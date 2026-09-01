@@ -25,7 +25,7 @@ if TYPE_CHECKING:
 
 _KEY = bytes(range(1, 33))
 _OTHER_KEY = bytes(range(2, 34))
-_CLAIMS = b'{"sub":"u1","exp":1767225600,"aud":"vox"}'
+_CLAIMS = b'{"sub":"u1","exp":1767225600,"aud":"example"}'
 
 
 def _token() -> str:
