@@ -2,6 +2,17 @@
 
 <!-- towncrier release notes start -->
 
+## [1.0.5] - 2026-09-01
+
+### Changed
+
+- Prose and fixtures name generic things rather than one deployment's. The
+  NDJSON docstring described the format by pointing at two artifacts nobody
+  outside their origin has ever seen, and a crypto fixture put a private service
+  in a JWT audience - so the docstring names what NDJSON is actually used for,
+  and the fixture says `example` like its sibling suite already did. No code
+  paths move.
+
 ## [1.0.4] - 2026-08-31
 
 ### Fixed
