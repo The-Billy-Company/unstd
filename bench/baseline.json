@@ -1,0 +1,97 @@
+{
+  "_": "Speed floors, ratio of stdlib cost to unstd cost. Raised by `python3 -m bench update`, never lowered by it. See bench/README.md.",
+  "recorded": "2026-09-01",
+  "host": "Darwin arm64 python3.13",
+  "cases": {
+    "b64.b64d · 128 KiB": {
+      "floor": 6.42,
+      "measured": 8.94,
+      "group": "serde"
+    },
+    "b64.b64s · 128 KiB": {
+      "floor": 11.77,
+      "measured": 16.52,
+      "group": "serde"
+    },
+    "binpack.pack_array · 50k f64 ← list": {
+      "floor": 0.41,
+      "measured": 0.59,
+      "group": "pack"
+    },
+    "binpack.pack_array · 50k f64 ← ndarray": {
+      "floor": 111.09,
+      "measured": 158.21,
+      "group": "pack"
+    },
+    "binpack.unpack_array · 50k f64": {
+      "floor": 1236.97,
+      "measured": 1767.1,
+      "group": "pack"
+    },
+    "clone.deep · 500 records": {
+      "floor": 4.09,
+      "measured": 5.85,
+      "group": "clone"
+    },
+    "clone.deep · nested (200 items)": {
+      "floor": 4.13,
+      "measured": 5.67,
+      "group": "clone"
+    },
+    "clone.deep · small dict": {
+      "floor": 0.85,
+      "measured": 1.21,
+      "group": "clone"
+    },
+    "draw.floats · 100k": {
+      "floor": 5.35,
+      "measured": 7.18,
+      "group": "rand"
+    },
+    "draw.ints · 100k": {
+      "floor": 77.75,
+      "measured": 108.7,
+      "group": "rand"
+    },
+    "fuzz.cdist · 20 × 2000": {
+      "floor": 140.27,
+      "measured": 200.38,
+      "group": "text"
+    },
+    "fuzz.extract · 1 × 2000": {
+      "floor": 214.4,
+      "measured": 306.08,
+      "group": "text"
+    },
+    "fuzz.ratio · one pair": {
+      "floor": 29.6,
+      "measured": 41.87,
+      "group": "text"
+    },
+    "hash.sum_ · 1 MiB": {
+      "floor": 1.21,
+      "measured": 1.72,
+      "group": "ids"
+    },
+    "jsonx.dumps · 500 records": {
+      "floor": 2.77,
+      "measured": 3.95,
+      "group": "serde"
+    },
+    "jsonx.loads · 500 records": {
+      "floor": 1.33,
+      "measured": 1.9,
+      "group": "serde"
+    },
+    "rex.findall · 4k words": {
+      "floor": 0.77,
+      "measured": 1.09,
+      "group": "rex"
+    },
+    "rex.search · catastrophic backtrack": {
+      "floor": 36597.4,
+      "measured": 51740.62,
+      "group": "rex"
+    }
+  }
+}

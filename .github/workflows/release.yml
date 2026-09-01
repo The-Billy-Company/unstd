@@ -1,0 +1,43 @@
+# Publish the wheel to PyPI when a version tag is pushed.
+#
+# ONE-TIME SETUP: PyPI Trusted Publishing, no API token in this repo.
+# On PyPI, add a trusted publisher for the `unstd` project pointing at this
+# repository, workflow `release.yml`, environment `pypi`. Before the project
+# exists this is a pending publisher under Your projects -> Publishing.
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # A tag push used to publish unconditionally — nothing stood between `git tag`
+  # and PyPI, and a release is the one artifact that cannot be taken back. The
+  # full CI gate (lint + type + the 3.12/3.13/3.14 matrix + the base-install
+  # fallback leg) runs first, by reference rather than by copy, so the bar is
+  # the same one every pull request clears.
+  gate:
+    uses: ./.github/workflows/ci.yml
+    permissions:
+      contents: read
+
+  pypi:
+    needs: gate
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          enable-cache: false
+      - run: uv build
+      - uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2

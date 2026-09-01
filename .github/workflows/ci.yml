@@ -1,0 +1,119 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  # Callable so `release.yml` can require *this* gate rather than a copy of it.
+  # A duplicated pre-publish check is a check that drifts; this way the bar a
+  # tag has to clear is the same bar a pull request clears, by construction.
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  lint:
+    # Style, import order, docstring shape (ruff) and the type contract (mypy,
+    # strict) — neither of which the test suite can observe. `--all-extras` so
+    # mypy resolves the real backends instead of typing the fallbacks alone;
+    # mypy judges against `python_version = "3.12"` from pyproject regardless of
+    # the interpreter running it, so this needs one leg, not the matrix.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          enable-cache: false
+          python-version: "3.13"
+      - run: uv sync --all-extras --group dev --python 3.13
+      - run: uv run --python 3.13 ruff check .
+      - run: uv run --python 3.13 ruff format --check .
+      - run: uv run --python 3.13 mypy
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # requires-python = ">=3.12" in pyproject.toml — test the whole claimed
+        # range, not just the pinned dev version. A change only exercised on
+        # one interpreter silently drifts to that interpreter's syntax/stdlib
+        # shape (e.g. PEP 758 bare-tuple `except`, 3.13's `batched(strict=)`).
+        python-version: ["3.12", "3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          enable-cache: false
+          python-version: ${{ matrix.python-version }}
+      - run: uv sync --all-extras --group dev --python ${{ matrix.python-version }}
+      - run: uv run --python ${{ matrix.python-version }} pytest -q
+
+  floors:
+    # Every extra declares a floor, and a floor is a promise: install this old a
+    # backend and the library still works. Nothing else in this matrix tests it —
+    # `test` resolves the newest of everything, so the floors could be fiction
+    # for years and only a consumer with an older pin would ever find out, as a
+    # resolver error blamed on their own manifest.
+    #
+    # `lowest-direct` takes the oldest version each DIRECT floor admits while
+    # leaving transitives modern, which is the environment a downstream
+    # application actually produces. A failure here means the floor is wrong, not
+    # the code: raise it to the version that works and say so in the changelog.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          enable-cache: false
+          python-version: "3.13"
+      - run: uv sync --all-extras --group dev --python 3.13 --resolution lowest-direct
+      # Which versions the floors admitted — the first thing anyone reading a
+      # failure here needs, and not recoverable from the traceback.
+      - run: uv pip list
+      # `--no-sync` is what makes this job mean anything. A bare `uv run`
+      # re-resolves in the default `highest` mode and quietly reinstalls the
+      # newest of everything first, so the suite would run against the same
+      # environment `test` already covers and pass no matter what the floors say.
+      - run: uv run --no-sync --python 3.13 pytest -q
+
+  test-fallback:
+    # A base install (no optional extras) is a load-bearing, documented contract
+    # on nearly every module: each accelerated backend degrades to a
+    # stdlib-faithful fallback. `test` above runs `--all-extras` on every leg, so
+    # those fallback branches were only ever reached through monkeypatch-forced
+    # fixtures inside the suite. This job takes the real path.
+    #
+    # Which modules can't be collected without their extra is decided by
+    # `tests/conftest.py`, which probes importability rather than carrying a
+    # list. A hardcoded `--ignore` roster here would be a second copy of that
+    # decision, and the copy that lives in CI is the one nobody updates.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          enable-cache: false
+          python-version: "3.13"
+      - run: uv sync --group dev --python 3.13
+      # A diagnostic, not a gate — the zero-closure claim is asserted offline by
+      # `tests/test_package.py`. This is here because a failure that reproduces
+      # only on the fallback leg is nearly unreadable without knowing which
+      # backends were actually present when it ran (the test tooling drags in a
+      # couple of its own, e.g. hypothesis → sortedcontainers).
+      - run: uv pip list
+      - run: uv run --python 3.13 pytest -q

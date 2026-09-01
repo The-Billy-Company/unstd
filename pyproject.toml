@@ -1,0 +1,240 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "unstd"
+version = "1.0.4"
+description = "stdlib-faithful accelerated replacements behind optional extras"
+readme = "README.md"
+requires-python = ">=3.12"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+authors = [{ name = "The Billy Company" }]
+keywords = [
+  "stdlib",
+  "orjson",
+  "msgspec",
+  "json",
+  "blake3",
+  "uuid",
+  "extras",
+]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = []
+
+# Every entry below is a FLOOR, never an `==` pin. A library that pins a patch
+# decides its consumers' resolutions for them, and two libraries doing that are
+# simply not co-installable. Applications are where an exact pin belongs, and a
+# consumer that wants one still has its own manifest and lockfile to say so in.
+#
+# The floor sits at the MINOR series, because that is where the API a backend
+# offers actually changes — pinning the patch we happened to develop against
+# rejects a consumer one bugfix behind for no reason we could state. CI's
+# `floors` job resolves `--resolution lowest-direct` and runs the whole suite
+# there, so each of these is a claim under test rather than a guess.
+[project.optional-dependencies]
+serde = [
+  "orjson>=3.12",
+  "msgspec>=0.21",
+  "pybase64>=1.5",
+]
+ids = [
+  "blake3>=1.0",
+  "uuid-utils>=0.17",
+]
+crypto = [
+  "blake3>=1.0",
+]
+time = [
+  "whenever>=0.10",
+]
+# `timeutil`'s protobuf Timestamp bridge only. Kept out of `time` so a
+# `whenever` consumer does not inherit protobuf, and out of the base install so
+# the rest of `timeutil` stays pure stdlib.
+proto = [
+  "protobuf>=7.36",
+]
+model = [
+  "pydantic>=2.13",
+  "pydantic-settings>=2.15",
+]
+rex = [
+  "irregex>=2.3.0",
+]
+containers = [
+  "sortedcontainers>=2.4",
+  "immutables>=0.21",
+]
+rand = [
+  "numpy>=2.5",
+]
+pack = [
+  "numpy>=2.5",
+]
+clone = [
+  "msgspec>=0.21",
+]
+text = [
+  "rapidfuzz>=3.12.0",
+]
+audio = [
+  "soundfile>=0.14",
+  "numpy>=2.5",
+]
+toml = [
+  "tomlkit>=0.15",
+]
+
+[project.urls]
+Homepage = "https://github.com/The-Billy-Company/unstd"
+Repository = "https://github.com/The-Billy-Company/unstd"
+Changelog = "https://github.com/The-Billy-Company/unstd/blob/main/CHANGELOG.md"
+Issues = "https://github.com/The-Billy-Company/unstd/issues"
+
+[dependency-groups]
+dev = [
+  "pytest>=8.0",
+  "hypothesis>=6.100",
+  "mypy>=1.15",
+  "ruff>=0.9",
+  # Only the TLS policy tests need it, and only to mint a throwaway self-signed
+  # certificate: `load_cert_chain` is the behavior under test, so there is no
+  # faking it. Without this the mTLS and pinned-root cases skip rather than fail,
+  # which is the quiet way a security test stops being one.
+  "cryptography>=44.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# The repo root, so `tests/test_bench.py` can import the `bench` harness. `bench`
+# is a development tool and deliberately outside `src/`, so it is not on the path
+# the installed wheel puts there.
+pythonpath = ["."]
+
+# Target Python version is INFERRED from `[project].requires-python` (3.12), per
+# ruff's own recommendation — so the lint target can never drift from the floor
+# the package actually claims to support.
+[tool.ruff]
+# 88 — ruff's default, and what the tree is already formatted to. Pinned rather
+# than inherited so a future ruff default change can't silently reflow the repo.
+line-length = 88
+
+[tool.ruff.lint]
+select = [
+  "E",
+  "W",
+  "F",
+  "I",
+  "UP",
+  "B",
+  "S",
+  "C4",
+  "PT",
+  "SIM",
+  "RUF",
+  "PTH",
+  "TC",
+  "ASYNC",
+  "FURB",
+  "DTZ",
+  "PERF",
+  "RET",
+  "TRY",
+  "EM",
+  "N",
+  "D",
+]
+# D401 (imperative mood) is deselected deliberately, not to go green. It suits
+# commands; this package's voice names what a pure accessor *returns* as a noun
+# phrase ("The digest of everything absorbed so far"), which reads better than
+# "Return the digest of …" and is the house convention throughout. The
+# load-bearing half of pydocstyle — a docstring must EXIST (D100-D107) and be
+# shaped correctly (D2xx) — stays enforced.
+# E501 — line length is owned by `ruff format`, which deliberately leaves long
+# docstrings and prose strings alone; selecting it would double-punish them.
+# D203/D213 — the two mutually-exclusive halves of the docstring-whitespace
+# rules; D211/D212 (this package's shape) are the other side of each pair.
+# RUF001/RUF002/RUF003 — the whole trio, one decision: this package deliberately
+# uses typographic characters (· × —) as prose in strings, docstrings and
+# comments alike. `×` in "5.9× faster" is a multiplication sign because that is
+# what it means; there is nothing ambiguous to resolve.
+ignore = ["E501", "D203", "D213", "D401", "RUF001", "RUF002", "RUF003"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "pep257"
+
+[tool.ruff.lint.isort]
+known-first-party = ["unstd"]
+force-sort-within-sections = true
+lines-after-imports = 2
+
+[tool.ruff.lint.per-file-ignores]
+# Tests assert (S101). A test's own name is its documentation, and the law each
+# suite enforces lives in the module docstring — so the per-function/class/
+# method docstring rules are noise there. Module docstrings stay required (D100).
+# D205 too: a test docstring is one law sentence that happens to wrap past a
+# line, not a summary followed by a description, so there is no blank line to
+# insert without splitting the sentence. It stays enforced on `src`, which ships.
+"tests/**" = [
+  "S101",
+  "D101",
+  "D102",
+  "D103",
+  "D105",
+  "D106",
+  "D107",
+  "D205",
+]
+# Benchmarks print their measurements; that is their entire output contract
+# (T201), and they seed `random.Random` to build deterministic payloads, which is
+# the opposite of a cryptographic use (S311). D102 covers one-line properties
+# (`per_op_us`, `ratio`, `skipped`) whose names already say everything a docstring
+# would; the ones carrying a real invariant have one anyway.
+"bench/**" = ["S101", "D102", "D103", "S311", "T201"]
+# FURB167 rewrites `re.S` → `re.DOTALL`. `rex` MUST re-export stdlib's full flag
+# vocabulary — short aliases included — or it is not a drop-in `re` surface, so
+# the finding is wrong here on its own terms. It is also actively destructive:
+# ruff marks the fix `safe`, and its replacement content is the bare token
+# `DOTALL`, which a plain `ruff --fix` splices over the PEP 695 type parameter
+# `S` in every generic signature in this file. That is exactly how the nine
+# `pattern: DOTALL` annotations got here. Do not re-enable.
+"src/unstd/rex/**" = ["FURB167"]
+# `unstd.fs` is an `os`-faithful surface: `os.chmod` is the function it stands in
+# for, so rewriting it to `Path.chmod` would break the contract the module exists
+# to keep.
+"src/unstd/fs/**" = ["PTH"]
+
+[tool.mypy]
+# The floor from `requires-python`, so the type gate judges the oldest
+# interpreter the package claims rather than whichever one CI happens to run.
+python_version = "3.12"
+# `bench` is checked too. It is the only thing standing behind the speedup
+# numbers the READMEs print, so a harness that silently stopped comparing what
+# it claims to compare would be worse than no harness — it would launder a
+# regression as a measurement.
+files = ["src/unstd", "bench"]
+strict = true
+# Several backends (irregex, pybase64, soundfile, immutables, tomlkit) ship
+# no stubs. Their surfaces are exercised behind guarded imports and pinned by
+# the suite; typing the shim against them is not the gate's job.
+ignore_missing_imports = true
+# `warn_unreachable` and `redundant-expr` are deliberately NOT enabled. Both are
+# structurally incompatible with this package's central idiom: a backend is
+# imported for real under `if TYPE_CHECKING:` and guarded by try/except at
+# runtime, so mypy — which always resolves the TYPE_CHECKING branch as true —
+# sees every runtime fallback guard as dead code. Enabling them would mean
+# suppressing the fallback contract the library is built on, one `type: ignore`
+# at a time. mypy's numeric promotion (`int` satisfies `float`) makes
+# `redundant-expr` misread the sample-coercion isinstance checks the same way.
+enable_error_code = ["truthy-bool", "ignore-without-code"]
+
