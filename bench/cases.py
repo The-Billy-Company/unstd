@@ -37,13 +37,14 @@ from typing import TYPE_CHECKING, Any
 
 from unstd.clone import asdict as clone_asdict
 from unstd.clone import deep
-from unstd.ids.hash import sum_
+from unstd.crypto.digest import raw as digest_raw
 from unstd.pack.binpack import pack_array, unpack_array
 from unstd.rand.draw import floats, ints
 from unstd.rex import compile as rex_compile
 from unstd.rex import findall as rex_findall
 from unstd.rex import search as rex_search
-from unstd.serde.b64 import b64d, b64s
+from unstd.serde.b64 import decode as b64_decode
+from unstd.serde.b64 import encode as b64_encode
 from unstd.serde.jsonx import dumps as jx_dumps
 from unstd.serde.jsonx import loads as jx_loads
 from unstd.text.fuzz import cdist, extract, ratio
@@ -220,20 +221,20 @@ case(
     base=json.loads,
 )
 case(
-    name="b64.b64s · 128 KiB",
+    name="b64.encode · 128 KiB",
     group="serde",
     backend="pybase64",
     payload=lambda: _BLOB,
-    accel=b64s,
+    accel=b64_encode,
     base=lambda p: base64.b64encode(p).decode("ascii"),
     note="pybase64 SIMD vs stdlib base64",
 )
 case(
-    name="b64.b64d · 128 KiB",
+    name="b64.decode · 128 KiB",
     group="serde",
     backend="pybase64",
     payload=lambda: _B64_TEXT,
-    accel=b64d,
+    accel=b64_decode,
     base=base64.b64decode,
 )
 
@@ -429,18 +430,18 @@ case(
 # ---------------------------------------------------------------- ids
 
 # The twin is blake2b, not sha256. BLAKE2 is what hashlib ships from the BLAKE
-# family, so it is the thing `sum_` actually stands in for — and a fair fight.
+# family, so it is the thing `digest.raw` actually stands in for — and a fair fight.
 # sha256 is *not* one: every ARMv8 and modern x86 core implements it in silicon,
 # so `hashlib.sha256` here is a hardware instruction and beats single-threaded
 # BLAKE3 (350 µs vs 453 µs on an M-series laptop). That is a fact about the chip,
 # not about the algorithm, and benchmarking against it would report a loss the
 # library cannot fix and a caller cannot act on.
 case(
-    name="hash.sum_ · 1 MiB",
+    name="digest.raw · 1 MiB",
     group="ids",
     backend="blake3",
     payload=lambda: _HASH_BLOB,
-    accel=sum_,
+    accel=digest_raw,
     base=lambda p: hashlib.blake2b(p).digest(),
     note="BLAKE3 vs hashlib's BLAKE2b — the stdlib's own BLAKE-family digest",
     equivalent=False,

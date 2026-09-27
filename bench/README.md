@@ -92,8 +92,8 @@ The harness earned its keep on the first run:
   real value is the shape beside it: handed an ndarray it already owns,
   `pack_array` is a memcpy and wins **159×**, and `unpack_array` returns a
   zero-copy view for **1667×**. Hold your data in an array, not a list.
-- **`hash.sum_`'s honest twin is `blake2b`, not `sha256`.** BLAKE2 is what
-  `hashlib` ships from the BLAKE family, so it is the thing `sum_` stands in for,
+- **`digest.raw`'s honest twin is `blake2b`, not `sha256`.** BLAKE2 is what
+  `hashlib` ships from the BLAKE family, so it is the thing `digest.raw` stands in for,
   and BLAKE3 beats it 1.7×. `sha256` is not a fair comparison in either
   direction: every ARMv8 and modern x86 core implements it in silicon, so
   `hashlib.sha256` is a hardware instruction and beats single-threaded BLAKE3

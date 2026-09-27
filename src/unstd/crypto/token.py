@@ -11,18 +11,20 @@ to re-encode to check the tag. That one detail is what a second implementation
 of this envelope gets wrong silently, so it is pinned by its own test rather
 than left to the whole-token golden.
 
-Base64 here is stdlib ``base64`` rather than :mod:`unstd.serde.b64` on purpose:
-the wire format is unpadded, ``serde.b64`` is padded, and the seam should not
-inherit an optional extra to strip two ``=`` off a string.
+The MAC comes in the two shapes :mod:`unstd.crypto.digest` names — :func:`mac_raw`
+(32 bytes) and :func:`mac_hex` (64 chars) — and :func:`verify_mac` accepts a tag
+in either. :func:`equal` is the constant-time compare every tag check rides.
+
+An opaque bearer (no claims inside) is just CSPRNG bytes:
+``unstd.rand.crypto.token_urlsafe()``.
 """
 
 from __future__ import annotations
 
-import base64
+import hmac
 
 from unstd.crypto import blake3
-from unstd.crypto.digest import equal
-from unstd.rand import crypto as _csprng
+from unstd.serde import b64
 
 
 SEPARATOR = "."
@@ -35,28 +37,38 @@ TAG_BYTES = 32
 """Width of a MAC tag, which is BLAKE3's output width."""
 
 
-def mac(key: bytes, data: bytes) -> str:
-    """Keyed BLAKE3 MAC of *data* as hex (64 chars). *key* must be exactly 32 bytes."""
-    return str(blake3(data, key=_checked(key)).hexdigest())
+def equal(a: str | bytes, b: str | bytes) -> bool:
+    """Constant-time equality for a token, digest, or MAC.
 
-
-def mac_bytes(key: bytes, data: bytes) -> bytes:
-    """Keyed BLAKE3 MAC of *data* as raw bytes (32). *key* must be exactly 32 bytes."""
-    return bytes(blake3(data, key=_checked(key)).digest())
-
-
-def verify_mac(key: bytes, data: bytes, tag: str) -> bool:
-    """Recompute the MAC over *data* and compare it to *tag* in constant time."""
-    return equal(mac(key, data), tag)
-
-
-def opaque(n: int = KEY_BYTES) -> str:
-    """Mint an opaque bearer — *n* CSPRNG bytes, URL-safe base64, no claims inside.
-
-    Delegates to :mod:`unstd.rand.crypto` (always stdlib ``secrets``, never
-    seedable) so there is one randomness door in the program, not two.
+    Never use ``==`` on one of those: it short-circuits on the first differing
+    byte, which leaks the length of the shared prefix and is enough to forge a
+    tag one byte at a time. Mismatched str/bytes is False rather than a
+    TypeError, so a caller cannot turn a comparison into a 500.
     """
-    return _csprng.token_urlsafe(n)
+    if isinstance(a, str):
+        return isinstance(b, str) and hmac.compare_digest(a, b)
+    return isinstance(b, bytes) and hmac.compare_digest(a, b)
+
+
+def mac_raw(key: bytes, data: bytes) -> bytes:
+    """Keyed BLAKE3 MAC of *data* as raw bytes (32). *key* must be exactly 32 bytes."""
+    if len(key) != KEY_BYTES:
+        raise ValueError(_key_error(key))
+    return blake3(data, key=key).digest()
+
+
+def mac_hex(key: bytes, data: bytes) -> str:
+    """Keyed BLAKE3 MAC of *data* as hex (64 chars). *key* must be exactly 32 bytes."""
+    if len(key) != KEY_BYTES:
+        raise ValueError(_key_error(key))
+    return blake3(data, key=key).hexdigest()
+
+
+def verify_mac(key: bytes, data: bytes, tag: str | bytes) -> bool:
+    """Recompute the MAC over *data* and compare it to *tag* — hex ``str`` or raw ``bytes`` — in constant time."""
+    return equal(
+        mac_hex(key, data) if isinstance(tag, str) else mac_raw(key, data), tag
+    )
 
 
 def mint(key: bytes, claims: bytes) -> str:
@@ -76,8 +88,9 @@ def mint(key: bytes, claims: bytes) -> str:
             "refusing to mint a token with no claims — an empty bearer asserts nothing"
         )
         raise ValueError(msg)
-    payload = _encode(claims)
-    return payload + SEPARATOR + _encode(mac_bytes(key, payload.encode("ascii")))
+    payload = b64.encode(claims, url=True, pad=False)
+    tag = mac_raw(key, payload.encode("ascii"))
+    return payload + SEPARATOR + b64.encode(tag, url=True, pad=False)
 
 
 def verify(key: bytes, token: str) -> bytes | None:
@@ -92,33 +105,17 @@ def verify(key: bytes, token: str) -> bytes | None:
     if not sep or SEPARATOR in tag or not payload or not tag:
         return None
     try:
-        claims = _decode(payload)
-        got = _decode(tag)
-    except (ValueError, UnicodeEncodeError):
+        claims = b64.decode(payload, url=True)
+        got = b64.decode(tag, url=True)
+    except ValueError:  # binascii.Error and UnicodeEncodeError are both ValueErrors
         return None
-    if len(got) != TAG_BYTES:
-        return None
-    if not equal(got, mac_bytes(key, payload.encode("ascii"))):
+    if len(got) != TAG_BYTES or not equal(got, mac_raw(key, payload.encode("ascii"))):
         return None
     return claims
 
 
-def _checked(key: bytes) -> bytes:
-    if len(key) != KEY_BYTES:
-        msg = f"keyed BLAKE3 needs exactly {KEY_BYTES} bytes of key, got {len(key)}"
-        raise ValueError(msg)
-    return key
-
-
-def _encode(raw: bytes) -> str:
-    return base64.urlsafe_b64encode(raw).decode("ascii").rstrip("=")
-
-
-def _decode(segment: str) -> bytes:
-    # Unpadded on the wire; stdlib insists on a multiple of four, so pad it back.
-    return base64.urlsafe_b64decode(
-        segment.encode("ascii") + b"=" * (-len(segment) % 4)
-    )
+def _key_error(key: bytes) -> str:
+    return f"keyed BLAKE3 needs exactly {KEY_BYTES} bytes of key, got {len(key)}"
 
 
 __all__ = [
@@ -126,10 +123,9 @@ __all__ = [
     "SEPARATOR",
     "TAG_BYTES",
     "equal",
-    "mac",
-    "mac_bytes",
+    "mac_hex",
+    "mac_raw",
     "mint",
-    "opaque",
     "verify",
     "verify_mac",
 ]

@@ -7,7 +7,7 @@ answer comes from the implementation proves only that the implementation agrees
 with itself, while these are the values a second implementation has to match.
 
 Each case exercises all three BLAKE3 modes on the same input — plain ``hash``
-(:func:`digest.hex_`), ``keyed_hash`` (:func:`token.mac`), and ``derive_key``
+(:func:`digest.hex`), ``keyed_hash`` (:func:`token.mac_hex`), and ``derive_key``
 (:func:`digest.derive_key`) — which is what makes a mode mix-up detectable. The
 reference outputs are extended (131-byte XOF) reads; a 32-byte digest is their
 first 64 hex characters, because every prefix of a BLAKE3 output is itself a
@@ -82,22 +82,22 @@ class TestReferenceVectors:
     def test_hash_matches_the_reference(self, case: dict[str, object]):
         data = _input(int(case["input_len"]))  # type: ignore[call-overload]
         expect = str(case["hash"])[:_DIGEST_HEX]
-        assert digest.hex_(data) == expect
-        assert digest.sum_(data) == bytes.fromhex(expect)
+        assert digest.hex(data) == expect
+        assert digest.raw(data) == bytes.fromhex(expect)
 
     def test_keyed_hash_matches_the_reference(self, case: dict[str, object]):
         """Keyed BLAKE3 is the MAC, so the reference's keyed answers gate the MAC."""
         data = _input(int(case["input_len"]))  # type: ignore[call-overload]
         expect = str(case["keyed_hash"])[:_DIGEST_HEX]
-        assert token.mac(_KEY, data) == expect
-        assert token.mac_bytes(_KEY, data) == bytes.fromhex(expect)
+        assert token.mac_hex(_KEY, data) == expect
+        assert token.mac_raw(_KEY, data) == bytes.fromhex(expect)
         assert token.verify_mac(_KEY, data, expect)
 
     def test_derive_key_matches_the_reference(self, case: dict[str, object]):
         data = _input(int(case["input_len"]))  # type: ignore[call-overload]
         expect = str(case["derive_key"])[:_DIGEST_HEX]
         assert digest.derive_key(_CONTEXT, data).hex() == expect
-        assert len(digest.derive_key(_CONTEXT, data)) == digest.KDF_BYTES
+        assert len(digest.derive_key(_CONTEXT, data)) == digest.DIGEST_BYTES
 
     def test_the_three_modes_never_collide_on_one_input(self, case: dict[str, object]):
         """Same bytes, three modes, three unrelated answers — the flag domain separation.
@@ -118,13 +118,13 @@ class TestPublishedConstants:
         # Spelled out rather than read from the fixture: if the vendored file
         # were ever replaced wholesale, this line still catches it.
         assert (
-            digest.hex_(b"")
+            digest.hex(b"")
             == "af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262"
         )
 
     def test_abc_digest_is_the_widely_published_constant(self):
         assert (
-            digest.hex_(b"abc")
+            digest.hex(b"abc")
             == "6437b3ac38465133ffb63b75273a8db548c558465d79db03fd359c6cd5bd9d85"
         )
 
@@ -136,7 +136,7 @@ class TestTruncationAndStreaming:
     def test_truncation_is_a_prefix_of_the_full_digest(self, n: int):
         expect = str(_CASES[3]["hash"])[:_DIGEST_HEX]
         data = _input(int(_CASES[3]["input_len"]))  # type: ignore[call-overload]
-        assert digest.hex_n(data, n) == expect[: n * 2]
+        assert digest.hex(data, n) == expect[: n * 2]
 
     @pytest.mark.parametrize(
         "chunks", [(1,), (1, 1, 1), (1023, 1), (1, 1023), (512, 512)]
@@ -150,8 +150,8 @@ class TestTruncationAndStreaming:
         for width in chunks:
             stream.update(data[at : at + width])
             at += width
-        assert stream.hex_() == digest.hex_(data)
-        assert digest.of_parts([data[:1], data[1:]]) == digest.sum_(data)
+        assert stream.hex() == digest.hex(data)
+        assert digest.Stream([data[:1], data[1:]]).raw() == digest.raw(data)
 
 
 class TestKdfDomainSeparation:
@@ -162,7 +162,7 @@ class TestKdfDomainSeparation:
         a = digest.derive_key("unstd test context v1", material)
         b = digest.derive_key("unstd test context v2", material)
         assert a != b
-        assert len(a) == len(b) == digest.KDF_BYTES
+        assert len(a) == len(b) == digest.DIGEST_BYTES
 
     def test_a_one_character_context_change_is_a_different_key(self):
         material = b"the same material either way"
@@ -171,7 +171,7 @@ class TestKdfDomainSeparation:
     def test_derived_key_is_not_the_bare_digest_of_the_material(self):
         """A KDF that forgot its context would just be a digest of the material."""
         material = _input(32)
-        assert digest.derive_key(_CONTEXT, material) != digest.sum_(material)
+        assert digest.derive_key(_CONTEXT, material) != digest.raw(material)
 
 
 class TestClaimsEnvelope:
@@ -204,8 +204,8 @@ class TestClaimsEnvelope:
         comparison distinguishes them until two services disagree in production.
         """
         payload, _, tag = self.GOLDEN.partition(token.SEPARATOR)
-        over_payload = token.mac_bytes(self.KEY, payload.encode("ascii"))
-        over_raw = token.mac_bytes(self.KEY, self.CLAIMS)
+        over_payload = token.mac_raw(self.KEY, payload.encode("ascii"))
+        over_raw = token.mac_raw(self.KEY, self.CLAIMS)
         assert over_payload != over_raw
         assert len(over_payload) == len(over_raw) == token.TAG_BYTES
         assert tag == token.mint(self.KEY, self.CLAIMS).partition(token.SEPARATOR)[2]

@@ -2,9 +2,9 @@
 
 Three modules, each deep enough to be the only place its subject is spelled:
 
-- ``digest`` — BLAKE3-256 content hashing (bytes / hex / truncated / streaming),
-  ``derive_key``, and constant-time ``equal``.
-- ``token`` — the keyed-BLAKE3 MAC, opaque bearers, and the claims envelope.
+- ``digest`` — BLAKE3-256 content hashing (``raw`` / ``hex`` / truncated /
+  streaming) and ``derive_key``.
+- ``token`` — the keyed-BLAKE3 MAC, constant-time ``equal``, and the claims envelope.
 - ``tls`` — a verifying TLS client context with no way to ask it not to verify.
 
 Import the module, not its members::

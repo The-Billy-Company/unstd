@@ -24,7 +24,12 @@ from __future__ import annotations
 import os
 import threading
 import time
+from typing import TYPE_CHECKING, Protocol
 from uuid import UUID, uuid5
+
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 # Spec-correct stdlib UUIDv7 fallback — always defined (so it is directly
@@ -81,29 +86,28 @@ def _stdlib_uuid7() -> UUID:
     return UUID(int=value)
 
 
+class _Uuid(Protocol):
+    """What a minted id must answer: its hex, and its canonical ``str``."""
+
+    @property
+    def hex(self) -> str: ...
+
+
+_uuid7: Callable[[], _Uuid]
 try:
     from uuid_utils import uuid7 as _uuid7
-
-    def _new_uuid7() -> str:
-        return str(_uuid7())
-
-    def _new_uuid7_hex() -> str:
-        return _uuid7().hex
-
 except (
     ImportError
 ):  # base install without the `ids` extra — spec-correct stdlib fallback
+    import uuid as _uuid
 
-    def _new_uuid7() -> str:
-        return str(_stdlib_uuid7())
-
-    def _new_uuid7_hex() -> str:
-        return _stdlib_uuid7().hex
+    # CPython 3.14 ships the same RFC 9562 Method 1 generator natively.
+    _uuid7 = getattr(_uuid, "uuid7", _stdlib_uuid7)
 
 
 def new() -> str:
     """Generate a time-ordered UUIDv7 string (lowercase, hyphenated)."""
-    return _new_uuid7()
+    return str(_uuid7())
 
 
 def new_hex() -> str:
@@ -112,35 +116,33 @@ def new_hex() -> str:
     For correlation keys embedded in log lines / metric labels where
     hyphens hurt grep-ability.
     """
-    return _new_uuid7_hex()
+    return _uuid7().hex
 
 
-def parse(s: str) -> UUID:
-    """Parse a canonical UUID string, raising ``ValueError`` if it is malformed.
+parse = UUID
+"""Parse a canonical UUID string, raising ``ValueError`` if it is malformed.
 
-    Here because :func:`derive` takes a namespace and a namespace is written
-    down as a string; without this, every caller that wants a derived id has to
-    reach past the seam for the stdlib just to spell its own constant.
-    """
-    return UUID(s)
+Here because :func:`derive` takes a namespace and a namespace is written
+down as a string; without this, every caller that wants a derived id has to
+reach past the seam for the stdlib just to spell its own constant.
+"""
 
 
-def derive(namespace: UUID, name: str) -> UUID:
-    """The RFC 4122 version-5 UUID of ``name`` inside ``namespace``.
+derive = uuid5
+"""The RFC 4122 version-5 UUID of ``name`` inside ``namespace`` — ``derive(namespace, name)``.
 
-    Deterministic where :func:`new` is not: the same namespace and name yield
-    the same id on every call, from any process, forever. That is what lets an
-    identity you do not store — a Gmail thread, a phone number, a chat
-    handle — name its own conversation without a lookup table, and it is why the
-    values this returns are load-bearing. Changing a namespace, changing how a
-    caller normalizes ``name``, or changing the digest underneath renames every
-    identity derived before it, so a differing value is a defect rather than a
-    new expectation.
+Deterministic where :func:`new` is not: the same namespace and name yield
+the same id on every call, from any process, forever. That is what lets an
+identity you do not store — a Gmail thread, a phone number, a chat
+handle — name its own conversation without a lookup table, and it is why the
+values this returns are load-bearing. Changing a namespace, changing how a
+caller normalizes ``name``, or changing the digest underneath renames every
+identity derived before it, so a differing value is a defect rather than a
+new expectation.
 
-    Mirrors Go's ``uid.Derive``; the two must agree byte for byte, since both
-    planes read and write the same ``email_thread_id`` column. Deliberately on
-    stdlib rather than ``uuid-utils``: v5 is a pure function of its inputs with
-    no entropy to speed up, and one return type is worth more here than a faster
-    hash on a per-inbound-message path.
-    """
-    return uuid5(namespace, name)
+Mirrors Go's ``uid.Derive``; the two must agree byte for byte, since both
+planes read and write the same ``email_thread_id`` column. Deliberately on
+stdlib rather than ``uuid-utils``: v5 is a pure function of its inputs with
+no entropy to speed up, and one return type is worth more here than a faster
+hash on a per-inbound-message path.
+"""

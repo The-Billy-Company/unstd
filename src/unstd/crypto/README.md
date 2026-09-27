@@ -8,7 +8,8 @@ constant-time compare.
 ```python
 from unstd.crypto import digest, token, tls
 
-digest.hex_(b"content")  # BLAKE3-256, 64 hex chars
+digest.hex(b"content")  # BLAKE3-256, 64 hex chars
+digest.hex(b"content", 8)  # a 16-char short id
 digest.derive_key("myapp session key v1", km)  # a domain-separated subkey
 token.mint(key, claims_json_bytes)  # payload.tag bearer
 token.verify(key, bearer)  # claims bytes, or None
@@ -21,8 +22,8 @@ Install with the extra: `pip install 'unstd[crypto]'`.
 
 | File        | Role                                                                                                      |
 | ----------- | --------------------------------------------------------------------------------------------------------- |
-| `digest.py` | BLAKE3-256 - `sum_` / `hex_` / `hex_n` / `of_parts` / `Stream`, `derive_key`, constant-time `equal`, and the `legacy_blake2b` escape hatch. |
-| `token.py`  | Keyed-BLAKE3 `mac` / `verify_mac`, opaque bearers, and the claims envelope (re-exports `equal`).           |
+| `digest.py` | BLAKE3-256 - `raw` (bytes) / `hex` (full or truncated) / `Stream`, `derive_key`, and the `legacy_blake2b` escape hatch. |
+| `token.py`  | Keyed-BLAKE3 `mac_raw` / `mac_hex` / `verify_mac`, constant-time `equal`, and the claims envelope.         |
 | `tls.py`    | A verifying TLS client context with no parameter for skipping verification.                                |
 
 There is deliberately no sealing or key-management module. An empty one would be
@@ -62,9 +63,9 @@ every value already addressed by one would stop resolving - so this package hard
 -requires the `crypto` extra and raises an ImportError naming
 `pip install 'unstd[crypto]'` when it is missing.
 
-Randomness is the one thing the seam does not re-implement: `token.opaque`
-delegates to `unstd.rand.crypto`, which is always stdlib `secrets` and never
-seedable. One randomness door in the program, not two.
+Randomness is the one thing the seam does not re-implement: an opaque bearer
+with no claims inside is `unstd.rand.crypto.token_urlsafe()`, which is always
+stdlib `secrets` and never seedable. One randomness door in the program, not two.
 
 ## Known-answer vectors
 
@@ -91,9 +92,10 @@ value derived from it. Keeping it inside the seam means the migration stays a
 visible decision instead of becoming a reason to import `hashlib` next door and
 grow a second digest for new work too.
 
-## Relationship to `unstd.ids.hash`
+## One digest, one vocabulary
 
-`ids.hash` is a thin caller of `digest` - three functions (`sum_`, `hex_n`,
-`content_hash`) that exist so identifier call sites keep their identifier
-vocabulary. One implementation, two named doors; a MAC is not an identifier, so
-the MAC half lives in `token`.
+Content-addressed identifiers are BLAKE3 digests, so they are spelled here too -
+`digest.hex(data)` for a content key, `digest.hex(data, 8)` for a short
+human-facing id. There used to be a second, identifier-shaped module over the
+same three calls; two names for one function is a door to keep in sync, not a
+vocabulary. A MAC is not an identifier, so the MAC half lives in `token`.

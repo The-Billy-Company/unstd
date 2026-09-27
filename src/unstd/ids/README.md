@@ -1,14 +1,13 @@
 # `unstd.ids`
 
-Identifier generation — one hasher and one UID strategy shared across the
-program. `hash` is a thin caller of `unstd.crypto.digest`, so there is
-exactly one BLAKE3 implementation with an identifier-shaped vocabulary over it.
+Identifier generation — one UID strategy shared across the program.
+Content-addressed ids are BLAKE3 digests and live with the digest:
+`unstd.crypto.digest.hex(data)` (or `hex(data, 8)` for a short id).
 
 ## Modules
 
 | File      | Role                                                                                                                                               |
 | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `hash.py` | `sum_` / `hex_n` / `content_hash` over `unstd.crypto.digest`. The MAC half moved to `unstd.crypto.token`.                                          |
 | `uid.py`  | `new` / `new_hex` mint a UUIDv7 (RFC 9562); `derive` computes a v5; `parse` reads one back. `ids` extra → `uuid-utils`; stdlib fallback otherwise. |
 
 ## Minted vs derived
@@ -28,8 +27,7 @@ same derived id column. The vectors are pinned in `tests/ids/test_uid.py`.
 
 ## Backend
 
-The `ids` extra (`pip install 'unstd[ids]'`) provides `blake3` + `uuid-utils`.
-`hash` fails loud without `blake3` (BLAKE2b ≠ BLAKE3 — a silent fallback would
-fork the digest), raising through `unstd.crypto`, which names the `crypto` extra;
-both extras pin the same version. `uid` falls back to a spec-correct stdlib
-UUIDv7 generator.
+The `ids` extra (`pip install 'unstd[ids]'`) provides `uuid-utils` (and
+`blake3`, so an `unstd[ids]` install keeps `unstd.crypto.digest` working). `uid`
+falls back to stdlib `uuid.uuid7` on Python 3.14+, and to a spec-correct
+hand-rolled RFC 9562 generator before that.
