@@ -202,6 +202,22 @@ def test_a_skipped_case_keeps_its_prior_floor(
     assert report.load_baseline()["probe"] == kept
 
 
+def test_a_narrowed_update_keeps_every_case_it_did_not_run(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """``update --group X`` once rewrote the file with group X alone, erasing every other floor."""
+    store = tmp_path / "baseline.json"
+    store.write_text(
+        json.dumps(
+            {"cases": {"elsewhere": {"floor": 3.5, "measured": 5.0, "group": "serde"}}}
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(report, "BASELINE", store)
+    report.write_baseline([report.Result(_case(), _stub(1.0), _stub(10.0), None)])
+    assert report.load_baseline() == {"elsewhere": 3.5, "probe": pytest.approx(7.0)}
+
+
 def _stub(us: float) -> Any:
     from bench.timing import Measurement
 

@@ -104,9 +104,17 @@ def run(cases: list[Case], *, rounds: int = 5) -> list[Result]:
 
 
 def write_baseline(results: list[Result]) -> tuple[int, int]:
-    """Persist floors, raising only. Returns ``(raised, held)``."""
+    """Persist floors, raising only. Returns ``(raised, held)``.
+
+    Cases this run did not measure (a ``--group`` narrowing) keep their rows as
+    committed — a partial run may only speak for the cases it timed.
+    """
     existing = load_baseline()
-    cases: dict[str, dict[str, object]] = {}
+    cases: dict[str, dict[str, object]] = (
+        json.loads(BASELINE.read_text(encoding="utf-8")).get("cases", {})
+        if BASELINE.is_file()
+        else {}
+    )
     raised = held = 0
     for r in results:
         if r.skipped:
