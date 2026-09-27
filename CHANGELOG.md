@@ -70,6 +70,8 @@ and each old name fails at import rather than changing meaning in place.
 - `crypto.tls.client_context(certfile=...)` alone loads the chain, which is the
   combined cert-plus-key PEM most bundles ship as; it used to be ignored and the
   client dialed without mTLS. A `keyfile` with no `certfile` raises `ValueError`.
+- The `ids` extra no longer pulls `blake3`; nothing under `ids` has used it since
+  `ids.hash` folded into `crypto.digest`. Depend on `unstd[crypto]` for digests.
 
 ### Performance
 

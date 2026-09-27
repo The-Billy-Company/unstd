@@ -27,7 +27,6 @@ same derived id column. The vectors are pinned in `tests/ids/test_uid.py`.
 
 ## Backend
 
-The `ids` extra (`pip install 'unstd[ids]'`) provides `uuid-utils` (and
-`blake3`, so an `unstd[ids]` install keeps `unstd.crypto.digest` working). `uid`
-falls back to stdlib `uuid.uuid7` on Python 3.14+, and to a spec-correct
+The `ids` extra (`pip install 'unstd[ids]'`) provides `uuid-utils`. BLAKE3 hashing
+lives in `unstd.crypto.digest` behind the `crypto` extra. `uid` falls back to stdlib `uuid.uuid7` on Python 3.14+, and to a spec-correct
 hand-rolled RFC 9562 generator before that.
