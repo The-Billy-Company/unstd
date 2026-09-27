@@ -172,7 +172,9 @@ def unpack_array(
     trailing element raises, matching ``numpy.frombuffer``).
     """
     if _HAVE_NUMPY:
-        return np.frombuffer(buf, dtype=np.dtype(dtype))
+        return np.frombuffer(
+            buf, dtype=dtype
+        )  # accepts the spec as-is; no extra dtype build
     order, char, size = _struct_spec(dtype)
     if len(buf) % size:
         msg = f"unstd.pack: buffer size {len(buf)} is not a multiple of itemsize {size}"
