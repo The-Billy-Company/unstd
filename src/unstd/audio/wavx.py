@@ -133,9 +133,7 @@ def read(path_or_file: PathOrFile, *, dtype: str = "float32") -> tuple[Samples, 
     ``[-1, 1]``, or ``"int16"`` for raw signed 16-bit samples. Mono returns a 1-D
     container, multichannel a 2-D ``(frames, channels)`` one.
     """
-    if dtype not in _DTYPES:
-        msg = f"dtype must be one of {_DTYPES}, got {dtype!r}"
-        raise ValueError(msg)
+    _check_dtype(dtype)
     if _HAVE_SOUNDFILE:
         samples, samplerate = _sf.read(path_or_file, dtype=dtype, always_2d=False)
         return samples, int(samplerate)
@@ -163,9 +161,7 @@ def blocks(
     :func:`read` uses on its own fallback path — identical numbers, one
     chunk at a time instead of the whole file at once.
     """
-    if dtype not in _DTYPES:
-        msg = f"dtype must be one of {_DTYPES}, got {dtype!r}"
-        raise ValueError(msg)
+    _check_dtype(dtype)
     if _HAVE_SOUNDFILE:
         yield from _sf.blocks(
             path_or_file, blocksize=blocksize, dtype=dtype, always_2d=False
@@ -329,20 +325,9 @@ class Writer:
             raise ValueError(msg)
         if self._spec is not None:  # numpy fallback
             _, code, scale = self._spec
-            arr = _np.asarray(samples)
-            ints = (
-                _np.round(_np.clip(arr, -1.0, 1.0) * scale)
-                if _np.issubdtype(arr.dtype, _np.floating)
-                else arr
-            )
-            ints = _np.ascontiguousarray(_np.clip(ints, -scale, scale - 1).astype(code))
-            wav.writeframesraw(ints.tobytes())
+            wav.writeframesraw(_quantize(_np.asarray(samples), code, scale))
         else:  # pure-stdlib array floor — 16-bit PCM only
-            flat, _nchannels = _flatten(samples)
-            pcm = array.array("h", (_to_int16(v) for v in flat))
-            if sys.byteorder == "big":
-                pcm.byteswap()
-            wav.writeframesraw(pcm.tobytes())
+            wav.writeframesraw(_pcm16(samples)[0])
 
     def close(self) -> None:
         """Finalize the header (patching RIFF/``data`` sizes if needed) and close the file."""
@@ -413,12 +398,19 @@ def _write_numpy(
     width, code, scale = spec
     arr = _np.asarray(samples)
     nchannels = 1 if arr.ndim == 1 else arr.shape[1]
-    if _np.issubdtype(arr.dtype, _np.floating):
-        ints = _np.round(_np.clip(arr, -1.0, 1.0) * scale)
-    else:
-        ints = arr
-    ints = _np.ascontiguousarray(_np.clip(ints, -scale, scale - 1).astype(code))
-    _write_frames(fp, ints.tobytes(), nchannels, width, samplerate)
+    _write_frames(fp, _quantize(arr, code, scale), nchannels, width, samplerate)
+
+
+def _quantize(arr: NDArray[_np.generic], code: str, scale: int) -> bytes:
+    """Little-endian PCM bytes of *arr*: floats clamped and scaled, ints clamped as-is."""
+    ints = (
+        _np.round(_np.clip(arr, -1.0, 1.0) * scale)
+        if _np.issubdtype(arr.dtype, _np.floating)
+        else arr
+    )
+    return _np.ascontiguousarray(
+        _np.clip(ints, -scale, scale - 1).astype(code)
+    ).tobytes()
 
 
 # ── pure-stdlib `array` floor (16-bit PCM only) ────────────────────────────────
@@ -446,11 +438,17 @@ def _write_array(
 ) -> None:
     if subtype != "PCM_16":
         raise ValueError(_bad_subtype(subtype))
+    raw, nchannels = _pcm16(samples)
+    _write_frames(fp, raw, nchannels, 2, samplerate)
+
+
+def _pcm16(samples: Samples) -> tuple[bytes, int]:
+    """Little-endian PCM16 bytes of list samples, and their channel count."""
     flat, nchannels = _flatten(samples)
-    ints = array.array("h", (_to_int16(v) for v in flat))
+    ints = array.array("h", map(_to_int16, flat))
     if sys.byteorder == "big":
         ints.byteswap()
-    _write_frames(fp, ints.tobytes(), nchannels, 2, samplerate)
+    return ints.tobytes(), nchannels
 
 
 def _flatten(samples: Samples) -> tuple[list[float], int]:
@@ -483,6 +481,12 @@ def _to_int16(v: float) -> int:
 
 
 # ── shared ─────────────────────────────────────────────────────────────────────
+
+
+def _check_dtype(dtype: str) -> None:
+    if dtype not in _DTYPES:
+        msg = f"dtype must be one of {_DTYPES}, got {dtype!r}"
+        raise ValueError(msg)
 
 
 def _write_frames(
