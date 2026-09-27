@@ -2,6 +2,38 @@
 
 <!-- towncrier release notes start -->
 
+## [1.1.0] - 2026-09-27
+
+### Fixed
+
+- `clone.deep` returns the types it was given. Its msgspec round-trip decoded a
+  nested `StrEnum` as `str`, an `IntEnum` as `int`, and an `OrderedDict` or
+  `defaultdict` as a plain `dict` - losing the factory with it - and the equality
+  check meant to catch a lossy round-trip passed every one, because those values
+  compare equal to what came back. `deep` is now an exact-type walk that never
+  leaves Python objects, so there is nothing to lose.
+- `python3 -m bench update --group X` no longer erases every other group's floors.
+  A narrowed run now merges into the baseline instead of replacing it.
+
+### Changed
+
+- `clone.deep` is pure stdlib and faster where callers actually spend time:
+  4.1x over `copy.deepcopy` on a small dict (was 1.2x, slower than deepcopy on
+  CPython 3.14), 2.2x on pydantic models (was a failed encode then deepcopy), and
+  4.4x on large JSON trees (was 5.8x on CPython 3.13 - the price of the fix above;
+  on 3.14 the two tie). Dataclasses, pydantic models, and `msgspec.Struct` are
+  rebuilt the way `deepcopy` rebuilds them, with the walker standing in for its
+  recursion; any other node is handed to `deepcopy` on its own while its siblings
+  keep walking. The `clone` extra no longer installs anything and stays declared
+  so existing `unstd[clone]` requirements resolve without a warning.
+
+### Added
+
+- `clone.asdict`: `dataclasses.asdict`'s result on the same walker, 10x faster on
+  a dataclass tree with `datetime` leaves. A custom `dict_factory`, a
+  non-dataclass argument, or a namedtuple / container subclass in the tree hands
+  the call to the stdlib, so the answer is always the stdlib's.
+
 ## [1.0.5] - 2026-09-01
 
 ### Changed

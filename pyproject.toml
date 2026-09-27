@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "unstd"
-version = "1.0.5"
+version = "1.1.0"
 description = "stdlib-faithful accelerated replacements behind optional extras"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -81,9 +81,10 @@ rand = [
 pack = [
   "numpy>=2.5",
 ]
-clone = [
-  "msgspec>=0.21",
-]
+# `clone` is pure stdlib since 1.1. The extra stays declared, empty, so an
+# existing `unstd[clone]` requirement keeps resolving without a missing-extra
+# warning.
+clone = []
 text = [
   "rapidfuzz>=3.12.0",
 ]
