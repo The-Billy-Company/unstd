@@ -127,6 +127,26 @@ def test_atomic_write_new_file_respects_umask(tmp_path: Path) -> None:
         os.umask(old_umask)
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="POSIX permission bits")
+def test_atomic_write_never_flips_the_process_umask(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Reading the umask means setting it, and a set umask races every other
+    thread creating a file — so a new destination must get its mode from the
+    kernel applying the umask at create time, never from ``os.umask``.
+    """
+
+    def _forbidden(_mask: int) -> int:
+        msg = "atomic_write touched the process-wide umask"
+        raise AssertionError(msg)
+
+    monkeypatch.setattr(os, "umask", _forbidden)
+    dest = tmp_path / "fresh.txt"
+    fs.atomic_write(dest, "hello")
+    assert dest.read_text(encoding="utf-8") == "hello"
+    assert [p.name for p in tmp_path.iterdir()] == ["fresh.txt"]
+
+
 def test_atomic_replace_moves_existing_file(tmp_path: Path) -> None:
     """Test atomic replace moves existing file."""
     src = fs.atomic_write(tmp_path / "src.txt", "payload")

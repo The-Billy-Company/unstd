@@ -105,6 +105,11 @@ and each old name fails at import rather than changing meaning in place.
   through a float round-trip (about 15% of random short pairs on 1.1), so every
   fast path now scores in full and applies `>=` itself - at no measurable cost.
   `cdist` also returns float64, so its scores equal `ratio`'s exactly.
+- `fs.atomic_write` / `atomic_writer` no longer flip the process-wide umask to
+  read it when creating a new file. Setting it to 0 and back left a window in
+  which any other thread creating a file got mode `0o666`/`0o777`. The temp file
+  is now opened at `0o666` so the kernel applies the umask, and an existing
+  destination's mode is still copied over.
 
 ## [1.1.0] - 2026-09-27
 

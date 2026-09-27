@@ -20,12 +20,12 @@ Provided:
 - :func:`walk_files` — an ``os.scandir`` walk that reuses the ``DirEntry`` stat
   cache, so it beats ``os.walk`` / ``Path.rglob`` (which re-``stat`` each entry).
   Yields ``pathlib.Path`` for interop with the rest of the codebase.
+- :func:`atomic_replace` — atomic ``os.replace`` of an existing file onto a
+  destination, with the same optional directory-fsync durability.
 
 Reads are ``Path.read_bytes`` / ``Path.read_text`` and a one-level listing is
 ``Path.iterdir``: CPython already sizes a whole-file read from ``fstat`` and lists
 through ``scandir``, so a wrapper here would only add a frame.
-- :func:`atomic_replace` — atomic ``os.replace`` of an existing file onto a
-  destination, with the same optional directory-fsync durability.
 
 References:
     - **PEP 471** — ``os.scandir`` (Ben Hoyt, 2014). ``DirEntry`` caches the
@@ -51,8 +51,8 @@ from __future__ import annotations
 from contextlib import AbstractContextManager, contextmanager
 import os
 from pathlib import Path
+import secrets
 import stat
-import tempfile
 from typing import IO, TYPE_CHECKING, Literal, overload
 
 
@@ -90,44 +90,61 @@ def sync_dir(path: _Pathish) -> None:
         os.close(fd)
 
 
-def _replacement_mode(dest: Path) -> int:
-    """The permission bits *dest* should carry after the replace.
+# Exclusive create, no fd leak into children; O_BINARY/O_NOINHERIT exist only on Windows.
+_TMP_FLAGS = (
+    os.O_WRONLY
+    | os.O_CREAT
+    | os.O_EXCL
+    | getattr(os, "O_CLOEXEC", 0)
+    | getattr(os, "O_BINARY", 0)
+    | getattr(os, "O_NOINHERIT", 0)
+)
 
-    ``tempfile.mkstemp`` always creates its file at ``0o600`` regardless of
-    umask — the right default for a *scratch* file, wrong for one about to
-    become *dest*. An existing destination's mode is preserved (atomically
-    rewriting a shared config must not silently drop its other readers to
-    owner-only); a brand-new destination gets the umask-respecting mode a
-    plain ``open()`` would have produced.
+
+def _scratch(dest: Path) -> tuple[int, Path]:
+    """Create a fresh temp file beside *dest*, at the mode a plain ``open()`` would give it.
+
+    ``tempfile.mkstemp`` hard-codes ``0o600``, and recovering the umask to undo
+    that means flipping the process-wide umask, which races every thread
+    creating a file in the meantime. Opening at ``0o666`` lets the kernel apply
+    the umask instead. An existing destination's own mode is then copied over,
+    so rewriting a shared config never drops its other readers to owner-only.
     """
+    while True:
+        tmp = dest.with_name(f".{dest.name}.{secrets.token_hex(4)}.tmp")
+        try:
+            fd = os.open(tmp, _TMP_FLAGS, 0o666)
+        except FileExistsError:
+            continue
+        break
     try:
-        return stat.S_IMODE(dest.stat().st_mode)
+        os.chmod(tmp, stat.S_IMODE(dest.stat().st_mode))
     except FileNotFoundError:
-        umask = os.umask(0)
-        os.umask(umask)
-        return 0o666 & ~umask
+        pass
+    except BaseException:
+        os.close(fd)
+        tmp.unlink(missing_ok=True)
+        raise
+    return fd, tmp
 
 
 @contextmanager
 def _atomic_writer(
     dest: Path, mode: Literal["w", "wb"], encoding: str, durable: bool
 ) -> Generator[IO[str] | IO[bytes]]:
-    directory = ensure_dir(dest.parent)
-    binary = mode == "wb"
-    fd, tmp = tempfile.mkstemp(dir=directory, prefix=f".{dest.name}.", suffix=".tmp")
-    tmp_path = Path(tmp)
+    ensure_dir(dest.parent)
+    fd, tmp_path = _scratch(dest)
     try:
-        with os.fdopen(fd, mode, encoding=None if binary else encoding) as fh:
+        with os.fdopen(fd, mode, encoding=None if mode == "wb" else encoding) as fh:
             yield fh
             fh.flush()
             os.fsync(fh.fileno())
-        os.chmod(tmp_path, _replacement_mode(dest))
         tmp_path.replace(dest)
     except BaseException:
         tmp_path.unlink(missing_ok=True)
         raise
     if durable:
-        sync_dir(directory)
+        sync_dir(dest.parent)
 
 
 @overload
