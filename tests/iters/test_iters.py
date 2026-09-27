@@ -16,7 +16,6 @@ from typing import TYPE_CHECKING
 import pytest
 
 from unstd.iters import (
-    batched_with_key,
     chunked,
     first,
     flatten,
@@ -24,6 +23,7 @@ from unstd.iters import (
     last,
     nth,
     partition,
+    runs,
     take,
     unique_everseen,
     unique_justseen,
@@ -86,9 +86,9 @@ def test_nth_consumes_exactly_n_plus_one() -> None:
 def test_take_consumes_exactly_n() -> None:
     """Test take consumes exactly n."""
     spy = Spy(range(100))
-    assert take(3, spy) == [0, 1, 2]
+    assert take(spy, 3) == [0, 1, 2]
     assert spy.count == 3
-    assert take(3, count()) == [0, 1, 2]  # bounded prefix of an infinite source
+    assert take(count(), 3) == [0, 1, 2]  # bounded prefix of an infinite source
 
 
 def test_chunked_is_lazy_per_batch() -> None:
@@ -112,13 +112,13 @@ def test_windowed_is_lazy_per_window() -> None:
 def test_batched_with_key_is_lazy_across_groups() -> None:
     # An infinite source; pulling one group must not hang or over-read.
     """Test batched with key is lazy across groups."""
-    groups = batched_with_key((i // 3 for i in count()), lambda x: x)
+    groups = runs((i // 3 for i in count()), lambda x: x)
     assert next(groups) == (0, (0, 0, 0))
 
 
 def test_flatten_is_lazy() -> None:
     """Test flatten is lazy."""
-    assert take(3, flatten([i, i] for i in count())) == [0, 0, 1]
+    assert take(flatten([i, i] for i in count()), 3) == [0, 0, 1]
 
 
 def test_unique_everseen_is_lazy() -> None:
@@ -245,19 +245,19 @@ def test_windowed_rejects_bad_args() -> None:
         list(windowed([1, 2], 2, step=0))
 
 
-# ── batched_with_key: run-length grouping, transient-group-safe ────────────────
+# ── runs: run-length grouping, transient-group-safe ────────────────
 
 
 def test_batched_with_key_materializes_each_run() -> None:
     """Test batched with key materializes each run."""
-    groups = list(batched_with_key([1, 1, 2, 3, 3, 3, 1], lambda x: x))
+    groups = list(runs([1, 1, 2, 3, 3, 3, 1], lambda x: x))
     assert groups == [(1, (1, 1)), (2, (2,)), (3, (3, 3, 3)), (1, (1,))]
 
 
 def test_batched_with_key_projects_the_key() -> None:
     """Test batched with key projects the key."""
     words = ["at", "an", "be", "by", "cat"]
-    grouped = [(k, len(run)) for k, run in batched_with_key(words, lambda w: w[0])]
+    grouped = [(k, len(run)) for k, run in runs(words, lambda w: w[0])]
     assert grouped == [("a", 2), ("b", 2), ("c", 1)]
 
 
@@ -284,7 +284,7 @@ def test_partition_consumes_source_exactly_once() -> None:
 def test_partition_is_lazy_on_infinite_source() -> None:
     """Test partition is lazy on infinite source."""
     _, truthy = partition(lambda n: n % 2, count())
-    assert take(3, truthy) == [1, 3, 5]
+    assert take(truthy, 3) == [1, 3, 5]
 
 
 # ── first / last / nth: empty + default edges ──────────────────────────────────
@@ -338,3 +338,51 @@ def test_flatten_one_level_only() -> None:
     assert list(flatten([[1, 2], [3], [4, 5]])) == [1, 2, 3, 4, 5]
     assert list(flatten([[[1]], [[2]]])) == [[1], [2]]  # only one level removed
     assert list(flatten(["ab", "cd"])) == ["a", "b", "c", "d"]  # strings are iterables
+
+
+# ── fast paths agree with the naive definitions they replace ───────────────────
+
+from hypothesis import given  # noqa: E402
+from hypothesis import strategies as st  # noqa: E402
+
+
+def _naive_windows(xs: list[int], n: int, step: int) -> list[tuple[int, ...]]:
+    return (
+        [tuple(xs[i : i + n]) for i in range(0, len(xs) - n + 1, step)] if n else [()]
+    )
+
+
+@given(
+    xs=st.lists(st.integers(), max_size=40), n=st.integers(0, 8), step=st.integers(1, 5)
+)
+def test_windowed_is_every_complete_window_at_each_stride(
+    xs: list[int], n: int, step: int
+) -> None:
+    assert list(windowed(xs, n, step)) == _naive_windows(xs, n, step)
+    assert list(windowed(iter(xs), n, step)) == _naive_windows(xs, n, step)
+
+
+_ITEM = st.one_of(st.integers(-3, 3), st.lists(st.integers(-2, 2), max_size=2))
+
+
+@given(xs=st.lists(_ITEM, max_size=40))
+def test_unique_everseen_keeps_first_occurrences_hashable_or_not(
+    xs: list[object],
+) -> None:
+    expected: list[object] = []
+    for x in xs:
+        if x not in expected:
+            expected.append(x)
+    assert list(unique_everseen(xs)) == expected
+    assert list(unique_everseen(xs, key=repr)) == expected
+
+
+@given(
+    xs=st.one_of(
+        st.lists(st.integers()), st.text(), st.binary(), st.tuples(st.integers())
+    )
+)
+def test_last_agrees_across_its_exact_type_fast_path(xs: object) -> None:
+    seq = list(xs)  # type: ignore[call-overload]
+    assert last(xs, None) == (seq[-1] if seq else None)  # type: ignore[arg-type]
+    assert last(iter(seq), None) == (seq[-1] if seq else None)

@@ -18,7 +18,7 @@ consistent; they are not interchangeable.
 from __future__ import annotations
 
 from collections import deque
-from itertools import batched, groupby, islice
+from itertools import batched, groupby, islice, tee
 from typing import TYPE_CHECKING
 
 
@@ -26,7 +26,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable, Iterable, Iterator
 
 
-__all__ = ["batched_with_key", "chunked", "windowed"]
+__all__ = ["chunked", "runs", "windowed"]
 
 
 def chunked[T](
@@ -80,10 +80,20 @@ def windowed[T](
     if step < 1:
         msg = "step must be >= 1"
         raise ValueError(msg)
-    it = iter(iterable)
     if n == 0:
-        yield ()
-        return
+        return iter(((),))
+    if step == 1:
+        # The `pairwise` shape generalized: n staggered `tee` views zipped together
+        # is a C-level walk, ~5x a Python deque loop, and `zip` stopping at the
+        # shortest view is exactly "complete windows only".
+        views = tee(iterable, n)
+        for lag, view in enumerate(views):
+            next(islice(view, lag, lag), None)
+        return zip(*views, strict=False)
+    return _strided(iter(iterable), n, step)
+
+
+def _strided[T](it: Iterator[T], n: int, step: int) -> Iterator[tuple[T, ...]]:
     window: deque[T] = deque(islice(it, n), maxlen=n)
     if len(window) == n:
         yield tuple(window)
@@ -94,11 +104,10 @@ def windowed[T](
             advanced += 1
         if advanced < step:  # ran out mid-stride → no more complete windows
             return
-        if len(window) == n:
-            yield tuple(window)
+        yield tuple(window)
 
 
-def batched_with_key[T, K](
+def runs[T, K](
     iterable: Iterable[T], key: Callable[[T], K]
 ) -> Iterator[tuple[K, tuple[T, ...]]]:
     """Group *consecutive* items sharing a *key* into ``(key, run)`` pairs.

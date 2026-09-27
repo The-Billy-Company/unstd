@@ -35,15 +35,14 @@ from __future__ import annotations
 
 from itertools import batched, pairwise
 
+from unstd.iters.consecutive import chunked, runs, windowed
 from unstd.iters.distinct import unique_everseen, unique_justseen
 from unstd.iters.reshape import flatten, partition
-from unstd.iters.runs import batched_with_key, chunked, windowed
 from unstd.iters.select import first, ilen, last, nth, take
 
 
 __all__ = [
     "batched",
-    "batched_with_key",
     "chunked",
     "first",
     "flatten",
@@ -52,6 +51,7 @@ __all__ = [
     "nth",
     "pairwise",
     "partition",
+    "runs",
     "take",
     "unique_everseen",
     "unique_justseen",

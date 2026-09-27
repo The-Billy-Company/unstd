@@ -21,6 +21,10 @@ from typing import cast, overload
 
 __all__ = ["first", "ilen", "last", "nth", "take"]
 
+# Builtins where ``x[-1]`` is the last item — checked by exact type, since an
+# ``isinstance(x, Reversible)`` ABC probe costs more than the lookup it guards.
+_INDEXABLE = frozenset({list, tuple, str, bytes, range})
+
 
 class _Missing(Enum):
     """Private no-default sentinel — distinct from ``None`` so ``None`` is a valid default. A single-member enum so type checkers narrow ``is _MISSING`` checks."""
@@ -64,7 +68,11 @@ def last[T, D](iterable: Iterable[T], default: D | _Missing = _MISSING) -> T | D
     stream through a ``maxlen=1`` deque, holding only the trailing item (never the
     whole input). Raises ``ValueError`` on empty input when no *default* is given.
     """
-    if isinstance(iterable, Reversible):
+    if type(iterable) in _INDEXABLE:  # exact builtins: no ABC walk, O(1) index
+        seq = cast("list[T]", iterable)
+        if seq:
+            return seq[-1]
+    elif isinstance(iterable, Reversible):
         # isinstance cannot carry the parameter, so it narrows to a bare
         # `Reversible` and erases the element type the caller passed in; the cast
         # restores exactly what the `Iterable[T]` annotation already guaranteed.
@@ -101,7 +109,7 @@ def nth[T, D](iterable: Iterable[T], n: int, default: D | _Missing = _MISSING) -
     return item
 
 
-def take[T](n: int, iterable: Iterable[T]) -> list[T]:
+def take[T](iterable: Iterable[T], n: int) -> list[T]:
     """Return the first *n* items of *iterable* as a ``list`` (``list(islice(...))``).
 
     Materializes by design — a bounded prefix — so the name says ``list``, not

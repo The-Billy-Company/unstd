@@ -36,18 +36,32 @@ def unique_everseen[T](
     ``key=frozenset`` at the call site instead) — this module keeps the fallback
     as a usability improvement, not an oversight.
     """
-    seen_hashable: set[object] = set()
-    seen_unhashable: list[object] = []
+    seen: set[object] = set()
+    remember = seen.add
+    unhashable: list[object] = []
+    if key is None:  # the common call — no key lookup per element
+        for element in iterable:
+            try:
+                if element in seen:
+                    continue
+                remember(element)
+            except TypeError:  # unhashable → the linear seen-log
+                if element in unhashable:
+                    continue
+                unhashable.append(element)
+            yield element
+        return
     for element in iterable:
-        k = element if key is None else key(element)
+        k = key(element)
         try:
-            if k not in seen_hashable:
-                seen_hashable.add(k)
-                yield element
-        except TypeError:  # unhashable key → fall back to the linear seen-log
-            if k not in seen_unhashable:
-                seen_unhashable.append(k)
-                yield element
+            if k in seen:
+                continue
+            remember(k)
+        except TypeError:
+            if k in unhashable:
+                continue
+            unhashable.append(k)
+        yield element
 
 
 def unique_justseen[T](

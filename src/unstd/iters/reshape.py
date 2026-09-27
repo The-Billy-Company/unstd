@@ -44,13 +44,12 @@ def partition[T](
     return filterfalse(pred, t1), filter(pred, t2)
 
 
-def flatten[T](iterable_of_iterables: Iterable[Iterable[T]]) -> Iterator[T]:
-    """Flatten exactly one level of nesting — ``itertools.chain.from_iterable`` renamed.
+flatten = chain.from_iterable
+"""Flatten exactly one level of nesting — ``itertools.chain.from_iterable`` renamed.
 
-    Concatenates the sub-iterables lazily into one stream; only a single level is
-    removed (a list of lists of lists stays a list of lists inside). Named because
-    ``chain.from_iterable`` is the least-discoverable of the hot ``itertools``
-    idioms. Note strings are iterables of characters: ``flatten(["ab", "cd"])``
-    yields ``'a', 'b', 'c', 'd'``.
-    """
-    return chain.from_iterable(iterable_of_iterables)
+Concatenates the sub-iterables lazily into one stream; only a single level is
+removed (a list of lists of lists stays a list of lists inside). Named because
+``chain.from_iterable`` is the least-discoverable of the hot ``itertools``
+idioms. Note strings are iterables of characters: ``flatten(["ab", "cd"])``
+yields ``'a', 'b', 'c', 'd'``.
+"""
