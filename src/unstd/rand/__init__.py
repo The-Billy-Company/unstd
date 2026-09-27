@@ -13,9 +13,9 @@ site:
    backends so an ML / eval run is reproducible; it deliberately never touches the
    crypto path.
 
-A stdlib-``random``-faithful scalar surface (:func:`random`, :func:`randint`,
-:func:`uniform`, :func:`choice`, :func:`shuffle`, :func:`sample`) routes through the
-active backend. Import the seed + scalar / bulk surface directly, and the crypto
+A stdlib-``random``-faithful scalar surface (``random``, ``randint``, ``uniform``,
+``choice``, ``shuffle``, ``sample``) is stdlib ``random`` itself, bound to the
+shared seeded engine — numpy only ever runs where one call fills an array. Import the seed + scalar / bulk surface directly, and the crypto
 path as the module so the security intent stays visible::
 
     from unstd import rand
@@ -24,9 +24,9 @@ path as the module so the security intent stays visible::
     xs = rand.floats(10_000)  # ndarray (numpy) or list (stdlib fallback)
     tok = rand.crypto.token_hex()  # unseedable CSPRNG token
 
-Backend & fallback: the ``rand`` extra provides ``numpy``. Without it the
-whole seedable surface runs on stdlib ``random`` — same API, scalar speed, bulk
-helpers returning ``list`` instead of ``ndarray``. The crypto path never depends on
+Backend & fallback: the ``rand`` extra provides ``numpy`` for the bulk helpers.
+Without it they run on stdlib ``random`` too — same API, returning ``list``
+instead of ``ndarray``. The crypto path never depends on
 the extra.
 """
 

@@ -17,11 +17,6 @@ OS CSPRNG (``os.urandom``).
 from __future__ import annotations
 
 import secrets as _secrets
-from typing import TYPE_CHECKING
-
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
 
 
 __all__ = [
@@ -34,31 +29,20 @@ __all__ = [
 ]
 
 
-def token_bytes(n: int = 32) -> bytes:
-    """*n* cryptographically-secure random bytes."""
-    return _secrets.token_bytes(n)
+token_bytes = _secrets.token_bytes
+"""*n* (default 32) cryptographically-secure random bytes."""
 
+token_hex = _secrets.token_hex
+"""A secure random hex token from *n* (default 32) bytes — ``2 * n`` hex chars."""
 
-def token_hex(n: int = 32) -> str:
-    """Return a secure random hex token from *n* bytes (``2 * n`` hex chars)."""
-    return _secrets.token_hex(n)
+token_urlsafe = _secrets.token_urlsafe
+"""A secure URL-safe base64 token from *n* (default 32) random bytes — an opaque bearer."""
 
+below = _secrets.randbelow
+"""A secure random int in ``[0, n)`` (uniform, no modulo bias)."""
 
-def token_urlsafe(n: int = 32) -> str:
-    """Return a secure URL-safe base64 token drawn from *n* random bytes."""
-    return _secrets.token_urlsafe(n)
+bits = _secrets.randbits
+"""A secure random non-negative int carrying *k* random bits."""
 
-
-def below(n: int) -> int:
-    """Return a secure random int in ``[0, n)`` (uniform, no modulo bias)."""
-    return _secrets.randbelow(n)
-
-
-def bits(k: int) -> int:
-    """Return a secure random non-negative int carrying *k* random bits."""
-    return _secrets.randbits(k)
-
-
-def choice[T](seq: Sequence[T]) -> T:
-    """Return a single secure, uniformly-random element of *seq*."""
-    return _secrets.choice(seq)
+choice = _secrets.choice
+"""A single secure, uniformly-random element of a non-empty sequence."""
