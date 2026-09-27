@@ -64,6 +64,9 @@ and each old name fails at import rather than changing meaning in place.
   them, so `dumps` / `dump` accept `sort_keys=` and each name carries tomlkit's
   types. On a base install each is a placeholder that raises naming the extra,
   decided at import rather than re-checked per call.
+- `unstd.crypto` no longer re-exports the `blake3` class; it was the backend,
+  not a surface. The guard moved into `digest` / `token`, so `crypto.tls` - pure
+  stdlib - now imports on a base install instead of failing on a missing BLAKE3.
 
 ### Performance
 

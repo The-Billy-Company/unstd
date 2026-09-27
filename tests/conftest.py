@@ -44,7 +44,7 @@ settings.load_profile(os.environ.get("HYPOTHESIS_PROFILE", _default))
 # Most of `unstd` degrades to the stdlib when its extra is absent, and those
 # tests run everywhere — exercising the fallback is the entire point of
 # installing without extras. Four surfaces have no faithful stand-in and say so
-# by raising at import (`crypto` has only BLAKE2 to fall back to, which is a
+# by raising at import (`crypto.digest`/`token` have only BLAKE2 to fall back to, which is a
 # different algorithm; pydantic, msgspec and whenever have no stdlib analogue at
 # all). Their test modules therefore cannot be imported, and pytest reports an
 # uncollectable module as an *error*, so a bare `pip install unstd && pytest`
@@ -57,7 +57,7 @@ settings.load_profile(os.environ.get("HYPOTHESIS_PROFILE", _default))
 # underneath (`rex` traded RE2 for irgx mid-flight; a hardcoded "re2" here would
 # have quietly started skipping a suite that was fine).
 _NEEDS: dict[str, str] = {
-    "crypto/*.py": "unstd.crypto",
+    "crypto/*.py": "unstd.crypto.digest",
     "model/*.py": "unstd.model",
     "serde/test_structs.py": "unstd.serde.structs",
     "time/test_zoned.py": "unstd.time.zoned",

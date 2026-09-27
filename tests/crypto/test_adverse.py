@@ -9,7 +9,9 @@ doubled, a key of the wrong width, a comparison that must not short-circuit.
 from __future__ import annotations
 
 import datetime as dt
+import importlib
 import ssl
+import sys
 from typing import TYPE_CHECKING
 
 from hypothesis import given, settings
@@ -316,6 +318,15 @@ class TestTlsPolicy:
             ctx = tls.client_context(**kwargs)
             assert ctx.minimum_version is tls.MINIMUM_VERSION
             assert ctx.verify_mode.name == "CERT_REQUIRED"
+
+    def test_tls_imports_without_blake3_and_digest_names_the_extra(self, monkeypatch):
+        """``tls`` is pure stdlib, so a missing BLAKE3 must not take it down with the digest."""
+        for name in [m for m in sys.modules if m.startswith("unstd.crypto")]:
+            monkeypatch.delitem(sys.modules, name)
+        monkeypatch.setitem(sys.modules, "blake3", None)
+        assert importlib.import_module("unstd.crypto.tls").client_context()
+        with pytest.raises(ImportError, match="'crypto' extra"):
+            importlib.import_module("unstd.crypto.digest")
 
 
 class TestRoundTripProperties:

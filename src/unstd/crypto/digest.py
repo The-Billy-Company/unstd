@@ -38,7 +38,7 @@ from __future__ import annotations
 import hashlib
 from typing import TYPE_CHECKING, Self
 
-from unstd.crypto import blake3
+from unstd.crypto._blake3 import blake3
 
 
 if TYPE_CHECKING:
@@ -49,8 +49,14 @@ DIGEST_BYTES = 32
 """BLAKE3's output width — the ceiling on :func:`hex` truncation and the width of a :func:`derive_key` subkey."""
 
 
-def _width_error(n: int) -> str:
-    return f"truncation width must be 1..{DIGEST_BYTES} bytes, got {n}"
+def _hexdigest(hasher: blake3, n: int | None) -> str:
+    """*hasher*'s full hex digest, or its first *n* bytes' — the one width check both :func:`hex` spellings share."""
+    if n is None:
+        return hasher.hexdigest()
+    if not 1 <= n <= DIGEST_BYTES:
+        msg = f"truncation width must be 1..{DIGEST_BYTES} bytes, got {n}"
+        raise ValueError(msg)
+    return hasher.hexdigest(length=n)
 
 
 def raw(data: bytes) -> bytes:
@@ -66,11 +72,7 @@ def hex(data: bytes, n: int | None = None) -> str:
     costs collision resistance quadratically — *n* = 8 gives a 64-bit digest, so
     only truncate for a short human-facing id, never for a security decision.
     """
-    if n is None:
-        return blake3(data).hexdigest()
-    if not 1 <= n <= DIGEST_BYTES:
-        raise ValueError(_width_error(n))
-    return blake3(data).hexdigest(length=n)
+    return _hexdigest(blake3(data), n)
 
 
 def derive_key(context: str, material: bytes) -> bytes:
@@ -130,11 +132,7 @@ class Stream:
 
     def hex(self, n: int | None = None) -> str:
         """The hex digest of everything absorbed so far — see :func:`hex` for *n*."""
-        if n is None:
-            return self._hasher.hexdigest()
-        if not 1 <= n <= DIGEST_BYTES:
-            raise ValueError(_width_error(n))
-        return self._hasher.hexdigest(length=n)
+        return _hexdigest(self._hasher, n)
 
 
 __all__ = ["DIGEST_BYTES", "Stream", "derive_key", "hex", "legacy_blake2b", "raw"]

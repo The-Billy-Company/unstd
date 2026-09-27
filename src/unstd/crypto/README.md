@@ -59,9 +59,10 @@ raising, because the input is attacker-controlled and a 500 is a signal.
 
 BLAKE3 has no stdlib equivalent; `hashlib` ships BLAKE2b, which is a *different*
 algorithm. A silent fallback would fork the digest rather than slow it down, and
-every value already addressed by one would stop resolving - so this package hard
--requires the `crypto` extra and raises an ImportError naming
-`pip install 'unstd[crypto]'` when it is missing.
+every value already addressed by one would stop resolving - so `digest` and
+`token` hard-require the `crypto` extra and raise an ImportError naming
+`pip install 'unstd[crypto]'` when it is missing. `tls` is pure stdlib and
+imports on a base install.
 
 Randomness is the one thing the seam does not re-implement: an opaque bearer
 with no claims inside is `unstd.rand.crypto.token_urlsafe()`, which is always

@@ -5,9 +5,9 @@ usual home of ``verify=False``: the flag gets added for one local sidecar, and
 nothing keeps the next caller from copying the line. Naming the policy once, in
 a function that has no parameter for skipping verification, is the whole point.
 
-This module is pure stdlib. It lives under :mod:`unstd.crypto` because transport
-security is the same subject as the rest of the seam, and it rides the ``crypto``
-extra only because it shares the package with BLAKE3.
+This module is pure stdlib and imports on a base install. It lives under
+:mod:`unstd.crypto` because transport security is the same subject as the rest
+of the seam.
 """
 
 from __future__ import annotations

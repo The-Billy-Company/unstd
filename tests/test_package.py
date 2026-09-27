@@ -172,7 +172,7 @@ def test_group_either_imports_or_names_the_extra_it_needs(group: str) -> None:
     degraded to the stdlib — that is the guarded-fallback contract, and it is why
     ``import unstd.rex`` works with no regex backend present, deferring the
     question to the call that actually needs one. Four surfaces have no faithful
-    stand-in and so **refuse**, on purpose: ``crypto`` would have to fork the
+    stand-in and so **refuse**, on purpose: ``crypto.digest`` would have to fork the
     digest to BLAKE2, and pydantic, msgspec and whenever have no stdlib analogue
     at all.
 

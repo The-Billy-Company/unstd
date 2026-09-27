@@ -23,7 +23,7 @@ from __future__ import annotations
 
 import hmac
 
-from unstd.crypto import blake3
+from unstd.crypto._blake3 import blake3
 from unstd.serde import b64
 
 
@@ -50,18 +50,21 @@ def equal(a: str | bytes, b: str | bytes) -> bool:
     return isinstance(b, bytes) and hmac.compare_digest(a, b)
 
 
+def _keyed(key: bytes, data: bytes) -> blake3:
+    if len(key) != KEY_BYTES:
+        msg = f"keyed BLAKE3 needs exactly {KEY_BYTES} bytes of key, got {len(key)}"
+        raise ValueError(msg)
+    return blake3(data, key=key)
+
+
 def mac_raw(key: bytes, data: bytes) -> bytes:
     """Keyed BLAKE3 MAC of *data* as raw bytes (32). *key* must be exactly 32 bytes."""
-    if len(key) != KEY_BYTES:
-        raise ValueError(_key_error(key))
-    return blake3(data, key=key).digest()
+    return _keyed(key, data).digest()
 
 
 def mac_hex(key: bytes, data: bytes) -> str:
     """Keyed BLAKE3 MAC of *data* as hex (64 chars). *key* must be exactly 32 bytes."""
-    if len(key) != KEY_BYTES:
-        raise ValueError(_key_error(key))
-    return blake3(data, key=key).hexdigest()
+    return _keyed(key, data).hexdigest()
 
 
 def verify_mac(key: bytes, data: bytes, tag: str | bytes) -> bool:
@@ -112,10 +115,6 @@ def verify(key: bytes, token: str) -> bytes | None:
     if len(got) != TAG_BYTES or not equal(got, mac_raw(key, payload.encode("ascii"))):
         return None
     return claims
-
-
-def _key_error(key: bytes) -> str:
-    return f"keyed BLAKE3 needs exactly {KEY_BYTES} bytes of key, got {len(key)}"
 
 
 __all__ = [
