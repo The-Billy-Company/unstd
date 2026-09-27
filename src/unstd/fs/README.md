@@ -18,10 +18,8 @@ from unstd import fs
 | `atomic_write(path, data, *, encoding="utf-8", durable=False)`            | Crash-safe write of `str`/`bytes`: temp file in the same dir → `fsync` → `os.replace`.                               |
 | `atomic_writer(path, *, mode="w"\|"wb", encoding="utf-8", durable=False)` | Context-manager form — yields a handle; commits atomically on clean exit, discards the temp file if the body raises. |
 | `atomic_replace(src, dest, *, durable=False)`                             | Atomic `os.replace` of an existing file onto `dest` (same-filesystem rename).                                        |
-| `read_bytes(path)` / `read_text(path, *, encoding="utf-8")`               | Sized one-shot reads (`fstat` length → single `read`).                                                               |
 | `ensure_dir(path)`                                                        | `mkdir(parents=True, exist_ok=True)`, idempotent.                                                                    |
 | `sync_dir(path)`                                                          | `fsync` a directory handle so a create/rename inside it is durable.                                                  |
-| `iter_dir(path)`                                                          | `os.scandir` generator — immediate entries, one level.                                                               |
 | `walk_files(root, *, follow_symlinks=False)`                              | `os.scandir` generator — every file, recursively.                                                                    |
 
 ## The atomic-write idiom
@@ -41,9 +39,13 @@ as it was. Pass `durable=True` to also `fsync` the **parent directory**: the
 rename is atomic but not _persisted_ across a power loss until the containing
 directory is synced (the "fsync the directory too" nuance — see references).
 
+Reads and one-level listings are `Path.read_bytes` / `read_text` / `iterdir`:
+CPython already sizes a whole-file read from `fstat` and lists through `scandir`,
+so a wrapper here measured slower, not faster.
+
 ## Fast walking
 
-`walk_files` / `iter_dir` are built on `os.scandir`, whose `DirEntry` caches the
+`walk_files` is built on `os.scandir`, whose `DirEntry` caches the
 `stat` taken during the directory read, so `is_dir()` / `is_file()` cost no extra
 syscall — markedly faster than `os.walk` / `Path.rglob`, which re-`stat` each
 entry. `walk_files` does **not** descend symlinked directories or yield symlinked

@@ -16,13 +16,14 @@ Provided:
   ``bytes``. For full crash durability the *parent directory* must also be
   fsync'd so the rename entry itself survives power loss (:func:`sync_dir`,
   folded in via ``durable=True``) — the "fsync the directory too" nuance below.
-- :func:`read_text` / :func:`read_bytes` — size-hinted one-shot reads (pull the
-  length from ``fstat`` and issue a single sized ``read``).
 - :func:`ensure_dir` — ``mkdir(parents=True, exist_ok=True)`` as one idempotent call.
-- :func:`walk_files` / :func:`iter_dir` — ``os.scandir`` generators that reuse
-  the ``DirEntry`` stat cache, so walking/listing is markedly faster than
-  ``os.walk`` / ``Path.rglob`` (which re-``stat`` each entry). Both yield
-  ``pathlib.Path`` for interop with the rest of the codebase.
+- :func:`walk_files` — an ``os.scandir`` walk that reuses the ``DirEntry`` stat
+  cache, so it beats ``os.walk`` / ``Path.rglob`` (which re-``stat`` each entry).
+  Yields ``pathlib.Path`` for interop with the rest of the codebase.
+
+Reads are ``Path.read_bytes`` / ``Path.read_text`` and a one-level listing is
+``Path.iterdir``: CPython already sizes a whole-file read from ``fstat`` and lists
+through ``scandir``, so a wrapper here would only add a frame.
 - :func:`atomic_replace` — atomic ``os.replace`` of an existing file onto a
   destination, with the same optional directory-fsync durability.
 
@@ -64,9 +65,6 @@ __all__ = [
     "atomic_write",
     "atomic_writer",
     "ensure_dir",
-    "iter_dir",
-    "read_bytes",
-    "read_text",
     "sync_dir",
     "walk_files",
 ]
@@ -199,24 +197,6 @@ def atomic_replace(src: _Pathish, dest: _Pathish, *, durable: bool = False) -> P
     if durable:
         sync_dir(target.parent)
     return target
-
-
-def read_bytes(path: _Pathish) -> bytes:
-    """Read *path* fully as ``bytes`` in one sized read — pull the length from ``fstat`` and issue a single ``read(size)`` rather than the stdlib doubling-buffer loop, which is a measurable win on large blobs."""
-    with Path(path).open("rb") as fh:
-        return fh.read(os.fstat(fh.fileno()).st_size)
-
-
-def read_text(path: _Pathish, *, encoding: str = "utf-8") -> str:
-    """Read *path* fully as text, decoding the sized :func:`read_bytes` result with *encoding* (default UTF-8)."""
-    return read_bytes(path).decode(encoding)
-
-
-def iter_dir(path: _Pathish) -> Iterator[Path]:
-    """Yield the immediate entries of *path* as ``Path`` via ``os.scandir`` — cheaper than ``Path.iterdir`` because the ``DirEntry`` carries a cached ``stat`` (PEP 471). One directory level only; no recursion."""
-    with os.scandir(path) as it:
-        for entry in it:
-            yield Path(entry.path)
 
 
 def walk_files(root: _Pathish, *, follow_symlinks: bool = False) -> Iterator[Path]:

@@ -32,7 +32,7 @@ def test_atomic_write_text_round_trips(tmp_path: Path) -> None:
     dest = tmp_path / "note.txt"
     payload = "héllo — unicode ☃\n"
     assert fs.atomic_write(dest, payload) == dest
-    assert fs.read_text(dest) == payload
+    assert dest.read_text(encoding="utf-8") == payload
 
 
 def test_atomic_write_bytes_round_trips(tmp_path: Path) -> None:
@@ -40,7 +40,7 @@ def test_atomic_write_bytes_round_trips(tmp_path: Path) -> None:
     dest = tmp_path / "blob.bin"
     payload = bytes(range(256)) * 8
     fs.atomic_write(dest, payload)
-    assert fs.read_bytes(dest) == payload
+    assert dest.read_bytes() == payload
 
 
 def test_atomic_write_overwrites_existing_atomically(tmp_path: Path) -> None:
@@ -48,7 +48,7 @@ def test_atomic_write_overwrites_existing_atomically(tmp_path: Path) -> None:
     dest = tmp_path / "v.txt"
     fs.atomic_write(dest, "old")
     fs.atomic_write(dest, "new-and-longer")
-    assert fs.read_text(dest) == "new-and-longer"
+    assert dest.read_text(encoding="utf-8") == "new-and-longer"
 
 
 def test_atomic_writer_failure_leaves_no_partial_file(tmp_path: Path) -> None:
@@ -83,7 +83,7 @@ def test_atomic_writer_failure_preserves_prior_contents(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="rollback"):
         _rewrite_then_fail()
 
-    assert fs.read_text(dest) == "committed"  # unchanged
+    assert dest.read_text(encoding="utf-8") == "committed"  # unchanged
     assert [p.name for p in tmp_path.iterdir()] == ["ledger.txt"]  # no temp orphan
 
 
@@ -91,7 +91,7 @@ def test_atomic_write_durable_still_round_trips(tmp_path: Path) -> None:
     """Test atomic write durable still round trips."""
     dest = tmp_path / "d" / "durable.txt"  # nested — also exercises parent mkdir
     fs.atomic_write(dest, "durably written", durable=True)
-    assert fs.read_text(dest) == "durably written"
+    assert dest.read_text(encoding="utf-8") == "durably written"
 
 
 # ── permission preservation: mkstemp's 0o600 must not leak onto dest ───────────
@@ -110,7 +110,7 @@ def test_atomic_write_preserves_existing_file_mode(tmp_path: Path) -> None:
     fs.atomic_write(dest, "new, rewritten")
 
     assert stat.S_IMODE(dest.stat().st_mode) == 0o644
-    assert fs.read_text(dest) == "new, rewritten"
+    assert dest.read_text(encoding="utf-8") == "new, rewritten"
 
 
 @pytest.mark.skipif(sys.platform == "win32", reason="POSIX permission bits")
@@ -132,7 +132,7 @@ def test_atomic_replace_moves_existing_file(tmp_path: Path) -> None:
     src = fs.atomic_write(tmp_path / "src.txt", "payload")
     dest = tmp_path / "dest.txt"
     assert fs.atomic_replace(src, dest) == dest
-    assert fs.read_text(dest) == "payload"
+    assert dest.read_text(encoding="utf-8") == "payload"
     assert not src.exists()
 
 
@@ -149,7 +149,7 @@ def test_ensure_dir_is_idempotent_and_makes_parents(tmp_path: Path) -> None:
     assert target.is_dir()
 
 
-# ── walk_files / iter_dir: scandir walking, symlink safety ─────────────────────
+# ── walk_files: scandir walking, symlink safety ─────────────────────
 
 
 def test_walk_files_finds_nested_files(tmp_path: Path) -> None:
@@ -182,21 +182,3 @@ def test_walk_files_honors_follow_symlinks_false(tmp_path: Path) -> None:
         for p in fs.walk_files(tmp_path, follow_symlinks=True)
     }
     assert followed == {"real/inside.txt", "link/inside.txt"}
-
-
-def test_iter_dir_lists_one_level(tmp_path: Path) -> None:
-    """Test iter dir lists one level."""
-    fs.atomic_write(tmp_path / "a.txt", "a")
-    (tmp_path / "child").mkdir()
-    fs.atomic_write(tmp_path / "child" / "b.txt", "b")  # deeper — must NOT appear
-
-    names = {p.name for p in fs.iter_dir(tmp_path)}
-    assert names == {"a.txt", "child"}
-
-
-def test_read_bytes_sized_read_matches_full_content(tmp_path: Path) -> None:
-    """Test read bytes sized read matches full content."""
-    dest = tmp_path / "sized.bin"
-    payload = b"\x00\x01\x02" * 4096
-    dest.write_bytes(payload)
-    assert fs.read_bytes(dest) == payload
