@@ -19,7 +19,7 @@ Split backend, because the two halves have different stdlib support:
   (``tomlkit``); imported without it the module still loads (reads keep working),
   and only the write calls raise a clear, actionable ImportError naming the extra
   — the same fail-loud-on-a-capability-with-no-fallback posture as
-  ``serde.structs`` / ``ids.hash`` / ``time.dateutil``.
+  ``serde.structs`` / ``crypto`` / ``time.zoned``.
 
 The write path is *round-trip / style-preserving*: ``tomlkit`` retains comments,
 key order, whitespace, and array layout, so ``parse`` → mutate → :func:`dumps`
@@ -102,6 +102,12 @@ _WRITE_HINT = (
 )
 
 
+def _require_kit() -> None:
+    """Raise an ImportError naming the ``toml`` extra when ``tomlkit`` is absent."""
+    if not _HAVE_TOMLKIT:
+        raise ImportError(_WRITE_HINT)
+
+
 def loads(s: str) -> dict[str, object]:
     """Parse a TOML *string* into a ``dict`` — stdlib ``tomllib.loads`` (always available)."""
     return tomllib.loads(s)
@@ -114,8 +120,7 @@ def load(fp: IO[bytes]) -> dict[str, object]:
 
 def dumps(obj: Mapping[str, object]) -> str:
     """Serialize *obj* (a mapping, or a style-preserving :func:`parse` / :func:`document` result) back to a TOML *string* via ``tomlkit`` — comment-, order-, and layout-preserving. Raises :class:`ImportError` when the ``toml`` extra is absent (the stdlib has no TOML writer — ``tomllib`` is read-only)."""
-    if not _HAVE_TOMLKIT:
-        raise ImportError(_WRITE_HINT)
+    _require_kit()
     return tomlkit.dumps(obj)
 
 
@@ -129,8 +134,7 @@ def dump(obj: Mapping[str, object], fp: IO[str]) -> None:
 
 def parse(s: str) -> TOMLDocument:
     """Parse *s* into a style-preserving ``tomlkit`` document — mutate it and :func:`dumps` keeps the original comments and layout, unlike :func:`loads` which returns a plain ``dict``. Requires the ``toml`` extra."""
-    if not _HAVE_TOMLKIT:
-        raise ImportError(_WRITE_HINT)
+    _require_kit()
     return tomlkit.parse(s)
 
 
@@ -139,8 +143,7 @@ def document() -> TOMLDocument:
 
     Requires the ``toml`` extra.
     """
-    if not _HAVE_TOMLKIT:
-        raise ImportError(_WRITE_HINT)
+    _require_kit()
     return tomlkit.document()
 
 
@@ -152,50 +155,43 @@ def document() -> TOMLDocument:
 
 def table(is_super_table: bool | None = None) -> Table:
     """Return a new, empty ``[table]`` node to populate and attach to a document."""
-    if not _HAVE_TOMLKIT:
-        raise ImportError(_WRITE_HINT)
+    _require_kit()
     return tomlkit.table(is_super_table=is_super_table)
 
 
 def array(raw: str = "[]") -> Array:
     """Return a new ``[...]`` array node, optionally seeded from raw TOML array syntax."""
-    if not _HAVE_TOMLKIT:
-        raise ImportError(_WRITE_HINT)
+    _require_kit()
     return tomlkit.array(raw)
 
 
 def inline_table() -> InlineTable:
     """Return a new, empty ``{ ... }`` inline-table node."""
-    if not _HAVE_TOMLKIT:
-        raise ImportError(_WRITE_HINT)
+    _require_kit()
     return tomlkit.inline_table()
 
 
 def aot() -> AoT:
     """Return a new, empty array-of-tables (``[[name]]``) node."""
-    if not _HAVE_TOMLKIT:
-        raise ImportError(_WRITE_HINT)
+    _require_kit()
     return tomlkit.aot()
 
 
 def comment(string: str) -> Comment:
     """Return a standalone ``# string`` comment node to insert between entries."""
-    if not _HAVE_TOMLKIT:
-        raise ImportError(_WRITE_HINT)
+    _require_kit()
     return tomlkit.comment(string)
 
 
 def nl() -> Whitespace:
     """Return a blank-line node — the layout unit :func:`comment` sits beside."""
-    if not _HAVE_TOMLKIT:
-        raise ImportError(_WRITE_HINT)
+    _require_kit()
     return tomlkit.nl()
 
 
 def item(value: Any) -> Item:
     """Wrap a plain Python value (``str``/``int``/``list``/``dict``/…) as a ``tomlkit`` node."""
-    if not _HAVE_TOMLKIT:
-        raise ImportError(_WRITE_HINT)
     # tomlkit ships no stubs, so its constructor is `Any` at the boundary; `Item`
     # is the node type it is documented to return and the one this surface names.
+    _require_kit()
     return cast("Item", tomlkit.item(value))

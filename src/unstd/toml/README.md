@@ -38,7 +38,7 @@ stdlib equivalent** (`tomllib` is read-only _by design_), so it hard-requires th
 `toml` extra (`pip install 'unstd[toml]'`); the module still imports without it
 (reads keep working) and only the write calls fail loud — the same posture as
 [`serde.structs`](../serde/README.md#structs--typed-msgspec-codecs),
-`ids.hash`, and `time.dateutil`.
+`crypto`, and `time.zoned`.
 
 ## Style preservation
 
