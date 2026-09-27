@@ -67,8 +67,8 @@ def _roundtrip(samples: object) -> object:
     fd, path = tempfile.mkstemp(suffix=".wav")
     os.close(fd)
     try:
-        wavx.write_wav(path, samples, 16000)
-        got, _sr = wavx.read_wav(path)
+        wavx.write(path, samples, 16000)
+        got, _sr = wavx.read(path)
         return got
     finally:
         with contextlib.suppress(OSError):

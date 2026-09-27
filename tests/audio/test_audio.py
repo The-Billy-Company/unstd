@@ -1,7 +1,7 @@
 """Adversarial round-trip tests for ``unstd.audio.wavx``.
 
-These pin the contract the voice paths depend on: a WAV written by ``write_wav``
-reads back through ``read_wav`` with samplerate and sample values preserved
+These pin the contract the voice paths depend on: a WAV written by ``wavx.write``
+reads back through ``wavx.read`` with samplerate and sample values preserved
 (within one PCM16 quantization step for float, *exactly* for int16), across mono
 and multichannel, and a file written by the stdlib ``wave`` module decodes
 consistently. Fixtures are synthesized in-test (a sine + a ramp) — no committed
@@ -74,9 +74,9 @@ def test_roundtrip_mono_float_within_pcm16_tolerance(backend, tmp_path) -> None:
     sr = 16000
     orig = _sine(512, freq=440, sr=sr)
     path = tmp_path / "mono.wav"
-    wavx.write_wav(str(path), orig, sr)
+    wavx.write(str(path), orig, sr)
 
-    got, got_sr = wavx.read_wav(str(path))
+    got, got_sr = wavx.read(str(path))
     assert got_sr == sr
     assert len(got) == len(orig)
     # container-shape contract: ndarray on numpy/soundfile, list on the array floor
@@ -92,9 +92,9 @@ def test_roundtrip_int16_is_exact(backend, tmp_path) -> None:
     sr = 8000
     orig = [-32768, -12345, -1, 0, 1, 12345, 32767]
     path = tmp_path / "i16.wav"
-    wavx.write_wav(str(path), orig, sr)
+    wavx.write(str(path), orig, sr)
 
-    got, got_sr = wavx.read_wav(str(path), dtype="int16")
+    got, got_sr = wavx.read(str(path), dtype="int16")
     assert got_sr == sr
     assert [int(v) for v in got] == orig
 
@@ -106,9 +106,9 @@ def test_roundtrip_stereo_preserves_both_channels(backend, tmp_path) -> None:
     right = _ramp(384)
     orig = [[lft, rgt] for lft, rgt in zip(left, right, strict=True)]
     path = tmp_path / "stereo.wav"
-    wavx.write_wav(str(path), orig, sr)
+    wavx.write(str(path), orig, sr)
 
-    got, got_sr = wavx.read_wav(str(path))
+    got, got_sr = wavx.read(str(path))
     assert got_sr == sr
     assert len(got) == len(orig)
     for (l_o, r_o), frame in zip(orig, got, strict=True):
@@ -124,8 +124,8 @@ def test_samplerate_is_preserved_across_rates(backend, tmp_path) -> None:
     tone = _sine(200, freq=200, sr=48000)
     for sr in (8000, 16000, 44100, 48000):
         path = tmp_path / f"sr_{sr}.wav"
-        wavx.write_wav(str(path), tone, sr)
-        _, got_sr = wavx.read_wav(str(path))
+        wavx.write(str(path), tone, sr)
+        _, got_sr = wavx.read(str(path))
         assert got_sr == sr
 
 
@@ -143,11 +143,11 @@ def test_reads_file_written_by_stdlib_wave(backend, tmp_path) -> None:
         w.setframerate(sr)
         w.writeframes(struct.pack(f"<{len(pcm)}h", *pcm))
 
-    got_i16, got_sr = wavx.read_wav(str(path), dtype="int16")
+    got_i16, got_sr = wavx.read(str(path), dtype="int16")
     assert got_sr == sr
     assert [int(v) for v in got_i16] == pcm
 
-    got_f, _ = wavx.read_wav(str(path))  # default float32
+    got_f, _ = wavx.read(str(path))  # default float32
     for i, f in zip(pcm, got_f, strict=True):
         assert abs(float(f) - i / 32768.0) <= 1e-6
 
@@ -179,12 +179,12 @@ def test_wrap_pcm_carries_the_interleave_and_width_it_was_given(backend) -> None
         assert (w.getsampwidth(), w.getnframes()) == (4, 4)
 
 
-def test_wrap_pcm_output_reads_back_through_read_wav(backend, tmp_path) -> None:
+def test_wrap_pcm_output_reads_back_through_read(backend, tmp_path) -> None:
     """The container is real, not just well-formed — the seam's own reader agrees."""
     pcm = [0, 8192, -8192, 32767, -32768]
     path = tmp_path / "wrapped.wav"
     path.write_bytes(wavx.wrap_pcm(struct.pack(f"<{len(pcm)}h", *pcm), 24000))
-    samples, sr = wavx.read_wav(str(path), dtype="int16")
+    samples, sr = wavx.read(str(path), dtype="int16")
     assert sr == 24000
     assert [int(v) for v in samples] == pcm
 
@@ -207,10 +207,10 @@ def test_wrap_pcm_treats_zero_channels_as_mono(backend) -> None:
 def test_read_rejects_unknown_dtype(tmp_path) -> None:
     """Unknown dtype fails closed — file bytes must remain readable as float32."""
     path = tmp_path / "x.wav"
-    wavx.write_wav(str(path), _sine(16, freq=100, sr=8000), 8000)
+    wavx.write(str(path), _sine(16, freq=100, sr=8000), 8000)
     with pytest.raises(ValueError, match="dtype must be one of"):
-        wavx.read_wav(str(path), dtype="float16")
-    got, sr = wavx.read_wav(str(path))  # contract still serves the default path
+        wavx.read(str(path), dtype="float16")
+    got, sr = wavx.read(str(path))  # contract still serves the default path
     assert sr == 8000
     assert len(got) == 16
 
@@ -225,9 +225,7 @@ def test_fallback_rejects_unsupported_subtype(floor, monkeypatch, tmp_path) -> N
         monkeypatch.setattr(wavx, "_HAVE_NUMPY", False)
         monkeypatch.setattr(wavx, "_np", None)
     with pytest.raises(ValueError, match="cannot write subtype"):
-        wavx.write_wav(
-            str(tmp_path / "x.wav"), [0.0, 0.1, -0.1], 8000, subtype="PCM_24"
-        )
+        wavx.write(str(tmp_path / "x.wav"), [0.0, 0.1, -0.1], 8000, subtype="PCM_24")
 
 
 def test_array_floor_rejects_non_16bit_read(monkeypatch, tmp_path) -> None:
@@ -245,46 +243,44 @@ def test_array_floor_rejects_non_16bit_read(monkeypatch, tmp_path) -> None:
     monkeypatch.setattr(wavx, "_HAVE_NUMPY", False)
     monkeypatch.setattr(wavx, "_np", None)
     with pytest.raises(ValueError, match="supports 16-bit PCM"):
-        wavx.read_wav(str(path))
+        wavx.read(str(path))
 
 
-# ── streaming: WavWriter + read_blocks, one run per backend ────────────────────
+# ── streaming: Writer + blocks, one run per backend ────────────────────
 
 
 def _chunked(seq: list, size: int) -> list[list]:
     return [seq[i : i + size] for i in range(0, len(seq), size)]
 
 
-def test_wavwriter_streamed_chunks_match_write_wav_in_one_call(
-    backend, tmp_path
-) -> None:
-    """Test wavwriter streamed chunks match write wav in one call."""
+def test_writer_streamed_chunks_match_write_in_one_call(backend, tmp_path) -> None:
+    """Test writer streamed chunks match write wav in one call."""
     sr = 16000
     orig = _sine(777, freq=440, sr=sr)  # not a multiple of the chunk size
     whole_path = tmp_path / "whole.wav"
-    wavx.write_wav(str(whole_path), orig, sr)
+    wavx.write(str(whole_path), orig, sr)
 
     streamed_path = tmp_path / "streamed.wav"
-    with wavx.WavWriter(str(streamed_path), sr) as w:
+    with wavx.Writer(str(streamed_path), sr) as w:
         for chunk in _chunked(orig, 100):
             w.write(chunk)
 
-    whole, whole_sr = wavx.read_wav(str(whole_path))
-    streamed, streamed_sr = wavx.read_wav(str(streamed_path))
+    whole, whole_sr = wavx.read(str(whole_path))
+    streamed, streamed_sr = wavx.read(str(streamed_path))
     assert streamed_sr == whole_sr == sr
     assert len(streamed) == len(whole) == len(orig)
     for a, b in zip(whole, streamed, strict=True):
         assert abs(float(a) - float(b)) <= _PCM16_TOL
 
 
-def test_wavwriter_finalizes_a_well_formed_header_on_close(backend, tmp_path) -> None:
+def test_writer_finalizes_a_well_formed_header_on_close(backend, tmp_path) -> None:
     # writeframesraw defers the RIFF/data sizes to close() — this pins that the
     # header actually gets patched rather than left at its placeholder size.
-    """Test wavwriter finalizes a well formed header on close."""
+    """Test writer finalizes a well formed header on close."""
     sr = 8000
     orig = _sine(500, freq=300, sr=sr)
     path = tmp_path / "finalized.wav"
-    with wavx.WavWriter(str(path), sr) as w:
+    with wavx.Writer(str(path), sr) as w:
         for chunk in _chunked(orig, 137):
             w.write(chunk)
 
@@ -295,18 +291,18 @@ def test_wavwriter_finalizes_a_well_formed_header_on_close(backend, tmp_path) ->
         assert len(w.readframes(w.getnframes())) == len(orig) * 2  # PCM16
 
 
-def test_wavwriter_stereo_preserves_both_channels(backend, tmp_path) -> None:
-    """Test wavwriter stereo preserves both channels."""
+def test_writer_stereo_preserves_both_channels(backend, tmp_path) -> None:
+    """Test writer stereo preserves both channels."""
     sr = 16000
     left = _sine(300, freq=330, sr=sr)
     right = _ramp(300)
     frames = list(zip(left, right, strict=True))
     path = tmp_path / "stereo_stream.wav"
-    with wavx.WavWriter(str(path), sr, channels=2) as w:
+    with wavx.Writer(str(path), sr, channels=2) as w:
         for chunk in _chunked(frames, 64):
             w.write([list(f) for f in chunk])
 
-    got, got_sr = wavx.read_wav(str(path))
+    got, got_sr = wavx.read(str(path))
     assert got_sr == sr
     assert len(got) == len(frames)
     for (l_o, r_o), frame in zip(frames, got, strict=True):
@@ -315,27 +311,25 @@ def test_wavwriter_stereo_preserves_both_channels(backend, tmp_path) -> None:
 
 
 @pytest.mark.parametrize("floor", ["array"] + (["numpy"] if _HAVE_NUMPY else []))
-def test_wavwriter_rejects_unsupported_subtype(floor, monkeypatch, tmp_path) -> None:
-    """Test wavwriter rejects unsupported subtype."""
+def test_writer_rejects_unsupported_subtype(floor, monkeypatch, tmp_path) -> None:
+    """Test writer rejects unsupported subtype."""
     monkeypatch.setattr(wavx, "_HAVE_SOUNDFILE", False)
     if floor == "array":
         monkeypatch.setattr(wavx, "_HAVE_NUMPY", False)
         monkeypatch.setattr(wavx, "_np", None)
     with pytest.raises(ValueError, match="cannot write subtype"):
-        wavx.WavWriter(str(tmp_path / "x.wav"), 8000, subtype="PCM_24")
+        wavx.Writer(str(tmp_path / "x.wav"), 8000, subtype="PCM_24")
 
 
-def test_read_blocks_concatenates_to_the_same_samples_as_read_wav(
-    backend, tmp_path
-) -> None:
+def test_blocks_concatenates_to_the_same_samples_as_read(backend, tmp_path) -> None:
     """Test read blocks concatenates to the same samples as read wav."""
     sr = 16000
     orig = _sine(777, freq=440, sr=sr)  # deliberately not a multiple of blocksize
     path = tmp_path / "blocks.wav"
-    wavx.write_wav(str(path), orig, sr)
+    wavx.write(str(path), orig, sr)
 
-    whole, _ = wavx.read_wav(str(path))
-    blocks = list(wavx.read_blocks(str(path), 100))
+    whole, _ = wavx.read(str(path))
+    blocks = list(wavx.blocks(str(path), 100))
     assert sum(len(b) for b in blocks) == len(orig)
     assert all(len(b) == 100 for b in blocks[:-1])  # every block but the last is full
     assert 0 < len(blocks[-1]) <= 100
@@ -344,9 +338,40 @@ def test_read_blocks_concatenates_to_the_same_samples_as_read_wav(
         assert abs(float(a) - float(b)) <= _PCM16_TOL
 
 
-def test_read_blocks_rejects_unknown_dtype(tmp_path) -> None:
+def test_blocks_rejects_unknown_dtype(tmp_path) -> None:
     """Test read blocks rejects unknown dtype."""
     path = tmp_path / "x.wav"
-    wavx.write_wav(str(path), _sine(16, freq=100, sr=8000), 8000)
+    wavx.write(str(path), _sine(16, freq=100, sr=8000), 8000)
     with pytest.raises(ValueError, match="dtype must be one of"):
-        list(wavx.read_blocks(str(path), 4, dtype="float16"))
+        list(wavx.blocks(str(path), 4, dtype="float16"))
+
+
+@pytest.mark.parametrize("width", [1, 2, 3, 4])
+@pytest.mark.parametrize("channels", [1, 2, 3])
+@pytest.mark.parametrize("nbytes", [0, 1, 7, 96, 301])
+def test_wrap_pcm_is_byte_identical_to_the_stdlib_wave_writer(
+    width: int, channels: int, nbytes: int
+) -> None:
+    """``wrap_pcm`` packs the 44-byte header itself; it must be the header ``wave``
+    writes, partial trailing frames and odd lengths included.
+    """
+    import io
+    import wave
+
+    raw = bytes(range(256)) * 2
+    raw = raw[:nbytes]
+    ref = io.BytesIO()
+    with wave.open(ref, "wb") as w:
+        w.setnchannels(channels)
+        w.setsampwidth(width)
+        w.setframerate(22050)
+        w.writeframes(raw)
+    assert wavx.wrap_pcm(raw, 22050, channels=channels, width=width) == ref.getvalue()
+
+
+@pytest.mark.parametrize(("width", "rate"), [(0, 16000), (5, 16000), (2, 0)])
+def test_wrap_pcm_refuses_what_wave_refuses(width: int, rate: int) -> None:
+    import wave
+
+    with pytest.raises(wave.Error):
+        wavx.wrap_pcm(b"\0\0", rate, width=width)

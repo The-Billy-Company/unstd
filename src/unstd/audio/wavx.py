@@ -1,6 +1,6 @@
 """WAV read/write with numpy-native samples — a stdlib-``wave`` replacement.
 
-Where stdlib ``wave`` hands back packed PCM byte strings, ``read_wav``/``write_wav``
+Where stdlib ``wave`` hands back packed PCM byte strings, ``read``/``write``
 speak in sample arrays: float32 in ``[-1, 1]`` (or int16) on the way in, the same
 on the way out. Mono is 1-D ``(frames,)``; multichannel is 2-D ``(frames,
 channels)`` — the shape libsndfile / ``soundfile`` use.
@@ -38,7 +38,7 @@ from __future__ import annotations
 import array
 from collections.abc import Callable, Iterator, Sequence
 import contextlib
-import io
+import struct
 import sys
 from typing import IO, TYPE_CHECKING, Protocol, cast
 import wave
@@ -112,7 +112,7 @@ else:
         _HAVE_NUMPY = False
 
 
-__all__ = ["WavWriter", "read_blocks", "read_wav", "wrap_pcm", "write_wav"]
+__all__ = ["Writer", "blocks", "read", "wrap_pcm", "write"]
 
 # A filesystem path or a binary file object (rb / wb).
 type PathOrFile = str | IO[bytes]
@@ -126,9 +126,7 @@ _PCM_CODE = {1: "<u1", 2: "<i2", 4: "<i4"}
 _SUBTYPE = {"PCM_16": (2, "<i2", 1 << 15), "PCM_32": (4, "<i4", 1 << 31)}
 
 
-def read_wav(
-    path_or_file: PathOrFile, *, dtype: str = "float32"
-) -> tuple[Samples, int]:
+def read(path_or_file: PathOrFile, *, dtype: str = "float32") -> tuple[Samples, int]:
     """Read a WAV file into ``(samples, samplerate)``.
 
     ``dtype`` is ``"float32"`` (default) or ``"float64"`` for normalized samples in
@@ -149,20 +147,20 @@ def read_wav(
     return reader(raw, nchannels, sampwidth, dtype), samplerate
 
 
-def read_blocks(
+def blocks(
     path_or_file: PathOrFile, blocksize: int, *, dtype: str = "float32"
 ) -> Iterator[Samples]:
     """Stream a WAV file *blocksize* frames at a time, instead of loading it whole.
 
-    The chunked counterpart to :func:`read_wav`, for the same reason
-    :class:`WavWriter` exists on the write side: a live consumer (playback,
+    The chunked counterpart to :func:`read`, for the same reason
+    :class:`Writer` exists on the write side: a live consumer (playback,
     streaming transcription) wants frames as they become available rather than
     after the whole file has been decoded into one array. Same ``dtype``
-    contract as :func:`read_wav`; each yielded chunk has the same mono/
-    multichannel shape :func:`read_wav` returns, just ``blocksize`` frames long
+    contract as :func:`read`; each yielded chunk has the same mono/
+    multichannel shape :func:`read` returns, just ``blocksize`` frames long
     (the final chunk may be shorter). Fast path: ``soundfile.blocks``. Fallback:
     a ``wave.readframes(blocksize)`` loop decoded through the same helpers
-    :func:`read_wav` uses on its own fallback path — identical numbers, one
+    :func:`read` uses on its own fallback path — identical numbers, one
     chunk at a time instead of the whole file at once.
     """
     if dtype not in _DTYPES:
@@ -189,10 +187,10 @@ def wrap_pcm(
 ) -> bytes:
     """Wrap already-interleaved, little-endian PCM bytes in a RIFF/WAVE container.
 
-    The complement of :func:`write_wav`, for the case where the samples never
+    The complement of :func:`write`, for the case where the samples never
     became samples. A caller holding PCM straight off a wire — a codec's output,
     a socket frame, a transcription upload — wants a *file* around bytes it
-    already has, and routing that through ``write_wav`` would decode to an array
+    already has, and routing that through ``write`` would decode to an array
     and re-quantize back, spending two conversions and a quantization step to
     reproduce its own input. Nothing is scaled, clamped or reinterpreted here:
     ``raw`` lands in the data chunk verbatim.
@@ -202,12 +200,39 @@ def wrap_pcm(
     wrong and the file plays at the wrong speed or pitch, which is the one
     failure a header cannot detect.
     """
-    buf = io.BytesIO()
-    _write_frames(buf, raw, max(1, channels), width, int(samplerate))
-    return buf.getvalue()
+    # The canonical 44-byte PCM header, packed in one call — byte-identical to what
+    # `wave` writes (pinned in the suite), at a sixth of the cost of a writer
+    # object built only to emit it. Same refusals `wave` makes, same exception.
+    channels, rate = max(1, channels), int(samplerate)
+    if not 1 <= width <= 4:
+        msg = "sample width not specified"
+        raise wave.Error(msg)
+    if rate <= 0:
+        msg = "sampling rate not specified"
+        raise wave.Error(msg)
+    n = len(raw)
+    block = channels * width
+    return (
+        _RIFF_PCM.pack(
+            b"RIFF",
+            36 + n,
+            b"WAVE",
+            b"fmt ",
+            16,
+            1,
+            channels,
+            rate,
+            rate * block,
+            block,
+            8 * width,
+            b"data",
+            n,
+        )
+        + raw
+    )
 
 
-def write_wav(
+def write(
     path_or_file: PathOrFile,
     samples: Samples,
     samplerate: int,
@@ -229,16 +254,16 @@ def write_wav(
     writer(path_or_file, samples, int(samplerate), subtype)
 
 
-class WavWriter:
+class Writer:
     """Incremental WAV writer — append frames as they arrive.
 
     Nothing buffers a whole utterance before the first byte reaches disk. The
-    streaming counterpart to :func:`write_wav`: live TTS synthesis produces
+    streaming counterpart to :func:`write`: live TTS synthesis produces
     audio in chunks (the voice paths ``unstd.audio``'s own module docstring
     names as the target), and routing every chunk through a fresh
-    :func:`write_wav` call would rewrite the file from scratch each time. Use
+    :func:`write` call would rewrite the file from scratch each time. Use
     as a context manager — ``channels``/``subtype`` are fixed for the file's
-    lifetime (unlike :func:`write_wav`, which infers the channel count from a
+    lifetime (unlike :func:`write`, which infers the channel count from a
     complete array, a stream has no "complete array" to infer from), every
     :meth:`write` call appends one chunk, and ``close()`` finalizes the header.
 
@@ -284,14 +309,14 @@ class WavWriter:
         # SIM115: the handle is owned by this object, not by a block — it must
         # outlive __init__ so successive `write` calls can append to it. The
         # lifetime is closed by `close()` / __exit__, which is what makes this a
-        # streaming writer rather than a one-shot `write_wav`.
+        # streaming writer rather than a one-shot `write`.
         self._wave = wave.open(path_or_file, "wb")  # noqa: SIM115
         self._wave.setnchannels(channels)
         self._wave.setsampwidth(self._spec[0] if self._spec else 2)
         self._wave.setframerate(int(samplerate))
 
     def write(self, samples: Samples) -> None:
-        """Append one chunk of samples — same shape/dtype rules as :func:`write_wav`."""
+        """Append one chunk of samples — same shape/dtype rules as :func:`write`."""
         if self._sf_handle is not None:
             self._sf_handle.write(_sf_samples(samples))
             return
@@ -300,7 +325,7 @@ class WavWriter:
         # once and carried by the type, rather than re-assumed at each write.
         wav = self._wave
         if wav is None:
-            msg = "WavWriter has no open handle — was close() already called?"
+            msg = "Writer has no open handle — was close() already called?"
             raise ValueError(msg)
         if self._spec is not None:  # numpy fallback
             _, code, scale = self._spec
@@ -326,7 +351,7 @@ class WavWriter:
         elif self._wave is not None:
             self._wave.close()
 
-    def __enter__(self) -> WavWriter:
+    def __enter__(self) -> Writer:
         """Enter the writer's context, returning self."""
         return self
 
@@ -469,6 +494,9 @@ def _write_frames(
         w.setframerate(samplerate)
         w.writeframes(raw)
 
+
+# RIFF/WAVE container + `fmt ` chunk (PCM, 16 bytes) + `data` chunk header.
+_RIFF_PCM = struct.Struct("<4sI4s4sIHHIIHH4sI")
 
 _INSTALL_HINT = "install the 'audio' extra (soundfile): pip install 'unstd[audio]'"
 
