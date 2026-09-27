@@ -16,6 +16,8 @@ from __future__ import annotations
 
 import difflib
 
+from hypothesis import given
+from hypothesis import strategies as st
 import pytest
 
 from unstd.text import fuzz
@@ -31,6 +33,11 @@ def _dl(a: str, b: str) -> float:
 def force_fallback(monkeypatch: pytest.MonkeyPatch) -> None:
     """Force the pure-stdlib branch regardless of whether the ``text`` extra is installed — so the fallback path is exercised deterministically even when rapidfuzz is present in the dev venv."""
     monkeypatch.setattr(fuzz, "_HAVE_RAPIDFUZZ", False)
+    # The pairwise scores are bound at import (the kernels themselves), so the
+    # fallback bodies are swapped in by name rather than re-dispatched per call.
+    monkeypatch.setattr(fuzz, "ratio", fuzz._difflib_ratio)
+    monkeypatch.setattr(fuzz, "distance", fuzz._levenshtein)
+    monkeypatch.setattr(fuzz, "jaro_winkler", fuzz._jaro_winkler)
 
 
 # A spread that provably agrees between Ratcliff-Obershelp (difflib) and Indel
@@ -295,7 +302,7 @@ def test_jaro_winkler_fallback_is_exactly_the_kernel() -> None:
             f"jaro diverged on {a!r}/{b!r}"
         )
         for weight in (0.0, 0.1, 0.25):
-            assert fuzz._jaro_winkler(a, b, weight) == pytest.approx(
+            assert fuzz._jaro_winkler(a, b, prefix_weight=weight) == pytest.approx(
                 JaroWinkler.similarity(a, b, prefix_weight=weight), abs=1e-15
             ), f"jaro-winkler diverged on {a!r}/{b!r} at {weight}"
 
@@ -370,3 +377,37 @@ def test_cdist_fallback_score_cutoff_zeroes_weak_pairs() -> None:
     """Test cdist fallback score cutoff zeroes weak pairs."""
     matrix = fuzz.cdist(["apple"], ["apple", "zzzzzzzz"], score_cutoff=0.5)
     assert matrix == [[1.0, 0.0]]
+
+
+@given(
+    a=st.text(alphabet="abcde", min_size=1, max_size=12),
+    b=st.text(alphabet="abcde", min_size=1, max_size=12),
+)
+def test_every_batch_helper_keeps_a_pair_scoring_exactly_at_the_cutoff(
+    a: str, b: str
+) -> None:
+    """Rapidfuzz's own ``score_cutoff`` drops exact-boundary pairs through a float
+    round-trip; the documented ``>=`` must hold on every helper, for every pair.
+    """
+    score = fuzz.ratio(a, b)
+    assert fuzz.best_match(a, [b], score_cutoff=score) == (b, score)
+    assert fuzz.extract(a, [b], score_cutoff=score) == [(b, score)]
+    assert fuzz.cdist([a], [b], score_cutoff=score) == [[score]]
+
+
+@pytest.mark.skipif(not _HAVE_RAPIDFUZZ, reason="needs rapidfuzz to compare against")
+@given(
+    a=st.text(alphabet="abcdeé ", max_size=14),
+    b=st.text(alphabet="abcdeé ", max_size=14),
+    weight=st.sampled_from([0.05, 0.1, 0.25]),
+)
+def test_portable_fallbacks_agree_with_the_kernels_they_stand_in_for(
+    a: str, b: str, weight: float
+) -> None:
+    """With the extra installed the public names *are* the rapidfuzz kernels, so
+    the pure-Python bodies run only on a base install — this is what proves them.
+    """
+    assert fuzz._levenshtein(a, b) == fuzz.distance(a, b)
+    assert fuzz._jaro_winkler(a, b, prefix_weight=weight) == pytest.approx(
+        fuzz.jaro_winkler(a, b, prefix_weight=weight), abs=1e-15
+    )
