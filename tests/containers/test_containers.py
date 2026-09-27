@@ -7,7 +7,7 @@ Two contracts are pinned here:
    clear, actionable ImportError naming the extra. This dev env has no extra
    installed, so the ImportError path is exercised for real (at minimum via the
    backend that is absent); the message contract is also asserted directly
-   through :func:`unstd.containers.guard.missing`, independent of which backends
+   through :func:`unstd._extra.missing`, independent of which backends
    happen to resolve.
 
 2. **The surfaces themselves, where the backend is present.** Sorted-collection
@@ -31,8 +31,8 @@ from typing import TYPE_CHECKING
 
 import pytest
 
+from unstd._extra import missing
 from unstd.containers import Map, SortedDict, SortedList, SortedSet
-from unstd.containers.guard import missing
 from unstd.containers.persistent import HAVE_IMMUTABLES
 from unstd.containers.sorted import HAVE_SORTEDCONTAINERS
 
@@ -92,7 +92,7 @@ def test_import_exposes_the_full_public_surface() -> None:
 def test_missing_placeholder_raises_a_clear_actionable_importerror() -> None:
     # Backend-independent: the error contract every guarded name shares.
     """Test missing placeholder raises a clear actionable importerror."""
-    placeholder = missing("Widget")
+    placeholder = missing("containers.Widget", "containers")
     with pytest.raises(ImportError) as exc:
         placeholder(1, 2, key="v")
     msg = str(exc.value)

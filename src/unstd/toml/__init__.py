@@ -52,11 +52,8 @@ Prior art:
 from __future__ import annotations
 
 import tomllib
-from typing import TYPE_CHECKING, Never
+from typing import TYPE_CHECKING
 
-
-if TYPE_CHECKING:
-    from collections.abc import Callable
 
 __all__ = [
     "TOMLDecodeError",
@@ -79,23 +76,6 @@ __all__ = [
 loads = tomllib.loads
 load = tomllib.load
 TOMLDecodeError = tomllib.TOMLDecodeError
-
-_WRITE_HINT = (
-    "unstd.toml's write path requires the 'toml' extra — install with: "
-    "pip install 'unstd[toml]'. The stdlib tomllib is read-only (PEP 680); "
-    "tomlkit provides the style-preserving TOML serializer it omits."
-)
-
-
-def _missing(name: str) -> Callable[..., Never]:
-    """A placeholder for write-path *name* that raises naming the extra when called."""
-
-    def _raise(*_args: object, **_kwargs: object) -> Never:
-        raise ImportError(_WRITE_HINT)
-
-    _raise.__name__ = _raise.__qualname__ = name
-    return _raise
-
 
 # The write half *is* tomlkit (typed, same signatures) when the extra is present,
 # and a named placeholder when it is not — so importing this module never fails,
@@ -134,10 +114,16 @@ else:
 
         _HAVE_TOMLKIT = True
     except ImportError:  # write path has no stdlib equivalent — tomllib is read-only
+        from unstd._extra import missing
+
         _HAVE_TOMLKIT = False
-        aot, array, comment, document, dump, dumps = map(
-            _missing, ("aot", "array", "comment", "document", "dump", "dumps")
-        )
-        inline_table, item, nl, parse, table = map(
-            _missing, ("inline_table", "item", "nl", "parse", "table")
-        )
+        (
+            aot, array, comment, document, dump, dumps,
+            inline_table, item, nl, parse, table,
+        ) = (
+            missing(f"toml.{name}", "toml")
+            for name in (
+                "aot", "array", "comment", "document", "dump", "dumps",
+                "inline_table", "item", "nl", "parse", "table",
+            )
+        )  # fmt: skip

@@ -72,6 +72,9 @@ and each old name fails at import rather than changing meaning in place.
   client dialed without mTLS. A `keyfile` with no `certfile` raises `ValueError`.
 - The `ids` extra no longer pulls `blake3`; nothing under `ids` has used it since
   `ids.hash` folded into `crypto.digest`. Depend on `unstd[crypto]` for digests.
+- `unstd.containers.guard` is gone. Its placeholder and `toml`'s copy of it are
+  one private helper, and every missing-backend name now raises the same
+  `unstd.<module>.<name> requires the '<extra>' extra` message.
 
 ### Performance
 
