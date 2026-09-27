@@ -128,6 +128,8 @@ and each old name fails at import rather than changing meaning in place.
   on both (399 → 317 µs and 547 → 421 µs per 1k rows).
 - `clone.asdict` tests dict keys and values for atoms inline instead of paying a
   call per leaf: 5.2 → 3.8 µs on a dict-heavy record.
+- `rand.choices` unboxes the drawn index array once instead of calling `int()`
+  per element: 379 → 209 µs for 10k draws.
 
 ### Fixed
 
