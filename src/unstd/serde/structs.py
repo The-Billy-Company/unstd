@@ -6,7 +6,11 @@ did, this module formalizes the *typed hot seam*: a payload with a fixed schema
 every hand-rolled site re-rolled — build one ``msgspec.json.Encoder`` + one
 ``msgspec.json.Decoder`` per schema and reuse them (msgspec's own perf guidance:
 constructing a codec is comparatively expensive, encode/decode is not) — behind a
-small generic :class:`Codec`.
+small generic :class:`Codec` — construct one per schema at import time and
+share it::
+
+    USER = Codec(User)
+    USER.decode(raw)
 
 Backend: unlike ``jsonx``/``b64``/``ndjson``, typed codecs have **no
 stdlib equivalent**, so this module hard-requires ``msgspec`` (the ``serde``
@@ -63,7 +67,6 @@ __all__ = [
     "EncHook",
     "FloatHook",
     "Order",
-    "codec",
     "float_enc_hook",
 ]
 
@@ -81,10 +84,17 @@ class Codec[T]:
     """A reusable typed JSON codec for one wire schema ``T`` (usually a ``msgspec.Struct``).
 
     Holds one ``msgspec.json.Encoder`` + one ``msgspec.json.Decoder``, built once and
-    reused for the object's life — the whole point — and forwards to them faithfully.
+    reused for the object's life — the whole point. :attr:`encode` / :attr:`decode`
+    *are* the msgspec methods, bound once at construction, so a call pays no
+    forwarding frame on the hot path.
     """
 
-    __slots__ = ("_decoder", "_encoder")
+    __slots__ = ("decode", "encode")
+
+    encode: Callable[[T], bytes]
+    """Serialize a value to compact UTF-8 JSON bytes."""
+    decode: Callable[[bytes | str], T]
+    """Decode + validate into a ``T``; raises ``msgspec.DecodeError`` on a malformed or schema-invalid payload."""
 
     def __init__(
         self,
@@ -109,51 +119,20 @@ class Codec[T]:
         coercion (e.g. a JSON string where the schema expects an int) — msgspec's
         own escape hatch for loose upstream producers.
         """
-        self._encoder = msgspec.json.Encoder(
+        self.encode = msgspec.json.Encoder(
             enc_hook=enc_hook,
             order=order,
             decimal_format=decimal_format,
             uuid_format=uuid_format,
-        )
-        self._decoder: msgspec.json.Decoder[T] = msgspec.json.Decoder(
+        ).encode
+        decoder: msgspec.json.Decoder[T] = msgspec.json.Decoder(
             spec, dec_hook=dec_hook, strict=strict, float_hook=float_hook
         )
-
-    def encode(self, value: T) -> bytes:
-        """Serialize ``value`` to compact UTF-8 JSON bytes."""
-        return self._encoder.encode(value)
-
-    def decode(self, raw: bytes | str) -> T:
-        """Decode + validate ``raw`` into a ``T``; raises ``msgspec.DecodeError`` on a malformed or schema-invalid payload (strict — the caller sees the failure)."""
-        return self._decoder.decode(raw)
+        self.decode = decoder.decode
 
     def decode_or(self, raw: bytes | str, default: T | None = None) -> T | None:
         """Decode ``raw``, or return ``default`` when it is malformed / schema-invalid (the "malformed → cache miss" convention). Only ``msgspec.DecodeError`` (``ValidationError`` included) is swallowed; any other exception propagates."""
         try:
-            return self._decoder.decode(raw)
+            return self.decode(raw)
         except msgspec.DecodeError:
             return default
-
-
-def codec[T](
-    spec: type[T],
-    *,
-    enc_hook: EncHook | None = None,
-    dec_hook: DecHook | None = None,
-    order: Order = None,
-    decimal_format: Literal["string", "number"] = "string",
-    uuid_format: Literal["canonical", "hex"] = "canonical",
-    strict: bool = True,
-    float_hook: FloatHook | None = None,
-) -> Codec[T]:
-    """Build a reusable :class:`Codec` for ``spec`` — one Encoder/Decoder pair, constructed once and shared across every call (msgspec perf guidance). See :class:`Codec` for what each keyword does."""
-    return Codec(
-        spec,
-        enc_hook=enc_hook,
-        dec_hook=dec_hook,
-        order=order,
-        decimal_format=decimal_format,
-        uuid_format=uuid_format,
-        strict=strict,
-        float_hook=float_hook,
-    )

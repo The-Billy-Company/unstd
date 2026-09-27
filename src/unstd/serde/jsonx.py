@@ -69,7 +69,7 @@ keys, tool results), not on human-facing pretty-print.
 from __future__ import annotations
 
 import json as _stdlib
-from typing import IO, TYPE_CHECKING, TypedDict, Unpack, cast
+from typing import IO, TYPE_CHECKING, TypedDict, Unpack
 
 
 if TYPE_CHECKING:
@@ -117,28 +117,23 @@ __all__ = [
     "loads",
 ]
 
-# orjson option bitmask — computed only when the fast backend is present.
-_BASE = (
-    (orjson.OPT_NON_STR_KEYS | orjson.OPT_PASSTHROUGH_DATETIME) if _HAVE_ORJSON else 0
-)
-_COMPACT = ((",", ":"), (",", ":"))  # both tuple/list spellings of the minified idiom
-
-
-def _orjson_bytes(
-    obj: object,
-    *,
-    option: int,
-    default: Callable[[object], object] | None,
-) -> bytes:
-    """``orjson.dumps`` as proven ``bytes`` — stubs type the codec as Any."""
-    if orjson is None:
-        msg = "orjson required"
-        raise TypeError(msg)
-    raw = orjson.dumps(obj, default=default, option=option)
-    if not isinstance(raw, (bytes, bytearray)):
-        msg = "orjson.dumps: bytes"
-        raise TypeError(msg)
-    return bytes(raw)
+# orjson option bits — zero when the fast backend is absent, so the fast-path
+# arithmetic below stays branch-free either way.
+if _HAVE_ORJSON:
+    _encode = orjson.dumps
+    _decode = orjson.loads
+    _BASE = orjson.OPT_NON_STR_KEYS | orjson.OPT_PASSTHROUGH_DATETIME
+    _SORT, _INDENT, _NUMPY = (
+        orjson.OPT_SORT_KEYS,
+        orjson.OPT_INDENT_2,
+        orjson.OPT_SERIALIZE_NUMPY,
+    )
+    _LINE = orjson.OPT_APPEND_NEWLINE
+else:
+    _BASE = _SORT = _INDENT = _NUMPY = _LINE = 0
+# Both tuple/list spellings of the minified idiom — orjson's native output.
+_COMPACT = ((",", ":"), [",", ":"])
+_NO_NUMPY = "numpy=True requires numpy to be installed"
 
 
 def _numpy_default(
@@ -209,14 +204,15 @@ def dumps(
     ``unstd[pack]``/``unstd[rand]``/``unstd[audio]``, which already depend on it).
     """
     if numpy and not _HAVE_NUMPY:
-        msg = "numpy=True requires numpy to be installed"
-        raise TypeError(msg)
+        raise TypeError(_NO_NUMPY)
+    # Ordered cheapest-first: the overwhelmingly common call passes nothing, and
+    # every test below short-circuits on a falsy default.
     if (
-        not _HAVE_ORJSON
+        kw
         or ensure_ascii
-        or indent not in (None, 0, 2)
+        or (indent and indent != 2)
         or (separators is not None and separators not in _COMPACT)
-        or kw
+        or not _HAVE_ORJSON
     ):
         # Base install (no orjson): emit compact, non-ASCII-preserving output to
         # approximate the orjson surface when the caller passed no format kwargs.
@@ -232,13 +228,13 @@ def dumps(
             **kw,
         )
     opt = _BASE
-    if indent == 2:
-        opt |= orjson.OPT_INDENT_2
     if sort_keys:
-        opt |= orjson.OPT_SORT_KEYS
+        opt |= _SORT
+    if indent:
+        opt |= _INDENT
     if numpy:
-        opt |= orjson.OPT_SERIALIZE_NUMPY
-    return _orjson_bytes(obj, option=opt, default=default).decode()
+        opt |= _NUMPY
+    return _encode(obj, default, opt).decode()
 
 
 def dumpb(
@@ -252,15 +248,27 @@ def dumpb(
 
     See :func:`dumps` for what ``numpy=True`` does on each backend.
     """
-    if numpy and not _HAVE_NUMPY:
-        msg = "numpy=True requires numpy to be installed"
-        raise TypeError(msg)
     if not _HAVE_ORJSON:
         return dumps(obj, sort_keys=sort_keys, default=default, numpy=numpy).encode()
-    opt = _BASE | (orjson.OPT_SORT_KEYS if sort_keys else 0)
+    if numpy and not _HAVE_NUMPY:
+        raise TypeError(_NO_NUMPY)
+    opt = _BASE
+    if sort_keys:
+        opt |= _SORT
     if numpy:
-        opt |= orjson.OPT_SERIALIZE_NUMPY
-    return _orjson_bytes(obj, option=opt, default=default)
+        opt |= _NUMPY
+    return _encode(obj, default, opt)
+
+
+def _line(obj: object) -> bytes:
+    """One newline-terminated compact record — :mod:`unstd.serde.ndjson`'s encoder.
+
+    orjson appends the newline itself (``OPT_APPEND_NEWLINE``), so a row never
+    pays a second ``bytes`` allocation for the concatenation.
+    """
+    if _HAVE_ORJSON:
+        return _encode(obj, None, _LINE | _BASE)
+    return dumps(obj).encode() + b"\n"
 
 
 def canonical(
@@ -280,19 +288,28 @@ def canonical(
     time*; use :func:`dumps`/:func:`dumpb` for machine transport where only the
     parsed value matters.
     """
+    if default is str:
+        return _CANONICAL.encode(obj).encode()
     return _stdlib.dumps(
         obj, sort_keys=True, separators=(",", ":"), ensure_ascii=True, default=default
     ).encode()
 
 
+# `json.dumps` builds a fresh `JSONEncoder` whenever it is passed a non-default
+# kwarg, which is every canonical call — a third of its cost on a small payload.
+# The encoder is stateless between `encode` calls, so one serves every caller.
+_CANONICAL = _stdlib.JSONEncoder(
+    sort_keys=True, separators=(",", ":"), ensure_ascii=True, default=str
+)
+
+
 def loads(s: str | bytes | bytearray, **kw: Unpack[_StdlibLoadsKw]) -> Json:
     """Parse a JSON ``str``/``bytes``. Falls back to stdlib for hook kwargs (``object_hook``, ``parse_float``, …) that orjson does not support."""
     # Both decoders are typed `Any` at their boundary — a JSON document's shape
-    # is only known at runtime. `Json` is the contract this module promises for
-    # that value, so naming it here is the point of the function.
-    if kw or not _HAVE_ORJSON:
-        return cast("Json", _stdlib.loads(s, **kw))
-    return cast("Json", orjson.loads(s))
+    # is only known at runtime. Annotating the local names `Json` as the contract
+    # at zero runtime cost, where `typing.cast` is a real call on the hottest path.
+    value: Json = _stdlib.loads(s, **kw) if kw or not _HAVE_ORJSON else _decode(s)
+    return value
 
 
 def dump(

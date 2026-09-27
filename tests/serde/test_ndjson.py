@@ -27,7 +27,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from unstd.serde import ndjson
+from unstd.serde import jsonx, ndjson
 
 
 if TYPE_CHECKING:
@@ -282,3 +282,41 @@ def test_write_requires_a_real_textiobase_for_str_output() -> None:
 
     with pytest.raises(TypeError):
         ndjson.write(StrOnlySink(), ROWS)  # type: ignore[arg-type]
+
+
+# ── the one-comprehension fast path answers exactly what the line walk does ────
+
+from hypothesis import given  # noqa: E402
+from hypothesis import strategies as st  # noqa: E402
+
+
+_RECORD = st.one_of(
+    st.integers(-(2**63), 2**63 - 1),
+    st.text(max_size=5),
+    st.dictionaries(st.text(max_size=3), st.integers(-(2**63), 2**63 - 1), max_size=2),
+)
+_PAD = st.sampled_from(["", " ", "\t", "\r", "\u00a0", "\u2028 "])
+
+
+@given(rows=st.lists(st.tuples(_PAD, _RECORD, _PAD), max_size=12), blanks=st.booleans())
+def test_loads_fast_path_matches_the_stripping_line_walk(
+    rows: list[tuple[str, object, str]], blanks: bool
+) -> None:
+    lines = [f"{a}{jsonx.dumps(r)}{b}" for a, r, b in rows]
+    if blanks:
+        lines.insert(len(lines) // 2, "  ")
+    text = "\n".join(lines)
+    expected = [r for _, r, _ in rows]
+    assert ndjson.loads(text) == expected == list(ndjson.iter_loads(text.split("\n")))
+    if text.isascii():  # `bytes.strip` only ever stripped ASCII whitespace
+        assert ndjson.loads(text.encode()) == expected
+
+
+def test_loads_fast_path_failure_still_names_the_bad_line() -> None:
+    with pytest.raises(ndjson.NDJSONDecodeError) as ei:
+        ndjson.loads('{"a": 1}\n\n{"b": \n{"c": 3}\n')
+    assert ei.value.lineno == 3
+    assert ndjson.loads('{"a": 1}\n{"b": \n{"c": 3}\n', skip_errors=True) == [
+        {"a": 1},
+        {"c": 3},
+    ]

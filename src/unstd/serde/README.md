@@ -81,23 +81,25 @@ codec (it raises), not `jsonx`.
 ## `b64` — accelerated base64
 
 The `base64.b64encode(x).decode("ascii")` / `b64decode(s).decode("utf-8",
-"replace")` idioms fused into named helpers, backed by
+"replace")` idioms fused into one verb per direction, with the alphabet and
+padding as keywords, backed by
 [`pybase64`](https://github.com/mayeut/pybase64) (SIMD `libbase64`, multi-GB/s)
 for large payloads — PCM audio, PNG thumbnails, f16 embeddings.
 
 ```python
 from unstd.serde import b64
 
-s = b64.b64s(data)  # bytes -> str    (standard, ASCII, padded)
-data = b64.b64d(s)  # str|bytes -> bytes (validate=True — fails loud)
-text = b64.b64text(s)  # str|bytes -> str  (utf-8, errors="replace")
-us = b64.b64u_s(data)  # url-safe encode (MIME); b64u_d / b64u_text decode
-blob = b64.b64_json(obj)  # any obj -> b64 of its compact JSON (arg/env smuggle)
-obj = b64.unb64_json(blob)  # inverse, via serde.jsonx
+s = b64.encode(data)  # bytes -> str (standard, padded)
+s = b64.encode(data, url=True, pad=False)  # base64url, JWT/bearer style
+data = b64.decode(s)  # str|bytes -> bytes (validated — fails loud)
+data = b64.decode(s, url=True)  # url-safe, padded or not
+text = b64.decode_text(s)  # str|bytes -> str (utf-8, errors="replace")
+blob = b64.encode_json(obj)  # any obj -> b64 of its compact JSON (arg/env smuggle)
+obj = b64.decode_json(blob)  # inverse, via serde.jsonx
 ```
 
-Standard + url-safe **encode** are byte-for-byte identical to stdlib. `b64d`
-decodes with `validate=True` so non-alphabet input raises `b64.Error`
+Standard + url-safe **encode** are byte-for-byte identical to stdlib. Standard
+`decode` validates, so non-alphabet input or a missing `=` raises `b64.Error`
 (re-exported `binascii.Error`) instead of being silently truncated. Without the
 `serde` extra, the helpers use stdlib `base64` (identical output, scalar speed).
 
@@ -110,7 +112,7 @@ guidance: constructing a codec is expensive, encode/decode is not).
 ```python
 from unstd.serde import structs
 
-CODEC = structs.codec(MyStruct, enc_hook=structs.float_enc_hook)
+CODEC = structs.Codec(MyStruct, enc_hook=structs.float_enc_hook)
 raw = CODEC.encode(value)  # -> bytes (compact UTF-8)
 value = CODEC.decode(raw)  # strict — raises on malformed / typed-wrong
 value = CODEC.decode_or(raw, default=None)  # "malformed -> cache miss" convention

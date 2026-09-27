@@ -50,6 +50,11 @@ __all__ = [
 ]
 
 
+# The backend decoder itself — `jsonx.loads` minus its per-call kwarg dispatch,
+# which a line-at-a-time reader would otherwise pay once per record.
+_parse = jsonx._decode if jsonx._HAVE_ORJSON else jsonx.loads
+
+
 class NDJSONDecodeError(ValueError):
     """A line failed to parse — carries its 1-based ``lineno`` for context."""
 
@@ -67,7 +72,7 @@ def dumps(rows: Iterable[object]) -> str:
 
 def dumpb(rows: Iterable[object]) -> bytes:
     """Serialize *rows* straight to NDJSON ``bytes`` (``jsonx.dumpb``) for file/socket writes."""
-    return b"".join(jsonx.dumpb(r) + b"\n" for r in rows)
+    return b"".join(map(jsonx._line, rows))  # the package's own row encoder
 
 
 def iter_loads(
@@ -81,14 +86,20 @@ def iter_loads(
     1-based line number, unless *skip_errors* drops it silently.
     """
     for lineno, line in enumerate(lines, 1):
-        if not (stripped := line.strip()):
+        if not line or line.isspace():  # exactly the lines `strip()` empties, no copy
             continue
         try:
-            yield jsonx.loads(stripped)
-        except jsonx.JSONDecodeError as exc:
-            if skip_errors:
-                continue
-            raise NDJSONDecodeError(lineno, exc) from exc
+            value = _parse(line)
+        except jsonx.JSONDecodeError:
+            # JSON's own whitespace never needs stripping; only exotic padding
+            # (NBSP, U+2028 …) does, so the copy is paid only on that path.
+            try:
+                value = _parse(line.strip())
+            except jsonx.JSONDecodeError as exc:
+                if skip_errors:
+                    continue
+                raise NDJSONDecodeError(lineno, exc) from exc
+        yield value
 
 
 def loads(text: str | bytes, *, skip_errors: bool = False) -> list[Json]:
@@ -103,6 +114,14 @@ def loads(text: str | bytes, *, skip_errors: bool = False) -> list[Json]:
     lines = (
         text.split(b"\n") if isinstance(text, bytes | bytearray) else text.split("\n")
     )
+    if not skip_errors:
+        # One comprehension over the backend decoder is the whole cost of a clean
+        # blob. A failure re-walks through `iter_loads`, which strips exotic
+        # padding and names the line — so the answer, and the error, are its.
+        try:
+            return [_parse(line) for line in lines if line and not line.isspace()]
+        except jsonx.JSONDecodeError:
+            pass
     return list(iter_loads(lines, skip_errors=skip_errors))
 
 
@@ -120,8 +139,9 @@ def write(fp: io.TextIOBase | IO[bytes], rows: Iterable[object]) -> int:
             fp.write(f"{jsonx.dumps(row)}\n")
             n += 1
     else:
+        line = jsonx._line  # the package's own row encoder
         for row in rows:
-            fp.write(jsonx.dumpb(row) + b"\n")
+            fp.write(line(row))
             n += 1
     return n
 
