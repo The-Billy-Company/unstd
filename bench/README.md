@@ -101,6 +101,15 @@ The harness earned its keep on the first run:
   the algorithm, and it is not something a caller can act on.
 - **`clone.deep` on a small dict is 1.19×, not the 1.8× the README claimed.**
   The floor case is real and the README now says what the harness measures.
+- **The 1.0.5 `clone.deep` floors were set against a clone that dropped types.**
+  Its msgspec round-trip turned a nested `StrEnum` into a `str` and a
+  `defaultdict` into a `dict`, and its equality guard could not tell. 1.1 replaced
+  it with a type-exact walker (4.4× on the large trees instead of 5.8×, 4.1× on
+  the small dict instead of 1.2×), and the two large-tree floors were re-pinned
+  by hand at the usual 70% of the new measurement. That is the one legitimate way
+  a floor comes down: the old number was bought with a bug.
+- **`update --group X` used to erase every other group's floors.** It rewrote the
+  baseline from the narrowed run alone. It now merges, and a test pins that.
 
 ## Adding a case
 

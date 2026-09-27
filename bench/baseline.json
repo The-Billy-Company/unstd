@@ -1,6 +1,6 @@
 {
   "_": "Speed floors, ratio of stdlib cost to unstd cost. Raised by `python3 -m bench update`, never lowered by it. See bench/README.md.",
-  "recorded": "2026-09-01",
+  "recorded": "2026-09-27",
   "host": "Darwin arm64 python3.13",
   "cases": {
     "b64.b64d · 128 KiB": {
@@ -28,19 +28,29 @@
       "measured": 1767.1,
       "group": "pack"
     },
+    "clone.asdict · dataclass tree": {
+      "floor": 7.55,
+      "measured": 10.78,
+      "group": "clone"
+    },
+    "clone.deep · 40 pydantic models": {
+      "floor": 1.58,
+      "measured": 2.25,
+      "group": "clone"
+    },
     "clone.deep · 500 records": {
-      "floor": 4.09,
-      "measured": 5.85,
+      "floor": 3.16,
+      "measured": 4.51,
       "group": "clone"
     },
     "clone.deep · nested (200 items)": {
-      "floor": 4.13,
-      "measured": 5.67,
+      "floor": 3.02,
+      "measured": 4.22,
       "group": "clone"
     },
     "clone.deep · small dict": {
-      "floor": 0.85,
-      "measured": 1.21,
+      "floor": 2.93,
+      "measured": 4.16,
       "group": "clone"
     },
     "draw.floats · 100k": {

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import copy
+import dataclasses
 
 from hypothesis import given
 from hypothesis import strategies as st
@@ -58,26 +59,32 @@ def test_mutating_clone_cannot_reach_source(payload: list[object]) -> None:
 
 
 @given(value=_TREE)
-def test_missing_backend_delegates_to_copy_deepcopy(
-    value: object,
-) -> None:
-    """The base-install fallback calls the general object-graph copier once."""
-    deepcopy = copy.deepcopy
-    expected = deepcopy(value)
-    calls: list[object] = []
+def test_plain_trees_are_walked_without_deepcopy(value: object) -> None:
+    """Plain data is owned by the walker — the general copier is never consulted."""
+    expected = copy.deepcopy(value)
 
-    def recording_deepcopy(obj: object) -> object:
-        calls.append(obj)
-        return deepcopy(obj)
+    def refuse(_obj: object, _memo: object = None) -> object:
+        msg = "plain data fell back to copy.deepcopy"
+        raise AssertionError(msg)
 
     with pytest.MonkeyPatch.context() as monkeypatch:
-        monkeypatch.setattr(structural, "_HAVE_MSGSPEC", False)
-        monkeypatch.setattr(structural._stdlib, "deepcopy", recording_deepcopy)
+        monkeypatch.setattr(structural._stdlib, "deepcopy", refuse)
         actual = clone.deep(value)
     assert actual == expected
     assert type(actual) is type(expected)
-    assert len(calls) == 1
-    assert calls[0] is value
+
+
+@dataclasses.dataclass
+class _Box:
+    value: object
+    rest: list[object]
+
+
+@given(value=_TREE, rest=st.lists(_TREE, max_size=4))
+def test_asdict_agrees_with_stdlib(value: object, rest: list[object]) -> None:
+    """``clone.asdict`` returns exactly ``dataclasses.asdict``'s answer, nested boxes included."""
+    box = _Box(value, [_Box(r, []) for r in rest])
+    assert clone.asdict(box) == dataclasses.asdict(box)
 
 
 @given(payload=st.lists(_SCALAR, max_size=8))

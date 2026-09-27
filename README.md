@@ -35,7 +35,7 @@ python3 -m pip install 'unstd[serde,ids,crypto]'
 | [`containers`](src/unstd/containers/README.md) | `unstd[containers]` | sortedcontainers + immutables (required) |
 | [`rand`](src/unstd/rand/README.md) | `unstd[rand]` | numpy PCG64 → stdlib `random`; `crypto` is always `secrets` |
 | [`pack`](src/unstd/pack/README.md) | `unstd[pack]` | numpy → stdlib `struct` |
-| [`clone`](src/unstd/clone/README.md) | `unstd[clone]` | msgspec → `copy.deepcopy` |
+| [`clone`](src/unstd/clone/README.md) | — | stdlib; exact-type walk, `copy.deepcopy` per foreign node |
 | [`text`](src/unstd/text/README.md) | `unstd[text]` | rapidfuzz → stdlib `difflib` |
 | [`audio`](src/unstd/audio/README.md) | `unstd[audio]` | soundfile + numpy → stdlib `wave` |
 | [`toml`](src/unstd/toml/README.md) | `unstd[toml]` | read is `tomllib`; write requires tomlkit |
@@ -43,7 +43,7 @@ python3 -m pip install 'unstd[serde,ids,crypto]'
 | [`fs`](src/unstd/fs/README.md) | — | stdlib `os` |
 | [`iters`](src/unstd/iters/README.md) | — | stdlib `itertools` |
 
-`proc`, `fs`, and `iters` ship in the base install.
+`clone`, `proc`, `fs`, and `iters` ship in the base install.
 
 ## Prior art
 

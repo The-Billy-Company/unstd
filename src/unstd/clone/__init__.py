@@ -1,32 +1,27 @@
-"""Fast structural deep clone — a stdlib-``copy``-faithful accelerated stand-in.
+"""Fast structural deep clone — a stdlib-``copy``-faithful stand-in for data.
 
-``copy.deepcopy`` is a pure-Python object-graph walker and a well-known hot-path
-sink; for wire-shaped data (``dict``/``list``/``tuple``/``set``/``dataclass``/
-``msgspec.Struct``) a structural round-trip through ``msgspec.json`` (encode to
-bytes, then decode back to the original type) is far faster and still fully
-independent — *not* ``msgspec.convert``, which reuses already-correct nested
-objects and so shares inner containers with the source (see
-:mod:`unstd.clone.structural` for why that would be a shallow copy in disguise).
-:func:`deep` takes that fast path when it can and falls back to
-``copy.deepcopy`` for everything else, and the faithful :func:`copy`/
-:func:`deepcopy` re-exports keep a file migrating off ``import copy`` working
-after a one-line import swap.
+``copy.deepcopy`` is a general object-graph walker and a well-known hot-path
+sink. :func:`deep` clones the data that crosses a program's seams —
+``dict``/``list``/``tuple``/``set`` trees, dataclasses, pydantic models,
+``msgspec.Struct`` — with an exact-type walk that never pays ``deepcopy``'s memo
+and reducer machinery, and hands every node it does not own to ``copy.deepcopy``
+itself. :func:`asdict` is the same walker in ``dataclasses.asdict``'s shape. The
+faithful :func:`copy`/:func:`deepcopy` re-exports keep a file migrating off
+``import copy`` working after a one-line import swap.
 
-Backend & fallback: the fast path rides the ``clone`` extra
-(``pip install 'unstd[clone]'``, providing ``msgspec``). Without it — a base
-``unstd`` install — every call transparently falls back to ``copy.deepcopy``.
-Import the module::
+Pure stdlib — no extra is needed::
 
     from unstd import clone
 
-    twin = clone.deep(payload)  # structural fast clone (deepcopy fallback)
+    twin = clone.deep(payload)  # structural fast clone
+    plain = clone.asdict(record)  # dataclasses.asdict, walked
     shallow = clone.copy(payload)  # stdlib copy.copy
     exact = clone.deepcopy(payload)  # stdlib copy.deepcopy
 """
 
 from __future__ import annotations
 
-from unstd.clone.structural import copy, deep, deepcopy
+from unstd.clone.structural import asdict, copy, deep, deepcopy
 
 
-__all__ = ["copy", "deep", "deepcopy"]
+__all__ = ["asdict", "copy", "deep", "deepcopy"]

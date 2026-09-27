@@ -23,7 +23,9 @@ from __future__ import annotations
 
 import base64
 import copy
+import dataclasses
 from dataclasses import dataclass
+import datetime
 import difflib
 import hashlib
 import importlib.util
@@ -33,6 +35,7 @@ import re
 import struct
 from typing import TYPE_CHECKING, Any
 
+from unstd.clone import asdict as clone_asdict
 from unstd.clone import deep
 from unstd.ids.hash import sum_
 from unstd.pack.binpack import pack_array, unpack_array
@@ -134,6 +137,53 @@ _BLOB = bytes(range(256)) * 512  # 128 KiB — the size an upload chunk lands at
 _B64_TEXT = base64.b64encode(_BLOB).decode("ascii")
 _NESTED = {"items": _records(200)}
 _SMALL = {"id": 7, "name": "small", "ok": True}
+
+
+@dataclass
+class _Hit:
+    url: str
+    score: float
+    seen: datetime.datetime
+
+
+@dataclass
+class _Receipt:
+    tool: str
+    args: dict[str, Any]
+    hits: list[_Hit]
+
+
+_SEEN = datetime.datetime(2026, 9, 27, tzinfo=datetime.UTC)
+_DATACLASS_TREE = _Receipt(
+    "search",
+    {"q": "lisbon", "k": 8, "filters": ["news", "maps"]},
+    [_Hit(f"https://example.com/{i}", 0.9 - i / 10, _SEEN) for i in range(8)],
+)
+
+
+def _models(n: int) -> list[Any]:
+    """A chat history's worth of pydantic models — built lazily; pydantic is optional."""
+    from pydantic import BaseModel
+
+    class Call(BaseModel):
+        name: str
+        args: dict[str, Any]
+
+    class Message(BaseModel):
+        role: str
+        content: str
+        calls: list[Call] = []
+
+    return [
+        Message(
+            role="assistant",
+            content=f"turn {i} " * 8,
+            calls=[Call(name="search", args={"q": [i]})],
+        )
+        for i in range(n)
+    ]
+
+
 _HAYSTACK = _prose(4_000)
 _CHOICES = _names(2_000)
 _QUERIES = _names(20)
@@ -189,22 +239,24 @@ case(
 
 
 # ---------------------------------------------------------------- clone
-# These three payloads are the ones the clone README's table reports, so the
-# table can be regenerated instead of remembered.
+# These payloads are the ones the clone README's table reports, so the table can
+# be regenerated instead of remembered. The walker is pure stdlib, so the
+# backend these name is `unstd` itself (always importable); the pydantic case
+# still needs pydantic installed to have anything to clone.
 
 case(
     name="clone.deep · nested (200 items)",
     group="clone",
-    backend="msgspec",
+    backend="unstd",
     payload=lambda: _NESTED,
     accel=deep,
     base=copy.deepcopy,
-    note="verified msgspec round-trip vs copy.deepcopy",
+    note="exact-type walk vs copy.deepcopy",
 )
 case(
     name="clone.deep · 500 records",
     group="clone",
-    backend="msgspec",
+    backend="unstd",
     payload=lambda: _RECORDS_500,
     accel=deep,
     base=copy.deepcopy,
@@ -212,11 +264,29 @@ case(
 case(
     name="clone.deep · small dict",
     group="clone",
-    backend="msgspec",
+    backend="unstd",
     payload=lambda: _SMALL,
     accel=deep,
     base=copy.deepcopy,
-    note="the floor case — at this size the round-trip barely pays",
+    note="the floor case — the one a serialization round-trip lost",
+)
+case(
+    name="clone.deep · 40 pydantic models",
+    group="clone",
+    backend="pydantic",
+    payload=lambda: _models(40),
+    accel=deep,
+    base=copy.deepcopy,
+    note="mirrors BaseModel.__deepcopy__ with the walker in place of deepcopy",
+)
+case(
+    name="clone.asdict · dataclass tree",
+    group="clone",
+    backend="unstd",
+    payload=lambda: _DATACLASS_TREE,
+    accel=clone_asdict,
+    base=dataclasses.asdict,
+    note="datetime leaves are where dataclasses.asdict pays deepcopy per leaf",
 )
 
 
