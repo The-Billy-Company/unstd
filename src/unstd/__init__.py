@@ -13,15 +13,17 @@ failing loud where no faithful substitute exists:
 - ``serde`` (``json`` / ``base64``) — ``jsonx`` (orjson) · ``b64`` (pybase64) ·
   ``ndjson`` (newline-delimited, rides ``jsonx``) · ``structs`` (msgspec, no
   stdlib equivalent). Behind the ``serde`` extra; the rest fall back to stdlib.
-- ``ids`` (``hashlib`` / ``uuid``) — ``hash`` (BLAKE3, fails loud) · ``uid``
-  (UUIDv7, falls back to a stdlib generator). Behind the ``ids`` extra.
-- ``crypto`` — BLAKE3 digests, key derivation, keyed MACs and the bearer
+- ``ids`` (``uuid``) — ``uid``: UUIDv7 minting and v5 derivation, falling back to
+  a stdlib generator. Behind the ``ids`` extra.
+- ``crypto`` (``hashlib`` / ``hmac`` / ``ssl``) — BLAKE3 digests (content
+  hashes and short ids included), key derivation, keyed MACs and the bearer
   envelope, constant-time compare, and a verifying TLS client policy. No
   fallback: ``hashlib`` ships BLAKE2, which is a different algorithm, not a
   slower one.
-- ``time`` — ``timeutil`` (pure-stdlib clock seam, always available; its
-  protobuf ``Timestamp`` bridge is behind the ``proto`` extra) · ``dateutil``
-  (the ``whenever`` typed-instant seam, behind the ``time`` extra).
+- ``time`` — ``timeutil`` (clocks, RFC-3339 formatting, ISO parsing, instant
+  arithmetic — pure stdlib; its protobuf ``Timestamp`` bridge is behind the
+  ``proto`` extra) · ``zoned`` (DST-correct wall-clock time over ``whenever``,
+  behind the ``time`` extra).
 - ``model`` — the strict Pydantic wire-shape spine: ``StrictModel`` ·
   ``FrozenModel`` · ``StrictSettings``. Behind the ``model`` extra (pydantic has
   no stdlib equivalent, so there is no fallback).
@@ -33,7 +35,7 @@ failing loud where no faithful substitute exists:
 - ``rand`` (``random``) — numpy PCG64 bulk draws; security-sensitive draws stay
   on ``secrets`` regardless of the extra.
 - ``pack`` (``struct``) — numpy bulk pack/unpack.
-- ``clone`` (``copy``) — msgspec round-trip, falls back to ``copy.deepcopy``.
+- ``clone`` (``copy``) — an exact-type structural deep clone, pure stdlib.
 - ``text`` (``difflib``) — rapidfuzz similarity and fuzzy matching.
 - ``audio`` (``wave``) — soundfile read/write plus a streaming writer.
 - ``toml`` (``tomllib``) — reading is stdlib; writing needs tomlkit.
@@ -43,8 +45,9 @@ failing loud where no faithful substitute exists:
 Import the module, not its members::
 
     from unstd.serde import jsonx, b64, structs, ndjson
-    from unstd.ids import hash, uid
-    from unstd.time import timeutil, dateutil
+    from unstd.ids import uid
+    from unstd.crypto import digest, token
+    from unstd.time import timeutil, zoned
     from unstd.model import StrictModel, FrozenModel, StrictSettings
 """
 

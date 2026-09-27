@@ -27,9 +27,9 @@ python3 -m pip install 'unstd[serde,ids,crypto]'
 | Group | Extra | Backend / fallback |
 |---|---|---|
 | [`serde`](src/unstd/serde/README.md) | `unstd[serde]` | orjson / msgspec / pybase64 → stdlib `json`/`base64` |
-| [`ids`](src/unstd/ids/README.md) | `unstd[ids]` | blake3 / uuid-utils → `hash` requires the extra; `uid` falls back to stdlib UUIDv7 |
+| [`ids`](src/unstd/ids/README.md) | `unstd[ids]` | uuid-utils → `uid` falls back to stdlib UUIDv7 |
 | [`crypto`](src/unstd/crypto/README.md) | `unstd[crypto]` | blake3 (required; hashlib ships BLAKE2, a different algorithm) |
-| [`time`](src/unstd/time/README.md) | `unstd[time]` | `timeutil` is pure stdlib; `dateutil` requires `whenever`, and `timeutil`'s protobuf `Timestamp` bridge requires `unstd[proto]` |
+| [`time`](src/unstd/time/README.md) | `unstd[time]` | `timeutil` is pure stdlib; `zoned` requires `whenever`, and `timeutil`'s protobuf `Timestamp` bridge requires `unstd[proto]` |
 | [`model`](src/unstd/model/README.md) | `unstd[model]` | pydantic (required) |
 | [`rex`](src/unstd/rex/README.md) | `unstd[rex]` | irregex → stdlib `re` |
 | [`containers`](src/unstd/containers/README.md) | `unstd[containers]` | sortedcontainers + immutables (required) |

@@ -2,6 +2,110 @@
 
 <!-- towncrier release notes start -->
 
+## [Unreleased]
+
+### Breaking
+
+This is a 2.0 surface pass: every change below renames or removes a public name,
+and each old name fails at import rather than changing meaning in place.
+
+- `serde.b64` is one verb per direction. `b64s` / `b64u_s` → `encode(data, url=,
+  pad=)`, `b64d` / `b64u_d` → `decode(s, url=)`, `b64text` / `b64u_text` →
+  `decode_text`, `b64_json` / `unb64_json` → `encode_json` / `decode_json`.
+  `pad=False` is new - the unpadded base64url JWTs and bearer tokens use, which
+  callers were `rstrip("=")`-ing by hand - and url-safe `decode` now accepts
+  padded and unpadded input alike. Standard `decode` stays strict.
+- `ids.hash` is gone; it was three second names for `crypto.digest`. Content
+  hashes are `digest.hex(data)`, short ids `digest.hex(data, n)`, raw bytes
+  `digest.raw(data)` (was `sum_` / `hex_` / `hex_n` / `content_hash`).
+  `digest.of_parts(parts)` is `digest.Stream(parts).raw()`; `Stream.update_all`
+  went with it, and `Stream.sum_` / `hex_` are `raw` / `hex(n=None)`.
+  `digest.KDF_BYTES` folded into `DIGEST_BYTES` (both were 32).
+- `crypto.token.mac` / `mac_bytes` → `mac_hex` / `mac_raw`, so the return type is
+  in the name as it is in `digest`. `verify_mac` takes a tag in either form.
+  `equal` lives in `token` only, and `token.opaque` is
+  `rand.crypto.token_urlsafe` - it was a pass-through.
+- `time.dateutil` is `time.zoned`, holding only what needs `whenever`:
+  `wall` / `parse` / `now` / `instant` / `to_utc` (were `zoned_wall` /
+  `parse_zoned` / `zoned_now` / `parse_instant` / `zoned_to_utc`). The pure-stdlib
+  half - `parse_iso`, `parse_utc`, `parse_date`, `from_epoch_s`, `from_epoch_ms` -
+  moved to `timeutil`, so none of it needs the `time` extra any more.
+- `timeutil.span(start, end=None, *, unit, assume_utc=False)` replaces
+  `span_hours`, `span_minutes`, `age_days`, `minutes_until`, `minutes_since`, and
+  `hours_between`. Those five disagreed about whether a floating stamp was UTC
+  depending on which unit you asked in; `span` is strict unless told otherwise.
+  `iso_range`, `lookback`, `days_range`, and `day_offset` are removed.
+- `timeutil.iso(dt=None, *, ms=False)` replaces `utcnow_iso`, `utcnow_iso_ms`,
+  and `iso_fmt`; `today(utc=True)` replaces `utcnow_date_iso`; `today_iso` and
+  `date_fmt` are removed (`.isoformat()`); `human(tz="")` replaces `human_now`
+  and `human_now_tz`.
+- `timeutil.parse_date` returns `None` on bad input like every other parser
+  here, instead of raising.
+- `serde.structs.codec(...)` is removed; construct `structs.Codec(...)`.
+- `audio.wavx` drops the stutter: `read_wav` / `write_wav` / `read_blocks` /
+  `WavWriter` → `read` / `write` / `blocks` / `Writer`.
+- `fs.read_bytes`, `fs.read_text`, and `fs.iter_dir` are removed. They measured
+  slower than the `pathlib` methods they wrapped.
+- `proc.TimeoutError` is removed. It aliased `subprocess.TimeoutExpired`, which
+  does not subclass the builtin of that name.
+- `iters.take(iterable, n)` takes the iterable first, like `chunked`, `windowed`,
+  and `nth` beside it. The old order fails loudly (`'int' object is not
+  iterable`), never silently.
+- `iters.batched_with_key` is `iters.runs` - it groups consecutive runs by key;
+  it never batched. Its module is `iters.consecutive`.
+
+### Performance
+
+- `jsonx.dumps` 416 → 264 ns, `dumpb` 375 → 200 ns, `loads` 251 → 212 ns on a
+  small dict (raw orjson: ~180 ns). The fast path no longer detours through a
+  checking wrapper, and `loads` names its return type with an annotation instead
+  of a runtime `typing.cast` call.
+- `ndjson.dumpb` / binary `write` let orjson append each newline
+  (`OPT_APPEND_NEWLINE`) instead of concatenating a second `bytes` per row.
+- `rand`'s scalar draws are stdlib `random` on every install. Routing
+  `random()` / `choice` / `shuffle` through numpy's `Generator` one value at a
+  time was 5-7x slower than the stdlib draw; numpy still fills the bulk arrays.
+- `timeutil.wall` / `mono` / `mono_ns` / `perf` and `rand.crypto.*` are the stdlib
+  functions bound directly, with no forwarding frame.
+- `timeutil.iso` formats through `isoformat` (~2.6x faster than `strftime`), and
+  `epoch_ms` is exact integer math on `time_ns()`.
+- `structs.Codec.encode` / `decode` are msgspec's own bound methods.
+- `digest.hex(data, n)` asks the XOF for `n` bytes rather than slicing a full
+  hex string, and checks the width inline.
+- `jsonx.canonical` reuses one prebuilt encoder instead of letting `json.dumps`
+  construct a fresh one per call: ~1.25 µs → ~0.9 µs on a small dict, same bytes.
+- `b64.encode(url=True)` rides pybase64's `altchars` straight to `str`: 293 →
+  192 ns for 64 bytes unpadded.
+- `token.mac_hex` / `mac_raw` check the key inline - 943 → 674 ns - and `verify`
+  follows (2.1 → 1.6 µs).
+- `ndjson.loads` parses a clean blob in one comprehension over the backend
+  decoder and strips a line only when a direct parse fails: 338 → 187 µs per
+  1k records, level with a bare orjson loop. A bad line still re-walks the slow
+  path, so the error and its line number are unchanged.
+- `iters.windowed(step=1)` is staggered `tee` views zipped together, a C-level
+  walk: 4x on 10k items. `unique_everseen` skips the key call when there is no
+  key, and `last` indexes exact builtin sequences without an ABC probe (2x).
+- Pure forwarders are now the function they forwarded to: `timeutil.utcnow`
+  (`partial(datetime.now, UTC)`, 132 → 96 ns), `uid.parse` / `uid.derive`
+  (`UUID` / `uuid5`), `iters.flatten` (`chain.from_iterable`, 2x), `zoned.now`
+  (`ZonedDateTime.now`), and - with the `text` extra - `fuzz.ratio` /
+  `distance` / `jaro_winkler` as the rapidfuzz kernels (~25-40% per call). Clock
+  freezers that patch at the C layer (`time-machine`) still see the bound
+  references. The pure-Python fallbacks are held to the kernels by a property
+  test, since with the extra installed nothing else runs them. The fuzz scorers
+  take their two strings positionally.
+- `wavx.wrap_pcm` packs the 44-byte header with one `struct` call - byte-identical
+  to `wave`, pinned across widths, channel counts, and partial frames - 2.7x
+  faster on 32 KB.
+
+### Fixed
+
+- `text.fuzz.best_match` / `extract` / `cdist` keep a choice scoring exactly at
+  `score_cutoff`, as documented. rapidfuzz's own cutoff drops boundary pairs
+  through a float round-trip (about 15% of random short pairs on 1.1), so every
+  fast path now scores in full and applies `>=` itself - at no measurable cost.
+  `cdist` also returns float64, so its scores equal `ratio`'s exactly.
+
 ## [1.1.0] - 2026-09-27
 
 ### Fixed
