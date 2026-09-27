@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import importlib
 import io
 import json
+import sys
 import tomllib
 
 from hypothesis import given
@@ -111,10 +113,15 @@ def test_writer_fails_loud_when_optional_backend_is_unavailable(
 ) -> None:
     """Absence of the optional backend must never become a partial write."""
     stream = io.StringIO()
-    with pytest.MonkeyPatch.context() as monkeypatch:
-        monkeypatch.setattr(toml, "_HAVE_TOMLKIT", False)
-        with pytest.raises(ImportError, match=r"unstd\[toml\]"):
-            toml.dumps(obj)
-        with pytest.raises(ImportError, match=r"unstd\[toml\]"):
-            toml.dump(obj, stream)
+    try:
+        with pytest.MonkeyPatch.context() as monkeypatch:
+            # Re-run the real import-time branch a base install takes.
+            monkeypatch.setitem(sys.modules, "tomlkit", None)
+            base = importlib.reload(toml)
+            with pytest.raises(ImportError, match=r"unstd\[toml\]"):
+                base.dumps(obj)
+            with pytest.raises(ImportError, match=r"unstd\[toml\]"):
+                base.dump(obj, stream)
+    finally:
+        importlib.reload(toml)
     assert stream.getvalue() == ""

@@ -53,6 +53,10 @@ and each old name fails at import rather than changing meaning in place.
   iterable`), never silently.
 - `iters.batched_with_key` is `iters.runs` - it groups consecutive runs by key;
   it never batched. Its module is `iters.consecutive`.
+- `toml`'s write half is `tomlkit`'s own functions rather than wrappers around
+  them, so `dumps` / `dump` accept `sort_keys=` and each name carries tomlkit's
+  types. On a base install each is a placeholder that raises naming the extra,
+  decided at import rather than re-checked per call.
 
 ### Performance
 

@@ -16,7 +16,9 @@ Two contracts to pin:
 from __future__ import annotations
 
 import datetime as dt
+import importlib
 import io
+import sys
 import tomllib
 
 import pytest
@@ -106,31 +108,47 @@ def test_malformed_toml_raises_the_reexported_decode_error() -> None:
 # ── write path: fails loud without the extra (forced branch = a base install) ───
 
 
+@pytest.fixture
+def base_install(monkeypatch):
+    """``unstd.toml`` as imported on a base install: ``tomlkit`` unimportable.
+
+    Re-runs the module's real import-time branch rather than flipping a flag, so
+    the placeholders under test are the ones a base install actually binds.
+    """
+    monkeypatch.setitem(sys.modules, "tomlkit", None)
+    yield importlib.reload(toml)
+    monkeypatch.undo()
+    importlib.reload(toml)
+
+
 @pytest.mark.parametrize(
-    ("call", "args"),
+    ("name", "args"),
     [
-        (toml.dumps, ({"a": 1},)),
-        (toml.dump, ({"a": 1}, io.StringIO())),
-        (toml.parse, ("a = 1",)),
-        (toml.document, ()),
-        (toml.table, ()),
-        (toml.array, ()),
-        (toml.inline_table, ()),
-        (toml.aot, ()),
-        (toml.comment, ("hi",)),
-        (toml.nl, ()),
-        (toml.item, (1,)),
+        ("dumps", ({"a": 1},)),
+        ("dump", ({"a": 1}, io.StringIO())),
+        ("parse", ("a = 1",)),
+        ("document", ()),
+        ("table", ()),
+        ("array", ()),
+        ("inline_table", ()),
+        ("aot", ()),
+        ("comment", ("hi",)),
+        ("nl", ()),
+        ("item", (1,)),
     ],
 )
 def test_write_path_raises_clear_importerror_without_extra(
-    monkeypatch, call, args
+    base_install, name, args
 ) -> None:
-    # Force the exact guard a base (no-`toml`-extra) install takes, regardless of
-    # whether tomlkit happens to be importable in this environment.
-    """Test write path raises clear importerror without extra."""
-    monkeypatch.setattr(toml, "_HAVE_TOMLKIT", False)
+    """Every write-path name imports cleanly on a base install and raises naming the extra when called."""
+    assert base_install._HAVE_TOMLKIT is False
     with pytest.raises(ImportError, match=r"unstd\[toml\]"):
-        call(*args)
+        getattr(base_install, name)(*args)
+
+
+def test_read_path_survives_a_base_install(base_install) -> None:
+    """The read half is stdlib, so a missing ``tomlkit`` must not touch it."""
+    assert base_install.loads(DOC) == tomllib.loads(DOC)
 
 
 # ── write path: round-trip + style preservation (only when the extra is present) ─

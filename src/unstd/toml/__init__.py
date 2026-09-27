@@ -52,30 +52,11 @@ Prior art:
 from __future__ import annotations
 
 import tomllib
-from typing import IO, TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Never
 
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
-    from typing import Any
-
-    import tomlkit
-    from tomlkit import TOMLDocument
-    from tomlkit.items import AoT, Array, Comment, InlineTable, Item, Table, Whitespace
-
-    _HAVE_TOMLKIT = True
-else:
-    try:
-        import tomlkit
-
-        _HAVE_TOMLKIT = True
-    except ImportError:  # write path has no stdlib equivalent — tomllib is read-only
-        tomlkit = None
-        _HAVE_TOMLKIT = False
-
-
-# Re-exported so ``except toml.TOMLDecodeError`` mirrors ``except tomllib.TOMLDecodeError``.
-TOMLDecodeError = tomllib.TOMLDecodeError
+    from collections.abc import Callable
 
 __all__ = [
     "TOMLDecodeError",
@@ -94,104 +75,69 @@ __all__ = [
     "table",
 ]
 
-# One shared, actionable hint for every write-path call when the extra is absent.
+# The read half *is* stdlib: same functions, same errors, no forwarding frame.
+loads = tomllib.loads
+load = tomllib.load
+TOMLDecodeError = tomllib.TOMLDecodeError
+
 _WRITE_HINT = (
-    "unstd.toml's write path (dumps/dump/parse/document) requires the 'toml' extra — "
-    "install with: pip install 'unstd[toml]'. The stdlib tomllib is read-only (PEP 680); "
+    "unstd.toml's write path requires the 'toml' extra — install with: "
+    "pip install 'unstd[toml]'. The stdlib tomllib is read-only (PEP 680); "
     "tomlkit provides the style-preserving TOML serializer it omits."
 )
 
 
-def _require_kit() -> None:
-    """Raise an ImportError naming the ``toml`` extra when ``tomlkit`` is absent."""
-    if not _HAVE_TOMLKIT:
+def _missing(name: str) -> Callable[..., Never]:
+    """A placeholder for write-path *name* that raises naming the extra when called."""
+
+    def _raise(*_args: object, **_kwargs: object) -> Never:
         raise ImportError(_WRITE_HINT)
 
-
-def loads(s: str) -> dict[str, object]:
-    """Parse a TOML *string* into a ``dict`` — stdlib ``tomllib.loads`` (always available)."""
-    return tomllib.loads(s)
+    _raise.__name__ = _raise.__qualname__ = name
+    return _raise
 
 
-def load(fp: IO[bytes]) -> dict[str, object]:
-    """Parse TOML from a **binary** file object — stdlib ``tomllib.load``. Faithful to stdlib: ``tomllib`` requires the file be opened in binary mode (``open(p, "rb")``)."""
-    return tomllib.load(fp)
+# The write half *is* tomlkit (typed, same signatures) when the extra is present,
+# and a named placeholder when it is not — so importing this module never fails,
+# and reads keep working on a base install.
+if TYPE_CHECKING:
+    from tomlkit import (
+        aot,
+        array,
+        comment,
+        document,
+        dump,
+        dumps,
+        inline_table,
+        item,
+        nl,
+        parse,
+        table,
+    )
 
+    _HAVE_TOMLKIT = True
+else:
+    try:
+        from tomlkit import (
+            aot,
+            array,
+            comment,
+            document,
+            dump,
+            dumps,
+            inline_table,
+            item,
+            nl,
+            parse,
+            table,
+        )
 
-def dumps(obj: Mapping[str, object]) -> str:
-    """Serialize *obj* (a mapping, or a style-preserving :func:`parse` / :func:`document` result) back to a TOML *string* via ``tomlkit`` — comment-, order-, and layout-preserving. Raises :class:`ImportError` when the ``toml`` extra is absent (the stdlib has no TOML writer — ``tomllib`` is read-only)."""
-    _require_kit()
-    return tomlkit.dumps(obj)
-
-
-def dump(obj: Mapping[str, object], fp: IO[str]) -> None:
-    """Write *obj* as TOML to text file object *fp* — the ``dumps(...)``-then-write idiom.
-
-    Requires the ``toml`` extra (``tomllib`` ships no writer).
-    """
-    fp.write(dumps(obj))
-
-
-def parse(s: str) -> TOMLDocument:
-    """Parse *s* into a style-preserving ``tomlkit`` document — mutate it and :func:`dumps` keeps the original comments and layout, unlike :func:`loads` which returns a plain ``dict``. Requires the ``toml`` extra."""
-    _require_kit()
-    return tomlkit.parse(s)
-
-
-def document() -> TOMLDocument:
-    """Return a new empty style-preserving ``tomlkit`` document to build up and :func:`dumps`.
-
-    Requires the ``toml`` extra.
-    """
-    _require_kit()
-    return tomlkit.document()
-
-
-# ── from-scratch node constructors — building a document with no prior TOML to
-# round-trip. Thin re-exports so a caller assembling one never has to import
-# ``tomlkit`` directly; the guarded-optional posture is identical to the four
-# functions above. See ``tomlkit.api`` for each constructor's own docstring.
-
-
-def table(is_super_table: bool | None = None) -> Table:
-    """Return a new, empty ``[table]`` node to populate and attach to a document."""
-    _require_kit()
-    return tomlkit.table(is_super_table=is_super_table)
-
-
-def array(raw: str = "[]") -> Array:
-    """Return a new ``[...]`` array node, optionally seeded from raw TOML array syntax."""
-    _require_kit()
-    return tomlkit.array(raw)
-
-
-def inline_table() -> InlineTable:
-    """Return a new, empty ``{ ... }`` inline-table node."""
-    _require_kit()
-    return tomlkit.inline_table()
-
-
-def aot() -> AoT:
-    """Return a new, empty array-of-tables (``[[name]]``) node."""
-    _require_kit()
-    return tomlkit.aot()
-
-
-def comment(string: str) -> Comment:
-    """Return a standalone ``# string`` comment node to insert between entries."""
-    _require_kit()
-    return tomlkit.comment(string)
-
-
-def nl() -> Whitespace:
-    """Return a blank-line node — the layout unit :func:`comment` sits beside."""
-    _require_kit()
-    return tomlkit.nl()
-
-
-def item(value: Any) -> Item:
-    """Wrap a plain Python value (``str``/``int``/``list``/``dict``/…) as a ``tomlkit`` node."""
-    # tomlkit ships no stubs, so its constructor is `Any` at the boundary; `Item`
-    # is the node type it is documented to return and the one this surface names.
-    _require_kit()
-    return cast("Item", tomlkit.item(value))
+        _HAVE_TOMLKIT = True
+    except ImportError:  # write path has no stdlib equivalent — tomllib is read-only
+        _HAVE_TOMLKIT = False
+        aot, array, comment, document, dump, dumps = map(
+            _missing, ("aot", "array", "comment", "document", "dump", "dumps")
+        )
+        inline_table, item, nl, parse, table = map(
+            _missing, ("inline_table", "item", "nl", "parse", "table")
+        )
