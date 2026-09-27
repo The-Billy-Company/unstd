@@ -21,7 +21,7 @@ The guarantees, versus a raw ``subprocess.run``:
   (``shlex.split``) so the tokenization is explicit and visible at the call site.
 - **A default timeout.** Every call is bounded by :data:`DEFAULT_TIMEOUT`
   (override per-call). On expiry ``subprocess`` kills the child and
-  :class:`TimeoutExpired` (aliased :data:`TimeoutError`) is raised — no call can
+  :class:`TimeoutExpired` is raised — no call can
   hang forever.
 - **Captured, decoded, structured result.** Output is always captured and
   text-decoded (utf-8, ``errors="replace"``) into a small frozen
@@ -54,13 +54,12 @@ if TYPE_CHECKING:
     import os
 
 
-# Faithful re-exports so callers ``except proc.TimeoutError`` / ``proc.CalledProcessError``
-# without importing stdlib ``subprocess`` alongside this safe surface. ``TimeoutError``
-# is an ergonomic alias for ``subprocess.TimeoutExpired`` (which, unlike the builtin
-# ``TimeoutError``, is what a timed-out child actually raises).
+# Faithful re-exports so callers ``except proc.TimeoutExpired`` / ``proc.CalledProcessError``
+# without importing stdlib ``subprocess`` alongside this safe surface. Deliberately
+# not aliased to ``TimeoutError``: the builtin of that name is a different
+# exception, and ``TimeoutExpired`` does not subclass it.
 CalledProcessError = subprocess.CalledProcessError
 TimeoutExpired = subprocess.TimeoutExpired
-TimeoutError = subprocess.TimeoutExpired
 
 # Default wall-clock ceiling (seconds) for any call. Override per-call via
 # ``timeout=``; ``None`` is refused so a call can never silently become unbounded.
@@ -71,7 +70,6 @@ __all__ = [
     "CalledProcessError",
     "CompletedProcess",
     "ProcessError",
-    "TimeoutError",
     "TimeoutExpired",
     "capture",
     "run",
@@ -116,7 +114,7 @@ class ProcessError(subprocess.CalledProcessError):
         self.result = result
 
     def __str__(self) -> str:
-        """Str."""
+        """The stdlib message, followed by the child's stderr."""
         base = super().__str__()
         tail = (self.stderr or "").strip()
         return f"{base}\n{tail}" if tail else base

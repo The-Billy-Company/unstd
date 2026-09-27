@@ -60,11 +60,14 @@ def test_timeout_fires_on_a_sleep_longer_than_the_deadline() -> None:
     assert ei.value.timeout == 0.25
 
 
-def test_timeout_alias_is_the_subprocess_class() -> None:
-    """Test timeout alias is the subprocess class."""
-    assert proc.TimeoutError is subprocess.TimeoutExpired
-    with pytest.raises(proc.TimeoutError):
-        proc.run(_py("import time; time.sleep(30)"), timeout=0.25)
+def test_timeout_is_not_aliased_to_the_unrelated_builtin() -> None:
+    """``subprocess.TimeoutExpired`` does not subclass builtin ``TimeoutError``, so
+    exporting it under that name would make ``except TimeoutError`` read as if it
+    caught a timed-out child when it does not.
+    """
+    assert proc.TimeoutExpired is subprocess.TimeoutExpired
+    assert not issubclass(proc.TimeoutExpired, TimeoutError)
+    assert not hasattr(proc, "TimeoutError")
 
 
 # ── check=True: non-zero exit raises, and keeps the stderr ─────────────────────

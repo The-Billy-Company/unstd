@@ -46,9 +46,10 @@ without `proc` depending on either.
 
 `proc.ProcessError` subclasses stdlib `subprocess.CalledProcessError`, so
 `except proc.CalledProcessError` (or `except subprocess.CalledProcessError`)
-catches it. `proc.TimeoutExpired` is the stdlib class re-exported; `proc.TimeoutError`
-is an ergonomic alias for it (a timed-out child raises `TimeoutExpired`, _not_
-the builtin `TimeoutError`).
+catches it. `proc.TimeoutExpired` is the stdlib class re-exported. It is deliberately not
+aliased as `TimeoutError`: a timed-out child raises `TimeoutExpired`, which does
+_not_ subclass the builtin `TimeoutError`, so the alias read as a promise the
+exception couldn't keep.
 
 ## Prior art
 
