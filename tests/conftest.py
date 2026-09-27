@@ -60,7 +60,7 @@ _NEEDS: dict[str, str] = {
     "crypto/*.py": "unstd.crypto",
     "model/*.py": "unstd.model",
     "serde/test_structs.py": "unstd.serde.structs",
-    "time/test_dateutil.py": "unstd.time.dateutil",
+    "time/test_zoned.py": "unstd.time.zoned",
     # Not an extra: the benchmark harness lives outside `src/` and is absent from
     # an installed wheel, so its own tests only mean something in a checkout.
     "test_bench.py": "bench",
