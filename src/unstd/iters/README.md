@@ -37,7 +37,7 @@ identically — only the missing combinators, plus two convenience re-exports
 | `ilen(iterable)`                        | `int`                    | count without building a list (`deque(zip(it, count()), maxlen=0)` drain); exhausts the iterable                                      |
 | `unique_everseen(iterable, key=None)`   | `Iterator`               | drop _any_ later repeat, first wins — hardened for **unhashable keys**                                                                |
 | `unique_justseen(iterable, key=None)`   | `Iterator`               | collapse only _consecutive_ duplicates (O(1) memory)                                                                                  |
-| `partition(pred, iterable)`             | `(falsy_it, truthy_it)`  | split into false/true streams in **one shared pass** (`tee`), never double-consuming the source                                       |
+| `partition(iterable, pred)`             | `(falsy_it, truthy_it)`  | split into false/true streams in **one shared pass** (`tee`); each element drawn once, `pred` called once                             |
 | `flatten(iterable_of_iterables)`        | `Iterator`               | flatten one level (`chain.from_iterable`, renamed)                                                                                    |
 | `batched` · `pairwise`                  | (stdlib)                 | re-exported from `itertools` for one-stop importing                                                                                   |
 
@@ -48,7 +48,7 @@ list(chunked("abcdefg", 3))  # [('a','b','c'), ('d','e','f'), ('g',)]
 list(windowed([1, 2, 3, 4], 2))  # [(1,2), (2,3), (3,4)]
 [(k, g) for k, g in runs([1, 1, 2, 1], lambda x: x)]
 # [(1,(1,1)), (2,(2,)), (1,(1,))]
-evens, odds = partition(lambda n: n % 2, range(6))  # ([0,2,4], [1,3,5]) once drained
+evens, odds = partition(range(6), lambda n: n % 2)  # ([0,2,4], [1,3,5]) once drained
 list(unique_everseen([1, 2, 1, 3, 2]))  # [1, 2, 3]
 ```
 

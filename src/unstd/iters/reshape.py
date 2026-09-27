@@ -10,7 +10,8 @@ https://github.com/more-itertools/more-itertools).
 
 from __future__ import annotations
 
-from itertools import chain, filterfalse, tee
+from itertools import chain, compress, tee
+from operator import not_
 from typing import TYPE_CHECKING
 
 
@@ -22,26 +23,22 @@ __all__ = ["flatten", "partition"]
 
 
 def partition[T](
-    pred: Callable[[T], object], iterable: Iterable[T]
+    iterable: Iterable[T], pred: Callable[[T], object]
 ) -> tuple[Iterator[T], Iterator[T]]:
     """Split *iterable* into ``(falsy, truthy)`` iterators by *pred*, over one shared pass.
 
-    The ``itertools`` recipe: :func:`itertools.tee` shares a *single* underlying
-    walk of *iterable* between the two returned iterators, so the source is **never
-    consumed twice** — each element is drawn from *iterable* exactly once and
-    buffered only until both sides have seen it. Order-preserving within each side,
-    and fully lazy (nothing is read until a returned iterator is pulled).
-
-    ``pred`` is evaluated once per element per side (tee duplicates the values, not
-    the predicate). ``tee``'s internal buffer grows if one side is drained far
-    ahead of the other — pull the two roughly in step for bounded memory. This is
-    the classic recipe shape; ``more-itertools`` ``>=11.0`` rewrote its own
-    ``partition`` onto a two-``deque`` generator for better behavior under a
-    lopsided pull — same output either way, just a different memory profile under
-    that specific access pattern.
+    Iterable first, like every other combinator here. The current ``itertools``
+    recipe: :func:`itertools.tee` shares a *single* walk of *iterable* between
+    both sides, and the verdicts are teed alongside it, so each element is drawn
+    **once** and *pred* runs **once** per element (not once per side — a
+    side-effecting or expensive predicate is safe). Order-preserving within each
+    side, fully lazy, and a C-level walk end to end. ``tee`` buffers whatever one
+    side has read ahead of the other — pull the two roughly in step for bounded
+    memory.
     """
-    t1, t2 = tee(iterable)
-    return filterfalse(pred, t1), filter(pred, t2)
+    t1, t2, p = tee(iterable, 3)
+    p1, p2 = tee(map(pred, p))
+    return compress(t1, map(not_, p1)), compress(t2, p2)
 
 
 flatten = chain.from_iterable

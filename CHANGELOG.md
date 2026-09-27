@@ -53,6 +53,8 @@ and each old name fails at import rather than changing meaning in place.
   iterable`), never silently.
 - `iters.batched_with_key` is `iters.runs` - it groups consecutive runs by key;
   it never batched. Its module is `iters.consecutive`.
+- `iters.partition(iterable, pred)` takes the iterable first, like every other
+  combinator in `iters`. The old order raises `TypeError` at the call.
 - `toml`'s write half is `tomlkit`'s own functions rather than wrappers around
   them, so `dumps` / `dump` accept `sort_keys=` and each name carries tomlkit's
   types. On a base install each is a placeholder that raises naming the extra,
@@ -101,6 +103,10 @@ and each old name fails at import rather than changing meaning in place.
 - `wavx.wrap_pcm` packs the 44-byte header with one `struct` call - byte-identical
   to `wave`, pinned across widths, channel counts, and partial frames - 2.7x
   faster on 32 KB.
+- `iters.partition` is the current `itertools` recipe - verdicts teed beside the
+  values and split with `compress` - so `pred` runs once per element instead of
+  once per side: 533 → 459 µs on 10k items with a trivial predicate, and half the
+  predicate calls whatever it costs.
 
 ### Fixed
 

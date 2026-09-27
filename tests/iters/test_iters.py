@@ -266,15 +266,34 @@ def test_batched_with_key_projects_the_key() -> None:
 
 def test_partition_splits_false_then_true() -> None:
     """Test partition splits false then true."""
-    falsy, truthy = partition(lambda n: n % 2, range(6))
+    falsy, truthy = partition(range(6), lambda n: n % 2)
     assert list(falsy) == [0, 2, 4]
     assert list(truthy) == [1, 3, 5]
+
+
+def test_partition_calls_pred_once_per_element() -> None:
+    """A side-effecting predicate sees each element exactly once, not once per side."""
+    seen: list[int] = []
+
+    def pred(n: int) -> bool:
+        seen.append(n)
+        return n % 2 == 1
+
+    falsy, truthy = partition(range(6), pred)
+    assert (list(falsy), list(truthy)) == ([0, 2, 4], [1, 3, 5])
+    assert seen == [0, 1, 2, 3, 4, 5]
+
+
+def test_partition_old_argument_order_fails_loud() -> None:
+    """The pre-2.0 ``partition(pred, iterable)`` order raises at the call, never mis-splits."""
+    with pytest.raises(TypeError, match="not iterable"):
+        partition(lambda n: n % 2, range(6))  # type: ignore[arg-type]
 
 
 def test_partition_consumes_source_exactly_once() -> None:
     """Test partition consumes source exactly once."""
     spy = Spy(range(6))
-    falsy, truthy = partition(lambda n: n % 2, spy)
+    falsy, truthy = partition(spy, lambda n: n % 2)
     assert spy.count == 0  # nothing read until a side is pulled (lazy)
     assert list(falsy) == [0, 2, 4]
     assert list(truthy) == [1, 3, 5]
@@ -283,7 +302,7 @@ def test_partition_consumes_source_exactly_once() -> None:
 
 def test_partition_is_lazy_on_infinite_source() -> None:
     """Test partition is lazy on infinite source."""
-    _, truthy = partition(lambda n: n % 2, count())
+    _, truthy = partition(count(), lambda n: n % 2)
     assert take(truthy, 3) == [1, 3, 5]
 
 
