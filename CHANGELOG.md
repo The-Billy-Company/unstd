@@ -115,6 +115,8 @@ and each old name fails at import rather than changing meaning in place.
 - `ndjson.dumps` joins orjson's row bytes and decodes once, and a text-mode
   `dump` decodes each row's bytes rather than re-entering `jsonx.dumps`: ~20%
   on both (399 → 317 µs and 547 → 421 µs per 1k rows).
+- `clone.asdict` tests dict keys and values for atoms inline instead of paying a
+  call per leaf: 5.2 → 3.8 µs on a dict-heavy record.
 
 ### Fixed
 

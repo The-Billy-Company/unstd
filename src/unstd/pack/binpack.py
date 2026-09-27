@@ -149,11 +149,10 @@ def pack_array(dtype: DTypeLike, seq: Iterable[float]) -> bytes:
     the equivalent stdlib ``struct.pack`` — byte-identical output either way.
     """
     if _HAVE_NUMPY:
-        dt = np.dtype(dtype)
         arr = (
-            np.asarray(seq, dtype=dt)
+            np.asarray(seq, dtype=dtype)
             if hasattr(seq, "__len__")
-            else np.fromiter(seq, dtype=dt)
+            else np.fromiter(seq, dtype=dtype)
         )
         return arr.tobytes()
     order, char, _ = _struct_spec(dtype)

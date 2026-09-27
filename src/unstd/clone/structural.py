@@ -233,7 +233,12 @@ def _plain(o: Any) -> Any:
     if t in _ATOMS:
         return o
     if t is dict:
-        return {_plain(k): _plain(v) for k, v in o.items()}
+        return {
+            (k if type(k) is str else _plain(k)): (
+                v if type(v) in _ATOMS else _plain(v)
+            )
+            for k, v in o.items()
+        }
     if t is list:
         return [v if type(v) in _ATOMS else _plain(v) for v in o]
     if t is tuple:
