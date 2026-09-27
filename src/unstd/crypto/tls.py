@@ -54,8 +54,10 @@ def client_context(
     ``create_default_context`` defaults, restated here so a future edit has to
     argue with them). *cafile* pins a private root, which is how a self-signed
     sidecar certificate is trusted without weakening the public path. Passing
-    *certfile* + *keyfile* turns it into mTLS; either one alone is not mTLS and
-    loads no chain, rather than half of one.
+    *certfile* turns it into mTLS — with *keyfile* beside it, or alone when the
+    PEM carries its own key, the usual bundle shape. A *keyfile* with no
+    certificate raises: a client that asked for mTLS must never quietly dial
+    without it and fail at the peer's handshake instead.
 
     *minimum_version* is the one dial, and it stops at
     :data:`LEGACY_MINIMUM_VERSION` — TLS 1.0 and 1.1 raise rather than quietly
@@ -66,9 +68,12 @@ def client_context(
     if minimum_version < _FLOOR:
         msg = f"TLS floor {minimum_version.name} is below {_FLOOR.name}; it will not be honored here"
         raise ValueError(msg)
+    if keyfile and not certfile:
+        msg = "keyfile without certfile is not mTLS; pass the certificate it belongs to"
+        raise ValueError(msg)
     ctx = ssl.create_default_context(cafile=cafile)
     ctx.minimum_version = minimum_version
-    if certfile and keyfile:
+    if certfile:
         ctx.load_cert_chain(certfile=certfile, keyfile=keyfile)
     return ctx
 

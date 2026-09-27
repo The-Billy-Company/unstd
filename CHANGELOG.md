@@ -67,6 +67,9 @@ and each old name fails at import rather than changing meaning in place.
 - `unstd.crypto` no longer re-exports the `blake3` class; it was the backend,
   not a surface. The guard moved into `digest` / `token`, so `crypto.tls` - pure
   stdlib - now imports on a base install instead of failing on a missing BLAKE3.
+- `crypto.tls.client_context(certfile=...)` alone loads the chain, which is the
+  combined cert-plus-key PEM most bundles ship as; it used to be ignored and the
+  client dialed without mTLS. A `keyfile` with no `certfile` raises `ValueError`.
 
 ### Performance
 

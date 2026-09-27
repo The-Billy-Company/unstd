@@ -309,15 +309,19 @@ class TestTlsPolicy:
         with pytest.raises(ssl.SSLError):
             tls.client_context(certfile=str(cert_pem), keyfile=str(other_key))
 
-    def test_half_configured_mtls_yields_a_plain_verifying_context(self, tmp_path):
-        """One half alone is not mTLS. It must not load a partial chain, and it
-        must not raise either — the caller gets the ordinary verifying policy.
+    def test_combined_pem_certfile_alone_is_mtls(self, tmp_path):
+        """A PEM carrying both certificate and key is the common bundle shape, so
+        certfile alone must load it. The old contract dropped it on the floor, and
+        the client dialed without mTLS until the peer refused the handshake.
         """
-        cert_pem, key_pem = _self_signed(tmp_path, "unstd-test-half")
-        for kwargs in ({"certfile": str(cert_pem)}, {"keyfile": str(key_pem)}):
-            ctx = tls.client_context(**kwargs)
-            assert ctx.minimum_version is tls.MINIMUM_VERSION
-            assert ctx.verify_mode.name == "CERT_REQUIRED"
+        cert_pem, key_pem = _self_signed(tmp_path, "unstd-test-bundle")
+        bundle = tmp_path / "bundle.pem"
+        bundle.write_bytes(cert_pem.read_bytes() + key_pem.read_bytes())
+        ctx = tls.client_context(certfile=str(bundle))
+        assert ctx.verify_mode.name == "CERT_REQUIRED"
+        # A certificate with no key anywhere is a real half-chain, and says so.
+        with pytest.raises(ssl.SSLError):
+            tls.client_context(certfile=str(cert_pem))
 
     def test_tls_imports_without_blake3_and_digest_names_the_extra(self, monkeypatch):
         """``tls`` is pure stdlib, so a missing BLAKE3 must not take it down with the digest."""
@@ -327,6 +331,11 @@ class TestTlsPolicy:
         assert importlib.import_module("unstd.crypto.tls").client_context()
         with pytest.raises(ImportError, match="'crypto' extra"):
             importlib.import_module("unstd.crypto.digest")
+
+    def test_keyfile_without_certfile_is_refused(self, tmp_path):
+        _, key_pem = _self_signed(tmp_path, "unstd-test-half")
+        with pytest.raises(ValueError, match="keyfile without certfile"):
+            tls.client_context(keyfile=str(key_pem))
 
 
 class TestRoundTripProperties:
