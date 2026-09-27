@@ -55,6 +55,9 @@ and each old name fails at import rather than changing meaning in place.
   it never batched. Its module is `iters.consecutive`.
 - `iters.partition(iterable, pred)` takes the iterable first, like every other
   combinator in `iters`. The old order raises `TypeError` at the call.
+- `serde.ndjson.read(fp)` / `write(fp, rows)` → `load(fp)` / `dump(rows, fp)`,
+  the same shape as `jsonx.dump(obj, fp)` and `toml.dump(obj, fp)`. `dump` still
+  returns the record count.
 - `toml`'s write half is `tomlkit`'s own functions rather than wrappers around
   them, so `dumps` / `dump` accept `sort_keys=` and each name carries tomlkit's
   types. On a base install each is a placeholder that raises naming the extra,
@@ -107,6 +110,9 @@ and each old name fails at import rather than changing meaning in place.
   values and split with `compress` - so `pred` runs once per element instead of
   once per side: 533 → 459 µs on 10k items with a trivial predicate, and half the
   predicate calls whatever it costs.
+- `ndjson.dumps` joins orjson's row bytes and decodes once, and a text-mode
+  `dump` decodes each row's bytes rather than re-entering `jsonx.dumps`: ~20%
+  on both (399 → 317 µs and 547 → 421 µs per 1k rows).
 
 ### Fixed
 

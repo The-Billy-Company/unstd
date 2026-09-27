@@ -148,7 +148,8 @@ raw = ndjson.dumpb(rows)  # -> bytes
 rows = ndjson.loads(text)  # whole blob -> list
 for row in ndjson.iter_loads(fp):  # lazy, never materializes the file
     ...
-n = ndjson.write(fp, rows)  # streams; text/binary/gzip handles
+n = ndjson.dump(rows, fp)  # streams; text/binary/gzip handles
+rows = ndjson.load(fp)  # every record -> list
 ```
 
 Every record is newline-terminated (append-safe). Blank lines are skipped on

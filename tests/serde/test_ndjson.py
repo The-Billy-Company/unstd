@@ -215,19 +215,19 @@ def test_iter_loads_does_not_read_past_a_failure() -> None:
 # ── file objects ────────────────────────────────────────────────────────────
 
 
-def test_write_to_a_text_handle_returns_the_record_count() -> None:
+def test_dump_to_a_text_handle_returns_the_record_count() -> None:
     buf = io.StringIO()
-    assert ndjson.write(buf, ROWS) == len(ROWS)
+    assert ndjson.dump(ROWS, buf) == len(ROWS)
     assert buf.getvalue() == _oracle(ROWS)
 
 
-def test_write_to_a_binary_handle_returns_the_record_count() -> None:
+def test_dump_to_a_binary_handle_returns_the_record_count() -> None:
     buf = io.BytesIO()
-    assert ndjson.write(buf, ROWS) == len(ROWS)
+    assert ndjson.dump(ROWS, buf) == len(ROWS)
     assert buf.getvalue() == _oracle(ROWS).encode()
 
 
-def test_write_streams_rather_than_buffering_the_corpus() -> None:
+def test_dump_streams_rather_than_buffering_the_corpus() -> None:
     """Each record must reach the handle as it is produced, not at the end."""
     seen: list[int] = []
 
@@ -239,34 +239,34 @@ def test_write_streams_rather_than_buffering_the_corpus() -> None:
     def source() -> object:
         yield from ROWS
 
-    ndjson.write(Counting(), source())
+    ndjson.dump(source(), Counting())
     assert len(seen) == len(ROWS)
 
 
-def test_read_round_trips_through_both_handle_flavours() -> None:
-    assert ndjson.read(io.StringIO(_oracle(ROWS))) == ROWS
-    assert ndjson.read(io.BytesIO(_oracle(ROWS).encode())) == ROWS
+def test_load_round_trips_through_both_handle_flavours() -> None:
+    assert ndjson.load(io.StringIO(_oracle(ROWS))) == ROWS
+    assert ndjson.load(io.BytesIO(_oracle(ROWS).encode())) == ROWS
 
 
-def test_read_honours_skip_errors() -> None:
+def test_load_honours_skip_errors() -> None:
     handle = io.StringIO('{"a":1}\n{bad}\n{"c":3}\n')
-    assert ndjson.read(handle, skip_errors=True) == [{"a": 1}, {"c": 3}]
+    assert ndjson.load(handle, skip_errors=True) == [{"a": 1}, {"c": 3}]
 
 
 def test_gzip_handles_round_trip_in_both_modes(tmp_path: Path) -> None:
     """``write`` names gzip as a target, so both of its modes are contract."""
     path = tmp_path / "rows.jsonl.gz"
     with gzip.open(path, "wb") as out:
-        assert ndjson.write(out, ROWS) == len(ROWS)
+        assert ndjson.dump(ROWS, out) == len(ROWS)
     with gzip.open(path, "rb") as handle:
-        assert ndjson.read(handle) == ROWS
+        assert ndjson.load(handle) == ROWS
     with gzip.open(path, "wt") as out:  # TextIOWrapper — the text branch
-        assert ndjson.write(out, ROWS) == len(ROWS)
+        assert ndjson.dump(ROWS, out) == len(ROWS)
     with gzip.open(path, "rt") as handle:
-        assert ndjson.read(handle) == ROWS
+        assert ndjson.load(handle) == ROWS
 
 
-def test_write_requires_a_real_textiobase_for_str_output() -> None:
+def test_dump_requires_a_real_textiobase_for_str_output() -> None:
     """The text branch is selected by type, not by duck-typing.
 
     A str-only sink that is not an ``io.TextIOBase`` takes the bytes branch and
@@ -281,7 +281,7 @@ def test_write_requires_a_real_textiobase_for_str_output() -> None:
             return len(s)
 
     with pytest.raises(TypeError):
-        ndjson.write(StrOnlySink(), ROWS)  # type: ignore[arg-type]
+        ndjson.dump(ROWS, StrOnlySink())  # type: ignore[arg-type]
 
 
 # ── the one-comprehension fast path answers exactly what the line walk does ────

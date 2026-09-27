@@ -13,13 +13,13 @@ so NDJSON inherits jsonx's backend + stdlib fallback transparently.
 
 Conventions:
 
-- **Trailing newline per record.** ``dumps``/``dumpb``/``write`` terminate
+- **Trailing newline per record.** ``dumps``/``dumpb``/``dump`` terminate
   *every* line — including the last — so the output is append-safe (a following
   writer starts on a fresh line) and matches the ``json.dumps(x) + "\\n"``
   idiom the migrated call-sites produced.
 - **Blank lines are skipped** on read (interior *and* trailing), so a file with
   a trailing newline round-trips cleanly.
-- **Malformed lines are strict by default** — ``iter_loads``/``loads``/``read``
+- **Malformed lines are strict by default** — ``iter_loads``/``loads``/``load``
   raise :class:`NDJSONDecodeError` tagged with the 1-based line number. Pass
   ``skip_errors=True`` for the lenient "drop the bad line, keep the rest" mode
   some tolerant readers want.
@@ -41,18 +41,25 @@ if TYPE_CHECKING:
 
 __all__ = [
     "NDJSONDecodeError",
+    "dump",
     "dumpb",
     "dumps",
     "iter_loads",
+    "load",
     "loads",
-    "read",
-    "write",
 ]
 
 
-# The backend decoder itself — `jsonx.loads` minus its per-call kwarg dispatch,
-# which a line-at-a-time reader would otherwise pay once per record.
+# The backend codec itself — `jsonx.loads` minus its per-call kwarg dispatch,
+# which a line-at-a-time reader would otherwise pay once per record — and the
+# package's own newline-terminated row encoder.
 _parse = jsonx._decode if jsonx._HAVE_ORJSON else jsonx.loads
+_line = jsonx._line
+
+
+def _text_line(row: object) -> str:
+    """One newline-terminated record as ``str`` — orjson's own line bytes decoded once, ~20% under a ``jsonx.dumps`` plus concatenation."""
+    return _line(row).decode() if jsonx._HAVE_ORJSON else f"{jsonx.dumps(row)}\n"
 
 
 class NDJSONDecodeError(ValueError):
@@ -66,13 +73,15 @@ class NDJSONDecodeError(ValueError):
 
 
 def dumps(rows: Iterable[object]) -> str:
-    """Serialize *rows* to an NDJSON ``str`` — one ``jsonx.dumps`` per newline-terminated line."""
-    return "".join(f"{jsonx.dumps(r)}\n" for r in rows)
+    """Serialize *rows* to an NDJSON ``str`` — one compact, newline-terminated line each."""
+    if jsonx._HAVE_ORJSON:  # join the bytes, decode the blob once
+        return dumpb(rows).decode()
+    return "".join(map(_text_line, rows))
 
 
 def dumpb(rows: Iterable[object]) -> bytes:
-    """Serialize *rows* straight to NDJSON ``bytes`` (``jsonx.dumpb``) for file/socket writes."""
-    return b"".join(map(jsonx._line, rows))  # the package's own row encoder
+    """Serialize *rows* straight to NDJSON ``bytes`` for file/socket writes."""
+    return b"".join(map(_line, rows))
 
 
 def iter_loads(
@@ -125,27 +134,26 @@ def loads(text: str | bytes, *, skip_errors: bool = False) -> list[Json]:
     return list(iter_loads(lines, skip_errors=skip_errors))
 
 
-def write(fp: io.TextIOBase | IO[bytes], rows: Iterable[object]) -> int:
+def dump(rows: Iterable[object], fp: io.TextIOBase | IO[bytes]) -> int:
     """Write *rows* as NDJSON to file object *fp*; returns the number of records written.
 
-    Streams row-by-row (no full-corpus buffering) and picks ``bytes`` vs ``str``
-    output from whether *fp* is a text handle — so it serves both
-    ``open(p, "w")`` and ``open(p, "wb")`` / ``gzip.open`` (the ``jsonx.dump``
-    twin, plural + counting).
+    The ``jsonx.dump(obj, fp)`` twin, plural and counting. Streams row by row (no
+    full-corpus buffering) and picks ``bytes`` vs ``str`` output from whether *fp*
+    is a text handle — so it serves ``open(p, "w")`` and ``open(p, "wb")`` /
+    ``gzip.open`` alike.
     """
     n = 0
     if isinstance(fp, io.TextIOBase):
         for row in rows:
-            fp.write(f"{jsonx.dumps(row)}\n")
+            fp.write(_text_line(row))
             n += 1
     else:
-        line = jsonx._line  # the package's own row encoder
         for row in rows:
-            fp.write(line(row))
+            fp.write(_line(row))
             n += 1
     return n
 
 
-def read(fp: IO[str] | IO[bytes], *, skip_errors: bool = False) -> list[Json]:
+def load(fp: IO[str] | IO[bytes], *, skip_errors: bool = False) -> list[Json]:
     """Read every NDJSON record from file object *fp* into a ``list`` (the ``jsonx.load`` twin)."""
     return list(iter_loads(fp, skip_errors=skip_errors))
