@@ -58,6 +58,8 @@ and each old name fails at import rather than changing meaning in place.
 - `serde.ndjson.read(fp)` / `write(fp, rows)` → `load(fp)` / `dump(rows, fp)`,
   the same shape as `jsonx.dump(obj, fp)` and `toml.dump(obj, fp)`. `dump` still
   returns the record count.
+- `timeutil.now_tz(tz)` requires its zone. Called bare it was a second spelling
+  of `utcnow()`.
 - `toml`'s write half is `tomlkit`'s own functions rather than wrappers around
   them, so `dumps` / `dump` accept `sort_keys=` and each name carries tomlkit's
   types. On a base install each is a placeholder that raises naming the extra,

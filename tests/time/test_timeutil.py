@@ -232,9 +232,11 @@ def test_utcnow_is_aware_and_utc() -> None:
     assert now.utcoffset() == timedelta(0)
 
 
-def test_now_tz_defaults_to_utc_and_honours_an_explicit_zone() -> None:
-    assert timeutil.now_tz().utcoffset() == timedelta(0)
+def test_now_tz_honours_its_zone_and_requires_one() -> None:
+    """UTC now has one spelling, :data:`utcnow` — ``now_tz`` is for a named zone."""
     assert timeutil.now_tz(TOKYO).utcoffset() == timedelta(hours=9)
+    with pytest.raises(TypeError):
+        timeutil.now_tz()  # type: ignore[call-arg]
 
 
 def test_now_tz_and_utcnow_describe_the_same_instant() -> None:

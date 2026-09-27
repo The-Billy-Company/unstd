@@ -115,9 +115,9 @@ utcnow = partial(datetime.now, UTC)
 """The current instant as a UTC-aware datetime (never naive) — ``datetime.now(UTC)``, pre-bound."""
 
 
-def now_tz(tz: tzinfo | None = None) -> datetime:
-    """The current aware datetime in *tz* (UTC when omitted)."""
-    return datetime.now(tz or UTC)
+def now_tz(tz: tzinfo) -> datetime:
+    """The current aware datetime in *tz*. UTC now is :data:`utcnow`."""
+    return datetime.now(tz)
 
 
 def today(*, utc: bool = False) -> date:
