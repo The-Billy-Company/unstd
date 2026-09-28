@@ -144,6 +144,33 @@ and each old name fails at import rather than changing meaning in place.
   is now opened at `0o666` so the kernel applies the umask, and an existing
   destination's mode is still copied over.
 
+- `rex` accepts its own compiled patterns. On the irgx path `rex.compile(p)` and
+  `rex.search(p, s)` raised `TypeError` for a `p` this module had just returned,
+  because only stdlib's `re.Pattern` was recognized; stdlib takes either.
+- `rex.purge` clears irgx's pattern cache too, not just stdlib's.
+- A pattern irgx declines (backreferences, lookaround) is no longer re-attempted
+  on every call. irgx caches what it compiles, not what it refuses, so each
+  `rex.search(r"(\w+)\s+\1", ...)` paid a full compile attempt plus a raise -
+  about 1.8 ms, against 0.2 µs for stdlib.
+
+### Changed
+
+- `rex` keeps a bounded front cache like stdlib's `re._cache`, and hands flags to
+  irgx as its keyword arguments instead of building an inline `(?imsx-u)` prefix
+  through `RegexFlag` arithmetic. A module-level `rex.search` drops from ~5 µs to
+  ~0.8 µs - now twice as fast as `re.search` - and a compiled pattern's
+  `.pattern` is the caller's source again rather than carrying the prefix.
+- `rex.findall` rewrites irgx's `None` for an absent group only when one is
+  actually present, found by a C-level containment scan instead of rebuilding
+  every row. A two-group `findall` over 10 KB drops from ~940 µs to ~240 µs.
+- The `rex` extra requires `irregex>=2.6.0`. Below it, a replacement template's
+  octal escapes (`\07`, `\101`) and unknown non-letter escapes rendered different
+  text than stdlib with no error; 2.6.0 reads them the way `re` does. It also
+  makes a group-reading `rex.sub` and a grouped `rex.split` one call into the
+  engine instead of one per match, and stops a capped `subn`/`split` walking past
+  its cap - on 10 KB, templated `sub` goes from ~7x slower than `re.sub` to
+  about even, and `subn(..., count=5)` from ~130x to ~1.7x.
+
 ## [1.1.0] - 2026-09-27
 
 ### Fixed

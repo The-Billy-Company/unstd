@@ -72,9 +72,9 @@ all three, faithfully, which is the one measurable behavior win of the swap:
 
 | Family            | How it is honored                                                                 |
 | ----------------- | --------------------------------------------------------------------------------- |
-| `re.VERBOSE`      | inline `(?x)`; class trivia is **not** stripped, matching stdlib rather than rg    |
-| `re.ASCII`        | inline `(?-u)`, which restricts `\w \d \s \b` and `.` to ASCII exactly as `A` does |
-| `bytes` patterns  | compiled with `(?-u)` so classes stay byte-oriented — stdlib's own rule for bytes  |
+| `re.VERBOSE`      | `verbose=True`; class trivia is **not** stripped, matching stdlib rather than rg        |
+| `re.ASCII`        | `unicode=False`, which restricts `\w \d \s \b` and `.` to ASCII exactly as `A` does     |
+| `bytes` patterns  | compiled with `unicode=False` so classes stay byte-oriented — stdlib's own rule for bytes |
 
 The `bytes` case is the one worth knowing about: irgx reads a subject as UTF-8 by
 default, so without that negation `rb"\w+"` would swallow `café` whole where
@@ -87,15 +87,20 @@ exactly that reason.
 `irgx.error` never escapes (a pattern irgx refuses — declined or malformed — is
 re-compiled on `re`, which raises `re.error` for the malformed case), so `except
 rex.error` keeps catching every compile failure. Compiled objects mirror
-`re.Pattern`/`re.Match` on both backends. Flags are honored by translating
-`I`/`M`/`S`/`X` into a leading inline `(?imsx)` group plus `A` into its negated
-`-u` half, since irgx takes no `flags=` argument.
+`re.Pattern`/`re.Match` on both backends, and either one is accepted wherever a
+pattern string is. Flags are honored by translating the stdlib bitmask into
+irgx's keyword flags (`ignore_case` / `multiline` / `dotall` / `verbose`, and
+`A` as `unicode=False`).
 
-Two projections are adapted so the drop-in claim holds: `findall` rewrites irgx's
+Compiles are cached like stdlib's own `re._cache` — bounded at 512, oldest out —
+so a module-level call is one dict lookup. That cache is also the only memory of
+a pattern irgx *declined*: irgx caches what it compiles, not what it refuses, so
+without it every `rex.search(r"(\w+)\s+\1", …)` would re-attempt the compile and
+raise, about 1.8 ms a call. `purge` clears it along with both backends' caches.
+
+One projection is adapted so the drop-in claim holds: `findall` rewrites irgx's
 `None` for a non-participating group to stdlib's `""` (`.groups()` already
-reports `None` on both, so nothing else needed it), and `finditer` is handed back
-through `iter()` because irgx answers the whole sequence eagerly while stdlib's
-contract is a lazy iterator.
+reports `None` on both, so nothing else needed it).
 
 | Divergence                                    | Behavior                                                                                                                                                                |
 | --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -103,7 +108,7 @@ contract is a lazy iterator.
 | Flag irgx can't honor (`L` / `DEBUG`)          | Degrades to stdlib `re`                                                                                                                                                 |
 | **`$` is the absolute end of the text**       | Stdlib follows Perl and also matches before a final `\n`; irgx follows Rust's `regex` and Go's `regexp` and does not. `(?m)…$`, `…\Z`, or stripping the newline all agree |
 | **POSIX bracket expressions**                 | `[[:alpha:]]` is a real class to irgx and a nested-set typo to stdlib. Keep patterns inside the shared grammar                                                           |
-| irgx-path `.pattern` / `.flags`               | `.pattern` carries the inline `(?imsx-u)` prefix we prepend; `.flags` reflects irgx's bookkeeping. Match _behavior_ is identical — only these cosmetic attributes differ  |
+| irgx-path `.flags`                            | Reflects irgx's bookkeeping rather than the stdlib bitmask. Match _behavior_ is identical — only this cosmetic attribute differs                                           |
 | `re.UNICODE` on the irgx path                 | No-op (irgx is UTF-8-native for `str`). Deliberately **not** mapped to inline `(?U)`, which swaps greediness in this lineage                                             |
 | Callable `repl` in `sub` / `subn`             | Receives the active backend's match object, so `sub`/`subn` type it as either. Interchangeable for `group`/`groups`/`groupdict`/`span`/`expand`/`start`/`end`; `.pos` and `.endpos` are stdlib-only |
 | `bytearray` / `memoryview` pattern            | Refused with `TypeError`, as stdlib refuses it — irgx would compile it, and being a **superset** of the twin is a divergence too                                          |

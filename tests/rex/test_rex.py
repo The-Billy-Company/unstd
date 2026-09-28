@@ -106,6 +106,83 @@ def test_escape_is_stdlib_re_escape() -> None:
     assert rex.search(rex.escape(hostile), f"x{hostile}y") is not None
 
 
+def test_compiled_pattern_is_accepted_wherever_a_pattern_string_is() -> None:
+    """``rex``'s own compiled object round-trips through every verb, as ``re``'s does.
+
+    Adverse on the irgx path: the object is irgx's, not ``re.Pattern``, so a
+    check that only recognizes stdlib's class hands it to ``re.compile``, which
+    raises ``TypeError`` for a value this very module returned.
+    """
+    rx = rex.compile(r"a+")
+    assert rex.compile(rx) is rx
+    hit = rex.search(rx, "caat")
+    assert hit is not None
+    assert hit.span() == (1, 3)
+    assert rex.findall(rx, "a aa") == ["a", "aa"]
+    assert rex.sub(rx, "-", "baab") == "b-b"
+    with pytest.raises(ValueError, match="flags"):
+        rex.compile(rx, rex.IGNORECASE)  # stdlib's refusal, on either backend
+
+
+def test_compiled_pattern_keeps_the_source_it_was_given() -> None:
+    """``.pattern`` is the caller's pattern, flags travel beside it, not inside it."""
+    for pattern, flags in ((r"cat$", rex.I | rex.M), (rb"\w+", 0), (r"\w+", rex.A)):
+        assert rex.compile(pattern, flags).pattern == pattern
+
+
+def test_purge_clears_every_cache(monkeypatch: pytest.MonkeyPatch) -> None:
+    """``purge`` reaches ours and irgx's too — ``re.purge`` alone would leave both warm."""
+    rex.compile(r"warm")
+    calls: list[str] = []
+    monkeypatch.setattr(re, "purge", lambda: calls.append("re"))
+    if rex._HAVE_IRGX:
+        monkeypatch.setattr(rex._irgx, "purge", lambda: calls.append("irgx"))
+    rex.purge()
+    assert calls == (["re", "irgx"] if rex._HAVE_IRGX else ["re"])
+    assert not rex._cache
+
+
+@pytest.mark.skipif(not rex._HAVE_IRGX, reason="backend absent — nothing is declined")
+def test_declined_pattern_is_not_re_attempted(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A declined pattern is remembered by ``rex``, since irgx caches only successes.
+
+    A refusal costs a whole compile attempt plus a raise (milliseconds, against
+    stdlib's sub-microsecond cache hit), so re-attempting on every module-level
+    call makes a backreference pattern thousands of times slower than ``re``.
+    """
+    rex.purge()
+    attempts: list[object] = []
+    real = rex._irgx.compile
+
+    def counting(pattern: str | bytes, **flags: bool) -> object:
+        attempts.append(pattern)
+        return real(pattern, **flags)
+
+    monkeypatch.setattr(rex._irgx, "compile", counting)
+    for _ in range(3):
+        assert rex.search(r"(\w+)\s+\1", "hi hi") is not None
+        assert rex.search(r"a+", "caat") is not None
+    assert attempts == [r"(\w+)\s+\1", r"a+"]
+
+
+def test_flag_enum_and_its_int_share_one_entry() -> None:
+    """``rex.I`` and ``2`` are the same flags, so they are the same compiled object."""
+    rex.purge()
+    assert rex.compile(r"x", rex.I | rex.M) is rex.compile(r"x", int(rex.I | rex.M))
+    assert len(rex._cache) == 1
+
+
+def test_cache_is_bounded(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Untrusted patterns must not grow the cache without limit."""
+    rex.purge()
+    monkeypatch.setattr(rex, "_MAXCACHE", 8)
+    for n in range(20):
+        rex.compile(rf"p{n}")
+    assert len(rex._cache) == 8
+    assert (str, r"p19", 0) in rex._cache  # newest kept, oldest evicted
+    assert (str, r"p0", 0) not in rex._cache
+
+
 def test_unicode_flag_does_not_flip_greediness() -> None:
     # Regression guard for the inline mapping: re.UNICODE must NOT become inline
     # `(?U)` (which swaps greediness in this lineage). `a+` stays greedy → full run.
@@ -124,6 +201,8 @@ def test_findall_reports_absent_group_as_empty_string_like_stdlib() -> None:
     """
     assert rex.findall(r"(a)|(b)", "ab") == re.findall(r"(a)|(b)", "ab")
     assert rex.findall(rb"(a)|(b)", b"ab") == re.findall(rb"(a)|(b)", b"ab")
+    # One group: the row is the group itself, so an absent one is a bare `None`.
+    assert rex.findall(r"(a)?b", "b ab") == re.findall(r"(a)?b", "b ab") == ["", "a"]
     mine, theirs = rex.search(r"(a)|(b)", "b"), re.search(r"(a)|(b)", "b")
     assert mine is not None
     assert theirs is not None
@@ -277,6 +356,29 @@ def test_by_value_escapes_match_stdlib_re_on_the_linear_path(
     assert not isinstance(rex.compile(pattern), re.Pattern)
     assert rex.findall(pattern, text) == re.findall(pattern, text)
     assert bool(rex.search(pattern, text)) is bool(re.search(pattern, text)) is True
+
+
+@pytest.mark.skipif(not rex._HAVE_IRGX, reason="backend absent — everything degrades")
+def test_templates_groups_and_caps_match_stdlib_re_on_the_linear_path() -> None:
+    r"""What the ``irregex>=2.6.0`` floor buys ``sub``/``split``, pinned against stdlib.
+
+    Below it, a template's octal escapes (``\07``, ``\101``) and unknown escapes
+    (``\ ``) rendered different text than stdlib with no error; grouped and capped
+    ``sub``/``split`` answered right but slower. Every pattern here is inside the
+    linear grammar, so the irgx arm is the one answering.
+    """
+    groups = "(a)(b)(c)(d)(e)(f)(g)(h)(i)(j)(k)(l)"
+    assert not isinstance(rex.compile(groups), re.Pattern)
+    for template in (r"\07", r"\0123", r"\101", r"\123", r"\128", r"\ ", r"\g<12>\1"):
+        assert rex.sub(groups, template, "abcdefghijkl") == re.sub(
+            groups, template, "abcdefghijkl"
+        )
+    pattern, text = r"(\w+)=(\w+)?", "clé=vâl; a=; ñ=δ"
+    for n in range(4):
+        assert rex.subn(pattern, r"\2=\1", text, n) == re.subn(
+            pattern, r"\2=\1", text, count=n
+        )
+        assert rex.split(pattern, text, n) == re.split(pattern, text, maxsplit=n)
 
 
 @pytest.mark.parametrize("pattern", [bytearray(rb"\d+"), memoryview(rb"\d+")])

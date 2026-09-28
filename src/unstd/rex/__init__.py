@@ -48,20 +48,23 @@ Faithfulness contract — what stays identical to stdlib ``re``:
 - Compiled objects and match objects: irgx's ``Pattern`` / ``Match`` mirror
   ``re.Pattern`` / ``re.Match`` (``.search``/``.match``/``.sub``/``.groups``/
   ``.groupdict``/…), so a compiled pattern is drop-in on either backend.
-- Flags are honored by translating ``I``/``M``/``S``/``X`` into a leading inline
-  ``(?imsx)`` group, and ``A`` into the same group's negated half (``-u``), since
-  irgx takes no ``flags=`` argument. ``A`` and ``(?-u)`` agree exactly: both
-  restrict ``\\w \\d \\s \\b`` and ``.`` to ASCII.
-- ``bytes`` patterns ride the irgx path, compiled with ``(?-u)`` so classes are
-  byte-oriented — which *is* stdlib's rule for a ``bytes`` pattern. Without that
-  negation irgx would read the subject as UTF-8 and ``\\w+`` would swallow
+- Flags are honored by translating the stdlib bitmask into irgx's keyword flags:
+  ``I``/``M``/``S``/``X`` → ``ignore_case``/``multiline``/``dotall``/``verbose``,
+  and ``A`` → ``unicode=False``, which restricts ``\\w \\d \\s \\b`` and ``.`` to
+  ASCII exactly as ``A`` does.
+- ``bytes`` patterns ride the irgx path, compiled with ``unicode=False`` so
+  classes are byte-oriented — which *is* stdlib's rule for a ``bytes`` pattern.
+  Without it irgx would read the subject as UTF-8 and ``\\w+`` would swallow
   ``café``'s tail where stdlib stops at ``caf``.
+- A compiled pattern from either backend is accepted wherever a pattern string
+  is, and ``purge`` clears every cache.
+- Compiles are cached like stdlib's own ``re._cache`` (bounded, oldest out), so
+  a module-level call is one dict lookup — including for a pattern irgx
+  *declined*, which irgx itself does not remember and would re-attempt at the
+  cost of a full compile plus a raise.
 - ``findall``'s non-participating groups are rewritten from irgx's ``None`` to
   stdlib's ``""`` (``.groups()`` already reports ``None`` in both libraries, so
   only this one projection needed adapting).
-- ``finditer`` is handed back through ``iter()``: irgx answers the whole match
-  sequence eagerly, and stdlib's contract is an *iterator*, so a caller holding
-  one and calling ``next()`` behaves the same either way.
 
 Divergences (deliberate, documented, pinned as tests):
 
@@ -80,10 +83,9 @@ Divergences (deliberate, documented, pinned as tests):
   character class to irgx and a nested-set typo to stdlib (which reads it as
   ``[`` ``:`` ``a`` ``l`` ``p`` ``h`` and warns). Also inherited from the RE2
   era, and the reason to keep patterns inside the shared grammar.
-- **On the irgx path a compiled pattern's ``.pattern`` carries the inline
-  ``(?imsx-u)`` prefix** we prepend, and ``.flags`` reflects irgx's own
-  bookkeeping rather than the stdlib bitmask. Match *behavior* is identical;
-  only these cosmetic attributes differ from what stdlib would report.
+- **On the irgx path a compiled pattern's ``.flags`` reflects irgx's own
+  bookkeeping** rather than the stdlib bitmask. Match *behavior* is identical;
+  only that cosmetic attribute differs from what stdlib would report.
 - **``re.UNICODE`` is a no-op on the irgx path** (irgx is UTF-8-native for
   ``str`` input). It is *not* mapped to inline ``(?U)`` — there ``(?U)`` swaps
   greediness, a different meaning entirely.
@@ -99,6 +101,8 @@ we ship stopped making sense.
 
 from __future__ import annotations
 
+from contextlib import suppress
+from itertools import repeat
 import re as _re
 from re import (  # faithful re-export of the flag + type vocabulary
     ASCII,
@@ -121,9 +125,8 @@ from re import (  # faithful re-export of the flag + type vocabulary
     U,
     X,
     escape,
-    purge,
 )
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Final
 
 
 if TYPE_CHECKING:
@@ -131,13 +134,16 @@ if TYPE_CHECKING:
 
     import irgx as _irgx
 
-    _HAVE_IRGX = True
+    _HAVE_IRGX: Final = True
 
     # irgx's compiled/match types (they deliberately mirror `re.Pattern` /
     # `re.Match`) — named here so the public unions below stay honest without
     # pretending the irgx objects nominally *are* the stdlib classes.
     type _IrgxPattern = _irgx.Pattern
     type _IrgxMatch = _irgx.Match
+    # What every module-level verb accepts as `pattern`: stdlib's own
+    # `str | Pattern` union, widened by the compiled object this module returns.
+    type _Source[AnyStr: (str, bytes)] = AnyStr | Pattern[AnyStr] | _IrgxPattern
 else:
     try:
         import irgx as _irgx
@@ -187,56 +193,43 @@ __all__ = [
     "subn",
 ]
 
-# irgx takes no `flags=` argument, so a bitmask is translated into one leading
-# inline group. `i`/`m`/`s`/`x` are the positive half; ASCII is the negation of
-# irgx's default Unicode mode, so it lands in the same group's `-u` half. NB we
-# deliberately do NOT map re.UNICODE to `(?U)`: there `(?U)` swaps greediness.
-_INLINE_FLAGS: tuple[tuple[int, str], ...] = (
-    (IGNORECASE, "i"),
-    (MULTILINE, "m"),
-    (DOTALL, "s"),
-    (VERBOSE, "x"),
-)
-
-# Flags irgx can honor without changing semantics: the four inline-mappable ones,
-# ASCII (via `-u`), plus UNICODE (irgx's default for `str`, so a no-op) and
+# Flags irgx can honor without changing semantics: the four with a keyword twin,
+# ASCII (`unicode=False`), plus UNICODE (irgx's default for `str`, so a no-op) and
 # NOFLAG (0). Only LOCALE and DEBUG carry semantics irgx has no spelling for, so
-# a pattern that sets either degrades to stdlib `re`.
+# a pattern that sets either degrades to stdlib `re`. NB re.UNICODE is deliberately
+# NOT inline `(?U)`: there `(?U)` swaps greediness.
 _HONORED = IGNORECASE | MULTILINE | DOTALL | VERBOSE | ASCII | UNICODE
 
-
-def _inline_prefix(flags: int, *, ascii_classes: bool) -> str:
-    """Render `flags` as irgx's leading inline group, or ``""`` if none apply."""
-    on = "".join(token for bit, token in _INLINE_FLAGS if flags & bit)
-    off = "u" if ascii_classes else ""
-    return f"(?{on}-{off})" if off else f"(?{on})" if on else ""
+# Front cache over both backends, keyed like stdlib's own `re._cache`. It is what
+# makes a module-level call one dict lookup, and it is the only memory of a
+# *declined* pattern: irgx caches what it compiles, not what it refuses, and a
+# refusal costs a full compile attempt plus a raise (~1.8 ms). Bounded, oldest
+# first, because the patterns this module exists for are untrusted.
+_MAXCACHE = 512
+_cache: dict[tuple[type, str | bytes, int], Pattern[Any] | _IrgxPattern] = {}
 
 
 def _irgx_pattern(pattern: str | bytes, flags: int) -> _IrgxPattern | None:
     """Compile `pattern` on irgx when it can faithfully express it; else ``None``.
 
     ``None`` (→ stdlib ``re`` fallback) when the backend is absent, `flags`
-    carries a bit irgx can't honor, or irgx refuses the pattern — either
-    declining it as outside the linear grammar (backreferences / lookaround) or
-    rejecting it as malformed. Both refusals route to stdlib, which re-raises the
-    malformed case as ``re.error``.
+    carries a bit irgx can't honor, or irgx refuses the pattern — declining it
+    as outside the linear grammar (backreferences / lookaround) or rejecting it
+    as malformed. Both refusals route to stdlib, which re-raises the malformed
+    case as ``re.error``.
     """
     if not _HAVE_IRGX or flags & ~_HONORED:
         return None
-    if isinstance(pattern, bytes):
-        # A stdlib `bytes` pattern is byte-oriented by definition, which is
-        # exactly what `-u` asks irgx for.
-        pattern = _inline_prefix(flags, ascii_classes=True).encode() + pattern
-    elif isinstance(pattern, str):
-        # A `str` pattern only wants byte semantics under `re.ASCII`.
-        pattern = _inline_prefix(flags, ascii_classes=bool(flags & ASCII)) + pattern
-    else:
-        # irgx accepts any buffer as a pattern; stdlib `re` accepts only `str`
-        # and `bytes`. Decline so the `re` arm raises its own ``TypeError``
-        # rather than this surface quietly compiling what its twin refuses.
-        return None
     try:
-        return _irgx.compile(pattern)
+        return _irgx.compile(
+            pattern,
+            ignore_case=bool(flags & IGNORECASE),
+            multiline=bool(flags & MULTILINE),
+            dotall=bool(flags & DOTALL),
+            verbose=bool(flags & VERBOSE),
+            # A `bytes` pattern is byte-oriented by definition; a `str` one only under ASCII.
+            unicode=isinstance(pattern, str) and not flags & ASCII,
+        )
     except _irgx.error:
         return None
 
@@ -271,45 +264,64 @@ def _absent_as_empty[AnyStr: (str, bytes)](
 
 
 def compile[AnyStr: (str, bytes)](  # shadows the builtin on purpose: `re.compile` twin
-    pattern: AnyStr | Pattern[AnyStr], flags: int = 0
+    pattern: _Source[AnyStr], flags: int = 0
 ) -> Pattern[AnyStr] | _IrgxPattern:
     """Compile a regex — irgx (linear-time) where it can, else stdlib ``re``.
 
-    Faithful to ``re.compile``: an already-compiled pattern is returned as-is,
-    and passing `flags` alongside one raises the same ``ValueError`` stdlib does.
+    Faithful to ``re.compile``: an already-compiled pattern — from either
+    backend — is returned as-is, and passing `flags` alongside one raises the
+    same ``ValueError`` stdlib does.
     """
-    if isinstance(pattern, _re.Pattern):
+    if isinstance(flags, RegexFlag):
+        flags = flags.value  # enum arithmetic and hashing run in Python; an int's don't
+    if isinstance(pattern, str | bytes):
+        key = (type(pattern), pattern, flags)
+        if (rx := _cache.get(key)) is not None:
+            return rx
+        rx = _irgx_pattern(pattern, flags)
+        if rx is None:
+            rx = _re.compile(pattern, flags)
+        if len(_cache) >= _MAXCACHE:
+            # Another thread may evict first — stdlib's own tolerance.
+            with suppress(StopIteration, RuntimeError, KeyError):
+                del _cache[next(iter(_cache))]
+        _cache[key] = rx
+        return rx
+    if isinstance(pattern, _re.Pattern) or (
+        _HAVE_IRGX and isinstance(pattern, _irgx.Pattern)
+    ):
         if flags:
             msg = "cannot process flags argument with a compiled pattern"
             raise ValueError(msg)
         return pattern
-    rx = _irgx_pattern(pattern, flags)
-    return rx if rx is not None else _re.compile(pattern, flags)
+    # A buffer or anything else stdlib refuses, refused in stdlib's own words.
+    msg = "first argument must be string or compiled pattern"
+    raise TypeError(msg)
 
 
 def search[AnyStr: (str, bytes)](
-    pattern: AnyStr, string: AnyStr, flags: int = 0
+    pattern: _Source[AnyStr], string: AnyStr, flags: int = 0
 ) -> Match[AnyStr] | _IrgxMatch | None:
     """Scan `string` for the first location `pattern` matches (``re.search`` twin)."""
     return compile(pattern, flags).search(string)
 
 
 def match[AnyStr: (str, bytes)](
-    pattern: AnyStr, string: AnyStr, flags: int = 0
+    pattern: _Source[AnyStr], string: AnyStr, flags: int = 0
 ) -> Match[AnyStr] | _IrgxMatch | None:
     """Match `pattern` at the start of `string` (``re.match`` twin)."""
     return compile(pattern, flags).match(string)
 
 
 def fullmatch[AnyStr: (str, bytes)](
-    pattern: AnyStr, string: AnyStr, flags: int = 0
+    pattern: _Source[AnyStr], string: AnyStr, flags: int = 0
 ) -> Match[AnyStr] | _IrgxMatch | None:
     """Match `pattern` against the whole of `string` (``re.fullmatch`` twin)."""
     return compile(pattern, flags).fullmatch(string)
 
 
 def findall[AnyStr: (str, bytes)](
-    pattern: AnyStr, string: AnyStr, flags: int = 0
+    pattern: _Source[AnyStr], string: AnyStr, flags: int = 0
 ) -> list[AnyStr | tuple[AnyStr, ...]]:
     """Return every non-overlapping match of `pattern` in `string` (``re.findall`` twin).
 
@@ -320,34 +332,35 @@ def findall[AnyStr: (str, bytes)](
     """
     rx = compile(pattern, flags)
     if isinstance(rx, _re.Pattern):
-        # stdlib already projects an absent group as ``""``, so this arm needs
-        # only the wider element type — a shallow copy, not a row rewrite.
-        widened: list[AnyStr | tuple[AnyStr, ...]] = list(rx.findall(string))
-        return widened
-    return _absent_as_empty(rx.findall(string), string[:0])
+        found: list[AnyStr | tuple[AnyStr, ...]] = rx.findall(string)
+        return found  # stdlib already projects an absent group as ``""``
+    rows = rx.findall(string)
+    # Rewrite only when an absent group is actually there: the probe is a C-level
+    # containment scan, several times cheaper than rebuilding every row.
+    absent = (
+        any(map(tuple.__contains__, rows, repeat(None)))
+        if rx.groups > 1
+        else None in rows
+    )
+    return _absent_as_empty(rows, string[:0]) if absent else rows
 
 
 def finditer[AnyStr: (str, bytes)](
-    pattern: AnyStr, string: AnyStr, flags: int = 0
+    pattern: _Source[AnyStr], string: AnyStr, flags: int = 0
 ) -> Iterator[Match[AnyStr] | _IrgxMatch]:
-    """Iterate over non-overlapping matches of `pattern` in `string` (``re.finditer`` twin).
-
-    ``iter`` because irgx answers the whole sequence eagerly while stdlib hands
-    back a lazy iterator; wrapping makes ``next()`` behave the same either way
-    (and is a no-op on the stdlib path, where the value already is an iterator).
-    """
-    return iter(compile(pattern, flags).finditer(string))
+    """Iterate over non-overlapping matches of `pattern` in `string` (``re.finditer`` twin)."""
+    return compile(pattern, flags).finditer(string)
 
 
 def split[AnyStr: (str, bytes)](
-    pattern: AnyStr, string: AnyStr, maxsplit: int = 0, flags: int = 0
+    pattern: _Source[AnyStr], string: AnyStr, maxsplit: int = 0, flags: int = 0
 ) -> list[AnyStr | None]:
     """Split `string` by the occurrences of `pattern` (``re.split`` twin)."""
     return compile(pattern, flags).split(string, maxsplit)
 
 
 def sub[AnyStr: (str, bytes)](
-    pattern: AnyStr,
+    pattern: _Source[AnyStr],
     repl: AnyStr | Callable[[Match[AnyStr] | _IrgxMatch], AnyStr],
     string: AnyStr,
     count: int = 0,
@@ -366,7 +379,7 @@ def sub[AnyStr: (str, bytes)](
 
 
 def subn[AnyStr: (str, bytes)](
-    pattern: AnyStr,
+    pattern: _Source[AnyStr],
     repl: AnyStr | Callable[[Match[AnyStr] | _IrgxMatch], AnyStr],
     string: AnyStr,
     count: int = 0,
@@ -374,3 +387,11 @@ def subn[AnyStr: (str, bytes)](
 ) -> tuple[AnyStr, int]:
     """Like :func:`sub`, but return ``(new_string, number_of_subs_made)`` (``re.subn`` twin)."""
     return compile(pattern, flags).subn(repl, string, count)
+
+
+def purge() -> None:
+    """Clear the regular expression caches (``re.purge`` twin) — ours and both backends'."""
+    _cache.clear()
+    _re.purge()
+    if _HAVE_IRGX:
+        _irgx.purge()
