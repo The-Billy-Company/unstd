@@ -2,7 +2,7 @@
 
 <!-- towncrier release notes start -->
 
-## [Unreleased]
+## [2.0.0] - 2026-09-27
 
 ### Breaking
 
