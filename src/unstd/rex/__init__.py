@@ -1,102 +1,63 @@
-r"""Drop-in linear-time regex — irregex under a stdlib-``re``-faithful surface.
+r"""Linear regex where Python's semantics survive the native boundary.
 
-Stdlib ``re`` is a backtracking engine: a hostile pattern (or a hostile input
-against a benign pattern) can trigger *catastrophic backtracking* — exponential
-match time that pins a CPU (a ReDoS). That is unacceptable when the pattern or
-the text is **untrusted** — LLM-supplied regexes, user filters, matching over
-tool output or retrieved documents. ``rex`` is a stdlib-``re``-faithful surface
-backed by **irregex**, our own finite-automaton engine, which matches in
-time linear in the length of the text and independent of the pattern's shape —
-the ReDoS class simply cannot occur on the irgx path. Migrate a call site by
-swapping the import::
+Swap ``import re`` for ``from unstd import rex`` to keep the module verbs,
+flags, compile errors and ordinary match interface. The optional ``rex`` extra
+provides ``irregex`` (import ``irgx``); a base installation uses stdlib ``re``.
 
-    import re  # →
-    from unstd import rex  # rex.compile / rex.search / … , same surface
+The compiler validates with Python first, then reads its parsed operations,
+including scoped flags. Native execution stays available for supported regular
+patterns, bytes patterns, ASCII classes and verbose mode. Unicode word/digit
+classes and boundaries use native execution on ASCII subjects; non-ASCII input
+uses the running interpreter's Unicode rules. Unicode whitespace and cased
+Unicode IGNORECASE expressions use Python, because their native semantics differ
+even on some ASCII input. This is version-independent: no Unicode table is
+pinned to one Python release.
 
-Backend & fallback: the ``rex`` extra provides ``irregex`` (import
-name ``irgx``). Its default grammar excludes the two features that force
-backtracking — **backreferences** (``\\1``) and **lookaround** (``(?=…)`` /
-``(?<=…)``) — so it *declines* them with ``irgx.UnsupportedPattern`` rather
-than failing. ``rex`` degrades gracefully in two ways, mirroring how
-``serde.jsonx`` auto-falls-back for exact-format cases:
+Patterns that can match empty text or repeat a nullable body use Python's
+adjacent-match and capture rules. Backreferences, lookaround, unsupported parsed
+operations and the LOCALE/DEBUG flags also fall back. A native operation that
+cannot express a requested match shape uses its typed refusal to recover; a
+lone-surrogate pattern, subject or replacement uses Python because UTF-8 cannot
+encode it. Recovery occurs before a replacement callback starts; callback
+exceptions propagate unchanged and callbacks are never retried.
 
-1. **Backend absent** (a base ``unstd`` install) → every call uses stdlib ``re``.
-2. **Backend present but the pattern needs a PCRE-only feature** → irgx declines
-   it at compile; ``rex`` transparently re-compiles that one pattern on stdlib
-   ``re``. Also degrades for the two ``re`` flags irgx has no spelling for
-   (``LOCALE`` / ``DEBUG``).
+**Only an operation that actually runs on irgx has the linear-time, ReDoS-immune
+guarantee.** Every fallback uses Python's backtracking engine. Installing the
+extra alone does not establish that guarantee, and native eligibility can depend
+on the subject. Keep untrusted patterns inside the supported regular grammar
+and use bytes or faithful ASCII expressions over encodable input when the
+linear guarantee is required. ``(a+)+$`` retains its native safety win; Python
+hangs on its failing tail, so the adverse test checks Python in a subprocess.
 
-**The linear-time (ReDoS-immune) guarantee holds only on the irgx path.** A
-pattern that degrades to stdlib ``re`` — a backref, a lookaround, ``LOCALE`` /
-``DEBUG``, or the absent-backend case — silently loses the guarantee and is once
-again backtracking. This is a deliberate trade (faithful behavior over a hard
-failure); it is pinned as a regression test in ``tests/rex/test_rex.py``. If
-linear-time is a *hard* requirement for a given call, keep the pattern within
-irgx's default grammar (no backref/lookaround) and install the extra.
+Compiled objects retain the caller's source and Python flag metadata, accept
+region bounds and round-trip through the module verbs. Native match objects
+supply ``group``/``groups``/``groupdict``/``span``/``expand``/``start``/``end``;
+``.pos`` and ``.endpos`` remain stdlib-only. Callable replacements receive the
+active backend's match. ``findall`` projects an absent group as ``""`` for both
+compiled and module calls; ``groups()`` still reports ``None``. Negative
+replacement/split limits follow Python's unchanged-input rule.
 
-Faithfulness contract — what stays identical to stdlib ``re``:
+``error`` and ``escape`` are stdlib's own objects. Malformed/native-only syntax
+raises Python's error, so ``except rex.error`` remains authoritative. A buffer
+pattern is refused with ``TypeError`` as stdlib refuses it; compiled patterns
+from either backend are accepted, but adding flags to one raises ``ValueError``.
+Compiles, including declines, are cached at 512 entries, oldest out. Without
+that front cache a repeated backreference would pay a native compile and refusal
+every time. ``purge`` clears our cache and both engines' caches. UNICODE never
+becomes inline ``(?U)``: that native spelling changes greediness.
 
-- The module surface — ``compile`` · ``search`` · ``match`` · ``fullmatch`` ·
-  ``findall`` · ``finditer`` · ``sub`` · ``subn`` · ``split`` · ``escape`` ·
-  ``purge`` — plus the flag/type vocabulary (``I``/``IGNORECASE`` … ``Pattern``,
-  ``Match``, ``RegexFlag``). ``escape`` is stdlib ``re.escape`` verbatim (its
-  output is a literal irgx also accepts).
-- ``error`` is re-exported from stdlib ``re``. ``irgx.error`` never escapes: a
-  pattern irgx refuses — malformed or merely declined — is re-compiled on stdlib
-  ``re``, which raises ``re.error`` for the malformed case, so ``except
-  rex.error`` keeps catching every compile failure.
-- Compiled objects and match objects: irgx's ``Pattern`` / ``Match`` mirror
-  ``re.Pattern`` / ``re.Match`` (``.search``/``.match``/``.sub``/``.groups``/
-  ``.groupdict``/…), so a compiled pattern is drop-in on either backend.
-- Flags are honored by translating the stdlib bitmask into irgx's keyword flags:
-  ``I``/``M``/``S``/``X`` → ``ignore_case``/``multiline``/``dotall``/``verbose``,
-  and ``A`` → ``unicode=False``, which restricts ``\\w \\d \\s \\b`` and ``.`` to
-  ASCII exactly as ``A`` does.
-- ``bytes`` patterns ride the irgx path, compiled with ``unicode=False`` so
-  classes are byte-oriented — which *is* stdlib's rule for a ``bytes`` pattern.
-  Without it irgx would read the subject as UTF-8 and ``\\w+`` would swallow
-  ``café``'s tail where stdlib stops at ``caf``.
-- A compiled pattern from either backend is accepted wherever a pattern string
-  is, and ``purge`` clears every cache.
-- Compiles are cached like stdlib's own ``re._cache`` (bounded, oldest out), so
-  a module-level call is one dict lookup — including for a pattern irgx
-  *declined*, which irgx itself does not remember and would re-attempt at the
-  cost of a full compile plus a raise.
-- ``findall``'s non-participating groups are rewritten from irgx's ``None`` to
-  stdlib's ``""`` (``.groups()`` already reports ``None`` in both libraries, so
-  only this one projection needed adapting).
+Two inherited syntax differences remain deliberate on the native path:
+``$`` means absolute end rather than also the position before a final newline
+(use ``(?m)…$`` for line ends or ``…\Z`` for absolute end), and POSIX bracket
+expressions are real native classes rather than Python's nested-set spelling.
+Keep patterns inside the shared grammar for Python parity. Native match
+``.re.flags`` also reflects native bookkeeping; the facade's ``.flags`` is
+Python's bitmask.
 
-Divergences (deliberate, documented, pinned as tests):
-
-- **PCRE-only patterns degrade to stdlib** (backref / lookaround) — losing the
-  linear-time guarantee (above). ``compile`` returns a stdlib ``re.Pattern`` for
-  these even when the backend is present.
-- **``$`` is the end of the text, not the byte before a trailing newline.**
-  Stdlib inherits Perl's rule where ``$`` also matches just before a final
-  ``\\n``; irgx follows Rust's ``regex`` and Go's ``regexp`` in reading it as the
-  absolute end. So ``rex.findall(r"[a-z]+$", "cat\\ndog\\n")`` finds nothing
-  where stdlib finds ``dog``. Three spellings agree, and one of them is usually
-  what was meant: ``(?m)[a-z]+$`` (every line's end), ``[a-z]+\\Z`` (the text's
-  end, said exactly), or strip the newline first. **This divergence predates the
-  irgx backend** — RE2 read ``$`` the same way — it was simply never written down.
-- **POSIX bracket expressions mean different things.** ``[[:alpha:]]`` is a real
-  character class to irgx and a nested-set typo to stdlib (which reads it as
-  ``[`` ``:`` ``a`` ``l`` ``p`` ``h`` and warns). Also inherited from the RE2
-  era, and the reason to keep patterns inside the shared grammar.
-- **On the irgx path a compiled pattern's ``.flags`` reflects irgx's own
-  bookkeeping** rather than the stdlib bitmask. Match *behavior* is identical;
-  only that cosmetic attribute differs from what stdlib would report.
-- **``re.UNICODE`` is a no-op on the irgx path** (irgx is UTF-8-native for
-  ``str`` input). It is *not* mapped to inline ``(?U)`` — there ``(?U)`` swaps
-  greediness, a different meaning entirely.
-
-Prior art: the linear-time automaton construction is Thompson's, popularized for
-this use by Russ Cox, "Regular Expression Matching Can Be Simple And Fast"
-(2007, https://swtch.com/~rsc/regexp/regexp1.html). ``rex`` rode Google's RE2
-implementation of it until the engine we publish ourselves — irregex
-(https://github.com/The-Billy-Company/irregex) — grew the ``re``-shaped surface
-this shim needs, at which point paying a third-party dependency for a capability
-we ship stopped making sense.
+Prior art: Thompson's finite automata, explained by Russ Cox at
+https://swtch.com/~rsc/regexp/regexp1.html, and the engine we publish at
+https://github.com/The-Billy-Company/irregex. The previous backend was RE2;
+irregex supplied the existing re-shaped API without that extra dependency.
 """
 
 from __future__ import annotations
@@ -128,6 +89,8 @@ from re import (  # faithful re-export of the flag + type vocabulary
 )
 from typing import TYPE_CHECKING, Any, Final
 
+from ._faithful import _LinearPattern, native_profile
+
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator, Sequence
@@ -139,7 +102,7 @@ if TYPE_CHECKING:
     # irgx's compiled/match types (they deliberately mirror `re.Pattern` /
     # `re.Match`) — named here so the public unions below stay honest without
     # pretending the irgx objects nominally *are* the stdlib classes.
-    type _IrgxPattern = _irgx.Pattern
+    type _IrgxPattern = _irgx.Pattern | _LinearPattern[Any]
     type _IrgxMatch = _irgx.Match
     # What every module-level verb accepts as `pattern`: stdlib's own
     # `str | Pattern` union, widened by the compiled object this module returns.
@@ -210,18 +173,12 @@ _cache: dict[tuple[type, str | bytes, int], Pattern[Any] | _IrgxPattern] = {}
 
 
 def _irgx_pattern(pattern: str | bytes, flags: int) -> _IrgxPattern | None:
-    """Compile `pattern` on irgx when it can faithfully express it; else ``None``.
-
-    ``None`` (→ stdlib ``re`` fallback) when the backend is absent, `flags`
-    carries a bit irgx can't honor, or irgx refuses the pattern — declining it
-    as outside the linear grammar (backreferences / lookaround) or rejecting it
-    as malformed. Both refusals route to stdlib, which re-raises the malformed
-    case as ``re.error``.
-    """
-    if not _HAVE_IRGX or flags & ~_HONORED:
+    """Compile with Python validation and a parsed native fidelity profile."""
+    if not _HAVE_IRGX or type(pattern) not in (str, bytes) or flags & ~_HONORED:
         return None
+    python = _re.compile(pattern, flags)
     try:
-        return _irgx.compile(
+        native = _irgx.compile(
             pattern,
             ignore_case=bool(flags & IGNORECASE),
             multiline=bool(flags & MULTILINE),
@@ -230,8 +187,14 @@ def _irgx_pattern(pattern: str | bytes, flags: int) -> _IrgxPattern | None:
             # A `bytes` pattern is byte-oriented by definition; a `str` one only under ASCII.
             unicode=isinstance(pattern, str) and not flags & ASCII,
         )
-    except _irgx.error:
+    except (_irgx.error, UnicodeEncodeError):
         return None
+    profile = native_profile(pattern, flags)
+    return (
+        _LinearPattern(native, python, profile, _irgx.error)
+        if profile is not None
+        else None
+    )
 
 
 # The str/bytes type parameter below is spelled `AnyStr` (typeshed's name for this
@@ -287,7 +250,7 @@ def compile[AnyStr: (str, bytes)](  # shadows the builtin on purpose: `re.compil
                 del _cache[next(iter(_cache))]
         _cache[key] = rx
         return rx
-    if isinstance(pattern, _re.Pattern) or (
+    if isinstance(pattern, _re.Pattern | _LinearPattern) or (
         _HAVE_IRGX and isinstance(pattern, _irgx.Pattern)
     ):
         if flags:
@@ -331,7 +294,7 @@ def findall[AnyStr: (str, bytes)](
     spells the same fact ``list[Any]``; this keeps the element types.)
     """
     rx = compile(pattern, flags)
-    if isinstance(rx, _re.Pattern):
+    if isinstance(rx, _re.Pattern | _LinearPattern):
         found: list[AnyStr | tuple[AnyStr, ...]] = rx.findall(string)
         return found  # stdlib already projects an absent group as ``""``
     rows = rx.findall(string)

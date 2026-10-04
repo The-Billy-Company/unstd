@@ -119,6 +119,10 @@ dev = [
 # two-day release quarantine as the applications that consume this package.
 exclude-newer = "P2D"
 
+[tool.uv.exclude-newer-package]
+# Our engine is released by the same verified publisher; upstreams keep P2D.
+irregex = false
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 # The repo root, so `tests/test_bench.py` can import the `bench` harness. `bench`
