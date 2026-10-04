@@ -29,11 +29,12 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           enable-cache: false
+          version: "latest-known"
           python-version: "3.13"
-      - run: uv sync --all-extras --group dev --python 3.13
+      - run: uv sync --locked --all-extras --group dev --python 3.13
       - run: uv run --python 3.13 ruff check .
       - run: uv run --python 3.13 ruff format --check .
       - run: uv run --python 3.13 mypy
@@ -52,11 +53,12 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           enable-cache: false
+          version: "latest-known"
           python-version: ${{ matrix.python-version }}
-      - run: uv sync --all-extras --group dev --python ${{ matrix.python-version }}
+      - run: uv sync --locked --all-extras --group dev --python ${{ matrix.python-version }}
       - run: uv run --python ${{ matrix.python-version }} pytest -q
 
   floors:
@@ -75,9 +77,10 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           enable-cache: false
+          version: "latest-known"
           python-version: "3.13"
       - run: uv sync --all-extras --group dev --python 3.13 --resolution lowest-direct
       # Which versions the floors admitted — the first thing anyone reading a
@@ -105,11 +108,12 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           enable-cache: false
+          version: "latest-known"
           python-version: "3.13"
-      - run: uv sync --group dev --python 3.13
+      - run: uv sync --locked --group dev --python 3.13
       # A diagnostic, not a gate — the zero-closure claim is asserted offline by
       # `tests/test_package.py`. This is here because a failure that reproduces
       # only on the fallback leg is nearly unreadable without knowing which

@@ -9,6 +9,7 @@ faithfulness contract (bytes match constructing msgspec directly), the
 from __future__ import annotations
 
 from decimal import Decimal
+from typing import get_type_hints
 from uuid import UUID
 
 import msgspec
@@ -151,6 +152,59 @@ def test_decimal_format_number_encodes_as_float_literal() -> None:
 def test_decimal_format_string_is_default() -> None:
     codec = structs.Codec(_HasDecimal)
     assert codec.encode(_HasDecimal(Decimal("1.5"))) == b'{"amount":"1.5"}'
+
+
+@pytest.mark.parametrize(
+    ("amount", "expected"),
+    [
+        ("1.5", b'{"amount":"1.50"}'),
+        (
+            "12345678901234567890.125",
+            b'{"amount":"12345678901234567890.12"}',
+        ),
+    ],
+)
+def test_decimal_format_callable_preserves_exact_policy(
+    amount: str, expected: bytes
+) -> None:
+    def cents(value: Decimal) -> str:
+        return format(value.quantize(Decimal("0.01")), "f")
+
+    codec = structs.Codec(_HasDecimal, decimal_format=cents)
+    encoded = codec.encode(_HasDecimal(Decimal(amount)))
+    assert encoded == expected
+    assert codec.decode(encoded).amount == Decimal(amount).quantize(Decimal("0.01"))
+
+
+def test_decimal_format_callable_error_does_not_poison_reused_encoder() -> None:
+    def nonnegative(value: Decimal) -> str:
+        if value < 0:
+            msg = "negative amount"
+            raise ValueError(msg)
+        return str(value)
+
+    codec = structs.Codec(_HasDecimal, decimal_format=nonnegative)
+    with pytest.raises(ValueError, match="negative amount"):
+        codec.encode(_HasDecimal(Decimal(-1)))
+    assert codec.encode(_HasDecimal(Decimal("1.25"))) == b'{"amount":"1.25"}'
+
+
+def test_decimal_format_callable_rejects_unencodable_return() -> None:
+    def unsupported(value: Decimal) -> object:
+        return object() if value < 0 else str(value)
+
+    codec = structs.Codec(_HasDecimal, decimal_format=unsupported)
+    with pytest.raises(TypeError, match="unsupported"):
+        codec.encode(_HasDecimal(Decimal(-1)))
+    assert codec.encode(_HasDecimal(Decimal("2.5"))) == b'{"amount":"2.5"}'
+
+
+def test_codec_annotations_remain_runtime_resolvable() -> None:
+    hints = get_type_hints(
+        structs.Codec.__init__,
+        localns={param.__name__: param for param in structs.Codec.__type_params__},
+    )
+    assert hints["decimal_format"] == structs._DecimalFormat
 
 
 def test_uuid_format_hex_drops_hyphens() -> None:

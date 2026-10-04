@@ -45,7 +45,7 @@ dependencies = []
 [project.optional-dependencies]
 serde = [
   "orjson>=3.12",
-  "msgspec>=0.21",
+  "msgspec>=0.22",
   "pybase64>=1.5",
 ]
 ids = [
@@ -113,6 +113,11 @@ dev = [
   # which is the quiet way a security test stops being one.
   "cryptography>=44.0",
 ]
+
+[tool.uv]
+# Keep development, optional backends and isolated builds behind the same
+# two-day release quarantine as the applications that consume this package.
+exclude-newer = "P2D"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

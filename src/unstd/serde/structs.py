@@ -46,6 +46,7 @@ decode.
 from __future__ import annotations
 
 from collections.abc import Callable
+from decimal import Decimal
 from typing import Literal, SupportsFloat, final
 
 
@@ -60,6 +61,7 @@ EncHook = Callable[[object], object]
 DecHook = Callable[[type, object], object]
 FloatHook = Callable[[str], object]
 Order = Literal["deterministic", "sorted"] | None
+_DecimalFormat = Literal["string", "number"] | Callable[[Decimal], object]
 
 __all__ = [
     "Codec",
@@ -103,7 +105,7 @@ class Codec[T]:
         enc_hook: EncHook | None = None,
         dec_hook: DecHook | None = None,
         order: Order = None,
-        decimal_format: Literal["string", "number"] = "string",
+        decimal_format: _DecimalFormat = "string",
         uuid_format: Literal["canonical", "hex"] = "canonical",
         strict: bool = True,
         float_hook: FloatHook | None = None,
@@ -118,6 +120,10 @@ class Codec[T]:
         since it never leaves the typed encoder. ``strict=False`` widens decode
         coercion (e.g. a JSON string where the schema expects an int) — msgspec's
         own escape hatch for loose upstream producers.
+
+        ``decimal_format`` also accepts a callable over each ``Decimal``. Use it
+        for an exact decimal policy without converting through a binary float;
+        its returned value is encoded normally and its exceptions propagate.
         """
         self.encode = msgspec.json.Encoder(
             enc_hook=enc_hook,
