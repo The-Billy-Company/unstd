@@ -2,7 +2,7 @@
 doc_radar:
   sentinels:
     - file: CHANGELOG.md
-      contains: ['## [2.1.0]', 'Codec(decimal_format=...)']
+      contains: ['## [2.1.1]', 'Codec(decimal_format=...)']
     - file: pyproject.toml
       contains: ['exclude-newer = "P2D"']
 ---

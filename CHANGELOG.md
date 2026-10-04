@@ -1,6 +1,8 @@
 ---
 doc_radar:
   sentinels:
+    - file: src/unstd/rex/_faithful.py
+      contains: ['_parser.parse(pattern, flags)', 'if started:']
     - file: pyproject.toml
       contains: ['"msgspec>=0.22"', 'exclude-newer = "P2D"']
     - file: .github/workflows/ci.yml
@@ -14,6 +16,15 @@ doc_radar:
 # Changelog
 
 <!-- towncrier release notes start -->
+
+## [2.1.1] - 2026-10-04
+
+### Fixed
+
+We keep Python's Unicode classification, scoped flags, empty-match iteration and
+nullable capture behavior across native engine upgrades. Eligible ASCII and byte
+work still run natively; surrogate recovery and typed native refusals preserve
+outputs without retrying replacement callbacks.
 
 ## [2.1.0] - 2026-10-04
 
