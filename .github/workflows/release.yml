@@ -40,5 +40,9 @@ jobs:
         with:
           enable-cache: false
           version: "latest-known"
+      - name: The tag agrees with package metadata
+        env:
+          TAG: ${{ github.ref_name }}
+        run: test "$TAG" = "v$(uv version --short)"
       - run: uv build
       - uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
