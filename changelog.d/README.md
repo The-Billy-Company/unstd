@@ -1,12 +1,14 @@
 ---
 doc_radar:
   sentinels:
-    - file: +dependency-refresh.changed.md
-      contains: ['Codec(decimal_format=...)', 'two days']
+    - file: CHANGELOG.md
+      contains: ['## [2.1.0]', 'Codec(decimal_format=...)']
+    - file: pyproject.toml
+      contains: ['exclude-newer = "P2D"']
 ---
 
 # Unreleased changes
 
 We keep one fragment per change here; release history stays in the root changelog.
-Fragments describe what changed for a caller, with source assertions for facts
-that must stay true until release.
+Fragments describe what changed for a caller. On release, we fold their bodies
+into the root changelog and move their source assertions with them.
