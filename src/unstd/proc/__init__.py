@@ -45,6 +45,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import math
+import os
 import subprocess
 import time
 from typing import TYPE_CHECKING, TypedDict, Unpack
@@ -52,7 +53,6 @@ from typing import TYPE_CHECKING, TypedDict, Unpack
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Mapping, Sequence
-    import os
 
 
 # Faithful re-exports so callers ``except proc.TimeoutExpired`` / ``proc.CalledProcessError``
@@ -182,23 +182,43 @@ def run(
         msg = "timeout must be a positive finite number of seconds"
         raise ValueError(msg)
     start = time.perf_counter()
-    completed = subprocess.run(  # noqa: S603 — shell=False + explicit argv is the safe path
+    # Own the child explicitly. subprocess.run delegates exceptional reaping to
+    # Popen.__exit__, whose KeyboardInterrupt path may skip wait() after
+    # communicate() has already consumed its short SIGINT grace period.
+    with subprocess.Popen(  # noqa: S603 — shell=False + explicit argv
         cmd,
-        capture_output=True,
-        timeout=timeout,
+        stdin=subprocess.PIPE if stdin_text is not None else None,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
         cwd=cwd,
         env=dict(env) if env is not None else None,
-        input=stdin_text,
         text=True,
         encoding=encoding,
         errors=errors,
-        check=False,
-    )
+    ) as child:
+        try:
+            stdout, stderr = child.communicate(stdin_text, timeout=timeout)
+        except TimeoutExpired as error:
+            child.kill()
+            if os.name == "nt":
+                # Match subprocess.run's Windows reader-thread drain. POSIX
+                # communicate has already attached partial bytes to the error;
+                # draining there could block on a descendant retaining a pipe.
+                # The stdlib also assigns text-mode results here; typeshed
+                # describes TimeoutExpired output only as POSIX-style bytes.
+                error.stdout, error.stderr = child.communicate()  # type: ignore[assignment]
+            child.wait()
+            raise
+        except BaseException:
+            child.kill()
+            child.wait()
+            raise
+        returncode = child.wait()
     result = CompletedProcess(
         argv=cmd,
-        returncode=completed.returncode,
-        stdout=completed.stdout or "",
-        stderr=completed.stderr or "",
+        returncode=returncode,
+        stdout=stdout or "",
+        stderr=stderr or "",
         duration=time.perf_counter() - start,
     )
     if log is not None:

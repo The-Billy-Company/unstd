@@ -57,6 +57,12 @@ def pytest_addoption(parser: pytest.Parser) -> None:
         action="store_true",
         help="fail if any declared extra is absent",
     )
+    parser.addoption(
+        "--chaos-seed",
+        type=int,
+        default=173,
+        help="replay seed for explicit chaos scenarios (unsigned 64-bit)",
+    )
 
 
 def pytest_configure(config: pytest.Config) -> None:

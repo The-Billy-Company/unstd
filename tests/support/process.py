@@ -26,7 +26,9 @@ if TYPE_CHECKING:
 
 def python_argv(code: str, args: Sequence[str] = ()) -> list[str]:
     """Build a worker command that imports this checkout from any directory."""
-    prelude = f"import sys; sys.path.insert(0, {str(REPO_ROOT / 'src')!r});\n"
+    prelude = f"import sys; sys.path[:0] = [{str(REPO_ROOT / 'src')!r}, {str(REPO_ROOT)!r}];\n"
+    if os.environ.get("UNSTD_CHAOS_BACKEND") == "stdlib":
+        prelude += "from tests.support.chaos import apply_backend_policy; apply_backend_policy();\n"
     return [sys.executable, "-u", "-c", prelude + code, *args]
 
 
@@ -39,21 +41,29 @@ def python_worker(
     env: Mapping[str, str] | None = None,
 ) -> Iterator[subprocess.Popen[str]]:
     """Own one piped worker and kill/reap it on every exit, including assertions."""
+    owns_group = os.name == "posix" and os.environ.get("UNSTD_CHAOS_OWNED_GROUP") != "1"
+    worker_env = dict(env) if env is not None else None
+    if worker_env is not None:
+        # A scenario's explicit environment cannot discard its outer supervisor
+        # or import policy. Ordinary helper calls have neither private flag.
+        for name in ("UNSTD_CHAOS_BACKEND", "UNSTD_CHAOS_OWNED_GROUP"):
+            if name in os.environ:
+                worker_env[name] = os.environ[name]
     child = subprocess.Popen(  # noqa: S603 — explicit interpreter, argv, no shell
         python_argv(code, args),
         cwd=cwd,
-        env=dict(env) if env is not None else None,
+        env=worker_env,
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
         encoding="utf-8",
-        start_new_session=os.name == "posix",
+        start_new_session=owns_group,
     )
     try:
         yield child
     finally:
-        if os.name == "posix":
+        if owns_group:
             with suppress(ProcessLookupError):
                 os.killpg(child.pid, signal.SIGKILL)
         elif child.poll() is None:

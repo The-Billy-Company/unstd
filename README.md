@@ -66,6 +66,11 @@ campaigns. Run `uv run --no-sync python -m tests.tooling.fuzz check` to validate
 the inventory, or `uv run --no-sync python -m tests.tooling.fuzz replay` to
 replay every installed target. CI retains findings and coverage corpora.
 
+The [chaos runner](tests/tooling/chaos/README.md) exercises recorded filesystem,
+process, stream and clock/entropy failures and recovery. Run
+`uv run --no-sync python -m tests.tooling.chaos run --seed 173` for a bounded
+installed-backend campaign with per-case journals and reproducible schedules.
+
 ## Prior art
 
 - **orjson** (Kloss) / **msgspec** (Fitzgerald) / **pybase64** (aklomp libbase64) — the serde backends.

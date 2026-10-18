@@ -13,7 +13,7 @@ tests/
 │   │   ├── parity/            dedicated differential tests
 │   │   ├── properties/        dedicated Hypothesis laws
 │   │   ├── security/          module-owned security contracts
-│   │   └── regression/        minimized confirmed fuzz-discovered defects
+│   │   └── regression/        confirmed fuzz and chaos defects
 │   └── assurance/             organized by cross-cutting risk
 │       ├── adversarial/       chaos, concurrency, resources, corpus replay
 │       ├── evals/performance/ dedicated performance evidence
@@ -52,6 +52,12 @@ unexpected exceptions, crashes, hangs and resource failures cannot become a
 passing run. Python coverage instrumentation does not establish coverage inside
 compiled dependencies.
 
+The [chaos lane](tooling/chaos/README.md) adds recorded mixed-fault histories,
+handshaken writer kills, stream interruptions and clock/entropy outages, with
+state, progress, ownership and recovery assertions. Its standalone runner bounds
+fresh installed/stdlib workers and records exact schedules and observed faults.
+Linux/macOS CI runs explicit pull-request and nightly campaigns.
+
 ## Run and inspect
 
 Use the existing environment with `--no-sync` to retain the backend combination
@@ -71,6 +77,9 @@ uv run --no-sync python -m tests.tooling run fuzz-replay -- -q
 uv run --no-sync python -m tests.tooling.fuzz check
 uv run --no-sync python -m tests.tooling.fuzz replay --target all --backend stdlib
 uv run --no-sync python -m tests.tooling.fuzz campaign --target json --backend installed --engine deterministic --runs 1000 --seed 17
+uv run --no-sync python -m tests.tooling.chaos check
+uv run --no-sync python -m tests.tooling.chaos run --backend installed --seed 173
+uv run --no-sync python -m tests.tooling run chaos -- --chaos-seed 173 -q
 ```
 
 The default run discovers only `tests/suites`, with strict configuration,

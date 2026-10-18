@@ -1,8 +1,9 @@
-# regression
+# Process cancellation regressions
 
-Status: **planned**. Minimized confirmed defects with an independent assertion and original failure reference.
+Status: **active**. A real SIGINT interrupts `run`, `capture` and `run_ok` while
+a child owns captured pipes. Independent `waitpid`/liveness checks prove that
+cancellation propagates only after the direct child is killed and reaped; a
+subsequent command proves recovery. The experiment uses a readiness handshake
+and an outer process deadline, not a timed guess.
 
-No executable coverage is claimed by this directory. Follow
-[the coverage plan](../../../../COVERAGE.md) before adding tests, then activate this lane in
-`tests/tooling/inventory.toml`. A required lane must fail when its prerequisites
-are absent. Use success controls, explicit bounds, and independent expectations.
+Run `uv run --no-sync python -m tests.tooling run regression -- -q`.

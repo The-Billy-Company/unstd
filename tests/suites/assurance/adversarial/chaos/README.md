@@ -1,8 +1,12 @@
-# chaos
+# Chaos and recovery
 
-Status: **planned**. Bounded syscall, stream, clock, entropy and killed-worker fault injection.
+Status: **active**. Recorded mixed filesystem/process histories, real writer
+interruption, stream faults and clock/entropy outages have bounded experiments,
+independent expectations, positive controls and recovery assertions.
 
-No executable coverage is claimed by this directory. Follow
-[the coverage plan](../../../../COVERAGE.md) before adding tests, then activate this lane in
-`tests/tooling/inventory.toml`. A required lane must fail when its prerequisites
-are absent. Use success controls, explicit bounds, and independent expectations.
+See the [campaign runbook](../../../../tooling/chaos/README.md) for seeds,
+replay, budgets, backend admission, process ownership, CI and evidence limits.
+
+Run `uv run --no-sync python -m tests.tooling.chaos run --seed 173`, or
+select this lane directly with
+`uv run --no-sync python -m tests.tooling run chaos -- --chaos-seed 173 -q`.

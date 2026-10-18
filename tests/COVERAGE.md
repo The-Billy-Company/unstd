@@ -48,14 +48,14 @@ duplicating a scenario under multiple paths.
 | `parity` | Active | Explicit stdlib JSON, Base64 and regex differential suites. Additional parity assertions remain inside unit and property files. |
 | `properties` | Active, existing tests | Generated serde, pack, TOML, clone, UUID, and audio laws. Other generated tests remain in inherited files. |
 | `security-contracts` | Active, existing tests | Existing crypto adverse contracts, including TLS context configuration. Reference-vector cases remain in the inherited crypto unit files. This is not a complete penetration campaign. |
-| `gates` | Active | Package description, optional dependencies, typing marker, benchmark-harness integrity, fuzz registry/corpus authentication, target oracles and bounded worker/engine failure handling. Isolated artifact installation belongs to `packaging`. |
-| `regression` | Active | Minimized fuzz-discovered regex surrogate and partial WAV frame defects, with direct assertions owned by the affected module. |
+| `gates` | Active | Package description, optional dependencies, typing marker, benchmark-harness integrity, fuzz registry/corpus authentication, target oracles, recorded chaos schedules and bounded worker failure handling. Isolated artifact installation belongs to `packaging`. |
+| `regression` | Active | Confirmed regex surrogate, partial WAV frame and interrupted-child reaping defects, with direct assertions owned by the affected module. |
 | `integration` | Active | Real filesystem/process fault schedules, interruption, cleanup and recovery. Broader application scenarios remain separately planned. |
 | `pentest` | Active | Real loopback TLS trust/identity/protocol/mTLS probes with authenticated controls and bounded fixture PKI. Module-owned parser/token probes live under security contracts. |
 | `packaging` | Active | Offline artifact rebuilds, pristine base and each-extra consumers, complete module probes, installed typing and negative controls. |
 | `system-integration` | Planned | Broader cross-module application scenarios beyond the implemented filesystem/process boundaries. |
 | `security-structure` | Planned | Early structural canaries and security-policy checks. Behavioral attack tests carry the security guarantee. |
-| `chaos` | Planned | Bounded interruption and failure campaigns with explicit fault schedules and recovery assertions. |
+| `chaos` | Active | Seeded mixed filesystem/process histories, barrier-selected writer kills, stream interruptions and clock/entropy provider outages; independent state/progress/ownership/recovery assertions and bounded installed/stdlib campaigns. |
 | `concurrency` | Planned | Thread/process races and isolation. Existing UUID thread coverage is a starting case, not a library-wide guarantee. |
 | `resources` | Planned | Time, memory, descriptors, handles, scratch files, and cache bounds in controlled workers. |
 | `performance` | Planned | Reproducible throughput/latency evidence with audited semantics and stable baselines. The existing `bench` program remains the current instrument. |
@@ -195,6 +195,15 @@ destination. Monkeypatching `fsync` proves ordering/error handling, not survival
 of a real power loss. Any future crash-durability claim needs a controlled
 filesystem/VM experiment with its own environment and limitations.
 
+The [chaos runner](tooling/chaos/README.md) now executes repeated atomic-write
+and process histories, actual SIGINT/SIGKILL, stream faults and clock/entropy
+schedules. Journals retain planned/observed boundaries and recovery. Fresh
+installed/stdlib workers have hard parent deadlines, honest platform controls,
+case accounting and process-group ownership. CI derives Linux/macOS combinations
+from executable groups and retains failure evidence. A discovered cancellation
+leak now has a production fix and owning regression: `proc.run` kills and reaps
+its direct child before returning a `KeyboardInterrupt`.
+
 Concurrency scenarios must state what the API promises. UUID uniqueness and
 filesystem visibility differ from global deterministic random sequencing. Do
 not assert thread safety for backend objects that publish no such guarantee.
@@ -312,6 +321,13 @@ remain separate future evidence: Python bytecode instrumentation does not cover
 compiled internals. Real power-loss durability and broad platform proof also
 require dedicated environments; process-kill evidence does not substitute for
 them.
+
+The chaos delivery activates recorded mixed-fault and recovery campaigns for
+filesystem/process, streams and clock/entropy boundaries. It keeps controlled
+interruption evidence distinct from physical power loss and cryptographic
+strength. Seed replay, actual fault journals, explicit backend admission and
+bounded Linux/macOS campaigns are implemented; broader resource/soak claims
+remain separate.
 
 ### P1 — broaden product and integration evidence
 
