@@ -15,10 +15,11 @@ Three contracts are pinned here:
 from __future__ import annotations
 
 import base64
+import json
 
 import pytest
 
-from unstd.serde import b64
+from unstd.serde import b64, jsonx
 
 
 try:
@@ -42,6 +43,12 @@ _DATA = [
     b"\xfb\xff\xfe",
     bytes(range(256)),
 ]
+
+
+def _assert_same_error(actual: BaseException, expected: BaseException) -> None:
+    """Keep UTF-8 exception classes and the offending byte offsets intact."""
+    assert type(actual) is type(expected)
+    assert actual.args == expected.args
 
 
 @pytest.fixture(params=["pybase64", "stdlib"])
@@ -133,3 +140,60 @@ def test_url_decode_text_round_trips_utf8(backend: str) -> None:
 @pytest.mark.parametrize("obj", [None, True, 1, 1.5, "s", [1, 2], {"k": "v"}])
 def test_json_round_trips(backend: str, obj: object) -> None:
     assert b64.decode_json(b64.encode_json(obj)) == obj
+
+
+@pytest.mark.parametrize(
+    "raw", [b"", b"hello", b"\xff", b"a\xc0\xafz", b"\xed\xa0\x80", b"\xe2\x82"]
+)
+@pytest.mark.parametrize(
+    "errors",
+    [
+        "replace",
+        "strict",
+        "ignore",
+        "backslashreplace",
+        "surrogateescape",
+        "surrogatepass",
+        "unknown-policy",
+    ],
+)
+def test_decode_text_follows_utf8_error_policy(
+    backend: str, raw: bytes, errors: str
+) -> None:
+    encoded = base64.b64encode(raw)
+    try:
+        expected = raw.decode("utf-8", errors)
+    except (UnicodeError, LookupError) as expected_error:
+        with pytest.raises(type(expected_error)) as caught:
+            b64.decode_text(encoded, errors=errors)
+        _assert_same_error(caught.value, expected_error)
+    else:
+        assert b64.decode_text(encoded, errors=errors) == expected
+
+
+@pytest.mark.parametrize("errors", ["replace", "ignore", "strict"])
+def test_decode_text_does_not_hide_base64_errors(backend: str, errors: str) -> None:
+    with pytest.raises(b64.Error):
+        b64.decode_text("!!", errors=errors)
+
+
+@pytest.mark.parametrize("document", ['{"x": 1}', '[true, null, "é"]', "123"])
+def test_decode_json_accepts_stdlib_encoded_json(backend: str, document: str) -> None:
+    encoded = base64.b64encode(document.encode("utf-8"))
+    assert b64.decode_json(encoded) == json.loads(document)
+
+
+def test_decode_json_preserves_json_error_details(backend: str) -> None:
+    document = '{"x":}'
+    encoded = base64.b64encode(document.encode())
+    with pytest.raises(json.JSONDecodeError) as expected:
+        jsonx.loads(document)
+    with pytest.raises(json.JSONDecodeError) as actual:
+        b64.decode_json(encoded)
+    for attribute in ("msg", "doc", "pos", "lineno", "colno"):
+        assert getattr(actual.value, attribute) == getattr(expected.value, attribute)
+
+
+def test_decode_json_does_not_hide_base64_errors(backend: str) -> None:
+    with pytest.raises(b64.Error):
+        b64.decode_json("!!")

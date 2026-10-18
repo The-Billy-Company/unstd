@@ -235,7 +235,8 @@ case(
     backend="pybase64",
     payload=lambda: _B64_TEXT,
     accel=b64_decode,
-    base=base64.b64decode,
+    base=lambda p: base64.b64decode(p, validate=True),
+    note="strict decoding on both paths; stdlib handles native errors",
 )
 
 

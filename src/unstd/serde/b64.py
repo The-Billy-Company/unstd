@@ -1,54 +1,35 @@
-"""Drop-in accelerated Base64 — pybase64 under a stdlib-``base64``-faithful surface.
+"""Stdlib-compatible Base64 functions and optional accelerated convenience helpers.
 
-The stdlib ``base64`` module is C-implemented but scalar; ``pybase64`` wraps
-`libbase64 <https://github.com/aklomp/base64>`_, which dispatches to an
-AVX2/NEON SIMD codec at runtime (multi-GB/s encode) with a pure-Python
-fallback. Callers that base64 genuinely large payloads — PCM audio, PNG
-thumbnails / screenshots, f16 embedding vectors — justify the SIMD codec over
-the scalar stdlib path.
+``b64encode``/``b64decode``, ``standard_b64encode``/``standard_b64decode`` and
+``urlsafe_b64encode``/``urlsafe_b64decode`` follow Python 3.12–3.14's Base64 API:
+byte results, bytes-like inputs, arbitrary ``altchars``, lenient decoding by
+default and optional ``validate=True``. MIME helpers ``encodebytes`` and
+``decodebytes`` are stdlib's originals. The legacy stream functions are exposed
+as ``encode_file``/``decode_file`` because ``encode``/``decode`` retain unstd's
+existing convenience meanings. Other encodings (Base16/32/85) remain in stdlib.
 
-One verb per direction, with the alphabet and padding as keywords rather than
-as more function names::
+``encode`` returns ASCII text, optionally URL-safe or unpadded. ``decode`` uses
+strict standard decoding by default; ``decode(url=True)`` uses stdlib's lenient
+URL alphabet with an extension accepting omitted padding. Ignored characters
+do not count towards that padding. Strict validation does not check unused pad
+bits for canonicality, just as in stdlib.
 
-    from unstd.serde import b64
+With the ``serde`` extra, pybase64 accelerates exact ``bytes`` encoding and
+strict decoding of exact ``bytes`` or ASCII ``str``. Other input types and
+options use stdlib; native decode failures also return to stdlib for its exact
+acceptance and diagnostics. This avoids pybase64 1.5's Python 3.15-oriented
+lenient padding rules, Unicode coercion and alternate-alphabet warnings.
+Installing the extra must not change results, errors or warnings.
 
-    s = b64.encode(data)  # bytes -> str (standard, padded)
-    s = b64.encode(data, url=True, pad=False)  # bytes -> str (base64url, JWT-style)
-    data = b64.decode(s)  # str|bytes -> bytes (standard, validated)
-    data = b64.decode(s, url=True)  # str|bytes -> bytes (url-safe, padding optional)
-    text = b64.decode_text(s)  # str|bytes -> str (utf-8, errors="replace")
-    blob = b64.encode_json(obj)  # any JSON value -> str
-    obj = b64.decode_json(blob)  # str|bytes -> Json
-
-Backend & fallback: pybase64 is provided by the ``serde`` extra. When it is
-absent (a base ``unstd`` install) every call transparently uses the stdlib
-``base64`` module — same surface, byte-identical output, scalar speed — so the
-module works everywhere.
-
-Faithfulness contract — verified byte-for-byte against stdlib ``base64`` in
-``tests/serde/test_b64.py``:
-
-- **Encode** produces exactly the bytes stdlib emits, handed back as ``str`` (the
-  ubiquitous ``base64.b64encode(x).decode("ascii")`` idiom fused into one call).
-  ``pad=False`` drops the trailing ``=`` — the unpadded base64url that JWTs,
-  WebAuthn, and bearer tokens put on the wire.
-- **Standard decode** passes ``validate=True`` so non-alphabet bytes raise
-  :data:`Error` instead of being silently discarded — a wire payload that isn't
-  clean base64 is a bug, not something to truncate past — and requires canonical
-  padding.
-- **Url-safe decode** is stdlib ``urlsafe_b64decode``'s lenient alphabet, and
-  accepts padded *and* unpadded input. The alphabet exists for URLs, headers,
-  and tokens, where the ``=`` is routinely dropped, so demanding it back would
-  only move the ``rstrip``/re-pad dance to every call site.
-- Every decoder accepts ``str`` *or* ``bytes``, so callers stop sprinkling
-  ``str(...)`` / ``.encode()`` coercions at the boundary.
-
-``binascii.Error`` is re-exported so ``except b64.Error`` keeps catching the
-same failure stdlib raised.
+Contract sources: https://docs.python.org/3.12/library/base64.html,
+https://github.com/python/cpython/blob/3.14/Lib/test/test_base64.py,
+https://pybase64.readthedocs.io/en/stable/changelog.html, and RFC 4648 §3.5.
+Differential tests live under ``tests/serde`` and ``tests/properties``.
 """
 
 from __future__ import annotations
 
+import base64 as _stdlib
 from binascii import Error
 from typing import TYPE_CHECKING
 
@@ -56,9 +37,8 @@ from unstd.serde import jsonx
 
 
 if TYPE_CHECKING:
-    # Every call below sticks to the API surface the two backends share (plus the
-    # `_HAVE_PYBASE64`-guarded calls), so type-checking against pybase64 alone is
-    # faithful for both.
+    from collections.abc import Buffer
+
     import pybase64 as _b64
 
     _HAVE_PYBASE64 = True
@@ -73,16 +53,87 @@ else:
         _HAVE_PYBASE64 = False
 
 
-__all__ = ["Error", "decode", "decode_json", "decode_text", "encode", "encode_json"]
+encodebytes = _stdlib.encodebytes
+decodebytes = _stdlib.decodebytes
+encode_file = _stdlib.encode
+decode_file = _stdlib.decode
+urlsafe_b64decode = _stdlib.urlsafe_b64decode
+
+__all__ = [
+    "Error",
+    "b64decode",
+    "b64encode",
+    "decode",
+    "decode_file",
+    "decode_json",
+    "decode_text",
+    "decodebytes",
+    "encode",
+    "encode_file",
+    "encode_json",
+    "encodebytes",
+    "standard_b64decode",
+    "standard_b64encode",
+    "urlsafe_b64decode",
+    "urlsafe_b64encode",
+]
+
+_URL_TRANSLATION = bytes.maketrans(b"-_", b"+/")
+_URL_IGNORED = bytes(
+    value
+    for value in range(256)
+    if value not in b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
+)
 
 
-def encode(data: bytes, *, url: bool = False, pad: bool = True) -> str:
+def b64encode(s: Buffer, altchars: Buffer | None = None) -> bytes:
+    """Stdlib ``b64encode``: bytes output with optional alternative alphabet."""
+    if _HAVE_PYBASE64 and type(s) is bytes and altchars is None:
+        return _b64.b64encode(s)
+    # Stdlib owns alphabet validation, translation, buffer errors and their order.
+    return _stdlib.b64encode(s, altchars)
+
+
+def b64decode(
+    s: str | Buffer, altchars: str | Buffer | None = None, validate: bool = False
+) -> bytes:
+    """Stdlib ``b64decode``, including lenient defaults and exact diagnostics."""
+    if _HAVE_PYBASE64 and altchars is None and validate is True:
+        raw = s.encode("ascii") if type(s) is str and s.isascii() else s
+        if type(raw) is bytes:
+            try:
+                return _b64.b64decode(raw, validate=True, padded=True)
+            except Error:
+                # Backend errors are less specific, and supported Python patch
+                # releases can differ on excess padding. Stdlib is authoritative.
+                pass
+    return _stdlib.b64decode(s, altchars, validate)
+
+
+def standard_b64encode(s: Buffer) -> bytes:
+    """Stdlib standard-alphabet encoding, returning bytes."""
+    return b64encode(s)
+
+
+def standard_b64decode(s: str | Buffer) -> bytes:
+    """Stdlib standard-alphabet decoding, discarding non-alphabet bytes."""
+    return b64decode(s)
+
+
+def urlsafe_b64encode(s: Buffer) -> bytes:
+    """Stdlib URL-safe encoding, retaining padding and returning bytes."""
+    if _HAVE_PYBASE64 and type(s) is bytes:
+        return _b64.b64encode(s, altchars=b"-_")
+    return _stdlib.urlsafe_b64encode(s)
+
+
+def encode(data: Buffer, *, url: bool = False, pad: bool = True) -> str:
     """Base64-encode *data* to an ASCII ``str``.
 
     ``url=True`` selects the ``-``/``_`` alphabet (URLs, filenames, MIME, tokens);
     ``pad=False`` drops the trailing ``=``.
     """
-    if _HAVE_PYBASE64:
+    if _HAVE_PYBASE64 and type(data) is bytes:
         # `altchars` rides the same SIMD encoder straight to `str`, where
         # `urlsafe_b64encode` round-trips through `bytes` first — ~1.8x slower.
         out = (
@@ -91,13 +142,33 @@ def encode(data: bytes, *, url: bool = False, pad: bool = True) -> str:
             else _b64.b64encode_as_string(data)
         )
     else:
-        out = (_b64.urlsafe_b64encode(data) if url else _b64.b64encode(data)).decode(
-            "ascii"
-        )
+        out = (
+            _stdlib.urlsafe_b64encode(data) if url else _stdlib.b64encode(data)
+        ).decode("ascii")
     return out if pad else out.rstrip("=")
 
 
-def decode(s: str | bytes, *, url: bool = False) -> bytes:
+def _decode_input(s: str | Buffer) -> bytes | bytearray:
+    """Normalize URL-helper inputs with stdlib's modern decode coercion rules."""
+    if isinstance(s, str):
+        try:
+            return s.encode("ascii")
+        except UnicodeEncodeError:
+            msg = "string argument should contain only ASCII characters"
+            raise ValueError(msg) from None
+    if isinstance(s, (bytes, bytearray)):
+        return s
+    try:
+        return memoryview(s).tobytes()
+    except TypeError:
+        msg = (
+            "argument should be a bytes-like object or ASCII "
+            f"string, not {s.__class__.__name__!r}"
+        )
+        raise TypeError(msg) from None
+
+
+def decode(s: str | Buffer, *, url: bool = False) -> bytes:
     """Base64-decode *s* to ``bytes``.
 
     Standard (default): strict — non-alphabet characters or missing padding raise
@@ -105,14 +176,19 @@ def decode(s: str | bytes, *, url: bool = False) -> bytes:
     lenient url-safe alphabet, padded or not.
     """
     if not url:
-        return _b64.b64decode(s, validate=True)
-    if _HAVE_PYBASE64:
-        return _b64.urlsafe_b64decode(s, padded=False)
-    raw = s.encode("ascii") if isinstance(s, str) else s
-    return _b64.urlsafe_b64decode(raw + b"=" * (-len(raw) % 4))
+        return b64decode(s, validate=True)
+    # Translate before filtering, as stdlib does, and retain '=' so completed
+    # padding still terminates lenient decoding according to this interpreter.
+    raw = _decode_input(_decode_input(s).translate(_URL_TRANSLATION))
+    # Stdlib normalizes the result of a subclass's translation as a fresh
+    # decode input. Internal filtering must not call that subclass again.
+    if type(raw) is not bytes:
+        raw = memoryview(raw).tobytes()
+    raw = raw.translate(None, _URL_IGNORED)
+    return _stdlib.b64decode(raw + b"=" * (-len(raw) % 4))
 
 
-def decode_text(s: str | bytes, *, url: bool = False, errors: str = "replace") -> str:
+def decode_text(s: str | Buffer, *, url: bool = False, errors: str = "replace") -> str:
     """:func:`decode` *s*, then UTF-8-decode the bytes to text."""
     return decode(s, url=url).decode("utf-8", errors)
 
@@ -122,6 +198,6 @@ def encode_json(obj: object) -> str:
     return encode(jsonx.dumpb(obj))
 
 
-def decode_json(s: str | bytes) -> jsonx.Json:
+def decode_json(s: str | Buffer) -> jsonx.Json:
     """Inverse of :func:`encode_json` — :func:`decode` *s*, then parse the JSON."""
     return jsonx.loads(decode(s))

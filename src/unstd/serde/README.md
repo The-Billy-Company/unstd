@@ -80,14 +80,17 @@ codec (it raises), not `jsonx`.
 
 ## `b64` — accelerated base64
 
-The `base64.b64encode(x).decode("ascii")` / `b64decode(s).decode("utf-8",
-"replace")` idioms fused into one verb per direction, with the alphabet and
-padding as keywords, backed by
-[`pybase64`](https://github.com/mayeut/pybase64) (SIMD `libbase64`, multi-GB/s)
-for large payloads — PCM audio, PNG thumbnails, f16 embeddings.
+Faithful Python 3.12–3.14 Base64 functions alongside unstd's existing text,
+optional-padding and JSON helpers. [`pybase64`](https://github.com/mayeut/pybase64)
+accelerates plain-byte encoding and strict decoding of plain ASCII inputs.
 
 ```python
 from unstd.serde import b64
+
+raw = b64.b64encode(data)  # bytes, exactly stdlib's default
+data = b64.b64decode(raw)  # lenient by default, as in stdlib
+data = b64.b64decode(raw, validate=True)  # strict alphabet/padding validation
+raw = b64.b64encode(data, altchars=b"-_")  # arbitrary two-byte alternative alphabet
 
 s = b64.encode(data)  # bytes -> str (standard, padded)
 s = b64.encode(data, url=True, pad=False)  # base64url, JWT/bearer style
@@ -98,10 +101,75 @@ blob = b64.encode_json(obj)  # any obj -> b64 of its compact JSON (arg/env smugg
 obj = b64.decode_json(blob)  # inverse, via serde.jsonx
 ```
 
-Standard + url-safe **encode** are byte-for-byte identical to stdlib. Standard
-`decode` validates, so non-alphabet input or a missing `=` raises `b64.Error`
-(re-exported `binascii.Error`) instead of being silently truncated. Without the
-`serde` extra, the helpers use stdlib `base64` (identical output, scalar speed).
+### Compatibility contract
+
+`b64encode`, `b64decode`, `standard_b64encode`, `standard_b64decode`,
+`urlsafe_b64encode` and `urlsafe_b64decode` preserve the corresponding stdlib
+functions' defaults, return types, positional/keyword options and failures:
+
+- Encoding returns `bytes`, accepts buffer exporters and retains padding.
+  Decoding accepts bytes-like objects and ASCII text. Non-ASCII text raises
+  `ValueError`; unsupported types, released views and noncontiguous encoding
+  buffers retain stdlib's errors. Decoding accepts strided views by copying,
+  just as CPython does. Inputs are not modified.
+- `b64decode` defaults to `validate=False`: ignored bytes, leading/interior/
+  excess padding and data after padding follow the running interpreter.
+  `validate=True` rejects malformed input with the same exception class and
+  diagnostic. `Error` is the original `binascii.Error`.
+- Alternative alphabets follow stdlib translation semantics, including
+  duplicated, overlapping and non-ASCII byte alternatives. Encoding requires
+  bytes-like `altchars`; decoding also accepts ASCII text `altchars`. Invalid
+  options and the order of their validation follow stdlib.
+- Strict validation does **not** require zero unused pad bits. For example,
+  `b64decode(b"Zh==", validate=True)` returns `b"f"`, as in stdlib. Encoding
+  always emits zero pad bits. Neither strict decoding nor the URL helper
+  promises a unique textual spelling.
+
+`encodebytes` and `decodebytes` are stdlib's MIME helpers, including 76-column
+wrapping, trailing newlines and their narrower buffer requirements. Legacy
+file functions are available as `encode_file(input, output)` and
+`decode_file(input, output)`. Their stdlib names conflict with unstd's existing
+`encode` and `decode` helpers, so a whole-module import replacement requires
+renaming those stream calls. Base16, Base32 and Base85 remain in `base64`.
+
+The convenience API retains its distinct defaults: `encode` returns `str`,
+`decode` validates standard input, and `decode(url=True)` accepts omitted
+padding. The URL helper translates the URL alphabet, removes bytes stdlib
+ignores, then appends enough `=` to reach a multiple of four. Existing `=`
+characters remain in place so completed padding retains stdlib's termination
+behavior. Thus `decode("AA!", url=True)` returns `b"\x00"`, and padded inputs
+already accepted by stdlib keep their decoded value. Non-ASCII **text** remains
+an error. `urlsafe_b64decode` itself keeps stdlib's padding requirement.
+
+Installing the `serde` extra must not change bytes, accepted inputs, errors or
+warnings. Native paths accept only exact builtin types; other buffers,
+subclasses, lenient decoding and custom alphabets use stdlib. Native strict
+decode failures return to stdlib for runtime-accurate behavior and diagnostics.
+This boundary matters because pybase64 1.5 adopts Python 3.15 padding and URL
+alphabet behavior, while this package tests Python 3.12–3.14. URL decoding
+therefore uses stdlib rather than pybase64's unpadded decoder. Without the
+extra, all operations use stdlib.
+
+### Evidence and regression coverage
+
+The contract follows the [Python 3.12 Base64 documentation](https://docs.python.org/3.12/library/base64.html),
+[Python 3.14 Base64 documentation](https://docs.python.org/3.14/library/base64.html),
+[strict-mode definition](https://docs.python.org/3.14/library/binascii.html#binascii.a2b_base64),
+[CPython implementation](https://github.com/python/cpython/blob/3.14/Lib/base64.py)
+and [CPython tests](https://github.com/python/cpython/blob/3.14/Lib/test/test_base64.py).
+[RFC 4648 §3.5](https://www.rfc-editor.org/rfc/rfc4648.html#section-3.5)
+explains unused bits and canonical encoding;
+[pybase64's changelog](https://pybase64.readthedocs.io/en/stable/changelog.html)
+and the [Python 3.15 documentation](https://docs.python.org/3.15/library/base64.html)
+document the backend's changed semantics.
+
+`tests/serde/test_b64_stdlib_parity.py` compares vectors,
+options, errors, unusual buffers, subclasses and MIME/stream behavior with
+the running stdlib. `tests/properties/test_b64_parity.py`
+generates arbitrary bytes, Unicode, transport mutations, ignored characters
+and padding, checking both the native backend and forced fallback. Named
+examples retain the discovered failures, including trailing data after padding,
+non-ASCII coercion and padding repair in the presence of ignored bytes.
 
 ## `structs` — typed `msgspec` codecs
 
