@@ -1,12 +1,13 @@
 # unstd
 
-stdlib-faithful accelerated replacements. Each module wraps a native codec
-behind the call surface of the stdlib module it stands in for, so migrating a
-call site is an import swap, not a rewrite.
+stdlib-faithful replacements, with optional native acceleration where it
+preserves the contract. Modules follow the stdlib call surface, so migrating a
+call site is an import swap. JSON proves native eligibility and falls back to
+stdlib codecs to preserve formatting, values, callbacks and errors.
 
 ```python
 import json  # →
-from unstd.serde import jsonx  # jsonx.dumps / jsonx.loads, same surface, faster
+from unstd.serde import jsonx  # faithful json API; dumpb for compact transport
 ```
 
 The base install is pure stdlib: depending on `unstd` adds zero third-party
