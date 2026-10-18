@@ -304,6 +304,59 @@ def test_pristine_environment_provenance_and_installed_version(
     assert facts["version"] == facts["metadata"] == artifacts.project["version"]
 
 
+def test_installed_import_defers_metadata_until_cached_version_access(
+    consumer: Consumer, artifacts: Artifacts
+) -> None:
+    result = consumer.run(
+        """
+import sys
+
+class MetadataBlocker:
+    def find_spec(self, fullname, path=None, target=None):
+        if fullname == 'importlib.metadata' or fullname.startswith('importlib.metadata.'):
+            raise AssertionError('package metadata imported during ordinary startup')
+
+assert 'importlib.metadata' not in sys.modules
+blocker = MetadataBlocker()
+sys.meta_path.insert(0, blocker)
+import unstd
+from unstd.serde import jsonx
+
+value = {'unicode': '雪', 'nested': [None, True, -7, 1.5]}
+assert jsonx.loads(jsonx.dumpb(value)) == value
+assert jsonx.canonical({'b': 2, 'a': 1}) == b'{"a":1,"b":2}'
+assert '__version__' in dir(unstd)
+assert '__version__' not in vars(unstd)
+assert 'importlib.metadata' not in sys.modules
+sys.meta_path.remove(blocker)
+
+import importlib.metadata
+installed_version = importlib.metadata.version
+metadata_version = installed_version('unstd')
+lookups = []
+
+def counted_version(distribution):
+    lookups.append(distribution)
+    return installed_version(distribution)
+
+importlib.metadata.version = counted_version
+version = unstd.__version__
+assert isinstance(version, str)
+assert version == metadata_version
+assert vars(unstd)['__version__'] is version
+assert unstd.__version__ is version
+from unstd import __version__
+assert __version__ is version
+assert lookups == ['unstd'], lookups
+importlib.metadata.version = installed_version
+"""
+        + CONSUMER_AUDIT
+        + "\nimport json\nprint(json.dumps({'version': version, 'metadata': metadata_version}))"
+    )
+    facts = json.loads(result.stdout)
+    assert facts["version"] == facts["metadata"] == artifacts.project["version"]
+
+
 @pytest.mark.parametrize("surface", _STDLIB_CASES)
 def test_base_install_executes_each_stdlib_surface(
     surface: str, consumer: Consumer

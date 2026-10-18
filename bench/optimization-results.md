@@ -54,3 +54,42 @@ Regressions cover subclass hooks, custom metaclasses, input mutation, integer
 bounds, recursion headroom, padding, Unicode and arbitrary sequence elements.
 The edit-distance state is masked to the shorter string's width, and character
 mask count is bounded to avoid quadratic storage on diverse Unicode inputs.
+
+## Package startup
+
+On the same macOS arm64 / CPython 3.12.13 host with msgspec 0.22.0, deferring
+`unstd.__version__` lookup removes distribution discovery from codec imports.
+`Codec` still caches the native encoder and decoder methods; its implementation
+and parsing policy are unchanged.
+
+| Fresh-process operation | Eager version lookup | Lazy version lookup | Direct msgspec |
+|---|---:|---:|---:|
+| Import, construct decoder, decode first record | 24.48 ms | 12.66 ms | 11.86 ms |
+| Complete child process | 42.69 ms | 27.75 ms | 27.75 ms |
+
+These are medians of 31 samples per variant, after two discarded warmups, with
+variant order rotated between rounds. Each sample launches a new isolated
+interpreter (`python -I`), adds the selected source tree to `sys.path`, then
+times the import, decoder construction and first decode with `perf_counter_ns`.
+The parent separately times the complete subprocess. The before tree is a copy
+of the source before this change; the after tree uses the working source.
+The wrapper path is `from unstd.serde import structs` followed by
+`structs.Codec(dict[str, object]).decode`; the direct path uses
+`msgspec.json.Decoder(dict[str, object]).decode`. Both decode
+`'{"n":1,"s":"café","items":[true,null,2.5]}'` and assert the same result,
+native decoder type and schema. Import-plus-first-decode improves **1.93×** and
+complete process time **1.54×** in this local sample. These timings do not
+establish an application-specific storage or SQL performance gate.
+
+For a fresh import profile, run:
+
+```console
+uv run --no-sync python -X importtime -c 'from unstd.serde.structs import Codec; Codec(dict[str, object]).decode("{}")'
+```
+
+`importlib.metadata` should be absent from that profile. Ordinary correctness
+tests enforce this by blocking its import in fresh workers, including installed
+wheel and sdist-built-wheel consumers. They also check native decoder reuse and
+successful/invalid-input parity against msgspec. Version access still resolves
+installed metadata on demand and caches the string, retaining the source-tree
+fallback and refreshing lazily after `importlib.reload`.

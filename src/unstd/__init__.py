@@ -56,11 +56,31 @@ Import the module, not its members::
 
 from __future__ import annotations
 
-from importlib.metadata import PackageNotFoundError
-from importlib.metadata import version as _installed_version
+
+__version__: str
+
+# A reload should refresh a version cached by a previous attribute access.
+globals().pop("__version__", None)
 
 
-try:
-    __version__ = _installed_version("unstd")
-except PackageNotFoundError:  # running from a source tree that was never installed
-    __version__ = "0.0.0.dev0"
+def __getattr__(name: str) -> str:
+    """Resolve and cache the installed version only when it is requested."""
+    if name != "__version__":
+        msg = f"module {__name__!r} has no attribute {name!r}"
+        raise AttributeError(msg)
+
+    # Metadata discovery imports a large stdlib closure and scans distributions.
+    # Submodule consumers (including native codecs) do not need to pay that cost.
+    from importlib.metadata import PackageNotFoundError, version
+
+    try:
+        resolved = version("unstd")
+    except PackageNotFoundError:  # source tree that was never installed
+        resolved = "0.0.0.dev0"
+    globals()[name] = resolved
+    return resolved
+
+
+def __dir__() -> list[str]:
+    """Include the lazy version attribute without resolving install metadata."""
+    return sorted({*globals(), "__version__"})
