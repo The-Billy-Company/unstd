@@ -14,8 +14,10 @@ from tests.tooling.chaos import execution
 from tests.tooling.runner import check_inventory
 
 
-def _parser():
-    parser = argparse.ArgumentParser(description=__doc__)
+def _parser(lane="chaos"):
+    parser = argparse.ArgumentParser(
+        description=f"Run or replay recorded {lane} scenarios with hard worker deadlines."
+    )
     commands = parser.add_subparsers(dest="command", required=True)
     listing = commands.add_parser("list")
     listing.add_argument("--json", action="store_true")
@@ -36,7 +38,7 @@ def _parser():
     return parser
 
 
-def _read_replay(path):
+def _read_replay(path, *, lane="chaos"):
     with path.open("rb") as stream:
         raw = stream.read(execution.MAX_REPORT + 1)
     if len(raw) > execution.MAX_REPORT:
@@ -53,6 +55,9 @@ def _read_replay(path):
         return result
 
     data = json.loads(raw, object_pairs_hook=unique)
+    if isinstance(data, dict) and data.get("lane", "chaos") != lane:
+        message = "replay belongs to a different campaign lane"
+        raise ValueError(message)
     if (
         not isinstance(data, dict)
         or type(data.get("schema_version")) is not int
@@ -79,9 +84,9 @@ def _read_replay(path):
     return data
 
 
-def _execute(args, groups):
+def _execute(args, groups, *, lane="chaos"):
     if args.command == "replay":
-        prior = _read_replay(args.report)
+        prior = _read_replay(args.report, lane=lane)
         selected, seed, backend, rounds, limits = (
             [prior["group"]],
             prior["seed"],
@@ -132,7 +137,7 @@ def _execute(args, groups):
     directory = (
         args.artifact_dir
         or execution.REPO
-        / ".local/chaos"
+        / f".local/{lane}"
         / (datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ") + "-" + uuid4().hex[:8])
     ).resolve()
     reports = []
@@ -145,6 +150,7 @@ def _execute(args, groups):
                 seed=current_seed,
                 backend=backend,
                 artifact_dir=output,
+                **({"lane": lane} if lane != "chaos" else {}),
                 **limits,
             )
             reports.append(
@@ -169,6 +175,7 @@ def _execute(args, groups):
     directory.mkdir(parents=True, exist_ok=True)
     summary = {
         "schema_version": 1,
+        "lane": lane,
         "command": args.command,
         "status": status,
         "reports": reports,
@@ -180,14 +187,14 @@ def _execute(args, groups):
     return 0 if status == "passed" else 1
 
 
-def main(argv=None):
+def main(argv=None, *, lane="chaos"):
     """Preserve all worker failures; unsupported or empty runs cannot pass."""
-    args = _parser().parse_args(argv)
+    args = _parser(lane).parse_args(argv)
     try:
         check_inventory(execution.REPO)
-        groups = execution.discover()
+        groups = execution.discover() if lane == "chaos" else execution.discover(lane)
         if args.command == "check":
-            print(f"Validated {len(groups)} executable chaos groups")
+            print(f"Validated {len(groups)} executable {lane} groups")
             return 0
         if args.command == "list":
             if args.json:
@@ -207,9 +214,9 @@ def main(argv=None):
                 for group, path in groups.items():
                     print(f"{group}: {path.relative_to(execution.REPO)}")
             return 0
-        return _execute(args, groups)
+        return _execute(args, groups, lane=lane)
     except (ValueError, OSError, TypeError) as error:
-        print(f"Chaos admission failed: {error}", file=sys.stderr)
+        print(f"{lane.capitalize()} admission failed: {error}", file=sys.stderr)
         return 2
 
 

@@ -48,6 +48,22 @@ _last_ms: int | None = None
 _last_counter = 0  # 12-bit monotonic counter, RFC 9562 §6.2 Method 1
 
 
+def _reset_after_fork() -> None:
+    """Give a forked child its own unlocked counter and fresh generator state.
+
+    A vanished parent thread may have owned the inherited lock. Replacing it
+    avoids a permanent child deadlock; reseeding starts a process-local sequence
+    using the child's entropy without changing the parent's state or backend.
+    """
+    global _counter_lock, _last_ms, _last_counter
+    _counter_lock = threading.Lock()
+    _last_ms, _last_counter = None, 0
+
+
+if hasattr(os, "register_at_fork"):
+    os.register_at_fork(after_in_child=_reset_after_fork)
+
+
 def _seed_counter() -> int:
     return _int_from_bytes(os.urandom(2)) & 0xFFF  # fresh 12-bit seed
 

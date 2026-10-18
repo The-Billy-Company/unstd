@@ -32,7 +32,7 @@ _NEEDS: dict[str, str] = {
     "suites/product/model/**/*.py": "unstd.model",
     "suites/product/serde/unit/test_structs.py": "unstd.serde.structs",
     "suites/product/time/unit/test_zoned.py": "unstd.time.zoned",
-    "suites/assurance/gates/bench/test_bench.py": "bench",
+    "suites/assurance/gates/bench/test_*.py": "bench",
 }
 
 
@@ -62,6 +62,12 @@ def pytest_addoption(parser: pytest.Parser) -> None:
         type=int,
         default=173,
         help="replay seed for explicit chaos scenarios (unsigned 64-bit)",
+    )
+    parser.addoption(
+        "--concurrency-seed",
+        type=int,
+        default=173,
+        help="replay seed for explicit concurrent histories (unsigned 64-bit)",
     )
 
 

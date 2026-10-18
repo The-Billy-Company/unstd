@@ -38,6 +38,7 @@ jobs:
       - run: uv run --no-sync --python 3.13 python -m tests.tooling check
       - run: uv run --no-sync --python 3.13 python -m tests.tooling.fuzz check
       - run: uv run --no-sync --python 3.13 python -m tests.tooling.chaos check
+      - run: uv run --no-sync --python 3.13 python -m tests.tooling.concurrency check
       - run: uv run --python 3.13 ruff check .
       - run: uv run --python 3.13 ruff format --check .
       - run: uv run --python 3.13 mypy

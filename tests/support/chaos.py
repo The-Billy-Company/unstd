@@ -34,6 +34,7 @@ BLOCKED_BACKENDS = (
     "irgx",
     "whenever",
     "rapidfuzz",
+    "immutables",
 )
 
 

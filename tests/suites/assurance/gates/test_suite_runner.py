@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 def repo(tmp_path: Path) -> Path:
     (tmp_path / "pyproject.toml").write_text(
         "[tool.pytest.ini_options]\n"
-        'markers = ["unit: unit evidence", "chaos: faults", "perf: timing"]\n',
+        'markers = ["unit: unit evidence", "chaos: faults", "concurrency: histories", "perf: timing"]\n',
         encoding="utf-8",
     )
     (tmp_path / "tests/tooling").mkdir(parents=True)
@@ -233,8 +233,9 @@ def test_planned_suite_with_tests_must_be_activated(repo: Path) -> None:
 @pytest.mark.parametrize(
     ("marker", "selection"),
     [
-        ("unit", "unit and not perf and not chaos"),
+        ("unit", "unit and not perf and not chaos and not concurrency"),
         ("perf", "perf"),
+        ("concurrency", "concurrency"),
         ("chaos", "chaos"),
     ],
 )
@@ -286,7 +287,7 @@ def test_explicit_pytest_marker_override_remains_last(
     assert runner.main(["run", "unit", "--", "-m", "unit or perf"], repo_root=repo) == 0
     assert calls[0][-4:] == [
         "-m",
-        "unit and not perf and not chaos",
+        "unit and not perf and not chaos and not concurrency",
         "-m",
         "unit or perf",
     ]

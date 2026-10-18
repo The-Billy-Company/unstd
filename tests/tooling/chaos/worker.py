@@ -74,15 +74,18 @@ def _backend_evidence():
 class Reporter:
     """Retain every terminal result and the currently executing test identity."""
 
-    def __init__(self, directory):
+    def __init__(self, directory, lane="chaos"):
         self.directory = directory
+        self.lane = lane
         self.records = directory / "cases.jsonl"
         self.records.write_text("")
         self.sequence = 0
         self.collected = 0
 
     def pytest_configure(self, config):
-        config._unstd_chaos_journal_directory = self.directory / "journals"
+        setattr(
+            config, f"_unstd_{self.lane}_journal_directory", self.directory / "journals"
+        )
 
     def pytest_collection_finish(self, session):
         self.collected = len(session.items)
@@ -132,6 +135,7 @@ def main():
     """Apply isolation before imports and never interpret a partial run as success."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--path", required=True)
+    parser.add_argument("--lane", choices=("chaos", "concurrency"), default="chaos")
     parser.add_argument("--seed", type=int, required=True)
     parser.add_argument("--backend", choices=("installed", "stdlib"), required=True)
     parser.add_argument("--cpu-seconds", type=int, required=True)
@@ -157,10 +161,16 @@ def main():
             memory = args.memory_mb * 1024 * 1024
             resource.setrlimit(resource.RLIMIT_AS, (memory, memory))
             enforcement["address_space"] = True
+    # A campaign owns its complete reviewed collection and plugin set. Pytest
+    # reads these explicit environment inputs even with plugin autoload disabled:
+    # inherited -k/-m selectors could otherwise turn a partial run into success.
+    for name in ("PYTEST_ADDOPTS", "PYTEST_PLUGINS"):
+        os.environ.pop(name, None)
     os.environ.update(
         PYTEST_DISABLE_PLUGIN_AUTOLOAD="1",
         UNSTD_CHAOS_BACKEND=args.backend,
         UNSTD_CHAOS_OWNED_GROUP="1",
+        UNSTD_CAMPAIGN_LANE=args.lane,
         OPENBLAS_NUM_THREADS="1",
         OMP_NUM_THREADS="1",
     )
@@ -172,6 +182,7 @@ def main():
         {
             "schema_version": 1,
             "backend": args.backend,
+            "lane": args.lane,
             "seed": args.seed,
             "enforcement": enforcement,
             **_backend_evidence(),
@@ -179,15 +190,15 @@ def main():
     )
     import pytest
 
-    reporter = Reporter(args.directory)
+    reporter = Reporter(args.directory, args.lane)
     arguments = [
         args.path,
         "-q",
         "-p",
         "no:cacheprovider",
         "-m",
-        "chaos",
-        "--chaos-seed",
+        args.lane,
+        f"--{args.lane}-seed",
         str(args.seed),
         "--basetemp",
         str(args.directory / "temporary"),

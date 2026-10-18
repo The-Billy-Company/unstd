@@ -136,7 +136,7 @@ irregex = false
 
 [tool.pytest.ini_options]
 testpaths = ["tests/suites"]
-addopts = "--strict-markers --strict-config --import-mode=importlib -m 'not perf and not chaos'"
+addopts = "--strict-markers --strict-config --import-mode=importlib -m 'not perf and not chaos and not concurrency'"
 markers = [
   "unit: module API contracts, including retained historical mixed cases",
   "parity: independent stdlib or backend differential contracts",

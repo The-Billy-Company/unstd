@@ -48,15 +48,15 @@ duplicating a scenario under multiple paths.
 | `parity` | Active | Explicit stdlib JSON, Base64 and regex differential suites. Additional parity assertions remain inside unit and property files. |
 | `properties` | Active, existing tests | Generated serde, pack, TOML, clone, UUID, and audio laws. Other generated tests remain in inherited files. |
 | `security-contracts` | Active, existing tests | Existing crypto adverse contracts, including TLS context configuration. Reference-vector cases remain in the inherited crypto unit files. This is not a complete penetration campaign. |
-| `gates` | Active | Package description, optional dependencies, typing marker, benchmark-harness integrity, fuzz registry/corpus authentication, target oracles, recorded chaos schedules and bounded worker failure handling. Isolated artifact installation belongs to `packaging`. |
-| `regression` | Active | Confirmed regex surrogate, partial WAV frame and interrupted-child reaping defects, with direct assertions owned by the affected module. |
+| `gates` | Active | Package description, optional dependencies, typing marker, benchmark-harness integrity, fuzz registry/corpus authentication, target oracles, recorded chaos/concurrency schedules, lane/replay selection and bounded worker failure handling. Isolated artifact installation belongs to `packaging`. |
+| `regression` | Active | Confirmed regex surrogate/cache capacity, UUID fork-lock, partial WAV frame and interrupted-child reaping defects, with direct assertions owned by the affected module. |
 | `integration` | Active | Real filesystem/process fault schedules, interruption, cleanup and recovery. Broader application scenarios remain separately planned. |
 | `pentest` | Active | Real loopback TLS trust/identity/protocol/mTLS probes with authenticated controls and bounded fixture PKI. Module-owned parser/token probes live under security contracts. |
 | `packaging` | Active | Offline artifact rebuilds, pristine base and each-extra consumers, complete module probes, installed typing and negative controls. |
 | `system-integration` | Planned | Broader cross-module application scenarios beyond the implemented filesystem/process boundaries. |
 | `security-structure` | Planned | Early structural canaries and security-policy checks. Behavioral attack tests carry the security guarantee. |
 | `chaos` | Active | Seeded mixed filesystem/process histories, barrier-selected writer kills, stream interruptions and clock/entropy provider outages; independent state/progress/ownership/recovery assertions and bounded installed/stdlib campaigns. |
-| `concurrency` | Planned | Thread/process races and isolation. Existing UUID thread coverage is a starting case, not a library-wide guarantee. |
+| `concurrency` | Active | Bounded thread/process atomic-file histories, exact fallback UUID reservation models and fork safety, shared clone/regex caches, msgspec/YAML isolation and immutable-map branches; observed histories, corruption controls and installed/stdlib campaigns. |
 | `resources` | Planned | Time, memory, descriptors, handles, scratch files, and cache bounds in controlled workers. |
 | `performance` | Planned | Reproducible throughput/latency evidence with audited semantics and stable baselines. The existing `bench` program remains the current instrument. |
 | `fuzz-replay` | Active | Authenticated reviewed parser/token inputs replay real oracles in eleven installed and eight import-blocked stdlib workers during ordinary validation. Exact case counts, bounds and normal exit are required. |
@@ -210,6 +210,15 @@ not assert thread safety for backend objects that publish no such guarantee.
 Use barriers/events, controlled schedules, and independently verified histories;
 repeating a race many times is supplementary evidence.
 
+The [concurrency runner](tooling/concurrency/README.md) implements these checks
+under recorded schedules, with invocation/response histories and per-actor order.
+Overlap permits more than one valid completion order. Independent exact UUID
+models, whole-generation file models and retained-object checks define the
+accepted outcomes. A held UUID lock inherited across `fork()` and concurrent
+regex evictions exceeding the cache bound have owning regressions and fixes.
+The explicit Linux/macOS campaigns cover the tested interpreter/backend builds;
+they do not establish free-threaded Python or arbitrary mutable-object safety.
+
 Resource probes run in child workers with a parent wall-clock deadline, bounded
 input/output, and platform-appropriate memory limits. Record peak RSS or a
 documented proxy, elapsed time, descriptor/handle counts, scratch artifacts, and
@@ -337,7 +346,7 @@ remain separate.
    shapes, numeric/audio boundary corpora, iterator consumption faults, settings
    process isolation, and timezone transition families.
 3. Add macOS/Windows and partial-extra jobs; complete ordinary integration,
-   concurrency, and resource lanes with explicit supported guarantees.
+   resource lanes and expand concurrency with explicit supported guarantees.
 4. Convert verified failures into minimal regression tests and retained corpus
    entries. Split inherited mixed files only when doing so improves honest lane
    selection and preserves collection.

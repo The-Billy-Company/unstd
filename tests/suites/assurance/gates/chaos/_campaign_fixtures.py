@@ -14,19 +14,20 @@ import pytest
 from tests.support.chaos import ChaosJournal, journal_sink
 
 
-pytestmark = pytest.mark.chaos
+LANE = os.environ.get("UNSTD_CAMPAIGN_LANE", "chaos")
+pytestmark = getattr(pytest.mark, LANE)
 MODE = os.environ.get("UNSTD_CHAOS_GATE_FIXTURE", "empty")
 
 
 @pytest.fixture(autouse=True)
 def reviewed_evidence(request):
     if MODE != "no-journal":
-        seed = request.config.getoption("--chaos-seed")
+        seed = request.config.getoption(f"--{LANE}-seed")
         journal = ChaosJournal(
             seed,
             request.node.nodeid,
             sink=journal_sink(
-                getattr(request.config, "_unstd_chaos_journal_directory", None)
+                getattr(request.config, f"_unstd_{LANE}_journal_directory", None)
                 if MODE != "invalid-journal"
                 else None,
                 request.node.nodeid,
@@ -38,8 +39,8 @@ def reviewed_evidence(request):
             snapshot["seed"] += 1
         request.node.user_properties.extend(
             [
-                ("chaos_seed", seed),
-                ("chaos_journal", snapshot),
+                (f"{LANE}_seed", seed),
+                (f"{LANE}_journal", snapshot),
             ]
         )
         return journal

@@ -9,5 +9,8 @@ statuses. See [the suite guide](../README.md) for commands and evidence policy.
 seed corpora, deterministic replay and mutation, and bounded Atheris campaigns.
 [`chaos/`](chaos/README.md) runs recorded fault/recovery schedules in bounded
 installed/stdlib workers, with exact replay and retained observation journals.
+[`concurrency/`](concurrency/README.md) runs bounded thread/process histories for
+atomic files, UUID state and shared caches/codecs, with recorded schedules and
+independent ownership and ordering checks.
 `mutation/` reserves future mutation-score campaigns. `bench/` points to the existing benchmark instrument.
 Pytest discovers only `tests/suites`; tests of these tools belong there too.

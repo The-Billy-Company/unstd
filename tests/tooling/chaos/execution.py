@@ -23,6 +23,7 @@ from tests.support.chaos import MAX_EVENTS, MAX_JOURNAL_BYTES, VERSION
 
 REPO = Path(__file__).resolve().parents[3]
 CASES = REPO / "tests/suites/assurance/adversarial/chaos"
+LANES = frozenset({"chaos", "concurrency"})
 MAX_REPORT = 16 * 1024 * 1024
 EVIDENCE_FILES = (
     "admission.json",
@@ -33,10 +34,14 @@ EVIDENCE_FILES = (
 )
 
 
-def discover():
+def discover(lane="chaos"):
     """Derive every executable group from the owning lane; reject empty drift."""
+    if lane not in LANES:
+        message = "unknown campaign lane"
+        raise ValueError(message)
+    directory = CASES if lane == "chaos" else CASES.with_name(lane)
     groups = {}
-    for path in sorted(CASES.glob("test_*.py")):
+    for path in sorted(directory.glob("test_*.py")):
         if path.is_symlink() or not re.fullmatch(
             r"test_[a-z][a-z0-9_]*\.py", path.name
         ):
@@ -208,9 +213,10 @@ def run_group(
     memory_mb=2048,
     artifact_dir=None,
     _fixture=None,
+    lane="chaos",
 ):
     """Run a registered scenario group under an independent parent watchdog."""
-    groups = discover()
+    groups = discover() if lane == "chaos" else discover(lane)
     if group not in groups or backend not in {"installed", "stdlib"}:
         message = "unknown chaos group or backend"
         raise ValueError(message)
@@ -254,13 +260,15 @@ def run_group(
     source_files = [
         *sorted((REPO / "src/unstd").rglob("*.py")),
         *sorted((REPO / "tests/support").glob("*.py")),
-        *sorted(CASES.glob("*.py")),
+        *sorted((CASES if lane == "chaos" else CASES.with_name(lane)).glob("*.py")),
         *sorted(Path(__file__).parent.glob("*.py")),
+        *sorted((REPO / "tests/tooling" / lane).glob("*.py")),
         REPO / "tests/conftest.py",
         REPO / "tests/tooling/inventory.toml",
     ]
     report = {
         "schema_version": 1,
+        "lane": lane,
         "group": group,
         "seed": seed,
         "backend": backend,
@@ -303,6 +311,8 @@ def run_group(
             str(Path(__file__).with_name("worker.py")),
             "--path",
             selected,
+            "--lane",
+            lane,
             "--seed",
             str(seed),
             "--backend",
@@ -381,6 +391,7 @@ def run_group(
                 or type(admission["seed"]) is not int
                 or admission["seed"] != seed
                 or admission["backend"] != backend
+                or admission.get("lane", "chaos") != lane
                 or set(admission["enforcement"])
                 != {"cpu", "address_space", "core_dumps_disabled", "process_group"}
                 or not all(
@@ -408,9 +419,9 @@ def run_group(
             failed = [case for case in cases if case["outcome"] == "failed"]
             skipped = [case for case in cases if case["outcome"] == "skipped"]
             journals = {
-                case["nodeid"]: case["properties"]["chaos_journal"]
+                case["nodeid"]: case["properties"][f"{lane}_journal"]
                 for case in cases
-                if "chaos_journal" in case["properties"]
+                if f"{lane}_journal" in case["properties"]
             }
             journals.update(live)
             report.update(

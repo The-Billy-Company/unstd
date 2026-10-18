@@ -13,7 +13,7 @@ tests/
 │   │   ├── parity/            dedicated differential tests
 │   │   ├── properties/        dedicated Hypothesis laws
 │   │   ├── security/          module-owned security contracts
-│   │   └── regression/        confirmed fuzz and chaos defects
+│   │   └── regression/        confirmed fuzz, chaos and concurrency defects
 │   └── assurance/             organized by cross-cutting risk
 │       ├── adversarial/       chaos, concurrency, resources, corpus replay
 │       ├── evals/performance/ dedicated performance evidence
@@ -58,6 +58,12 @@ state, progress, ownership and recovery assertions. Its standalone runner bounds
 fresh installed/stdlib workers and records exact schedules and observed faults.
 Linux/macOS CI runs explicit pull-request and nightly campaigns.
 
+The [concurrency lane](tooling/concurrency/README.md) checks thread/process
+atomic-file histories, UUID contention and fork safety, clone/regex caches,
+codec/YAML isolation and persistent-map branches. Controlled overlap, independent
+models and broken-result controls distinguish valid interleavings from corruption.
+Confirmed fork-lock and cache-capacity defects also have ordinary owning regressions.
+
 ## Run and inspect
 
 Use the existing environment with `--no-sync` to retain the backend combination
@@ -80,15 +86,19 @@ uv run --no-sync python -m tests.tooling.fuzz campaign --target json --backend i
 uv run --no-sync python -m tests.tooling.chaos check
 uv run --no-sync python -m tests.tooling.chaos run --backend installed --seed 173
 uv run --no-sync python -m tests.tooling run chaos -- --chaos-seed 173 -q
+uv run --no-sync python -m tests.tooling.concurrency check
+uv run --no-sync python -m tests.tooling.concurrency run --backend installed --seed 173
+uv run --no-sync python -m tests.tooling run concurrency -- --concurrency-seed 173 -q
 ```
 
 The default run discovers only `tests/suites`, with strict configuration,
-registered markers, and importlib collection. It excludes `perf` and `chaos`.
+registered markers, and importlib collection. It excludes `perf`, `chaos` and
+`concurrency`.
 Three existing wall-clock benchmark calibration checks carry `perf`; run them
 explicitly with `uv run --no-sync pytest -q -m perf` on a quiet machine. The
 cross-module product performance lane remains planned. Other excluded work
 requires explicit selection when implemented. A runner invocation selects
-the requested lane's marker and excludes `perf`/`chaos` unless one of those is
+the requested lane's marker and excludes `perf`/`chaos`/`concurrency` unless one is
 the requested kind; extra pytest arguments may override selection.
 The `properties` runner lane selects the dedicated property directories;
 `pytest -m properties` includes generated cases in historical mixed files too.

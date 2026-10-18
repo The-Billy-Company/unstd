@@ -1,0 +1,75 @@
+name: concurrency
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "13 8 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: concurrency-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name != 'schedule' }}
+
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      matrix: ${{ steps.groups.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          enable-cache: false
+          version: "latest-known"
+          python-version: "3.13"
+      - id: groups
+        shell: bash
+        run: |
+          matrix=$(uv run --no-project --python 3.13 python -m tests.tooling.concurrency list --json)
+          printf 'matrix=%s\n' "$matrix" >> "$GITHUB_OUTPUT"
+
+  campaign:
+    needs: inventory
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.inventory.outputs.matrix) }}
+    env:
+      ROUNDS: ${{ github.event_name == 'schedule' && '10' || '1' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          enable-cache: false
+          version: "latest-known"
+          python-version: "3.13"
+      # Both lanes install extras; the stdlib worker blocks acceleration imports
+      # before product loading, and propagates that policy into nested workers.
+      - run: uv sync --locked --all-extras --group dev --python 3.13
+      - name: Recorded overlap, ordering and isolation
+        run: >-
+          uv run --no-sync python -m tests.tooling.concurrency run
+          --group ${{ matrix.group }} --backend ${{ matrix.backend }}
+          --seed 173 --rounds "$ROUNDS"
+          --wall-seconds 120 --per-test-seconds 45 --cpu-seconds 60 --memory-mb 2048
+          --artifact-dir .local/concurrency/
+      - name: Retain schedules, observations and failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: concurrency-${{ matrix.group }}-${{ matrix.backend }}-${{ matrix.os }}-${{ github.run_attempt }}
+          path: .local/concurrency/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14

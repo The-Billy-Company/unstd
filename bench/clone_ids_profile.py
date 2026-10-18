@@ -403,6 +403,43 @@ def _workloads(
     return cases
 
 
+def _fork_reset_control(uid: Any) -> Workload | None:
+    """Check the child-reset cold path without inventing a legacy timing pair.
+
+    Saved comparison sources predate the fork hook. Only implementations that
+    provide it receive this profiling control; ordinary paired timing workloads
+    retain their identical names and meaning across those source snapshots.
+    """
+    if not hasattr(uid, "_reset_after_fork"):
+        return None
+
+    def reset() -> tuple[bool, bool, bool, bool, Any, Any, bool]:
+        inherited = uid._counter_lock
+        backend = uid._uuid7
+        with inherited:
+            uid._last_ms, uid._last_counter = 1_700_000_000_000, 91
+            uid._reset_after_fork()
+            fresh = uid._counter_lock
+            acquired = fresh is not inherited and fresh.acquire(blocking=False)
+            if acquired:
+                fresh.release()
+            return (
+                fresh is not inherited,
+                inherited.locked(),
+                fresh.locked(),
+                acquired,
+                uid._last_ms,
+                uid._last_counter,
+                uid._uuid7 is backend,
+            )
+
+    return Workload(
+        "uid._reset_after_fork/held-lock",
+        reset,
+        lambda result: result == (True, True, False, True, None, 0, True),
+    )
+
+
 def _profile(
     modules: list[Any], cases: list[Workload], stdlib_only: bool
 ) -> dict[str, Any]:
@@ -410,12 +447,20 @@ def _profile(
     clone._NODES.clear()
     clone._FIELDS.clear()
     clone._PYDANTIC_UNDEFINED = None
+    reset_control = _fork_reset_control(modules[1])
     profiler = cProfile.Profile()
     profiler.enable()
-    for _ in range(3):
-        for case in cases:
-            case.call()
-    profiler.disable()
+    try:
+        for _ in range(3):
+            if reset_control is not None and not reset_control.check(
+                reset_control.call()
+            ):
+                msg = f"incorrect output: {reset_control.name}"
+                raise AssertionError(msg)
+            for case in cases:
+                case.call()
+    finally:
+        profiler.disable()
     # Native and fallback namespaces have separate code objects at identical
     # source locations. pstats overwrites those duplicate keys; aggregate the
     # raw entries explicitly so both executions contribute to function totals.

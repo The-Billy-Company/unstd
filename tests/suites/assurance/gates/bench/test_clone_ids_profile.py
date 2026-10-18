@@ -9,6 +9,7 @@ import pytest
 from bench.clone_ids_profile import (
     Record,
     _bundle,
+    _fork_reset_control,
     _isolated,
     _load,
     _profile,
@@ -56,6 +57,27 @@ def test_stdlib_profile_records_coverage_and_explicit_optional_skips() -> None:
     assert calls["uid.new"] == 6
     assert calls["uid.new_hex"] == 6
     assert calls["uid._next_ms_and_counter"] >= 21
+    assert calls["uid._reset_after_fork"] == 3
+
+
+def test_reset_profile_control_observes_real_lock_state_and_rejects_noop(
+    monkeypatch,
+) -> None:
+    uid = _load(REPO_ROOT / "src", "ids/uid.py", "_gate_reset_uid")
+    control = _fork_reset_control(uid)
+    assert control is not None
+    backend = uid._uuid7
+    assert control.check(control.call())
+    assert uid._uuid7 is backend
+    monkeypatch.setattr(uid, "_reset_after_fork", lambda: None)
+    assert not control.check(control.call())
+
+
+def test_reset_profile_control_is_absent_for_legacy_sources() -> None:
+    class Legacy:
+        pass
+
+    assert _fork_reset_control(Legacy()) is None
 
 
 def test_new_unexercised_runtime_function_fails_profile() -> None:

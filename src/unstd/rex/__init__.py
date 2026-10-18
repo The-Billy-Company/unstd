@@ -244,11 +244,14 @@ def compile[AnyStr: (str, bytes)](  # shadows the builtin on purpose: `re.compil
         rx = _irgx_pattern(pattern, flags)
         if rx is None:
             rx = _re.compile(pattern, flags)
-        if len(_cache) >= _MAXCACHE:
-            # Another thread may evict first — stdlib's own tolerance.
+        _cache[key] = rx
+        while len(_cache) > _MAXCACHE:
+            # Publish before trimming: concurrent misses can choose the same
+            # oldest key. Retry a lost eviction rather than each publishing an
+            # extra entry after a suppressed duplicate deletion. Purge can also
+            # empty the cache between this size check and the iterator read.
             with suppress(StopIteration, RuntimeError, KeyError):
                 del _cache[next(iter(_cache))]
-        _cache[key] = rx
         return rx
     if isinstance(pattern, _re.Pattern | _LinearPattern) or (
         _HAVE_IRGX and isinstance(pattern, _irgx.Pattern)

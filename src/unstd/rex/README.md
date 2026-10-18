@@ -77,6 +77,9 @@ the active backend's match, whose `.re.flags` uses native bookkeeping.
 `error` and `escape` are stdlib's own objects, native-only syntax is refused by
 Python, and compiled patterns round-trip through every module verb. Compiles and
 declines share a bounded cache of 512 entries; `purge` clears it and both engines.
+Concurrent misses compile independently, then retry oldest-entry eviction until
+the cache is within that bound. Retained compiled patterns and matches remain
+usable after eviction or purge.
 
 ## Where it comes from
 

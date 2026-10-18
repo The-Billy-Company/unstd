@@ -71,6 +71,11 @@ process, stream and clock/entropy failures and recovery. Run
 `uv run --no-sync python -m tests.tooling.chaos run --seed 173` for a bounded
 installed-backend campaign with per-case journals and reproducible schedules.
 
+The [concurrency runner](tests/tooling/concurrency/README.md) checks atomic file
+histories, UUID contention and fork safety, and shared cache/parser isolation.
+Run `uv run --no-sync python -m tests.tooling.concurrency run --seed 173` for
+bounded installed-backend workers with retained histories and replay.
+
 ## Prior art
 
 - **orjson** (Kloss) / **msgspec** (Fitzgerald) / **pybase64** (aklomp libbase64) — the serde backends.
