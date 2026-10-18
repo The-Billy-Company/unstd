@@ -391,6 +391,13 @@ def test_untyped_jsonl_and_error_reporting_work_without_serde_backends() -> None
         assert len(errors) == 1 and errors[0].lineno == 2
         assert "msgspec" not in sys.modules
         assert "unstd.serde.structs" not in sys.modules
+
+        class CustomCodec:
+            encode = "café".encode
+
+        # A different native bound `encode` method needs no msgspec backend.
+        assert ndjson.dumpb(["utf-8"], codec=CustomCodec()) == "café\\n".encode()
+        assert "msgspec" not in sys.modules
         try:
             from unstd.serde import structs
         except ImportError as error:
@@ -479,3 +486,185 @@ def test_consumer_typing_infers_records_and_rejects_mismatched_writes(
     stdout, stderr, status = mypy.run([*options, str(invalid)])
     assert status == 1, stdout + stderr
     assert stdout.count("error:") == 6, stdout + stderr
+
+
+def test_typed_writers_keep_encoder_options_and_reentrant_hooks(typed_backend) -> None:
+    from decimal import Decimal
+    from uuid import UUID
+
+    calls = []
+
+    def hook(value):
+        calls.append(value.value)
+        # The same encoder may be used recursively by its caller's hook.
+        return codec.encode(value.value).decode()
+
+    codec = typed_backend.structs.Codec(
+        object,
+        order="sorted",
+        decimal_format="number",
+        uuid_format="hex",
+        enc_hook=hook,
+    )
+    rows = [
+        {"z": _Token("café"), "a": Decimal("1.25")},
+        {"z": _Token("last"), "a": UUID(int=1)},
+    ]
+    expected = b"".join(codec.encode(row) + b"\n" for row in rows)
+    calls.clear()
+    assert ndjson.dumpb(rows, codec=codec) == expected
+    assert calls == ["café", "last"]
+    assert ndjson.dumps(rows, codec=codec) == expected.decode()
+
+
+def test_typed_writer_consumes_iterator_once_without_length_probes(
+    typed_backend,
+) -> None:
+    calls = []
+
+    def hook(value):
+        calls.append(value.value)
+        return value.value
+
+    codec = typed_backend.structs.Codec(_Token, enc_hook=hook)
+
+    class Rows:
+        def __init__(self):
+            self.index = 0
+            self.iterations = 0
+
+        def __iter__(self):
+            self.iterations += 1
+            assert self.iterations == 1
+            return self
+
+        def __next__(self):
+            assert calls == list(range(self.index))
+            if self.index == 3:
+                raise StopIteration
+            value = self.index
+            self.index += 1
+            return _Token(value)
+
+        def __len__(self):
+            pytest.fail("writer queried the stream length")
+
+        def __length_hint__(self):
+            pytest.fail("writer queried the stream length hint")
+
+    assert ndjson.dumpb(Rows(), codec=codec) == b"0\n1\n2\n"
+    assert calls == [0, 1, 2]
+
+
+def test_typed_writer_stops_at_encoder_failure_without_replaying_hooks(
+    typed_backend,
+) -> None:
+    failure = _HookError("second record failed")
+    calls = []
+
+    def hook(value):
+        calls.append(value.value)
+        if value.value == 1:
+            raise failure
+        return value.value
+
+    codec = typed_backend.structs.Codec(_Token, enc_hook=hook)
+    consumed = []
+
+    def rows():
+        for value in range(3):
+            consumed.append(value)
+            yield _Token(value)
+
+    with pytest.raises(_HookError) as caught:
+        ndjson.dumpb(rows(), codec=codec)
+    assert caught.value is failure
+    assert consumed == calls == [0, 1]
+    assert ndjson.dumpb([_Token(3)], codec=codec) == b"3\n"
+
+
+def test_writer_binds_replaced_encoder_once_per_call(typed_backend) -> None:
+    calls = []
+
+    def hook(value):
+        calls.append(value.value)
+        codec.encode = lambda _value: b'"replaced"'
+        return value.value
+
+    codec = typed_backend.structs.Codec(_Token, enc_hook=hook)
+    rows = [_Token(1), _Token(2)]
+    assert ndjson.dumpb(rows, codec=codec) == b"1\n2\n"
+    assert calls == [1, 2]
+    assert ndjson.dumpb(rows, codec=codec) == b'"replaced"\n"replaced"\n'
+
+
+def test_writer_uses_the_supplied_native_encoder_method(typed_backend) -> None:
+    codec = typed_backend.structs.Codec(object)
+    encoder = typed_backend.msgspec.json.Encoder()
+    codec.encode = encoder.encode_lines
+    assert ndjson.dumpb([[1, 2], [3]], codec=codec) == b"1\n2\n\n3\n\n"
+
+
+@pytest.mark.parametrize("value", [object(), {"label": "\ud800"}])
+def test_typed_writer_preserves_encoder_errors(typed_backend, value) -> None:
+    codec = typed_backend.structs.Codec(object)
+    with pytest.raises((TypeError, UnicodeEncodeError)) as expected:
+        codec.encode(value)
+    with pytest.raises(type(expected.value)) as caught:
+        ndjson.dumpb([0, value, 2], codec=codec)
+    assert str(caught.value) == str(expected.value)
+
+
+@pytest.mark.parametrize("writer", [ndjson.dumpb, ndjson.dumps])
+@pytest.mark.parametrize("callback", ["enc_hook", "decimal_format", "utcoffset"])
+def test_writer_keeps_prefix_when_encoding_raises_stopiteration(
+    typed_backend, writer, callback: str
+) -> None:
+    from datetime import datetime, timedelta, tzinfo
+    from decimal import Decimal
+
+    failure = StopIteration("encoding stopped")
+
+    def hook(value):
+        if value.value == 1:
+            raise failure
+        return value.value
+
+    def decimal_format(value):
+        if value == 1:
+            raise failure
+        return str(value)
+
+    class Zone(tzinfo):
+        def __init__(self, value):
+            self.value = value
+
+        def utcoffset(self, _value):
+            if self.value == 1:
+                raise failure
+            return timedelta(0)
+
+    if callback == "enc_hook":
+        codec = typed_backend.structs.Codec(object, enc_hook=hook)
+        values = [_Token(value) for value in range(3)]
+        expected = b"0\n"
+    elif callback == "decimal_format":
+        codec = typed_backend.structs.Codec(object, decimal_format=decimal_format)
+        values = [Decimal(value) for value in range(3)]
+        expected = b'"0"\n'
+    else:
+        codec = typed_backend.structs.Codec(object)
+        values = [datetime(2026, 1, 1, tzinfo=Zone(value)) for value in range(3)]
+        expected = b'"2026-01-01T00:00:00Z"\n'
+    consumed = []
+
+    def rows():
+        for index, value in enumerate(values):
+            consumed.append(index)
+            yield value
+
+    # map treats StopIteration raised inside encoding as exhaustion: the
+    # completed prefix is returned, and the following record stays unread.
+    actual = writer(rows(), codec=codec)
+    assert actual == (expected.decode() if writer is ndjson.dumps else expected)
+    assert consumed == [0, 1]

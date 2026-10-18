@@ -105,6 +105,38 @@ def test_result_subclasses_are_not_inspected() -> None:
     assert not _decoded_exact(Mapping(a=1))
 
 
+@pytest.mark.parametrize("size", [1, 8, 15, 16, 17, 64])
+@pytest.mark.parametrize("position", ["first", "middle", "last"])
+@pytest.mark.parametrize("mapping", [False, True])
+def test_result_proof_checks_nested_values_among_scalar_siblings(
+    size: int, position: str, mapping: bool
+) -> None:
+    offsets = {"first": 0, "middle": size // 2, "last": size - 1}
+    values: list[object] = list(range(size))
+    nested: list[object] = [{"value": [True, None, "text"]}]
+    values[offsets[position]] = nested
+    tree = dict(enumerate(values)) if mapping else values
+    assert _decoded_exact(tree)
+    nested.append({"hidden": [1.5]})
+    assert not _decoded_exact(tree)
+
+
+@pytest.mark.parametrize("size", [1, 15, 16, 64])
+def test_nested_result_subclasses_are_rejected_without_inspection(size: int) -> None:
+    class Items(list[Any]):
+        def __iter__(self) -> Any:
+            pytest.fail("the result proof inspected a nested list subclass")
+
+    class Mapping(dict[str, Any]):
+        def values(self) -> Any:
+            pytest.fail("the result proof inspected a nested dictionary subclass")
+
+    for unsupported in (Items([1]), Mapping(a=1), (1,), {1}, object()):
+        tree: list[object] = list(range(size))
+        tree[size // 2] = unsupported
+        assert not _decoded_exact(tree)
+
+
 @pytest.mark.parametrize(
     "document",
     [

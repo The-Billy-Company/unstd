@@ -73,7 +73,10 @@ def _snapshot(obj: Any, remaining: list[int], spaced: bool, depth: int = 0) -> A
                 return _UNSAFE
             # Class hashing/equality can be user-defined through a metaclass.
             # Identity checks must precede every numeric operation.
-            if all(type(value) is int for value in values):
+            for value in values:
+                if type(value) is not int:
+                    break
+            else:
                 if min(values) < -(2**63) or max(values) >= 2**64:
                     return _UNSAFE
                 # Keep the recursive scalar frame: exhausting Python's stack

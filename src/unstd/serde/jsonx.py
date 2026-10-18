@@ -117,6 +117,7 @@ if _HAVE_ORJSON:
 else:
     _SORT = _INDENT = 0
 _NO_NUMPY = "numpy=True requires numpy to be installed"
+_DEFAULT_ENCODER = _stdlib.JSONEncoder()
 
 
 def _numpy_default(
@@ -166,38 +167,65 @@ def dumps(
     an explicit ``cls``, all extra keywords, including ``numpy``, are forwarded
     unchanged to that encoder, as in stdlib.
     """
-    if cls is None and kw.pop("numpy", False):
+    if cls is None and kw and kw.pop("numpy", False):
         if not _HAVE_NUMPY:
             raise TypeError(_NO_NUMPY)
         default = _numpy_default(default)
-    if (
-        cls is None
-        and default is None
-        and not kw
-        and type(skipkeys)
-        is type(ensure_ascii)
-        is type(check_circular)
-        is type(allow_nan)
-        is type(sort_keys)
-        is bool
-        and (style := _format(indent, separators)) >= 0
-    ):
-        if _HAVE_ORJSON and style < 3 and type(obj) is not str:
-            try:
-                result = _exact_encode(
-                    obj,
-                    ensure_ascii,
-                    style,
-                    (_SORT if sort_keys else 0) | (_INDENT if style == 2 else 0),
-                    _encode,
-                )
-                if result is not None:
-                    return result
-            except (orjson.JSONEncodeError, RecursionError, RuntimeError):
-                # No callbacks have run; stdlib decides errors on the original
-                # object, including a dict changed during the snapshot walk.
-                pass
-        return _encoder(
+    encoder = None
+    style = -1
+    if cls is None and default is None and not kw:
+        if (
+            skipkeys is False
+            and ensure_ascii is True
+            and check_circular is True
+            and allow_nan is True
+            and sort_keys is False
+            and indent is None
+            and separators is None
+        ):
+            # Default calls need neither format classification nor a cache lookup.
+            style = 1
+            encoder = _DEFAULT_ENCODER
+        elif (
+            type(skipkeys)
+            is type(ensure_ascii)
+            is type(check_circular)
+            is type(allow_nan)
+            is type(sort_keys)
+            is bool
+        ):
+            style = _format(indent, separators)
+    if style < 0:
+        return _stdlib.dumps(
+            obj,
+            skipkeys=skipkeys,
+            ensure_ascii=ensure_ascii,
+            check_circular=check_circular,
+            allow_nan=allow_nan,
+            cls=cls,
+            indent=indent,
+            separators=separators,
+            default=default,
+            sort_keys=sort_keys,
+            **kw,
+        )
+    if _HAVE_ORJSON and style < 3 and type(obj) is not str:
+        try:
+            result = _exact_encode(
+                obj,
+                ensure_ascii,
+                style,
+                (_SORT if sort_keys else 0) | (_INDENT if style == 2 else 0),
+                _encode,
+            )
+            if result is not None:
+                return result
+        except (orjson.JSONEncodeError, RecursionError, RuntimeError):
+            # No callbacks have run; stdlib decides errors on the original
+            # object, including a dict changed during the snapshot walk.
+            pass
+    if encoder is None:
+        encoder = _encoder(
             skipkeys,
             ensure_ascii,
             check_circular,
@@ -205,20 +233,8 @@ def dumps(
             sort_keys,
             indent,
             separators,
-        ).encode(obj)
-    return _stdlib.dumps(
-        obj,
-        skipkeys=skipkeys,
-        ensure_ascii=ensure_ascii,
-        check_circular=check_circular,
-        allow_nan=allow_nan,
-        cls=cls,
-        indent=indent,
-        separators=separators,
-        default=default,
-        sort_keys=sort_keys,
-        **kw,
-    )
+        )
+    return encoder.encode(obj)
 
 
 def dumpb(
@@ -362,7 +378,7 @@ def dump(
     **kw: Any,
 ) -> None:
     """Stream JSON text to ``fp`` with stdlib's encoder and write behavior."""
-    if cls is None and kw.pop("numpy", False):
+    if cls is None and kw and kw.pop("numpy", False):
         if not _HAVE_NUMPY:
             raise TypeError(_NO_NUMPY)
         default = _numpy_default(default)
@@ -395,6 +411,16 @@ def load(
     **kw: Any,
 ) -> Any:
     """Read once, then apply the same exact decoder dispatch as :func:`loads`."""
+    if (
+        cls is None
+        and object_hook is None
+        and parse_float is None
+        and parse_int is None
+        and parse_constant is None
+        and object_pairs_hook is None
+        and not kw
+    ):
+        return loads(fp.read())
     return loads(
         fp.read(),
         cls=cls,

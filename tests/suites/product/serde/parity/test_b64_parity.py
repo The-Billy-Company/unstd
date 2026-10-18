@@ -169,6 +169,11 @@ def test_rfc_4648_vectors(raw: bytes, encoded: bytes) -> None:
         127,
         128,
         129,
+        189,
+        190,
+        191,
+        192,
+        193,
         1023,
         1024,
         1025,
@@ -200,6 +205,45 @@ def test_padding_alphabet_and_diagnostics_follow_the_interpreter(
         _same_call(b64.urlsafe_b64decode, base64.urlsafe_b64decode, value)
     else:
         _same_call(b64.decode, lambda s: base64.b64decode(s, validate=True), value)
+
+
+@pytest.mark.parametrize("validate", [None, 0, 1, [], [1], object()])
+@pytest.mark.parametrize("encoded", [b"YQ==", b"YQ==!", b"A" * 256])
+@pytest.mark.parametrize("text", [False, True])
+def test_validation_truthiness_matches_stdlib(
+    validate: object, encoded: bytes, text: bool
+) -> None:
+    document = encoded.decode("ascii") if text else encoded
+    _same_call(b64.b64decode, base64.b64decode, document, validate=validate)
+
+
+def test_ascii_coercion_precedes_validation_truthiness() -> None:
+    class ValidationFailure:
+        def __bool__(self) -> bool:
+            msg = "validation truthiness failed"
+            raise RuntimeError(msg)
+
+    for document in [b"YQ==", "YQ==", "é", "é" * 256, "\ud800"]:
+        _same_call(
+            b64.b64decode,
+            base64.b64decode,
+            document,
+            validate=ValidationFailure(),
+        )
+
+
+@pytest.mark.parametrize("document", ["é", "é" * 256, "\ud800"])
+@pytest.mark.parametrize("name", ["b64decode", "standard_b64decode", "decode"])
+def test_non_ascii_decode_preserves_exception_context(name: str, document: str) -> None:
+    with pytest.raises(ValueError, match="only ASCII characters") as expected:
+        base64.b64decode(document, validate=name == "decode")
+    with pytest.raises(ValueError, match="only ASCII characters") as actual:
+        getattr(b64, name)(document)
+    assert actual.value.args == expected.value.args
+    assert type(actual.value.__context__) is type(expected.value.__context__)
+    assert actual.value.__context__.args == expected.value.__context__.args
+    assert actual.value.__cause__ is expected.value.__cause__
+    assert actual.value.__suppress_context__ is expected.value.__suppress_context__
 
 
 def test_exhaustive_short_padding_shapes() -> None:

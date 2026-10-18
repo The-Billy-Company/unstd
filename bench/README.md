@@ -143,6 +143,41 @@ results before timing. Payload construction and codec setup stay outside the
 measurement. The 1,000-row payload contains UTF-8 text, tags, attributes, and
 nested token usage; it measures ingestion with validation, not parsing alone.
 
+## Complete Serde function profiles
+
+`serde_profile` exercises every runtime Python function in `unstd.serde`, its
+stdlib aliases, and the typed codec's directly bound native methods. It checks
+outputs, including types and dictionary order, before timing. Profiling and
+timing run separately so profiler overhead is excluded from workload timings.
+
+```console
+uv run --no-sync python -m bench.serde_profile --output /tmp/serde.json
+uv run --no-sync python -m bench.serde_profile --compare-source /tmp/before/src --rounds 9 --repetitions 3 --output /tmp/serde-comparison.json
+uv run --no-sync python -m bench.serde_profile --compare-source /tmp/before/src --paired --rounds 9 --repetitions 3 --output /tmp/serde-paired.json
+uv run --no-sync python -m bench.serde_profile --fallback --output /tmp/serde-fallback.json
+```
+
+The comparison source must contain `unstd/`; workers verify the actual import
+path and preserve their selected source between repetitions. Save that source
+before editing, or extract it from the Git revision under comparison. Workers
+alternate old/new order and reject any changed public signature. `--fallback`
+disables orjson and pybase64 dispatch; typed codecs still require msgspec, and
+NumPy extension workloads run when NumPy is installed. The complete native
+profile also requires all three Serde backends. Declaration-only Protocol
+methods and overloads contain no runtime work and are excluded from coverage.
+
+`--paired` is a companion timing mode that loads separate original/current
+module namespaces in one interpreter and alternates them for each workload.
+This reduces long-run scheduling and clock drift; it produces timing samples
+rather than cProfile data. Use the ordinary worker mode for complete function
+profiles and signature comparisons.
+
+The measured audit and retained implementation choices are recorded in
+[`serde-results.md`](serde-results.md), with per-function profiles and all
+workload timings in [`serde-results.json`](serde-results.json). These are local
+measurements, not a proof that one implementation is fastest for every input,
+interpreter, backend version, or machine.
+
 ## Gzip throughput and size
 
 Run `uv run --locked --all-extras python -m bench --group compress --rounds 5`.

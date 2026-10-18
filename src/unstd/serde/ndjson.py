@@ -123,7 +123,14 @@ def dumps[T](rows: Iterable[T], *, codec: _Codec[T] | None = None) -> str:
 
 def dumpb[T](rows: Iterable[T], *, codec: _Codec[T] | None = None) -> bytes:
     """Serialize *rows* straight to NDJSON ``bytes`` for file/socket writes."""
-    return b"".join(map(_encoder(codec), rows))
+    if codec is None:
+        return b"".join(map(_line, rows))
+    encode = codec.encode
+
+    def line(row: T) -> bytes:
+        return encode(row) + b"\n"
+
+    return b"".join(map(line, rows))
 
 
 @overload

@@ -279,3 +279,72 @@ def test_one_group_measures_and_verifies(capsys: pytest.CaptureFixture[str]) -> 
     # must hold is that verify returns a verdict rather than crashing, and never
     # reports success while a case was skipped.
     assert code in (0, 1, 2)
+
+
+def test_serde_profile_inventory_excludes_declarations_and_keeps_nested_functions(
+    tmp_path: Path,
+) -> None:
+    from bench.serde_profile import _functions
+
+    source = tmp_path / "codec.py"
+    source.write_text(
+        "from typing import TYPE_CHECKING, Protocol, overload\n"
+        "if TYPE_CHECKING:\n"
+        "    def typing_only(): ...\n"
+        "class Writer(Protocol):\n"
+        "    def write(self, value): ...\n"
+        "@overload\n"
+        "def encode(value: int): ...\n"
+        "def encode(value):\n"
+        "    def nested(): return value\n"
+        "    return nested()\n"
+        "class Codec:\n"
+        "    @staticmethod\n"
+        "    def decode(value): return value\n"
+    )
+    assert list(_functions(source)) == [
+        (8, "encode"),
+        (9, "encode.nested"),
+        (12, "Codec.decode"),
+    ]
+
+
+def test_serde_profile_oracle_keeps_types_and_dictionary_order() -> None:
+    from bench.serde_profile import _same
+
+    assert _same({"values": [1, True, None, 1.5]}, {"values": [1, True, None, 1.5]})
+    assert not _same({"values": [1]}, {"values": [True]})
+    assert not _same({"values": [1]}, {"values": [1.0]})
+    assert not _same([1], (1,))
+    assert not _same({"a": 1, "b": 2}, {"b": 2, "a": 1})
+
+
+def test_serde_profile_refuses_to_measure_a_different_imported_source(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import sys
+
+    from bench.serde_profile import _worker
+
+    monkeypatch.setattr(sys, "path", list(sys.path))
+    with pytest.raises(RuntimeError, match=r"requested .* imported"):
+        _worker(tmp_path, 1, False)
+
+
+def test_serde_paired_imports_restore_the_original_modules(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from pathlib import Path
+    import sys
+
+    from bench import serde_profile
+    from unstd.serde import jsonx
+
+    original_path = sys.path[:]
+    original_flag = jsonx._HAVE_ORJSON
+    monkeypatch.setattr(serde_profile, "_workloads", lambda: [])
+    source = Path(jsonx.__file__).resolve().parents[2]
+    assert serde_profile._isolated_cases(source, True) == []
+    assert sys.modules["unstd.serde.jsonx"] is jsonx
+    assert jsonx._HAVE_ORJSON is original_flag
+    assert sys.path == original_path

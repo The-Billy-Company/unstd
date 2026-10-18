@@ -33,6 +33,8 @@ from __future__ import annotations
 
 import base64 as _stdlib
 from binascii import Error
+from binascii import a2b_base64 as _a2b_base64
+from binascii import b2a_base64 as _b2a_base64
 from typing import TYPE_CHECKING
 
 from unstd.serde import jsonx
@@ -93,6 +95,9 @@ def b64encode(s: Buffer, altchars: Buffer | None = None) -> bytes:
     """Stdlib ``b64encode``: bytes output with optional alternative alphabet."""
     if _HAVE_PYBASE64 and type(s) is bytes and altchars is None:
         return _b64.b64encode(s)
+    if altchars is None:
+        # This is stdlib's entire no-alternate-alphabet implementation.
+        return _b2a_base64(s, newline=False)
     # Stdlib owns alphabet validation, translation, buffer errors and their order.
     return _stdlib.b64encode(s, altchars)
 
@@ -101,26 +106,33 @@ def b64decode(
     s: str | Buffer, altchars: str | Buffer | None = None, validate: bool = False
 ) -> bytes:
     """Stdlib ``b64decode``, including lenient defaults and exact diagnostics."""
-    if _HAVE_PYBASE64 and altchars is None and validate is True:
-        raw = s.encode("ascii") if type(s) is str and s.isascii() else s
-        if type(raw) is bytes:
+    if altchars is None and (type(s) is bytes or (type(s) is str and s.isascii())):
+        # Native keyword dispatch costs more than binascii on tiny documents.
+        # Exact ASCII strings are accepted directly by both native codecs;
+        # subclasses retain stdlib's observable encode/coercion hooks below.
+        if _HAVE_PYBASE64 and validate is True and len(s) >= 256:
             try:
-                return _b64.b64decode(raw, validate=True, padded=True)
+                return _b64.b64decode(s, validate=True, padded=True)
             except Error:
                 # Backend errors are less specific, and supported Python patch
                 # releases can differ on excess padding. Stdlib is authoritative.
                 pass
+        return _a2b_base64(s, strict_mode=validate)
     return _stdlib.b64decode(s, altchars, validate)
 
 
 def standard_b64encode(s: Buffer) -> bytes:
     """Stdlib standard-alphabet encoding, returning bytes."""
-    return b64encode(s)
+    if _HAVE_PYBASE64 and type(s) is bytes:
+        return _b64.b64encode(s)
+    return _b2a_base64(s, newline=False)
 
 
 def standard_b64decode(s: str | Buffer) -> bytes:
     """Stdlib standard-alphabet decoding, discarding non-alphabet bytes."""
-    return b64decode(s)
+    if type(s) is bytes or (type(s) is str and s.isascii()):
+        return _a2b_base64(s)
+    return _stdlib.b64decode(s)
 
 
 def urlsafe_b64encode(s: Buffer) -> bytes:
@@ -179,12 +191,36 @@ def decode(s: str | Buffer, *, url: bool = False) -> bytes:
     lenient url-safe alphabet, padded or not.
     """
     if not url:
-        return b64decode(s, validate=True)
-    raw = _decode_input(s)
+        if type(s) is bytes or (type(s) is str and s.isascii()):
+            if _HAVE_PYBASE64 and len(s) >= 256:
+                try:
+                    return _b64.b64decode(s, validate=True, padded=True)
+                except Error:
+                    pass
+            return _a2b_base64(s, strict_mode=True)
+        return _stdlib.b64decode(s, validate=True)
+    native_rejected = False
+    raw: bytes | bytearray
+    if type(s) is bytes:
+        raw = s
+    elif type(s) is str and s.isascii():
+        # A clean exact string can go straight to the native codec, avoiding
+        # a Python-level ASCII bytes copy before its own input conversion.
+        if _HAVE_PYBASE64 and len(s) >= 128 and "+" not in s and "/" not in s:
+            try:
+                return _b64.b64decode(
+                    s, altchars=b"-_", validate=True, padded=s.endswith("=")
+                )
+            except Error:
+                # The bytes path must not repeat the same rejected attempt.
+                native_rejected = True
+        raw = s.encode("ascii")
+    else:
+        raw = _decode_input(s)
     if type(raw) is bytes:
         source_size = len(raw)
         # For tiny values, native keyword dispatch costs more than normalization.
-        native = _HAVE_PYBASE64 and source_size >= 128
+        native = _HAVE_PYBASE64 and source_size >= 128 and not native_rejected
         if native and b"+" not in raw and b"/" not in raw:
             # Native strict decoding proves this is already a clean URL value.
             # Its unpadded mode is only used when no terminal '=' is present;

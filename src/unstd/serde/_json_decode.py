@@ -82,25 +82,45 @@ def _decode_eligible(document: Any) -> bool:
 def _decoded_exact(value: Any) -> bool:
     """Accept only exact builtin trees without any floating-point values.
 
-    Iteration avoids adding a separate Python recursion limit. The bulk type
-    check runs in C for the common flat-container case. Checking the *result*
-    avoids rescanning string contents in Python or a regular expression.
+    Iteration avoids adding a separate Python recursion limit. Short containers
+    use direct type checks; wide flat containers use a bulk type check in C.
+    Checking the *result* avoids rescanning string contents in Python or a
+    regular expression.
     """
-    pending = [value]
-    while pending:
-        item = pending.pop()
-        kind = type(item)
-        if kind in _EXACT_SCALARS:
-            continue
+    kind = type(value)
+    if kind in _EXACT_SCALARS:
+        return True
+    pending = []
+    while True:
         if kind is list:
-            values = item
+            values = value
         elif kind is dict:
-            values = item.values()
+            values = value.values()
         else:
             return False
-        kinds = set(map(type, values))
-        if float in kinds:
-            return False
-        if not kinds <= _EXACT_SCALARS:
-            pending.extend(values)
-    return True
+        if len(value) < 16:
+            # Avoid allocating a map and set for small records, and retain
+            # only containers instead of revisiting their scalar siblings.
+            for item in values:
+                item_kind = type(item)
+                if item_kind in _EXACT_SCALARS:
+                    continue
+                if item_kind is list or item_kind is dict:
+                    pending.append(item)
+                else:
+                    return False
+        else:
+            kinds = set(map(type, values))
+            if float in kinds:
+                return False
+            if not kinds <= _EXACT_SCALARS:
+                for item in values:
+                    item_kind = type(item)
+                    if item_kind is list or item_kind is dict:
+                        pending.append(item)
+                    elif item_kind not in _EXACT_SCALARS:
+                        return False
+        if not pending:
+            return True
+        value = pending.pop()
+        kind = type(value)
