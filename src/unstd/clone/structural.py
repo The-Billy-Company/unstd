@@ -90,15 +90,13 @@ type _Clone = Callable[[Any], Any]
 _NODES: dict[type, _Clone | None] = {}
 
 
-def _key(k: Any) -> Any:
-    return k if type(k) in _ATOMS else _walk(k)
-
-
 def _walk(o: Any) -> Any:
     t = type(o)
     if t is dict:
         return {
-            (k if type(k) is str else _key(k)): (v if type(v) in _ATOMS else _walk(v))
+            (k if type(k) is str else k if type(k) in _ATOMS else _walk(k)): (
+                v if type(v) in _ATOMS else _walk(v)
+            )
             for k, v in o.items()
         }
     if t is list:
@@ -108,9 +106,9 @@ def _walk(o: Any) -> Any:
     if t in _ATOMS:
         return o
     if t is set:
-        return {_key(v) for v in o}
+        return {v if type(v) in _ATOMS else _walk(v) for v in o}
     if t is frozenset:
-        return frozenset([_key(v) for v in o])
+        return frozenset([v if type(v) in _ATOMS else _walk(v) for v in o])
     try:
         node = _NODES[t]
     except KeyError:
@@ -177,9 +175,17 @@ def _reduced(o: Any) -> Any:
     return fn(*[a if type(a) in _ATOMS else _walk(a) for a in args])
 
 
+_PYDANTIC_UNDEFINED: Any = None
+
+
 def _model(o: Any) -> Any:
     """``pydantic.BaseModel.__deepcopy__``, with the walker in place of ``deepcopy``."""
-    from pydantic_core import PydanticUndefined
+    global _PYDANTIC_UNDEFINED
+    if _PYDANTIC_UNDEFINED is None:
+        # Keep the optional import lazy, but out of every model in a large tree.
+        from pydantic_core import PydanticUndefined
+
+        _PYDANTIC_UNDEFINED = PydanticUndefined
 
     cls: Any = type(o)
     setattr_ = object.__setattr__
@@ -194,7 +200,7 @@ def _model(o: Any) -> Any:
         "__pydantic_private__",
         None
         if private is None
-        else _walk({k: v for k, v in private.items() if v is not PydanticUndefined}),
+        else _walk({k: v for k, v in private.items() if v is not _PYDANTIC_UNDEFINED}),
     )
     return twin
 
@@ -243,7 +249,9 @@ def _plain(o: Any) -> Any:
         return [v if type(v) in _ATOMS else _plain(v) for v in o]
     if t is tuple:
         return tuple([v if type(v) in _ATOMS else _plain(v) for v in o])
-    if dataclasses.is_dataclass(t):
+    # ``t`` is already a type; avoid is_dataclass's instance/type dispatch for
+    # every record in the tree while retaining its inherited-field semantics.
+    if hasattr(t, "__dataclass_fields__"):
         try:
             names = _FIELDS[t]
         except KeyError:

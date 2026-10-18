@@ -389,6 +389,12 @@ class _TranslatedBytearray(bytearray):
         return b"ZA=="
 
 
+class _LengthGuardBytes(_TranslatedBytes):
+    def __len__(self) -> int:
+        message = "subclass length must not replace buffer length"
+        raise AssertionError(message)
+
+
 @pytest.mark.parametrize(
     "value",
     [
@@ -396,6 +402,7 @@ class _TranslatedBytearray(bytearray):
         _EncodedString("é"),
         _TranslatedBytes(b"YQ=="),
         _TranslatedBytearray(b"YQ=="),
+        _LengthGuardBytes(b"YQ=="),
     ],
 )
 def test_subclass_conversion_and_translation_are_observable(value: object) -> None:
@@ -441,6 +448,36 @@ def test_optional_url_padding_is_added_after_ignored_characters(encoded: bytes) 
     assert b64.decode(encoded, url=True) == expected
     if b"\xff" not in encoded:
         assert b64.decode(encoded.decode("ascii"), url=True) == expected
+
+
+def test_url_helper_exhaustive_short_alphabets_and_padding() -> None:
+    # The standard decoder owns interior padding and termination. Repair only
+    # omitted terminal padding after removing the ignored byte in this corpus.
+    def reference(encoded: bytes) -> bytes:
+        meaningful = encoded.replace(b"!", b"")
+        return base64.urlsafe_b64decode(meaningful + b"=" * (-len(meaningful) % 4))
+
+    for prefix in (b"", b"AAAA" * 32):
+        for size in range(7):
+            for characters in product(b"A-_=!", repeat=size):
+                _same_call(
+                    lambda data: b64.decode(data, url=True),
+                    reference,
+                    prefix + bytes(characters),
+                )
+
+
+@pytest.mark.parametrize("size", [1023, 1024, 1025])
+@pytest.mark.parametrize("alphabet", [b"-_", b"+/", b"+_", b"-/"])
+def test_url_helper_large_mixed_alphabets_and_ignored_bytes(
+    size: int, alphabet: bytes
+) -> None:
+    payload = (bytes(range(256)) * 5)[:size]
+    encoded = base64.b64encode(payload, altchars=alphabet)
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        for document in [encoded, encoded.rstrip(b"="), b"!\n" + encoded + b"\xff"]:
+            assert b64.decode(document, url=True) == payload
 
 
 @pytest.mark.parametrize("size", [0, 1, 56, 57, 58, 114, 115, 512])

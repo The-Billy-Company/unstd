@@ -50,16 +50,14 @@ __all__ = [
 ]
 
 
-# The backend codec itself — `jsonx.loads` minus its per-call kwarg dispatch,
-# which a line-at-a-time reader would otherwise pay once per record — and the
-# package's own newline-terminated row encoder.
-_parse = jsonx._decode if jsonx._HAVE_ORJSON else jsonx.loads
+# Reuse the faithful JSON decoder and newline-terminated compact encoder.
+_parse = jsonx.loads
 _line = jsonx._line
 
 
 def _text_line(row: object) -> str:
     """One newline-terminated record as ``str`` — orjson's own line bytes decoded once, ~20% under a ``jsonx.dumps`` plus concatenation."""
-    return _line(row).decode() if jsonx._HAVE_ORJSON else f"{jsonx.dumps(row)}\n"
+    return _line(row).decode()
 
 
 class NDJSONDecodeError(ValueError):
@@ -74,9 +72,7 @@ class NDJSONDecodeError(ValueError):
 
 def dumps(rows: Iterable[object]) -> str:
     """Serialize *rows* to an NDJSON ``str`` — one compact, newline-terminated line each."""
-    if jsonx._HAVE_ORJSON:  # join the bytes, decode the blob once
-        return dumpb(rows).decode()
-    return "".join(map(_text_line, rows))
+    return dumpb(rows).decode()
 
 
 def dumpb(rows: Iterable[object]) -> bytes:
@@ -99,12 +95,12 @@ def iter_loads(
             continue
         try:
             value = _parse(line)
-        except jsonx.JSONDecodeError:
+        except (ValueError, RecursionError):
             # JSON's own whitespace never needs stripping; only exotic padding
             # (NBSP, U+2028 …) does, so the copy is paid only on that path.
             try:
                 value = _parse(line.strip())
-            except jsonx.JSONDecodeError as exc:
+            except (ValueError, RecursionError) as exc:
                 if skip_errors:
                     continue
                 raise NDJSONDecodeError(lineno, exc) from exc
@@ -129,7 +125,7 @@ def loads(text: str | bytes, *, skip_errors: bool = False) -> list[Json]:
         # padding and names the line — so the answer, and the error, are its.
         try:
             return [_parse(line) for line in lines if line and not line.isspace()]
-        except jsonx.JSONDecodeError:
+        except (ValueError, RecursionError):
             pass
     return list(iter_loads(lines, skip_errors=skip_errors))
 

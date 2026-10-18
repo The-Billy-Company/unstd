@@ -16,6 +16,16 @@ python3 -m bench list            # what is registered, without running it
 
 Every backend has to be installed for a full run: `uv sync --all-extras`.
 
+The `jsonx.dumps` and `jsonx.loads` 500-record cases measure fallback overhead.
+These float-bearing/wide trees take stdlib codecs to preserve the JSON contract,
+so their roughly 1× ratios are references, not native-backend speedup claims.
+Their former floors (2.77× / 1.33×) covered incompatible value and error behavior;
+they were reset to 70% of measurements on Python 3.13.14 when parity was fixed
+(1.06× / 0.96×). Two eligible cases separately measure exact guarded orjson
+paths: text encoding (5.98×) and integer-array decoding (1.91×), with floors at
+70% of those Python 3.13.14 measurements. Guards are bounded because a Python
+eligibility walk can outweigh the codec speedup on trees with many small values.
+
 ## What a number means
 
 Each case is one accelerated `unstd` call and the stdlib call it stands in for,

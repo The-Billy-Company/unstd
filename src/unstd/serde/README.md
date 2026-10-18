@@ -1,82 +1,128 @@
 # `serde` — serialization/deserialization helpers
 
 Part of [`unstd`](../README.md). Every module wraps a best-in-class
-native codec behind a small, stdlib-faithful surface, and all JSON rides one
-backend (orjson, via `jsonx`). The native backends live behind the **`serde`
+codec behind a stdlib-faithful surface. All untyped JSON goes through `jsonx`,
+which proves eligibility for native acceleration and uses stdlib otherwise.
+The native backends live behind the **`serde`
 extra** (`unstd[serde]`); without it, `jsonx`/`b64`/`ndjson` fall back to the
 stdlib (same surface, slower) and the typed `structs` codecs — which have no
 stdlib equivalent — raise a clear ImportError.
 
 | Module                                      | Wraps                         | Use for                                                    |
 | ------------------------------------------- | ----------------------------- | ---------------------------------------------------------- |
-| [`jsonx`](#jsonx--accelerated-json-codec)   | `orjson`                      | untyped `dict`/`list` JSON on machine-to-machine paths     |
+| [`jsonx`](#jsonx--accelerated-json-codec)   | stdlib `json` / guarded `orjson` | faithful JSON plus compact byte transport     |
 | [`b64`](#b64--accelerated-base64)           | `pybase64` (SIMD `libbase64`) | base64 of large payloads — audio, images, embeddings       |
 | [`structs`](#structs--typed-msgspec-codecs) | `msgspec`                     | typed, validate-on-decode wire schemas (`msgspec.Struct`)  |
 | [`ndjson`](#ndjson--newline-delimited-json) | `jsonx`                       | `.jsonl` streams — trace exports, eval datasets, snapshots |
 
 ## `jsonx` — accelerated JSON codec
 
-Drop-in replacement for the stdlib `json` module on **machine-to-machine** JSON
-(wire payloads, Redis envelopes, cache keys, tool results). Backed by
-[`orjson`](https://github.com/ijl/orjson) for a several-fold encode/decode
-speedup, wrapped in a stdlib-faithful surface.
+Drop-in replacement for the standard `json` function and codec API. Standard
+calls preserve the running interpreter's stdlib semantics, using guarded
+acceleration through [`orjson`](https://github.com/ijl/orjson) on safe builtin values.
 
 ```python
 from unstd.serde import jsonx
 
-body = jsonx.dumps(payload)  # -> str  (compact, UTF-8)
-raw = jsonx.dumpb(payload)  # -> bytes (skips the str decode)
-data = jsonx.loads(body)  # str | bytes -> Python
+body = jsonx.dumps(payload)  # str, exactly stdlib's defaults and formatting
+raw = jsonx.dumpb(payload)  # extension: compact UTF-8 bytes
+data = jsonx.loads(body)  # str | bytes | bytearray -> Python
 ```
 
 ### Migrating a file
 
-1. Replace `import json` with `from unstd.serde import jsonx`.
-2. Rename call sites: `json.dumps` → `jsonx.dumps`, `json.loads` → `jsonx.loads`,
-   `json.JSONDecodeError` → `jsonx.JSONDecodeError`, etc. The full stdlib
-   surface used across the service (`dumps`, `loads`, `dump`, `load`,
-   `JSONDecodeError`, `JSONDecoder`, `JSONEncoder`) is re-exported.
+Replace `import json` with `from unstd.serde import jsonx` and rename calls.
+`dumps`, `dump`, `loads`, `load`, `JSONEncoder`, `JSONDecoder` and
+`JSONDecodeError` follow stdlib behavior. The classes are stdlib's originals.
+Custom codec constructor keywords pass through unchanged.
 
-### Faithfulness & the one intentional difference
+### Compatibility contract
 
-`jsonx.dumps` returns `str`, coerces non-string dict keys, passes `datetime`
-through to `default` (so `dumps(dt, default=str)` matches stdlib), honors
-`default`/`sort_keys`, and re-exports `JSONDecodeError` (orjson raises a subclass,
-so `except` clauses keep working).
+The standard API preserves:
 
-**Format difference (auto-recovered):** output is compact UTF-8 with non-ASCII
-unescaped — valid JSON that parses identically but differs byte-for-byte from
-stdlib's `\uXXXX` escaping and `", "`/`": "` spacing. Calls that need stdlib's
-_exact bytes_ (`ensure_ascii=True`, `indent` ≠ 2, arbitrary `separators`, `cls`,
-…) fall back to stdlib automatically. Without the `serde` extra installed, the
-whole module falls back to stdlib `json`. Do **not** use `jsonx` for human-facing
-pretty-print.
+- **Exact output:** `ensure_ascii=True`, default spaces, indentation (including
+  zero, negative and string indents), separators and finite float notation.
+- **Numbers:** arbitrary precision integers subject to Python's configured digit
+  limit, signed zero, `NaN` and infinities; `allow_nan=False` raises `ValueError`.
+- **Unicode and input encodings:** lone surrogates in text, UTF-8/16/32 binary
+  input and BOM handling according to the running stdlib.
+- **Types and keys:** stdlib-supported subclasses, key coercion and sorting,
+  duplicate coerced keys, `skipkeys`, and rejection of unsupported types.
+  Dataclasses, UUIDs and plain enums require an explicit encoder or `default`.
+- **Customization and failures:** hooks, custom classes, callback exceptions,
+  circular references, interpreter limits, and complete decoder diagnostics.
+- **Streams:** `dump` writes encoder chunks as stdlib does, including partial
+  output before a later encoding or write failure; `load` supports text/binary
+  files and duck-typed readers.
 
-**Value differences (deliberate, _not_ recovered — orjson is a fixed-width
-finite codec):**
+Installing optional dependencies never changes these standard behaviors.
+The accelerated paths are deliberately narrower than the supported API:
 
-| Input                           | `jsonx` (orjson)                          | stdlib `json`                   |
-| ------------------------------- | ----------------------------------------- | ------------------------------- |
-| `NaN` / `±Infinity`             | `null` (silent — `default` does not fire) | `NaN` / `Infinity` literals     |
-| int outside ±2⁶³ (unsigned 2⁶⁴) | raises `TypeError`                        | arbitrary precision             |
-| nesting past ~254 deep          | raises `TypeError`                        | recurses to interpreter limit   |
-| `1e-05`                         | `0.00001` (fixed)                         | `1e-05` (exponent) — same value |
+- **Encoding:** no custom encoder, `default`, unknown keywords or custom option
+  objects. A private snapshot validates at most 16 values and 16 container levels
+  of exact builtin types, string keys and backend-range integers. Floats and
+  unsupported values use stdlib. Snapshotting prevents a later input mutation
+  from introducing unvalidated backend-only types. Compact output and default
+  `indent=2` use native formatting. Default spacing is added only when strings
+  cannot contain its delimiter characters. Top-level text uses stdlib's
+  specialized string encoder.
+  ASCII output must also exclude DEL, which stdlib escapes differently.
+- **Decoding:** exact `str`/`bytes`, no hooks/custom decoder/extra keywords, and at
+  most 8 raw container openers for inputs under 4 KiB, or 64 for larger inputs
+  (including those in strings, conservatively).
+  The backend result is returned only after the whole tree is checked for exact
+  builtin types without floats. This rejects both floating tokens and integers
+  that the backend rounded to floats. Failure reparses the original document
+  with stdlib; caller callbacks are never invoked speculatively.
+- **Other cases:** common builtin formatting configurations reuse a bounded cache
+  of stateless stdlib encoders; custom behavior goes directly to stdlib. `load`
+  reads once and shares the same decoder; `dump` keeps stdlib's streaming writes.
+  Eligibility limits only choose the codec and never reject supported data.
 
-Each is pinned as a regression guard in `tests/serde/test_jsonx.py` and
-`tests/properties/test_serde_parity.py`. Need a non-finite float to surface
-loudly instead of becoming `null`? Use a typed [`structs`](#structs--typed-msgspec-codecs)
-codec (it raises), not `jsonx`.
+Both encoders and decoders preserve interpreter recursion failures. Backend
+errors fall back to stdlib for the original input and its diagnostics.
+A native codec cannot provide this entire contract by itself; the bounded
+proofs and fallback paths are part of the implementation.
 
-> **numpy arrays & scalars:** pass `numpy=True` to `dumps`/`dumpb`/`dump` to
-> serialize an `ndarray` or numpy scalar directly instead of raising —
-> orjson's native `OPT_SERIALIZE_NUMPY` on the fast path (contiguous
-> int/float/bool/`datetime64` dtypes, native byte order), a `.tolist()`/`.item()`
-> `default` on the stdlib fallback path. Needs numpy installed (not part of the
-> `serde` extra itself — `unstd[pack]`/`unstd[rand]`/`unstd[audio]` already pull
-> it in, or add it standalone). Without `numpy=True`, `default=float` (or
-> `serde.structs.float_enc_hook` on the typed path) still works for a lone
-> numpy *scalar*, since `numpy.float64`/`int64` subclass Python `float`/`int`
-> but orjson dispatches on the exact type.
+Speed depends on the payload and Python version. The benchmark harness compares
+identical outputs and separately measures eligible text/integer payloads and
+fallback records. Broad Python tree walks can outweigh codec savings, so proofs
+are bounded. On Python 3.13.14, the committed eligible cases measured about 6×
+for text encoding and 1.9× for integer-array decoding; fallback records stay near
+stdlib speed. These are measured cases, not a uniform speedup promise.
+
+**Compact bytes:** `dumpb` equals
+`json.dumps(obj, ensure_ascii=False, separators=(",", ":"), ...).encode()` with
+its `sort_keys` and `default` options. It uses the same private snapshot proof
+and falls back for all other values, including floats, so notation also matches
+stdlib across backends. Lone surrogates raise the same UTF-8 encoding error.
+`canonical` retains its sorted, compact, ASCII-escaped identity format; it is
+not an implementation of RFC 8785.
+
+**Numpy extension:** with the default encoder, `numpy=True` on
+`dumps`/`dump`/`dumpb` converts arrays with `.tolist()` and scalars with `.item()`
+before calling a user-supplied `default` for other objects. Conversion and float
+precision are independent of the installed backend. Numpy must be installed
+separately (or through `unstd[pack]`, `unstd[rand]` or `unstd[audio]`). When
+`cls` is explicit, `dump`/`dumps` forward `numpy` to that custom encoder as an
+ordinary constructor keyword.
+
+### Evidence and regression coverage
+
+The contract is based on the [Python 3.12 JSON documentation](https://docs.python.org/3.12/library/json.html)
+(the package's supported floor), [CPython's implementation](https://github.com/python/cpython/tree/3.12/Lib/json)
+and [regression tests](https://github.com/python/cpython/tree/3.12/Lib/test/test_json),
+and [orjson's documented differences](https://github.com/ijl/orjson).
+`tests/serde/test_jsonx_encode_parity.py` and
+`test_jsonx_decode_parity.py` compare
+formatting, values, types, hooks, errors and stream behavior to the running
+stdlib, with and without the backend.
+`tests/properties/test_serde_parity.py`
+generates broad values, options, Unicode, binary encodings and malformed input;
+its comparator checks type, key order, NaN and negative zero as well as equality.
+The fast-path suite also asserts actual backend use, snapshot isolation, fallback
+dispatch, and recursion boundaries rather than letting every example fall back.
+CI covers Python 3.12, 3.13 and 3.14, dependency floors and a real base install.
 
 ## `b64` — accelerated base64
 

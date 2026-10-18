@@ -15,10 +15,12 @@ do not count towards that padding. Strict validation does not check unused pad
 bits for canonicality, just as in stdlib.
 
 With the ``serde`` extra, pybase64 accelerates exact ``bytes`` encoding and
-strict decoding of exact ``bytes`` or ASCII ``str``. Other input types and
-options use stdlib; native decode failures also return to stdlib for its exact
-acceptance and diagnostics. This avoids pybase64 1.5's Python 3.15-oriented
-lenient padding rules, Unicode coercion and alternate-alphabet warnings.
+strict decoding of exact ``bytes`` or ASCII ``str``. The URL convenience decoder
+also accelerates validated input after preserving its normalization rules.
+Other input types and options use stdlib; native decode failures also return to
+stdlib for its exact acceptance and diagnostics. This avoids pybase64 1.5's
+Python 3.15-oriented lenient padding rules, Unicode coercion and
+alternate-alphabet warnings.
 Installing the extra must not change results, errors or warnings.
 
 Contract sources: https://docs.python.org/3.12/library/base64.html,
@@ -84,6 +86,7 @@ _URL_IGNORED = bytes(
     for value in range(256)
     if value not in b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
 )
+_URL_INPUT_IGNORED = _URL_IGNORED.translate(None, b"-_")
 
 
 def b64encode(s: Buffer, altchars: Buffer | None = None) -> bytes:
@@ -177,15 +180,44 @@ def decode(s: str | Buffer, *, url: bool = False) -> bytes:
     """
     if not url:
         return b64decode(s, validate=True)
-    # Translate before filtering, as stdlib does, and retain '=' so completed
-    # padding still terminates lenient decoding according to this interpreter.
-    raw = _decode_input(_decode_input(s).translate(_URL_TRANSLATION))
-    # Stdlib normalizes the result of a subclass's translation as a fresh
-    # decode input. Internal filtering must not call that subclass again.
-    if type(raw) is not bytes:
-        raw = memoryview(raw).tobytes()
-    raw = raw.translate(None, _URL_IGNORED)
-    return _stdlib.b64decode(raw + b"=" * (-len(raw) % 4))
+    raw = _decode_input(s)
+    if type(raw) is bytes:
+        source_size = len(raw)
+        # For tiny values, native keyword dispatch costs more than normalization.
+        native = _HAVE_PYBASE64 and source_size >= 128
+        if native and b"+" not in raw and b"/" not in raw:
+            # Native strict decoding proves this is already a clean URL value.
+            # Its unpadded mode is only used when no terminal '=' is present;
+            # partial or unusual padding returns to the lenient stdlib path.
+            try:
+                return _b64.b64decode(
+                    raw, altchars=b"-_", validate=True, padded=raw.endswith(b"=")
+                )
+            except Error:
+                native = False
+        # Exact bytes have no translation hooks. Translate and remove ignored
+        # characters together, retaining both alphabets until translation.
+        raw = raw.translate(_URL_TRANSLATION, _URL_INPUT_IGNORED)
+        # Retry a rejected native value only if filtering changed its content.
+        # Padding-only failures already have a cheap authoritative stdlib path.
+        if len(raw) < source_size:
+            native = _HAVE_PYBASE64 and source_size >= 128
+    else:
+        # A subclass's translation and its result's normalization are observable.
+        # Preserve both before filtering, without invoking that subclass twice.
+        raw = _decode_input(raw.translate(_URL_TRANSLATION))
+        if type(raw) is not bytes:
+            raw = memoryview(raw).tobytes()
+        raw = raw.translate(None, _URL_IGNORED)
+        native = _HAVE_PYBASE64 and len(raw) >= 128
+    raw += b"=" * (-len(raw) % 4)
+    if native:
+        try:
+            return _b64.b64decode(raw, validate=True, padded=True)
+        except Error:
+            # Internal '=' and trailing data retain stdlib's lenient meaning.
+            pass
+    return _stdlib.b64decode(raw)
 
 
 def decode_text(s: str | Buffer, *, url: bool = False, errors: str = "replace") -> str:
@@ -200,4 +232,5 @@ def encode_json(obj: object) -> str:
 
 def decode_json(s: str | Buffer) -> jsonx.Json:
     """Inverse of :func:`encode_json` — :func:`decode` *s*, then parse the JSON."""
-    return jsonx.loads(decode(s))
+    value: jsonx.Json = jsonx.loads(decode(s))
+    return value

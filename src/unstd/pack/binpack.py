@@ -39,6 +39,7 @@ Prior art:
 
 from __future__ import annotations
 
+from functools import lru_cache
 import struct as _struct
 from typing import TYPE_CHECKING
 
@@ -123,6 +124,19 @@ def _struct_spec(dtype: DTypeLike) -> tuple[str, str, int]:
     maps to stdlib ``struct``'s ``"="`` (native order, standard size, no alignment),
     exactly the layout ``numpy.ndarray.tobytes`` produces for the same dtype.
     """
+    if type(dtype) is str:
+        return _cached_struct_spec(dtype)
+    return _parse_struct_spec(dtype)
+
+
+@lru_cache(maxsize=128)
+def _cached_struct_spec(dtype: str) -> tuple[str, str, int]:
+    """Reuse parsed formats for repeated calls without retaining arbitrary dtypes."""
+    return _parse_struct_spec(dtype)
+
+
+def _parse_struct_spec(dtype: DTypeLike) -> tuple[str, str, int]:
+    """Parse a dtype, preserving conversion and error behavior for foreign objects."""
     s = str(dtype)
     order = "="
     if s[:1] in "<>=|":
@@ -135,6 +149,12 @@ def _struct_spec(dtype: DTypeLike) -> tuple[str, str, int]:
         msg = f"unstd.pack: unsupported array dtype {dtype!r}"
         raise error(msg) from exc
     return order, char, int(s[1:])
+
+
+@lru_cache(maxsize=128)
+def _array_struct(order: str, char: str, count: int) -> _struct.Struct:
+    """Reuse a compiled format whose bound pack method accepts only values."""
+    return _struct.Struct(f"{order}{count}{char}")
 
 
 def pack_array(dtype: DTypeLike, seq: Iterable[float]) -> bytes:
@@ -156,8 +176,10 @@ def pack_array(dtype: DTypeLike, seq: Iterable[float]) -> bytes:
         )
         return arr.tobytes()
     order, char, _ = _struct_spec(dtype)
-    vals = list(seq)
-    return _struct.pack(f"{order}{len(vals)}{char}", *vals)
+    # Freeze before reading the count. The bound method reuses this tuple for
+    # argument expansion, avoiding a second copy to prepend a format argument.
+    vals = tuple(seq)
+    return _array_struct(order, char, len(vals)).pack(*vals)
 
 
 def unpack_array(

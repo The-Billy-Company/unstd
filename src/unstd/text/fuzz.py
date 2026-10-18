@@ -188,10 +188,11 @@ def _jaro_winkler(a: str, b: str, /, *, prefix_weight: float = 0.1) -> float:
 
 
 def _levenshtein(a: Sequence[object], b: Sequence[object], /) -> int:
-    """Uniform Levenshtein distance via the classic two-row DP (Wagner-Fischer, 1974).
+    """Uniform Levenshtein distance, with packed DP columns for exact strings.
 
     Faithful stand-in for ``rapidfuzz.distance.Levenshtein.distance`` when the
-    ``text`` extra is absent; O(len(a)·len(b)) time, O(len(b)) space.
+    ``text`` extra is absent. Foreign sequences retain the classic two-row DP
+    and its equality/iteration behavior, including unhashable elements.
     """
     if a == b:
         return 0
@@ -199,6 +200,13 @@ def _levenshtein(a: Sequence[object], b: Sequence[object], /) -> int:
         return len(b)
     if not b:
         return len(a)
+    if type(a) is str and type(b) is str:
+        return _string_distance(a, b)
+    return _sequence_distance(a, b)
+
+
+def _sequence_distance(a: Sequence[object], b: Sequence[object]) -> int:
+    """Wagner-Fischer DP for arbitrary sequences, without hashing their elements."""
     prev = list(range(len(b) + 1))
     for i, ca in enumerate(a, 1):
         cur = [i]
@@ -206,6 +214,48 @@ def _levenshtein(a: Sequence[object], b: Sequence[object], /) -> int:
             cur.append(min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (ca != cb)))
         prev = cur
     return prev[-1]
+
+
+def _string_distance(a: str, b: str) -> int:
+    """Myers' bit-vector recurrence, evaluated by Python's arbitrary-width ints.
+
+    One bit records each DP row's vertical difference. Integer arithmetic updates
+    a whole column at once instead of allocating and visiting Python cells.
+    The shorter string bounds the bit width; at most 256 character masks keep
+    their total storage linear with a small constant even for diverse Unicode.
+    """
+    if len(a) > len(b):
+        a, b = b, a
+    masks: dict[str, int] = {}
+    bit = 1
+    for char in a:
+        masks[char] = masks.get(char, 0) | bit
+        if len(masks) > 256:
+            # A distinct mask per character can otherwise need quadratic space.
+            return _sequence_distance(b, a)
+        bit <<= 1
+    width_mask = bit - 1
+    positive = width_mask
+    negative = 0
+    high_bit = bit >> 1
+    score = len(a)
+    for char in b:
+        matches = masks.get(char, 0)
+        differences = (
+            (((matches & positive) + positive) ^ positive) | matches | negative
+        )
+        horizontal_positive = negative | ~(differences | positive)
+        horizontal_negative = differences & positive
+        score += bool(horizontal_positive & high_bit)
+        score -= bool(horizontal_negative & high_bit)
+        horizontal_positive = (horizontal_positive << 1) | 1
+        # Python's complement has infinitely many sign bits. Discard the rows
+        # outside the pattern so shifts cannot grow state with the text length.
+        positive = (
+            (horizontal_negative << 1) | ~(differences | horizontal_positive)
+        ) & width_mask
+        negative = differences & horizontal_positive & width_mask
+    return score
 
 
 class _Similarity(Protocol):

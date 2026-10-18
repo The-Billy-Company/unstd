@@ -115,6 +115,22 @@ def test_plain_data_never_reaches_deepcopy(monkeypatch: pytest.MonkeyPatch) -> N
     assert clone.deep(src) == src
 
 
+@pytest.mark.parametrize("container", [dict, set, frozenset])
+def test_hashable_atom_subclasses_retain_custom_deepcopy(container: type) -> None:
+    """Key and set fast paths must still honor subclasses' copy protocols."""
+
+    class Number(int):
+        def __deepcopy__(self, memo: dict[int, object]) -> Number:
+            return Number(self + 10)
+
+    source = container({Number(1): "value", 2: "other"})
+    actual = clone.deep(source)
+
+    assert actual == _stdlib_copy.deepcopy(source)
+    assert actual is not source
+    assert Number(11) in actual
+
+
 def test_foreign_node_is_deepcopied_alone_and_siblings_still_walk() -> None:
     """A node the walker does not own goes to ``deepcopy`` per node, not per tree."""
     od = collections.OrderedDict(k=[1])

@@ -45,9 +45,10 @@ from unstd.rex import findall as rex_findall
 from unstd.rex import search as rex_search
 from unstd.serde.b64 import decode as b64_decode
 from unstd.serde.b64 import encode as b64_encode
+from unstd.serde.jsonx import dumpb as jx_dumpb
 from unstd.serde.jsonx import dumps as jx_dumps
 from unstd.serde.jsonx import loads as jx_loads
-from unstd.text.fuzz import cdist, extract, ratio
+from unstd.text.fuzz import _levenshtein, _sequence_distance, cdist, extract, ratio
 
 
 if TYPE_CHECKING:
@@ -134,10 +135,21 @@ def _names(n: int) -> list[str]:
 
 _RECORDS_500 = _records(500)
 _RECORDS_JSON = json.dumps(_RECORDS_500, separators=(",", ":"))
+_JSON_TEXT = {
+    "text": "Exact JSON values and formatting with native acceleration " * 2048
+}
+_JSON_INTS = json.dumps(list(range(1000))).encode()
 _BLOB = bytes(range(256)) * 512  # 128 KiB — the size an upload chunk lands at
 _B64_TEXT = base64.b64encode(_BLOB).decode("ascii")
+_URL_B64_TEXT = base64.urlsafe_b64encode(_BLOB).decode("ascii")
+_JSON_INT_RECORD = {"id": 7, "name": "small", "ok": True, "values": list(range(32))}
+_JSON_NESTED = json.dumps(
+    [{"id": i, "name": "record", "tags": ["a", "b"]} for i in range(20)]
+)
 _NESTED = {"items": _records(200)}
 _SMALL = {"id": 7, "name": "small", "ok": True}
+_INTEGER_SET = set(range(1000))
+_DISTANCE_STRINGS = ("abcd" * 256, "bdac" * 256)
 
 
 @dataclass
@@ -206,19 +218,38 @@ _EVIL, _EVIL_PATTERN = "a" * 22 + "b", "(a+)+$"
 case(
     name="jsonx.dumps · 500 records",
     group="serde",
-    backend="orjson",
+    backend="json",
     payload=lambda: _RECORDS_500,
     accel=jx_dumps,
-    base=lambda p: json.dumps(p, separators=(",", ":")),
-    note="orjson vs stdlib json, both minified",
+    base=json.dumps,
+    note="float-bearing tree uses native stdlib; fallback overhead reference",
 )
 case(
     name="jsonx.loads · 500 records",
     group="serde",
-    backend="orjson",
+    backend="json",
     payload=lambda: _RECORDS_JSON,
     accel=jx_loads,
     base=json.loads,
+    note="wide float-bearing tree uses stdlib; fallback overhead reference",
+)
+case(
+    name="jsonx.dumps · text payload",
+    group="serde",
+    backend="orjson",
+    payload=lambda: _JSON_TEXT,
+    accel=jx_dumps,
+    base=json.dumps,
+    note="guarded native encode; byte-identical stdlib defaults",
+)
+case(
+    name="jsonx.loads · 1000 integers",
+    group="serde",
+    backend="orjson",
+    payload=lambda: _JSON_INTS,
+    accel=jx_loads,
+    base=json.loads,
+    note="guarded native decode; integer types and values verified before return",
 )
 case(
     name="b64.encode · 128 KiB",
@@ -237,6 +268,42 @@ case(
     accel=b64_decode,
     base=lambda p: base64.b64decode(p, validate=True),
     note="strict decoding on both paths; stdlib handles native errors",
+)
+case(
+    name="b64.decode URL · 128 KiB",
+    group="serde",
+    backend="pybase64",
+    payload=lambda: _URL_B64_TEXT,
+    accel=lambda p: b64_decode(p, url=True),
+    base=base64.urlsafe_b64decode,
+    note="padded URL alphabet; identical stdlib results before native timing",
+)
+case(
+    name="jsonx.dumps · 32-int record",
+    group="serde",
+    backend="orjson",
+    payload=lambda: _JSON_INT_RECORD,
+    accel=jx_dumps,
+    base=json.dumps,
+    note="bounded snapshot proof and fallback; byte-identical stdlib spacing",
+)
+case(
+    name="jsonx.dumpb · 500 records",
+    group="serde",
+    backend="json",
+    payload=lambda: _RECORDS_500,
+    accel=jx_dumpb,
+    base=lambda p: json.dumps(p, ensure_ascii=False, separators=(",", ":")).encode(),
+    note="float-bearing fallback transport; one eligibility proof per call",
+)
+case(
+    name="jsonx.loads · 20 nested records",
+    group="serde",
+    backend="orjson",
+    payload=lambda: _JSON_NESTED,
+    accel=jx_loads,
+    base=json.loads,
+    note="small nested input uses stdlib without a native result-validation walk",
 )
 
 
@@ -271,6 +338,15 @@ case(
     accel=deep,
     base=copy.deepcopy,
     note="the floor case — the one a serialization round-trip lost",
+)
+case(
+    name="clone.deep · 1k integer set",
+    group="clone",
+    backend="unstd",
+    payload=lambda: _INTEGER_SET,
+    accel=deep,
+    base=copy.deepcopy,
+    note="atomic set members retain their identity without a forwarding frame",
 )
 case(
     name="clone.deep · 40 pydantic models",
@@ -330,6 +406,15 @@ case(
 
 # ---------------------------------------------------------------- text
 
+case(
+    name="fuzz.distance fallback · 1024 characters",
+    group="text",
+    backend="unstd",
+    payload=lambda: _DISTANCE_STRINGS,
+    accel=lambda p: _levenshtein(*p),
+    base=lambda p: _sequence_distance(*p),
+    note="portable bit-vector DP vs classic two-row DP; same Levenshtein cost",
+)
 case(
     name="fuzz.ratio · one pair",
     group="text",

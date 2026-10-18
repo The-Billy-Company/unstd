@@ -167,6 +167,49 @@ def test_fallback_empty_sequence() -> None:
     assert binpack.unpack_array("<f4", b"") == []
 
 
+@pytest.mark.usefixtures("force_fallback")
+def test_fallback_does_not_cache_stateful_string_subclasses() -> None:
+    """A dtype subclass may change its string conversion between calls."""
+
+    class Dtype(str):
+        calls = 0
+
+        def __str__(self) -> str:
+            self.calls += 1
+            return "<i4" if self.calls == 1 else ">i4"
+
+    dtype = Dtype("dynamic")
+    assert binpack.pack_array(dtype, [1]) == struct.pack("<i", 1)
+    assert binpack.pack_array(dtype, [1]) == struct.pack(">i", 1)
+    assert dtype.calls == 2
+
+
+@pytest.mark.usefixtures("force_fallback")
+def test_fallback_builtin_list_is_snapshotted_before_numeric_conversion() -> None:
+    """Mutation during __index__ cannot change the arguments being packed."""
+    source: list[object] = []
+
+    class Number:
+        def __index__(self) -> int:
+            source.clear()
+            return 7
+
+    source.extend([Number(), 8])
+    assert binpack.pack_array("<i4", source) == struct.pack("<2i", 7, 8)
+    assert source == []
+
+
+@pytest.mark.usefixtures("force_fallback")
+def test_fallback_list_subclass_uses_its_iterator() -> None:
+    """Skipping a redundant copy must not bypass a custom iterable's protocol."""
+
+    class Values(list[int]):
+        def __iter__(self):
+            return iter([3, 4])
+
+    assert binpack.pack_array("<i4", Values([1, 2])) == struct.pack("<2i", 3, 4)
+
+
 # ── array helpers: the NumPy backend + cross-backend byte parity ──────────────
 
 

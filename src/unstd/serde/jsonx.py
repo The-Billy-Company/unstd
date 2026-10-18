@@ -1,85 +1,75 @@
-r"""Drop-in accelerated JSON — orjson under a stdlib-``json``-faithful surface.
+"""Exact stdlib JSON semantics with guarded native acceleration.
 
-The stdlib ``json`` module is pure-Python on the hot encode/decode path; orjson
-is a C/Rust codec several times faster. This shim wraps orjson but presents the
-*exact* stdlib call surface (``str`` in/out, ``dumps``/``loads``/``dump``/``load``,
-``JSONDecodeError``, ``JSONDecoder``/``JSONEncoder``) so a caller migrates by
-swapping the import and the module name:
+``dumps`` uses orjson only for a bounded private snapshot of exact builtin
+values whose output matches stdlib byte-for-byte. Floats, unsupported types,
+large integers, complex formatting and user callbacks take stdlib paths.
+Common builtin option configurations reuse stateless stdlib JSONEncoder
+instances, retaining CPython's native ``_json`` implementation for all values.
 
-    from unstd.serde import jsonx     # then jsonx.dumps(...) / jsonx.loads(...)
+``loads`` and ``load`` use orjson only with exact immutable input types,
+bounded source nesting and no hooks/custom decoders. A decoded result is
+exposed only if its entire tree contains exact builtin values without floats;
+this also rejects integers silently rounded by the backend. Failed proofs or
+backend errors use the original document with stdlib, preserving extensions,
+integer limits and complete diagnostics. Validation retains stdlib's Python
+recursion headroom. ``dump`` delegates streaming writes to stdlib.
 
-Backend & fallback: orjson is provided by the ``serde`` extra. When it
-is installed the fast path is taken and output is byte-identical to the historic
-shim. When it is **not** (a base ``unstd`` install), every function transparently
-falls back to the stdlib ``json`` module — same surface, correct JSON, just
-slower — so the module imports and works everywhere. Production consumers that
-opt into ``unstd[serde]`` never hit the fallback.
+``JSONEncoder``, ``JSONDecoder`` and ``JSONDecodeError`` remain the original
+stdlib classes. Default escaping, spacing, values, subclasses, key behavior,
+callbacks, interpreter limits and errors follow the running stdlib. ``dumpb``
+is exactly compact ``ensure_ascii=False`` stdlib JSON encoded as UTF-8;
+``canonical`` retains the package's sorted, ASCII-escaped identity format.
 
-Faithfulness contract — what stays identical to stdlib ``json``:
+The existing ``numpy=True`` extension converts arrays with ``.tolist()`` and
+scalars with ``.item()``. Custom ``cls`` receives all extra constructor keywords,
+including ``numpy``, unchanged.
 
-- ``dumps`` returns ``str`` (orjson returns ``bytes`` — we decode once).
-- Non-string dict keys are coerced to strings (``OPT_NON_STR_KEYS``), matching
-  the stdlib behavior of stringifying ``int``/``float``/``bool``/``None`` keys.
-- ``datetime``/``date``/``time`` are *passed through* to ``default``
-  (``OPT_PASSTHROUGH_DATETIME``) rather than emitted as orjson's native RFC-3339,
-  so ``dumps(dt, default=str)`` yields the same ``str(dt)`` the stdlib produced,
-  and ``dumps(dt)`` with no ``default`` raises ``TypeError`` exactly as stdlib.
-- ``default`` is honored identically (called for unknown types, result re-encoded).
-- ``sort_keys=True`` maps to ``OPT_SORT_KEYS``; the compact
-  ``separators=(",", ":")`` idiom is orjson's native output (no-op fast path).
-- ``JSONDecodeError`` is re-exported from stdlib; orjson raises a *subclass* of
-  it, so existing ``except json.JSONDecodeError`` clauses keep catching failures.
-- ``JSONDecoder``/``JSONEncoder`` are re-exported unchanged for the rare
-  streaming ``raw_decode`` / custom-encoder callers (orjson has no equivalent).
-
-Format difference (recovered by fallback): orjson output is always UTF-8 with
-non-ASCII left unescaped and no inter-token whitespace. That is valid JSON that
-parses identically; it differs byte-for-byte from stdlib's ``\\uXXXX`` escaping
-and ``", "``/``": "`` spacing. Any call that needs stdlib's *exact bytes* —
-``ensure_ascii=True``, an ``indent`` other than 2, arbitrary ``separators``, or
-any other stdlib-only kwarg (``cls``, ``skipkeys``, …) — transparently falls
-back to stdlib ``json`` so that output stays identical.
-
-Value differences (NOT recovered — orjson is a fixed-width, finite codec, so no
-format kwarg triggers a fallback here). These are deliberate and pinned as
-regression guards in ``tests/properties/test_serde_parity.py`` and
-``tests/serde/test_jsonx.py``:
-
-- **Non-finite floats** — ``NaN`` / ``Infinity`` / ``-Infinity`` serialize to
-  JSON ``null`` (silently — ``default`` does *not* fire), where stdlib emits the
-  technically-invalid ``NaN`` / ``Infinity`` literals. A struct that must
-  surface a non-finite value should use a typed ``serde.structs`` codec (which
-  raises) rather than rely on ``jsonx``.
-- **Integers beyond 64-bit** — on encode, an int outside signed/unsigned 64-bit
-  range raises ``TypeError`` (stdlib serializes arbitrary precision); on decode,
-  ``loads`` coerces an out-of-range integer literal to ``float`` (lossy, silent —
-  orjson has no arbitrary-precision path), where stdlib returns the exact ``int``.
-  Stringify large IDs before encoding if they can exceed 2⁶⁴.
-- **Deep nesting** — nesting past orjson's recursion cap (~254) raises
-  ``TypeError`` (stdlib recurses to the interpreter limit).
-- **Small/large float notation** — orjson prefers fixed notation (``0.00001``)
-  where stdlib switches to exponent form (``1e-05``). Same value, different
-  bytes — parses back identically, so it never corrupts data, but it is not
-  byte-parity with stdlib.
-
-Use this shim on machine-to-machine JSON (wire payloads, Redis envelopes, cache
-keys, tool results), not on human-facing pretty-print.
+Contract sources: https://docs.python.org/3.12/library/json.html,
+https://github.com/python/cpython/tree/3.12/Lib/json, and
+https://github.com/ijl/orjson. Differential and generated tests exercise both
+successful acceleration and every fallback boundary against the running stdlib.
 """
 
 from __future__ import annotations
 
+from functools import wraps
 import json as _stdlib
-from typing import IO, TYPE_CHECKING, TypedDict, Unpack
+from typing import TYPE_CHECKING, Any
+
+from unstd.serde._json_decode import _decode_eligible, _verify_result
+from unstd.serde._json_encode import (
+    _compact_bytes,
+    _encoder,
+    _exact_bytes,
+    _exact_encode,
+    _format,
+)
 
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+    from typing import Protocol
 
     import numpy as np
     import orjson
 
     _HAVE_ORJSON = True
     _HAVE_NUMPY = True
+
+    class _TextWriter(Protocol):
+        """A text sink accepted by stdlib's streaming JSON encoder."""
+
+        def write(self, text: str, /) -> object:
+            """Write one encoder chunk."""
+            ...
+
+    class _Reader(Protocol):
+        """A text or binary source accepted by JSON loading."""
+
+        def read(self) -> str | bytes | bytearray:
+            """Read the complete document once."""
+            ...
+
 else:
     try:
         import orjson
@@ -101,7 +91,7 @@ JSONDecodeError = _stdlib.JSONDecodeError
 JSONDecoder = _stdlib.JSONDecoder
 JSONEncoder = _stdlib.JSONEncoder
 
-# The recursive shape of any parsed JSON value — what `loads`/`load` hand back.
+# The recursive shape of JSON values before any custom decoding hooks run.
 type Json = dict[str, Json] | list[Json] | str | int | float | bool | None
 
 __all__ = [
@@ -122,17 +112,10 @@ __all__ = [
 if _HAVE_ORJSON:
     _encode = orjson.dumps
     _decode = orjson.loads
-    _BASE = orjson.OPT_NON_STR_KEYS | orjson.OPT_PASSTHROUGH_DATETIME
-    _SORT, _INDENT, _NUMPY = (
-        orjson.OPT_SORT_KEYS,
-        orjson.OPT_INDENT_2,
-        orjson.OPT_SERIALIZE_NUMPY,
-    )
-    _LINE = orjson.OPT_APPEND_NEWLINE
+    _SORT = orjson.OPT_SORT_KEYS
+    _INDENT = orjson.OPT_INDENT_2
 else:
-    _BASE = _SORT = _INDENT = _NUMPY = _LINE = 0
-# Both tuple/list spellings of the minified idiom — orjson's native output.
-_COMPACT = ((",", ":"), [",", ":"])
+    _SORT = _INDENT = 0
 _NO_NUMPY = "numpy=True requires numpy to be installed"
 
 
@@ -144,8 +127,7 @@ def _numpy_default(
     An ndarray/numpy scalar becomes a JSON-native value before falling through
     to whatever the caller already supplied.
 
-    Only reached on the stdlib path — orjson's own ``OPT_SERIALIZE_NUMPY`` handles
-    the fast path natively and never calls ``default`` for a numpy value.
+    The extension uses the same conversion regardless of installed backends.
     """
 
     def _default(o: object) -> object:
@@ -162,79 +144,81 @@ def _numpy_default(
     return _default
 
 
-class _StdlibDumpsKw(TypedDict, total=False):
-    """stdlib-only ``json.dumps`` kwargs — any of these forces the stdlib fallback."""
-
-    skipkeys: bool
-    check_circular: bool
-    allow_nan: bool
-    cls: type[_stdlib.JSONEncoder] | None
-
-
-class _StdlibLoadsKw(TypedDict, total=False):
-    """stdlib-only ``json.loads`` hook kwargs — any of these forces the stdlib fallback."""
-
-    cls: type[_stdlib.JSONDecoder] | None
-    object_hook: Callable[[dict[str, object]], object] | None
-    parse_float: Callable[[str], object] | None
-    parse_int: Callable[[str], object] | None
-    parse_constant: Callable[[str], object] | None
-    object_pairs_hook: Callable[[list[tuple[str, object]]], object] | None
-
-
 def dumps(
     obj: object,
     *,
-    indent: int | None = None,
-    sort_keys: bool = False,
-    default: Callable[[object], object] | None = None,
-    ensure_ascii: bool = False,
+    skipkeys: bool = False,
+    ensure_ascii: bool = True,
+    check_circular: bool = True,
+    allow_nan: bool = True,
+    cls: type[JSONEncoder] | None = None,
+    indent: int | str | None = None,
     separators: tuple[str, str] | None = None,
-    numpy: bool = False,
-    **kw: Unpack[_StdlibDumpsKw],
+    default: Callable[[Any], Any] | None = None,
+    sort_keys: bool = False,
+    **kw: Any,
 ) -> str:
-    """Serialize ``obj`` to a JSON ``str`` (orjson fast path, stdlib for exact-format cases).
+    """Serialize ``obj`` with stdlib formatting, values, hooks and errors.
 
-    ``numpy=True`` lets an ``ndarray``/numpy scalar serialize directly instead of
-    raising — the orjson path takes its native ``OPT_SERIALIZE_NUMPY`` (C/int/
-    float/bool dtypes, native byte order, no ``object`` arrays); the stdlib
-    fallback path degrades the same values via ``default`` (``.tolist()``/
-    ``.item()``) first, then defers to any *user*-supplied ``default``. Requires
-    numpy (not part of the ``serde`` extra — install it separately, or pull in
-    ``unstd[pack]``/``unstd[rand]``/``unstd[audio]``, which already depend on it).
+    The optional ``numpy=True`` extension converts arrays with ``.tolist()`` and
+    scalars with ``.item()``, then defers to the user's ``default`` for other
+    objects. It requires numpy, which is not part of the ``serde`` extra. With
+    an explicit ``cls``, all extra keywords, including ``numpy``, are forwarded
+    unchanged to that encoder, as in stdlib.
     """
-    if numpy and not _HAVE_NUMPY:
-        raise TypeError(_NO_NUMPY)
-    # Ordered cheapest-first: the overwhelmingly common call passes nothing, and
-    # every test below short-circuits on a falsy default.
+    if cls is None and kw.pop("numpy", False):
+        if not _HAVE_NUMPY:
+            raise TypeError(_NO_NUMPY)
+        default = _numpy_default(default)
     if (
-        kw
-        or ensure_ascii
-        or (indent and indent != 2)
-        or (separators is not None and separators not in _COMPACT)
-        or not _HAVE_ORJSON
+        cls is None
+        and default is None
+        and not kw
+        and type(skipkeys)
+        is type(ensure_ascii)
+        is type(check_circular)
+        is type(allow_nan)
+        is type(sort_keys)
+        is bool
+        and (style := _format(indent, separators)) >= 0
     ):
-        # Base install (no orjson): emit compact, non-ASCII-preserving output to
-        # approximate the orjson surface when the caller passed no format kwargs.
-        if not _HAVE_ORJSON and separators is None and indent is None:
-            separators = (",", ":")
-        return _stdlib.dumps(
-            obj,
-            indent=indent,
-            sort_keys=sort_keys,
-            default=_numpy_default(default) if numpy else default,
-            ensure_ascii=ensure_ascii,
-            separators=separators,
-            **kw,
-        )
-    opt = _BASE
-    if sort_keys:
-        opt |= _SORT
-    if indent:
-        opt |= _INDENT
-    if numpy:
-        opt |= _NUMPY
-    return _encode(obj, default, opt).decode()
+        if _HAVE_ORJSON and style < 3 and type(obj) is not str:
+            try:
+                result = _exact_encode(
+                    obj,
+                    ensure_ascii,
+                    style,
+                    (_SORT if sort_keys else 0) | (_INDENT if style == 2 else 0),
+                    _encode,
+                )
+                if result is not None:
+                    return result
+            except (orjson.JSONEncodeError, RecursionError, RuntimeError):
+                # No callbacks have run; stdlib decides errors on the original
+                # object, including a dict changed during the snapshot walk.
+                pass
+        return _encoder(
+            skipkeys,
+            ensure_ascii,
+            check_circular,
+            allow_nan,
+            sort_keys,
+            indent,
+            separators,
+        ).encode(obj)
+    return _stdlib.dumps(
+        obj,
+        skipkeys=skipkeys,
+        ensure_ascii=ensure_ascii,
+        check_circular=check_circular,
+        allow_nan=allow_nan,
+        cls=cls,
+        indent=indent,
+        separators=separators,
+        default=default,
+        sort_keys=sort_keys,
+        **kw,
+    )
 
 
 def dumpb(
@@ -244,31 +228,45 @@ def dumpb(
     default: Callable[[object], object] | None = None,
     numpy: bool = False,
 ) -> bytes:
-    """Serialize straight to ``bytes`` — skips the ``str`` decode for callers that immediately write to a socket / Redis / hash (the ``dumps(...).encode()`` idiom).
+    """Serialize bytes identical to compact, unescaped stdlib JSON's UTF-8.
 
-    See :func:`dumps` for what ``numpy=True`` does on each backend.
+    This extension uses ``ensure_ascii=False`` and compact separators. orjson
+    handles exact builtin snapshots; other values, ``default`` and ``numpy=True``
+    use stdlib. For the package's identity format use :func:`canonical`.
     """
-    if not _HAVE_ORJSON:
-        return dumps(obj, sort_keys=sort_keys, default=default, numpy=numpy).encode()
     if numpy and not _HAVE_NUMPY:
         raise TypeError(_NO_NUMPY)
-    opt = _BASE
-    if sort_keys:
-        opt |= _SORT
-    if numpy:
-        opt |= _NUMPY
-    return _encode(obj, default, opt)
+    if _HAVE_ORJSON and not numpy and default is None and type(sort_keys) is bool:
+        try:
+            result = _exact_bytes(obj, _SORT if sort_keys else 0, _encode)
+            if result is not None:
+                return result
+        except (orjson.JSONEncodeError, RecursionError, RuntimeError):
+            # Lone surrogates and a low Python recursion limit take stdlib's
+            # path. No user callback has run during this eligibility probe.
+            pass
+    if (
+        type(numpy) is bool
+        and not numpy
+        and default is None
+        and type(sort_keys) is bool
+    ):
+        # The native proof has already failed. Reusing the stdlib encoder here
+        # avoids copying and proving the same tree again through dumps().
+        return _compact_bytes(obj, sort_keys)
+    return dumps(
+        obj,
+        ensure_ascii=False,
+        separators=(",", ":"),
+        sort_keys=sort_keys,
+        default=default,
+        numpy=numpy,
+    ).encode()
 
 
 def _line(obj: object) -> bytes:
-    """One newline-terminated compact record — :mod:`unstd.serde.ndjson`'s encoder.
-
-    orjson appends the newline itself (``OPT_APPEND_NEWLINE``), so a row never
-    pays a second ``bytes`` allocation for the concatenation.
-    """
-    if _HAVE_ORJSON:
-        return _encode(obj, None, _LINE | _BASE)
-    return dumps(obj).encode() + b"\n"
+    """One newline-terminated compact record for :mod:`unstd.serde.ndjson`."""
+    return dumpb(obj) + b"\n"
 
 
 def canonical(
@@ -303,42 +301,107 @@ _CANONICAL = _stdlib.JSONEncoder(
 )
 
 
-def loads(s: str | bytes | bytearray, **kw: Unpack[_StdlibLoadsKw]) -> Json:
-    """Parse a JSON ``str``/``bytes``. Falls back to stdlib for hook kwargs (``object_hook``, ``parse_float``, …) that orjson does not support."""
-    # Both decoders are typed `Any` at their boundary — a JSON document's shape
-    # is only known at runtime. Annotating the local names `Json` as the contract
-    # at zero runtime cost, where `typing.cast` is a real call on the hottest path.
-    value: Json = _stdlib.loads(s, **kw) if kw or not _HAVE_ORJSON else _decode(s)
-    return value
+# A successful backend parse is still provisional: its result must pass the
+# numeric/type proof before returning. Hooks and custom behavior bypass it.
+@wraps(_stdlib.loads)
+def loads(
+    s: str | bytes | bytearray,
+    *,
+    cls: type[JSONDecoder] | None = None,
+    object_hook: Callable[[Any], Any] | None = None,
+    parse_float: Callable[[str], Any] | None = None,
+    parse_int: Callable[[str], Any] | None = None,
+    parse_constant: Callable[[str], Any] | None = None,
+    object_pairs_hook: Callable[[list[tuple[Any, Any]]], Any] | None = None,
+    **kw: Any,
+) -> Any:
+    """Parse through orjson only when its result proves exact stdlib values."""
+    if (
+        _HAVE_ORJSON
+        and cls is None
+        and object_hook is None
+        and parse_float is None
+        and parse_int is None
+        and parse_constant is None
+        and object_pairs_hook is None
+        and not kw
+    ):
+        try:
+            if _decode_eligible(s):
+                value = _decode(s)
+                if _verify_result(value):
+                    return value
+        except (orjson.JSONDecodeError, RecursionError):
+            pass
+        return _stdlib.loads(s)
+    return _stdlib.loads(
+        s,
+        cls=cls,
+        object_hook=object_hook,
+        parse_float=parse_float,
+        parse_int=parse_int,
+        parse_constant=parse_constant,
+        object_pairs_hook=object_pairs_hook,
+        **kw,
+    )
 
 
 def dump(
     obj: object,
-    fp: IO[str],
+    fp: _TextWriter,
     *,
-    indent: int | None = None,
-    sort_keys: bool = False,
-    default: Callable[[object], object] | None = None,
-    ensure_ascii: bool = False,
+    skipkeys: bool = False,
+    ensure_ascii: bool = True,
+    check_circular: bool = True,
+    allow_nan: bool = True,
+    cls: type[JSONEncoder] | None = None,
+    indent: int | str | None = None,
     separators: tuple[str, str] | None = None,
-    numpy: bool = False,
-    **kw: Unpack[_StdlibDumpsKw],
+    default: Callable[[Any], Any] | None = None,
+    sort_keys: bool = False,
+    **kw: Any,
 ) -> None:
-    """Write ``obj`` as JSON to text file object ``fp`` (stdlib ``json.dump`` twin)."""
-    fp.write(
-        dumps(
-            obj,
-            indent=indent,
-            sort_keys=sort_keys,
-            default=default,
-            ensure_ascii=ensure_ascii,
-            separators=separators,
-            numpy=numpy,
-            **kw,
-        )
+    """Stream JSON text to ``fp`` with stdlib's encoder and write behavior."""
+    if cls is None and kw.pop("numpy", False):
+        if not _HAVE_NUMPY:
+            raise TypeError(_NO_NUMPY)
+        default = _numpy_default(default)
+    _stdlib.dump(
+        obj,
+        fp,
+        skipkeys=skipkeys,
+        ensure_ascii=ensure_ascii,
+        check_circular=check_circular,
+        allow_nan=allow_nan,
+        cls=cls,
+        indent=indent,
+        separators=separators,
+        default=default,
+        sort_keys=sort_keys,
+        **kw,
     )
 
 
-def load(fp: IO[str] | IO[bytes], **kw: Unpack[_StdlibLoadsKw]) -> Json:
-    """Read and parse JSON from file object ``fp`` (stdlib ``json.load`` twin)."""
-    return loads(fp.read(), **kw)
+@wraps(_stdlib.load)
+def load(
+    fp: _Reader,
+    *,
+    cls: type[JSONDecoder] | None = None,
+    object_hook: Callable[[Any], Any] | None = None,
+    parse_float: Callable[[str], Any] | None = None,
+    parse_int: Callable[[str], Any] | None = None,
+    parse_constant: Callable[[str], Any] | None = None,
+    object_pairs_hook: Callable[[list[tuple[Any, Any]]], Any] | None = None,
+    **kw: Any,
+) -> Any:
+    """Read once, then apply the same exact decoder dispatch as :func:`loads`."""
+    return loads(
+        fp.read(),
+        cls=cls,
+        object_hook=object_hook,
+        parse_float=parse_float,
+        parse_int=parse_int,
+        parse_constant=parse_constant,
+        object_pairs_hook=object_pairs_hook,
+        **kw,
+    )

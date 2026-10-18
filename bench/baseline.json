@@ -1,7 +1,7 @@
 {
   "_": "Speed floors, ratio of stdlib cost to unstd cost. Raised by `python3 -m bench update`, never lowered by it. See bench/README.md.",
-  "recorded": "2026-09-27",
-  "host": "Darwin arm64 python3.13",
+  "recorded": "2026-10-18",
+  "host": "Darwin arm64 python3.12",
   "cases": {
     "b64.decode · 128 KiB": {
       "floor": 6.42,
@@ -53,6 +53,11 @@
       "measured": 4.16,
       "group": "clone"
     },
+    "digest.raw · 1 MiB": {
+      "floor": 1.21,
+      "measured": 1.72,
+      "group": "ids"
+    },
     "draw.floats · 100k": {
       "floor": 5.35,
       "measured": 7.18,
@@ -78,19 +83,24 @@
       "measured": 41.87,
       "group": "text"
     },
-    "digest.raw · 1 MiB": {
-      "floor": 1.21,
-      "measured": 1.72,
-      "group": "ids"
-    },
     "jsonx.dumps · 500 records": {
-      "floor": 2.77,
-      "measured": 3.95,
+      "floor": 0.74,
+      "measured": 1.06,
+      "group": "serde"
+    },
+    "jsonx.dumps · text payload": {
+      "floor": 4.19,
+      "measured": 5.98,
+      "group": "serde"
+    },
+    "jsonx.loads · 1000 integers": {
+      "floor": 1.34,
+      "measured": 1.91,
       "group": "serde"
     },
     "jsonx.loads · 500 records": {
-      "floor": 1.33,
-      "measured": 1.9,
+      "floor": 0.67,
+      "measured": 0.96,
       "group": "serde"
     },
     "rex.findall · 4k words": {
@@ -102,6 +112,36 @@
       "floor": 36597.4,
       "measured": 51740.62,
       "group": "rex"
+    },
+    "b64.decode URL · 128 KiB": {
+      "floor": 4.19,
+      "measured": 5.98,
+      "group": "serde"
+    },
+    "jsonx.dumps · 32-int record": {
+      "floor": 0.45,
+      "measured": 0.65,
+      "group": "serde"
+    },
+    "jsonx.dumpb · 500 records": {
+      "floor": 0.69,
+      "measured": 0.99,
+      "group": "serde"
+    },
+    "jsonx.loads · 20 nested records": {
+      "floor": 0.59,
+      "measured": 0.84,
+      "group": "serde"
+    },
+    "clone.deep · 1k integer set": {
+      "floor": 4.07,
+      "measured": 5.81,
+      "group": "clone"
+    },
+    "fuzz.distance fallback · 1024 characters": {
+      "floor": 117.3,
+      "measured": 167.57,
+      "group": "text"
     }
   }
 }
