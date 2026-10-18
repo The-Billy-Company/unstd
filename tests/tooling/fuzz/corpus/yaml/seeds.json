@@ -1,0 +1,191 @@
+{
+  "version": 1,
+  "target": "yaml",
+  "input_version": 1,
+  "seeds": [
+    {
+      "file": "empty.bin",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0,
+      "label": "Empty YAML stream is a safe native None value",
+      "kind": "boundary",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "raw-basic.bin",
+      "sha256": "58bafad6f13f8656b5c21bf6dd71f0de6fc3599a579478d75e18b778f9ff59cd",
+      "size": 54,
+      "label": "YAML 1.2 primitive mapping with quoted resolver-sensitive scalar",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "raw-float-specials.bin",
+      "sha256": "c867ea811290215b94703463e36d8fc1e848583f6f0464cf97f1fb0ba024244b",
+      "size": 35,
+      "label": "NaN, infinities and negative zero native scalar graph",
+      "kind": "boundary",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "raw-duplicate-key.bin",
+      "sha256": "96525671f1c0dee138f54380d94ac9b61c720be27f562a87efd33fb5d769a036",
+      "size": 26,
+      "label": "Duplicate mapping key must be rejected",
+      "kind": "invalid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "raw-semantic-key-collision.bin",
+      "sha256": "64d3c270dd4c4cc979c034b64bc656cad71cd5beeea455cd04ecec3daae82a2e",
+      "size": 26,
+      "label": "Boolean/integer semantic key collision must be rejected",
+      "kind": "invalid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "raw-unknown-tag.bin",
+      "sha256": "21ddb22fdad17493bc24f467b79072b50f100e344e977f24882bccf76ba0d64f",
+      "size": 35,
+      "label": "Unknown constructor tag must be rejected",
+      "kind": "invalid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "raw-python-tag.bin",
+      "sha256": "7d1176aacce0f72f9267861a463aa2c14526052bda428dd2186956ba14c12c1d",
+      "size": 47,
+      "label": "Python apply tag is refused without invoking its constructor",
+      "kind": "invalid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "raw-safe-aliases.bin",
+      "sha256": "35671d032672335ec2159f0f110c2491702f4cc81ec42760e99d44f0cdba9dad",
+      "size": 45,
+      "label": "Acyclic aliases retain shared node identity",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "raw-recursive-alias.bin",
+      "sha256": "7242348ad067d67e9b774602ff5c336f5e6fc7859f0dcde065b07ec280362f86",
+      "size": 15,
+      "label": "Recursive safe alias graph is fingerprinted by identity",
+      "kind": "boundary",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "raw-merge-overrides.bin",
+      "sha256": "e872b00b9947d5234963715a732944f92752ad25fd2761775617236a4de6a5d7",
+      "size": 73,
+      "label": "Legal merge override differs from duplicate source keys",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "raw-multiple-documents.bin",
+      "sha256": "0ce3dc4caf7e0f9fee446f14cc05de05985d3bd285a9c75eb2d52708c799fd42",
+      "size": 32,
+      "label": "Single-document readers refuse multiple documents",
+      "kind": "invalid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "raw-unclosed-flow.bin",
+      "sha256": "928a05cdbc5954331c8f6fcb63432be215ce5ed3695ff62d2410fb61dea8863f",
+      "size": 25,
+      "label": "Truncated flow sequence exercises exact backend syntax error",
+      "kind": "invalid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "raw-invalid-utf16.bin",
+      "sha256": "b127917b5c28f15fad5f5384570b8a297be3e6c1a3ec568041442ea8f14547f8",
+      "size": 4,
+      "label": "Truncated UTF-16 input has a precise reader error",
+      "kind": "invalid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "raw-nul.bin",
+      "sha256": "f4211a62aa30a7aa2804813db2b89bdf107bcc29c22508e59aa8db32ce962cd9",
+      "size": 10,
+      "label": "NUL in YAML input is rejected by the reader",
+      "kind": "invalid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "raw-binary-timestamp.bin",
+      "sha256": "7e29be2cdf510fd2e5f9ab9bcf7bc4f37914378771d2dec454f34ac9e91b040b",
+      "size": 44,
+      "label": "Explicit binary and safe date scalars stay inside the safe value domain",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "known-model.bin",
+      "sha256": "6ce4552188727ba64e31e0c17cb43c86d7a1d8c60cd29c3b44f9b26dab4d4aab",
+      "size": 11,
+      "label": "Independent known model exercises safe/editable/stream/multidocument round trips",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "known-model-binary.bin",
+      "sha256": "c846bdabb58f1cbb4a17ac8a32a275481f125881cbade83ae6a1c3bc7fb80ef1",
+      "size": 7,
+      "label": "Known model converts binary entropy to safe hex text",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "generated-tag-unknown.bin",
+      "sha256": "99be5efb88ca2013bd8e4eb035fd42d5245468fe9afa70d8ba9c1c419a48c4e8",
+      "size": 2,
+      "label": "Unknown explicit tag is refused by every reader",
+      "kind": "invalid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "generated-tag-python-apply.bin",
+      "sha256": "25dfd29c09617dcc9852281c030e5b3037a338a4712a42a21c907f259c6412a0",
+      "size": 2,
+      "label": "Python apply tag is refused by every reader",
+      "kind": "invalid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "generated-tag-python-new.bin",
+      "sha256": "50cff72c8e550546d661ec235431888fb2f9f7bada40c17020d47f6ccc117aae",
+      "size": 2,
+      "label": "Python new-object tag is refused by every reader",
+      "kind": "invalid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "alias-minimum.bin",
+      "sha256": "434a47c39f8fe7c326f067b43eb5c754b060db0e1cbe76eb7d0db66138721080",
+      "size": 7,
+      "label": "Depth-one fanout-two alias graph validates shared nodes",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "alias-expansion-budget.bin",
+      "sha256": "e46e01b518c7b9b46bee5f405518a015441a9733f26333b600bb1dfa083eaca4",
+      "size": 7,
+      "label": "Depth-24 fanout-eight aliases would expand to 8**24 leaves if copied",
+      "kind": "boundary",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "raw-alias-expansion-budget.bin",
+      "sha256": "4a05e84ff97c6cf134ba2cc11d90983e5e215506563597044dacf3f40a020b78",
+      "size": 3310,
+      "label": "Raw depth-16 fanout-20 graph remains bounded through identity traversal",
+      "kind": "boundary",
+      "origin": "reviewed synthetic boundary fixture"
+    }
+  ]
+}

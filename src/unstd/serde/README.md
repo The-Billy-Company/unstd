@@ -113,11 +113,11 @@ The contract is based on the [Python 3.12 JSON documentation](https://docs.pytho
 (the package's supported floor), [CPython's implementation](https://github.com/python/cpython/tree/3.12/Lib/json)
 and [regression tests](https://github.com/python/cpython/tree/3.12/Lib/test/test_json),
 and [orjson's documented differences](https://github.com/ijl/orjson).
-`tests/serde/test_jsonx_encode_parity.py` and
+`tests/suites/product/serde/parity/test_jsonx_encode_parity.py` and
 `test_jsonx_decode_parity.py` compare
 formatting, values, types, hooks, errors and stream behavior to the running
 stdlib, with and without the backend.
-`tests/properties/test_serde_parity.py`
+`tests/suites/product/serde/properties/test_serde_parity.py`
 generates broad values, options, Unicode, binary encodings and malformed input;
 its comparator checks type, key order, NaN and negative zero as well as equality.
 The fast-path suite also asserts actual backend use, snapshot isolation, fallback
@@ -209,9 +209,9 @@ explains unused bits and canonical encoding;
 and the [Python 3.15 documentation](https://docs.python.org/3.15/library/base64.html)
 document the backend's changed semantics.
 
-`tests/serde/test_b64_stdlib_parity.py` compares vectors,
+`tests/suites/product/serde/parity/test_b64_parity.py` compares vectors,
 options, errors, unusual buffers, subclasses and MIME/stream behavior with
-the running stdlib. `tests/properties/test_b64_parity.py`
+the running stdlib. `tests/suites/product/serde/properties/test_b64_parity.py`
 generates arbitrary bytes, Unicode, transport mutations, ignored characters
 and padding, checking both the native backend and forced fallback. Named
 examples retain the discovered failures, including trailing data after padding,
@@ -241,9 +241,8 @@ extra raises a clear `ImportError`.
 
 `codec()`/`Codec()` also forward every constructor knob msgspec itself exposes:
 `order="deterministic"` (sort dict keys/set elements) or `"sorted"` (also sort
-struct fields by name) for canonical bytes worth hashing or diffing — msgspec's
-own maintainer benchmarks this ~20-25% faster than `jsonx.dumps(..., sort_keys=True)`
-for the same shape, since it never leaves the typed encoder; `decimal_format`/
+struct fields by name) for deterministic bytes worth hashing or diffing;
+`decimal_format`/
 `uuid_format` control how `Decimal`/`UUID` fields serialize; `strict=False` widens
 decode coercion for loose upstream producers; `float_hook` redirects untyped
 float decoding (e.g. to `Decimal`, for exact-precision round-tripping).

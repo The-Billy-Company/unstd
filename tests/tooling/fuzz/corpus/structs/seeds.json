@@ -1,0 +1,207 @@
+{
+  "version": 1,
+  "target": "structs",
+  "input_version": 1,
+  "seeds": [
+    {
+      "file": "empty-input.bin",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0,
+      "label": "Zero-length raw schema document is rejected",
+      "kind": "invalid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "strict-row.bin",
+      "sha256": "915871e00c386a42d3e15fda0c79fb55611ce6ac2590ed9828a05e29060f6e8d",
+      "size": 26,
+      "label": "Strict Row accepts required fields and defaults optional collections",
+      "kind": "valid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "relaxed-numeric-strings.bin",
+      "sha256": "86f12e4364db74820aebd75d5aae173b2bc43846f63cd3f007ce3e270e995f7c",
+      "size": 46,
+      "label": "Relaxed Row forwards numeric coercion to msgspec",
+      "kind": "valid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "tagged-put.bin",
+      "sha256": "9bec4780149a1bb4d06ee72964311429fd925805d0322a9a00d41408a4b39513",
+      "size": 47,
+      "label": "Tagged Put contains a validated nested Row",
+      "kind": "valid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "tagged-delete.bin",
+      "sha256": "7011a882a64a032381b80fdc0be4c8ce274aa36930119566c5da2a333a7db746",
+      "size": 28,
+      "label": "Tagged Delete reaches the alternate union arm and generated Put path",
+      "kind": "valid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "tagged-unknown.bin",
+      "sha256": "a4e121be22c45df47ef85dde357e5570d12e8f8791bbd1fbbcd8f0e1c7b8cf49",
+      "size": 29,
+      "label": "Unknown tagged union discriminator is rejected",
+      "kind": "invalid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "row-list.bin",
+      "sha256": "8d496bb6e7373287d113a8fe85a7f7b96260081a780699aaf3ee0eba6805fd49",
+      "size": 28,
+      "label": "Container schema accepts a list of validated Rows",
+      "kind": "valid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "row-list-limit.bin",
+      "sha256": "3ca09109d47232ff2f4a641a771ce3cc3b4369508dd07faa9820511815f99577",
+      "size": 210,
+      "label": "Eight Rows reach the container schema maximum",
+      "kind": "boundary",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "row-list-over-limit.bin",
+      "sha256": "bcc23df7cfc81dd420601f1358560a95cecb68f44437c45049e42fc4432de368",
+      "size": 236,
+      "label": "A ninth Row is rejected by the bounded schema",
+      "kind": "invalid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "index-maximum.bin",
+      "sha256": "300261562e933620f06b1d8ee8645a0c84f12ac1ff07024926488c5411d7bf1e",
+      "size": 35,
+      "label": "Largest allowed signed-31-bit index",
+      "kind": "boundary",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "index-overflow.bin",
+      "sha256": "e4bee80ac482f9c128ab155e9f1e777720d9b39dae314bf7776053af68906291",
+      "size": 41,
+      "label": "An index above the reviewed integer range is rejected",
+      "kind": "invalid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "negative-index.bin",
+      "sha256": "f0c2f75db546770ed57adf23406e92f837a2efe61106745241bbbeee38b850a0",
+      "size": 32,
+      "label": "A negative index is rejected by the schema",
+      "kind": "invalid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "label-limit.bin",
+      "sha256": "6596dcd4fd98d49379a6d8ea07fd51569636f5ccc39a6f003d43531744136cb2",
+      "size": 151,
+      "label": "Maximum 128-character label is accepted",
+      "kind": "boundary",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "label-over-limit.bin",
+      "sha256": "03d194c7aff073cf7327768acdb286cd8d16997156c6d9440a0f91feb1b41dce",
+      "size": 152,
+      "label": "A 129-character label is rejected",
+      "kind": "invalid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "unknown-field.bin",
+      "sha256": "05a0faf74563b37638e8f5608b67d59d1b293ae04b65349ae03ec9109efca20d",
+      "size": 39,
+      "label": "forbid_unknown_fields must reject extra fields",
+      "kind": "invalid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "wrong-field-type.bin",
+      "sha256": "862f1c25343cb1ae741a2d0e2ad96ac19f46e671bf28e11b0ae91cc91527abfc",
+      "size": 28,
+      "label": "Boolean-as-index and null-as-label are invalid schema types",
+      "kind": "invalid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "utf8-key-error.bin",
+      "sha256": "d47f3c879512b97e86dd2d76e77980c705d73d469cc6d2eeb6bfece231dcf28b",
+      "size": 26,
+      "label": "Malformed UTF-8 key raises UnicodeDecodeError that decode_or must propagate",
+      "kind": "invalid",
+      "origin": "reviewed synthetic regression reduced from deterministic harness mutation probe 121; no user data"
+    },
+    {
+      "file": "utf8-value-error.bin",
+      "sha256": "c25e789e76c488d1447ccac7b12cf440a1d2674cb6d00e5d529e3b9f014e7a99",
+      "size": 24,
+      "label": "Malformed UTF-8 value preserves raw msgspec rejection behavior",
+      "kind": "invalid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "escaped-lone-surrogate.bin",
+      "sha256": "a6f8bd222dba6a10fd35312e505322d484c8f022bd6ad0cefa7db11a8ec1c2e9",
+      "size": 29,
+      "label": "msgspec rejects unpaired JSON surrogate escapes",
+      "kind": "invalid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "escaped-surrogate-pair.bin",
+      "sha256": "4ec9eb81ffd1a335378f0c861a982694602516a20222fac643eb793280c4017c",
+      "size": 35,
+      "label": "A well-formed surrogate pair decodes to one supplementary character",
+      "kind": "valid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "utf16-rejected.bin",
+      "sha256": "ac2c76d5aa9aabe791f4b356542120037a57a6fa186161ada8c7b907d1942c15",
+      "size": 53,
+      "label": "Typed msgspec JSON accepts UTF-8, so UTF-16 source is rejected",
+      "kind": "invalid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "utf32-rejected.bin",
+      "sha256": "87696be8bf967c5c8123b4def5c510399329ee1c67d045c0ebd1ee31b905b173",
+      "size": 105,
+      "label": "Typed msgspec JSON accepts UTF-8, so UTF-32 source is rejected",
+      "kind": "invalid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "truncated-row.bin",
+      "sha256": "c6fb830625ff86dbd5cefefdbc5df36df8445990fb81c3d993c60590bf5dc2b4",
+      "size": 20,
+      "label": "Truncated Row document becomes only a DecodeError cache miss",
+      "kind": "invalid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "deterministic-order.bin",
+      "sha256": "b8d52bea52293a5c4b84734ff59183d5b905cf6be58c6aa5458fdb530932ce56",
+      "size": 51,
+      "label": "Deterministic encoder option forwards dictionary key ordering",
+      "kind": "valid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "sorted-order.bin",
+      "sha256": "914b598f718e9c7314a4351486040942eeff2050b497dfb29c7ba5cde9e1e1e6",
+      "size": 26,
+      "label": "Sorted encoder option forwards struct field ordering",
+      "kind": "valid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    }
+  ]
+}

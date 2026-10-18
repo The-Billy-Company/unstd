@@ -1,0 +1,167 @@
+{
+  "version": 1,
+  "target": "base64",
+  "input_version": 1,
+  "seeds": [
+    {
+      "file": "empty-input.bin",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0,
+      "label": "Zero-length input is the valid empty Base64 byte string",
+      "kind": "valid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "padded-standard.bin",
+      "sha256": "5815f781d015fae95bcf178c384b5c09383d8b5065763e1f567ceae2b6472f89",
+      "size": 5,
+      "label": "Padded standard Base64 decodes to f",
+      "kind": "valid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "missing-padding.bin",
+      "sha256": "ab852e4d5bd264ba71f340db1f94e33bc86b1fff659ca1ae554f8ddbd23f511c",
+      "size": 3,
+      "label": "Missing padding fails strict APIs while the URL helper accepts it",
+      "kind": "boundary",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "unused-pad-bits.bin",
+      "sha256": "d87b3be8427159aedc6a1d3486a554b9640ac9f5c88ad00020896dd0cb8a07a8",
+      "size": 5,
+      "label": "Stdlib-compatible Base64 accepts unused pad bits even though tokens must refuse aliases",
+      "kind": "boundary",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "url-ignored-junk.bin",
+      "sha256": "434edadc68c6e12a01b80115260613dc4b621f457f7f6f3335df3329c5918d54",
+      "size": 6,
+      "label": "URL helper filters ignored characters before computing omitted padding",
+      "kind": "boundary",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "url-alphabet.bin",
+      "sha256": "9e62b9a72716ad39c46b37cce716a482197a9bcbc4cc0b955e484afa7e1ae745",
+      "size": 4,
+      "label": "URL alphabet with omitted padding decodes to ff ef",
+      "kind": "valid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "mixed-alphabets.bin",
+      "sha256": "b6b327f878608c4ab9c4a207e30c33ed2fcf565e59202bf6c5d4ed07c7a5af6c",
+      "size": 5,
+      "label": "URL helper accepts both standard and URL alphabets",
+      "kind": "boundary",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "native-clean-long.bin",
+      "sha256": "d6d7e7e50b5acd26492e96c7fd537936de4cc4515fcc690bde5ab3bc22426706",
+      "size": 129,
+      "label": "128 retained characters reach the native URL decode threshold",
+      "kind": "boundary",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "native-filtered-long.bin",
+      "sha256": "c2a6426afceb815979ab46aa5e9db1e9e69d66c1920c58b907adf4c8407b6adf",
+      "size": 132,
+      "label": "Long URL input filters junk before native strict retry",
+      "kind": "boundary",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "padding-only.bin",
+      "sha256": "bc1f46da537f3d047b8008d3ad7ffac6fddc3cdc4a4dc944974ba6e4c481a972",
+      "size": 5,
+      "label": "Padding-only content distinguishes lenient and strict decode contracts",
+      "kind": "boundary",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "partial-group.bin",
+      "sha256": "c00b4d3c929cb5cc316691ed4636f634576f2c9b2954767234c5274e9dde185d",
+      "size": 2,
+      "label": "A single retained alphabet character cannot form a Base64 group",
+      "kind": "invalid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "text-nonascii.bin",
+      "sha256": "f3f0cfe7a352d6e3d23587e9151a9306502932e27adfa2a01028c5284eebbad1",
+      "size": 7,
+      "label": "Modern text decode APIs reject non-ASCII Unicode",
+      "kind": "invalid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "text-surrogate.bin",
+      "sha256": "ff8f8106e4c9046af315fd9a73bbfac65eba697095632bc4b9069b0d5935525c",
+      "size": 4,
+      "label": "ASCII input coercion rejects a surrogatepass text surrogate",
+      "kind": "invalid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "raw-nontext-bytes.bin",
+      "sha256": "be76b468729ff90a72d56d46ba4bac8cb9164b010dff121a7665f92ddd56e247",
+      "size": 4,
+      "label": "Invalid bytes retain strict versus lenient parser behavior",
+      "kind": "boundary",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "encode-binary.bin",
+      "sha256": "840feb7acd5957b50905f1059a62c0fae8cf7cbabba113f84890d7948b643a0e",
+      "size": 5,
+      "label": "Byte-derived encoding includes NUL and high-bit bytes",
+      "kind": "valid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "encode-altchars-pair.bin",
+      "sha256": "ca941f1e1d57134128a18a4f8653fa461fd7d6b8e8a3e00a755b9b2408b5fd21",
+      "size": 10,
+      "label": "An exactly two-byte alternative alphabet is accepted",
+      "kind": "valid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "encode-altchars-short.bin",
+      "sha256": "70f43fa8617428a73b978725b253760d2e73e318f798e74080a9a62ac37f5085",
+      "size": 9,
+      "label": "One-byte alternative alphabet has the same assertion error as stdlib",
+      "kind": "invalid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "encode-altchars-long.bin",
+      "sha256": "d85d6ecf9425d2072ea30f8c457abcfcc1077512f8069a5584494fcef21821cd",
+      "size": 11,
+      "label": "Three-byte alternative alphabet has the same assertion error as stdlib",
+      "kind": "invalid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "mime-full-line.bin",
+      "sha256": "970383adf4f0d09bfbed665c3146836ef64c4235314b5474b326ef311be670f8",
+      "size": 58,
+      "label": "57 source bytes produce exactly one 76-character MIME line",
+      "kind": "boundary",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "mime-second-line.bin",
+      "sha256": "b2f172624748a4a49dd4ac05b473229e191556f8fdee8fb6f122369da42e4b77",
+      "size": 59,
+      "label": "58 source bytes require a second MIME line",
+      "kind": "boundary",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    }
+  ]
+}

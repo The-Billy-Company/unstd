@@ -1,0 +1,167 @@
+{
+  "version": 1,
+  "target": "json",
+  "input_version": 1,
+  "seeds": [
+    {
+      "file": "empty-input.bin",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0,
+      "label": "Zero-length harness input selects an empty raw JSON document",
+      "kind": "invalid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "empty-document.bin",
+      "sha256": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "size": 1,
+      "label": "Explicit raw selector with empty document",
+      "kind": "invalid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "ordered-duplicate-keys.bin",
+      "sha256": "4019de487274e13a98bcb426c048a05751415c35e5db7e432436a8ec17203572",
+      "size": 20,
+      "label": "Duplicate keys keep first insertion order and last value",
+      "kind": "valid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "signed-zero.bin",
+      "sha256": "0d2f93c3de6e4c3fd180cdba456a2afee029ff884915b112497da4530588ee52",
+      "size": 16,
+      "label": "Float signed zero and exact integer-versus-float types",
+      "kind": "valid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "nonfinite-extensions.bin",
+      "sha256": "b6b533d8573eee05876aecaa8cd95ffeb45c881450a5f76ba787babc26d2d100",
+      "size": 31,
+      "label": "Running stdlib nonfinite and overflowing-float extensions",
+      "kind": "valid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "utf8-unicode.bin",
+      "sha256": "ca6ae035588c3c14f40166e540b8cc9e5993263a73969ecd53bb7aaa53921010",
+      "size": 26,
+      "label": "Literal multibyte UTF-8 and a line separator inside a JSON string",
+      "kind": "valid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "utf16-bom.bin",
+      "sha256": "e34e867c4e8e6ac69f2f2c48e3679b32c1c68943b1ba22adc6b1ddc66141a67c",
+      "size": 47,
+      "label": "UTF-16 with BOM is auto-detected by the stdlib-compatible byte reader",
+      "kind": "valid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "utf32-bom.bin",
+      "sha256": "ec449f3597687de144e9e4c701d4e6198a7843b62640fbe8d61290e359b26762",
+      "size": 33,
+      "label": "UTF-32 with BOM is auto-detected by the byte reader",
+      "kind": "valid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "utf16-big-endian.bin",
+      "sha256": "c2e2de6d0ef85518cebda4eeb88d6ea04550bcdd3ec11da1c1d68a5ec189b95c",
+      "size": 11,
+      "label": "UTF-16 big endian detection without a BOM",
+      "kind": "valid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "escaped-lone-surrogate.bin",
+      "sha256": "2129ab8bd1766a89b45a73a8f128d4f19c29bb2ebd1a3c1c57efb2fb15bf8729",
+      "size": 9,
+      "label": "Escaped lone surrogate follows Python JSON semantics",
+      "kind": "valid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "text-lone-surrogate.bin",
+      "sha256": "60e2e055b7adf8b4d9c1dc48cbeb9a1952934b892993a7c63c49fd4cb7a41b67",
+      "size": 6,
+      "label": "Text mode maps UTF-8 surrogatepass to a lone-surrogate JSON value",
+      "kind": "valid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "invalid-utf8.bin",
+      "sha256": "96eda52dfbd5f140e2260040cd43c56c6a45fc96f7474db4b3f667e292d43f72",
+      "size": 4,
+      "label": "Malformed UTF-8 is rejected before JSON grammar decoding",
+      "kind": "invalid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "truncated-object.bin",
+      "sha256": "ea2ac85f2a06f6fe1fb301748e2395b4b9f4ea6d272cee2be11159eebd6ae78d",
+      "size": 13,
+      "label": "Object and array truncation retain exact stdlib diagnostics",
+      "kind": "invalid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "invalid-leading-zero.bin",
+      "sha256": "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b",
+      "size": 3,
+      "label": "Extra data from a leading-zero integer is rejected",
+      "kind": "invalid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "integer-digit-limit.bin",
+      "sha256": "05dcadecdafceb010b722969a0af7d462e8300ce77ea53347a6e1af07af36fb2",
+      "size": 513,
+      "label": "Largest decimal digit run included in the campaign grammar domain",
+      "kind": "boundary",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "nesting-limit.bin",
+      "sha256": "87b31b57f5113cde514ee4018f2bd9bbda884a5dc37a55405011c9cd007e366b",
+      "size": 194,
+      "label": "Maximum included JSON grammar depth is 96",
+      "kind": "boundary",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "nesting-outside-domain.bin",
+      "sha256": "c51d6598fa9b2e1c389d89646f282ceb6eb894668fe41d9a08a10b2e604e5166",
+      "size": 681,
+      "label": "Quoted closing braces cannot bypass the depth-domain guard",
+      "kind": "boundary",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "encode-rich-values.bin",
+      "sha256": "2a949b86487624644afbfdc62444e96ff4fa70f33af0014d0f758d3e7c3f6ffd",
+      "size": 7,
+      "label": "Derived encoder mode includes NaN, infinity, large integers and surrogateescaped bytes",
+      "kind": "boundary",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "encode-native-snapshot.bin",
+      "sha256": "bb0732c6c2e94e1f4a893c174160bf8ba54b34d1da30c5ac65ff75fae1389c82",
+      "size": 22,
+      "label": "Derived encoder mode bit 64 builds a native-eligible exact builtin snapshot",
+      "kind": "valid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "parsed-encode-surrogate.bin",
+      "sha256": "6d8f8acdf1304a6ae7773b089c85b116fc7bc568c358a7f1659549112884ed47",
+      "size": 20,
+      "label": "Parsed-value encoding checks lone-surrogate UTF-8 errors and nonfinite JSON behavior",
+      "kind": "boundary",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    }
+  ]
+}

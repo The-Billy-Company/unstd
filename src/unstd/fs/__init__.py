@@ -48,7 +48,7 @@ Import the module, not its members::
 
 from __future__ import annotations
 
-from contextlib import AbstractContextManager, contextmanager
+from contextlib import AbstractContextManager, contextmanager, suppress
 import os
 from pathlib import Path
 import secrets
@@ -81,13 +81,17 @@ def ensure_dir(path: _Pathish) -> Path:
 
 def sync_dir(path: _Pathish) -> None:
     """``fsync`` a *directory* handle so an entry change inside it (a create or rename) is persisted. The nuance an ``os.replace`` alone misses: the rename is atomic, but not durable until the containing directory is synced. Failure to fsync a directory handle is swallowed (some platforms, notably Windows, reject it) — best-effort durability, never a hard error."""
-    fd = os.open(path, os.O_RDONLY)
+    try:
+        fd = os.open(path, os.O_RDONLY)
+    except OSError:
+        return  # e.g. Windows cannot open a directory as an ordinary file
     try:
         os.fsync(fd)
     except OSError:
         pass  # e.g. Windows can't fsync a directory handle — best effort
     finally:
-        os.close(fd)
+        with suppress(OSError):
+            os.close(fd)
 
 
 # Exclusive create, no fd leak into children; O_BINARY/O_NOINHERIT exist only on Windows.
@@ -121,11 +125,27 @@ def _scratch(dest: Path) -> tuple[int, Path]:
         os.chmod(tmp, stat.S_IMODE(dest.stat().st_mode))
     except FileNotFoundError:
         pass
-    except BaseException:
-        os.close(fd)
-        tmp.unlink(missing_ok=True)
+    except BaseException as error:
+        _close_scratch_fd(fd, error)
+        _discard_scratch(tmp, error)
         raise
     return fd, tmp
+
+
+def _close_scratch_fd(fd: int, error: BaseException) -> None:
+    """Release an owned descriptor without hiding the operation's failure."""
+    try:
+        os.close(fd)
+    except OSError as cleanup_error:
+        error.add_note(f"scratch descriptor cleanup failed: {cleanup_error}")
+
+
+def _discard_scratch(path: Path, error: BaseException) -> None:
+    """Attempt rollback while retaining the original error and cleanup evidence."""
+    try:
+        path.unlink(missing_ok=True)
+    except OSError as cleanup_error:
+        error.add_note(f"scratch file cleanup failed for {path}: {cleanup_error}")
 
 
 @contextmanager
@@ -135,13 +155,32 @@ def _atomic_writer(
     ensure_dir(dest.parent)
     fd, tmp_path = _scratch(dest)
     try:
-        with os.fdopen(fd, mode, encoding=None if mode == "wb" else encoding) as fh:
-            yield fh
-            fh.flush()
-            os.fsync(fh.fileno())
+        try:
+            # Retain descriptor ownership even if stream construction fails.
+            # A failed fdopen may otherwise close it before our rollback runs.
+            fh = os.fdopen(
+                fd, mode, encoding=None if mode == "wb" else encoding, closefd=False
+            )
+            try:
+                yield fh
+                fh.flush()
+                os.fsync(fh.fileno())
+            except BaseException as error:
+                try:
+                    fh.close()
+                except BaseException as cleanup_error:
+                    error.add_note(f"scratch stream cleanup failed: {cleanup_error}")
+                raise
+            else:
+                fh.close()
+        except BaseException as error:
+            _close_scratch_fd(fd, error)
+            raise
+        else:
+            os.close(fd)
         tmp_path.replace(dest)
-    except BaseException:
-        tmp_path.unlink(missing_ok=True)
+    except BaseException as error:
+        _discard_scratch(tmp_path, error)
         raise
     if durable:
         sync_dir(dest.parent)
@@ -191,8 +230,9 @@ def atomic_write(
 
     ``str`` is encoded with *encoding*; ``bytes`` is written verbatim. A
     concurrent reader sees either the prior file or the complete new file, never
-    a torn write, and a crash mid-write discards the temp file leaving *path*
-    untouched. ``durable=True`` fsyncs the parent directory too. Returns *path*.
+    a torn write. A process killed before replacement leaves *path* untouched
+    but may leave its scratch file for later cleanup. ``durable=True`` fsyncs
+    the parent directory too. Returns *path*.
     """
     dest = Path(path)
     if isinstance(data, bytes):

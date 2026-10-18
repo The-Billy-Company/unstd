@@ -1,0 +1,87 @@
+# Installed packaging contracts
+
+This lane freezes the working tree's release inputs into an external session
+snapshot, including new/untracked package sources, before reading its oracles or
+building real artifacts. This keeps concurrent edits from changing inputs between
+the two build routes. It builds a wheel and sdist through isolated PEP 517 builds,
+then builds another wheel from that sdist. Missing build tools, uncached build
+requirements, subprocess failures and deadlines are failures; no artifact test
+quietly skips its prerequisite.
+
+```console
+uv run --no-sync python -m tests.tooling run packaging -- -q
+uv run --no-sync pytest -q tests/suites/assurance/planes/packaging
+uv run --no-sync pytest -q --require-extras tests/suites/assurance/planes/packaging
+```
+
+The host needs `uv`, the project's dev environment, and a cached Hatchling build
+closure. Prepare the environment using the project's two-day quarantine before
+running this offline lane. Build commands explicitly use `--offline`, isolated
+build environments, no automatic interpreter downloads and `--exclude-newer P2D`.
+They never fall back to the network or an unisolated builder. Each command has a
+90-second ceiling; product consumer processes have a 30-second ceiling.
+For the required per-extra runtime matrix, prepare the locked wheel cache with
+`uv sync --locked --all-extras --group dev`, then select `--require-extras`.
+Without that flag the optional-backend consumers report an explicit skip; their
+tests are implemented and become mandatory in the required-extra run. No missing
+cache, backend, resolver, import or native library failure is skipped there.
+
+## Evidence
+
+- Both wheel routes contain every package source/data file from the build
+  snapshot, the typing marker and exact license/notice bytes. Tests and benchmark
+  tools stay out of the installed wheel. Wheel RECORD digests and sizes are
+  independently recomputed for every member, and paths, duplicate members,
+  universal tags, metadata, supported Python and license metadata are checked.
+- The sdist preserves all build inputs and package files, excludes local
+  environments and caches, has safe non-link members, and reconstructs the
+  entire wheel payload, including dependency metadata and RECORD.
+- Every advertised extra has its own metadata assertion, including empty
+  `clone`; every requirement is guarded by exactly one extra, proving the base
+  metadata has no unconditional dependency.
+- Required-extra runs also exercise each extra alone for each wheel route.
+  `uv export --locked --no-dev --no-default-groups --no-emit-project --extra EXTRA`
+  exports that extra's exact closure from the frozen lockfile, retaining hashes.
+  A new unseeded consumer receives only the product wheel and that closure, with
+  offline binary-only hash verification. Its exact distribution/version map must
+  equal the export, including transitives. Each direct backend must originate
+  inside that environment; unrelated backends must be absent unless shared by
+  the exported closure. Empty `clone` receives no dependency.
+  Real public calls prove native execution through native types, exact backend
+  bindings or observed delegation to real backend functions. The probes cover
+  orjson, pybase64, msgspec, UUIDs, BLAKE3/tokens, zoned time, protobuf, models and
+  settings, regex, sorted/persistent containers, NumPy random/packing, rapidfuzz,
+  soundfile/WAV, TOML, YAML and gzip/zlib-ng. Base consumers remain in their own
+  pristine environments throughout.
+- A separate unseeded virtualenv for each wheel installs that wheel offline with
+  `--no-deps`. Every product probe runs from an external consumer directory in a
+  new `python -I` process. The probe verifies the installed distribution set is
+  exactly `{unstd}`, every optional backend is absent, the product origin is
+  inside the consumer environment, and no import-search path enters the repo.
+- Real calls cover every stdlib-capable module group: JSON/base64/NDJSON, TLS,
+  filesystem, processes, cloning, UUIDs, iterators, numeric packing, random draws,
+  regex, text similarity, clocks, TOML reading, gzip and WAV framing/PCM. Independent
+  stdlib outputs or fixed byte/value fixtures supply expected values.
+  A completeness gate derives every public module from the snapshot and requires
+  an explicit behavior probe for each; adding a new module without installed
+  consumer evidence fails with the missing probe named. Successful probes also
+  verify each assigned module actually loaded from the consumer environment.
+- Missing crypto, msgspec, Pydantic, zoned time, sorted/persistent containers,
+  TOML writing, YAML and protobuf capabilities must raise an actionable
+  `pip install 'unstd[extra]'` error. Lazy iterator and bridge entry points are
+  called, not merely imported.
+- The host's mypy checks an external strict consumer against the fresh
+  interpreter's installed package. A successful fixture uses `assert_type`; a
+  negative control requires five real type errors, so a missing typing marker or
+  `Any` leakage cannot masquerade as success. No type checker is installed into
+  the consumer environment.
+
+`clean_environment()` retains only platform/launch variables and an explicitly
+selected cache directory. Inherited Python import paths, virtualenv selection,
+uv index/install/build policy and mypy paths cannot affect a probe. A poisoned
+environment test exercises that filter through a real consumer process.
+
+Platform coverage and combinations of multiple extras remain separate evidence.
+Per-extra runtime probes follow the versions in the frozen session lockfile;
+the dependency-floor job's re-resolved lock therefore drives its floor consumers.
+The lane itself needs no registry access.

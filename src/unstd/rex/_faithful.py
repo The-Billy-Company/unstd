@@ -25,6 +25,9 @@ if TYPE_CHECKING:
     from irgx import Pattern as NativePattern
 
 
+_SURROGATES = re.compile("[\ud800-\udfff]")
+
+
 def native_profile(pattern: str | bytes, flags: int) -> bool | None:
     """Return the ASCII-subject requirement, or decline unrepresentable semantics."""
     # The authoritative compile already emitted any syntax warnings.
@@ -123,8 +126,8 @@ def _profile(nodes: Any, flags: int, byte_transport: bool) -> bool | None:
 class _LinearPattern[AnyStr: (str, bytes)]:
     """A native pattern with Python's identity, projections and UTF-8 recovery.
 
-    Both compiled objects are owned here. A UTF-8 refusal happens before a
-    native match exists, so the same operation can run on the Python pattern.
+    Both compiled objects are owned here. Unencodable original subjects use
+    Python before a native match or callback can expose lazy UTF-8 indexing.
     User callbacks are never retried after they have started.
     """
 
@@ -146,8 +149,23 @@ class _LinearPattern[AnyStr: (str, bytes)]:
         """Read pattern metadata and ancillary stdlib operations from Python."""
         return getattr(self._python, name)
 
+    def _needs_python(self, string: AnyStr) -> bool:
+        """Decline subjects whose lazy native match projections cannot encode."""
+        if type(string) not in (str, bytes):
+            return True
+        if self._ascii and not string.isascii():
+            return True
+        # Region matching may encode only a slice, while a returned Match later
+        # indexes the entire original string as UTF-8. Recover before exposing
+        # that object, including when the surrogate lies outside the region.
+        return (
+            isinstance(string, str)
+            and not string.isascii()
+            and _SURROGATES.search(string) is not None
+        )
+
     def _call(self, name: str, *args: Any) -> Any:
-        if type(args[0]) not in (str, bytes) or (self._ascii and not args[0].isascii()):
+        if self._needs_python(args[0]):
             return getattr(self._python, name)(*args)
         try:
             return getattr(self._native, name)(*args)
@@ -202,7 +220,7 @@ class _LinearPattern[AnyStr: (str, bytes)]:
         self, string: AnyStr, pos: int = 0, endpos: int | None = None
     ) -> list[AnyStr | tuple[AnyStr, ...]]:
         """Project absent groups as empty strings, including compiled calls."""
-        if type(string) not in (str, bytes) or (self._ascii and not string.isascii()):
+        if self._needs_python(string):
             result: list[AnyStr | tuple[AnyStr, ...]] = (
                 self._python.findall(string, pos, endpos)
                 if endpos is not None
@@ -265,8 +283,7 @@ class _LinearPattern[AnyStr: (str, bytes)]:
         if (
             type(count) is not int
             or not 0 <= count <= sys.maxsize
-            or type(string) not in (str, bytes)
-            or (self._ascii and not string.isascii())
+            or self._needs_python(string)
         ):
             return self._python.subn(repl, string, count)
         limit = 0 if count and count > len(string) else count

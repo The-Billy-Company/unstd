@@ -1,0 +1,159 @@
+{
+  "version": 1,
+  "target": "ndjson",
+  "input_version": 1,
+  "seeds": [
+    {
+      "file": "empty-input.bin",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0,
+      "label": "Zero-length NDJSON input is an empty record stream",
+      "kind": "valid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "blank-rows.bin",
+      "sha256": "fe7f104d585ccbb7e9def032dd7f91751a500dea19ecddd18a9a50f4843d82fd",
+      "size": 7,
+      "label": "Blank physical lines and ASCII whitespace produce no records",
+      "kind": "valid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "valid-final-newline.bin",
+      "sha256": "abada86b93b35422e908c5e65328fae453a32fbe56780fc4a8fc4e4285adaf25",
+      "size": 16,
+      "label": "Multiple JSON record shapes with an append-safe final newline",
+      "kind": "valid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "valid-no-final-newline.bin",
+      "sha256": "d0d5617158fde1a2286ac714be75a78ac1acf1a7051c42c3e66e1f71f12926f0",
+      "size": 4,
+      "label": "A final record remains readable without a trailing newline",
+      "kind": "valid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "crlf-rows.bin",
+      "sha256": "76ed3da3b6ab4fa4deb753bf5c36afd12bf26669936e5f1894b211716316e770",
+      "size": 13,
+      "label": "Windows CRLF row endings preserve physical row numbers",
+      "kind": "valid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "mixed-invalid-rows.bin",
+      "sha256": "9edf15a4688ff2e63cb68304ebcc72bb21f6456f2bd852a38868c675a7595075",
+      "size": 15,
+      "label": "Strict mode stops at the first malformed row; skip mode reports both in order",
+      "kind": "invalid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "invalid-utf8-row.bin",
+      "sha256": "344c6188c04ebef53b9d812f44db3c8aafa938ecd36403a382e30d27e6096b51",
+      "size": 9,
+      "label": "Invalid UTF-8 is reported at physical line 2 and later rows survive skip mode",
+      "kind": "invalid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "truncated-final-row.bin",
+      "sha256": "7c7113428d38ced2141fc3e8465906b556e6f8bdafa30182fa67c8ab710eeea1",
+      "size": 12,
+      "label": "Truncated final JSON row retains its exact line number and cause",
+      "kind": "invalid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "ascii-exotic-padding.bin",
+      "sha256": "6bf7c161aecd9b9a0d8f110ecf0ed444c9c56fb4359b4052a60c20f8e642d812",
+      "size": 9,
+      "label": "Stripped VT/FF padding is retried without creating extra physical rows",
+      "kind": "boundary",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "unicode-exotic-padding.bin",
+      "sha256": "ac05fe8d275609920c8523989ca1ae1b645c41ed0f48b7945d0dcd3cad5bb363",
+      "size": 15,
+      "label": "Text-mode Unicode padding is stripped before retry; malformed middle row still reports",
+      "kind": "boundary",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "unicode-line-separators.bin",
+      "sha256": "09015d2904c9e9aaffe92feb537457a7b40d9f383d32f525397677dae995cf47",
+      "size": 21,
+      "label": "NEL, LS and PS inside JSON strings never split physical LF rows",
+      "kind": "valid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "escaped-newline-value.bin",
+      "sha256": "55a68a963bfe2da664fe3a191d7fe3acd017c634eaf480d5699f5abc9477b4df",
+      "size": 20,
+      "label": "Escaped newlines remain part of one decoded JSON value",
+      "kind": "valid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "text-lone-surrogate.bin",
+      "sha256": "ee7001df591f5a7f12cca2ca780d5b3a69986b1569995465a889baa2e2006b76",
+      "size": 7,
+      "label": "Surrogatepass text supports Python JSON lone-surrogate string values",
+      "kind": "boundary",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "utf16-single-row.bin",
+      "sha256": "84c0fc83da22262e99653dc414049f7f1c777acf0372c16f6fda3ceb2371f0cd",
+      "size": 25,
+      "label": "One UTF-16 BOM row reaches the inherited byte-oriented JSON encoding detector",
+      "kind": "valid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "utf32-single-row.bin",
+      "sha256": "3adbf2d0b5b7cfd3a13638721d4176c5b42c39835c0e3956cfc36ffbf7ef5fef",
+      "size": 37,
+      "label": "One UTF-32 BOM row reaches the inherited JSON encoding detector",
+      "kind": "valid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "maximum-physical-lines.bin",
+      "sha256": "050cf2957673a96a5fab5ccf073a6402b793028494e271c23d6e13738139bf22",
+      "size": 1023,
+      "label": "511 LF characters form the maximum 512 physical-line domain",
+      "kind": "boundary",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "physical-lines-outside-domain.bin",
+      "sha256": "9a14b6d8f232fb0b010bbcf60e8a99def4b15c40e98cfe234d28faad729258b0",
+      "size": 1025,
+      "label": "A 513th physical line triggers the explicit campaign domain guard",
+      "kind": "boundary",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "quoted-depth-guard.bin",
+      "sha256": "f1ff624e4ca7c7635fa288d62149f0749f372e227432a722b6ed7ed91c1d0832",
+      "size": 685,
+      "label": "Per-line text-mode bounds cannot be bypassed by an earlier malformed UTF-8 row",
+      "kind": "boundary",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "encode-full-record-set.bin",
+      "sha256": "c062b951d9db47e64c6ae923c865e7dfd0ffdf33b27de6c459df9d0d6383e390",
+      "size": 1025,
+      "label": "Maximum generated 16-record writer stream derives 1024 bytes",
+      "kind": "boundary",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    }
+  ]
+}

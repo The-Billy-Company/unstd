@@ -1,0 +1,175 @@
+{
+  "version": 1,
+  "target": "toml",
+  "input_version": 1,
+  "seeds": [
+    {
+      "file": "empty.bin",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0,
+      "label": "Empty envelope checks independently generated empty-payload model",
+      "kind": "boundary",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "raw-empty.bin",
+      "sha256": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "size": 1,
+      "label": "Empty TOML document",
+      "kind": "boundary",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "raw-basic.bin",
+      "sha256": "eeecc42df18afa13520a498a3d448b3e51d0f58cb6d7fdb70d31eb652b18e580",
+      "size": 44,
+      "label": "Ordinary independent TOML mapping",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "raw-numeric-extrema.bin",
+      "sha256": "92d0f9e2b4fd1e36861eb4055812bb698c7e5f22ad7896d46e15d4a4a89ecd29",
+      "size": 65,
+      "label": "Signed 64-bit TOML boundaries and alternate integer base",
+      "kind": "boundary",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "raw-float-specials.bin",
+      "sha256": "5b58d1747a69a7f485d38e6b8ba2782bde07e38427dc0e8e54f97f3e2384bec6",
+      "size": 54,
+      "label": "NaN, infinities and signed zero compare through parser diagnostics",
+      "kind": "boundary",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "raw-datetimes.bin",
+      "sha256": "409963cc7ea93da1131d0a79977eba0d4d71ee0fd329a6cd0b740f007f07abd0",
+      "size": 65,
+      "label": "Date, local time and offset datetime scalar fidelity",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "raw-arrays-tables.bin",
+      "sha256": "48ef9bbe74df85cb620d40a54f1925f6bdc62bf20c7e4aa5be40c07f111c73f2",
+      "size": 80,
+      "label": "Nested arrays, inline tables and explicit tables",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "raw-array-of-tables.bin",
+      "sha256": "93b624cc44cdb9a1a5d7422c2a5b675e773e9ced80f721aa1fdb3545e7fda55f",
+      "size": 53,
+      "label": "Array-of-table construction and order",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "raw-string-escapes.bin",
+      "sha256": "51e0f47daf0c8ccca46e709580e9b7762ece12505a538d0c090106508e9c07b2",
+      "size": 54,
+      "label": "Basic and literal string escaping",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "raw-duplicate-key.bin",
+      "sha256": "da36d97c59ac74f1b450a4272ca31ac28786b51bfd39658b104611369e150860",
+      "size": 32,
+      "label": "Duplicate semantic key is a precise TOML decode error",
+      "kind": "invalid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "raw-dotted-key-redefinition.bin",
+      "sha256": "6741b1630f768c8703356501307c867462a47fb18e6374863673c1ea72465f59",
+      "size": 15,
+      "label": "Dotted-key table cannot be overwritten by a scalar",
+      "kind": "invalid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "raw-unterminated-array.bin",
+      "sha256": "be097b7928814a4087490792bd206f81d24e40b59b051695f0dada1ac2ae45d1",
+      "size": 11,
+      "label": "Truncated array syntax",
+      "kind": "invalid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "raw-invalid-utf8.bin",
+      "sha256": "c85842fe7d2ef177fcde2faceb3c4bf8524a3e5d755ee26e620e05a69bf34a05",
+      "size": 12,
+      "label": "Invalid UTF-8 exercises distinct string and binary load paths",
+      "kind": "invalid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "raw-nul.bin",
+      "sha256": "f6b3ced35d24568ea85a32fd7e0d17498f1f482dbccd2536de15fb01daf1e195",
+      "size": 13,
+      "label": "NUL is forbidden inside TOML basic strings",
+      "kind": "invalid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "raw-nested-budget.bin",
+      "sha256": "84bd67a7452a163483bf7948f84ef995c37a9abec26ffe749daa3ab9796664c3",
+      "size": 203,
+      "label": "Finite 96-level nested array parser budget",
+      "kind": "boundary",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "raw-quoted-unicode-key.bin",
+      "sha256": "0de4b912db6fae4ba02e37c0549d232ae375d5bd585aa8396ae18090fcce7ea9",
+      "size": 14,
+      "label": "Quoted Unicode key and non-ASCII string",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "model-empty.bin",
+      "sha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a",
+      "size": 1,
+      "label": "Empty payload independent model and comment-preserving writer",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "model-escapes.bin",
+      "sha256": "c846bdabb58f1cbb4a17ac8a32a275481f125881cbade83ae6a1c3bc7fb80ef1",
+      "size": 7,
+      "label": "Binary entropy becomes safe hex and explicit escaped-string model",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "model-integer-boundary.bin",
+      "sha256": "f835f9b3fc8775fdbff54d4a773f683722aacf607afaffcea1ed8c70ae63739b",
+      "size": 9,
+      "label": "Known model reaches a signed-64-bit negative boundary",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "model-boolean-true.bin",
+      "sha256": "f40a7deaf388a1b330607a482ae6209e86f909feeee7ab695d48637ed8437232",
+      "size": 4,
+      "label": "Known model selects the true boolean branch",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "model-boolean-false.bin",
+      "sha256": "ff5ab8cbaf9d467516ad1cf31edf16cca015c1dce1d9ee3d1053e3ec626ba2d4",
+      "size": 5,
+      "label": "Known model selects the false boolean branch",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    }
+  ]
+}

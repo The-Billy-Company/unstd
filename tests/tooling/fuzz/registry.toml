@@ -1,0 +1,111 @@
+version = 1
+
+[[target]]
+name = "json"
+backends = ["installed", "stdlib"]
+requirements = ["orjson"]
+input_version = 1
+max_input_bytes = 65536
+minimum_seeds = 12
+surface = "JSON byte/text decoding, encoding options and numeric/Unicode boundaries"
+oracle = "Running interpreter json results, exact errors and typed value snapshots"
+
+[[target]]
+name = "base64"
+backends = ["installed", "stdlib"]
+requirements = ["pybase64"]
+input_version = 1
+max_input_bytes = 65536
+minimum_seeds = 12
+surface = "Standard, alternate and URL alphabet bytes/text boundaries"
+oracle = "Independent stdlib base64 recipes and diagnostics"
+
+[[target]]
+name = "ndjson"
+backends = ["installed", "stdlib"]
+requirements = ["orjson"]
+input_version = 1
+max_input_bytes = 65536
+minimum_seeds = 12
+surface = "Physical record framing, malformed rows and error policy"
+oracle = "Independent per-line json model and error histories"
+
+[[target]]
+name = "structs"
+backends = ["installed"]
+requirements = ["msgspec"]
+input_version = 1
+max_input_bytes = 65536
+minimum_seeds = 12
+surface = "Strict/coercing typed native JSON codecs and decode_or"
+oracle = "Raw msgspec codecs with fixed independently declared schemas"
+
+[[target]]
+name = "tokens"
+backends = ["installed"]
+requirements = ["blake3"]
+input_version = 1
+max_input_bytes = 65536
+minimum_seeds = 12
+surface = "Canonical authenticated envelopes and hostile token spellings"
+oracle = "Stdlib Base64 plus raw keyed BLAKE3 independent envelope model"
+
+[[target]]
+name = "pack"
+backends = ["installed", "stdlib"]
+requirements = ["numpy"]
+input_version = 1
+max_input_bytes = 65536
+minimum_seeds = 12
+surface = "Numeric widths, endianness, truncation and array codecs"
+oracle = "struct bytes, independent numeric coercion and typed snapshots"
+
+[[target]]
+name = "wav"
+backends = ["installed", "stdlib"]
+requirements = ["soundfile", "numpy"]
+input_version = 1
+max_input_bytes = 65536
+minimum_seeds = 12
+surface = "Bounded RIFF parsing, PCM16 quantization and streaming"
+oracle = "wave headers, fixed PCM bytes and arithmetic scaling"
+
+[[target]]
+name = "toml"
+backends = ["installed", "stdlib"]
+requirements = ["tomlkit"]
+input_version = 1
+max_input_bytes = 65536
+minimum_seeds = 12
+surface = "Raw document parsing and generated model/edit writer behavior"
+oracle = "tomllib and independent generated TOML model"
+
+[[target]]
+name = "yaml"
+backends = ["installed"]
+requirements = ["ruamel.yaml"]
+input_version = 1
+max_input_bytes = 65536
+minimum_seeds = 12
+surface = "Safe construction, malformed documents, aliases and unknown tags"
+oracle = "Independent safe constructor, known models and constructor refusal"
+
+[[target]]
+name = "rex"
+backends = ["installed", "stdlib"]
+requirements = ["irgx"]
+input_version = 1
+max_input_bytes = 65536
+minimum_seeds = 12
+surface = "Hostile pattern compilation and bounded shared-grammar execution"
+oracle = "re compile diagnostics, match spans, captures and callback histories"
+
+[[target]]
+name = "gzip"
+backends = ["installed", "stdlib"]
+requirements = ["zlib_ng"]
+input_version = 1
+max_input_bytes = 65536
+minimum_seeds = 12
+surface = "Bounded members, concatenation, framing, CRC and truncation"
+oracle = "stdlib gzip bytes, errors and independent expansion preflight"

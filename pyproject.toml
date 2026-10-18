@@ -94,7 +94,6 @@ audio = [
 toml = [
   "tomlkit>=0.15",
 ]
-
 yaml = [
   "ruamel-yaml>=0.19",
 ]
@@ -120,6 +119,11 @@ dev = [
   # which is the quiet way a security test stops being one.
   "cryptography>=44.0",
 ]
+fuzz = [
+  # A tested development engine/protocol, kept outside the runtime closure.
+  # The binary-wheel platform is explicit; other hosts retain replay/mutation.
+  "atheris==3.0.0 ; python_full_version == '3.12.*' and platform_machine == 'x86_64' and sys_platform == 'linux'",
+]
 
 [tool.uv]
 # Keep development, optional backends and isolated builds behind the same
@@ -131,8 +135,26 @@ exclude-newer = "P2D"
 irregex = false
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
-# The repo root, so `tests/test_bench.py` can import the `bench` harness. `bench`
+testpaths = ["tests/suites"]
+addopts = "--strict-markers --strict-config --import-mode=importlib -m 'not perf and not chaos'"
+markers = [
+  "unit: module API contracts, including retained historical mixed cases",
+  "parity: independent stdlib or backend differential contracts",
+  "properties: Hypothesis generated contracts, including mixed modules",
+  "security: existing crypto and TLS policy contracts",
+  "gates: package, harness, inventory and runner checks",
+  "regression: minimized reproducer of a confirmed defect",
+  "integration: real cross-module boundaries and installed artifacts",
+  "packaging: offline built artifacts and pristine installed consumers",
+  "pentest: behavioral probes against concrete trust boundaries",
+  "security_structure: structural security canaries",
+  "chaos: explicit bounded injected-failure experiments",
+  "concurrency: thread, process and fork safety contracts",
+  "resources: bounded memory, CPU, descriptor and streaming growth",
+  "perf: performance evidence requiring a quiet dedicated worker",
+  "fuzz_replay: deterministic replay of committed fuzz corpora",
+]
+# The repo root, so the assurance/gates/bench tests can import `bench`. `bench`
 # is a development tool and deliberately outside `src/`, so it is not on the path
 # the installed wheel puts there.
 pythonpath = ["."]

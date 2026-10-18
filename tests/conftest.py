@@ -1,69 +1,38 @@
-"""Hypothesis profiles, and the rule that lets the suite run on a base install.
-
-``ci`` is what GitHub Actions loads. ``dev`` is the local default. ``campaign``
-is the deep sweep.
-"""
+"""Shared profiles, suite selection, and optional-backend collection policy."""
 
 from __future__ import annotations
 
 import importlib
-import importlib.util
-import os
+from importlib import metadata
+import tomllib
+from typing import TYPE_CHECKING
 
-from hypothesis import HealthCheck, settings
+from packaging.requirements import Requirement
+import pytest
 
-
-settings.register_profile(
-    "dev",
-    max_examples=20,
-    deadline=None,
-    suppress_health_check=(HealthCheck.too_slow,),
-)
+from tests.support.anchors import REPO_ROOT
+from tests.support.backends import configure_backend_policy
+from tests.support.hypothesis.profiles import load_active_profile
 
 
-settings.register_profile(
-    "ci",
-    max_examples=80,
-    deadline=None,
-    suppress_health_check=(HealthCheck.too_slow,),
-)
-settings.register_profile(
-    "campaign",
-    max_examples=1000,
-    deadline=None,
-    suppress_health_check=(HealthCheck.too_slow,),
-)
-
-_default = "ci" if os.environ.get("CI") else "dev"
-settings.load_profile(os.environ.get("HYPOTHESIS_PROFILE", _default))
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
-# --------------------------------------------------------------------------
-# Running on a base install
-#
-# Most of `unstd` degrades to the stdlib when its extra is absent, and those
-# tests run everywhere — exercising the fallback is the entire point of
-# installing without extras. Four surfaces have no faithful stand-in and say so
-# by raising at import (`crypto.digest`/`token` have only BLAKE2 to fall back to, which is a
-# different algorithm; pydantic, msgspec and whenever have no stdlib analogue at
-# all). Their test modules therefore cannot be imported, and pytest reports an
-# uncollectable module as an *error*, so a bare `pip install unstd && pytest`
-# aborted the whole run before this rule — which meant the fallback paths, the
-# library's central promise, had never been exercised by anything.
-#
-# Each entry names the `unstd` module rather than the backend behind it. The
-# module is what has to import, its own guarded `ImportError` already carries the
-# "install the X extra" hint, and naming it survives a backend being swapped
-# underneath (`rex` traded RE2 for irgx mid-flight; a hardcoded "re2" here would
-# have quietly started skipping a suite that was fine).
+_PROFILE = load_active_profile()
+with (REPO_ROOT / "tests/tooling/inventory.toml").open("rb") as _stream:
+    _SUITES = tomllib.load(_stream)["suite"]
+
+# Refuse collection only for modules that cannot exist without their extra.
+# TLS is pure stdlib: its contracts must still run without the crypto extra.
 _NEEDS: dict[str, str] = {
-    "crypto/*.py": "unstd.crypto.digest",
-    "model/*.py": "unstd.model",
-    "serde/test_structs.py": "unstd.serde.structs",
-    "time/test_zoned.py": "unstd.time.zoned",
-    # Not an extra: the benchmark harness lives outside `src/` and is absent from
-    # an installed wheel, so its own tests only mean something in a checkout.
-    "test_bench.py": "bench",
+    "suites/product/crypto/unit/test_vectors.py": "unstd.crypto.digest",
+    "suites/product/crypto/security/test_adverse.py": "unstd.crypto.digest",
+    "suites/product/crypto/security/test_token_boundary.py": "unstd.crypto.token",
+    "suites/product/model/**/*.py": "unstd.model",
+    "suites/product/serde/unit/test_structs.py": "unstd.serde.structs",
+    "suites/product/time/unit/test_zoned.py": "unstd.time.zoned",
+    "suites/assurance/gates/bench/test_bench.py": "bench",
 }
 
 
@@ -75,6 +44,70 @@ def _importable(module: str) -> bool:
     return True
 
 
-collect_ignore_glob = [
-    pattern for pattern, module in _NEEDS.items() if not _importable(module)
-]
+_MISSING = {
+    pattern: module for pattern, module in _NEEDS.items() if not _importable(module)
+}
+collect_ignore_glob = list(_MISSING)
+
+
+def pytest_addoption(parser: pytest.Parser) -> None:
+    """Arm the required-backend posture for all-extra and dependency-floor CI."""
+    parser.addoption(
+        "--require-extras",
+        action="store_true",
+        help="fail if any declared extra is absent",
+    )
+
+
+def pytest_configure(config: pytest.Config) -> None:
+    """A required capability must not disappear behind import skips or fallback."""
+    required = config.getoption("--require-extras")
+    configure_backend_policy(required=required)
+    if not required:
+        return
+    with (REPO_ROOT / "pyproject.toml").open("rb") as stream:
+        extras = tomllib.load(stream)["project"]["optional-dependencies"]
+    missing = list(_MISSING.values())
+    for extra, requirements in extras.items():
+        for text in requirements:
+            requirement = Requirement(text)
+            if requirement.marker and not requirement.marker.evaluate({"extra": extra}):
+                continue
+            try:
+                version = metadata.version(requirement.name)
+            except metadata.PackageNotFoundError:
+                missing.append(text)
+            else:
+                if not requirement.specifier.contains(version, prereleases=True):
+                    missing.append(f"{text} (installed {version})")
+    if missing:
+        msg = f"required extras unavailable: {', '.join(sorted(set(missing)))}"
+        raise pytest.UsageError(msg)
+
+
+def _owns(path: Path, candidate: str) -> bool:
+    return path.is_relative_to(REPO_ROOT / candidate)
+
+
+def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
+    """Give every collected test exactly one inventoried owner and kind marker."""
+    for item in items:
+        matches = [
+            suite
+            for suite in _SUITES
+            if suite["status"] == "active"
+            and any(_owns(item.path, candidate) for candidate in suite["paths"])
+        ]
+        if len(matches) != 1:
+            msg = f"{item.nodeid}: expected one active suite owner, found {len(matches)}; update tests/tooling/inventory.toml"
+            raise pytest.UsageError(msg)
+        item.add_marker(matches[0]["marker"])
+        # Some retained API/security/parity files also contain generated tests.
+        # Marker selection includes those without moving individual functions.
+        if getattr(getattr(item, "obj", None), "is_hypothesis_test", False):
+            item.add_marker("properties")
+
+
+def pytest_report_header() -> str:
+    """Make the selected generation policy visible in verbose runs."""
+    return f"unstd Hypothesis profile: {_PROFILE}; suite inventory: tests/tooling/inventory.toml"

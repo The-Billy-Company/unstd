@@ -26,7 +26,7 @@ Installing the extra must not change results, errors or warnings.
 Contract sources: https://docs.python.org/3.12/library/base64.html,
 https://github.com/python/cpython/blob/3.14/Lib/test/test_base64.py,
 https://pybase64.readthedocs.io/en/stable/changelog.html, and RFC 4648 §3.5.
-Differential tests live under ``tests/serde`` and ``tests/properties``.
+Differential and generated tests live under ``tests/suites/product/serde``.
 """
 
 from __future__ import annotations

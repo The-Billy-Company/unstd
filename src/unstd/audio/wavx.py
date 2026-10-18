@@ -73,6 +73,7 @@ if TYPE_CHECKING:
             samplerate: int,
             *,
             subtype: str | None = ...,
+            format: str | None = ...,
         ) -> None: ...
         def blocks(
             self,
@@ -89,6 +90,7 @@ if TYPE_CHECKING:
             samplerate: int | None = ...,
             channels: int | None = ...,
             subtype: str | None = ...,
+            format: str | None = ...,
         ) -> _SoundFileHandle: ...
 
     _sf: _Soundfile
@@ -131,7 +133,8 @@ def read(path_or_file: PathOrFile, *, dtype: str = "float32") -> tuple[Samples, 
 
     ``dtype`` is ``"float32"`` (default) or ``"float64"`` for normalized samples in
     ``[-1, 1]``, or ``"int16"`` for raw signed 16-bit samples. Mono returns a 1-D
-    container, multichannel a 2-D ``(frames, channels)`` one.
+    container, multichannel a 2-D ``(frames, channels)`` one. Fallback decoders
+    reject incomplete PCM sample/channel frames with ``ValueError``.
     """
     _check_dtype(dtype)
     if _HAVE_SOUNDFILE:
@@ -244,7 +247,13 @@ def write(
     ``PCM_16`` only (array floor).
     """
     if _HAVE_SOUNDFILE:
-        _sf.write(path_or_file, _sf_samples(samples), int(samplerate), subtype=subtype)
+        _sf.write(
+            path_or_file,
+            _sf_samples(samples),
+            int(samplerate),
+            subtype=subtype,
+            format="WAV",
+        )
         return
     writer = _write_numpy if _HAVE_NUMPY else _write_array
     writer(path_or_file, samples, int(samplerate), subtype)
@@ -295,6 +304,7 @@ class Writer:
                 samplerate=int(samplerate),
                 channels=channels,
                 subtype=subtype,
+                format="WAV",
             )
             return
         self._spec = _SUBTYPE.get(subtype) if _HAVE_NUMPY else None
@@ -369,6 +379,7 @@ def _read_numpy(raw: bytes, nchannels: int, sampwidth: int, dtype: str) -> Sampl
     code = _PCM_CODE.get(sampwidth)
     if code is None:
         raise ValueError(_bad_width(sampwidth, "8/16/32"))
+    _check_pcm_frames(raw, nchannels, sampwidth)
     arr = _np.frombuffer(raw, dtype=code)
     if sampwidth == 1:  # 8-bit WAV is unsigned, centered on 128
         flt = (arr.astype(_np.float64) - 128.0) / 128.0
@@ -419,6 +430,7 @@ def _quantize(arr: NDArray[_np.generic], code: str, scale: int) -> bytes:
 def _read_array(raw: bytes, nchannels: int, sampwidth: int, dtype: str) -> Samples:
     if sampwidth != 2:
         raise ValueError(_bad_width(sampwidth, "16"))
+    _check_pcm_frames(raw, nchannels, sampwidth)
     a = array.array("h")  # signed 16-bit
     a.frombytes(raw)
     if sys.byteorder == "big":  # WAV PCM is little-endian
@@ -481,6 +493,13 @@ def _to_int16(v: float) -> int:
 
 
 # ── shared ─────────────────────────────────────────────────────────────────────
+
+
+def _check_pcm_frames(raw: bytes, nchannels: int, sampwidth: int) -> None:
+    """Reject truncated interleaved frames before decoding or channel indexing."""
+    if len(raw) % (nchannels * sampwidth):
+        msg = "PCM data is not a whole number of frames"
+        raise ValueError(msg)
 
 
 def _check_dtype(dtype: str) -> None:

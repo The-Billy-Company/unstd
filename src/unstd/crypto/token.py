@@ -43,10 +43,16 @@ def equal(a: str | bytes, b: str | bytes) -> bool:
     Never use ``==`` on one of those: it short-circuits on the first differing
     byte, which leaks the length of the shared prefix and is enough to forge a
     tag one byte at a time. Mismatched str/bytes is False rather than a
-    TypeError, so a caller cannot turn a comparison into a 500.
+    TypeError. Non-ASCII strings are also refused: wire tags are ASCII and
+    ``hmac.compare_digest`` otherwise raises for caller-controlled Unicode.
     """
     if isinstance(a, str):
-        return isinstance(b, str) and hmac.compare_digest(a, b)
+        return (
+            isinstance(b, str)
+            and a.isascii()
+            and b.isascii()
+            and hmac.compare_digest(a, b)
+        )
     return isinstance(b, bytes) and hmac.compare_digest(a, b)
 
 
@@ -100,17 +106,30 @@ def verify(key: bytes, token: str) -> bytes | None:
     """Return the claims bytes if *token*'s MAC checks out under *key*, else None.
 
     Fails closed on every shape problem — a missing or extra separator, a
-    non-base64 segment, a tag of the wrong width — and compares the tag in
+    noncanonical base64url segment, a tag of the wrong width — and compares the tag in
     constant time. None means "do not trust this"; it never raises for
     caller-supplied input.
     """
     payload, sep, tag = token.partition(SEPARATOR)
     if not sep or SEPARATOR in tag or not payload or not tag:
         return None
+    if not all(
+        segment.isascii() and segment.replace("-", "a").replace("_", "a").isalnum()
+        for segment in (payload, tag)
+    ):
+        return None
     try:
         claims = b64.decode(payload, url=True)
         got = b64.decode(tag, url=True)
     except ValueError:  # binascii.Error and UnicodeEncodeError are both ValueErrors
+        return None
+    # The general-purpose URL decoder intentionally follows stdlib's leniency.
+    # A bearer envelope must instead have one spelling: ignored junk, padding,
+    # alternate alphabets and unused-bit aliases must never authenticate.
+    if (
+        b64.encode(claims, url=True, pad=False) != payload
+        or b64.encode(got, url=True, pad=False) != tag
+    ):
         return None
     if len(got) != TAG_BYTES or not equal(got, mac_raw(key, payload.encode("ascii"))):
         return None

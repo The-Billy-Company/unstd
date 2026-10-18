@@ -1,0 +1,167 @@
+{
+  "version": 1,
+  "target": "tokens",
+  "input_version": 1,
+  "seeds": [
+    {
+      "file": "empty-input.bin",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0,
+      "label": "Zero-length attacker-controlled token text cannot authenticate",
+      "kind": "invalid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "authentic-opaque-token.bin",
+      "sha256": "b3ab10a1ab6c336ca8f660e635161f22a8680d990cf351cdad236ae242b833db",
+      "size": 64,
+      "label": "Independent keyed BLAKE3 authenticates exact opaque NUL/high-bit claims",
+      "kind": "valid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "authentic-no-json-policy.bin",
+      "sha256": "a72836e94a5cbeb80ebdba7b4c0b152f30154d8b210944084401cde4303b886a",
+      "size": 76,
+      "label": "Authentic claims are returned without inventing application expiry or audience policy",
+      "kind": "valid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "signature-pad-bit-alias.bin",
+      "sha256": "271b03eff9d0896eff7fb97ff391ce2a441a4d13f0d584041f7c4b3884bd4ba6",
+      "size": 64,
+      "label": "Unused signature pad bits decode to the authentic MAC but must not authenticate",
+      "kind": "invalid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "signed-payload-alias.bin",
+      "sha256": "1f026d85981444dd9671ba0a53ad884616d455b508222b933542cb38d6743c9c",
+      "size": 47,
+      "label": "Independently signed unused payload bits still violate canonical spelling",
+      "kind": "invalid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "signed-payload-padding.bin",
+      "sha256": "dd6df292fb4718dd820d1b0d21c809b4e57a26c985d036280fc4c14fea78d676",
+      "size": 49,
+      "label": "Even a valid independent MAC cannot bless padded payload spelling",
+      "kind": "invalid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "signed-payload-junk.bin",
+      "sha256": "37fc2aea7e1c42d006267f5c6cc704f5c57da48ba6d1c74b4cfece51be7b5053",
+      "size": 48,
+      "label": "Independently signed ignored payload junk is refused",
+      "kind": "invalid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "signed-standard-alphabet.bin",
+      "sha256": "d05ace472142875c0c7063dfeafc59255893ecba52d099294441be54618a8242",
+      "size": 47,
+      "label": "Independently signed standard-alphabet payload violates the URL envelope",
+      "kind": "invalid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "changed-claims.bin",
+      "sha256": "b088266eba3646c4f1718542e06dcbb9e2f9b7dc9ba778e7b07f5e551510ab4d",
+      "size": 55,
+      "label": "Changed claims cannot inherit the original authenticated signature",
+      "kind": "invalid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "truncated-signature.bin",
+      "sha256": "5b99cd0fe56ca76641c1ffc02b1fc6060dc9e12814d21320a9ec76f8c1dbcbef",
+      "size": 63,
+      "label": "Signature truncation is rejected",
+      "kind": "invalid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "extra-separator.bin",
+      "sha256": "44dd5e863fae3b4b928c412e3e41e1624bb25440b60abac9ddd56aa11e966254",
+      "size": 65,
+      "label": "A third empty segment invalidates an otherwise authentic bearer",
+      "kind": "invalid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "missing-separator.bin",
+      "sha256": "22a1cb640c9037559ada5d5451ec53747c4358cbe9147d7bdf2a5bc28c863be2",
+      "size": 63,
+      "label": "Payload and signature cannot authenticate without the exact separator",
+      "kind": "invalid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "text-nonascii.bin",
+      "sha256": "7f1af3efedd01c535d7149087fc3cbc97aa61d3f0127fcb7394ef475ab3dc742",
+      "size": 11,
+      "label": "Arbitrary non-ASCII token text fails closed without raising",
+      "kind": "invalid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "text-lone-surrogate.bin",
+      "sha256": "9dec58c36488bf326da16e3b6352cb8dc82c8d91be4eef83eed71c81dc43f1c2",
+      "size": 8,
+      "label": "Arbitrary surrogatepass token text fails closed without raising",
+      "kind": "invalid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "arbitrary-invalid-utf8.bin",
+      "sha256": "1622a2f8288f5b830e7253918c780aababd21307db6a41201694a9cdb70401c5",
+      "size": 8,
+      "label": "Surrogateescaped arbitrary bytes fail closed at the text boundary",
+      "kind": "invalid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "utf16-shaped-token.bin",
+      "sha256": "0991e3a7399c8bbeb66f576776e176bac1acc43ddae2cf87761e24bfd3460f48",
+      "size": 129,
+      "label": "UTF-16 bytes map to attacker text and cannot bypass ASCII envelope rules",
+      "kind": "invalid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "utf32-shaped-token.bin",
+      "sha256": "44556af11d0a2143d0b90c0bcbcd3931e87a57c79b0cf0b91f7e780aaf46882d",
+      "size": 257,
+      "label": "UTF-32 bytes map to attacker text and cannot bypass ASCII envelope rules",
+      "kind": "invalid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "derive-authentic-tampering.bin",
+      "sha256": "4e7bfca540da28b17122f103be5fd0c34707bea05fa411d35b8929c9b1e936ae",
+      "size": 15,
+      "label": "Mint mode derives authentic controls and tampered claims, tags and separators",
+      "kind": "valid",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "derive-signed-malformed.bin",
+      "sha256": "53bbed4e608eff5b6bdd4b9cd814f2822703b806bb9a4c5fd91a42b0f2839dc8",
+      "size": 6,
+      "label": "Malformed-envelope mode derives valid MACs over deliberately invalid spellings",
+      "kind": "boundary",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    },
+    {
+      "file": "claims-generation-limit.bin",
+      "sha256": "f4be71cb4e592e859ac8a540b6cf42ee3362cbb6303c7e1eaef73e6f6e81c09e",
+      "size": 8193,
+      "label": "Maximum derived opaque claims length reaches 8192 bytes",
+      "kind": "boundary",
+      "origin": "reviewed synthetic fixture for the documented v1 fuzz envelope"
+    }
+  ]
+}

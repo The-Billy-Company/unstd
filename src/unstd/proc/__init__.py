@@ -44,6 +44,7 @@ pass a timeout and to capture output before raising.
 from __future__ import annotations
 
 from dataclasses import dataclass
+import math
 import subprocess
 import time
 from typing import TYPE_CHECKING, TypedDict, Unpack
@@ -164,8 +165,22 @@ def run(
     invoked once with a structured record (``argv``/``returncode``/``duration``)
     — an injectable hook so callers can wire billog/logging without this module
     depending on either.
+
+    ``timeout`` must be a positive, finite number of seconds. ``None``, bools,
+    non-numeric values, zero, negative values, infinity and NaN are refused
+    before launching a child.
     """
     cmd = _argv(argv)
+    if isinstance(timeout, bool) or not isinstance(timeout, int | float):
+        msg = "timeout must be a positive finite number of seconds"
+        raise TypeError(msg)
+    try:
+        valid_timeout = math.isfinite(timeout) and timeout > 0
+    except OverflowError:
+        valid_timeout = False
+    if not valid_timeout:
+        msg = "timeout must be a positive finite number of seconds"
+        raise ValueError(msg)
     start = time.perf_counter()
     completed = subprocess.run(  # noqa: S603 — shell=False + explicit argv is the safe path
         cmd,

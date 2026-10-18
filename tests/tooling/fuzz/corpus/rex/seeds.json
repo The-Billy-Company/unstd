@@ -1,0 +1,215 @@
+{
+  "version": 1,
+  "target": "rex",
+  "input_version": 1,
+  "seeds": [
+    {
+      "file": "empty.bin",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0,
+      "label": "Empty envelope still exercises fixed ASCII matching controls",
+      "kind": "boundary",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "native-literal-class.bin",
+      "sha256": "1b5b72a75e94c1fd070883099117b4a81a87b6d7cc501178a251bd5cf49d9f52",
+      "size": 14,
+      "label": "ASCII str class pattern with bounded replacement count",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "native-optional-capture.bin",
+      "sha256": "28ba9beeb0d22dd545ce603d50ca80db682759b4036bc96b3c9f67578b42becd",
+      "size": 13,
+      "label": "Native optional capture and whole-match replacement template",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "native-named-word.bin",
+      "sha256": "d440dc81c89a24161546e61920e3081430428b93e4fe56905767d8ff55900289",
+      "size": 12,
+      "label": "ASCII named word capture is eligible for native execution",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "native-digit-width.bin",
+      "sha256": "92b55f85046b1ffd09f1b3603694aaeedbb1e962cce815a5c876d5987aa86a56",
+      "size": 17,
+      "label": "Bounded digit repetition over ASCII subject",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "native-alternation.bin",
+      "sha256": "8169ce770645e9b1b5e678ffcd243c34cb515dea822d1393171a7239fc7d4358",
+      "size": 10,
+      "label": "Native nonnullable alternation and repetition",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "native-absolute-anchor.bin",
+      "sha256": "4efacc0ea140050be78697686149d86676f2728d0c653a0489941109e88c8f20",
+      "size": 7,
+      "label": "Shared absolute-end anchor uses Python-compatible Z semantics",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "fallback-nullable.bin",
+      "sha256": "215c308a228ac71d5601ba4ca40c342b1a24cd788c47f76ae2ba56eac095c6dd",
+      "size": 7,
+      "label": "Nullable pattern uses Python adjacent-match semantics",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "fallback-lookahead.bin",
+      "sha256": "e4ed2cb7956ea0525c3e8701779e9f481a8b035f743dafde99531418285de95c",
+      "size": 7,
+      "label": "Lookahead takes the documented Python fallback",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "fallback-backreference.bin",
+      "sha256": "be52001f106c6f9ba01364e5802b23b590b1e868a4cfb089ea0878bf0302a3f6",
+      "size": 8,
+      "label": "Backreference takes the documented Python fallback",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "fallback-unicode-ignorecase.bin",
+      "sha256": "5b1d1d950f7b0d626a84ea18af39edfc1cbd31f71aed8d4becd9089790c448d8",
+      "size": 8,
+      "label": "Unicode cased IGNORECASE uses interpreter-owned rules",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "fallback-nullable-repeat.bin",
+      "sha256": "14600ddbd693f8f9833ed09cbb0956636b053e17d0e60d70686fa36d155fc3c9",
+      "size": 7,
+      "label": "Nullable repeated capture uses Python capture semantics",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "fallback-unicode-subject.bin",
+      "sha256": "3eba15f9b7b5a7b8402e0bd6470f52bdaa350150fbba625ec4dd75ce24adb1b2",
+      "size": 11,
+      "label": "Non-ASCII subject switches Unicode word-class execution to Python",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "native-bytes-word.bin",
+      "sha256": "ccc5cbc026c1878fdab6419880d8eede097b4a6c3fb429764660ce37a938e72d",
+      "size": 13,
+      "label": "Bytes transport exercises native byte-oriented word classes",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "literal-octet-boundary.bin",
+      "sha256": "2e2ea86f807f962ab60b32f2246f0ffe874696801a7a08be525b92e5f58b624c",
+      "size": 7,
+      "label": "Escaped literal alternative preserves arbitrary byte octets",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "literal-metacharacters.bin",
+      "sha256": "41eda0998a9e1cac795773ab7d42e4c13735dfdc26e0ec49fd97245d4d11617a",
+      "size": 8,
+      "label": "Generated literal branch escapes source metacharacters",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "compile-unclosed-class.bin",
+      "sha256": "cc98bca0bbb9315d300741d521f96ffad440693e5e58b66a6127821599e92204",
+      "size": 20,
+      "label": "Unclosed raw character class produces exact Python compile diagnostics",
+      "kind": "invalid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "compile-duplicate-name.bin",
+      "sha256": "c01bea9379ea1ba4edd85c9c9cba14abd6ed0e674928c7e50b2c927ee4ee3a8e",
+      "size": 35,
+      "label": "Duplicate group name is rejected authoritatively by Python",
+      "kind": "invalid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "compile-bad-backreference.bin",
+      "sha256": "c23fba73e24ee9bafe29af70b194d0cb8ee243e86bd409d2e15734f74d4383f5",
+      "size": 21,
+      "label": "Invalid raw group reference is a compile failure",
+      "kind": "invalid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "compile-bad-repeat.bin",
+      "sha256": "7e4a9271cec1add43b7ea1674b389fac845aba08014ee7fc8b51da65328f081c",
+      "size": 25,
+      "label": "Descending repetition bounds are rejected",
+      "kind": "invalid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "compile-dollar-divergence.bin",
+      "sha256": "6d8912a2a0487409ff5848155808cf6ef941394f4c2f133f90b923f02cc4d83f",
+      "size": 21,
+      "label": "Documented dollar-anchor divergence is compilation-only",
+      "kind": "boundary",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "compile-posix-divergence.bin",
+      "sha256": "9f285bceb65239db31d00e28ee52ebb262c853f298161658d90822ae692be739",
+      "size": 30,
+      "label": "Documented POSIX-class divergence is compilation-only",
+      "kind": "boundary",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "compile-nested-repeat.bin",
+      "sha256": "8c8c89cbe015435513a9a171d4c07c1cc4c35ac2d33fdce539e9ebe85d6995dc",
+      "size": 25,
+      "label": "Hostile arbitrary regex is compiled but never backtracking-executed",
+      "kind": "boundary",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "compile-lone-surrogate.bin",
+      "sha256": "38bc278f9d9ed6ed8337d4069c9c6fc3d6e2b58e1f548a46fdc86c6b77064221",
+      "size": 20,
+      "label": "Invalid UTF-8 becomes a lone surrogate and exercises compile fallback",
+      "kind": "boundary",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "surrogate-region-finding.bin",
+      "sha256": "3ea58f5cb42614f0e4c23f0825aa81083ba6f4f723dc8f96686dda636652311d",
+      "size": 15,
+      "label": "A native region match excludes a trailing surrogate while lazy group extraction indexes the entire original subject",
+      "kind": "boundary",
+      "origin": "reviewed synthetic regression from deterministic mutator v1 campaign seed 173 iteration 79 boundary operator; exact original bytes"
+    },
+    {
+      "file": "surrogate-region-minimized.bin",
+      "sha256": "ae974d4a74c2371d8cfe842b7aa4f6698de8570526eeb3db1941b0b72311d470",
+      "size": 3,
+      "label": "One surrogateescaped payload octet outside the searched region requires Python recovery before match exposure",
+      "kind": "boundary",
+      "origin": "reviewed synthetic manual minimization of deterministic campaign seed 173 iteration 79; preserves whole-subject lazy projection failure"
+    }
+  ]
+}

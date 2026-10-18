@@ -1,0 +1,183 @@
+{
+  "version": 1,
+  "target": "gzip",
+  "input_version": 1,
+  "seeds": [
+    {
+      "file": "empty.bin",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0,
+      "label": "Empty raw gzip input has stdlib empty-output semantics",
+      "kind": "boundary",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "raw-member.bin",
+      "sha256": "f787088e65a509e5d441a2cced86e7216b06bea5bce151edfae399e69540484f",
+      "size": 33,
+      "label": "Independent stdlib gzip member with text payload",
+      "kind": "valid",
+      "origin": "reviewed synthetic member emitted or mutated using stdlib gzip"
+    },
+    {
+      "file": "raw-empty-member.bin",
+      "sha256": "06925f05d5732a9bca1c434d8bf68fa333a125e47832d5afd0452641ae083a65",
+      "size": 21,
+      "label": "Genuine empty gzip member exercises EOF and seek",
+      "kind": "boundary",
+      "origin": "reviewed synthetic member emitted or mutated using stdlib gzip"
+    },
+    {
+      "file": "raw-concatenated.bin",
+      "sha256": "4cd7d4b49c39cee762c0fd7fc4897a63a5f8d140caff015e92a26e478f2ac466",
+      "size": 52,
+      "label": "Two genuine concatenated members decode in order",
+      "kind": "valid",
+      "origin": "reviewed synthetic member emitted or mutated using stdlib gzip"
+    },
+    {
+      "file": "raw-empty-between-members.bin",
+      "sha256": "f242004813c104927413bd3688bf6189f6e251a75242ad055d38b06a840f1314",
+      "size": 63,
+      "label": "An empty member between nonempty members retains concatenation semantics",
+      "kind": "valid",
+      "origin": "reviewed synthetic member emitted or mutated using stdlib gzip"
+    },
+    {
+      "file": "raw-zero-padding.bin",
+      "sha256": "0b158ac44f14ac9c0830acb6dc92b3b8c5851282275c0298e3ce3a0d35d5f3be",
+      "size": 49,
+      "label": "Permitted trailing NUL padding matches stdlib streams",
+      "kind": "valid",
+      "origin": "reviewed synthetic member emitted or mutated using stdlib gzip"
+    },
+    {
+      "file": "raw-crc-corruption.bin",
+      "sha256": "bc10b35c3c3dfb203468e43e55172736f0eacc15b1484da2fc6293c325429083",
+      "size": 33,
+      "label": "A flipped CRC trailer is rejected after bounded decode",
+      "kind": "invalid",
+      "origin": "reviewed synthetic member emitted or mutated using stdlib gzip"
+    },
+    {
+      "file": "raw-isize-corruption.bin",
+      "sha256": "e6ce969cec852fa27664ad0eb5e7dd2eb573f05a15adf5c1cbde5e2ef0fe2e60",
+      "size": 33,
+      "label": "Forged small ISIZE fails trailer validation",
+      "kind": "invalid",
+      "origin": "reviewed synthetic member emitted or mutated using stdlib gzip"
+    },
+    {
+      "file": "raw-truncated-trailer.bin",
+      "sha256": "b10f3922d327817f02f1897ca1953df81dcb0301d5939429fd5fbc8dc4e1eace",
+      "size": 32,
+      "label": "One-byte trailer truncation preserves exact EOFError family",
+      "kind": "invalid",
+      "origin": "reviewed synthetic member emitted or mutated using stdlib gzip"
+    },
+    {
+      "file": "raw-truncated-deflate.bin",
+      "sha256": "b492807d4d0e53fcd7b16152f38ad7f59c68ddaf1a3ed5da8f6454b7999deab4",
+      "size": 13,
+      "label": "Truncated deflate body produces a bounded EOF failure",
+      "kind": "invalid",
+      "origin": "reviewed synthetic member emitted or mutated using stdlib gzip"
+    },
+    {
+      "file": "raw-bad-signature.bin",
+      "sha256": "c0ef4f3cc84a292e581645be99383bb79a1b78abe4732111be3963b9e7cef19c",
+      "size": 9,
+      "label": "Foreign signature must produce BadGzipFile",
+      "kind": "invalid",
+      "origin": "reviewed synthetic member emitted or mutated using stdlib gzip"
+    },
+    {
+      "file": "raw-invalid-compression-method.bin",
+      "sha256": "e57f9c873469f0992a0462e86d6b63273854ab5f80d21a13e7284718f87d3702",
+      "size": 33,
+      "label": "Gzip header advertises an unsupported compression method",
+      "kind": "invalid",
+      "origin": "reviewed synthetic member emitted or mutated using stdlib gzip"
+    },
+    {
+      "file": "raw-oversized-extra-header.bin",
+      "sha256": "6f9d0231b75072c9523e4f0cfba5aa8b8c5c1eaddcecca74bb21868bb0751e74",
+      "size": 13,
+      "label": "Declared 65,535-byte extra header is truncated and bounded",
+      "kind": "boundary",
+      "origin": "reviewed synthetic member emitted or mutated using stdlib gzip"
+    },
+    {
+      "file": "raw-garbage-second-member.bin",
+      "sha256": "4aae22906b433fcc62edfefe1c56f63b5e677f3c55890b6c55a16a04ef1b6031",
+      "size": 40,
+      "label": "Valid first member followed by foreign trailing data",
+      "kind": "invalid",
+      "origin": "reviewed synthetic member emitted or mutated using stdlib gzip"
+    },
+    {
+      "file": "generated-stored-level-zero.bin",
+      "sha256": "06d356f8b390fa10c7605c71b2eb8e45d3f4a7678889a79fc2d62a13879cb4cc",
+      "size": 16,
+      "label": "Level-zero compression with real one-shot and stream round trips",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "generated-level-nine.bin",
+      "sha256": "711f085ee59707516913671f8c5a10c406e93211a0c97b3cf524c901c3da5f27",
+      "size": 23,
+      "label": "Level-nine compression shares decoded bytes with stdlib",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "generated-concatenation.bin",
+      "sha256": "9d4ef2513bffc905e60285528d632bacfa2d9241fb4ff94a7815071f7a93588d",
+      "size": 17,
+      "label": "Generated members split a reviewed content fixture",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "generated-crc-error.bin",
+      "sha256": "ad77724d24c953259782666f2d267b8ea4e53b3ffc6b477a13277b4e5acdae99",
+      "size": 10,
+      "label": "Generated CRC corruption uses the exact stdlib failure family",
+      "kind": "invalid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "generated-truncation.bin",
+      "sha256": "81e83e7cf834c7bf1811e43df5cd8822abd163c4d8aa626d39e2c5365e95a690",
+      "size": 11,
+      "label": "Generated trailer truncation uses the exact stdlib failure family",
+      "kind": "invalid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "declared-expansion-budget.bin",
+      "sha256": "6d6e948f4b90db402aa784380aa00d12858f6e055c351cce4e4e2d22f12ae205",
+      "size": 99,
+      "label": "Declared decoded length exceeds 64 KiB before unbounded decode",
+      "kind": "boundary",
+      "origin": "reviewed synthetic single-symbol compression expansion fixture"
+    },
+    {
+      "file": "forged-expansion-budget.bin",
+      "sha256": "b6f5199af1292fd9c13e090b95e8b64d13320321a8ae5712e8337cb4e2ff13dc",
+      "size": 99,
+      "label": "Forged small ISIZE cannot bypass the independent 65,537-byte stream guard",
+      "kind": "boundary",
+      "origin": "reviewed synthetic single-symbol fixture with explicitly forged ISIZE"
+    },
+    {
+      "file": "concatenated-expansion-budget.bin",
+      "sha256": "78718fe501af5c7c1494fe08857351a7f4f143f1c568a4d3f82906e797957753",
+      "size": 149,
+      "label": "Per-member declared sizes below the limit cannot bypass aggregate stream budget",
+      "kind": "boundary",
+      "origin": "reviewed synthetic two-member expansion fixture"
+    }
+  ]
+}

@@ -48,6 +48,24 @@ python3 -m pip install 'unstd[serde,ids,crypto]'
 
 `clone`, `proc`, `fs`, and `iters` ship in the base install.
 
+## Testing
+
+The [test suite](tests/README.md) follows Billy's owner-first Python layout:
+product contracts, cross-cutting assurance, shared support, and standalone tools.
+The [P0 boundary suites](tests/P0.md) exercise installed packaging, real TLS peers,
+filesystem/process failures, and parser/token security. The
+[coverage plan](tests/COVERAGE.md) maps parity, properties, fuzzing,
+penetration, fault injection, packaging, concurrency, resource, and performance
+obligations. Inspect implemented and planned lanes with
+`uv run --no-sync python -m tests.tooling list`; run the active suite with
+`uv run --no-sync pytest -q`.
+
+The [fuzz runner](tests/tooling/fuzz/README.md) supplies eleven parser/token
+targets, authenticated corpora, deterministic mutation, and bounded Atheris
+campaigns. Run `uv run --no-sync python -m tests.tooling.fuzz check` to validate
+the inventory, or `uv run --no-sync python -m tests.tooling.fuzz replay` to
+replay every installed target. CI retains findings and coverage corpora.
+
 ## Prior art
 
 - **orjson** (Kloss) / **msgspec** (Fitzgerald) / **pybase64** (aklomp libbase64) — the serde backends.

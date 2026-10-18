@@ -1,0 +1,191 @@
+{
+  "version": 1,
+  "target": "pack",
+  "input_version": 1,
+  "seeds": [
+    {
+      "file": "empty.bin",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0,
+      "label": "Empty envelope selects signed-byte empty arrays",
+      "kind": "boundary",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "encode-i1-little.bin",
+      "sha256": "74de7792431004fbea1419612031331de2001595a7d6ab40c0d7ea526b600b69",
+      "size": 5,
+      "label": "i1 zero and full-width extrema, byte-order selector 0",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "encode-u1-big.bin",
+      "sha256": "4ebadfe59abc0d5a989b740f87af7c36f7a80483b40326e2e72b736ff0ea84c5",
+      "size": 4,
+      "label": "u1 zero and full-width extrema, byte-order selector 1",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "encode-i2-native.bin",
+      "sha256": "6ab6db4730c07bdefa83e1a93c29668b0a09224d888dd5ca8a0467b8d34b904a",
+      "size": 8,
+      "label": "i2 zero and full-width extrema, byte-order selector 2",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "encode-u2-pipe.bin",
+      "sha256": "c2924dc994890964fab36ff90ee29f25681a426721e11a08b2fe776f47d5f709",
+      "size": 6,
+      "label": "u2 zero and full-width extrema, byte-order selector 3",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "encode-i4-little.bin",
+      "sha256": "a1f66e7f5f89d7c8179e84950343646b04308b918ba5b67de39dc385960aee96",
+      "size": 14,
+      "label": "i4 zero and full-width extrema, byte-order selector 0",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "encode-u4-big.bin",
+      "sha256": "2fccddb16257e2fbcda1b222d486c07d40c5d65411b263875cdde4ce3b508f3e",
+      "size": 10,
+      "label": "u4 zero and full-width extrema, byte-order selector 1",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "encode-i8-native.bin",
+      "sha256": "cf3470a319f80bbec503dadc0e135f29d388bbec64ba0a2a29d36cd2b08787d6",
+      "size": 26,
+      "label": "i8 zero and full-width extrema, byte-order selector 2",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "encode-u8-pipe.bin",
+      "sha256": "987c77a670ba91a5a5ec4372fc518de23a94353538ee659bc146c5d65284bf02",
+      "size": 18,
+      "label": "u8 zero and full-width extrema, byte-order selector 3",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "encode-f2-finite.bin",
+      "sha256": "bb79f8d706517016b9ce001d1a50d519bc50a6202f5a088094e735783a46e72c",
+      "size": 8,
+      "label": "f2 finite fixed-point values spanning signs and zero",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "encode-f4-finite.bin",
+      "sha256": "8632faee8827f7fa38face84a9537b2c00f1d6f60d353ce5b4f85a24113c7575",
+      "size": 14,
+      "label": "f4 finite fixed-point values spanning signs and zero",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "encode-f8-finite.bin",
+      "sha256": "52feac4229daf732a030d1baa2152c30818659faf23bf1595dd0457ada40c439",
+      "size": 26,
+      "label": "f8 finite fixed-point values spanning signs and zero",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "decode-half-specials.bin",
+      "sha256": "64b4bac3c638b738cf06674141cdae968878c2ddff4b03a6d0dc18a998e63997",
+      "size": 14,
+      "label": "Little-endian half-float signed zero, one, infinities and quiet NaN",
+      "kind": "boundary",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "decode-single-specials-big.bin",
+      "sha256": "1c7da209c4223372de5aa5751f7e66a401085728b183f37dee23442668a0c273",
+      "size": 26,
+      "label": "Big-endian float32 signed zero, one, infinities and quiet NaN",
+      "kind": "boundary",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "decode-double-specials-pipe.bin",
+      "sha256": "ef10cb400ae38967e3b699f4cbf4b2ba2671e385cfa691feb6db2e1e1c027440",
+      "size": 50,
+      "label": "Native-order pipe dtype decodes float64 IEEE edge bit patterns",
+      "kind": "boundary",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "alias-int16.bin",
+      "sha256": "dccaa1072a6fdc26f3c3d1977db77f80e3166c8e3e6a269011752a2abbfa06c1",
+      "size": 6,
+      "label": "Named int16 dtype exercises both sized and iterator conversion",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "alias-uint64.bin",
+      "sha256": "7f6741a72e4e77a8ff245a126adf6e38c3c5e3645cf86dddfcbaeb8fe0e37d89",
+      "size": 10,
+      "label": "Named uint64 dtype exercises both sized and iterator conversion",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "alias-float16.bin",
+      "sha256": "775d84796889dde165a9fe35725f9daad726c045111b963fecb15fb483e4fed3",
+      "size": 4,
+      "label": "Named float16 dtype exercises both sized and iterator conversion",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "alias-float64.bin",
+      "sha256": "756e8d0ba66e308805f209f818c8d8ba597725e08b6a846666bacf31eeac21e8",
+      "size": 10,
+      "label": "Named float64 dtype exercises both sized and iterator conversion",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "partial-int16.bin",
+      "sha256": "12483fe6f5bc47c00c070cc91aaca2030d8a665fe7b2a1148919bd3d2412713a",
+      "size": 5,
+      "label": "Partial int16 input exercises aligned prefix and required partial-element refusal",
+      "kind": "invalid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "partial-float32.bin",
+      "sha256": "474c761725d923f5c74b699018776e79f0b9a0dcf4ed05229438f9ef40671309",
+      "size": 7,
+      "label": "Partial float32 input exercises aligned prefix and required partial-element refusal",
+      "kind": "invalid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "partial-float64.bin",
+      "sha256": "7c6fc808ad02fdbe3278b56bb8d1bf2468419f6125920000c8c16445c54137a3",
+      "size": 11,
+      "label": "Partial float64 input exercises aligned prefix and required partial-element refusal",
+      "kind": "invalid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "empty-multibyte-decode.bin",
+      "sha256": "26e7f98cfafee5b213726e22632923bf31bf3e988233235f8f5ca5466b3ac0ed",
+      "size": 2,
+      "label": "Empty big-endian int64 decode plus partial-element refusal",
+      "kind": "boundary",
+      "origin": "reviewed synthetic boundary fixture"
+    }
+  ]
+}

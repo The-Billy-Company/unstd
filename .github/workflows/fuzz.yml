@@ -1,0 +1,84 @@
+name: fuzz
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "23 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fuzz-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name != 'schedule' }}
+
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      matrix: ${{ steps.targets.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          enable-cache: false
+          version: "latest-known"
+          python-version: "3.12"
+      - id: targets
+        shell: bash
+        run: |
+          matrix=$(uv run --no-project --python 3.12 python -m tests.tooling.fuzz list --json --all-backends)
+          printf 'matrix=%s\n' "$matrix" >> "$GITHUB_OUTPUT"
+
+  campaign:
+    needs: inventory
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.inventory.outputs.matrix) }}
+    env:
+      RUNS: ${{ github.event_name == 'schedule' && '100000' || '1000' }}
+      WALL: ${{ github.event_name == 'schedule' && '120' || '30' }}
+      CPU: ${{ github.event_name == 'schedule' && '110' || '20' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          enable-cache: false
+          version: "latest-known"
+          python-version: "3.12"
+      # Atheris has a tested binary wheel here; it is a development group,
+      # never a runtime dependency or a silently substituted mutation engine.
+      - run: uv sync --locked --all-extras --group dev --group fuzz --python 3.12
+      - name: Replay and deterministic mutation
+        run: >-
+          uv run --no-sync python -m tests.tooling.fuzz campaign
+          --target ${{ matrix.target }} --backend ${{ matrix.backend }}
+          --engine deterministic --runs 1000 --seed 173
+          --wall-seconds 30 --cpu-seconds 20
+          --artifact-dir .local/fuzz/deterministic
+      - name: Instrumented Python coverage campaign
+        run: >-
+          uv run --no-sync python -m tests.tooling.fuzz campaign
+          --target ${{ matrix.target }} --backend ${{ matrix.backend }}
+          --engine atheris --runs "$RUNS" --seed 173
+          --wall-seconds "$WALL" --cpu-seconds "$CPU"
+          --artifact-dir .local/fuzz/atheris
+      - name: Retain reports, findings, and coverage corpus
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: fuzz-${{ matrix.target }}-${{ matrix.backend }}-${{ github.run_attempt }}
+          path: .local/fuzz/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14

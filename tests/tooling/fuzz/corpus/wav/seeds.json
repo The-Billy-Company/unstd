@@ -1,0 +1,199 @@
+{
+  "version": 1,
+  "target": "wav",
+  "input_version": 1,
+  "seeds": [
+    {
+      "file": "empty.bin",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0,
+      "label": "Empty envelope exercises an empty PCM16 mono file",
+      "kind": "boundary",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "raw-mono-extrema.bin",
+      "sha256": "a8ebb28e85538b5513041297fe635b6259f1e865dbf28e01802b8f94721e2d1f",
+      "size": 58,
+      "label": "Independent PCM16 RIFF mono-extrema fixture",
+      "kind": "valid",
+      "origin": "reviewed synthetic PCM16 emitted with stdlib wave"
+    },
+    {
+      "file": "raw-stereo-interleaved.bin",
+      "sha256": "9e5ff7a36187ee8dc2d35432dd0e93256759b73a068c7946100e5cc740e6e05e",
+      "size": 62,
+      "label": "Independent PCM16 RIFF stereo-interleaved fixture",
+      "kind": "valid",
+      "origin": "reviewed synthetic PCM16 emitted with stdlib wave"
+    },
+    {
+      "file": "raw-quad-interleaved.bin",
+      "sha256": "074947edf808937fb9b67e7dc4374efa9c295128c13a368b0f6084098354a476",
+      "size": 62,
+      "label": "Independent PCM16 RIFF quad-interleaved fixture",
+      "kind": "valid",
+      "origin": "reviewed synthetic PCM16 emitted with stdlib wave"
+    },
+    {
+      "file": "raw-empty-stereo.bin",
+      "sha256": "82ffa0965c39496dabee6586a707fa7e7f092704ab3aa90b244e4f3db34e6c85",
+      "size": 46,
+      "label": "Independent PCM16 RIFF empty-stereo fixture",
+      "kind": "valid",
+      "origin": "reviewed synthetic PCM16 emitted with stdlib wave"
+    },
+    {
+      "file": "generated-mono-8000.bin",
+      "sha256": "ecbadab2d35a0706809f038182241478729fc7d65dea297a7268d3aaef0bb515",
+      "size": 46,
+      "label": "Generated complete-frame PCM16 mono-8000 read/write/stream law",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "generated-stereo-16000.bin",
+      "sha256": "d00951e1be8e44e0f0f45a6fc2f0d764740148115a6452e23497c8a5ddc2ec43",
+      "size": 46,
+      "label": "Generated complete-frame PCM16 stereo-16000 read/write/stream law",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "generated-three-channel-22050.bin",
+      "sha256": "5b7915a85cc04f2ec58eea04e35c6e4534b450a98f733ccdcbf0b1984dee273a",
+      "size": 46,
+      "label": "Generated complete-frame PCM16 three-channel-22050 read/write/stream law",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "generated-quad-44100.bin",
+      "sha256": "9b1d7e59184f53aeb682a9bc0160aab3c2be0057531a374b54abf27882bc97cd",
+      "size": 46,
+      "label": "Generated complete-frame PCM16 quad-44100 read/write/stream law",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "generated-mono-48000.bin",
+      "sha256": "45e441c534f60518fbebba22631fa1bf8d8e258c2af889103d49a230397ae136",
+      "size": 46,
+      "label": "Generated complete-frame PCM16 mono-48000 read/write/stream law",
+      "kind": "valid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "generated-invalid-wrong-magic.bin",
+      "sha256": "c0a680f66d430ac739f4e3e38a1a9072c0fcbd25b3408fb604c1831266cbe589",
+      "size": 14,
+      "label": "Unambiguously invalid wrong-magic must be rejected",
+      "kind": "invalid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "generated-invalid-truncated-riff.bin",
+      "sha256": "d917cda5be01d770c928874acaf4ae493b8b924bf122f069da8ef43f87aa27b3",
+      "size": 14,
+      "label": "Unambiguously invalid truncated-riff must be rejected",
+      "kind": "invalid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "generated-invalid-zero-channels.bin",
+      "sha256": "357f38e4c61e2c15038694925308127b4f93a01d38f3382ef928e81e210d5eed",
+      "size": 14,
+      "label": "Unambiguously invalid zero-channels must be rejected",
+      "kind": "invalid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "raw-short-riff.bin",
+      "sha256": "4c92460609aea5972f20ea04545e5089350288fd77a46d339542595cfd5161f2",
+      "size": 6,
+      "label": "Truncated raw RIFF signature reaches bounded parser refusal",
+      "kind": "invalid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "raw-missing-format.bin",
+      "sha256": "a0e8ddf9a7367e29fb19f6ab3d9c39a986449f8582b79d6bcc3ee363a301ee20",
+      "size": 14,
+      "label": "RIFF/WAVE without fmt and data chunks",
+      "kind": "invalid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "raw-truncated-pcm.bin",
+      "sha256": "83e0a31e0a41c97c3213d0be8f6d67d9ab0e17f3186eafa50ccf9f41c897702e",
+      "size": 57,
+      "label": "Declared PCM data is truncated by one octet",
+      "kind": "invalid",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "declared-riff-overflow.bin",
+      "sha256": "e657ed80229cd3800935e61c154f5c41a2276837c83946f8f9c0182a4af2a7a4",
+      "size": 58,
+      "label": "Unsigned-32-bit RIFF length is refused before native allocation",
+      "kind": "boundary",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "declared-data-overflow.bin",
+      "sha256": "80f3df5ab5a3cc5021bfdecbd75ea7f4ac35e5dd3f37353d33c54aa295fedf64",
+      "size": 58,
+      "label": "Declared data frame budget exceeds admission limit",
+      "kind": "boundary",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "declared-channel-overflow.bin",
+      "sha256": "3529dbda2d328ebf74f0e7b408e6a854cb30855f22f5a4573901e0219fca6e02",
+      "size": 58,
+      "label": "Declared 65,535 channels are refused before native allocation",
+      "kind": "boundary",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "raw-foreign-flac.bin",
+      "sha256": "7aec983fce69ce3982bb7d04624f0575bde902ead540c74e0137214abbdaac5e",
+      "size": 26,
+      "label": "Foreign codec signature is refused by WAV-only admission",
+      "kind": "boundary",
+      "origin": "reviewed synthetic boundary fixture"
+    },
+    {
+      "file": "regression-fmt-extent-outside-riff.bin",
+      "sha256": "ea04f413b5c7f5e17b342fdb1cd208b48a6db3d47bd08653d53edca00e067698",
+      "size": 58,
+      "label": "Oversized fmt child extent must be refused before wave seeks beyond the RIFF parent",
+      "kind": "invalid",
+      "origin": "reviewed Atheris-generated malformed RIFF chunk extent regression"
+    },
+    {
+      "file": "regression-inconsistent-pcm-byte-rate.bin",
+      "sha256": "9ae210d33879514423f4d584053d854b0b3d6a77fe6022faad687ae89f02d65f",
+      "size": 46,
+      "label": "Internally inconsistent PCM rate fields are malformed despite permissive wave header parsing",
+      "kind": "invalid",
+      "origin": "reviewed deterministic mutation-v1/173/872/arithmetic/wav/raw-empty-stereo.bin against corpus 7c7650840dff4e953b657fffba98db2106f0358b75bebf1ca3719f3bbb710443"
+    },
+    {
+      "file": "regression-truncated-quad-frame.bin",
+      "sha256": "fe831397ee44142f0db7d404b9d3d14d181f1e62cb085c69f3c679e5d456ac56",
+      "size": 58,
+      "label": "Four-channel PCM data truncated inside the second frame is an explicit fallback input rejection",
+      "kind": "invalid",
+      "origin": "reviewed deterministic mutation-v1/173/283/truncate/wav/raw-quad-interleaved.bin against corpus 7c7650840dff4e953b657fffba98db2106f0358b75bebf1ca3719f3bbb710443"
+    },
+    {
+      "file": "regression-declared-partial-pcm-sample.bin",
+      "sha256": "60bd9850259826a582ba2f8deffd50acfb02fb629835fc6268a38731f29fd973",
+      "size": 58,
+      "label": "An odd declared PCM16 data length is outside valid one-shot/stream parity even when wave floors its frame count",
+      "kind": "invalid",
+      "origin": "reviewed deterministic mutation-v1/173/377/arithmetic/wav/raw-mono-extrema.bin against corpus ccd25b36d4fdc90b4c2bbf64eca49fe6f710b40a45b1ad4415c709d5d562e5fc"
+    }
+  ]
+}
