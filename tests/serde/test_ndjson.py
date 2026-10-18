@@ -23,6 +23,8 @@ from __future__ import annotations
 import gzip
 import io
 import json
+import math
+import sys
 from typing import TYPE_CHECKING
 
 import pytest
@@ -320,3 +322,63 @@ def test_loads_fast_path_failure_still_names_the_bad_line() -> None:
         {"a": 1},
         {"c": 3},
     ]
+
+
+@pytest.mark.parametrize("backend", [True, False])
+def test_json_numeric_edges_preserve_values(
+    backend: bool, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    if backend and not jsonx._HAVE_ORJSON:
+        pytest.skip("orjson (`serde` extra) not installed")
+    monkeypatch.setattr(jsonx, "_HAVE_ORJSON", backend)
+    rows = [2**100, -(2**100), -0.0, math.nan, math.inf, -math.inf]
+    decoded = ndjson.loads(ndjson.dumps(rows))
+    assert decoded[:3] == rows[:3]
+    assert type(decoded[0]) is int
+    assert type(decoded[1]) is int
+    assert math.copysign(1, decoded[2]) == -1
+    assert math.isnan(decoded[3])
+    assert decoded[4:] == rows[4:]
+
+
+@pytest.mark.parametrize("reader", ["loads", "iter_loads", "load"])
+@pytest.mark.parametrize("failure", ["unicode", "integer-limit", "recursion"])
+def test_decode_failures_keep_line_numbers_and_skip_errors(
+    reader: str, failure: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    limit = sys.get_int_max_str_digits()
+    try:
+        sys.set_int_max_str_digits(640)
+        invalid, error = {
+            "unicode": (b'"\xff"', UnicodeDecodeError),
+            "integer-limit": (b"9" * 641, ValueError),
+            "recursion": (b"[[0]]", RecursionError),
+        }[failure]
+        if failure == "recursion":
+            # The decoder's maximum depth varies by interpreter; inject its
+            # exception to test the line/error policy independently.
+            def parse(line: bytes) -> object:
+                if line.strip() == invalid:
+                    msg = "maximum recursion depth exceeded while decoding JSON"
+                    raise RecursionError(msg)
+                return json.loads(line)
+
+            monkeypatch.setattr(ndjson, "_parse", parse)
+        document = b"1\n" + invalid + b"\n2\n"
+
+        def read(*, skip_errors: bool = False) -> object:
+            if reader == "iter_loads":
+                return list(
+                    ndjson.iter_loads(document.split(b"\n"), skip_errors=skip_errors)
+                )
+            if reader == "load":
+                return ndjson.load(io.BytesIO(document), skip_errors=skip_errors)
+            return ndjson.loads(document, skip_errors=skip_errors)
+
+        with pytest.raises(ndjson.NDJSONDecodeError) as caught:
+            read()
+        assert caught.value.lineno == 2
+        assert type(caught.value.err) is error
+        assert read(skip_errors=True) == [1, 2]
+    finally:
+        sys.set_int_max_str_digits(limit)

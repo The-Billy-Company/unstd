@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import base64
 import json
+import math
 
 import pytest
 
@@ -140,6 +141,17 @@ def test_url_decode_text_round_trips_utf8(backend: str) -> None:
 @pytest.mark.parametrize("obj", [None, True, 1, 1.5, "s", [1, 2], {"k": "v"}])
 def test_json_round_trips(backend: str, obj: object) -> None:
     assert b64.decode_json(b64.encode_json(obj)) == obj
+
+
+def test_json_round_trip_preserves_numeric_edges(backend: str) -> None:
+    values = [2**100, -(2**100), -0.0, math.nan, math.inf, -math.inf]
+    actual = b64.decode_json(b64.encode_json(values))
+    assert actual[:3] == values[:3]
+    assert type(actual[0]) is int
+    assert type(actual[1]) is int
+    assert math.copysign(1, actual[2]) == -1
+    assert math.isnan(actual[3])
+    assert actual[4:] == values[4:]
 
 
 @pytest.mark.parametrize(
