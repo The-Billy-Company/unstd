@@ -1,0 +1,559 @@
+{
+  "runs": [
+    {
+      "python": "3.12.13 (main, Aug  7 2026, 02:15:23) [Clang 22.1.3 ]",
+      "platform": "macOS-26.6-arm64-arm-64bit",
+      "backends": {
+        "uuid-utils": null,
+        "pydantic": null,
+        "msgspec": null
+      },
+      "stdlib_only": true,
+      "rounds": 9,
+      "repetitions": 3,
+      "profiles": {
+        "after": {
+          "source": "/Users/griffinstrier/Billy-Company/unstd/src",
+          "signatures": {
+            "clone.deep": "(obj: 'T') -> 'T'",
+            "clone.asdict": "(obj: 'Any', *, dict_factory: 'Callable[[list[tuple[str, Any]]], Any]' = <class 'dict'>) -> 'Any'",
+            "clone.copy": "(x)",
+            "clone.deepcopy": "(x, memo=None, _nil=[])",
+            "uid.new": "() -> 'str'",
+            "uid.new_hex": "() -> 'str'",
+            "uid.parse": "(hex=None, bytes=None, bytes_le=None, fields=None, int=None, version=None, *, is_safe=<SafeUUID.unknown: None>)",
+            "uid.derive": "(namespace, name)"
+          },
+          "functions": [
+            {
+              "function": "structural._walk",
+              "line": 93,
+              "calls": 7611,
+              "self_ns": 30566899.0,
+              "cumulative_ns": 35820206.0,
+              "skipped": null
+            },
+            {
+              "function": "structural._default_protocol",
+              "line": 122,
+              "calls": 5,
+              "self_ns": 7457.000000000001,
+              "cumulative_ns": 12292.0,
+              "skipped": null
+            },
+            {
+              "function": "structural._admit",
+              "line": 132,
+              "calls": 9,
+              "self_ns": 91543.0,
+              "cumulative_ns": 130415.00000000001,
+              "skipped": null
+            },
+            {
+              "function": "structural._same",
+              "line": 167,
+              "calls": 3,
+              "self_ns": 208.0,
+              "cumulative_ns": 208.0,
+              "skipped": null
+            },
+            {
+              "function": "structural._dataclass",
+              "line": 171,
+              "calls": 612,
+              "self_ns": 246491.0,
+              "cumulative_ns": 1011758.0,
+              "skipped": null
+            },
+            {
+              "function": "structural._reduced",
+              "line": 179,
+              "calls": 0,
+              "self_ns": 0,
+              "cumulative_ns": 0,
+              "skipped": "optional model workload disabled"
+            },
+            {
+              "function": "structural._model",
+              "line": 190,
+              "calls": 0,
+              "self_ns": 0,
+              "cumulative_ns": 0,
+              "skipped": "optional model workload disabled"
+            },
+            {
+              "function": "structural.deep",
+              "line": 234,
+              "calls": 87,
+              "self_ns": 143254.00000000003,
+              "cumulative_ns": 35970460.0,
+              "skipped": null
+            },
+            {
+              "function": "structural._plain",
+              "line": 260,
+              "calls": 1257,
+              "self_ns": 650180.0000000001,
+              "cumulative_ns": 804209.0000000001,
+              "skipped": null
+            },
+            {
+              "function": "structural.asdict",
+              "line": 290,
+              "calls": 24,
+              "self_ns": 24917.000000000004,
+              "cumulative_ns": 944001.0000000001,
+              "skipped": null
+            },
+            {
+              "function": "uid._seed_counter",
+              "line": 51,
+              "calls": 16,
+              "self_ns": 12001.0,
+              "cumulative_ns": 66627.00000000001,
+              "skipped": null
+            },
+            {
+              "function": "uid._next_ms_and_counter",
+              "line": 55,
+              "calls": 27,
+              "self_ns": 44125.0,
+              "cumulative_ns": 109251.0,
+              "skipped": null
+            },
+            {
+              "function": "uid._stdlib_uuid7",
+              "line": 80,
+              "calls": 15,
+              "self_ns": 48949.00000000001,
+              "cumulative_ns": 1032957.0000000001,
+              "skipped": null
+            },
+            {
+              "function": "uid.new",
+              "line": 109,
+              "calls": 6,
+              "self_ns": 14209.0,
+              "cumulative_ns": 996084.0000000001,
+              "skipped": null
+            },
+            {
+              "function": "uid.new_hex",
+              "line": 114,
+              "calls": 6,
+              "self_ns": 4875.0,
+              "cumulative_ns": 63875.00000000001,
+              "skipped": null
+            }
+          ],
+          "aliases": [
+            {
+              "function": "clone.copy",
+              "target": "copy.copy",
+              "calls": 3,
+              "self_ns": 10083.0,
+              "cumulative_ns": 32541.0
+            },
+            {
+              "function": "clone.deepcopy",
+              "target": "copy.deepcopy",
+              "calls": 90,
+              "self_ns": 4433703.000000001,
+              "cumulative_ns": 4660750.0
+            },
+            {
+              "function": "uid.parse",
+              "target": "uuid.UUID.__init__",
+              "calls": 21,
+              "self_ns": 888918.0,
+              "cumulative_ns": 954253.0000000001
+            },
+            {
+              "function": "uid.derive",
+              "target": "uuid.uuid5",
+              "calls": 3,
+              "self_ns": 24624.0,
+              "cumulative_ns": 68000.0
+            }
+          ],
+          "source_sha256": {
+            "clone/structural.py": "0e467bc08c72f92e761b896d9de0ce5473e71ad5c2d1eb82b43d7504ee39affa",
+            "ids/uid.py": "b03acd81f59cf4ab670426a87b06ce7e42f5026e05401f08dafa1f0e36d85f3e"
+          },
+          "uuid_backend": "_profile_after_uid._stdlib_uuid7"
+        }
+      },
+      "timings": {}
+    },
+    {
+      "python": "3.13.14 (main, Aug  5 2026, 15:33:38) [Clang 22.1.3 ]",
+      "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+      "backends": {
+        "uuid-utils": null,
+        "pydantic": null,
+        "msgspec": null
+      },
+      "stdlib_only": true,
+      "rounds": 9,
+      "repetitions": 3,
+      "profiles": {
+        "after": {
+          "source": "/Users/griffinstrier/Billy-Company/unstd/src",
+          "signatures": {
+            "clone.deep": "(obj: 'T') -> 'T'",
+            "clone.asdict": "(obj: 'Any', *, dict_factory: 'Callable[[list[tuple[str, Any]]], Any]' = <class 'dict'>) -> 'Any'",
+            "clone.copy": "(x)",
+            "clone.deepcopy": "(x, memo=None, _nil=[])",
+            "uid.new": "() -> 'str'",
+            "uid.new_hex": "() -> 'str'",
+            "uid.parse": "(hex=None, bytes=None, bytes_le=None, fields=None, int=None, version=None, *, is_safe=<SafeUUID.unknown: None>)",
+            "uid.derive": "(namespace, name)"
+          },
+          "functions": [
+            {
+              "function": "structural._walk",
+              "line": 93,
+              "calls": 7611,
+              "self_ns": 4187797.0,
+              "cumulative_ns": 5047502.000000001,
+              "skipped": null
+            },
+            {
+              "function": "structural._default_protocol",
+              "line": 122,
+              "calls": 5,
+              "self_ns": 6372.0,
+              "cumulative_ns": 8833.0,
+              "skipped": null
+            },
+            {
+              "function": "structural._admit",
+              "line": 132,
+              "calls": 9,
+              "self_ns": 22120.0,
+              "cumulative_ns": 46332.0,
+              "skipped": null
+            },
+            {
+              "function": "structural._same",
+              "line": 167,
+              "calls": 3,
+              "self_ns": 292.0,
+              "cumulative_ns": 292.0,
+              "skipped": null
+            },
+            {
+              "function": "structural._dataclass",
+              "line": 171,
+              "calls": 612,
+              "self_ns": 277086.0,
+              "cumulative_ns": 1008463.0,
+              "skipped": null
+            },
+            {
+              "function": "structural._reduced",
+              "line": 179,
+              "calls": 0,
+              "self_ns": 0,
+              "cumulative_ns": 0,
+              "skipped": "optional model workload disabled"
+            },
+            {
+              "function": "structural._model",
+              "line": 190,
+              "calls": 0,
+              "self_ns": 0,
+              "cumulative_ns": 0,
+              "skipped": "optional model workload disabled"
+            },
+            {
+              "function": "structural.deep",
+              "line": 234,
+              "calls": 87,
+              "self_ns": 195877.0,
+              "cumulative_ns": 5248505.000000001,
+              "skipped": null
+            },
+            {
+              "function": "structural._plain",
+              "line": 260,
+              "calls": 1257,
+              "self_ns": 635420.0,
+              "cumulative_ns": 779917.0000000001,
+              "skipped": null
+            },
+            {
+              "function": "structural.asdict",
+              "line": 290,
+              "calls": 24,
+              "self_ns": 29453.0,
+              "cumulative_ns": 927331.0000000001,
+              "skipped": null
+            },
+            {
+              "function": "uid._seed_counter",
+              "line": 51,
+              "calls": 15,
+              "self_ns": 12875.000000000002,
+              "cumulative_ns": 64958.0,
+              "skipped": null
+            },
+            {
+              "function": "uid._next_ms_and_counter",
+              "line": 55,
+              "calls": 27,
+              "self_ns": 23959.0,
+              "cumulative_ns": 68459.0,
+              "skipped": null
+            },
+            {
+              "function": "uid._stdlib_uuid7",
+              "line": 80,
+              "calls": 15,
+              "self_ns": 36797.00000000001,
+              "cumulative_ns": 129626.00000000001,
+              "skipped": null
+            },
+            {
+              "function": "uid.new",
+              "line": 109,
+              "calls": 6,
+              "self_ns": 9416.000000000002,
+              "cumulative_ns": 108709.0,
+              "skipped": null
+            },
+            {
+              "function": "uid.new_hex",
+              "line": 114,
+              "calls": 6,
+              "self_ns": 4627.0,
+              "cumulative_ns": 34959.0,
+              "skipped": null
+            }
+          ],
+          "aliases": [
+            {
+              "function": "clone.copy",
+              "target": "copy.copy",
+              "calls": 3,
+              "self_ns": 9212.0,
+              "cumulative_ns": 29792.000000000004
+            },
+            {
+              "function": "clone.deepcopy",
+              "target": "copy.deepcopy",
+              "calls": 90,
+              "self_ns": 120666.00000000001,
+              "cumulative_ns": 316587.0
+            },
+            {
+              "function": "uid.parse",
+              "target": "uuid.UUID.__init__",
+              "calls": 21,
+              "self_ns": 41580.00000000001,
+              "cumulative_ns": 52665.00000000001
+            },
+            {
+              "function": "uid.derive",
+              "target": "uuid.uuid5",
+              "calls": 3,
+              "self_ns": 21456.000000000004,
+              "cumulative_ns": 67708.00000000001
+            }
+          ],
+          "source_sha256": {
+            "clone/structural.py": "0e467bc08c72f92e761b896d9de0ce5473e71ad5c2d1eb82b43d7504ee39affa",
+            "ids/uid.py": "b03acd81f59cf4ab670426a87b06ce7e42f5026e05401f08dafa1f0e36d85f3e"
+          },
+          "uuid_backend": "_profile_after_uid._stdlib_uuid7"
+        }
+      },
+      "timings": {}
+    },
+    {
+      "python": "3.14.6 (main, Aug  4 2026, 19:23:56) [Clang 22.1.3 ]",
+      "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+      "backends": {
+        "uuid-utils": null,
+        "pydantic": null,
+        "msgspec": null
+      },
+      "stdlib_only": true,
+      "rounds": 9,
+      "repetitions": 3,
+      "profiles": {
+        "after": {
+          "source": "/Users/griffinstrier/Billy-Company/unstd/src",
+          "signatures": {
+            "clone.deep": "(obj: 'T') -> 'T'",
+            "clone.asdict": "(obj: 'Any', *, dict_factory: 'Callable[[list[tuple[str, Any]]], Any]' = <class 'dict'>) -> 'Any'",
+            "clone.copy": "(x)",
+            "clone.deepcopy": "(x, memo=None, _nil=[])",
+            "uid.new": "() -> 'str'",
+            "uid.new_hex": "() -> 'str'",
+            "uid.parse": "(hex=None, bytes=None, bytes_le=None, fields=None, int=None, version=None, *, is_safe=<SafeUUID.unknown: None>)",
+            "uid.derive": "(namespace, name)"
+          },
+          "functions": [
+            {
+              "function": "structural._walk",
+              "line": 93,
+              "calls": 7611,
+              "self_ns": 4143417.0,
+              "cumulative_ns": 4904995.000000001,
+              "skipped": null
+            },
+            {
+              "function": "structural._default_protocol",
+              "line": 122,
+              "calls": 5,
+              "self_ns": 6333.0,
+              "cumulative_ns": 21293.0,
+              "skipped": null
+            },
+            {
+              "function": "structural._admit",
+              "line": 132,
+              "calls": 9,
+              "self_ns": 19871.0,
+              "cumulative_ns": 58835.0,
+              "skipped": null
+            },
+            {
+              "function": "structural._same",
+              "line": 167,
+              "calls": 3,
+              "self_ns": 168.00000000000003,
+              "cumulative_ns": 168.00000000000003,
+              "skipped": null
+            },
+            {
+              "function": "structural._dataclass",
+              "line": 171,
+              "calls": 612,
+              "self_ns": 242623.00000000003,
+              "cumulative_ns": 970757.0,
+              "skipped": null
+            },
+            {
+              "function": "structural._reduced",
+              "line": 179,
+              "calls": 0,
+              "self_ns": 0,
+              "cumulative_ns": 0,
+              "skipped": "optional model workload disabled"
+            },
+            {
+              "function": "structural._model",
+              "line": 190,
+              "calls": 0,
+              "self_ns": 0,
+              "cumulative_ns": 0,
+              "skipped": "optional model workload disabled"
+            },
+            {
+              "function": "structural.deep",
+              "line": 234,
+              "calls": 87,
+              "self_ns": 187757.0,
+              "cumulative_ns": 5098754.000000001,
+              "skipped": null
+            },
+            {
+              "function": "structural._plain",
+              "line": 260,
+              "calls": 1257,
+              "self_ns": 640757.0,
+              "cumulative_ns": 783124.0000000001,
+              "skipped": null
+            },
+            {
+              "function": "structural.asdict",
+              "line": 290,
+              "calls": 24,
+              "self_ns": 24623.0,
+              "cumulative_ns": 883456.0,
+              "skipped": null
+            },
+            {
+              "function": "uid._seed_counter",
+              "line": 51,
+              "calls": 15,
+              "self_ns": 4964.0,
+              "cumulative_ns": 24458.000000000004,
+              "skipped": null
+            },
+            {
+              "function": "uid._next_ms_and_counter",
+              "line": 55,
+              "calls": 21,
+              "self_ns": 17582.000000000004,
+              "cumulative_ns": 45084.00000000001,
+              "skipped": null
+            },
+            {
+              "function": "uid._stdlib_uuid7",
+              "line": 80,
+              "calls": 9,
+              "self_ns": 21627.0,
+              "cumulative_ns": 69001.0,
+              "skipped": null
+            },
+            {
+              "function": "uid.new",
+              "line": 109,
+              "calls": 6,
+              "self_ns": 9375.0,
+              "cumulative_ns": 108708.99999999999,
+              "skipped": null
+            },
+            {
+              "function": "uid.new_hex",
+              "line": 114,
+              "calls": 6,
+              "self_ns": 3041.0,
+              "cumulative_ns": 33459.00000000001,
+              "skipped": null
+            }
+          ],
+          "aliases": [
+            {
+              "function": "clone.copy",
+              "target": "copy.copy",
+              "calls": 3,
+              "self_ns": 6707.0,
+              "cumulative_ns": 23290.000000000004
+            },
+            {
+              "function": "clone.deepcopy",
+              "target": "copy.deepcopy",
+              "calls": 90,
+              "self_ns": 75996.00000000001,
+              "cumulative_ns": 239710.00000000003
+            },
+            {
+              "function": "uid.parse",
+              "target": "uuid.UUID.__init__",
+              "calls": 12,
+              "self_ns": 18084.0,
+              "cumulative_ns": 25250.0
+            },
+            {
+              "function": "uid.derive",
+              "target": "uuid.uuid5",
+              "calls": 3,
+              "self_ns": 16082.0,
+              "cumulative_ns": 39249.0
+            }
+          ],
+          "source_sha256": {
+            "clone/structural.py": "0e467bc08c72f92e761b896d9de0ce5473e71ad5c2d1eb82b43d7504ee39affa",
+            "ids/uid.py": "b03acd81f59cf4ab670426a87b06ce7e42f5026e05401f08dafa1f0e36d85f3e"
+          },
+          "uuid_backend": "uuid.uuid7"
+        }
+      },
+      "timings": {}
+    }
+  ]
+}

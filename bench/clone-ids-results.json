@@ -1,0 +1,3002 @@
+{
+  "python": "3.12.13 (main, Aug  7 2026, 02:15:23) [Clang 22.1.3 ]",
+  "platform": "macOS-26.6-arm64-arm-64bit",
+  "backends": {
+    "uuid-utils": "1.0.0",
+    "pydantic": "2.13.5",
+    "msgspec": "0.22.0"
+  },
+  "stdlib_only": false,
+  "rounds": 9,
+  "repetitions": 3,
+  "profiles": {
+    "before": {
+      "source": "/private/tmp/unstd-clone-ids-before/src",
+      "signatures": {
+        "clone.deep": "(obj: 'T') -> 'T'",
+        "clone.asdict": "(obj: 'Any', *, dict_factory: 'Callable[[list[tuple[str, Any]]], Any]' = <class 'dict'>) -> 'Any'",
+        "clone.copy": "(x)",
+        "clone.deepcopy": "(x, memo=None, _nil=[])",
+        "uid.new": "() -> 'str'",
+        "uid.new_hex": "() -> 'str'",
+        "uid.parse": "(hex=None, bytes=None, bytes_le=None, fields=None, int=None, version=None, *, is_safe=<SafeUUID.unknown: None>)",
+        "uid.derive": "(namespace, name)"
+      },
+      "functions": [
+        {
+          "function": "structural._walk",
+          "line": 93,
+          "calls": 9006,
+          "self_ns": 4636160.0,
+          "cumulative_ns": 5920753.0,
+          "skipped": null
+        },
+        {
+          "function": "structural._default_protocol",
+          "line": 122,
+          "calls": 5,
+          "self_ns": 5499.0,
+          "cumulative_ns": 7250.0,
+          "skipped": null
+        },
+        {
+          "function": "structural._admit",
+          "line": 132,
+          "calls": 11,
+          "self_ns": 46043.00000000001,
+          "cumulative_ns": 79750.0,
+          "skipped": null
+        },
+        {
+          "function": "structural._same",
+          "line": 158,
+          "calls": 3,
+          "self_ns": 250.00000000000003,
+          "cumulative_ns": 250.00000000000003,
+          "skipped": null
+        },
+        {
+          "function": "structural._dataclass",
+          "line": 162,
+          "calls": 612,
+          "self_ns": 267203.00000000006,
+          "cumulative_ns": 980069.0000000001,
+          "skipped": null
+        },
+        {
+          "function": "structural._reduced",
+          "line": 170,
+          "calls": 120,
+          "self_ns": 54995.00000000001,
+          "cumulative_ns": 92661.0,
+          "skipped": null
+        },
+        {
+          "function": "structural._model",
+          "line": 181,
+          "calls": 123,
+          "self_ns": 180142.00000000003,
+          "cumulative_ns": 565577.0,
+          "skipped": null
+        },
+        {
+          "function": "structural.deep",
+          "line": 211,
+          "calls": 96,
+          "self_ns": 121584.0,
+          "cumulative_ns": 6044919.0,
+          "skipped": null
+        },
+        {
+          "function": "structural._plain",
+          "line": 237,
+          "calls": 1257,
+          "self_ns": 573995.0,
+          "cumulative_ns": 707542.0,
+          "skipped": null
+        },
+        {
+          "function": "structural.asdict",
+          "line": 267,
+          "calls": 24,
+          "self_ns": 18703.0,
+          "cumulative_ns": 821457.0,
+          "skipped": null
+        },
+        {
+          "function": "uid._seed_counter",
+          "line": 43,
+          "calls": 16,
+          "self_ns": 149664.0,
+          "cumulative_ns": 192205.0,
+          "skipped": null
+        },
+        {
+          "function": "uid._next_ms_and_counter",
+          "line": 47,
+          "calls": 21,
+          "self_ns": 22377.0,
+          "cumulative_ns": 212583.00000000003,
+          "skipped": null
+        },
+        {
+          "function": "uid._stdlib_uuid7",
+          "line": 73,
+          "calls": 9,
+          "self_ns": 42128.0,
+          "cumulative_ns": 301626.00000000006,
+          "skipped": null
+        },
+        {
+          "function": "uid.new",
+          "line": 108,
+          "calls": 6,
+          "self_ns": 14290.0,
+          "cumulative_ns": 189624.0,
+          "skipped": null
+        },
+        {
+          "function": "uid.new_hex",
+          "line": 113,
+          "calls": 6,
+          "self_ns": 39789.00000000001,
+          "cumulative_ns": 159541.99999999997,
+          "skipped": null
+        }
+      ],
+      "aliases": [
+        {
+          "function": "clone.copy",
+          "target": "copy.copy",
+          "calls": 3,
+          "self_ns": 6290.000000000001,
+          "cumulative_ns": 19792.0
+        },
+        {
+          "function": "clone.deepcopy",
+          "target": "copy.deepcopy",
+          "calls": 90,
+          "self_ns": 231368.00000000003,
+          "cumulative_ns": 420210.0
+        },
+        {
+          "function": "uid.parse",
+          "target": "uuid.UUID.__init__",
+          "calls": 15,
+          "self_ns": 58754.00000000001,
+          "cumulative_ns": 67791.0
+        },
+        {
+          "function": "uid.derive",
+          "target": "uuid.uuid5",
+          "calls": 3,
+          "self_ns": 14499.000000000002,
+          "cumulative_ns": 36625.0
+        }
+      ],
+      "source_sha256": {
+        "clone/structural.py": "8b99928b83852a4d62a48c6e6f2899cdf362f48afa1a0f9838439c7e9884656e",
+        "ids/uid.py": "fed4c4a3dcd888683b1df0518e7aff59ff4b5058fa66c0561a7fba0bc5306aea"
+      },
+      "uuid_backend": "uuid_utils._uuid_utils.uuid7"
+    },
+    "after": {
+      "source": "/Users/griffinstrier/Billy-Company/unstd/src",
+      "signatures": {
+        "clone.deep": "(obj: 'T') -> 'T'",
+        "clone.asdict": "(obj: 'Any', *, dict_factory: 'Callable[[list[tuple[str, Any]]], Any]' = <class 'dict'>) -> 'Any'",
+        "clone.copy": "(x)",
+        "clone.deepcopy": "(x, memo=None, _nil=[])",
+        "uid.new": "() -> 'str'",
+        "uid.new_hex": "() -> 'str'",
+        "uid.parse": "(hex=None, bytes=None, bytes_le=None, fields=None, int=None, version=None, *, is_safe=<SafeUUID.unknown: None>)",
+        "uid.derive": "(namespace, name)"
+      },
+      "functions": [
+        {
+          "function": "structural._walk",
+          "line": 93,
+          "calls": 8883,
+          "self_ns": 5276937.000000001,
+          "cumulative_ns": 6538124.0,
+          "skipped": null
+        },
+        {
+          "function": "structural._default_protocol",
+          "line": 122,
+          "calls": 5,
+          "self_ns": 4750.0,
+          "cumulative_ns": 6250.0,
+          "skipped": null
+        },
+        {
+          "function": "structural._admit",
+          "line": 132,
+          "calls": 11,
+          "self_ns": 28117.000000000004,
+          "cumulative_ns": 56623.0,
+          "skipped": null
+        },
+        {
+          "function": "structural._same",
+          "line": 167,
+          "calls": 3,
+          "self_ns": 84.00000000000001,
+          "cumulative_ns": 84.00000000000001,
+          "skipped": null
+        },
+        {
+          "function": "structural._dataclass",
+          "line": 171,
+          "calls": 612,
+          "self_ns": 226854.00000000003,
+          "cumulative_ns": 893441.0,
+          "skipped": null
+        },
+        {
+          "function": "structural._reduced",
+          "line": 179,
+          "calls": 120,
+          "self_ns": 67492.00000000001,
+          "cumulative_ns": 110530.0,
+          "skipped": null
+        },
+        {
+          "function": "structural._model",
+          "line": 190,
+          "calls": 123,
+          "self_ns": 329594.0,
+          "cumulative_ns": 701203.0000000001,
+          "skipped": null
+        },
+        {
+          "function": "structural.deep",
+          "line": 234,
+          "calls": 96,
+          "self_ns": 142463.0,
+          "cumulative_ns": 6689505.0,
+          "skipped": null
+        },
+        {
+          "function": "structural._plain",
+          "line": 260,
+          "calls": 1257,
+          "self_ns": 673026.0000000001,
+          "cumulative_ns": 828877.0,
+          "skipped": null
+        },
+        {
+          "function": "structural.asdict",
+          "line": 290,
+          "calls": 24,
+          "self_ns": 25288.000000000004,
+          "cumulative_ns": 971043.0000000001,
+          "skipped": null
+        },
+        {
+          "function": "uid._seed_counter",
+          "line": 51,
+          "calls": 16,
+          "self_ns": 10540.0,
+          "cumulative_ns": 49791.0,
+          "skipped": null
+        },
+        {
+          "function": "uid._next_ms_and_counter",
+          "line": 55,
+          "calls": 21,
+          "self_ns": 23457.000000000004,
+          "cumulative_ns": 70251.0,
+          "skipped": null
+        },
+        {
+          "function": "uid._stdlib_uuid7",
+          "line": 80,
+          "calls": 9,
+          "self_ns": 35459.0,
+          "cumulative_ns": 118874.00000000001,
+          "skipped": null
+        },
+        {
+          "function": "uid.new",
+          "line": 109,
+          "calls": 6,
+          "self_ns": 15917.000000000004,
+          "cumulative_ns": 110292.0,
+          "skipped": null
+        },
+        {
+          "function": "uid.new_hex",
+          "line": 114,
+          "calls": 6,
+          "self_ns": 6542.000000000001,
+          "cumulative_ns": 29167.0,
+          "skipped": null
+        }
+      ],
+      "aliases": [
+        {
+          "function": "clone.copy",
+          "target": "copy.copy",
+          "calls": 3,
+          "self_ns": 8459.0,
+          "cumulative_ns": 29083.000000000004
+        },
+        {
+          "function": "clone.deepcopy",
+          "target": "copy.deepcopy",
+          "calls": 90,
+          "self_ns": 120496.0,
+          "cumulative_ns": 356793.0
+        },
+        {
+          "function": "uid.parse",
+          "target": "uuid.UUID.__init__",
+          "calls": 15,
+          "self_ns": 34375.0,
+          "cumulative_ns": 46083.00000000001
+        },
+        {
+          "function": "uid.derive",
+          "target": "uuid.uuid5",
+          "calls": 3,
+          "self_ns": 20041.0,
+          "cumulative_ns": 52250.0
+        }
+      ],
+      "source_sha256": {
+        "clone/structural.py": "0e467bc08c72f92e761b896d9de0ce5473e71ad5c2d1eb82b43d7504ee39affa",
+        "ids/uid.py": "b03acd81f59cf4ab670426a87b06ce7e42f5026e05401f08dafa1f0e36d85f3e"
+      },
+      "uuid_backend": "uuid_utils._uuid_utils.uuid7"
+    }
+  },
+  "timings": {
+    "clone.deep/atom": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 44.069643373842595,
+            "iters": 110592,
+            "rounds": 9,
+            "spread": 0.2219286996665812
+          },
+          {
+            "per_op_ns": 47.1099853515625,
+            "iters": 204800,
+            "rounds": 9,
+            "spread": 0.08703763684653754
+          },
+          {
+            "per_op_ns": 48.6064453125,
+            "iters": 98304,
+            "rounds": 9,
+            "spread": 0.5167209129447693
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 44.60611328125,
+            "iters": 102400,
+            "rounds": 9,
+            "spread": 3.414937081651767
+          },
+          {
+            "per_op_ns": 46.9757080078125,
+            "iters": 204800,
+            "rounds": 9,
+            "spread": 0.3291063730267004
+          },
+          {
+            "per_op_ns": 47.133388671875,
+            "iters": 102400,
+            "rounds": 9,
+            "spread": 0.07388087208448264
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 47.1099853515625,
+        "after": 46.9757080078125
+      },
+      "speedup": 1.0028584421490288
+    },
+    "clone.deep/small": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 248.05194091796875,
+            "iters": 16384,
+            "rounds": 9,
+            "spread": 1.0044393778375098
+          },
+          {
+            "per_op_ns": 253.20816040039062,
+            "iters": 32768,
+            "rounds": 9,
+            "spread": 0.41741362218840866
+          },
+          {
+            "per_op_ns": 247.13134765625,
+            "iters": 32768,
+            "rounds": 9,
+            "spread": 0.46766683131637443
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 249.72915649414062,
+            "iters": 32768,
+            "rounds": 9,
+            "spread": 2.898194882761781
+          },
+          {
+            "per_op_ns": 248.22235107421875,
+            "iters": 32768,
+            "rounds": 9,
+            "spread": 0.3864299984631935
+          },
+          {
+            "per_op_ns": 323.221923828125,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 1.445190295162008
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 248.05194091796875,
+        "after": 249.72915649414062
+      },
+      "speedup": 0.993283861605438
+    },
+    "clone.deep/mixed-keys": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 646.1944580078125,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 1.6035718434909916
+          },
+          {
+            "per_op_ns": 702.3519287109375,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 1.91664724427048
+          },
+          {
+            "per_op_ns": 603.1697998046875,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 0.4553074202916032
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 623.0621337890625,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 0.3856847157935983
+          },
+          {
+            "per_op_ns": 584.0301513671875,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 1.0554582364467668
+          },
+          {
+            "per_op_ns": 632.8939208984375,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 0.2085235175180971
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 646.1944580078125,
+        "after": 623.0621337890625
+      },
+      "speedup": 1.0371268336884383
+    },
+    "clone.deep/nested200": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 61826.171875,
+            "iters": 128,
+            "rounds": 9,
+            "spread": 0.32228197757068394
+          },
+          {
+            "per_op_ns": 64933.265625,
+            "iters": 128,
+            "rounds": 9,
+            "spread": 0.5359319628397328
+          },
+          {
+            "per_op_ns": 63417.3125,
+            "iters": 128,
+            "rounds": 9,
+            "spread": 0.14482244103295927
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 65613.9375,
+            "iters": 64,
+            "rounds": 9,
+            "spread": 0.3657659434018877
+          },
+          {
+            "per_op_ns": 65385.09375,
+            "iters": 128,
+            "rounds": 9,
+            "spread": 0.1494002121087423
+          },
+          {
+            "per_op_ns": 63790.6875,
+            "iters": 128,
+            "rounds": 9,
+            "spread": 0.08733200672903862
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 63417.3125,
+        "after": 65385.09375
+      },
+      "speedup": 0.9699047422410402
+    },
+    "clone.deep/records500": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 128778.14864864865,
+            "iters": 74,
+            "rounds": 9,
+            "spread": 0.12959202936791672
+          },
+          {
+            "per_op_ns": 125898.48717948717,
+            "iters": 39,
+            "rounds": 9,
+            "spread": 1.7421019498615185
+          },
+          {
+            "per_op_ns": 120836.81666666667,
+            "iters": 60,
+            "rounds": 9,
+            "spread": 1.0287346199261291
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 125013.34615384616,
+            "iters": 78,
+            "rounds": 9,
+            "spread": 0.6757612853848117
+          },
+          {
+            "per_op_ns": 126514.80645161291,
+            "iters": 31,
+            "rounds": 9,
+            "spread": 1.7379704887276997
+          },
+          {
+            "per_op_ns": 125324.55263157895,
+            "iters": 38,
+            "rounds": 9,
+            "spread": 1.4227621210024584
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 125898.48717948717,
+        "after": 125324.55263157895
+      },
+      "speedup": 1.004579585850152
+    },
+    "clone.deep/dataclass": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 1237.4131944444443,
+            "iters": 4032,
+            "rounds": 9,
+            "spread": 1.1327435987372851
+          },
+          {
+            "per_op_ns": 1096.552490234375,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 0.21008759030154656
+          },
+          {
+            "per_op_ns": 1101.4862060546875,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 1.6141133445080138
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 1093.6431884765625,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 11.308307675135685
+          },
+          {
+            "per_op_ns": 1173.238037109375,
+            "iters": 4096,
+            "rounds": 9,
+            "spread": 0.4617460566178963
+          },
+          {
+            "per_op_ns": 1070.8211669921875,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 1.385822454132485
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 1101.4862060546875,
+        "after": 1093.6431884765625
+      },
+      "speedup": 1.0071714592663905
+    },
+    "clone.deep/dataclasses200": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 117151.51136363637,
+            "iters": 88,
+            "rounds": 9,
+            "spread": 0.12384816748086419
+          },
+          {
+            "per_op_ns": 112854.70512820513,
+            "iters": 78,
+            "rounds": 9,
+            "spread": 0.21454191099129388
+          },
+          {
+            "per_op_ns": 109592.41025641025,
+            "iters": 78,
+            "rounds": 9,
+            "spread": 0.14298318431184642
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 110542.1875,
+            "iters": 80,
+            "rounds": 9,
+            "spread": 0.27101734349159684
+          },
+          {
+            "per_op_ns": 111469.0,
+            "iters": 43,
+            "rounds": 9,
+            "spread": 0.11246906273034092
+          },
+          {
+            "per_op_ns": 110832.77027027027,
+            "iters": 74,
+            "rounds": 9,
+            "spread": 0.4308597381616448
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 112854.70512820513,
+        "after": 110832.77027027027
+      },
+      "speedup": 1.0182431139545127
+    },
+    "clone.deep/slotted": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 3303.1633522727275,
+            "iters": 2816,
+            "rounds": 9,
+            "spread": 0.2663087252362684
+          },
+          {
+            "per_op_ns": 3257.6997282608695,
+            "iters": 1472,
+            "rounds": 9,
+            "spread": 0.3324410770970281
+          },
+          {
+            "per_op_ns": 3243.1949404761904,
+            "iters": 2688,
+            "rounds": 9,
+            "spread": 3.8545730139160432
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 3320.1426630434785,
+            "iters": 2944,
+            "rounds": 9,
+            "spread": 0.38218067420328405
+          },
+          {
+            "per_op_ns": 3326.00927734375,
+            "iters": 2048,
+            "rounds": 9,
+            "spread": 0.4729323967246197
+          },
+          {
+            "per_op_ns": 3267.3800951086955,
+            "iters": 2944,
+            "rounds": 9,
+            "spread": 0.49918553238549657
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 3257.6997282608695,
+        "after": 3320.1426630434785
+      },
+      "speedup": 0.9811926952785308
+    },
+    "clone.deep/enum": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 129.84098307291666,
+            "iters": 36864,
+            "rounds": 9,
+            "spread": 0.43335802800317064
+          },
+          {
+            "per_op_ns": 126.86949327256944,
+            "iters": 73728,
+            "rounds": 9,
+            "spread": 0.16493236890883461
+          },
+          {
+            "per_op_ns": 131.87026977539062,
+            "iters": 65536,
+            "rounds": 9,
+            "spread": 0.9331144088634326
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 126.05173068576389,
+            "iters": 73728,
+            "rounds": 9,
+            "spread": 0.5528525076875964
+          },
+          {
+            "per_op_ns": 125.48546006944444,
+            "iters": 73728,
+            "rounds": 9,
+            "spread": 0.11237001437126991
+          },
+          {
+            "per_op_ns": 126.83743286132812,
+            "iters": 32768,
+            "rounds": 9,
+            "spread": 0.3735673542884874
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 129.84098307291666,
+        "after": 126.05173068576389
+      },
+      "speedup": 1.030061089733064
+    },
+    "clone.deep/custom": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 491.51611328125,
+            "iters": 16384,
+            "rounds": 9,
+            "spread": 0.22767403452129642
+          },
+          {
+            "per_op_ns": 547.5616455078125,
+            "iters": 16384,
+            "rounds": 9,
+            "spread": 3.4571548000557337
+          },
+          {
+            "per_op_ns": 603.78515625,
+            "iters": 16384,
+            "rounds": 9,
+            "spread": 0.28903889605936506
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 491.2618408203125,
+            "iters": 16384,
+            "rounds": 9,
+            "spread": 0.14930212251861574
+          },
+          {
+            "per_op_ns": 507.81756591796875,
+            "iters": 16384,
+            "rounds": 9,
+            "spread": 0.14645791394148353
+          },
+          {
+            "per_op_ns": 482.41162109375,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 0.7916942060509383
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 547.5616455078125,
+        "after": 491.2618408203125
+      },
+      "speedup": 1.1146024380674269
+    },
+    "clone.deep/bytearray": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 1689.3092296511627,
+            "iters": 5504,
+            "rounds": 9,
+            "spread": 0.37653439604696
+          },
+          {
+            "per_op_ns": 1829.604403409091,
+            "iters": 2816,
+            "rounds": 9,
+            "spread": 0.377276663834201
+          },
+          {
+            "per_op_ns": 1954.6287202380952,
+            "iters": 2688,
+            "rounds": 9,
+            "spread": 0.38788384257301334
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 2116.7730823863635,
+            "iters": 2816,
+            "rounds": 9,
+            "spread": 0.602928986603047
+          },
+          {
+            "per_op_ns": 1942.600074404762,
+            "iters": 2688,
+            "rounds": 9,
+            "spread": 1.2981541100815843
+          },
+          {
+            "per_op_ns": 1673.9612926136363,
+            "iters": 2816,
+            "rounds": 9,
+            "spread": 0.506191827318289
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 1829.604403409091,
+        "after": 1942.600074404762
+      },
+      "speedup": 0.9418327670813591
+    },
+    "clone.deep/datetime": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 54.884033203125,
+            "iters": 102400,
+            "rounds": 9,
+            "spread": 0.5017904406040791
+          },
+          {
+            "per_op_ns": 45.49310302734375,
+            "iters": 212992,
+            "rounds": 9,
+            "spread": 1.7032705045488148
+          },
+          {
+            "per_op_ns": 45.419578269675924,
+            "iters": 110592,
+            "rounds": 9,
+            "spread": 0.20408449700400674
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 47.15629245923913,
+            "iters": 188416,
+            "rounds": 9,
+            "spread": 0.37228474957794033
+          },
+          {
+            "per_op_ns": 46.7412109375,
+            "iters": 188416,
+            "rounds": 9,
+            "spread": 0.005975388086831164
+          },
+          {
+            "per_op_ns": 46.75800969050481,
+            "iters": 106496,
+            "rounds": 9,
+            "spread": 1.977675653237919
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 45.49310302734375,
+        "after": 46.75800969050481
+      },
+      "speedup": 0.9729478078401202
+    },
+    "clone.deep/defaultdict": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 2058.748511904762,
+            "iters": 1344,
+            "rounds": 9,
+            "spread": 3.576159450197654
+          },
+          {
+            "per_op_ns": 2020.8248355263158,
+            "iters": 4864,
+            "rounds": 9,
+            "spread": 6.019295896388061
+          },
+          {
+            "per_op_ns": 2017.098478618421,
+            "iters": 4864,
+            "rounds": 9,
+            "spread": 3.6178204896522503
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 2019.1098345588234,
+            "iters": 2176,
+            "rounds": 9,
+            "spread": 0.5932515671150402
+          },
+          {
+            "per_op_ns": 2045.5726351351352,
+            "iters": 2368,
+            "rounds": 9,
+            "spread": 0.08214799761184959
+          },
+          {
+            "per_op_ns": 2205.640625,
+            "iters": 2816,
+            "rounds": 9,
+            "spread": 0.32337350452835606
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 2020.8248355263158,
+        "after": 2045.5726351351352
+      },
+      "speedup": 0.9879017742104355
+    },
+    "clone.deep/list0": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 104.55138050426136,
+            "iters": 90112,
+            "rounds": 9,
+            "spread": 0.16961939784748103
+          },
+          {
+            "per_op_ns": 107.95409046519886,
+            "iters": 90112,
+            "rounds": 9,
+            "spread": 0.10436834694718594
+          },
+          {
+            "per_op_ns": 107.49491743607955,
+            "iters": 45056,
+            "rounds": 9,
+            "spread": 0.1837422116490626
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 104.46351207386364,
+            "iters": 90112,
+            "rounds": 9,
+            "spread": 1.9473182742587813
+          },
+          {
+            "per_op_ns": 104.672119140625,
+            "iters": 65536,
+            "rounds": 9,
+            "spread": 0.20871011832428737
+          },
+          {
+            "per_op_ns": 103.8365145596591,
+            "iters": 45056,
+            "rounds": 9,
+            "spread": 0.7814897558127059
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 107.49491743607955,
+        "after": 104.46351207386364
+      },
+      "speedup": 1.029018796152215
+    },
+    "clone.deep/list8": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 279.45452880859375,
+            "iters": 16384,
+            "rounds": 9,
+            "spread": 0.34982635457301964
+          },
+          {
+            "per_op_ns": 273.10052490234375,
+            "iters": 32768,
+            "rounds": 9,
+            "spread": 0.12565250613535117
+          },
+          {
+            "per_op_ns": 273.4222412109375,
+            "iters": 32768,
+            "rounds": 9,
+            "spread": 0.12269099838160612
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 266.11456298828125,
+            "iters": 32768,
+            "rounds": 9,
+            "spread": 0.20823190989217713
+          },
+          {
+            "per_op_ns": 265.7381591796875,
+            "iters": 32768,
+            "rounds": 9,
+            "spread": 0.14066078008127972
+          },
+          {
+            "per_op_ns": 292.22869873046875,
+            "iters": 16384,
+            "rounds": 9,
+            "spread": 0.5448571652350991
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 273.4222412109375,
+        "after": 266.11456298828125
+      },
+      "speedup": 1.027460647551927
+    },
+    "clone.deep/list1000": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 21136.283854166668,
+            "iters": 384,
+            "rounds": 9,
+            "spread": 0.19958730130959387
+          },
+          {
+            "per_op_ns": 20345.270833333332,
+            "iters": 384,
+            "rounds": 9,
+            "spread": 0.20902700054169018
+          },
+          {
+            "per_op_ns": 20878.0390625,
+            "iters": 384,
+            "rounds": 9,
+            "spread": 0.24959452634577775
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 21254.7734375,
+            "iters": 384,
+            "rounds": 9,
+            "spread": 0.45730131944625674
+          },
+          {
+            "per_op_ns": 20354.817708333332,
+            "iters": 384,
+            "rounds": 9,
+            "spread": 0.06584577003038541
+          },
+          {
+            "per_op_ns": 20377.8203125,
+            "iters": 384,
+            "rounds": 9,
+            "spread": 0.0904836408763971
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 20878.0390625,
+        "after": 20377.8203125
+      },
+      "speedup": 1.0245472156653164
+    },
+    "clone.deep/tuple0": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 110.86810980902777,
+            "iters": 73728,
+            "rounds": 9,
+            "spread": 0.17132390614043114
+          },
+          {
+            "per_op_ns": 111.63330078125,
+            "iters": 81920,
+            "rounds": 9,
+            "spread": 2.3796700929469656
+          },
+          {
+            "per_op_ns": 117.73908148871527,
+            "iters": 73728,
+            "rounds": 9,
+            "spread": 3.2116627673887272
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 113.92974853515625,
+            "iters": 81920,
+            "rounds": 9,
+            "spread": 2.2222281390209604
+          },
+          {
+            "per_op_ns": 139.43990071614584,
+            "iters": 24576,
+            "rounds": 9,
+            "spread": 3.1062921758161592
+          },
+          {
+            "per_op_ns": 112.01324462890625,
+            "iters": 81920,
+            "rounds": 9,
+            "spread": 8.703251644893678
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 111.63330078125,
+        "after": 113.92974853515625
+      },
+      "speedup": 0.9798433000736624
+    },
+    "clone.deep/tuple8": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 282.2901611328125,
+            "iters": 16384,
+            "rounds": 9,
+            "spread": 0.24847514898243087
+          },
+          {
+            "per_op_ns": 281.964599609375,
+            "iters": 32768,
+            "rounds": 9,
+            "spread": 0.27897250215814506
+          },
+          {
+            "per_op_ns": 311.22845458984375,
+            "iters": 16384,
+            "rounds": 9,
+            "spread": 0.4048945641513604
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 285.6330871582031,
+            "iters": 32768,
+            "rounds": 9,
+            "spread": 0.7886400363262417
+          },
+          {
+            "per_op_ns": 283.2794189453125,
+            "iters": 24576,
+            "rounds": 9,
+            "spread": 0.16195938594128736
+          },
+          {
+            "per_op_ns": 293.5791015625,
+            "iters": 16384,
+            "rounds": 9,
+            "spread": 0.7078742203742203
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 282.2901611328125,
+        "after": 285.6330871582031
+      },
+      "speedup": 0.9882964328164857
+    },
+    "clone.deep/tuple1000": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 22456.161458333332,
+            "iters": 192,
+            "rounds": 9,
+            "spread": 2.514360966726142
+          },
+          {
+            "per_op_ns": 22292.098958333332,
+            "iters": 192,
+            "rounds": 9,
+            "spread": 0.6946225108251406
+          },
+          {
+            "per_op_ns": 21628.036458333332,
+            "iters": 192,
+            "rounds": 9,
+            "spread": 3.5569427510539824
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 21627.60546875,
+            "iters": 256,
+            "rounds": 9,
+            "spread": 1.1570663361188238
+          },
+          {
+            "per_op_ns": 21527.994791666668,
+            "iters": 384,
+            "rounds": 9,
+            "spread": 0.22563788671485166
+          },
+          {
+            "per_op_ns": 21903.971354166668,
+            "iters": 384,
+            "rounds": 9,
+            "spread": 1.693872698360802
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 22292.098958333332,
+        "after": 21627.60546875
+      },
+      "speedup": 1.030724320847422
+    },
+    "clone.deep/set0": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 141.88929966517858,
+            "iters": 57344,
+            "rounds": 9,
+            "spread": 0.6284950531555337
+          },
+          {
+            "per_op_ns": 133.04928927951389,
+            "iters": 73728,
+            "rounds": 9,
+            "spread": 3.6191219739153784
+          },
+          {
+            "per_op_ns": 136.28304036458334,
+            "iters": 49152,
+            "rounds": 9,
+            "spread": 0.8673101658499767
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 142.18392944335938,
+            "iters": 65536,
+            "rounds": 9,
+            "spread": 0.30299696313630814
+          },
+          {
+            "per_op_ns": 142.81884765625,
+            "iters": 24576,
+            "rounds": 9,
+            "spread": 0.9878324723440675
+          },
+          {
+            "per_op_ns": 140.05789184570312,
+            "iters": 32768,
+            "rounds": 9,
+            "spread": 0.2963064807577956
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 136.28304036458334,
+        "after": 142.18392944335938
+      },
+      "speedup": 0.9584981994668622
+    },
+    "clone.deep/set8": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 326.2650960286458,
+            "iters": 24576,
+            "rounds": 9,
+            "spread": 4.653225731019241
+          },
+          {
+            "per_op_ns": 326.8873291015625,
+            "iters": 24576,
+            "rounds": 9,
+            "spread": 0.7992334180153489
+          },
+          {
+            "per_op_ns": 326.5584309895833,
+            "iters": 24576,
+            "rounds": 9,
+            "spread": 5.492965173509439
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 327.2162272135417,
+            "iters": 12288,
+            "rounds": 9,
+            "spread": 0.24837316048689415
+          },
+          {
+            "per_op_ns": 324.5798746744792,
+            "iters": 24576,
+            "rounds": 9,
+            "spread": 1.7704352895087363
+          },
+          {
+            "per_op_ns": 343.8076171875,
+            "iters": 12288,
+            "rounds": 9,
+            "spread": 0.6114427316633481
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 326.5584309895833,
+        "after": 327.2162272135417
+      },
+      "speedup": 0.9979897200405984
+    },
+    "clone.deep/set1000": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 23302.518229166668,
+            "iters": 384,
+            "rounds": 9,
+            "spread": 0.3231433879139717
+          },
+          {
+            "per_op_ns": 22097.330729166668,
+            "iters": 384,
+            "rounds": 9,
+            "spread": 0.9956248250666588
+          },
+          {
+            "per_op_ns": 22009.1171875,
+            "iters": 128,
+            "rounds": 9,
+            "spread": 1.2605898052902083
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 21862.739583333332,
+            "iters": 384,
+            "rounds": 9,
+            "spread": 0.609141051913382
+          },
+          {
+            "per_op_ns": 22885.5234375,
+            "iters": 384,
+            "rounds": 9,
+            "spread": 1.983936693058214
+          },
+          {
+            "per_op_ns": 22321.723958333332,
+            "iters": 384,
+            "rounds": 9,
+            "spread": 0.5148091206926362
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 22097.330729166668,
+        "after": 22321.723958333332
+      },
+      "speedup": 0.9899473163638469
+    },
+    "clone.deep/frozenset0": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 169.34627278645834,
+            "iters": 49152,
+            "rounds": 9,
+            "spread": 0.5110102372644499
+          },
+          {
+            "per_op_ns": 186.557373046875,
+            "iters": 24576,
+            "rounds": 9,
+            "spread": 0.32760182811416944
+          },
+          {
+            "per_op_ns": 171.23579915364584,
+            "iters": 24576,
+            "rounds": 9,
+            "spread": 0.2934091297393645
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 184.9356892903646,
+            "iters": 49152,
+            "rounds": 9,
+            "spread": 0.35874738268896483
+          },
+          {
+            "per_op_ns": 165.91389973958334,
+            "iters": 49152,
+            "rounds": 9,
+            "spread": 0.4667483752299203
+          },
+          {
+            "per_op_ns": 173.70462472098214,
+            "iters": 28672,
+            "rounds": 9,
+            "spread": 0.3018294096989856
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 171.23579915364584,
+        "after": 173.70462472098214
+      },
+      "speedup": 0.9857872202809689
+    },
+    "clone.deep/frozenset8": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 392.01104736328125,
+            "iters": 16384,
+            "rounds": 9,
+            "spread": 0.27433891213193684
+          },
+          {
+            "per_op_ns": 387.546142578125,
+            "iters": 24576,
+            "rounds": 9,
+            "spread": 2.338181756330679
+          },
+          {
+            "per_op_ns": 384.9402669270833,
+            "iters": 24576,
+            "rounds": 9,
+            "spread": 2.6022452583916014
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 387.4240315755208,
+            "iters": 24576,
+            "rounds": 9,
+            "spread": 0.7560172509458497
+          },
+          {
+            "per_op_ns": 387.89617919921875,
+            "iters": 16384,
+            "rounds": 9,
+            "spread": 0.4493828842770536
+          },
+          {
+            "per_op_ns": 384.12646484375,
+            "iters": 24576,
+            "rounds": 9,
+            "spread": 1.9871516686136403
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 387.546142578125,
+        "after": 387.4240315755208
+      },
+      "speedup": 1.0003151869596412
+    },
+    "clone.deep/frozenset1000": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 26996.41796875,
+            "iters": 256,
+            "rounds": 9,
+            "spread": 0.007970386117486941
+          },
+          {
+            "per_op_ns": 28075.84375,
+            "iters": 256,
+            "rounds": 9,
+            "spread": 0.5382962388708264
+          },
+          {
+            "per_op_ns": 27041.17578125,
+            "iters": 256,
+            "rounds": 9,
+            "spread": 4.761901590759809
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 29499.8359375,
+            "iters": 256,
+            "rounds": 9,
+            "spread": 0.5355897106419288
+          },
+          {
+            "per_op_ns": 27679.19921875,
+            "iters": 256,
+            "rounds": 9,
+            "spread": 0.5878596503607529
+          },
+          {
+            "per_op_ns": 27558.26953125,
+            "iters": 256,
+            "rounds": 9,
+            "spread": 0.33603627087320803
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 27041.17578125,
+        "after": 27679.19921875
+      },
+      "speedup": 0.9769493534672853
+    },
+    "clone.deep/dataclass-wide200": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 11141.166666666666,
+            "iters": 768,
+            "rounds": 9,
+            "spread": 0.8681497019312759
+          },
+          {
+            "per_op_ns": 11084.092447916666,
+            "iters": 768,
+            "rounds": 9,
+            "spread": 0.39029481415922757
+          },
+          {
+            "per_op_ns": 11071.885416666666,
+            "iters": 768,
+            "rounds": 9,
+            "spread": 0.31587102185434013
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 11282.010416666666,
+            "iters": 768,
+            "rounds": 9,
+            "spread": 0.010286010268929242
+          },
+          {
+            "per_op_ns": 11297.526041666666,
+            "iters": 768,
+            "rounds": 9,
+            "spread": 2.962355212355212
+          },
+          {
+            "per_op_ns": 11362.955729166666,
+            "iters": 384,
+            "rounds": 9,
+            "spread": 0.38553871716274674
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 11084.092447916666,
+        "after": 11297.526041666666
+      },
+      "speedup": 0.9811079352273382
+    },
+    "clone.deep/cold-dataclass": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 1260.249799679487,
+            "iters": 4992,
+            "rounds": 9,
+            "spread": 0.3431264819388835
+          },
+          {
+            "per_op_ns": 1272.4497575431035,
+            "iters": 7424,
+            "rounds": 9,
+            "spread": 0.30545598781030386
+          },
+          {
+            "per_op_ns": 1237.7485795454545,
+            "iters": 3520,
+            "rounds": 9,
+            "spread": 0.6626308994405393
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 1285.2528935185185,
+            "iters": 3456,
+            "rounds": 9,
+            "spread": 0.4158942004586394
+          },
+          {
+            "per_op_ns": 1333.0246497844828,
+            "iters": 7424,
+            "rounds": 9,
+            "spread": 0.461031640373369
+          },
+          {
+            "per_op_ns": 1273.2434210526317,
+            "iters": 7296,
+            "rounds": 9,
+            "spread": 0.21465794377875264
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 1260.249799679487,
+        "after": 1285.2528935185185
+      },
+      "speedup": 0.9805461680225572
+    },
+    "clone.asdict/cold-fields": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 1187.8537703804348,
+            "iters": 5888,
+            "rounds": 9,
+            "spread": 0.09647454855768797
+          },
+          {
+            "per_op_ns": 1101.4912109375,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 1.4270696374854046
+          },
+          {
+            "per_op_ns": 1123.780505952381,
+            "iters": 8064,
+            "rounds": 9,
+            "spread": 2.3846350861372434
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 1090.61181640625,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 0.25997202688248827
+          },
+          {
+            "per_op_ns": 1040.29345703125,
+            "iters": 4096,
+            "rounds": 9,
+            "spread": 1.096552908889422
+          },
+          {
+            "per_op_ns": 1114.0899658203125,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 2.1941526029611165
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 1123.780505952381,
+        "after": 1090.61181640625
+      },
+      "speedup": 1.0304129196540592
+    },
+    "clone.deep/shared": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 310.4620768229167,
+            "iters": 12288,
+            "rounds": 9,
+            "spread": 2.4473732083026865
+          },
+          {
+            "per_op_ns": 309.8720703125,
+            "iters": 24576,
+            "rounds": 9,
+            "spread": 0.055052934731339695
+          },
+          {
+            "per_op_ns": 311.7811279296875,
+            "iters": 24576,
+            "rounds": 9,
+            "spread": 0.41511508309544887
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 311.8726806640625,
+            "iters": 24576,
+            "rounds": 9,
+            "spread": 0.5262354129376641
+          },
+          {
+            "per_op_ns": 310.6112874348958,
+            "iters": 24576,
+            "rounds": 9,
+            "spread": 2.6758895527827495
+          },
+          {
+            "per_op_ns": 311.2945556640625,
+            "iters": 24576,
+            "rounds": 9,
+            "spread": 0.40477871999738574
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 310.4620768229167,
+        "after": 311.2945556640625
+      },
+      "speedup": 0.9973257520056207
+    },
+    "clone.deep/cycle": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 181826.92307692306,
+            "iters": 26,
+            "rounds": 9,
+            "spread": 6.913008989952406
+          },
+          {
+            "per_op_ns": 183724.83333333334,
+            "iters": 48,
+            "rounds": 9,
+            "spread": 1.2729728742893585
+          },
+          {
+            "per_op_ns": 183712.94444444444,
+            "iters": 18,
+            "rounds": 9,
+            "spread": 0.8401543107861812
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 206140.82,
+            "iters": 50,
+            "rounds": 9,
+            "spread": 0.851642775069974
+          },
+          {
+            "per_op_ns": 189576.375,
+            "iters": 24,
+            "rounds": 9,
+            "spread": 0.828840091493468
+          },
+          {
+            "per_op_ns": 181721.15384615384,
+            "iters": 26,
+            "rounds": 9,
+            "spread": 0.27895655854807133
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 183712.94444444444,
+        "after": 189576.375
+      },
+      "speedup": 0.9690708794513263
+    },
+    "clone.asdict/small": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 405.573486328125,
+            "iters": 16384,
+            "rounds": 9,
+            "spread": 0.37184458012712274
+          },
+          {
+            "per_op_ns": 407.7784423828125,
+            "iters": 16384,
+            "rounds": 9,
+            "spread": 0.1907823659842282
+          },
+          {
+            "per_op_ns": 411.4176025390625,
+            "iters": 16384,
+            "rounds": 9,
+            "spread": 0.12890684689020343
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 383.9975992838542,
+            "iters": 24576,
+            "rounds": 9,
+            "spread": 0.17826318926579865
+          },
+          {
+            "per_op_ns": 379.23175048828125,
+            "iters": 16384,
+            "rounds": 9,
+            "spread": 0.38715130832356803
+          },
+          {
+            "per_op_ns": 406.9383138020833,
+            "iters": 24576,
+            "rounds": 9,
+            "spread": 0.21806342539023427
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 407.7784423828125,
+        "after": 383.9975992838542
+      },
+      "speedup": 1.0619296660794468
+    },
+    "clone.asdict/records200": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 59793.296875,
+            "iters": 128,
+            "rounds": 9,
+            "spread": 0.23415080233439628
+          },
+          {
+            "per_op_ns": 60738.28125,
+            "iters": 128,
+            "rounds": 9,
+            "spread": 0.24580899093189273
+          },
+          {
+            "per_op_ns": 59949.21875,
+            "iters": 128,
+            "rounds": 9,
+            "spread": 0.267625594578745
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 62643.2265625,
+            "iters": 128,
+            "rounds": 9,
+            "spread": 0.19689254611900003
+          },
+          {
+            "per_op_ns": 59564.125,
+            "iters": 128,
+            "rounds": 9,
+            "spread": 0.2335871476748798
+          },
+          {
+            "per_op_ns": 62102.8671875,
+            "iters": 128,
+            "rounds": 9,
+            "spread": 0.16374872989836545
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 59949.21875,
+        "after": 62102.8671875
+      },
+      "speedup": 0.9653212720276225
+    },
+    "clone.asdict/mixed-keys": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 913.640380859375,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 0.13871924294098423
+          },
+          {
+            "per_op_ns": 936.492919921875,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 0.1399236158633949
+          },
+          {
+            "per_op_ns": 888.386962890625,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 0.2681263471008425
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 858.2000732421875,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 0.16551990469925146
+          },
+          {
+            "per_op_ns": 982.828857421875,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 0.25165072024089424
+          },
+          {
+            "per_op_ns": 867.46728515625,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 0.33321991271960116
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 913.640380859375,
+        "after": 867.46728515625
+      },
+      "speedup": 1.053227477846393
+    },
+    "clone.asdict/namedtuple": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 1921.404513888889,
+            "iters": 2304,
+            "rounds": 9,
+            "spread": 0.4099732183759529
+          },
+          {
+            "per_op_ns": 1980.0188419117646,
+            "iters": 4352,
+            "rounds": 9,
+            "spread": 0.11899384962960607
+          },
+          {
+            "per_op_ns": 1922.828404017857,
+            "iters": 3584,
+            "rounds": 9,
+            "spread": 0.17626998917639145
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 1912.7417410714286,
+            "iters": 4480,
+            "rounds": 9,
+            "spread": 0.1908071143668465
+          },
+          {
+            "per_op_ns": 1987.87421875,
+            "iters": 2560,
+            "rounds": 9,
+            "spread": 0.16277084621252524
+          },
+          {
+            "per_op_ns": 1933.927483974359,
+            "iters": 2496,
+            "rounds": 9,
+            "spread": 0.6857748250858748
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 1922.828404017857,
+        "after": 1933.927483974359
+      },
+      "speedup": 0.9942608603225948
+    },
+    "clone.asdict/defaultdict": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 2013.8830236486488,
+            "iters": 4736,
+            "rounds": 9,
+            "spread": 0.6682786820791067
+          },
+          {
+            "per_op_ns": 1988.0587993421052,
+            "iters": 2432,
+            "rounds": 9,
+            "spread": 0.378794939109101
+          },
+          {
+            "per_op_ns": 2033.0130208333333,
+            "iters": 1536,
+            "rounds": 9,
+            "spread": 0.602135069945701
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 1997.4791666666667,
+            "iters": 2496,
+            "rounds": 9,
+            "spread": 0.5956945332538528
+          },
+          {
+            "per_op_ns": 1983.4155016447369,
+            "iters": 4864,
+            "rounds": 9,
+            "spread": 0.19135682369417537
+          },
+          {
+            "per_op_ns": 2016.3277138157894,
+            "iters": 2432,
+            "rounds": 9,
+            "spread": 0.9393993403768454
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 2013.8830236486488,
+        "after": 1997.4791666666667
+      },
+      "speedup": 1.008212279384799
+    },
+    "clone.asdict/custom-leaf": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 895.23828125,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 0.29268610290556374
+          },
+          {
+            "per_op_ns": 856.6334228515625,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 0.5265496845689964
+          },
+          {
+            "per_op_ns": 853.1646728515625,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 0.1859138304151092
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 862.7471923828125,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 0.021424028581029694
+          },
+          {
+            "per_op_ns": 842.3258056640625,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 9.720315961563015
+          },
+          {
+            "per_op_ns": 824.96142578125,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 8.48843888297334
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 856.6334228515625,
+        "after": 842.3258056640625
+      },
+      "speedup": 1.0169858469149242
+    },
+    "clone.asdict/factory": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 1119.7305908203125,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 0.21245715473071405
+          },
+          {
+            "per_op_ns": 1169.2962646484375,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 0.0752394200780363
+          },
+          {
+            "per_op_ns": 1176.025390625,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 0.083376582935437
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 1148.406982421875,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 0.19972012436554967
+          },
+          {
+            "per_op_ns": 1085.642578125,
+            "iters": 4096,
+            "rounds": 9,
+            "spread": 0.12873505214545677
+          },
+          {
+            "per_op_ns": 1147.9593505859375,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 0.06758149625008626
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 1169.2962646484375,
+        "after": 1147.9593505859375
+      },
+      "speedup": 1.018586820214156
+    },
+    "clone.copy/record": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 658.711669921875,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 0.245930907240437
+          },
+          {
+            "per_op_ns": 664.947509765625,
+            "iters": 4096,
+            "rounds": 9,
+            "spread": 2.160187984762954
+          },
+          {
+            "per_op_ns": 705.40869140625,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 0.07828306950273314
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 665.7918701171875,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 0.06000751352131315
+          },
+          {
+            "per_op_ns": 632.0037841796875,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 0.8749124797798112
+          },
+          {
+            "per_op_ns": 696.370361328125,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 4.7154967530088525
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 664.947509765625,
+        "after": 665.7918701171875
+      },
+      "speedup": 0.9987317953410667
+    },
+    "clone.deepcopy/record": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 2602.351262019231,
+            "iters": 3328,
+            "rounds": 9,
+            "spread": 1.2495009309374323
+          },
+          {
+            "per_op_ns": 2562.4105603448274,
+            "iters": 1856,
+            "rounds": 9,
+            "spread": 3.797292125839548
+          },
+          {
+            "per_op_ns": 2607.291796875,
+            "iters": 2560,
+            "rounds": 9,
+            "spread": 0.8123500393352957
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 2780.546875,
+            "iters": 1600,
+            "rounds": 9,
+            "spread": 0.19400972155882104
+          },
+          {
+            "per_op_ns": 2608.91015625,
+            "iters": 1792,
+            "rounds": 9,
+            "spread": 3.913122247825586
+          },
+          {
+            "per_op_ns": 2765.625,
+            "iters": 3200,
+            "rounds": 9,
+            "spread": 0.18171841807909606
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 2602.351262019231,
+        "after": 2765.625
+      },
+      "speedup": 0.9409631681877445
+    },
+    "clone.deep/models40": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 54751.953125,
+            "iters": 128,
+            "rounds": 9,
+            "spread": 0.22909314022758892
+          },
+          {
+            "per_op_ns": 55978.8359375,
+            "iters": 128,
+            "rounds": 9,
+            "spread": 0.22916612877271839
+          },
+          {
+            "per_op_ns": 54618.1640625,
+            "iters": 128,
+            "rounds": 9,
+            "spread": 0.14812236943267357
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 50085.28125,
+            "iters": 64,
+            "rounds": 9,
+            "spread": 0.8891996089170409
+          },
+          {
+            "per_op_ns": 52628.90625,
+            "iters": 128,
+            "rounds": 9,
+            "spread": 0.14594002820455726
+          },
+          {
+            "per_op_ns": 50796.21875,
+            "iters": 128,
+            "rounds": 9,
+            "spread": 0.18161954107066286
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 54751.953125,
+        "after": 50796.21875
+      },
+      "speedup": 1.0778745834304841
+    },
+    "clone.deep/model-private100": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 20508.46484375,
+            "iters": 256,
+            "rounds": 9,
+            "spread": 0.09339379109274047
+          },
+          {
+            "per_op_ns": 20256.7265625,
+            "iters": 384,
+            "rounds": 9,
+            "spread": 0.04905032189024659
+          },
+          {
+            "per_op_ns": 19538.520833333332,
+            "iters": 384,
+            "rounds": 9,
+            "spread": 0.14022553204193852
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 17338.94921875,
+            "iters": 512,
+            "rounds": 9,
+            "spread": 0.09457843173256741
+          },
+          {
+            "per_op_ns": 17154.458984375,
+            "iters": 512,
+            "rounds": 9,
+            "spread": 0.06432354106183444
+          },
+          {
+            "per_op_ns": 16800.78125,
+            "iters": 384,
+            "rounds": 9,
+            "spread": 0.09023730915291017
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 20256.7265625,
+        "after": 17154.458984375
+      },
+      "speedup": 1.1808432187194406
+    },
+    "clone.deep/structs40": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 13123.697916666666,
+            "iters": 384,
+            "rounds": 9,
+            "spread": 0.054816946125607696
+          },
+          {
+            "per_op_ns": 12675.565104166666,
+            "iters": 384,
+            "rounds": 9,
+            "spread": 0.06591442648123225
+          },
+          {
+            "per_op_ns": 12493.034375,
+            "iters": 640,
+            "rounds": 9,
+            "spread": 0.08331205064021927
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 13011.6640625,
+            "iters": 768,
+            "rounds": 9,
+            "spread": 0.05055650188862997
+          },
+          {
+            "per_op_ns": 12949.653645833334,
+            "iters": 384,
+            "rounds": 9,
+            "spread": 0.07993678241474847
+          },
+          {
+            "per_op_ns": 12822.8515625,
+            "iters": 640,
+            "rounds": 9,
+            "spread": 0.05341720865763941
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 12675.565104166666,
+        "after": 12949.653645833334
+      },
+      "speedup": 0.9788342955601088
+    },
+    "uid.new/selected": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 159.0287882486979,
+            "iters": 49152,
+            "rounds": 9,
+            "spread": 0.045107177906253924
+          },
+          {
+            "per_op_ns": 161.22365025111608,
+            "iters": 57344,
+            "rounds": 9,
+            "spread": 0.043774889242633674
+          },
+          {
+            "per_op_ns": 161.22945731026786,
+            "iters": 57344,
+            "rounds": 9,
+            "spread": 0.1468951198318065
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 160.07341657366072,
+            "iters": 57344,
+            "rounds": 9,
+            "spread": 0.07622267614456518
+          },
+          {
+            "per_op_ns": 157.68069893973214,
+            "iters": 57344,
+            "rounds": 9,
+            "spread": 0.06743034372103116
+          },
+          {
+            "per_op_ns": 162.38984026227678,
+            "iters": 57344,
+            "rounds": 9,
+            "spread": 0.037044128580039505
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 161.22365025111608,
+        "after": 160.07341657366072
+      },
+      "speedup": 1.0071856633167198
+    },
+    "uid.new_hex/selected": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 151.0480194091797,
+            "iters": 65536,
+            "rounds": 9,
+            "spread": 0.1021306721036686
+          },
+          {
+            "per_op_ns": 155.14501953125,
+            "iters": 65536,
+            "rounds": 9,
+            "spread": 0.1722630469539273
+          },
+          {
+            "per_op_ns": 153.41404506138392,
+            "iters": 57344,
+            "rounds": 9,
+            "spread": 1.2129470438625158
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 152.36410086495536,
+            "iters": 57344,
+            "rounds": 9,
+            "spread": 0.0950870001683612
+          },
+          {
+            "per_op_ns": 149.29926409040178,
+            "iters": 57344,
+            "rounds": 9,
+            "spread": 0.16130495687804952
+          },
+          {
+            "per_op_ns": 150.79751586914062,
+            "iters": 32768,
+            "rounds": 9,
+            "spread": 0.19286293799669035
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 153.41404506138392,
+        "after": 150.79751586914062
+      },
+      "speedup": 1.017351275166322
+    },
+    "uid.new/fallback": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 2505.7023168103447,
+            "iters": 3712,
+            "rounds": 9,
+            "spread": 0.32725280601885764
+          },
+          {
+            "per_op_ns": 2578.7541666666666,
+            "iters": 1920,
+            "rounds": 9,
+            "spread": 0.19176310104523986
+          },
+          {
+            "per_op_ns": 2679.351041666667,
+            "iters": 3840,
+            "rounds": 9,
+            "spread": 0.10300943519827757
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 2368.9278846153848,
+            "iters": 3328,
+            "rounds": 9,
+            "spread": 0.8491630677217258
+          },
+          {
+            "per_op_ns": 2388.65,
+            "iters": 1920,
+            "rounds": 9,
+            "spread": 0.8391828281665376
+          },
+          {
+            "per_op_ns": 2633.497306034483,
+            "iters": 3712,
+            "rounds": 9,
+            "spread": 0.1745085847925363
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 2578.7541666666666,
+        "after": 2388.65
+      },
+      "speedup": 1.0795864470167946
+    },
+    "uid.new_hex/fallback": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 2326.3295454545455,
+            "iters": 2112,
+            "rounds": 9,
+            "spread": 0.27226793573567415
+          },
+          {
+            "per_op_ns": 2182.7135416666665,
+            "iters": 3456,
+            "rounds": 9,
+            "spread": 0.32840827111385784
+          },
+          {
+            "per_op_ns": 2465.456341911765,
+            "iters": 2176,
+            "rounds": 9,
+            "spread": 0.2303814489658858
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 2241.1089285714284,
+            "iters": 2240,
+            "rounds": 9,
+            "spread": 0.1705316086344372
+          },
+          {
+            "per_op_ns": 2183.159722222222,
+            "iters": 2304,
+            "rounds": 9,
+            "spread": 0.19863320079522861
+          },
+          {
+            "per_op_ns": 2104.9517463235293,
+            "iters": 2176,
+            "rounds": 9,
+            "spread": 0.3320780503779712
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 2326.3295454545455,
+        "after": 2183.159722222222
+      },
+      "speedup": 1.0655791794686427
+    },
+    "uid._stdlib_uuid7": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 2056.0080357142856,
+            "iters": 2240,
+            "rounds": 9,
+            "spread": 0.36074045187253906
+          },
+          {
+            "per_op_ns": 2079.0751689189187,
+            "iters": 4736,
+            "rounds": 9,
+            "spread": 0.2271703651043518
+          },
+          {
+            "per_op_ns": 2041.825168918919,
+            "iters": 2368,
+            "rounds": 9,
+            "spread": 0.4844923787632041
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 2159.0650337837837,
+            "iters": 2368,
+            "rounds": 9,
+            "spread": 0.5448804987456642
+          },
+          {
+            "per_op_ns": 1943.0088141025642,
+            "iters": 2496,
+            "rounds": 9,
+            "spread": 0.22428991185112634
+          },
+          {
+            "per_op_ns": 1959.7212171052631,
+            "iters": 4864,
+            "rounds": 9,
+            "spread": 4.62305766503946
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 2056.0080357142856,
+        "after": 1959.7212171052631
+      },
+      "speedup": 1.0491329163396257
+    },
+    "uid._seed_counter": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 1174.4894593253969,
+            "iters": 8064,
+            "rounds": 9,
+            "spread": 0.8631053069643673
+          },
+          {
+            "per_op_ns": 1210.11328125,
+            "iters": 7936,
+            "rounds": 9,
+            "spread": 0.7412692655844108
+          },
+          {
+            "per_op_ns": 1195.79052734375,
+            "iters": 4096,
+            "rounds": 9,
+            "spread": 0.2834005518218
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 1158.0657958984375,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 9.06928867514329
+          },
+          {
+            "per_op_ns": 1164.9271240234375,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 0.5088022392763428
+          },
+          {
+            "per_op_ns": 1155.1666259765625,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 0.636144719635427
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 1195.79052734375,
+        "after": 1158.0657958984375
+      },
+      "speedup": 1.0325756373937678
+    },
+    "uid._next_ms_and_counter/advance": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 1410.8556134259259,
+            "iters": 3456,
+            "rounds": 9,
+            "spread": 2.0906664325910387
+          },
+          {
+            "per_op_ns": 1410.045695754717,
+            "iters": 6784,
+            "rounds": 9,
+            "spread": 0.5646925750725243
+          },
+          {
+            "per_op_ns": 1407.5352564102564,
+            "iters": 4992,
+            "rounds": 9,
+            "spread": 0.18919090472297684
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 1345.835648148148,
+            "iters": 3456,
+            "rounds": 9,
+            "spread": 0.9994627202223595
+          },
+          {
+            "per_op_ns": 1351.8881138392858,
+            "iters": 3584,
+            "rounds": 9,
+            "spread": 3.544898452416604
+          },
+          {
+            "per_op_ns": 1437.5798938679245,
+            "iters": 6784,
+            "rounds": 9,
+            "spread": 0.20309228096633677
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 1410.045695754717,
+        "after": 1351.8881138392858
+      },
+      "speedup": 1.0430195230804027
+    },
+    "uid._next_ms_and_counter/same": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 207.623291015625,
+            "iters": 20480,
+            "rounds": 9,
+            "spread": 1.1579699561983714
+          },
+          {
+            "per_op_ns": 213.9973876953125,
+            "iters": 40960,
+            "rounds": 9,
+            "spread": 0.20154214335040094
+          },
+          {
+            "per_op_ns": 216.224169921875,
+            "iters": 40960,
+            "rounds": 9,
+            "spread": 4.993761447752407
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 208.41470336914062,
+            "iters": 32768,
+            "rounds": 9,
+            "spread": 0.2822323937052125
+          },
+          {
+            "per_op_ns": 211.420703125,
+            "iters": 40960,
+            "rounds": 9,
+            "spread": 2.2098105820555505
+          },
+          {
+            "per_op_ns": 214.156103515625,
+            "iters": 40960,
+            "rounds": 9,
+            "spread": 0.07114145114921236
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 213.9973876953125,
+        "after": 211.420703125
+      },
+      "speedup": 1.0121874751726139
+    },
+    "uid._next_ms_and_counter/backward": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 220.9126708984375,
+            "iters": 40960,
+            "rounds": 9,
+            "spread": 0.22211124106393232
+          },
+          {
+            "per_op_ns": 228.607177734375,
+            "iters": 20480,
+            "rounds": 9,
+            "spread": 0.10691934321185423
+          },
+          {
+            "per_op_ns": 224.4802001953125,
+            "iters": 40960,
+            "rounds": 9,
+            "spread": 0.08697023472956023
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 209.12880859375,
+            "iters": 20480,
+            "rounds": 9,
+            "spread": 2.4886520017240423
+          },
+          {
+            "per_op_ns": 208.47745768229166,
+            "iters": 24576,
+            "rounds": 9,
+            "spread": 1.4032934637795493
+          },
+          {
+            "per_op_ns": 210.111474609375,
+            "iters": 40960,
+            "rounds": 9,
+            "spread": 0.08775208379666392
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 224.4802001953125,
+        "after": 209.12880859375
+      },
+      "speedup": 1.0734063934318292
+    },
+    "uid._next_ms_and_counter/overflow": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 1527.0725911458333,
+            "iters": 3072,
+            "rounds": 9,
+            "spread": 0.19040208971456357
+          },
+          {
+            "per_op_ns": 1465.8329326923076,
+            "iters": 3328,
+            "rounds": 9,
+            "spread": 0.15892673091319667
+          },
+          {
+            "per_op_ns": 1480.162109375,
+            "iters": 6656,
+            "rounds": 9,
+            "spread": 0.1801206237256976
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 1438.977313701923,
+            "iters": 6656,
+            "rounds": 9,
+            "spread": 0.2505134512159483
+          },
+          {
+            "per_op_ns": 1422.8515625,
+            "iters": 3456,
+            "rounds": 9,
+            "spread": 0.25916612013523477
+          },
+          {
+            "per_op_ns": 1418.7042824074074,
+            "iters": 3456,
+            "rounds": 9,
+            "spread": 0.1971225210797705
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 1480.162109375,
+        "after": 1422.8515625
+      },
+      "speedup": 1.0402786547700755
+    },
+    "uid.parse": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 500.95623779296875,
+            "iters": 16384,
+            "rounds": 9,
+            "spread": 0.05449685032299678
+          },
+          {
+            "per_op_ns": 492.73431396484375,
+            "iters": 16384,
+            "rounds": 9,
+            "spread": 0.12206887214464981
+          },
+          {
+            "per_op_ns": 493.70318603515625,
+            "iters": 16384,
+            "rounds": 9,
+            "spread": 0.11956817503835225
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 490.41748046875,
+            "iters": 16384,
+            "rounds": 9,
+            "spread": 0.06118021157436217
+          },
+          {
+            "per_op_ns": 487.27923583984375,
+            "iters": 16384,
+            "rounds": 9,
+            "spread": 0.16344478412762792
+          },
+          {
+            "per_op_ns": 498.97509765625,
+            "iters": 16384,
+            "rounds": 9,
+            "spread": 0.06404534294417952
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 493.70318603515625,
+        "after": 490.41748046875
+      },
+      "speedup": 1.0066998133167393
+    },
+    "uid.derive": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 1196.6145391949153,
+            "iters": 7552,
+            "rounds": 9,
+            "spread": 0.06734947962411168
+          },
+          {
+            "per_op_ns": 1170.66455078125,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 0.053796817629543185
+          },
+          {
+            "per_op_ns": 1185.2384868421052,
+            "iters": 3648,
+            "rounds": 9,
+            "spread": 0.3823840416305291
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 1182.77978515625,
+            "iters": 4096,
+            "rounds": 9,
+            "spread": 0.07199505600592487
+          },
+          {
+            "per_op_ns": 1181.3571068548388,
+            "iters": 7936,
+            "rounds": 9,
+            "spread": 0.061291698888029655
+          },
+          {
+            "per_op_ns": 1260.7846467391305,
+            "iters": 5888,
+            "rounds": 9,
+            "spread": 0.2661985586313733
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 1185.2384868421052,
+        "after": 1182.77978515625
+      },
+      "speedup": 1.00207874848447
+    }
+  }
+}

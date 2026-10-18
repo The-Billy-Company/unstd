@@ -24,24 +24,32 @@ from __future__ import annotations
 import os
 import threading
 import time
-from typing import TYPE_CHECKING, Protocol
+from typing import TYPE_CHECKING
 from uuid import UUID, uuid5
 
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+    from typing import Protocol
+
+    class _Uuid(Protocol):
+        """What a minted id must answer: its hex, and its canonical ``str``."""
+
+        @property
+        def hex(self) -> str: ...
 
 
 # Spec-correct stdlib UUIDv7 fallback — always defined (so it is directly
 # testable regardless of which backend `new()`/`new_hex()` dispatch to below),
 # and the only path taken on a base install without the `ids` extra.
+_int_from_bytes = int.from_bytes
 _counter_lock = threading.Lock()
 _last_ms: int | None = None
 _last_counter = 0  # 12-bit monotonic counter, RFC 9562 §6.2 Method 1
 
 
 def _seed_counter() -> int:
-    return int.from_bytes(os.urandom(2), "big") & 0xFFF  # fresh 12-bit seed
+    return _int_from_bytes(os.urandom(2)) & 0xFFF  # fresh 12-bit seed
 
 
 def _next_ms_and_counter(now_ms: int) -> tuple[int, int]:
@@ -60,8 +68,7 @@ def _next_ms_and_counter(now_ms: int) -> tuple[int, int]:
         if _last_ms is None or now_ms > _last_ms:
             counter = _seed_counter()
         else:
-            if now_ms < _last_ms:  # clock stepped backward — hold the line
-                now_ms = _last_ms
+            now_ms = _last_ms  # equal or backward clock — hold the line
             counter = _last_counter + 1
             if counter > 0xFFF:  # 12-bit counter exhausted this ms — force the clock on
                 now_ms += 1
@@ -77,20 +84,14 @@ def _stdlib_uuid7() -> UUID:
     random bits (rand_b).
     """
     ms, counter = _next_ms_and_counter(time.time_ns() // 1_000_000)
-    rand_b = int.from_bytes(os.urandom(8), "big") & (1 << 62) - 1
-    value = (ms & (1 << 48) - 1) << 80  # unix_ts_ms  (bits 127..80)
-    value |= 0x7 << 76  # version 7   (bits 79..76)
-    value |= counter << 64  # counter     (bits 75..64)
-    value |= 0b10 << 62  # variant     (bits 63..62)
-    value |= rand_b  # rand_b      (bits 61..0)
+    rand_b = _int_from_bytes(os.urandom(8)) & (1 << 62) - 1
+    value = (
+        (ms & (1 << 48) - 1) << 80
+        | counter << 64
+        | rand_b
+        | (0x7 << 76 | 0b10 << 62)  # constant version + variant, folded at compile time
+    )
     return UUID(int=value)
-
-
-class _Uuid(Protocol):
-    """What a minted id must answer: its hex, and its canonical ``str``."""
-
-    @property
-    def hex(self) -> str: ...
 
 
 _uuid7: Callable[[], _Uuid]

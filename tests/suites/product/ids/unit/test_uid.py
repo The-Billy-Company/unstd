@@ -19,7 +19,7 @@ to agree today. Assertions are deliberately strict — never weakened to go gree
 from __future__ import annotations
 
 import threading
-from uuid import RFC_4122, UUID
+from uuid import RFC_4122, UUID, SafeUUID, uuid5
 
 import pytest
 
@@ -85,6 +85,11 @@ def test_parse_rejects_malformed() -> None:
         uid.parse("not-a-uuid")
 
 
+def test_stdlib_aliases_retain_their_full_apis() -> None:
+    assert uid.parse is UUID
+    assert uid.derive is uuid5
+
+
 def test_new_is_v7_and_unique() -> None:
     ids = [uid.new() for _ in range(100)]
     assert len(set(ids)) == 100
@@ -110,6 +115,30 @@ def test_stdlib_fallback_is_v7_and_unique() -> None:
     assert len({i.int for i in ids}) == 200
     assert all(i.version == 7 for i in ids)
     assert all(i.variant == RFC_4122 for i in ids)
+
+
+@pytest.mark.parametrize(
+    "timestamp", [0x112233445566, 0x1112233445566, -0xEEDDCCBBAA9A]
+)
+def test_stdlib_fallback_exact_wire_layout(
+    timestamp: int, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    requests: list[int] = []
+
+    def entropy(size: int) -> bytes:
+        requests.append(size)
+        return b"\xfa\xbc" if size == 2 else b"\xc1\x23\x45\x67\x89\xab\xcd\xef"
+
+    monkeypatch.setattr(uid, "_last_ms", None)
+    monkeypatch.setattr(uid, "_last_counter", 0)
+    monkeypatch.setattr(uid.time, "time_ns", lambda: timestamp * 1_000_000)
+    monkeypatch.setattr(uid.os, "urandom", entropy)
+
+    generated = uid._stdlib_uuid7()
+    assert generated == UUID("11223344-5566-7abc-8123-456789abcdef")
+    assert type(generated) is UUID
+    assert generated.is_safe is SafeUUID.unknown
+    assert requests == [2, 8]
 
 
 def test_stdlib_fallback_sorts_in_mint_order() -> None:

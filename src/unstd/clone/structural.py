@@ -143,13 +143,22 @@ def _admit(cls: type) -> _Clone | None:
             else None
         )
     if (ms := sys.modules.get("msgspec")) and issubclass(cls, ms.Struct):
-        return _reduced if getattr(cls, "__deepcopy__", None) is None else None
+        return (
+            _reduced
+            if getattr(cls, "__deepcopy__", None) is None
+            and cls not in copyreg.dispatch_table
+            and getattr(cls, "__reduce_ex__", None) is object.__reduce_ex__
+            and getattr(cls, "__reduce__", None) is ms.Struct.__reduce__
+            else None
+        )
     if (
         dataclasses.is_dataclass(cls)
         and _default_protocol(cls)
         and getattr(cls, "__getstate__", None) is object.__getstate__
         and not hasattr(cls, "__setstate__")
         and not hasattr(cls, "__slots__")
+        and not hasattr(cls, "__getnewargs__")
+        and not hasattr(cls, "__getnewargs_ex__")
     ):
         return _dataclass
     return None
@@ -195,12 +204,26 @@ def _model(o: Any) -> Any:
     setattr_(twin, "__pydantic_extra__", None if extra is None else _walk(extra))
     setattr_(twin, "__pydantic_fields_set__", set(o.__pydantic_fields_set__))
     private = getattr(o, "__pydantic_private__", None)
+    if private is not None:
+        # Snapshot before invoking user copy hooks, as pydantic's filtered
+        # dictionary does. The C copy replaces a second Python traversal.
+        private = (
+            private.copy()
+            if type(private) is dict
+            else {k: v for k, v in private.items() if v is not _PYDANTIC_UNDEFINED}
+        )
     setattr_(
         twin,
         "__pydantic_private__",
         None
         if private is None
-        else _walk({k: v for k, v in private.items() if v is not _PYDANTIC_UNDEFINED}),
+        else {
+            (k if type(k) is str else k if type(k) in _ATOMS else _walk(k)): (
+                v if type(v) in _ATOMS else _walk(v)
+            )
+            for k, v in private.items()
+            if v is not _PYDANTIC_UNDEFINED
+        },
     )
     return twin
 
@@ -275,7 +298,11 @@ def asdict(
     """
     if (
         dict_factory is not dict
-        or not dataclasses.is_dataclass(obj)
+        # Inline is_dataclass's predicate without changing class/metaclass
+        # attribute access or the stdlib's non-instance error behavior.
+        or not hasattr(
+            obj if isinstance(obj, type) else type(obj), "__dataclass_fields__"
+        )
         or isinstance(obj, type)
     ):
         return dataclasses.asdict(obj, dict_factory=dict_factory)

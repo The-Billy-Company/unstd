@@ -178,6 +178,44 @@ workload timings in [`serde-results.json`](serde-results.json). These are local
 measurements, not a proof that one implementation is fastest for every input,
 interpreter, backend version, or machine.
 
+## Complete clone and UUID profiles
+
+`clone_ids_profile` checks and profiles all 15 runtime Python functions in
+`unstd.clone` and `unstd.ids`, plus their four direct stdlib aliases. Its 54
+workloads cover atomic and mixed containers, dataclasses, models, reducers,
+cycles, custom factories, native UUID minting, and the handwritten fallback's
+clock/counter branches. Outputs are checked for type, key order, mutable
+reference isolation, UUID layout, and unchanged public signatures before timing.
+
+```console
+uv run --no-sync python -m bench.clone_ids_profile --output /tmp/clone-ids.json
+uv run --no-sync python -m bench.clone_ids_profile --compare-source /tmp/before/src --rounds 9 --repetitions 3 --output /tmp/clone-ids-comparison.json
+uv run --no-sync python -m bench.clone_ids_profile --stdlib-only --profile-only --output /tmp/clone-ids-stdlib.json
+python bench/clone_ids_profile.py --stdlib-only --profile-only --output /tmp/clone-ids-stdlib.json
+```
+
+The saved source must contain `unstd/clone/structural.py` and `unstd/ids/uid.py`.
+Sources load into separate namespaces, and comparison order alternates for each
+workload. cProfile runs separately from timing. Raw profiler entries are summed
+by source location so native/fallback namespaces cannot overwrite each other's
+function counts. Declaration-only Protocol methods are excluded.
+
+Full coverage needs pydantic and msgspec; `--stdlib-only` explicitly skips their
+two helpers and selects the stdlib UUID generator. The handwritten fallback is
+always measured separately, including on Python 3.14+. Cold-cache and counter
+branch workloads include their stated state-reset work; ordinary UUID workloads
+use real clocks and entropy. The function inventory fails on an uncovered
+runtime function instead of silently reporting complete coverage.
+Direct script execution also avoids loading other benchmark groups and their
+optional dependencies through `bench.__init__`.
+
+The implementation decisions and measured limits are in
+[`clone-ids-results.md`](clone-ids-results.md); complete profiles, source hashes,
+public signatures, backend versions, and timing samples are in
+[`clone-ids-results.json`](clone-ids-results.json).
+Standard-only validation profiles for Python 3.12, 3.13, and 3.14 are saved in
+[`clone-ids-stdlib-results.json`](clone-ids-stdlib-results.json).
+
 ## Gzip throughput and size
 
 Run `uv run --locked --all-extras python -m bench --group compress --rounds 5`.

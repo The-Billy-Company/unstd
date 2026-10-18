@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import collections
 import copy as _stdlib_copy
+import copyreg
 import dataclasses
 import datetime as dt
 import enum
@@ -251,6 +252,25 @@ def test_dataclass_with_custom_deepcopy_keeps_its_protocol() -> None:
     assert calls == [1]
 
 
+def test_dataclass_with_pickle_constructor_arguments_keeps_its_protocol() -> None:
+    """A custom allocator receives the constructor arguments its reducer supplies."""
+
+    @dataclasses.dataclass
+    class WithNewArgs:
+        items: list[int]
+
+        def __new__(cls, items: list[int]) -> WithNewArgs:
+            return super().__new__(cls)
+
+        def __getnewargs__(self) -> tuple[list[int]]:
+            return (self.items,)
+
+    original = WithNewArgs([1, 2])
+    cloned = clone.deep(original)
+    assert cloned == _stdlib_copy.deepcopy(original)
+    assert cloned.items is not original.items
+
+
 def test_subclasses_that_compare_equal_keep_their_type() -> None:
     """Regression (1.0.5): an equality guard cannot see ``StrEnum`` → ``str`` or ``defaultdict`` → ``dict``."""
 
@@ -338,6 +358,81 @@ def test_model_clone_matches_model_copy_deep() -> None:
     assert cloned._cache is not original._cache
 
 
+def test_model_private_attributes_filter_undefined_and_clone_values() -> None:
+    """Private attributes are filtered and copied in the same way as pydantic."""
+    pydantic = pytest.importorskip("pydantic")
+    pydantic_core = pytest.importorskip("pydantic_core")
+
+    class Model(pydantic.BaseModel):
+        _ready: list[int] = pydantic.PrivateAttr(default_factory=lambda: [1])
+        _unset: object = pydantic.PrivateAttr()
+
+    original = Model()
+    original.__pydantic_private__["_unset"] = pydantic_core.PydanticUndefined
+    cloned = clone.deep(original)
+    expected = original.model_copy(deep=True)
+    assert cloned.__pydantic_private__ == expected.__pydantic_private__
+    assert "_unset" not in cloned.__pydantic_private__
+    cloned._ready.append(2)
+    assert original._ready == [1]
+
+
+@pytest.mark.parametrize("custom_mapping", [False, True])
+def test_model_private_copy_hooks_see_a_snapshot(custom_mapping: bool) -> None:
+    """A private value's copy hook can mutate the original private attribute mapping."""
+    pydantic = pytest.importorskip("pydantic")
+
+    class Model(pydantic.BaseModel):
+        _cache: object = pydantic.PrivateAttr()
+
+    original = Model()
+    if custom_mapping:
+
+        class PrivateMap(dict[str, object]):
+            def copy(self) -> dict[str, object]:
+                pytest.fail("a custom private mapping's copy method must not be called")
+
+        original.__pydantic_private__ = PrivateMap()
+
+    class ChangePrivate:
+        def __deepcopy__(self, _memo: dict[int, object]) -> str:
+            original.__pydantic_private__["added"] = [1]
+            return "copied"
+
+    original.__pydantic_private__["_cache"] = ChangePrivate()
+    cloned = clone.deep(original)
+    assert cloned.__pydantic_private__ == {"_cache": "copied"}
+    assert original.__pydantic_private__["added"] == [1]
+
+
+@pytest.mark.parametrize("protocol", ["reduce", "reduce_ex", "copyreg"])
+def test_msgspec_custom_reducers_keep_their_copy_protocol(
+    protocol: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Registered reducers and both reducer methods take precedence over the fast path."""
+    msgspec = pytest.importorskip("msgspec")
+
+    class Point(msgspec.Struct):
+        x: int
+
+    def reduce(_obj: object) -> tuple[type[str], tuple[str]]:
+        return str, ("custom",)
+
+    if protocol == "copyreg":
+        monkeypatch.setitem(copyreg.dispatch_table, Point, reduce)
+    elif protocol == "reduce":
+        monkeypatch.setattr(Point, "__reduce__", reduce)
+    else:
+
+        def reduce_ex(obj: object, _protocol: int) -> tuple[type[str], tuple[str]]:
+            return reduce(obj)
+
+        monkeypatch.setattr(Point, "__reduce_ex__", reduce_ex)
+
+    original = Point(1)
+    assert clone.deep(original) == _stdlib_copy.deepcopy(original) == "custom"
+
+
 # ── asdict — dataclasses.asdict's answer, walked ───────────────────────────────
 
 
@@ -400,3 +495,23 @@ def test_asdict_keeps_stdlib_errors_and_factory() -> None:
     assert clone.asdict(tree, dict_factory=factory) == dataclasses.asdict(
         tree, dict_factory=factory
     )
+
+
+def test_asdict_keeps_dataclass_predicate_metaclass_errors() -> None:
+    """Inlined dataclass detection retains the original attribute access and exception."""
+    failure = RuntimeError("dataclass field inspection failed")
+
+    class Meta(type):
+        def __getattribute__(cls, name: str) -> object:
+            if name == "__dataclass_fields__":
+                raise failure
+            return super().__getattribute__(name)
+
+    class Record(metaclass=Meta):
+        pass
+
+    with pytest.raises(RuntimeError) as expected:
+        dataclasses.is_dataclass(Record)
+    with pytest.raises(RuntimeError) as observed:
+        clone.asdict(Record)
+    assert observed.value is expected.value is failure
