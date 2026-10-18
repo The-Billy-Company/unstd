@@ -132,3 +132,41 @@ dict clone.
 Mark `equivalent=False` if the two sides do not compute the same answer, and say
 why in `note`. If importability does not prove the fast path was taken, pass a
 `probe`.
+
+## Typed NDJSON ingestion
+
+Run `uv run --locked --all-extras python -m bench --group serde --rounds 5` to include
+`ndjson.loads · 1k typed trace rows`. It compares a reused `structs.Codec` with
+per-line `jsonx.loads` followed by `msgspec.convert` into the same nested
+dataclass schema. Both paths validate every row; the audit checks identical
+results before timing. Payload construction and codec setup stay outside the
+measurement. The 1,000-row payload contains UTF-8 text, tags, attributes, and
+nested token usage; it measures ingestion with validation, not parsing alone.
+
+## Gzip throughput and size
+
+Run `uv run --locked --all-extras python -m bench --group compress --rounds 5`.
+The three cases use 4,000 JSONL trace rows (1,115,230 uncompressed bytes), explicit
+compression level 6 and `mtime=0`. Decompression receives identical bytes from
+stdlib's compressor. The stream case runs the complete in-memory NDJSON dump,
+gzip write, gzip read and NDJSON load, using the same NDJSON implementation on
+both sides. Before timing, both compressors' output is independently decoded
+back to the original bytes, and both pipelines must recover the original rows.
+Compressed-byte equality is deliberately not required.
+
+On macOS arm64, Python 3.12.13 and zlib-ng 1.0.0 (2026-10-18), the bounded
+five-round run measured:
+
+| Operation | Native MiB/s | Stdlib MiB/s | Stdlib/native time ratio |
+|---|---:|---:|---:|
+| One-shot compression | 716 | 330 | 2.17× |
+| One-shot decompression | 4,257 | 7,648 | 0.56× |
+| Full NDJSON stream roundtrip | 27.7 | 29.7 | 0.93× |
+
+Throughput counts the uncompressed input once, including for the roundtrip.
+One-shot compressed sizes were **40,135 bytes native / 48,096 bytes stdlib**;
+streamed sizes were **40,111 / 48,096 bytes**. Codec choices affect storage size
+as well as speed. Compression and roundtrip timing were flagged noisy by the
+harness; decompression was stable. Compression improved on this workload,
+while decompression was slower and the complete pipeline had no measured gain.
+The committed floors retain those observed losses rather than asserting parity.

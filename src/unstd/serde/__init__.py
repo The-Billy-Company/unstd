@@ -1,7 +1,7 @@
 """Serialization/deserialization helpers (stdlib-faithful, accelerated).
 
 Each module wraps a best-in-class native codec behind a small, stdlib-faithful
-surface, and all four share one JSON backend (orjson, via ``jsonx``). The
+surface. Untyped JSON uses orjson through ``jsonx``; typed JSON uses msgspec. The
 accelerated backends live behind the ``serde`` extra (``pip install
 'unstd[serde]'``); without it, ``jsonx``/``b64``/``ndjson`` transparently fall
 back to the stdlib (slower, same surface) and the typed ``structs`` codecs —
@@ -16,7 +16,8 @@ not its members::
   surface; the ``b64encode(x).decode(...)`` idiom fused into named helpers.
 - ``structs`` — typed ``msgspec`` codecs: one reusable Encoder/Decoder per wire
   schema, with validate-on-decode and a "malformed → miss" fallback.
-- ``ndjson``  — newline-delimited JSON (``.jsonl``) streaming over ``jsonx``.
+- ``ndjson``  — newline-delimited JSON (``.jsonl``) streaming over ``jsonx``
+  or a reusable ``structs.Codec`` for validated typed records.
 """
 
 from __future__ import annotations

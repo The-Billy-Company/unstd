@@ -83,6 +83,21 @@
       "measured": 41.87,
       "group": "text"
     },
+    "gzipx + ndjson · 4k-row stream roundtrip": {
+      "floor": 0.65,
+      "measured": 0.93,
+      "group": "compress"
+    },
+    "gzipx.compress · 4k JSONL trace rows": {
+      "floor": 1.52,
+      "measured": 2.17,
+      "group": "compress"
+    },
+    "gzipx.decompress · 4k JSONL trace rows": {
+      "floor": 0.39,
+      "measured": 0.56,
+      "group": "compress"
+    },
     "jsonx.dumps · 500 records": {
       "floor": 0.74,
       "measured": 1.06,
@@ -101,6 +116,11 @@
     "jsonx.loads · 500 records": {
       "floor": 0.67,
       "measured": 0.96,
+      "group": "serde"
+    },
+    "ndjson.loads · 1k typed trace rows": {
+      "floor": 2.71,
+      "measured": 3.87,
       "group": "serde"
     },
     "rex.findall · 4k words": {

@@ -8,8 +8,13 @@ line at a time without materializing the whole array.
 
 This module is a thin layer over :mod:`jsonx` so the whole ``serde`` package
 rides one JSON backend — never re-import orjson here. Each record is encoded with
-``jsonx.dumps``/``jsonx.dumpb`` (compact UTF-8) and decoded with ``jsonx.loads``,
+``jsonx.dumpb`` (compact UTF-8) and decoded with ``jsonx.loads``,
 so NDJSON inherits jsonx's backend + stdlib fallback transparently.
+
+Pass a reusable ``structs.Codec(T)`` as ``codec=`` to decode each row directly
+into a validated ``T`` or write typed records with that codec. Typed readers
+require the ``serde`` extra. ``on_error`` observes each rejected row once before
+the default raise or an explicit ``skip_errors=True``.
 
 Conventions:
 
@@ -28,16 +33,16 @@ Conventions:
 from __future__ import annotations
 
 import io
-from typing import IO, TYPE_CHECKING
+from typing import TYPE_CHECKING, Protocol, overload
 
+from unstd._extra import missing
 from unstd.serde import jsonx
 
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable, Iterator
+    from collections.abc import Callable, Iterable, Iterator
 
     from unstd.serde.jsonx import Json
-
 
 __all__ = [
     "NDJSONDecodeError",
@@ -50,14 +55,43 @@ __all__ = [
 ]
 
 
-# Reuse the faithful JSON decoder and newline-terminated compact encoder.
+# Untyped readers keep jsonx's faithful decoder, including integer precision,
+# non-finite constants, Unicode support and interpreter limits.
 _parse = jsonx.loads
 _line = jsonx._line
 
 
-def _text_line(row: object) -> str:
-    """One newline-terminated record as ``str`` — orjson's own line bytes decoded once, ~20% under a ``jsonx.dumps`` plus concatenation."""
-    return _line(row).decode()
+class _MethodCodec[T](Protocol):
+    """A codec exposing ordinary bound encode/decode methods."""
+
+    def encode(self, value: T, /) -> bytes:
+        """One record as JSON bytes, without a trailing newline."""
+        ...
+
+    def decode(self, raw: str | bytes, /) -> T:
+        """One decoded record, raising msgspec decode errors on invalid input."""
+        ...
+
+
+class _CallableCodec[T](Protocol):
+    """The paired callable attributes bound by ``structs.Codec[T]``."""
+
+    encode: Callable[[T], bytes]
+    decode: Callable[[str | bytes], T]
+
+
+# mypy 1.15 treats Callable attributes as descriptors during method-protocol
+# matching. Keep both structural forms so the supported typing floor accepts
+# existing bound-callable codecs and codecs implemented with ordinary methods.
+type _Codec[T] = _MethodCodec[T] | _CallableCodec[T]
+
+
+class _Writer(Protocol):
+    """A binary sink, including gzip streams and write-only destinations."""
+
+    def write(self, data: bytes, /) -> object:
+        """Accept a newline-terminated encoded record."""
+        ...
 
 
 class NDJSONDecodeError(ValueError):
@@ -70,44 +104,128 @@ class NDJSONDecodeError(ValueError):
         super().__init__(f"line {lineno}: {err}")
 
 
-def dumps(rows: Iterable[object]) -> str:
+def _encoder[T](codec: _Codec[T] | None) -> Callable[[T], bytes]:
+    """Bind the newline-terminated encoder once per stream."""
+    if codec is None:
+        return _line
+    encode = codec.encode
+
+    def line(row: T) -> bytes:
+        return encode(row) + b"\n"
+
+    return line
+
+
+def dumps[T](rows: Iterable[T], *, codec: _Codec[T] | None = None) -> str:
     """Serialize *rows* to an NDJSON ``str`` — one compact, newline-terminated line each."""
-    return dumpb(rows).decode()
+    return dumpb(rows, codec=codec).decode()
 
 
-def dumpb(rows: Iterable[object]) -> bytes:
+def dumpb[T](rows: Iterable[T], *, codec: _Codec[T] | None = None) -> bytes:
     """Serialize *rows* straight to NDJSON ``bytes`` for file/socket writes."""
-    return b"".join(map(_line, rows))
+    return b"".join(map(_encoder(codec), rows))
 
 
+@overload
+def iter_loads[T](
+    lines: Iterable[str | bytes],
+    *,
+    codec: _Codec[T],
+    skip_errors: bool = False,
+    on_error: Callable[[NDJSONDecodeError], None] | None = None,
+) -> Iterator[T]: ...
+
+
+@overload
 def iter_loads(
-    lines: Iterable[str | bytes], *, skip_errors: bool = False
-) -> Iterator[Json]:
+    lines: Iterable[str | bytes],
+    *,
+    codec: None = None,
+    skip_errors: bool = False,
+    on_error: Callable[[NDJSONDecodeError], None] | None = None,
+) -> Iterator[Json]: ...
+
+
+def iter_loads[T](
+    lines: Iterable[str | bytes],
+    *,
+    codec: _Codec[T] | None = None,
+    skip_errors: bool = False,
+    on_error: Callable[[NDJSONDecodeError], None] | None = None,
+) -> Iterator[Json | T]:
     """Stream-parse *lines* (a file object, ``splitlines()``, any line iterable) lazily.
 
     Consumes and yields one line at a time — never materializes the whole input,
     the property that matters for large trace/eval files. Blank / whitespace-only
     lines are skipped. A malformed line raises :class:`NDJSONDecodeError` with its
-    1-based line number, unless *skip_errors* drops it silently.
+    1-based line number. ``codec=`` validates into its schema directly. The error
+    retains the backend's exception and field path in ``err``. ``on_error`` runs
+    once before the error is raised or skipped; its own exceptions propagate.
     """
+    decode: Callable[[str | bytes], Json | T] = _parse
+    errors: tuple[type[Exception], ...] = (ValueError, RecursionError)
+    if codec is not None:
+        try:
+            from msgspec import DecodeError
+        except ImportError:
+            missing("serde.ndjson.iter_loads", "serde")()
+        decode = codec.decode
+        errors = (DecodeError,)
     for lineno, line in enumerate(lines, 1):
         if not line or line.isspace():  # exactly the lines `strip()` empties, no copy
             continue
+        if codec is not None:
+            # Normalize before a typed decode: retrying a schema failure could
+            # run a caller's conversion hook twice for the same record.
+            line = line.strip()
         try:
-            value = _parse(line)
-        except (ValueError, RecursionError):
-            # JSON's own whitespace never needs stripping; only exotic padding
-            # (NBSP, U+2028 …) does, so the copy is paid only on that path.
-            try:
-                value = _parse(line.strip())
-            except (ValueError, RecursionError) as exc:
-                if skip_errors:
+            value = decode(line)
+        except errors as original:
+            cause = original
+            if codec is None and (stripped := line.strip()) != line:
+                try:
+                    value = decode(stripped)
+                except errors as stripped_error:
+                    cause = stripped_error
+                else:
+                    yield value
                     continue
-                raise NDJSONDecodeError(lineno, exc) from exc
+            error = NDJSONDecodeError(lineno, cause)
+            if on_error is not None:
+                on_error(error)
+            if skip_errors:
+                continue
+            raise error from cause
         yield value
 
 
-def loads(text: str | bytes, *, skip_errors: bool = False) -> list[Json]:
+@overload
+def loads[T](
+    text: str | bytes,
+    *,
+    codec: _Codec[T],
+    skip_errors: bool = False,
+    on_error: Callable[[NDJSONDecodeError], None] | None = None,
+) -> list[T]: ...
+
+
+@overload
+def loads(
+    text: str | bytes,
+    *,
+    codec: None = None,
+    skip_errors: bool = False,
+    on_error: Callable[[NDJSONDecodeError], None] | None = None,
+) -> list[Json]: ...
+
+
+def loads[T](
+    text: str | bytes,
+    *,
+    codec: _Codec[T] | None = None,
+    skip_errors: bool = False,
+    on_error: Callable[[NDJSONDecodeError], None] | None = None,
+) -> list[Json] | list[T]:
     r"""Parse a whole NDJSON blob into a ``list`` — blank lines skipped, trailing newline tolerated.
 
     Splits strictly on ``\\n`` (not ``str.splitlines``, which also breaks on
@@ -119,7 +237,7 @@ def loads(text: str | bytes, *, skip_errors: bool = False) -> list[Json]:
     lines = (
         text.split(b"\n") if isinstance(text, bytes | bytearray) else text.split("\n")
     )
-    if not skip_errors:
+    if codec is None and not skip_errors and on_error is None:
         # One comprehension over the backend decoder is the whole cost of a clean
         # blob. A failure re-walks through `iter_loads`, which strips exotic
         # padding and names the line — so the answer, and the error, are its.
@@ -127,10 +245,20 @@ def loads(text: str | bytes, *, skip_errors: bool = False) -> list[Json]:
             return [_parse(line) for line in lines if line and not line.isspace()]
         except (ValueError, RecursionError):
             pass
-    return list(iter_loads(lines, skip_errors=skip_errors))
+    if codec is None:
+        return list(iter_loads(lines, skip_errors=skip_errors, on_error=on_error))
+    typed_rows: list[T] = list(
+        iter_loads(lines, codec=codec, skip_errors=skip_errors, on_error=on_error)
+    )
+    return typed_rows
 
 
-def dump(rows: Iterable[object], fp: io.TextIOBase | IO[bytes]) -> int:
+def dump[T](
+    rows: Iterable[T],
+    fp: io.TextIOBase | _Writer,
+    *,
+    codec: _Codec[T] | None = None,
+) -> int:
     """Write *rows* as NDJSON to file object *fp*; returns the number of records written.
 
     The ``jsonx.dump(obj, fp)`` twin, plural and counting. Streams row by row (no
@@ -139,17 +267,49 @@ def dump(rows: Iterable[object], fp: io.TextIOBase | IO[bytes]) -> int:
     ``gzip.open`` alike.
     """
     n = 0
+    encode = _encoder(codec)
     if isinstance(fp, io.TextIOBase):
         for row in rows:
-            fp.write(_text_line(row))
+            fp.write(encode(row).decode())
             n += 1
     else:
         for row in rows:
-            fp.write(_line(row))
+            fp.write(encode(row))
             n += 1
     return n
 
 
-def load(fp: IO[str] | IO[bytes], *, skip_errors: bool = False) -> list[Json]:
+@overload
+def load[T](
+    fp: Iterable[str | bytes],
+    *,
+    codec: _Codec[T],
+    skip_errors: bool = False,
+    on_error: Callable[[NDJSONDecodeError], None] | None = None,
+) -> list[T]: ...
+
+
+@overload
+def load(
+    fp: Iterable[str | bytes],
+    *,
+    codec: None = None,
+    skip_errors: bool = False,
+    on_error: Callable[[NDJSONDecodeError], None] | None = None,
+) -> list[Json]: ...
+
+
+def load[T](
+    fp: Iterable[str | bytes],
+    *,
+    codec: _Codec[T] | None = None,
+    skip_errors: bool = False,
+    on_error: Callable[[NDJSONDecodeError], None] | None = None,
+) -> list[Json] | list[T]:
     """Read every NDJSON record from file object *fp* into a ``list`` (the ``jsonx.load`` twin)."""
-    return list(iter_loads(fp, skip_errors=skip_errors))
+    if codec is None:
+        return list(iter_loads(fp, skip_errors=skip_errors, on_error=on_error))
+    typed_rows: list[T] = list(
+        iter_loads(fp, codec=codec, skip_errors=skip_errors, on_error=on_error)
+    )
+    return typed_rows

@@ -27,8 +27,11 @@ import dataclasses
 from dataclasses import dataclass
 import datetime
 import difflib
+from functools import cache
+import gzip
 import hashlib
 import importlib.util
+import io
 import json
 import random
 import re
@@ -37,12 +40,14 @@ from typing import TYPE_CHECKING, Any
 
 from unstd.clone import asdict as clone_asdict
 from unstd.clone import deep
+from unstd.compress import gzipx
 from unstd.crypto.digest import raw as digest_raw
 from unstd.pack.binpack import pack_array, unpack_array
 from unstd.rand.draw import floats, ints
 from unstd.rex import compile as rex_compile
 from unstd.rex import findall as rex_findall
 from unstd.rex import search as rex_search
+from unstd.serde import ndjson
 from unstd.serde.b64 import decode as b64_decode
 from unstd.serde.b64 import encode as b64_encode
 from unstd.serde.jsonx import dumpb as jx_dumpb
@@ -52,7 +57,10 @@ from unstd.text.fuzz import _levenshtein, _sequence_distance, cdist, extract, ra
 
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Sequence
+    from collections.abc import Callable, Iterable, Sequence
+
+    from unstd.serde.jsonx import Json
+    from unstd.serde.structs import Codec
 
 
 @dataclass(frozen=True, slots=True)
@@ -563,3 +571,192 @@ def audit(cases: Sequence[Case]) -> list[Divergence]:
         if left != right:
             out.append(Divergence(c.name, f"{str(left)[:80]!r} != {str(right)[:80]!r}"))
     return out
+
+
+# ---------------------------------------------------------------- typed NDJSON
+
+
+@dataclass(frozen=True, slots=True)
+class _TraceUsage:
+    input_tokens: int
+    output_tokens: int
+
+
+@dataclass(frozen=True, slots=True)
+class _TraceRow:
+    event_id: str
+    timestamp: str
+    name: str
+    duration_ms: float
+    success: bool
+    tags: list[str]
+    attributes: dict[str, str]
+    usage: _TraceUsage
+
+
+@cache
+def _trace_readers() -> tuple[Codec[_TraceRow], Callable[[bytes], _TraceRow]]:
+    """Bind one reusable codec and the equivalent dict-then-validate reader."""
+    from msgspec import convert
+
+    from unstd.serde.structs import Codec
+
+    def through_dict(line: bytes) -> _TraceRow:
+        return convert(jx_loads(line), type=_TraceRow)
+
+    return Codec(_TraceRow), through_dict
+
+
+def _trace_payload() -> bytes:
+    """One thousand UTF-8 trace rows, prepared outside the timed region."""
+    codec, _ = _trace_readers()
+    return ndjson.dumpb(
+        (
+            _TraceRow(
+                event_id=f"event-{i:05d}",
+                timestamp="2026-10-18T12:34:56.123456Z",
+                name="search_documents",
+                duration_ms=12.5 + i % 240 / 10,
+                success=i % 31 != 0,
+                tags=["production", "retrieval"],
+                attributes={"service": "agent", "query": "recent café documents"},
+                usage=_TraceUsage(1_200 + i % 400, 80 + i % 90),
+            )
+            for i in range(1_000)
+        ),
+        codec=codec,
+    )
+
+
+def _typed_trace_rows(payload: bytes) -> list[_TraceRow]:
+    """Decode directly into the reusable codec's validated dataclass schema."""
+    codec, _ = _trace_readers()
+    return ndjson.loads(payload, codec=codec)
+
+
+def _validated_trace_rows(payload: bytes) -> list[_TraceRow]:
+    """Decode dictionaries, then validate each into the same dataclass schema."""
+    _, decode = _trace_readers()
+    return [
+        decode(line.strip())
+        for line in payload.split(b"\n")
+        if line and not line.isspace()
+    ]
+
+
+case(
+    name="ndjson.loads · 1k typed trace rows",
+    group="serde",
+    backend="msgspec",
+    payload=_trace_payload,
+    accel=_typed_trace_rows,
+    base=_validated_trace_rows,
+    note="reused typed codec vs validated dict-then-convert; identical dataclass results",
+    equivalent=True,
+)
+
+
+# ---------------------------------------------------------------- gzip
+
+
+@cache
+def _gzip_trace_rows() -> list[dict[str, Json]]:
+    """Four thousand trace records shared by codec and stream measurements."""
+    return [
+        {
+            "event_id": f"event-{i:05d}",
+            "timestamp": "2026-10-18T12:34:56.123456Z",
+            "name": "search_documents",
+            "duration_ms": 12.5 + i % 240 / 10,
+            "success": i % 31 != 0,
+            "tags": ["production", "retrieval"],
+            "attributes": {"service": "agent", "query": "recent café documents"},
+            "usage": {"input_tokens": 1_200 + i % 400, "output_tokens": 80 + i % 90},
+        }
+        for i in range(4_000)
+    ]
+
+
+def _gzip_compress(payload: bytes) -> bytes:
+    """Compress with an explicit level and reproducible timestamp."""
+    return gzipx.compress(payload, compresslevel=6, mtime=0)
+
+
+def _stdlib_gzip_compress(payload: bytes) -> bytes:
+    """The same compression settings on stdlib's codec."""
+    return gzip.compress(payload, compresslevel=6, mtime=0)
+
+
+@cache
+def _gzip_trace_bytes() -> bytes:
+    """Prepare JSONL and prove both compression outputs recover it exactly."""
+    payload = ndjson.dumpb(_gzip_trace_rows())
+    native, standard = _gzip_compress(payload), _stdlib_gzip_compress(payload)
+    assert gzip.decompress(native) == payload
+    assert gzipx.decompress(standard) == payload
+    return payload
+
+
+@cache
+def _gzip_trace_compressed() -> bytes:
+    """One identical stdlib-compressed input for both decompression codecs."""
+    compressed = _stdlib_gzip_compress(_gzip_trace_bytes())
+    assert gzipx.decompress(compressed) == gzip.decompress(compressed)
+    return compressed
+
+
+def _gzip_archive(rows: Iterable[object], factory: type[gzip.GzipFile]) -> bytes:
+    """Stream NDJSON into one gzip member; expose bytes for size comparisons."""
+    stream = io.BytesIO()
+    with factory(fileobj=stream, mode="wb", compresslevel=6, mtime=0) as compressed:
+        ndjson.dump(rows, compressed)
+    return stream.getvalue()
+
+
+def _gzip_roundtrip(
+    rows: list[dict[str, Json]], factory: type[gzip.GzipFile]
+) -> list[Json]:
+    """Measure the complete NDJSON dump, gzip write, gzip read, NDJSON load."""
+    archive = _gzip_archive(rows, factory)
+    with factory(fileobj=io.BytesIO(archive), mode="rb") as compressed:
+        return ndjson.load(compressed)
+
+
+def _native_gzip_roundtrip(rows: list[dict[str, Json]]) -> list[Json]:
+    """The complete pipeline with native compression and inflation."""
+    return _gzip_roundtrip(rows, gzipx.GzipFile)
+
+
+def _stdlib_gzip_roundtrip(rows: list[dict[str, Json]]) -> list[Json]:
+    """The same pipeline using stdlib gzip in both directions."""
+    return _gzip_roundtrip(rows, gzip.GzipFile)
+
+
+case(
+    name="gzipx.compress · 4k JSONL trace rows",
+    group="compress",
+    backend="zlib_ng",
+    payload=_gzip_trace_bytes,
+    accel=_gzip_compress,
+    base=_stdlib_gzip_compress,
+    note="level 6, mtime 0; compressed bytes/sizes may differ; recovered bytes checked",
+    equivalent=False,
+)
+case(
+    name="gzipx.decompress · 4k JSONL trace rows",
+    group="compress",
+    backend="zlib_ng",
+    payload=_gzip_trace_compressed,
+    accel=gzipx.decompress,
+    base=gzip.decompress,
+    note="identical stdlib-compressed input; both return the original JSONL bytes",
+)
+case(
+    name="gzipx + ndjson · 4k-row stream roundtrip",
+    group="compress",
+    backend="zlib_ng",
+    payload=_gzip_trace_rows,
+    accel=_native_gzip_roundtrip,
+    base=_stdlib_gzip_roundtrip,
+    note="level 6, mtime 0; complete in-memory write/read pipeline; equal recovered rows",
+)

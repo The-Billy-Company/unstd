@@ -252,7 +252,7 @@ float decoding (e.g. to `Decimal`, for exact-precision round-tripping).
 
 `.jsonl` — `\n`-separated JSON values, each independently parseable. What trace
 exports, eval datasets, and snapshot canons are written as. A thin layer over
-`jsonx` (same backend + fallback).
+`jsonx` for untyped records, or a reusable `structs.Codec` for typed records.
 
 ```python
 from unstd.serde import ndjson
@@ -269,3 +269,39 @@ rows = ndjson.load(fp)  # every record -> list
 Every record is newline-terminated (append-safe). Blank lines are skipped on
 read. Malformed lines raise `NDJSONDecodeError` with a 1-based `lineno` by
 default; pass `skip_errors=True` for the lenient "drop the bad line" mode.
+
+Pass `codec=` to decode directly into a validated schema, with no intermediate
+dictionary and second validation pass. Construct the codec once and reuse it:
+
+```python
+import msgspec
+
+from unstd.serde import ndjson, structs
+
+
+class Event(msgspec.Struct):
+    name: str
+    count: int
+
+
+EVENTS = structs.Codec(Event)
+with open("events.jsonl", "rb") as fp:
+    for event in ndjson.iter_loads(fp, codec=EVENTS):
+        print(event.name)
+
+raw = ndjson.dumpb([Event("saved", 1)], codec=EVENTS)
+events = ndjson.loads(raw, codec=EVENTS)  # list[Event]
+```
+
+All six read/write functions accept `codec=`. Typed reads follow that codec's
+strictness and conversion settings; writes use its encoder and append one newline
+per record. Like the codec itself, writing does not validate field types at runtime.
+Typed reads require the existing `serde` extra; untyped operations keep the stdlib
+fallback and never import msgspec.
+
+Reader `on_error(error)` callbacks receive `NDJSONDecodeError` once for each
+rejected row, before the default raise or `skip_errors=True`. Its `lineno` counts
+physical lines, including blanks; `err` retains the original decode/validation
+exception and schema field path. Exceptions from the callback, or codec hooks
+outside msgspec's decode-error family, propagate. Typed decoding processes each
+row once, so a later schema failure cannot replay earlier conversion hooks.
