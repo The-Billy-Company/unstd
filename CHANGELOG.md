@@ -17,6 +17,180 @@ doc_radar:
 
 <!-- towncrier release notes start -->
 
+## [3.0.0] - 2026-10-19
+
+### Breaking
+
+- `serde.jsonx` now guarantees the running stdlib's JSON defaults and semantics.
+  `dump` and `dumps` use `ensure_ascii=True` and default spaces, replacing the
+  previous compact, unescaped output. To retain compact text, pass
+  `ensure_ascii=False, separators=(",", ":")` explicitly. Dataclasses, UUIDs and
+  plain enums now require an explicit encoder or `default`, as they do in
+  stdlib `json`; orjson-only type acceptance is removed.
+- JSON numbers retain their values: arbitrary precision integers no longer fail
+  on encode or silently become floats on decode, and non-finite floats follow
+  stdlib's `NaN`/infinity behavior instead of silently becoming `null`.
+  `allow_nan=False` rejects them. Unicode and lone surrogates, UTF-16/32 binary
+  input, supported subclasses, key coercion/sorting, callbacks, custom codec
+  keywords, error diagnostics and interpreter limits follow stdlib too.
+  `dump` preserves streamed writes, including partial output before a later
+  encoding or write failure; `load` reads once through the guarded parser.
+- `jsonx.dumpb` now preserves exact compact stdlib float notation across
+  backends, which can change serialized bytes. NDJSON and Base64 JSON helpers
+  preserve the same numeric values. NDJSON wraps Unicode, integer-limit and
+  recursion failures with physical line numbers and honors `skip_errors=True`.
+
+### Added
+
+- `unstd.yaml`, behind `unstd[yaml]`, provides safe YAML 1.2 native-value
+  loading, multi-document streams, and comment-preserving parse/edit/write.
+  Duplicate keys and unknown tags are rejected; parser instances and scalar
+  semantics are isolated from optional C extensions. The base install keeps
+  zero third-party dependencies.
+- `unstd.compress.gzipx`, behind `unstd[compress]`, accelerates gzip file and
+  one-shot operations with zlib-ng, with exact stdlib bindings on a base
+  install. Streams retain stdlib framing, ownership, modes, seeking and error
+  families; one-shot defaults follow the running interpreter. Compressed bytes
+  may differ between codecs while recovered content remains identical.
+- NDJSON readers and writers accept a reusable `structs.Codec` through `codec=`.
+  Readers decode each row directly into its validated schema, preserving
+  physical line numbers and schema paths on errors. `on_error` reports each
+  rejected record once before the normal raise or explicit skip. Untyped
+  streaming still works on a base install, and typed processing reuses the
+  existing serde extra.
+- Base64 exposes stdlib-compatible `b64encode`/`b64decode`, standard and URL-safe
+  functions, MIME byte helpers and `encode_file`/`decode_file` stream helpers
+  alongside the convenience API. Standard defaults, alternative alphabets,
+  buffer handling, exception types and diagnostics follow the running stdlib.
+  Acceleration is limited to plain-byte encoding and strict ASCII decoding;
+  other cases and native decode failures use stdlib.
+- Eleven executable parser/token fuzz targets use independent oracles,
+  authenticated synthetic seed corpora, finite pytest replay, deterministic
+  mutations, and isolated Atheris campaigns. Workers preserve exact failures
+  and enforce wall/input deadlines, POSIX CPU limits and Linux address-space
+  limits. CI runs bounded pull-request campaigns and deeper nightly coverage
+  campaigns, retaining reports and generated corpora. Harness canaries verify
+  that incorrect results, unexpected exceptions, crashes and exhausted budgets
+  fail the run.
+- Recorded chaos campaigns cover mixed filesystem/process histories,
+  handshaken writer interruption, stream failures and clock/entropy outages.
+  Bounded installed/fallback workers, seed replay, exact fault journals, strict
+  completion controls and Linux/macOS pull-request/nightly CI campaigns retain
+  recovery evidence. Ordinary correctness discovery stays separate from
+  explicit chaos runs.
+- Recorded concurrency campaigns cover atomic filesystem histories, UUID
+  contention/fork safety, and shared clone/regex/codec/YAML/map isolation.
+  Independent models, broken-result controls, bounded installed/stdlib workers,
+  lane-specific replay and Linux/macOS pull-request/nightly jobs retain
+  schedules and observations. This explicit lane stays outside default pytest;
+  owning defect regressions remain in ordinary validation.
+
+### Changed
+
+- Native JSON acceleration now requires bounded eligibility proofs. Encoding
+  snapshots at most 16 exact builtin values before calling orjson, retaining
+  exact whitespace and escaping; other inputs use cached or direct stdlib
+  encoders. Decoding verifies the complete backend result and falls back to
+  stdlib for every float, including lossy large-integer conversions.
+  Hooks/custom codecs bypass speculation; deep or unproven cases and backend
+  errors retry the original input with stdlib. Callback isolation, snapshot
+  mutation, DEL escaping and near-limit recursion failures have generated
+  contracts that also assert real backend use.
+- JSON type annotations accept duck-typed writers and typed `default`
+  callbacks. The `numpy=True` conversion extension is consistent across
+  backends. With an explicit custom `cls`, `dump`/`dumps` forward all
+  constructor keywords unchanged. Differential tests use the running stdlib as
+  the authority across Python 3.12–3.14 and optional-backend/base configurations;
+  generated cases include large integers, non-finite values, lone surrogates,
+  mixed keys, formatting options, binary encodings and malformed input.
+- The test suite follows Billy's Python organization: module-owned contracts
+  under `tests/suites/product`, cross-cutting assurance under
+  `tests/suites/assurance`, shared support, and standalone tooling. A validated
+  inventory distinguishes active coverage from planned lanes and provides
+  `python -m tests.tooling list|check|run`. CI checks inventory drift; pytest
+  uses strict markers and shared generation profiles. Existing TLS policy tests
+  run without the BLAKE3 extra. The coverage plan maps remaining property, fuzz,
+  penetration, fault, installation, concurrency, resource and performance work
+  without counting scaffolding as implemented tests. Wall-clock benchmark
+  calibration assertions use the explicit `perf` marker, outside ordinary
+  correctness runs.
+- P0 assurance builds and installs real artifacts in pristine consumers, checks
+  independent optional-extra installations, performs real loopback TLS
+  handshakes, injects filesystem/process failures, and challenges parser and
+  token boundaries with independent controls and bounded workers. Required CI
+  execution fails when declared extras are unavailable.
+
+### Fixed
+
+- URL convenience Base64 decoding behaves the same with and without pybase64:
+  ignored characters no longer interfere with missing-padding repair,
+  completed padding preserves stdlib's handling of trailing data, non-ASCII
+  text raises stdlib's `ValueError`, and strided decoding buffers work. URL
+  decoding no longer emits pybase64's alternate-alphabet warnings. Strict
+  validation still accepts nonzero unused pad bits, as stdlib does; it does not
+  promise canonical spelling. Independent differential and generated
+  malformed-input contracts cover native and fallback paths. The decode
+  benchmark compares the same strict validation mode on both paths.
+- Process timeouts must be positive and finite. Filesystem rollback preserves
+  scratch-descriptor ownership and the original error, and directory syncing
+  remains best effort. Bearer-token envelopes require strict canonical
+  Base64url spelling, and non-ASCII MACs are rejected. The general-purpose URL
+  Base64 codec retains its documented lenient behavior. Editable YAML supports
+  standard `!!str` construction.
+- Native WAV writes select the WAV format for file-like, extensionless and
+  misleading-extension outputs in both one-shot and streaming writers, pinned
+  by independent audio-extra consumer tests.
+- Confirmed surrogate-region regex and truncated PCM frame findings remain as
+  module-owned regressions and corpus entries. Faithful regex recovery is
+  selected before exposing lazy match projections; incomplete PCM frames are
+  rejected explicitly.
+- `proc.run` kills and reaps its direct child before propagating cancellation,
+  including the `KeyboardInterrupt` path where `subprocess.run` could return
+  with an unreaped child. Captured output, timeout behavior and callback
+  semantics are preserved; real SIGINT regressions cover `run`, `capture` and
+  `run_ok`, including recovery.
+- The Python UUIDv7 fallback resets its lock and counter state after POSIX fork
+  so a child can generate IDs even when a vanished parent thread held the
+  counter lock. The parent's state and selected UUID backend are preserved;
+  a bounded ordinary regression and controlled concurrency histories pin the
+  deadlock.
+- Concurrent regular-expression cache misses no longer exceed the documented
+  512-entry limit when multiple threads select the same oldest entry. Compiles
+  publish before trimming and retry lost evictions. A bounded regression forces
+  the duplicate-oldest interleaving against native and stdlib backends.
+- Package metadata lookup is deferred until `unstd.__version__` is requested
+  and the result is cached. Importing submodules such as
+  `unstd.serde.structs` avoids that startup cost while retaining the same native
+  codecs, parsing behavior and metadata-derived version, including the
+  uninstalled-source fallback.
+
+### Performance
+
+- Reduce JSON eligibility and compact-encoding overhead, accelerate URL-safe
+  Base64 decoding, and improve structural cloning and stdlib array packing.
+  The portable Levenshtein fallback evaluates packed dynamic-programming
+  columns. Public call signatures, serialized formats and optional dependencies
+  for these hot-path optimizations stay the same; parity and regression tests
+  cover the optimized boundaries.
+- Reduce serde dispatch and allocation overhead for default JSON encoding,
+  small decoded JSON values, integer snapshot proofs, short Base64 decoding
+  and NDJSON writer setup. These optimizations preserve public signatures,
+  codec policies, output and error semantics. A repeatable complete function
+  profile includes output-checked native/fallback benchmarks and explicit API
+  comparisons.
+- Reduce duplicate private-attribute traversal when cloning Pydantic models
+  and the dataclass conversion entry check. Remove redundant integer
+  conversion, branching and bit assembly in the portable UUIDv7 generator.
+  Existing APIs, direct stdlib aliases, secure entropy and synchronized counter
+  behavior remain. Custom dataclass constructor arguments and msgspec copy
+  reducers defer to the stdlib copy protocol. Reproducible per-function
+  clone/UUID profiles and paired workload timings include output validation,
+  unchanged-signature checks and explicit coverage gaps.
+- JSON benchmarks separately measure fallback records and eligible
+  text/integer cases. Python 3.13.14 measured 5.98× text encoding and 1.91×
+  integer-array decoding. The old speed floors covered incompatible behavior
+  and were reset; no uniform speedup is promised.
+
 ## [2.1.1] - 2026-10-04
 
 ### Fixed
