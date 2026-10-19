@@ -122,6 +122,13 @@ doc_radar:
 
 ### Fixed
 
+- Installed-extra checks use locked artifact URLs and hashes for offline
+  consumers, including source-built dependencies at declared floors. Crash
+  controls allow Python 3.14 diagnostics to finish while retaining the short
+  intentional-hang deadline.
+- YAML fuzzing compares scalar `ValueError` exceptions from malformed dates
+  with the reference parser, retaining exact error types and messages. The
+  discovered invalid-date input is preserved in the authenticated seed corpus.
 - URL convenience Base64 decoding behaves the same with and without pybase64:
   ignored characters no longer interfere with missing-padding repair,
   completed padding preserves stdlib's handling of trailing data, non-ASCII

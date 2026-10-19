@@ -20,7 +20,7 @@ running this offline lane. Build commands explicitly use `--offline`, isolated
 build environments, no automatic interpreter downloads and `--exclude-newer P2D`.
 They never fall back to the network or an unisolated builder. Each command has a
 90-second ceiling; product consumer processes have a 30-second ceiling.
-For the required per-extra runtime matrix, prepare the locked wheel cache with
+For the required per-extra runtime matrix, prepare the locked artifact cache with
 `uv sync --locked --all-extras --group dev`, then select `--require-extras`.
 Without that flag the optional-backend consumers report an explicit skip; their
 tests are implemented and become mandatory in the required-extra run. No missing
@@ -40,10 +40,15 @@ cache, backend, resolver, import or native library failure is skipped there.
   `clone`; every requirement is guarded by exactly one extra, proving the base
   metadata has no unconditional dependency.
 - Required-extra runs also exercise each extra alone for each wheel route.
-  `uv export --locked --no-dev --no-default-groups --no-emit-project --extra EXTRA`
-  exports that extra's exact closure from the frozen lockfile, retaining hashes.
+  `uv export --locked --no-dev --no-default-groups --no-emit-project --extra EXTRA --format pylock.toml`
+  exports that extra's exact closure from the frozen lockfile, retaining artifact
+  URLs and hashes. Direct URLs avoid depending on registry metadata that a locked
+  sync does not need to cache.
   A new unseeded consumer receives only the product wheel and that closure, with
-  offline binary-only hash verification. Its exact distribution/version map must
+  offline hash verification. Source-only dependencies can reuse cached builds or
+  build in isolation from cached prerequisites under the same two-day quarantine;
+  no dependency preparation fetches from the network during pytest.
+  Its exact distribution/version map must
   equal the export, including transitives. Each direct backend must originate
   inside that environment; unrelated backends must be absent unless shared by
   the exported closure. Empty `clone` receives no dependency.

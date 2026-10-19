@@ -103,6 +103,9 @@ def test_reviewed_controls_preserve_lane_identity_journals_limits_and_exit_statu
 ):
     if fixture == "abort" and os.name != "posix":
         pytest.skip("POSIX abort signal classification")
+    # Only the hang control needs a short watchdog. Crash diagnostics (including
+    # Python 3.14's C stack) may take longer before SIGABRT terminates the worker.
+    per_test_seconds = 0.3 if fixture == "hang" else 2
     real_run = execution.run_group
     selected = []
 
@@ -123,7 +126,7 @@ def test_reviewed_controls_preserve_lane_identity_journals_limits_and_exit_statu
             "--wall-seconds",
             "8",
             "--per-test-seconds",
-            "0.3",
+            str(per_test_seconds),
             "--cpu-seconds",
             "5",
             "--artifact-dir",
@@ -143,7 +146,7 @@ def test_reviewed_controls_preserve_lane_identity_journals_limits_and_exit_statu
     assert report["seed"] == 271
     assert report["backend"] == "stdlib"
     assert report["backend_modules"] == {}
-    assert report["limits"]["per_test_seconds"] == 0.3
+    assert report["limits"]["per_test_seconds"] == per_test_seconds
     assert report["limits"]["wall_seconds"] == 8
     for source in (
         "tests/suites/assurance/adversarial/concurrency/test_ids.py",

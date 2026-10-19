@@ -230,6 +230,24 @@ def test_yaml_raw_safe_values_errors_and_recursive_aliases(raw):
     _yaml().fuzz(b"\0" + raw)
 
 
+@pytest.mark.parametrize("raw", [b"date: 2001-32-15\n", b"date: 2001-02-30\n"])
+def test_yaml_invalid_dates_preserve_scalar_value_error_parity(raw):
+    _yaml().fuzz(b"\0" + raw)
+
+
+@pytest.mark.parametrize("raw", [b"date: 2001-32-15\n", b"ok: true\n"])
+def test_yaml_scalar_value_errors_cannot_hide_a_parser_parity_failure(monkeypatch, raw):
+    target = _yaml()
+
+    def broken_parser(_source):
+        msg = "unexpected scalar rejection"
+        raise ValueError(msg)
+
+    monkeypatch.setattr(target.yaml, "loads", broken_parser)
+    with pytest.raises(AssertionError):
+        target.fuzz(b"\0" + raw)
+
+
 def test_yaml_known_model_rejects_wrong_production_value(monkeypatch):
     target = _yaml()
     target.fuzz(b"\x01payload")

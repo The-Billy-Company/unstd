@@ -61,7 +61,9 @@ def _graph(value):
 def _outcome(operation, source):
     try:
         return ("value", _graph(operation(source)))
-    except (YAMLError, UnicodeError, RecursionError) as error:
+    # Scalar constructors can reject malformed dates/binary with ValueError
+    # rather than YAMLError; retain exact type/message parity for those too.
+    except (YAMLError, ValueError, RecursionError) as error:
         return (
             "error",
             type(error),

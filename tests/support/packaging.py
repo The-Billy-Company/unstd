@@ -10,14 +10,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 import os
 from pathlib import Path
-import re
 import shutil
 import subprocess
 import sys
 import tomllib
 from typing import TYPE_CHECKING
 
-from packaging.requirements import Requirement
+from packaging.markers import Marker
 from packaging.utils import canonicalize_name
 
 from tests.support.anchors import REPO_ROOT
@@ -240,8 +239,8 @@ def create_consumer(root: Path, wheel: Path) -> Consumer:
 def install_extra_closure(
     artifacts: Artifacts, consumer: Consumer, extra: str
 ) -> dict[str, str]:
-    """Install one lock-exported hash-pinned closure, with no network or builds."""
-    requirements = consumer.root / f"{extra}.requirements.txt"
+    """Install one hash-pinned closure offline from its locked artifact URLs."""
+    lockfile = consumer.root / f"pylock.{extra}.toml"
     lock_before = (artifacts.source / "uv.lock").read_bytes()
     lock_options = tomllib.loads(lock_before.decode("utf-8")).get("options", {})
     # uv sync --resolution lowest-direct writes a distinct lock. Preserve its
@@ -268,29 +267,25 @@ def install_extra_closure(
             "--no-emit-project",
             "--extra",
             extra,
+            "--format",
+            "pylock.toml",
             "--no-annotate",
             "--no-header",
             "--output-file",
-            requirements,
+            lockfile,
         ],
         cwd=artifacts.source,
     )
     assert (artifacts.source / "uv.lock").read_bytes() == lock_before
     expected = {}
-    text = requirements.read_text(encoding="utf-8").replace("\\\n", " ")
-    for line in text.splitlines():
-        line = re.sub(r"\s+--hash=\S+", "", line).strip()
-        if not line or line.startswith("#"):
+    packages = tomllib.loads(lockfile.read_text(encoding="utf-8")).get("packages", [])
+    for package in packages:
+        marker = package.get("marker")
+        if marker is not None and not Marker(marker).evaluate():
             continue
-        requirement = Requirement(line)
-        if requirement.marker is not None and not requirement.marker.evaluate():
-            continue
-        specifiers = list(requirement.specifier)
-        assert len(specifiers) == 1, line
-        assert specifiers[0].operator == "==", line
-        name = canonicalize_name(requirement.name)
-        assert name not in expected, line
-        expected[name] = specifiers[0].version
+        name = canonicalize_name(package["name"])
+        assert name not in expected, package
+        expected[name] = package["version"]
     if expected:
         checked_command(
             [
@@ -301,14 +296,14 @@ def install_extra_closure(
                 "--no-config",
                 "--no-deps",
                 "--require-hashes",
-                "--only-binary",
-                ":all:",
+                "--exclude-newer",
+                "P2D",
                 "--link-mode",
                 "copy",
                 "--python",
                 consumer.python,
                 "--requirements",
-                requirements,
+                lockfile,
             ],
             cwd=consumer.root,
         )
