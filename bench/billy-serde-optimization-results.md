@@ -5,7 +5,8 @@
 call. Nine of eleven equivalent-output cases pass the median-ratio gate. The
 comparison with 3.0.0 passes all thirteen selected cases. The strict
 zero-regression target remains unmet.
-Release remains on hold.
+The 3.1.0 release discloses these remaining costs; it does not claim to pass
+the strict legacy performance gate.
 
 Measured on 2026-10-19 using Billy's existing fixtures and public calls, without
 Billy code changes. The implementation retains the 3.0 JSON values, output

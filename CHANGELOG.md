@@ -17,7 +17,7 @@ doc_radar:
 
 <!-- towncrier release notes start -->
 
-## [3.1.0] - 2026-10-19
+## [3.1.0] - 2026-10-20
 
 ### Performance
 
