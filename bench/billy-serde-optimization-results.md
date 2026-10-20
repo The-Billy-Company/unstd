@@ -1,13 +1,10 @@
 # Billy serde optimization measurements
 
-The measurements below identify candidate `5604a59`. A subsequent cold-path
-watcher reconfiguration correction is under validation and will be remeasured.
-
-**Status: the strict comparison with 2.1.1 still fails.** Source decoding through
-a warmed direct call is 0.20% slower. The original source-decoding workload is
-effectively tied, with 55 of 105 pairs faster. Ten of eleven equivalent-output
-cases pass the median-ratio gate. The comparison with 3.0.0 passes all thirteen
-selected cases. The strict zero-regression target remains unmet.
+**Status: the strict comparison with 2.1.1 still fails.** Source decoding is
+0.29% slower in the original workload and 0.58% slower through a warmed direct
+call. Nine of eleven equivalent-output cases pass the median-ratio gate. The
+comparison with 3.0.0 passes all thirteen selected cases. The strict
+zero-regression target remains unmet.
 Release remains on hold.
 
 Measured on 2026-10-19 using Billy's existing fixtures and public calls, without
@@ -23,21 +20,21 @@ so dividing displayed times need not reproduce the paired ratio exactly.
 
 | Saved Billy operation | 2.1.1 µs | Current µs | Paired current / old | Faster pairs |
 | --- | ---: | ---: | ---: | ---: |
-| Compact source encoding | 1.900 | 1.874 | 0.98640 | 99 / 105 |
-| Small request encoding | 0.108 | 0.080 | 0.74142 | 105 / 105 |
-| Small request decoding | 0.124 | 0.094 | 0.75234 | 105 / 105 |
-| Source decoding | 4.749 | 4.744 | 0.99918 | 55 / 105 |
-| NDJSON writing | 5.772 | 5.263 | 0.90749 | 104 / 105 |
-| NDJSON reading | 8.894 | 7.757 | 0.87437 | 104 / 105 |
-| Source decoding, direct call | 4.752 | 4.756 | **1.00201 — fails** | 35 / 105 |
+| Compact source encoding | 1.905 | 1.890 | 0.98989 | 99 / 105 |
+| Small request encoding | 0.106 | 0.080 | 0.75553 | 105 / 105 |
+| Small request decoding | 0.124 | 0.095 | 0.75919 | 105 / 105 |
+| Source decoding | 4.752 | 4.765 | **1.00294 — fails** | 33 / 105 |
+| NDJSON writing | 5.836 | 5.208 | 0.89325 | 105 / 105 |
+| NDJSON reading | 8.858 | 7.650 | 0.86573 | 105 / 105 |
+| Source decoding, direct call | 4.734 | 4.753 | **1.00575 — fails** | 14 / 105 |
 
 The original benchmark uses `functools.partial` for several operations. Additional
 warmed direct-call companions exercise Python's specialized call instructions.
 Every equivalent-output companion except source decoding also passes. Direct
-compact encoding has a paired ratio of 0.98904, with 96 / 105 faster pairs.
+compact encoding has a paired ratio of 0.98931, with 101 / 105 faster pairs.
 
 All thirteen current cases match their independent references and required
-native probes. The remaining failure is a performance failure. The report retains
+native probes. The remaining failures are performance failures. The report retains
 every batch sample, per-repetition result and failure:
 [`billy-serde-optimized-legacy-results.json`](billy-serde-optimized-legacy-results.json).
 
@@ -53,7 +50,7 @@ the remaining cost.
 The default source encoder produces different bytes in 2.1.1: 17,525 compact
 bytes, compared with the 17,628 bytes required by the 3.0 stdlib-compatible
 format. Both outputs decode to the same values. The measured complete call costs
-2.742 µs before and 20.926 µs currently. This operation is slower and receives
+2.754 µs before and 21.750 µs currently. This operation is slower and receives
 no equivalent-output release ratio. The strict gate covers the eleven cases
 whose outputs match their references in both versions.
 
@@ -65,12 +62,12 @@ own 105 neighboring batch pairs; absolute times are not mixed between runs.
 
 | Saved Billy operation | 3.0.0 µs | Current µs | Paired speedup |
 | --- | ---: | ---: | ---: |
-| Compact source encoding | 32.972 | 1.860 | 17.80× |
-| Small request encoding | 0.532 | 0.080 | 6.67× |
-| Small request decoding | 0.469 | 0.092 | 5.08× |
-| Source decoding | 8.106 | 4.699 | 1.73× |
-| NDJSON writing | 33.090 | 5.189 | 6.40× |
-| NDJSON reading | 25.729 | 7.561 | 3.40× |
+| Compact source encoding | 35.195 | 1.976 | 17.63× |
+| Small request encoding | 0.646 | 0.090 | 6.81× |
+| Small request decoding | 0.518 | 0.103 | 5.07× |
+| Source decoding | 8.591 | 4.968 | 1.73× |
+| NDJSON writing | 35.360 | 5.583 | 6.42× |
+| NDJSON reading | 29.058 | 8.443 | 3.42× |
 
 All thirteen selected cases pass the strict 1.0 ratio gate, exact output checks
 and required native probes. The complete report is
@@ -103,7 +100,7 @@ came from the actual Hatch wheel, rather than a separately configured prototype.
 - macOS 26.6, arm64; CPython 3.14.6.
 - orjson 3.13.0; msgspec 0.22.0; pybase64 1.5.0.
 - Native module SHA-256:
-  `a085bf6db4ea3ce1b25e4a6f0cc2d9abfa197c2e9d755bf171bb9ee83dd42e59`.
+  `7986b5de5198ac2fb30c431c3ee6e5484b0e0a4b298d5f4fe1f2b6c934f3fcf8`.
 - Installed distribution metadata reports unstd 3.0.0; the selected source and
   binary hashes identify the current implementation actually measured.
 
@@ -120,18 +117,19 @@ git archive v3.0.0 src/unstd | tar -x -C .local/billy-serde-v3
 ../billy/.venv/bin/python bench/billy_serde.py --paired --baseline-source .local/billy-serde-v3/src --runs 15 --repetitions 7 --select json- --select ndjson- --max-regression 1.0 --check --output bench/billy-serde-optimized-results.json
 ```
 
-The legacy command exits unsuccessfully for the direct source-decoding case.
+The legacy command exits unsuccessfully for both source-decoding cases.
 The 3.0.0 command succeeds. Both runs were performed once after the final freeze;
 no favorable rerun was selected.
 
 ## Validation and remaining limits
 
 The actual Hatch native artifacts passed the serde suite on CPython 3.12
-(2,684 tests, 38 skips), 3.13 (2,685 tests, 37 skips) and 3.14 (2,722 tests).
-Packaging and benchmark checks passed 164 tests with 32 skips and three
-deselections. The final full all-extras repository run on Python 3.13 passed
-6,024 tests with 43 skips and 250 deselections. Ruff, formatting, mypy and suite
+(2,685 tests, 38 skips), 3.13 (2,686 tests, 37 skips) and 3.14 (2,723 tests).
+The final full all-extras repository run on Python 3.14 passed 6,062 tests with
+six skips and 250 deselections in 84.23 seconds. Ruff, formatting, mypy and suite
 inventory checks also passed.
+Remote CI for [code commit 80fbdaf](https://github.com/The-Billy-Company/unstd/commit/80fbdaf)
+completed all 56 checks successfully.
 
 Near C-stack exhaustion, failure depth can depend on the invocation context:
 a 256 KiB stack probe found a difference of a few caller levels. Identical
