@@ -7,6 +7,7 @@
  */
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
+#include <string.h>
 
 #if PY_VERSION_HEX >= 0x030E0000 && PY_VERSION_HEX < 0x030F0000
 #define Py_BUILD_CORE
@@ -96,34 +97,21 @@ unchanged_function(PyObject *function, PyObject *expected, PyObject *code)
         && monitoring_clear(code);
 }
 
-static int
-safe_string(PyObject *value, int spaced)
-{
-    if (!spaced) {
-        return 1;
-    }
-    Py_ssize_t end = PyUnicode_GetLength(value);
-    if (end < 0) {
-        return -1;
-    }
-    Py_ssize_t found = PyUnicode_FindChar(value, ',', 0, end, 1);
-    if (found != -1) {
-        return found == -2 ? -1 : 0;
-    }
-    found = PyUnicode_FindChar(value, ':', 0, end, 1);
-    return found == -2 ? -1 : found == -1;
-}
+/* Container sizes are bounded by MAX_VALUES before counting punctuation. */
+typedef struct {
+    Py_ssize_t remaining, separators;
+} EncodeProof;
 
-static int eligible_container(PyObject *, Py_ssize_t *, int, int);
+static int eligible_container(PyObject *, EncodeProof *, int, int);
 
 static inline Py_ALWAYS_INLINE int
-eligible(PyObject *value, Py_ssize_t *remaining, int spaced, int depth)
+eligible(PyObject *value, EncodeProof *proof, int spaced, int depth)
 {
-    if (--*remaining < 0) {
+    if (--proof->remaining < 0) {
         return 0;
     }
     if (PyUnicode_CheckExact(value)) {
-        return safe_string(value, spaced);
+        return 1;
     }
     if (value == Py_None || PyBool_Check(value) || PyLong_CheckExact(value)) {
         /* orjson rejects oversized integers without exposing a lossy result;
@@ -133,11 +121,11 @@ eligible(PyObject *value, Py_ssize_t *remaining, int spaced, int depth)
     if (depth >= MAX_DEPTH) {
         return 0;
     }
-    return eligible_container(value, remaining, spaced, depth);
+    return eligible_container(value, proof, spaced, depth);
 }
 
 static int
-eligible_container(PyObject *value, Py_ssize_t *remaining, int spaced, int depth)
+eligible_container(PyObject *value, EncodeProof *proof, int spaced, int depth)
 {
     if (Py_EnterRecursiveCall(" while proving JSON encoding")) {
         return -1;
@@ -147,19 +135,25 @@ eligible_container(PyObject *value, Py_ssize_t *remaining, int spaced, int depth
     if (PyList_CheckExact(value) || PyTuple_CheckExact(value)) {
         int list = PyList_CheckExact(value);
         Py_ssize_t size = list ? PyList_GET_SIZE(value) : PyTuple_GET_SIZE(value);
-        if (size <= *remaining) {
+        if (size <= proof->remaining) {
+            if (spaced && size > 0) {
+                proof->separators += size - 1;
+            }
             result = 1;
             PyObject **items = list ? ((PyListObject *)value)->ob_item
                                    : ((PyTupleObject *)value)->ob_item;
             for (Py_ssize_t index = 0; index < size; index++) {
-                result = eligible(items[index], remaining, spaced, depth + 1);
+                result = eligible(items[index], proof, spaced, depth + 1);
                 if (result != 1) {
                     break;
                 }
             }
         }
     } else if (PyDict_CheckExact(value)) {
-        if (PyDict_GET_SIZE(value) <= *remaining) {
+        if (PyDict_GET_SIZE(value) <= proof->remaining) {
+            if (spaced && PyDict_GET_SIZE(value) > 0) {
+                proof->separators += PyDict_GET_SIZE(value) * 2 - 1;
+            }
             Py_ssize_t position = 0;
             PyObject *key, *item;
             result = 1;
@@ -168,10 +162,7 @@ eligible_container(PyObject *value, Py_ssize_t *remaining, int spaced, int depth
                     result = 0;
                     break;
                 }
-                result = safe_string(key, spaced);
-                if (result == 1) {
-                    result = eligible(item, remaining, spaced, depth + 1);
-                }
+                result = eligible(item, proof, spaced, depth + 1);
                 if (result != 1) {
                     break;
                 }
@@ -182,14 +173,84 @@ eligible_container(PyObject *value, Py_ssize_t *remaining, int spaced, int depth
     return result;
 }
 
+/* cursor follows an opening quote in a trusted JSON byte span. */
+static const char *
+skip_json_string(const char *cursor, const char *end)
+{
+    for (;;) {
+        const char *quote = memchr(cursor, '\"', end - cursor);
+        if (quote == NULL) {
+            return NULL;
+        }
+        const char *escape = quote;
+        while (escape > cursor && escape[-1] == '\\') {
+            escape--;
+        }
+        cursor = quote + 1;
+        if (((quote - escape) & 1) == 0) {
+            return cursor;
+        }
+    }
+}
+
+/* The proof counts separators; this pass only inserts JSON whitespace.
+ * Skip whole quoted spans so punctuation and escaped quotes stay untouched. */
+static PyObject *
+space_encoded(PyObject *encoded, Py_ssize_t separators)
+{
+    if (!PyBytes_CheckExact(encoded)) {
+        PyErr_SetString(PyExc_TypeError, "native JSON must be bytes");
+        return NULL;
+    }
+    Py_ssize_t length = PyBytes_GET_SIZE(encoded);
+    if (separators > PY_SSIZE_T_MAX - length) {
+        return PyErr_NoMemory();
+    }
+    PyObject *result = PyBytes_FromStringAndSize(NULL, length + separators);
+    if (result == NULL) {
+        return NULL;
+    }
+    const char *cursor = PyBytes_AS_STRING(encoded);
+    const char *end = cursor + length;
+    const char *segment = cursor;
+    char *output = PyBytes_AS_STRING(result);
+    while (cursor < end) {
+        char current = *cursor++;
+        if (current == '\"') {
+            cursor = skip_json_string(cursor, end);
+            if (cursor == NULL) {
+                goto invalid;
+            }
+        } else if (current == ',' || current == ':') {
+            if (separators-- == 0) {
+                goto invalid;
+            }
+            Py_ssize_t size = cursor - segment;
+            memcpy(output, segment, size);
+            output += size;
+            *output++ = ' ';
+            segment = cursor;
+        }
+    }
+    if (separators != 0) {
+        goto invalid;
+    }
+    memcpy(output, segment, end - segment);
+    return result;
+invalid:
+    Py_DECREF(result);
+    PyErr_SetString(PyExc_TypeError, "inconsistent native JSON separators");
+    return NULL;
+}
+
 static PyObject *
 guarded_encode(NativeState *state, PyObject *value, PyObject *option, int spaced)
 {
     if (Py_EnterRecursiveCall(" while proving JSON encoding")) {
         return NULL;
     }
-    Py_ssize_t remaining = MAX_VALUES;
-    int result = eligible(value, &remaining, spaced, 0);
+    EncodeProof proof = {MAX_VALUES, 0};
+    int result = eligible(value, &proof, spaced, 0);
     if (result != 1) {
         Py_LeaveRecursiveCall();
         if (result < 0) {
@@ -203,6 +264,11 @@ guarded_encode(NativeState *state, PyObject *value, PyObject *option, int spaced
         ? state->encoder_fast(state->encoder_self, backend_args, count, NULL)
         : PyObject_Vectorcall(state->encoder, backend_args, count, NULL);
     Py_LeaveRecursiveCall();
+    if (encoded != NULL && spaced && proof.separators != 0) {
+        PyObject *result = space_encoded(encoded, proof.separators);
+        Py_DECREF(encoded);
+        return result;
+    }
     return encoded;
 }
 
@@ -425,7 +491,7 @@ static PyMethodDef methods[] = {
     {"encode", (PyCFunction)(void (*)(void))encode,
      METH_FASTCALL | METH_KEYWORDS,
      "encode(obj, option=0, spaced=False)\n--\n\n"
-     "Serialize an exact builtin tree, or return NotImplemented."},
+     "Serialize exact builtins, adding default spaces when requested."},
     {"configure", configure, METH_O, "Bind the Python codec's module globals."},
     {"dumpb", (PyCFunction)(void (*)(void))dumpb, METH_FASTCALL,
      "Compact transport bytes for the existing Python facade."},

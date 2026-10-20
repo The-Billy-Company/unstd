@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import sys
 from types import SimpleNamespace
 from typing import TYPE_CHECKING
@@ -94,3 +95,61 @@ def test_native_dispatch_readiness_is_observed_after_profile_and_warmup(
     assert result["native_calls"] == {"msgspec": 1}
     assert not result["native_function_dispatch_after_profile"]
     assert result["native_function_dispatch_ready"]
+
+
+def test_native_spacing_probe_requires_exact_bytes_not_entry_or_fallback(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    expected = json.dumps({"quoted:key": ['comma, quote" slash\\', {}]})
+    monkeypatch.setattr(
+        billy_serde,
+        "_native_calls",
+        lambda _operation: {"unstd.serde._json_native": 1},
+    )
+    for name in ("json-default-source", "json-default-source/direct"):
+        case = SimpleNamespace(
+            name=name,
+            reference=lambda: expected,
+            actual=lambda: expected,
+            native=None,
+            fallback="stdlib",
+        )
+        for encoded in (
+            NotImplemented,
+            expected,
+            json.dumps(json.loads(expected), separators=(",", ":")).encode(),
+            expected.encode(),
+        ):
+            result = billy_serde._verify(case, {"spacing": lambda value=encoded: value})
+            assert result["identical_output"]
+            assert result["native_calls"] == {"unstd.serde._json_native": 1}
+            assert result["native_spacing_accepts_fixture"] is (
+                type(encoded) is bytes and encoded == expected.encode()
+            )
+
+
+def test_paired_gate_rejects_declined_native_spacing() -> None:
+    shared = {
+        "identical_output": True,
+        "required_native": None,
+        "native_calls": {"unstd.serde._json_native": 1},
+        "backend": "unstd.serde._json_native",
+        "cpu_ns": 100,
+    }
+    reports = {
+        "before": [{"cases": {"json-default-source": shared}}],
+        "after": [
+            {
+                "cases": {
+                    "json-default-source": {
+                        **shared,
+                        "native_spacing_accepts_fixture": False,
+                    }
+                }
+            }
+        ],
+    }
+    _, failures = billy_serde._summarize(reports, None)
+    assert failures == [
+        "json-default-source: native spacing rejected the required fixture"
+    ]

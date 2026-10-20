@@ -131,16 +131,67 @@ def test_unknown_types_do_not_invoke_class_properties_or_metaclass_methods() -> 
     assert native.encode([Unknown()] * 8) is NotImplemented
 
 
-@pytest.mark.parametrize("value", ["comma,", "colon:", {"key:": 1}, ["x,y"]])
-def test_spacing_proof_rejects_string_punctuation(value: object) -> None:
-    assert native.encode(value, 0, True) is NotImplemented
-    assert native.encode(value, 0, False) == orjson.dumps(value)
+@pytest.mark.parametrize(
+    "value",
+    [
+        "comma,",
+        "colon:",
+        {"key:": 1},
+        ["x,y"],
+        {"punctuation,:": ['quoted "text",: and trailing \\', {"empty": []}]},
+        {"é,:": ["😀\x00\x1f\x7f,:", (), {}, True, None, -(2**63), 2**64 - 1]},
+    ],
+)
+@pytest.mark.parametrize("sort_keys", [False, True])
+def test_native_default_spacing_preserves_string_content(
+    value: object, sort_keys: bool
+) -> None:
+    option = orjson.OPT_SORT_KEYS if sort_keys else 0
+    expected = json.dumps(value, ensure_ascii=False, sort_keys=sort_keys).encode()
+    assert native.encode(value, option, True) == expected
+    assert native.encode(value, option, False) == orjson.dumps(value, option=option)
+    assert (
+        jsonx.dumps(value, ensure_ascii=False, sort_keys=sort_keys).encode() == expected
+    )
+    assert jsonx.dumps(value, sort_keys=sort_keys) == json.dumps(
+        value, sort_keys=sort_keys
+    )
+
+
+@pytest.mark.parametrize("backslashes", range(12))
+def test_native_spacing_handles_escaped_quotes_and_trailing_backslashes(
+    backslashes: int,
+) -> None:
+    text = "\\" * backslashes
+    value = {text + '",:': [text, '"' + text, {"tail": text + '"'}]}
+    assert native.encode(value, 0, True) == json.dumps(value).encode()
+
+
+def test_public_default_spacing_accepts_a_larger_punctuated_text_tree(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from unstd.serde import _json_encode
+
+    value = {"records:": [{"text,": 'quoted "words", path ' + "\\" + " : " * 20}] * 40}
+    expected = json.dumps(value)
+    observed: list[bytes] = []
+
+    def encode(obj: object, option: int, spaced: bool) -> Any:
+        assert spaced
+        result = native.encode(obj, option, spaced)
+        assert result is not NotImplemented
+        observed.append(result)
+        return result
+
+    monkeypatch.setattr(_json_encode, "_native_encode", encode)
+    assert jsonx.dumps(value) == expected
+    assert observed == [expected.encode()]
 
 
 def test_native_backend_options_support_indentation_and_newlines() -> None:
     value = {"items": [1, None], "empty": {}}
     assert (
-        native.encode(value, orjson.OPT_INDENT_2, True)
+        native.encode(value, orjson.OPT_INDENT_2, False)
         == json.dumps(value, ensure_ascii=False, indent=2).encode()
     )
     assert native.encode(value, orjson.OPT_APPEND_NEWLINE) == (
@@ -227,7 +278,7 @@ def test_nonbuiltin_flags_are_not_evaluated() -> None:
 
 
 def test_keyword_arguments_keep_the_same_native_proof() -> None:
-    assert native.encode(obj={"value": 7}, spaced=True, option=0) == b'{"value":7}'
+    assert native.encode(obj={"value": 7}, spaced=True, option=0) == b'{"value": 7}'
 
 
 @pytest.fixture

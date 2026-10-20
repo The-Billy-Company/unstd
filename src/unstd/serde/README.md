@@ -65,10 +65,11 @@ The accelerated paths are deliberately narrower than the supported API:
   while retaining the GIL. No Python callback can mutate the tree between proof
   and encoding. Without the extension, a private snapshot validates at most 16
   values and 16 container levels. Floats and unsupported values use stdlib.
-  Compact output and default `indent=2` use native formatting. Default spacing
-  is added only when strings cannot contain delimiter characters. Top-level
-  text uses stdlib's specialized encoder. ASCII output also excludes DEL,
-  which stdlib escapes differently.
+  Compact output and default spaces use native formatting. The extension adds
+  spaces only outside quoted strings, preserving punctuation and escaped quotes
+  in text. Indentation keeps the recursive snapshot proof. Top-level text uses
+  stdlib's specialized encoder. ASCII output also excludes DEL, which stdlib
+  escapes differently.
 - **Decoding:** exact `str`/`bytes` with no explicit options. A reusable msgspec
   decoder constructs arbitrary-precision integers and correctly rounded floats.
   The optional extension can use orjson for larger documents after a bounded

@@ -133,6 +133,7 @@ def _exact_encode(
     encode: Callable[..., bytes],
 ) -> str | None:
     """Serialize only after a bounded proof; the caller owns error fallback."""
+    native_spacing = False
     scalar_string = type(obj) is str
     # Python 3.12's indented encoder recurses in Python for each container.
     # The recursive snapshot retains that headroom across supported versions.
@@ -141,6 +142,7 @@ def _exact_encode(
         if result is NotImplemented:
             return None
         raw = result
+        native_spacing = style == 1
     else:
         snapshot = obj if scalar_string else _snapshot(obj, [_MAX_VALUES], style == 1)
         if snapshot is _UNSAFE:
@@ -150,7 +152,7 @@ def _exact_encode(
     # escapes match; non-ASCII and surrogate cases belong to stdlib.
     if ensure_ascii and (not raw.isascii() or b"\x7f" in raw):
         return None
-    if style == 1 and not scalar_string:
+    if style == 1 and not scalar_string and not native_spacing:
         raw = raw.replace(b",", b", ").replace(b":", b": ")
     return raw.decode()
 

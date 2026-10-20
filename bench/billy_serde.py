@@ -120,6 +120,7 @@ def _workloads(benchmark: Path) -> tuple[Any, list[Any], dict[str, Any], Any]:
 
     encoder_module = sys.modules.get("unstd.serde._json_encode")
     native_guard = getattr(encoder_module, "_native_encode", None)
+    native_spacing = native_guard
     native_facade = getattr(jsonx, "_native_dumpb", None)
     if native_facade is not None:
 
@@ -148,6 +149,9 @@ def _workloads(benchmark: Path) -> tuple[Any, list[Any], dict[str, Any], Any]:
     metadata["native_module"] = getattr(native, "__file__", None)
     binding = getattr(native, "is_bound", None)
     probes = {"encode": native_guard}
+    if native_spacing is not None:
+        source = next(case for case in cases if case.name == "json-default-source")
+        probes["spacing"] = partial(native_spacing, source.actual.args[0], 0, True)
     readiness = getattr(native, "dispatch_ready", None)
     # Profiling restores Python frames; separate untimed dispatch evidence
     # never becomes an invented native c_call profiling event.
@@ -183,6 +187,15 @@ def _verify(case: Any, probes: dict[str, Any]) -> dict[str, Any]:
         probe = native_guard(case.actual.args[0])
         result["native_guard_accepts_fixture"] = (
             type(probe) is bytes and probe == expected
+        )
+    native_spacing = probes.get("spacing")
+    if case.name.startswith("json-default-source") and native_spacing is not None:
+        # A C entry can still decline and let stdlib produce the same output.
+        # Require the renderer itself to accept the real punctuation-bearing
+        # fixture and return the complete independent whitespace representation.
+        probe = native_spacing()
+        result["native_spacing_accepts_fixture"] = (
+            type(probe) is bytes and probe == expected.encode()
         )
     codec = (
         "loads"
@@ -409,6 +422,10 @@ def _summarize(
         ):
             failures.append(f"{name}: native guard rejected the required fixture")
         if any(
+            not result.get("native_spacing_accepts_fixture", True) for result in after
+        ):
+            failures.append(f"{name}: native spacing rejected the required fixture")
+        if any(
             not result.get("native_function_dispatch_ready", True) for result in after
         ):
             failures.append(f"{name}: native dispatch inactive after profiling probe")
@@ -514,6 +531,7 @@ def main() -> None:
             "comparison": "only outputs equal to their independent reference receive a release ratio",
             "distribution_metadata": "worker package versions describe installed distributions; source hashes identify selected code",
             "native_probe": "observed Python-to-C entries; a native guard's delegated orjson call is not fabricated as an orjson profiling event",
+            "native_spacing": "the native spaced encoder must independently return the exact default-source reference bytes; entry followed by fallback does not satisfy this probe",
             "native_dispatch": "profiling restores Python function frames; separate untimed binding and readiness probes attest native dispatch after one output-checked warm call",
         },
         "sources": source_info,

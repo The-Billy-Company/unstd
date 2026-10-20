@@ -25,6 +25,8 @@ doc_radar:
   builtin trees and calls orjson while retaining the GIL. Larger text records
   avoid 3.0.0's Python snapshot budget and stdlib fallback. Compiler-less source
   builds retain the portable path; release wheels include the guard.
+- Native default spacing preserves punctuation and escaped quotes inside text,
+  avoiding the stdlib fallback for larger string-heavy records.
 - Untyped JSON decoding reuses msgspec's arbitrary-precision integer and correctly
   rounded float decoder, with a bounded native proof enabling orjson for larger
   records. CPython 3.14 native dispatch preserves Python function metadata and

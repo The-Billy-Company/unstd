@@ -199,20 +199,10 @@ array_float_prefix(PyObject *document)
     }
     while (source < end) {
         char current = *source++;
-        if (current == '"') {
-            while (source < end) {
-                const char *quote = memchr(source, '"', end - source);
-                if (quote == NULL) {
-                    return 0;
-                }
-                const char *escape = quote;
-                while (escape > source && escape[-1] == '\\') {
-                    escape--;
-                }
-                source = quote + 1;
-                if (((quote - escape) & 1) == 0) {
-                    break;
-                }
+        if (current == '\"') {
+            source = skip_json_string(source, end);
+            if (source == NULL) {
+                return 0;
             }
         } else if ((current >= '0' && current <= '9') || current == '-') {
             while (source < end && *source >= '0' && *source <= '9') {
