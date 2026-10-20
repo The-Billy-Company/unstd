@@ -1,5 +1,9 @@
 # Billy serde regression investigation
 
+Historical measurements for the first 3.1.0 candidate. See the
+[subsequent optimization report](billy-serde-optimization-results.md) for the
+current implementation and its stricter comparison with 2.1.1.
+
 Measured 2026-10-19 on macOS arm64, Python 3.14.6, orjson 3.13.0,
 msgspec 0.22.0 and pybase64 1.5.0. The patch keeps Billy's public calls intact.
 It recovers most of the JSON performance lost in 3.0.0 while retaining exact

@@ -8,7 +8,7 @@ doc_radar:
     - file: .github/workflows/ci.yml
       contains: ['github.sha || github.ref', 'version: "latest-known"', 'uv sync --locked']
     - file: .github/workflows/release.yml
-      contains: ['TAG: ${{ github.ref_name }}', 'Build and test CPython stable-ABI wheels']
+      contains: ['TAG: ${{ github.ref_name }}', 'Build and test CPython wheels']
     - file: src/unstd/serde/structs.py
       contains: ['Callable[[Decimal], object]', 'decimal_format: _DecimalFormat']
 ---
@@ -21,19 +21,31 @@ doc_radar:
 
 ### Performance
 
-- JSON encoding can use an optional CPython stable-ABI guard that checks exact
+- JSON encoding can use an optional CPython native guard that checks exact
   builtin trees and calls orjson while retaining the GIL. Larger text records
   avoid 3.0.0's Python snapshot budget and stdlib fallback. Compiler-less source
   builds retain the portable path; release wheels include the guard.
 - Untyped JSON decoding reuses msgspec's arbitrary-precision integer and correctly
-  rounded float decoder, removing the source scan and Python result-tree walk.
-  Custom options, unsupported inputs and native errors retain stdlib behavior.
+  rounded float decoder, with a bounded native proof enabling orjson for larger
+  records. CPython 3.14 native dispatch preserves Python function metadata and
+  falls back during instrumentation. Custom options, unsupported inputs and
+  native errors retain stdlib behavior.
 - NDJSON writes use the same guarded encoder's native trailing-newline option,
   avoiding redundant public dispatch and an extra output copy per record.
+- Whole-blob NDJSON reads batch native parsing over strict physical newline
+  boundaries. Streaming reads, callbacks and error diagnostics keep their
+  existing behavior.
 - Added an output-checked Billy fixture comparison with source and fixture
-  fingerprints, raw CPU samples and an optional release-regression gate. Results
-  retain residual costs relative to the permissive 2.1.1 codec; no universal
-  speedup or zero-overhead compatibility claim is made. Public APIs are unchanged.
+  fingerprints, alternating before/after CPU batches, direct-call companions and
+  an optional release-regression gate. The measurement report retains residual
+  costs relative to the permissive 2.1.1 codec; no universal speedup or
+  zero-overhead compatibility claim is made. Public APIs are unchanged.
+
+### Fixed
+
+- Native codec reinitialization keeps earlier helpers' configuration checks and
+  Python fallbacks valid. Module destruction also releases watchers and owned
+  references when garbage collection has not run the clear hook first.
 
 ## [3.0.0] - 2026-10-19
 

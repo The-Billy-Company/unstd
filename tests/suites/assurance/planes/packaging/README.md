@@ -32,7 +32,7 @@ cache, backend, resolver, import or native library failure is skipped there.
   snapshot, the typing marker and exact license/notice bytes. Tests and benchmark
   tools stay out of the installed wheel. Wheel RECORD digests and sizes are
   independently recomputed for every member, and paths, duplicate members,
-  native stable-ABI or portable wheel tags, metadata, supported Python and
+  native CPython or portable wheel tags, metadata, supported Python and
   license metadata are checked. An explicit compiler failure verifies the
   portable fallback; native release builds require the extension to compile.
 - The sdist preserves all build inputs and package files, excludes local

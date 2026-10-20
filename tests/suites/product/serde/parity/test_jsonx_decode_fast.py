@@ -1,8 +1,9 @@
-"""The native decoder preserves exact numeric values without a tree walk."""
+"""Native dispatch preserves exact numeric values and source-wide failures."""
 
 from __future__ import annotations
 
 import json
+import sys
 from typing import Any
 
 import pytest
@@ -73,3 +74,53 @@ def test_source_type_checks_do_not_call_metaclass_equality(
     source_type = Equality("Document", (container,), {})
     source = source_type("{}" if container is str else b"{}")
     assert jsonx.loads(source) == {}
+
+
+@pytest.mark.parametrize("binary", [False, True])
+@pytest.mark.parametrize("digits", [640, 641, 5000])
+def test_discarded_duplicate_integer_obeys_the_interpreter_digit_limit(
+    binary: bool, digits: int
+) -> None:
+    # The last duplicate hides the integer in the result. A result-only numeric
+    # proof must still retain failures produced while reading the original text.
+    document = '{"padding":"' + "x" * 3000 + '","x":' + "9" * digits + ',"x":1}'
+    source = document.encode() if binary else document
+    previous = sys.get_int_max_str_digits()
+    try:
+        sys.set_int_max_str_digits(640)
+        if digits <= 640:
+            assert jsonx.loads(source) == json.loads(source)
+        else:
+            with pytest.raises(
+                ValueError, match="integer string conversion"
+            ) as reference:
+                json.loads(source)
+            with pytest.raises(type(reference.value)) as actual:
+                jsonx.loads(source)
+            assert str(actual.value) == str(reference.value)
+    finally:
+        sys.set_int_max_str_digits(previous)
+
+
+@pytest.mark.parametrize("binary", [False, True])
+@pytest.mark.parametrize("depth", [128, 1000, 1200])
+def test_discarded_duplicate_nesting_retains_source_limits(
+    binary: bool, depth: int
+) -> None:
+    document = (
+        '{"padding":"'
+        + "x" * 3000
+        + '","x":'
+        + "[" * depth
+        + "0"
+        + "]" * depth
+        + ',"x":1}'
+    )
+    source = document.encode() if binary else document
+    try:
+        expected = json.loads(source)
+    except RecursionError:
+        with pytest.raises(RecursionError):
+            jsonx.loads(source)
+    else:
+        assert jsonx.loads(source) == expected

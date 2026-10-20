@@ -40,7 +40,7 @@ jobs:
         with:
           enable-cache: false
           version: "latest-known"
-      - name: Build and test CPython stable-ABI wheels
+      - name: Build and test CPython wheels
         run: uvx --from cibuildwheel==4.3.1 cibuildwheel --output-dir dist
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:

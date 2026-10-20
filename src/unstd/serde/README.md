@@ -71,7 +71,9 @@ The accelerated paths are deliberately narrower than the supported API:
   which stdlib escapes differently.
 - **Decoding:** exact `str`/`bytes` with no explicit options. A reusable msgspec
   decoder constructs arbitrary-precision integers and correctly rounded floats.
-  It needs no Python result-tree walk. Failures,
+  The optional extension can use orjson for larger documents after a bounded
+  native proof excludes numeric coercions. Interpreter limits still apply to
+  the entire source, including discarded duplicate values. Failures,
   including integer digit limits, Unicode extensions and malformed input, parse
   the original document with stdlib for authoritative behavior and diagnostics.
   Explicit options and caller callbacks go directly to stdlib.
@@ -87,8 +89,8 @@ proofs and fallback paths are part of the implementation.
 
 Speed depends on the payload and Python version. The benchmark harness compares
 identical outputs and separately measures native paths and fallback records.
-The [Billy fixture comparison](../../../bench/billy-serde-results.md) retains
-release regressions as well as gains. Compatibility checking has a cost relative
+The [Billy fixture comparison](../../../bench/billy-serde-optimization-results.md)
+retains release regressions as well as gains. Compatibility checking has a cost relative
 to the permissive 2.1 codec; measured results are not a universal speed promise.
 
 **Compact bytes:** `dumpb` equals
@@ -99,10 +101,12 @@ stdlib across backends. Lone surrogates raise the same UTF-8 encoding error.
 `canonical` retains its sorted, compact, ASCII-escaped identity format; it is
 not an implementation of RFC 8785.
 
-Platform wheels include the optional CPython stable-ABI guard. Source builds
-use a compiler when available and otherwise retain the portable implementation;
-no runtime dependency or public API is added. Use a platform wheel for the full
-encoding speedup. Decoding needs only the existing `serde` extra.
+Platform wheels include the optional guard for each CPython version. Source
+builds use a compiler when available and otherwise retain the portable
+implementation; no runtime dependency or public API is added. Use a platform
+wheel for the full JSON and NDJSON speedups. On CPython 3.14, native dispatch
+preserves the public Python function objects, signatures and annotations, and
+resumes ordinary Python execution for tracing, profiling or monitoring.
 
 **Numpy extension:** with the default encoder, `numpy=True` on
 `dumps`/`dump`/`dumpb` converts arrays with `.tolist()` and scalars with `.item()`
@@ -273,6 +277,8 @@ rows = ndjson.load(fp)  # every record -> list
 Every record is newline-terminated (append-safe). Blank lines are skipped on
 read. Malformed lines raise `NDJSONDecodeError` with a 1-based `lineno` by
 default; pass `skip_errors=True` for the lenient "drop the bad line" mode.
+The optional extension batches whole-blob reads while keeping physical newline
+boundaries. Streaming readers keep their lazy per-record behavior.
 
 Pass `codec=` to decode directly into a validated schema, with no intermediate
 dictionary and second validation pass. Construct the codec once and reuse it:
@@ -300,8 +306,8 @@ events = ndjson.loads(raw, codec=EVENTS)  # list[Event]
 All six read/write functions accept `codec=`. Typed reads follow that codec's
 strictness and conversion settings; writes use its encoder and append one newline
 per record. Like the codec itself, writing does not validate field types at runtime.
-Typed reads require the existing `serde` extra; untyped operations keep the stdlib
-fallback and never import msgspec.
+Typed reads require the existing `serde` extra; untyped operations share jsonx's
+decoder and keep the stdlib fallback.
 
 Reader `on_error(error)` callbacks receive `NDJSONDecodeError` once for each
 rejected row, before the default raise or `skip_errors=True`. Its `lineno` counts

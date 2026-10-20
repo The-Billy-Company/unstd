@@ -11,21 +11,25 @@ from functools import lru_cache
 import json
 from typing import TYPE_CHECKING, Any
 
-from unstd.serde._json_common import _check_headroom
-
 
 if TYPE_CHECKING:
     from collections.abc import Callable
-    from types import NotImplementedType
+    from types import ModuleType, NotImplementedType
 
 
 _native_encode: Callable[..., bytes | NotImplementedType] | None
 _native_backend: Callable[..., bytes] | None
+_native: ModuleType | None
 try:
     from orjson import dumps as _native_backend
 
-    from unstd.serde._json_native import encode as _native_encode
-except ImportError:
+    from unstd.serde import _json_native as _native_module
+
+    _configure_native = _native_module.configure
+    _native_encode = _native_module.encode
+    _native = _native_module
+except (ImportError, AttributeError):
+    _native = None
     _native_encode = None
     _native_backend = None
 
@@ -136,7 +140,7 @@ def _exact_encode(
         result = _native_encode(obj, option, style == 1)
         if result is NotImplemented:
             return None
-        raw = _check_headroom(result)
+        raw = result
     else:
         snapshot = obj if scalar_string else _snapshot(obj, [_MAX_VALUES], style == 1)
         if snapshot is _UNSAFE:
@@ -157,7 +161,7 @@ def _exact_bytes(
     """The same exact snapshot domain, in compact UTF-8 without a text roundtrip."""
     if _native_encode is not None and encode is _native_backend:
         result = _native_encode(obj, option)
-        return None if result is NotImplemented else _check_headroom(result)
+        return None if result is NotImplemented else result
     snapshot = _snapshot(obj, [_MAX_VALUES], False)
     return None if snapshot is _UNSAFE else encode(snapshot, option=option)
 

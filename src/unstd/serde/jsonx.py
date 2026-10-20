@@ -44,11 +44,13 @@ from unstd.serde._json_encode import (
     _exact_bytes,
     _exact_encode,
     _format,
+    _native,
 )
 
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+    from types import NotImplementedType
     from typing import Protocol
 
     import msgspec
@@ -131,6 +133,12 @@ if _HAVE_MSGSPEC:
     _decode = msgspec.json.Decoder().decode
 _NO_NUMPY = "numpy=True requires numpy to be installed"
 _DEFAULT_ENCODER = _stdlib.JSONEncoder()
+_native_dumpb: (
+    Callable[[object, bool, object, bool], bytes | NotImplementedType] | None
+) = _native.dumpb if _native is not None else None
+_native_line: Callable[[object], bytes | NotImplementedType] | None = (
+    _native.line if _native is not None else None
+)
 
 
 def _numpy_default(
@@ -263,6 +271,10 @@ def dumpb(
     handles proven exact builtin trees; other values, ``default`` and ``numpy=True``
     use stdlib. For the package's identity format use :func:`canonical`.
     """
+    if _native_dumpb is not None:
+        native_result = _native_dumpb(obj, sort_keys, default, numpy)
+        if native_result is not NotImplemented:
+            return native_result
     if numpy and not _HAVE_NUMPY:
         raise TypeError(_NO_NUMPY)
     if _HAVE_ORJSON and not numpy and default is None and type(sort_keys) is bool:
@@ -295,6 +307,10 @@ def dumpb(
 
 def _line(obj: object) -> bytes:
     """One newline-terminated compact record for :mod:`unstd.serde.ndjson`."""
+    if _native_line is not None:
+        native_result = _native_line(obj)
+        if native_result is not NotImplemented:
+            return native_result
     if _HAVE_ORJSON:
         try:
             result = _exact_bytes(obj, _NEWLINE, _encode)
@@ -389,3 +405,7 @@ def dump(
 def load(fp: _Reader, **kw: Any) -> Any:
     """Read once, then apply the same exact decoder dispatch as :func:`loads`."""
     return loads(fp.read(), **kw)
+
+
+if _native is not None:
+    _native.configure(globals())

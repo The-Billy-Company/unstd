@@ -59,6 +59,9 @@ __all__ = [
 # non-finite constants, Unicode support and interpreter limits.
 _parse = jsonx.loads
 _line = jsonx._line
+_loads_lines: Callable[[object], object] | None = getattr(
+    getattr(jsonx, "_native", None), "loads_lines", None
+)
 
 
 class _MethodCodec[T](Protocol):
@@ -241,6 +244,17 @@ def loads[T](
     unescaped, and over-splitting there silently corrupts a record. A ``\\r\\n``
     writer is still tolerated — :func:`iter_loads` strips the trailing ``\\r``.
     """
+    if (
+        codec is None
+        and skip_errors is False
+        and on_error is None
+        and _loads_lines is not None
+        and jsonx._HAVE_MSGSPEC is True
+        and _parse is jsonx.loads
+    ):
+        result = _loads_lines(text)
+        if isinstance(result, list):
+            return result
     lines = (
         text.split(b"\n") if isinstance(text, bytes | bytearray) else text.split("\n")
     )

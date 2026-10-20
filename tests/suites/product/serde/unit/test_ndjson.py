@@ -324,6 +324,132 @@ def test_loads_fast_path_failure_still_names_the_bad_line() -> None:
     ]
 
 
+@pytest.mark.parametrize(
+    "document",
+    [
+        "1 2\n",
+        "1\t2\n",
+        '{"a":1}{"b":2}\n',
+        "[\n1\n]\n",
+        "[\n1]\n2 3\n",
+        "1\r2\n",
+    ],
+)
+@pytest.mark.parametrize("binary", [False, True])
+def test_batch_reader_requires_one_complete_json_value_per_physical_line(
+    document: str, binary: bool
+) -> None:
+    source = document.encode() if binary else document
+    with pytest.raises(ndjson.NDJSONDecodeError) as caught:
+        ndjson.loads(source)
+    assert caught.value.lineno == 1
+
+
+@pytest.mark.parametrize(
+    ("document", "expected"),
+    [
+        ('\x1c\n\u00a01\u00a0\n\u2028{"a":2}\u2029\n', [1, {"a": 2}]),
+        (b"\v\n\f1\v\n\r2\t\n", [1, 2]),
+        (b"\xef\xbb\xbf1\n2\n", [1, 2]),
+    ],
+)
+def test_batch_reader_retains_unicode_padding_and_bytes_bom_contracts(
+    document: str | bytes, expected: list[object]
+) -> None:
+    assert ndjson.loads(document) == expected
+
+
+def test_batch_failure_invokes_error_callbacks_once_in_physical_order() -> None:
+    errors = []
+    assert ndjson.loads(
+        "1\n\n[\n2]\n3 4\n5\n",
+        skip_errors=True,
+        on_error=lambda error: errors.append(error.lineno),
+    ) == [1, 5]
+    assert errors == [3, 4, 5]
+
+
+def test_batch_reader_keeps_subclass_split_behavior() -> None:
+    calls = []
+
+    class Document(str):
+        def split(self, *args, **kwargs):
+            calls.append("split")
+            return ["1", "2"]
+
+    assert ndjson.loads(Document("ignored")) == [1, 2]
+    assert calls == ["split"]
+
+
+def test_batch_reader_keeps_custom_error_flag_truthiness_order() -> None:
+    calls = []
+
+    class Flag:
+        def __bool__(self) -> bool:
+            calls.append("bool")
+            return False
+
+    class Document(str):
+        def split(self, *args, **kwargs):
+            calls.append("split")
+            return ["1", "2"]
+
+    assert ndjson.loads(Document("ignored"), skip_errors=Flag()) == [1, 2]  # type: ignore[arg-type]
+    assert calls == ["split", "bool"]
+
+
+def test_batch_reader_observes_replaced_json_backend(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls = []
+
+    def decode(document: str | bytes) -> object:
+        calls.append(document)
+        return {"decoded": json.loads(document)}
+
+    monkeypatch.setattr(jsonx, "_HAVE_MSGSPEC", True)
+    monkeypatch.setattr(jsonx, "_decode", decode, raising=False)
+    assert ndjson.loads("1\n2\n") == [{"decoded": 1}, {"decoded": 2}]
+    assert calls == ["1", "2"]
+
+
+def test_batch_reader_observes_replaced_headroom_check(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    if not jsonx._HAVE_MSGSPEC:
+        pytest.skip("msgspec (`serde` extra) not installed")
+    monkeypatch.setattr(jsonx, "_HAVE_MSGSPEC", True)
+    monkeypatch.setattr(jsonx, "_check_headroom", lambda value: [value])
+    assert ndjson.loads("1\n2\n") == [[1], [2]]
+
+
+def test_batch_reader_observes_replaced_json_function(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def decode(document: str | bytes) -> object:
+        return {"decoded": json.loads(document)}
+
+    monkeypatch.setattr(jsonx, "loads", decode)
+    monkeypatch.setattr(ndjson, "_parse", decode)
+    assert ndjson.loads("1\n2\n") == [{"decoded": 1}, {"decoded": 2}]
+
+
+def test_batch_reader_retains_profiled_json_function_calls() -> None:
+    calls = []
+
+    def profile(frame, event, _argument):
+        if event == "call" and frame.f_code is jsonx.loads.__code__:
+            calls.append(frame.f_locals["s"])
+
+    previous = sys.getprofile()
+    sys.setprofile(profile)
+    try:
+        assert ndjson.loads("1\n2\n") == [1, 2]
+    finally:
+        sys.setprofile(previous)
+    assert calls == ["1", "2"]
+
+
 @pytest.mark.parametrize("backend", [True, False])
 def test_json_numeric_edges_preserve_values(
     backend: bool, monkeypatch: pytest.MonkeyPatch
