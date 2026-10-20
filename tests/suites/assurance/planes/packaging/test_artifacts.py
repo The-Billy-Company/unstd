@@ -56,7 +56,9 @@ def _metadata(wheel: Path) -> Message:
 
 
 def _native_file(name: str) -> bool:
-    return bool(re.fullmatch(r"unstd/serde/_json_native(?:\.abi3)?\.(?:so|pyd)", name))
+    return bool(
+        re.fullmatch(r"unstd/serde/_json_native(?:\.[a-zA-Z0-9_-]+)?\.(?:so|pyd)", name)
+    )
 
 
 def _requirement(requirement: str) -> str:
@@ -128,7 +130,10 @@ def test_wheel_tags_match_native_or_portable_contents(wheel: Path) -> None:
     assert metadata["Root-Is-Purelib"] == str(not native).lower()
     assert set(metadata.get_all("Tag", [])) == {str(tag) for tag in tags}
     if native:
-        assert all(tag.interpreter == "cp312" and tag.abi == "abi3" for tag in tags)
+        interpreter = f"cp{sys.version_info.major}{sys.version_info.minor}"
+        assert all(
+            tag.interpreter == interpreter and tag.abi == interpreter for tag in tags
+        )
         assert all(tag.platform != "any" for tag in tags)
     else:
         assert metadata.get_all("Tag") == ["py3-none-any"]

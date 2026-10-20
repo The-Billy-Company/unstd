@@ -1,4 +1,4 @@
-"""Optional CPython stable-ABI build; the base package stays dependency free."""
+"""Optional CPython native build; the base package stays dependency free."""
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ from setuptools.errors import BaseError, CCompilerError
 
 
 class CustomBuildHook(BuildHookInterface):
-    """Build the JSON proof in C when a compiler and the limited API exist."""
+    """Build JSON acceleration for the selected CPython interpreter."""
 
     def initialize(self, version: str, build_data: dict[str, Any]) -> None:
         """Add only a successfully built extension, or keep a portable wheel."""
@@ -30,8 +30,6 @@ class CustomBuildHook(BuildHookInterface):
         extension = Extension(
             "unstd.serde._json_native",
             [str(Path(self.root) / "src/unstd/serde/_json_native.c")],
-            define_macros=[("Py_LIMITED_API", "0x030C0000")],
-            py_limited_api=True,
             optional=os.environ.get("CIBUILDWHEEL") != "1",
         )
         distribution = Distribution(
@@ -51,10 +49,9 @@ class CustomBuildHook(BuildHookInterface):
         target = Path(self.root) / "src/unstd/serde" / output.name
         if not output.is_file():
             if version == "editable":
-                target.unlink(missing_ok=True)
+                self._clear_native(target.parent)
             return
         wheel = bdist_wheel(distribution)
-        wheel.py_limited_api = "cp312"
         wheel.bdist_dir = command.build_lib
         wheel.ensure_finalized()
         build_data["pure_python"] = False
@@ -69,8 +66,15 @@ class CustomBuildHook(BuildHookInterface):
                 staged_path.replace(target)
             finally:
                 staged_path.unlink(missing_ok=True)
+            self._clear_native(target.parent, keep=target)
         else:
             build_data["force_include"][str(output)] = f"unstd/serde/{output.name}"
+
+    def _clear_native(self, directory: Path, *, keep: Path | None = None) -> None:
+        """Remove stale generated modules, including earlier wheel ABIs."""
+        for native in directory.glob("_json_native.*"):
+            if native.suffix in {".so", ".pyd"} and native != keep:
+                native.unlink(missing_ok=True)
 
     def finalize(
         self, version: str, build_data: dict[str, Any], artifact_path: str
