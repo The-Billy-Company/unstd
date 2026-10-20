@@ -149,6 +149,13 @@ resource-exhaustion depth is not established. Native dispatch also defers to
 ordinary Python behavior for tracing, profiling, monitoring and custom frame
 evaluators.
 
+On CPython 3.14 musllinux, the forced 256 KiB thread-stack probe is skipped:
+the stdlib-only control itself segfaults at depth 3,000, while the default and
+8 MiB stack controls succeed. CPython estimates the stack size on musl rather
+than querying the requested thread stack; see its
+[stack-limit implementation](https://github.com/python/cpython/blob/v3.14.6/Python/ceval.c#L459-L493).
+The remaining installed-wheel serde tests still run on musllinux.
+
 Earlier reports, including the
 [original release regression reproduction](billy-serde-release-results.json),
 describe their own recorded source revisions and must not be combined with this

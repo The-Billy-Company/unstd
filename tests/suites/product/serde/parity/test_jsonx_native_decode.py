@@ -10,6 +10,7 @@ import textwrap
 from types import FunctionType
 from typing import Any
 
+from packaging.tags import sys_tags
 import pytest
 
 from unstd.serde import jsonx
@@ -229,6 +230,13 @@ def test_reconfiguration_keeps_the_original_globals_when_a_copy_is_rejected(
 
 
 def test_small_thread_stack_keeps_discarded_source_recursion_limits() -> None:
+    # CPython 3.14 estimates a fixed 4 MB stack on musl instead of querying the
+    # real thread stack. With 256 KiB, the stdlib oracle itself segfaults.
+    # https://github.com/python/cpython/blob/v3.14.8/Python/ceval.c#L460-L492
+    if sys.version_info[:2] == (3, 14) and any(
+        tag.platform.startswith("musllinux") for tag in sys_tags()
+    ):
+        pytest.skip("CPython 3.14's stdlib parser overruns small musl thread stacks")
     source = textwrap.dedent(
         """
         from functools import partial
