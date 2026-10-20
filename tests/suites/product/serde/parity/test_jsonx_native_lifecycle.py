@@ -85,3 +85,29 @@ assert original.loads_lines(document) == [{"value": 1}]
 jsonx._HAVE_ORJSON = False
 assert original.dumpb({}, False, None, False) is NotImplemented
 """)
+
+
+def test_reconfiguring_an_earlier_instance_keeps_live_configuration_checks() -> None:
+    _isolated("""
+original.configure(jsonx.__dict__)
+jsonx.loads("null")
+assert original.dispatch_ready(jsonx.loads)
+decoder = jsonx._decode
+calls = []
+def spy(source):
+    calls.append(source)
+    return decoder(source)
+jsonx._decode = spy
+assert jsonx.loads("[1]") == [1]
+assert calls == ["[1]"]
+assert not original.dispatch_ready(jsonx.loads)
+jsonx._decode = decoder
+assert original.dispatch_ready(jsonx.loads)
+jsonx._decode = len
+original.configure(jsonx.__dict__)
+assert jsonx.loads('"hello"') == 7
+assert not original.dispatch_ready(jsonx.loads)
+jsonx._decode = decoder
+jsonx.loads("null")
+assert original.dispatch_ready(jsonx.loads)
+""")

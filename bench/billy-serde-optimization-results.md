@@ -1,5 +1,8 @@
 # Billy serde optimization measurements
 
+The measurements below identify candidate `5604a59`. A subsequent cold-path
+watcher reconfiguration correction is under validation and will be remeasured.
+
 **Status: the strict comparison with 2.1.1 still fails.** Source decoding through
 a warmed direct call is 0.20% slower. The original source-decoding workload is
 effectively tied, with 55 of 105 pairs faster. Ten of eleven equivalent-output

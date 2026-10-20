@@ -306,6 +306,7 @@ static PyObject *dumpb_vectorcall(PyObject *, PyObject *const *, size_t,
                                   PyObject *);
 static int unchanged_encoder(NativeState *, PyObject *);
 static int configure_encoder(NativeState *, PyObject *);
+static void detach_watcher(NativeState *);
 
 #include "_json_decode_native.h"
 #include "_json_lines_native.h"
@@ -345,6 +346,12 @@ configure(PyObject *module, PyObject *globals)
     }
     if (configure_encoder(state, globals) < 0) {
         return NULL;
+    }
+    if (PyState_FindModule(&definition) != module) {
+        /* The shared callback resolves the current instance. Older instances
+         * must keep their ordinary per-call checks when reconfigured. */
+        detach_watcher(state);
+        Py_RETURN_NONE;
     }
     if (state->globals_watcher < 0) {
         state->globals_watcher = PyDict_AddWatcher(configuration_changed);
