@@ -1,0 +1,4136 @@
+{
+  "schema": 1,
+  "method": {
+    "clock": "process_time_ns",
+    "estimator": "median of worker medians; raw alternating native/reference CPU batches retained",
+    "runs": 9,
+    "repetitions": 3,
+    "worker_order": "before/after, after/before, repeated",
+    "scope": "saved Billy fixture CPU costs; not provider or production latency",
+    "comparison": "only outputs equal to their independent reference receive a release ratio",
+    "distribution_metadata": "worker package versions describe installed distributions; source hashes identify selected code",
+    "native_probe": "observed Python-to-C entries; a native guard's delegated orjson call is not fabricated as an orjson profiling event"
+  },
+  "sources": {
+    "before": {
+      "path": "/Users/griffinstrier/Billy-Company/unstd/.local/billy-serde-v3/src",
+      "files_sha256": {
+        "unstd/__init__.py": "28d8604f2cd84f9a2681a164126acea06fffc0722bd7db732ad54a7c41df7295",
+        "unstd/_extra.py": "8125908815b82490d343dbbad243a0c89bfa197250f75cf42cf812aaba4a0135",
+        "unstd/audio/__init__.py": "d418ff841ef1d595b1f338cbef878e98878c670cc65d3cba2d92b9022e6d198a",
+        "unstd/audio/wavx.py": "80ff0c8d9196fd1c75d81abd7f7aed2180eb8553d90ec499927db4359c4b66a9",
+        "unstd/clone/__init__.py": "47c2933a1f9d0e89989487d9f05e18bbc082ea0681781101d25b53c1e8831769",
+        "unstd/clone/structural.py": "0e467bc08c72f92e761b896d9de0ce5473e71ad5c2d1eb82b43d7504ee39affa",
+        "unstd/compress/__init__.py": "3866ad8b717cb78f808381859d644b6f1b0dc79f8c17bcec522b0a674f566259",
+        "unstd/compress/_backend.py": "85bbba7729891333d0a66c64e068fed98849b263406336a416427764548f37df",
+        "unstd/compress/_inflate.py": "4ba6f281e608b2d6512375b1fe99e64f0849c7b60df4c0e676af2ff52c4847d2",
+        "unstd/compress/gzipx.py": "b6bbbe7199726dfad7056455827ed6da6ff8869abbd34f564e448296bff62de9",
+        "unstd/containers/__init__.py": "c6fab1c58830e220cc7ffcdb85fc5c09a395787b1900f00aedadd80a4cbe128e",
+        "unstd/containers/persistent.py": "c967a539a72d063bb21f9c1c4f4718e6fed0408a2b6c73ebfc989c0a86cf7aa8",
+        "unstd/containers/sorted.py": "aa31fc25662fe607c0e5694c615276112cd0db244dfc0eba0125a36d6506036a",
+        "unstd/crypto/__init__.py": "6908e373f1ef84c7e673c59fc9f52a25871ba93eaa2f5a327940579d170e9270",
+        "unstd/crypto/_blake3.py": "c4259b4612d88edf043a7a065d4a8276d2d569e281efa07e15e185420fc9567a",
+        "unstd/crypto/digest.py": "084bc2970fa20979943337f729b1ba9d8b67762e661bb079d7bd1ea68c86868a",
+        "unstd/crypto/tls.py": "f7c947226cfa1f37177c2279a0e3273cdd39018f15f8a23f047e0d5a49b8d0c6",
+        "unstd/crypto/token.py": "520265b1e3bd3a33a8d0cc4c0a08c1887130490a0649440a22c0d17eb10c705f",
+        "unstd/fs/__init__.py": "60b50d5f63b54e5bbedfea4fc715485c4ba3c1b1be99c22c922b81358f731112",
+        "unstd/ids/__init__.py": "66dc384b2ac1155327fb79b0b94ae3ac1c7aae1e354e8f564eafeac2f6ed3f03",
+        "unstd/ids/uid.py": "b3e12b802cdb470747fc93a4d976249e83bf546e68ab763beaa9a0201292d258",
+        "unstd/iters/__init__.py": "d891eb82d3b01bf29bfebe02320bb33314a1404a45db2bf64314261839705197",
+        "unstd/iters/consecutive.py": "f22523968826c2bd4b53be03bf07190bd91ac0a501a4756125c759d9bb8066d3",
+        "unstd/iters/distinct.py": "70558ace10c929a25099e8c3aa09afc687b3dceb2d79a47e909b0384b6bc1db8",
+        "unstd/iters/reshape.py": "8bd9b5640043b4f770cfc48fda4349332b626abadecab4d014bfb8256ca7166e",
+        "unstd/iters/select.py": "9a7af43f4a5e3370f8c5561af7d2044cb5a1809c45710a61a1112af815ae0e5c",
+        "unstd/model/__init__.py": "a33a77fed171f845228a916b91518895b1912797506290a1a9d820883fa0116a",
+        "unstd/model/base.py": "53ba849ca99c00402791c7a6fd2110cbcb290ac841d421b812dc2337edb2dcbb",
+        "unstd/model/settings.py": "1f9bf7b3d7de6736cdb6813540ad72c95e2874e7a0be43f91f23bff8d339593c",
+        "unstd/pack/__init__.py": "3399b170cfd1dd1bce7aedf15e65fb029c0e4ce61baebc80d5ec7cd712b704fa",
+        "unstd/pack/binpack.py": "1ae2b835ad39e34a49f3c9eaf3f445d0da1bd504b77161d92059dae28b373597",
+        "unstd/proc/__init__.py": "70f72bdbc5966706812c539ee7ff5df23738ee98bbca0a8766537d767eec962d",
+        "unstd/rand/__init__.py": "b29e39f3e353800e7377d261fa1c2f6ef68b2bb13db6808bb45d3f55437dc0a8",
+        "unstd/rand/crypto.py": "dde63b51dec92e542aba3e386fd27819d49a3db20e803f28250129f56b88edad",
+        "unstd/rand/draw.py": "3b53f4c799e87a6d03884e7b2c408069fb96246b452a1b73a2b36bd554f7d9b7",
+        "unstd/rex/__init__.py": "5a1bfde3f1ebac44dcee5d3b870a697d38885cc3967d27dc05e8ec64c24e16ad",
+        "unstd/rex/_faithful.py": "96376eeb3ffca7a235bf927b39778770eb6c2cfe7ab7e67f9b502fcbfa24c18b",
+        "unstd/serde/__init__.py": "7efa88414f904f691037d7e275032de6087ac24b6c2068886188a0f675965d3f",
+        "unstd/serde/_json_decode.py": "9088c3b5f8a6da4b2932923d1bae3cf7292a568a6b34d4a2f43cd9fbe1861177",
+        "unstd/serde/_json_encode.py": "1aff491d68e65762176b915fd7f02fd80c2e05563ca65dd07394df4ce953c359",
+        "unstd/serde/b64.py": "43976425369cd052748ae75b6afbe78afff15d9d0573849ceec37ae1dae2c2a0",
+        "unstd/serde/jsonx.py": "e7c2e8a73cbfdcf3321575b64ddbd5e93884ce403c28c4928fd63bda34ec9f74",
+        "unstd/serde/ndjson.py": "191028bfdc061bf5cf9ae482cf41c061e3ab3b1bc59ca9f8793b1c7874437cfd",
+        "unstd/serde/structs.py": "1f9b73299e5fe307905ef012ef1225a0d65d9eea225494b6bdae2db83773ddee",
+        "unstd/text/__init__.py": "0f0270bb772904f5d2caa553ad981e758cb2f353f2a23b1edf2613015f0a896a",
+        "unstd/text/fuzz.py": "604798f783d1f8c656c4588eaf3b8d4d065d5e64dc67d92d1f1f7770aa2a1efe",
+        "unstd/time/__init__.py": "086200dcbf110f22d08d69c197aef901ebe346e0859e00091b5c2e075112d80f",
+        "unstd/time/timeutil.py": "3342916bf17692b914f973166442ddc168b05428e550c7c997abef386b6fc806",
+        "unstd/time/zoned.py": "e8b6391f8987f4938272d5de462d7811e494dff3b4e961ed2e25cfce5688b995",
+        "unstd/toml/__init__.py": "85f06d33e01b687a070be6eca26a292f34e0213ba316203b41db6a567ba8fd00",
+        "unstd/yaml/__init__.py": "cb8c37fce4f5203f7630b196035549d3343a894f39b20c24da4cb6ab9bfe4ce7"
+      }
+    },
+    "after": {
+      "path": "/Users/griffinstrier/Billy-Company/unstd/src",
+      "files_sha256": {
+        "unstd/__init__.py": "9a6ca7a7f7f169f5c7129484f943d6aa2c67787f5feaa75638c1d31363a43a4b",
+        "unstd/_extra.py": "8125908815b82490d343dbbad243a0c89bfa197250f75cf42cf812aaba4a0135",
+        "unstd/audio/__init__.py": "d418ff841ef1d595b1f338cbef878e98878c670cc65d3cba2d92b9022e6d198a",
+        "unstd/audio/wavx.py": "80ff0c8d9196fd1c75d81abd7f7aed2180eb8553d90ec499927db4359c4b66a9",
+        "unstd/clone/__init__.py": "47c2933a1f9d0e89989487d9f05e18bbc082ea0681781101d25b53c1e8831769",
+        "unstd/clone/structural.py": "0e467bc08c72f92e761b896d9de0ce5473e71ad5c2d1eb82b43d7504ee39affa",
+        "unstd/compress/__init__.py": "3866ad8b717cb78f808381859d644b6f1b0dc79f8c17bcec522b0a674f566259",
+        "unstd/compress/_backend.py": "85bbba7729891333d0a66c64e068fed98849b263406336a416427764548f37df",
+        "unstd/compress/_inflate.py": "4ba6f281e608b2d6512375b1fe99e64f0849c7b60df4c0e676af2ff52c4847d2",
+        "unstd/compress/gzipx.py": "b6bbbe7199726dfad7056455827ed6da6ff8869abbd34f564e448296bff62de9",
+        "unstd/containers/__init__.py": "c6fab1c58830e220cc7ffcdb85fc5c09a395787b1900f00aedadd80a4cbe128e",
+        "unstd/containers/persistent.py": "c967a539a72d063bb21f9c1c4f4718e6fed0408a2b6c73ebfc989c0a86cf7aa8",
+        "unstd/containers/sorted.py": "aa31fc25662fe607c0e5694c615276112cd0db244dfc0eba0125a36d6506036a",
+        "unstd/crypto/__init__.py": "6908e373f1ef84c7e673c59fc9f52a25871ba93eaa2f5a327940579d170e9270",
+        "unstd/crypto/_blake3.py": "c4259b4612d88edf043a7a065d4a8276d2d569e281efa07e15e185420fc9567a",
+        "unstd/crypto/digest.py": "084bc2970fa20979943337f729b1ba9d8b67762e661bb079d7bd1ea68c86868a",
+        "unstd/crypto/tls.py": "f7c947226cfa1f37177c2279a0e3273cdd39018f15f8a23f047e0d5a49b8d0c6",
+        "unstd/crypto/token.py": "520265b1e3bd3a33a8d0cc4c0a08c1887130490a0649440a22c0d17eb10c705f",
+        "unstd/fs/__init__.py": "60b50d5f63b54e5bbedfea4fc715485c4ba3c1b1be99c22c922b81358f731112",
+        "unstd/ids/__init__.py": "66dc384b2ac1155327fb79b0b94ae3ac1c7aae1e354e8f564eafeac2f6ed3f03",
+        "unstd/ids/uid.py": "b3e12b802cdb470747fc93a4d976249e83bf546e68ab763beaa9a0201292d258",
+        "unstd/iters/__init__.py": "d891eb82d3b01bf29bfebe02320bb33314a1404a45db2bf64314261839705197",
+        "unstd/iters/consecutive.py": "f22523968826c2bd4b53be03bf07190bd91ac0a501a4756125c759d9bb8066d3",
+        "unstd/iters/distinct.py": "70558ace10c929a25099e8c3aa09afc687b3dceb2d79a47e909b0384b6bc1db8",
+        "unstd/iters/reshape.py": "8bd9b5640043b4f770cfc48fda4349332b626abadecab4d014bfb8256ca7166e",
+        "unstd/iters/select.py": "9a7af43f4a5e3370f8c5561af7d2044cb5a1809c45710a61a1112af815ae0e5c",
+        "unstd/model/__init__.py": "a33a77fed171f845228a916b91518895b1912797506290a1a9d820883fa0116a",
+        "unstd/model/base.py": "53ba849ca99c00402791c7a6fd2110cbcb290ac841d421b812dc2337edb2dcbb",
+        "unstd/model/settings.py": "1f9bf7b3d7de6736cdb6813540ad72c95e2874e7a0be43f91f23bff8d339593c",
+        "unstd/pack/__init__.py": "3399b170cfd1dd1bce7aedf15e65fb029c0e4ce61baebc80d5ec7cd712b704fa",
+        "unstd/pack/binpack.py": "1ae2b835ad39e34a49f3c9eaf3f445d0da1bd504b77161d92059dae28b373597",
+        "unstd/proc/__init__.py": "70f72bdbc5966706812c539ee7ff5df23738ee98bbca0a8766537d767eec962d",
+        "unstd/rand/__init__.py": "b29e39f3e353800e7377d261fa1c2f6ef68b2bb13db6808bb45d3f55437dc0a8",
+        "unstd/rand/crypto.py": "dde63b51dec92e542aba3e386fd27819d49a3db20e803f28250129f56b88edad",
+        "unstd/rand/draw.py": "3b53f4c799e87a6d03884e7b2c408069fb96246b452a1b73a2b36bd554f7d9b7",
+        "unstd/rex/__init__.py": "5a1bfde3f1ebac44dcee5d3b870a697d38885cc3967d27dc05e8ec64c24e16ad",
+        "unstd/rex/_faithful.py": "96376eeb3ffca7a235bf927b39778770eb6c2cfe7ab7e67f9b502fcbfa24c18b",
+        "unstd/serde/__init__.py": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d",
+        "unstd/serde/_json_common.py": "cb4ee6fce1510e202b4126e67b53ac73b9e7b73a9d67d010b451b7fa45ea0b8f",
+        "unstd/serde/_json_encode.py": "c8efd2f7bb4b1158fa48dafed2200d64c8d1188dcaff3276c20de7006c80d471",
+        "unstd/serde/_json_native.abi3.so": "9a9e13b3342c7b244f783d0f72b05b4e2075148ac0aad4213f2d0c0f31b5b18a",
+        "unstd/serde/_json_native.c": "cf354f6ce951dc5d2ac9753e70b80329a89dcb92c41879be8d84a6500c1b0b44",
+        "unstd/serde/_json_native.pyi": "40aa8dc7d002790b510d548ca03297edb7545b4d0af3ed8986e23b431f0eb3a4",
+        "unstd/serde/b64.py": "43976425369cd052748ae75b6afbe78afff15d9d0573849ceec37ae1dae2c2a0",
+        "unstd/serde/jsonx.py": "bb3a8cedbad144db1aa3ab38ea6920185d89254cd02441eca2180b8458b22e56",
+        "unstd/serde/ndjson.py": "191028bfdc061bf5cf9ae482cf41c061e3ab3b1bc59ca9f8793b1c7874437cfd",
+        "unstd/serde/structs.py": "1f9b73299e5fe307905ef012ef1225a0d65d9eea225494b6bdae2db83773ddee",
+        "unstd/text/__init__.py": "0f0270bb772904f5d2caa553ad981e758cb2f353f2a23b1edf2613015f0a896a",
+        "unstd/text/fuzz.py": "604798f783d1f8c656c4588eaf3b8d4d065d5e64dc67d92d1f1f7770aa2a1efe",
+        "unstd/time/__init__.py": "086200dcbf110f22d08d69c197aef901ebe346e0859e00091b5c2e075112d80f",
+        "unstd/time/timeutil.py": "3342916bf17692b914f973166442ddc168b05428e550c7c997abef386b6fc806",
+        "unstd/time/zoned.py": "e8b6391f8987f4938272d5de462d7811e494dff3b4e961ed2e25cfce5688b995",
+        "unstd/toml/__init__.py": "85f06d33e01b687a070be6eca26a292f34e0213ba316203b41db6a567ba8fd00",
+        "unstd/yaml/__init__.py": "cb8c37fce4f5203f7630b196035549d3343a894f39b20c24da4cb6ab9bfe4ce7"
+      }
+    }
+  },
+  "benchmark": {
+    "path": "/Users/griffinstrier/Billy-Company/billy/services/ai/tests/tooling/bench/bench_serde.py",
+    "sha256": "74a8603d55405a3167d29dd59f2ae695c7b692e70f8256393334727569ea64b1"
+  },
+  "fixtures_sha256": {
+    "scripts/tests/act/delivery/ship/testdata/execution-noncaller.json": "aa5b0563bc00225915069119b240fc34979d0543ae40cf73ff669c4a19db8f77",
+    "services/ai/tests/support/fixtures/source_record_capture.json": "3598d59636d6636a6e5e7f7bff22621eab6b150a7b916e7289053a624e9c1db8",
+    "services/ai/tests/support/fixtures/purchase_capture.json": "0ec6ec5e123ecac16323fc2e49295a296b516b3832412296ede76059d26b2188",
+    "services/ai/tests/tooling/bench/discovery_capture.json": "68dcada824bc35df7ef5df405e6d98547c2408287c875095715c4fbfe4f0f4cd",
+    "assets/data/interoceptive-proof.png": "beec8932b696c02f6801084dd4ded4bc201958cc4a2f5c03eee52b9217909fa0"
+  },
+  "cases": {
+    "clone-rollout": {
+      "before_cpu_ns": 34531.25,
+      "after_cpu_ns": 32144.53125,
+      "after_over_before": 0.9308823529411765,
+      "comparable": true,
+      "identical_output": true,
+      "backends": [
+        "python-structural"
+      ]
+    },
+    "json-default-source": {
+      "before_cpu_ns": 22808.59375,
+      "after_cpu_ns": 22652.34375,
+      "after_over_before": 0.993149511902723,
+      "comparable": true,
+      "identical_output": true,
+      "backends": [
+        "unstd.serde._json_native"
+      ]
+    },
+    "json-compact-source": {
+      "before_cpu_ns": 35593.75,
+      "after_cpu_ns": 2228.515625,
+      "after_over_before": 0.0626097453906936,
+      "comparable": true,
+      "identical_output": true,
+      "backends": [
+        "unstd.serde._json_native"
+      ]
+    },
+    "json-native-request": {
+      "before_cpu_ns": 589.599609375,
+      "after_cpu_ns": 163.39111328125,
+      "after_over_before": 0.2771221532091097,
+      "comparable": true,
+      "identical_output": true,
+      "backends": [
+        "unstd.serde._json_native"
+      ]
+    },
+    "json-load-request": {
+      "before_cpu_ns": 507.568359375,
+      "after_cpu_ns": 138.5498046875,
+      "after_over_before": 0.27296777296777297,
+      "comparable": true,
+      "identical_output": true,
+      "backends": [
+        "msgspec"
+      ]
+    },
+    "json-load-source": {
+      "before_cpu_ns": 8652.34375,
+      "after_cpu_ns": 5657.2265625,
+      "after_over_before": 0.6538374717832958,
+      "comparable": true,
+      "identical_output": true,
+      "backends": [
+        "msgspec"
+      ]
+    },
+    "b64-encode-image": {
+      "before_cpu_ns": 9570.3125,
+      "after_cpu_ns": 9292.96875,
+      "after_over_before": 0.9710204081632653,
+      "comparable": true,
+      "identical_output": true,
+      "backends": [
+        "pybase64"
+      ]
+    },
+    "b64-decode-image": {
+      "before_cpu_ns": 18929.6875,
+      "after_cpu_ns": 18042.96875,
+      "after_over_before": 0.9531572430870822,
+      "comparable": true,
+      "identical_output": true,
+      "backends": [
+        "pybase64"
+      ]
+    },
+    "b64-url-decode-image": {
+      "before_cpu_ns": 38078.125,
+      "after_cpu_ns": 36796.875,
+      "after_over_before": 0.9663520722199426,
+      "comparable": true,
+      "identical_output": true,
+      "backends": [
+        "pybase64"
+      ]
+    },
+    "ndjson-dump": {
+      "before_cpu_ns": 35656.25,
+      "after_cpu_ns": 6563.4765625,
+      "after_over_before": 0.18407646801051708,
+      "comparable": true,
+      "identical_output": true,
+      "backends": [
+        "unstd.serde._json_native"
+      ]
+    },
+    "ndjson-load": {
+      "before_cpu_ns": 28171.875,
+      "after_cpu_ns": 11707.03125,
+      "after_over_before": 0.41555740432612315,
+      "comparable": true,
+      "identical_output": true,
+      "backends": [
+        "msgspec"
+      ]
+    },
+    "typed-encode": {
+      "before_cpu_ns": 3035.15625,
+      "after_cpu_ns": 3123.046875,
+      "after_over_before": 1.028957528957529,
+      "comparable": true,
+      "identical_output": true,
+      "backends": [
+        "msgspec"
+      ]
+    },
+    "typed-decode": {
+      "before_cpu_ns": 7471.6796875,
+      "after_cpu_ns": 7634.765625,
+      "after_over_before": 1.0218272121291334,
+      "comparable": true,
+      "identical_output": true,
+      "backends": [
+        "msgspec"
+      ]
+    },
+    "b64-wire-encode-image": {
+      "before_cpu_ns": 9546.875,
+      "after_cpu_ns": 9281.25,
+      "after_over_before": 0.972176759410802,
+      "comparable": true,
+      "identical_output": true,
+      "backends": [
+        "pybase64"
+      ]
+    },
+    "b64-wire-decode-image": {
+      "before_cpu_ns": 18648.4375,
+      "after_cpu_ns": 18625.0,
+      "after_over_before": 0.9987431922915794,
+      "comparable": true,
+      "identical_output": true,
+      "backends": [
+        "pybase64"
+      ]
+    },
+    "typed-ndjson-load": {
+      "before_cpu_ns": 11511.71875,
+      "after_cpu_ns": 11664.0625,
+      "after_over_before": 1.0132337970817782,
+      "comparable": true,
+      "identical_output": true,
+      "backends": [
+        "msgspec"
+      ]
+    }
+  },
+  "workers": {
+    "before": [
+      {
+        "environment": {
+          "package_source": "/Users/griffinstrier/Billy-Company/unstd/.local/billy-serde-v3/src/unstd/serde/jsonx.py",
+          "packages": {
+            "unstd": "3.0.0",
+            "orjson": "3.13.0",
+            "pybase64": "1.5.0",
+            "msgspec": "0.22.0"
+          },
+          "python": "3.14.6",
+          "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+          "fixtures": [
+            "scripts/tests/act/delivery/ship/testdata/execution-noncaller.json",
+            "services/ai/tests/support/fixtures/source_record_capture.json",
+            "services/ai/tests/support/fixtures/purchase_capture.json",
+            "services/ai/tests/tooling/bench/discovery_capture.json",
+            "assets/data/interoceptive-proof.png"
+          ],
+          "prompt_default_bytes": 17628,
+          "prompt_compact_bytes": 17525,
+          "image_bytes": 223544
+        },
+        "cases": {
+          "clone-rollout": {
+            "identical_output": true,
+            "native_calls": {},
+            "required_native": null,
+            "backend": "python-structural",
+            "iterations": 64,
+            "cpu_ns": 33453.125,
+            "reference_cpu_ns": 97609.375,
+            "speedup": 2.917795422699673,
+            "cpu_samples_ns": [
+              [
+                34546.875,
+                33781.25,
+                33125.0,
+                31734.375,
+                32250.0,
+                34968.75,
+                33453.125,
+                33828.125,
+                32968.75
+              ],
+              [
+                105718.75,
+                107968.75,
+                97609.375,
+                97203.125,
+                104859.375,
+                95218.75,
+                99296.875,
+                96734.375,
+                96187.5
+              ]
+            ],
+            "spread": 0.13390219888414834
+          },
+          "json-default-source": {
+            "identical_output": true,
+            "native_calls": {},
+            "required_native": null,
+            "backend": "stdlib-fallback",
+            "iterations": 256,
+            "cpu_ns": 22296.875,
+            "reference_cpu_ns": 22269.53125,
+            "speedup": 0.9987736510161177,
+            "cpu_samples_ns": [
+              [
+                22296.875,
+                22570.3125,
+                24039.0625,
+                24917.96875,
+                27066.40625,
+                22015.625,
+                22074.21875,
+                22121.09375,
+                22000.0
+              ],
+              [
+                23003.90625,
+                22308.59375,
+                23398.4375,
+                22269.53125,
+                23417.96875,
+                21679.6875,
+                21386.71875,
+                21687.5,
+                21289.0625
+              ]
+            ],
+            "spread": 0.23029119318181818,
+            "output_bytes": 17628,
+            "reference_bytes": 17628,
+            "identical_json_values": true
+          },
+          "json-compact-source": {
+            "identical_output": true,
+            "native_calls": {},
+            "required_native": null,
+            "backend": "stdlib-fallback",
+            "iterations": 64,
+            "cpu_ns": 34359.375,
+            "reference_cpu_ns": 34656.25,
+            "speedup": 1.0086402910413825,
+            "cpu_samples_ns": [
+              [
+                34343.75,
+                34828.125,
+                34218.75,
+                34437.5,
+                34281.25,
+                33906.25,
+                34453.125,
+                34359.375,
+                34781.25
+              ],
+              [
+                34109.375,
+                35609.375,
+                34046.875,
+                34671.875,
+                34093.75,
+                34656.25,
+                35796.875,
+                34437.5,
+                34656.25
+              ]
+            ],
+            "spread": 0.05139972464433226,
+            "output_bytes": 17525,
+            "reference_bytes": 17525,
+            "identical_json_values": true
+          },
+          "json-native-request": {
+            "identical_output": true,
+            "native_calls": {
+              "orjson": 1
+            },
+            "required_native": "orjson",
+            "backend": "orjson",
+            "iterations": 4096,
+            "cpu_ns": 564.208984375,
+            "reference_cpu_ns": 924.072265625,
+            "speedup": 1.6378191259195154,
+            "cpu_samples_ns": [
+              [
+                559.814453125,
+                592.529296875,
+                573.73046875,
+                564.697265625,
+                625.48828125,
+                551.7578125,
+                564.208984375,
+                547.8515625,
+                543.701171875
+              ],
+              [
+                962.890625,
+                967.529296875,
+                939.453125,
+                953.61328125,
+                924.072265625,
+                902.099609375,
+                906.73828125,
+                911.62109375,
+                917.236328125
+              ]
+            ],
+            "spread": 0.1504265828468792,
+            "output_bytes": 49,
+            "reference_bytes": 49,
+            "identical_json_values": true
+          },
+          "json-load-request": {
+            "identical_output": true,
+            "native_calls": {
+              "orjson": 1
+            },
+            "required_native": "orjson",
+            "backend": "orjson",
+            "iterations": 16384,
+            "cpu_ns": 489.8681640625,
+            "reference_cpu_ns": 451.0498046875,
+            "speedup": 0.9207575380014952,
+            "cpu_samples_ns": [
+              [
+                482.84912109375,
+                484.68017578125,
+                480.16357421875,
+                489.8681640625,
+                489.92919921875,
+                494.32373046875,
+                540.6494140625,
+                491.76025390625,
+                484.130859375
+              ],
+              [
+                458.06884765625,
+                444.580078125,
+                446.59423828125,
+                452.2705078125,
+                456.11572265625,
+                449.64599609375,
+                451.0498046875,
+                458.251953125,
+                428.89404296875
+              ]
+            ],
+            "spread": 0.1259692385915851
+          },
+          "json-load-source": {
+            "identical_output": true,
+            "native_calls": {
+              "orjson": 1
+            },
+            "required_native": null,
+            "backend": "orjson",
+            "iterations": 256,
+            "cpu_ns": 8347.65625,
+            "reference_cpu_ns": 11976.5625,
+            "speedup": 1.4347215722976134,
+            "cpu_samples_ns": [
+              [
+                8281.25,
+                8550.78125,
+                8902.34375,
+                8777.34375,
+                8433.59375,
+                8308.59375,
+                8230.46875,
+                8347.65625,
+                8277.34375
+              ],
+              [
+                12093.75,
+                11835.9375,
+                11976.5625,
+                12062.5,
+                12210.9375,
+                11875.0,
+                11910.15625,
+                11843.75,
+                12035.15625
+              ]
+            ],
+            "spread": 0.08163265306122448
+          },
+          "b64-encode-image": {
+            "identical_output": true,
+            "native_calls": {
+              "pybase64": 1
+            },
+            "required_native": "pybase64",
+            "backend": "pybase64",
+            "iterations": 256,
+            "cpu_ns": 9070.3125,
+            "reference_cpu_ns": 134945.3125,
+            "speedup": 14.877691645133506,
+            "cpu_samples_ns": [
+              [
+                8976.5625,
+                9199.21875,
+                9035.15625,
+                9070.3125,
+                9027.34375,
+                9105.46875,
+                9113.28125,
+                9082.03125,
+                8976.5625
+              ],
+              [
+                134945.3125,
+                138523.4375,
+                133007.8125,
+                134039.0625,
+                137847.65625,
+                141089.84375,
+                134863.28125,
+                134656.25,
+                138101.5625
+              ]
+            ],
+            "spread": 0.06076358296622614,
+            "output_bytes": 298060,
+            "reference_bytes": 298060
+          },
+          "b64-decode-image": {
+            "identical_output": true,
+            "native_calls": {
+              "pybase64": 1
+            },
+            "required_native": "pybase64",
+            "backend": "pybase64",
+            "iterations": 256,
+            "cpu_ns": 17605.46875,
+            "reference_cpu_ns": 192195.3125,
+            "speedup": 10.91679609496339,
+            "cpu_samples_ns": [
+              [
+                18363.28125,
+                17574.21875,
+                17640.625,
+                18039.0625,
+                17718.75,
+                17605.46875,
+                17562.5,
+                17484.375,
+                17449.21875
+              ],
+              [
+                190691.40625,
+                192195.3125,
+                192507.8125,
+                192750.0,
+                194558.59375,
+                189910.15625,
+                193496.09375,
+                189144.53125,
+                188656.25
+              ]
+            ],
+            "spread": 0.052384150436534584,
+            "output_bytes": 223544,
+            "reference_bytes": 223544
+          },
+          "b64-url-decode-image": {
+            "identical_output": true,
+            "native_calls": {
+              "pybase64": 1
+            },
+            "required_native": "pybase64",
+            "backend": "pybase64",
+            "iterations": 64,
+            "cpu_ns": 35890.625,
+            "reference_cpu_ns": 209296.875,
+            "speedup": 5.831519373095341,
+            "cpu_samples_ns": [
+              [
+                35609.375,
+                35890.625,
+                35656.25,
+                35750.0,
+                35703.125,
+                36078.125,
+                36140.625,
+                44937.5,
+                37734.375
+              ],
+              [
+                209812.5,
+                205937.5,
+                201578.125,
+                202906.25,
+                216718.75,
+                228703.125,
+                207046.875,
+                209296.875,
+                217828.125
+              ]
+            ],
+            "spread": 0.26195699868363315,
+            "output_bytes": 223544,
+            "reference_bytes": 223544
+          },
+          "ndjson-dump": {
+            "identical_output": true,
+            "native_calls": {
+              "orjson": 11
+            },
+            "required_native": null,
+            "backend": "orjson",
+            "iterations": 64,
+            "cpu_ns": 34171.875,
+            "reference_cpu_ns": 32937.5,
+            "speedup": 0.9638774577046182,
+            "cpu_samples_ns": [
+              [
+                33812.5,
+                34171.875,
+                33718.75,
+                33562.5,
+                33500.0,
+                35203.125,
+                34765.625,
+                34500.0,
+                34250.0
+              ],
+              [
+                33093.75,
+                33265.625,
+                32718.75,
+                33781.25,
+                32781.25,
+                32562.5,
+                32937.5,
+                33000.0,
+                32859.375
+              ]
+            ],
+            "spread": 0.05083955223880597,
+            "output_bytes": 6586,
+            "reference_bytes": 6586
+          },
+          "ndjson-load": {
+            "identical_output": true,
+            "native_calls": {
+              "orjson": 11
+            },
+            "required_native": null,
+            "backend": "orjson",
+            "iterations": 256,
+            "cpu_ns": 26253.90625,
+            "reference_cpu_ns": 22925.78125,
+            "speedup": 0.8732331498288946,
+            "cpu_samples_ns": [
+              [
+                26433.59375,
+                26226.5625,
+                26199.21875,
+                26367.1875,
+                26253.90625,
+                26460.9375,
+                26128.90625,
+                26183.59375,
+                26640.625
+              ],
+              [
+                22964.84375,
+                22792.96875,
+                22964.84375,
+                22785.15625,
+                23152.34375,
+                22925.78125,
+                22632.8125,
+                22699.21875,
+                23035.15625
+              ]
+            ],
+            "spread": 0.022954780807732136
+          },
+          "typed-encode": {
+            "identical_output": true,
+            "native_calls": {
+              "msgspec": 1
+            },
+            "required_native": "msgspec",
+            "backend": "msgspec",
+            "iterations": 1024,
+            "cpu_ns": 2863.28125,
+            "reference_cpu_ns": 22182.6171875,
+            "speedup": 7.747271487039564,
+            "cpu_samples_ns": [
+              [
+                2871.09375,
+                2899.4140625,
+                2831.0546875,
+                2904.296875,
+                2835.9375,
+                2839.84375,
+                2816.40625,
+                2863.28125,
+                2923.828125
+              ],
+              [
+                22473.6328125,
+                22182.6171875,
+                22127.9296875,
+                22175.78125,
+                22194.3359375,
+                22023.4375,
+                22267.578125,
+                22180.6640625,
+                22653.3203125
+              ]
+            ],
+            "spread": 0.03814147018030513,
+            "output_bytes": 6587,
+            "reference_bytes": 6587,
+            "identical_json_values": true
+          },
+          "typed-decode": {
+            "identical_output": true,
+            "native_calls": {
+              "msgspec": 1
+            },
+            "required_native": "msgspec",
+            "backend": "msgspec",
+            "iterations": 1024,
+            "cpu_ns": 7113.28125,
+            "reference_cpu_ns": 13541.9921875,
+            "speedup": 1.9037616694124109,
+            "cpu_samples_ns": [
+              [
+                6963.8671875,
+                7141.6015625,
+                7217.7734375,
+                7131.8359375,
+                7113.28125,
+                6875.0,
+                6895.5078125,
+                7278.3203125,
+                6975.5859375
+              ],
+              [
+                13594.7265625,
+                13699.21875,
+                13541.9921875,
+                13612.3046875,
+                13851.5625,
+                13500.9765625,
+                13364.2578125,
+                13427.734375,
+                13516.6015625
+              ]
+            ],
+            "spread": 0.058664772727272725
+          },
+          "b64-wire-encode-image": {
+            "identical_output": true,
+            "native_calls": {
+              "pybase64": 1
+            },
+            "required_native": "pybase64",
+            "backend": "pybase64",
+            "iterations": 256,
+            "cpu_ns": 8964.84375,
+            "reference_cpu_ns": 123601.5625,
+            "speedup": 13.787363834422658,
+            "cpu_samples_ns": [
+              [
+                8937.5,
+                9000.0,
+                8945.3125,
+                8964.84375,
+                8953.125,
+                8976.5625,
+                8988.28125,
+                9214.84375,
+                8957.03125
+              ],
+              [
+                123425.78125,
+                123238.28125,
+                123722.65625,
+                123601.5625,
+                123804.6875,
+                124777.34375,
+                122730.46875,
+                124824.21875,
+                122839.84375
+              ]
+            ],
+            "spread": 0.031031468531468532,
+            "output_bytes": 298060,
+            "reference_bytes": 298060
+          },
+          "b64-wire-decode-image": {
+            "identical_output": true,
+            "native_calls": {
+              "pybase64": 1
+            },
+            "required_native": "pybase64",
+            "backend": "pybase64",
+            "iterations": 256,
+            "cpu_ns": 17656.25,
+            "reference_cpu_ns": 189695.3125,
+            "speedup": 10.743805309734514,
+            "cpu_samples_ns": [
+              [
+                17667.96875,
+                17664.0625,
+                17617.1875,
+                17734.375,
+                17585.9375,
+                17679.6875,
+                17578.125,
+                17656.25,
+                17648.4375
+              ],
+              [
+                191351.5625,
+                189695.3125,
+                190101.5625,
+                189027.34375,
+                189132.8125,
+                190261.71875,
+                189738.28125,
+                189125.0,
+                189187.5
+              ]
+            ],
+            "spread": 0.012295674815564877,
+            "output_bytes": 223544,
+            "reference_bytes": 223544
+          },
+          "typed-ndjson-load": {
+            "identical_output": true,
+            "native_calls": {
+              "msgspec": 16
+            },
+            "required_native": "msgspec",
+            "backend": "msgspec",
+            "iterations": 256,
+            "cpu_ns": 10937.5,
+            "reference_cpu_ns": 23070.3125,
+            "speedup": 2.1092857142857144,
+            "cpu_samples_ns": [
+              [
+                10898.4375,
+                11089.84375,
+                10828.125,
+                11421.875,
+                10917.96875,
+                10984.375,
+                10937.5,
+                10925.78125,
+                11000.0
+              ],
+              [
+                23437.5,
+                23070.3125,
+                23550.78125,
+                24273.4375,
+                22929.6875,
+                22894.53125,
+                22875.0,
+                22875.0,
+                23210.9375
+              ]
+            ],
+            "spread": 0.061133879781420764
+          }
+        }
+      },
+      {
+        "environment": {
+          "package_source": "/Users/griffinstrier/Billy-Company/unstd/.local/billy-serde-v3/src/unstd/serde/jsonx.py",
+          "packages": {
+            "unstd": "3.0.0",
+            "orjson": "3.13.0",
+            "pybase64": "1.5.0",
+            "msgspec": "0.22.0"
+          },
+          "python": "3.14.6",
+          "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+          "fixtures": [
+            "scripts/tests/act/delivery/ship/testdata/execution-noncaller.json",
+            "services/ai/tests/support/fixtures/source_record_capture.json",
+            "services/ai/tests/support/fixtures/purchase_capture.json",
+            "services/ai/tests/tooling/bench/discovery_capture.json",
+            "assets/data/interoceptive-proof.png"
+          ],
+          "prompt_default_bytes": 17628,
+          "prompt_compact_bytes": 17525,
+          "image_bytes": 223544
+        },
+        "cases": {
+          "clone-rollout": {
+            "identical_output": true,
+            "native_calls": {},
+            "required_native": null,
+            "backend": "python-structural",
+            "iterations": 64,
+            "cpu_ns": 35656.25,
+            "reference_cpu_ns": 100984.375,
+            "speedup": 2.8321647677475896,
+            "cpu_samples_ns": [
+              [
+                38937.5,
+                33937.5,
+                33578.125,
+                36453.125,
+                32906.25,
+                38796.875,
+                36406.25,
+                35656.25,
+                32812.5
+              ],
+              [
+                105640.625,
+                99687.5,
+                105171.875,
+                106343.75,
+                95718.75,
+                94250.0,
+                97343.75,
+                100984.375,
+                107234.375
+              ]
+            ],
+            "spread": 0.18666666666666668
+          },
+          "json-default-source": {
+            "identical_output": true,
+            "native_calls": {},
+            "required_native": null,
+            "backend": "stdlib-fallback",
+            "iterations": 256,
+            "cpu_ns": 26812.5,
+            "reference_cpu_ns": 24160.15625,
+            "speedup": 0.9010780885780886,
+            "cpu_samples_ns": [
+              [
+                27558.59375,
+                26812.5,
+                25875.0,
+                24105.46875,
+                23281.25,
+                29042.96875,
+                27128.90625,
+                24300.78125,
+                27777.34375
+              ],
+              [
+                24332.03125,
+                24441.40625,
+                24160.15625,
+                23031.25,
+                24113.28125,
+                25371.09375,
+                24574.21875,
+                23671.875,
+                23839.84375
+              ]
+            ],
+            "spread": 0.24748322147651006,
+            "output_bytes": 17628,
+            "reference_bytes": 17628,
+            "identical_json_values": true
+          },
+          "json-compact-source": {
+            "identical_output": true,
+            "native_calls": {},
+            "required_native": null,
+            "backend": "stdlib-fallback",
+            "iterations": 64,
+            "cpu_ns": 35593.75,
+            "reference_cpu_ns": 35500.0,
+            "speedup": 0.9973661106233538,
+            "cpu_samples_ns": [
+              [
+                36906.25,
+                35484.375,
+                42078.125,
+                37546.875,
+                35593.75,
+                36281.25,
+                35031.25,
+                34078.125,
+                33984.375
+              ],
+              [
+                36046.875,
+                35328.125,
+                41265.625,
+                37406.25,
+                35031.25,
+                35453.125,
+                35500.0,
+                35609.375,
+                34718.75
+              ]
+            ],
+            "spread": 0.2381609195402299,
+            "output_bytes": 17525,
+            "reference_bytes": 17525,
+            "identical_json_values": true
+          },
+          "json-native-request": {
+            "identical_output": true,
+            "native_calls": {
+              "orjson": 1
+            },
+            "required_native": "orjson",
+            "backend": "orjson",
+            "iterations": 4096,
+            "cpu_ns": 589.599609375,
+            "reference_cpu_ns": 964.111328125,
+            "speedup": 1.6351966873706003,
+            "cpu_samples_ns": [
+              [
+                568.603515625,
+                568.359375,
+                573.2421875,
+                600.341796875,
+                589.599609375,
+                601.806640625,
+                613.525390625,
+                598.6328125,
+                589.599609375
+              ],
+              [
+                951.904296875,
+                940.185546875,
+                942.3828125,
+                1055.908203125,
+                964.111328125,
+                961.181640625,
+                1037.109375,
+                1051.513671875,
+                1017.578125
+              ]
+            ],
+            "spread": 0.12308491300960789,
+            "output_bytes": 49,
+            "reference_bytes": 49,
+            "identical_json_values": true
+          },
+          "json-load-request": {
+            "identical_output": true,
+            "native_calls": {
+              "orjson": 1
+            },
+            "required_native": "orjson",
+            "backend": "orjson",
+            "iterations": 4096,
+            "cpu_ns": 507.568359375,
+            "reference_cpu_ns": 477.783203125,
+            "speedup": 0.9413179413179413,
+            "cpu_samples_ns": [
+              [
+                487.060546875,
+                488.28125,
+                520.01953125,
+                514.16015625,
+                507.568359375,
+                516.357421875,
+                512.20703125,
+                503.662109375,
+                494.384765625
+              ],
+              [
+                444.3359375,
+                466.064453125,
+                489.74609375,
+                477.783203125,
+                483.642578125,
+                479.00390625,
+                490.234375,
+                471.19140625,
+                456.298828125
+              ]
+            ],
+            "spread": 0.10329670329670329
+          },
+          "json-load-source": {
+            "identical_output": true,
+            "native_calls": {
+              "orjson": 1
+            },
+            "required_native": null,
+            "backend": "orjson",
+            "iterations": 256,
+            "cpu_ns": 8859.375,
+            "reference_cpu_ns": 14160.15625,
+            "speedup": 1.5983245149911816,
+            "cpu_samples_ns": [
+              [
+                8265.625,
+                8476.5625,
+                8742.1875,
+                8378.90625,
+                12003.90625,
+                11546.875,
+                9746.09375,
+                9203.125,
+                8859.375
+              ],
+              [
+                12203.125,
+                12207.03125,
+                12562.5,
+                11777.34375,
+                15761.71875,
+                14160.15625,
+                14886.71875,
+                15875.0,
+                15812.5
+              ]
+            ],
+            "spread": 0.45226843100189035
+          },
+          "b64-encode-image": {
+            "identical_output": true,
+            "native_calls": {
+              "pybase64": 1
+            },
+            "required_native": "pybase64",
+            "backend": "pybase64",
+            "iterations": 256,
+            "cpu_ns": 9570.3125,
+            "reference_cpu_ns": 141515.625,
+            "speedup": 14.786938775510205,
+            "cpu_samples_ns": [
+              [
+                9738.28125,
+                9386.71875,
+                9308.59375,
+                9589.84375,
+                9242.1875,
+                9789.0625,
+                9550.78125,
+                9578.125,
+                9570.3125
+              ],
+              [
+                140125.0,
+                151160.15625,
+                139636.71875,
+                141515.625,
+                143105.46875,
+                144015.625,
+                137394.53125,
+                137566.40625,
+                144144.53125
+              ]
+            ],
+            "spread": 0.10019048702129474,
+            "output_bytes": 298060,
+            "reference_bytes": 298060
+          },
+          "b64-decode-image": {
+            "identical_output": true,
+            "native_calls": {
+              "pybase64": 1
+            },
+            "required_native": "pybase64",
+            "backend": "pybase64",
+            "iterations": 256,
+            "cpu_ns": 18929.6875,
+            "reference_cpu_ns": 199156.25,
+            "speedup": 10.520841931489889,
+            "cpu_samples_ns": [
+              [
+                19453.125,
+                17656.25,
+                18804.6875,
+                19605.46875,
+                18253.90625,
+                18457.03125,
+                18929.6875,
+                20093.75,
+                20566.40625
+              ],
+              [
+                201890.625,
+                199726.5625,
+                199523.4375,
+                199156.25,
+                201445.3125,
+                196515.625,
+                196554.6875,
+                198308.59375,
+                198039.0625
+              ]
+            ],
+            "spread": 0.16482300884955753,
+            "output_bytes": 223544,
+            "reference_bytes": 223544
+          },
+          "b64-url-decode-image": {
+            "identical_output": true,
+            "native_calls": {
+              "pybase64": 1
+            },
+            "required_native": "pybase64",
+            "backend": "pybase64",
+            "iterations": 64,
+            "cpu_ns": 38078.125,
+            "reference_cpu_ns": 236046.875,
+            "speedup": 6.199015182601559,
+            "cpu_samples_ns": [
+              [
+                36343.75,
+                38218.75,
+                37921.875,
+                38312.5,
+                39750.0,
+                39093.75,
+                37140.625,
+                38078.125,
+                37984.375
+              ],
+              [
+                233906.25,
+                236375.0,
+                249468.75,
+                235796.875,
+                228625.0,
+                224484.375,
+                238593.75,
+                260890.625,
+                236046.875
+              ]
+            ],
+            "spread": 0.1621772116656226,
+            "output_bytes": 223544,
+            "reference_bytes": 223544
+          },
+          "ndjson-dump": {
+            "identical_output": true,
+            "native_calls": {
+              "orjson": 11
+            },
+            "required_native": null,
+            "backend": "orjson",
+            "iterations": 64,
+            "cpu_ns": 37843.75,
+            "reference_cpu_ns": 35640.625,
+            "speedup": 0.9417836498761354,
+            "cpu_samples_ns": [
+              [
+                37843.75,
+                41000.0,
+                38187.5,
+                39140.625,
+                35546.875,
+                38609.375,
+                35453.125,
+                35281.25,
+                34828.125
+              ],
+              [
+                36437.5,
+                35765.625,
+                36640.625,
+                35640.625,
+                34968.75,
+                34468.75,
+                35875.0,
+                33531.25,
+                34312.5
+              ]
+            ],
+            "spread": 0.177209510991476,
+            "output_bytes": 6586,
+            "reference_bytes": 6586
+          },
+          "ndjson-load": {
+            "identical_output": true,
+            "native_calls": {
+              "orjson": 11
+            },
+            "required_native": null,
+            "backend": "orjson",
+            "iterations": 64,
+            "cpu_ns": 28171.875,
+            "reference_cpu_ns": 24515.625,
+            "speedup": 0.870216306156406,
+            "cpu_samples_ns": [
+              [
+                39031.25,
+                30265.625,
+                27671.875,
+                28640.625,
+                28062.5,
+                28171.875,
+                29031.25,
+                27468.75,
+                27265.625
+              ],
+              [
+                24609.375,
+                25921.875,
+                24109.375,
+                24093.75,
+                24125.0,
+                24515.625,
+                23718.75,
+                24984.375,
+                25890.625
+              ]
+            ],
+            "spread": 0.4315186246418338
+          },
+          "typed-encode": {
+            "identical_output": true,
+            "native_calls": {
+              "msgspec": 1
+            },
+            "required_native": "msgspec",
+            "backend": "msgspec",
+            "iterations": 1024,
+            "cpu_ns": 3035.15625,
+            "reference_cpu_ns": 24078.125,
+            "speedup": 7.9330759330759335,
+            "cpu_samples_ns": [
+              [
+                3149.4140625,
+                3010.7421875,
+                3028.3203125,
+                3124.0234375,
+                3035.15625,
+                2942.3828125,
+                3091.796875,
+                3091.796875,
+                3031.25
+              ],
+              [
+                24306.640625,
+                25944.3359375,
+                24823.2421875,
+                24701.171875,
+                23154.296875,
+                23635.7421875,
+                22926.7578125,
+                24078.125,
+                23921.875
+              ]
+            ],
+            "spread": 0.1316181794948247,
+            "output_bytes": 6587,
+            "reference_bytes": 6587,
+            "identical_json_values": true
+          },
+          "typed-decode": {
+            "identical_output": true,
+            "native_calls": {
+              "msgspec": 1
+            },
+            "required_native": "msgspec",
+            "backend": "msgspec",
+            "iterations": 1024,
+            "cpu_ns": 7471.6796875,
+            "reference_cpu_ns": 14560.546875,
+            "speedup": 1.948764867337603,
+            "cpu_samples_ns": [
+              [
+                7515.625,
+                7471.6796875,
+                7627.9296875,
+                7552.734375,
+                7298.828125,
+                7365.234375,
+                7170.8984375,
+                7583.984375,
+                7428.7109375
+              ],
+              [
+                15041.9921875,
+                14726.5625,
+                14533.203125,
+                14560.546875,
+                14328.125,
+                13955.078125,
+                15135.7421875,
+                14210.9375,
+                14757.8125
+              ]
+            ],
+            "spread": 0.08460461861441568
+          },
+          "b64-wire-encode-image": {
+            "identical_output": true,
+            "native_calls": {
+              "pybase64": 1
+            },
+            "required_native": "pybase64",
+            "backend": "pybase64",
+            "iterations": 256,
+            "cpu_ns": 9566.40625,
+            "reference_cpu_ns": 136203.125,
+            "speedup": 14.237648019599837,
+            "cpu_samples_ns": [
+              [
+                9347.65625,
+                9648.4375,
+                9527.34375,
+                9707.03125,
+                9097.65625,
+                9917.96875,
+                9566.40625,
+                9578.125,
+                9324.21875
+              ],
+              [
+                141738.28125,
+                135421.875,
+                135824.21875,
+                134773.4375,
+                136585.9375,
+                139714.84375,
+                136203.125,
+                134972.65625,
+                137246.09375
+              ]
+            ],
+            "spread": 0.090167453842851,
+            "output_bytes": 298060,
+            "reference_bytes": 298060
+          },
+          "b64-wire-decode-image": {
+            "identical_output": true,
+            "native_calls": {
+              "pybase64": 1
+            },
+            "required_native": "pybase64",
+            "backend": "pybase64",
+            "iterations": 256,
+            "cpu_ns": 18648.4375,
+            "reference_cpu_ns": 198566.40625,
+            "speedup": 10.647884373690825,
+            "cpu_samples_ns": [
+              [
+                19523.4375,
+                18648.4375,
+                20003.90625,
+                17894.53125,
+                18320.3125,
+                18445.3125,
+                19859.375,
+                18023.4375,
+                18761.71875
+              ],
+              [
+                201890.625,
+                203214.84375,
+                199085.9375,
+                198175.78125,
+                196277.34375,
+                198566.40625,
+                199207.03125,
+                194066.40625,
+                196460.9375
+              ]
+            ],
+            "spread": 0.11787819253438114,
+            "output_bytes": 223544,
+            "reference_bytes": 223544
+          },
+          "typed-ndjson-load": {
+            "identical_output": true,
+            "native_calls": {
+              "msgspec": 16
+            },
+            "required_native": "msgspec",
+            "backend": "msgspec",
+            "iterations": 256,
+            "cpu_ns": 11722.65625,
+            "reference_cpu_ns": 25089.84375,
+            "speedup": 2.140286571142952,
+            "cpu_samples_ns": [
+              [
+                11722.65625,
+                11683.59375,
+                11429.6875,
+                12253.90625,
+                11386.71875,
+                13421.875,
+                11238.28125,
+                12324.21875,
+                12265.625
+              ],
+              [
+                23523.4375,
+                26683.59375,
+                24867.1875,
+                24699.21875,
+                25089.84375,
+                24546.875,
+                30183.59375,
+                27156.25,
+                26332.03125
+              ]
+            ],
+            "spread": 0.2831285287279973
+          }
+        }
+      },
+      {
+        "environment": {
+          "package_source": "/Users/griffinstrier/Billy-Company/unstd/.local/billy-serde-v3/src/unstd/serde/jsonx.py",
+          "packages": {
+            "unstd": "3.0.0",
+            "orjson": "3.13.0",
+            "pybase64": "1.5.0",
+            "msgspec": "0.22.0"
+          },
+          "python": "3.14.6",
+          "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+          "fixtures": [
+            "scripts/tests/act/delivery/ship/testdata/execution-noncaller.json",
+            "services/ai/tests/support/fixtures/source_record_capture.json",
+            "services/ai/tests/support/fixtures/purchase_capture.json",
+            "services/ai/tests/tooling/bench/discovery_capture.json",
+            "assets/data/interoceptive-proof.png"
+          ],
+          "prompt_default_bytes": 17628,
+          "prompt_compact_bytes": 17525,
+          "image_bytes": 223544
+        },
+        "cases": {
+          "clone-rollout": {
+            "identical_output": true,
+            "native_calls": {},
+            "required_native": null,
+            "backend": "python-structural",
+            "iterations": 64,
+            "cpu_ns": 34531.25,
+            "reference_cpu_ns": 99750.0,
+            "speedup": 2.88868778280543,
+            "cpu_samples_ns": [
+              [
+                32828.125,
+                38937.5,
+                34921.875,
+                35921.875,
+                34531.25,
+                32265.625,
+                30796.875,
+                35406.25,
+                31953.125
+              ],
+              [
+                102046.875,
+                98531.25,
+                102703.125,
+                99750.0,
+                98343.75,
+                97765.625,
+                95859.375,
+                105890.625,
+                105593.75
+              ]
+            ],
+            "spread": 0.2643328259766616
+          },
+          "json-default-source": {
+            "identical_output": true,
+            "native_calls": {},
+            "required_native": null,
+            "backend": "stdlib-fallback",
+            "iterations": 256,
+            "cpu_ns": 22808.59375,
+            "reference_cpu_ns": 23324.21875,
+            "speedup": 1.0226066107210139,
+            "cpu_samples_ns": [
+              [
+                23046.875,
+                22707.03125,
+                23714.84375,
+                22867.1875,
+                22808.59375,
+                22679.6875,
+                22765.625,
+                22812.5,
+                22550.78125
+              ],
+              [
+                22320.3125,
+                24695.3125,
+                23324.21875,
+                24359.375,
+                23476.5625,
+                26531.25,
+                22582.03125,
+                22628.90625,
+                22347.65625
+              ]
+            ],
+            "spread": 0.18865943297164858,
+            "output_bytes": 17628,
+            "reference_bytes": 17628,
+            "identical_json_values": true
+          },
+          "json-compact-source": {
+            "identical_output": true,
+            "native_calls": {},
+            "required_native": null,
+            "backend": "stdlib-fallback",
+            "iterations": 64,
+            "cpu_ns": 37031.25,
+            "reference_cpu_ns": 36093.75,
+            "speedup": 0.9746835443037974,
+            "cpu_samples_ns": [
+              [
+                37390.625,
+                36453.125,
+                37046.875,
+                37031.25,
+                35796.875,
+                37437.5,
+                34718.75,
+                38171.875,
+                36062.5
+              ],
+              [
+                38078.125,
+                36265.625,
+                36093.75,
+                36328.125,
+                35218.75,
+                35515.625,
+                35078.125,
+                36125.0,
+                35968.75
+              ]
+            ],
+            "spread": 0.09945994599459947,
+            "output_bytes": 17525,
+            "reference_bytes": 17525,
+            "identical_json_values": true
+          },
+          "json-native-request": {
+            "identical_output": true,
+            "native_calls": {
+              "orjson": 1
+            },
+            "required_native": "orjson",
+            "backend": "orjson",
+            "iterations": 4096,
+            "cpu_ns": 593.26171875,
+            "reference_cpu_ns": 955.56640625,
+            "speedup": 1.6106995884773663,
+            "cpu_samples_ns": [
+              [
+                587.158203125,
+                559.08203125,
+                557.861328125,
+                614.501953125,
+                593.26171875,
+                565.673828125,
+                628.662109375,
+                619.140625,
+                615.478515625
+              ],
+              [
+                956.298828125,
+                935.546875,
+                947.021484375,
+                955.56640625,
+                953.857421875,
+                972.412109375,
+                963.37890625,
+                936.5234375,
+                1059.326171875
+              ]
+            ],
+            "spread": 0.13230688935281837,
+            "output_bytes": 49,
+            "reference_bytes": 49,
+            "identical_json_values": true
+          },
+          "json-load-request": {
+            "identical_output": true,
+            "native_calls": {
+              "orjson": 1
+            },
+            "required_native": "orjson",
+            "backend": "orjson",
+            "iterations": 4096,
+            "cpu_ns": 519.287109375,
+            "reference_cpu_ns": 466.796875,
+            "speedup": 0.8989186647860837,
+            "cpu_samples_ns": [
+              [
+                534.66796875,
+                626.708984375,
+                482.177734375,
+                486.083984375,
+                483.642578125,
+                505.615234375,
+                529.78515625,
+                522.94921875,
+                519.287109375
+              ],
+              [
+                484.619140625,
+                494.62890625,
+                466.796875,
+                458.740234375,
+                462.158203125,
+                459.47265625,
+                459.47265625,
+                472.900390625,
+                470.947265625
+              ]
+            ],
+            "spread": 0.299746835443038
+          },
+          "json-load-source": {
+            "identical_output": true,
+            "native_calls": {
+              "orjson": 1
+            },
+            "required_native": null,
+            "backend": "orjson",
+            "iterations": 256,
+            "cpu_ns": 8652.34375,
+            "reference_cpu_ns": 12207.03125,
+            "speedup": 1.4108352144469527,
+            "cpu_samples_ns": [
+              [
+                8621.09375,
+                8652.34375,
+                8535.15625,
+                9082.03125,
+                8871.09375,
+                8703.125,
+                8281.25,
+                8289.0625,
+                10062.5
+              ],
+              [
+                12191.40625,
+                12519.53125,
+                12804.6875,
+                12398.4375,
+                12203.125,
+                12207.03125,
+                12152.34375,
+                11968.75,
+                13394.53125
+              ]
+            ],
+            "spread": 0.21509433962264152
+          },
+          "b64-encode-image": {
+            "identical_output": true,
+            "native_calls": {
+              "pybase64": 1
+            },
+            "required_native": "pybase64",
+            "backend": "pybase64",
+            "iterations": 256,
+            "cpu_ns": 9730.46875,
+            "reference_cpu_ns": 143820.3125,
+            "speedup": 14.780409474106785,
+            "cpu_samples_ns": [
+              [
+                10093.75,
+                10527.34375,
+                9730.46875,
+                9617.1875,
+                10199.21875,
+                9964.84375,
+                9285.15625,
+                9316.40625,
+                9296.875
+              ],
+              [
+                145343.75,
+                145804.6875,
+                143300.78125,
+                143820.3125,
+                142382.8125,
+                144707.03125,
+                141187.5,
+                146082.03125,
+                142656.25
+              ]
+            ],
+            "spread": 0.13378207824989483,
+            "output_bytes": 298060,
+            "reference_bytes": 298060
+          },
+          "b64-decode-image": {
+            "identical_output": true,
+            "native_calls": {
+              "pybase64": 1
+            },
+            "required_native": "pybase64",
+            "backend": "pybase64",
+            "iterations": 256,
+            "cpu_ns": 19867.1875,
+            "reference_cpu_ns": 201562.5,
+            "speedup": 10.145497443963823,
+            "cpu_samples_ns": [
+              [
+                18789.0625,
+                20234.375,
+                19007.8125,
+                22519.53125,
+                17824.21875,
+                23105.46875,
+                19867.1875,
+                19859.375,
+                21265.625
+              ],
+              [
+                205074.21875,
+                196675.78125,
+                200324.21875,
+                202503.90625,
+                201179.6875,
+                203277.34375,
+                198585.9375,
+                201562.5,
+                206496.09375
+              ]
+            ],
+            "spread": 0.2962962962962963,
+            "output_bytes": 223544,
+            "reference_bytes": 223544
+          },
+          "b64-url-decode-image": {
+            "identical_output": true,
+            "native_calls": {
+              "pybase64": 1
+            },
+            "required_native": "pybase64",
+            "backend": "pybase64",
+            "iterations": 64,
+            "cpu_ns": 38312.5,
+            "reference_cpu_ns": 226984.375,
+            "speedup": 5.924551386623165,
+            "cpu_samples_ns": [
+              [
+                46968.75,
+                36500.0,
+                43703.125,
+                38312.5,
+                40515.625,
+                38218.75,
+                37109.375,
+                39703.125,
+                38250.0
+              ],
+              [
+                250609.375,
+                232875.0,
+                238750.0,
+                222843.75,
+                226984.375,
+                220015.625,
+                240062.5,
+                226640.625,
+                221843.75
+              ]
+            ],
+            "spread": 0.2868150684931507,
+            "output_bytes": 223544,
+            "reference_bytes": 223544
+          },
+          "ndjson-dump": {
+            "identical_output": true,
+            "native_calls": {
+              "orjson": 11
+            },
+            "required_native": null,
+            "backend": "orjson",
+            "iterations": 64,
+            "cpu_ns": 35656.25,
+            "reference_cpu_ns": 34062.5,
+            "speedup": 0.9553023663453112,
+            "cpu_samples_ns": [
+              [
+                35937.5,
+                35656.25,
+                36843.75,
+                37031.25,
+                35328.125,
+                34859.375,
+                35421.875,
+                34578.125,
+                35687.5
+              ],
+              [
+                34359.375,
+                33984.375,
+                35093.75,
+                34062.5,
+                33171.875,
+                34781.25,
+                33156.25,
+                32734.375,
+                40640.625
+              ]
+            ],
+            "spread": 0.241527446300716,
+            "output_bytes": 6586,
+            "reference_bytes": 6586
+          },
+          "ndjson-load": {
+            "identical_output": true,
+            "native_calls": {
+              "orjson": 11
+            },
+            "required_native": null,
+            "backend": "orjson",
+            "iterations": 256,
+            "cpu_ns": 29929.6875,
+            "reference_cpu_ns": 26683.59375,
+            "speedup": 0.8915426781519186,
+            "cpu_samples_ns": [
+              [
+                28562.5,
+                30746.09375,
+                30917.96875,
+                32304.6875,
+                28933.59375,
+                28101.5625,
+                29929.6875,
+                30292.96875,
+                28839.84375
+              ],
+              [
+                24738.28125,
+                24871.09375,
+                25136.71875,
+                27585.9375,
+                27734.375,
+                26683.59375,
+                31746.09375,
+                24906.25,
+                27734.375
+              ]
+            ],
+            "spread": 0.28327806726669824
+          },
+          "typed-encode": {
+            "identical_output": true,
+            "native_calls": {
+              "msgspec": 1
+            },
+            "required_native": "msgspec",
+            "backend": "msgspec",
+            "iterations": 1024,
+            "cpu_ns": 3052.734375,
+            "reference_cpu_ns": 23708.984375,
+            "speedup": 7.766474728087013,
+            "cpu_samples_ns": [
+              [
+                3016.6015625,
+                3254.8828125,
+                3346.6796875,
+                3084.9609375,
+                2971.6796875,
+                3122.0703125,
+                3028.3203125,
+                3052.734375,
+                2956.0546875
+              ],
+              [
+                23708.984375,
+                23837.890625,
+                23861.328125,
+                23664.0625,
+                22968.75,
+                24022.4609375,
+                23464.84375,
+                24414.0625,
+                23218.75
+              ]
+            ],
+            "spread": 0.13214403700033037,
+            "output_bytes": 6587,
+            "reference_bytes": 6587,
+            "identical_json_values": true
+          },
+          "typed-decode": {
+            "identical_output": true,
+            "native_calls": {
+              "msgspec": 1
+            },
+            "required_native": "msgspec",
+            "backend": "msgspec",
+            "iterations": 1024,
+            "cpu_ns": 7750.9765625,
+            "reference_cpu_ns": 14990.234375,
+            "speedup": 1.9339800932342195,
+            "cpu_samples_ns": [
+              [
+                7167.96875,
+                7854.4921875,
+                7795.8984375,
+                7536.1328125,
+                7907.2265625,
+                7615.234375,
+                7508.7890625,
+                7750.9765625,
+                7863.28125
+              ],
+              [
+                14990.234375,
+                15018.5546875,
+                14756.8359375,
+                14071.2890625,
+                15425.78125,
+                14108.3984375,
+                14789.0625,
+                15463.8671875,
+                15064.453125
+              ]
+            ],
+            "spread": 0.10313351498637602
+          },
+          "b64-wire-encode-image": {
+            "identical_output": true,
+            "native_calls": {
+              "pybase64": 1
+            },
+            "required_native": "pybase64",
+            "backend": "pybase64",
+            "iterations": 256,
+            "cpu_ns": 9546.875,
+            "reference_cpu_ns": 135636.71875,
+            "speedup": 14.207446808510639,
+            "cpu_samples_ns": [
+              [
+                10128.90625,
+                9281.25,
+                9300.78125,
+                9976.5625,
+                9863.28125,
+                9546.875,
+                9585.9375,
+                9269.53125,
+                9242.1875
+              ],
+              [
+                134695.3125,
+                138152.34375,
+                135636.71875,
+                139636.71875,
+                134585.9375,
+                137707.03125,
+                131183.59375,
+                135500.0,
+                135773.4375
+              ]
+            ],
+            "spread": 0.09594251901944209,
+            "output_bytes": 298060,
+            "reference_bytes": 298060
+          },
+          "b64-wire-decode-image": {
+            "identical_output": true,
+            "native_calls": {
+              "pybase64": 1
+            },
+            "required_native": "pybase64",
+            "backend": "pybase64",
+            "iterations": 256,
+            "cpu_ns": 18707.03125,
+            "reference_cpu_ns": 198480.46875,
+            "speedup": 10.609939444560451,
+            "cpu_samples_ns": [
+              [
+                18320.3125,
+                18707.03125,
+                18496.09375,
+                18785.15625,
+                18687.5,
+                19460.9375,
+                18320.3125,
+                19699.21875,
+                19136.71875
+              ],
+              [
+                202617.1875,
+                198410.15625,
+                202796.875,
+                196550.78125,
+                196863.28125,
+                201601.5625,
+                192320.3125,
+                209304.6875,
+                198480.46875
+              ]
+            ],
+            "spread": 0.08831295446236341,
+            "output_bytes": 223544,
+            "reference_bytes": 223544
+          },
+          "typed-ndjson-load": {
+            "identical_output": true,
+            "native_calls": {
+              "msgspec": 16
+            },
+            "required_native": "msgspec",
+            "backend": "msgspec",
+            "iterations": 256,
+            "cpu_ns": 11511.71875,
+            "reference_cpu_ns": 25394.53125,
+            "speedup": 2.2059721750933154,
+            "cpu_samples_ns": [
+              [
+                11230.46875,
+                12816.40625,
+                12339.84375,
+                11343.75,
+                11472.65625,
+                11652.34375,
+                11621.09375,
+                11449.21875,
+                11511.71875
+              ],
+              [
+                24441.40625,
+                24144.53125,
+                25195.3125,
+                27957.03125,
+                27058.59375,
+                25460.9375,
+                25394.53125,
+                24773.4375,
+                25925.78125
+              ]
+            ],
+            "spread": 0.1579032519009869
+          }
+        }
+      }
+    ],
+    "after": [
+      {
+        "environment": {
+          "package_source": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/serde/jsonx.py",
+          "packages": {
+            "unstd": "3.0.0",
+            "orjson": "3.13.0",
+            "pybase64": "1.5.0",
+            "msgspec": "0.22.0"
+          },
+          "python": "3.14.6",
+          "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+          "fixtures": [
+            "scripts/tests/act/delivery/ship/testdata/execution-noncaller.json",
+            "services/ai/tests/support/fixtures/source_record_capture.json",
+            "services/ai/tests/support/fixtures/purchase_capture.json",
+            "services/ai/tests/tooling/bench/discovery_capture.json",
+            "assets/data/interoceptive-proof.png"
+          ],
+          "prompt_default_bytes": 17628,
+          "prompt_compact_bytes": 17525,
+          "image_bytes": 223544
+        },
+        "cases": {
+          "clone-rollout": {
+            "identical_output": true,
+            "native_calls": {},
+            "required_native": null,
+            "backend": "python-structural",
+            "iterations": 256,
+            "cpu_ns": 31296.875,
+            "reference_cpu_ns": 92371.09375,
+            "speedup": 2.9514478282576135,
+            "cpu_samples_ns": [
+              [
+                30933.59375,
+                31062.5,
+                31125.0,
+                31027.34375,
+                31296.875,
+                31386.71875,
+                31453.125,
+                31328.125,
+                31476.5625
+              ],
+              [
+                91718.75,
+                91816.40625,
+                94433.59375,
+                91550.78125,
+                93113.28125,
+                92582.03125,
+                92371.09375,
+                92359.375,
+                94453.125
+              ]
+            ],
+            "spread": 0.031702009642872384
+          },
+          "json-default-source": {
+            "identical_output": true,
+            "native_calls": {
+              "unstd.serde._json_native": 1
+            },
+            "required_native": null,
+            "backend": "unstd.serde._json_native",
+            "iterations": 256,
+            "cpu_ns": 21445.3125,
+            "reference_cpu_ns": 21167.96875,
+            "speedup": 0.9870673952641166,
+            "cpu_samples_ns": [
+              [
+                22414.0625,
+                21527.34375,
+                21957.03125,
+                21445.3125,
+                21425.78125,
+                21273.4375,
+                21398.4375,
+                21988.28125,
+                21316.40625
+              ],
+              [
+                21910.15625,
+                21343.75,
+                21859.375,
+                21128.90625,
+                22464.84375,
+                21152.34375,
+                21105.46875,
+                20917.96875,
+                21167.96875
+              ]
+            ],
+            "spread": 0.07394957983193277,
+            "output_bytes": 17628,
+            "reference_bytes": 17628,
+            "identical_json_values": true
+          },
+          "json-compact-source": {
+            "identical_output": true,
+            "native_calls": {
+              "unstd.serde._json_native": 1
+            },
+            "required_native": null,
+            "backend": "unstd.serde._json_native",
+            "iterations": 1024,
+            "cpu_ns": 2199.21875,
+            "reference_cpu_ns": 34478.515625,
+            "speedup": 15.677619893428064,
+            "cpu_samples_ns": [
+              [
+                2173.828125,
+                2178.7109375,
+                2161.1328125,
+                2226.5625,
+                2199.21875,
+                2206.0546875,
+                2143.5546875,
+                2276.3671875,
+                2651.3671875
+              ],
+              [
+                34147.4609375,
+                34195.3125,
+                35130.859375,
+                34114.2578125,
+                34199.21875,
+                34537.109375,
+                34478.515625,
+                34825.1953125,
+                35178.7109375
+              ]
+            ],
+            "spread": 0.23690205011389523,
+            "output_bytes": 17525,
+            "reference_bytes": 17525,
+            "identical_json_values": true
+          },
+          "json-native-request": {
+            "identical_output": true,
+            "native_calls": {
+              "unstd.serde._json_native": 1
+            },
+            "required_native": "unstd.serde._json_native",
+            "backend": "unstd.serde._json_native",
+            "iterations": 16384,
+            "cpu_ns": 163.39111328125,
+            "reference_cpu_ns": 955.56640625,
+            "speedup": 5.848337691445648,
+            "cpu_samples_ns": [
+              [
+                165.8935546875,
+                176.1474609375,
+                164.85595703125,
+                161.19384765625,
+                162.78076171875,
+                161.7431640625,
+                158.50830078125,
+                163.39111328125,
+                167.05322265625
+              ],
+              [
+                959.89990234375,
+                983.82568359375,
+                973.44970703125,
+                935.11962890625,
+                969.05517578125,
+                920.5322265625,
+                955.56640625,
+                919.43359375,
+                928.466796875
+              ]
+            ],
+            "spread": 0.11128224874855602,
+            "output_bytes": 49,
+            "reference_bytes": 49,
+            "identical_json_values": true,
+            "native_guard_accepts_fixture": true
+          },
+          "json-load-request": {
+            "identical_output": true,
+            "native_calls": {
+              "msgspec": 1
+            },
+            "required_native": "msgspec",
+            "backend": "msgspec",
+            "iterations": 16384,
+            "cpu_ns": 138.5498046875,
+            "reference_cpu_ns": 459.28955078125,
+            "speedup": 3.314977973568282,
+            "cpu_samples_ns": [
+              [
+                138.97705078125,
+                135.07080078125,
+                135.009765625,
+                137.451171875,
+                138.85498046875,
+                139.22119140625,
+                138.5498046875,
+                138.3056640625,
+                139.5263671875
+              ],
+              [
+                467.041015625,
+                447.3876953125,
+                461.669921875,
+                459.28955078125,
+                461.669921875,
+                456.97021484375,
+                448.91357421875,
+                442.81005859375,
+                466.00341796875
+              ]
+            ],
+            "spread": 0.054720882150241214
+          },
+          "json-load-source": {
+            "identical_output": true,
+            "native_calls": {
+              "msgspec": 1
+            },
+            "required_native": null,
+            "backend": "msgspec",
+            "iterations": 1024,
+            "cpu_ns": 5657.2265625,
+            "reference_cpu_ns": 12165.0390625,
+            "speedup": 2.150353875366822,
+            "cpu_samples_ns": [
+              [
+                5516.6015625,
+                5568.359375,
+                5927.734375,
+                6009.765625,
+                5728.515625,
+                5567.3828125,
+                5657.2265625,
+                5599.609375,
+                5665.0390625
+              ],
+              [
+                11889.6484375,
+                11960.9375,
+                12529.296875,
+                12337.890625,
+                12165.0390625,
+                12419.921875,
+                12136.71875,
+                11852.5390625,
+                12188.4765625
+              ]
+            ],
+            "spread": 0.08939635333687378
+          },
+          "b64-encode-image": {
+            "identical_output": true,
+            "native_calls": {
+              "pybase64": 1
+            },
+            "required_native": "pybase64",
+            "backend": "pybase64",
+            "iterations": 256,
+            "cpu_ns": 9273.4375,
+            "reference_cpu_ns": 136277.34375,
+            "speedup": 14.695450716090985,
+            "cpu_samples_ns": [
+              [
+                9554.6875,
+                9078.125,
+                10246.09375,
+                10226.5625,
+                9511.71875,
+                9187.5,
+                9273.4375,
+                9042.96875,
+                9132.8125
+              ],
+              [
+                144742.1875,
+                141707.03125,
+                134617.1875,
+                134082.03125,
+                138976.5625,
+                136277.34375,
+                132703.125,
+                138855.46875,
+                135011.71875
+              ]
+            ],
+            "spread": 0.1330453563714903,
+            "output_bytes": 298060,
+            "reference_bytes": 298060
+          },
+          "b64-decode-image": {
+            "identical_output": true,
+            "native_calls": {
+              "pybase64": 1
+            },
+            "required_native": "pybase64",
+            "backend": "pybase64",
+            "iterations": 256,
+            "cpu_ns": 18042.96875,
+            "reference_cpu_ns": 193328.125,
+            "speedup": 10.714873349209785,
+            "cpu_samples_ns": [
+              [
+                17652.34375,
+                18253.90625,
+                17683.59375,
+                18058.59375,
+                18042.96875,
+                18062.5,
+                18675.78125,
+                17605.46875,
+                17746.09375
+              ],
+              [
+                190992.1875,
+                195375.0,
+                192082.03125,
+                194675.78125,
+                192558.59375,
+                194632.8125,
+                193328.125,
+                193128.90625,
+                194027.34375
+              ]
+            ],
+            "spread": 0.0607943199467495,
+            "output_bytes": 223544,
+            "reference_bytes": 223544
+          },
+          "b64-url-decode-image": {
+            "identical_output": true,
+            "native_calls": {
+              "pybase64": 1
+            },
+            "required_native": "pybase64",
+            "backend": "pybase64",
+            "iterations": 64,
+            "cpu_ns": 36250.0,
+            "reference_cpu_ns": 235203.125,
+            "speedup": 6.488362068965517,
+            "cpu_samples_ns": [
+              [
+                39671.875,
+                37937.5,
+                36140.625,
+                36437.5,
+                36187.5,
+                36250.0,
+                37390.625,
+                35890.625,
+                35890.625
+              ],
+              [
+                241781.25,
+                234218.75,
+                261687.5,
+                228078.125,
+                220781.25,
+                235203.125,
+                239656.25,
+                225375.0,
+                235546.875
+              ]
+            ],
+            "spread": 0.18527954706298655,
+            "output_bytes": 223544,
+            "reference_bytes": 223544
+          },
+          "ndjson-dump": {
+            "identical_output": true,
+            "native_calls": {
+              "unstd.serde._json_native": 16
+            },
+            "required_native": null,
+            "backend": "unstd.serde._json_native",
+            "iterations": 1024,
+            "cpu_ns": 6563.4765625,
+            "reference_cpu_ns": 34874.0234375,
+            "speedup": 5.313346228239845,
+            "cpu_samples_ns": [
+              [
+                6563.4765625,
+                6486.328125,
+                6533.203125,
+                6392.578125,
+                6658.203125,
+                6564.453125,
+                6658.203125,
+                6563.4765625,
+                6648.4375
+              ],
+              [
+                36518.5546875,
+                34651.3671875,
+                34963.8671875,
+                35227.5390625,
+                34096.6796875,
+                34535.15625,
+                35483.3984375,
+                34861.328125,
+                34874.0234375
+              ]
+            ],
+            "spread": 0.07102964341973364,
+            "output_bytes": 6586,
+            "reference_bytes": 6586
+          },
+          "ndjson-load": {
+            "identical_output": true,
+            "native_calls": {
+              "msgspec": 16
+            },
+            "required_native": null,
+            "backend": "msgspec",
+            "iterations": 256,
+            "cpu_ns": 11273.4375,
+            "reference_cpu_ns": 25238.28125,
+            "speedup": 2.2387387387387387,
+            "cpu_samples_ns": [
+              [
+                10992.1875,
+                11117.1875,
+                10683.59375,
+                11304.6875,
+                12027.34375,
+                11566.40625,
+                11863.28125,
+                11273.4375,
+                11007.8125
+              ],
+              [
+                26898.4375,
+                26082.03125,
+                24042.96875,
+                24160.15625,
+                27617.1875,
+                25238.28125,
+                24894.53125,
+                24574.21875,
+                26277.34375
+              ]
+            ],
+            "spread": 0.148659626320065
+          },
+          "typed-encode": {
+            "identical_output": true,
+            "native_calls": {
+              "msgspec": 1
+            },
+            "required_native": "msgspec",
+            "backend": "msgspec",
+            "iterations": 1024,
+            "cpu_ns": 3108.3984375,
+            "reference_cpu_ns": 24360.3515625,
+            "speedup": 7.836946277097078,
+            "cpu_samples_ns": [
+              [
+                3181.640625,
+                3142.578125,
+                3120.1171875,
+                3255.859375,
+                3029.296875,
+                3108.3984375,
+                3031.25,
+                3100.5859375,
+                3068.359375
+              ],
+              [
+                24360.3515625,
+                23833.0078125,
+                24636.71875,
+                24480.46875,
+                24055.6640625,
+                24990.234375,
+                24181.640625,
+                23421.875,
+                25166.9921875
+              ]
+            ],
+            "spread": 0.07479045776918117,
+            "output_bytes": 6587,
+            "reference_bytes": 6587,
+            "identical_json_values": true
+          },
+          "typed-decode": {
+            "identical_output": true,
+            "native_calls": {
+              "msgspec": 1
+            },
+            "required_native": "msgspec",
+            "backend": "msgspec",
+            "iterations": 1024,
+            "cpu_ns": 7477.5390625,
+            "reference_cpu_ns": 15694.3359375,
+            "speedup": 2.098863784772104,
+            "cpu_samples_ns": [
+              [
+                7333.0078125,
+                7381.8359375,
+                7477.5390625,
+                8555.6640625,
+                8347.65625,
+                8041.015625,
+                7493.1640625,
+                7023.4375,
+                7018.5546875
+              ],
+              [
+                15464.84375,
+                14078.125,
+                15934.5703125,
+                16038.0859375,
+                17362.3046875,
+                16426.7578125,
+                15694.3359375,
+                13622.0703125,
+                15245.1171875
+              ]
+            ],
+            "spread": 0.2745716538819987
+          },
+          "b64-wire-encode-image": {
+            "identical_output": true,
+            "native_calls": {
+              "pybase64": 1
+            },
+            "required_native": "pybase64",
+            "backend": "pybase64",
+            "iterations": 256,
+            "cpu_ns": 9230.46875,
+            "reference_cpu_ns": 139460.9375,
+            "speedup": 15.108760050782903,
+            "cpu_samples_ns": [
+              [
+                9566.40625,
+                9425.78125,
+                9191.40625,
+                9175.78125,
+                9828.125,
+                9074.21875,
+                9046.875,
+                9230.46875,
+                9984.375
+              ],
+              [
+                149648.4375,
+                137476.5625,
+                128781.25,
+                128199.21875,
+                157714.84375,
+                136484.375,
+                142421.875,
+                145808.59375,
+                139460.9375
+              ]
+            ],
+            "spread": 0.2302324872787105,
+            "output_bytes": 298060,
+            "reference_bytes": 298060
+          },
+          "b64-wire-decode-image": {
+            "identical_output": true,
+            "native_calls": {
+              "pybase64": 1
+            },
+            "required_native": "pybase64",
+            "backend": "pybase64",
+            "iterations": 256,
+            "cpu_ns": 17636.71875,
+            "reference_cpu_ns": 190488.28125,
+            "speedup": 10.800664451827242,
+            "cpu_samples_ns": [
+              [
+                18867.1875,
+                17742.1875,
+                20503.90625,
+                17484.375,
+                18414.0625,
+                17511.71875,
+                17546.875,
+                17500.0,
+                17636.71875
+              ],
+              [
+                197621.09375,
+                190835.9375,
+                194710.9375,
+                190410.15625,
+                188757.8125,
+                188734.375,
+                190488.28125,
+                190097.65625,
+                193421.875
+              ]
+            ],
+            "spread": 0.1726988382484361,
+            "output_bytes": 223544,
+            "reference_bytes": 223544
+          },
+          "typed-ndjson-load": {
+            "identical_output": true,
+            "native_calls": {
+              "msgspec": 16
+            },
+            "required_native": "msgspec",
+            "backend": "msgspec",
+            "iterations": 256,
+            "cpu_ns": 11085.9375,
+            "reference_cpu_ns": 23574.21875,
+            "speedup": 2.1264975334742777,
+            "cpu_samples_ns": [
+              [
+                10996.09375,
+                11164.0625,
+                10902.34375,
+                13675.78125,
+                11000.0,
+                11062.5,
+                11417.96875,
+                11582.03125,
+                11085.9375
+              ],
+              [
+                23511.71875,
+                23011.71875,
+                24273.4375,
+                23664.0625,
+                24468.75,
+                23820.3125,
+                23152.34375,
+                23496.09375,
+                23574.21875
+              ]
+            ],
+            "spread": 0.2543891078466499
+          }
+        }
+      },
+      {
+        "environment": {
+          "package_source": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/serde/jsonx.py",
+          "packages": {
+            "unstd": "3.0.0",
+            "orjson": "3.13.0",
+            "pybase64": "1.5.0",
+            "msgspec": "0.22.0"
+          },
+          "python": "3.14.6",
+          "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+          "fixtures": [
+            "scripts/tests/act/delivery/ship/testdata/execution-noncaller.json",
+            "services/ai/tests/support/fixtures/source_record_capture.json",
+            "services/ai/tests/support/fixtures/purchase_capture.json",
+            "services/ai/tests/tooling/bench/discovery_capture.json",
+            "assets/data/interoceptive-proof.png"
+          ],
+          "prompt_default_bytes": 17628,
+          "prompt_compact_bytes": 17525,
+          "image_bytes": 223544
+        },
+        "cases": {
+          "clone-rollout": {
+            "identical_output": true,
+            "native_calls": {},
+            "required_native": null,
+            "backend": "python-structural",
+            "iterations": 256,
+            "cpu_ns": 32144.53125,
+            "reference_cpu_ns": 93097.65625,
+            "speedup": 2.8962206829505406,
+            "cpu_samples_ns": [
+              [
+                36789.0625,
+                32144.53125,
+                32312.5,
+                30957.03125,
+                31722.65625,
+                30859.375,
+                34613.28125,
+                30613.28125,
+                32691.40625
+              ],
+              [
+                96203.125,
+                92289.0625,
+                93097.65625,
+                91738.28125,
+                93667.96875,
+                91574.21875,
+                92820.3125,
+                94019.53125,
+                96347.65625
+              ]
+            ],
+            "spread": 0.2017353579175705
+          },
+          "json-default-source": {
+            "identical_output": true,
+            "native_calls": {
+              "unstd.serde._json_native": 1
+            },
+            "required_native": null,
+            "backend": "unstd.serde._json_native",
+            "iterations": 256,
+            "cpu_ns": 22652.34375,
+            "reference_cpu_ns": 22585.9375,
+            "speedup": 0.997068460079324,
+            "cpu_samples_ns": [
+              [
+                22652.34375,
+                22789.0625,
+                21675.78125,
+                22988.28125,
+                22714.84375,
+                23382.8125,
+                22644.53125,
+                22171.875,
+                22183.59375
+              ],
+              [
+                22699.21875,
+                22910.15625,
+                21000.0,
+                20992.1875,
+                22585.9375,
+                22566.40625,
+                22339.84375,
+                23234.375,
+                22851.5625
+              ]
+            ],
+            "spread": 0.106810569408262,
+            "output_bytes": 17628,
+            "reference_bytes": 17628,
+            "identical_json_values": true
+          },
+          "json-compact-source": {
+            "identical_output": true,
+            "native_calls": {
+              "unstd.serde._json_native": 1
+            },
+            "required_native": null,
+            "backend": "unstd.serde._json_native",
+            "iterations": 1024,
+            "cpu_ns": 2228.515625,
+            "reference_cpu_ns": 34264.6484375,
+            "speedup": 15.375547765118318,
+            "cpu_samples_ns": [
+              [
+                2116.2109375,
+                2203.125,
+                2228.515625,
+                2424.8046875,
+                2674.8046875,
+                2195.3125,
+                2154.296875,
+                2331.0546875,
+                2373.046875
+              ],
+              [
+                33780.2734375,
+                34301.7578125,
+                34264.6484375,
+                34868.1640625,
+                35389.6484375,
+                34117.1875,
+                34225.5859375,
+                35083.0078125,
+                33988.28125
+              ]
+            ],
+            "spread": 0.2639593908629442,
+            "output_bytes": 17525,
+            "reference_bytes": 17525,
+            "identical_json_values": true
+          },
+          "json-native-request": {
+            "identical_output": true,
+            "native_calls": {
+              "unstd.serde._json_native": 1
+            },
+            "required_native": "unstd.serde._json_native",
+            "backend": "unstd.serde._json_native",
+            "iterations": 16384,
+            "cpu_ns": 162.41455078125,
+            "reference_cpu_ns": 933.28857421875,
+            "speedup": 5.746335963923337,
+            "cpu_samples_ns": [
+              [
+                163.63525390625,
+                165.6494140625,
+                162.41455078125,
+                159.48486328125,
+                161.0107421875,
+                165.34423828125,
+                156.8603515625,
+                160.09521484375,
+                173.27880859375
+              ],
+              [
+                934.08203125,
+                933.28857421875,
+                943.90869140625,
+                909.7900390625,
+                946.8994140625,
+                943.29833984375,
+                918.51806640625,
+                925.1708984375,
+                919.98291015625
+              ]
+            ],
+            "spread": 0.10466926070038911,
+            "output_bytes": 49,
+            "reference_bytes": 49,
+            "identical_json_values": true,
+            "native_guard_accepts_fixture": true
+          },
+          "json-load-request": {
+            "identical_output": true,
+            "native_calls": {
+              "msgspec": 1
+            },
+            "required_native": "msgspec",
+            "backend": "msgspec",
+            "iterations": 16384,
+            "cpu_ns": 133.23974609375,
+            "reference_cpu_ns": 442.07763671875,
+            "speedup": 3.3179111314704537,
+            "cpu_samples_ns": [
+              [
+                130.9814453125,
+                153.38134765625,
+                142.4560546875,
+                133.056640625,
+                135.986328125,
+                133.23974609375,
+                133.36181640625,
+                131.77490234375,
+                130.859375
+              ],
+              [
+                430.7861328125,
+                452.81982421875,
+                478.08837890625,
+                439.02587890625,
+                439.63623046875,
+                446.71630859375,
+                440.61279296875,
+                442.07763671875,
+                448.05908203125
+              ]
+            ],
+            "spread": 0.17210820895522388
+          },
+          "json-load-source": {
+            "identical_output": true,
+            "native_calls": {
+              "msgspec": 1
+            },
+            "required_native": null,
+            "backend": "msgspec",
+            "iterations": 1024,
+            "cpu_ns": 5464.84375,
+            "reference_cpu_ns": 11888.671875,
+            "speedup": 2.175482487491065,
+            "cpu_samples_ns": [
+              [
+                6422.8515625,
+                5443.359375,
+                5420.8984375,
+                5464.84375,
+                5534.1796875,
+                5570.3125,
+                5534.1796875,
+                5424.8046875,
+                5433.59375
+              ],
+              [
+                11967.7734375,
+                11842.7734375,
+                11871.09375,
+                11764.6484375,
+                12150.390625,
+                12041.9921875,
+                12299.8046875,
+                11888.671875,
+                11728.515625
+              ]
+            ],
+            "spread": 0.1848315618807422
+          },
+          "b64-encode-image": {
+            "identical_output": true,
+            "native_calls": {
+              "pybase64": 1
+            },
+            "required_native": "pybase64",
+            "backend": "pybase64",
+            "iterations": 256,
+            "cpu_ns": 9292.96875,
+            "reference_cpu_ns": 136449.21875,
+            "speedup": 14.683060109289617,
+            "cpu_samples_ns": [
+              [
+                12359.375,
+                9015.625,
+                9496.09375,
+                9292.96875,
+                9335.9375,
+                9289.0625,
+                9296.875,
+                9218.75,
+                9285.15625
+              ],
+              [
+                145351.5625,
+                133597.65625,
+                139609.375,
+                140968.75,
+                136449.21875,
+                137218.75,
+                133910.15625,
+                136437.5,
+                135871.09375
+              ]
+            ],
+            "spread": 0.3708838821490468,
+            "output_bytes": 298060,
+            "reference_bytes": 298060
+          },
+          "b64-decode-image": {
+            "identical_output": true,
+            "native_calls": {
+              "pybase64": 1
+            },
+            "required_native": "pybase64",
+            "backend": "pybase64",
+            "iterations": 256,
+            "cpu_ns": 17664.0625,
+            "reference_cpu_ns": 193906.25,
+            "speedup": 10.977443609022556,
+            "cpu_samples_ns": [
+              [
+                17753.90625,
+                17773.4375,
+                17652.34375,
+                17796.875,
+                17601.5625,
+                17664.0625,
+                17566.40625,
+                17546.875,
+                17824.21875
+              ],
+              [
+                193906.25,
+                197953.125,
+                196683.59375,
+                199015.625,
+                189507.8125,
+                188160.15625,
+                189121.09375,
+                188699.21875,
+                194242.1875
+              ]
+            ],
+            "spread": 0.057692706927692086,
+            "output_bytes": 223544,
+            "reference_bytes": 223544
+          },
+          "b64-url-decode-image": {
+            "identical_output": true,
+            "native_calls": {
+              "pybase64": 1
+            },
+            "required_native": "pybase64",
+            "backend": "pybase64",
+            "iterations": 64,
+            "cpu_ns": 36796.875,
+            "reference_cpu_ns": 220968.75,
+            "speedup": 6.005095541401274,
+            "cpu_samples_ns": [
+              [
+                36093.75,
+                37015.625,
+                36828.125,
+                36796.875,
+                36156.25,
+                36046.875,
+                36921.875,
+                44609.375,
+                36531.25
+              ],
+              [
+                219578.125,
+                220953.125,
+                229468.75,
+                207968.75,
+                214218.75,
+                225281.25,
+                226703.125,
+                250343.75,
+                220968.75
+              ]
+            ],
+            "spread": 0.2375379280450802,
+            "output_bytes": 223544,
+            "reference_bytes": 223544
+          },
+          "ndjson-dump": {
+            "identical_output": true,
+            "native_calls": {
+              "unstd.serde._json_native": 16
+            },
+            "required_native": null,
+            "backend": "unstd.serde._json_native",
+            "iterations": 1024,
+            "cpu_ns": 6478.515625,
+            "reference_cpu_ns": 34926.7578125,
+            "speedup": 5.391166716912873,
+            "cpu_samples_ns": [
+              [
+                6441.40625,
+                6419.921875,
+                6591.796875,
+                6478.515625,
+                6391.6015625,
+                6663.0859375,
+                6911.1328125,
+                6847.65625,
+                6447.265625
+              ],
+              [
+                35653.3203125,
+                35985.3515625,
+                34371.09375,
+                34405.2734375,
+                35440.4296875,
+                35597.65625,
+                34926.7578125,
+                34402.34375,
+                34285.15625
+              ]
+            ],
+            "spread": 0.08128342245989305,
+            "output_bytes": 6586,
+            "reference_bytes": 6586
+          },
+          "ndjson-load": {
+            "identical_output": true,
+            "native_calls": {
+              "msgspec": 16
+            },
+            "required_native": null,
+            "backend": "msgspec",
+            "iterations": 256,
+            "cpu_ns": 11707.03125,
+            "reference_cpu_ns": 24531.25,
+            "speedup": 2.0954287620954286,
+            "cpu_samples_ns": [
+              [
+                11101.5625,
+                11062.5,
+                11582.03125,
+                11527.34375,
+                11843.75,
+                11707.03125,
+                12039.0625,
+                12269.53125,
+                11804.6875
+              ],
+              [
+                23550.78125,
+                23359.375,
+                23113.28125,
+                24292.96875,
+                24531.25,
+                26992.1875,
+                26019.53125,
+                24640.625,
+                27503.90625
+              ]
+            ],
+            "spread": 0.18996112895048167
+          },
+          "typed-encode": {
+            "identical_output": true,
+            "native_calls": {
+              "msgspec": 1
+            },
+            "required_native": "msgspec",
+            "backend": "msgspec",
+            "iterations": 1024,
+            "cpu_ns": 3151.3671875,
+            "reference_cpu_ns": 25220.703125,
+            "speedup": 8.003098853424232,
+            "cpu_samples_ns": [
+              [
+                3698.2421875,
+                3148.4375,
+                2971.6796875,
+                2911.1328125,
+                3198.2421875,
+                3219.7265625,
+                3897.4609375,
+                3151.3671875,
+                3088.8671875
+              ],
+              [
+                26262.6953125,
+                26518.5546875,
+                25607.421875,
+                24418.9453125,
+                23222.65625,
+                22960.9375,
+                25220.703125,
+                23875.0,
+                25892.578125
+              ]
+            ],
+            "spread": 0.33881247903388123,
+            "output_bytes": 6587,
+            "reference_bytes": 6587,
+            "identical_json_values": true
+          },
+          "typed-decode": {
+            "identical_output": true,
+            "native_calls": {
+              "msgspec": 1
+            },
+            "required_native": "msgspec",
+            "backend": "msgspec",
+            "iterations": 1024,
+            "cpu_ns": 7634.765625,
+            "reference_cpu_ns": 14335.9375,
+            "speedup": 1.8777180864671272,
+            "cpu_samples_ns": [
+              [
+                8710.9375,
+                8196.2890625,
+                8053.7109375,
+                8026.3671875,
+                7511.71875,
+                7462.890625,
+                7363.28125,
+                7634.765625,
+                7535.15625
+              ],
+              [
+                16678.7109375,
+                14327.1484375,
+                15031.25,
+                14335.9375,
+                14955.078125,
+                13753.90625,
+                13930.6640625,
+                14860.3515625,
+                14246.09375
+              ]
+            ],
+            "spread": 0.21265265549559784
+          },
+          "b64-wire-encode-image": {
+            "identical_output": true,
+            "native_calls": {
+              "pybase64": 1
+            },
+            "required_native": "pybase64",
+            "backend": "pybase64",
+            "iterations": 256,
+            "cpu_ns": 9281.25,
+            "reference_cpu_ns": 141378.90625,
+            "speedup": 15.232744107744107,
+            "cpu_samples_ns": [
+              [
+                9652.34375,
+                10265.625,
+                9007.8125,
+                9261.71875,
+                9562.5,
+                9382.8125,
+                9246.09375,
+                9281.25,
+                9246.09375
+              ],
+              [
+                131187.5,
+                141378.90625,
+                142511.71875,
+                127128.90625,
+                144507.8125,
+                144625.0,
+                144796.875,
+                135714.84375,
+                135523.4375
+              ]
+            ],
+            "spread": 0.1396357328707719,
+            "output_bytes": 298060,
+            "reference_bytes": 298060
+          },
+          "b64-wire-decode-image": {
+            "identical_output": true,
+            "native_calls": {
+              "pybase64": 1
+            },
+            "required_native": "pybase64",
+            "backend": "pybase64",
+            "iterations": 256,
+            "cpu_ns": 18625.0,
+            "reference_cpu_ns": 200621.09375,
+            "speedup": 10.771602348993289,
+            "cpu_samples_ns": [
+              [
+                18960.9375,
+                19128.90625,
+                18957.03125,
+                21070.3125,
+                18218.75,
+                18625.0,
+                18414.0625,
+                18339.84375,
+                18042.96875
+              ],
+              [
+                202722.65625,
+                198144.53125,
+                202046.875,
+                200621.09375,
+                195574.21875,
+                201968.75,
+                201121.09375,
+                197062.5,
+                199769.53125
+              ]
+            ],
+            "spread": 0.16778523489932887,
+            "output_bytes": 223544,
+            "reference_bytes": 223544
+          },
+          "typed-ndjson-load": {
+            "identical_output": true,
+            "native_calls": {
+              "msgspec": 16
+            },
+            "required_native": "msgspec",
+            "backend": "msgspec",
+            "iterations": 256,
+            "cpu_ns": 11664.0625,
+            "reference_cpu_ns": 24792.96875,
+            "speedup": 2.125586068318821,
+            "cpu_samples_ns": [
+              [
+                11941.40625,
+                11664.0625,
+                12136.71875,
+                11226.5625,
+                11421.875,
+                11437.5,
+                11867.1875,
+                12625.0,
+                11117.1875
+              ],
+              [
+                24792.96875,
+                25132.8125,
+                23804.6875,
+                23839.84375,
+                24851.5625,
+                24500.0,
+                24429.6875,
+                25199.21875,
+                24828.125
+              ]
+            ],
+            "spread": 0.13562895291637386
+          }
+        }
+      },
+      {
+        "environment": {
+          "package_source": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/serde/jsonx.py",
+          "packages": {
+            "unstd": "3.0.0",
+            "orjson": "3.13.0",
+            "pybase64": "1.5.0",
+            "msgspec": "0.22.0"
+          },
+          "python": "3.14.6",
+          "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+          "fixtures": [
+            "scripts/tests/act/delivery/ship/testdata/execution-noncaller.json",
+            "services/ai/tests/support/fixtures/source_record_capture.json",
+            "services/ai/tests/support/fixtures/purchase_capture.json",
+            "services/ai/tests/tooling/bench/discovery_capture.json",
+            "assets/data/interoceptive-proof.png"
+          ],
+          "prompt_default_bytes": 17628,
+          "prompt_compact_bytes": 17525,
+          "image_bytes": 223544
+        },
+        "cases": {
+          "clone-rollout": {
+            "identical_output": true,
+            "native_calls": {},
+            "required_native": null,
+            "backend": "python-structural",
+            "iterations": 64,
+            "cpu_ns": 33468.75,
+            "reference_cpu_ns": 105343.75,
+            "speedup": 3.1475256769374416,
+            "cpu_samples_ns": [
+              [
+                31859.375,
+                36734.375,
+                35765.625,
+                33468.75,
+                32343.75,
+                33609.375,
+                31078.125,
+                33078.125,
+                34281.25
+              ],
+              [
+                99453.125,
+                104359.375,
+                113656.25,
+                115390.625,
+                106125.0,
+                96593.75,
+                97109.375,
+                105343.75,
+                106015.625
+              ]
+            ],
+            "spread": 0.19459721772889033
+          },
+          "json-default-source": {
+            "identical_output": true,
+            "native_calls": {
+              "unstd.serde._json_native": 1
+            },
+            "required_native": null,
+            "backend": "unstd.serde._json_native",
+            "iterations": 256,
+            "cpu_ns": 24949.21875,
+            "reference_cpu_ns": 25046.875,
+            "speedup": 1.0039142007202129,
+            "cpu_samples_ns": [
+              [
+                26261.71875,
+                25234.375,
+                22226.5625,
+                28546.875,
+                24949.21875,
+                22343.75,
+                23230.46875,
+                25476.5625,
+                24183.59375
+              ],
+              [
+                25023.4375,
+                28375.0,
+                27593.75,
+                22960.9375,
+                24519.53125,
+                25296.875,
+                24019.53125,
+                25046.875,
+                25066.40625
+              ]
+            ],
+            "spread": 0.2843585237258348,
+            "output_bytes": 17628,
+            "reference_bytes": 17628,
+            "identical_json_values": true
+          },
+          "json-compact-source": {
+            "identical_output": true,
+            "native_calls": {
+              "unstd.serde._json_native": 1
+            },
+            "required_native": null,
+            "backend": "unstd.serde._json_native",
+            "iterations": 1024,
+            "cpu_ns": 2541.9921875,
+            "reference_cpu_ns": 38841.796875,
+            "speedup": 15.280061467537458,
+            "cpu_samples_ns": [
+              [
+                2888.671875,
+                2541.9921875,
+                2431.640625,
+                2365.234375,
+                2287.109375,
+                2771.484375,
+                2935.546875,
+                2588.8671875,
+                2535.15625
+              ],
+              [
+                39117.1875,
+                38811.5234375,
+                39679.6875,
+                38309.5703125,
+                38651.3671875,
+                39768.5546875,
+                38580.078125,
+                38841.796875,
+                38905.2734375
+              ]
+            ],
+            "spread": 0.28351836037574724,
+            "output_bytes": 17525,
+            "reference_bytes": 17525,
+            "identical_json_values": true
+          },
+          "json-native-request": {
+            "identical_output": true,
+            "native_calls": {
+              "unstd.serde._json_native": 1
+            },
+            "required_native": "unstd.serde._json_native",
+            "backend": "unstd.serde._json_native",
+            "iterations": 16384,
+            "cpu_ns": 182.43408203125,
+            "reference_cpu_ns": 1090.33203125,
+            "speedup": 5.976580796252928,
+            "cpu_samples_ns": [
+              [
+                213.134765625,
+                174.8046875,
+                163.9404296875,
+                173.7060546875,
+                175.9033203125,
+                197.20458984375,
+                182.43408203125,
+                194.82421875,
+                211.5478515625
+              ],
+              [
+                1098.93798828125,
+                1009.521484375,
+                1044.3115234375,
+                1090.33203125,
+                1010.19287109375,
+                1072.93701171875,
+                1101.37939453125,
+                1096.49658203125,
+                1126.220703125
+              ]
+            ],
+            "spread": 0.30007446016381234,
+            "output_bytes": 49,
+            "reference_bytes": 49,
+            "identical_json_values": true,
+            "native_guard_accepts_fixture": true
+          },
+          "json-load-request": {
+            "identical_output": true,
+            "native_calls": {
+              "msgspec": 1
+            },
+            "required_native": "msgspec",
+            "backend": "msgspec",
+            "iterations": 16384,
+            "cpu_ns": 151.3671875,
+            "reference_cpu_ns": 527.77099609375,
+            "speedup": 3.486693548387097,
+            "cpu_samples_ns": [
+              [
+                168.3349609375,
+                148.0712890625,
+                156.18896484375,
+                145.8740234375,
+                151.3671875,
+                153.4423828125,
+                142.02880859375,
+                147.03369140625,
+                158.14208984375
+              ],
+              [
+                569.03076171875,
+                530.70068359375,
+                514.58740234375,
+                497.37548828125,
+                518.73779296875,
+                527.77099609375,
+                513.24462890625,
+                541.93115234375,
+                540.58837890625
+              ]
+            ],
+            "spread": 0.18521701761925224
+          },
+          "json-load-source": {
+            "identical_output": true,
+            "native_calls": {
+              "msgspec": 1
+            },
+            "required_native": null,
+            "backend": "msgspec",
+            "iterations": 1024,
+            "cpu_ns": 6489.2578125,
+            "reference_cpu_ns": 13597.65625,
+            "speedup": 2.0954100827689994,
+            "cpu_samples_ns": [
+              [
+                7825.1953125,
+                6044.921875,
+                6049.8046875,
+                6172.8515625,
+                5921.875,
+                6489.2578125,
+                6833.0078125,
+                6686.5234375,
+                7223.6328125
+              ],
+              [
+                13275.390625,
+                13466.796875,
+                13597.65625,
+                13673.828125,
+                13154.296875,
+                13298.828125,
+                13951.171875,
+                13872.0703125,
+                15321.2890625
+              ]
+            ],
+            "spread": 0.3214050131926121
+          },
+          "b64-encode-image": {
+            "identical_output": true,
+            "native_calls": {
+              "pybase64": 1
+            },
+            "required_native": "pybase64",
+            "backend": "pybase64",
+            "iterations": 256,
+            "cpu_ns": 11867.1875,
+            "reference_cpu_ns": 173156.25,
+            "speedup": 14.591178406846609,
+            "cpu_samples_ns": [
+              [
+                9714.84375,
+                11890.625,
+                11894.53125,
+                11343.75,
+                10980.46875,
+                11960.9375,
+                11867.1875,
+                10320.3125,
+                12054.6875
+              ],
+              [
+                168214.84375,
+                184324.21875,
+                162789.0625,
+                190636.71875,
+                166859.375,
+                175339.84375,
+                161906.25,
+                174367.1875,
+                173156.25
+              ]
+            ],
+            "spread": 0.24085243264977885,
+            "output_bytes": 298060,
+            "reference_bytes": 298060
+          },
+          "b64-decode-image": {
+            "identical_output": true,
+            "native_calls": {
+              "pybase64": 1
+            },
+            "required_native": "pybase64",
+            "backend": "pybase64",
+            "iterations": 256,
+            "cpu_ns": 19949.21875,
+            "reference_cpu_ns": 211382.8125,
+            "speedup": 10.596044644605444,
+            "cpu_samples_ns": [
+              [
+                21238.28125,
+                18894.53125,
+                20773.4375,
+                19707.03125,
+                19535.15625,
+                19949.21875,
+                22132.8125,
+                20449.21875,
+                19066.40625
+              ],
+              [
+                211382.8125,
+                212042.96875,
+                205867.1875,
+                212988.28125,
+                209425.78125,
+                206734.375,
+                216898.4375,
+                212570.3125,
+                208625.0
+              ]
+            ],
+            "spread": 0.1713872234856316,
+            "output_bytes": 223544,
+            "reference_bytes": 223544
+          },
+          "b64-url-decode-image": {
+            "identical_output": true,
+            "native_calls": {
+              "pybase64": 1
+            },
+            "required_native": "pybase64",
+            "backend": "pybase64",
+            "iterations": 64,
+            "cpu_ns": 43468.75,
+            "reference_cpu_ns": 255484.375,
+            "speedup": 5.877426312005751,
+            "cpu_samples_ns": [
+              [
+                40156.25,
+                47125.0,
+                46875.0,
+                37953.125,
+                46750.0,
+                46718.75,
+                43468.75,
+                39265.625,
+                43375.0
+              ],
+              [
+                240765.625,
+                249468.75,
+                281468.75,
+                272765.625,
+                259812.5,
+                284218.75,
+                231984.375,
+                251984.375,
+                255484.375
+              ]
+            ],
+            "spread": 0.24166323589954714,
+            "output_bytes": 223544,
+            "reference_bytes": 223544
+          },
+          "ndjson-dump": {
+            "identical_output": true,
+            "native_calls": {
+              "unstd.serde._json_native": 16
+            },
+            "required_native": null,
+            "backend": "unstd.serde._json_native",
+            "iterations": 256,
+            "cpu_ns": 8671.875,
+            "reference_cpu_ns": 48292.96875,
+            "speedup": 5.568918918918919,
+            "cpu_samples_ns": [
+              [
+                8699.21875,
+                8613.28125,
+                9613.28125,
+                10339.84375,
+                8257.8125,
+                8761.71875,
+                8671.875,
+                6871.09375,
+                6683.59375
+              ],
+              [
+                50941.40625,
+                48292.96875,
+                47441.40625,
+                44617.1875,
+                48175.78125,
+                51324.21875,
+                52179.6875,
+                48730.46875,
+                39246.09375
+              ]
+            ],
+            "spread": 0.5470485096434834,
+            "output_bytes": 6586,
+            "reference_bytes": 6586
+          },
+          "ndjson-load": {
+            "identical_output": true,
+            "native_calls": {
+              "msgspec": 16
+            },
+            "required_native": null,
+            "backend": "msgspec",
+            "iterations": 256,
+            "cpu_ns": 13371.09375,
+            "reference_cpu_ns": 28390.625,
+            "speedup": 2.1232836692959394,
+            "cpu_samples_ns": [
+              [
+                12121.09375,
+                14019.53125,
+                13371.09375,
+                14539.0625,
+                12714.84375,
+                12375.0,
+                13433.59375,
+                13515.625,
+                11609.375
+              ],
+              [
+                28640.625,
+                28390.625,
+                26691.40625,
+                27191.40625,
+                30175.78125,
+                32644.53125,
+                27550.78125,
+                27574.21875,
+                30230.46875
+              ]
+            ],
+            "spread": 0.25235531628532976
+          },
+          "typed-encode": {
+            "identical_output": true,
+            "native_calls": {
+              "msgspec": 1
+            },
+            "required_native": "msgspec",
+            "backend": "msgspec",
+            "iterations": 1024,
+            "cpu_ns": 3123.046875,
+            "reference_cpu_ns": 26088.8671875,
+            "speedup": 8.353658536585366,
+            "cpu_samples_ns": [
+              [
+                3123.046875,
+                3917.96875,
+                3907.2265625,
+                3450.1953125,
+                3324.21875,
+                3028.3203125,
+                2995.1171875,
+                2946.2890625,
+                2915.0390625
+              ],
+              [
+                26794.921875,
+                26262.6953125,
+                26088.8671875,
+                27385.7421875,
+                27491.2109375,
+                25535.15625,
+                25717.7734375,
+                25712.890625,
+                25592.7734375
+              ]
+            ],
+            "spread": 0.3440536013400335,
+            "output_bytes": 6587,
+            "reference_bytes": 6587,
+            "identical_json_values": true
+          },
+          "typed-decode": {
+            "identical_output": true,
+            "native_calls": {
+              "msgspec": 1
+            },
+            "required_native": "msgspec",
+            "backend": "msgspec",
+            "iterations": 256,
+            "cpu_ns": 8089.84375,
+            "reference_cpu_ns": 16539.0625,
+            "speedup": 2.044422984065669,
+            "cpu_samples_ns": [
+              [
+                8089.84375,
+                8183.59375,
+                7312.5,
+                7171.875,
+                7203.125,
+                8925.78125,
+                8328.125,
+                8062.5,
+                8324.21875
+              ],
+              [
+                16640.625,
+                17039.0625,
+                16539.0625,
+                14835.9375,
+                18242.1875,
+                14214.84375,
+                17140.625,
+                15117.1875,
+                15097.65625
+              ]
+            ],
+            "spread": 0.2833195932948612
+          },
+          "b64-wire-encode-image": {
+            "identical_output": true,
+            "native_calls": {
+              "pybase64": 1
+            },
+            "required_native": "pybase64",
+            "backend": "pybase64",
+            "iterations": 256,
+            "cpu_ns": 10976.5625,
+            "reference_cpu_ns": 159296.875,
+            "speedup": 14.512455516014235,
+            "cpu_samples_ns": [
+              [
+                10121.09375,
+                10976.5625,
+                9714.84375,
+                11363.28125,
+                11042.96875,
+                11875.0,
+                11703.125,
+                9968.75,
+                9929.6875
+              ],
+              [
+                146613.28125,
+                164828.125,
+                166843.75,
+                159296.875,
+                161023.4375,
+                158562.5,
+                163660.15625,
+                152500.0,
+                158687.5
+              ]
+            ],
+            "spread": 0.22235625251306795,
+            "output_bytes": 298060,
+            "reference_bytes": 298060
+          },
+          "b64-wire-decode-image": {
+            "identical_output": true,
+            "native_calls": {
+              "pybase64": 1
+            },
+            "required_native": "pybase64",
+            "backend": "pybase64",
+            "iterations": 256,
+            "cpu_ns": 20640.625,
+            "reference_cpu_ns": 211875.0,
+            "speedup": 10.264950794852384,
+            "cpu_samples_ns": [
+              [
+                19683.59375,
+                20402.34375,
+                19867.1875,
+                20640.625,
+                19945.3125,
+                23761.71875,
+                23199.21875,
+                23203.125,
+                23585.9375
+              ],
+              [
+                211875.0,
+                210781.25,
+                210042.96875,
+                214640.625,
+                211300.78125,
+                220046.875,
+                225757.8125,
+                216808.59375,
+                210097.65625
+              ]
+            ],
+            "spread": 0.207183965072435,
+            "output_bytes": 223544,
+            "reference_bytes": 223544
+          },
+          "typed-ndjson-load": {
+            "identical_output": true,
+            "native_calls": {
+              "msgspec": 16
+            },
+            "required_native": "msgspec",
+            "backend": "msgspec",
+            "iterations": 256,
+            "cpu_ns": 12562.5,
+            "reference_cpu_ns": 27296.875,
+            "speedup": 2.1728855721393034,
+            "cpu_samples_ns": [
+              [
+                14050.78125,
+                12761.71875,
+                11753.90625,
+                12414.0625,
+                14179.6875,
+                13000.0,
+                11828.125,
+                12562.5,
+                11949.21875
+              ],
+              [
+                28343.75,
+                27296.875,
+                29308.59375,
+                26261.71875,
+                27492.1875,
+                26843.75,
+                27062.5,
+                26484.375,
+                29281.25
+              ]
+            ],
+            "spread": 0.20638085742771686
+          }
+        }
+      }
+    ]
+  },
+  "failures": []
+}

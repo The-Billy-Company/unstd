@@ -383,6 +383,7 @@ def _worker(source: Path, rounds: int, fallback: bool) -> dict[str, Any]:
     if fallback:
         b64._HAVE_PYBASE64 = False
         jsonx._HAVE_ORJSON = False
+        jsonx._HAVE_MSGSPEC = False
     cases = _workloads()
     for case in cases:
         actual = case.call()
@@ -464,6 +465,7 @@ def _isolated_cases(source: Path, fallback: bool) -> list[Workload]:
         if fallback:
             b64._HAVE_PYBASE64 = False
             jsonx._HAVE_ORJSON = False
+            jsonx._HAVE_MSGSPEC = False
         return _workloads()
     finally:
         for name in list(sys.modules):

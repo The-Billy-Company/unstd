@@ -1,4 +1,4 @@
-"""Native proof shortcuts retain snapshot, integer and source-budget boundaries."""
+"""Native proof shortcuts retain snapshot, integer and recursion boundaries."""
 
 from __future__ import annotations
 
@@ -11,7 +11,6 @@ from typing import Any
 import pytest
 
 from unstd.serde import jsonx
-from unstd.serde._json_decode import _decode_eligible
 from unstd.serde._json_encode import _UNSAFE, _snapshot
 
 
@@ -62,20 +61,6 @@ def test_wide_containers_stay_outside_the_snapshot_budget(container: type[Any]) 
         else container(range(64))
     )
     assert _snapshot(values, [64], False) is _UNSAFE
-
-
-@pytest.mark.parametrize("binary", [False, True])
-@pytest.mark.parametrize("offset", [0, 4095, 4096, 8192])
-@pytest.mark.parametrize("count", [63, 64, 65])
-@pytest.mark.parametrize("second_opener", ["[", "{"])
-def test_source_opener_budget_crosses_the_native_counting_boundary(
-    binary: bool, offset: int, count: int, second_opener: str
-) -> None:
-    # Split the shared budget across both opener types and both scan regions.
-    text = "[" * (count // 2) + " " * offset + second_opener * (count - count // 2)
-    document = text.encode() if binary else text
-    limit = 8 if len(document) < 4096 else 64
-    assert _decode_eligible(document) is (count <= limit)
 
 
 def test_compact_fallback_preserves_stdlib_recursion_headroom() -> None:

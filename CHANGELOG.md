@@ -8,7 +8,7 @@ doc_radar:
     - file: .github/workflows/ci.yml
       contains: ['github.sha || github.ref', 'version: "latest-known"', 'uv sync --locked']
     - file: .github/workflows/release.yml
-      contains: ['TAG: ${{ github.ref_name }}', 'uv version --short']
+      contains: ['TAG: ${{ github.ref_name }}', 'Build and test CPython stable-ABI wheels']
     - file: src/unstd/serde/structs.py
       contains: ['Callable[[Decimal], object]', 'decimal_format: _DecimalFormat']
 ---
@@ -16,6 +16,24 @@ doc_radar:
 # Changelog
 
 <!-- towncrier release notes start -->
+
+## [3.1.0] - 2026-10-19
+
+### Performance
+
+- JSON encoding can use an optional CPython stable-ABI guard that checks exact
+  builtin trees and calls orjson while retaining the GIL. Larger text records
+  avoid 3.0.0's Python snapshot budget and stdlib fallback. Compiler-less source
+  builds retain the portable path; release wheels include the guard.
+- Untyped JSON decoding reuses msgspec's arbitrary-precision integer and correctly
+  rounded float decoder, removing the source scan and Python result-tree walk.
+  Custom options, unsupported inputs and native errors retain stdlib behavior.
+- NDJSON writes use the same guarded encoder's native trailing-newline option,
+  avoiding redundant public dispatch and an extra output copy per record.
+- Added an output-checked Billy fixture comparison with source and fixture
+  fingerprints, raw CPU samples and an optional release-regression gate. Results
+  retain residual costs relative to the permissive 2.1.1 codec; no universal
+  speedup or zero-overhead compatibility claim is made. Public APIs are unchanged.
 
 ## [3.0.0] - 2026-10-19
 

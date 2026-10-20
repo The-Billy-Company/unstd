@@ -235,11 +235,11 @@ case(
 case(
     name="jsonx.loads · 500 records",
     group="serde",
-    backend="json",
+    backend="msgspec",
     payload=lambda: _RECORDS_JSON,
     accel=jx_loads,
     base=json.loads,
-    note="wide float-bearing tree uses stdlib; fallback overhead reference",
+    note="native decode with exact integers and correctly rounded floats",
 )
 case(
     name="jsonx.dumps · text payload",
@@ -253,11 +253,11 @@ case(
 case(
     name="jsonx.loads · 1000 integers",
     group="serde",
-    backend="orjson",
+    backend="msgspec",
     payload=lambda: _JSON_INTS,
     accel=jx_loads,
     base=json.loads,
-    note="guarded native decode; integer types and values verified before return",
+    note="native exact integer construction; no result-validation walk",
 )
 case(
     name="b64.encode · 128 KiB",
@@ -307,11 +307,11 @@ case(
 case(
     name="jsonx.loads · 20 nested records",
     group="serde",
-    backend="orjson",
+    backend="msgspec",
     payload=lambda: _JSON_NESTED,
     accel=jx_loads,
     base=json.loads,
-    note="small nested input uses stdlib without a native result-validation walk",
+    note="native nested-container decode without a result-validation walk",
 )
 
 

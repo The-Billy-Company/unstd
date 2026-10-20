@@ -19,7 +19,8 @@ stdlib equivalent — raise a clear ImportError.
 
 Drop-in replacement for the standard `json` function and codec API. Standard
 calls preserve the running interpreter's stdlib semantics, using guarded
-acceleration through [`orjson`](https://github.com/ijl/orjson) on safe builtin values.
+encoding through [`orjson`](https://github.com/ijl/orjson) on safe builtin values
+and decoding through [`msgspec`](https://github.com/msgspec/msgspec).
 
 ```python
 from unstd.serde import jsonx
@@ -59,21 +60,21 @@ Installing optional dependencies never changes these standard behaviors.
 The accelerated paths are deliberately narrower than the supported API:
 
 - **Encoding:** no custom encoder, `default`, unknown keywords or custom option
-  objects. A private snapshot validates at most 16 values and 16 container levels
-  of exact builtin types, string keys and backend-range integers. Floats and
-  unsupported values use stdlib. Snapshotting prevents a later input mutation
-  from introducing unvalidated backend-only types. Compact output and default
-  `indent=2` use native formatting. Default spacing is added only when strings
-  cannot contain its delimiter characters. Top-level text uses stdlib's
-  specialized string encoder.
-  ASCII output must also exclude DEL, which stdlib escapes differently.
-- **Decoding:** exact `str`/`bytes`, no hooks/custom decoder/extra keywords, and at
-  most 8 raw container openers for inputs under 4 KiB, or 64 for larger inputs
-  (including those in strings, conservatively).
-  The backend result is returned only after the whole tree is checked for exact
-  builtin types without floats. This rejects both floating tokens and integers
-  that the backend rounded to floats. Failure reparses the original document
-  with stdlib; caller callbacks are never invoked speculatively.
+  objects. The optional C guard validates bounded trees of exact builtin types,
+  string keys and backend-range integers, then calls its trusted orjson encoder
+  while retaining the GIL. No Python callback can mutate the tree between proof
+  and encoding. Without the extension, a private snapshot validates at most 16
+  values and 16 container levels. Floats and unsupported values use stdlib.
+  Compact output and default `indent=2` use native formatting. Default spacing
+  is added only when strings cannot contain delimiter characters. Top-level
+  text uses stdlib's specialized encoder. ASCII output also excludes DEL,
+  which stdlib escapes differently.
+- **Decoding:** exact `str`/`bytes` with no explicit options. A reusable msgspec
+  decoder constructs arbitrary-precision integers and correctly rounded floats.
+  It needs no Python result-tree walk. Failures,
+  including integer digit limits, Unicode extensions and malformed input, parse
+  the original document with stdlib for authoritative behavior and diagnostics.
+  Explicit options and caller callbacks go directly to stdlib.
 - **Other cases:** common builtin formatting configurations reuse a bounded cache
   of stateless stdlib encoders; custom behavior goes directly to stdlib. `load`
   reads once and shares the same decoder; `dump` keeps stdlib's streaming writes.
@@ -85,19 +86,23 @@ A native codec cannot provide this entire contract by itself; the bounded
 proofs and fallback paths are part of the implementation.
 
 Speed depends on the payload and Python version. The benchmark harness compares
-identical outputs and separately measures eligible text/integer payloads and
-fallback records. Broad Python tree walks can outweigh codec savings, so proofs
-are bounded. On Python 3.13.14, the committed eligible cases measured about 6×
-for text encoding and 1.9× for integer-array decoding; fallback records stay near
-stdlib speed. These are measured cases, not a uniform speedup promise.
+identical outputs and separately measures native paths and fallback records.
+The [Billy fixture comparison](../../../bench/billy-serde-results.md) retains
+release regressions as well as gains. Compatibility checking has a cost relative
+to the permissive 2.1 codec; measured results are not a universal speed promise.
 
 **Compact bytes:** `dumpb` equals
 `json.dumps(obj, ensure_ascii=False, separators=(",", ":"), ...).encode()` with
-its `sort_keys` and `default` options. It uses the same private snapshot proof
+its `sort_keys` and `default` options. It uses the same native guard or snapshot
 and falls back for all other values, including floats, so notation also matches
 stdlib across backends. Lone surrogates raise the same UTF-8 encoding error.
 `canonical` retains its sorted, compact, ASCII-escaped identity format; it is
 not an implementation of RFC 8785.
+
+Platform wheels include the optional CPython stable-ABI guard. Source builds
+use a compiler when available and otherwise retain the portable implementation;
+no runtime dependency or public API is added. Use a platform wheel for the full
+encoding speedup. Decoding needs only the existing `serde` extra.
 
 **Numpy extension:** with the default encoder, `numpy=True` on
 `dumps`/`dump`/`dumpb` converts arrays with `.tolist()` and scalars with `.item()`

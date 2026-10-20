@@ -331,6 +331,7 @@ def test_json_numeric_edges_preserve_values(
     if backend and not jsonx._HAVE_ORJSON:
         pytest.skip("orjson (`serde` extra) not installed")
     monkeypatch.setattr(jsonx, "_HAVE_ORJSON", backend)
+    monkeypatch.setattr(jsonx, "_HAVE_MSGSPEC", backend and jsonx._HAVE_MSGSPEC)
     rows = [2**100, -(2**100), -0.0, math.nan, math.inf, -math.inf]
     decoded = ndjson.loads(ndjson.dumps(rows))
     assert decoded[:3] == rows[:3]

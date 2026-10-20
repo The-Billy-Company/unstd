@@ -28,7 +28,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
 
-_BACKEND_PRESENT = jsonx._HAVE_ORJSON
+_BACKEND_PRESENT = jsonx._HAVE_ORJSON and jsonx._HAVE_MSGSPEC
 _TEXT = st.text(st.characters(blacklist_categories=("Cs",)), max_size=24)
 _INTEGER = st.integers(min_value=-(2**63), max_value=2**64 - 1)
 _SAFE_TREE = st.recursive(
@@ -73,7 +73,7 @@ def backend_calls(monkeypatch: pytest.MonkeyPatch) -> _BackendCalls:
     if not _BACKEND_PRESENT:
         pytest.skip("orjson (`serde` extra) not installed")
     calls = _BackendCalls()
-    encode, decode = jsonx.orjson.dumps, jsonx.orjson.loads
+    encode, decode = jsonx.orjson.dumps, jsonx._decode
 
     def record_encode(value: object, **kwargs: Any) -> bytes:
         calls.encoded.append(value)
@@ -84,10 +84,10 @@ def backend_calls(monkeypatch: pytest.MonkeyPatch) -> _BackendCalls:
         return decode(value, **kwargs)
 
     monkeypatch.setattr(jsonx, "_HAVE_ORJSON", True)
+    monkeypatch.setattr(jsonx, "_HAVE_MSGSPEC", True)
     monkeypatch.setattr(jsonx, "_encode", record_encode)
     monkeypatch.setattr(jsonx, "_decode", record_decode, raising=False)
     monkeypatch.setattr(jsonx.orjson, "dumps", record_encode)
-    monkeypatch.setattr(jsonx.orjson, "loads", record_decode)
     return calls
 
 
@@ -439,15 +439,9 @@ def test_generated_integer_documents_keep_values_and_types(value: object) -> Non
 @pytest.mark.parametrize(
     "document",
     [
-        "[0.0]",
-        "[-0.0]",
-        "[1e1]",
-        "[1E-1000]",
         "[NaN]",
         "[Infinity]",
         "[-Infinity]",
-        "[18446744073709551616]",
-        "[-9223372036854775809]",
         r'["\ud800"]',
         r'["\udfff"]',
         '["\ud800"]',
@@ -541,12 +535,11 @@ def test_accelerated_decoder_failure_defers_to_stdlib_result_and_diagnostics(
         failure = (
             RecursionError("backend limit")
             if recursion_error
-            else jsonx.orjson.JSONDecodeError("backend refusal", "irrelevant", 0)
+            else jsonx.msgspec.DecodeError("backend refusal")
         )
         raise failure
 
     monkeypatch.setattr(jsonx, "_decode", fail, raising=False)
-    monkeypatch.setattr(jsonx.orjson, "loads", fail)
     if document.endswith(",]}"):
         _same_failure(lambda: jsonx.loads(document), lambda: json.loads(document))
     else:

@@ -10,7 +10,7 @@ Module groups (grown incrementally from the stdlib census) — each named for th
 stdlib surface it stands in for, and each either degrading to that surface or
 failing loud where no faithful substitute exists:
 
-- ``serde`` (``json`` / ``base64``) — ``jsonx`` (orjson) · ``b64`` (pybase64) ·
+- ``serde`` (``json`` / ``base64``) — ``jsonx`` (orjson/msgspec) · ``b64`` (pybase64) ·
   ``ndjson`` (newline-delimited, rides ``jsonx``) · ``structs`` (msgspec, no
   stdlib equivalent). Behind the ``serde`` extra; the rest fall back to stdlib.
 - ``ids`` (``uuid``) — ``uid``: UUIDv7 minting and v5 derivation, falling back to

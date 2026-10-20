@@ -26,7 +26,7 @@ import pytest
 from unstd.serde import jsonx
 
 
-_BACKEND_PRESENT = jsonx._HAVE_ORJSON
+_BACKEND_PRESENT = jsonx._HAVE_MSGSPEC
 
 
 if TYPE_CHECKING:
@@ -40,8 +40,8 @@ def backend_state(
 ) -> None:
     """Codec availability must never change the public decoding contract."""
     if request.param and not _BACKEND_PRESENT:
-        pytest.skip("orjson (`serde` extra) not installed")
-    monkeypatch.setattr(jsonx, "_HAVE_ORJSON", request.param)
+        pytest.skip("msgspec (`serde` extra) not installed")
+    monkeypatch.setattr(jsonx, "_HAVE_MSGSPEC", request.param)
 
 
 pytestmark = pytest.mark.usefixtures("backend_state")

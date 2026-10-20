@@ -1,4 +1,4 @@
-# Publish the wheel to PyPI when a version tag is pushed.
+# Build and verify native wheels before publishing a version tag to PyPI.
 #
 # ONE-TIME SETUP: PyPI Trusted Publishing, no API token in this repo.
 # On PyPI, add a trusted publisher for the `unstd` project pointing at this
@@ -25,13 +25,13 @@ jobs:
     permissions:
       contents: read
 
-  pypi:
+  wheels:
     needs: gate
-    if: startsWith(github.ref, 'refs/tags/v')
-    runs-on: ubuntu-latest
-    environment: pypi
-    permissions:
-      id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-15-intel, macos-14, windows-latest, windows-11-arm]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -40,9 +40,54 @@ jobs:
         with:
           enable-cache: false
           version: "latest-known"
+      - name: Build and test CPython stable-ABI wheels
+        run: uvx --from cibuildwheel==4.3.1 cibuildwheel --output-dir dist
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: wheels-${{ matrix.os }}
+          path: dist/*.whl
+          if-no-files-found: error
+
+  sdist:
+    needs: gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          enable-cache: false
+          version: "latest-known"
+      - run: uv build --sdist
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: source
+          path: dist/*.tar.gz
+          if-no-files-found: error
+
+  pypi:
+    needs: [wheels, sdist]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          path: dist
+          merge-multiple: true
       - name: The tag agrees with package metadata
         env:
           TAG: ${{ github.ref_name }}
-        run: test "$TAG" = "v$(uv version --short)"
-      - run: uv build
+        run: |
+          python - <<'PY'
+          import os, pathlib, tarfile, tomllib
+          source, = pathlib.Path("dist").glob("*.tar.gz")
+          with tarfile.open(source) as archive:
+              manifest, = (item for item in archive.getmembers() if item.name.endswith("/pyproject.toml"))
+              version = tomllib.loads(archive.extractfile(manifest).read().decode())["project"]["version"]
+          assert os.environ["TAG"] == "v" + version
+          PY
       - uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2

@@ -120,6 +120,9 @@ def build_artifacts(root: Path) -> Artifacts:
         ".local",
         "__pycache__",
         "*.pyc",
+        "*.so",
+        "*.pyd",
+        "build",
         ".pytest_cache",
         ".hypothesis",
         ".mypy_cache",
@@ -128,6 +131,7 @@ def build_artifacts(root: Path) -> Artifacts:
     for name in (
         "src",
         "pyproject.toml",
+        "hatch_build.py",
         "README.md",
         "LICENSE",
         "NOTICE",

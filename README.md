@@ -23,6 +23,12 @@ python3 -m pip install unstd
 python3 -m pip install 'unstd[serde,ids,crypto]'
 ```
 
+CPython platform wheels include an optional C guard for fast, compatible JSON
+encoding. Source builds use it when a compiler is available and otherwise keep
+the portable fallback. The runtime dependency set and public APIs are unchanged.
+See the [Billy fixture measurements](bench/billy-serde-results.md) for release
+comparisons, including remaining overhead relative to 2.1.1.
+
 ## Groups
 
 | Group | Extra | Backend / fallback |

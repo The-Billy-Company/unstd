@@ -14,8 +14,8 @@ uv run --no-sync pytest -q tests/suites/assurance/planes/packaging
 uv run --no-sync pytest -q --require-extras tests/suites/assurance/planes/packaging
 ```
 
-The host needs `uv`, the project's dev environment, and a cached Hatchling build
-closure. Prepare the environment using the project's two-day quarantine before
+The host needs `uv`, the project's dev environment, and cached Hatchling and
+setuptools build dependencies. Prepare them using the project's two-day quarantine before
 running this offline lane. Build commands explicitly use `--offline`, isolated
 build environments, no automatic interpreter downloads and `--exclude-newer P2D`.
 They never fall back to the network or an unisolated builder. Each command has a
@@ -32,7 +32,9 @@ cache, backend, resolver, import or native library failure is skipped there.
   snapshot, the typing marker and exact license/notice bytes. Tests and benchmark
   tools stay out of the installed wheel. Wheel RECORD digests and sizes are
   independently recomputed for every member, and paths, duplicate members,
-  universal tags, metadata, supported Python and license metadata are checked.
+  native stable-ABI or portable wheel tags, metadata, supported Python and
+  license metadata are checked. An explicit compiler failure verifies the
+  portable fallback; native release builds require the extension to compile.
 - The sdist preserves all build inputs and package files, excludes local
   environments and caches, has safe non-link members, and reconstructs the
   entire wheel payload, including dependency metadata and RECORD.

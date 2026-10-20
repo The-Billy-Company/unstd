@@ -25,6 +25,7 @@ def _backend(request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatch) ->
     if request.param and not jsonx._HAVE_ORJSON:
         pytest.skip("orjson (`serde` extra) not installed")
     monkeypatch.setattr(jsonx, "_HAVE_ORJSON", request.param)
+    monkeypatch.setattr(jsonx, "_HAVE_MSGSPEC", request.param and jsonx._HAVE_MSGSPEC)
 
 
 @requires_numpy

@@ -1,18 +1,19 @@
 """Exact stdlib JSON semantics with guarded native acceleration.
 
-``dumps`` uses orjson only for a bounded private snapshot of exact builtin
-values whose output matches stdlib byte-for-byte. Floats, unsupported types,
-large integers, complex formatting and user callbacks take stdlib paths.
+``dumps`` uses orjson only for bounded exact builtin trees whose output matches
+stdlib byte-for-byte. The optional native guard proves eligibility and encodes
+without releasing the GIL or invoking Python callbacks. Its portable fallback
+uses private snapshots. Floats, unsupported types, large integers, complex
+formatting and user callbacks take stdlib paths.
 Common builtin option configurations reuse stateless stdlib JSONEncoder
 instances, retaining CPython's native ``_json`` implementation for all values.
 
-``loads`` and ``load`` use orjson only with exact immutable input types,
-bounded source nesting and no hooks/custom decoders. A decoded result is
-exposed only if its entire tree contains exact builtin values without floats;
-this also rejects integers silently rounded by the backend. Failed proofs or
-backend errors use the original document with stdlib, preserving extensions,
-integer limits and complete diagnostics. Validation retains stdlib's Python
-recursion headroom. ``dump`` delegates streaming writes to stdlib.
+``loads`` and ``load`` use msgspec with exact immutable inputs and no custom
+options. Its arbitrary-precision integers and correctly rounded floats preserve
+stdlib numbers without a second tree walk. Backend errors use the original
+document with stdlib, preserving extensions, integer limits and diagnostics.
+Validation retains stdlib's Python recursion headroom. ``dump`` delegates
+streaming writes to stdlib.
 
 ``JSONEncoder``, ``JSONDecoder`` and ``JSONDecodeError`` remain the original
 stdlib classes. Default escaping, spacing, values, subclasses, key behavior,
@@ -36,7 +37,7 @@ from functools import wraps
 import json as _stdlib
 from typing import TYPE_CHECKING, Any
 
-from unstd.serde._json_decode import _decode_eligible, _verify_result
+from unstd.serde._json_common import _check_headroom
 from unstd.serde._json_encode import (
     _compact_bytes,
     _encoder,
@@ -50,10 +51,12 @@ if TYPE_CHECKING:
     from collections.abc import Callable
     from typing import Protocol
 
+    import msgspec
     import numpy as np
     import orjson
 
     _HAVE_ORJSON = True
+    _HAVE_MSGSPEC = True
     _HAVE_NUMPY = True
 
     class _TextWriter(Protocol):
@@ -78,6 +81,13 @@ else:
     except ImportError:  # base install without the `serde` extra — stdlib fallback
         orjson = None
         _HAVE_ORJSON = False
+    try:
+        import msgspec
+
+        _HAVE_MSGSPEC = True
+    except ImportError:
+        msgspec = None
+        _HAVE_MSGSPEC = False
     try:
         import numpy as np
 
@@ -111,11 +121,14 @@ __all__ = [
 # arithmetic below stays branch-free either way.
 if _HAVE_ORJSON:
     _encode = orjson.dumps
-    _decode = orjson.loads
     _SORT = orjson.OPT_SORT_KEYS
     _INDENT = orjson.OPT_INDENT_2
+    _NEWLINE = orjson.OPT_APPEND_NEWLINE
 else:
-    _SORT = _INDENT = 0
+    _SORT = _INDENT = _NEWLINE = 0
+if _HAVE_MSGSPEC:
+    # The native parser constructs exact integers and correctly rounded floats.
+    _decode = msgspec.json.Decoder().decode
 _NO_NUMPY = "numpy=True requires numpy to be installed"
 _DEFAULT_ENCODER = _stdlib.JSONEncoder()
 
@@ -247,7 +260,7 @@ def dumpb(
     """Serialize bytes identical to compact, unescaped stdlib JSON's UTF-8.
 
     This extension uses ``ensure_ascii=False`` and compact separators. orjson
-    handles exact builtin snapshots; other values, ``default`` and ``numpy=True``
+    handles proven exact builtin trees; other values, ``default`` and ``numpy=True``
     use stdlib. For the package's identity format use :func:`canonical`.
     """
     if numpy and not _HAVE_NUMPY:
@@ -282,7 +295,14 @@ def dumpb(
 
 def _line(obj: object) -> bytes:
     """One newline-terminated compact record for :mod:`unstd.serde.ndjson`."""
-    return dumpb(obj) + b"\n"
+    if _HAVE_ORJSON:
+        try:
+            result = _exact_bytes(obj, _NEWLINE, _encode)
+            if result is not None:
+                return result
+        except (orjson.JSONEncodeError, RecursionError, RuntimeError):
+            pass
+    return _compact_bytes(obj, False) + b"\n"
 
 
 def canonical(
@@ -317,49 +337,16 @@ _CANONICAL = _stdlib.JSONEncoder(
 )
 
 
-# A successful backend parse is still provisional: its result must pass the
-# numeric/type proof before returning. Hooks and custom behavior bypass it.
+# Hooks and custom behavior bypass the native decoder entirely.
 @wraps(_stdlib.loads)
-def loads(
-    s: str | bytes | bytearray,
-    *,
-    cls: type[JSONDecoder] | None = None,
-    object_hook: Callable[[Any], Any] | None = None,
-    parse_float: Callable[[str], Any] | None = None,
-    parse_int: Callable[[str], Any] | None = None,
-    parse_constant: Callable[[str], Any] | None = None,
-    object_pairs_hook: Callable[[list[tuple[Any, Any]]], Any] | None = None,
-    **kw: Any,
-) -> Any:
-    """Parse through orjson only when its result proves exact stdlib values."""
-    if (
-        _HAVE_ORJSON
-        and cls is None
-        and object_hook is None
-        and parse_float is None
-        and parse_int is None
-        and parse_constant is None
-        and object_pairs_hook is None
-        and not kw
-    ):
+def loads(s: str | bytes | bytearray, **kw: Any) -> Any:
+    """Parse exact immutable input natively, retaining stdlib values and errors."""
+    if _HAVE_MSGSPEC and not kw and (type(s) is str or type(s) is bytes):
         try:
-            if _decode_eligible(s):
-                value = _decode(s)
-                if _verify_result(value):
-                    return value
-        except (orjson.JSONDecodeError, RecursionError):
+            return _check_headroom(_decode(s))
+        except (msgspec.DecodeError, UnicodeError, RecursionError):
             pass
-        return _stdlib.loads(s)
-    return _stdlib.loads(
-        s,
-        cls=cls,
-        object_hook=object_hook,
-        parse_float=parse_float,
-        parse_int=parse_int,
-        parse_constant=parse_constant,
-        object_pairs_hook=object_pairs_hook,
-        **kw,
-    )
+    return _stdlib.loads(s, **kw)
 
 
 def dump(
@@ -399,35 +386,6 @@ def dump(
 
 
 @wraps(_stdlib.load)
-def load(
-    fp: _Reader,
-    *,
-    cls: type[JSONDecoder] | None = None,
-    object_hook: Callable[[Any], Any] | None = None,
-    parse_float: Callable[[str], Any] | None = None,
-    parse_int: Callable[[str], Any] | None = None,
-    parse_constant: Callable[[str], Any] | None = None,
-    object_pairs_hook: Callable[[list[tuple[Any, Any]]], Any] | None = None,
-    **kw: Any,
-) -> Any:
+def load(fp: _Reader, **kw: Any) -> Any:
     """Read once, then apply the same exact decoder dispatch as :func:`loads`."""
-    if (
-        cls is None
-        and object_hook is None
-        and parse_float is None
-        and parse_int is None
-        and parse_constant is None
-        and object_pairs_hook is None
-        and not kw
-    ):
-        return loads(fp.read())
-    return loads(
-        fp.read(),
-        cls=cls,
-        object_hook=object_hook,
-        parse_float=parse_float,
-        parse_int=parse_int,
-        parse_constant=parse_constant,
-        object_pairs_hook=object_pairs_hook,
-        **kw,
-    )
+    return loads(fp.read(), **kw)
