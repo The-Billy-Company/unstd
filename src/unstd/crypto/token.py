@@ -23,7 +23,7 @@ from __future__ import annotations
 
 import hmac
 
-from unstd.crypto._blake3 import blake3
+from unstd.crypto._blake3 import _PARALLEL_MIN_BYTES, _parallel_hasher, blake3
 from unstd.serde import b64
 
 
@@ -60,6 +60,8 @@ def _keyed(key: bytes, data: bytes) -> blake3:
     if len(key) != KEY_BYTES:
         msg = f"keyed BLAKE3 needs exactly {KEY_BYTES} bytes of key, got {len(key)}"
         raise ValueError(msg)
+    if type(data) is bytes and len(data) >= _PARALLEL_MIN_BYTES:
+        return _parallel_hasher(data, key=key)
     return blake3(data, key=key)
 
 

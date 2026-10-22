@@ -38,7 +38,7 @@ from __future__ import annotations
 import hashlib
 from typing import TYPE_CHECKING, Self
 
-from unstd.crypto._blake3 import blake3
+from unstd.crypto._blake3 import _PARALLEL_MIN_BYTES, _parallel_hasher, blake3
 
 
 if TYPE_CHECKING:
@@ -61,6 +61,8 @@ def _hexdigest(hasher: blake3, n: int | None) -> str:
 
 def raw(data: bytes) -> bytes:
     """BLAKE3-256 digest of *data* (32 bytes)."""
+    if type(data) is bytes and len(data) >= _PARALLEL_MIN_BYTES:
+        return _parallel_hasher(data).digest()
     return blake3(data).digest()
 
 
@@ -72,6 +74,8 @@ def hex(data: bytes, n: int | None = None) -> str:
     costs collision resistance quadratically — *n* = 8 gives a 64-bit digest, so
     only truncate for a short human-facing id, never for a security decision.
     """
+    if type(data) is bytes and len(data) >= _PARALLEL_MIN_BYTES:
+        return _hexdigest(_parallel_hasher(data), n)
     return _hexdigest(blake3(data), n)
 
 
@@ -88,6 +92,8 @@ def derive_key(context: str, material: bytes) -> bytes:
     BLAKE3 hashes the context separately from the material, so two contexts
     differing by one character give two unrelated keys.
     """
+    if type(material) is bytes and len(material) >= _PARALLEL_MIN_BYTES:
+        return _parallel_hasher(material, derive_key_context=context).digest()
     return blake3(material, derive_key_context=context).digest()
 
 

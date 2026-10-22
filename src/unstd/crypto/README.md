@@ -64,6 +64,18 @@ every value already addressed by one would stop resolving - so `digest` and
 `pip install 'unstd[crypto]'` when it is missing. `tls` is pure stdlib and
 imports on a base install.
 
+One-shot hashes, MACs, and key derivation use up to eight workers for exact
+`bytes` inputs of at least 16 MiB. Smaller inputs and other accepted buffer
+types retain the serial backend. The public signatures, algorithms, digest
+values, truncation rules, and validation behavior stay the same.
+
+Each parallel call creates a fresh bounded worker pool, avoiding inherited
+global pools after `fork()` and retaining no cached keys or key material. If
+the backend cannot create its worker pool, hashing retries serially. `Stream`
+keeps its serial, eager, incremental behavior, including when inherited after
+a fork. [Paired measurements](../../../bench/crypto-hash-results.md) record the
+benefits and overhead on the measured host.
+
 TLS certificate paths use `None` for omission. Explicitly empty `cafile`,
 `certfile` or `keyfile` values raise `ValueError`, preventing a configured pin
 or client identity from silently disappearing.

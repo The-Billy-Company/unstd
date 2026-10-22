@@ -4,6 +4,10 @@ Benchmark drivers and recorded measurements for `unstd` APIs, optional backends,
 and bundled native kernels. Cases validate comparable outputs before timing;
 reports retain gains, losses, and backend-specific limitations.
 
+The [parallel hashing report](crypto-hash-results.md) compares saved and current
+BLAKE3 wrappers with `crypto_hash.py`, including all modes, tiny-call overhead,
+serial streams, raw paired samples, and the measured host's scheduling noise.
+
 ```console
 python3 -m bench                 # measure everything, print a table
 python3 -m bench --group serde   # one group
