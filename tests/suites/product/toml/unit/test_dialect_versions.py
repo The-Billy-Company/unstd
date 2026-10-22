@@ -77,13 +77,7 @@ def test_written_control_characters_read_back_through_parse() -> None:
     assert toml.parse(toml.dumps({"s": text})).unwrap() == {"s": text}
 
 
-@pytest.mark.xfail(
-    not STDLIB_READS_1_1,
-    strict=True,
-    raises=tomllib.TOMLDecodeError,
-    reason="tomlkit 0.15 spells ESC as the 1.1-only '\\e' although '\\u001b' "
-    "exists in 1.0; the module docstring claims writes add no 1.1-only syntax",
-)
 def test_writer_spells_ordinary_strings_in_the_common_dialect() -> None:
     require_backend("tomlkit")
+    assert toml.dumps({"s": "\x1b"}) == 's = "\\u001b"\n'
     assert tomllib.loads(toml.dumps({"s": "\x1b"})) == {"s": "\x1b"}

@@ -1,9 +1,11 @@
 r"""Generated temporal/Unicode writes and stateful edit sequences.
 
-Writes are restricted to the dialect both halves share: minute-precision UTC
-offsets, offset-free times, and strings without ESC (written as 1.1-only
-``\e``; pinned in the unit dialect fixtures). ``tomllib`` is the independent
-reader and a plain ``dict`` is the reference model for edits.
+Writes are restricted to values TOML 1.0 can represent: minute-precision UTC
+offsets and offset-free times. Plain-data strings include ESC, which the writer
+must spell ``\u001b``. Values assigned into a parsed document become tomlkit
+items that keep tomlkit's 1.1-only ``\e``, so edit strings exclude ESC.
+``tomllib`` is the independent reader and a plain ``dict`` is the reference
+model for edits.
 """
 
 from __future__ import annotations
@@ -28,9 +30,11 @@ def tomlkit_backend() -> None:
 _OFFSET = st.integers(-(24 * 60 - 1), 24 * 60 - 1).map(
     lambda m: dt.timezone(dt.timedelta(minutes=m))
 )
-_TEXT = st.text(st.characters(exclude_categories=("Cs",), exclude_characters="\x1b"))
-_KEY = st.text(
-    st.characters(exclude_categories=("Cs",), exclude_characters="\x1b"), max_size=8
+_CHARS = st.characters(exclude_categories=("Cs",))
+_TEXT = st.text(_CHARS | st.just("\x1b"))
+_KEY = st.text(_CHARS | st.just("\x1b"), max_size=8)
+_EDIT_TEXT = st.text(
+    st.characters(exclude_categories=("Cs",), exclude_characters="\x1b")
 )
 _LEAF = st.one_of(
     st.datetimes(timezones=st.none() | _OFFSET),
@@ -60,7 +64,7 @@ def test_parse_of_written_document_reemits_it_exactly(obj: dict[str, object]) ->
 
 
 _NAME = st.sampled_from(["alpha", "beta", "gamma", "delta"])
-_VALUE = st.one_of(st.integers(-(2**63), 2**63 - 1), st.booleans(), _TEXT)
+_VALUE = st.one_of(st.integers(-(2**63), 2**63 - 1), st.booleans(), _EDIT_TEXT)
 HEADER = "# keep this header\n"
 
 
