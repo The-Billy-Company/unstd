@@ -285,8 +285,9 @@ class Writer:
     write mode — its writer already streams. Fallback: stdlib ``wave`` +
     ``writeframesraw``, which defers the RIFF/``data``-chunk sizes to
     ``close()`` — this **requires `path_or_file` be seekable** (a real file
-    path, or a file object opened on one); a genuinely non-seekable sink (a raw
-    socket) needs the ``audio`` extra.
+    path, or a file object opened on one). libsndfile also seeks to finalize
+    WAV output, so the ``audio`` extra does not make a raw socket a supported
+    sink either.
     """
 
     def __init__(
@@ -345,9 +346,15 @@ class Writer:
             raise ValueError(msg)
         if self._spec is not None:  # numpy fallback
             _, code, scale = self._spec
-            wav.writeframesraw(_quantize(_sample_array(samples), code, scale))
+            arr = _sample_array(samples)
+            _check_channels(
+                wav, 1 if arr.ndim == 1 else arr.shape[1] if arr.ndim == 2 else 0
+            )
+            wav.writeframesraw(_quantize(arr, code, scale))
         else:  # pure-stdlib array floor — 16-bit PCM only
-            wav.writeframesraw(_pcm16(samples)[0])
+            raw, nchannels = _pcm16(samples)
+            _check_channels(wav, nchannels)
+            wav.writeframesraw(raw)
 
     def close(self) -> None:
         """Finalize the header (patching RIFF/``data`` sizes if needed) and close the file."""
@@ -507,16 +514,22 @@ def _flatten(samples: Samples) -> tuple[list[float], int]:
     seq: list[object] = list(samples)
     if seq and isinstance(seq[0], list | tuple):
         nchannels = len(seq[0])
-        return [_scalar(v) for frame in seq for v in _frame(frame)], nchannels
+        return (
+            [_scalar(v) for frame in seq for v in _frame(frame, nchannels)],
+            nchannels,
+        )
     return [_scalar(v) for v in seq], 1
 
 
-def _frame(frame: object) -> Sequence[float]:
+def _frame(frame: object, nchannels: int) -> Sequence[float]:
     """Narrow one multichannel frame to a sequence — mixed mono/frame input is a bug."""
-    if isinstance(frame, list | tuple):
-        return frame
-    msg = f"expected a per-frame sequence of samples, got {type(frame).__name__}"
-    raise TypeError(msg)
+    if not isinstance(frame, list | tuple):
+        msg = f"expected a per-frame sequence of samples, got {type(frame).__name__}"
+        raise TypeError(msg)
+    if len(frame) != nchannels:
+        msg = f"expected {nchannels} samples per frame, got {len(frame)}"
+        raise ValueError(msg)
+    return frame
 
 
 def _scalar(v: object) -> float:
@@ -539,6 +552,13 @@ def _check_pcm_frames(raw: bytes, nchannels: int, sampwidth: int) -> None:
     """Reject truncated interleaved frames before decoding or channel indexing."""
     if len(raw) % (nchannels * sampwidth):
         msg = "PCM data is not a whole number of frames"
+        raise ValueError(msg)
+
+
+def _check_channels(wav: wave.Wave_write, nchannels: int) -> None:
+    """A streamed chunk must match the channel count fixed in the header."""
+    if nchannels != (expected := wav.getnchannels()):
+        msg = f"expected {expected}-channel frames, got {nchannels}"
         raise ValueError(msg)
 
 
