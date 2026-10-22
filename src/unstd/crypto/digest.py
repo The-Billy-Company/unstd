@@ -106,6 +106,10 @@ def derive_key(context: str, material: bytes) -> bytes:
     BLAKE3 hashes the context separately from the material, so two contexts
     differing by one character give two unrelated keys.
     """
+    if not isinstance(context, str):
+        # The backend reads a None context as plain hashing mode.
+        msg = f"{type(context).__name__!r} object is not an instance of 'str'"
+        raise TypeError(msg)
     if type(material) is bytes and len(material) >= _PARALLEL_MIN_BYTES:
         return _parallel_hasher(material, derive_key_context=context).digest()
     return blake3(material, derive_key_context=context).digest()
