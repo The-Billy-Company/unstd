@@ -71,8 +71,14 @@ required. A post-rename sync failure leaves the rename committed.
 Rewriting an existing file preserves its permissions from scratch creation, so
 an initially broader mode cannot leak replacement data through a retained read
 handle. Where descriptor chmod is available, mode copying targets the acquired
-file rather than following a replaced scratch path. New files retain normal
-umask-based permissions.
+file rather than following a replaced scratch path. New files request owner-only
+`0o600`, with the process umask applied by the kernel. They never grant group or
+world access by default, including under a permissive `0o000` umask. This is
+deliberately stricter than ordinary `open()` creation; `0o022` still produces
+`0o600`. Rewrites preserve the destination's existing mode exactly, including an
+explicitly chosen group-sharing or world-write policy. Set a new file's sharing
+policy explicitly when needed. The writer never reads or changes the
+process-wide umask.
 
 Reads and one-level listings are `Path.read_bytes` / `read_text` / `iterdir`:
 CPython already sizes a whole-file read from `fstat` and lists through `scandir`,

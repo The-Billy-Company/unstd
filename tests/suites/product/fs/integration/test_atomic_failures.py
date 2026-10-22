@@ -66,7 +66,7 @@ class _Boundary:
         self.reached.append(stage)
         raise self.error
 
-    def open(self, path: Path, flags: int, mode: int = 0o777) -> int:
+    def open(self, path: Path, flags: int, mode: int = 0o600) -> int:
         if self.stage == "open":
             self.fail("open")
         descriptor = os.open(path, flags, mode)

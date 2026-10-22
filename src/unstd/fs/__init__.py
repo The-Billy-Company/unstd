@@ -174,13 +174,12 @@ _TMP_FLAGS = (
 def _scratch(dest: Path) -> tuple[int, Path]:
     """Create a fresh temp file beside *dest*, preserving its existing mode.
 
-    ``tempfile.mkstemp`` hard-codes ``0o600``, and recovering the umask to undo
-    that means flipping the process-wide umask, which races every thread
-    creating a file in the meantime. A new destination is opened at ``0o666``
-    so the kernel applies the umask. An existing destination's mode limits the
-    scratch from creation: tightening permissions later cannot revoke a read
-    descriptor acquired in between. Copying the exact mode afterward preserves
-    shared readers even when the current umask is stricter.
+    New destinations request owner-only ``0o600``; the kernel may reduce those
+    permissions further through the process umask. An existing destination's
+    mode limits the scratch from creation: tightening permissions later cannot
+    revoke a read descriptor acquired in between. Copying the exact existing
+    mode afterward preserves explicit sharing even when the current umask is
+    stricter. The writer never reads or changes the process-wide umask.
     """
     try:
         prior_mode = stat.S_IMODE(dest.stat().st_mode)
@@ -189,7 +188,7 @@ def _scratch(dest: Path) -> tuple[int, Path]:
     while True:
         tmp = dest.with_name(f".{dest.name}.{secrets.token_hex(4)}.tmp")
         try:
-            fd = os.open(tmp, _TMP_FLAGS, 0o666 if prior_mode is None else prior_mode)
+            fd = os.open(tmp, _TMP_FLAGS, 0o600 if prior_mode is None else prior_mode)
         except FileExistsError:
             continue
         break
@@ -287,6 +286,8 @@ def atomic_writer(
     """Yield a handle to a fresh temp file in *path*'s own directory; on clean exit it is flushed, ``os.fsync``'d, and ``os.replace``'d onto *path* (an atomic same-filesystem rename). If the body raises, the temp file is removed and *path* is left exactly as it was — no partial write is ever observable.
 
     ``mode`` is ``"w"`` (text, *encoding* applied) or ``"wb"`` (binary).
+    New files request owner-only ``0o600`` filtered by the process umask.
+    Existing files retain their prior mode, including explicitly shared access.
     ``durable=True`` attempts parent-directory syncing with legacy best-effort
     error handling. ``durable="strict"`` reports every directory-sync failure,
     including syncing newly created parent entries. Unsupported platforms fail
@@ -314,7 +315,9 @@ def atomic_write(
     ``str`` is encoded with *encoding*; ``bytes`` is written verbatim. A
     concurrent reader sees either the prior file or the complete new file, never
     a torn write. A process killed before replacement leaves *path* untouched
-    but may leave its scratch file for later cleanup. ``durable=True`` fsyncs
+    but may leave its scratch file for later cleanup. New files request ``0o600``
+    filtered by the process umask; existing file modes are preserved.
+    ``durable=True`` fsyncs
     the parent directory too, with best-effort errors. ``durable="strict"``
     requires directory-sync acknowledgments and propagates failures; a failure
     after replacement leaves the new data committed. Returns *path*.
