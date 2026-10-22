@@ -59,9 +59,12 @@ never has to `import tomlkit` directly just to construct one.
 `tomlkit` 0.15+ writes **TOML 1.1.0** (ratified 2025-12-18); stdlib `tomllib`
 stays **TOML-1.0.0-only** through Python 3.14 — 1.1 support
 [lands in 3.15](https://docs.python.org/3.15/whatsnew/3.15.html), not
-backported. Nothing in this module emits 1.1-only syntax on its own, but a
-document built with 1.1-only constructs (a caller's data, or hand-authored
-input) can fail `loads`/`load` even though `dumps` wrote it without complaint.
+backported. `dumps`/`dump` therefore keep plain Python data in TOML 1.0:
+ESC is spelled `\u001b` (tomlkit alone writes the 1.1-only `\e`), and UTC
+offsets that are not whole minutes, or a `time` carrying an offset, raise
+`ValueError` before anything is written — no TOML version can represent them.
+Existing tomlkit items keep their spelling, so a document parsed from (or
+built with) 1.1-only constructs can still fail `loads`/`load` after `dumps`.
 Read such a document back with `tomlkit.parse` (or this module's `parse`) — not
 `loads` — until the target interpreter is 3.15+.
 

@@ -293,11 +293,11 @@ assert rate == 8000 and samples.tolist() == [0, 16384, -32768]
     "toml": """
 import tomlkit
 from unstd import toml
-assert toml.dumps is tomlkit.dumps
 assert toml.parse is tomlkit.parse
 document = toml.parse('# retained\\nvalue = 1\\n')
 document['value'] = 7
-assert toml.dumps(document) == '# retained\\nvalue = 7\\n'
+assert toml.dumps(document) == tomlkit.dumps(document) == '# retained\\nvalue = 7\\n'
+assert toml.dumps({'s': '\\x1b'}) == 's = "\\\\u001b"\\n'
 assert toml.loads(toml.dumps(document)) == {'value': 7}
 """,
     "yaml": """

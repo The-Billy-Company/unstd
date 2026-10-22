@@ -1,4 +1,4 @@
-"""TOML — stdlib ``tomllib`` read path + a style-preserving ``tomlkit`` write path.
+r"""TOML — stdlib ``tomllib`` read path + a style-preserving ``tomlkit`` write path.
 
 A faithful stand-in for the stdlib ``tomllib`` module that *adds the write half*
 ``tomllib`` deliberately omits. Swap the import and the surface is unchanged for
@@ -35,10 +35,15 @@ through Python 3.14 — 1.1 support lands in 3.15
 (https://docs.python.org/3.15/whatsnew/3.15.html), not backported. So on every
 interpreter this package currently targets, a document containing 1.1-only
 syntax (seconds-optional local times, a handful of new escapes) that ``dumps``
-happily writes can fail to round-trip back through :func:`loads`. Nothing in
-this module *emits* 1.1-only syntax on its own — it only exists if a caller's
-data does — but a from-scratch document built with 1.1-only constructs should
-be read back with ``tomlkit.parse``, not :func:`loads`, until you are on 3.15+.
+happily writes can fail to round-trip back through :func:`loads`. :func:`dumps`
+and :func:`dump` therefore keep plain Python data in the common dialect: ESC is
+spelled ``\u001b`` (tomlkit alone writes the 1.1-only ``\e``), and values TOML
+cannot represent in any version — a UTC offset that is not whole minutes, or a
+time of day carrying an offset — raise ``ValueError`` instead of being written
+as invalid TOML. Strings that are already tomlkit items (parsed text, or values
+assigned into a parsed document) keep their spelling, so parse → edit → dump
+stays byte-preserving; a parsed 1.1 document should be read back with
+:func:`parse`, not :func:`loads`, until you are on 3.15+.
 
 Prior art:
 
@@ -51,8 +56,10 @@ Prior art:
 
 from __future__ import annotations
 
+from collections.abc import Mapping
+from datetime import datetime, time, timedelta
 import tomllib
-from typing import TYPE_CHECKING
+from typing import IO, TYPE_CHECKING, Any
 
 
 __all__ = [
@@ -86,14 +93,17 @@ if TYPE_CHECKING:
         array,
         comment,
         document,
-        dump,
-        dumps,
         inline_table,
         item,
         nl,
         parse,
         table,
     )
+    from tomlkit import (
+        dumps as _dumps,
+    )
+    from tomlkit.container import Container
+    from tomlkit.items import Item, KeyType, SingleKey, String, StringType, Trivia
 
     _HAVE_TOMLKIT = True
 else:
@@ -103,14 +113,17 @@ else:
             array,
             comment,
             document,
-            dump,
-            dumps,
             inline_table,
             item,
             nl,
             parse,
             table,
         )
+        from tomlkit import (
+            dumps as _dumps,
+        )
+        from tomlkit.container import Container
+        from tomlkit.items import Item, KeyType, SingleKey, String, StringType, Trivia
 
         _HAVE_TOMLKIT = True
     except ImportError:  # write path has no stdlib equivalent — tomllib is read-only
@@ -127,3 +140,64 @@ else:
                 "inline_table", "item", "nl", "parse", "table",
             )
         )  # fmt: skip
+
+# TOML 1.0 basic-string escapes; ESC falls in the control range as ``\u001b``.
+_ESCAPES = str.maketrans(
+    {chr(c): f"\\u{c:04x}" for c in (*range(0x20), 0x7F)}
+    | {"\b": "\\b", "\t": "\\t", "\n": "\\n", "\f": "\\f", "\r": "\\r"}
+    | {'"': '\\"', "\\": "\\\\"}
+)
+_MINUTE = timedelta(minutes=1)
+
+
+def _common_mapping(value: Mapping[Any, Any]) -> Mapping[Any, Any]:
+    if isinstance(value, Item | Container):
+        for child in value.values():
+            _common(child)
+        return value
+    return {
+        SingleKey(key, KeyType.Basic, original=f'"{key.translate(_ESCAPES)}"')
+        if isinstance(key, str) and "\x1b" in key
+        else key: _common(child)
+        for key, child in value.items()
+    }
+
+
+def _common(value: object) -> object:
+    """*value* restricted to the TOML 1.0 dialect; tomlkit items keep their spelling."""
+    if isinstance(value, datetime):
+        if (offset := value.utcoffset()) is not None and offset % _MINUTE:
+            msg = f"TOML offsets are whole minutes, not {offset}: {value!r}"
+            raise ValueError(msg)
+    elif isinstance(value, time):
+        if value.utcoffset() is not None:
+            msg = f"a TOML local time carries no UTC offset: {value!r}"
+            raise ValueError(msg)
+    elif isinstance(value, str):
+        if "\x1b" in value and not isinstance(value, Item):
+            return String(StringType.SLB, value, value.translate(_ESCAPES), Trivia())
+    # Below the root tomlkit accepts only plain dicts; other mappings stay as given.
+    elif isinstance(value, dict | Item | Container) and isinstance(value, Mapping):
+        return _common_mapping(value)
+    elif isinstance(value, list | tuple):
+        if isinstance(value, Item):
+            for child in value:
+                _common(child)
+            return value
+        return [_common(child) for child in value]
+    return value
+
+
+if _HAVE_TOMLKIT:
+
+    def dumps(data: Mapping[str, Any], sort_keys: bool = False) -> str:
+        r"""``tomlkit.dumps`` kept to the TOML 1.0 dialect ``tomllib`` reads.
+
+        Raises ``ValueError`` for an offset that is not whole minutes or a time of
+        day with an offset; plain strings spell ESC ``\u001b``, not ``\e``.
+        """
+        return _dumps(_common_mapping(data), sort_keys=sort_keys)
+
+    def dump(data: Mapping[str, Any], fp: IO[str], *, sort_keys: bool = False) -> None:
+        """Write :func:`dumps` output to *fp*; nothing is written if it raises."""
+        fp.write(dumps(data, sort_keys=sort_keys))

@@ -4,6 +4,7 @@ Contracts for `unstd.toml`: stdlib-faithful reading and optional comment-preserv
 
 - [unit/](unit/README.md): tomllib behavior, exact style-preserving edit fixtures, date/time/numeric boundaries, TOML 1.0/1.1 dialect fixtures, and missing-extra guards.
 - [properties/](properties/README.md): generated read parity, writer round trips, and stateful edit sequences.
+- [regression/](regression/README.md): writer output held to TOML 1.0 — ESC spelled `\u001b`, unrepresentable offsets and aware times refused.
 - [security/](security/README.md): malformed documents rejected with located errors by both halves.
 - [integration/](integration/README.md): real binary/text handles and fixture-owned failing streams.
 
