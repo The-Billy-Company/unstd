@@ -291,7 +291,7 @@ clone_value(PyObject *source, PyObject **result, unsigned int depth,
 }
 
 static PyObject *
-clone(PyObject *module, PyObject *source)
+clone_builtin(PyObject *module, PyObject *source)
 {
     (void)module;
     /* The C stack guard alone cannot model Python's frame budget on 3.12+.
@@ -359,7 +359,7 @@ clone(PyObject *module, PyObject *source)
 }
 
 static PyMethodDef methods[] = {
-    {"clone", clone, METH_O,
+    {"clone", clone_builtin, METH_O,
      "Clone exact builtin data or return NotImplemented without copy hooks."},
     {NULL, NULL, 0, NULL}
 };
