@@ -66,6 +66,37 @@ jobs:
       - run: uv build --python ${{ matrix.python-version }} --sdist --wheel --out-dir "$RUNNER_TEMP/unstd-build-cache"
       - run: uv run --no-sync --python ${{ matrix.python-version }} pytest --require-extras -q
 
+  resources:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          enable-cache: false
+          version: "latest-known"
+          python-version: "3.13"
+      - run: uv sync --locked --all-extras --group dev --python 3.13
+      # The suite owns both installed and import-blocked stdlib worker policies.
+      - run: >-
+          uv run --no-sync python -m tests.tooling run resources --
+          --require-extras -q --junitxml=.local/resources.xml
+      - name: Retain resource measurements and failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: resources-${{ matrix.os }}-${{ github.run_attempt }}
+          path: .local/resources.xml
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+
   floors:
     # Every extra declares a floor, and a floor is a promise: install this old a
     # backend and the library still works. Nothing else in this matrix tests it —

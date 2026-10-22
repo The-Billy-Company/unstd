@@ -57,7 +57,7 @@ duplicating a scenario under multiple paths.
 | `security-structure` | Planned | Early structural canaries and security-policy checks. Behavioral attack tests carry the security guarantee. |
 | `chaos` | Active | Seeded mixed filesystem/process histories, barrier-selected writer kills, stream interruptions and clock/entropy provider outages; independent state/progress/ownership/recovery assertions and bounded installed/stdlib campaigns. |
 | `concurrency` | Active | Bounded thread/process atomic-file histories, exact fallback UUID reservation models and fork safety, shared clone/regex caches, msgspec/YAML isolation and immutable-map branches; observed histories, corruption controls and installed/stdlib campaigns. |
-| `resources` | Planned | Time, memory, descriptors, handles, scratch files, and cache bounds in controlled workers. |
+| `resources` | Active | Finite installed/stdlib workers check NDJSON/WAV streaming allocation growth, filesystem descriptors/scratch cleanup, regex capacity/purge, clone class lifetime and JSON depth; CPU/memory/output/wall containment and measured reports. Sustained soak and Windows handles remain planned. |
 | `performance` | Planned | Reproducible throughput/latency evidence with audited semantics and stable baselines. The existing `bench` program remains the current instrument. |
 | `fuzz-replay` | Active | Authenticated reviewed parser/token inputs replay real oracles in eleven installed and eight import-blocked stdlib workers during ordinary validation. Exact case counts, bounds and normal exit are required. |
 
@@ -228,6 +228,16 @@ cache, clone class-cache churn, repeated failed writer cleanup, and expected
 all-pairs text matrix allocation. Use process termination, not a thread timeout,
 to contain code that may hold the GIL or loop inside a native dependency.
 
+The [resource lane](suites/assurance/adversarial/resources/README.md) implements
+the first finite slice with one small shared harness and the existing suite
+runner. Linux address-space limits and a macOS RSS watchdog complement CPU and
+wall limits. Traced Python allocations, peak RSS, exact processed work and OS
+ownership observations are retained in pytest/JUnit reports. Eager-output and
+leaking-cache/descriptor controls must fail. Clone class churn exposed strong
+metadata caches retaining generated classes; weak keys and a module-owned
+lifetime regression now cover that defect. Digest streams, text matrices,
+sustained soak, Windows handles and broader parser resource corpora remain open.
+
 ## Standalone campaigns
 
 [`tooling/fuzz`](tooling/fuzz/README.md) implements eleven real targets: JSON,
@@ -345,8 +355,8 @@ remain separate.
 2. Add state machines for containers/clock sequences, generated mixed clone
    shapes, numeric/audio boundary corpora, iterator consumption faults, settings
    process isolation, and timezone transition families.
-3. Add macOS/Windows and partial-extra jobs; complete ordinary integration,
-   resource lanes and expand concurrency with explicit supported guarantees.
+3. Add Windows and partial-extra jobs; expand ordinary integration, the finite
+   Linux/macOS resource lane and concurrency with explicit supported guarantees.
 4. Convert verified failures into minimal regression tests and retained corpus
    entries. Split inherited mixed files only when doing so improves honest lane
    selection and preserves collection.

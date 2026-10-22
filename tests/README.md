@@ -64,6 +64,13 @@ codec/YAML isolation and persistent-map branches. Controlled overlap, independen
 models and broken-result controls distinguish valid interleavings from corruption.
 Confirmed fork-lock and cache-capacity defects also have ordinary owning regressions.
 
+The [resource lane](suites/assurance/adversarial/resources/README.md) checks
+streaming NDJSON/WAV memory growth, repeated filesystem cleanup, cache lifetime
+and deep JSON in fresh workers with CPU, memory, output and parent wall bounds.
+Independent data/OS observations and deliberate leaking/eager controls check
+that correct output alone cannot hide resource growth. Measurements attach to
+pytest reports; the existing runner selects the explicit lane.
+
 ## Run and inspect
 
 Use the existing environment with `--no-sync` to retain the backend combination
@@ -89,16 +96,17 @@ uv run --no-sync python -m tests.tooling run chaos -- --chaos-seed 173 -q
 uv run --no-sync python -m tests.tooling.concurrency check
 uv run --no-sync python -m tests.tooling.concurrency run --backend installed --seed 173
 uv run --no-sync python -m tests.tooling run concurrency -- --concurrency-seed 173 -q
+uv run --no-sync python -m tests.tooling run resources -- -q
 ```
 
 The default run discovers only `tests/suites`, with strict configuration,
-registered markers, and importlib collection. It excludes `perf`, `chaos` and
-`concurrency`.
+registered markers, and importlib collection. It excludes `perf`, `chaos`,
+`concurrency` and `resources`.
 Three existing wall-clock benchmark calibration checks carry `perf`; run them
 explicitly with `uv run --no-sync pytest -q -m perf` on a quiet machine. The
 cross-module product performance lane remains planned. Other excluded work
 requires explicit selection when implemented. A runner invocation selects
-the requested lane's marker and excludes `perf`/`chaos`/`concurrency` unless one is
+the requested lane's marker and excludes `perf`/`chaos`/`concurrency`/`resources` unless one is
 the requested kind; extra pytest arguments may override selection.
 The `properties` runner lane selects the dedicated property directories;
 `pytest -m properties` includes generated cases in historical mixed files too.
