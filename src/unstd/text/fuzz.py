@@ -18,10 +18,10 @@ matching path.
 
 Backend & fallback: rapidfuzz is provided by the ``text`` extra. When
 it is installed the fast Indel/Levenshtein kernels are used; when it is **not**
-(a base ``unstd`` install — the case in this dev env) every function
-transparently falls back to the stdlib (``difflib`` for ``ratio``/``best_match``/
-``extract``, a pure-Python DP for ``distance``), so the module imports and works
-everywhere and only the speed differs.
+(a base ``unstd`` install) every function transparently falls back to
+``difflib`` or portable scoring algorithms. Optional bundled C kernels accelerate
+bounded exact-string Levenshtein and Jaro calls on this path; unsupported values
+and source builds without a compiler retain the Python bodies.
 
 Scale normalization — the deliberate difflib faithfulness choice:
 
@@ -94,7 +94,8 @@ from typing import TYPE_CHECKING, Final, Protocol
 
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable, Sequence
+    from collections.abc import Callable, Iterable, Sequence
+    from types import NotImplementedType
 
     import rapidfuzz as _rf
 
@@ -107,6 +108,15 @@ else:
     except ImportError:  # base install without the `text` extra — stdlib fallback
         _rf = None
         _HAVE_RAPIDFUZZ = False
+
+
+_native_distance: Callable[[object, object], int | NotImplementedType] | None
+_native_jaro: Callable[[object, object], float | NotImplementedType] | None
+try:
+    from unstd.text._text_native import distance as _native_distance
+    from unstd.text._text_native import jaro as _native_jaro
+except ImportError:  # source-only installs retain the portable scoring bodies
+    _native_distance = _native_jaro = None
 
 
 __all__ = [
@@ -149,6 +159,10 @@ def _jaro(a: str, b: str) -> float:
         return 1.0
     if not a or not b:
         return 0.0
+    if type(a) is str and type(b) is str and _native_jaro is not None:
+        result = _native_jaro(a, b)
+        if result is not NotImplemented:
+            return result
     window = max(max(len(a), len(b)) // 2 - 1, 0)
     b_taken = [False] * len(b)
     a_matched: list[str] = []
@@ -201,6 +215,10 @@ def _levenshtein(a: Sequence[object], b: Sequence[object], /) -> int:
     if not b:
         return len(a)
     if type(a) is str and type(b) is str:
+        if _native_distance is not None:
+            result = _native_distance(a, b)
+            if result is not NotImplemented:
+                return result
         return _string_distance(a, b)
     return _sequence_distance(a, b)
 

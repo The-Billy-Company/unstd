@@ -223,6 +223,38 @@ public signatures, backend versions, and timing samples are in
 Standard-only validation profiles for Python 3.12, 3.13, and 3.14 are saved in
 [`clone-ids-stdlib-results.json`](clone-ids-stdlib-results.json).
 
+## Bundled native kernel profiles
+
+`native_profile` compares a saved source tree with the current bundled C
+implementations of structural cloning, Levenshtein distance, and Jaro matching.
+Save the original sources before editing; the directory must contain `unstd/`.
+Build the current extensions before running the driver.
+
+```console
+uv run --no-sync python -m bench.native_profile --compare-source /tmp/before/src --rounds 9 --repetitions 3 --output /tmp/native-comparison.json
+python bench/native_profile.py --compare-source /tmp/before/src --profile-only --output /tmp/native-profile.json
+```
+
+Text workloads explicitly select the base-install Python wrappers, which may
+dispatch into the bundled kernels even when rapidfuzz is installed. The original
+installed text bindings are recorded. The driver checks public signatures,
+output types, dictionary order, mutable independence, shared-branch behavior,
+and cyclic fallback before timing. It covers small and 200/500-record clones,
+custom copy protocols, Unicode distance at lengths 12/64/65/256/1024, short and
+75-character Unicode name matching, and sequence/string-subclass fallbacks.
+
+Python and C cProfile entries are retained separately from timing. Per-workload
+profiles prove all three native kernels execute and the declared Python fallback
+routes remain selected; missing native modules or unexpected routes fail the
+run. Paired measurements alternate original/current order by repetition. JSON
+includes all timing samples, source and extension hashes, public signatures,
+interpreter/machine details, and native dispatch evidence. Unit tests verify the
+evidence checks without enforcing machine-specific speedup thresholds.
+
+The measured results, safety boundaries, validation and known fallback overhead
+are recorded in [`native-results.md`](native-results.md), with complete evidence
+in [`native-results.json`](native-results.json).
+
 ## Gzip throughput and size
 
 Run `uv run --locked --all-extras python -m bench --group compress --rounds 5`.

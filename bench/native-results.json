@@ -1,0 +1,1335 @@
+{
+  "python": "3.13.14 (main, Aug  5 2026, 15:33:38) [Clang 22.1.3 ]",
+  "implementation": "CPython",
+  "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "processor": "arm",
+  "rounds": 9,
+  "repetitions": 3,
+  "profiles": {
+    "before": {
+      "source": "/Users/griffinstrier/Billy-Company/unstd/.local/native-acceleration-before/src",
+      "source_sha256": {
+        "clone/structural.py": "0e467bc08c72f92e761b896d9de0ce5473e71ad5c2d1eb82b43d7504ee39affa",
+        "text/fuzz.py": "604798f783d1f8c656c4588eaf3b8d4d065d5e64dc67d92d1f1f7770aa2a1efe"
+      },
+      "signatures": {
+        "clone.asdict": "(obj: 'Any', *, dict_factory: 'Callable[[list[tuple[str, Any]]], Any]' = <class 'dict'>) -> 'Any'",
+        "clone.copy": "(x)",
+        "clone.deep": "(obj: 'T') -> 'T'",
+        "clone.deepcopy": "(x, memo=None, _nil=[])",
+        "text.best_match": "(query: 'str', choices: 'Iterable[str]', *, score_cutoff: 'float' = 0.0) -> 'tuple[str, float] | None'",
+        "text.cdist": "(queries: 'Sequence[str]', choices: 'Sequence[str]', *, score_cutoff: 'float' = 0.0, workers: 'int' = 1) -> 'list[list[float]]'",
+        "text.distance": "(a: 'Sequence[object]', b: 'Sequence[object]', /) -> 'int'",
+        "text.extract": "(query: 'str', choices: 'Iterable[str]', *, limit: 'int | None' = 5, score_cutoff: 'float' = 0.0) -> 'list[tuple[str, float]]'",
+        "text.jaro_winkler": "(a: 'str', b: 'str', /, *, prefix_weight: 'float' = 0.1) -> 'float'",
+        "text.ratio": "(s1, s2, *, processor=None, score_cutoff=None)"
+      },
+      "installed_text_selection": {
+        "distance": "rapidfuzz.distance.metrics_cpp.distance",
+        "jaro_winkler": "rapidfuzz.distance.metrics_cpp.similarity"
+      },
+      "measured_text_selection": "base-install wrappers (rapidfuzz disabled)",
+      "native_modules": {},
+      "native_execution": {},
+      "routes": {},
+      "profile": {
+        "python": [
+          {
+            "function": "_walk",
+            "file": "/Users/griffinstrier/Billy-Company/unstd/.local/native-acceleration-before/src/unstd/clone/structural.py",
+            "line": 93,
+            "calls": 6324,
+            "recursive_calls": 6306,
+            "self_ns": 1896477.0000000002,
+            "cumulative_ns": 1991086.0
+          },
+          {
+            "function": "deep",
+            "file": "/Users/griffinstrier/Billy-Company/unstd/.local/native-acceleration-before/src/unstd/clone/structural.py",
+            "line": 234,
+            "calls": 18,
+            "recursive_calls": 0,
+            "self_ns": 103082.0,
+            "cumulative_ns": 2107294.0
+          },
+          {
+            "function": "_jaro",
+            "file": "/Users/griffinstrier/Billy-Company/unstd/.local/native-acceleration-before/src/unstd/text/fuzz.py",
+            "line": 140,
+            "calls": 9,
+            "recursive_calls": 0,
+            "self_ns": 193588.00000000003,
+            "cumulative_ns": 275665.0
+          },
+          {
+            "function": "<genexpr>",
+            "file": "/Users/griffinstrier/Billy-Company/unstd/.local/native-acceleration-before/src/unstd/text/fuzz.py",
+            "line": 168,
+            "calls": 258,
+            "recursive_calls": 0,
+            "self_ns": 13411.0,
+            "cumulative_ns": 13411.0
+          },
+          {
+            "function": "_jaro_winkler",
+            "file": "/Users/griffinstrier/Billy-Company/unstd/.local/native-acceleration-before/src/unstd/text/fuzz.py",
+            "line": 172,
+            "calls": 9,
+            "recursive_calls": 0,
+            "self_ns": 12837.000000000002,
+            "cumulative_ns": 289293.00000000006
+          },
+          {
+            "function": "_levenshtein",
+            "file": "/Users/griffinstrier/Billy-Company/unstd/.local/native-acceleration-before/src/unstd/text/fuzz.py",
+            "line": 190,
+            "calls": 21,
+            "recursive_calls": 0,
+            "self_ns": 13501.000000000002,
+            "cumulative_ns": 3794168.0
+          },
+          {
+            "function": "_sequence_distance",
+            "file": "/Users/griffinstrier/Billy-Company/unstd/.local/native-acceleration-before/src/unstd/text/fuzz.py",
+            "line": 208,
+            "calls": 6,
+            "recursive_calls": 0,
+            "self_ns": 21798.0,
+            "cumulative_ns": 30709.0
+          },
+          {
+            "function": "_string_distance",
+            "file": "/Users/griffinstrier/Billy-Company/unstd/.local/native-acceleration-before/src/unstd/text/fuzz.py",
+            "line": 219,
+            "calls": 15,
+            "recursive_calls": 0,
+            "self_ns": 3174239.0,
+            "cumulative_ns": 3749958.0000000005
+          }
+        ],
+        "c": [
+          {
+            "function": "<built-in method builtins.getattr>",
+            "calls": 3,
+            "recursive_calls": 0,
+            "self_ns": 832.0,
+            "cumulative_ns": 832.0
+          },
+          {
+            "function": "<built-in method builtins.id>",
+            "calls": 24,
+            "recursive_calls": 0,
+            "self_ns": 1792.0000000000002,
+            "cumulative_ns": 1792.0000000000002
+          },
+          {
+            "function": "<built-in method builtins.issubclass>",
+            "calls": 3,
+            "recursive_calls": 0,
+            "self_ns": 334.0,
+            "cumulative_ns": 334.0
+          },
+          {
+            "function": "<built-in method builtins.len>",
+            "calls": 4620,
+            "recursive_calls": 0,
+            "self_ns": 153312.0,
+            "cumulative_ns": 153312.0
+          },
+          {
+            "function": "<built-in method builtins.max>",
+            "calls": 270,
+            "recursive_calls": 0,
+            "self_ns": 12708.000000000002,
+            "cumulative_ns": 12708.000000000002
+          },
+          {
+            "function": "<built-in method builtins.min>",
+            "calls": 327,
+            "recursive_calls": 0,
+            "self_ns": 17954.0,
+            "cumulative_ns": 17954.0
+          },
+          {
+            "function": "<built-in method builtins.sum>",
+            "calls": 9,
+            "recursive_calls": 0,
+            "self_ns": 14088.000000000002,
+            "cumulative_ns": 27499.000000000004
+          },
+          {
+            "function": "<method 'append' of 'list' objects>",
+            "calls": 318,
+            "recursive_calls": 0,
+            "self_ns": 19511.0,
+            "cumulative_ns": 19511.0
+          },
+          {
+            "function": "<method 'disable' of '_lsprof.Profiler' objects>",
+            "calls": 1,
+            "recursive_calls": 0,
+            "self_ns": 11750.000000000002,
+            "cumulative_ns": 11750.000000000002
+          },
+          {
+            "function": "<method 'get' of 'dict' objects>",
+            "calls": 8535,
+            "recursive_calls": 0,
+            "self_ns": 438140.0,
+            "cumulative_ns": 438140.0
+          },
+          {
+            "function": "<method 'items' of 'dict' objects>",
+            "calls": 2112,
+            "recursive_calls": 0,
+            "self_ns": 82941.0,
+            "cumulative_ns": 82941.0
+          }
+        ]
+      }
+    },
+    "after": {
+      "source": "/Users/griffinstrier/Billy-Company/unstd/src",
+      "source_sha256": {
+        "clone/structural.py": "87416806a33a17b1ad13b8b5d1ff297b94ed760250e0a807309bf75a0cc41873",
+        "text/fuzz.py": "0a6dd4e4ae32bf284138dfa814045021a6a03327ec9467579da79bd8883f5f7e"
+      },
+      "signatures": {
+        "clone.asdict": "(obj: 'Any', *, dict_factory: 'Callable[[list[tuple[str, Any]]], Any]' = <class 'dict'>) -> 'Any'",
+        "clone.copy": "(x)",
+        "clone.deep": "(obj: 'T') -> 'T'",
+        "clone.deepcopy": "(x, memo=None, _nil=[])",
+        "text.best_match": "(query: 'str', choices: 'Iterable[str]', *, score_cutoff: 'float' = 0.0) -> 'tuple[str, float] | None'",
+        "text.cdist": "(queries: 'Sequence[str]', choices: 'Sequence[str]', *, score_cutoff: 'float' = 0.0, workers: 'int' = 1) -> 'list[list[float]]'",
+        "text.distance": "(a: 'Sequence[object]', b: 'Sequence[object]', /) -> 'int'",
+        "text.extract": "(query: 'str', choices: 'Iterable[str]', *, limit: 'int | None' = 5, score_cutoff: 'float' = 0.0) -> 'list[tuple[str, float]]'",
+        "text.jaro_winkler": "(a: 'str', b: 'str', /, *, prefix_weight: 'float' = 0.1) -> 'float'",
+        "text.ratio": "(s1, s2, *, processor=None, score_cutoff=None)"
+      },
+      "installed_text_selection": {
+        "distance": "rapidfuzz.distance.metrics_cpp.distance",
+        "jaro_winkler": "rapidfuzz.distance.metrics_cpp.similarity"
+      },
+      "measured_text_selection": "base-install wrappers (rapidfuzz disabled)",
+      "native_modules": {
+        "unstd.clone._clone_native": {
+          "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/clone/_clone_native.cpython-313-darwin.so",
+          "sha256": "0ad51588db6804ac13312af1c1a8e847ec56bd9eef5556e51afb845c90ae8c4f",
+          "c_source_sha256": "7409511a9a0065637e4c947425ee7716cb7d0d45619e069678eedc3074705889"
+        },
+        "unstd.text._text_native": {
+          "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/text/_text_native.cpython-313-darwin.so",
+          "sha256": "1f641c643f0376fcc43c1c68d061488ab839ad180a01ab9116d7541a3f921cd1",
+          "c_source_sha256": "7051b4889c064fa430eb90ad2aab0eae5c126e5d4fbe7e869b99aa654355883f"
+        }
+      },
+      "native_execution": {
+        "<built-in method unstd.clone._clone_native.clone>": 18,
+        "<built-in method unstd.text._text_native.distance>": 15,
+        "<built-in method unstd.text._text_native.jaro>": 6
+      },
+      "routes": {
+        "clone.deep/small": {
+          "expected": "native kernel",
+          "c_calls": {
+            "<built-in method unstd.clone._clone_native.clone>": 3
+          },
+          "python_calls": {
+            "deep": 3
+          }
+        },
+        "clone.deep/records200": {
+          "expected": "native kernel",
+          "c_calls": {
+            "<built-in method unstd.clone._clone_native.clone>": 3
+          },
+          "python_calls": {
+            "deep": 3
+          }
+        },
+        "clone.deep/records500": {
+          "expected": "native kernel",
+          "c_calls": {
+            "<built-in method unstd.clone._clone_native.clone>": 3
+          },
+          "python_calls": {
+            "deep": 3
+          }
+        },
+        "clone.deep/mixed-custom-fallback": {
+          "expected": "python fallback",
+          "c_calls": {
+            "<built-in method unstd.clone._clone_native.clone>": 3
+          },
+          "python_calls": {
+            "_walk": 9,
+            "deep": 3
+          }
+        },
+        "clone.deep/shared-branch-semantics": {
+          "expected": "native kernel",
+          "c_calls": {
+            "<built-in method unstd.clone._clone_native.clone>": 3
+          },
+          "python_calls": {
+            "deep": 3
+          }
+        },
+        "clone.deep/cycle-fallback": {
+          "expected": "python fallback",
+          "c_calls": {
+            "<built-in method unstd.clone._clone_native.clone>": 3
+          },
+          "python_calls": {
+            "_walk": 2982,
+            "deep": 3
+          }
+        },
+        "text.distance/unicode12": {
+          "expected": "native kernel",
+          "c_calls": {
+            "<built-in method unstd.text._text_native.distance>": 3
+          },
+          "python_calls": {
+            "_levenshtein": 3
+          }
+        },
+        "text.distance/unicode64": {
+          "expected": "native kernel",
+          "c_calls": {
+            "<built-in method unstd.text._text_native.distance>": 3
+          },
+          "python_calls": {
+            "_levenshtein": 3
+          }
+        },
+        "text.distance/unicode65": {
+          "expected": "native kernel",
+          "c_calls": {
+            "<built-in method unstd.text._text_native.distance>": 3
+          },
+          "python_calls": {
+            "_levenshtein": 3
+          }
+        },
+        "text.distance/unicode256": {
+          "expected": "native kernel",
+          "c_calls": {
+            "<built-in method unstd.text._text_native.distance>": 3
+          },
+          "python_calls": {
+            "_levenshtein": 3
+          }
+        },
+        "text.distance/unicode1024": {
+          "expected": "native kernel",
+          "c_calls": {
+            "<built-in method unstd.text._text_native.distance>": 3
+          },
+          "python_calls": {
+            "_levenshtein": 3
+          }
+        },
+        "text.distance/sequence-fallback": {
+          "expected": "python fallback",
+          "c_calls": {},
+          "python_calls": {
+            "_levenshtein": 3,
+            "_sequence_distance": 3
+          }
+        },
+        "text.distance/subclass-fallback": {
+          "expected": "python fallback",
+          "c_calls": {},
+          "python_calls": {
+            "_levenshtein": 3,
+            "_sequence_distance": 3
+          }
+        },
+        "text.jaro_winkler/short-name": {
+          "expected": "native kernel",
+          "c_calls": {
+            "<built-in method unstd.text._text_native.jaro>": 3
+          },
+          "python_calls": {
+            "_jaro": 3,
+            "_jaro_winkler": 3
+          }
+        },
+        "text.jaro_winkler/unicode75": {
+          "expected": "native kernel",
+          "c_calls": {
+            "<built-in method unstd.text._text_native.jaro>": 3
+          },
+          "python_calls": {
+            "_jaro": 3,
+            "_jaro_winkler": 3
+          }
+        },
+        "text.jaro_winkler/subclass-fallback": {
+          "expected": "python fallback",
+          "c_calls": {},
+          "python_calls": {
+            "_jaro": 3,
+            "<genexpr>": 12,
+            "_jaro_winkler": 3
+          }
+        }
+      },
+      "profile": {
+        "python": [
+          {
+            "function": "_walk",
+            "file": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/clone/structural.py",
+            "line": 105,
+            "calls": 2994,
+            "recursive_calls": 2988,
+            "self_ns": 663960.0,
+            "cumulative_ns": 672460.0
+          },
+          {
+            "function": "deep",
+            "file": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/clone/structural.py",
+            "line": 248,
+            "calls": 18,
+            "recursive_calls": 0,
+            "self_ns": 93211.0,
+            "cumulative_ns": 1003668.0000000001
+          },
+          {
+            "function": "_jaro",
+            "file": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/text/fuzz.py",
+            "line": 150,
+            "calls": 9,
+            "recursive_calls": 0,
+            "self_ns": 16919.000000000004,
+            "cumulative_ns": 28792.0
+          },
+          {
+            "function": "<genexpr>",
+            "file": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/text/fuzz.py",
+            "line": 182,
+            "calls": 12,
+            "recursive_calls": 0,
+            "self_ns": 1166.0000000000002,
+            "cumulative_ns": 1166.0000000000002
+          },
+          {
+            "function": "_jaro_winkler",
+            "file": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/text/fuzz.py",
+            "line": 186,
+            "calls": 9,
+            "recursive_calls": 0,
+            "self_ns": 9210.0,
+            "cumulative_ns": 38583.0
+          },
+          {
+            "function": "_levenshtein",
+            "file": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/text/fuzz.py",
+            "line": 204,
+            "calls": 21,
+            "recursive_calls": 0,
+            "self_ns": 7210.0,
+            "cumulative_ns": 105377.0
+          },
+          {
+            "function": "_sequence_distance",
+            "file": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/text/fuzz.py",
+            "line": 226,
+            "calls": 6,
+            "recursive_calls": 0,
+            "self_ns": 17745.0,
+            "cumulative_ns": 25751.0
+          }
+        ],
+        "c": [
+          {
+            "function": "<built-in method builtins.getattr>",
+            "calls": 3,
+            "recursive_calls": 0,
+            "self_ns": 374.00000000000006,
+            "cumulative_ns": 374.00000000000006
+          },
+          {
+            "function": "<built-in method builtins.id>",
+            "calls": 24,
+            "recursive_calls": 0,
+            "self_ns": 1415.0,
+            "cumulative_ns": 1415.0
+          },
+          {
+            "function": "<built-in method builtins.issubclass>",
+            "calls": 3,
+            "recursive_calls": 0,
+            "self_ns": 291.0,
+            "cumulative_ns": 291.0
+          },
+          {
+            "function": "<built-in method builtins.len>",
+            "calls": 33,
+            "recursive_calls": 0,
+            "self_ns": 2043.0000000000002,
+            "cumulative_ns": 2043.0000000000002
+          },
+          {
+            "function": "<built-in method builtins.max>",
+            "calls": 15,
+            "recursive_calls": 0,
+            "self_ns": 1205.0,
+            "cumulative_ns": 1205.0
+          },
+          {
+            "function": "<built-in method builtins.min>",
+            "calls": 84,
+            "recursive_calls": 0,
+            "self_ns": 5002.000000000001,
+            "cumulative_ns": 5002.000000000001
+          },
+          {
+            "function": "<built-in method builtins.sum>",
+            "calls": 3,
+            "recursive_calls": 0,
+            "self_ns": 1584.0,
+            "cumulative_ns": 2750.0000000000005
+          },
+          {
+            "function": "<built-in method unstd.clone._clone_native.clone>",
+            "calls": 18,
+            "recursive_calls": 0,
+            "self_ns": 228373.0,
+            "cumulative_ns": 228373.0
+          },
+          {
+            "function": "<built-in method unstd.text._text_native.distance>",
+            "calls": 15,
+            "recursive_calls": 0,
+            "self_ns": 72416.0,
+            "cumulative_ns": 72416.0
+          },
+          {
+            "function": "<built-in method unstd.text._text_native.jaro>",
+            "calls": 6,
+            "recursive_calls": 0,
+            "self_ns": 5084.0,
+            "cumulative_ns": 5084.0
+          },
+          {
+            "function": "<method 'append' of 'list' objects>",
+            "calls": 78,
+            "recursive_calls": 0,
+            "self_ns": 4584.000000000001,
+            "cumulative_ns": 4584.000000000001
+          },
+          {
+            "function": "<method 'disable' of '_lsprof.Profiler' objects>",
+            "calls": 1,
+            "recursive_calls": 0,
+            "self_ns": 7958.000000000001,
+            "cumulative_ns": 7958.000000000001
+          },
+          {
+            "function": "<method 'get' of 'dict' objects>",
+            "calls": 9,
+            "recursive_calls": 0,
+            "self_ns": 1209.0,
+            "cumulative_ns": 1209.0
+          },
+          {
+            "function": "<method 'items' of 'dict' objects>",
+            "calls": 3,
+            "recursive_calls": 0,
+            "self_ns": 375.0,
+            "cumulative_ns": 375.0
+          }
+        ]
+      }
+    }
+  },
+  "timings": {
+    "clone.deep/small": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 162.53953334263392,
+            "iters": 57344,
+            "rounds": 9,
+            "spread": 0.05536535099902185
+          },
+          {
+            "per_op_ns": 160.23908342633928,
+            "iters": 57344,
+            "rounds": 9,
+            "spread": 0.09340225819616378
+          },
+          {
+            "per_op_ns": 154.78297642299108,
+            "iters": 57344,
+            "rounds": 9,
+            "spread": 0.09104274226484713
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 70.63262580422794,
+            "iters": 69632,
+            "rounds": 9,
+            "spread": 0.20687246850582855
+          },
+          {
+            "per_op_ns": 71.4575424194336,
+            "iters": 131072,
+            "rounds": 9,
+            "spread": 0.22708713984277099
+          },
+          {
+            "per_op_ns": 72.66362762451172,
+            "iters": 131072,
+            "rounds": 9,
+            "spread": 0.05690345412884927
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 160.23908342633928,
+        "after": 71.4575424194336
+      },
+      "speedup": 2.242437648999816
+    },
+    "clone.deep/records200": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 59994.46875,
+            "iters": 128,
+            "rounds": 9,
+            "spread": 0.055321896862367
+          },
+          {
+            "per_op_ns": 60041.015625,
+            "iters": 128,
+            "rounds": 9,
+            "spread": 0.05395621482710387
+          },
+          {
+            "per_op_ns": 59752.28125,
+            "iters": 128,
+            "rounds": 9,
+            "spread": 0.03674558973428316
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 47712.890625,
+            "iters": 128,
+            "rounds": 9,
+            "spread": 0.03352572761881371
+          },
+          {
+            "per_op_ns": 46976.2421875,
+            "iters": 128,
+            "rounds": 9,
+            "spread": 0.06736832897081121
+          },
+          {
+            "per_op_ns": 47862.3046875,
+            "iters": 128,
+            "rounds": 9,
+            "spread": 0.0566674420028157
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 59994.46875,
+        "after": 47712.890625
+      },
+      "speedup": 1.2574058700724549
+    },
+    "clone.deep/records500": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 78905.88793103448,
+            "iters": 116,
+            "rounds": 9,
+            "spread": 0.1137732499530486
+          },
+          {
+            "per_op_ns": 78680.55,
+            "iters": 60,
+            "rounds": 9,
+            "spread": 0.1925772421943331
+          },
+          {
+            "per_op_ns": 79867.01666666666,
+            "iters": 120,
+            "rounds": 9,
+            "spread": 0.15585365756953068
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 29974.44921875,
+            "iters": 256,
+            "rounds": 9,
+            "spread": 0.09747325163267309
+          },
+          {
+            "per_op_ns": 29178.0625,
+            "iters": 256,
+            "rounds": 9,
+            "spread": 0.12781260643162992
+          },
+          {
+            "per_op_ns": 29752.60546875,
+            "iters": 256,
+            "rounds": 9,
+            "spread": 0.08239049967656456
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 78905.88793103448,
+        "after": 29752.60546875
+      },
+      "speedup": 2.652066489232735
+    },
+    "clone.deep/mixed-custom-fallback": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 553.6676635742188,
+            "iters": 16384,
+            "rounds": 9,
+            "spread": 0.6478267536561224
+          },
+          {
+            "per_op_ns": 545.684814453125,
+            "iters": 16384,
+            "rounds": 9,
+            "spread": 0.025017169062132992
+          },
+          {
+            "per_op_ns": 548.3118896484375,
+            "iters": 16384,
+            "rounds": 9,
+            "spread": 0.17994472558819227
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 622.5179443359375,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 1.0552239979590825
+          },
+          {
+            "per_op_ns": 615.814208984375,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 0.1153510084741563
+          },
+          {
+            "per_op_ns": 625.3917236328125,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 0.4104685169002475
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 548.3118896484375,
+        "after": 622.5179443359375
+      },
+      "speedup": 0.8807969226225948
+    },
+    "clone.deep/shared-branch-semantics": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 544.4183349609375,
+            "iters": 16384,
+            "rounds": 9,
+            "spread": 0.2203116679279128
+          },
+          {
+            "per_op_ns": 532.8598022460938,
+            "iters": 16384,
+            "rounds": 9,
+            "spread": 0.0783852927279756
+          },
+          {
+            "per_op_ns": 531.2881469726562,
+            "iters": 16384,
+            "rounds": 9,
+            "spread": 0.28424544423223286
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 463.37127685546875,
+            "iters": 16384,
+            "rounds": 9,
+            "spread": 0.08759917675146127
+          },
+          {
+            "per_op_ns": 454.4219970703125,
+            "iters": 16384,
+            "rounds": 9,
+            "spread": 0.027321715187535678
+          },
+          {
+            "per_op_ns": 517.3365478515625,
+            "iters": 16384,
+            "rounds": 9,
+            "spread": 0.5452672367597989
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 532.8598022460938,
+        "after": 463.37127685546875
+      },
+      "speedup": 1.149962953815757
+    },
+    "clone.deep/cycle-fallback": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 146509.38709677418,
+            "iters": 31,
+            "rounds": 9,
+            "spread": 0.5011608856506167
+          },
+          {
+            "per_op_ns": 149227.21875,
+            "iters": 64,
+            "rounds": 9,
+            "spread": 0.45531876620196005
+          },
+          {
+            "per_op_ns": 110778.0,
+            "iters": 64,
+            "rounds": 9,
+            "spread": 0.15856121025835454
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 112889.89285714286,
+            "iters": 28,
+            "rounds": 9,
+            "spread": 1.144749450871377
+          },
+          {
+            "per_op_ns": 135953.125,
+            "iters": 40,
+            "rounds": 9,
+            "spread": 0.994751499827606
+          },
+          {
+            "per_op_ns": 114109.375,
+            "iters": 80,
+            "rounds": 9,
+            "spread": 0.05849650828426674
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 146509.38709677418,
+        "after": 114109.375
+      },
+      "speedup": 1.2839382136373474
+    },
+    "text.distance/unicode12": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 3047.578125,
+            "iters": 3200,
+            "rounds": 9,
+            "spread": 0.09023138250147401
+          },
+          {
+            "per_op_ns": 3032.27875,
+            "iters": 3200,
+            "rounds": 9,
+            "spread": 0.12024702544249931
+          },
+          {
+            "per_op_ns": 2974.3228125,
+            "iters": 3200,
+            "rounds": 9,
+            "spread": 0.027304114287359318
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 144.32488141741072,
+            "iters": 57344,
+            "rounds": 9,
+            "spread": 0.10691351526781846
+          },
+          {
+            "per_op_ns": 148.12469482421875,
+            "iters": 32768,
+            "rounds": 9,
+            "spread": 0.1483733195982488
+          },
+          {
+            "per_op_ns": 144.30491638183594,
+            "iters": 65536,
+            "rounds": 9,
+            "spread": 0.10047490966375025
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 3032.27875,
+        "after": 144.32488141741072
+      },
+      "speedup": 21.010090015110862
+    },
+    "text.distance/unicode64": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 23763.346354166668,
+            "iters": 384,
+            "rounds": 9,
+            "spread": 0.019008835495404174
+          },
+          {
+            "per_op_ns": 23731.338541666668,
+            "iters": 384,
+            "rounds": 9,
+            "spread": 0.026976569528206044
+          },
+          {
+            "per_op_ns": 23639.322916666668,
+            "iters": 384,
+            "rounds": 9,
+            "spread": 0.03995229964197191
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 483.423828125,
+            "iters": 16384,
+            "rounds": 9,
+            "spread": 0.03447318928702735
+          },
+          {
+            "per_op_ns": 480.18646240234375,
+            "iters": 16384,
+            "rounds": 9,
+            "spread": 0.08026298479480132
+          },
+          {
+            "per_op_ns": 466.94183349609375,
+            "iters": 16384,
+            "rounds": 9,
+            "spread": 4.27177857294577
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 23731.338541666668,
+        "after": 480.18646240234375
+      },
+      "speedup": 49.42109034673785
+    },
+    "text.distance/unicode65": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 24848.958333333332,
+            "iters": 384,
+            "rounds": 9,
+            "spread": 0.25350639278977155
+          },
+          {
+            "per_op_ns": 24882.161458333332,
+            "iters": 384,
+            "rounds": 9,
+            "spread": 0.9076070017530548
+          },
+          {
+            "per_op_ns": 25250.434895833332,
+            "iters": 384,
+            "rounds": 9,
+            "spread": 0.11497667067821749
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 802.91748046875,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 0.053249714937286204
+          },
+          {
+            "per_op_ns": 764.0380859375,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 0.04428966288544496
+          },
+          {
+            "per_op_ns": 787.65869140625,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 0.02781867493219682
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 24882.161458333332,
+        "after": 787.65869140625
+      },
+      "speedup": 31.590029704248998
+    },
+    "text.distance/unicode256": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 106263.89285714286,
+            "iters": 84,
+            "rounds": 9,
+            "spread": 0.06028152957478837
+          },
+          {
+            "per_op_ns": 108530.04651162791,
+            "iters": 43,
+            "rounds": 9,
+            "spread": 0.25262707230148673
+          },
+          {
+            "per_op_ns": 107581.3953488372,
+            "iters": 86,
+            "rounds": 9,
+            "spread": 0.08634165585819283
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 2952.2879464285716,
+            "iters": 1792,
+            "rounds": 9,
+            "spread": 0.030991021642566865
+          },
+          {
+            "per_op_ns": 2981.407752403846,
+            "iters": 3328,
+            "rounds": 9,
+            "spread": 0.03355289315544805
+          },
+          {
+            "per_op_ns": 2978.515625,
+            "iters": 2944,
+            "rounds": 9,
+            "spread": 0.04631024946543122
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 107581.3953488372,
+        "after": 2978.515625
+      },
+      "speedup": 36.11913076629813
+    },
+    "text.distance/unicode1024": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 689684.5,
+            "iters": 14,
+            "rounds": 9,
+            "spread": 0.26953328452564695
+          },
+          {
+            "per_op_ns": 822483.3,
+            "iters": 10,
+            "rounds": 9,
+            "spread": 0.29558363069499405
+          },
+          {
+            "per_op_ns": 830800.0,
+            "iters": 10,
+            "rounds": 9,
+            "spread": 0.6675544053923929
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 19503.692708333332,
+            "iters": 192,
+            "rounds": 9,
+            "spread": 0.8271446459524625
+          },
+          {
+            "per_op_ns": 20670.8984375,
+            "iters": 384,
+            "rounds": 9,
+            "spread": 1.043910111651785
+          },
+          {
+            "per_op_ns": 28503.09375,
+            "iters": 256,
+            "rounds": 9,
+            "spread": 0.4755343169984837
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 822483.3,
+        "after": 20670.8984375
+      },
+      "speedup": 39.78943162469883
+    },
+    "text.distance/sequence-fallback": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 607.0150146484375,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 0.3017244066413456
+          },
+          {
+            "per_op_ns": 582.5729370117188,
+            "iters": 16384,
+            "rounds": 9,
+            "spread": 0.015972865019185687
+          },
+          {
+            "per_op_ns": 574.6129150390625,
+            "iters": 16384,
+            "rounds": 9,
+            "spread": 0.14447640002217865
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 600.7589111328125,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 0.04941828745664104
+          },
+          {
+            "per_op_ns": 576.9983520507812,
+            "iters": 16384,
+            "rounds": 9,
+            "spread": 0.04326865457081108
+          },
+          {
+            "per_op_ns": 581.1691284179688,
+            "iters": 16384,
+            "rounds": 9,
+            "spread": 0.9751975319986872
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 582.5729370117188,
+        "after": 581.1691284179688
+      },
+      "speedup": 1.0024154906465377
+    },
+    "text.distance/subclass-fallback": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 1084.227092161017,
+            "iters": 7552,
+            "rounds": 9,
+            "spread": 0.2136693045246366
+          },
+          {
+            "per_op_ns": 1077.7435302734375,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 0.18380507142756014
+          },
+          {
+            "per_op_ns": 1133.1380615234375,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 0.061808745266850575
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 1072.9879150390625,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 0.24411493305340654
+          },
+          {
+            "per_op_ns": 1088.541748046875,
+            "iters": 4096,
+            "rounds": 9,
+            "spread": 0.2438414889472571
+          },
+          {
+            "per_op_ns": 1103.6224365234375,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 0.0787672653365963
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 1084.227092161017,
+        "after": 1088.541748046875
+      },
+      "speedup": 0.99603629728157
+    },
+    "text.jaro_winkler/short-name": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 1570.3478260869565,
+            "iters": 5888,
+            "rounds": 9,
+            "spread": 0.037357693013179025
+          },
+          {
+            "per_op_ns": 1482.9732142857142,
+            "iters": 6272,
+            "rounds": 9,
+            "spread": 0.03230773895175766
+          },
+          {
+            "per_op_ns": 1502.3051658163265,
+            "iters": 6272,
+            "rounds": 9,
+            "spread": 0.09044879796757917
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 342.2122802734375,
+            "iters": 24576,
+            "rounds": 9,
+            "spread": 0.074046792416217
+          },
+          {
+            "per_op_ns": 323.7694905598958,
+            "iters": 24576,
+            "rounds": 9,
+            "spread": 0.12891231436532474
+          },
+          {
+            "per_op_ns": 317.567626953125,
+            "iters": 24576,
+            "rounds": 9,
+            "spread": 0.05282180555886559
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 1502.3051658163265,
+        "after": 323.7694905598958
+      },
+      "speedup": 4.6400454941519795
+    },
+    "text.jaro_winkler/unicode75": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 27694.5,
+            "iters": 256,
+            "rounds": 9,
+            "spread": 0.033839638736933325
+          },
+          {
+            "per_op_ns": 27427.57421875,
+            "iters": 256,
+            "rounds": 9,
+            "spread": 0.021867392517708927
+          },
+          {
+            "per_op_ns": 27673.50390625,
+            "iters": 256,
+            "rounds": 9,
+            "spread": 0.053491769329783945
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 1240.0366908482142,
+            "iters": 7168,
+            "rounds": 9,
+            "spread": 0.08352017413799252
+          },
+          {
+            "per_op_ns": 1239.8174342105262,
+            "iters": 7296,
+            "rounds": 9,
+            "spread": 0.048959683421131876
+          },
+          {
+            "per_op_ns": 1246.131722383721,
+            "iters": 5504,
+            "rounds": 9,
+            "spread": 0.06208646554329685
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 27673.50390625,
+        "after": 1240.0366908482142
+      },
+      "speedup": 22.316681522802906
+    },
+    "text.jaro_winkler/subclass-fallback": {
+      "samples": {
+        "before": [
+          {
+            "per_op_ns": 1154.754638671875,
+            "iters": 4096,
+            "rounds": 9,
+            "spread": 0.11589460609424139
+          },
+          {
+            "per_op_ns": 1122.7518310546875,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 0.15674411418739032
+          },
+          {
+            "per_op_ns": 1118.3013916015625,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 0.738828473577208
+          }
+        ],
+        "after": [
+          {
+            "per_op_ns": 1153.4373779296875,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 1.0215895740472576
+          },
+          {
+            "per_op_ns": 1120.3104248046875,
+            "iters": 8192,
+            "rounds": 9,
+            "spread": 0.09080092220359108
+          },
+          {
+            "per_op_ns": 1136.9476273148148,
+            "iters": 3456,
+            "rounds": 9,
+            "spread": 0.558307083898851
+          }
+        ]
+      },
+      "median_ns": {
+        "before": 1122.7518310546875,
+        "after": 1136.9476273148148
+      },
+      "speedup": 0.987514115937201
+    }
+  }
+}

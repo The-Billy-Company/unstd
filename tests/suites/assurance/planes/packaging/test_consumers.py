@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from typing import TYPE_CHECKING
+import zipfile
 
 import pytest
 
@@ -369,6 +370,47 @@ for module in {_PROBE_MODULES[surface]!r}:
     assert module in sys.modules, module
     assert Path(sys.modules[module].__file__).resolve().is_relative_to(Path(sys.prefix).resolve()), module
 """
+    )
+
+
+@pytest.mark.parametrize(
+    "module",
+    ["unstd.clone._clone_native", "unstd.text._text_native"],
+)
+def test_base_install_runs_packaged_accelerators_without_backend_extras(
+    module: str, consumer: Consumer
+) -> None:
+    prefix = module.replace(".", "/") + "."
+    with zipfile.ZipFile(consumer.wheel) as archive:
+        packaged = any(
+            name.startswith(prefix) and name.endswith((".so", ".pyd"))
+            for name in archive.namelist()
+        )
+    if not packaged:
+        consumer.run(
+            CONSUMER_AUDIT + f"\nassert importlib.util.find_spec({module!r}) is None"
+        )
+        return
+    operation = (
+        """
+source = {'items': [[1, 2], (3, 4)]}
+copied = native.clone(source)
+assert copied == source and copied is not source
+copied['items'][0].append(5)
+assert source['items'][0] == [1, 2]
+"""
+        if module == "unstd.clone._clone_native"
+        else """
+assert native.distance('kitten', 'sitting') == 3
+assert native.distance('雪🙂', '雪x') == 1
+assert native.jaro('same', 'same') == 1.0
+"""
+    )
+    consumer.run(
+        CONSUMER_AUDIT
+        + f"\nnative = importlib.import_module({module!r})\n"
+        + "assert Path(native.__file__).resolve().is_relative_to(Path(sys.prefix).resolve())\n"
+        + operation
     )
 
 
