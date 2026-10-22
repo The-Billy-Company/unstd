@@ -99,7 +99,8 @@ _ATOMS: frozenset[type] = frozenset(
 _TIMEZONES = frozenset({type(None), _dt.timezone, ZoneInfo})
 
 type _Clone = Callable[[Any], Any]
-_NODES: dict[type, _Clone | None] = {}
+# Admission metadata must not keep dynamically generated classes alive.
+_NODES: weakref.WeakKeyDictionary[type, _Clone | None] = weakref.WeakKeyDictionary()
 
 
 def _walk(o: Any) -> Any:
@@ -271,7 +272,7 @@ def deep[T](obj: T) -> T:
         return _stdlib.deepcopy(obj)
 
 
-_FIELDS: dict[type, tuple[str, ...]] = {}
+_FIELDS: weakref.WeakKeyDictionary[type, tuple[str, ...]] = weakref.WeakKeyDictionary()
 
 
 class _DeferError(Exception):
