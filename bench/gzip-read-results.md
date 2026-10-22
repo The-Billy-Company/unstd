@@ -15,6 +15,11 @@ source hashes, fixture hashes and observed C calls are in
 [the Python 3.13 results](gzip-read-results.json) and
 [the Python 3.14 results](gzip-read-py314-results.json).
 
+The recorded source hashes precede the release-preflight fix for owned-file
+cleanup when reader initialization fails on older CPython patch releases. That
+fix changes only the constructor's exception path; normal read paths measured
+here are unchanged.
+
 ## Why the earlier improvement did not fit Billy
 
 The earlier benchmark improved large level-6 writes, while one-shot reads ran at

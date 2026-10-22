@@ -106,6 +106,13 @@ if TYPE_CHECKING or _backend is not None:
             except BaseException as error:
                 with suppress(Exception):
                     self.close()
+                # Older stdlib constructors can fail before assigning fileobj,
+                # leaving close() unable to release an already-owned handle.
+                owned = self.myfileobj
+                self.myfileobj = None
+                if owned is not None:
+                    with suppress(Exception):
+                        owned.close()
                 if isinstance(error, _native.error):
                     raise zlib.error(str(error)) from error
                 raise

@@ -27,6 +27,8 @@ doc_radar:
   reads, seeking, concatenated members, header quirks, buffer slicing semantics
   and exact stdlib decode diagnostics. Remove the unused native inflater adapter
   and add paired, output-checked read workloads with source and dispatch evidence.
+- Close owned files immediately if reader setup fails on older CPython patch
+  releases; explicitly supplied file objects remain caller-owned.
 
 ## [3.1.2] - 2026-10-22
 
