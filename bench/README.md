@@ -383,6 +383,12 @@ fresh-process RSS. Build instructions are in
 
 ## Gzip throughput and size
 
+The [read-workload follow-up](gzip-read-results.md) removes native inflater
+overhead from streaming reads and measures a C gzip parser for single-member
+buffers. Its paired runner compares saved source, current source and stdlib on
+captured JSON, datasets, bounded HTTP reads, journal iteration and upload rewinds.
+The measurements below describe the earlier native reader.
+
 Run `uv run --locked --all-extras python -m bench --group compress --rounds 5`.
 The three cases use 4,000 JSONL trace rows (1,115,230 uncompressed bytes), explicit
 compression level 6 and `mtime=0`. Decompression receives identical bytes from
