@@ -18,7 +18,7 @@ consistent; they are not interchangeable.
 from __future__ import annotations
 
 from collections import deque
-from itertools import batched, groupby, islice, tee
+from itertools import batched, chain, groupby, islice, tee
 from typing import TYPE_CHECKING
 
 
@@ -83,14 +83,20 @@ def windowed[T](
     if n == 0:
         return iter(((),))
     if step == 1:
-        # The `pairwise` shape generalized: n staggered `tee` views zipped together
-        # is a C-level walk, ~5x a Python deque loop, and `zip` stopping at the
-        # shortest view is exactly "complete windows only".
-        views = tee(iterable, n)
-        for lag, view in enumerate(views):
-            next(islice(view, lag, lag), None)
-        return zip(*views, strict=False)
+        # Staggering reads n - 1 items, so `chain` defers it to the first pull
+        # while keeping the walk C-level.
+        return chain.from_iterable(map(_staggered, (iterable,), (n,)))
     return _strided(iter(iterable), n, step)
+
+
+def _staggered[T](iterable: Iterable[T], n: int) -> Iterator[tuple[T, ...]]:
+    # The `pairwise` shape generalized: n staggered `tee` views zipped together
+    # is a C-level walk, ~5x a Python deque loop, and `zip` stopping at the
+    # shortest view is exactly "complete windows only".
+    views = tee(iterable, n)
+    for lag, view in enumerate(views):
+        next(islice(view, lag, lag), None)
+    return zip(*views, strict=False)
 
 
 def _strided[T](it: Iterator[T], n: int, step: int) -> Iterator[tuple[T, ...]]:
