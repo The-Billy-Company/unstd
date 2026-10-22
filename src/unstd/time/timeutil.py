@@ -127,8 +127,7 @@ def today(*, utc: bool = False) -> date:
     The two disagree by a day for roughly half of every day at either end of the
     world; pick by whether the caller's day boundary is the user's or the fleet's.
     """
-    now = datetime.now(UTC)
-    return (now if utc else now.astimezone()).date()
+    return datetime.now(UTC if utc else None).date()
 
 
 # ── formatting ─────────────────────────────────────────────────────────────────
@@ -148,10 +147,8 @@ def iso(dt: datetime | None = None, *, ms: bool = False) -> str:
         dt = datetime.now(UTC)
     elif dt.tzinfo is not None:
         dt = dt.astimezone(UTC)
-    return (
-        dt.replace(tzinfo=None).isoformat("T", "milliseconds" if ms else "seconds")
-        + "Z"
-    )
+    spec = "milliseconds" if ms else "seconds"
+    return f"{dt.replace(tzinfo=None).isoformat('T', spec)}Z"
 
 
 def human(tz: str = "") -> str:
@@ -187,8 +184,7 @@ def parse_utc(raw: str) -> datetime | None:
     The lenient reading: use it where a legacy tz-less stamp should still anchor
     somewhere rather than crash an aware/naive compare.
     """
-    dt = parse_iso(raw)
-    if dt is None:
+    if (dt := parse_iso(raw)) is None:
         return None
     return dt.replace(tzinfo=UTC) if dt.tzinfo is None else dt.astimezone(UTC)
 
@@ -214,13 +210,16 @@ def from_epoch_ms(ms: int, tz: tzinfo = UTC) -> datetime:
 # ── instant arithmetic ─────────────────────────────────────────────────────────
 
 
-def _instant(value: str | datetime | None, assume_utc: bool) -> datetime | None:
+def _instant(
+    value: str | datetime | None, assume_utc: bool
+) -> tuple[datetime, timedelta] | None:
     if value is None:
-        return datetime.now(UTC)
-    dt = value if isinstance(value, datetime) else parse_iso(value)
-    if dt is None or dt.utcoffset() is not None:
-        return dt
-    return dt.replace(tzinfo=UTC) if assume_utc else None
+        return datetime.now(UTC).replace(tzinfo=None), timedelta()
+    if (dt := value if isinstance(value, datetime) else parse_iso(value)) is None:
+        return None
+    if (offset := dt.utcoffset()) is None and not assume_utc:
+        return None
+    return dt.replace(tzinfo=None), offset or timedelta()
 
 
 def span(
@@ -250,9 +249,7 @@ def span(
     # Subtract wall fields and offsets separately: direct aware subtraction
     # ignores offsets for a shared tzinfo, while constructing UTC endpoints can
     # overflow at datetime.min/max even when the duration is representable.
-    wall_delta = b.replace(tzinfo=None) - a.replace(tzinfo=None)
-    offset_delta = (b.utcoffset() or timedelta(0)) - (a.utcoffset() or timedelta(0))
-    return (wall_delta - offset_delta).total_seconds() / _SECONDS[unit]
+    return (b[0] - a[0] - b[1] + a[1]).total_seconds() / _SECONDS[unit]
 
 
 # ── protobuf Timestamp bridge (the `proto` extra) ──────────────────────────────
@@ -283,18 +280,16 @@ def proto_timestamp(value: str | datetime | None) -> Timestamp | None:
     if not value:
         return None
     if isinstance(value, datetime):
-        dt: datetime | None = value if value.tzinfo else value.replace(tzinfo=UTC)
-    else:
-        dt = parse_utc(value.strip())
-    if dt is None:
+        dt: datetime | None = (
+            value.astimezone(UTC) if value.tzinfo else value.replace(tzinfo=UTC)
+        )
+    elif (dt := parse_utc(value.strip())) is None:
         return None
-    ts = timestamp()
-    ts.FromDatetime(dt.astimezone(UTC))
+    (ts := timestamp()).FromDatetime(dt)
     return ts
 
 
 def proto_timestamp_ms(ms: int) -> Timestamp:
     """A ``google.protobuf.Timestamp`` from epoch milliseconds (the ``proto`` extra)."""
-    ts = _timestamp()()
-    ts.FromMilliseconds(ms)
+    (ts := _timestamp()()).FromMilliseconds(ms)
     return ts
