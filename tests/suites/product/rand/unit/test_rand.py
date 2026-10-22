@@ -2,8 +2,7 @@ r"""Adversarial + parity tests for ``unstd.rand``.
 
 These pin the three intents the module makes explicit:
 
-- the **crypto** path rides stdlib ``secrets`` — independent of :func:`rand.seed`
-  (unseedable by design), so seeding can never make a token reproducible;
+- the **crypto** path keeps its token shapes and integer/sequence bounds;
 - :func:`rand.seed` makes bulk + scalar draws reproducible on the **active**
   backend (numpy ``Generator(PCG64)`` or the stdlib ``random`` fallback);
 - the stdlib fallback is what runs in this base install (no ``rand`` extra) — the
@@ -31,25 +30,7 @@ def _floats(x: Iterable[float]) -> list[float]:
     return [float(v) for v in x]
 
 
-# ── the crypto path: stdlib secrets, unseedable, independent of seed() ─────────
-
-
-def test_crypto_is_independent_of_seed() -> None:
-    # Seeding the PRNG must NOT make the CSPRNG reproducible — the whole point of a
-    # separate crypto path. 32 bytes of collision would be ~2^-256; a repeat here
-    # would mean the crypto path leaked into the seeded engine.
-    """Test crypto is independent of seed."""
-    rand.seed(1234)
-    a = crypto.token_bytes(32)
-    rand.seed(1234)
-    b = crypto.token_bytes(32)
-    assert a != b
-
-
-def test_crypto_tokens_are_unique_across_many_draws() -> None:
-    """Test crypto tokens are unique across many draws."""
-    tokens = {crypto.token_hex(16) for _ in range(2000)}
-    assert len(tokens) == 2000  # a CSPRNG never repeats over this horizon
+# ── crypto shapes; primitive selection lives in security/structure ───────────
 
 
 def test_crypto_bounds_and_shapes() -> None:

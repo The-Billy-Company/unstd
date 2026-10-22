@@ -47,14 +47,14 @@ duplicating a scenario under multiple paths.
 | `unit` | Active, existing tests | Public outcomes, state, errors, and boundaries owned by a module. Several inherited files also contain properties or integrations awaiting finer separation. |
 | `parity` | Active | Explicit stdlib JSON, Base64 and regex differential suites. Additional parity assertions remain inside unit and property files. |
 | `properties` | Active, existing tests | Generated serde, pack, TOML, clone, UUID, and audio laws. Other generated tests remain in inherited files. |
-| `security-contracts` | Active, existing tests | Existing crypto adverse contracts, including TLS context configuration. Reference-vector cases remain in the inherited crypto unit files. This is not a complete penetration campaign. |
+| `security-contracts` | Active | Module-owned bearer authentication, TLS policy, strict encodings, YAML construction and observed native regex boundaries. Reference-vector cases remain in crypto unit files. |
 | `gates` | Active | Package description, optional dependencies, typing marker, benchmark-harness integrity, fuzz registry/corpus authentication, target oracles, recorded chaos/concurrency schedules, lane/replay selection and bounded worker failure handling. Isolated artifact installation belongs to `packaging`. |
 | `regression` | Active | Confirmed regex surrogate/cache capacity, UUID fork-lock, partial WAV frame and interrupted-child reaping defects, with direct assertions owned by the affected module. |
 | `integration` | Active | Real filesystem/process fault schedules, interruption, cleanup and recovery. Broader application scenarios remain separately planned. |
 | `pentest` | Active | Real loopback TLS trust/identity/protocol/mTLS probes with authenticated controls and bounded fixture PKI. Module-owned parser/token probes live under security contracts. |
 | `packaging` | Active | Offline artifact rebuilds, pristine base and each-extra consumers, complete module probes, installed typing and negative controls. |
 | `system-integration` | Planned | Broader cross-module application scenarios beyond the implemented filesystem/process boundaries. |
-| `security-structure` | Planned | Early structural canaries and security-policy checks. Behavioral attack tests carry the security guarantee. |
+| `security-structure` | Active | Runtime observation of complete constant-time comparisons and honored rejection decisions; stdlib secrets identity, seed separation and deterministic entropy failure/recovery. Behavioral attack tests retain their existing owners. |
 | `chaos` | Active | Seeded mixed filesystem/process histories, barrier-selected writer kills, stream interruptions and clock/entropy provider outages; independent state/progress/ownership/recovery assertions and bounded installed/stdlib campaigns. |
 | `concurrency` | Active | Bounded thread/process atomic-file histories, exact fallback UUID reservation models and fork safety, shared clone/regex caches, msgspec/YAML isolation and immutable-map branches; observed histories, corruption controls and installed/stdlib campaigns. |
 | `resources` | Active | Finite installed/stdlib workers check NDJSON/WAV streaming allocation growth, filesystem descriptors/scratch cleanup, regex capacity/purge, clone class lifetime and JSON depth; CPU/memory/output/wall containment and measured reports. Sustained soak and Windows handles remain planned. |
@@ -171,11 +171,16 @@ needed to penetrate this local library's boundaries. SQL injection, browser
 sessions, distributed authorization, and Kubernetes chaos have no target in the
 current API. Add such evidence only when an actual product surface requires it.
 
-Structural canaries may pin use of a constant-time primitive, guarded import, or
-security configuration. They detect early drift but do not replace behavioral
-verification. Timing assertions on a shared machine cannot prove constant-time
-cryptographic execution, and statistical randomness tests cannot prove a secure
-generator.
+The [security scope](suites/assurance/security/README.md) maps these obligations
+to their executable owners. The active structural canaries observe actual
+constant-time primitive calls with complete operands and prove that a primitive
+refusal cannot be ignored by equality, MAC or bearer verification. Deterministic
+secure-random checks pin stdlib secrets bindings across seeding and prove exact
+token output, entropy-error propagation and recovery. These replace substring
+and noncollision checks, without adding a scanner or runner. They detect drift
+but do not replace behavioral verification. Timing assertions on a shared
+machine cannot prove constant-time cryptographic execution, and statistical
+randomness tests cannot prove a secure generator.
 
 ## Failure injection, chaos, concurrency, and resources
 

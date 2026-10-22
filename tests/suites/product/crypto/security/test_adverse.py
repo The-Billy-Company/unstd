@@ -140,24 +140,6 @@ class TestConstantTimeCompare:
         assert not token.equal("abc", b"abc")
         assert not token.equal(b"abc", "abc")
 
-    def test_equal_routes_through_hmac_compare_digest(self):
-        """The one regression this file can express structurally.
-
-        ``hmac.compare_digest`` is the only constant-time compare in the stdlib. If
-        someone rewrote ``equal`` as ``a == b`` the timing leak would be invisible
-        in review and silent at runtime, so pin the call itself.
-        """
-        import inspect
-
-        source = inspect.getsource(token.equal)
-        assert "hmac.compare_digest" in source
-        assert "==" not in source.split('"""')[-1]
-
-    def test_verify_mac_uses_the_constant_time_path(self):
-        import inspect
-
-        assert "equal(" in inspect.getsource(token.verify_mac)
-
 
 class TestDigestGuards:
     @pytest.mark.parametrize("n", [0, -1, 33, 64])

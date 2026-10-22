@@ -44,6 +44,11 @@ peer tests run without BLAKE3. Security expectations include independent MAC
 envelopes, successful peer controls, observed native regex execution, and
 bounded hostile parser workers. Remaining planned lanes cannot report a pass.
 
+The [security scope](suites/assurance/security/README.md) maps each actual trust
+boundary to its existing owner. The active `security-structure` lane adds live
+constant-time primitive and secure-random canaries, replacing source-string and
+collision-based checks. Ordinary CI already discovers them.
+
 The [fuzz suites](tooling/fuzz/README.md) now provide eleven parser/token
 targets, reviewed authenticated corpora, ordinary finite replay in nineteen
 installed/stdlib combinations, reproducible byte mutation and genuine bounded
@@ -83,6 +88,8 @@ uv run --no-sync python -m tests.tooling check
 uv run --no-sync pytest -q
 uv run --no-sync pytest --require-extras -q
 uv run --no-sync python -m tests.tooling run parity -- -q
+uv run --no-sync pytest --require-extras -q -m 'security or pentest or security_structure or integration'
+uv run --no-sync python -m tests.tooling run security-structure -- --require-extras -q
 uv run --no-sync pytest -q -m properties
 HYPOTHESIS_PROFILE=ci uv run --no-sync pytest -q -m properties
 HYPOTHESIS_PROFILE=campaign uv run --no-sync pytest -q -m properties
