@@ -8,19 +8,17 @@ the wrapper under test supplies neither the expected facts nor the oracle.
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
+import subprocess
 import sys
 from types import SimpleNamespace
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import pytest
 
 from tests.support.environment.process import isolated_environment, run_python
 from unstd import proc
-
-
-if TYPE_CHECKING:
-    import subprocess
 
 
 _HOSTILE_ARGUMENTS = [
@@ -106,7 +104,13 @@ def test_missing_executable_propagates_without_creating_output(
     missing = tmp_path / "executable-does-not-exist"
     with pytest.raises(FileNotFoundError) as caught:
         getattr(proc, api)([str(missing)], timeout=1)
-    assert caught.value.filename == str(missing)
+    with pytest.raises(FileNotFoundError) as oracle:
+        subprocess.run(  # noqa: S603 — fixture-owned nonexistent executable
+            [str(missing)], timeout=1, check=True
+        )
+    assert caught.value.filename == oracle.value.filename
+    assert caught.value.errno == oracle.value.errno
+    assert caught.value.args == oracle.value.args
     assert list(tmp_path.iterdir()) == []
 
 
@@ -201,7 +205,7 @@ print('EXACT_BOTH_STREAMS')
 def test_nonzero_contract_retains_both_streams_and_checked_result(
     tmp_path: Path, api: str
 ) -> None:
-    child = "import sys; print('  output ☃  '); print('failure detail', file=sys.stderr); sys.exit(19)"
+    child = "import sys; sys.stdout.reconfigure(encoding='utf-8'); print('  output ☃  '); print('failure detail', file=sys.stderr); sys.exit(19)"
     code = f"""
 import sys
 from unstd import proc
@@ -250,18 +254,33 @@ encoding = sys.argv[1]
 result = proc.run(argv, timeout=5, encoding=encoding, errors='replace')
 assert result.stdout == b'\\xff\\x00'.decode(encoding, errors='replace')
 assert result.stderr == b'\\xfe\\x00'.decode(encoding, errors='replace')
-if encoding == 'utf-8':
-    try:
-        proc.run(argv, timeout=5, encoding=encoding, errors='strict')
-    except UnicodeDecodeError:
-        pass
-    else:
-        raise AssertionError('strict invalid UTF-8 accepted')
 print('CODEC_POLICY')
 """
     result = run_python(code, [encoding], cwd=tmp_path, timeout=10)
     assert result.returncode == 0, result.stderr
     assert result.stdout == "CODEC_POLICY\n"
+
+
+@pytest.mark.skipif(
+    os.name != "posix", reason="POSIX communicate propagates strict decode errors"
+)
+def test_posix_strict_output_codec_error_propagates(tmp_path: Path) -> None:
+    child = "import sys; sys.stdout.buffer.write(b'\\xff\\x00'); sys.stderr.buffer.write(b'\\xfe\\x00')"
+    code = f"""
+import sys
+from unstd import proc
+try:
+    proc.run([sys.executable, '-c', {child!r}], timeout=5,
+             encoding='utf-8', errors='strict')
+except UnicodeDecodeError:
+    pass
+else:
+    raise AssertionError('strict invalid UTF-8 accepted')
+print('STRICT_DECODE_ERROR')
+"""
+    result = run_python(code, cwd=tmp_path, timeout=10)
+    assert result.returncode == 0, result.stderr
+    assert result.stdout == "STRICT_DECODE_ERROR\n"
 
 
 @pytest.mark.parametrize("status", [0, 11])

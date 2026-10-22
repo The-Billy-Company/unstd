@@ -244,17 +244,27 @@ def test_parse_keeps_odd_offsets_and_their_instant(raw: str, offset: timedelta) 
 def test_from_epoch_s_negative_and_limit_seconds(
     seconds: int, expected: datetime
 ) -> None:
+    try:
+        reference = datetime.fromtimestamp(seconds, UTC)
+    except (OSError, OverflowError, ValueError) as error:
+        expected_type, expected_args = type(error), error.args
+        with pytest.raises(expected_type) as actual:
+            timeutil.from_epoch_s(seconds)
+        assert type(actual.value) is expected_type
+        assert actual.value.args == expected_args
+        return
+    assert reference == expected
     assert timeutil.from_epoch_s(seconds) == expected
 
 
 @pytest.mark.parametrize("seconds", [253_402_300_800, -62_135_596_801])
 def test_from_epoch_s_beyond_the_calendar_raises(seconds: int) -> None:
-    with pytest.raises(ValueError, match=r"\byear\b") as reference:
+    with pytest.raises((OSError, OverflowError, ValueError)) as reference:
         datetime.fromtimestamp(seconds, UTC)
-    with pytest.raises(ValueError, match=r"\byear\b") as actual:
+    with pytest.raises(type(reference.value)) as actual:
         timeutil.from_epoch_s(seconds)
     assert type(actual.value) is type(reference.value)
-    assert str(actual.value) == str(reference.value)
+    assert actual.value.args == reference.value.args
 
 
 @pytest.mark.parametrize(
@@ -268,7 +278,21 @@ def test_from_epoch_s_beyond_the_calendar_raises(seconds: int) -> None:
 def test_from_epoch_uses_the_historical_zone_offset(
     seconds: int, offset: timedelta
 ) -> None:
+    try:
+        reference = datetime.fromtimestamp(seconds, KATHMANDU)
+    except (OSError, OverflowError, ValueError) as error:
+        expected_type, expected_args = type(error), error.args
+        with pytest.raises(expected_type) as actual_seconds:
+            timeutil.from_epoch_s(seconds, KATHMANDU)
+        assert type(actual_seconds.value) is expected_type
+        assert actual_seconds.value.args == expected_args
+        with pytest.raises(expected_type) as actual_millis:
+            timeutil.from_epoch_ms(seconds * 1000, KATHMANDU)
+        assert type(actual_millis.value) is expected_type
+        assert actual_millis.value.args == expected_args
+        return
     local = timeutil.from_epoch_s(seconds, KATHMANDU)
+    assert local == reference
     assert local.utcoffset() == offset
     assert local == datetime(1970, 1, 1, tzinfo=UTC) + timedelta(seconds=seconds)
     assert timeutil.from_epoch_ms(seconds * 1000, KATHMANDU).utcoffset() == offset

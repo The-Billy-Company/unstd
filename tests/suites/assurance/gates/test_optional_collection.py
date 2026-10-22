@@ -10,12 +10,25 @@ from tests.support.environment.process import run_python
 
 _PARTIAL = """
 from importlib import metadata
+from pathlib import Path
 import sys
+import tomllib
+from packaging.requirements import Requirement
 import pytest
 real = metadata.version
+extras = tomllib.loads(Path('pyproject.toml').read_text())['project']['optional-dependencies']
+available = {{}}
+for requirements in extras.values():
+    for text in requirements:
+        requirement = Requirement(text)
+        available[requirement.name] = next(
+            bound.version for bound in requirement.specifier if bound.operator == '>='
+        )
 def version(name):
     if name in {absent!r}:
         raise metadata.PackageNotFoundError(name)
+    if name in available:
+        return available[name]
     return real(name)
 metadata.version = version
 raise SystemExit(pytest.main([

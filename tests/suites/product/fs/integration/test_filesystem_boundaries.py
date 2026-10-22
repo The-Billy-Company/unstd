@@ -31,6 +31,10 @@ def test_scratch_collision_cannot_overwrite_existing_entry(
         occupied.mkdir()
     else:
         occupied.symlink_to(unrelated)
+    # Windows can reject an existing directory with PermissionError rather than
+    # FileExistsError. Observe the real exclusive-create contract independently.
+    with pytest.raises((FileExistsError, PermissionError)) as collision:
+        os.open(occupied, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
     tokens = iter(["occupied", "occupied", "available"])
     seen: list[str] = []
 
@@ -42,13 +46,26 @@ def test_scratch_collision_cannot_overwrite_existing_entry(
 
     with monkeypatch.context() as patch:
         patch.setattr(fs, "secrets", SimpleNamespace(token_hex=token_hex))
-        fs.atomic_write(dest, b"new complete version")
-    assert seen == ["occupied", "occupied", "available"]
-    assert dest.read_bytes() == b"new complete version"
+        if isinstance(collision.value, FileExistsError):
+            fs.atomic_write(dest, b"new complete version")
+            assert seen == ["occupied", "occupied", "available"]
+            assert dest.read_bytes() == b"new complete version"
+        else:
+            with pytest.raises(type(collision.value)) as rejected:
+                fs.atomic_write(dest, b"new complete version")
+            assert rejected.value.errno == collision.value.errno
+            assert getattr(rejected.value, "winerror", None) == getattr(
+                collision.value, "winerror", None
+            )
+            assert seen == ["occupied"]
+            assert dest.read_bytes() == b"old"
     assert unrelated.read_bytes() == b"protected unrelated contents"
     assert occupied.exists()
     if collision_kind == "file":
         assert occupied.read_bytes() == b"protected collision"
+    elif collision_kind == "directory":
+        assert occupied.is_dir()
+        assert list(occupied.iterdir()) == []
     elif collision_kind == "symlink":
         assert occupied.is_symlink()
         assert occupied.resolve() == unrelated

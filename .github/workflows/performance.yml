@@ -93,11 +93,14 @@ jobs:
       # The committed laptop snapshot has a different environment. Record the
       # old revision on THIS worker, then compare current against that file.
       # Both passes use exactly the current workload definitions and backends.
+      # An older revision cannot implement newly added APIs. Inventory its own
+      # exports, compare every shared workload, and report additions separately.
       - name: Freeze comparison revision on this worker
         env:
           PYTHONPATH: ${{ github.workspace }}/.local/performance/installed-before:${{ github.workspace }}
         run: >-
           .venv/bin/python -m bench.speeds freeze --rounds 9
+          --comparison-source .local/performance/source-before/src/unstd
           --baseline .local/performance/evidence/baseline.json
           --output .local/performance/evidence/before.json
       - name: Verify current revision against the frozen worker baseline
@@ -105,6 +108,7 @@ jobs:
           PYTHONPATH: ${{ github.workspace }}/.local/performance/installed-current:${{ github.workspace }}
         run: >-
           .venv/bin/python -m bench.speeds verify --rounds 9
+          --revision-baseline
           --baseline .local/performance/evidence/baseline.json
           --output .local/performance/evidence/current.json
       - name: Retain baseline, measurements and revision identities

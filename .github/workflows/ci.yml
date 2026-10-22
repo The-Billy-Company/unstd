@@ -54,6 +54,9 @@ jobs:
         run: |
           rustup toolchain install stable --profile minimal --component rustfmt
           rustup default stable
+      - name: Install both macOS architectures for universal Python
+        if: runner.os == 'macOS'
+        run: rustup target add aarch64-apple-darwin x86_64-apple-darwin
       - name: Check Rust formatting
         run: cargo fmt --manifest-path native/text/Cargo.toml --check
       - name: Check Rust kernels in debug mode
@@ -79,6 +82,7 @@ jobs:
           --junitxml=.local/native-rust.xml
       - name: Summarize Rust compatibility checks
         if: always() && steps.tests.outcome != 'skipped'
+        shell: bash
         env:
           TEST_EXIT: ${{ steps.tests.outcome == 'success' && '0' || '1' }}
         run: uv run --no-sync python -m tests.tooling.ci report "Rust text compatibility" .local/native-rust.xml --exit-code "$TEST_EXIT"
@@ -182,6 +186,11 @@ jobs:
       - name: Prime offline artifact build dependencies
         if: matrix.group.id == 'packaging'
         run: uv build --python ${{ matrix.environment.python }} --sdist --wheel --out-dir "$RUNNER_TEMP/unstd-build-cache"
+      - name: Prime canonical artifacts without replacing dependency floors
+        if: matrix.group.id == 'packaging' && matrix.environment.id == 'floors'
+        env:
+          UV_PROJECT_ENVIRONMENT: ${{ runner.temp }}/unstd-canonical-cache
+        run: uv sync --locked --all-extras --no-default-groups --no-install-project --python ${{ matrix.environment.python }}
       - name: Run ${{ matrix.group.name }}
         run: uv run --no-sync python -m tests.tooling.ci run ${{ matrix.group.id }} -- ${{ matrix.environment.pytest }} -q
       - name: Retain grouped test results
@@ -446,6 +455,7 @@ jobs:
           ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
           UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
           PYTHONMALLOC: malloc
+          UNSTD_NATIVE_SANITIZERS: "1"
         run: |
           LD_PRELOAD="$(gcc -print-file-name=libasan.so)"
           export LD_PRELOAD

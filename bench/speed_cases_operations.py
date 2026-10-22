@@ -95,7 +95,7 @@ def _clone_cases() -> list[Case]:
     ]
 
 
-def _text_cases() -> list[Case]:
+def _text_cases(*, comparison: bool = False) -> list[Case]:
     from unstd.text import fuzz
 
     names = ("cat", "dog", "bat", "x") * 8
@@ -125,17 +125,29 @@ def _text_cases() -> list[Case]:
             _near(8 / 13),
             "Pairwise similarity for kitten/sitting; both selected metrics give 8/13.",
         ),
-        Case(
-            "unstd.text.fuzz.indel_ratio",
-            partial(fuzz.indel_ratio, "kitten", "sitting"),
-            _near(8 / 13),
-            "Indel similarity for kitten/sitting; LCS has four characters.",
+        *(
+            [
+                Case(
+                    "unstd.text.fuzz.indel_ratio",
+                    partial(fuzz.indel_ratio, "kitten", "sitting"),
+                    _near(8 / 13),
+                    "Indel similarity for kitten/sitting; LCS has four characters.",
+                )
+            ]
+            if not comparison or hasattr(fuzz, "indel_ratio")
+            else []
         ),
-        Case(
-            "unstd.text.fuzz.difflib_ratio",
-            partial(fuzz.difflib_ratio, "kitten", "sitting"),
-            _near(8 / 13),
-            "SequenceMatcher similarity for kitten/sitting.",
+        *(
+            [
+                Case(
+                    "unstd.text.fuzz.difflib_ratio",
+                    partial(fuzz.difflib_ratio, "kitten", "sitting"),
+                    _near(8 / 13),
+                    "SequenceMatcher similarity for kitten/sitting.",
+                )
+            ]
+            if not comparison or hasattr(fuzz, "difflib_ratio")
+            else []
         ),
         Case(
             "unstd.text.fuzz.distance",
@@ -276,11 +288,14 @@ def _iterator_cases() -> list[Case]:
     ]
 
 
-def _regex_cases(stack: ExitStack) -> list[Case]:
+def _regex_cases(stack: ExitStack, *, comparison: bool = False) -> list[Case]:
     from unstd import rex
 
     # Restore private front caches so these fixtures do not change later tests.
-    for cache in (rex._cache, rex._faithful_cache, rex._linear_cache):
+    for name in ("_cache", "_faithful_cache", "_linear_cache"):
+        if comparison and not hasattr(rex, name):
+            continue
+        cache = getattr(rex, name)
         stack.callback(_restore_cache, cache, cache.copy())
 
     pattern = r"[a-z]+"
@@ -308,17 +323,29 @@ def _regex_cases(stack: ExitStack) -> list[Case]:
             compiled_check,
             "Warm-cache compilation of an ASCII character-class pattern.",
         ),
-        Case(
-            "unstd.rex.compile_faithful",
-            partial(rex.compile_faithful, pattern),
-            compiled_check,
-            "Warm-cache faithful compilation of an ASCII character-class pattern.",
+        *(
+            [
+                Case(
+                    "unstd.rex.compile_faithful",
+                    partial(rex.compile_faithful, pattern),
+                    compiled_check,
+                    "Warm-cache faithful compilation of an ASCII character-class pattern.",
+                )
+            ]
+            if not comparison or hasattr(rex, "compile_faithful")
+            else []
         ),
-        Case(
-            "unstd.rex.compile_linear",
-            partial(rex.compile_linear, pattern),
-            compiled_check,
-            "Warm-cache strict linear compilation of an ASCII character-class pattern.",
+        *(
+            [
+                Case(
+                    "unstd.rex.compile_linear",
+                    partial(rex.compile_linear, pattern),
+                    compiled_check,
+                    "Warm-cache strict linear compilation of an ASCII character-class pattern.",
+                )
+            ]
+            if not comparison or hasattr(rex, "compile_linear")
+            else []
         ),
         Case(
             "unstd.rex.escape",
@@ -528,13 +555,13 @@ def _process_cases() -> list[Case]:
     ]
 
 
-def cases(stack: ExitStack) -> list[Case]:
+def cases(stack: ExitStack, *, comparison: bool = False) -> list[Case]:
     """Build independent, bounded workloads and register owned fixture cleanup."""
     return [
         *_clone_cases(),
-        *_text_cases(),
+        *_text_cases(comparison=comparison),
         *_iterator_cases(),
-        *_regex_cases(stack),
+        *_regex_cases(stack, comparison=comparison),
         *_filesystem_cases(stack),
         *_process_cases(),
     ]

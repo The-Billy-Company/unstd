@@ -189,7 +189,7 @@ def test_real_file_handles_stay_open_for_their_owner(tmp_path: Path, mode):
     with path.open("w", encoding="utf-8") as stream:
         assert yaml.dump_all([{"name": "café"}, [1, 2]], stream) is None
         assert not stream.closed
-    with path.open(mode) as stream:
+    with path.open(mode, encoding=None if "b" in mode else "utf-8") as stream:
         documents = yaml.load_all(stream)
         assert next(documents) == {"name": "café"}
         assert next(documents) == [1, 2]

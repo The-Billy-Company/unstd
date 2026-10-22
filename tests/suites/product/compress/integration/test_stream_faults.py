@@ -167,9 +167,8 @@ def test_owned_write_faults_propagate_and_release_the_file(
     value = PAYLOAD.decode("latin-1") if text else PAYLOAD
 
     def scenario() -> None:
-        with gzipx.open(
-            path, "wt" if text else "wb", encoding="latin-1" if text else None
-        ) as handle:
+        options = {"encoding": "latin-1", "newline": ""} if text else {}
+        with gzipx.open(path, "wt" if text else "wb", **options) as handle:
             handle.write(value)
 
     scenario()

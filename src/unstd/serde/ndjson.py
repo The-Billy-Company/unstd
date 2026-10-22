@@ -112,12 +112,11 @@ def _encoder[T](codec: _Codec[T] | None) -> Callable[[T], bytes]:
     return lambda row: encode(row) + b"\n"
 
 
-def _write_all[T: (str, bytes)](
-    write: Callable[[T], object], data: T, *, require_count: bool
+def _write_remainder[T: (str, bytes)](
+    write: Callable[[T], object], data: T, written: object, *, require_count: bool
 ) -> None:
     """Finish a record before consuming another, without spinning on a full sink."""
     while data:
-        written = write(data)
         if written is None and not require_count:
             # Generic write-only sinks, including codecs.StreamWriter, may
             # acknowledge a successful whole write without returning a count.
@@ -129,6 +128,8 @@ def _write_all[T: (str, bytes)](
             msg = "NDJSON sink returned an invalid write count"
             raise OSError(msg)
         data = data[written:]
+        if data:
+            written = write(data)
 
 
 def dumps[T](rows: Iterable[T], *, codec: _Codec[T] | None = None) -> str:
@@ -293,12 +294,20 @@ def dump[T](
     if isinstance(fp, io.TextIOBase):
         write_text = fp.write
         for row in rows:
-            _write_all(write_text, encode(row).decode(), require_count=require_count)
+            data_text = encode(row).decode()
+            written = write_text(data_text)
+            if type(written) is not int or written != len(data_text):
+                _write_remainder(
+                    write_text, data_text, written, require_count=require_count
+                )
             n += 1
     else:
         write = fp.write
         for row in rows:
-            _write_all(write, encode(row), require_count=require_count)
+            data = encode(row)
+            written = write(data)
+            if type(written) is not int or written != len(data):
+                _write_remainder(write, data, written, require_count=require_count)
             n += 1
     return n
 

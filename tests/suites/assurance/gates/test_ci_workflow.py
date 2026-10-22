@@ -242,6 +242,22 @@ def test_floor_install_restores_canonical_lock_without_replacing_active_versions
         for index, step in enumerate(steps)
         if "tests.tooling.ci run " in step.get("run", "")
     )
+    prime = next(
+        step
+        for step in steps
+        if step.get("name")
+        == "Prime canonical artifacts without replacing dependency floors"
+    )
+    assert prime["if"] == (
+        "matrix.group.id == 'packaging' && matrix.environment.id == 'floors'"
+    )
+    assert prime["env"]["UV_PROJECT_ENVIRONMENT"].startswith("${{ runner.temp }}/")
+    assert {
+        "--locked",
+        "--all-extras",
+        "--no-default-groups",
+        "--no-install-project",
+    } <= set(shlex.split(prime["run"]))
 
     git, uv = shutil.which("git"), shutil.which("uv")
     assert git is not None, "floor workflow probe requires git"
@@ -356,6 +372,26 @@ def test_floor_install_restores_canonical_lock_without_replacing_active_versions
         if p.is_file() and not p.is_symlink()
     }
     execute(*command)
+    assert lock.read_bytes() == canonical
+    # Cache canonical consumers in another environment while retaining floors.
+    cache_environment = tmp_path / "canonical-cache"
+    environment["UV_PROJECT_ENVIRONMENT"] = str(cache_environment)
+    try:
+        execute(
+            uv,
+            "sync",
+            *options,
+            "--locked",
+            "--all-extras",
+            "--no-default-groups",
+            "--no-install-project",
+        )
+    finally:
+        environment.pop("UV_PROJECT_ENVIRONMENT")
+    cache_python = cache_environment / (
+        "Scripts/python.exe" if os.name == "nt" else "bin/python"
+    )
+    assert execute(str(cache_python), *probe[1:]).stdout.strip() == "2.0"
     assert lock.read_bytes() == canonical
     assert {
         p.relative_to(active): p.read_bytes()

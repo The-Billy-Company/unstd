@@ -202,6 +202,84 @@ def test_unfrozen_missing_and_stale_cases_are_errors(store: Path) -> None:
         speeds.regressions({"unstd.demo.added": _measurement()}, raw)
 
 
+def test_revision_comparison_reports_additions_without_changing_shared_ceilings(
+    store: Path,
+) -> None:
+    baseline = _freeze(store)
+    original = store.read_bytes()
+    added = _case("unstd.demo.added")
+    shared, additions = speeds.revision_cases([_case(), added], baseline)
+    assert [case.name for case in shared] == [_case().name]
+    assert additions == [added.name]
+    assert speeds.regressions({_case().name: _measurement(131)}, baseline) == [
+        _case().name
+    ]
+    assert store.read_bytes() == original
+    assert added.name not in baseline["cases"]
+
+
+def test_revision_comparison_rejects_removed_or_changed_workloads(store: Path) -> None:
+    baseline = _freeze(store)
+    with pytest.raises(speeds.RegistryError, match="stale="):
+        speeds.revision_cases([_case("unstd.demo.other")], baseline)
+    with pytest.raises(speeds.RegistryError, match="changed workloads"):
+        speeds.revision_cases([replace(_case(), note="changed")], baseline)
+
+
+def test_revision_environment_records_native_changes_but_requires_same_runtime() -> (
+    None
+):
+    before = {"python": "3.13", "native": {"clone": False}}
+    current = {"python": "3.13", "native": {"clone": True}}
+    assert not speeds.comparable_environment(before, current)
+    assert speeds.comparable_environment(before, current, revision=True)
+    assert not speeds.comparable_environment(
+        before, {**current, "python": "3.14"}, revision=True
+    )
+
+
+def test_revision_cli_audits_additions_and_keeps_shared_slowdowns(
+    store: Path, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    _freeze(store)
+    shared = _case()
+    added = _case("unstd.demo.added")
+
+    @contextmanager
+    def toy_registry() -> Iterator[list[speeds.Case]]:
+        yield [shared, added]
+
+    monkeypatch.setattr(speeds, "registry", toy_registry)
+    monkeypatch.setattr(speeds, "check_coverage", lambda cases: {})
+    monkeypatch.setattr(
+        speeds,
+        "measure",
+        lambda run, **kw: _measurement(1_000 if run is shared.run else 200),
+    )
+    output = tmp_path / "report.json"
+    assert (
+        speeds.main(
+            [
+                "verify",
+                "--revision-baseline",
+                "--baseline",
+                str(store),
+                "--output",
+                str(output),
+            ]
+        )
+        == 1
+    )
+    report = json.loads(output.read_text())
+    assert report["added"] == [added.name]
+    assert report["cases"][added.name]["ceiling_ns"] is None
+    assert report["failed"] == [_case().name]
+    assert report["cases"][_case().name]["ceiling_ns"] == 130
+    assert report["baseline_environment"] == {"python": "fixture"}
+    added = replace(added, run=lambda: None)
+    assert speeds.main(["verify", "--revision-baseline", "--baseline", str(store)]) == 2
+
+
 def test_changing_a_workload_cannot_reuse_its_old_speed(store: Path) -> None:
     raw = _freeze(store)
     changed = replace(_case(), note="different payload")

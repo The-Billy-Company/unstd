@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from collections import Counter
 from itertools import repeat
+import random
+import re
 from typing import Literal
 
 from hypothesis import given
@@ -107,10 +109,21 @@ def test_sample_is_a_sub_multiset_of_the_counted_population(
     pool = Counter(dict(zip(population, counts, strict=True)))
     k = data.draw(st.integers(0, pool.total()))
     subject, twin = _pair(seed, backend)
+    reference = random.Random(seed)  # noqa: S311 — seeded stdlib contract oracle
+    try:
+        expected = reference.sample(population, k, counts=counts)
+    except ValueError as error:
+        # Early Python 3.12 rejects a zero total even when k=0; later versions
+        # return []. Scalar sampling retains the running stdlib's contract.
+        for stream in (subject, twin):
+            with pytest.raises(type(error), match=f"^{re.escape(str(error))}$"):
+                stream.sample(population, k, counts=counts)
+        assert subject.random() == twin.random() == reference.random()
+        return
     picked = subject.sample(population, k, counts=counts)
     assert len(picked) == k
     assert not Counter(picked) - pool
-    assert picked == twin.sample(population, k, counts=counts)
+    assert picked == twin.sample(population, k, counts=counts) == expected
 
 
 @given(seed=seeds, items=st.lists(st.integers(0, 5), max_size=30))

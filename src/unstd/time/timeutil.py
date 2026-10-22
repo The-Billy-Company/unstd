@@ -221,13 +221,7 @@ def from_epoch_ms(ms: int, tz: tzinfo = UTC) -> datetime:
 # ── instant arithmetic ─────────────────────────────────────────────────────────
 
 
-def _instant(
-    value: str | datetime | None, assume_utc: bool
-) -> tuple[datetime, timedelta] | None:
-    if value is None:
-        return datetime.now(UTC).replace(tzinfo=None), timedelta()
-    if (dt := value if isinstance(value, datetime) else parse_iso(value)) is None:
-        return None
+def _instant(dt: datetime, assume_utc: bool) -> tuple[datetime, timedelta] | None:
     if (offset := dt.utcoffset()) is None and not assume_utc:
         return None
     return dt.replace(tzinfo=None), offset or timedelta()
@@ -254,13 +248,30 @@ def span(
         span(created_at, unit="days", assume_utc=True)  # age
         span(now, deadline, unit="minutes")  # time remaining
     """
-    a, b = _instant(start, assume_utc), _instant(end, assume_utc)
+    a = start if isinstance(start, datetime) else parse_iso(start)
+    b = (
+        datetime.now(UTC)
+        if end is None
+        else end
+        if isinstance(end, datetime)
+        else parse_iso(end)
+    )
     if a is None or b is None:
+        return None
+    if (
+        type(a) is datetime
+        and type(b) is datetime
+        and a.tzinfo is UTC
+        and b.tzinfo is UTC
+    ):
+        return (b - a).total_seconds() / _SECONDS[unit]
+    first, last = _instant(a, assume_utc), _instant(b, assume_utc)
+    if first is None or last is None:
         return None
     # Subtract wall fields and offsets separately: direct aware subtraction
     # ignores offsets for a shared tzinfo, while constructing UTC endpoints can
     # overflow at datetime.min/max even when the duration is representable.
-    return (b[0] - a[0] - b[1] + a[1]).total_seconds() / _SECONDS[unit]
+    return (last[0] - first[0] - last[1] + first[1]).total_seconds() / _SECONDS[unit]
 
 
 # ── protobuf Timestamp bridge (the `proto` extra) ──────────────────────────────

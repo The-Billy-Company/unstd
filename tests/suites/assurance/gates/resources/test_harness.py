@@ -76,7 +76,8 @@ def test_success_preserves_exact_result_backend_and_measured_evidence(backend):
         "address_space": sys.platform == "linux",
         "rss_watchdog": sys.platform == "darwin",
     }
-    assert 0 < report["cpu_seconds"] < report["wall_seconds"] < 15
+    # A tiny probe can finish within one process-clock tick on hosted workers.
+    assert 0 <= report["cpu_seconds"] < report["wall_seconds"] < 15
     assert report["peak_rss_bytes"] > 0
     assert report["traced_peak_bytes"] >= 256 * 1024
     assert 0 <= report["traced_current_bytes"] <= report["traced_peak_bytes"]

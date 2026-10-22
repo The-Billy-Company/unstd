@@ -34,7 +34,7 @@ def _instance(kind: type) -> Callable[[object], None]:
     return check
 
 
-def _serde_cases() -> list[Case]:
+def _serde_cases(*, comparison: bool = False) -> list[Case]:
     from unstd.serde import b64, jsonx, ndjson, structs
 
     rows = [{"id": n, "text": "café", "ok": True} for n in range(32)]
@@ -63,12 +63,13 @@ def _serde_cases() -> list[Case]:
         expect(canonical),
         "32 Unicode records; sorted ASCII format",
     )
-    add(
-        "jsonx.canonical_strict",
-        partial(jsonx.canonical_strict, rows),
-        expect(canonical),
-        "32 exact builtin Unicode records; validated sorted ASCII format",
-    )
+    if not comparison or hasattr(jsonx, "canonical_strict"):
+        add(
+            "jsonx.canonical_strict",
+            partial(jsonx.canonical_strict, rows),
+            expect(canonical),
+            "32 exact builtin Unicode records; validated sorted ASCII format",
+        )
 
     def json_dump() -> str:
         sink = io.StringIO()
@@ -226,7 +227,7 @@ def _serde_cases() -> list[Case]:
     return out
 
 
-def _pack_cases() -> list[Case]:
+def _pack_cases(*, comparison: bool = False) -> list[Case]:
     import numpy as np
 
     from unstd.pack import binpack
@@ -316,6 +317,7 @@ def _pack_cases() -> list[Case]:
     return [
         Case(f"unstd.pack.binpack.{name}", run, check, note)
         for name, run, check, note in specs
+        if not comparison or hasattr(binpack, name.split("#", 1)[0])
     ]
 
 
@@ -664,12 +666,12 @@ def _yaml_cases() -> list[Case]:
     ]
 
 
-def cases(stack: ExitStack) -> list[Case]:
+def cases(stack: ExitStack, *, comparison: bool = False) -> list[Case]:
     """Build bounded, reusable cases; no handles survive individual calls."""
     del stack  # All fixtures are in-memory and each measured stream closes itself.
     return [
-        *_serde_cases(),
-        *_pack_cases(),
+        *_serde_cases(comparison=comparison),
+        *_pack_cases(comparison=comparison),
         *_compress_cases(),
         *_audio_cases(),
         *_toml_cases(),

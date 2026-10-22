@@ -35,6 +35,7 @@ Path('should-never-complete').write_text('escaped timeout')
     code = f"""
 import os
 from pathlib import Path
+import subprocess
 import sys
 from unstd import proc
 argv = [sys.executable, '-c', {child!r}]
@@ -44,13 +45,24 @@ if api == 'run_ok':
     assert proc.run_ok(argv, timeout=1, log=events.append) is False
 else:
     try:
+        subprocess.run(argv, capture_output=True, text=True,
+                       encoding='utf-8', errors='replace', timeout=1)
+    except subprocess.TimeoutExpired as oracle:
+        expected_stdout, expected_stderr = oracle.stdout, oracle.stderr
+        assert expected_stdout in (
+            b'partial stdout\\x00\\xff\\n', 'partial stdout\\x00�\\n')
+        assert expected_stderr in (
+            b'partial stderr\\x00\\xfe\\n', 'partial stderr\\x00�\\n')
+    else:
+        raise AssertionError('stdlib blocking child escaped timeout')
+    try:
         getattr(proc, api)(argv, timeout=1, log=events.append)
     except proc.TimeoutExpired as error:
         assert error.timeout == 1
         assert tuple(error.cmd) == tuple(argv)
-        assert error.stdout == b'partial stdout\\x00\\xff\\n'
+        assert error.stdout == expected_stdout
         assert error.output == error.stdout
-        assert error.stderr == b'partial stderr\\x00\\xfe\\n'
+        assert error.stderr == expected_stderr
     else:
         raise AssertionError('blocking child escaped timeout')
 assert events == [], 'an incomplete run must not emit a completion record'
@@ -126,7 +138,10 @@ print('SIGNAL_STATUS_AND_REAP')
     assert result.stdout == "SIGNAL_STATUS_AND_REAP\n"
 
 
-def test_invalid_stdin_encoding_still_reaps_child(tmp_path: Path) -> None:
+@pytest.mark.skipif(
+    os.name != "posix", reason="POSIX communicate propagates strict encode errors"
+)
+def test_posix_invalid_stdin_encoding_still_reaps_child(tmp_path: Path) -> None:
     code = """
 import os
 import sys

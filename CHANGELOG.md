@@ -78,7 +78,7 @@ doc_radar:
   Decimal encoding bypasses `float_enc_hook`; `decimal_format` controls its wire
   type. Tests pin both string and numeric Decimal output with a hook installed.
 - Random bulk result annotations now support runtime type introspection with and
-  without NumPy.
+  without NumPy, including early Python 3.12 patch releases.
 - Public text and array-helper annotations now support `typing.get_type_hints`
   without optional backends; portable dtype signatures use plain strings.
 - Strengthen the required Ruff and mypy gates for production and benchmark code.
@@ -119,7 +119,8 @@ doc_radar:
   metadata. Coverage gates reject newly exported APIs without workloads or
   frozen entries. An opt-in performance suite and a revision-comparison workflow
   enforce speeds on compatible workers while keeping ordinary correctness tests
-  free of timing assertions.
+  free of timing assertions. Revision comparisons audit every shared workload
+  and report newly added APIs without inventing historical latency ceilings.
 - Benchmark calibration now confirms the iteration count with a second batch so
   one descheduled cheap call cannot make all later batches too small.
   Verification reports retain raw wall and thread-CPU samples for every

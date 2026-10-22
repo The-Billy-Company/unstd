@@ -3,12 +3,15 @@
 Oracle: integer microseconds since 1970-01-01T00:00Z, computed from each value's
 wall fields minus its own ``utcoffset()``, and UTC calendar fields rebuilt from
 that integer with ``date.fromordinal``. Neither path calls ``astimezone``, which
-the module itself uses.
+the module itself uses. Platform timestamp rejection is checked independently
+with ``datetime.fromtimestamp`` before asserting exact supported calendar values.
 """
 
 from __future__ import annotations
 
 from datetime import UTC, date, datetime, timedelta, timezone
+import re
+from typing import TYPE_CHECKING
 from unittest.mock import patch
 from zoneinfo import ZoneInfo
 
@@ -17,6 +20,10 @@ from hypothesis import strategies as st
 import pytest
 
 from unstd.time import timeutil
+
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 _EPOCH_ORDINAL = date(1970, 1, 1).toordinal()
@@ -71,6 +78,18 @@ def _utc_stamp(us: int) -> tuple[str, int]:
         f"{day.year:04d}-{day.month:02d}-{day.day:02d}T{hh:02d}:{mm:02d}:{ss:02d}",
         micro,
     )
+
+
+def _platform_supports_timestamp(
+    seconds: int, tz: ZoneInfo | timezone, operation: Callable[[], datetime]
+) -> bool:
+    try:
+        datetime.fromtimestamp(seconds, tz)
+    except (OSError, OverflowError, ValueError) as error:
+        with pytest.raises(type(error), match=f"^{re.escape(str(error))}$"):
+            operation()
+        return False
+    return True
 
 
 @given(aware)
@@ -129,6 +148,10 @@ def test_span_is_the_signed_instant_difference(a: datetime, b: datetime) -> None
 @example(_MS_MAX)
 @example(-1)
 def test_from_epoch_ms_is_exact_across_the_calendar(ms: int) -> None:
+    if not _platform_supports_timestamp(
+        ms // 1000, UTC, lambda: timeutil.from_epoch_ms(ms)
+    ):
+        return
     dt = timeutil.from_epoch_ms(ms)
     assert dt.tzinfo is UTC
     assert _epoch_us(dt) == ms * 1000
@@ -136,12 +159,18 @@ def test_from_epoch_ms_is_exact_across_the_calendar(ms: int) -> None:
 
 @given(st.integers(_MS_MIN + _DAY_US // 1000, _MS_MAX - _DAY_US // 1000), _zones)
 def test_from_epoch_ms_and_s_convert_into_any_zone(ms: int, tz: ZoneInfo) -> None:
-    dt = timeutil.from_epoch_ms(ms, tz)
-    assert dt.tzinfo is tz
-    assert _epoch_us(dt) == ms * 1000
-    whole = timeutil.from_epoch_s(ms // 1000, tz)
-    assert whole.tzinfo is tz
-    assert _epoch_us(whole) == ms // 1000 * _US
+    if _platform_supports_timestamp(
+        ms // 1000, UTC, lambda: timeutil.from_epoch_ms(ms, tz)
+    ):
+        dt = timeutil.from_epoch_ms(ms, tz)
+        assert dt.tzinfo is tz
+        assert _epoch_us(dt) == ms * 1000
+    if _platform_supports_timestamp(
+        ms // 1000, tz, lambda: timeutil.from_epoch_s(ms // 1000, tz)
+    ):
+        whole = timeutil.from_epoch_s(ms // 1000, tz)
+        assert whole.tzinfo is tz
+        assert _epoch_us(whole) == ms // 1000 * _US
 
 
 @given(st.integers(0, 2**63 - 1))

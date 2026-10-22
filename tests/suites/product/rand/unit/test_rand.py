@@ -17,7 +17,7 @@ import builtins
 import importlib.util
 import random
 import secrets
-from typing import TYPE_CHECKING, Literal, cast, get_type_hints
+from typing import TYPE_CHECKING, Literal, cast, get_args, get_type_hints
 
 import pytest
 
@@ -554,6 +554,13 @@ def test_rand_public_annotations_support_runtime_introspection() -> None:
         "choices",
     ):
         assert get_type_hints(getattr(rand.Generator, name))
+    for choices in (rand.choices, rand.Generator.choices):
+        (item_type,) = choices.__type_params__
+        hints = get_type_hints(choices)
+        assert get_args(hints["seq"]) == (item_type,)
+        assert hints["return"] == list[item_type]
+    (item_type,) = rand.Generator.choice.__type_params__
+    assert get_type_hints(rand.Generator.choice)["return"] is item_type
 
 
 def test_import_without_numpy_keeps_explicit_streams_and_annotations_usable(
@@ -578,6 +585,8 @@ def test_import_without_numpy_keeps_explicit_streams_and_annotations_usable(
     for name in ("floats", "ints", "choices", "seed"):
         assert get_type_hints(getattr(portable, name))
         assert get_type_hints(getattr(portable.Generator, name))
+    assert get_type_hints(portable.floats)["return"] == list[float]
+    assert get_type_hints(portable.ints)["return"] == list[int]
     with pytest.raises(ImportError, match="NumPy backend requires the rand extra"):
         portable.Generator(83, backend="numpy")
 

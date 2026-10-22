@@ -1,7 +1,7 @@
 """Bounded Python workers with explicit ownership and unconditional reaping.
 
-Workers inherit the selected interpreter, but import the checkout explicitly so
-temporary working directories cannot accidentally change the product under test.
+Workers inherit the selected interpreter and the parent's installed-or-source
+product choice, so temporary directories cannot change the product under test.
 Only fixture-owned children are launched; every caller supplies a wall deadline.
 """
 
@@ -9,7 +9,9 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 import errno
+from importlib.util import find_spec
 import os
+from pathlib import Path
 from queue import Queue
 import signal
 import subprocess
@@ -22,7 +24,6 @@ from tests.support.environment.anchors import REPO_ROOT
 
 if TYPE_CHECKING:
     from collections.abc import Iterator, Mapping, Sequence
-    from pathlib import Path
 
 
 _GROUP_EVIDENCE_LIMIT = 65536
@@ -88,8 +89,17 @@ def kill_owned_process_group(pgid: int) -> None:
 
 
 def python_argv(code: str, args: Sequence[str] = ()) -> list[str]:
-    """Build a worker command that imports this checkout from any directory."""
-    prelude = f"import sys; sys.path[:0] = [{str(REPO_ROOT / 'src')!r}, {str(REPO_ROOT)!r}];\n"
+    """Preserve the parent's product origin and repository support imports."""
+    paths = [str(REPO_ROOT)]
+    package = find_spec("unstd")
+    source = REPO_ROOT / "src"
+    if (
+        package is not None
+        and package.origin is not None
+        and Path(package.origin).resolve().is_relative_to(source.resolve())
+    ):
+        paths.insert(0, str(source))
+    prelude = f"import sys; sys.path[:0] = {paths!r};\n"
     if os.environ.get("UNSTD_CHAOS_BACKEND") == "stdlib":
         prelude += "from tests.support.chaos.journal import apply_backend_policy; apply_backend_policy();\n"
     return [sys.executable, "-u", "-c", prelude + code, *args]
@@ -107,9 +117,20 @@ def python_worker(
     owns_group = os.name == "posix" and os.environ.get("UNSTD_CHAOS_OWNED_GROUP") != "1"
     worker_env = dict(env) if env is not None else None
     if worker_env is not None:
-        # A scenario's explicit environment cannot discard its outer supervisor
-        # or import policy. Ordinary helper calls have neither private flag.
-        for name in ("UNSTD_CHAOS_BACKEND", "UNSTD_CHAOS_OWNED_GROUP"):
+        # Scenario environments retain explicitly armed campaign policy and
+        # sanitizer runtimes required by instrumented extension imports.
+        inherited = ["UNSTD_CHAOS_BACKEND", "UNSTD_CHAOS_OWNED_GROUP"]
+        if os.environ.get("UNSTD_NATIVE_SANITIZERS") == "1":
+            inherited.extend(
+                (
+                    "UNSTD_NATIVE_SANITIZERS",
+                    "LD_PRELOAD",
+                    "ASAN_OPTIONS",
+                    "UBSAN_OPTIONS",
+                    "PYTHONMALLOC",
+                )
+            )
+        for name in inherited:
             if name in os.environ:
                 worker_env[name] = os.environ[name]
     child = subprocess.Popen(  # noqa: S603 — explicit interpreter, argv, no shell

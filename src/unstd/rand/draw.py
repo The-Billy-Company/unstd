@@ -30,12 +30,9 @@ Generation" (2014). stdlib ``random`` — the Mersenne Twister (Matsumoto &
 Nishimura, 1998).
 """
 
-from __future__ import annotations
-
-from collections.abc import (  # noqa: TC003 — runtime type introspection
-    MutableSequence,
-    Sequence,
-)
+# Early Python 3.12 cannot resolve deferred function type parameters in
+# get_type_hints. Evaluate public annotations here; defer private NumPy types.
+from collections.abc import MutableSequence, Sequence
 from math import isfinite
 from operator import index
 import random as _random
@@ -138,7 +135,7 @@ def _size(n: int) -> int:
 
 def _floats(
     py: _random.Random,
-    gen: _np.random.Generator | None,
+    gen: "_np.random.Generator | None",
     n: int,
     low: float,
     high: float,
@@ -171,7 +168,7 @@ def floats(n: int, *, low: float = 0.0, high: float = 1.0) -> FloatArray:
 
 def _ints(
     py: _random.Random,
-    gen: _np.random.Generator | None,
+    gen: "_np.random.Generator | None",
     n: int,
     low: int,
     high: int,
@@ -200,7 +197,7 @@ def ints(n: int, low: int, high: int, *, endpoint: bool = False) -> IntArray:
 
 def _choices[T](
     py: _random.Random,
-    gen: _np.random.Generator | None,
+    gen: "_np.random.Generator | None",
     seq: Sequence[T],
     n: int,
     weights: Sequence[float] | None,

@@ -99,13 +99,15 @@ def _invalid(message: str) -> NoReturn:
 
 
 @contextmanager
-def registry(groups: Sequence[str] = ()) -> Iterator[list[Case]]:
+def registry(
+    groups: Sequence[str] = (), *, comparison: bool = False
+) -> Iterator[list[Case]]:
     """Prepare fixtures once and release them even after failed checks/timing."""
     with ExitStack() as stack:
         selected = []
         for provider in _PROVIDERS:
             module = importlib.import_module(f"bench.speed_cases_{provider}")
-            selected.extend(module.cases(stack))
+            selected.extend(module.cases(stack, comparison=comparison))
         validate_cases(selected)
         unknown = set(groups) - {case.package for case in selected}
         if unknown:
@@ -225,21 +227,23 @@ def public_apis(root: Path = ROOT / "src/unstd") -> set[str]:
     return names
 
 
-def check_coverage(cases: Sequence[Case]) -> dict[str, str]:
+def check_coverage(
+    cases: Sequence[Case], *, source: Path | None = None
+) -> dict[str, str]:
     """Fail when an API/package has no case or an exclusion becomes stale."""
     validate_cases(cases)
     exclusions: dict[str, str] = {}
     for provider in _PROVIDERS:
         module = importlib.import_module(f"bench.speed_cases_{provider}")
         exclusions.update(getattr(module, "EXCLUSIONS", {}))
-    apis = public_apis()
+    apis = public_apis() if source is None else public_apis(source)
     covered = {case.name.split("#", 1)[0] for case in cases}
     missing = apis - covered - exclusions.keys()
     stale = exclusions.keys() - apis
     dangling = covered - apis
     packages = {
         path.name
-        for path in (ROOT / "src/unstd").iterdir()
+        for path in (source or ROOT / "src/unstd").iterdir()
         if path.is_dir() and not path.name.startswith("_")
     }
     absent = packages - {case.package for case in cases}
@@ -417,6 +421,28 @@ def validate_baseline(
         raise RegistryError(msg)
 
 
+def revision_cases(
+    cases: Sequence[Case], baseline: dict[str, Any]
+) -> tuple[list[Case], list[str]]:
+    """Compare every baseline workload and report APIs absent from that revision."""
+    shared = [case for case in cases if case.name in baseline["cases"]]
+    validate_baseline(shared, baseline)
+    if not shared:
+        _invalid("revisions have no shared workloads")
+    added = sorted(case.name for case in cases if case.name not in baseline["cases"])
+    return shared, added
+
+
+def comparable_environment(
+    before: dict[str, Any], current: dict[str, Any], *, revision: bool = False
+) -> bool:
+    """Keep runtime checks strict while recording revision-owned native changes."""
+    ignored = {"native", "native_implementations"} if revision else set()
+    return {key: value for key, value in before.items() if key not in ignored} == {
+        key: value for key, value in current.items() if key not in ignored
+    }
+
+
 def audit(cases: Sequence[Case]) -> None:
     """Run independent correctness oracles before reporting any speed."""
     for case in cases:
@@ -549,6 +575,16 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--output", type=Path, help="retain measurements as JSON")
     parser.add_argument("--rounds", type=int, default=7)
     parser.add_argument(
+        "--comparison-source",
+        type=Path,
+        help="freeze an older revision using its src/unstd API inventory",
+    )
+    parser.add_argument(
+        "--revision-baseline",
+        action="store_true",
+        help="verify shared workloads and report newly added APIs/native routes",
+    )
+    parser.add_argument(
         "--tolerance",
         type=float,
         default=0.30,
@@ -561,8 +597,25 @@ def main(argv: list[str] | None = None) -> int:
     """Return 1 for speed regressions and 2 for missing/incomparable evidence."""
     args = _parser().parse_args(argv)
     try:
-        with registry() as all_cases:
-            exclusions = check_coverage(all_cases)
+        if args.comparison_source is not None and args.verb != "freeze":
+            _invalid("--comparison-source requires freeze")
+        if args.revision_baseline and args.verb != "verify":
+            _invalid("--revision-baseline requires verify")
+        if (
+            args.comparison_source is not None or args.revision_baseline
+        ) and args.group:
+            _invalid("revision comparisons require the complete registry")
+        prepared = (
+            registry(comparison=True)
+            if args.comparison_source is not None
+            else registry()
+        )
+        with prepared as all_cases:
+            exclusions = (
+                check_coverage(all_cases, source=args.comparison_source)
+                if args.comparison_source is not None
+                else check_coverage(all_cases)
+            )
             selected = [
                 case
                 for case in all_cases
@@ -586,31 +639,63 @@ def main(argv: list[str] | None = None) -> int:
                 )
                 return 0
             baseline = None
+            added: list[str] = []
+            comparable = selected
             if args.verb == "verify":
                 baseline = load_baseline(args.baseline)
-                validate_baseline(all_cases, baseline)
-                if baseline["environment"] != environment():
+                if args.revision_baseline:
+                    shared, added = revision_cases(all_cases, baseline)
+                    shared_names = {case.name for case in shared}
+                    comparable = [
+                        case for case in selected if case.name in shared_names
+                    ]
+                else:
+                    validate_baseline(all_cases, baseline)
+                if not comparable_environment(
+                    baseline["environment"],
+                    environment(),
+                    revision=args.revision_baseline,
+                ):
                     msg = "baseline environment differs; freeze a separate --baseline file on this worker before comparing revisions"
                     _invalid(msg)
             measured = timings(selected, rounds=args.rounds)
             attempts = {name: [result] for name, result in measured.items()}
             if args.verb == "verify":
                 assert baseline is not None
-                measured, attempts = recheck_regressions(
-                    selected, measured, baseline, rounds=args.rounds
+                checked, history = recheck_regressions(
+                    comparable,
+                    {case.name: measured[case.name] for case in comparable},
+                    baseline,
+                    rounds=args.rounds,
                 )
+                measured.update(checked)
+                attempts.update(history)
             if args.verb == "freeze":
                 baseline = freeze(
                     selected, measured, args.baseline, tolerance=args.tolerance
                 )
-            failed = regressions(measured, baseline) if baseline else []
+            failed = (
+                regressions(
+                    {case.name: measured[case.name] for case in comparable}, baseline
+                )
+                if baseline
+                else []
+            )
             rows = {}
             for case in selected:
                 result = measured[case.name]
                 ceiling = (
-                    baseline["cases"][case.name]["ceiling_ns"] if baseline else None
+                    baseline["cases"][case.name]["ceiling_ns"]
+                    if baseline and case.name in baseline["cases"]
+                    else None
                 )
-                verdict = "FAIL" if case.name in failed else "ok"
+                verdict = (
+                    "FAIL"
+                    if case.name in failed
+                    else "added"
+                    if case.name in added
+                    else "ok"
+                )
                 noise = " noisy" if result.spread > 0.25 else ""
                 print(f"{case.name:<54} {result.human():>11} {verdict}{noise}")
                 rows[case.name] = {
@@ -646,11 +731,17 @@ def main(argv: list[str] | None = None) -> int:
                     else None,
                     "cases": rows,
                     "failed": failed,
+                    "added": added,
+                    "baseline_environment": baseline["environment"]
+                    if baseline
+                    else None,
                 }
                 args.output.write_text(
                     json.dumps(report, indent=2) + "\n", encoding="utf-8"
                 )
-            print(f"{len(measured)} measured; {len(failed)} regressions")
+            print(
+                f"{len(measured)} measured; {len(added)} added; {len(failed)} regressions"
+            )
             return 1 if failed else 0
     except (RegistryError, ImportError, OSError) as error:
         print(f"speeds: {error}", file=sys.stderr)

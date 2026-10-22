@@ -6,7 +6,7 @@ from datetime import UTC, date, datetime
 from functools import partial
 import hashlib
 import ssl
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 from uuid import UUID
 
 from bench.speeds import Case, expect
@@ -24,9 +24,15 @@ EXCLUSIONS = {
 }
 
 
-def cases(stack: ExitStack) -> list[Case]:
+def cases(stack: ExitStack, *, comparison: bool = False) -> list[Case]:
     """Build bounded workloads and register restoration of mutable PRNG state."""
-    return [*_crypto(), *_random(stack), *_time(), *_identity(), *_types()]
+    return [
+        *_crypto(),
+        *_random(stack, comparison=comparison),
+        *_time(),
+        *_identity(),
+        *_types(),
+    ]
 
 
 def _crypto() -> list[Case]:
@@ -60,12 +66,16 @@ def _crypto() -> list[Case]:
     def updated_stream() -> digest.Stream:
         return digest.Stream().update(data)
 
+    # OpenSSL may load capath roots lazily during a handshake. Compare the
+    # initial store with the running stdlib instead of requiring eager roots.
+    default_roots = ssl.create_default_context().get_ca_certs(binary_form=True)
+
     def check_tls(value: Any) -> None:
         assert isinstance(value, ssl.SSLContext)
         assert value.check_hostname
         assert value.verify_mode == ssl.CERT_REQUIRED
         assert value.minimum_version == ssl.TLSVersion.TLSv1_3
-        assert value.cert_store_stats()["x509_ca"] > 0
+        assert value.get_ca_certs(binary_form=True) == default_roots
 
     return [
         Case(
@@ -179,7 +189,7 @@ def _crypto() -> list[Case]:
     ]
 
 
-def _random(stack: ExitStack) -> list[Case]:
+def _random(stack: ExitStack, *, comparison: bool = False) -> list[Case]:
     import numpy as np
 
     from unstd import rand
@@ -189,8 +199,10 @@ def _random(stack: ExitStack) -> list[Case]:
     stack.callback(draw._py.setstate, py_state)
     stack.callback(setattr, draw, "_gen", np_engine)
     rand.seed(173)
-    gen = rand.Generator(173)
-    numpy_gen = rand.Generator(173, backend="numpy")
+    has_generator = not comparison or hasattr(rand, "Generator")
+    gen = rand.Generator(173) if has_generator else None
+    numpy_gen = rand.Generator(173, backend="numpy") if has_generator else None
+    shuffle_gen = cast("rand.Generator", gen)
     population = tuple(range(32))
 
     def check_generator(value: Any) -> None:
@@ -238,7 +250,7 @@ def _random(stack: ExitStack) -> list[Case]:
 
     def shuffle_instance() -> list[int]:
         result = list(population)
-        gen.shuffle(result)
+        shuffle_gen.shuffle(result)
         return result
 
     def bytes_token(value: Any) -> None:
@@ -303,101 +315,111 @@ def _random(stack: ExitStack) -> list[Case]:
     ]
     instance_specs: list[
         tuple[str, Callable[[], object], Callable[[Any], None], str]
-    ] = [
-        (
-            "seed",
-            partial(gen.seed, 173),
-            expect(None),
-            "seed the independent stdlib engine with 173",
-        ),
-        ("random", gen.random, float_scalar, "one scalar stdlib draw"),
-        (
-            "randint",
-            partial(gen.randint, 0, 31),
-            int_scalar,
-            "one scalar stdlib integer",
-        ),
-        (
-            "uniform",
-            partial(gen.uniform, 0.0, 1.0),
-            float_scalar,
-            "one scalar stdlib uniform draw",
-        ),
-        (
-            "choice",
-            partial(gen.choice, population),
-            int_scalar,
-            "one stdlib choice from 32 integers",
-        ),
-        (
-            "shuffle",
-            shuffle_instance,
-            shuffled,
-            "copy and shuffle 32 integers using the independent engine",
-        ),
-        (
-            "sample",
-            partial(gen.sample, population, 8),
-            sample_array,
-            "8 distinct stdlib draws from 32 integers",
-        ),
-        (
-            "floats",
-            partial(gen.floats, 256),
-            float_array,
-            "256 floats from the independent stdlib engine",
-        ),
-        (
-            "ints",
-            partial(gen.ints, 256, 0, 32),
-            int_array,
-            "256 integers from the independent stdlib engine",
-        ),
-        (
-            "choices",
-            partial(gen.choices, population, 256),
-            choice_array,
-            "256 choices from the independent stdlib engine",
-        ),
-    ]
+    ] = (
+        [
+            (
+                "seed",
+                partial(gen.seed, 173),
+                expect(None),
+                "seed the independent stdlib engine with 173",
+            ),
+            ("random", gen.random, float_scalar, "one scalar stdlib draw"),
+            (
+                "randint",
+                partial(gen.randint, 0, 31),
+                int_scalar,
+                "one scalar stdlib integer",
+            ),
+            (
+                "uniform",
+                partial(gen.uniform, 0.0, 1.0),
+                float_scalar,
+                "one scalar stdlib uniform draw",
+            ),
+            (
+                "choice",
+                partial(gen.choice, population),
+                int_scalar,
+                "one stdlib choice from 32 integers",
+            ),
+            (
+                "shuffle",
+                shuffle_instance,
+                shuffled,
+                "copy and shuffle 32 integers using the independent engine",
+            ),
+            (
+                "sample",
+                partial(gen.sample, population, 8),
+                sample_array,
+                "8 distinct stdlib draws from 32 integers",
+            ),
+            (
+                "floats",
+                partial(gen.floats, 256),
+                float_array,
+                "256 floats from the independent stdlib engine",
+            ),
+            (
+                "ints",
+                partial(gen.ints, 256, 0, 32),
+                int_array,
+                "256 integers from the independent stdlib engine",
+            ),
+            (
+                "choices",
+                partial(gen.choices, population, 256),
+                choice_array,
+                "256 choices from the independent stdlib engine",
+            ),
+        ]
+        if gen is not None
+        else []
+    )
     return [
         *[
             Case(f"unstd.rand.{name}", run, check, note)
             for name, run, check, note in module_specs
         ],
-        Case(
-            "unstd.rand.Generator",
-            partial(rand.Generator, 173),
-            check_generator,
-            "construct an independent stdlib engine with seed 173",
-        ),
-        Case(
-            "unstd.rand.Generator.backend",
-            lambda: gen.backend,
-            expect("stdlib"),
-            "read the prepared generator's explicitly selected backend",
-        ),
-        *[
-            Case(f"unstd.rand.Generator.{name}", run, check, note)
-            for name, run, check, note in instance_specs
-        ],
-        Case(
-            "unstd.rand.Generator.floats#numpy",
-            partial(numpy_gen.floats, 256),
-            float_array,
-            "256 floats from an independent NumPy engine",
-        ),
-        Case(
-            "unstd.rand.Generator.ints#numpy",
-            partial(numpy_gen.ints, 256, 0, 32),
-            int_array,
-            "256 integers from an independent NumPy engine",
-        ),
-        Case(
-            "unstd.rand.Generator.choices#numpy",
-            partial(numpy_gen.choices, population, 256),
-            choice_array,
-            "256 choices from an independent NumPy engine",
+        *(
+            [
+                Case(
+                    "unstd.rand.Generator",
+                    partial(rand.Generator, 173),
+                    check_generator,
+                    "construct an independent stdlib engine with seed 173",
+                ),
+                Case(
+                    "unstd.rand.Generator.backend",
+                    lambda: gen.backend,
+                    expect("stdlib"),
+                    "read the prepared generator's explicitly selected backend",
+                ),
+                *[
+                    Case(f"unstd.rand.Generator.{name}", run, check, note)
+                    for name, run, check, note in instance_specs
+                ],
+                Case(
+                    "unstd.rand.Generator.floats#numpy",
+                    partial(numpy_gen.floats, 256),
+                    float_array,
+                    "256 floats from an independent NumPy engine",
+                ),
+                Case(
+                    "unstd.rand.Generator.ints#numpy",
+                    partial(numpy_gen.ints, 256, 0, 32),
+                    int_array,
+                    "256 integers from an independent NumPy engine",
+                ),
+                Case(
+                    "unstd.rand.Generator.choices#numpy",
+                    partial(numpy_gen.choices, population, 256),
+                    choice_array,
+                    "256 choices from an independent NumPy engine",
+                ),
+            ]
+            if gen is not None and numpy_gen is not None
+            else []
         ),
         Case(
             "unstd.rand.crypto.below",

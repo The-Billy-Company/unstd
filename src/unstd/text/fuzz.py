@@ -400,7 +400,9 @@ def best_match(
     With an explicit scorer, mappings supply their iterated keys, like other
     iterables; a NaN cutoff admits no choices.
     """
-    if _accelerated(scorer):
+    if _HAVE_RAPIDFUZZ and (
+        scorer is None or scorer is _rf.distance.Indel.normalized_similarity
+    ):
         hit = _rf.process.extractOne(
             query,
             choices if scorer is None else iter(choices),

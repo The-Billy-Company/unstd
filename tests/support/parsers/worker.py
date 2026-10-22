@@ -5,6 +5,7 @@ from __future__ import annotations
 import base64
 import importlib
 import json
+import os
 from pathlib import Path
 import re
 import sys
@@ -12,7 +13,6 @@ import sys
 
 MAX_INPUT = 2 * 1024 * 1024
 _SOURCE = Path(__file__).resolve().parents[3] / "src"
-sys.path.insert(0, str(_SOURCE))
 
 
 class _Observed:
@@ -41,15 +41,30 @@ def _emit(result):
     print(json.dumps(result))
 
 
-def main() -> None:
-    """Decode a test-owned envelope and execute exactly one public parser call."""
-    envelope = json.loads(sys.stdin.buffer.read(MAX_INPUT + 1))
+def _limits() -> None:
+    """Enforce CPU and memory budgets, accounting for ASan's shadow mapping."""
     if sys.platform == "linux":
         import resource
 
         # Limits run inside the new interpreter; preexec_fn is unsafe with threads.
         resource.setrlimit(resource.RLIMIT_CPU, (4, 4))
-        resource.setrlimit(resource.RLIMIT_AS, (512 * 1024**2, 512 * 1024**2))
+        if os.environ.get("UNSTD_NATIVE_SANITIZERS") == "1":
+            assert "libasan" in os.environ.get("LD_PRELOAD", ""), (
+                "ASan runtime required"
+            )
+            assert "hard_rss_limit_mb=512" in os.environ.get("ASAN_OPTIONS", "").split(
+                ":"
+            ), "ASan resident-memory budget required"
+        else:
+            resource.setrlimit(resource.RLIMIT_AS, (512 * 1024**2, 512 * 1024**2))
+
+
+def main() -> None:
+    """Decode a test-owned envelope and execute exactly one public parser call."""
+    envelope = json.loads(sys.stdin.buffer.read(MAX_INPUT + 1))
+    if envelope.get("source", True):
+        sys.path.insert(0, str(_SOURCE))
+    _limits()
     target = envelope["target"]
     raw = base64.b64decode(envelope["raw"], validate=True)
     if len(raw) > MAX_INPUT:

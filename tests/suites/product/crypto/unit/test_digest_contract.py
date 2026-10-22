@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from array import array
 import gc
+import hashlib
 import json
 from pathlib import Path
 import tracemalloc
@@ -160,10 +161,11 @@ class TestLegacyBlake2b:
 
     @pytest.mark.parametrize("width", [0, 65, -1])
     def test_width_outside_one_to_sixty_four_raises(self, width: int):
-        with pytest.raises(
-            ValueError, match=r"^digest_size must be between 1 and 64 bytes$"
-        ):
+        with pytest.raises(ValueError, match="digest_size") as reference:
+            hashlib.blake2b(b"abc", digest_size=width)
+        with pytest.raises(ValueError, match="digest_size") as actual:
             digest.legacy_blake2b(b"abc", width=width)
+        assert str(actual.value) == str(reference.value)
 
     def test_width_is_keyword_only(self):
         with pytest.raises(TypeError):

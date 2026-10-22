@@ -6,6 +6,7 @@ import copy
 import importlib
 import math
 from pathlib import Path
+import ssl
 from tempfile import TemporaryDirectory
 from typing import TYPE_CHECKING
 
@@ -90,6 +91,55 @@ def test_real_workload_oracles_survive_repeated_audits(
 ) -> None:
     speeds.audit(complete_cases)
     speeds.audit(complete_cases)
+
+
+def test_tls_workload_accepts_lazy_default_roots_and_rejects_insecure_policy(
+    all_backends: None, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    del all_backends
+    from bench import speed_cases_runtime
+
+    def lazy_context(*, cafile: str | None = None) -> ssl.SSLContext:
+        assert cafile is None
+        context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+        context.load_verify_locations(capath=str(tmp_path))
+        return context
+
+    monkeypatch.setattr(ssl, "create_default_context", lazy_context)
+    case = next(
+        case
+        for case in speed_cases_runtime._crypto()
+        if case.name == "unstd.crypto.tls.client_context"
+    )
+    context = case.run()
+    assert isinstance(context, ssl.SSLContext)
+    assert context.cert_store_stats()["x509_ca"] == 0
+    case.check(context)
+    context.check_hostname = False
+    with pytest.raises(AssertionError):
+        case.check(context)
+    context.check_hostname = True
+    context.minimum_version = ssl.TLSVersion.TLSv1_2
+    with pytest.raises(AssertionError):
+        case.check(context)
+    context.minimum_version = ssl.TLSVersion.TLSv1_3
+    context.check_hostname = False
+    context.verify_mode = ssl.CERT_NONE
+    with pytest.raises(AssertionError):
+        case.check(context)
+
+
+def test_only_comparison_registry_accepts_apis_missing_from_an_older_revision(
+    all_backends: None, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    del all_backends
+    from unstd.serde import jsonx
+
+    monkeypatch.delattr(jsonx, "canonical_strict")
+    with speeds.registry(comparison=True) as cases:
+        assert "unstd.serde.jsonx.canonical_strict" not in {case.name for case in cases}
+    with pytest.raises(AttributeError, match="canonical_strict"), speeds.registry():
+        pass
 
 
 def test_filesystem_workloads_reuse_bounded_private_storage(

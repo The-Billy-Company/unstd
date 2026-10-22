@@ -63,7 +63,7 @@ def test_short_writes_finish_the_record_before_consuming_the_next(
 
         codec = Codec(dict[str, str])
     path = tmp_path / "events.jsonl"
-    options = {} if binary else {"encoding": "utf-8"}
+    options = {} if binary else {"encoding": "utf-8", "newline": ""}
     with path.open("wb" if binary else "w", **options) as handle:
 
         class ShortBinary(io.RawIOBase):
@@ -95,7 +95,7 @@ def test_failure_after_a_partial_write_propagates_without_consuming_ahead(
     failure = OSError("sink disconnected")
     consumed = []
     path = tmp_path / "events.jsonl"
-    options = {} if binary else {"encoding": "utf-8"}
+    options = {} if binary else {"encoding": "utf-8", "newline": ""}
     with path.open("wb" if binary else "w", **options) as handle:
 
         def write(value):

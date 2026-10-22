@@ -126,7 +126,8 @@ def test_capture_strips_and_decodes_stdout() -> None:
 
 def test_capture_decodes_utf8() -> None:
     """Test capture decodes utf8."""
-    assert proc.capture(_py("print('café — 日本語')")) == "café — 日本語"
+    child = "import sys; sys.stdout.buffer.write('café — 日本語'.encode('utf-8'))"
+    assert proc.capture(_py(child)) == "café — 日本語"
 
 
 def test_capture_replaces_undecodable_bytes_without_raising() -> None:

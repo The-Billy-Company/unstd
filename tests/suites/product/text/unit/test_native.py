@@ -215,12 +215,17 @@ def test_foreign_values_defer_without_running_user_code(kernel) -> None:
         ("a" * 8192, "b" * 32769),
         ("".join(chr(i) for i in range(257)), "a" * 258),
     ],
+    ids=["pattern-length", "text-length", "word-work", "alphabet-size"],
 )
 def test_distance_resource_bounds_defer(a: str, b: str) -> None:
     assert native.distance(a, b) is NotImplemented
 
 
-@pytest.mark.parametrize(("a", "b"), [("a" * 65537, "b"), ("a" * 2048, "b" * 2049)])
+@pytest.mark.parametrize(
+    ("a", "b"),
+    [("a" * 65537, "b"), ("a" * 2048, "b" * 2049)],
+    ids=["text-length", "pair-work"],
+)
 def test_jaro_resource_bounds_defer(a: str, b: str) -> None:
     assert native.jaro(a, b) is NotImplemented
 

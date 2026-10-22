@@ -114,7 +114,7 @@ mod tests {
 
     #[test]
     fn adapter_preserves_each_unicode_storage_kind() {
-        let narrow = [b'a', b'b', b'c'];
+        let narrow = *b"abc";
         let wide = [u16::from(b'a'), 0xd800, u16::from(b'c')];
         let widest = [u32::from(b'a'), 0x1f600, u32::from(b'c')];
         let a = UnstdText {

@@ -80,11 +80,15 @@ The [performance workflow](../.github/workflows/performance.yml) automates this
 for pull requests and manual reference comparisons: it builds each revision's
 own wheel/native kernels, runs the current harness against both installations
 on one worker, and retains baseline, measurements and Git identities even on
-regression. It requires the comparison revision to implement the current workload
-surface; an absent function or native implementation fails explicitly. New API
-introductions need a comparison revision containing that API before a timing
-comparison can succeed. The local committed snapshot remains separate from
-ephemeral CI worker baselines.
+regression. The freeze pass uses `--comparison-source` with the older revision's
+source inventory; `--revision-baseline` checks every shared workload against its
+unchanged ceiling. New APIs still receive correctness checks and measurements;
+the report identifies them as additions with no fabricated comparison ceiling.
+Removed workloads, changed notes, coverage gaps and runtime errors still fail.
+The runtime and dependency environment must match; revision-owned native routes
+may change and both route inventories remain in the reports. Ordinary committed
+baseline verification retains strict API and native-environment equality. The
+local committed snapshot remains separate from ephemeral CI worker baselines.
 
 For the random-workload investigation, use an alternating paired diagnosis:
 

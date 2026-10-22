@@ -16,6 +16,20 @@ import pytest
 from unstd.time import timeutil
 
 
+def _platform_admits_milliseconds(ms: int, tz: timezone = UTC) -> bool:
+    """Retain the host timestamp boundary while checking exact admitted values."""
+    try:
+        datetime.fromtimestamp(ms // 1000, UTC)
+    except (OSError, OverflowError, ValueError) as error:
+        expected_type, expected_args = type(error), error.args
+        with pytest.raises(expected_type) as actual:
+            timeutil.from_epoch_ms(ms, tz)
+        assert type(actual.value) is expected_type
+        assert actual.value.args == expected_args
+        return False
+    return True
+
+
 @pytest.mark.parametrize(
     ("ms", "expected"),
     [
@@ -48,6 +62,8 @@ from unstd.time import timeutil
     ],
 )
 def test_from_epoch_ms_is_exact(ms: int, expected: datetime) -> None:
+    if not _platform_admits_milliseconds(ms):
+        return
     result = timeutil.from_epoch_ms(ms)
     assert result == expected
     assert result.microsecond == expected.microsecond
@@ -56,9 +72,10 @@ def test_from_epoch_ms_is_exact(ms: int, expected: datetime) -> None:
 
 def test_exact_milliseconds_survive_zone_conversion() -> None:
     plus_one = timezone(timedelta(hours=1))
-    assert timeutil.from_epoch_ms(253_402_297_199_999, plus_one) == datetime(
-        9999, 12, 31, 23, 59, 59, 999_000, tzinfo=plus_one
-    )
+    if _platform_admits_milliseconds(253_402_297_199_999, plus_one):
+        assert timeutil.from_epoch_ms(253_402_297_199_999, plus_one) == datetime(
+            9999, 12, 31, 23, 59, 59, 999_000, tzinfo=plus_one
+        )
     # 2026-11-01T06:45:00.007Z is the repeated 01:45 in New York, second pass.
     repeated = timeutil.from_epoch_ms(1_793_515_500_007, ZoneInfo("America/New_York"))
     assert (repeated.hour, repeated.minute, repeated.microsecond) == (1, 45, 7_000)
@@ -104,10 +121,10 @@ def test_integer_subclass_keeps_its_divmod_contract() -> None:
 
 
 @pytest.mark.parametrize("ms", [253_402_300_800_000, -62_135_596_800_001])
-def test_out_of_range_still_raises_value_error(ms: int) -> None:
-    with pytest.raises(ValueError, match=r"\byear\b") as reference:
+def test_out_of_range_preserves_the_platform_exception(ms: int) -> None:
+    with pytest.raises((OSError, OverflowError, ValueError)) as reference:
         datetime.fromtimestamp(ms // 1000, UTC)
-    with pytest.raises(ValueError, match=r"\byear\b") as actual:
+    with pytest.raises(type(reference.value)) as actual:
         timeutil.from_epoch_ms(ms)
     assert type(actual.value) is type(reference.value)
-    assert str(actual.value) == str(reference.value)
+    assert actual.value.args == reference.value.args
