@@ -48,7 +48,7 @@ import math
 import os
 import subprocess
 import time
-from typing import TYPE_CHECKING, TypedDict, Unpack
+from typing import TYPE_CHECKING, TypedDict, Unpack, override
 
 
 if TYPE_CHECKING:
@@ -114,6 +114,7 @@ class ProcessError(subprocess.CalledProcessError):
         )
         self.result = result
 
+    @override
     def __str__(self) -> str:
         """The stdlib message, followed by the child's stderr."""
         base = super().__str__()

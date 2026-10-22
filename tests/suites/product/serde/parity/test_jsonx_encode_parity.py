@@ -106,7 +106,7 @@ def test_indent_and_separator_combinations(
         -float("inf"),
     ],
 )
-def test_number_text_is_identical(value: int | float) -> None:
+def test_number_text_is_identical(value: float) -> None:
     assert jsonx.dumps([value]) == json.dumps([value])
     assert jsonx.dumps([value], separators=(",", ":")) == json.dumps(
         [value], separators=(",", ":")

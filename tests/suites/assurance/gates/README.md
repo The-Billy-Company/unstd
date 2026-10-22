@@ -20,3 +20,11 @@ Tests directly in this directory verify the inventory/runner, CI groups and
 workflow, required-extra behavior, and optional benchmark collection. From the
 repository root, run `uv run --no-sync python -m tests.tooling run gates -- -q`.
 The normal run includes these gates but excludes the `perf` calibration tests.
+
+`test_typing.py` runs the real mypy and Ruff policies against independently
+seeded valid and invalid source. It checks missing annotations and imports,
+stub annotations, specific suppression codes, unsafe overrides, dynamic
+decorator signatures, uninitialized values, incomplete matches, deprecated
+calls, unused awaitables, iterable truthiness, strict bytes, and strict
+`None` comparisons. Tests skip individually when their development analyzer
+is unavailable; the main CI environments install `dev` and run every control.

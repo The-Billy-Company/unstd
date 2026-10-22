@@ -354,6 +354,8 @@ def _measure(
 
 
 def _load_average() -> tuple[float, float, float] | None:
+    if sys.platform == "win32":
+        return None
     try:
         return os.getloadavg()
     except (AttributeError, OSError):

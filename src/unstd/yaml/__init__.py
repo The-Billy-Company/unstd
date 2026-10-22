@@ -13,7 +13,7 @@ from collections.abc import Hashable, MutableSet
 from contextlib import closing
 from datetime import date, datetime
 import io
-from typing import IO, TYPE_CHECKING, TypeGuard
+from typing import IO, TYPE_CHECKING, TypeGuard, override
 
 from unstd._extra import missing
 
@@ -29,6 +29,8 @@ if TYPE_CHECKING:
     )
     from ruamel.yaml.error import YAMLError
     from ruamel.yaml.nodes import MappingNode, Node
+
+    _HAVE_YAML = True
 else:
     try:
         from ruamel.yaml import YAML as _YAML
@@ -41,6 +43,9 @@ else:
     except ImportError:
         _YAML = None
         YAMLError = ValueError
+        _HAVE_YAML = False
+    else:
+        _HAVE_YAML = True
 
 
 type YamlScalar = str | int | float | bool | bytes | date | datetime | None
@@ -65,13 +70,14 @@ __all__ = [
     "parse",
 ]
 
-if _YAML is not None:
+if _HAVE_YAML:
 
     class _SafeConstructor(SafeConstructor):
         """Validate source keys before merging disables backend duplicate checks."""
 
         _merge_source = False
 
+        @override
         def flatten_mapping(self, node: MappingNode) -> None:
             """Keep explicit duplicates distinct from permitted merge overrides."""
             if node.merge is None and (
@@ -114,6 +120,7 @@ if _YAML is not None:
     class _Constructor(RoundTripConstructor):
         """An editable constructor that refuses unresolved recursive aliases."""
 
+        @override
         def construct_object(self, node: Node, deep: bool = False) -> object:
             """Refuse the backend's unresolved ``None`` placeholder before data loss."""
             if node not in self.constructed_objects and node in self.recursive_objects:
@@ -138,7 +145,7 @@ if _YAML is not None:
 
 def _engine(*, editable: bool = False) -> _YAML:
     """A private parser/emitter session with fixed safe semantics."""
-    if _YAML is None:
+    if not _HAVE_YAML:
         missing("yaml", "yaml")()
     engine = _YAML(typ="rt" if editable else "safe", pure=True)
     engine.Constructor = _Constructor if editable else _SafeConstructor

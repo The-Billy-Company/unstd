@@ -64,7 +64,7 @@ class Case:
     large: bool = False
 
 
-def _same(actual: Any, expected: int | float) -> bool:
+def _same(actual: Any, expected: float) -> bool:
     """Require exact scalar types and bit-identical floating-point results."""
     if type(actual) is not type(expected):
         return False
@@ -423,6 +423,9 @@ def _compiler(program: str) -> str | None:
 
 def _rss_bytes() -> int:
     # resource is intentionally imported only for this optional POSIX probe.
+    if sys.platform == "win32":
+        msg = "peak RSS probes require POSIX resource support"
+        raise NotImplementedError(msg)
     import resource
 
     peak = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss

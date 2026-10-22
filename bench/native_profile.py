@@ -36,6 +36,7 @@ else:
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator
+    from types import ModuleType
 
 
 _SOURCE_FILES = ("clone/structural.py", "text/fuzz.py")
@@ -330,7 +331,9 @@ def _assert_native_execution(profile: dict[str, Any]) -> dict[str, int]:
 
 
 @contextmanager
-def _native_results(clone: Any, fuzz: Any) -> Iterator[dict[str, list[bool]]]:
+def _native_results(
+    clone: ModuleType, fuzz: ModuleType
+) -> Iterator[dict[str, list[bool]]]:
     """Observe actual native returns only during untimed route profiling."""
     outcomes: dict[str, list[bool]] = {}
     saved = []

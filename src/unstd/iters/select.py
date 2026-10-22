@@ -16,7 +16,7 @@ from collections import deque
 from collections.abc import Iterable, Reversible
 from enum import Enum
 from itertools import count, islice
-from typing import cast, overload
+from typing import cast, overload, override
 
 
 __all__ = ["first", "ilen", "last", "nth", "take"]
@@ -31,6 +31,7 @@ class _Missing(Enum):
 
     TOKEN = 0
 
+    @override
     def __repr__(self) -> str:
         return "<no default>"
 

@@ -107,6 +107,18 @@ obligations. Inspect implemented and planned lanes with
 `uv run --no-sync python -m tests.tooling list`; run the active suite with
 `uv run --no-sync pytest -q`.
 
+The quality gate runs `uv run --no-sync ruff check .`,
+`uv run --no-sync ruff format --check .`, and `uv run --no-sync mypy`.
+CI checks Python 3.12–3.14 type contracts for Linux, macOS, and Windows.
+Production and benchmark code require complete annotations; mypy also rejects
+missing type information, unsafe overrides, unused awaitables, possibly
+uninitialized values, and incomplete pattern matches. Development stubs cover
+protobuf and sorted containers without adding runtime dependencies. Compatible
+exceptions for dynamic stdlib APIs, private regex internals, and deliberately
+invalid test inputs are documented in `pyproject.toml`. The
+[typing gate tests](tests/suites/assurance/gates/test_typing.py)
+verify that the actual analyzers accept valid code and reject seeded mistakes.
+
 The [fuzz runner](tests/tooling/fuzz/README.md) supplies eleven parser/token
 targets, authenticated corpora, deterministic mutation, and bounded Atheris
 campaigns. Run `uv run --no-sync python -m tests.tooling.fuzz check` to validate

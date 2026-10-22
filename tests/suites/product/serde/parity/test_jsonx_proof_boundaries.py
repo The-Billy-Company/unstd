@@ -17,7 +17,7 @@ from unstd.serde._json_encode import _UNSAFE, _snapshot
 @pytest.mark.parametrize("container", [list, tuple])
 @pytest.mark.parametrize("size", [8, 32, 63])
 def test_integer_snapshot_is_independent_and_consumes_every_node(
-    container: type[list[Any]] | type[tuple[Any, ...]], size: int
+    container: type[list[Any] | tuple[Any, ...]], size: int
 ) -> None:
     original = list(range(size))
     remaining = [64]

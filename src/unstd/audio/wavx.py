@@ -40,7 +40,7 @@ from collections.abc import Callable, Iterator, Sequence
 import contextlib
 import struct
 import sys
-from typing import IO, TYPE_CHECKING, Protocol, cast
+from typing import IO, TYPE_CHECKING, Protocol, Self, cast
 import wave
 
 
@@ -53,7 +53,7 @@ if TYPE_CHECKING:
 
         def write(self, data: NDArray[_np.generic]) -> None: ...
         def close(self) -> None: ...
-        def __enter__(self) -> _SoundFileHandle: ...
+        def __enter__(self) -> Self: ...
         def __exit__(self, *exc: object) -> None: ...
 
     class _Soundfile(Protocol):
@@ -356,7 +356,7 @@ class Writer:
         elif self._wave is not None:
             self._wave.close()
 
-    def __enter__(self) -> Writer:
+    def __enter__(self) -> Self:
         """Enter the writer's context, returning self."""
         return self
 

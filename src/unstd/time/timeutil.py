@@ -34,7 +34,7 @@ from __future__ import annotations
 from datetime import UTC, date, datetime, timedelta, tzinfo
 from functools import cache, partial
 import time as _time
-from typing import TYPE_CHECKING, Literal, cast
+from typing import TYPE_CHECKING, Literal
 from zoneinfo import ZoneInfo
 
 
@@ -262,9 +262,7 @@ def _timestamp() -> type[Timestamp]:
         from google.protobuf.timestamp_pb2 import Timestamp
     except ImportError as exc:
         raise ImportError(_PROTO_HINT) from exc
-    # protobuf's generated modules carry no stubs, so the imported symbol lands
-    # as `Any` and the declared return type would be silently unenforced.
-    return cast("type[Timestamp]", Timestamp)
+    return Timestamp
 
 
 def proto_timestamp(value: str | datetime | None) -> Timestamp | None:
@@ -280,11 +278,12 @@ def proto_timestamp(value: str | datetime | None) -> Timestamp | None:
     if not value:
         return None
     if isinstance(value, datetime):
-        dt: datetime | None = (
-            value.astimezone(UTC) if value.tzinfo else value.replace(tzinfo=UTC)
-        )
-    elif (dt := parse_utc(value.strip())) is None:
-        return None
+        dt = value.astimezone(UTC) if value.tzinfo else value.replace(tzinfo=UTC)
+    else:
+        parsed = parse_utc(value.strip())
+        if parsed is None:
+            return None
+        dt = parsed
     (ts := timestamp()).FromDatetime(dt)
     return ts
 

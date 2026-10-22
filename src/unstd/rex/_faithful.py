@@ -15,7 +15,7 @@ import re._compiler as _compiler
 import re._constants as op
 import re._parser as _parser
 import sys
-from typing import TYPE_CHECKING, Any, NoReturn
+from typing import TYPE_CHECKING, Any, NoReturn, override
 import warnings
 
 
@@ -390,7 +390,7 @@ class _LinearPattern[AnyStr: (str, bytes)]:
         def replace(match: re.Match[AnyStr] | NativeMatch) -> AnyStr:
             nonlocal started
             started = True
-            value = repl(match)
+            value: AnyStr | None = repl(match)
             return self._python.pattern[:0] if value is None else value
 
         try:
@@ -427,6 +427,7 @@ class _StrictLinearPattern[AnyStr: (str, bytes)](_LinearPattern[AnyStr]):
 
     __slots__ = ()
 
+    @override
     def __getattr__(self, name: str) -> Any:
         """Expose metadata without borrowing Python's ancillary matching methods."""
         if name in ("pattern", "flags", "groups", "groupindex"):
@@ -441,6 +442,7 @@ class _StrictLinearPattern[AnyStr: (str, bytes)](_LinearPattern[AnyStr]):
         """Whether Python's Unicode rules restrict this pattern to ASCII subjects."""
         return self._ascii
 
+    @override
     def _needs_python(self, string: AnyStr) -> bool:
         """Refuse subjects that would otherwise select Python's matching engine."""
         needs_python = (
@@ -474,6 +476,7 @@ class _StrictLinearPattern[AnyStr: (str, bytes)](_LinearPattern[AnyStr]):
             match.groups()
             match.span()
 
+    @override
     def _call(self, name: str, *args: Any) -> Any:
         if name not in ("search", "match", "fullmatch"):
             self._unsupported(name)
@@ -498,22 +501,26 @@ class _StrictLinearPattern[AnyStr: (str, bytes)](_LinearPattern[AnyStr]):
         )
         raise LinearRegexError(msg)
 
+    @override
     def finditer(
         self, string: AnyStr, pos: int = 0, endpos: int | None = None
     ) -> Iterator[re.Match[AnyStr] | NativeMatch]:
         """Refuse iteration because repeated native searches can rescan suffixes."""
         self._unsupported("finditer")
 
+    @override
     def findall(
         self, string: AnyStr, pos: int = 0, endpos: int | None = None
     ) -> list[AnyStr | tuple[AnyStr, ...]]:
         """Refuse materialized iteration because total work can be quadratic."""
         self._unsupported("findall")
 
+    @override
     def split(self, string: AnyStr, maxsplit: int = 0) -> list[AnyStr | None]:
         """Refuse splitting because native match iteration can be quadratic."""
         self._unsupported("split")
 
+    @override
     def subn(
         self,
         repl: AnyStr | Callable[[re.Match[AnyStr] | NativeMatch], AnyStr],
@@ -523,6 +530,7 @@ class _StrictLinearPattern[AnyStr: (str, bytes)](_LinearPattern[AnyStr]):
         """Refuse substitution before any matching or replacement callback."""
         self._unsupported("subn")
 
+    @override
     def sub(
         self,
         repl: AnyStr | Callable[[re.Match[AnyStr] | NativeMatch], AnyStr],

@@ -139,13 +139,15 @@ release = [
 dev = [
   "pytest>=8.0",
   "hypothesis>=6.100",
-  "mypy>=1.15",
-  "ruff>=0.9",
+  "mypy>=2.4",
+  "ruff>=0.16.10",
   # Only the TLS policy tests need it, and only to mint a throwaway self-signed
   # certificate: `load_cert_chain` is the behavior under test, so there is no
   # faking it. Without this the mTLS and pinned-root cases skip rather than fail,
   # which is the quiet way a security test stops being one.
   "cryptography>=44.0",
+  "types-protobuf>=7.35.1.20260906",
+  "sortedcontainers-stubs>=2.4.3",
 ]
 fuzz = [
   # A tested development engine/protocol, kept outside the runtime closure.
@@ -222,6 +224,11 @@ select = [
   "EM",
   "N",
   "D",
+  "ANN",
+  "PYI",
+  "FA",
+  "PGH",
+  "PLC0131",
 ]
 # D401 (imperative mood) is deselected deliberately, not to go green. It suits
 # commands; this package's voice names what a pure accessor *returns* as a noun
@@ -237,7 +244,21 @@ select = [
 # uses typographic characters (· × —) as prose in strings, docstrings and
 # comments alike. `×` in "5.9× faster" is a multiplication sign because that is
 # what it means; there is nothing ambiguous to resolve.
-ignore = ["E501", "D203", "D213", "D401", "RUF001", "RUF002", "RUF003"]
+# ANN401 — the JSON, clone and backend-faithful APIs deliberately accept and
+# return arbitrary values. Their existing Any annotations describe that dynamic
+# boundary; missing annotations remain errors in production and benchmark code.
+# PYI021 — module docstrings document native extension stubs and satisfy D100.
+ignore = [
+  "E501",
+  "D203",
+  "D213",
+  "D401",
+  "RUF001",
+  "RUF002",
+  "RUF003",
+  "ANN401",
+  "PYI021",
+]
 
 [tool.ruff.lint.pydocstyle]
 convention = "pep257"
@@ -254,6 +275,11 @@ lines-after-imports = 2
 # D205 too: a test docstring is one law sentence that happens to wrap past a
 # line, not a summary followed by a description, so there is no blank line to
 # insert without splitting the sentence. It stays enforced on `src`, which ships.
+# ANN — tests deliberately pass invalid inputs and replace modules/functions
+# with small fixture doubles. Production and benchmark signatures are checked;
+# test signatures do not claim the stricter runtime contracts they challenge.
+# PYI024 — namedtuple fixtures exercise the stdlib type itself, including its
+# construction and copy/serialization behavior.
 "tests/**" = [
   "S101",
   "D101",
@@ -263,13 +289,23 @@ lines-after-imports = 2
   "D106",
   "D107",
   "D205",
+  "ANN001",
+  "ANN002",
+  "ANN003",
+  "ANN201",
+  "ANN202",
+  "ANN204",
+  "ANN205",
+  "ANN206",
+  "PYI024",
 ]
 # Benchmarks print their measurements; that is their entire output contract
 # (T201), and they seed `random.Random` to build deterministic payloads, which is
 # the opposite of a cryptographic use (S311). D102 covers one-line properties
 # (`per_op_us`, `ratio`, `skipped`) whose names already say everything a docstring
 # would; the ones carrying a real invariant have one anyway.
-"bench/**" = ["S101", "D102", "D103", "S311", "T201"]
+# PYI024 preserves the stdlib namedtuple fixture being measured.
+"bench/**" = ["S101", "D102", "D103", "S311", "T201", "PYI024"]
 # FURB167 rewrites `re.S` → `re.DOTALL`. `rex` MUST re-export stdlib's full flag
 # vocabulary — short aliases included — or it is not a drop-in `re` surface, so
 # the finding is wrong here on its own terms. It is also actively destructive:
@@ -293,10 +329,23 @@ python_version = "3.12"
 # regression as a measurement.
 files = ["src/unstd", "bench"]
 strict = true
-# Several backends (irregex, pybase64, soundfile, immutables, tomlkit) ship
-# no stubs. Their surfaces are exercised behind guarded imports and pinned by
-# the suite; typing the shim against them is not the gate's job.
-ignore_missing_imports = true
+# JSON values, cloning hooks, and regex forwarding retain explicit Any where
+# their stdlib contracts are dynamic. Banning every Any expression/annotation
+# would misdescribe those APIs; imported and decorated Any leaks are checked.
+# Keep these explicit rather than inheriting permissive version defaults.
+# Missing third-party types are supplied by the development stub dependencies;
+# an unknown import must never silently turn a public contract into Any.
+ignore_missing_imports = false
+disallow_any_unimported = true
+disallow_any_decorated = true
+disallow_untyped_globals = true
+local_partial_types = true
+implicit_optional = false
+strict_optional = true
+strict_bytes = true
+strict_equality_for_none = true
+warn_incomplete_stub = true
+warn_unused_configs = true
 # `warn_unreachable` and `redundant-expr` are deliberately NOT enabled. Both are
 # structurally incompatible with this package's central idiom: a backend is
 # imported for real under `if TYPE_CHECKING:` and guarded by try/except at
@@ -305,5 +354,29 @@ ignore_missing_imports = true
 # suppressing the fallback contract the library is built on, one `type: ignore`
 # at a time. mypy's numeric promotion (`int` satisfies `float`) makes
 # `redundant-expr` misread the sample-coercion isinstance checks the same way.
-enable_error_code = ["truthy-bool", "ignore-without-code"]
+enable_error_code = [
+  "truthy-bool",
+  "truthy-iterable",
+  "ignore-without-code",
+  "redundant-self",
+  "unused-awaitable",
+  "possibly-undefined",
+  "explicit-override",
+  "mutable-override",
+  "unimported-reveal",
+  "exhaustive-match",
+  "deprecated",
+]
 
+[[tool.mypy.overrides]]
+# CPython's private regex compiler/parser expose no installed stubs. These
+# implementation details stay behind the typed public regex facade; other
+# missing imports, including misspelled project imports, remain errors.
+module = ["_sre", "re._compiler", "re._constants", "re._parser"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# functools.wraps intentionally preserves stdlib json's dynamic input/output
+# contract. Any in those decorated signatures is part of the public API.
+module = "unstd.serde.jsonx"
+disallow_any_decorated = false

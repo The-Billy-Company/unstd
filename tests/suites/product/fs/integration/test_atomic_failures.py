@@ -11,7 +11,7 @@ from __future__ import annotations
 import errno
 import os
 from pathlib import Path
-from typing import IO, Any
+from typing import IO, Any, Self
 
 import pytest
 
@@ -23,7 +23,7 @@ class _FailingStream:
         self.stream = stream
         self.boundary = boundary
 
-    def __enter__(self) -> _FailingStream:
+    def __enter__(self) -> Self:
         self.stream.__enter__()
         return self
 

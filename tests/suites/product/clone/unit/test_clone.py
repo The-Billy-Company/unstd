@@ -16,6 +16,7 @@ import copyreg
 import dataclasses
 import datetime as dt
 import enum
+from typing import Self
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import pytest
@@ -176,7 +177,7 @@ class _TemporalBox:
 @pytest.mark.parametrize("kind", [dt.datetime, dt.time])
 @pytest.mark.parametrize("operation", ["deep", "asdict"])
 def test_custom_timezone_state_is_independent_in_datetime_and_time(
-    kind: type[dt.datetime] | type[dt.time], operation: str
+    kind: type[dt.datetime | dt.time], operation: str
 ) -> None:
     """An immutable temporal value can still contain a mutable timezone."""
     zone = _MutableTimezone()
@@ -205,7 +206,7 @@ def test_custom_timezone_state_is_independent_in_datetime_and_time(
 
 @pytest.mark.parametrize("kind", [dt.datetime, dt.time])
 def test_custom_timezone_is_copied_through_every_structural_shortcut(
-    kind: type[dt.datetime] | type[dt.time],
+    kind: type[dt.datetime | dt.time],
 ) -> None:
     """Container values, keys, sets, and dataclass fields all copy timezone state."""
     zone = _MutableTimezone()
@@ -242,7 +243,7 @@ def test_custom_timezone_is_copied_through_every_structural_shortcut(
 
 @pytest.mark.parametrize("kind", [dt.datetime, dt.time])
 def test_custom_timezone_deepcopy_protocol_is_preserved(
-    kind: type[dt.datetime] | type[dt.time],
+    kind: type[dt.datetime | dt.time],
 ) -> None:
     """Temporal reconstruction delegates to a custom timezone's copy protocol."""
     calls = []
@@ -269,7 +270,7 @@ def test_custom_timezone_deepcopy_protocol_is_preserved(
 @pytest.mark.parametrize("kind", [dt.datetime, dt.time])
 @pytest.mark.parametrize("zone_kind", ["naive", "utc", "fixed", "zoneinfo"])
 def test_safe_temporal_values_keep_the_fast_identity_path(
-    kind: type[dt.datetime] | type[dt.time],
+    kind: type[dt.datetime | dt.time],
     zone_kind: str,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -406,7 +407,7 @@ def test_dataclass_with_pickle_constructor_arguments_keeps_its_protocol() -> Non
     class WithNewArgs:
         items: list[int]
 
-        def __new__(cls, items: list[int]) -> WithNewArgs:
+        def __new__(cls, items: list[int]) -> Self:
             return super().__new__(cls)
 
         def __getnewargs__(self) -> tuple[list[int]]:
