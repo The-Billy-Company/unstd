@@ -2,7 +2,7 @@
 
 Run ``python bench/crypto_hash.py --compare-source /path/to/before/src
 --output /tmp/crypto-hash.json``. The saved source directory contains
-``unstd/crypto/digest.py`` and ``unstd/crypto/token.py``. Inputs are prepared
+``unstd/crypto`` and its private helpers. Inputs are prepared
 outside timing; both implementations hash the same bytes. Batch order alternates,
 and the JSON report retains every sample rather than asserting a speed floor.
 Minimum and median batch costs are reported separately; cases with a sample
@@ -12,10 +12,12 @@ spread over 25% are marked noisy. These measurements describe the recorded host.
 from __future__ import annotations
 
 import argparse
+import builtins
 from dataclasses import dataclass
 from functools import partial
 import gc
 import hashlib
+from importlib.machinery import PathFinder
 from importlib.metadata import version
 import importlib.util
 import inspect
@@ -27,7 +29,9 @@ import platform
 import statistics
 import sys
 import time
+from types import ModuleType
 from typing import TYPE_CHECKING, Any
+from uuid import uuid4
 
 
 if TYPE_CHECKING:
@@ -49,17 +53,95 @@ class Workload:
     after: Callable[[], bytes | str]
 
 
-def _load(source: Path, module: str) -> Any:
-    path = source / "unstd" / "crypto" / f"{module}.py"
-    name = f"_crypto_hash_before_{module}"
-    spec = importlib.util.spec_from_file_location(name, path)
-    if spec is None or spec.loader is None:
-        msg = f"cannot load saved source: {path}"
-        raise RuntimeError(msg)
-    loaded = importlib.util.module_from_spec(spec)
-    sys.modules[name] = loaded
-    spec.loader.exec_module(loaded)
-    return loaded
+def _load(source: Path) -> tuple[Any, Any]:
+    """Load saved crypto and its helpers without replacing any live modules."""
+    namespace = f"_crypto_hash_saved_{uuid4().hex}"
+    modules: dict[str, ModuleType] = {}
+    for suffix, directory in (
+        ("", source / "unstd"),
+        (".crypto", source / "unstd/crypto"),
+    ):
+        name = namespace + suffix
+        package = ModuleType(name)
+        package.__path__ = [str(directory)]
+        package.__package__ = name
+        modules[name] = package
+        sys.modules[name] = package
+    modules[namespace].__dict__["crypto"] = modules[f"{namespace}.crypto"]
+
+    def load(name: str) -> ModuleType:
+        if name in modules:
+            return modules[name]
+        parent_name, _, member = name.rpartition(".")
+        parent = load(parent_name)
+        spec = PathFinder.find_spec(name, parent.__path__)
+        if spec is None or spec.loader is None:
+            msg = f"missing saved crypto module: {name} in {source}"
+            raise ModuleNotFoundError(msg, name=name)
+        module = importlib.util.module_from_spec(spec)
+        module.__dict__["__builtins__"] = {
+            **vars(builtins),
+            "__import__": saved_import,
+        }
+        modules[name] = module
+        sys.modules[name] = module
+        setattr(parent, member, module)
+        try:
+            if spec.origin is not None and spec.origin.endswith(".py"):
+                # Execute the recorded source even if a same-size edit left a
+                # timestamp-valid bytecode cache beside the snapshot.
+                code = compile(Path(spec.origin).read_bytes(), spec.origin, "exec")
+                exec(code, module.__dict__)  # noqa: S102  # explicit comparison source
+            else:
+                spec.loader.exec_module(module)
+        except BaseException:
+            del modules[name], sys.modules[name]
+            delattr(parent, member)
+            raise
+        return module
+
+    def saved_import(
+        name: str,
+        globals: dict[str, Any] | None = None,
+        locals: dict[str, Any] | None = None,
+        fromlist: tuple[str, ...] | None = (),
+        level: int = 0,
+    ) -> Any:
+        members = fromlist or ()
+        resolved = (
+            importlib.util.resolve_name("." * level + name, globals["__package__"])
+            if level and globals is not None
+            else name
+        )
+        if resolved == "unstd.crypto" or resolved.startswith("unstd.crypto."):
+            selected = namespace + resolved.removeprefix("unstd")
+        elif resolved == "unstd" and "crypto" in members:
+            selected = namespace
+        elif resolved == namespace or resolved.startswith(namespace + ".crypto"):
+            selected = resolved
+        else:
+            return builtins.__import__(name, globals, locals, members, level)
+        module = load(selected)
+        for member in members:
+            if (
+                member != "*"
+                and not hasattr(module, member)
+                and hasattr(module, "__path__")
+            ):
+                child = selected + "." + member
+                try:
+                    load(child)
+                except ModuleNotFoundError as error:
+                    if error.name != child:
+                        raise
+        return module if fromlist else modules[namespace]
+
+    try:
+        return load(f"{namespace}.crypto.digest"), load(f"{namespace}.crypto.token")
+    except BaseException:
+        for name in modules:
+            sys.modules.pop(name, None)
+        raise
 
 
 def _signatures(digest: Any, token: Any) -> dict[str, str]:
@@ -91,16 +173,16 @@ def _stream(stream_type: Any, chunks: tuple[bytes, ...]) -> bytes:
 def _workloads(before: tuple[Any, Any], after: tuple[Any, Any]) -> list[Workload]:
     blobs = {
         size: (bytes(range(256)) * ((size + 255) // 256))[:size]
-        for size in (64, 1 << 20, 8 << 20, 16 << 20, 64 << 20)
+        for size in (64, 256 << 10, 1 << 20, 4 << 20, 8 << 20, 16 << 20, 64 << 20)
     }
     cases = []
     matrix = (
-        ("raw", (64, 1 << 20, 8 << 20, 16 << 20, 64 << 20)),
-        ("hex", (64, 1 << 20, 8 << 20, 64 << 20)),
+        ("raw", (64, 256 << 10, 1 << 20, 4 << 20, 8 << 20, 16 << 20, 64 << 20)),
+        ("hex", (64, 256 << 10, 1 << 20, 4 << 20, 8 << 20, 16 << 20, 64 << 20)),
         ("hex8", (64, 8 << 20)),
-        ("derive_key", (64, 1 << 20, 64 << 20)),
-        ("mac_raw", (64, 1 << 20, 64 << 20)),
-        ("mac_hex", (64, 8 << 20, 64 << 20)),
+        ("derive_key", (64, 256 << 10, 1 << 20, 4 << 20, 8 << 20, 16 << 20, 64 << 20)),
+        ("mac_raw", (64, 256 << 10, 1 << 20, 4 << 20, 8 << 20, 16 << 20, 64 << 20)),
+        ("mac_hex", (64, 256 << 10, 1 << 20, 4 << 20, 8 << 20, 16 << 20, 64 << 20)),
     )
     for operation, sizes in matrix:
         for size in sizes:
@@ -116,7 +198,13 @@ def _workloads(before: tuple[Any, Any], after: tuple[Any, Any]) -> list[Workload
                 else:
                     call = partial(getattr(digest, operation), data)
                 calls.append(call)
-            label = "64 B" if size == 64 else f"{size >> 20} MiB"
+            label = (
+                "64 B"
+                if size == 64
+                else f"{size >> 10} KiB"
+                if size < 1 << 20
+                else f"{size >> 20} MiB"
+            )
             cases.append(Workload(f"{operation} / {label}", size, *calls))
     for size, chunk_size in ((1 << 20, 1 << 10), (64 << 20, 8 << 20)):
         data = blobs[size]
@@ -131,6 +219,13 @@ def _workloads(before: tuple[Any, Any], after: tuple[Any, Any]) -> list[Workload
                 *calls,
             )
         )
+    for width, operation in ((None, "hex"), (8, "hex8")):
+        # Reusable finalization isolates hex conversion from chunk absorption.
+        calls = [
+            partial(modules[0].Stream((blobs[64],)).hex, width)
+            for modules in (before, after)
+        ]
+        cases.append(Workload(f"Stream.{operation} / 64 B", 64, *calls))
     return cases
 
 
@@ -244,7 +339,11 @@ def main() -> None:
 
     source = Path(digest.__file__).resolve().parents[2]
     before_source = args.compare_source.resolve()
-    before = (_load(before_source, "digest"), _load(before_source, "token"))
+    hashes = {
+        "before": _source_hashes(before_source),
+        "after": _source_hashes(source),
+    }
+    before = _load(before_source)
     after = (digest, token)
     signatures = {"before": _signatures(*before), "after": _signatures(*after)}
     if signatures["before"] != signatures["after"]:
@@ -258,10 +357,6 @@ def main() -> None:
         ):
             msg = "public exports or constants changed"
             raise AssertionError(msg)
-    hashes = {
-        "before": _source_hashes(before_source),
-        "after": _source_hashes(source),
-    }
     cases = {}
     for index, case in enumerate(_workloads(before, after)):
         row = _measure(case, args.rounds, args.seconds, index)

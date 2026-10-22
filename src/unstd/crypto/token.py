@@ -72,7 +72,7 @@ def mac_raw(key: bytes, data: bytes) -> bytes:
 
 def mac_hex(key: bytes, data: bytes) -> str:
     """Keyed BLAKE3 MAC of *data* as hex (64 chars). *key* must be exactly 32 bytes."""
-    return _keyed(key, data).hexdigest()
+    return _keyed(key, data).digest().hex()
 
 
 def verify_mac(key: bytes, data: bytes, tag: str | bytes) -> bool:

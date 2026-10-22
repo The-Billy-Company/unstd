@@ -6,6 +6,10 @@ audits, baseline floors, source isolation, workload coverage, paired timing, and
 observed native dispatch. Deliberately wrong outputs and declined native calls
 must fail before they can support an acceleration claim.
 
+`test_crypto_hash.py` verifies saved crypto helper isolation, missing-helper
+failures, source hashes despite stale bytecode, crossover workload coverage,
+output/type checks, and retained alternating samples.
+
 From the repository root:
 
 ```console

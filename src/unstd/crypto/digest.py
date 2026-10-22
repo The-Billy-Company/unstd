@@ -49,14 +49,16 @@ DIGEST_BYTES = 32
 """BLAKE3's output width — the ceiling on :func:`hex` truncation and the width of a :func:`derive_key` subkey."""
 
 
-def _hexdigest(hasher: blake3, n: int | None) -> str:
-    """*hasher*'s full hex digest, or its first *n* bytes' — the one width check both :func:`hex` spellings share."""
-    if n is None:
-        return hasher.hexdigest()
+def _hexdigest(hasher: blake3, n: int) -> str:
+    """*hasher*'s first *n* bytes as hex — the one truncation check both :func:`hex` spellings share."""
     if not 1 <= n <= DIGEST_BYTES:
         msg = f"truncation width must be 1..{DIGEST_BYTES} bytes, got {n}"
         raise ValueError(msg)
-    return hasher.hexdigest(length=n)
+    if type(n) is not int:
+        # Custom comparisons can disagree with __index__. Keep the backend's
+        # hex-specific conversion and overflow checks for those objects.
+        return hasher.hexdigest(length=n)
+    return hasher.digest(length=n).hex()
 
 
 def raw(data: bytes) -> bytes:
@@ -75,8 +77,12 @@ def hex(data: bytes, n: int | None = None) -> str:
     only truncate for a short human-facing id, never for a security decision.
     """
     if type(data) is bytes and len(data) >= _PARALLEL_MIN_BYTES:
-        return _hexdigest(_parallel_hasher(data), n)
-    return _hexdigest(blake3(data), n)
+        hasher = _parallel_hasher(data)
+    else:
+        hasher = blake3(data)
+    if n is None:
+        return hasher.digest().hex()
+    return _hexdigest(hasher, n)
 
 
 def derive_key(context: str, material: bytes) -> bytes:
@@ -138,6 +144,8 @@ class Stream:
 
     def hex(self, n: int | None = None) -> str:
         """The hex digest of everything absorbed so far — see :func:`hex` for *n*."""
+        if n is None:
+            return self._hasher.digest().hex()
         return _hexdigest(self._hasher, n)
 
 

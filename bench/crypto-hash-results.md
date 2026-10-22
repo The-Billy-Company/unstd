@@ -1,5 +1,9 @@
 # Parallel BLAKE3 hashing
 
+This records the initial 16 MiB implementation. The
+[follow-up report](crypto-hash-tuning-results.md) measures the current 4 MiB
+threshold and faster hex output against this version.
+
 One-shot `digest.raw`, `digest.hex`, `digest.derive_key`, and the MAC helpers
 now use fresh BLAKE3 worker pools for exact `bytes` inputs of at least 16 MiB.
 The pool uses at most eight workers, capped by the reported CPU count. Smaller
@@ -57,7 +61,7 @@ keeps those buffers on their existing backend path. Performance near the
 crossover depends on CPU count and competing work.
 
 Reproduce with a source snapshot taken before the change, containing
-`unstd/crypto/digest.py` and `unstd/crypto/token.py`:
+`unstd/crypto` and its private helpers:
 
 ```console
 .venv/bin/python bench/crypto_hash.py --compare-source /path/to/before/src --rounds 25 --seconds 0.005 --output /tmp/crypto-hash.json

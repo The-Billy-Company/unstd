@@ -22,7 +22,7 @@ except ImportError as exc:  # fail loud, don't fork the digest
 # Amortize pool creation only on substantial inputs. A positive count creates a
 # fresh, bounded pool for each hasher; AUTO uses Rayon's process-global pool,
 # which can deadlock after fork. Never cache keyed hashers or their secret keys.
-_PARALLEL_MIN_BYTES = 16 * 1024 * 1024
+_PARALLEL_MIN_BYTES = 4 * 1024 * 1024
 _PARALLEL_THREADS = min(8, os.cpu_count() or 1)
 
 

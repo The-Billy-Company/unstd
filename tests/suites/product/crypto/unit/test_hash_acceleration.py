@@ -32,7 +32,9 @@ def _outcome(call):
     return type(value), value
 
 
-@pytest.mark.parametrize("length", [2**24 - 1, 2**24, 2**24 + 1])
+@pytest.mark.parametrize(
+    "length", [2**22 - 1, 2**22, 2**22 + 1, 2**23, 2**24, 2**24 + 1]
+)
 def test_large_inputs_match_the_serial_backend_in_every_mode(length):
     data = _input(length)
     plain = blake3(data, max_threads=1).digest()
@@ -92,11 +94,11 @@ def test_large_input_truncation_errors_keep_their_messages(width):
         ValueError,
         match=rf"^truncation width must be 1\.\.32 bytes, got {width}$",
     ):
-        digest.hex(_input(2**24), width)
+        digest.hex(_input(2**22), width)
 
 
 def test_truncation_retains_backend_index_conversion_and_validation_order():
-    data = _input(2**24)
+    data = _input(2**22)
     assert digest.hex(data, True) == blake3(data).hexdigest(length=True)
     assert _outcome(lambda: digest.hex(data, 1.5)) == _outcome(
         lambda: blake3(data).hexdigest(length=1.5)
@@ -104,6 +106,25 @@ def test_truncation_retains_backend_index_conversion_and_validation_order():
     assert _outcome(lambda: digest.hex(object(), 0)) == _outcome(
         lambda: blake3(object()).hexdigest()
     )
+
+
+@pytest.mark.parametrize("indexed_width", [8, 2**62])
+def test_custom_width_keeps_backend_hex_conversion_and_overflow(indexed_width):
+    class Width:
+        def __ge__(self, other):
+            return True
+
+        def __le__(self, other):
+            return True
+
+        def __index__(self):
+            return indexed_width
+
+    width = Width()
+    data = b"custom index conversion"
+    expected = _outcome(lambda: blake3(data).hexdigest(length=width))
+    assert _outcome(lambda: digest.hex(data, width)) == expected
+    assert _outcome(lambda: digest.Stream([data]).hex(width)) == expected
 
 
 def test_key_width_validation_precedes_any_data_inspection():
