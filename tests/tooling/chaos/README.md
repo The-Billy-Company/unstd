@@ -90,13 +90,22 @@ directory by default, or under `--artifact-dir`.
 
 ## CI and scope
 
-[`chaos.yml`](../../../.github/workflows/chaos.yml) derives its group/backend/OS
-matrix from `list --json`. Pull requests, main pushes and manual runs execute
-one round per combination. Nightly jobs execute ten recorded rounds, with a
-30-minute job timeout. Failed and successful runs retain their reports and
-journals as artifacts for fourteen days. Actions are pinned and repository
-permissions are read-only. Ordinary CI validates group discovery and executes
-the harness gates; chaos scenarios stay explicitly selected.
+[`chaos.yml`](../../../.github/workflows/chaos.yml) has four named jobs:
+`Fault injection / Linux / installed`, `Linux / stdlib`, `macOS / installed` and
+`macOS / stdlib`. Each job installs dependencies once, then `--group all`
+discovers and runs every executable group. New groups join automatically without
+adding another setup job. Pull requests, main pushes and manual runs execute one
+round per group; nightly jobs execute ten recorded rounds. Independent per-group
+worker bounds remain unchanged. The 65-minute outer timeout accommodates three
+groups × ten rounds × 120 seconds plus setup, cleanup and evidence upload.
+
+Each worker has a folded log section. The GitHub job summary lists each group,
+seed, result, case counts, duration and replay-report path inside the artifact.
+All reports and journals upload after success or failure and remain for fourteen
+days. Dependencies are cached by the lockfile and project configuration; unstd
+is rebuilt from the current checkout. Actions are pinned and repository
+permissions are read-only. Ordinary CI validates discovery and runs the harness
+gates; campaign scenarios stay explicitly selected.
 
 These tests inject syscall failures around real files; they do not exhaust the
 host disk or prove physical power-loss durability. SIGKILL experiments prove

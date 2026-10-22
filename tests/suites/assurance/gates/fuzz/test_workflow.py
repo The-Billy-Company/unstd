@@ -1,9 +1,4 @@
-"""CI discovers every target/backend pair and retains failures from bounded runs.
-
-The independent YAML reader checks workflow semantics. The CLI matrix gate
-executes the discovery command itself, so a valid YAML file cannot conceal an
-empty, duplicated or hard-coded campaign matrix.
-"""
+"""CI batches authenticated target inventories while retaining per-worker bounds."""
 
 from __future__ import annotations
 
@@ -14,6 +9,7 @@ import shlex
 import pytest
 
 from tests.support.backends import require_backend
+from tests.tooling.fuzz import registry
 
 
 REPO = Path(__file__).resolve().parents[5]
@@ -29,11 +25,9 @@ def workflow():
 
 def _arguments(step):
     command = step["run"]
-    assert "--target ${{ matrix.target }}" in command
+    assert "--target all" in command
     assert "--backend ${{ matrix.backend }}" in command
-    command = command.replace("${{ matrix.target }}", "target").replace(
-        "${{ matrix.backend }}", "backend"
-    )
+    command = command.replace("${{ matrix.backend }}", "backend")
     tokens = shlex.split(command)
     assert tokens[:7] == [
         "uv",
@@ -59,27 +53,33 @@ def test_required_and_scheduled_fuzz_jobs_use_pinned_actions_and_read_only_permi
     assert workflow["permissions"] == {"contents": "read"}
     for job in workflow["jobs"].values():
         assert type(job["timeout-minutes"]) is int
-        assert 1 <= job["timeout-minutes"] <= 30
+        assert 1 <= job["timeout-minutes"] <= 65
         assert not job.get("continue-on-error", False)
         for step in job["steps"]:
+            assert step["name"]
             assert not step.get("continue-on-error", False)
             if "uses" in step:
                 assert re.fullmatch(r"[\w/-]+@[0-9a-f]{40}", step["uses"])
 
 
-def test_campaign_matrix_is_discovered_from_authenticated_inventory(workflow):
-    inventory = workflow["jobs"]["inventory"]
-    discovery = next(step for step in inventory["steps"] if step.get("id") == "targets")
-    assert "python -m tests.tooling.fuzz list --json --all-backends" in discovery["run"]
-    assert '"$GITHUB_OUTPUT"' in discovery["run"]
-    assert inventory["outputs"]["matrix"] == "${{ steps.targets.outputs.matrix }}"
+def test_targets_share_two_backend_jobs_and_cached_setup(workflow):
+    assert set(workflow["jobs"]) == {"campaign"}
     campaign = workflow["jobs"]["campaign"]
-    assert campaign["needs"] == "inventory"
-    assert (
-        campaign["strategy"]["matrix"]
-        == "${{ fromJSON(needs.inventory.outputs.matrix) }}"
-    )
+    assert "needs" not in campaign
+    assert campaign["name"] == "Parser fuzzing / ${{ matrix.backend }}"
+    assert campaign["strategy"]["matrix"] == {"backend": ["installed", "stdlib"]}
     assert campaign["strategy"]["fail-fast"] is False
+    assert campaign["env"]["UNSTD_CAMPAIGN_REPORTING"] == "1"
+    setup = next(
+        step
+        for step in campaign["steps"]
+        if step.get("uses", "").startswith("astral-sh/setup-uv@")
+    )
+    assert setup["with"]["enable-cache"] is True
+    assert set(setup["with"]["cache-dependency-glob"].splitlines()) == {
+        "uv.lock",
+        "pyproject.toml",
+    }
     sync = next(
         step["run"]
         for step in campaign["steps"]
@@ -89,6 +89,7 @@ def test_campaign_matrix_is_discovered_from_authenticated_inventory(workflow):
     assert "--all-extras" in sync
     assert "--group fuzz" in sync
     assert "--python 3.12" in sync
+    assert "--reinstall-package unstd" in sync
 
 
 def test_both_mutation_engines_execute_with_explicit_small_and_nightly_budgets(
@@ -103,6 +104,8 @@ def test_both_mutation_engines_execute_with_explicit_small_and_nightly_budgets(
     assert len(commands) == 2
     engines = {command["--engine"]: command for command in commands}
     assert set(engines) == {"deterministic", "atheris"}
+    assert all(command["--target"] == "all" for command in commands)
+    assert all(command["--backend"] == "backend" for command in commands)
     deterministic = engines["deterministic"]
     assert deterministic["--runs"] == "1000"
     assert deterministic["--wall-seconds"] == "30"
@@ -125,6 +128,23 @@ def test_both_mutation_engines_execute_with_explicit_small_and_nightly_budgets(
         )
     assert deterministic["--seed"] == atheris["--seed"] == "173"
     assert deterministic["--artifact-dir"] != atheris["--artifact-dir"]
+    # Both commands replay before mutation; limits remain independent per stage.
+    count = max(
+        sum(backend in target.backends for target in registry.check())
+        for backend in ("installed", "stdlib")
+    )
+    assert campaign["timeout-minutes"] * 60 > count * 2 * (30 + 120)
+    instrumented = next(
+        step for step in campaign["steps"] if "--engine atheris" in step.get("run", "")
+    )
+    assert (
+        instrumented["if"]
+        == "${{ !cancelled() && steps.dependencies.outcome == 'success' }}"
+    )
+    dependencies = next(
+        step for step in campaign["steps"] if step.get("id") == "dependencies"
+    )
+    assert dependencies["run"].startswith("uv sync")
 
 
 def test_ci_retains_hidden_evidence_even_when_a_campaign_fails(workflow):
@@ -140,5 +160,4 @@ def test_ci_retains_hidden_evidence_even_when_a_campaign_fails(workflow):
     assert settings["include-hidden-files"] is True
     assert settings["if-no-files-found"] == "error"
     assert settings["retention-days"] == 14
-    assert "${{ matrix.target }}" in settings["name"]
     assert "${{ matrix.backend }}" in settings["name"]

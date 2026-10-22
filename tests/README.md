@@ -134,6 +134,42 @@ standalone mutation requires the explicit campaign command. Installed replay
 uses the same optional/required capability policy, while its stdlib workers
 block optional imports before target loading.
 
+## GitHub Actions groups
+
+The main CI workflow runs four parallel groups in each supported environment:
+
+| Group | Owned suites |
+| --- | --- |
+| API & regressions | Module API contracts and confirmed regressions |
+| Compatibility & boundaries | Parity, properties, security contracts/canaries, filesystem/process integration, and TLS peers |
+| Test tooling & corpus | Harness gates and finite fuzz corpus replay |
+| Packaging & consumers | Offline artifact builds and isolated installed consumers |
+
+Every group runs on Python 3.12, 3.13, and 3.14 with all extras, plus Python
+3.13 with dependency floors and with a base install. Paths come from the suite
+inventory; a new active default suite must join exactly one CI group. Groups
+use ownership paths so generated tests in mixed files do not run twice.
+Packaging alone primes the offline build cache. Dependency caching reuses
+downloads while each job rebuilds the local project, including native modules.
+
+```console
+uv run --no-sync python -m tests.tooling.ci list
+uv run --no-sync python -m tests.tooling.ci check
+uv run --no-sync python -m tests.tooling.ci run contracts -- --require-extras -q
+```
+
+Each group writes `.local/ci/<group>.xml` and a GitHub job summary with counts,
+duration, and status. Results are retained for 14 days, including failed runs.
+Quality checks, native debug-allocator/sanitizer checks, and Linux/macOS resource
+bounds have separate named jobs. `CI / Required groups` requires all main CI
+groups to pass; releases invoke this same workflow.
+
+Fuzz campaigns run one job per backend. Chaos and concurrency each run one job
+per backend and OS. These jobs select all supported targets/scenarios from their
+registries, preserving both mutation engines, worker limits, seeds, nightly
+depth, and failure artifacts. Target/scenario logs are folded inside the named
+jobs instead of creating a separate runner job for each small campaign.
+
 ## Shared evidence policy
 
 - Use stdlib behavior, standards, published vectors, independent reference

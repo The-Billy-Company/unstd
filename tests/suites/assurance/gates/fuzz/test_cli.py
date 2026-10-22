@@ -311,6 +311,87 @@ def test_all_stdlib_selects_exactly_supported_targets_and_reports_exclusions(
     assert len(summary["reports"]) == 8
 
 
+@pytest.mark.parametrize("backend", ["installed", "stdlib"])
+@pytest.mark.parametrize("engine", ["deterministic", "atheris"])
+def test_batched_campaigns_run_every_supported_target_and_retain_failures(
+    tmp_path, monkeypatch, capsys, backend, engine
+):
+    targets = [target for target in registry.check() if backend in target.backends]
+    seen = []
+
+    def recorded(target, cases, **limits):
+        cases = list(cases)
+        assert limits["backend"] == backend
+        # Replay IDs are the authenticated seed identities; mutation IDs differ.
+        seeds = registry.load_seeds(
+            next(item for item in targets if item.name == target)
+        )
+        stage = (
+            "replay"
+            if cases == [(seed.identity, seed.data) for seed in seeds]
+            else "campaign"
+        )
+        seen.append((target, stage))
+        return {
+            "status": "failed"
+            if stage == "campaign" and target == targets[0].name
+            else "passed",
+            "completed": len(cases),
+            "duration_seconds": 1.5,
+        }
+
+    def instrumented(target, directory, **limits):
+        assert limits["backend"] == backend
+        assert limits["runs"] == 3
+        assert all(path.suffix == ".bin" for path in directory.iterdir())
+        seen.append((target, "campaign"))
+        return {
+            "status": "failed" if target == targets[0].name else "passed",
+            "completed": 3,
+            "duration_seconds": 2.5,
+        }
+
+    monkeypatch.setattr(execution, "run_inputs", recorded)
+    monkeypatch.setattr(execution, "run_atheris", instrumented)
+    monkeypatch.setenv("GITHUB_ACTIONS", "true")
+    monkeypatch.setenv("UNSTD_CAMPAIGN_REPORTING", "1")
+    github_summary = tmp_path / "github-summary.md"
+    monkeypatch.setenv("GITHUB_STEP_SUMMARY", str(github_summary))
+    assert (
+        cli.main(
+            [
+                "campaign",
+                "--target",
+                "all",
+                "--backend",
+                backend,
+                "--engine",
+                engine,
+                "--runs",
+                "3",
+                "--artifact-dir",
+                str(tmp_path),
+            ]
+        )
+        == 1
+    )
+    assert seen == [
+        (target.name, stage) for target in targets for stage in ("replay", "campaign")
+    ]
+    summary = json.loads((tmp_path / "summary.json").read_text())
+    assert summary["status"] == "failed"
+    assert len(summary["reports"]) == len(seen)
+    assert all(Path(item["path"]).is_file() for item in summary["reports"])
+    logs = capsys.readouterr().out
+    assert logs.count("::group::") == logs.count("::endgroup::") == len(seen)
+    markdown = github_summary.read_text()
+    assert f"Parser fuzzing / {backend} / {engine}: failed" in markdown
+    assert "1.50s" in markdown
+    for item in summary["reports"]:
+        assert f"{item['target']} | {item['stage']} | {item['status']}" in markdown
+        assert str(Path(item["path"]).relative_to(tmp_path)) in markdown
+
+
 def test_atheris_routing_excludes_manifests_and_forwards_exact_authenticated_seeds(
     tmp_path, monkeypatch
 ):

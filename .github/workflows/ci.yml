@@ -1,4 +1,4 @@
-name: ci
+name: CI
 
 on:
   push:
@@ -19,54 +19,98 @@ concurrency:
 
 jobs:
   lint:
-    # Style, import order, docstring shape (ruff) and the type contract (mypy,
-    # strict) — neither of which the test suite can observe. `--all-extras` so
-    # mypy resolves the real backends instead of typing the fallbacks alone;
-    # mypy judges against `python_version = "3.12"` from pyproject regardless of
-    # the interpreter running it, so this needs one leg, not the matrix.
+    name: Quality / Style, types & inventories
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+      - name: Set up Python & dependency cache
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
-          enable-cache: false
+          enable-cache: auto
+          cache-suffix: quality
+          cache-dependency-glob: |
+            uv.lock
+            pyproject.toml
           version: "latest-known"
           python-version: "3.13"
-      - run: uv sync --locked --all-extras --group dev --python 3.13
-      - run: uv run --no-sync --python 3.13 python -m tests.tooling check
-      - run: uv run --no-sync --python 3.13 python -m tests.tooling.fuzz check
-      - run: uv run --no-sync --python 3.13 python -m tests.tooling.chaos check
-      - run: uv run --no-sync --python 3.13 python -m tests.tooling.concurrency check
-      - run: uv run --python 3.13 ruff check .
-      - run: uv run --python 3.13 ruff format --check .
-      - run: uv run --python 3.13 mypy
+      - name: Install quality tools & backends
+        run: uv sync --locked --all-extras --group dev --reinstall-package unstd --python 3.13
+      - name: Validate test ownership & CI groups
+        run: uv run --no-sync python -m tests.tooling.ci check
+      - name: Validate fuzz targets & corpus
+        run: uv run --no-sync python -m tests.tooling.fuzz check
+      - name: Validate fault-injection scenarios
+        run: uv run --no-sync python -m tests.tooling.chaos check
+      - name: Validate concurrency scenarios
+        run: uv run --no-sync python -m tests.tooling.concurrency check
+      - name: Check style & imports
+        run: uv run --no-sync ruff check .
+      - name: Check formatting
+        run: uv run --no-sync ruff format --check .
+      - name: Check type contracts
+        run: uv run --no-sync mypy
 
   test:
+    name: ${{ matrix.group.name }} / ${{ matrix.environment.name }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
-        # requires-python = ">=3.12" in pyproject.toml — test the whole claimed
-        # range, not just the pinned dev version. A change only exercised on
-        # one interpreter silently drifts to that interpreter's syntax/stdlib
-        # shape (e.g. PEP 758 bare-tuple `except`, 3.13's `batched(strict=)`).
-        python-version: ["3.12", "3.13", "3.14"]
+        # Groups select owned suite paths. Every environment retains full coverage.
+        group:
+          - {id: api, name: API & regressions}
+          - {id: contracts, name: Compatibility & boundaries}
+          - {id: tooling, name: Test tooling & corpus}
+          - {id: packaging, name: Packaging & consumers}
+        environment:
+          - {id: py312, name: Python 3.12, python: "3.12", sync: "--locked --all-extras", pytest: "--require-extras"}
+          - {id: py313, name: Python 3.13, python: "3.13", sync: "--locked --all-extras", pytest: "--require-extras"}
+          - {id: py314, name: Python 3.14, python: "3.14", sync: "--locked --all-extras", pytest: "--require-extras"}
+          # Floors remain unlocked; --no-sync below preserves lowest-direct.
+          - {id: floors, name: Dependency floors (3.13), python: "3.13", sync: "--all-extras --resolution lowest-direct", pytest: "--require-extras"}
+          - {id: fallback, name: Base install (3.13), python: "3.13", sync: "--locked", pytest: ""}
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+      - name: Set up Python & dependency cache
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
-          enable-cache: false
+          enable-cache: auto
+          cache-suffix: tests-${{ matrix.environment.id }}-${{ matrix.group.id }}
+          cache-dependency-glob: |
+            uv.lock
+            pyproject.toml
           version: "latest-known"
-          python-version: ${{ matrix.python-version }}
-      - run: uv sync --locked --all-extras --group dev --python ${{ matrix.python-version }}
-      - run: uv build --python ${{ matrix.python-version }} --sdist --wheel --out-dir "$RUNNER_TEMP/unstd-build-cache"
-      - run: uv run --no-sync --python ${{ matrix.python-version }} pytest --require-extras -q
+          python-version: ${{ matrix.environment.python }}
+      - name: Install test environment & rebuild local extensions
+        run: uv sync ${{ matrix.environment.sync }} --group dev --reinstall-package unstd --python ${{ matrix.environment.python }}
+      - name: Show resolved backend versions
+        if: matrix.environment.id == 'floors' || matrix.environment.id == 'fallback'
+        run: uv pip list
+      - name: Prime offline artifact build dependencies
+        if: matrix.group.id == 'packaging'
+        run: uv build --python ${{ matrix.environment.python }} --sdist --wheel --out-dir "$RUNNER_TEMP/unstd-build-cache"
+      - name: Run ${{ matrix.group.name }}
+        run: uv run --no-sync python -m tests.tooling.ci run ${{ matrix.group.id }} -- ${{ matrix.environment.pytest }} -q
+      - name: Retain grouped test results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: tests-${{ matrix.group.id }}-${{ matrix.environment.id }}-${{ github.run_attempt }}
+          path: .local/ci/${{ matrix.group.id }}.xml
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
 
   resources:
+    name: Resource bounds / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
     strategy:
@@ -74,19 +118,31 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+      - name: Set up Python & dependency cache
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
-          enable-cache: false
+          enable-cache: auto
           version: "latest-known"
           python-version: "3.13"
-      - run: uv sync --locked --all-extras --group dev --python 3.13
+          cache-suffix: resources
+          cache-dependency-glob: "uv.lock\npyproject.toml\n"
+      - name: Install test environment
+        run: uv sync --locked --all-extras --group dev --python 3.13 --reinstall-package unstd
       # The suite owns both installed and import-blocked stdlib worker policies.
-      - run: >-
+      - name: Check memory, cleanup, cache lifetime & depth
+        id: tests
+        run: >-
           uv run --no-sync python -m tests.tooling run resources --
           --require-extras -q --junitxml=.local/resources.xml
+      - name: Summarize resource bounds
+        if: always() && steps.tests.outcome != 'skipped'
+        env:
+          TEST_EXIT: ${{ steps.tests.outcome == 'success' && '0' || '1' }}
+        run: uv run --no-sync python -m tests.tooling.ci report "Resource bounds" .local/resources.xml --exit-code "$TEST_EXIT"
       - name: Retain resource measurements and failures
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -97,42 +153,11 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-  floors:
-    # Every extra declares a floor, and a floor is a promise: install this old a
-    # backend and the library still works. Nothing else in this matrix tests it —
-    # `test` resolves the newest of everything, so the floors could be fiction
-    # for years and only a consumer with an older pin would ever find out, as a
-    # resolver error blamed on their own manifest.
-    #
-    # `lowest-direct` takes the oldest version each DIRECT floor admits while
-    # leaving transitives modern, which is the environment a downstream
-    # application actually produces. A failure here means the floor is wrong, not
-    # the code: raise it to the version that works and say so in the changelog.
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
-        with:
-          enable-cache: false
-          version: "latest-known"
-          python-version: "3.13"
-      - run: uv sync --all-extras --group dev --python 3.13 --resolution lowest-direct
-      # Which versions the floors admitted — the first thing anyone reading a
-      # failure here needs, and not recoverable from the traceback.
-      - run: uv pip list
-      - run: uv build --python 3.13 --sdist --wheel --out-dir "$RUNNER_TEMP/unstd-build-cache"
-      # `--no-sync` is what makes this job mean anything. A bare `uv run`
-      # re-resolves in the default `highest` mode and quietly reinstalls the
-      # newest of everything first, so the suite would run against the same
-      # environment `test` already covers and pass no matter what the floors say.
-      - run: uv run --no-sync --python 3.13 pytest --require-extras -q
-
   native:
     # Optional compiler failures are a consumer fallback, never a reason for
     # native parity tests to disappear behind importorskip in CI. Serde alone
     # leaves text's dependency-free implementation under test as well.
+    name: Native safety / Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -143,39 +168,64 @@ jobs:
       PYTHONMALLOC: debug
       PYTHONFAULTHANDLER: "1"
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+      - name: Set up Python & dependency cache
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
-          enable-cache: false
+          enable-cache: auto
           version: "latest-known"
           python-version: ${{ matrix.python-version }}
-      - run: uv sync --locked --extra serde --group dev --python ${{ matrix.python-version }}
+          cache-suffix: native
+          cache-dependency-glob: "uv.lock\npyproject.toml\n"
+      - name: Install test environment
+        run: uv sync --locked --extra serde --group dev --python ${{ matrix.python-version }} --reinstall-package unstd
       - name: Every native module must import
         run: >-
           uv run --no-sync python -c
           "import unstd.serde._json_native, unstd.clone._clone_native, unstd.text._text_native"
       - name: Native compatibility with the debug allocator
-        run: >-
-          uv run --no-sync python -m pytest
-          tests/suites/product/clone tests/suites/product/text
-          tests/suites/product/serde -q
+        id: tests
+        run: >
+          uv run --no-sync python -m pytest tests/suites/product/clone tests/suites/product/text tests/suites/product/serde -q --junitxml=.local/native.xml
 
+      - name: Summarize native safety
+        if: always() && steps.tests.outcome != 'skipped'
+        env:
+          TEST_EXIT: ${{ steps.tests.outcome == 'success' && '0' || '1' }}
+        run: uv run --no-sync python -m tests.tooling.ci report "Native safety" .local/native.xml --exit-code "$TEST_EXIT"
+      - name: Retain native test results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: native-${{ github.run_attempt }}-${{ matrix.python-version }}
+          path: .local/native.xml
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+    timeout-minutes: 15
   native-sanitizers:
+    name: Native safety / ASan & UBSan
     runs-on: ubuntu-latest
     env:
       PYTHONFAULTHANDLER: "1"
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+      - name: Set up Python & dependency cache
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
-          enable-cache: false
+          enable-cache: auto
           version: "latest-known"
           python-version: "3.13"
-      - run: uv sync --locked --extra serde --group dev --no-install-project --python 3.13
+          cache-suffix: native-sanitizers
+          cache-dependency-glob: "uv.lock\npyproject.toml\n"
+      - name: Install test environment
+        run: uv sync --locked --extra serde --group dev --no-install-project --python 3.13
       - name: Build our native modules with address and undefined behavior checks
         env:
           CC: gcc
@@ -184,6 +234,7 @@ jobs:
           CIBUILDWHEEL: "1"
         run: uv pip install --python .venv/bin/python --no-deps --reinstall --editable .
       - name: Native compatibility under ASan and UBSan
+        id: tests
         env:
           # CPython and imported third-party runtimes own process-lifetime
           # allocations. Bounds, use-after-free and UB checks remain fatal.
@@ -191,37 +242,50 @@ jobs:
           UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
           PYTHONMALLOC: malloc
         run: |
-          export LD_PRELOAD="$(gcc -print-file-name=libasan.so)"
+          LD_PRELOAD="$(gcc -print-file-name=libasan.so)"
+          export LD_PRELOAD
           .venv/bin/python -c "import unstd.serde._json_native, unstd.clone._clone_native, unstd.text._text_native"
-          .venv/bin/python -m pytest tests/suites/product/clone tests/suites/product/text tests/suites/product/serde -q
+          .venv/bin/python -m pytest tests/suites/product/clone tests/suites/product/text tests/suites/product/serde -q --junitxml=.local/native-sanitizers.xml
 
-  test-fallback:
-    # A base install (no optional extras) is a load-bearing, documented contract
-    # on nearly every module: each accelerated backend degrades to a
-    # stdlib-faithful fallback. `test` above runs `--all-extras` on every leg, so
-    # those fallback branches were only ever reached through monkeypatch-forced
-    # fixtures inside the suite. This job takes the real path.
-    #
-    # Which modules can't be collected without their extra is decided by
-    # `tests/conftest.py`, which centralizes module importability probes.
-    # A hardcoded `--ignore` roster here would be a second copy of that
-    # decision, and the copy that lives in CI is the one nobody updates.
+      - name: Summarize sanitizer checks
+        if: always() && steps.tests.outcome != 'skipped'
+        env:
+          TEST_EXIT: ${{ steps.tests.outcome == 'success' && '0' || '1' }}
+        run: uv run --no-sync python -m tests.tooling.ci report "Native sanitizers" .local/native-sanitizers.xml --exit-code "$TEST_EXIT"
+      - name: Retain native test results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: native-sanitizers-${{ github.run_attempt }}
+          path: .local/native-sanitizers.xml
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+    timeout-minutes: 15
+  result:
+    name: CI / Required groups
+    if: always()
+    needs:
+      - lint
+      - test
+      - resources
+      - native
+      - native-sanitizers
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
-        with:
-          enable-cache: false
-          version: "latest-known"
-          python-version: "3.13"
-      - run: uv sync --locked --group dev --python 3.13
-      - run: uv build --python 3.13 --sdist --wheel --out-dir "$RUNNER_TEMP/unstd-build-cache"
-      # A diagnostic, not a gate — the zero-closure claim is asserted offline by
-      # `tests/suites/assurance/gates/packaging/test_package.py`. A failure that reproduces
-      # only on the fallback leg is nearly unreadable without knowing which
-      # backends were actually present when it ran (the test tooling drags in a
-      # couple of its own, e.g. hypothesis → sortedcontainers).
-      - run: uv pip list
-      - run: uv run --python 3.13 pytest -q
+      - name: Require every group to pass
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: |
+          python - <<'PYTHON'
+          import json, os
+          results = json.loads(os.environ["RESULTS"])
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as summary:
+              summary.write("| Required group | Result |\n| --- | --- |\n")
+              for name, job in results.items():
+                  summary.write(f"| {name} | {job['result']} |\n")
+          failed = [name for name, job in results.items() if job["result"] != "success"]
+          if failed:
+              raise SystemExit("Required groups did not pass: " + ", ".join(failed))
+          PYTHON

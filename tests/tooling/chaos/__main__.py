@@ -10,6 +10,7 @@ from pathlib import Path
 import sys
 from uuid import uuid4
 
+from tests.tooling.campaign_reporting import append_campaign_summary, campaign_group
 from tests.tooling.chaos import execution
 from tests.tooling.runner import check_inventory
 
@@ -141,18 +142,23 @@ def _execute(args, groups, *, lane="chaos"):
         / (datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ") + "-" + uuid4().hex[:8])
     ).resolve()
     reports = []
+    rows = []
     for round_index in range(rounds):
         current_seed = (seed + round_index) % 2**64
         for group in selected:
             output = directory / f"round-{round_index:03d}" / group / backend
-            report = execution.run_group(
-                group,
-                seed=current_seed,
-                backend=backend,
-                artifact_dir=output,
-                **({"lane": lane} if lane != "chaos" else {}),
-                **limits,
-            )
+            with campaign_group(f"{group} / {backend} / seed {current_seed}"):
+                report = execution.run_group(
+                    group,
+                    seed=current_seed,
+                    backend=backend,
+                    artifact_dir=output,
+                    **({"lane": lane} if lane != "chaos" else {}),
+                    **limits,
+                )
+                print(
+                    f"{group}/{backend}/seed-{current_seed}: {report['status']} ({report.get('passed', 0)} passed, {report.get('skipped', 0)} skipped)"
+                )
             reports.append(
                 {
                     "group": group,
@@ -164,8 +170,16 @@ def _execute(args, groups, *, lane="chaos"):
                     "path": str(output / "report.json"),
                 }
             )
-            print(
-                f"{group}/{backend}/seed-{current_seed}: {report['status']} ({report.get('passed', 0)} passed, {report.get('skipped', 0)} skipped)"
+            rows.append(
+                (
+                    group,
+                    current_seed,
+                    report["status"],
+                    report.get("passed", 0),
+                    report.get("skipped", 0),
+                    f"{report.get('duration_seconds', 0):.2f}s",
+                    f"`{(output / 'report.json').relative_to(directory)}`",
+                )
             )
     status = (
         "passed"
@@ -184,6 +198,12 @@ def _execute(args, groups, *, lane="chaos"):
         json.dumps(summary, indent=2, sort_keys=True) + "\n"
     )
     print(f"Reports: {directory / 'summary.json'}")
+    title = "Fault injection" if lane == "chaos" else "Concurrency"
+    append_campaign_summary(
+        f"{title} / {backend}: {status}",
+        ("Group", "Seed", "Result", "Passed", "Skipped", "Time", "Replay report"),
+        rows,
+    )
     return 0 if status == "passed" else 1
 
 

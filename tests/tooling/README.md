@@ -5,6 +5,13 @@ The inventory describes implemented versus planned ownership; it does not
 declare all planned tests implemented or create required branch-protection
 statuses. See [the suite guide](../README.md) for commands and evidence policy.
 
+`python -m tests.tooling.ci list|check|run <group>` composes those owned suites
+into four complete, disjoint CI groups: `api`, `contracts`, `tooling`, and
+`packaging`. Each run retains a JUnit report under `.local/ci/` and appends a
+result summary when `GITHUB_STEP_SUMMARY` is set. The group validator rejects
+new active default suites until their CI group is declared; planned suites and
+explicit chaos/concurrency/resource campaigns remain separate.
+
 [`fuzz/`](fuzz/README.md) contains executable parser/token targets, authenticated
 seed corpora, deterministic replay and mutation, and bounded Atheris campaigns.
 [`chaos/`](chaos/README.md) runs recorded fault/recovery schedules in bounded
