@@ -204,7 +204,18 @@ def from_epoch_s(s: float, tz: tzinfo = UTC) -> datetime:
 
 def from_epoch_ms(ms: int, tz: tzinfo = UTC) -> datetime:
     """The aware datetime *ms* milliseconds after the Unix epoch, in *tz*."""
-    return datetime.fromtimestamp(ms / 1000, tz=tz)
+    # Float division loses millisecond alignment at far-calendar timestamps.
+    s, rem = divmod(ms, 1000)
+    result = datetime.fromtimestamp(s, UTC)
+    if type(ms) is int:
+        # Integer divmod guarantees 0 <= rem < 1000; setting the UTC field
+        # avoids allocating and adding a timedelta for the fractional second.
+        if rem:
+            result = result.replace(microsecond=rem * 1000)
+    else:
+        # Keep timedelta's numeric coercion and rounding for other input types.
+        result += timedelta(milliseconds=rem)
+    return result if tz is UTC else result.astimezone(tz)
 
 
 # ── instant arithmetic ─────────────────────────────────────────────────────────
