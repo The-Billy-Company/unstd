@@ -507,7 +507,7 @@ def _flatten(samples: Samples) -> tuple[list[float], int]:
     seq: list[object] = list(samples)
     if seq and isinstance(seq[0], list | tuple):
         nchannels = len(seq[0])
-        return [v for frame in seq for v in _frame(frame)], nchannels
+        return [_scalar(v) for frame in seq for v in _frame(frame)], nchannels
     return [_scalar(v) for v in seq], 1
 
 
