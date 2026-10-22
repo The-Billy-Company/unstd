@@ -234,15 +234,20 @@ def _jaro_winkler(a: str, b: str, /, *, prefix_weight: float = 0.1) -> float:
     names: "Jane"/"John" sits at 0.667 and stays there, where an unconditional
     bonus would read 0.70 and cross thresholds callers set just above it.
     """
-    sim = _jaro(a, b)
-    if sim <= _BOOST_MIN:
+    if prefix_weight < 0.0 or prefix_weight > 1.0:
+        msg = "prefix_weight has to be in the range 0.0 - 1.0"
+        raise ValueError(msg)
+    if (sim := _jaro(a, b)) <= _BOOST_MIN:
         return sim
     prefix = 0
     for ca, cb in zip(a[:_PREFIX_MAX], b[:_PREFIX_MAX], strict=False):
         if ca != cb:
             break
         prefix += 1
-    return min(sim + prefix * prefix_weight * (1.0 - sim), 1.0)
+    score = sim + prefix * prefix_weight * (1.0 - sim)
+    # RapidFuzz applies its default zero cutoff after the boost. A NaN weight
+    # fails that comparison, while scores below the boost threshold bypass it.
+    return min(score, 1.0) if score >= 0.0 else 0.0
 
 
 def _levenshtein(a: Sequence[object], b: Sequence[object], /) -> int:

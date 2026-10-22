@@ -167,9 +167,17 @@ def test_exhaustive_repeated_matches_and_transpositions() -> None:
 @pytest.mark.parametrize(
     ("a", "b"), [("Jane", "John"), ("Jon", "Jonathan"), ("Dwayne", "Duane")]
 )
-def test_winkler_retains_python_prefix_arithmetic(
+def test_winkler_keeps_weight_validation_and_exact_prefix_arithmetic(
     weight: float, a: str, b: str, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    if not 0.0 <= weight <= 1.0:
+        for kernel in (native.jaro, None):
+            monkeypatch.setattr(fuzz, "_native_jaro", kernel)
+            with pytest.raises(
+                ValueError, match=r"prefix_weight has to be in the range 0\.0 - 1\.0"
+            ):
+                fuzz._jaro_winkler(a, b, prefix_weight=weight)
+        return
     monkeypatch.setattr(fuzz, "_native_jaro", native.jaro)
     actual = fuzz._jaro_winkler(a, b, prefix_weight=weight)
     monkeypatch.setattr(fuzz, "_native_jaro", None)
