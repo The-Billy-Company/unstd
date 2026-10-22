@@ -27,7 +27,9 @@ update_chunk(PyObject *update, PyObject *chunk)
         return -1;
     }
     Py_DECREF(result);
-    return 0;
+    /* A C backend can return without reaching Python's evaluation loop.
+     * Observe pending interrupts between updates, even for large chunks. */
+    return PyErr_CheckSignals();
 }
 
 static int

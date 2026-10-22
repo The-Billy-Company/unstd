@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ctypes
 import importlib
 import json
 from pathlib import Path
@@ -357,6 +358,29 @@ def test_native_releases_the_bound_method_and_hasher_after_success(native_absorb
     assert hasher.result.digest() == blake3(b"firstsecondthird").digest()
     del hasher
     assert reference() is None
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="requires POSIX SIGUSR1")
+def test_pending_signals_are_handled_between_c_backend_updates(monkeypatch):
+    # PyDLL retains the GIL and calls libc without executing Python bytecode.
+    # This makes pending-signal delivery deterministic without timer deadlines.
+    raise_signal = getattr(ctypes.PyDLL(None), "raise")
+    raise_signal.argtypes = [ctypes.c_int]
+    raise_signal.restype = ctypes.c_int
+
+    class SignalHasher:
+        update = staticmethod(raise_signal)
+
+    monkeypatch.setattr(digest, "blake3", SignalHasher)
+    observed = []
+    previous = signal.signal(
+        signal.SIGUSR1, lambda signum, _frame: observed.append(signum)
+    )
+    try:
+        digest.Stream([signal.SIGUSR1] * 8)
+        assert observed == [signal.SIGUSR1] * 8
+    finally:
+        signal.signal(signal.SIGUSR1, previous)
 
 
 @pytest.mark.skipif(not hasattr(signal, "setitimer"), reason="requires interval timers")
