@@ -69,6 +69,37 @@ def test_unicode_mask_hash_collisions_and_full_alphabet() -> None:
     assert native.distance(a, b) == fuzz._string_distance(a, b)
 
 
+@pytest.mark.parametrize("width", [63, 64, 65, 127, 128, 129, 16383, 16384])
+def test_distance_maximum_admitted_work_and_unicode_storage(width: int) -> None:
+    # 16384 * ceil(16384 / 64) is exactly the native word-step limit.
+    # NULs and lone surrogates must be ordinary characters, without encoding.
+    a = ("\x00é\ud800😀" * (width // 4 + 1))[:width]
+    assert native.distance(a, a) == 0
+    assert native.distance(a, "x" * width) == width
+    assert native.distance(a, a[:-1] + "x") == 1
+
+
+def test_distance_word_budget_defers_immediately_above_limit() -> None:
+    assert native.distance("a" * 16384, "b" * 16385) is NotImplemented
+    assert native.distance("a" * 16385, "b" * 16385) is NotImplemented
+
+
+@pytest.mark.parametrize("alphabet", ["ab\x00", "abé", "ab\ud800", "ab😀"])
+def test_each_unicode_representation_preserves_jaro_scores(
+    alphabet: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(fuzz, "_native_jaro", None)
+    a = alphabet * 23
+    b = a[3:] + alphabet[::-1]
+    assert native.jaro(a, b) == fuzz._jaro(a, b)
+
+
+def test_jaro_maximum_admitted_pair_budget() -> None:
+    assert native.jaro("a" * 2048, "a" * 2048) == 1.0
+    assert native.jaro("a" * 2048, "b" * 2048) == 0.0
+    assert native.jaro("a" * 2048, "b" * 2049) is NotImplemented
+
+
 @pytest.mark.parametrize(
     ("a", "b"),
     [
@@ -178,3 +209,20 @@ def test_public_fallback_bodies_survive_missing_or_deferred_native(
     monkeypatch.setattr(fuzz, "_native_jaro", None)
     assert fuzz._levenshtein("kitten", "sitting") == 3
     assert fuzz._jaro("CRATE", "TRACE") == 0.7333333333333334
+
+
+def test_public_fallback_preserves_str_subclass_iteration(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class Letters(str):
+        def __iter__(self):
+            return iter("xy")
+
+    def forbidden(*args):
+        msg = "string subclasses must keep Python iteration behavior"
+        raise AssertionError(msg)
+
+    monkeypatch.setattr(fuzz, "_native_distance", forbidden)
+    monkeypatch.setattr(fuzz, "_native_jaro", forbidden)
+    assert fuzz._levenshtein(Letters("ab"), "xy") == 0
+    assert fuzz._jaro(Letters("ab"), "xy") == 1.0
