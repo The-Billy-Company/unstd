@@ -3,8 +3,9 @@
 Three measured Python hotspots now have optional C acceleration: structural
 container cloning, exact-string Levenshtein distance, and Jaro matching. The
 public Python functions and signatures remain in place. C fits the existing
-extension build and these CPython loops; no Rust comparison was made, and the
-language choice alone does not establish which implementation is fastest.
+extension build and these CPython loops. This initial audit did not compare Rust;
+the later [Rust text experiment](rust-text-results.md) measures C against an
+opt-in Rust prototype and retains C by default because the prototype adds overhead.
 
 Measurements were collected on 2026-10-21, macOS arm64, CPython 3.13.14, against
 Git revision `035c166b579557f2977ebf7335ed0207d27ce75b`. The complete harness, source and

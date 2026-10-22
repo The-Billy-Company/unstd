@@ -24,6 +24,67 @@ jobs:
     permissions:
       contents: read
 
+  native-rust:
+    name: Rust experiment / ${{ matrix.os }}
+    # Explicit opt-in keeps published/default wheels on the existing C kernels.
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    env:
+      UNSTD_TEXT_RUST: "1"
+      CIBUILDWHEEL: "1"
+      PYTHONMALLOC: debug
+      PYTHONFAULTHANDLER: "1"
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Select the stable Rust toolchain
+        run: |
+          rustup toolchain install stable --profile minimal --component rustfmt
+          rustup default stable
+      - name: Check Rust formatting
+        run: cargo fmt --manifest-path native/text/Cargo.toml --check
+      - name: Check Rust kernels in debug mode
+        run: cargo test --manifest-path native/text/Cargo.toml --locked --offline
+      - name: Check Rust kernels in release mode
+        run: cargo test --manifest-path native/text/Cargo.toml --locked --offline --release
+      - name: Set up Python
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          enable-cache: false
+          version: "latest-known"
+          python-version: "3.13"
+      - name: Build experimental Rust text extension
+        run: uv sync --locked --group dev --python 3.13 --reinstall-package unstd
+      - name: Rust text extension must import
+        run: >-
+          uv run --no-sync python -c
+          "from unstd.text import _text_native; assert 'Rust text kernels' in _text_native.__doc__"
+      - name: Check Rust text compatibility
+        id: tests
+        run: >-
+          uv run --no-sync python -m pytest tests/suites/product/text -q
+          --junitxml=.local/native-rust.xml
+      - name: Summarize Rust compatibility checks
+        if: always() && steps.tests.outcome != 'skipped'
+        env:
+          TEST_EXIT: ${{ steps.tests.outcome == 'success' && '0' || '1' }}
+        run: uv run --no-sync python -m tests.tooling.ci report "Rust text compatibility" .local/native-rust.xml --exit-code "$TEST_EXIT"
+      - name: Retain Rust compatibility results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: native-rust-${{ matrix.os }}-${{ github.run_attempt }}
+          path: .local/native-rust.xml
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+
   lint:
     name: Quality / Style, types & inventories
     runs-on: ubuntu-latest
@@ -215,13 +276,22 @@ jobs:
   native-sanitizers:
     name: Native safety / ASan & UBSan
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        rust-text: ["0", "1"]
     env:
       PYTHONFAULTHANDLER: "1"
+      UNSTD_TEXT_RUST: ${{ matrix.rust-text }}
     steps:
       - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - name: Select the stable Rust toolchain
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
       - name: Set up Python & dependency cache
         uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
@@ -232,7 +302,9 @@ jobs:
           cache-dependency-glob: "uv.lock\npyproject.toml\n"
       - name: Install test environment
         run: uv sync --locked --extra serde --group dev --no-install-project --python 3.13
-      - name: Build our native modules with address and undefined behavior checks
+      # Stable Rust kernels retain their bounds checks and unit tests. These
+      # sanitizer flags instrument our C modules and the text CPython shim.
+      - name: Build C boundaries with address and undefined behavior checks
         env:
           CC: gcc
           CFLAGS: -O1 -g -fsanitize=address,undefined -fno-omit-frame-pointer
@@ -262,7 +334,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: native-sanitizers-${{ github.run_attempt }}
+          name: native-sanitizers-${{ matrix.rust-text }}-${{ github.run_attempt }}
           path: .local/native-sanitizers.xml
           include-hidden-files: true
           if-no-files-found: error
@@ -271,13 +343,7 @@ jobs:
   result:
     name: CI / Required groups
     if: always()
-    needs:
-      - supply-chain
-      - lint
-      - test
-      - resources
-      - native
-      - native-sanitizers
+    needs: [supply-chain, lint, test, resources, native, native-rust, native-sanitizers]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

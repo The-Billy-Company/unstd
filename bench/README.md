@@ -259,6 +259,14 @@ The measured results, safety boundaries, validation and known fallback overhead
 are recorded in [`native-results.md`](native-results.md), with complete evidence
 in [`native-results.json`](native-results.json).
 
+The separate [Rust text experiment](rust-text-results.md) compares the same
+base-install Python calls backed by C and by an explicitly selected Rust
+prototype. Default builds retain C because this prototype adds short-Jaro
+latency and binary-size overhead. `text_native_compare.py` records paired
+samples, exact output and route checks, hashes, binary sizes and approximate
+fresh-process RSS. Build instructions are in
+[`native/text/README.md`](../native/text/README.md).
+
 ## Gzip throughput and size
 
 Run `uv run --locked --all-extras python -m bench --group compress --rounds 5`.

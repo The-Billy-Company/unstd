@@ -94,6 +94,32 @@ def test_each_unicode_representation_preserves_jaro_scores(
     assert native.jaro(a, b) == fuzz._jaro(a, b)
 
 
+@pytest.mark.parametrize("left", ["\x00é", "\ud800雪", "😀𝄞"])
+@pytest.mark.parametrize("right", ["\x00ö", "\udfff水", "🙂𐀀"])
+def test_mixed_unicode_storage_widths_preserve_both_kernels(
+    left: str, right: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Each input has its own CPython storage width. Reading the second using
+    # the first one's element type can overread, truncate or change the score.
+    a, b = (left + "ab") * 19, (right + "ba") * 17
+    assert native.distance(a, b) == _reference_distance(a, b)
+    monkeypatch.setattr(fuzz, "_native_jaro", None)
+    assert native.jaro(a, b) == fuzz._jaro(a, b)
+
+
+@pytest.mark.parametrize("kernel", [native.distance, native.jaro])
+@pytest.mark.parametrize("arguments", [(), ("a",), ("a", "b", "c")])
+def test_native_call_rejects_wrong_arity(kernel, arguments) -> None:
+    with pytest.raises(TypeError, match="takes exactly two arguments"):
+        kernel(*arguments)
+
+
+@pytest.mark.parametrize("kernel", [native.distance, native.jaro])
+def test_native_call_rejects_keywords(kernel) -> None:
+    with pytest.raises(TypeError):
+        kernel(a="a", b="b")
+
+
 def test_jaro_maximum_admitted_pair_budget() -> None:
     assert native.jaro("a" * 2048, "a" * 2048) == 1.0
     assert native.jaro("a" * 2048, "b" * 2048) == 0.0
