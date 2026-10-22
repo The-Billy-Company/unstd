@@ -9,7 +9,7 @@ import sys
 
 import pytest
 
-from tests.support.anchors import REPO_ROOT
+from tests.support.environment.anchors import REPO_ROOT
 from tests.tooling.static_analysis import reports as static_analysis
 
 

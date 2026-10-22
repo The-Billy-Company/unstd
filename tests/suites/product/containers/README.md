@@ -2,7 +2,8 @@
 
 Contracts for `unstd.containers`: sorted collections, persistent maps, and actionable errors when optional implementations are absent.
 
-- [unit/](unit/README.md): ordering, persistence, public names, and missing-backend behavior.
+- [unit/](unit/README.md): ordering, persistence, public names, verbatim re-exports, and missing-backend behavior in isolated interpreters.
+- [properties/](properties/README.md): sorted-collection and persistent-map state machines against list/bisect, dict and set models, including comparison/hash faults and retained-version isolation.
 
 Backend operations require the `containers` extra (`sortedcontainers` and `immutables`). Missing-backend guards remain testable without it.
 

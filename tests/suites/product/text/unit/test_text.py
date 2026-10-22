@@ -196,7 +196,8 @@ def test_extract_ranks_best_first() -> None:
     scores = [s for _, s in results]
     assert scores == sorted(scores, reverse=True)  # monotonically non-increasing
     assert results[0][1] == pytest.approx(max(_dl("aple", c) for c in choices))
-    assert "zzzzz" not in {c for c, _ in results} or results[-1][0] == "zzzzz"
+    assert len(results) == len(choices)  # default limit 5 keeps all four
+    assert results[-1] == ("zzzzz", 0.0)  # disjoint from the query
 
 
 def test_extract_limit_caps_result_count() -> None:
@@ -398,14 +399,13 @@ def test_cdist_matches_pairwise_ratio() -> None:
     for row, q in zip(matrix, queries, strict=True):
         assert len(row) == len(choices)
         for score, c in zip(row, choices, strict=True):
-            assert score == pytest.approx(fuzz.ratio(q, c), abs=1e-6)
+            assert score == fuzz.ratio(q, c)
 
 
 def test_cdist_score_cutoff_zeroes_weak_pairs() -> None:
     """Test cdist score cutoff zeroes weak pairs."""
     matrix = fuzz.cdist(["apple"], ["apple", "zzzzzzzz"], score_cutoff=0.5)
-    assert matrix[0][0] == pytest.approx(1.0)
-    assert matrix[0][1] == 0.0
+    assert matrix == [[1.0, 0.0]]
 
 
 def test_cdist_empty_inputs() -> None:

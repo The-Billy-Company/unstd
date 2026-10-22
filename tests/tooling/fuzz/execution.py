@@ -25,7 +25,7 @@ import threading
 import time
 from typing import TYPE_CHECKING, Any
 
-from tests.support.process import kill_owned_process_group
+from tests.support.environment.process import kill_owned_process_group
 
 
 if TYPE_CHECKING:

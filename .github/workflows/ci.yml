@@ -194,6 +194,115 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+  platforms:
+    # Linux owns the interpreter/dependency matrix. The same public contracts
+    # must hold on every other supported OS; POSIX-only probes name the
+    # capability they skip rather than dropping a module.
+    name: ${{ matrix.group.name }} / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+        group:
+          - {id: api, name: API & regressions}
+          - {id: contracts, name: Compatibility & boundaries}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Python & dependency cache
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          enable-cache: auto
+          cache-suffix: platforms-${{ matrix.os }}-${{ matrix.group.id }}
+          cache-dependency-glob: |
+            uv.lock
+            pyproject.toml
+          version: "latest-known"
+          python-version: "3.13"
+      - name: Install test environment & rebuild local extensions
+        run: uv sync --locked --all-extras --group dev --reinstall-package unstd --python 3.13
+      - name: Run ${{ matrix.group.name }}
+        run: uv run --no-sync python -m tests.tooling.ci run ${{ matrix.group.id }} -- --require-extras -q
+      - name: Retain platform test results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: platforms-${{ matrix.group.id }}-${{ matrix.os }}-${{ github.run_attempt }}
+          path: .local/ci/${{ matrix.group.id }}.xml
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+
+  extras:
+    # Each declared extra alone, plus combinations that select different
+    # backends. A lane requires only its own extras; every other backend is
+    # genuinely absent, so fallbacks and missing-extra errors execute for real.
+    name: Partial extras / ${{ matrix.install.name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        install:
+          - {id: serde, name: serde, sync: "--extra serde", pytest: "--require-extra serde"}
+          - {id: ids, name: ids, sync: "--extra ids", pytest: "--require-extra ids"}
+          - {id: crypto, name: crypto, sync: "--extra crypto", pytest: "--require-extra crypto"}
+          - {id: time, name: time without protobuf, sync: "--extra time", pytest: "--require-extra time"}
+          - {id: proto, name: proto without whenever, sync: "--extra proto", pytest: "--require-extra proto"}
+          - {id: model, name: model without msgspec, sync: "--extra model", pytest: "--require-extra model"}
+          - {id: rex, name: rex, sync: "--extra rex", pytest: "--require-extra rex"}
+          - {id: containers, name: containers, sync: "--extra containers", pytest: "--require-extra containers"}
+          - {id: rand, name: rand, sync: "--extra rand", pytest: "--require-extra rand"}
+          - {id: pack, name: pack (audio without soundfile), sync: "--extra pack", pytest: "--require-extra pack"}
+          - {id: text, name: text without NumPy, sync: "--extra text", pytest: "--require-extra text"}
+          - {id: text-numpy, name: text with NumPy, sync: "--extra text --extra rand", pytest: "--require-extra text --require-extra rand"}
+          - {id: audio, name: audio, sync: "--extra audio", pytest: "--require-extra audio"}
+          - {id: toml, name: toml, sync: "--extra toml", pytest: "--require-extra toml"}
+          - {id: yaml, name: yaml, sync: "--extra yaml", pytest: "--require-extra yaml"}
+          - {id: compress, name: compress, sync: "--extra compress", pytest: "--require-extra compress"}
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Python & dependency cache
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          enable-cache: auto
+          cache-suffix: extras-${{ matrix.install.id }}
+          cache-dependency-glob: |
+            uv.lock
+            pyproject.toml
+          version: "latest-known"
+          python-version: "3.13"
+      - name: Install one partial environment & rebuild local extensions
+        run: uv sync --locked ${{ matrix.install.sync }} --group dev --reinstall-package unstd --python 3.13
+      - name: Show resolved backend versions
+        run: uv pip list
+      - name: Run API & regressions
+        run: uv run --no-sync python -m tests.tooling.ci run api -- ${{ matrix.install.pytest }} -q
+      - name: Run Compatibility & boundaries
+        if: ${{ !cancelled() }}
+        run: uv run --no-sync python -m tests.tooling.ci run contracts -- ${{ matrix.install.pytest }} -q
+      - name: Retain partial-extra test results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: extras-${{ matrix.install.id }}-${{ github.run_attempt }}
+          path: |
+            .local/ci/api.xml
+            .local/ci/contracts.xml
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+
   resources:
     name: Resource bounds / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
@@ -361,7 +470,7 @@ jobs:
   result:
     name: CI / Required groups
     if: always()
-    needs: [static-analysis, supply-chain, lint, test, resources, native, native-rust, native-sanitizers]
+    needs: [static-analysis, supply-chain, lint, test, platforms, extras, resources, native, native-rust, native-sanitizers]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

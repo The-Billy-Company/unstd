@@ -8,7 +8,7 @@ import sys
 
 import pytest
 
-from tests.support.anchors import REPO_ROOT
+from tests.support.environment.anchors import REPO_ROOT
 
 
 _DUPLICATE_BODY = """    output = []

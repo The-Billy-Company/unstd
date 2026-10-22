@@ -13,7 +13,7 @@ import json
 
 import pytest
 
-from tests.support.backends import require_backend
+from tests.support.environment.backends import require_backend
 from tests.tooling.fuzz.execution import run_inputs
 from tests.tooling.fuzz.registry import load_registry, load_seeds
 

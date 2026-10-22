@@ -18,7 +18,7 @@ import zipfile
 
 import pytest
 
-from tests.tooling import release
+from tests.tooling.release import verify as release
 
 
 if TYPE_CHECKING:

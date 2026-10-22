@@ -2,8 +2,10 @@
 
 Contracts for `unstd.toml`: stdlib-faithful reading and optional comment-preserving writing.
 
-- [unit/](unit/README.md): tomllib behavior, editing helpers, and missing-extra guards.
-- [properties/](properties/README.md): generated read parity and optional writer round trips.
+- [unit/](unit/README.md): tomllib behavior, exact style-preserving edit fixtures, date/time/numeric boundaries, TOML 1.0/1.1 dialect fixtures, and missing-extra guards.
+- [properties/](properties/README.md): generated read parity, writer round trips, and stateful edit sequences.
+- [security/](security/README.md): malformed documents rejected with located errors by both halves.
+- [integration/](integration/README.md): real binary/text handles and fixture-owned failing streams.
 
 Reads run without extras. Writer and editable-document cases use the `toml` extra (`tomlkit`); missing-writer behavior is tested explicitly.
 

@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import pytest
 
-from tests.support.backends import require_backend
+from tests.support.environment.backends import require_backend
 
 
 msgspec = require_backend("msgspec")

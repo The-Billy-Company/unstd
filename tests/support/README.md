@@ -4,16 +4,19 @@ Reusable mechanisms live here; executable product and harness assertions stay in
 [suites](../suites/README.md). Helpers operate real temporary files, subprocesses,
 loopback peers, or public fault seams so tests can observe the boundary they claim.
 
-| Files | Responsibility |
+Helpers are grouped by purpose; the root contains only this guide and the package
+initializer. Import the specific module that owns the mechanism.
+
+| Package | Responsibility |
 | --- | --- |
-| `anchors.py`, `backends.py` | Repository paths and optional/required backend admission |
-| [hypothesis](hypothesis/README.md) | Shared generation profiles loaded at collection |
-| `process.py`, `parser_cases.py`, `parser_worker.py` | Owned Python subprocesses and bounded hostile parser/regex execution |
-| `tls.py` | Independent certificate fixtures and bounded loopback TLS peers |
-| `packaging.py` | Frozen source snapshots, offline artifact builds, pristine installed consumers, and probe definitions |
-| `chaos.py`, `chaos_*.py` | Versioned schedules, bounded journals, and filesystem/process, stream, clock, and entropy fault experiments |
-| `concurrency_*.py` | Gated filesystem, UUID, and shared-state histories with independent observations |
-| `resources.py`, `resource_*.py` | Measured resource workers, streaming/cache/OS probes, and deliberate failure controls |
+| [`environment/`](environment/) | Repository paths (`anchors.py`), optional/required backend admission (`backends.py`), and owned Python subprocesses (`process.py`) |
+| [hypothesis/](hypothesis/README.md) | Shared generation profiles loaded at collection |
+| [`parsers/`](parsers/) | Bounded hostile parser/regex execution through `cases.py` and its isolated `worker.py` |
+| [`security/`](security/) | Independent certificate fixtures and bounded loopback TLS peers in `tls.py` |
+| [`packaging/`](packaging/) | Frozen source snapshots, offline artifact builds, pristine installed consumers, and probe definitions in `artifacts.py` |
+| [`chaos/`](chaos/) | Versioned schedules and bounded journals (`journal.py`), plus filesystem/process, stream, clock, and entropy fault experiments |
+| [`concurrency/`](concurrency/) | Gated filesystem, UUID, and shared-state histories with independent observations |
+| [`resources/`](resources/) | Measured resource workers (`runner.py`), streaming/cache/OS probes, and deliberate failure controls |
 
 Add a helper when real tests need to share a mechanism. Keep product-specific
 expected outcomes in the owning suite; test harness admission, containment, and

@@ -4,6 +4,8 @@
 
 `test_stable_scorers.py` compares named algorithms with an independent edit matrix and RapidFuzz, then checks explicit-scorer ranking, ties, cutoffs, Unicode, empty inputs, and NumPy-free batching in both backend configurations.
 
+`test_batch_boundaries.py` pins hand-derived ties with duplicates at every `limit`, cutoffs one float above and below a score, one-shot iterator choices, `cdist` workers on the batch kernel and Python paths, large all-pairs matrix shape/element types, and the documented difflib `autojunk` divergence from Indel.
+
 Portable cases run without extras. RapidFuzz comparisons require the `text` capability; compiled kernel tests skip when the native extension is absent.
 
 Run from the repository root:

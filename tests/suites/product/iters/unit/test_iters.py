@@ -14,6 +14,8 @@ from collections.abc import Generator
 from itertools import count, islice
 from typing import TYPE_CHECKING
 
+from hypothesis import given
+from hypothesis import strategies as st
 import pytest
 
 from unstd.iters import (
@@ -361,9 +363,6 @@ def test_flatten_one_level_only() -> None:
 
 
 # ── fast paths agree with the naive definitions they replace ───────────────────
-
-from hypothesis import given  # noqa: E402
-from hypothesis import strategies as st  # noqa: E402
 
 
 def _naive_windows(xs: list[int], n: int, step: int) -> list[tuple[int, ...]]:

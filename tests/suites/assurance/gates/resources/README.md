@@ -1,6 +1,6 @@
 # Resource harness gates
 
-`test_harness.py` checks [resource workers](../../../../support/resources.py)
+`test_harness.py` checks [resource workers](../../../../support/resources/runner.py)
 with real success, assertion, crash, output-flood, hang, memory-growth, leak, and
 descendant-process controls. It requires accurate backend/provenance measurements,
 bounded output, enforced wall/CPU/memory budgets, unconditional process-group

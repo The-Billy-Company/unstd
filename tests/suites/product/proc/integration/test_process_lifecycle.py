@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from tests.support.process import run_python
+from tests.support.environment.process import run_python
 
 
 if TYPE_CHECKING:
@@ -79,10 +79,11 @@ print('TIMED_OUT_AND_REAPED')
 
 
 @pytest.mark.skipif(os.name != "posix", reason="POSIX signal exit status contract")
-@pytest.mark.parametrize("termination_signal", [signal.SIGTERM, signal.SIGKILL])
+@pytest.mark.parametrize("signal_name", ["SIGTERM", "SIGKILL"])
 def test_signal_exit_is_negative_and_checked_error_retains_output(
-    tmp_path: Path, termination_signal: signal.Signals
+    tmp_path: Path, signal_name: str
 ) -> None:
+    termination_signal = getattr(signal, signal_name)
     child = """
 import os
 import signal

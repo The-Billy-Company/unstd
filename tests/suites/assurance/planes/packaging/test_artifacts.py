@@ -21,8 +21,8 @@ import zipfile
 from packaging.utils import parse_wheel_filename
 import pytest
 
-from tests.support.anchors import REPO_ROOT
-from tests.support.packaging import (
+from tests.support.environment.anchors import REPO_ROOT
+from tests.support.packaging.artifacts import (
     checked_command,
     clean_environment,
     create_consumer,
@@ -34,7 +34,7 @@ if TYPE_CHECKING:
     from email.message import Message
     from pathlib import Path
 
-    from tests.support.packaging import Artifacts
+    from tests.support.packaging.artifacts import Artifacts
 
 
 with (REPO_ROOT / "pyproject.toml").open("rb") as _manifest:

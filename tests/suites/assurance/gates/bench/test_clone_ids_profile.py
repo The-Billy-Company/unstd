@@ -16,7 +16,7 @@ from bench.clone_ids_profile import (
     _same,
     _workloads,
 )
-from tests.support.anchors import REPO_ROOT
+from tests.support.environment.anchors import REPO_ROOT
 
 
 @pytest.mark.parametrize("value", [[1], {"nested": [1]}, Record("record", [1])])

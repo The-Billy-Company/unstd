@@ -23,7 +23,7 @@ from bench.native_profile import (
     _workloads,
 )
 from bench.timing import Measurement
-from tests.support.anchors import REPO_ROOT
+from tests.support.environment.anchors import REPO_ROOT
 from unstd.clone import structural
 from unstd.text import fuzz
 

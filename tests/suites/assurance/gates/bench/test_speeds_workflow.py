@@ -8,8 +8,8 @@ from typing import Any
 
 import pytest
 
-from tests.support.anchors import REPO_ROOT
-from tests.support.backends import require_backend
+from tests.support.environment.anchors import REPO_ROOT
+from tests.support.environment.backends import require_backend
 
 
 @pytest.fixture(scope="module")

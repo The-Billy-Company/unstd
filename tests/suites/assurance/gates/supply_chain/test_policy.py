@@ -12,8 +12,8 @@ from urllib import request
 
 import pytest
 
-from tests.support.anchors import REPO_ROOT
-from tests.tooling import supply_chain
+from tests.support.environment.anchors import REPO_ROOT
+from tests.tooling.supply_chain import policy as supply_chain
 
 
 if TYPE_CHECKING:
@@ -91,7 +91,7 @@ def repo(tmp_path: Path) -> Path:
     return tmp_path
 
 
-def _replace(root: Path, file: str, old: str, new: str) -> None:
+def _replace(root: Path, file: str, old: str, new: str):
     path = root / file
     text = path.read_text()
     assert old in text
@@ -474,7 +474,7 @@ def test_sbom_contains_every_locked_component_hash_and_dependency_deterministica
 
 def test_cli_json_and_saved_sbom_match_the_library_and_invalid_policy_creates_no_output(
     repo, capsys
-):
+) -> None:
     assert supply_chain.main(["check", "--json"], repo_root=repo) == 0
     assert json.loads(capsys.readouterr().out) == supply_chain.check_policy(repo)
     path = repo / "reports/sbom.json"

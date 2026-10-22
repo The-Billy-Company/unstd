@@ -5,7 +5,7 @@ own contracts for individual `unstd` modules; [assurance suites](assurance/READM
 own cross-module risks, installed artifacts, and test-tool correctness.
 
 Every test file must have exactly one active owner in the
-[suite inventory](../tooling/inventory.toml). Add new tests to the appropriate
+[suite inventory](../tooling/suites/inventory.toml). Add new tests to the appropriate
 owner and update the inventory when adding a new leaf. Planned lanes contain
 documentation only and cannot be run as passing coverage.
 

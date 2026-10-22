@@ -15,7 +15,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from tests.support.backends import require_backend
+from tests.support.environment.backends import require_backend
 from unstd.serde import ndjson
 
 

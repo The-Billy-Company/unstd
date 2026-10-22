@@ -16,7 +16,7 @@ import wave
 
 import pytest
 
-from tests.support.backends import require_backend
+from tests.support.environment.backends import require_backend
 from tests.tooling.fuzz.targets import gzip, pack, rex, toml, wav
 
 

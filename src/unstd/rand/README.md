@@ -75,12 +75,12 @@ its default `int64` dtype, while stdlib supports arbitrary-sized integers.
 Weight validation retains the selected engine's behavior. For weighted draws,
 use finite non-negative weights with a positive
 total and one weight per population item; exact extreme-value limits and errors
-can differ between engines.
+can differ between engines. A non-positive total raises `ValueError` on both.
 
 The bulk helpers `floats`/`ints` return a NumPy `ndarray` on the NumPy backend and
 a Python `list` on the stdlib fallback, with different seeded sequences. These
-contracts are checked in
-[`test_rand.py`](../../../tests/suites/product/rand/unit/test_rand.py).
+contracts are checked under
+[`tests/suites/product/rand/`](../../../tests/suites/product/rand/README.md).
 
 ## `crypto` — the CSPRNG path
 

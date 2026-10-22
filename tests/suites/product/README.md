@@ -2,9 +2,8 @@
 
 Tests mirror `src/unstd/<module>`, with evidence kinds beneath each module.
 Active leaves include `unit`, `parity`, `properties`, `security`, `regression`,
-and filesystem/process `integration`. Each module README describes its leaves
-and optional capabilities. The empty crypto and serde regression leaves are
-reserved locations and claim no executable coverage.
+and filesystem/process/stream `integration`. Each module README describes its
+leaves and optional capabilities.
 
 Run all product contracts from the repository root:
 
@@ -18,7 +17,7 @@ built extensions; optional capability and platform guards still apply.
 
 Existing mixed API files retain their assertions. New files should make the
 evidence kind explicit. Register active leaves in
-[the inventory](../../tooling/inventory.toml); every
+[the inventory](../../tooling/suites/inventory.toml); every
 test file must have exactly one active suite owner. Shared strategy construction
 belongs under `tests/support`, while the module-specific law stays here.
 

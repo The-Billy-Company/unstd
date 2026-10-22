@@ -20,22 +20,22 @@ from uuid import RFC_4122, UUID
 
 import pytest
 
-from tests.support.anchors import REPO_ROOT
-from tests.support.backends import require_backend
-from tests.support.chaos import ordered
+from tests.support.chaos.journal import ordered
+from tests.support.environment.anchors import REPO_ROOT
+from tests.support.environment.backends import require_backend
 
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from tests.support.chaos import ChaosJournal
+    from tests.support.chaos.journal import ChaosJournal
 
 
 BASE = 1_700_000_000_000
 FAULTS = (errno.EIO, errno.EAGAIN, errno.EINTR)
 _LAUNCH = (
     "import sys; sys.path[:0] = [sys.argv.pop(1), sys.argv.pop(1)]; "
-    "from tests.support.chaos_clock_entropy import main; main()"
+    "from tests.support.chaos.clock_entropy import main; main()"
 )
 
 

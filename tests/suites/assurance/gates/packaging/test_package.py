@@ -18,7 +18,7 @@ import tomllib
 
 import pytest
 
-from tests.support.anchors import PRODUCT_ROOT, REPO_ROOT
+from tests.support.environment.anchors import PRODUCT_ROOT, REPO_ROOT
 import unstd
 
 

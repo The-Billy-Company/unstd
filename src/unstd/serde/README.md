@@ -267,7 +267,8 @@ value = CODEC.decode_or(raw, default=None)  # "malformed -> cache miss" conventi
 ```
 
 `decode_or` swallows only `msgspec.DecodeError` (which includes
-`ValidationError`); any other exception propagates. `float_enc_hook` coerces
+`ValidationError`) and the `UnicodeError` msgspec raises for non-UTF-8 string
+content; any other exception propagates. `float_enc_hook` coerces
 unsupported numeric scalars (`numpy.float32`/`float64`) to `float` so a
 numpy-bearing struct serializes identically to one built from native floats.
 Msgspec handles `Decimal` natively before consulting the hook: it emits JSON

@@ -1,7 +1,7 @@
 # Release verifier gates
 
 `test_verifier.py` constructs small wheel/sdist fixtures and corrupts them to
-check the stdlib-only [release verifier](../../../../tooling/release.py). It
+check the stdlib-only [release verifier](../../../../tooling/release/verify.py). It
 requires safe archive members, consistent package/version/tag metadata, valid
 wheel RECORD hashes and sizes, bounded decompression, an admitted distribution
 set, and an exact publication manifest. Isolated CLI tests exercise manifest

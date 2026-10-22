@@ -12,5 +12,5 @@ These directories group tests of real installation and application boundaries.
 
 Existing filesystem and process integration contracts remain in their owning
 product suites; `uv run --no-sync python -m tests.tooling run integration -- -q`
-selects those active tests. The [inventory](../../../tooling/inventory.toml)
+selects those active tests. The [inventory](../../../tooling/suites/inventory.toml)
 defines each lane's actual status and paths.

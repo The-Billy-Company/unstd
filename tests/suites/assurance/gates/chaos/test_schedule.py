@@ -7,7 +7,7 @@ import random
 
 import pytest
 
-from tests.support.chaos import (
+from tests.support.chaos.journal import (
     MAX_EVENTS,
     MAX_JOURNAL_BYTES,
     VERSION,

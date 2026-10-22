@@ -13,7 +13,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from tests.support.backends import require_backend
+from tests.support.environment.backends import require_backend
 
 
 _KEY = bytes(range(32))

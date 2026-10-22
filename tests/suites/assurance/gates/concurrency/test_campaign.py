@@ -16,12 +16,12 @@ import signal
 
 import pytest
 
-from tests.support.anchors import REPO_ROOT
-from tests.support.process import run_python
+from tests.support.environment.anchors import REPO_ROOT
+from tests.support.environment.process import run_python
 from tests.tooling.chaos import __main__ as shared_cli
 from tests.tooling.chaos import execution
 from tests.tooling.concurrency import __main__ as cli
-from tests.tooling.runner import check_inventory
+from tests.tooling.suites.runner import check_inventory
 
 
 def _command(*arguments):
@@ -77,7 +77,7 @@ def test_default_pytest_excludes_scenarios_but_explicit_suite_runner_collects_th
     assert default.returncode == 5, (default.stdout, default.stderr)
     assert "::test_" not in default.stdout
     explicit = run_python(
-        "from tests.tooling.runner import main; raise SystemExit(main())",
+        "from tests.tooling.suites.runner import main; raise SystemExit(main())",
         ("run", "concurrency", "--", "--collect-only", "-q"),
         cwd=REPO_ROOT,
         timeout=20,
@@ -150,7 +150,7 @@ def test_reviewed_controls_preserve_lane_identity_journals_limits_and_exit_statu
     assert report["limits"]["wall_seconds"] == 8
     for source in (
         "tests/suites/assurance/adversarial/concurrency/test_ids.py",
-        "tests/support/concurrency_ids.py",
+        "tests/support/concurrency/ids.py",
         "tests/tooling/concurrency/__main__.py",
         "tests/tooling/chaos/worker.py",
         "src/unstd/ids/uid.py",

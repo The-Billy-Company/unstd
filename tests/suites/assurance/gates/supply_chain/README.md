@@ -43,7 +43,7 @@ It emits a SHA256 manifest outside `dist`:
 
 ```console
 python -m tests.tooling.release verify --dist dist --tag v3.1.0 --manifest evidence/manifest.json
-python -I tests/tooling/release.py verify --dist dist --tag v3.1.0 --expected-manifest evidence/manifest.json
+python -I tests/tooling/release/verify.py verify --dist dist --tag v3.1.0 --expected-manifest evidence/manifest.json
 ```
 
 Omit `--tag` for a manual build rehearsal; the verifier infers the version from

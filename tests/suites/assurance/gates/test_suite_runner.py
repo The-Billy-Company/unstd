@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from tests.tooling import runner
+from tests.tooling.suites import runner
 
 
 if TYPE_CHECKING:
@@ -23,7 +23,7 @@ def repo(tmp_path: Path) -> Path:
         'markers = ["unit: unit evidence", "chaos: faults", "concurrency: histories", "resources: bounds", "perf: timing"]\n',
         encoding="utf-8",
     )
-    (tmp_path / "tests/tooling").mkdir(parents=True)
+    (tmp_path / "tests/tooling/suites").mkdir(parents=True)
     path = tmp_path / "tests/suites/product/serde/unit"
     path.mkdir(parents=True)
     (path / "test_contract.py").write_text(
@@ -50,7 +50,7 @@ def _inventory(root: Path, *rows: dict[str, object]) -> None:
         + "".join(f"{key} = {json.dumps(value)}\n" for key, value in row.items())
         for row in records
     )
-    (root / "tests/tooling/inventory.toml").write_text(text, encoding="utf-8")
+    (root / "tests/tooling/suites/inventory.toml").write_text(text, encoding="utf-8")
 
 
 def test_active_suite_is_validated_and_listed(
@@ -315,7 +315,9 @@ def test_run_refuses_inventory_drift_before_starting_pytest(
 def test_malformed_inventory_is_an_actionable_failure(
     repo: Path, contents: str, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    (repo / "tests/tooling/inventory.toml").write_text(contents, encoding="utf-8")
+    (repo / "tests/tooling/suites/inventory.toml").write_text(
+        contents, encoding="utf-8"
+    )
     assert runner.main(["check"], repo_root=repo) == 2
     assert "suite inventory:" in capsys.readouterr().err
 
@@ -323,7 +325,7 @@ def test_malformed_inventory_is_an_actionable_failure(
 def test_missing_inventory_is_an_actionable_failure(
     repo: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    (repo / "tests/tooling/inventory.toml").unlink()
+    (repo / "tests/tooling/suites/inventory.toml").unlink()
     assert runner.main(["check"], repo_root=repo) == 2
     assert "cannot read" in capsys.readouterr().err
 

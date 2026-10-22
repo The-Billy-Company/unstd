@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from tests.tooling import supply_chain
+from tests.tooling.supply_chain import policy as supply_chain
 
 
 if TYPE_CHECKING:

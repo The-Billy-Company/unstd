@@ -35,3 +35,8 @@ use a quiet machine. The directory is omitted from optional collection when
 `bench` cannot import; `--require-extras` makes missing required capabilities
 fatal. The separate [performance lane](../../evals/performance/README.md) is
 active and opt-in; it verifies the frozen per-function latency ceilings.
+
+The measurement divisor is checked against an independent virtual nanosecond
+clock at four known costs, so scheduler delays cannot masquerade as arithmetic
+errors. The explicit `perf` tests still exercise real-clock calibration and
+human-readable timing units.

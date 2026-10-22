@@ -34,6 +34,12 @@ behavior canaries prove that state corruption, hidden failures or unreaped
 children are detected. Errors from injected providers are tested at the real
 module seam rather than replacing the program with a canned result.
 
+Strict durability also has a mixed filesystem history: preflight refusal must
+retain old bytes, while post-commit fsync failure or cancellation must retain
+new bytes and report that the replacement committed. Simultaneous fsync/close
+failures retain the primary exception and cleanup evidence. Every step checks
+descriptor release and neighboring data, then requires a successful strict write.
+
 ## Seeds and replay
 
 `ordered()` derives a local RNG from the versioned seed and scenario namespace.

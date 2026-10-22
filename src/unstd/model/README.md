@@ -74,6 +74,10 @@ part of a base swap.
 
 [`tests/suites/product/model/unit/`](../../../tests/suites/product/model/unit/README.md)
 checks field-name and alias population, unknown-field handling, frozen models,
-settings sources, and emitted schemas. Run from the repository root with
+emitted schemas, and missing-extra errors.
+[`properties/`](../../../tests/suites/product/model/properties/README.md) compares
+generated layouts with explicitly configured Pydantic twins, and
+[`integration/`](../../../tests/suites/product/model/integration/README.md) checks
+environment and dotenv precedence in isolated workers. Run from the repository root with
 `uv run --no-sync pytest tests/suites/product/model -q`; install the `model`
 extra to exercise these contracts.

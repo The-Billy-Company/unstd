@@ -37,7 +37,7 @@ identically — only the missing combinators, plus two convenience re-exports
 | `ilen(iterable)`                        | `int`                    | count without building a list (`deque(zip(it, count()), maxlen=0)` drain); exhausts the iterable                                      |
 | `unique_everseen(iterable, key=None)`   | `Iterator`               | drop _any_ later repeat, first wins — hardened for **unhashable keys**                                                                |
 | `unique_justseen(iterable, key=None)`   | `Iterator`               | collapse only _consecutive_ duplicates (O(1) memory)                                                                                  |
-| `partition(iterable, pred)`             | `(falsy_it, truthy_it)`  | split into false/true streams in **one shared pass** (`tee`); each element drawn once, `pred` called once                             |
+| `partition(iterable, pred)`             | `(falsy_it, truthy_it)`  | split into false/true streams in **one shared pass** (`tee`); each element drawn once, `pred` and its result's truth test called once                             |
 | `flatten(iterable_of_iterables)`        | `Iterator`               | flatten one level (`chain.from_iterable`, renamed)                                                                                    |
 | `batched` · `pairwise`                  | (stdlib)                 | re-exported from `itertools` for one-stop importing                                                                                   |
 
@@ -61,3 +61,10 @@ section and the same-named helpers in
 al.). They are **native reimplementations, not a dependency** — adopting the
 recipe shapes without pulling `more-itertools` into `unstd`'s (empty) runtime
 closure, which is the whole point of the pure-stdlib base.
+
+`unique_everseen` compares equal keys across its hashable and unhashable
+histories: a set and an equal frozenset count as the same value, in either order.
+Hashable keys retain the fast set lookup; mixed histories need cross-comparison.
+`partition` freezes each predicate result to a boolean before sharing it, so
+mutable results and side-effecting truth tests cannot change the other side's
+membership.

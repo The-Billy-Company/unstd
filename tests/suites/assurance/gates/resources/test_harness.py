@@ -16,18 +16,18 @@ from types import SimpleNamespace
 
 import pytest
 
-from tests.support import process as process_support
-from tests.support import resources
-from tests.support.anchors import REPO_ROOT
-from tests.support.chaos import BLOCKED_BACKENDS
-from tests.support.process import run_python
+from tests.support.chaos.journal import BLOCKED_BACKENDS
+from tests.support.environment import process as process_support
+from tests.support.environment.anchors import REPO_ROOT
+from tests.support.environment.process import run_python
+from tests.support.resources import runner as resources
 
 
 pytestmark = pytest.mark.skipif(
     sys.platform not in {"linux", "darwin"},
     reason="resource containment requires Linux or macOS",
 )
-CONTROLS = "tests.support.resource_controls"
+CONTROLS = "tests.support.resources.controls"
 
 
 def test_resource_lane_requires_explicit_selection():
@@ -44,7 +44,7 @@ def test_resource_lane_requires_explicit_selection():
     assert default.returncode == 5, (default.stdout, default.stderr)
     assert "::test_" not in default.stdout
     explicit = run_python(
-        "from tests.tooling.runner import main; raise SystemExit(main())",
+        "from tests.tooling.suites.runner import main; raise SystemExit(main())",
         ("run", "resources", "--", "--collect-only", "-q"),
         cwd=REPO_ROOT,
         timeout=15,

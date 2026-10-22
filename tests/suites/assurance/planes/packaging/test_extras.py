@@ -9,8 +9,8 @@ from packaging.requirements import Requirement
 from packaging.utils import canonicalize_name
 import pytest
 
-from tests.support.anchors import REPO_ROOT
-from tests.support.packaging import (
+from tests.support.environment.anchors import REPO_ROOT
+from tests.support.packaging.artifacts import (
     CONSUMER_PROVENANCE,
     _quarantine_args,
     create_consumer,
@@ -21,7 +21,7 @@ from tests.support.packaging import (
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from tests.support.packaging import Artifacts
+    from tests.support.packaging.artifacts import Artifacts
 
 
 with (REPO_ROOT / "pyproject.toml").open("rb") as _manifest:

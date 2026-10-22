@@ -9,8 +9,9 @@ import sys
 
 import pytest
 
-from tests.support.anchors import REPO_ROOT
-from tests.tooling import ci, runner
+from tests.support.environment.anchors import REPO_ROOT
+from tests.tooling.ci import groups as ci
+from tests.tooling.suites import runner
 
 
 _OWNERS = {
@@ -42,7 +43,9 @@ def _add_suite(root: Path, identity: str, *, status: str = "active") -> None:
         # Deliberately shared: CI must partition owners, not overlapping markers.
         "marker": "unit",
     }
-    with (root / "tests/tooling/inventory.toml").open("a", encoding="utf-8") as stream:
+    with (root / "tests/tooling/suites/inventory.toml").open(
+        "a", encoding="utf-8"
+    ) as stream:
         stream.write("\n[[suite]]\n")
         stream.writelines(
             f"{key} = {json.dumps(value)}\n" for key, value in row.items()
@@ -55,8 +58,8 @@ def repo(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
         '[tool.pytest.ini_options]\nmarkers = ["unit: contracts"]\n'
         'addopts = "--import-mode=importlib"\n'
     )
-    (tmp_path / "tests/tooling").mkdir(parents=True)
-    (tmp_path / "tests/tooling/inventory.toml").write_text("version = 1\n")
+    (tmp_path / "tests/tooling/suites").mkdir(parents=True)
+    (tmp_path / "tests/tooling/suites/inventory.toml").write_text("version = 1\n")
     for identity in sorted(set.union(*_OWNERS.values()) | ci.OPT_IN_SUITES):
         _add_suite(tmp_path, identity)
     _add_suite(tmp_path, "system-integration", status="planned")

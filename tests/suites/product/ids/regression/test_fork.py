@@ -15,8 +15,8 @@ from uuid import UUID
 
 import pytest
 
-from tests.support.concurrency_ids import BASE_MS, TAIL
-from tests.support.process import run_python
+from tests.support.concurrency.ids import BASE_MS, TAIL
+from tests.support.environment.process import run_python
 
 
 if TYPE_CHECKING:
@@ -28,7 +28,7 @@ def test_child_can_mint_after_fork_with_a_held_parent_counter_lock(
     tmp_path: Path,
 ) -> None:
     completed = run_python(
-        "from tests.support.concurrency_ids import main; main()",
+        "from tests.support.concurrency.ids import main; main()",
         ("fork", '{"seed":173}'),
         cwd=tmp_path,
         timeout=12,

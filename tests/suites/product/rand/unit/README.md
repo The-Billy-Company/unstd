@@ -7,6 +7,8 @@ engines, including mixed scalar and bulk draws, failed reseeding, backend
 selection, invalid draw shapes, and isolation from module/global/crypto state.
 A NumPy-free import also checks runtime annotation introspection.
 
+`test_boundaries.py` covers equal/reversed and arbitrary-precision scalar ranges, empty populations, zero/non-finite/mismatched weights without consuming draws, engine-defined mixed-sign weights, per-backend scalar/bulk engine ownership, NumPy dtypes and int64 limits, and secure-token lengths, alphabets, and argument errors.
+
 Seeded sequences are compared within their selected backend. Tests do not require NumPy and stdlib generators to produce identical sequences, and collision samples alone are not treated as proof of cryptographic security.
 
 Run from the repository root:

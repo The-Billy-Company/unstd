@@ -15,9 +15,9 @@ import zipfile
 
 import pytest
 
-from tests.support.anchors import REPO_ROOT
-from tests.support.backends import require_backend
-from tests.tooling import ci
+from tests.support.environment.anchors import REPO_ROOT
+from tests.support.environment.backends import require_backend
+from tests.tooling.ci import groups as ci
 
 
 if TYPE_CHECKING:
@@ -47,26 +47,6 @@ def _sync(job):
         for step in job["steps"]
         if step.get("run", "").startswith("uv sync ")
     )
-
-
-def _uv_runs(script):
-    # Bash removes escaped newlines before tokenizing a logical command.
-    for line in re.sub(r"\\\r?\n", "", script).splitlines():
-        if line.strip().startswith("uv run "):
-            yield shlex.split(line)
-
-
-@pytest.mark.parametrize(
-    ("command", "preserved"),
-    [
-        ("uv run --no-sync mypy \\\n  --python-version 3.13", True),
-        ("uv run \\\n  --no-sync mypy --python-version 3.13", True),
-        ("uv run mypy \\\n  --python-version 3.13", False),
-    ],
-)
-def test_uv_environment_check_reads_complete_shell_commands(command, preserved):
-    (tokens,) = _uv_runs(command)
-    assert ("--no-sync" in tokens) is preserved
 
 
 def test_every_owned_group_runs_in_every_supported_dependency_environment(workflow):
@@ -139,12 +119,70 @@ def test_test_commands_use_the_selected_group_and_preserve_its_resolved_environm
     # A later uv invocation must not replace floors, base, or native-only extras.
     for candidate in workflow["jobs"].values():
         for step in candidate.get("steps", []):
-            for tokens in _uv_runs(step.get("run", "")):
-                assert "--no-sync" in tokens
+            for line in step.get("run", "").splitlines():
+                if line.strip().startswith("uv run "):
+                    assert "--no-sync" in shlex.split(line)
+
+
+def _group_runs(job):
+    return [
+        step["run"]
+        for step in job["steps"]
+        if "tests.tooling.ci run " in step.get("run", "")
+    ]
+
+
+def test_public_contract_groups_run_on_every_other_supported_os(workflow):
+    job = workflow["jobs"]["platforms"]
+    matrix = job["strategy"]["matrix"]
+    assert set(matrix) == {"os", "group"}
+    assert set(matrix["os"]) == {"macos-latest", "windows-latest"}
+    assert {group["id"] for group in matrix["group"]} == {"api", "contracts"}
+    assert job["runs-on"] == "${{ matrix.os }}"
+    assert job["strategy"]["fail-fast"] is False
+    sync = shlex.split(_sync(job))
+    assert {"--locked", "--all-extras"} <= set(sync)
+    assert _group_runs(job) == [
+        "uv run --no-sync python -m tests.tooling.ci run ${{ matrix.group.id }}"
+        " -- --require-extras -q"
+    ]
+
+
+def test_every_declared_extra_runs_alone_and_requires_exactly_what_it_installs(
+    workflow,
+):
+    job = workflow["jobs"]["extras"]
+    rows = job["strategy"]["matrix"]["install"]
+    assert len(rows) == len({row["id"] for row in rows})
+    assert job["strategy"]["fail-fast"] is False
+    installs = []
+    for row in rows:
+        sync, pytest_args = shlex.split(row["sync"]), shlex.split(row["pytest"])
+        installed = set(sync[1::2])
+        assert sync[::2] == ["--extra"] * len(installed)
+        assert pytest_args[::2] == ["--require-extra"] * len(installed)
+        # A lane admitting fewer extras than it installs could silently skip one.
+        assert set(pytest_args[1::2]) == installed
+        installs.append(frozenset(installed))
+    with (REPO_ROOT / "pyproject.toml").open("rb") as stream:
+        extras = tomllib.load(stream)["project"]["optional-dependencies"]
+    declared = {name for name, requirements in extras.items() if requirements}
+    assert {frozenset({name}) for name in declared} <= set(installs)
+    assert set().union(*installs) == declared
+    template = _sync(job)
+    assert "--all-extras" not in template
+    assert "${{ matrix.install.sync }}" in template
+    assert _group_runs(job) == [
+        f"uv run --no-sync python -m tests.tooling.ci run {group}"
+        " -- ${{ matrix.install.pytest }} -q"
+        for group in ("api", "contracts")
+    ]
+    second = next(s for s in job["steps"] if "run contracts" in s.get("run", ""))
+    assert second["if"] == "${{ !cancelled() }}"
 
 
 def test_cached_dependency_setup_rebuilds_source_before_running_tests(workflow):
-    for identity in ("lint", "test", "resources", "native"):
+    for identity in ("lint", "test", "platforms", "extras", "resources", "native"):
         job = workflow["jobs"][identity]
         setup_index = next(
             index

@@ -4,6 +4,7 @@ Contracts for `unstd.pack.binpack`: stdlib wire formats and compatible array pac
 
 - [unit/](unit/README.md): struct parity, array formats, buffer handling, and backend agreement.
 - [properties/](properties/README.md): generated struct formats, offsets, and truncated inputs.
+- [regression/](regression/README.md): dtype spelling and buffer byte-size defects.
 
 Scalar contracts and forced fallback tests run without extras. NumPy array-path cases run when the `pack` capability is installed.
 

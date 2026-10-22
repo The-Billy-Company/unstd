@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import sys
 
-from tests.support.packaging import Consumer, checked_command
+from tests.support.packaging.artifacts import Consumer, checked_command
 
 
 _POSITIVE = """from datetime import datetime

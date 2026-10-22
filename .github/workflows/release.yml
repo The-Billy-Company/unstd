@@ -126,7 +126,7 @@ jobs:
           tag_args=()
           if [ -n "$RELEASE_TAG" ]; then tag_args=(--tag "$RELEASE_TAG"); fi
           python -m tests.tooling.release verify --dist dist "${tag_args[@]}" --manifest evidence/manifest.json
-          cp tests/tooling/release.py evidence/release.py
+          cp tests/tooling/release/verify.py evidence/release.py
       - name: Retain verified distributions
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:

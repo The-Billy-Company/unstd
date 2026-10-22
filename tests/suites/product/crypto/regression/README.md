@@ -1,11 +1,18 @@
-# Cryptography regression reservation
+# Cryptography regressions
 
-This directory is reserved for minimized confirmed defects in `unstd.crypto`,
-with an independent assertion and a reference to the original failure. It
-currently contains no test files and is not an active inventory owner.
+`test_derive_key_context.py` retains the KDF mode drop: `digest.derive_key(None, material)`
+returned `digest.raw(material)` because the BLAKE3 backend reads a `None`
+context as plain hashing. A missing context must raise `TypeError` on the serial
+and parallel paths, and the published `derive_key` vector must still hold
+afterwards. The test failed against the original implementation.
 
-Follow [the coverage plan](../../../../COVERAGE.md) before adding tests, then
-register this path in the existing active `regression` suite in
-[the inventory](../../../../tooling/inventory.toml). No runnable coverage is
-claimed here. Current evidence lives in [unit](../unit/README.md) and
-[security](../security/README.md).
+These tests require BLAKE3 from the `crypto` extra; `--require-extras` turns its
+absence into a failure.
+
+Run from the repository root:
+
+```console
+uv run --no-sync pytest tests/suites/product/crypto/regression -q
+```
+
+See [the module test overview](../README.md) for related evidence.

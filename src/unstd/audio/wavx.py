@@ -361,7 +361,8 @@ class Writer:
         if self._sf_handle is not None:
             self._sf_handle.close()
         elif self._wave is not None:
-            self._wave.close()
+            wav, self._wave = self._wave, None
+            wav.close()
 
     def __enter__(self) -> Self:
         """Enter the writer's context, returning self."""

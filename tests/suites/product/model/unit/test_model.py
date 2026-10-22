@@ -31,8 +31,11 @@ def test_extra_key_is_forbidden() -> None:
         name: str
 
     assert Sample(name="ok").name == "ok"
-    with pytest.raises(ValidationError):
+    with pytest.raises(ValidationError) as caught:
         Sample.model_validate({"name": "ok", "unexpected": 1})
+    assert [(e["type"], e["loc"]) for e in caught.value.errors()] == [
+        ("extra_forbidden", ("unexpected",))
+    ]
 
 
 def test_validate_by_name_is_a_superset_alias_or_name_both_populate() -> None:
@@ -43,6 +46,8 @@ def test_validate_by_name_is_a_superset_alias_or_name_both_populate() -> None:
 
     assert Aliased.model_validate({"from": "x"}).frm == "x"  # alias still works…
     assert Aliased.model_validate({"frm": "x"}).frm == "x"  # …and the Python name too
+    assert Aliased(frm="x").model_dump() == {"frm": "x"}
+    assert Aliased(frm="x").model_dump(by_alias=True) == {"from": "x"}
 
 
 # ── inheritance: config merges through house shapes + the MI diamond ───────────
@@ -62,9 +67,13 @@ def test_config_inherited_through_subclassing_and_the_diamond() -> None:
 
     assert Body.model_config.get("extra") == "forbid"
     assert UpdateInput.model_config.get("extra") == "forbid"
-    assert UpdateInput(id=7, name="Acme").id == 7
-    with pytest.raises(ValidationError):
+    assert UpdateInput.model_config.get("validate_by_name") is True
+    assert UpdateInput(id=7, name="Acme").model_dump() == {"id": 7, "name": "Acme"}
+    with pytest.raises(ValidationError) as caught:
         UpdateInput.model_validate({"id": 7, "name": "Acme", "bogus": 1})
+    assert [(e["type"], e["loc"]) for e in caught.value.errors()] == [
+        ("extra_forbidden", ("bogus",))
+    ]
 
 
 # ── FrozenModel: strict + immutable + hashable ─────────────────────────────────
@@ -82,10 +91,17 @@ def test_frozen_model_is_strict_immutable_and_hashable() -> None:
 
     p = Point(x=1, y=2)
     assert {p} == {Point(x=1, y=2)}  # hashable, value-equal
-    with pytest.raises(ValidationError):
+    assert hash(p) == hash(Point(x=1, y=2))
+    assert p != Point(x=1, y=3)
+    with pytest.raises(ValidationError) as frozen:
         p.x = 9  # frozen — no post-construction mutation
-    with pytest.raises(ValidationError):
+    assert [e["type"] for e in frozen.value.errors()] == ["frozen_instance"]
+    assert p.x == 1
+    with pytest.raises(ValidationError) as extra:
         Point.model_validate({"x": 1, "y": 2, "z": 3})  # still forbids extra
+    assert [(e["type"], e["loc"]) for e in extra.value.errors()] == [
+        ("extra_forbidden", ("z",))
+    ]
 
 
 # ── StrictSettings: the deliberate env-safe inverse ────────────────────────────
@@ -102,4 +118,6 @@ def test_strict_settings_ignores_extra_at_the_env_root() -> None:
         port: int = 8080
 
     assert Cfg(port=9000).port == 9000
-    assert Cfg.model_validate({"port": 9000, "unrelated_ambient_var": "x"}).port == 9000
+    ignored = Cfg.model_validate({"port": 9000, "unrelated_ambient_var": "x"})
+    assert ignored.model_dump() == {"port": 9000}
+    assert ignored.model_extra is None

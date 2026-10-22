@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pytest
 
-from tests.support.backends import require_backend
+from tests.support.environment.backends import require_backend
 
 
 digest = require_backend("unstd.crypto.digest")

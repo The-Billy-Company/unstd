@@ -13,5 +13,5 @@ Assurance suites group cross-cutting risks by owner:
 
 A module-owned invariant stays under `suites/product/<module>/<kind>`. A shared
 harness belongs under support; standalone campaigns belong under tooling.
-The [inventory](../../tooling/inventory.toml) marks unimplemented lanes planned.
+The [inventory](../../tooling/suites/inventory.toml) marks unimplemented lanes planned.
 See [the coverage plan](../../COVERAGE.md) for activation criteria and priorities.

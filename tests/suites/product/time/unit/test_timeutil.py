@@ -25,11 +25,13 @@ from __future__ import annotations
 
 from datetime import UTC, date, datetime, timedelta, timezone, tzinfo
 import re
+import sys
 import time as _time
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import pytest
 
+from tests.support.environment.backends import require_backend
 from unstd.time import timeutil
 
 
@@ -173,7 +175,7 @@ def test_twelve_hour_conversion_including_both_midnights(
 
 
 def test_proto_timestamp_builds_a_real_timestamp() -> None:
-    pytest.importorskip("google.protobuf")
+    require_backend("google.protobuf")
     ts = timeutil.proto_timestamp("2026-01-15T14:30:00Z")
     assert ts is not None
     assert ts.seconds == int(datetime(2026, 1, 15, 14, 30, tzinfo=UTC).timestamp())
@@ -191,7 +193,7 @@ def test_proto_timestamp_builds_a_real_timestamp() -> None:
 def test_proto_timestamp_parses_each_documented_input_shape(
     value: str, expected_iso: str
 ) -> None:
-    pytest.importorskip("google.protobuf")
+    require_backend("google.protobuf")
     ts = timeutil.proto_timestamp(value)
     assert ts is not None
     assert ts.ToDatetime(tzinfo=UTC).isoformat() == expected_iso
@@ -204,23 +206,30 @@ def test_proto_timestamp_returns_the_unset_sentinel_for_unusable_input(
     """Documented contract: unparseable is ``None`` (field unset), never a raise
     and never epoch zero.
     """
-    pytest.importorskip("google.protobuf")
+    require_backend("google.protobuf")
     assert timeutil.proto_timestamp(value) is None
 
 
 def test_proto_timestamp_ms_round_trips_epoch_milliseconds() -> None:
-    pytest.importorskip("google.protobuf")
+    require_backend("google.protobuf")
     ms = 1_768_487_400_000
     assert timeutil.proto_timestamp_ms(ms).ToMilliseconds() == ms
 
 
-def test_proto_bridge_error_names_an_installable_extra() -> None:
+def test_proto_bridge_error_names_an_installable_extra(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """Without protobuf the old code raised ``No module named 'google'``, which
     tells a caller nothing they can act on. Every other guarded backend in this
     package names its extra; this one must too.
     """
-    with pytest.raises(ImportError, match=r"unstd\[proto\]"):
-        raise ImportError(timeutil._PROTO_HINT)
+    timeutil._timestamp.cache_clear()
+    monkeypatch.setitem(sys.modules, "google.protobuf.timestamp_pb2", None)
+    try:
+        with pytest.raises(ImportError, match=r"unstd\[proto\]"):
+            timeutil.proto_timestamp("2026-01-15T14:30:00Z")
+    finally:
+        timeutil._timestamp.cache_clear()
 
 
 # ── the rest of the surface ─────────────────────────────────────────────────

@@ -13,7 +13,7 @@ import sys
 import tempfile
 from uuid import uuid4
 
-from tests.tooling.campaign_reporting import append_campaign_summary, campaign_group
+from tests.tooling.ci.campaigns import append_campaign_summary, campaign_group
 from tests.tooling.fuzz import execution, mutate, registry
 
 

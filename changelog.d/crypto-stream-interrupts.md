@@ -1,1 +1,0 @@
-Fixed native BLAKE3 stream batching delaying pending signals across backend updates. Signals are now checked after each successful backend update, so cancellation does not wait for thousands of large chunks. Empty-chunk traversal keeps its periodic signal checks.

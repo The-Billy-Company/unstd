@@ -122,6 +122,22 @@ if _HAVE_YAML:
                 super().flatten_mapping(node)
             finally:
                 self._merge_source = prior_source
+            # The backend copies every aliased source's flattened pairs, so
+            # repeated merges of one anchor grow exponentially with nesting.
+            # Keep each pair's first insertion and final overwrite: removing
+            # either can change key order or precedence around other sources.
+            if node.merge:
+                merged = len(node.merge)
+                positions: dict[tuple[Node, Node], tuple[int, int]] = {}
+                for index, pair in enumerate(node.merge):
+                    first, _last = positions.get(pair, (index, index))
+                    positions[pair] = (first, index)
+                node.merge = [
+                    pair
+                    for index, pair in enumerate(node.merge)
+                    if index in positions[pair]
+                ]
+                node.value = node.merge + node.value[merged:]
 
     class _Constructor(RoundTripConstructor):
         """An editable constructor that refuses unresolved recursive aliases."""

@@ -6,7 +6,7 @@ cross-module risks and test-tool correctness. Reusable workers and fixtures live
 in [support](support/README.md); standalone runners live in [tooling](tooling/README.md).
 `conftest.py` applies generation profiles, inventory ownership, and backend policy.
 
-The [inventory](tooling/inventory.toml) defines every lane's paths, marker, and
+The [inventory](tooling/suites/inventory.toml) defines every lane's paths, marker, and
 active/planned status. Every test file needs exactly one active owner. New tests
 belong beside the contract they exercise; shared support has no standalone
 product assertions. The [coverage plan](COVERAGE.md) records obligations and gaps;
@@ -24,7 +24,10 @@ From the repository root, prepare a full environment with
 `uv sync --locked --all-extras --group dev`; omit `--all-extras` for the fallback
 configuration. `--no-sync` preserves the backend combination already installed.
 `--require-extras` makes every declared extra mandatory, including isolated
-per-extra consumers in the packaging lane. Optional local/base runs retain
+per-extra consumers in the packaging lane. A partial install (for example
+`uv sync --locked --extra text --group dev`) instead passes
+`--require-extra text`, repeatable, so only its own extras are mandatory while
+every other backend stays genuinely absent. Optional local/base runs retain
 explicit capability skips.
 
 ```console

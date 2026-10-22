@@ -5,13 +5,13 @@ from __future__ import annotations
 import shutil
 from typing import TYPE_CHECKING
 
-from tests.tooling.release import verify
+from tests.tooling.release.verify import verify
 
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from tests.support.packaging import Artifacts
+    from tests.support.packaging.artifacts import Artifacts
 
 
 def test_release_verifier_accepts_real_built_artifacts(

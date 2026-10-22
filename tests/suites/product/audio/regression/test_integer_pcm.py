@@ -71,7 +71,9 @@ def test_pcm32_keeps_python_integer_sample_counts(backend, streaming):
 @pytest.mark.parametrize("subtype", ["PCM_16", "PCM_32"])
 def test_python_integer_overflow_clips_before_narrowing(backend, streaming, subtype):
     if backend == "array" and subtype == "PCM_32":
-        pytest.skip("The pure-stdlib floor supports only PCM_16")
+        with pytest.raises(ValueError, match="cannot write subtype 'PCM_32'"):
+            _write_pcm([0], subtype, streaming)
+        return
     scale = 1 << (15 if subtype == "PCM_16" else 31)
     samples = [-(1 << 100), -scale - 1, -scale, -1, 0, 1, scale - 1, scale, 1 << 100]
     expected = [-scale, -scale, -scale, -1, 0, 1, scale - 1, scale - 1, scale - 1]
@@ -127,7 +129,9 @@ def test_mixed_signed_python_integers_do_not_become_normalized_floats(
 @pytest.mark.parametrize("subtype", ["PCM_16", "PCM_32"])
 def test_float_samples_remain_normalized_and_clamped(backend, streaming, subtype):
     if backend == "array" and subtype == "PCM_32":
-        pytest.skip("The pure-stdlib floor supports only PCM_16")
+        with pytest.raises(ValueError, match="cannot write subtype 'PCM_32'"):
+            _write_pcm([0], subtype, streaming)
+        return
     scale = 1 << (15 if subtype == "PCM_16" else 31)
     samples = [-2.0, -1.0, -0.5, 0.0, 0.5, 1.0, 2.0]
     expected = [-scale, -scale, -scale // 2, 0, scale // 2, scale - 1, scale - 1]

@@ -1,7 +1,7 @@
 """Adversarial + parity tests for ``unstd.clone`` — structural deep clone.
 
 The walker is pure stdlib, so the core runs in every environment; the pydantic
-and ``msgspec.Struct`` shapes are proven under ``pytest.importorskip``.
+and ``msgspec.Struct`` shapes use the shared optional-backend policy.
 
 Independence is asserted adversarially: we mutate the clone and assert the
 original is untouched *and* that the two genuinely diverged — a shallow-copy bug
@@ -21,6 +21,7 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import pytest
 
+from tests.support.environment.backends import require_backend
 from unstd import clone
 
 
@@ -458,7 +459,7 @@ def test_non_json_types_survive_unmangled() -> None:
 
 def test_struct_clone_is_independent_and_runs_post_init_like_deepcopy() -> None:
     """Struct rebuilds through its own reducer, so ``__post_init__`` fires as under deepcopy."""
-    msgspec = pytest.importorskip("msgspec")
+    msgspec = require_backend("msgspec")
     inits: list[int] = []
 
     class Point(msgspec.Struct, kw_only=True):
@@ -480,7 +481,7 @@ def test_struct_clone_is_independent_and_runs_post_init_like_deepcopy() -> None:
 
 def test_model_clone_matches_model_copy_deep() -> None:
     """The walker mirrors ``BaseModel.__deepcopy__``: fields, extras, private attrs, fields-set."""
-    pydantic = pytest.importorskip("pydantic")
+    pydantic = require_backend("pydantic")
 
     class Inner(pydantic.BaseModel):
         tags: list[str]
@@ -508,8 +509,8 @@ def test_model_clone_matches_model_copy_deep() -> None:
 
 def test_model_private_attributes_filter_undefined_and_clone_values() -> None:
     """Private attributes are filtered and copied in the same way as pydantic."""
-    pydantic = pytest.importorskip("pydantic")
-    pydantic_core = pytest.importorskip("pydantic_core")
+    pydantic = require_backend("pydantic")
+    pydantic_core = require_backend("pydantic_core")
 
     class Model(pydantic.BaseModel):
         _ready: list[int] = pydantic.PrivateAttr(default_factory=lambda: [1])
@@ -528,7 +529,7 @@ def test_model_private_attributes_filter_undefined_and_clone_values() -> None:
 @pytest.mark.parametrize("custom_mapping", [False, True])
 def test_model_private_copy_hooks_see_a_snapshot(custom_mapping: bool) -> None:
     """A private value's copy hook can mutate the original private attribute mapping."""
-    pydantic = pytest.importorskip("pydantic")
+    pydantic = require_backend("pydantic")
 
     class Model(pydantic.BaseModel):
         _cache: object = pydantic.PrivateAttr()
@@ -558,7 +559,7 @@ def test_msgspec_custom_reducers_keep_their_copy_protocol(
     protocol: str, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """Registered reducers and both reducer methods take precedence over the fast path."""
-    msgspec = pytest.importorskip("msgspec")
+    msgspec = require_backend("msgspec")
 
     class Point(msgspec.Struct):
         x: int

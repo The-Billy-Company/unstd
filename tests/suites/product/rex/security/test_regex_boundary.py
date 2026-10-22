@@ -10,8 +10,8 @@ import re
 
 import pytest
 
-from tests.support.backends import require_backend
-from tests.support.parser_cases import parser_case
+from tests.support.environment.backends import require_backend
+from tests.support.parsers.cases import parser_case
 from unstd import rex
 
 

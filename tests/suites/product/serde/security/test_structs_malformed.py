@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import pytest
 
-from tests.support.backends import require_backend
+from tests.support.environment.backends import require_backend
 
 
 msgspec = require_backend("msgspec")
@@ -32,16 +32,37 @@ VALID = b'{"name":"n","leaves":[{"x":1,"tags":["a"]},{"x":2}],"index":{"k":{"x":
 EXPECTED = Node("n", [Leaf(1, ["a"]), Leaf(2)], {"k": Leaf(3)})
 
 SHAPE = [
-    b'{"name":"n","leaves":[{"x":1},{"x":"2"}]}',
-    b'{"name":"n","leaves":[{"x":1,"tags":[1]}]}',
-    b'{"name":"n","leaves":[],"index":{"k":{"x":null}}}',
-    b'{"name":"n","leaves":[{}]}',
-    b'{"name":"n","leaves":{"x":1}}',
-    b'{"leaves":[]}',
-    b'{"name":"n","leaves":[],"extra":1}',
-    b'{"name":"n","leaves":[],"index":[]}',
-    b"[]",
-    b'{"name":"n","leaves":[{"x":1.5}]}',
+    (
+        b'{"name":"n","leaves":[{"x":1},{"x":"2"}]}',
+        "Expected `int`, got `str` - at `$.leaves[1].x`",
+    ),
+    (
+        b'{"name":"n","leaves":[{"x":1,"tags":[1]}]}',
+        "Expected `str`, got `int` - at `$.leaves[0].tags[0]`",
+    ),
+    (
+        b'{"name":"n","leaves":[],"index":{"k":{"x":null}}}',
+        "Expected `int`, got `null` - at `$.index[...].x`",
+    ),
+    (
+        b'{"name":"n","leaves":[{}]}',
+        "Object missing required field `x` - at `$.leaves[0]`",
+    ),
+    (
+        b'{"name":"n","leaves":{"x":1}}',
+        "Expected `array`, got `object` - at `$.leaves`",
+    ),
+    (b'{"leaves":[]}', "Object missing required field `name`"),
+    (b'{"name":"n","leaves":[],"extra":1}', "Object contains unknown field `extra`"),
+    (
+        b'{"name":"n","leaves":[],"index":[]}',
+        "Expected `object`, got `array` - at `$.index`",
+    ),
+    (b"[]", "Expected `object`, got `array`"),
+    (
+        b'{"name":"n","leaves":[{"x":1.5}]}',
+        "Expected `int`, got `float` - at `$.leaves[0].x`",
+    ),
 ]
 
 SYNTAX = [
@@ -74,19 +95,17 @@ def test_valid_nested_control(codec: structs.Codec[Node]) -> None:
     assert codec.decode(VALID.decode()) == EXPECTED
 
 
-@pytest.mark.parametrize("raw", SHAPE)
+@pytest.mark.parametrize(("raw", "message"), SHAPE)
 def test_schema_mismatch_reports_exact_nested_path(
-    codec: structs.Codec[Node], raw: bytes
+    codec: structs.Codec[Node], raw: bytes, message: str
 ) -> None:
+    with pytest.raises(msgspec.ValidationError) as caught:
+        codec.decode(raw)
+    assert str(caught.value) == message
     with pytest.raises(msgspec.ValidationError) as raw_caught:
         msgspec.json.Decoder(Node).decode(raw)
-    assert type(raw_caught.value) is msgspec.ValidationError
-    with pytest.raises(type(raw_caught.value)) as caught:
-        codec.decode(raw)
-    assert type(caught.value) is type(raw_caught.value)
-    assert caught.value.args == raw_caught.value.args
-    default = object()
-    assert codec.decode_or(raw, default) is default
+    assert str(raw_caught.value) == message
+    assert codec.decode_or(raw) is None
     assert codec.decode(VALID) == EXPECTED
 
 
@@ -99,7 +118,7 @@ def test_malformed_json_is_a_decode_error_not_validation(
     assert type(caught.value) is msgspec.DecodeError
     with pytest.raises(msgspec.DecodeError) as raw_caught:
         msgspec.json.Decoder(Node).decode(raw)
-    assert caught.value.args == raw_caught.value.args
+    assert str(caught.value) == str(raw_caught.value)
     assert codec.decode_or(raw, EXPECTED) is EXPECTED
     assert codec.decode(VALID) == EXPECTED
 
@@ -141,7 +160,7 @@ def test_deep_nesting_is_a_catchable_recursion_refusal() -> None:
         deep.decode_or(payload)
     assert type(raw_caught.value) is type(caught.value) is RecursionError
     assert type(default_caught.value) is RecursionError
-    assert caught.value.args == default_caught.value.args == raw_caught.value.args
+    assert str(caught.value) == str(default_caught.value) == str(raw_caught.value)
     assert decoder.decode(b"[[[]]]") == [[[]]]
     assert deep.decode(b"[[[]]]") == [[[]]]
 

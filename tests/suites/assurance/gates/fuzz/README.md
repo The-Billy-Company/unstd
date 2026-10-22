@@ -7,6 +7,14 @@ and CI campaign configuration. Wrong product results and unexpected exceptions
 must fail the target's laws. `_execution_fixtures.py` provides reviewed subprocess
 controls for worker failures.
 
+`test_process_ownership.py` observes real kernel waitability at both supervisors'
+EOF cleanup boundary. Exited and signaled leaders stay waitable until group
+cleanup, while a bounded timeout retains a running child for cleanup. Darwin
+tests exercise both native observation and the CPython 3.12 libc backport,
+including ABI layout and errno preservation. Repeated real replay, startup
+failure and missing-backend runs overlap under a three-worker load; expected
+startup failures remain findings rather than cleanup exceptions or successes.
+
 Run from the repository root:
 
 ```console

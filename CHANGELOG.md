@@ -17,6 +17,315 @@ doc_radar:
 
 <!-- towncrier release notes start -->
 
+## [3.1.1] - 2026-10-21
+
+### Added
+
+- `jsonx.canonical_strict` encodes a defined JSON identity domain using a frozen
+  version-1 byte format. It rejects implicit object/string conversions,
+  non-string keys, subclasses, non-finite floats, surrogate code points and
+  cycles. The legacy `canonical` function and its persisted bytes remain
+  unchanged.
+- Filesystem writers and moves accept `durable="strict"`; `sync_dir` accepts
+  `strict=True`. Strict mode reports directory-sync failures, preflights
+  support, syncs new parent entries, and identifies failures after replacement
+  as already committed. Existing best-effort defaults remain unchanged. Strict
+  moves sync both directories; source-file content flushing remains the caller's
+  job.
+- `rex.compile_faithful` requires Python regex meaning, including non-multiline
+  `$` and nested/POSIX bracket syntax, while retaining native acceleration where
+  the parsed pattern and subject support it. Historical `rex.compile` behavior
+  remains unchanged.
+- `rex.compile_linear` requires Python-faithful native single-match operations
+  and raises `rex.LinearRegexError` whenever compilation, a subject, an argument
+  shape or a native operation would need backtracking fallback. `requires_ascii`
+  exposes subject restrictions. `search`, `match` and `fullmatch` include
+  capture projection within a linear subject-length bound for a fixed compiled
+  pattern. Iteration, splitting, substitution and scanner operations are always
+  refused before matching or callbacks because native suffix rescans can be
+  quadratic. Compilation and process limits require a separate application
+  policy.
+- Added `rand.Generator(seed, backend="stdlib")` for independent, explicitly
+  selected random streams. Its default remains stdlib with NumPy installed;
+  `backend="numpy"` requires the `rand` extra and selects PCG64 for bulk draws.
+  Existing module-level defaults and valid seeded draw sequences remain
+  unchanged. Reproducibility requires the same backend and call sequence.
+- Added explicit backend-independent fuzzy scorers: `fuzz.indel_ratio` computes
+  normalized Indel similarity with or without RapidFuzz, and
+  `fuzz.difflib_ratio` always uses stdlib SequenceMatcher. `best_match`,
+  `extract`, and `cdist` accept `scorer=` to keep rankings and inclusive cutoff
+  decisions stable as optional dependencies change. Existing `ratio` and
+  omitted-scorer behavior are retained.
+- Added `binpack.pack_array_portable` and `unpack_array_portable`, which always
+  use the portable dtype subset and stdlib struct conversion/error rules,
+  returning bytes and an owned list of Python scalars. Existing NumPy coercion,
+  broader dtypes, and zero-copy results remain available through the original
+  helpers. Clarified the historical backend differences in module documentation.
+- Explicit-scorer matching consumes mapping keys in iteration order and applies
+  identical inclusive-cutoff behavior across backends, including NaN and
+  infinite cutoffs. Historical omitted-scorer behavior remains unchanged.
+- Added an opt-in Rust prototype for the bounded text kernels and a paired,
+  output-checked C-versus-Rust comparison harness. Default and release builds
+  keep the existing C implementation: the measured Rust prototype has short-Jaro
+  latency and extension-size overhead and does not meet the no-overhead gate.
+  Rust builds are selected explicitly with `UNSTD_TEXT_RUST=1` and retain the
+  public API, Unicode behavior, resource bounds and portable fallbacks.
+
+### Changed
+
+- Clarify that utility extensions have their own contracts rather than promising
+  an import-only stdlib migration. Correct Decimal hook documentation: native
+  Decimal encoding bypasses `float_enc_hook`; `decimal_format` controls its wire
+  type. Tests pin both string and numeric Decimal output with a hook installed.
+- Random bulk result annotations now support runtime type introspection with and
+  without NumPy.
+- Public text and array-helper annotations now support `typing.get_type_hints`
+  without optional backends; portable dtype signatures use plain strings.
+- Strengthen the required Ruff and mypy gates for production and benchmark code.
+  Require complete annotations, validate native stubs and override declarations,
+  reject blanket suppressions, and check additional control-flow, awaitable,
+  pattern-match, bytes, and optional-value contracts. Replace global
+  missing-import suppression with development-only protobuf and sorted-container
+  stubs and narrow exceptions for CPython's private regex modules. Preserve
+  subclass types from audio writer context managers and retain optional-backend
+  runtime behavior. Check Python 3.12–3.14 types for Linux, macOS, and Windows
+  in CI, and add real-analyzer positive and negative regression controls.
+- Add required full-source SAST and duplicate-code checks to CI and releases:
+  Bandit, CodeQL security-extended for Python/C/C++/Rust/Actions, Rust Clippy,
+  and Pylint duplicate-code. Findings and incomplete scanner evidence fail the
+  gate; reports and diagnostics are retained. Consolidate strict Base64 decoding
+  and regex absent-group projection into shared implementations. Document scope,
+  local commands, reviewed false positives and finding remediation in
+  SECURITY.md.
+- Supply chain checks now validate dependency sources and hashes, audit every
+  locked extra and build/release tool, and retain a complete CycloneDX
+  inventory. The required CI gate also rescans daily for newly published
+  advisories.
+
+  Release wheels build from the published source archive with authenticated
+  build and test requirements. Before PyPI publication, archive, metadata and
+  wheel RECORD checks produce a SHA256 manifest that is verified again in the
+  isolated Trusted Publishing job. Test reports and dependency evidence stay
+  outside the distribution handoff.
+- Resource tests now cover streaming memory growth, file-descriptor and scratch
+  cleanup, cache lifetime and deep JSON in bounded Linux/macOS workers.
+- Native profiles distinguish completed C work from rejected dispatch attempts,
+  compare both installed and base public signatures, and reject native-enabled
+  baselines. Expanded Unicode, work-budget and recursion regressions, sanitizer
+  checks and Python 3.12–3.14 runs retain existing API and fallback contracts.
+- Added a shared registry with correctness-checked latency workloads for every
+  public operation across all 18 packages, a committed per-function speed
+  snapshot, and immutable regression ceilings with recorded runtime/backend
+  metadata. Coverage gates reject newly exported APIs without workloads or
+  frozen entries. An opt-in performance suite and a revision-comparison workflow
+  enforce speeds on compatible workers while keeping ordinary correctness tests
+  free of timing assertions.
+- Benchmark calibration now confirms the iteration count with a second batch so
+  one descheduled cheap call cannot make all later batches too small.
+  Verification reports retain raw wall and thread-CPU samples for every
+  initial/recheck attempt. Added alternating independent random-workload
+  controls with primitive/source identity evidence. Environment sensitivity
+  remains diagnostic: original latency ceilings and failure verdicts stay
+  intact.
+- Expanded product property, state-machine and boundary tests across optional
+  backends, and reorganized shared test support and tooling by responsibility.
+  CI now includes macOS/Windows public contracts and each declared extra
+  installed alone, plus backend-selecting combinations; missing-extra checks
+  require exactly the installed extras.
+
+### Performance
+
+- `clone.deep` now uses a bundled, bounded C walker for eligible exact builtin
+  trees. Base-install `fuzz.distance` and `fuzz.jaro_winkler` can use bundled
+  exact-string Levenshtein and Jaro kernels. Public signatures, runtime
+  dependencies, RapidFuzz selection, Unicode behavior, custom copy protocols and
+  documented clone alias/cycle behavior are retained. Unsupported inputs and
+  builds without a compiler use the existing Python implementations.
+
+  The paired profile driver in `bench/native_profile.py` checks compatibility
+  and actual native dispatch before timing. Native-required Python 3.12–3.14 CI,
+  debug-allocation tests, sanitizer CI, and installed-wheel/fallback tests
+  exercise the new boundaries.
+- One-shot BLAKE3 hashes, MACs, and key derivation now use four fresh workers
+  for exact `bytes` inputs from 1 MiB and eight from 4 MiB, capped by CPU count.
+  Fresh pools remain usable after a fork and fall back to serial hashing if the
+  backend refuses workers. An optional C helper batches small immutable chunks
+  from materialized stream lists and tuples into bounded 64 KiB updates for the
+  existing BLAKE3 backend. Generators remain eager, mutable buffers retain their
+  backend behavior, and compiler-free installs keep the Python path. Public
+  APIs, digest values, validation, accepted buffers and legacy BLAKE2b
+  identities are preserved. Full and truncated hex output use faster byte-to-hex
+  conversion. Paired benchmarks load saved private helpers independently and
+  record crossover, medium-input, reusable-stream hex and small-chunk gains
+  alongside overhead and scheduling noise.
+
+### Fixed
+
+- Fix `unstd.crypto.digest.derive_key` silently returning the plain BLAKE3
+  digest of the material when the context was `None`: the backend treats a
+  `None` derive-key context as ordinary hashing, so the derived "key" equalled
+  the public content digest. Non-`str` contexts now raise `TypeError` on both
+  the serial and parallel paths, matching the backend's existing message for
+  other wrong types.
+- Fixed native BLAKE3 stream batching delaying pending signals across backend
+  updates. Signals are now checked after each successful backend update, so
+  cancellation does not wait for thousands of large chunks. Empty-chunk
+  traversal keeps its periodic signal checks.
+- Create atomic-write scratch files with the existing destination's permissions
+  from the outset, preventing retained read descriptors from exposing
+  replacement secrets. Copy permissions through the acquired descriptor where
+  supported so a replaced scratch path cannot redirect chmod onto an unrelated
+  file.
+- New `fs.atomic_write` and `fs.atomic_writer` destinations request owner-only
+  `0o600` instead of `0o666` before the kernel applies the caller's umask. New
+  atomic files and their scratch files no longer grant group or world access by
+  default, even under permissive umasks. A normal `0o022` umask now produces
+  `0o600`, deliberately stricter than ordinary `open()` creation. Set new-file
+  sharing explicitly when needed. Rewrites preserve the existing destination
+  mode exactly, including previously configured group sharing. The library never
+  changes the process-wide umask.
+- `fs.atomic_writer` now rejects modes other than `"w"` and `"wb"` before
+  creating directories or scratch files. Previously, unsupported read and
+  exclusive-create modes could silently replace an existing destination with an
+  empty file.
+- Protect default filesystem enumeration against directory and ancestor symlink
+  replacement on platforms supporting descriptor-relative no-follow traversal.
+  Bound live handles by traversal depth and close them on termination. Preserve
+  the portable fallback with directory-identity checks and document its weaker
+  concurrency guarantees and the limits of returned path names.
+- Reject explicitly empty TLS CA, certificate and key paths. An empty CA pin can
+  no longer restore default public trust, and empty identity paths cannot
+  silently omit mTLS. Use None to omit a path.
+- Use Python semantics for nested character sets and set operators that the
+  native regex engine interprets differently, preventing character denylist
+  bypasses. Escape-aware classification preserves literal escapes and documented
+  native POSIX bracket expressions.
+- Reject duplicate explicit YAML keys even when their mapping uses a merge. Safe
+  loading now checks source keys before merge flattening; legitimate single
+  overrides, merge precedence and reused anchors remain supported.
+- Fix exponential merge-key amplification in `yaml.loads`, `load` and
+  `load_all`. Merging the same anchor repeatedly at each nesting level copied
+  every inherited key/value pair again, so a 2 KB document never finished
+  loading. Redundant merged pairs are now bounded while preserving merge
+  precedence, key order and duplicate-key rejection.
+- Fix two cases where `yaml.dumps`, `dump` and `dump_all` wrote a different
+  value than they were given. Strings containing NEL (U+0085) are now
+  double-quoted with an escape instead of single-quoted, where readers folded
+  NEL into a space. Floats from `parse` keep their original spelling only while
+  it still denotes the same number; exponent spellings that the backend would
+  truncate (for example `3.403832445554453e+16`) are written in the shortest
+  exact form instead.
+- Fix `serde.structs.Codec.decode_or` so a payload whose JSON string content is
+  not valid UTF-8 (or a `str` payload carrying lone surrogates) returns the
+  default as a malformed cache miss, instead of leaking the `UnicodeError`
+  msgspec raises for it. `Codec.decode` is unchanged and still raises exactly
+  what msgspec raises; hook exceptions other than msgspec validation errors
+  still propagate from `decode_or`.
+- Finish partial NDJSON writes before counting a record or consuming the next
+  one. A zero write count, or None from a standard io.IOBase stream, now raises
+  BlockingIOError instead of silently reporting success with missing data.
+  Generic write-only sinks may still return None to acknowledge complete writes.
+  Existing sink exceptions and caller ownership remain intact.
+- Fix whole-file and streaming PCM16/PCM32 writes to preserve raw integer sample
+  counts with and without soundfile. Clip before narrowing and preserve integer
+  semantics for mixed signed and large Python integers. Independent PCM-byte
+  tests cover the supported backend and source-width combinations.
+- The pure-stdlib WAV writer now validates every multichannel sample with the
+  same numeric check used for mono input. Numeric strings are rejected instead
+  of being silently converted to integer PCM values. Rejected chunks emit no
+  bytes, and an incremental writer remains usable afterward.
+- Fix WAV fallback writers accepting frames that contradict the channel layout.
+  The pure-stdlib floor now rejects ragged multichannel lists with `ValueError`,
+  and both stdlib fallbacks reject `Writer.write` chunks whose channel count
+  differs from the writer's `channels`, matching NumPy and soundfile instead of
+  writing a data chunk the header misdescribes. A closed fallback `Writer` now
+  raises its documented `ValueError` on further writes instead of an internal
+  `AttributeError`.
+- Reject nonpositive WAV block sizes before reading input, preventing zero-size
+  nonprogress and negative-size whole-file reads. Fallback whole-file decoders
+  also reject declared trailing partial PCM frames instead of silently dropping
+  their bytes.
+- Fix the stdlib `unpack_array` fallback to count memoryview bytes instead of
+  its first dimension. Contiguous typed, multidimensional, and scalar views now
+  decode consistently with NumPy. Document that NumPy view writability follows
+  the buffer.
+- Fix two defects in the `unstd.pack.binpack` struct array path (the portable
+  helpers and the no-NumPy fallback). Dtype sizes were parsed with `int()`, so
+  spellings such as `"i4 "`, `"i0_4"`, `"i+4"` or non-ASCII digits were accepted
+  as `int32`; only exact typestrs and documented aliases are accepted now.
+  Non-memoryview buffers were also sized with `len()`, so an 8-byte `array("i")`
+  was rejected as "buffer size 2" and contiguous ndarrays failed or were
+  misreported. Every contiguous buffer exporter is now measured in bytes.
+- The stdlib array-packing fallback now rejects empty and incomplete dtype
+  strings with `struct.error`, matching its other unsupported dtype errors,
+  instead of leaking an internal `IndexError`.
+- Fix `clone.deep` and `clone.asdict` isolation for datetime/time values
+  containing custom mutable timezones. Delegate their copy protocol to
+  `deepcopy`, while retaining shared immutable values for naive and exact stdlib
+  timezone types.
+- Clone's per-class metadata caches use weak keys so dynamically generated
+  classes can be collected after their instances are released.
+- Native clone stack-guard exhaustion now defers to the original Python walker,
+  preserving shared-branch duplication in acyclic trees under C recursion
+  pressure.
+- The native clone extension now builds with glibc headers, whose process-level
+  `clone` declaration conflicted with the extension's internal C function name.
+  The Python `clone` method and cloning behavior are unchanged. Strict native
+  builds no longer fail, and ordinary Linux source builds retain clone
+  acceleration instead of silently falling back to Python.
+- Fix `timeutil.span` to measure elapsed instants across DST transitions within
+  a shared IANA zone. Repeated local times and half-hour transitions are covered
+  by regressions, including reverse durations and string/datetime input
+  agreement. Offset arithmetic also preserves valid intervals near the datetime
+  year limits without constructing UTC endpoints that would overflow. Custom
+  timezones returning no UTC offset follow the floating-input policy: strict
+  mode rejects them; `assume_utc=True` treats their wall fields as UTC.
+- Fix `timeutil.from_epoch_ms` returning instants off by up to tens of
+  microseconds for timestamps beyond roughly 2^33 seconds from the epoch (for
+  example `9999-12-31T23:59:59.998993Z` for `253402300799999`). It divided by
+  1000 in floating point; it now splits whole seconds from milliseconds exactly,
+  keeps the same out-of-range `ValueError`, and still converts the instant into
+  *tz*.
+- Fix iterator contracts exposed by adversarial tests. `partition` freezes each
+  predicate result to a boolean once, preventing mutable or side-effecting truth
+  values from dropping or duplicating items across its two outputs.
+  `unique_everseen` now deduplicates equal hashable and unhashable keys across
+  one shared history (including sets/frozensets), preserves the first object,
+  and propagates TypeError raised by hashable-key comparisons instead of hiding
+  it.
+- Fix `iters.windowed` with the default step reading `n - 1` items from its
+  input as soon as it was called. An abandoned window iterator no longer drains
+  a shared source, and a failing source now raises on the first pull instead of
+  from the `windowed(...)` call itself; strided and zero-width windows were
+  already lazy.
+- Failed NumPy-backed `seed()` calls now preserve both scalar and bulk state.
+  Bulk helpers consistently reject negative/noninteger counts and reversed or
+  empty intervals before drawing, including when requesting zero integers. Bulk
+  floats also reject nonfinite bounds or spans without consuming state,
+  including for zero draws; equal finite bounds remain valid.
+- Fix NumPy-backed `rand.choices` and `Generator.choices` accepting weights with
+  a zero or negative total: normalizing by that total flipped all-negative
+  weights into valid probabilities and drew by magnitude. Both engines now raise
+  `ValueError` for a non-positive total before consuming any draws, and an
+  all-zero vector no longer emits a NumPy divide warning.
+- The portable Jaro-Winkler scorer now validates `prefix_weight` within `0..1`
+  before scoring, matching RapidFuzz even for empty or identical strings. NaN
+  weights preserve RapidFuzz's default cutoff behavior instead of leaking NaN
+  scores when the prefix bonus applies.
+- Fuzz replay and Atheris supervisors now observe POSIX worker exit without
+  reaping the leader until its owned process group has been cleaned up. This
+  closes the released-PID reuse window before group signaling; cleanup errors
+  still fail. macOS Python 3.12 uses a contained stdlib `ctypes` adapter for the
+  OS `waitid` operation that its Python wrapper does not expose.
+- Verification workers now distinguish macOS's zombie-only process-group `EPERM`
+  race from real cleanup permission failures using bounded OS evidence. Live,
+  foreign, or uncertain process membership still fails cleanup, and direct
+  children are reaped even when group cleanup fails. Resource probes, Python
+  workers, fuzz workers and chaos campaigns share this cleanup rule.
+- Isolated per-extra consumers preserve the frozen manifest's complete resolver
+  quarantine policy, including package exceptions, fixing locked exports after
+  policy changes without rewriting the lockfile.
+
 ## [3.1.0] - 2026-10-20
 
 ### Performance

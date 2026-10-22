@@ -2,7 +2,7 @@
 
 import pytest
 
-from tests.support.resources import run_resource
+from tests.support.resources.runner import run_resource
 
 
 _CAPABILITIES = {
@@ -18,7 +18,7 @@ _CAPABILITIES = {
 def resource_probe(request):
     def probe(module, function, **arguments):
         report = run_resource(
-            f"tests.support.resource_{module}",
+            f"tests.support.resources.{module}",
             function,
             backend=request.param,
             **arguments,

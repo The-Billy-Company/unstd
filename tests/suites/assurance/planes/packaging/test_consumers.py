@@ -8,7 +8,7 @@ import zipfile
 
 import pytest
 
-from tests.support.packaging import (
+from tests.support.packaging.artifacts import (
     CONSUMER_AUDIT,
     Consumer,
     clean_environment,
@@ -16,7 +16,7 @@ from tests.support.packaging import (
 
 
 if TYPE_CHECKING:
-    from tests.support.packaging import Artifacts
+    from tests.support.packaging.artifacts import Artifacts
 
 
 _STDLIB_CASES = {

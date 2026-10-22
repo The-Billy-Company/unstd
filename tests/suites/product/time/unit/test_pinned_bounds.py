@@ -17,7 +17,7 @@ from zoneinfo import ZoneInfo
 
 import pytest
 
-from tests.support.backends import require_backend
+from tests.support.environment.backends import require_backend
 from unstd.time import timeutil
 
 
@@ -350,8 +350,9 @@ def _timestamp_type() -> type:
 def test_proto_timestamp_range_and_precision(
     value: str | datetime, seconds: int, nanos: int
 ) -> None:
+    timestamp = _timestamp_type()
     ts = timeutil.proto_timestamp(value)
-    assert type(ts) is _timestamp_type()
+    assert type(ts) is timestamp
     assert (ts.seconds, ts.nanos) == (seconds, nanos)
 
 
@@ -366,8 +367,9 @@ def test_proto_timestamp_range_and_precision(
 def test_proto_timestamp_ms_reaches_the_declared_limits(
     ms: int, seconds: int, nanos: int
 ) -> None:
+    timestamp = _timestamp_type()
     ts = timeutil.proto_timestamp_ms(ms)
-    assert type(ts) is _timestamp_type()
+    assert type(ts) is timestamp
     assert (ts.seconds, ts.nanos) == (seconds, nanos)
 
 

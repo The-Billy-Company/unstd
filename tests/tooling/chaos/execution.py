@@ -17,8 +17,8 @@ import tempfile
 import threading
 import time
 
-from tests.support.chaos import MAX_EVENTS, MAX_JOURNAL_BYTES, VERSION
-from tests.support.process import kill_owned_process_group
+from tests.support.chaos.journal import MAX_EVENTS, MAX_JOURNAL_BYTES, VERSION
+from tests.support.environment.process import kill_owned_process_group
 
 
 REPO = Path(__file__).resolve().parents[3]
@@ -262,12 +262,12 @@ def run_group(
         raise ValueError(message)
     source_files = [
         *sorted((REPO / "src/unstd").rglob("*.py")),
-        *sorted((REPO / "tests/support").glob("*.py")),
+        *sorted((REPO / "tests/support").rglob("*.py")),
         *sorted((CASES if lane == "chaos" else CASES.with_name(lane)).glob("*.py")),
         *sorted(Path(__file__).parent.glob("*.py")),
         *sorted((REPO / "tests/tooling" / lane).glob("*.py")),
         REPO / "tests/conftest.py",
-        REPO / "tests/tooling/inventory.toml",
+        REPO / "tests/tooling/suites/inventory.toml",
     ]
     report = {
         "schema_version": 1,

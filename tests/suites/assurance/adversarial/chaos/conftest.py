@@ -2,7 +2,7 @@
 
 import pytest
 
-from tests.support.chaos import ChaosJournal, journal_sink
+from tests.support.chaos.journal import ChaosJournal, journal_sink
 
 
 @pytest.fixture

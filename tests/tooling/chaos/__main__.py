@@ -10,9 +10,9 @@ from pathlib import Path
 import sys
 from uuid import uuid4
 
-from tests.tooling.campaign_reporting import append_campaign_summary, campaign_group
 from tests.tooling.chaos import execution
-from tests.tooling.runner import check_inventory
+from tests.tooling.ci.campaigns import append_campaign_summary, campaign_group
+from tests.tooling.suites.runner import check_inventory
 
 
 def _parser(lane="chaos"):

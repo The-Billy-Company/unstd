@@ -10,8 +10,8 @@ from typing import TYPE_CHECKING
 from packaging.requirements import Requirement
 import pytest
 
-from tests.support.anchors import REPO_ROOT
-from tests.support.backends import configure_backend_policy
+from tests.support.environment.anchors import REPO_ROOT
+from tests.support.environment.backends import configure_backend_policy
 from tests.support.hypothesis.profiles import load_active_profile
 
 
@@ -20,18 +20,23 @@ if TYPE_CHECKING:
 
 
 _PROFILE = load_active_profile()
-with (REPO_ROOT / "tests/tooling/inventory.toml").open("rb") as _stream:
+with (REPO_ROOT / "tests/tooling/suites/inventory.toml").open("rb") as _stream:
     _SUITES = tomllib.load(_stream)["suite"]
 
 # Refuse collection only for modules that cannot exist without their extra.
 # TLS is pure stdlib: its contracts must still run without the crypto extra.
 _NEEDS: dict[str, str] = {
     "suites/product/crypto/unit/test_vectors.py": "unstd.crypto.digest",
+    "suites/product/crypto/unit/test_digest_contract.py": "unstd.crypto.digest",
+    "suites/product/crypto/properties/*.py": "unstd.crypto.digest",
+    "suites/product/crypto/regression/*.py": "unstd.crypto.digest",
     "suites/product/crypto/security/test_adverse.py": "unstd.crypto.digest",
     "suites/product/crypto/security/test_token_boundary.py": "unstd.crypto.token",
     "suites/product/model/**/*.py": "unstd.model",
     "suites/product/serde/unit/test_structs.py": "unstd.serde.structs",
     "suites/product/time/unit/test_zoned.py": "unstd.time.zoned",
+    "suites/product/time/unit/test_zone_transitions.py": "unstd.time.zoned",
+    "suites/product/time/properties/test_zoned_laws.py": "unstd.time.zoned",
     "suites/assurance/gates/bench/test_*.py": "bench",
 }
 
@@ -58,6 +63,13 @@ def pytest_addoption(parser: pytest.Parser) -> None:
         help="fail if any declared extra is absent",
     )
     parser.addoption(
+        "--require-extra",
+        action="append",
+        default=[],
+        metavar="EXTRA",
+        help="fail if this declared extra is absent (repeatable; partial installs)",
+    )
+    parser.addoption(
         "--chaos-seed",
         type=int,
         default=173,
@@ -74,14 +86,19 @@ def pytest_addoption(parser: pytest.Parser) -> None:
 def pytest_configure(config: pytest.Config) -> None:
     """A required capability must not disappear behind import skips or fallback."""
     required = config.getoption("--require-extras")
+    selected: list[str] = config.getoption("--require-extra")
     configure_backend_policy(required=required)
-    if not required:
+    if not (required or selected):
         return
     with (REPO_ROOT / "pyproject.toml").open("rb") as stream:
         extras = tomllib.load(stream)["project"]["optional-dependencies"]
-    missing = list(_MISSING.values())
-    for extra, requirements in extras.items():
-        for text in requirements:
+    if unknown := sorted(set(selected) - extras.keys()):
+        msg = f"unknown extras requested: {', '.join(unknown)}"
+        raise pytest.UsageError(msg)
+    # A partial install leaves other extras absent; only its own must be whole.
+    missing = list(_MISSING.values()) if required else []
+    for extra in extras if required else dict.fromkeys(selected):
+        for text in extras[extra]:
             requirement = Requirement(text)
             if requirement.marker and not requirement.marker.evaluate({"extra": extra}):
                 continue
@@ -111,7 +128,7 @@ def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
             and any(_owns(item.path, candidate) for candidate in suite["paths"])
         ]
         if len(matches) != 1:
-            msg = f"{item.nodeid}: expected one active suite owner, found {len(matches)}; update tests/tooling/inventory.toml"
+            msg = f"{item.nodeid}: expected one active suite owner, found {len(matches)}; update tests/tooling/suites/inventory.toml"
             raise pytest.UsageError(msg)
         item.add_marker(matches[0]["marker"])
         # Some retained API/security/parity files also contain generated tests.
@@ -122,4 +139,4 @@ def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
 
 def pytest_report_header() -> str:
     """Make the selected generation policy visible in verbose runs."""
-    return f"unstd Hypothesis profile: {_PROFILE}; suite inventory: tests/tooling/inventory.toml"
+    return f"unstd Hypothesis profile: {_PROFILE}; suite inventory: tests/tooling/suites/inventory.toml"

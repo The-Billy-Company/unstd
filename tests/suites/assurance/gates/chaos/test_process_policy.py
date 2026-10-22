@@ -3,7 +3,7 @@
 import json
 import os
 
-from tests.support.process import isolated_environment, run_python
+from tests.support.environment.process import isolated_environment, run_python
 
 
 def test_explicit_worker_environment_cannot_discard_campaign_admission(

@@ -39,7 +39,8 @@ splitting it out would imply a keystore that does not exist.
 What makes it safe is the *context*. Register one versioned string per purpose,
 somewhere your program can be read: two unrelated uses then cannot derive the
 same subkey out of the same material, and a context differing by one character
-gives a wholly unrelated key.
+gives a wholly unrelated key. A context that is not a `str`, including `None`,
+raises `TypeError` rather than falling back to the plain digest.
 
 ## The token format
 

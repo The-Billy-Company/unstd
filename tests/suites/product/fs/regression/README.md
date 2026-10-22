@@ -2,6 +2,20 @@
 
 Run `uv run pytest tests/suites/product/fs/regression -q` from the repository root.
 
+`test_new_file_permissions.py` retains the CodeQL-exposed new-file group/world
+access under permissive umasks. Bounded isolated interpreters cover both atomic
+write APIs and umasks `000`, `001`, `002`, `022`, `077`, `200`, `400` and `777`,
+observing owner-only scratch and published modes, including further owner-bit
+restrictions imposed by the kernel. Existing destinations preserve their explicit permission policy,
+including shared group access, even under a stricter current umask. The production
+writer is forbidden from changing process umask during these probes.
+
+`test_atomic_mode.py` retains the destructive read-mode failure: opening an
+atomic writer with `mode="r"` and leaving its body empty committed an empty
+scratch over an existing destination. Unsupported modes now raise before any
+filesystem changes; the regression checks retained bytes and absent parent
+creation as well as rejection of the unsupported modes.
+
 `test_atomic_permissions.py` retains two permission failures. An observer that
 opened the initially public scratch file could read newly written secrets even
 after chmod tightened the mode. Replacing the scratch path with a symlink also
