@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from contextlib import suppress
+import errno
 import io
 import os
 from pathlib import Path
@@ -11,9 +12,11 @@ import subprocess
 import sys
 from threading import Event
 import time
+from types import SimpleNamespace
 
 import pytest
 
+from tests.support import process as process_support
 from tests.support import resources
 from tests.support.anchors import REPO_ROOT
 from tests.support.chaos import BLOCKED_BACKENDS
@@ -212,3 +215,193 @@ def test_invalid_probe_admission_precedes_process_launch(monkeypatch, options):
     arguments = {"module": CONTROLS, "function": "success", "value": 73, **options}
     with pytest.raises(ValueError, match=r"invalid resource|arguments exceed"):
         resources.run_resource(**arguments)
+
+
+@pytest.mark.parametrize(
+    ("returncode", "stdout"),
+    [(1, b""), (0, b"42425 42424 {uid} Z\n42426 42424 {uid} Zs+\n")],
+)
+def test_darwin_group_permission_race_accepts_only_verified_finished_members(
+    monkeypatch, returncode, stdout
+):
+    refused = PermissionError(errno.EPERM, "fixture group denied")
+    signals, inspections = [], []
+
+    def kill(group, signum):
+        signals.append((group, signum))
+        raise refused
+
+    def inspect(command, **options):
+        inspections.append((command, options))
+        return subprocess.CompletedProcess(
+            command,
+            returncode,
+            stdout.replace(b"{uid}", str(os.getuid()).encode()),
+            b"",
+        )
+
+    monkeypatch.setattr(process_support, "sys", SimpleNamespace(platform="darwin"))
+    monkeypatch.setattr(process_support.os, "killpg", kill)
+    monkeypatch.setattr(process_support.subprocess, "run", inspect)
+    process_support.kill_owned_process_group(42424)
+    assert signals == [(42424, signal.SIGKILL)]
+    assert inspections == [
+        (
+            ["/bin/ps", "-o", "pid=,pgid=,uid=,stat=", "-g", "42424"],
+            {"capture_output": True, "timeout": 1, "check": False},
+        )
+    ]
+
+
+@pytest.mark.parametrize(
+    ("kind", "returncode", "stdout", "stderr"),
+    [
+        ("live", 0, b"42425 42424 {uid} S\n", b""),
+        ("foreign", 0, b"42425 42424 {foreign} Z\n", b""),
+        ("wrong-group", 0, b"42425 42423 {uid} Z\n", b""),
+        ("invalid-pid", 0, b"1 42424 {uid} Z\n", b""),
+        ("malformed", 0, b"42425 42424 Z\n", b""),
+        ("malformed-number", 0, b"invalid 42424 {uid} Z\n", b""),
+        ("malformed-state", 0, b"42425 42424 {uid} Zombie\n", b""),
+        ("nonascii", 0, b"\xff", b""),
+        ("oversize", 0, b"x" * (process_support._GROUP_EVIDENCE_LIMIT + 1), b""),
+        ("stderr", 0, b"42425 42424 {uid} Z\n", b"inspector warning"),
+        ("failed", 2, b"", b""),
+        ("inconsistent-exit", 1, b"42425 42424 {uid} Z\n", b""),
+        ("missing-evidence", 0, b"", b""),
+        ("timeout", 0, b"", b""),
+        ("inspector-error", 0, b"", b""),
+    ],
+)
+def test_darwin_group_permission_failures_retain_live_foreign_or_uncertain_errors(
+    monkeypatch, kind, returncode, stdout, stderr
+):
+    refused = PermissionError(errno.EPERM, "fixture group denied")
+    signals = []
+
+    def kill(group, signum):
+        signals.append((group, signum))
+        raise refused
+
+    def inspect(command, **_options):
+        if kind == "timeout":
+            raise subprocess.TimeoutExpired(command, 1)
+        if kind == "inspector-error":
+            message = "fixture inspector unavailable"
+            raise OSError(message)
+        output = stdout.replace(b"{uid}", str(os.getuid()).encode()).replace(
+            b"{foreign}", str(os.getuid() + 1).encode()
+        )
+        return subprocess.CompletedProcess(command, returncode, output, stderr)
+
+    monkeypatch.setattr(process_support, "sys", SimpleNamespace(platform="darwin"))
+    monkeypatch.setattr(process_support.os, "killpg", kill)
+    monkeypatch.setattr(process_support.subprocess, "run", inspect)
+    with pytest.raises(PermissionError, match="fixture group denied") as error:
+        process_support.kill_owned_process_group(42424)
+    assert error.value is refused
+    assert signals == [(42424, signal.SIGKILL)]
+
+
+@pytest.mark.parametrize(
+    ("platform", "number"), [("linux", errno.EPERM), ("darwin", errno.EACCES)]
+)
+def test_group_permission_exemption_is_limited_to_darwin_eperm(
+    monkeypatch, platform, number
+):
+    refused = PermissionError(number, "fixture group denied")
+
+    def kill(_group, _signum):
+        raise refused
+
+    def forbidden(*_args, **_kwargs):
+        pytest.fail("non-Darwin or non-EPERM failure queried process membership")
+
+    monkeypatch.setattr(process_support, "sys", SimpleNamespace(platform=platform))
+    monkeypatch.setattr(process_support.os, "killpg", kill)
+    monkeypatch.setattr(process_support.subprocess, "run", forbidden)
+    with pytest.raises(PermissionError) as error:
+        process_support.kill_owned_process_group(42424)
+    assert error.value is refused
+
+
+@pytest.mark.skipif(
+    sys.platform != "darwin", reason="Darwin zombie-only group behavior"
+)
+def test_real_darwin_zombie_group_permission_race_is_owned_and_reaped():
+    child = subprocess.Popen(
+        [sys.executable, "-c", "pass"], stdout=subprocess.PIPE, start_new_session=True
+    )
+    try:
+        assert child.stdout.read() == b""
+        observed = subprocess.run(  # noqa: S603 — OS-owned ps and fixture-owned group
+            ["/bin/ps", "-o", "pid=,pgid=,uid=,stat=", "-g", str(child.pid)],
+            capture_output=True,
+            timeout=1,
+            check=True,
+        )
+        pid, group, owner, state = observed.stdout.split()
+        assert int(pid) == int(group) == child.pid
+        assert int(owner) == os.getuid()
+        assert state.startswith(b"Z")
+        with pytest.raises(PermissionError) as error:
+            os.killpg(child.pid, signal.SIGKILL)
+        assert error.value.errno == errno.EPERM
+        process_support.kill_owned_process_group(child.pid)
+    finally:
+        assert child.wait(timeout=5) == 0
+        child.stdout.close()
+
+
+def test_python_worker_reaps_direct_child_when_group_cleanup_fails(
+    tmp_path, monkeypatch
+):
+    refused = PermissionError(errno.EPERM, "fixture group denied")
+
+    def deny(_group):
+        raise refused
+
+    monkeypatch.delenv("UNSTD_CHAOS_OWNED_GROUP", raising=False)
+    monkeypatch.setattr(process_support, "kill_owned_process_group", deny)
+    with (
+        pytest.raises(PermissionError, match="fixture group denied") as error,
+        process_support.python_worker(
+            "import time; print('ready', flush=True); time.sleep(60)", cwd=tmp_path
+        ) as child,
+    ):
+        assert process_support.worker_line(child, timeout=2) == "ready\n"
+    assert error.value is refused
+    assert child.returncode == -signal.SIGKILL
+    with pytest.raises(ChildProcessError):
+        os.waitpid(child.pid, os.WNOHANG)
+
+
+def test_resource_worker_reaps_direct_child_when_group_cleanup_fails(
+    tmp_path, monkeypatch
+):
+    refused = PermissionError(errno.EPERM, "fixture group denied")
+    children = []
+    original_popen = subprocess.Popen
+
+    def record(*args, **kwargs):
+        child = original_popen(*args, **kwargs)
+        children.append(child)
+        return child
+
+    def deny(_group):
+        raise refused
+
+    monkeypatch.setattr(resources.subprocess, "Popen", record)
+    monkeypatch.setattr(resources, "kill_owned_process_group", deny)
+    with pytest.raises(PermissionError, match="fixture group denied") as error:
+        resources.run_resource(
+            CONTROLS,
+            "hang",
+            timeout=0.1,
+            kind="sleep",
+            marker=str(tmp_path / "entered"),
+        )
+    assert error.value is refused
+    assert children[0].returncode == -signal.SIGKILL
+    with pytest.raises(ChildProcessError):
+        os.waitpid(children[0].pid, os.WNOHANG)

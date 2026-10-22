@@ -41,6 +41,18 @@ _JSON = st.recursive(
     max_leaves=25,
 )
 _CONTAINER = st.lists(_JSON, max_size=5) | st.dictionaries(_DICT_KEY, _JSON, max_size=5)
+_IDENTITY_JSON = st.recursive(
+    st.none()
+    | st.booleans()
+    | _INT
+    | st.floats(allow_nan=False, allow_infinity=False)
+    | st.text(max_size=40),
+    lambda children: (
+        st.lists(children, max_size=6)
+        | st.dictionaries(st.text(max_size=20), children, max_size=6)
+    ),
+    max_leaves=25,
+)
 _FORMAT = st.fixed_dictionaries(
     {
         "ensure_ascii": st.booleans(),
@@ -130,6 +142,15 @@ def test_jsonx_interoperates_with_stdlib_json_both_directions(value: object) -> 
     _assert_same_value(json.loads(jsonx_text), expected)
     _assert_same_value(jsonx.loads(stdlib_text), expected)
     _assert_same_value(jsonx.loads(jsonx_text), expected)
+
+
+@given(value=_IDENTITY_JSON)
+@example(value={"é": [2**200, -0.0, 5e-324, 1e20]})
+def test_strict_identity_matches_the_defined_json_format(value: object) -> None:
+    expected = json.dumps(
+        value, sort_keys=True, separators=(",", ":"), ensure_ascii=True, allow_nan=False
+    ).encode()
+    assert jsonx.canonical_strict(value) == expected
 
 
 @given(value=_JSON, options=_FORMAT)

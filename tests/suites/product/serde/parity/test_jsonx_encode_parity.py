@@ -18,9 +18,12 @@ import inspect
 from io import BytesIO, StringIO
 import json
 import math
+import os
 from pathlib import Path
+import subprocess
 import sys
 from types import MappingProxyType
+from typing import get_type_hints
 from uuid import UUID
 
 import pytest
@@ -616,3 +619,138 @@ def test_canonical_uses_ascii_sorted_compact_stdlib() -> None:
         value, sort_keys=True, ensure_ascii=True, separators=(",", ":"), default=str
     ).encode()
     assert jsonx.canonical(value) == expected
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        None,
+        True,
+        False,
+        0,
+        2**100,
+        -0.0,
+        1.25,
+        "café 😀",
+        [],
+        {},
+        {"z": [True, None, 1, 1.0, -0.0], "a": {"text": "é"}},
+    ],
+)
+def test_strict_identity_matches_the_defined_legacy_format(value: object) -> None:
+    expected = json.dumps(
+        value, sort_keys=True, separators=(",", ":"), ensure_ascii=True, allow_nan=False
+    ).encode()
+    assert jsonx.canonical_strict(value) == expected
+    assert jsonx.canonical_strict(value) == jsonx.canonical(value)
+
+
+def test_strict_identity_has_frozen_unicode_and_numeric_spellings() -> None:
+    assert jsonx.canonical_strict({"é": "😀", "a": [True, None, 1, 1.0, -0.0]}) == (
+        b'{"a":[true,null,1,1.0,-0.0],"\\u00e9":"\\ud83d\\ude00"}'
+    )
+    assert jsonx.canonical_strict("é") != jsonx.canonical_strict("e\u0301")
+
+
+@pytest.mark.parametrize(
+    "value",
+    [b"a", bytearray(b"a"), Decimal("1.0"), {"a", "b"}, (1, 2), object(), {1: "value"}],
+)
+def test_strict_identity_refuses_implicit_coercions(value: object) -> None:
+    with pytest.raises(TypeError):
+        jsonx.canonical_strict(value)
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        float("nan"),
+        float("inf"),
+        float("-inf"),
+        "\ud800",
+        {"\udfff": 1},
+        "\ud83d\ude00",
+        {"\ud83d\ude00": 1},
+    ],
+)
+def test_strict_identity_refuses_nonfinite_numbers_and_surrogate_codepoints(
+    value: object,
+) -> None:
+    with pytest.raises(ValueError, match=r"finite|surrogate"):
+        jsonx.canonical_strict(value)
+
+
+def test_strict_identity_rejects_cycles_but_accepts_shared_branches() -> None:
+    branch = [1, {"key": "value"}]
+    assert (
+        jsonx.canonical_strict([branch, branch])
+        == b'[[1,{"key":"value"}],[1,{"key":"value"}]]'
+    )
+    cycle: list[object] = []
+    cycle.append(cycle)
+    with pytest.raises(ValueError, match="circular"):
+        jsonx.canonical_strict(cycle)
+    mapping: dict[str, object] = {}
+    mapping["self"] = mapping
+    with pytest.raises(ValueError, match="circular"):
+        jsonx.canonical_strict(mapping)
+
+
+def test_strict_identity_rejects_subclasses_without_running_their_hooks() -> None:
+    class Text(str):
+        def __str__(self):
+            pytest.fail("identity serialization invoked a conversion hook")
+
+    class Values(list):
+        def __iter__(self):
+            pytest.fail("identity serialization invoked an iteration hook")
+
+    for value in (Text("value"), Values([1]), {Text("key"): 1}):
+        with pytest.raises(TypeError):
+            jsonx.canonical_strict(value)
+
+
+def test_strict_identity_owns_the_validated_snapshot(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source = {"values": [1]}
+    encoder = jsonx._IDENTITY.encode
+
+    def observed(snapshot):
+        source["values"].append(2)
+        return encoder(snapshot)
+
+    monkeypatch.setattr(jsonx._IDENTITY, "encode", observed)
+    assert jsonx.canonical_strict(source) == b'{"values":[1]}'
+    assert source == {"values": [1, 2]}
+
+
+def test_legacy_identity_coercions_remain_compatible() -> None:
+    assert jsonx.canonical(b"a") == jsonx.canonical("b'a'")
+    assert jsonx.canonical(Decimal("1.0")) == b'"1.0"'
+    assert jsonx.canonical(float("nan")) == b"NaN"
+
+
+def test_strict_identity_is_independent_of_process_hash_seed() -> None:
+    script = (
+        "from unstd.serde import jsonx; import sys; "
+        "value = {key: {'b': [1, 2], 'a': 'é'} for key in {'z', 'a', 'm'}}; "
+        "sys.stdout.buffer.write(jsonx.canonical_strict(value))"
+    )
+    outputs = [
+        subprocess.run(  # noqa: S603 — fixed source and the current interpreter
+            [sys.executable, "-c", script],
+            env={**os.environ, "PYTHONHASHSEED": seed},
+            timeout=10,
+            check=True,
+            capture_output=True,
+        ).stdout
+        for seed in ("1", "2", "173")
+    ]
+    assert outputs == [outputs[0]] * len(outputs)
+
+
+def test_public_json_annotations_resolve_for_runtime_consumers() -> None:
+    for function in (jsonx.dumps, jsonx.dumpb, jsonx.dump, jsonx.load, jsonx.canonical):
+        get_type_hints(function)
+    assert get_type_hints(jsonx.canonical_strict) == {"obj": object, "return": bytes}

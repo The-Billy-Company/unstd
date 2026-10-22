@@ -63,6 +63,23 @@ shared references, text similarity uses different algorithms across backends,
 and random bulk draws can return arrays or lists with different seeded streams.
 These helpers extend the stdlib rather than promising an import-only migration.
 
+Opt into explicit contracts when results or guarantees must survive backend
+changes. Existing defaults and persisted canonical bytes remain unchanged:
+
+- [Text](src/unstd/text/README.md): `indel_ratio` or `difflib_ratio`, selected
+  through `scorer=` on matching helpers, keep the algorithm explicit.
+- [Packing](src/unstd/pack/README.md): `pack_array_portable` and
+  `unpack_array_portable` use struct validation and owned Python results.
+- [Randomness](src/unstd/rand/README.md): `Generator(seed, backend="stdlib")`
+  owns an independent stream and keeps stdlib semantics with NumPy installed.
+- [Identity](src/unstd/serde/README.md): `canonical_strict` rejects unsupported
+  identity values instead of converting them implicitly.
+- [Regex](src/unstd/rex/README.md): `compile_faithful` preserves Python matching
+  semantics; `compile_linear` guarantees a single `search`, `match`, or
+  `fullmatch` and refuses fallback and iterative operations.
+- [Filesystem](src/unstd/fs/README.md): `durable="strict"` and
+  `sync_dir(..., strict=True)` report directory-sync failures.
+
 ## Repository layout
 
 - [`src/`](src/README.md) contains the installable Python package and bundled C

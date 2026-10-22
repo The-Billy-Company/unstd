@@ -30,6 +30,10 @@ except binpack.error:
 # bulk homogeneous arrays (the value-add)
 blob = binpack.pack_array("<f4", [1.0, 2.0, 3.0])  # -> bytes
 arr = binpack.unpack_array("<f4", blob)  # ndarray (numpy) | list (fallback)
+
+# explicit portable validation and return types, with or without NumPy
+blob = binpack.pack_array_portable("<i4", [1, 2, 3])  # -> bytes
+values = binpack.unpack_array_portable("<i4", blob)  # -> owned list[int]
 ```
 
 ### Migrating a file
@@ -63,13 +67,39 @@ numbers, which the fallback does not implement.
 
 Input conversion and errors follow the selected backend. For example, NumPy
 converts `1.5` to `1` for `"<i4"`, while `struct` rejects a float for that integer
-format. Callers needing backend-independent behavior should provide values
-already valid for the portable dtype rather than relying on NumPy coercion.
+format. Existing helpers retain these conversion and return-type differences
+for compatibility. Choose the explicit portable helpers below when validation
+and output types must be independent of installed dependencies.
 
 Both paths require the buffer's byte size to be a whole multiple of the dtype's itemsize; a
 partial trailing element raises `binpack.error` (fallback) / `ValueError`
 (NumPy `frombuffer`). Contiguous typed and multidimensional memoryviews are
 interpreted as raw bytes, using all their storage regardless of their shape.
+
+### `pack_array_portable` / `unpack_array_portable` — stable struct semantics
+
+These helpers always use stdlib `struct`, even when NumPy is installed. They
+accept the portable numeric dtype subset and aliases above, apply the same
+byte-order rules, and produce `bytes` / a fresh `list` of Python scalars.
+Integer dtypes require integer values (or `__index__`), reject floats instead of
+truncating them, and reject out-of-range integers with `binpack.error`.
+Float conversion and overflow follow `struct.pack`; for example, finite values
+outside the float16 range raise `OverflowError`. Nonfinite floats and signed
+zero retain struct's representation.
+
+```python
+binpack.pack_array_portable("u1", [1.9])  # raises binpack.error on every install
+binpack.pack_array_portable("u1", [256])  # raises binpack.error (out of range)
+binpack.pack_array_portable("<i2", (n for n in [1, -2]))  # b"\x01\x00\xfe\xff"
+binpack.unpack_array_portable("<i2", b"\x01\x00\xfe\xff")  # [1, -2]
+```
+
+Packing snapshots the iterable once before numeric conversion. Unpacking
+requires contiguous buffers and a whole number of elements; trailing partial
+elements always raise `binpack.error`. Typed, scalar, and multidimensional
+memoryviews use their full byte storage. Decoded lists do not alias the input
+buffer. This stable contract gives up NumPy's broader dtype/coercion surface and
+its zero-copy array result.
 
 #### Hold your data in an array, not a list
 

@@ -173,6 +173,9 @@ match = pattern.fullmatch('item123')
 assert isinstance(match, irgx.Match)
 assert match.group() == 'item123' and match.span() == (0, 7)
 assert pattern.fullmatch('item') is None
+strict = rex.compile_linear('[a-z]+[0-9]+')
+assert strict.fullmatch('item123').span() == (0, 7)
+assert rex.compile_faithful('a$').search('a\\n').span() == (0, 1)
 """,
     "containers": """
 import immutables, sortedcontainers
@@ -189,7 +192,7 @@ old = containers.Map({'a': 1}); new = old.set('a', 2)
 assert old['a'] == 1 and new['a'] == 2
 """,
     "rand": """
-import numpy
+import numpy, random
 from unstd import rand
 from unstd.rand import draw
 assert rand.HAVE_NUMPY is True
@@ -201,6 +204,11 @@ assert numpy.array_equal(first, second)
 assert bool(numpy.all((first >= 0) & (first < 1)))
 assert isinstance(rand.ints(4, 1, 2), numpy.ndarray)
 assert rand.choices(['only'], 3) == ['only', 'only', 'only']
+explicit = rand.Generator(173)
+reference = random.Random(173)
+assert explicit.backend == 'stdlib'
+assert explicit.floats(3) == [reference.uniform(0.0, 1.0) for _ in range(3)]
+assert isinstance(rand.Generator(173, backend='numpy').floats(3), numpy.ndarray)
 """,
     "pack": """
 import numpy, struct
@@ -212,6 +220,13 @@ values = binpack.unpack_array('>i2', wire)
 assert isinstance(values, numpy.ndarray)
 assert values.tolist() == [1, -2, 300]
 assert values.base is wire
+assert binpack.unpack_array_portable('>i2', wire) == [1, -2, 300]
+try:
+    binpack.pack_array_portable('u1', [1.9])
+except struct.error:
+    pass
+else:
+    raise AssertionError('portable packing silently truncated a float')
 """,
     "clone": """
 from dataclasses import dataclass
@@ -233,6 +248,9 @@ assert fuzz.ratio('abcd', 'abdc') == 0.75
 assert fuzz.distance('kitten', 'sitting') == 3
 assert fuzz.extract('needle', ['other', 'needle'], limit=1) == [('needle', 1.0)]
 assert fuzz.cdist(['same'], ['same', 'xxxx']) == [[1.0, 0.0]]
+assert fuzz.indel_ratio('abcbc', 'bcabc') == 0.8
+assert fuzz.difflib_ratio('abcbc', 'bcabc') == 0.6
+assert fuzz.extract('abcbc', ['bcabc'], scorer=fuzz.difflib_ratio) == [('bcabc', 0.6)]
 """,
     "audio": """
 import io, numpy, soundfile, struct, wave

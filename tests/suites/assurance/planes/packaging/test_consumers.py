@@ -8,7 +8,11 @@ import zipfile
 
 import pytest
 
-from tests.support.packaging import CONSUMER_AUDIT, Consumer, clean_environment
+from tests.support.packaging import (
+    CONSUMER_AUDIT,
+    Consumer,
+    clean_environment,
+)
 
 
 if TYPE_CHECKING:
@@ -36,6 +40,13 @@ value = {'unicode': '雪', 'nested': [None, True, -7, 1.5]}
 assert jsonx.dumps(value) == json.dumps(value)
 assert jsonx.loads(jsonx.dumpb(value)) == value
 assert jsonx.canonical({'b': 2, 'a': 1}) == b'{"a":1,"b":2}'
+assert jsonx.canonical_strict({'b': 2, 'a': 1}) == b'{"a":1,"b":2}'
+try:
+    jsonx.canonical_strict(b'a')
+except TypeError:
+    pass
+else:
+    raise AssertionError('identity serialization accepted implicit conversion')
 stream = io.StringIO(); jsonx.dump(value, stream)
 assert jsonx.load(io.StringIO(stream.getvalue())) == value
 """,
@@ -65,6 +76,7 @@ assert context.check_hostname and context.verify_mode == ssl.CERT_REQUIRED
 assert context.minimum_version == ssl.TLSVersion.TLSv1_3
 """,
     "fs": """
+import os
 from pathlib import Path
 from unstd import fs
 directory = fs.ensure_dir(Path('files') / 'nested')
@@ -82,6 +94,10 @@ assert destination.read_text() == 'complete new'
 assert list(fs.walk_files('files')) == [destination]
 replacement = directory / 'replacement'; replacement.write_bytes(b'replaced')
 assert fs.atomic_replace(replacement, destination).read_bytes() == b'replaced'
+if os.name != 'nt':
+    fs.atomic_write(destination, 'acknowledged', durable='strict')
+    fs.sync_dir(directory, strict=True)
+    assert destination.read_text() == 'acknowledged'
 """,
     "proc": """
 import sys
@@ -131,6 +147,8 @@ assert binpack.unpack_array('<f4', expected) == [1.0, -2.5]
 assert binpack.pack('>H', 0x1234) == b'\\x12\\x34'
 assert binpack.unpack('>H', b'\\x12\\x34') == (0x1234,)
 assert binpack.Struct is struct.Struct
+assert binpack.pack_array_portable('<f4', [1.0, -2.5]) == expected
+assert binpack.unpack_array_portable('<f4', expected) == [1.0, -2.5]
 """,
     "rand": """
 import random
@@ -144,6 +162,10 @@ assert rand.ints(3, 4, 5) == [4, 4, 4]
 assert rand.choices(['only'], 2) == ['only', 'only']
 assert len(rand.crypto.token_bytes(16)) == 16
 assert len(rand.crypto.token_hex(8)) == 16
+stream = rand.Generator(173)
+reference = random.Random(173)
+assert stream.backend == 'stdlib'
+assert stream.floats(3) == [reference.uniform(0.0, 1.0) for _ in range(3)]
 """,
     "rex": """
 import re
@@ -152,6 +174,13 @@ assert rex.findall(r'([a-z]+)(\\d+)', 'item12 item34') == [('item', '12'), ('ite
 assert rex.sub(r'\\d+', '#', 'item12 item34') == 'item# item#'
 assert rex.compile(r'(?P<word>\\w+)').fullmatch('雪').groupdict() == {'word': '雪'}
 assert rex.error is re.error
+assert rex.compile_faithful('a$').search('a\\n').span() == (0, 1)
+try:
+    rex.compile_linear('[a-z]+')
+except rex.LinearRegexError:
+    pass
+else:
+    raise AssertionError('linear mode silently used a missing backend')
 """,
     "text.fuzz": """
 import difflib
@@ -160,6 +189,9 @@ assert fuzz.ratio('abcd', 'abdc') == difflib.SequenceMatcher(None, 'abcd', 'abdc
 assert fuzz.distance('kitten', 'sitting') == 3
 assert fuzz.jaro_winkler('same', 'same') == 1.0
 assert fuzz.best_match('needle', ['other', 'needle']) == ('needle', 1.0)
+assert fuzz.indel_ratio('abcbc', 'bcabc') == 0.8
+assert fuzz.difflib_ratio('abcbc', 'bcabc') == 0.6
+assert fuzz.best_match('abcbc', ['bcabc'], scorer=fuzz.indel_ratio) == ('bcabc', 0.8)
 """,
     "time.timeutil": """
 from datetime import UTC, datetime

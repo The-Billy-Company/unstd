@@ -17,14 +17,20 @@ slow. :func:`pack_array` / :func:`unpack_array` take a NumPy dtype string
 (``"<f4"``, ``">i8"``, ``"u1"``, …) and, when NumPy is present (the ``pack``
 extra), ride ``numpy.ndarray.tobytes`` for the encode and a **zero-copy**
 ``numpy.frombuffer`` view for the decode. Without the extra (a base ``unstd``
-install) they transparently fall back to stdlib ``struct`` — same dtype grammar,
-byte-identical output, returning a ``list`` instead of an ``ndarray`` — so the
-surface works everywhere and only the array throughput differs.
+install) they fall back to stdlib ``struct`` over a portable numeric dtype
+subset, returning a ``list`` instead of an ``ndarray``. Compatible values have
+the same layout; accepted dtypes, input coercion, and errors follow the backend.
+For example, NumPy truncates floats for integer dtypes while struct rejects them.
+
+:func:`pack_array_portable` / :func:`unpack_array_portable` always use struct's
+portable dtype subset and conversion rules, returning bytes / a fresh list of
+Python scalars regardless of whether NumPy is installed. Choose these helpers
+when validation and return types must remain stable across installations.
 
 Backend & fallback: NumPy is provided by the ``pack`` extra. The scalar
 struct surface never needs it; the array helpers prefer it and degrade to
-``struct`` when it is absent. The two backends are pinned to produce identical
-bytes (see ``tests/pack/test_pack.py``).
+``struct`` when it is absent. The explicit portable helpers always use struct.
+Tests pin shared layouts for compatible inputs and the portable validation rules.
 
 Prior art:
 
@@ -39,18 +45,18 @@ Prior art:
 
 from __future__ import annotations
 
+from collections.abc import Iterable  # noqa: TC003 — runtime type introspection
 from functools import lru_cache
 import struct as _struct
 from typing import TYPE_CHECKING
 
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
-
     import numpy as np
     from numpy.typing import DTypeLike, NDArray
 
     _HAVE_NUMPY = True
+    _ArrayResult = NDArray[np.generic] | list[float]
 else:
     try:
         import numpy as np
@@ -61,6 +67,12 @@ else:
     ):  # base install without the `pack` extra — stdlib struct fallback
         np = None
         _HAVE_NUMPY = False
+
+    # Runtime consumers must be able to inspect signatures without importing
+    # optional NumPy typing. The legacy dtype accepts backend-specific objects;
+    # the result alias describes the shapes available on this installation.
+    DTypeLike = object
+    _ArrayResult = np.ndarray | list[float] if _HAVE_NUMPY else list[float]
 
 
 # ── stdlib-``struct``-faithful surface (re-exported verbatim — byte-identical) ──
@@ -80,9 +92,11 @@ __all__ = [
     "iter_unpack",
     "pack",
     "pack_array",
+    "pack_array_portable",
     "pack_into",
     "unpack",
     "unpack_array",
+    "unpack_array_portable",
     "unpack_from",
 ]
 
@@ -139,16 +153,17 @@ def _parse_struct_spec(dtype: DTypeLike) -> tuple[str, str, int]:
     """Parse a dtype, preserving conversion and error behavior for foreign objects."""
     s = str(dtype)
     order = "="
-    if s[:1] in "<>=|":
+    if s and s[0] in "<>=|":
         order = "=" if s[0] == "|" else s[0]
         s = s[1:]
     s = _ALIAS.get(s, s)
     try:
-        char = _STRUCT_CHAR[s[0], int(s[1:])]
+        size = int(s[1:])
+        char = _STRUCT_CHAR[s[:1], size]
     except (KeyError, ValueError) as exc:
         msg = f"unstd.pack: unsupported array dtype {dtype!r}"
         raise error(msg) from exc
-    return order, char, int(s[1:])
+    return order, char, size
 
 
 @lru_cache(maxsize=128)
@@ -166,7 +181,10 @@ def pack_array(dtype: DTypeLike, seq: Iterable[float]) -> bytes:
     through ``numpy.asarray`` — no intermediate Python list; a generic iterator/
     generator (no ``__len__``) streams through ``numpy.fromiter``, NumPy's own
     idiom for that case (``asarray`` cannot consume one directly). Without NumPy,
-    the equivalent stdlib ``struct.pack`` — byte-identical output either way.
+    :func:`pack_array_portable` applies struct's stricter numeric conversion and
+    portable dtype subset. Compatible values have the same binary layout, but
+    coercion and supported dtypes can differ. Use :func:`pack_array_portable`
+    when validation must be independent of installed dependencies.
     """
     if _HAVE_NUMPY:
         arr = (
@@ -175,6 +193,24 @@ def pack_array(dtype: DTypeLike, seq: Iterable[float]) -> bytes:
             else np.fromiter(seq, dtype=dtype)
         )
         return arr.tobytes()
+    return _pack_array_struct(dtype, seq)
+
+
+def pack_array_portable(dtype: str, seq: Iterable[float]) -> bytes:
+    """Pack numeric values with struct's validation, independent of NumPy.
+
+    Accepts portable dtype strings: signed/unsigned integers of 1/2/4/8 bytes
+    and floats of 2/4/8 bytes, with the byte-order prefixes and spelled-out
+    aliases described in the module README. Integer formats require integer
+    values (or ``__index__``); floats are not silently truncated. Values outside
+    the format's range raise the same exception as stdlib ``struct.pack``.
+    The input iterable is consumed once before values are converted.
+    """
+    return _pack_array_struct(dtype, seq)
+
+
+def _pack_array_struct(dtype: DTypeLike, seq: Iterable[float]) -> bytes:
+    """Shared struct body, retaining legacy dtype-object handling."""
     order, char, _ = _struct_spec(dtype)
     # Freeze before reading the count. The bound method reuses this tuple for
     # argument expansion, avoiding a second copy to prepend a format argument.
@@ -182,9 +218,7 @@ def pack_array(dtype: DTypeLike, seq: Iterable[float]) -> bytes:
     return _array_struct(order, char, len(vals)).pack(*vals)
 
 
-def unpack_array(
-    dtype: DTypeLike, buf: bytes | bytearray | memoryview
-) -> NDArray[np.generic] | list[float]:
+def unpack_array(dtype: DTypeLike, buf: bytes | bytearray | memoryview) -> _ArrayResult:
     """Unpack ``dtype``-typed contiguous bytes into an array of scalars.
 
     With NumPy present this returns a **zero-copy** ``numpy.frombuffer`` view
@@ -197,6 +231,26 @@ def unpack_array(
         return np.frombuffer(
             buf, dtype=dtype
         )  # accepts the spec as-is; no extra dtype build
+    return _unpack_array_struct(dtype, buf)
+
+
+def unpack_array_portable(
+    dtype: str, buf: bytes | bytearray | memoryview
+) -> list[float]:
+    """Decode portable numeric bytes to a fresh list, independent of NumPy.
+
+    Uses the same dtype subset as :func:`pack_array_portable`. Buffers must be
+    contiguous and contain a whole number of elements; partial elements raise
+    :class:`error`. Contiguous typed and multidimensional memoryviews use their
+    full byte size. The result contains Python scalars and does not alias *buf*.
+    """
+    return _unpack_array_struct(dtype, buf)
+
+
+def _unpack_array_struct(
+    dtype: DTypeLike, buf: bytes | bytearray | memoryview
+) -> list[float]:
+    """Shared struct body, retaining legacy dtype-object and buffer handling."""
     order, char, size = _struct_spec(dtype)
     # A memoryview's length counts its first dimension, not bytes; scalar
     # views have no length at all. Keep the original buffer for struct's

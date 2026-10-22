@@ -7,14 +7,12 @@ Neither measurement is a throughput benchmark.
 
 from __future__ import annotations
 
-import contextlib
 import importlib
 from importlib import metadata
 import json
 import math
 import os
 from pathlib import Path
-import signal
 import subprocess
 import sys
 from threading import Event, Thread
@@ -28,7 +26,10 @@ if __name__ == "__main__":
     sys.path[:0] = [str(root / "src"), str(root)]
 
 from tests.support.anchors import REPO_ROOT
-from tests.support.process import isolated_environment
+from tests.support.process import (
+    isolated_environment,
+    kill_owned_process_group,
+)
 
 
 MAX_OUTPUT = 65536
@@ -124,11 +125,21 @@ def run_resource(
     finally:
         # Also reap descendants after a successful parent exit. A child cannot
         # evade ownership by keeping a capture pipe alive after its parent exits.
-        with contextlib.suppress(ProcessLookupError):
-            os.killpg(child.pid, signal.SIGKILL)
-        child.wait(timeout=5)
-        for reader in readers:
-            reader.join(timeout=5)
+        try:
+            try:
+                kill_owned_process_group(child.pid)
+            except BaseException as error:
+                try:
+                    child.kill()
+                    child.wait(timeout=5)
+                except BaseException as cleanup_error:
+                    error.add_note(f"direct-child cleanup failed: {cleanup_error}")
+                raise
+            else:
+                child.wait(timeout=5)
+        finally:
+            for reader in readers:
+                reader.join(timeout=5)
     diagnostic = bytes(stderr).decode("utf-8", "replace")[-4000:]
     assert not failure, (failure, diagnostic)
     assert not overflow.is_set(), "output budget exceeded"

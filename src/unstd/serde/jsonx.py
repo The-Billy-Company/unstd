@@ -33,9 +33,11 @@ successful acceleration and every fallback boundary against the running stdlib.
 
 from __future__ import annotations
 
+from collections.abc import Callable  # noqa: TC003 — public annotation introspection
 from functools import wraps
 import json as _stdlib
-from typing import TYPE_CHECKING, Any
+from math import isfinite
+from typing import TYPE_CHECKING, Any, Protocol
 
 from unstd.serde._json_common import _check_headroom
 from unstd.serde._json_encode import (
@@ -48,10 +50,24 @@ from unstd.serde._json_encode import (
 )
 
 
+class _TextWriter(Protocol):
+    """A text sink accepted by stdlib's streaming JSON encoder."""
+
+    def write(self, text: str, /) -> object:
+        """Write one encoder chunk."""
+        ...
+
+
+class _Reader(Protocol):
+    """A text or binary source accepted by JSON loading."""
+
+    def read(self) -> str | bytes | bytearray:
+        """Read the complete document once."""
+        ...
+
+
 if TYPE_CHECKING:
-    from collections.abc import Callable
     from types import NotImplementedType
-    from typing import Protocol
 
     import msgspec
     import numpy as np
@@ -60,20 +76,6 @@ if TYPE_CHECKING:
     _HAVE_ORJSON = True
     _HAVE_MSGSPEC = True
     _HAVE_NUMPY = True
-
-    class _TextWriter(Protocol):
-        """A text sink accepted by stdlib's streaming JSON encoder."""
-
-        def write(self, text: str, /) -> object:
-            """Write one encoder chunk."""
-            ...
-
-    class _Reader(Protocol):
-        """A text or binary source accepted by JSON loading."""
-
-        def read(self) -> str | bytes | bytearray:
-            """Read the complete document once."""
-            ...
 
 else:
     try:
@@ -112,6 +114,7 @@ __all__ = [
     "JSONEncoder",
     "Json",
     "canonical",
+    "canonical_strict",
     "dump",
     "dumpb",
     "dumps",
@@ -324,25 +327,82 @@ def _line(obj: object) -> bytes:
 def canonical(
     obj: object, *, default: Callable[[object], object] | None = str
 ) -> bytes:
-    """Stable canonical JSON *bytes* for identity — digests, HMACs, cache keys, fingerprints.
+    """The legacy sorted, compact, ASCII-escaped JSON byte format.
 
-    Sorted keys, compact separators, ASCII-escaped. Deterministic and independent
-    of the active codec (stdlib vs orjson) *and* of any Unicode-handling change,
-    which is exactly what a hash/identity input needs. Deliberately stdlib-backed
-    (identity is never the hot path): the ASCII escaping makes the bytes
-    reproducible across versions, and this form is byte-identical to the historic
-    ``json.dumps(obj, sort_keys=True, separators=(",", ":"))`` output — so swapping
-    a hash site onto it changes nothing on the wire.
+    Sorted keys, compact separators and ASCII escaping are independent of the
+    installed accelerator. The format retains stdlib number spellings and is
+    not RFC 8785/JCS. Existing identity inputs retain their historical bytes.
 
-    Use this whenever serialized bytes feed something *compared or persisted across
-    time*; use :func:`dumps`/:func:`dumpb` for machine transport where only the
-    parsed value matters.
+    The default ``str`` conversion is retained for compatibility with existing
+    persisted bytes. Unsupported values can stringify nondeterministically or
+    collide with strings. Use :func:`canonical_strict` for new identity inputs;
+    use :func:`dumps`/:func:`dumpb` for transport.
     """
     if default is str:
         return _CANONICAL.encode(obj).encode()
     return _stdlib.dumps(
         obj, sort_keys=True, separators=(",", ":"), ensure_ascii=True, default=default
     ).encode()
+
+
+def _identity_snapshot(obj: object, active: set[int]) -> Json:
+    """Own an exact JSON tree, rejecting coercions and cycles before encoding."""
+    if type(obj) is str:
+        obj.encode()  # Reject surrogate code points, including explicit pairs.
+        return obj
+    if obj is None or type(obj) is int or type(obj) is bool:
+        return obj
+    if type(obj) is float:
+        if isfinite(obj):
+            return obj
+        msg = "identity JSON requires finite numbers"
+        raise ValueError(msg)
+    if type(obj) is not list and type(obj) is not dict:
+        msg = f"unsupported identity JSON type: {type(obj).__name__}"
+        raise TypeError(msg)
+    if (identity := id(obj)) in active:
+        msg = "circular reference in identity JSON"
+        raise ValueError(msg)
+    active.add(identity)
+    try:
+        if isinstance(obj, list):
+            return [_identity_snapshot(value, active) for value in obj]
+        result: dict[str, Json] = {}
+        for key, value in obj.items():
+            if type(key) is not str:
+                msg = "identity JSON requires exact string keys"
+                raise TypeError(msg)
+            key.encode()
+            result[key] = _identity_snapshot(value, active)
+        return result
+    finally:
+        active.remove(identity)
+
+
+def canonical_strict(obj: object) -> bytes:
+    """Encode an exact JSON value using the version-1 identity byte format.
+
+    Accepts exact builtin dicts with exact string keys, lists, strings, integers,
+    finite floats, booleans and None. Other types, subclasses, non-finite numbers,
+    surrogate code points (including explicit pairs) and cycles are rejected
+    without a user conversion hook.
+    Shared acyclic branches are accepted. A private snapshot owns every mutable
+    branch before serialization, so validation and encoding see the same values.
+
+    Version 1 is sorted-key, compact, ASCII-escaped stdlib JSON with finite
+    numbers. It matches :func:`canonical` on this restricted domain; it is not
+    RFC 8785/JCS. Unicode normalization is not applied, and integer/float and
+    signed-zero spellings remain distinct. Normalize application values before
+    calling when those distinctions should not be part of an identity. Future
+    incompatible formats require a separate API; existing canonical bytes stay
+    unchanged. Interpreter integer-conversion and recursion limits still apply.
+    """
+    return _IDENTITY.encode(_identity_snapshot(obj, set())).encode()
+
+
+_IDENTITY = _stdlib.JSONEncoder(
+    sort_keys=True, separators=(",", ":"), ensure_ascii=True, allow_nan=False
+)
 
 
 # `json.dumps` builds a fresh `JSONEncoder` whenever it is passed a non-default

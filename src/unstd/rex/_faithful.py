@@ -15,22 +15,42 @@ import re._compiler as _compiler
 import re._constants as op
 import re._parser as _parser
 import sys
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, NoReturn
 import warnings
 
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterator
+    from collections.abc import Callable, Iterator, Sequence
 
     from irgx import Match as NativeMatch
     from irgx import Pattern as NativePattern
 
 
 _SURROGATES = re.compile("[\ud800-\udfff]")
-
-
 _INLINE_FLAGS = re.compile(r"\(\?([aiLmsux]*)(?:-([imsx]+))?([:)])")
 _POSIX_TOKEN = re.compile(r"\[:\^?[A-Za-z]+:\]|\[([.=])(?:\\.|[^\[\\])*?\1\]")
+
+
+def _absent_as_empty[AnyStr: (str, bytes)](
+    rows: Sequence[AnyStr | None] | Sequence[tuple[AnyStr | None, ...]], empty: AnyStr
+) -> list[AnyStr | tuple[AnyStr, ...]]:
+    """Rewrite irgx's ``None`` for a non-participating group to stdlib's ``""``.
+
+    The only place the two libraries project an absent group differently:
+    ``.groups()`` already reports ``None`` on both, so nothing else needs this.
+
+    `empty` is the caller's own zero-length string (``string[:0]``), which is
+    how a ``str`` corpus gets ``""`` and a ``bytes`` corpus ``b""`` without
+    branching on the subject type.
+    """
+    return [
+        tuple(empty if group is None else group for group in row)
+        if isinstance(row, tuple)
+        else empty
+        if row is None
+        else row
+        for row in rows
+    ]
 
 
 def _comment_end(source: str, index: int, terminator: str) -> int:
@@ -92,7 +112,9 @@ def _faithful_classes(pattern: str | bytes, flags: int, *, faithful: bool) -> bo
     return True
 
 
-def native_profile(pattern: str | bytes, flags: int) -> bool | None:
+def native_profile(
+    pattern: str | bytes, flags: int, *, faithful: bool = False
+) -> bool | None:
     """Return the ASCII-subject requirement, or decline unrepresentable semantics."""
     # The authoritative compile already emitted any syntax warnings.
     with warnings.catch_warnings(record=True):
@@ -100,16 +122,18 @@ def native_profile(pattern: str | bytes, flags: int) -> bool | None:
     if parsed.getwidth()[0] == 0:
         return None
     byte_transport = isinstance(pattern, str) and bool(flags & re.ASCII)
-    profile = _profile(parsed, parsed.state.flags, byte_transport)
+    profile = _profile(parsed, parsed.state.flags, byte_transport, faithful)
     return (
         profile
         if profile is not None
-        and _faithful_classes(pattern, parsed.state.flags, faithful=False)
+        and _faithful_classes(pattern, parsed.state.flags, faithful=faithful)
         else None
     )
 
 
-def _profile(nodes: Any, flags: int, byte_transport: bool) -> bool | None:
+def _profile(
+    nodes: Any, flags: int, byte_transport: bool, faithful: bool = False
+) -> bool | None:
     unicode = bool(flags & re.UNICODE)
     ascii_subject = False
     for kind, value in nodes:
@@ -124,7 +148,7 @@ def _profile(nodes: Any, flags: int, byte_transport: bool) -> bool | None:
             if byte_transport and (kind is op.NOT_LITERAL or value > 127):
                 return None
         elif kind is op.IN:
-            child = _profile(value, flags, byte_transport)
+            child = _profile(value, flags, byte_transport, faithful)
         elif kind is op.NEGATE:
             if byte_transport:
                 return None
@@ -155,6 +179,8 @@ def _profile(nodes: Any, flags: int, byte_transport: bool) -> bool | None:
             else:
                 return None
         elif kind is op.AT:
+            if faithful and value is op.AT_END and not flags & re.MULTILINE:
+                return None
             if value in (op.AT_BOUNDARY, op.AT_NON_BOUNDARY):
                 child = unicode
             elif value not in (
@@ -172,11 +198,14 @@ def _profile(nodes: Any, flags: int, byte_transport: bool) -> bool | None:
             if group and body.getwidth()[0] == 0:
                 return None
             child = _profile(
-                body, _compiler._combine_flags(flags, added, removed), byte_transport
+                body,
+                _compiler._combine_flags(flags, added, removed),
+                byte_transport,
+                faithful,
             )
         elif kind is op.BRANCH:
             for branch in value[1]:
-                branch_profile = _profile(branch, flags, byte_transport)
+                branch_profile = _profile(branch, flags, byte_transport, faithful)
                 if branch_profile is None:
                     return None
                 ascii_subject |= branch_profile
@@ -184,7 +213,7 @@ def _profile(nodes: Any, flags: int, byte_transport: bool) -> bool | None:
             # Empty iterations have different capture and adjacent-match rules.
             if value[2].getwidth()[0] == 0:
                 return None
-            child = _profile(value[2], flags, byte_transport)
+            child = _profile(value[2], flags, byte_transport, faithful)
         else:
             return None
         if child is None:
@@ -321,15 +350,7 @@ class _LinearPattern[AnyStr: (str, bytes)]:
         if not absent:
             found: list[AnyStr | tuple[AnyStr, ...]] = rows
             return found
-        empty = self._python.pattern[:0]
-        return [
-            tuple(empty if group is None else group for group in row)
-            if isinstance(row, tuple)
-            else empty
-            if row is None
-            else row
-            for row in rows
-        ]
+        return _absent_as_empty(rows, self._python.pattern[:0])
 
     def split(self, string: AnyStr, maxsplit: int = 0) -> list[AnyStr | None]:
         """Split on matches with Python's group projection."""
@@ -389,3 +410,124 @@ class _LinearPattern[AnyStr: (str, bytes)]:
     ) -> AnyStr:
         """Replace matches and return the resulting string."""
         return self.subn(repl, string, count)[0]
+
+
+class LinearRegexError(ValueError):
+    """A requested regex operation cannot keep Python semantics on the linear engine."""
+
+
+class _StrictLinearPattern[AnyStr: (str, bytes)](_LinearPattern[AnyStr]):
+    """A Python-faithful native pattern restricted to one linear match operation.
+
+    Python's compiled object supplies metadata only. Subject validation and
+    capture materialization finish before a match becomes observable. Iteration
+    and replacement are refused because native suffix rescans can be quadratic.
+    Native refusals become :class:`LinearRegexError`.
+    """
+
+    __slots__ = ()
+
+    def __getattr__(self, name: str) -> Any:
+        """Expose metadata without borrowing Python's ancillary matching methods."""
+        if name in ("pattern", "flags", "groups", "groupindex"):
+            return getattr(self._python, name)
+        if name == "scanner":
+            self._unsupported(name)
+        msg = f"{type(self).__name__!r} has no attribute {name!r}"
+        raise AttributeError(msg)
+
+    @property
+    def requires_ascii(self) -> bool:
+        """Whether Python's Unicode rules restrict this pattern to ASCII subjects."""
+        return self._ascii
+
+    def _needs_python(self, string: AnyStr) -> bool:
+        """Refuse subjects that would otherwise select Python's matching engine."""
+        needs_python = (
+            self._ascii and not string.isascii()
+            if type(string) in (str, bytes)
+            else True
+        )
+        needs_python |= (
+            isinstance(string, str) and _SURROGATES.search(string) is not None
+        )
+        if type(string) is not type(self._python.pattern) or needs_python:
+            msg = (
+                "the subject requires Python fallback; use an exact str/bytes "
+                "of the pattern's type, without lone surrogates"
+                + (" and containing only ASCII" if self._ascii else "")
+            )
+            raise LinearRegexError(msg)
+        return False
+
+    @staticmethod
+    def _limit(value: int, name: str) -> None:
+        """Restrict region bounds to native integer arguments."""
+        if type(value) is not int or not -sys.maxsize - 1 <= value <= sys.maxsize:
+            msg = f"{name} requires an exact platform-sized int in linear mode"
+            raise LinearRegexError(msg)
+
+    @staticmethod
+    def _materialize(match: NativeMatch | None) -> None:
+        """Resolve lazy captures before returning a match to application code."""
+        if match is not None:
+            match.groups()
+            match.span()
+
+    def _call(self, name: str, *args: Any) -> Any:
+        if name not in ("search", "match", "fullmatch"):
+            self._unsupported(name)
+        self._needs_python(args[0])
+        for value in args[1:]:
+            self._limit(value, "region bound")
+        try:
+            result = getattr(self._native, name)(*args)
+            self._materialize(result)
+        except self._declines as exc:
+            msg = f"native {name} cannot preserve the linear regex guarantee"
+            raise LinearRegexError(msg) from exc
+        else:
+            return result
+
+    @staticmethod
+    def _unsupported(name: str) -> NoReturn:
+        """Reject operations whose total work is not proven linear in the subject."""
+        msg = (
+            f"{name} is unavailable under the linear regex guarantee; "
+            "use search, match or fullmatch"
+        )
+        raise LinearRegexError(msg)
+
+    def finditer(
+        self, string: AnyStr, pos: int = 0, endpos: int | None = None
+    ) -> Iterator[re.Match[AnyStr] | NativeMatch]:
+        """Refuse iteration because repeated native searches can rescan suffixes."""
+        self._unsupported("finditer")
+
+    def findall(
+        self, string: AnyStr, pos: int = 0, endpos: int | None = None
+    ) -> list[AnyStr | tuple[AnyStr, ...]]:
+        """Refuse materialized iteration because total work can be quadratic."""
+        self._unsupported("findall")
+
+    def split(self, string: AnyStr, maxsplit: int = 0) -> list[AnyStr | None]:
+        """Refuse splitting because native match iteration can be quadratic."""
+        self._unsupported("split")
+
+    def subn(
+        self,
+        repl: AnyStr | Callable[[re.Match[AnyStr] | NativeMatch], AnyStr],
+        string: AnyStr,
+        count: int = 0,
+    ) -> tuple[AnyStr, int]:
+        """Refuse substitution before any matching or replacement callback."""
+        self._unsupported("subn")
+
+    def sub(
+        self,
+        repl: AnyStr | Callable[[re.Match[AnyStr] | NativeMatch], AnyStr],
+        string: AnyStr,
+        count: int = 0,
+    ) -> AnyStr:
+        """Refuse substitution before any matching or replacement callback."""
+        self._unsupported("sub")

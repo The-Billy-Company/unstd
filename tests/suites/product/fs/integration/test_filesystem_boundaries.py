@@ -329,3 +329,165 @@ def test_walk_skips_inaccessible_subdirectory_and_keeps_accessible_sibling(
 
 def test_walk_missing_root_is_empty(tmp_path: Path) -> None:
     assert list(fs.walk_files(tmp_path / "does-not-exist")) == []
+
+
+@pytest.mark.parametrize("failure", ["open", "fsync", "close"])
+def test_strict_directory_sync_propagates_os_failures_and_closes_handles(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, failure: str
+) -> None:
+    if os.name == "nt" and failure != "open":
+        pytest.skip("real directory handles are unavailable on Windows")
+    refused = OSError(errno.EIO, "injected directory failure")
+    descriptors: list[int] = []
+
+    class Boundary:
+        def __getattr__(self, name: str) -> Any:
+            return getattr(os, name)
+
+        def open(self, path, flags):
+            if failure == "open":
+                raise refused
+            fd = os.open(path, flags)
+            descriptors.append(fd)
+            return fd
+
+        def fsync(self, fd):
+            if failure == "fsync":
+                raise refused
+            os.fsync(fd)
+
+        def close(self, fd):
+            os.close(fd)
+            if failure == "close":
+                raise refused
+
+    monkeypatch.setattr(fs, "os", Boundary())
+    with pytest.raises(OSError, match="injected directory failure") as error:
+        fs.sync_dir(tmp_path, strict=True)
+    assert error.value is refused
+    for descriptor in descriptors:
+        with pytest.raises(OSError, match="Bad file descriptor"):
+            os.fstat(descriptor)
+
+
+def test_strict_directory_sync_refuses_an_ordinary_file(tmp_path: Path) -> None:
+    path = tmp_path / "file"
+    path.write_bytes(b"data")
+    with pytest.raises(OSError, match=r"directory|Directory|denied"):
+        fs.sync_dir(path, strict=True)
+
+
+def _strict_commit(operation: str, source: Path, dest: Path) -> None:
+    if operation == "replace":
+        fs.atomic_replace(source, dest, durable="strict")
+    elif operation == "writer":
+        with fs.atomic_writer(dest, mode="wb", durable="strict") as writer:
+            writer.write(b"new")
+    else:
+        fs.atomic_write(dest, b"new", durable="strict")
+
+
+@pytest.mark.parametrize("operation", ["write", "writer", "replace"])
+def test_strict_durability_preflight_refusal_preserves_destination(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, operation: str
+) -> None:
+    dest = tmp_path / "state"
+    source = tmp_path / "source"
+    dest.write_bytes(b"old")
+    source.write_bytes(b"new")
+    refused = OSError(errno.ENOTSUP, "directory sync unsupported")
+
+    def refuse(path, *, strict=False):
+        assert strict is True
+        raise refused
+
+    monkeypatch.setattr(fs, "sync_dir", refuse)
+    with pytest.raises(OSError, match="directory sync unsupported") as error:
+        _strict_commit(operation, source, dest)
+    assert error.value is refused
+    assert dest.read_bytes() == b"old"
+    assert source.read_bytes() == b"new"
+    assert not list(tmp_path.glob(".*.tmp"))
+
+
+@pytest.mark.parametrize("operation", ["write", "writer", "replace"])
+def test_strict_durability_reports_post_commit_failure_without_rollback(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, operation: str
+) -> None:
+    dest = tmp_path / "state"
+    source = tmp_path / "source"
+    dest.write_bytes(b"old")
+    source.write_bytes(b"new")
+    calls = []
+    refused = OSError(errno.EIO, "directory persistence failed")
+
+    def sync(path, *, strict=False):
+        assert strict is True
+        calls.append(Path(path))
+        if len(calls) == 2:
+            raise refused
+
+    monkeypatch.setattr(fs, "sync_dir", sync)
+    with pytest.raises(OSError, match="directory persistence failed") as error:
+        _strict_commit(operation, source, dest)
+    assert error.value is refused
+    assert dest.read_bytes() == b"new"
+    assert "replacement already committed" in " ".join(error.value.__notes__)
+    assert not list(tmp_path.glob(".*.tmp"))
+
+
+def test_strict_durability_syncs_new_parent_entries_before_committing(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    dest = tmp_path / "outer" / "inner" / "state"
+    reached = []
+
+    def sync(path, *, strict=False):
+        assert strict is True
+        reached.append((Path(path), dest.exists()))
+
+    monkeypatch.setattr(fs, "sync_dir", sync)
+    fs.atomic_write(dest, "new", durable="strict")
+    assert reached == [
+        (tmp_path, False),
+        (tmp_path / "outer", False),
+        (dest.parent, False),
+        (dest.parent, True),
+    ]
+    assert dest.read_text() == "new"
+
+
+def test_strict_replace_syncs_both_directories_after_the_move(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    source = tmp_path / "old" / "source"
+    dest = tmp_path / "new" / "dest"
+    source.parent.mkdir()
+    dest.parent.mkdir()
+    source.write_bytes(b"data")
+    reached = []
+
+    def sync(path, *, strict=False):
+        assert strict is True
+        reached.append((Path(path), dest.exists()))
+
+    monkeypatch.setattr(fs, "sync_dir", sync)
+    assert fs.atomic_replace(source, dest, durable="strict") == dest
+    assert reached == [
+        (dest.parent, False),
+        (source.parent, False),
+        (dest.parent, True),
+        (source.parent, True),
+    ]
+    assert not source.exists()
+    assert dest.read_bytes() == b"data"
+
+
+@pytest.mark.skipif(
+    os.name == "nt", reason="directory syncing is unavailable on Windows"
+)
+def test_strict_durability_real_filesystem_round_trip(tmp_path: Path) -> None:
+    dest = tmp_path / "nested" / "deeper" / "state"
+    fs.atomic_write(dest, "acknowledged", durable="strict")
+    fs.sync_dir(dest.parent, strict=True)
+    assert dest.read_text() == "acknowledged"

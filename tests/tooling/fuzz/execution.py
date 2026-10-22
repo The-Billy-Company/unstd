@@ -8,7 +8,6 @@ memory; a wall watchdog remains effective during startup and native hangs.
 from __future__ import annotations
 
 import base64
-import contextlib
 import hashlib
 import json
 import math
@@ -23,6 +22,8 @@ import tempfile
 import threading
 import time
 from typing import TYPE_CHECKING, Any
+
+from tests.support.process import kill_owned_process_group
 
 
 if TYPE_CHECKING:
@@ -164,20 +165,48 @@ class _Child:
         )
         self.process.stdin.flush()
 
-    def close(self):
-        """Kill descendants even if the worker exited first, and reap the leader."""
-        if os.name == "posix":
-            with contextlib.suppress(ProcessLookupError):
-                os.killpg(self.process.pid, signal.SIGKILL)
-        elif self.process.poll() is None:
-            self.process.kill()
-        self.process.wait(timeout=5)
+    def _close_pipes(self, error: BaseException | None = None):
+        """Finish readers before closing handles they might still be using."""
         self.stopped.set()
-        for stream in (self.process.stdin, self.process.stdout, self.process.stderr):
-            if stream is not None:
-                stream.close()
         for reader in self.readers:
             reader.join(timeout=1)
+        for stream, reader in (
+            (self.process.stdin, None),
+            (self.process.stdout, self.readers[0]),
+            (self.process.stderr, self.readers[1]),
+        ):
+            if reader is not None and reader.is_alive():
+                message = "worker capture pipe did not close"
+                if error is None:
+                    raise TimeoutError(message)
+                error.add_note(message)
+                continue
+            if stream is not None:
+                try:
+                    stream.close()
+                except BaseException as cleanup_error:
+                    if error is None:
+                        raise
+                    error.add_note(f"worker pipe cleanup failed: {cleanup_error}")
+
+    def close(self):
+        """Kill descendants even if the worker exited first, and reap the leader."""
+        try:
+            if os.name == "posix":
+                kill_owned_process_group(self.process.pid)
+            elif self.process.poll() is None:
+                self.process.kill()
+        except BaseException as error:
+            try:
+                self.process.kill()
+                self.process.wait(timeout=5)
+            except BaseException as cleanup_error:
+                error.add_note(f"direct-child cleanup failed: {cleanup_error}")
+            self._close_pipes(error)
+            raise
+        else:
+            self.process.wait(timeout=5)
+            self._close_pipes()
 
 
 def _failure_for_exit(code: int | None) -> dict:

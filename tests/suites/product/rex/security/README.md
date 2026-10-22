@@ -4,6 +4,12 @@
 
 The suite also checks Python syntax rejection and callback exception identity without replaying effects. Native safety probes require the `rex` capability; stdlib fallback is not claimed as linear-time matching.
 
+`test_linear_policy.py` proves that explicit linear policy refuses unsupported
+patterns, subjects, regions and native match shapes. It resolves lazy capture
+failures before returning a match and refuses every iterative operation before
+native work or callbacks. It checks generated accepted single-match operations
+against Python and runs hostile strict patterns in bounded processes.
+
 Run from the repository root:
 
 ```console

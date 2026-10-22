@@ -238,11 +238,16 @@ def test_unpack_array_rejects_noncontiguous_views(
 
 
 @pytest.mark.usefixtures("force_fallback")
-def test_fallback_unsupported_dtype_raises() -> None:
-    """Unknown dtype codes must raise; supported dtypes remain usable afterward."""
-    with pytest.raises(binpack.error):
-        binpack.pack_array("<c16", [1])  # complex128 has no struct char
+@pytest.mark.parametrize("dtype", ["", "<", ">", "=", "|", "i", "<i", "<c16"])
+def test_fallback_unsupported_dtype_raises(dtype: str) -> None:
+    """Malformed and unsupported dtypes raise the codec's documented exception."""
+    message = "unstd.pack: unsupported array dtype"
+    with pytest.raises(binpack.error, match=message):
+        binpack.pack_array(dtype, [1])
+    with pytest.raises(binpack.error, match=message):
+        binpack.unpack_array(dtype, bytes(16))
     assert binpack.pack_array("<f4", [1.0]) == struct.pack("<f", 1.0)
+    assert binpack.unpack_array("<f4", struct.pack("<f", 1.0)) == [1.0]
 
 
 @pytest.mark.usefixtures("force_fallback")

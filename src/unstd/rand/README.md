@@ -42,6 +42,41 @@ engine. Repeating the same calls with the same backend and seed reproduces the
 stream; switching backends changes the bulk sequence. It never touches the
 crypto path.
 
+For reproducibility across installations, create an independent stream with
+`Generator`. Its default is **always stdlib**, even with NumPy installed:
+
+```python
+run = rand.Generator(1234)  # independent stdlib stream
+xs = run.floats(100)  # always a Python list
+ks = run.ints(100, 0, 10)
+run.seed(1234)  # reset only this instance
+
+vectorized = rand.Generator(1234, backend="numpy")  # explicit PCG64 bulk engine
+xs = vectorized.floats(100)  # always a NumPy ndarray
+```
+
+Requesting `backend="numpy"` without NumPy raises `ImportError` with installation
+instructions. Every instance has the same scalar and bulk methods as the module,
+and a read-only `backend` property. Instances never change module-level draws,
+other instances, stdlib's global random engine, or `crypto`. All scalar methods
+use the instance's stdlib engine. With `backend="stdlib"`, scalar and bulk draws
+share that engine; with `backend="numpy"`, bulk draws use a separate PCG64 engine.
+Both engines receive the same seed. Reproducibility requires the same backend,
+call sequence, and compatible engine versions; selecting NumPy does not promise
+stdlib's values. Negative integer seeds are accepted by stdlib and rejected by
+NumPy. A failed `seed()` call preserves both engines' previous state.
+
+Bulk counts must be non-negative integers. `floats` requires `high >= low`;
+both bounds and their difference must be finite, including for zero draws.
+Floating-point rounding can include `high`, as with stdlib `uniform`.
+`ints` requires integer bounds and a non-empty interval, including for zero
+draws; equal bounds are valid with `endpoint=True`. NumPy integer draws use
+its default `int64` dtype, while stdlib supports arbitrary-sized integers.
+Weight validation retains the selected engine's behavior. For weighted draws,
+use finite non-negative weights with a positive
+total and one weight per population item; exact extreme-value limits and errors
+can differ between engines.
+
 The bulk helpers `floats`/`ints` return a NumPy `ndarray` on the NumPy backend and
 a Python `list` on the stdlib fallback, with different seeded sequences. These
 contracts are checked in

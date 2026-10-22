@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
+import errno
 import hashlib
 import json
 import os
@@ -390,3 +391,31 @@ def test_real_clock_entropy_group_produces_named_fault_observations():
         for journal in report["journals"].values()
         for event in journal["events"]
     )
+
+
+@pytest.mark.skipif(os.name != "posix", reason="POSIX group cleanup ownership")
+def test_campaign_group_cleanup_failure_still_reaps_worker_and_finishes_capture(
+    monkeypatch,
+):
+    refused = PermissionError(errno.EPERM, "fixture group denied")
+    children = []
+    original_popen = subprocess.Popen
+
+    def record(*args, **kwargs):
+        child = original_popen(*args, **kwargs)
+        children.append(child)
+        return child
+
+    def deny(_group):
+        raise refused
+
+    monkeypatch.setattr(execution.subprocess, "Popen", record)
+    monkeypatch.setattr(execution, "kill_owned_process_group", deny)
+    with pytest.raises(PermissionError, match="fixture group denied") as error:
+        _run("hang", wall_seconds=0.1)
+    assert error.value is refused
+    assert children[0].returncode == -signal.SIGKILL
+    assert children[0].stdout.closed
+    assert children[0].stderr.closed
+    with pytest.raises(ChildProcessError):
+        os.waitpid(children[0].pid, os.WNOHANG)

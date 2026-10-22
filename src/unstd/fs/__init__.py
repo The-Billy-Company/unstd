@@ -13,9 +13,10 @@ Provided:
   ``os.fsync``, then ``os.replace`` (an atomic same-filesystem rename). A reader
   ever sees the whole old file or the whole new file, never a torn half-write,
   and a crash mid-write leaves the destination untouched. Handles ``str`` and
-  ``bytes``. For full crash durability the *parent directory* must also be
-  fsync'd so the rename entry itself survives power loss (:func:`sync_dir`,
-  folded in via ``durable=True``) — the "fsync the directory too" nuance below.
+  ``bytes``. Persisting the rename also requires parent-directory syncing.
+  ``durable=True`` attempts it with best-effort errors; ``durable="strict"``
+  requires OS acknowledgments, including for new parent entries. Physical
+  persistence still depends on the filesystem and device.
 - :func:`ensure_dir` — ``mkdir(parents=True, exist_ok=True)`` as one idempotent call.
 - :func:`walk_files` — an ``os.scandir`` walk that reuses ``DirEntry`` type
   information and anchors no-follow traversal to directory handles where
@@ -49,6 +50,7 @@ Import the module, not its members::
 from __future__ import annotations
 
 from contextlib import AbstractContextManager, ExitStack, contextmanager, suppress
+import errno
 import os
 from pathlib import Path
 import secrets
@@ -70,6 +72,7 @@ __all__ = [
 ]
 
 _Pathish = str | os.PathLike[str]
+type _Durability = bool | Literal["strict"]
 
 
 def ensure_dir(path: _Pathish) -> Path:
@@ -79,19 +82,82 @@ def ensure_dir(path: _Pathish) -> Path:
     return p
 
 
-def sync_dir(path: _Pathish) -> None:
-    """``fsync`` a *directory* handle so an entry change inside it (a create or rename) is persisted. The nuance an ``os.replace`` alone misses: the rename is atomic, but not durable until the containing directory is synced. Failure to fsync a directory handle is swallowed (some platforms, notably Windows, reject it) — best-effort durability, never a hard error."""
+def _sync_directory_handle(fd: int, path: _Pathish, *, strict: bool) -> None:
+    """Validate strict handle ownership before asking the OS to persist it."""
+    if strict and not stat.S_ISDIR(os.fstat(fd).st_mode):
+        raise NotADirectoryError(errno.ENOTDIR, os.strerror(errno.ENOTDIR), path)
+    os.fsync(fd)
+
+
+def sync_dir(path: _Pathish, *, strict: bool = False) -> None:
+    """Sync a directory, suppressing OS failures unless ``strict=True``.
+
+    Strict mode requires a directory handle and reports open, fsync and close
+    failures, including platforms that do not support directory syncing. This
+    observes OS acknowledgments; it cannot establish physical power-loss safety
+    independently of the filesystem and storage device.
+    """
     try:
-        fd = os.open(path, os.O_RDONLY)
+        flags = os.O_RDONLY | (getattr(os, "O_DIRECTORY", 0) if strict else 0)
+        fd = os.open(path, flags)
     except OSError:
+        if strict:
+            raise
         return  # e.g. Windows cannot open a directory as an ordinary file
     try:
-        os.fsync(fd)
-    except OSError:
-        pass  # e.g. Windows can't fsync a directory handle — best effort
-    finally:
+        _sync_directory_handle(fd, path, strict=strict)
+    except BaseException as error:
+        try:
+            os.close(fd)
+        except OSError as cleanup_error:
+            if strict:
+                error.add_note(f"directory close failed: {cleanup_error}")
+        if strict or not isinstance(error, OSError):
+            raise
+    else:
+        if strict:
+            os.close(fd)
+            return
         with suppress(OSError):
             os.close(fd)
+
+
+def _prepare_parent(parent: Path, *, strict: bool) -> None:
+    """Prepare parents and acknowledge newly created directory entries in order."""
+    if not strict:
+        ensure_dir(parent)
+        return
+    missing = []
+    current = parent
+    while True:
+        try:
+            info = current.stat()
+        except FileNotFoundError:
+            missing.append(current)
+            current = current.parent
+        else:
+            if not stat.S_ISDIR(info.st_mode):
+                raise NotADirectoryError(
+                    errno.ENOTDIR, os.strerror(errno.ENOTDIR), current
+                )
+            break
+    ensure_dir(parent)
+    for created in reversed(missing):
+        sync_dir(created.parent, strict=True)
+    # Refuse unsupported directory syncing before replacing the destination.
+    sync_dir(parent, strict=True)
+
+
+def _sync_committed(parent: Path, *, strict: bool) -> None:
+    """Report post-commit sync failures without implying a successful rollback."""
+    try:
+        if strict:
+            sync_dir(parent, strict=True)
+        else:
+            sync_dir(parent)
+    except BaseException as error:
+        error.add_note("replacement already committed; directory sync failed")
+        raise
 
 
 # Exclusive create, no fd leak into children; O_BINARY/O_NOINHERIT exist only on Windows.
@@ -158,9 +224,10 @@ def _discard_scratch(path: Path, error: BaseException) -> None:
 
 @contextmanager
 def _atomic_writer(
-    dest: Path, mode: Literal["w", "wb"], encoding: str, durable: bool
+    dest: Path, mode: Literal["w", "wb"], encoding: str, durable: _Durability
 ) -> Generator[IO[str] | IO[bytes]]:
-    ensure_dir(dest.parent)
+    strict = durable == "strict"
+    _prepare_parent(dest.parent, strict=strict)
     fd, tmp_path = _scratch(dest)
     try:
         try:
@@ -191,7 +258,7 @@ def _atomic_writer(
         _discard_scratch(tmp_path, error)
         raise
     if durable:
-        sync_dir(dest.parent)
+        _sync_committed(dest.parent, strict=strict)
 
 
 @overload
@@ -200,7 +267,7 @@ def atomic_writer(
     *,
     mode: Literal["w"] = "w",
     encoding: str = "utf-8",
-    durable: bool = False,
+    durable: _Durability = False,
 ) -> AbstractContextManager[IO[str]]: ...
 @overload
 def atomic_writer(
@@ -208,20 +275,25 @@ def atomic_writer(
     *,
     mode: Literal["wb"],
     encoding: str = "utf-8",
-    durable: bool = False,
+    durable: _Durability = False,
 ) -> AbstractContextManager[IO[bytes]]: ...
 def atomic_writer(
     path: _Pathish,
     *,
     mode: Literal["w", "wb"] = "w",
     encoding: str = "utf-8",
-    durable: bool = False,
+    durable: _Durability = False,
 ) -> AbstractContextManager[IO[str] | IO[bytes]]:
     """Yield a handle to a fresh temp file in *path*'s own directory; on clean exit it is flushed, ``os.fsync``'d, and ``os.replace``'d onto *path* (an atomic same-filesystem rename). If the body raises, the temp file is removed and *path* is left exactly as it was — no partial write is ever observable.
 
     ``mode`` is ``"w"`` (text, *encoding* applied) or ``"wb"`` (binary).
-    ``durable=True`` also fsyncs the parent directory so the rename survives a
-    power loss. The temp file is co-located with the destination so the rename
+    ``durable=True`` attempts parent-directory syncing with legacy best-effort
+    error handling. ``durable="strict"`` reports every directory-sync failure,
+    including syncing newly created parent entries. Unsupported platforms fail
+    the preflight before replacement. A later sync failure is reported after
+    commit: the destination already contains the new data and is not rolled back.
+    These acknowledgments depend on filesystem/device persistence semantics.
+    The temp file is co-located with the destination so the rename
     stays on one filesystem (``os.replace`` is only atomic within a filesystem).
     """
     return _atomic_writer(Path(path), mode, encoding, durable)
@@ -232,7 +304,7 @@ def atomic_write(
     data: str | bytes,
     *,
     encoding: str = "utf-8",
-    durable: bool = False,
+    durable: _Durability = False,
 ) -> Path:
     """Atomically write *data* to *path* (temp-file + fsync + ``os.replace``).
 
@@ -240,7 +312,9 @@ def atomic_write(
     concurrent reader sees either the prior file or the complete new file, never
     a torn write. A process killed before replacement leaves *path* untouched
     but may leave its scratch file for later cleanup. ``durable=True`` fsyncs
-    the parent directory too. Returns *path*.
+    the parent directory too, with best-effort errors. ``durable="strict"``
+    requires directory-sync acknowledgments and propagates failures; a failure
+    after replacement leaves the new data committed. Returns *path*.
     """
     dest = Path(path)
     if isinstance(data, bytes):
@@ -252,15 +326,29 @@ def atomic_write(
     return dest
 
 
-def atomic_replace(src: _Pathish, dest: _Pathish, *, durable: bool = False) -> Path:
-    """Atomically move *src* onto *dest* via ``os.replace`` — a same-filesystem rename that overwrites *dest* if it exists, with no window where *dest* is absent. ``durable=True`` fsyncs *dest*'s parent so the rename persists.
+def atomic_replace(
+    src: _Pathish, dest: _Pathish, *, durable: _Durability = False
+) -> Path:
+    """Atomically move *src* onto *dest* with optional directory syncing.
 
-    Returns *dest*.
+    ``durable=True`` attempts destination-directory syncing, suppressing OS
+    failures. ``durable="strict"`` preflights both parents and requires their
+    post-rename sync acknowledgments. Later failures leave the rename committed.
+    Neither mode flushes the source file's data: the caller must have synced it
+    before moving when its content must persist. Returns *dest*.
     """
     target = Path(dest)
-    Path(src).replace(target)
+    source = Path(src)
+    strict = durable == "strict"
+    if strict:
+        sync_dir(target.parent, strict=True)
+        if source.parent != target.parent:
+            sync_dir(source.parent, strict=True)
+    source.replace(target)
     if durable:
-        sync_dir(target.parent)
+        _sync_committed(target.parent, strict=strict)
+        if strict and source.parent != target.parent:
+            _sync_committed(source.parent, strict=True)
     return target
 
 

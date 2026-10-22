@@ -43,7 +43,7 @@ also fall back, as do native operations that decline a requested match shape.
 
 ## Safety follows execution
 
-Native matching uses finite automata, so hostile patterns cannot trigger
+Single native searches use finite automata, so hostile patterns cannot trigger
 catastrophic backtracking there. `rex.search(r"(a+)+$", "a" * 40 + "!")` keeps
 that native safety win; the tests prove the same call hangs on stdlib `re` in a
 separate process.
@@ -52,6 +52,49 @@ Every fallback uses Python's backtracking engine and loses that guarantee.
 Installing the extra alone is insufficient: use supported regular patterns and
 bytes or faithful ASCII expressions over encodable input when linear matching
 is required.
+
+Use `compile_linear` when that requirement must be enforced:
+
+```python
+rx = rex.compile_linear(r"(a+)+\Z")
+assert rx.search("a" * 20_000 + "!") is None
+
+words = rex.compile_linear(r"\w+")
+assert words.requires_ascii
+assert words.search("one two").group() == "one"
+try:
+    words.search("café")
+except rex.LinearRegexError:
+    pass  # Python's Unicode semantics would require backtracking fallback.
+```
+
+`compile_linear` requires both Python meaning and native execution. Unsupported
+patterns, an absent `rex` extra, subjects requiring Python's Unicode rules,
+lone surrogates, unsupported argument shapes and native execution refusals
+raise `LinearRegexError`; malformed regex syntax still raises Python's compile
+error. Accepted subjects are exact `str` or `bytes` of the pattern's own type.
+Region bounds must be exact platform-sized integers. Capture projections are
+resolved before returning a match. Compiled objects and their module-level
+round trips retain this policy.
+
+The supported operations are **`search`, `match` and `fullmatch` only**.
+`findall`, `finditer`, `split`, `sub`, `subn` and `scanner` always raise
+`LinearRegexError` before matching or invoking callbacks, including when given
+a substitution or split limit. Even without backtracking, repeated native
+searches and capture extraction can rescan overlapping suffixes: `(a+z|a)`
+over repeated `a` is one such case. Restricting the facade to a single match
+operation establishes a linear bound on total matching and capture work for a
+fixed compiled pattern. Compilation cost and process CPU/memory limits need
+their own application policy.
+
+Use `compile_faithful` when Python semantics are required and backtracking
+fallback is acceptable. It retains the complete iteration, splitting and
+substitution API and also handles the legacy dialect differences below:
+non-multiline `$` and ambiguous nested/POSIX bracket syntax use Python. The
+decision follows parsed operations and scoped flags, so escaped dollars and
+multiline anchors keep native eligibility. Both policy compilers accept source
+text, Python patterns and patterns returned by `rex`; bare native patterns are
+refused because their flag metadata has a different meaning.
 
 ## Recovery keeps side effects intact
 
@@ -80,6 +123,8 @@ declines share a bounded cache of 512 entries; `purge` clears it and both engine
 Concurrent misses compile independently, then retry oldest-entry eviction until
 the cache is within that bound. Retained compiled patterns and matches remain
 usable after eviction or purge.
+The explicit policy compilers have separate caches with the same 512-entry bound;
+`purge` clears those caches too.
 
 ## Where it comes from
 

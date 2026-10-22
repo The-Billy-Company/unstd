@@ -20,3 +20,10 @@ expected outcomes in the owning suite; test harness admission, containment, and
 failure accounting under [assurance/gates](../suites/assurance/gates/README.md).
 Process-global patches and hostile inputs belong in deadline-owned workers.
 Production modules must not import test support.
+
+Owned process-group cleanup retains permission failures. On macOS, `killpg` can
+report `EPERM` for a group containing only zombies. The shared process helper
+accepts that case only after a bounded OS query confirms that the group is absent
+or every remaining member is an owned-UID zombie; live, foreign, or uncertain
+membership still fails. Worker supervisors reap their direct child even
+when group cleanup reports an error.

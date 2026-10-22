@@ -7,7 +7,8 @@ Only fixture-owned children are launched; every caller supplies a wall deadline.
 
 from __future__ import annotations
 
-from contextlib import contextmanager, suppress
+from contextlib import contextmanager
+import errno
 import os
 from queue import Queue
 import signal
@@ -22,6 +23,68 @@ from tests.support.anchors import REPO_ROOT
 if TYPE_CHECKING:
     from collections.abc import Iterator, Mapping, Sequence
     from pathlib import Path
+
+
+_GROUP_EVIDENCE_LIMIT = 65536
+
+
+def _darwin_group_finished(pgid: int) -> bool:
+    """Accept only bounded OS evidence of absence or owned zombie-only membership."""
+    try:
+        observed = subprocess.run(  # noqa: S603 — OS-owned ps, literal numeric group
+            ["/bin/ps", "-o", "pid=,pgid=,uid=,stat=", "-g", str(pgid)],
+            capture_output=True,
+            timeout=1,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return False
+    if observed.stderr or len(observed.stdout) > _GROUP_EVIDENCE_LIMIT:
+        return False
+    # Darwin ps exits 1 without output when the selected group has disappeared.
+    if observed.returncode == 1 and not observed.stdout:
+        return True
+    if observed.returncode != 0 or not observed.stdout:
+        return False
+    try:
+        rows = observed.stdout.decode("ascii").splitlines()
+        for row in rows:
+            pid, group, owner, state = row.split()
+            if (
+                int(pid) <= 1
+                or int(group) != pgid
+                or int(owner) != os.getuid()
+                or not state.startswith("Z")
+                or any(flag not in "+<>AELNSsVWX" for flag in state[1:])
+            ):
+                return False
+    except (UnicodeError, ValueError):
+        return False
+    return bool(rows)
+
+
+def kill_owned_process_group(pgid: int) -> None:
+    """Kill an owned group, accepting Darwin's verified terminal-zombie race.
+
+    Darwin can return EPERM for a group whose only remaining members are
+    zombies. Inspect that rare error once; live, foreign or uncertain evidence
+    retains the permission failure. Never retry a signal after observing exit.
+    The caller still owns direct-child reaping.
+    """
+    if pgid <= 1:
+        msg = "owned process group must have an id greater than 1"
+        raise ValueError(msg)
+    try:
+        os.killpg(pgid, signal.SIGKILL)
+    except ProcessLookupError:
+        return
+    except PermissionError as error:
+        if (
+            sys.platform != "darwin"
+            or error.errno != errno.EPERM
+            or not _darwin_group_finished(pgid)
+        ):
+            raise
 
 
 def python_argv(code: str, args: Sequence[str] = ()) -> list[str]:
@@ -63,12 +126,21 @@ def python_worker(
     try:
         yield child
     finally:
-        if owns_group:
-            with suppress(ProcessLookupError):
-                os.killpg(child.pid, signal.SIGKILL)
-        elif child.poll() is None:
-            child.kill()
-        child.communicate(timeout=5)
+        try:
+            if owns_group:
+                kill_owned_process_group(child.pid)
+            elif child.poll() is None:
+                child.kill()
+        except BaseException as error:
+            # A group-cleanup failure must not skip ownership of the direct child.
+            try:
+                child.kill()
+                child.communicate(timeout=5)
+            except BaseException as cleanup_error:
+                error.add_note(f"direct-child cleanup failed: {cleanup_error}")
+            raise
+        else:
+            child.communicate(timeout=5)
 
 
 def run_python(

@@ -99,8 +99,32 @@ to the permissive 2.1 codec; measured results are not a universal speed promise.
 its `sort_keys` and `default` options. It uses the same native guard or snapshot
 and falls back for all other values, including floats, so notation also matches
 stdlib across backends. Lone surrogates raise the same UTF-8 encoding error.
-`canonical` retains its sorted, compact, ASCII-escaped identity format; it is
-not an implementation of RFC 8785.
+`canonical` retains its legacy sorted, compact, ASCII-escaped format, including
+the default conversion of unsupported values through `str`. That conversion
+can produce unstable values or collide with ordinary strings. Its bytes are
+unchanged for existing persisted identities; neither identity API implements
+RFC 8785/JCS.
+
+For new identities, use `canonical_strict(value)`. It accepts exact builtin
+dicts with exact string keys, lists, strings, integers, finite floats, booleans,
+and `None`. Unsupported objects and subclasses, tuples, sets, non-string keys,
+non-finite numbers, surrogate code points (including explicit surrogate pairs),
+and cycles raise instead of being coerced.
+No conversion hook runs. Shared acyclic branches are allowed, and every mutable
+branch is copied before encoding so validation and encoding use the same values.
+
+```python
+jsonx.canonical_strict({"b": 2, "a": [True, None]})
+# b'{"a":[true,null],"b":2}'
+jsonx.canonical_strict(b"a")  # TypeError; no collision with the string "b'a'"
+```
+
+The version-1 format matches `canonical` on this restricted domain: sorted
+keys, compact separators, ASCII escapes, and stdlib number spellings. Unicode
+normalization is not applied; `1`/`1.0` and positive/negative zero retain their
+distinct spellings. Normalize such values explicitly if your application treats
+them as the same identity. Integer conversion and recursion limits still apply.
+Any future incompatible identity format will use a separate API.
 
 Platform wheels include the optional guard for each CPython version. Source
 builds use a compiler when available and otherwise retain the portable

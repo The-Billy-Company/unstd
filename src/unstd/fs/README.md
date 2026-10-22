@@ -42,6 +42,32 @@ one. Pass `durable=True` to attempt `fsync` on the parent directory after the
 rename. `sync_dir` suppresses OS errors, so this is best effort and does not
 guarantee persistence when directory syncing fails or is unsupported.
 
+Use `durable="strict"` when directory-sync failures must be visible. It requires
+successful OS acknowledgments for newly created parent entries and the final
+replacement. It preflights directory syncing before replacing the destination,
+so unsupported platforms fail before commit. A later I/O failure can still occur
+after replacement; the exception includes a note that the new data is already
+committed. Retrying must account for that state, rather than assuming rollback.
+
+```python
+fs.atomic_write(path, payload, durable="strict")
+fs.sync_dir(path.parent, strict=True)
+```
+
+`sync_dir(..., strict=True)` reports open, fsync and close errors, and refuses an
+ordinary file handle. The default continues to suppress OS errors. Strict mode
+requires platform directory-fsync support; it does not simulate power loss or
+override filesystem/storage-device persistence semantics. Paths and their parent
+directories must be trusted against concurrent namespace replacement.
+
+`atomic_replace(..., durable="strict")` preflights and syncs both source and
+destination directories. As with the legacy mode, it does not flush source-file
+contents; the caller must sync those before moving when content durability is
+required. A post-rename sync failure leaves the rename committed.
+
+`atomic_writer` accepts only `"w"` and `"wb"`. Unsupported modes raise
+`ValueError` before creating directories or a scratch file.
+
 Rewriting an existing file preserves its permissions from scratch creation, so
 an initially broader mode cannot leak replacement data through a retained read
 handle. Where descriptor chmod is available, mode copying targets the acquired

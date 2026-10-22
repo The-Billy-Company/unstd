@@ -90,7 +90,8 @@ cache, backend, resolver, import or native library failure is skipped there.
   called, not merely imported.
 - The host's mypy checks an external strict consumer against the fresh
   interpreter's installed package. A successful fixture uses `assert_type`; a
-  negative control requires five real type errors, so a missing typing marker or
+  negative control requires seven real type errors, including invalid explicit
+  durability/backend policies, so a missing typing marker or
   `Any` leakage cannot masquerade as success. No type checker is installed into
   the consumer environment.
 
