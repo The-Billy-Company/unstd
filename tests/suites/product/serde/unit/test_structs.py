@@ -24,6 +24,14 @@ class Point(msgspec.Struct):
     label: str = ""
 
 
+class _Opaque:
+    pass
+
+
+class _NeedsHook(msgspec.Struct):
+    value: _Opaque
+
+
 # ── thin-wrapper faithfulness ────────────────────────────────────────────────
 
 
@@ -88,6 +96,9 @@ def test_decode_or_does_not_swallow_other_exceptions() -> None:
     # dec_hook only fires for types msgspec can't natively decode into — Point's
     # fields are all native, so drive it through a type that needs the hook.
     assert hooked.decode_or(b'{"x": 1, "y": 2}') == Point(1, 2)
+    needs_hook = structs.Codec(_NeedsHook, dec_hook=bad_hook)
+    with pytest.raises(BoomError):
+        needs_hook.decode_or(b'{"value": 1}')
 
 
 # ── order=: canonical/deterministic bytes ───────────────────────────────────
@@ -211,8 +222,8 @@ def test_uuid_format_hex_drops_hyphens() -> None:
     u = UUID("12345678-1234-5678-1234-567812345678")
     canonical = structs.Codec(_HasUUID).encode(_HasUUID(u))
     hexed = structs.Codec(_HasUUID, uuid_format="hex").encode(_HasUUID(u))
-    assert b"-" in canonical
-    assert b"-" not in hexed
+    assert canonical == b'{"id":"12345678-1234-5678-1234-567812345678"}'
+    assert hexed == b'{"id":"12345678123456781234567812345678"}'
 
 
 # ── float_enc_hook (unchanged behavior, still covered) ──────────────────────
@@ -224,7 +235,7 @@ def test_float_enc_hook_coerces_supports_float() -> None:
 
 
 def test_float_enc_hook_raises_on_unencodable() -> None:
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match=r"^unencodable value of type object$"):
         structs.float_enc_hook(object())
 
 

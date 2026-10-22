@@ -345,18 +345,39 @@ def test_token_parser_exceptions_escape_the_fuzz_boundary(monkeypatch):
     assert caught.value is sentinel
 
 
-def test_structs_backend_utf8_errors_propagate_through_decode_or():
+def test_structs_backend_utf8_errors_preserve_decode_parity_and_decode_or_default():
     target = _target("structs")
     sample = b'\x00{"i\x8byndex":0,"label":"x"}'
     target.fuzz(sample)
-    with pytest.raises(UnicodeDecodeError):
-        target._CODECS[0, None].decode_or(sample[1:], object())
+    codec = target._CODECS[0, None]
+    with pytest.raises(UnicodeDecodeError) as raw_caught:
+        target._DECODERS[0].decode(sample[1:])
+    with pytest.raises(UnicodeDecodeError) as caught:
+        codec.decode(sample[1:])
+    assert type(caught.value) is type(raw_caught.value) is UnicodeDecodeError
+    assert caught.value.args == raw_caught.value.args
+    default = object()
+    assert codec.decode_or(sample[1:], default) is default
+    assert codec.decode_or(sample[1:]) is None
+    control = b'{"index":0,"label":"x"}'
+    assert codec.decode(control) == target.Row(0, "x")
+    assert codec.decode_or(control, default) == target.Row(0, "x")
+    target.fuzz(b"\x00" + control)
 
 
-def test_structs_oracle_detects_decode_or_swallowing_backend_utf8_errors(monkeypatch):
+def test_structs_oracle_detects_decode_or_losing_backend_utf8_error_default(
+    monkeypatch,
+):
     target = _target("structs")
-    monkeypatch.setattr(
-        target.structs.Codec, "decode_or", lambda self, raw, default=None: default
-    )
-    with pytest.raises(AssertionError, match="non-DecodeError UTF-8"):
+    original = target.structs.Codec.decode_or
+
+    def lose_utf8_default(self, raw, default=None):
+        try:
+            self.decode(raw)
+        except UnicodeError:
+            return None
+        return original(self, raw, default)
+
+    monkeypatch.setattr(target.structs.Codec, "decode_or", lose_utf8_default)
+    with pytest.raises(AssertionError):
         target.fuzz(b'\x00{"i\x8byndex":0,"label":"x"}')

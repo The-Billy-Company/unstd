@@ -24,8 +24,9 @@ produces (compact UTF-8, no inter-token whitespace) and ``decode`` validates aga
 the schema exactly as msgspec does. The only added surface is :meth:`Codec.decode_or`,
 which encodes the "malformed payload → cache miss" convention every Redis/HTTP cache
 reader shares: catch ``msgspec.DecodeError`` (``ValidationError`` is a subclass, so a
-typed-wrong field is caught too) and return a default; any *other* exception
-propagates untouched.
+typed-wrong field is caught too) and the ``UnicodeError`` msgspec raises for
+non-UTF-8 string content, and return a default; any *other* exception propagates
+untouched (msgspec already wraps hook ``ValueError``/``TypeError`` as validation).
 
 :func:`float_enc_hook` handles numeric scalars that msgspec does not encode
 natively, including ``numpy.float32``/``float64``. It coerces anything
@@ -99,7 +100,7 @@ class Codec[T]:
     encode: Callable[[T], bytes]
     """Serialize a value to compact UTF-8 JSON bytes."""
     decode: Callable[[bytes | str], T]
-    """Decode + validate into a ``T``; raises ``msgspec.DecodeError`` on a malformed or schema-invalid payload."""
+    """Decode + validate into a ``T``; raises ``msgspec.DecodeError`` on a malformed or schema-invalid payload (``UnicodeError`` for non-UTF-8 string content, exactly as msgspec does)."""
 
     def __init__(
         self,
@@ -140,8 +141,8 @@ class Codec[T]:
         self.decode = decoder.decode
 
     def decode_or(self, raw: bytes | str, default: T | None = None) -> T | None:
-        """Decode ``raw``, or return ``default`` when it is malformed / schema-invalid (the "malformed → cache miss" convention). Only ``msgspec.DecodeError`` (``ValidationError`` included) is swallowed; any other exception propagates."""
+        """Decode ``raw``, or return ``default`` when it is malformed / schema-invalid (the "malformed → cache miss" convention). Only ``msgspec.DecodeError`` (``ValidationError`` included) and the ``UnicodeError`` msgspec raises for non-UTF-8 payload text are swallowed; any other exception propagates."""
         try:
             return self.decode(raw)
-        except msgspec.DecodeError:
+        except (msgspec.DecodeError, UnicodeError):
             return default
