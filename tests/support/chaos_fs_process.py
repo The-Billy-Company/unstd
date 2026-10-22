@@ -86,7 +86,7 @@ class _AtomicBoundary:
         self.hits.append(name)
         raise error
 
-    def open(self, path: Path, flags: int, mode: int = 0o777) -> int:
+    def open(self, path: Path, flags: int, mode: int = 0o600) -> int:
         directory = Path(path) == self.parent
         if (directory and self.action == "directory-open") or (
             not directory and self.action == "open"
