@@ -226,3 +226,22 @@ def test_float_enc_hook_coerces_supports_float() -> None:
 def test_float_enc_hook_raises_on_unencodable() -> None:
     with pytest.raises(TypeError):
         structs.float_enc_hook(object())
+
+
+@pytest.mark.parametrize(
+    ("decimal_format", "expected"),
+    [("string", b'{"amount":"1.23"}'), ("number", b'{"amount":1.23}')],
+)
+def test_decimal_format_controls_output_before_float_hook(
+    decimal_format: structs._DecimalFormat, expected: bytes
+) -> None:
+    """Native Decimal support bypasses enc_hook; its wire type is explicit."""
+    calls: list[object] = []
+
+    def counted(value: object) -> float:
+        calls.append(value)
+        return structs.float_enc_hook(value)
+
+    codec = structs.Codec(_HasDecimal, enc_hook=counted, decimal_format=decimal_format)
+    assert codec.encode(_HasDecimal(Decimal("1.23"))) == expected
+    assert calls == []

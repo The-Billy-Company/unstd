@@ -18,9 +18,10 @@ the stdlib functions, bound directly: no wrapper frame on the hottest calls in a
 program, and patching the module attribute in a test still redirects every
 caller that reads it through the module.
 
-Everything here is absolute-instant work, which stdlib ``datetime`` does
-correctly once both sides are aware. DST-correct *wall-clock* work — "9am in
-New York next Tuesday" — is :mod:`unstd.time.zoned`, behind the ``time`` extra.
+Everything here is absolute-instant work. Durations account for each endpoint's
+UTC offset so a shared IANA zone cannot select wall-clock arithmetic.
+DST-correct *wall-clock* work — "9am in New York next Tuesday" — is
+:mod:`unstd.time.zoned`, behind the ``time`` extra.
 
 Backend: **pure stdlib** — works in a base ``unstd`` install with no extra. The
 only third-party touchpoint is the protobuf ``Timestamp`` bridge
@@ -30,7 +31,7 @@ only third-party touchpoint is the protobuf ``Timestamp`` bridge
 
 from __future__ import annotations
 
-from datetime import UTC, date, datetime, tzinfo
+from datetime import UTC, date, datetime, timedelta, tzinfo
 from functools import cache, partial
 import time as _time
 from typing import TYPE_CHECKING, Literal, cast
@@ -217,7 +218,7 @@ def _instant(value: str | datetime | None, assume_utc: bool) -> datetime | None:
     if value is None:
         return datetime.now(UTC)
     dt = value if isinstance(value, datetime) else parse_iso(value)
-    if dt is None or dt.tzinfo is not None:
+    if dt is None or dt.utcoffset() is not None:
         return dt
     return dt.replace(tzinfo=UTC) if assume_utc else None
 
@@ -237,6 +238,8 @@ def span(
     lenient reading for legacy tz-less stamps — an event's own offset cancels in
     the subtraction, so a duration between two floating values is still exact.
     Negative when *end* precedes *start*; clamp if you only want elapsed time.
+    Each endpoint's UTC offset is accounted for, including two local datetimes
+    in the same zone on opposite sides of a DST transition.
 
         span(created_at, unit="days", assume_utc=True)  # age
         span(now, deadline, unit="minutes")  # time remaining
@@ -244,7 +247,12 @@ def span(
     a, b = _instant(start, assume_utc), _instant(end, assume_utc)
     if a is None or b is None:
         return None
-    return (b - a).total_seconds() / _SECONDS[unit]
+    # Subtract wall fields and offsets separately: direct aware subtraction
+    # ignores offsets for a shared tzinfo, while constructing UTC endpoints can
+    # overflow at datetime.min/max even when the duration is representable.
+    wall_delta = b.replace(tzinfo=None) - a.replace(tzinfo=None)
+    offset_delta = (b.utcoffset() or timedelta(0)) - (a.utcoffset() or timedelta(0))
+    return (wall_delta - offset_delta).total_seconds() / _SECONDS[unit]
 
 
 # ── protobuf Timestamp bridge (the `proto` extra) ──────────────────────────────

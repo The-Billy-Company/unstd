@@ -43,14 +43,36 @@ Reads and one-level listings are `Path.read_bytes` / `read_text` / `iterdir`:
 CPython already sizes a whole-file read from `fstat` and lists through `scandir`,
 so a wrapper here measured slower, not faster.
 
-## Fast walking
+## Walking and concurrent directory changes
 
-`walk_files` is built on `os.scandir`, whose `DirEntry` caches the
-`stat` taken during the directory read, so `is_dir()` / `is_file()` cost no extra
-syscall — markedly faster than `os.walk` / `Path.rglob`, which re-`stat` each
-entry. `walk_files` does **not** descend symlinked directories or yield symlinked
-files unless `follow_symlinks=True` (the safe default avoids cycles and escaping
-`root`).
+`walk_files` uses `os.scandir` and reuses each `DirEntry`'s cached type
+information. The default skips symlinked directories and files, including a
+symlink supplied as `root`.
+
+On platforms supporting descriptor-relative opens, `O_DIRECTORY`, `O_NOFOLLOW`,
+and `scandir(fd)` (including Linux and macOS), it opens each directory relative
+to its already-open parent. Replacing a directory with a symlink before descent,
+or renaming and replacing an opened ancestor, cannot redirect enumeration into
+the symlink target. Open directories stay anchored to the tree being traversed.
+The initial root's parent components are resolved normally when the root is
+opened; the caller must trust that initial root selection.
+
+Live directory handles and scanners grow with traversal depth, rather than the
+number of siblings. Iteration is lazy; exhaustion, errors, and `close()` release
+all acquired handles. Close an unfinished iterator explicitly when stopping early.
+Unreadable or vanished directories are skipped. Entry order is unspecified.
+
+Other platforms, notably Windows, keep the portable path walk. It rejects
+directory reparse points and rechecks directory identity before and after opening
+a scan, including directories that changed while queued. These checks are best
+effort: this fallback is **not a confinement boundary** against concurrent
+namespace changes.
+
+Every yielded `Path` is a name, not an open file handle. A later open can follow a
+replacement even after a descriptor-protected walk. Applications that need to
+read untrusted, concurrently modified trees must also protect their file opens.
+`follow_symlinks=True` retains ordinary path traversal, including links outside
+`root` and possible symlink cycles.
 
 ## Prior art
 

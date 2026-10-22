@@ -8,8 +8,9 @@ none of that generality, so :func:`deep` walks it with exact-type dispatch inste
 
 - **Leaves never pay a call.** The container comprehensions test each child's
   exact type inline and return atoms (``str``/``int``/``float``/``bool``/``None``/
-  ``bytes``/the immutable ``datetime`` values …) as-is, the same objects
-  ``deepcopy`` itself returns for them.
+  ``bytes``/immutable date and duration values …) as-is. Datetimes and times
+  also stay shared when their timezone is absent or an exact immutable stdlib
+  type; custom timezones retain ``deepcopy``'s copy protocol.
 - **Data classes are rebuilt the way ``deepcopy`` rebuilds them**, with the walker
   in place of the recursive ``deepcopy``: a plain dataclass is ``cls.__new__`` plus
   its walked ``__dict__`` (what ``object.__reduce_ex__(4)`` reconstructs to); a
@@ -51,6 +52,7 @@ import sys
 import types
 from typing import Any
 import weakref
+from zoneinfo import ZoneInfo
 
 
 copy = _stdlib.copy
@@ -79,12 +81,14 @@ _ATOMS: frozenset[type] = frozenset(
         types.NotImplementedType,
         weakref.ref,
         _dt.date,
-        _dt.time,
-        _dt.datetime,
         _dt.timedelta,
         _dt.timezone,
     }
 )
+
+# A datetime/time is immutable, but a caller's tzinfo can own mutable state.
+# Admit only exact immutable timezone types; subclasses keep their copy hooks.
+_TIMEZONES = frozenset({type(None), _dt.timezone, ZoneInfo})
 
 type _Clone = Callable[[Any], Any]
 _NODES: dict[type, _Clone | None] = {}
@@ -105,6 +109,8 @@ def _walk(o: Any) -> Any:
         return tuple([v if type(v) in _ATOMS else _walk(v) for v in o])
     if t in _ATOMS:
         return o
+    if t is _dt.datetime or t is _dt.time:
+        return o if type(o.tzinfo) in _TIMEZONES else _stdlib.deepcopy(o)
     if t is set:
         return {v if type(v) in _ATOMS else _walk(v) for v in o}
     if t is frozenset:

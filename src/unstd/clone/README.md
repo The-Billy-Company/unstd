@@ -21,8 +21,10 @@ probe, and for anything but a builtin container a `__reduce_ex__` round-trip.
 
 - **Leaves never pay a call.** Each container comprehension tests its children's
   exact type inline and returns atoms (`str`, `int`, `float`, `bool`, `None`,
-  `bytes`, the immutable `datetime` values, …) as the same objects `deepcopy`
-  returns for them.
+  `bytes`, immutable dates and durations, …) as shared objects. Datetimes and
+  times stay shared when naive or using an exact `datetime.timezone` or
+  `zoneinfo.ZoneInfo`. Values with custom `tzinfo` use `deepcopy`, preserving
+  timezone copy hooks and isolating mutable timezone state.
 - **Data classes are rebuilt the way `deepcopy` rebuilds them**, with the walker
   in place of the recursion. A plain dataclass is `cls.__new__` plus its walked
   `__dict__`. A pydantic model mirrors `BaseModel.__deepcopy__` line for line

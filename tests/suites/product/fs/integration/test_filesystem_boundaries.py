@@ -306,9 +306,18 @@ def test_walk_skips_inaccessible_subdirectory_and_keeps_accessible_sibling(
     refused: list[Path] = []
 
     class Boundary:
-        def scandir(self, path: Path) -> os.ScandirIterator[str]:
-            if Path(path) == denied:
-                refused.append(Path(path))
+        def __getattr__(self, name: str) -> Any:
+            return getattr(os, name)
+
+        def open(self, path: Any, *args: Any, **kwargs: Any) -> int:
+            if str(path) == denied.name and kwargs.get("dir_fd") is not None:
+                refused.append(denied)
+                raise PermissionError(errno.EACCES, "directory access denied")
+            return os.open(path, *args, **kwargs)
+
+        def scandir(self, path: Any) -> os.ScandirIterator[str]:
+            if not isinstance(path, int) and Path(path) == denied:
+                refused.append(denied)
                 raise PermissionError(errno.EACCES, "directory access denied")
             return os.scandir(path)
 

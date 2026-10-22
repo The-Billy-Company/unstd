@@ -50,16 +50,18 @@ a spelled-out name (`"float32"`). Endianness prefixes `<` / `>` are explicit;
 `=` / `|` / no prefix mean native standard size.
 
 - **With the `pack` extra (NumPy present):** `pack_array` encodes via
-  `numpy.asarray(seq, dtype).tobytes()`; `unpack_array` returns a **zero-copy,
-  read-only** `numpy.frombuffer` view over the buffer (no allocation, no copy).
-  Copy it (`arr.copy()`) if you need a writable array.
+  `numpy.asarray(seq, dtype).tobytes()`; `unpack_array` returns a **zero-copy**
+  `numpy.frombuffer` view over the buffer (no allocation, no copy). Its writability
+  follows the buffer: immutable bytes produce a read-only array, while a mutable
+  buffer produces a writable view. Copy it (`arr.copy()`) for independent data.
 - **Without the extra (base install):** both fall back to stdlib `struct` — the
   same dtype grammar, **byte-identical** encoded output, and `unpack_array`
   returns a `list` of Python scalars instead of an `ndarray`.
 
-Both paths require `len(buf)` to be a whole multiple of the dtype's itemsize; a
+Both paths require the buffer's byte size to be a whole multiple of the dtype's itemsize; a
 partial trailing element raises `binpack.error` (fallback) / `ValueError`
-(NumPy `frombuffer`).
+(NumPy `frombuffer`). Contiguous typed and multidimensional memoryviews are
+interpreted as raw bytes, using all their storage regardless of their shape.
 
 #### Hold your data in an array, not a list
 

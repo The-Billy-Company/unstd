@@ -27,13 +27,11 @@ reader shares: catch ``msgspec.DecodeError`` (``ValidationError`` is a subclass,
 typed-wrong field is caught too) and return a default; any *other* exception
 propagates untouched.
 
-:func:`float_enc_hook` is the shared ``enc_hook`` for structs whose numeric values
-arrive as non-native scalars — ``numpy`` ``float32``/``float64``, ``Decimal`` — which
-msgspec routes to ``enc_hook`` because it dispatches on the *exact* type. It coerces
-anything ``float()``-able to ``float`` (so a numpy-scalar-bearing struct serializes
-identically to one built from native ``float``) and raises on a genuinely
-unencodable value, so a nan-in-the-map bug surfaces rather than silently corrupting
-the wire.
+:func:`float_enc_hook` handles numeric scalars that msgspec does not encode
+natively, including ``numpy.float32``/``float64``. It coerces anything
+``float()``-able to ``float`` and raises on an unsupported value. Types msgspec
+already supports bypass the hook: ``Decimal`` uses ``decimal_format`` instead,
+which defaults to JSON strings; choose ``"number"`` for numeric output.
 
 Every other msgspec constructor knob is forwarded straight through, not
 reinvented: ``order`` gives the typed path the same canonical-bytes capability
@@ -74,7 +72,12 @@ __all__ = [
 
 
 def float_enc_hook(obj: object) -> float:
-    """Coerce a non-native numeric scalar (numpy ``float32``/``float64``, ``Decimal``) to ``float``. msgspec dispatches on the *exact* type — routing any ``float`` subclass here — so anything ``float()``-able is accepted and anything else raises."""
+    """Coerce an unsupported numeric scalar to ``float``.
+
+    msgspec calls this hook only for types it cannot encode natively, such as
+    numpy float scalars. Decimal encoding is controlled by ``decimal_format``
+    and bypasses this hook. Direct calls accept any ``SupportsFloat`` value.
+    """
     if isinstance(obj, SupportsFloat):
         return float(obj)
     msg = f"unencodable value of type {type(obj).__name__}"

@@ -249,7 +249,7 @@ def write(
     if _HAVE_SOUNDFILE:
         _sf.write(
             path_or_file,
-            _sf_samples(samples),
+            _sf_samples(samples, subtype),
             int(samplerate),
             subtype=subtype,
             format="WAV",
@@ -297,6 +297,7 @@ class Writer:
         self._sf_handle: _SoundFileHandle | None = None
         self._wave: wave.Wave_write | None = None
         self._spec: tuple[int, str, int] | None = None
+        self._subtype = subtype
         if _HAVE_SOUNDFILE:
             self._sf_handle = _sf.SoundFile(
                 path_or_file,
@@ -324,7 +325,7 @@ class Writer:
     def write(self, samples: Samples) -> None:
         """Append one chunk of samples — same shape/dtype rules as :func:`write`."""
         if self._sf_handle is not None:
-            self._sf_handle.write(_sf_samples(samples))
+            self._sf_handle.write(_sf_samples(samples, self._subtype))
             return
         # __init__ binds exactly one handle or raises, so this is the `wave`
         # branch by elimination — hoisted into a local so the invariant is stated
@@ -335,7 +336,7 @@ class Writer:
             raise ValueError(msg)
         if self._spec is not None:  # numpy fallback
             _, code, scale = self._spec
-            wav.writeframesraw(_quantize(_np.asarray(samples), code, scale))
+            wav.writeframesraw(_quantize(_sample_array(samples), code, scale))
         else:  # pure-stdlib array floor — 16-bit PCM only
             wav.writeframesraw(_pcm16(samples)[0])
 
@@ -355,15 +356,45 @@ class Writer:
         self.close()
 
 
-def _sf_samples(samples: Samples) -> NDArray[_np.generic]:
-    """Coerce integer samples to a libsndfile-accepted dtype.
+def _python_integers(samples: object) -> bool:
+    """Whether a plain Python sample tree contains only integer sample counts."""
+    if isinstance(samples, int):
+        return True
+    return isinstance(samples, list | tuple) and all(map(_python_integers, samples))
 
-    A plain Python ``list`` of ints (or a ``numpy`` int64 array) is ambiguous —
-    ``numpy`` widens it to int64, which libsndfile rejects. Downcast any integer
-    input that isn't already int16/int32 to int16 (the documented integer sample
-    type), matching what the stdlib fallback does. Float input passes through.
-    """
+
+def _sample_array(samples: Samples) -> NDArray[_np.generic]:
+    """Keep mixed signed/unsigned Python integers out of NumPy's float promotion."""
     arr = _np.asarray(samples)
+    if _np.issubdtype(arr.dtype, _np.floating) and _python_integers(samples):
+        # [-1, 2**63] has no common native integer dtype. Preserve counts until
+        # clipping rather than interpreting -1 as normalized negative full scale.
+        arr = _np.asarray(samples, dtype=object)
+    return arr
+
+
+def _sf_samples(samples: Samples, subtype: str) -> NDArray[_np.generic]:
+    """Prepare integer sample counts without libsndfile's source-width scaling.
+
+    libsndfile aligns integer inputs to the destination's full-scale range: an
+    int16 value written as PCM32 is shifted left by 16 bits, and an int32 value
+    written as PCM16 loses its low 16 bits. Our PCM16/PCM32 contract instead uses
+    raw integer sample counts. Clip before converting to the destination width,
+    matching the fallback quantizer and avoiding overflow from a narrowing cast.
+    Object arrays of Python integers can exceed int64 and need the same clipping.
+    Normalized float input retains libsndfile's existing quantization behavior.
+    """
+    arr = _sample_array(samples) if subtype in _SUBTYPE else _np.asarray(samples)
+    if (spec := _SUBTYPE.get(subtype)) is not None and not _np.issubdtype(
+        arr.dtype, _np.floating
+    ):
+        width, _, scale = spec
+        return cast(
+            "NDArray[_np.generic]",
+            _np.clip(arr, -scale, scale - 1).astype(
+                _np.int16 if width == 2 else _np.int32
+            ),
+        )
     if _np.issubdtype(arr.dtype, _np.integer) and arr.dtype not in (
         _np.int16,
         _np.int32,
@@ -407,7 +438,7 @@ def _write_numpy(
     if spec is None:
         raise ValueError(_bad_subtype(subtype))
     width, code, scale = spec
-    arr = _np.asarray(samples)
+    arr = _sample_array(samples)
     nchannels = 1 if arr.ndim == 1 else arr.shape[1]
     _write_frames(fp, _quantize(arr, code, scale), nchannels, width, samplerate)
 

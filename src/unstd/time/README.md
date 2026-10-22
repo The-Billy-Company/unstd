@@ -23,10 +23,12 @@ zoned.wall(2026, 3, 8, 2, 30, "America/New_York")  # DST gap → 3:30 EDT
 | `timeutil.py` | Clocks (`wall`, `mono`, `perf`, `elapsed_ms`, `epoch_*`), `iso` / `human` formatting, ISO parsing, and `span`. Pure stdlib. |
 | `zoned.py`    | DST-correct wall-clock time in an IANA zone (`wall`, `parse`, `now`, `instant`, `to_utc`) over `whenever`.                 |
 
-The split is by what stdlib gets right. Absolute instants — parse, format,
-subtract two aware datetimes — stdlib does correctly, so all of it is in
-`timeutil` and costs no dependency. Wall-clock time in a zone it gets wrong
-silently, so that is `zoned`, behind the `time` extra.
+Absolute instants — parsing, formatting and elapsed durations — live in
+`timeutil` and cost no dependency. Durations account for each endpoint's UTC
+offset, so DST changes within a shared IANA zone still measure elapsed time.
+Offsets are applied to the difference without constructing UTC endpoints,
+preserving valid intervals near the datetime year limits. Local wall-clock
+construction and disambiguation live in `zoned`, behind the `time` extra.
 
 ## Backend
 

@@ -17,9 +17,9 @@ Provided:
   fsync'd so the rename entry itself survives power loss (:func:`sync_dir`,
   folded in via ``durable=True``) — the "fsync the directory too" nuance below.
 - :func:`ensure_dir` — ``mkdir(parents=True, exist_ok=True)`` as one idempotent call.
-- :func:`walk_files` — an ``os.scandir`` walk that reuses the ``DirEntry`` stat
-  cache, so it beats ``os.walk`` / ``Path.rglob`` (which re-``stat`` each entry).
-  Yields ``pathlib.Path`` for interop with the rest of the codebase.
+- :func:`walk_files` — an ``os.scandir`` walk that reuses ``DirEntry`` type
+  information and anchors no-follow traversal to directory handles where
+  supported. Yields ``pathlib.Path`` for interop with the rest of the codebase.
 - :func:`atomic_replace` — atomic ``os.replace`` of an existing file onto a
   destination, with the same optional directory-fsync durability.
 
@@ -29,8 +29,8 @@ through ``scandir``, so a wrapper here would only add a frame.
 
 References:
     - **PEP 471** — ``os.scandir`` (Ben Hoyt, 2014). ``DirEntry`` caches the
-      ``stat`` result from the directory read, so ``is_dir()`` / ``is_file()`` avoid
-      a per-entry syscall — the reason a scandir walk beats ``os.walk`` / ``rglob``.
+      ``stat`` result from the directory read, so ``is_dir()`` / ``is_file()`` can
+      avoid a per-entry syscall on filesystems that supply entry type information.
     - **The atomic-write idiom** — temp-file + ``fsync`` + atomic ``rename`` — as
       used by SQLite's rollback/WAL commit, Postgres, and CPython's own
       ``importlib`` bytecode-cache writer. The *"fsync the parent directory too"*
@@ -48,7 +48,7 @@ Import the module, not its members::
 
 from __future__ import annotations
 
-from contextlib import AbstractContextManager, contextmanager, suppress
+from contextlib import AbstractContextManager, ExitStack, contextmanager, suppress
 import os
 from pathlib import Path
 import secrets
@@ -256,15 +256,121 @@ def atomic_replace(src: _Pathish, dest: _Pathish, *, durable: bool = False) -> P
     return target
 
 
-def walk_files(root: _Pathish, *, follow_symlinks: bool = False) -> Iterator[Path]:
-    """Recursively yield every *file* under *root* as ``Path``, via ``os.scandir``.
+_FD_WALK_SUPPORTED = (
+    hasattr(os, "O_NOFOLLOW")
+    and hasattr(os, "O_DIRECTORY")
+    and os.open in os.supports_dir_fd
+    and os.scandir in os.supports_fd
+)
+_WALK_FLAGS = (
+    os.O_RDONLY
+    | getattr(os, "O_DIRECTORY", 0)
+    | getattr(os, "O_NOFOLLOW", 0)
+    | getattr(os, "O_CLOEXEC", 0)
+)
 
-    Reuses each ``DirEntry``'s cached ``stat`` (PEP 471) so it beats ``os.walk``
-    / ``Path.rglob``, which re-``stat`` every entry. Symlinked directories are
-    **not** descended and symlinked files are **not** yielded unless
-    ``follow_symlinks=True`` — the safe default avoids symlink cycles and escapes
-    out of *root*. Unreadable subdirectories are skipped rather than raising.
-    """
+
+def _open_walk_dir(
+    path: _Pathish, *, parent_fd: int | None = None
+) -> tuple[int, Iterator[os.DirEntry[str]], ExitStack] | None:
+    """Acquire one no-follow directory and its scan, transferring both owners."""
+    try:
+        with ExitStack() as owned:
+            fd = os.open(path, _WALK_FLAGS, dir_fd=parent_fd)
+            owned.callback(os.close, fd)
+            scan = owned.enter_context(os.scandir(fd))
+            return fd, scan, owned.pop_all()
+    except OSError:
+        return None  # vanished, unreadable, or replaced by a symlink
+
+
+def _walk_descriptors(root: Path) -> Iterator[Path]:
+    """Anchor every child open to its parent's handle, with O(depth) owners."""
+    opened = _open_walk_dir(root)
+    if opened is None:
+        return
+    stack = [(root, *opened)]
+    try:
+        while stack:
+            path, fd, scan, owned = stack[-1]
+            try:
+                entry = next(scan)
+            except StopIteration:
+                stack.pop()
+                owned.close()
+                continue
+            child = path / entry.name
+            try:
+                directory = entry.is_dir(follow_symlinks=False)
+                regular = not directory and entry.is_file(follow_symlinks=False)
+            except OSError:
+                continue  # an entry vanished or became unreadable during its check
+            if directory:
+                opened = _open_walk_dir(entry.name, parent_fd=fd)
+                if opened is not None:
+                    stack.append((child, *opened))
+            elif regular:
+                yield child
+    finally:
+        # Close every live frame on exhaustion, generator.close(), or an error.
+        # ExitStack still closes the remaining frames if one cleanup raises.
+        with ExitStack() as cleanup:
+            for _, _, _, owned in stack:
+                cleanup.callback(owned.close)
+
+
+def _directory_identity(path: Path) -> tuple[int, int] | None:
+    """The identity of an ordinary directory, rejecting links/reparse points."""
+    try:
+        info = os.lstat(path)
+    except OSError:
+        return None
+    if not stat.S_ISDIR(info.st_mode) or (
+        getattr(info, "st_file_attributes", 0)
+        & getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0)
+    ):
+        return None
+    return info.st_dev, info.st_ino
+
+
+def _walk_portable(root: Path) -> Iterator[Path]:
+    """Best-effort no-follow traversal where directory handles are unavailable."""
+    identity = _directory_identity(root)
+    if identity is None:
+        return
+    stack = [(root, identity)]
+    while stack:
+        path, expected = stack.pop()
+        if _directory_identity(path) != expected:
+            continue
+        try:
+            scan = os.scandir(path)
+        except OSError:
+            continue
+        with scan as entries:
+            # Detect replacements both while queued and across the scan open.
+            # These path checks cannot close every race on a changing namespace.
+            if _directory_identity(path) != expected:
+                continue
+            for entry in entries:
+                if _directory_identity(path) != expected:
+                    break
+                child = path / entry.name
+                try:
+                    directory = entry.is_dir(follow_symlinks=False)
+                    regular = not directory and entry.is_file(follow_symlinks=False)
+                except OSError:
+                    continue
+                if directory:
+                    identity = _directory_identity(child)
+                    if identity is not None:
+                        stack.append((child, identity))
+                elif regular:
+                    yield child
+
+
+def _walk_following(root: _Pathish) -> Iterator[Path]:
+    """The explicitly opted-in path walk, including symlinked directories."""
     stack: list[_Pathish] = [root]
     while stack:
         try:
@@ -273,7 +379,33 @@ def walk_files(root: _Pathish, *, follow_symlinks: bool = False) -> Iterator[Pat
             continue  # vanished or unreadable directory — skip, don't abort the walk
         with scan as it:
             for entry in it:
-                if entry.is_dir(follow_symlinks=follow_symlinks):
+                if entry.is_dir(follow_symlinks=True):
                     stack.append(entry.path)
-                elif entry.is_file(follow_symlinks=follow_symlinks):
+                elif entry.is_file(follow_symlinks=True):
                     yield Path(entry.path)
+
+
+def walk_files(root: _Pathish, *, follow_symlinks: bool = False) -> Iterator[Path]:
+    """Recursively yield files under *root* as ``Path``, via ``os.scandir``.
+
+    The default skips symlinked files and directories, including a symlinked
+    root. Where descriptor-relative opens and ``O_NOFOLLOW`` are supported,
+    each directory is opened relative to its already-open parent: swapping a
+    queued directory or an opened ancestor cannot redirect enumeration through
+    a symlink. Live handles grow with tree depth and close on exhaustion, error,
+    or iterator ``close()``. Unreadable directories are skipped.
+
+    Other platforms, notably Windows, recheck directory identities and reject
+    directory reparse points on a best-effort path walk. That fallback cannot
+    provide confinement against concurrent namespace changes. Root path
+    ancestors are resolved when the initial root is opened on every platform.
+    Returned Paths are names, not pinned handles: opening one later can observe
+    a replacement. ``follow_symlinks=True`` retains the ordinary path walk and
+    may follow links outside *root* or encounter cycles.
+    """
+    if follow_symlinks:
+        yield from _walk_following(root)
+    elif _FD_WALK_SUPPORTED:
+        yield from _walk_descriptors(Path(root))
+    else:
+        yield from _walk_portable(Path(root))

@@ -244,8 +244,11 @@ value = CODEC.decode_or(raw, default=None)  # "malformed -> cache miss" conventi
 
 `decode_or` swallows only `msgspec.DecodeError` (which includes
 `ValidationError`); any other exception propagates. `float_enc_hook` coerces
-non-native numeric scalars (`numpy.float32`/`float64`, `Decimal`) to `float` so a
+unsupported numeric scalars (`numpy.float32`/`float64`) to `float` so a
 numpy-bearing struct serializes identically to one built from native floats.
+Msgspec handles `Decimal` natively before consulting the hook: it emits JSON
+strings by default. Use `Codec(..., decimal_format="number")` for numeric
+Decimal output, including when `float_enc_hook` is installed.
 Typed codecs have no stdlib fallback — importing `structs` without the `serde`
 extra raises a clear `ImportError`.
 

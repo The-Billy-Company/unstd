@@ -23,7 +23,7 @@ values, so nothing here is flaky.
 
 from __future__ import annotations
 
-from datetime import UTC, date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta, timezone, tzinfo
 import re
 import time as _time
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
@@ -429,4 +429,76 @@ def test_span_across_zones_measures_the_absolute_instants() -> None:
             "2026-01-01T09:00:00+09:00", "2026-01-01T00:00:00Z", unit="seconds"
         )
         == 0
+    )
+
+
+@pytest.mark.parametrize(
+    ("zone", "start_fields", "end_fields", "end_fold", "hours"),
+    [
+        ("America/New_York", (2026, 3, 8, 1, 30), (2026, 3, 8, 3, 30), 0, 1.0),
+        ("America/New_York", (2026, 11, 1, 1, 30), (2026, 11, 1, 1, 30), 1, 1.0),
+        ("America/New_York", (2026, 11, 1, 0, 30), (2026, 11, 1, 2, 30), 0, 3.0),
+        ("Australia/Lord_Howe", (2026, 10, 4, 1, 45), (2026, 10, 4, 2, 45), 0, 0.5),
+        ("Australia/Lord_Howe", (2026, 4, 5, 1, 45), (2026, 4, 5, 1, 45), 1, 0.5),
+    ],
+    ids=[
+        "spring-gap",
+        "repeated-hour",
+        "autumn-span",
+        "half-hour-gap",
+        "half-hour-fold",
+    ],
+)
+def test_span_measures_elapsed_instants_through_dst(
+    zone: str,
+    start_fields: tuple[int, int, int, int, int],
+    end_fields: tuple[int, int, int, int, int],
+    end_fold: int,
+    hours: float,
+) -> None:
+    """Shared IANA zones must not turn instant arithmetic into wall-clock math."""
+    tz = ZoneInfo(zone)
+    start = datetime(*start_fields, tzinfo=tz)
+    end = datetime(*end_fields, tzinfo=tz, fold=end_fold)
+    assert timeutil.span(start, end, unit="hours") == hours
+    assert timeutil.span(end, start, unit="minutes") == -hours * 60
+    assert timeutil.span(start.isoformat(), end.isoformat(), unit="hours") == hours
+    assert timeutil.span(start, end.isoformat(), unit="hours") == hours
+
+
+@pytest.mark.parametrize(
+    ("start", "end"),
+    [
+        ("0001-01-01T00:00:00+01:00", "0001-01-01T01:00:00+01:00"),
+        ("9999-12-31T22:59:59-01:00", "9999-12-31T23:59:59-01:00"),
+    ],
+    ids=["minimum-date", "maximum-date"],
+)
+def test_span_handles_offsets_beyond_utc_datetime_bounds(start: str, end: str) -> None:
+    """Elapsed differences need not materialize an out-of-range UTC datetime."""
+    assert timeutil.span(start, end, unit="hours") == 1.0
+    assert (
+        timeutil.span(
+            datetime.fromisoformat(end), datetime.fromisoformat(start), unit="minutes"
+        )
+        == -60.0
+    )
+
+
+@pytest.mark.parametrize("floating_end", [False, True])
+@pytest.mark.parametrize("assume_utc", [False, True])
+def test_span_treats_none_utc_offset_as_floating(
+    floating_end: bool, assume_utc: bool
+) -> None:
+    """A tzinfo object alone does not make a datetime aware."""
+
+    class FloatingZone(tzinfo):
+        def utcoffset(self, _value: datetime | None) -> None:
+            return None
+
+    zone = FloatingZone()
+    start = datetime(2026, 1, 1, tzinfo=zone)
+    end = datetime(2026, 1, 1, 1, tzinfo=zone if floating_end else UTC)
+    assert timeutil.span(start, end, unit="hours", assume_utc=assume_utc) == (
+        1.0 if assume_utc else None
     )

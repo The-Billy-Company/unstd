@@ -1,9 +1,10 @@
 # unstd
 
-stdlib-faithful replacements, with optional native acceleration where it
-preserves the contract. Modules follow the stdlib call surface, so migrating a
-call site is an import swap. JSON proves native eligibility and falls back to
-stdlib codecs to preserve formatting, values, callbacks and errors.
+Stdlib-compatible codecs and focused utility APIs, with optional native
+acceleration. Documented stdlib replacements preserve their call surface;
+additional helpers have their own contracts. JSON proves native eligibility
+and falls back to stdlib codecs to preserve formatting, values, callbacks and
+errors.
 
 ```python
 import json  # →
@@ -53,6 +54,11 @@ for release comparisons, including remaining overhead relative to 2.1.1.
 | [`iters`](src/unstd/iters/README.md) | — | stdlib `itertools` |
 
 `clone`, `proc`, `fs`, and `iters` ship in the base install.
+
+Check the module contract when migrating: `clone.deep` intentionally duplicates
+shared references, text similarity uses different algorithms across backends,
+and random bulk draws can return arrays or lists with different seeded streams.
+These helpers extend the stdlib rather than promising an import-only migration.
 
 ## Testing
 

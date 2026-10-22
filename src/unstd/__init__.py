@@ -1,10 +1,11 @@
 """unstd — the unstandardized library.
 
-Best-in-class native codecs behind small, **stdlib-faithful** surfaces: migrate a
-call site by swapping the import, not the call. The base install is pure stdlib —
-depending on ``unstd`` costs zero third-party closure — and each accelerated
-backend rides an optional extra with a guarded stdlib fallback, so a lightweight
-consumer never inherits a heavy dependency graph.
+Native codecs behind small, **stdlib-compatible** surfaces, alongside focused
+utility helpers. Documented stdlib replacements preserve their call surface;
+additional helpers have explicit contracts, including their divergences.
+The base install is pure stdlib — depending on ``unstd`` costs zero third-party
+closure — and each accelerated backend rides an optional extra with a guarded
+stdlib fallback, so a lightweight consumer never inherits a heavy dependency graph.
 
 Module groups (grown incrementally from the stdlib census) — each named for the
 stdlib surface it stands in for, and each either degrading to that surface or

@@ -143,6 +143,13 @@ results before timing. Payload construction and codec setup stay outside the
 measurement. The 1,000-row payload contains UTF-8 text, tags, attributes, and
 nested token usage; it measures ingestion with validation, not parsing alone.
 
+The historical relative floor currently fails on the measured Python 3.13
+environment. A [paired diagnosis](typed-ndjson-floor-results.md) found the typed
+reader substantially unchanged while its dictionary-decoding comparator became
+about 3.1× faster. The original floor remains intact; this ratio compares two
+current ingestion strategies and cannot independently establish a typed-reader
+throughput regression.
+
 ## Complete Serde function profiles
 
 `serde_profile` exercises every runtime Python function in `unstd.serde`, its

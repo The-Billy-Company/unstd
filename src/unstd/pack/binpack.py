@@ -187,17 +187,22 @@ def unpack_array(
 ) -> NDArray[np.generic] | list[float]:
     """Unpack ``dtype``-typed contiguous bytes into an array of scalars.
 
-    With NumPy present this returns a **zero-copy** read-only ``numpy.frombuffer``
-    view over ``buf``; without it, a ``list`` decoded via stdlib ``struct``. Both
-    require ``len(buf)`` to be a whole multiple of the dtype's itemsize (a partial
-    trailing element raises, matching ``numpy.frombuffer``).
+    With NumPy present this returns a **zero-copy** ``numpy.frombuffer`` view
+    whose writability follows ``buf``; without it, a ``list`` decoded via stdlib
+    ``struct``. Both require the buffer's byte size to be a whole multiple of
+    the dtype's itemsize (a partial trailing element raises, matching
+    ``numpy.frombuffer``).
     """
     if _HAVE_NUMPY:
         return np.frombuffer(
             buf, dtype=dtype
         )  # accepts the spec as-is; no extra dtype build
     order, char, size = _struct_spec(dtype)
-    if len(buf) % size:
-        msg = f"unstd.pack: buffer size {len(buf)} is not a multiple of itemsize {size}"
+    # A memoryview's length counts its first dimension, not bytes; scalar
+    # views have no length at all. Keep the original buffer for struct's
+    # contiguous-buffer checks without copying or changing its interpretation.
+    nbytes = buf.nbytes if isinstance(buf, memoryview) else len(buf)
+    if nbytes % size:
+        msg = f"unstd.pack: buffer size {nbytes} is not a multiple of itemsize {size}"
         raise error(msg)
-    return list(_struct.unpack(f"{order}{len(buf) // size}{char}", buf))
+    return list(_struct.unpack(f"{order}{nbytes // size}{char}", buf))

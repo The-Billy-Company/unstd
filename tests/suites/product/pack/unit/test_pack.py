@@ -152,6 +152,91 @@ def test_fallback_partial_trailing_element_raises() -> None:
     assert binpack.unpack_array("<f4", struct.pack("<f", 1.5)) == pytest.approx([1.5])
 
 
+@pytest.mark.parametrize("native", [False, True], ids=["stdlib", "numpy"])
+@pytest.mark.parametrize("readonly", [False, True], ids=["mutable", "readonly"])
+@pytest.mark.parametrize("shape", [(4,), (2, 2)], ids=["typed", "multidimensional"])
+@pytest.mark.parametrize(("dtype", "fmt"), [("=i4", "=4i"), ("u1", "=16B")])
+def test_unpack_array_counts_memoryview_bytes_and_preserves_buffer_semantics(
+    native: bool,
+    readonly: bool,
+    shape: tuple[int, ...],
+    dtype: str,
+    fmt: str,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Typed and shaped views expose all bytes, regardless of element counts."""
+    if native and not _HAVE_NUMPY:
+        pytest.skip("numpy (`pack` extra) not installed")
+    monkeypatch.setattr(binpack, "_HAVE_NUMPY", native)
+    raw = struct.pack("=4i", 1, -2, 300, 9999)
+    backing = raw if readonly else bytearray(raw)
+    source = memoryview(backing).cast("i", shape=shape)
+    expected = list(struct.unpack(fmt, raw))
+
+    actual = binpack.unpack_array(dtype, source)
+
+    assert list(actual) == expected
+    assert source.tobytes() == raw
+    if native:
+        assert isinstance(actual, np.ndarray)
+        assert actual.flags.writeable is not readonly
+        assert actual.flags.owndata is False
+    else:
+        assert isinstance(actual, list)
+    if not readonly:
+        backing[:] = bytes(len(raw))
+        assert list(actual) == ([0] * len(expected) if native else expected)
+
+
+@pytest.mark.parametrize("native", [False, True], ids=["stdlib", "numpy"])
+@pytest.mark.parametrize("readonly", [False, True], ids=["mutable", "readonly"])
+def test_unpack_array_accepts_zero_dimensional_contiguous_memoryview(
+    native: bool, readonly: bool, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A scalar buffer has bytes even though its view has no length."""
+    if native and not _HAVE_NUMPY:
+        pytest.skip("numpy (`pack` extra) not installed")
+    monkeypatch.setattr(binpack, "_HAVE_NUMPY", native)
+    raw = struct.pack("=i", 123)
+    backing = raw if readonly else bytearray(raw)
+    source = memoryview(backing).cast("i", shape=())
+    assert list(binpack.unpack_array("=i4", source)) == [123]
+
+
+@pytest.mark.parametrize("native", [False, True], ids=["stdlib", "numpy"])
+@pytest.mark.parametrize("kind", ["bytes", "bytearray", "typed", "multidimensional"])
+def test_unpack_array_rejects_partial_bytes_and_recovers(
+    native: bool, kind: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Malformed buffers reject according to their byte size on both backends."""
+    if native and not _HAVE_NUMPY:
+        pytest.skip("numpy (`pack` extra) not installed")
+    monkeypatch.setattr(binpack, "_HAVE_NUMPY", native)
+    raw = bytes(6)
+    source = (
+        raw
+        if kind == "bytes"
+        else bytearray(raw)
+        if kind == "bytearray"
+        else memoryview(raw).cast("H", shape=(3,) if kind == "typed" else (1, 3))
+    )
+    with pytest.raises(ValueError if native else binpack.error):
+        binpack.unpack_array("=i4", source)
+    assert list(binpack.unpack_array("=i4", struct.pack("=i", 7))) == [7]
+
+
+@pytest.mark.parametrize("native", [False, True], ids=["stdlib", "numpy"])
+def test_unpack_array_rejects_noncontiguous_views(
+    native: bool, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Neither backend silently flattens a strided buffer."""
+    if native and not _HAVE_NUMPY:
+        pytest.skip("numpy (`pack` extra) not installed")
+    monkeypatch.setattr(binpack, "_HAVE_NUMPY", native)
+    with pytest.raises(BufferError):
+        binpack.unpack_array("u1", memoryview(bytes(8))[::2])
+
+
 @pytest.mark.usefixtures("force_fallback")
 def test_fallback_unsupported_dtype_raises() -> None:
     """Unknown dtype codes must raise; supported dtypes remain usable afterward."""
