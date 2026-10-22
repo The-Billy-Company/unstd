@@ -23,6 +23,7 @@ Install with the extra: `pip install 'unstd[crypto]'`.
 | File        | Role                                                                                                      |
 | ----------- | --------------------------------------------------------------------------------------------------------- |
 | `digest.py` | BLAKE3-256 - `raw` (bytes) / `hex` (full or truncated) / `Stream`, `derive_key`, and the `legacy_blake2b` escape hatch. |
+| `_stream_native.c` | Optional bounded batching of small immutable chunks before the BLAKE3 backend absorbs them. |
 | `token.py`  | Keyed-BLAKE3 `mac_raw` / `mac_hex` / `verify_mac`, constant-time `equal`, and the claims envelope.         |
 | `tls.py`    | A verifying TLS client context with no parameter for skipping verification.                                |
 
@@ -64,19 +65,32 @@ every value already addressed by one would stop resolving - so `digest` and
 `pip install 'unstd[crypto]'` when it is missing. `tls` is pure stdlib and
 imports on a base install.
 
-One-shot hashes, MACs, and key derivation use up to eight workers for exact
-`bytes` inputs of at least 4 MiB. Smaller inputs and other accepted buffer
-types retain the serial backend. The public signatures, algorithms, digest
-values, truncation rules, and validation behavior stay the same.
+One-shot hashes, MACs, and key derivation use four workers for exact `bytes`
+inputs from 1 MiB, and eight workers from 4 MiB, capped by the reported CPU
+count. Smaller inputs and other accepted buffer types retain the serial
+backend. The public signatures, algorithms, digest values, truncation rules,
+and validation behavior stay the same.
 
 Each parallel call creates a fresh bounded worker pool, avoiding inherited
 global pools after `fork()` and retaining no cached keys or key material. If
-the backend cannot create its worker pool, hashing retries serially. `Stream`
-keeps its serial, eager, incremental behavior, including when inherited after
-a fork. Hex output uses Python's byte-to-hex conversion after BLAKE3
-finalization. [Paired measurements](../../../bench/crypto-hash-tuning-results.md)
-record the crossover, hex-output savings, and overhead on the measured host;
-the [initial report](../../../bench/crypto-hash-results.md) covers the earlier
+the backend cannot create its worker pool, hashing retries serially.
+
+When the optional native helper is available, `Stream` batches small exact
+`bytes` chunks from exact lists and tuples with at least eight elements. Each
+batch is at most 64 KiB, regardless of the total input size. Mutable buffers,
+subclasses, and larger chunks reach the backend unchanged, after preceding
+bytes have been absorbed. Generators and other iterators retain the eager
+Python loop, so they can inspect or update the stream between yields. Streams
+remain serial and reusable after a fork. Compiler-free installs retain the
+Python implementation. The helper owns no cryptographic implementation and
+retains no messages, keys, hashers, or worker pools between calls.
+
+Hex output uses Python's byte-to-hex conversion after BLAKE3 finalization.
+[Current paired measurements](../../../bench/crypto-hash-adaptive-results.md)
+cover adaptive workers and native stream batching. The
+[previous tuning report](../../../bench/crypto-hash-tuning-results.md) records
+the 4 MiB crossover and hex-output savings; the
+[initial report](../../../bench/crypto-hash-results.md) covers the earlier
 16 MiB threshold.
 
 TLS certificate paths use `None` for omission. Explicitly empty `cafile`,

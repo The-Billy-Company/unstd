@@ -1,8 +1,10 @@
 # Parallel BLAKE3 hashing
 
 This records the initial 16 MiB implementation. The
-[follow-up report](crypto-hash-tuning-results.md) measures the current 4 MiB
-threshold and faster hex output against this version.
+[follow-up report](crypto-hash-tuning-results.md) measures the later 4 MiB
+threshold and faster hex output against this version. The
+[current report](crypto-hash-adaptive-results.md) covers adaptive workers and
+native stream batching.
 
 One-shot `digest.raw`, `digest.hex`, `digest.derive_key`, and the MAC helpers
 now use fresh BLAKE3 worker pools for exact `bytes` inputs of at least 16 MiB.

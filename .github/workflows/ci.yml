@@ -248,15 +248,15 @@ jobs:
           cache-suffix: native
           cache-dependency-glob: "uv.lock\npyproject.toml\n"
       - name: Install test environment
-        run: uv sync --locked --extra serde --group dev --python ${{ matrix.python-version }} --reinstall-package unstd
+        run: uv sync --locked --extra serde --extra crypto --group dev --python ${{ matrix.python-version }} --reinstall-package unstd
       - name: Every native module must import
         run: >-
           uv run --no-sync python -c
-          "import unstd.serde._json_native, unstd.clone._clone_native, unstd.text._text_native"
+          "import unstd.serde._json_native, unstd.clone._clone_native, unstd.crypto._stream_native, unstd.text._text_native"
       - name: Native compatibility with the debug allocator
         id: tests
         run: >
-          uv run --no-sync python -m pytest tests/suites/product/clone tests/suites/product/text tests/suites/product/serde -q --junitxml=.local/native.xml
+          uv run --no-sync python -m pytest tests/suites/product/clone tests/suites/product/text tests/suites/product/serde tests/suites/product/crypto -q --junitxml=.local/native.xml
 
       - name: Summarize native safety
         if: always() && steps.tests.outcome != 'skipped'
@@ -301,7 +301,7 @@ jobs:
           cache-suffix: native-sanitizers
           cache-dependency-glob: "uv.lock\npyproject.toml\n"
       - name: Install test environment
-        run: uv sync --locked --extra serde --group dev --no-install-project --python 3.13
+        run: uv sync --locked --extra serde --extra crypto --group dev --no-install-project --python 3.13
       # Stable Rust kernels retain their bounds checks and unit tests. These
       # sanitizer flags instrument our C modules and the text CPython shim.
       - name: Build C boundaries with address and undefined behavior checks
@@ -322,8 +322,8 @@ jobs:
         run: |
           LD_PRELOAD="$(gcc -print-file-name=libasan.so)"
           export LD_PRELOAD
-          .venv/bin/python -c "import unstd.serde._json_native, unstd.clone._clone_native, unstd.text._text_native"
-          .venv/bin/python -m pytest tests/suites/product/clone tests/suites/product/text tests/suites/product/serde -q --junitxml=.local/native-sanitizers.xml
+          .venv/bin/python -c "import unstd.serde._json_native, unstd.clone._clone_native, unstd.crypto._stream_native, unstd.text._text_native"
+          .venv/bin/python -m pytest tests/suites/product/clone tests/suites/product/text tests/suites/product/serde tests/suites/product/crypto -q --junitxml=.local/native-sanitizers.xml
 
       - name: Summarize sanitizer checks
         if: always() && steps.tests.outcome != 'skipped'

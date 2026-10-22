@@ -117,7 +117,9 @@ def test_workloads_cover_crossover_sizes_and_each_hashing_mode():
             for size in (
                 "64 B",
                 "256 KiB",
+                "512 KiB",
                 "1 MiB",
+                "2 MiB",
                 "4 MiB",
                 "8 MiB",
                 "16 MiB",
@@ -126,6 +128,15 @@ def test_workloads_cover_crossover_sizes_and_each_hashing_mode():
         } <= names
     assert len(names) == len(cases)
     assert {"Stream.hex / 64 B", "Stream.hex8 / 64 B"} <= names
+    assert {
+        "Stream / 64 KiB / 1 B chunks",
+        "Stream / 1024 KiB / 64 B chunks",
+        "Stream / 1024 KiB / 4096 B chunks",
+        "Stream iterator / 1 MiB / 1 KiB chunks",
+        "Stream / 64 B / 16 B chunks",
+        "Stream / 64 B / 64 B chunks",
+        "Stream / empty",
+    } <= names
 
 
 @pytest.mark.parametrize("after", [lambda: "value", lambda: b"wrong"])

@@ -407,7 +407,11 @@ for module in {_PROBE_MODULES[surface]!r}:
 
 @pytest.mark.parametrize(
     "module",
-    ["unstd.clone._clone_native", "unstd.text._text_native"],
+    [
+        "unstd.clone._clone_native",
+        "unstd.crypto._stream_native",
+        "unstd.text._text_native",
+    ],
 )
 def test_base_install_runs_packaged_accelerators_without_backend_extras(
     module: str, consumer: Consumer
@@ -423,21 +427,37 @@ def test_base_install_runs_packaged_accelerators_without_backend_extras(
             CONSUMER_AUDIT + f"\nassert importlib.util.find_spec({module!r}) is None"
         )
         return
-    operation = (
-        """
+    operation = {
+        "unstd.clone._clone_native": """
 source = {'items': [[1, 2], (3, 4)]}
 copied = native.clone(source)
 assert copied == source and copied is not source
 copied['items'][0].append(5)
 assert source['items'][0] == [1, 2]
-"""
-        if module == "unstd.clone._clone_native"
-        else """
+""",
+        "unstd.crypto._stream_native": """
+class Hasher:
+    def __init__(self):
+        self.chunks = []
+    def update(self, chunk):
+        self.chunks.append(chunk)
+        return self
+
+hasher = Hasher()
+mutable = bytearray(b'!')
+assert native.absorb(hasher, [b'hello', b'', b' ', b'world', mutable]) is None
+assert b''.join(hasher.chunks) == b'hello world!'
+assert hasher.chunks[-1] is mutable
+pending = iter([b'next'])
+assert native.absorb(hasher, pending) is NotImplemented
+assert next(pending) == b'next'
+""",
+        "unstd.text._text_native": """
 assert native.distance('kitten', 'sitting') == 3
 assert native.distance('雪🙂', '雪x') == 1
 assert native.jaro('same', 'same') == 1.0
-"""
-    )
+""",
+    }[module]
     consumer.run(
         CONSUMER_AUDIT
         + f"\nnative = importlib.import_module({module!r})\n"

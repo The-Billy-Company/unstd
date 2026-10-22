@@ -42,7 +42,15 @@ from unstd.crypto._blake3 import _PARALLEL_MIN_BYTES, _parallel_hasher, blake3
 
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
+    from collections.abc import Callable, Iterable
+    from types import NotImplementedType
+
+
+_native_absorb: Callable[[blake3, Iterable[bytes]], NotImplementedType | None] | None
+try:
+    from unstd.crypto._stream_native import absorb as _native_absorb
+except ImportError:
+    _native_absorb = None
 
 
 DIGEST_BYTES = 32
@@ -130,6 +138,13 @@ class Stream:
     def __init__(self, chunks: Iterable[bytes] = ()) -> None:
         """Start a stream, absorbing *chunks* (if any) in order."""
         self._hasher = blake3()
+        if (
+            _native_absorb is not None
+            and (type(chunks) is tuple or type(chunks) is list)
+            and len(chunks) >= 8
+        ):
+            _native_absorb(self._hasher, chunks)
+            return
         for chunk in chunks:
             self._hasher.update(chunk)
 

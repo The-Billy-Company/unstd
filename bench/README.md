@@ -9,6 +9,8 @@ BLAKE3 wrappers with `crypto_hash.py`, including all modes, tiny-call overhead,
 serial streams, raw paired samples, and the measured host's scheduling noise.
 The [follow-up tuning report](crypto-hash-tuning-results.md) measures the lower
 4 MiB crossover and faster hex output against that initial implementation.
+The [adaptive hashing report](crypto-hash-adaptive-results.md) covers the current
+1 MiB crossover, bounded worker counts, and native batching of small stream chunks.
 Saved snapshots must include `unstd/crypto` and its private helpers, which load
 independently from the current source.
 

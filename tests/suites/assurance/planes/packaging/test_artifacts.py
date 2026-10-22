@@ -44,6 +44,7 @@ with (REPO_ROOT / "pyproject.toml").open("rb") as _manifest:
 _NATIVE_MODULES = (
     "unstd.serde._json_native",
     "unstd.clone._clone_native",
+    "unstd.crypto._stream_native",
     "unstd.text._text_native",
 )
 
@@ -466,6 +467,7 @@ def test_optional_rust_failure_preserves_c_modules_and_fails_release_builds(
     assert _native_modules(_wheel_files(wheels[0])) == {
         "unstd.serde._json_native",
         "unstd.clone._clone_native",
+        "unstd.crypto._stream_native",
     }
     consumer = create_consumer(tmp_path / "consumer", wheels[0])
     consumer.run("""

@@ -24,6 +24,7 @@ from setuptools.errors import BaseError, CCompilerError
 _NATIVE_MODULES = (
     "unstd.serde._json_native",
     "unstd.clone._clone_native",
+    "unstd.crypto._stream_native",
     "unstd.text._text_native",
 )
 

@@ -1,8 +1,10 @@
 # BLAKE3 crossover and hex output tuning
 
 This follows the [initial parallel hashing change](crypto-hash-results.md).
+The [current report](crypto-hash-adaptive-results.md) covers the later adaptive
+worker counts and native stream batching.
 The comparison source is the complete crypto package from `78be815`, with the
-16 MiB threshold and backend `hexdigest` calls. The current implementation:
+16 MiB threshold and backend `hexdigest` calls. The implementation measured here:
 
 - Uses fresh, bounded worker pools from **4 MiB**, retaining the eight-worker
   cap. Smaller inputs and other accepted buffer types keep their serial path.

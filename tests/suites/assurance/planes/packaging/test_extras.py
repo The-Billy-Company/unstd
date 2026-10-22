@@ -114,6 +114,23 @@ import blake3
 from unstd.crypto import digest, token
 assert digest.blake3 is blake3.blake3
 assert digest.hex(b'') == 'af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262'
+native_absorb = digest._native_absorb
+native_calls = []
+if native_absorb is not None:
+    from unstd.crypto import _stream_native
+    assert native_absorb is _stream_native.absorb
+    def observed_absorb(hasher, chunks):
+        native_calls.append(type(chunks))
+        return native_absorb(hasher, chunks)
+    digest._native_absorb = observed_absorb
+chunks = [bytes(range(251))] * 1024
+stream = digest.Stream(chunks)
+assert stream.raw() == blake3.blake3(b''.join(chunks)).digest()
+assert stream.update(memoryview(b'suffix')).raw() == blake3.blake3(b''.join(chunks) + b'suffix').digest()
+assert digest.Stream(iter(chunks)).hex() == digest.Stream(tuple(chunks)).hex()
+if native_absorb is not None:
+    assert native_calls == [list, tuple]
+    digest._native_absorb = native_absorb
 key = bytes(range(32))
 claims = b'{"subject":"installed"}'
 assert token.mac_raw(key, claims) == blake3.blake3(claims, key=key).digest()

@@ -170,19 +170,31 @@ def _stream(stream_type: Any, chunks: tuple[bytes, ...]) -> bytes:
     return stream_type(chunks).raw()  # type: ignore[no-any-return]
 
 
+def _stream_iter(stream_type: Any, chunks: tuple[bytes, ...]) -> bytes:
+    return stream_type(iter(chunks)).raw()  # type: ignore[no-any-return]
+
+
 def _workloads(before: tuple[Any, Any], after: tuple[Any, Any]) -> list[Workload]:
-    blobs = {
-        size: (bytes(range(256)) * ((size + 255) // 256))[:size]
-        for size in (64, 256 << 10, 1 << 20, 4 << 20, 8 << 20, 16 << 20, 64 << 20)
-    }
+    sizes: tuple[int, ...] = (
+        64,
+        256 << 10,
+        512 << 10,
+        1 << 20,
+        2 << 20,
+        4 << 20,
+        8 << 20,
+        16 << 20,
+        64 << 20,
+    )
+    blobs = {size: (bytes(range(256)) * ((size + 255) // 256))[:size] for size in sizes}
     cases = []
     matrix = (
-        ("raw", (64, 256 << 10, 1 << 20, 4 << 20, 8 << 20, 16 << 20, 64 << 20)),
-        ("hex", (64, 256 << 10, 1 << 20, 4 << 20, 8 << 20, 16 << 20, 64 << 20)),
+        ("raw", sizes),
+        ("hex", sizes),
         ("hex8", (64, 8 << 20)),
-        ("derive_key", (64, 256 << 10, 1 << 20, 4 << 20, 8 << 20, 16 << 20, 64 << 20)),
-        ("mac_raw", (64, 256 << 10, 1 << 20, 4 << 20, 8 << 20, 16 << 20, 64 << 20)),
-        ("mac_hex", (64, 256 << 10, 1 << 20, 4 << 20, 8 << 20, 16 << 20, 64 << 20)),
+        ("derive_key", sizes),
+        ("mac_raw", sizes),
+        ("mac_hex", sizes),
     )
     for operation, sizes in matrix:
         for size in sizes:
@@ -226,6 +238,31 @@ def _workloads(before: tuple[Any, Any], after: tuple[Any, Any]) -> list[Workload
             for modules in (before, after)
         ]
         cases.append(Workload(f"Stream.{operation} / 64 B", 64, *calls))
+    for size, chunk_size in ((64 << 10, 1), (1 << 20, 64), (1 << 20, 4096)):
+        data = bytes(range(256)) * (size // 256)
+        chunks = tuple(data[at : at + chunk_size] for at in range(0, size, chunk_size))
+        calls = [
+            partial(_stream, modules[0].Stream, chunks) for modules in (before, after)
+        ]
+        cases.append(
+            Workload(f"Stream / {size >> 10} KiB / {chunk_size} B chunks", size, *calls)
+        )
+    data = blobs[1 << 20]
+    chunks = tuple(data[at : at + 1024] for at in range(0, len(data), 1024))
+    calls = [
+        partial(_stream_iter, modules[0].Stream, chunks) for modules in (before, after)
+    ]
+    cases.append(Workload("Stream iterator / 1 MiB / 1 KiB chunks", len(data), *calls))
+    for chunk_size in (16, 64):
+        chunks = tuple(
+            blobs[64][at : at + chunk_size] for at in range(0, 64, chunk_size)
+        )
+        calls = [
+            partial(_stream, modules[0].Stream, chunks) for modules in (before, after)
+        ]
+        cases.append(Workload(f"Stream / 64 B / {chunk_size} B chunks", 64, *calls))
+    calls = [partial(_stream, modules[0].Stream, ()) for modules in (before, after)]
+    cases.append(Workload("Stream / empty", 0, *calls))
     return cases
 
 

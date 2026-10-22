@@ -8,11 +8,11 @@ path = "hatch_build.py"
 [tool.cibuildwheel]
 build = "cp3{12,13,14}-*"
 archs = ["auto64"]
-test-extras = ["serde"]
+test-extras = ["serde", "crypto"]
 test-requires = ["pytest>=8", "hypothesis>=6.100", "packaging>=24"]
 test-command = [
-  "python -c \"import unstd.serde._json_native, unstd.clone._clone_native, unstd.text._text_native\"",
-  "python -m pytest {project}/tests/suites/product/serde {project}/tests/suites/product/clone {project}/tests/suites/product/text -q",
+  "python -c \"import unstd.serde._json_native, unstd.clone._clone_native, unstd.crypto._stream_native, unstd.text._text_native\"",
+  "python -m pytest {project}/tests/suites/product/serde {project}/tests/suites/product/clone {project}/tests/suites/product/crypto {project}/tests/suites/product/text -q",
 ]
 
 [project]

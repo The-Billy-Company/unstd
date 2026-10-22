@@ -369,7 +369,9 @@ def test_wheel_test_dependencies_use_only_the_authenticated_locked_closure(workf
     assert {"--locked", "--no-emit-project", "--no-default-groups"} <= set(export)
     assert "--no-hashes" not in export
     assert export[export.index("--project") + 1] == "{package}"
-    assert export[export.index("--extra") + 1] == "serde"
+    assert {
+        export[index + 1] for index, option in enumerate(export) if option == "--extra"
+    } == {"serde", "crypto"}
     assert export[export.index("--group") + 1] == "supply-chain"
     assert install[:3] == ["uv", "pip", "install"]
     assert {"--require-hashes", "--no-deps"} <= set(install)
@@ -469,7 +471,8 @@ def test_real_offline_wheel_export_keeps_every_transitive_locked_hash(
         by_name.setdefault(row["name"], []).append(row)
     seeds = list(root.get("dependencies", []))
     if purpose == "tests":
-        seeds.extend(root["optional-dependencies"]["serde"])
+        for extra in manifest["tool"]["cibuildwheel"]["test-extras"]:
+            seeds.extend(root["optional-dependencies"][extra])
         seeds.extend(root["dev-dependencies"]["supply-chain"])
     else:
         seeds.extend(root["dev-dependencies"]["release"])
