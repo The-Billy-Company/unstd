@@ -16,6 +16,7 @@ from bench.native_profile import (
     _isolated,
     _load,
     _native_modules,
+    _routes,
     _same,
     _timings,
     _validate_comparison,
@@ -113,6 +114,14 @@ def test_signature_changes_abort_comparison_before_timing() -> None:
         _validate_comparison({"before": before, "after": after})
 
 
+@pytest.mark.parametrize("key", ["installed_signatures", "installed_text_selection"])
+def test_normalized_base_wrappers_cannot_hide_installed_api_changes(key) -> None:
+    before = {"signatures": {}, "cases": [], key: {"distance": "original"}}
+    after = {"signatures": {}, "cases": [], key: {"distance": "changed"}}
+    with pytest.raises(AssertionError, match=r"installed .+ changed"):
+        _validate_comparison({"before": before, "after": after})
+
+
 def test_comparison_rejects_self_consistent_changed_output() -> None:
     before = {
         "signatures": {},
@@ -154,4 +163,64 @@ def test_built_extensions_are_exercised_by_the_public_workloads() -> None:
     assert len(result["native_execution"]) == 3
     assert result["profile"]["python"]
     assert result["profile"]["c"]
+    assert result["installed_signatures"] == native_profile._signatures(
+        structural, fuzz
+    )
     assert len(result["routes"]) == len(result["cases"])
+    assert result["routes"]["clone.deep/small"]["native_returns"] == {
+        "clone": [True, True, True]
+    }
+    assert result["routes"]["clone.deep/mixed-custom-fallback"]["native_returns"] == {
+        "clone": [False, False, False]
+    }
+
+
+@pytest.mark.parametrize(
+    ("module_name", "attribute", "workload", "unsupported"),
+    [
+        ("clone", "_native_clone", "clone.deep/small", (object(),)),
+        (
+            "text",
+            "_native_distance",
+            "text.distance/unicode64",
+            ([], []),
+        ),
+        (
+            "text",
+            "_native_jaro",
+            "text.jaro_winkler/short-name",
+            ([], []),
+        ),
+    ],
+)
+def test_native_call_that_refuses_input_cannot_prove_acceleration(
+    module_name, attribute, workload, unsupported, monkeypatch
+) -> None:
+    pytest.importorskip("unstd.clone._clone_native")
+    pytest.importorskip("unstd.text._text_native")
+    source = REPO_ROOT / "src"
+    clone = _load(source, "clone/structural.py", "_route_refusal_clone")
+    text = _load(source, "text/fuzz.py", "_route_refusal_text")
+    _base_text(text)
+    module = clone if module_name == "clone" else text
+    native = getattr(module, attribute)
+
+    def refused(*args):
+        # The real builtin executes, but the public wrapper must do the work.
+        return native(*unsupported)
+
+    monkeypatch.setattr(module, attribute, refused)
+    cases = [case for case in _workloads(clone, text) if case.name == workload]
+    assert len(cases) == 1
+    assert cases[0].check(cases[0].call())
+    with pytest.raises(AssertionError, match="unexpected native/fallback route"):
+        _routes(cases, source, clone, text)
+    # Failed proofs must not leave instrumentation installed on the module.
+    assert getattr(module, attribute) is refused
+
+
+def test_current_native_calls_cannot_contaminate_python_comparison_baseline() -> None:
+    pytest.importorskip("unstd.clone._clone_native")
+    pytest.importorskip("unstd.text._text_native")
+    with pytest.raises(AssertionError, match="Python-only baseline"):
+        _bundle(REPO_ROOT / "src", "contaminated_before", require_native=False)

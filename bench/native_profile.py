@@ -4,11 +4,13 @@ Run ``python bench/native_profile.py --compare-source /tmp/before/src``.
 The comparison directory must contain ``unstd``. Text measurements deliberately
 select the base-install scorers, even when rapidfuzz is installed. Profiling is
 separate from timing, and a missing or unexercised C kernel fails explicitly.
+The comparison must use Python-only implementations of the measured functions.
 """
 
 from __future__ import annotations
 
 import argparse
+from contextlib import contextmanager
 import copy
 import cProfile
 import dataclasses
@@ -33,7 +35,7 @@ else:
     from timing import measure
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import Callable, Iterator
 
 
 _SOURCE_FILES = ("clone/structural.py", "text/fuzz.py")
@@ -327,10 +329,51 @@ def _assert_native_execution(profile: dict[str, Any]) -> dict[str, int]:
     return calls
 
 
-def _routes(cases: list[Workload], source: Path) -> dict[str, Any]:
+@contextmanager
+def _native_results(clone: Any, fuzz: Any) -> Iterator[dict[str, list[bool]]]:
+    """Observe actual native returns only during untimed route profiling."""
+    outcomes: dict[str, list[bool]] = {}
+    saved = []
+
+    def track(function: Callable[..., Any], name: str) -> Callable[..., Any]:
+        def recorded(*args: Any) -> Any:
+            result = function(*args)
+            outcomes.setdefault(name, []).append(result is not NotImplemented)
+            return result
+
+        return recorded
+
+    try:
+        for module, attribute, name in (
+            (clone, "_native_clone", "clone"),
+            (fuzz, "_native_distance", "distance"),
+            (fuzz, "_native_jaro", "jaro"),
+        ):
+            original = getattr(module, attribute, None)
+            if original is not None:
+                saved.append((module, attribute, original))
+                setattr(module, attribute, track(original, name))
+        yield outcomes
+    finally:
+        for module, attribute, original in saved:
+            setattr(module, attribute, original)
+
+
+def _routes(
+    cases: list[Workload], source: Path, clone: Any, fuzz: Any
+) -> dict[str, Any]:
     """Prove per-workload native execution and the declared Python fallbacks."""
+    with _native_results(clone, fuzz) as outcomes:
+        return _checked_routes(cases, source, outcomes)
+
+
+def _checked_routes(
+    cases: list[Workload], source: Path, outcomes: dict[str, list[bool]]
+) -> dict[str, Any]:
+    """A C call that refuses its input is not evidence of acceleration."""
     routes = {}
     for case in cases:
+        outcomes.clear()
         profile = _profile([case], source)
         c_calls = {
             row["function"]: row["calls"]
@@ -338,12 +381,19 @@ def _routes(cases: list[Workload], source: Path) -> dict[str, Any]:
             if any(name in row["function"] for name in _NATIVE_NAMES)
         }
         python_calls = {row["function"]: row["calls"] for row in profile["python"]}
+        completed = {name: all(results) for name, results in outcomes.items()}
         if case.name.startswith("clone.deep/"):
             fallback = "fallback" in case.name
             if fallback:
-                valid = bool(python_calls.get("_walk"))
+                valid = bool(python_calls.get("_walk")) and not any(
+                    any(results) for results in outcomes.values()
+                )
             else:
-                valid = any("_clone_native.clone>" in name for name in c_calls)
+                valid = (
+                    any("_clone_native.clone>" in name for name in c_calls)
+                    and completed.get("clone", False)
+                    and not python_calls.get("_walk")
+                )
         else:
             fallback = "fallback" in case.name
             if fallback:
@@ -352,13 +402,18 @@ def _routes(cases: list[Workload], source: Path) -> dict[str, Any]:
                     valid = valid and bool(python_calls.get("_sequence_distance"))
             else:
                 kernel = "distance" if "text.distance/" in case.name else "jaro"
-                valid = any(f"_text_native.{kernel}>" in name for name in c_calls)
+                valid = any(
+                    f"_text_native.{kernel}>" in name for name in c_calls
+                ) and completed.get(kernel, False)
         if not valid:
             msg = f"unexpected native/fallback route: {case.name}"
             raise AssertionError(msg)
         routes[case.name] = {
             "expected": "python fallback" if fallback else "native kernel",
             "c_calls": c_calls,
+            "native_returns": {
+                name: list(results) for name, results in outcomes.items()
+            },
             "python_calls": python_calls,
         }
     return routes
@@ -367,6 +422,7 @@ def _routes(cases: list[Workload], source: Path) -> dict[str, Any]:
 def _bundle(source: Path, label: str, *, require_native: bool) -> dict[str, Any]:
     clone = _load(source, _SOURCE_FILES[0], f"_native_profile_{label}_clone")
     fuzz = _load(source, _SOURCE_FILES[1], f"_native_profile_{label}_fuzz")
+    installed_signatures = _signatures(clone, fuzz)
     selected = _base_text(fuzz)
     cases = _workloads(clone, fuzz)
     for case in cases:
@@ -375,8 +431,13 @@ def _bundle(source: Path, label: str, *, require_native: bool) -> dict[str, Any]
             raise AssertionError(msg)
     native = _native_modules(source) if require_native else {}
     profile = _profile(cases, source)
+    if not require_native and any(
+        name in row["function"] for row in profile["c"] for name in _NATIVE_NAMES
+    ):
+        msg = "comparison source executes bundled kernels; use a Python-only baseline"
+        raise AssertionError(msg)
     execution = _assert_native_execution(profile) if require_native else {}
-    routes = _routes(cases, source) if require_native else {}
+    routes = _routes(cases, source, clone, fuzz) if require_native else {}
     if clone.copy is not copy.copy or clone.deepcopy is not copy.deepcopy:
         msg = "clone stdlib aliases changed"
         raise AssertionError(msg)
@@ -389,6 +450,7 @@ def _bundle(source: Path, label: str, *, require_native: bool) -> dict[str, Any]
             for relative in _SOURCE_FILES
         },
         "signatures": _signatures(clone, fuzz),
+        "installed_signatures": installed_signatures,
         "installed_text_selection": selected,
         "measured_text_selection": "base-install wrappers (rapidfuzz disabled)",
         "native_modules": native,
@@ -403,6 +465,12 @@ def _validate_comparison(bundles: dict[str, dict[str, Any]]) -> None:
     before, after = bundles["before"], bundles["after"]
     if before["signatures"] != after["signatures"]:
         msg = "public signatures changed"
+        raise AssertionError(msg)
+    if before.get("installed_signatures") != after.get("installed_signatures"):
+        msg = "installed public signatures changed"
+        raise AssertionError(msg)
+    if before.get("installed_text_selection") != after.get("installed_text_selection"):
+        msg = "installed text bindings changed"
         raise AssertionError(msg)
     if [case.name for case in before["cases"]] != [
         case.name for case in after["cases"]
@@ -466,6 +534,7 @@ def main() -> None:
     }
     _validate_comparison(bundles)
     output = {
+        "harness_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
         "python": sys.version,
         "implementation": platform.python_implementation(),
         "platform": platform.platform(),
