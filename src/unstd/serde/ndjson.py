@@ -295,10 +295,10 @@ def dump[T](
         write_text = fp.write
         for row in rows:
             data_text = encode(row).decode()
-            written = write_text(data_text)
-            if type(written) is not int or written != len(data_text):
+            written_text = write_text(data_text)
+            if type(written_text) is not int or written_text != len(data_text):
                 _write_remainder(
-                    write_text, data_text, written, require_count=require_count
+                    write_text, data_text, written_text, require_count=require_count
                 )
             n += 1
     else:

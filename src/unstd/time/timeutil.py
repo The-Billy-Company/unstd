@@ -221,6 +221,12 @@ def from_epoch_ms(ms: int, tz: tzinfo = UTC) -> datetime:
 # ── instant arithmetic ─────────────────────────────────────────────────────────
 
 
+def _endpoint(value: str | datetime | None) -> datetime | None:
+    if value is None:
+        return datetime.now(UTC)
+    return value if isinstance(value, datetime) else parse_iso(value)
+
+
 def _instant(dt: datetime, assume_utc: bool) -> tuple[datetime, timedelta] | None:
     if (offset := dt.utcoffset()) is None and not assume_utc:
         return None
@@ -248,14 +254,7 @@ def span(
         span(created_at, unit="days", assume_utc=True)  # age
         span(now, deadline, unit="minutes")  # time remaining
     """
-    a = start if isinstance(start, datetime) else parse_iso(start)
-    b = (
-        datetime.now(UTC)
-        if end is None
-        else end
-        if isinstance(end, datetime)
-        else parse_iso(end)
-    )
+    a, b = _endpoint(start), _endpoint(end)
     if a is None or b is None:
         return None
     if (

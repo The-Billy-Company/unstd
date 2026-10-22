@@ -117,6 +117,12 @@ def test_span_to_now_measures_from_the_pinned_instant() -> None:
     )
 
 
+@pytest.mark.usefixtures("pinned")
+def test_span_none_start_keeps_the_existing_now_sentinel() -> None:
+    assert timeutil.span(None, "2026-03-08T08:30:00.987654Z", unit="minutes") == 60.0
+    assert timeutil.span(None, unit="seconds") == 0.0
+
+
 @pytest.mark.parametrize(
     ("ns", "seconds", "millis"),
     [
