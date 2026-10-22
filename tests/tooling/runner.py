@@ -235,8 +235,8 @@ def main(argv: Sequence[str] | None = None, *, repo_root: Path | None = None) ->
     if extra[:1] == ["--"]:
         extra = extra[1:]
     selection = selected.marker
-    if selection not in {"perf", "chaos", "concurrency"}:
-        selection += " and not perf and not chaos and not concurrency"
+    if selection not in {"perf", "chaos", "concurrency", "resources"}:
+        selection += " and not perf and not chaos and not concurrency and not resources"
     command = [
         sys.executable,
         "-m",
