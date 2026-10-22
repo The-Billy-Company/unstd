@@ -7,7 +7,10 @@ are traversed by identity, never recursively expanded. This target requires the
 yaml extra and is installed-backend only.
 
 Raw safe-loader values/errors compare with a separately configured pure ruamel
-safe parser, preserving exact backend error types/messages. Generated values
+safe parser, preserving exact backend error types/messages. When that parser
+fails to identify merged duplicate keys, an independent round-trip parser
+identifies the explicit duplicate and requires the wrapper's stricter rejection.
+Generated values
 have an independent Python model and exercise safe/editable/stream/multidocument
 paths. Explicit unknown and Python tags must fail every reader. These laws test
 the wrapper's security policy rather than claiming a separate YAML parser.
@@ -20,6 +23,7 @@ import io
 import json
 
 from ruamel.yaml import YAML
+from ruamel.yaml.constructor import DuplicateKeyError
 from ruamel.yaml.error import YAMLError
 
 from unstd import yaml
@@ -79,6 +83,29 @@ def fuzz(data: bytes) -> None:
         reference = YAML(typ="safe", pure=True)
         reference.allow_duplicate_keys = False
         expected = _outcome(reference.load, payload)
+        duplicate_merge = False
+        if expected[0] != "error" or expected[1] is not DuplicateKeyError:
+            policy = YAML(typ="rt", pure=True)
+            policy.allow_duplicate_keys = False
+            try:
+                policy.load(payload)
+            except DuplicateKeyError:
+                duplicate_merge = True
+            except (YAMLError, ValueError, RecursionError):
+                # Only explicit duplicate errors amend the safe value oracle.
+                # Other round-trip limitations do not alter safe parser parity.
+                pass
+        if duplicate_merge:
+            for operation, source in (
+                (yaml.loads, payload),
+                (yaml.load, io.BytesIO(payload)),
+            ):
+                result = _outcome(operation, source)
+                assert result[0] == "error"
+                assert result[1] is DuplicateKeyError
+                if isinstance(source, io.BytesIO):
+                    assert not source.closed
+            return
         assert _outcome(yaml.loads, payload) == expected
         source = io.BytesIO(payload)
         reference = YAML(typ="safe", pure=True)

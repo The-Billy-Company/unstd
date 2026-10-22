@@ -230,6 +230,35 @@ def test_yaml_raw_safe_values_errors_and_recursive_aliases(raw):
     _yaml().fuzz(b"\0" + raw)
 
 
+@pytest.mark.parametrize(
+    "raw",
+    [
+        b"user: {<<: {role: reader}, role: reader, role: admin}\n",
+        b"user: {<<: {role: reader, role: admin}}\n",
+        b"user: {<<: {role: reader}, role: reader, role: admin, date: 2001-32-15}\n",
+        b"user: {<<: {role: reader}, role: admin}\n",
+        b"user: {<<: {role: reader}, date: 2001-32-15}\n",
+    ],
+    ids=[
+        "duplicate-target",
+        "duplicate-source",
+        "duplicate-before-invalid-date",
+        "valid-override",
+        "invalid-date-parity",
+    ],
+)
+def test_yaml_raw_merge_policy_distinguishes_duplicates_from_overrides(raw):
+    _yaml().fuzz(b"\0" + raw)
+
+
+def test_yaml_raw_merge_policy_cannot_accept_a_duplicate_key(monkeypatch):
+    target = _yaml()
+    monkeypatch.setattr(target.yaml, "loads", lambda *_: {"user": {"role": "admin"}})
+    monkeypatch.setattr(target.yaml, "load", lambda *_: {"user": {"role": "admin"}})
+    with pytest.raises(AssertionError):
+        target.fuzz(b"\0user: {<<: {role: reader}, role: reader, role: admin}\n")
+
+
 @pytest.mark.parametrize("raw", [b"date: 2001-32-15\n", b"date: 2001-02-30\n"])
 def test_yaml_invalid_dates_preserve_scalar_value_error_parity(raw):
     _yaml().fuzz(b"\0" + raw)

@@ -28,7 +28,7 @@ if TYPE_CHECKING:
         SafeConstructor,
     )
     from ruamel.yaml.error import YAMLError
-    from ruamel.yaml.nodes import Node
+    from ruamel.yaml.nodes import MappingNode, Node
 else:
     try:
         from ruamel.yaml import YAML as _YAML
@@ -67,6 +67,50 @@ __all__ = [
 
 if _YAML is not None:
 
+    class _SafeConstructor(SafeConstructor):
+        """Validate source keys before merging disables backend duplicate checks."""
+
+        _merge_source = False
+
+        def flatten_mapping(self, node: MappingNode) -> None:
+            """Keep explicit duplicates distinct from permitted merge overrides."""
+            if node.merge is None and (
+                self._merge_source
+                or any(
+                    key.tag == "tag:yaml.org,2002:merge" for key, _value in node.value
+                )
+            ):
+                keys: dict[Hashable, None] = {}
+                for key_node, _value_node in node.value:
+                    if key_node.tag == "tag:yaml.org,2002:merge":
+                        continue
+                    if key_node.tag == "tag:yaml.org,2002:value":
+                        key_node.tag = "tag:yaml.org,2002:str"
+                    key: object = self.construct_object(key_node, deep=True)
+                    if isinstance(key, list):
+                        key = tuple(key)
+                    if not isinstance(key, Hashable):
+                        context = "while constructing a mapping"
+                        problem = "found unhashable key"
+                        raise ConstructorError(
+                            context,
+                            node.start_mark,
+                            problem,
+                            key_node.start_mark,
+                        )
+                    if self.check_mapping_key(node, key_node, keys, key, None):
+                        keys[key] = None
+            # Aliased sources can already have been flattened. Their inherited
+            # keys must not be checked again as explicit source declarations.
+            # Ordinary mappings retain the backend's checks and diagnostics;
+            # its recursive flatten calls identify inline merge sources too.
+            prior_source = self._merge_source
+            self._merge_source = True
+            try:
+                super().flatten_mapping(node)
+            finally:
+                self._merge_source = prior_source
+
     class _Constructor(RoundTripConstructor):
         """An editable constructor that refuses unresolved recursive aliases."""
 
@@ -97,8 +141,8 @@ def _engine(*, editable: bool = False) -> _YAML:
     if _YAML is None:
         missing("yaml", "yaml")()
     engine = _YAML(typ="rt" if editable else "safe", pure=True)
+    engine.Constructor = _Constructor if editable else _SafeConstructor
     if editable:
-        engine.Constructor = _Constructor
         engine.preserve_quotes = True
     engine.allow_duplicate_keys = False
     engine.default_flow_style = False

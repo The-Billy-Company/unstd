@@ -88,6 +88,13 @@ class _Boundary:
             self.fail("chmod")
         path.chmod(mode)
 
+    if hasattr(os, "fchmod"):
+
+        def fchmod(self, descriptor: int, mode: int) -> None:
+            if self.stage == "chmod":
+                self.fail("chmod")
+            os.fchmod(descriptor, mode)
+
 
 _STAGES = ("open", "fdopen", "write", "flush", "fsync", "close", "replace")
 

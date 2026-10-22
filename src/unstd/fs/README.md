@@ -39,6 +39,12 @@ as it was. Pass `durable=True` to also `fsync` the **parent directory**: the
 rename is atomic but not _persisted_ across a power loss until the containing
 directory is synced (the "fsync the directory too" nuance — see references).
 
+Rewriting an existing file preserves its permissions from scratch creation, so
+an initially broader mode cannot leak replacement data through a retained read
+handle. Where descriptor chmod is available, mode copying targets the acquired
+file rather than following a replaced scratch path. New files retain normal
+umask-based permissions.
+
 Reads and one-level listings are `Path.read_bytes` / `read_text` / `iterdir`:
 CPython already sizes a whole-file read from `fstat` and lists through `scandir`,
 so a wrapper here measured slower, not faster.

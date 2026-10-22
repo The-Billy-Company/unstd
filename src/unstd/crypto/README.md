@@ -64,6 +64,10 @@ every value already addressed by one would stop resolving - so `digest` and
 `pip install 'unstd[crypto]'` when it is missing. `tls` is pure stdlib and
 imports on a base install.
 
+TLS certificate paths use `None` for omission. Explicitly empty `cafile`,
+`certfile` or `keyfile` values raise `ValueError`, preventing a configured pin
+or client identity from silently disappearing.
+
 Randomness is the one thing the seam does not re-implement: an opaque bearer
 with no claims inside is `unstd.rand.crypto.token_urlsafe()`, which is always
 stdlib `secrets` and never seedable. One randomness door in the program, not two.

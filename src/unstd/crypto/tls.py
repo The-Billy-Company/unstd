@@ -59,6 +59,10 @@ def client_context(
     certificate raises: a client that asked for mTLS must never quietly dial
     without it and fail at the peer's handshake instead.
 
+    Explicitly empty certificate paths raise: use ``None`` to omit one. An empty
+    *cafile* must never silently revert to default public trust, and empty client
+    identity paths must never silently drop mTLS.
+
     *minimum_version* is the one dial, and it stops at
     :data:`LEGACY_MINIMUM_VERSION` — TLS 1.0 and 1.1 raise rather than quietly
     widening what the process will speak. There is deliberately no
@@ -68,6 +72,14 @@ def client_context(
     if minimum_version < _FLOOR:
         msg = f"TLS floor {minimum_version.name} is below {_FLOOR.name}; it will not be honored here"
         raise ValueError(msg)
+    for name, path in (
+        ("cafile", cafile),
+        ("certfile", certfile),
+        ("keyfile", keyfile),
+    ):
+        if path == "":
+            msg = f"{name} must not be empty; use None to omit a certificate path"
+            raise ValueError(msg)
     if keyfile and not certfile:
         msg = "keyfile without certfile is not mTLS; pass the certificate it belongs to"
         raise ValueError(msg)

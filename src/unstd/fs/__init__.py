@@ -106,25 +106,33 @@ _TMP_FLAGS = (
 
 
 def _scratch(dest: Path) -> tuple[int, Path]:
-    """Create a fresh temp file beside *dest*, at the mode a plain ``open()`` would give it.
+    """Create a fresh temp file beside *dest*, preserving its existing mode.
 
     ``tempfile.mkstemp`` hard-codes ``0o600``, and recovering the umask to undo
     that means flipping the process-wide umask, which races every thread
-    creating a file in the meantime. Opening at ``0o666`` lets the kernel apply
-    the umask instead. An existing destination's own mode is then copied over,
-    so rewriting a shared config never drops its other readers to owner-only.
+    creating a file in the meantime. A new destination is opened at ``0o666``
+    so the kernel applies the umask. An existing destination's mode limits the
+    scratch from creation: tightening permissions later cannot revoke a read
+    descriptor acquired in between. Copying the exact mode afterward preserves
+    shared readers even when the current umask is stricter.
     """
+    try:
+        prior_mode = stat.S_IMODE(dest.stat().st_mode)
+    except FileNotFoundError:
+        prior_mode = None
     while True:
         tmp = dest.with_name(f".{dest.name}.{secrets.token_hex(4)}.tmp")
         try:
-            fd = os.open(tmp, _TMP_FLAGS, 0o666)
+            fd = os.open(tmp, _TMP_FLAGS, 0o666 if prior_mode is None else prior_mode)
         except FileExistsError:
             continue
         break
     try:
-        os.chmod(tmp, stat.S_IMODE(dest.stat().st_mode))
-    except FileNotFoundError:
-        pass
+        if prior_mode is not None:
+            if hasattr(os, "fchmod"):
+                os.fchmod(fd, prior_mode)
+            else:
+                os.chmod(tmp, prior_mode)
     except BaseException as error:
         _close_scratch_fd(fd, error)
         _discard_scratch(tmp, error)

@@ -2,6 +2,12 @@
 
 Run `uv run pytest tests/suites/product/fs/regression -q` from the repository root.
 
+`test_atomic_permissions.py` retains two permission failures. An observer that
+opened the initially public scratch file could read newly written secrets even
+after chmod tightened the mode. Replacing the scratch path with a symlink also
+redirected chmod onto an unrelated file. Real descriptors, inode permissions
+and retained destination bytes prove the fixes; these tests require POSIX modes.
+
 `test_walk_symlink_races.py` retains the confirmed traversal escape: the original
 walker checked a directory entry without following links, queued its path, then
 later followed a replacement symlink through `scandir(path)`. Real fixture-owned

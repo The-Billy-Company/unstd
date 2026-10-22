@@ -106,6 +106,13 @@ class _AtomicBoundary:
             self.hit("chmod", self.primary)
         os.chmod(path, mode)  # noqa: PTH101 — exercise the real chmod boundary
 
+    if hasattr(os, "fchmod"):
+
+        def fchmod(self, fd: int, mode: int) -> None:
+            if self.action == "chmod":
+                self.hit("chmod", self.primary)
+            os.fchmod(fd, mode)
+
     def fsync(self, fd: int) -> None:
         directory = stat.S_ISDIR(os.fstat(fd).st_mode)
         if (directory and self.action == "directory-sync") or (
