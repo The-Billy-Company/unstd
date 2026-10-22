@@ -46,10 +46,10 @@ jobs:
         run: uv audit --locked --output-format json > .local/supply-chain/audit.json
       - name: Reject vulnerabilities, adverse statuses & malformed reports
         run: python -m tests.tooling.supply_chain audit-report .local/supply-chain/audit.json
-      - name: Install only harness dependencies
-        run: uv sync --locked --only-group supply-chain --no-install-project --python 3.13
-      - name: Require the workflow parser
-        run: uv run --no-sync python -c "import ruamel.yaml"
+      - name: Install audited harness and release tools
+        run: uv sync --locked --only-group supply-chain --only-group release --no-install-project --python 3.13
+      - name: Require the workflow parser and real wheel builder
+        run: uv run --no-sync python -c "import ruamel.yaml, cibuildwheel"
       - name: Prove trust checks & release validation reject tampering
         run: >-
           uv run --no-sync python -m pytest

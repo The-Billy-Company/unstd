@@ -17,7 +17,7 @@ test-command = [
 
 [project]
 name = "unstd"
-version = "3.1.1"
+version = "3.1.2"
 description = "stdlib-faithful accelerated replacements behind optional extras"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -135,6 +135,7 @@ build = ["hatchling", "setuptools>=77"]
 release = [
   "cibuildwheel==4.3.1",
   "delocate==0.13.0 ; sys_platform == 'darwin'",
+  "delvewheel==1.13.2 ; sys_platform == 'win32'",
   # GHSA-6q48-6c7w-9gw2: do not restore compromised certificate roots.
   "certifi>=2026.10.19",
 ]

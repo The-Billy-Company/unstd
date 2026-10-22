@@ -17,7 +17,7 @@ doc_radar:
 
 <!-- towncrier release notes start -->
 
-## [3.1.1] - 2026-10-21
+## [3.1.2] - 2026-10-22
 
 ### Added
 
@@ -103,7 +103,8 @@ doc_radar:
   advisories.
 
   Release wheels build from the published source archive with authenticated
-  build and test requirements. Before PyPI publication, archive, metadata and
+  build and test requirements. Correct constraint-file paths for isolated wheel
+  builds from that archive. Before PyPI publication, archive, metadata and
   wheel RECORD checks produce a SHA256 manifest that is verified again in the
   isolated Trusted Publishing job. Test reports and dependency evidence stay
   outside the distribution handoff.
