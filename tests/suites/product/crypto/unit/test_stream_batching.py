@@ -90,22 +90,58 @@ class _CallbackBuffer:
         return memoryview(self.data)
 
 
+def _construction_outcome(target, parts, use_stream):
+    """Keep the exact refusal and partial digest from either independent path."""
+    error = None
+    try:
+        if use_stream:
+            digest.Stream.__init__(target, parts)
+        else:
+            for part in parts:
+                target.update(part)
+    except Exception as caught:
+        error = caught
+    return error, target.raw() if use_stream else target.digest()
+
+
 @pytest.mark.parametrize("container", [tuple, list], ids=["tuple", "list"])
 def test_mutable_chunks_are_absorbed_before_later_buffer_callbacks(container):
-    stream = digest.Stream.__new__(digest.Stream)
-    mutable = bytearray(b"first")
-    observed = []
+    def run(use_stream):
+        target = digest.Stream.__new__(digest.Stream) if use_stream else blake3()
+        mutable = bytearray(b"first")
+        observed = []
 
-    def mutate():
-        observed.append(stream.raw())
-        mutable[:] = b"later"
+        def mutate():
+            observed.append("buffer-enter")
+            observed.append(target.raw() if use_stream else target.digest())
+            mutable[:] = b"later"
 
-    parts = container(
-        [b"prefix", mutable, _CallbackBuffer(b"callback", mutate), b"tail"] + [b""] * 5
-    )
-    digest.Stream.__init__(stream, parts)
-    assert observed == [blake3(b"prefixfirst").digest()]
-    assert stream.raw() == blake3(b"prefixfirstcallbacktail").digest()
+        parts = container(
+            [b"prefix", mutable, _CallbackBuffer(b"callback", mutate), b"tail"]
+            + [b""] * 5
+        )
+        error, value = _construction_outcome(target, parts, use_stream)
+        return (
+            None if error is None else (type(error), str(error)),
+            value,
+            observed,
+            bytes(mutable),
+        )
+
+    expected = run(False)
+    assert run(True) == expected
+    error, value, observed, mutable = expected
+    if error is None:
+        assert observed == ["buffer-enter", blake3(b"prefixfirst").digest()]
+        assert value == blake3(b"prefixfirstcallbacktail").digest()
+        assert mutable == b"later"
+    else:
+        # BLAKE3 1.0.0 retains its mutable Rust borrow during __buffer__.
+        assert error == (RuntimeError, "Already mutably borrowed")
+        assert observed
+        assert observed == ["buffer-enter"] * len(observed)
+        assert value == blake3(b"prefixfirst").digest()
+        assert mutable == b"first"
 
 
 @pytest.mark.parametrize("mutation", ["replace-and-append", "remove-prefix"])
@@ -115,6 +151,7 @@ def test_buffer_callbacks_observe_and_mutate_lists_like_normal_iteration(mutatio
         observed = []
 
         def mutate():
+            observed.append("buffer-enter")
             observed.append(target.raw() if use_stream else target.digest())
             if mutation == "replace-and-append":
                 parts[2] = b"replacement"
@@ -125,14 +162,60 @@ def test_buffer_callbacks_observe_and_mutate_lists_like_normal_iteration(mutatio
         parts = [b"prefix", _CallbackBuffer(b"callback", mutate), b"old", b"tail"] + [
             b""
         ] * 5
-        if use_stream:
-            digest.Stream.__init__(target, parts)
-            return target.raw(), observed
-        for part in parts:
-            target.update(part)
-        return target.digest(), observed
+        error, value = _construction_outcome(target, parts, use_stream)
+        return None if error is None else (type(error), str(error)), value, observed
 
-    assert run(True) == run(False)
+    expected = run(False)
+    assert run(True) == expected
+    error, value, observed = expected
+    if error is None:
+        assert observed == ["buffer-enter", blake3(b"prefix").digest()]
+        assert (
+            value
+            == blake3(
+                b"prefixcallbackreplacementtailappended"
+                if mutation == "replace-and-append"
+                else b"prefixcallbacktail"
+            ).digest()
+        )
+    else:
+        assert error == (RuntimeError, "Already mutably borrowed")
+        assert observed
+        assert observed == ["buffer-enter"] * len(observed)
+        assert value == blake3(b"prefix").digest()
+
+
+@pytest.mark.parametrize("container", [tuple, list], ids=["tuple", "list"])
+def test_buffer_callback_refusal_preserves_identity_history_and_partial_state(
+    container,
+):
+    failure = LookupError("buffer callback refused")
+    expected_history = None
+    for use_stream in (False, True):
+        target = digest.Stream.__new__(digest.Stream) if use_stream else blake3()
+        observed = []
+
+        def refuse(history=observed):
+            history.append("buffer-enter")
+            raise failure
+
+        parts = container(
+            [
+                b"prefix",
+                bytearray(b"first"),
+                _CallbackBuffer(b"callback", refuse),
+                b"tail",
+            ]
+            + [b""] * 5
+        )
+        caught, value = _construction_outcome(target, parts, use_stream)
+        assert caught is failure
+        if use_stream:
+            assert observed == expected_history
+        else:
+            assert observed
+            expected_history = observed
+        assert value == blake3(b"prefixfirst").digest()
 
 
 @pytest.mark.parametrize("container", [tuple, list], ids=["tuple", "list"])
