@@ -109,6 +109,13 @@ eligible(PyObject *source, unsigned int depth, Py_ssize_t *remaining)
      * No allocation/callback occurs unless entering fails; errors unwind the
      * proof immediately without touching another borrowed source reference. */
     if (Py_EnterRecursiveCall(" while checking a builtin clone tree")) {
+        /* Native stack pressure must defer to the Python walker. Raising this
+         * RecursionError would make deep() select whole-graph deepcopy, which
+         * preserves aliases that an acyclic structural clone must duplicate. */
+        if (PyErr_ExceptionMatches(PyExc_RecursionError)) {
+            PyErr_Clear();
+            return 0;
+        }
         return -1;
     }
     int status = eligible_contents(source, depth, remaining);
@@ -250,6 +257,10 @@ clone_value(PyObject *source, PyObject **result, unsigned int depth,
         return 0;
     }
     if (Py_EnterRecursiveCall(" while cloning a builtin tree")) {
+        if (PyErr_ExceptionMatches(PyExc_RecursionError)) {
+            PyErr_Clear();
+            return 0;
+        }
         return -1;
     }
     int status;

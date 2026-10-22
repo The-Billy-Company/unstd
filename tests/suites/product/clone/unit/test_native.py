@@ -247,10 +247,76 @@ finally:
     sys.setprofile(None)
     sys.setrecursionlimit(1000)
 """
-    subprocess.run(  # noqa: S603 — fixed interpreter and literal source, no shell
+    completed = subprocess.run(  # noqa: S603 — fixed interpreter and literal source, no shell
         [sys.executable, "-X", "faulthandler", "-c", code],
-        check=True,
+        check=False,
         capture_output=True,
         text=True,
         timeout=30,
     )
+    assert completed.returncode == 0, completed.stdout + completed.stderr
+
+
+@pytest.mark.skipif(
+    sys.version_info >= (3, 14),
+    reason="CPython 3.14 guards the machine stack instead of a C recursion counter",
+)
+def test_native_stack_pressure_defers_without_preserving_acyclic_aliases() -> None:
+    # Pair the public CPython enter/leave APIs to simulate a nested extension
+    # caller without actually consuming the machine stack or needing a compiler.
+    # The subprocess contains the deliberately exhausted C recursion budget.
+    code = """
+import ctypes
+from unstd.clone import structural as s
+from unstd.clone import _clone_native as n
+enter = ctypes.pythonapi.Py_EnterRecursiveCall
+enter.argtypes = [ctypes.c_char_p]
+enter.restype = ctypes.c_int
+leave = ctypes.pythonapi.Py_LeaveRecursiveCall
+leave.argtypes = []
+leave.restype = None
+entered = 0
+exhausted = False
+try:
+    while entered < 20000:
+        try:
+            enter(b' while simulating a nested extension caller')
+        except RecursionError:
+            exhausted = True
+            break
+        entered += 1
+finally:
+    for _ in range(entered):
+        leave()
+assert exhausted, 'bounded probe did not reach the CPython C recursion budget'
+pressure = entered - 100
+assert pressure > 0
+shared = [1]
+source = [shared, shared]
+for _ in range(100):
+    source = [source]
+for backend in (None, n.clone):
+    s._native_clone = backend
+    entered = 0
+    try:
+        for _ in range(pressure):
+            enter(b' while simulating a nested extension caller')
+            entered += 1
+        if backend is not None:
+            assert n.clone(source) is NotImplemented
+        result = s.deep(source)
+    finally:
+        for _ in range(entered):
+            leave()
+    for _ in range(100):
+        result = result[0]
+    assert result[0] is not result[1], 'native pressure selected whole-graph deepcopy'
+"""
+    completed = subprocess.run(  # noqa: S603 — fixed interpreter and literal source, no shell
+        [sys.executable, "-X", "faulthandler", "-c", code],
+        check=False,
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    assert completed.returncode == 0, completed.stdout + completed.stderr
