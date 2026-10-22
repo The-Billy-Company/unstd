@@ -8,8 +8,8 @@ Assurance suites group cross-cutting risks by owner:
 - [security](security/README.md) holds TLS penetration probes and primitive canaries.
 - [adversarial](adversarial/README.md) applies faults, concurrency, resource
   pressure, and committed-corpus replay.
-- [evals](evals/README.md) reserves performance and scaling evidence; that lane
-  remains planned.
+- [evals](evals/README.md) enforces frozen per-function latency ceilings on
+  explicitly selected performance workers.
 
 A module-owned invariant stays under `suites/product/<module>/<kind>`. A shared
 harness belongs under support; standalone campaigns belong under tooling.

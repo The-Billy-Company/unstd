@@ -59,7 +59,7 @@ def repo(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     (tmp_path / "tests/tooling/inventory.toml").write_text("version = 1\n")
     for identity in sorted(set.union(*_OWNERS.values()) | ci.OPT_IN_SUITES):
         _add_suite(tmp_path, identity)
-    _add_suite(tmp_path, "performance", status="planned")
+    _add_suite(tmp_path, "system-integration", status="planned")
     monkeypatch.delenv("GITHUB_ACTIONS", raising=False)
     monkeypatch.setenv("GITHUB_STEP_SUMMARY", str(tmp_path / "summary.md"))
     return tmp_path
@@ -105,7 +105,7 @@ def test_check_and_list_show_human_group_names_without_opt_in_or_planned_suites(
     output = capsys.readouterr().out
     assert "api\tAPI & regressions\tunit, regression" in output
     assert not any(
-        identity in output for identity in (*ci.OPT_IN_SUITES, "performance")
+        identity in output for identity in (*ci.OPT_IN_SUITES, "system-integration")
     )
 
 

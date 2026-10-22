@@ -58,7 +58,7 @@ duplicating a scenario under multiple paths.
 | `chaos` | Active | Seeded mixed filesystem/process histories, barrier-selected writer kills, stream interruptions and clock/entropy provider outages; independent state/progress/ownership/recovery assertions and bounded installed/stdlib campaigns. |
 | `concurrency` | Active | Bounded thread/process atomic-file histories, exact fallback UUID reservation models and fork safety, shared clone/regex caches, msgspec/YAML isolation and immutable-map branches; observed histories, corruption controls and installed/stdlib campaigns. |
 | `resources` | Active | Finite installed/stdlib workers check NDJSON/WAV streaming allocation growth, filesystem descriptors/scratch cleanup, regex capacity/purge, clone class lifetime and JSON depth; CPU/memory/output/wall containment and measured reports. Sustained soak and Windows handles remain planned. |
-| `performance` | Planned | Reproducible throughput/latency evidence with audited semantics and stable baselines. The existing `bench` program remains the current instrument. |
+| `performance` | Active, opt-in | Every public callable has an audited representative workload and a frozen latency ceiling in `bench.speeds`; verification requires the recorded worker environment. Scaling and sustained measurements remain separate work. |
 | `fuzz-replay` | Active | Authenticated reviewed parser/token inputs replay real oracles in eleven installed and eight import-blocked stdlib workers during ordinary validation. Exact case counts, bounds and normal exit are required. |
 
 Further module-owned `regression` leaves are added as defects are confirmed; cross-module
@@ -97,9 +97,10 @@ precise selection. The following gaps require explicit follow-up:
    Atheris/libFuzzer campaigns now execute real parser/token oracles. Native
    sanitizer/instrumented builds, sustained chaos, broad resource/soak gates
    and source-mutation campaigns remain separate work.
-3. **Performance execution.** `bench verify` has equivalence checks and speedup
-   baselines, but CI still tests its instrument rather than enforcing speed on
-   a stable worker. Wall-clock calibration remains explicitly selected `perf`.
+3. **Performance execution.** `bench.speeds` registers every public callable and
+   enforces frozen latency ceilings through the opt-in `performance` lane.
+   A stable required CI worker and scaling workloads remain follow-up work.
+   Wall-clock timing stays outside ordinary correctness execution.
 4. **Broader product depth.** P1 module laws, state machines, platform combinations
    and whole-application scenarios remain governed by the matrix below.
 

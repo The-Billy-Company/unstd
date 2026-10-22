@@ -46,7 +46,7 @@ GROUPS = (
     Group("tooling", "Test tooling & corpus", ("gates", "fuzz-replay")),
     Group("packaging", "Packaging & consumers", ("packaging",)),
 )
-OPT_IN_SUITES = frozenset({"chaos", "concurrency", "resources"})
+OPT_IN_SUITES = frozenset({"chaos", "concurrency", "resources", "performance"})
 DEFAULT_SELECTION = "not perf and not chaos and not concurrency and not resources"
 
 

@@ -8,6 +8,7 @@
 | [`fuzz.yml`](fuzz.yml) | Pull requests, pushes to `main`, daily schedules, and manual runs. Runs deterministic and Atheris campaigns for installed and stdlib backends on Linux/Python 3.12. |
 | [`chaos.yml`](chaos.yml) | Pull requests, pushes to `main`, daily schedules, and manual runs. Exercises fault/recovery campaigns for installed and stdlib backends on Linux and macOS. |
 | [`concurrency.yml`](concurrency.yml) | Pull requests, pushes to `main`, daily schedules, and manual runs. Exercises bounded thread/process histories for both backends on Linux and macOS. |
+| [`performance.yml`](performance.yml) | Product, benchmark and dependency pull requests, plus manual reference comparisons. Builds each revision's own native modules, freezes the comparison revision and verifies every public operation on the same worker with identical workloads and dependencies. Retains baselines and reports on failure. |
 
 Keep suite ownership in [`inventory.toml`](../../tests/tooling/inventory.toml)
 and CI grouping in [`ci.py`](../../tests/tooling/ci.py). The

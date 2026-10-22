@@ -4,6 +4,106 @@ Benchmark drivers and recorded measurements for `unstd` APIs, optional backends,
 and bundled native kernels. Cases validate comparable outputs before timing;
 reports retain gains, losses, and backend-specific limitations.
 
+## Frozen function speeds
+
+[`speeds.json`](speeds.json) freezes representative latency for every public
+operation across all 18 packages. The shared registry currently has 224
+workloads, including constructors, locally declared public methods/properties,
+stdlib aliases, generator consumption and complete stream lifecycles. Nine
+imported typing/enum/result vocabulary names have explicit exclusions. Private
+implementation helpers are exercised through their public operations; they do
+not each receive an independent latency budget.
+
+```console
+uv sync --locked --all-extras --group dev
+uv run --no-sync python -m bench.speeds list
+uv run --no-sync python -m bench.speeds check
+uv run --no-sync python -m bench.speeds run --group serde
+uv run --no-sync python -m bench.speeds verify --output /tmp/speeds-current.json
+uv run --no-sync python -m tests.tooling run performance -- -q
+```
+
+Each registry `Case` names a callable, its bounded input and an independent
+correctness checker. Checks run before and after timing, outside the measured
+region. Workload notes describe setup included in the timer: for example,
+stateful writers measure a fresh in-memory stream's complete lifecycle, while
+filesystem and subprocess cases perform actual I/O. Timings include callable
+dispatch overhead. These are representative input contracts, not worst-case or
+all-input complexity guarantees; add `#variant` cases for other important shapes.
+
+Each frozen row retains the observed nanoseconds, a ceiling with **30% headroom**,
+iteration/round counts and sample spread. The estimator is the existing calibrated
+minimum batch mean. A `noisy` annotation means spread exceeded 25%; inspect the
+retained evidence and repeat on a quiet worker. Verification rechecks only cases
+over their ceiling, at most twice, and retains each attempt in JSON reports.
+A persistent slowdown still fails; a transiently delayed sample can recover
+without changing its ceiling. Calibration confirms that its chosen iteration
+count produces a long-enough batch twice, preventing one descheduled call from
+selecting an undersized timer batch. JSON verification reports retain every raw
+wall-clock batch mean and available thread-CPU samples for each attempt. CPU
+time is diagnostic and never substitutes for the wall time being gated.
+Existing ceilings and measured
+evidence remain unchanged when `freeze` runs again, so it cannot turn an existing
+slowdown green. New entries can be appended with:
+
+```console
+uv run --no-sync python -m bench.speeds freeze
+```
+
+Coverage gates discover public operations from source exports and runtime
+bindings. New functions/packages need workloads and frozen rows; unknown IDs,
+stale exclusions, changed workload notes and absent baseline entries fail.
+Workload source fingerprints also detect fixture edits, including changed inputs
+without a note change. Review those edits and run `freeze` to acknowledge the
+new source snapshot; existing speed ceilings remain unchanged. A deliberately
+different input should normally receive a new `#variant` ID.
+
+Absolute speeds belong to a machine and runtime. Verification requires the
+recorded CPU, OS, Python configuration, backend versions, thread settings and
+native implementation (including C versus the optional Rust text kernel).
+Missing prerequisites or mismatched evidence exit **2**; a speed regression exits
+**1**; a complete passing comparison exits **0**. Correctness/coverage checks do
+not compare wall-clock speeds and run in ordinary all-extra CI. Latency assertions
+are in the explicitly selected `perf` lane.
+
+For another worker, capture the comparison revision first using a separate file,
+then retain that file when testing the candidate with identical workloads and
+dependencies:
+
+```console
+uv run --no-sync python -m bench.speeds freeze --baseline /tmp/worker-speeds.json
+# Switch/build the candidate revision, retaining the comparison file.
+uv run --no-sync python -m bench.speeds verify --baseline /tmp/worker-speeds.json
+```
+
+The [performance workflow](../.github/workflows/performance.yml) automates this
+for pull requests and manual reference comparisons: it builds each revision's
+own wheel/native kernels, runs the current harness against both installations
+on one worker, and retains baseline, measurements and Git identities even on
+regression. It requires the comparison revision to implement the current workload
+surface; an absent function or native implementation fails explicitly. New API
+introductions need a comparison revision containing that API before a timing
+comparison can succeed. The local committed snapshot remains separate from
+ephemeral CI worker baselines.
+
+For the random-workload investigation, use an alternating paired diagnosis:
+
+```console
+uv run --no-sync python -m bench.rand_diagnose --output /tmp/rand-diagnosis.json
+```
+
+This runs the original `crypto.bits`, `seed` and `shuffle` workloads beside
+equivalent direct stdlib/NumPy controls with independent seedable engines. It
+records primitive identities, loaded-source hashes, source agreement with Git
+HEAD, the unchanged baseline hash, and all wall/CPU samples. A candidate-only
+slowdown points toward implementation work. A similarly slow control makes the
+runtime or host a suspect; it does not prove scheduler noise. In particular,
+uniformly high thread CPU time is different evidence from wall time lost to
+descheduling. Neither finding waives an absolute ceiling: diagnosis still exits
+nonzero when the original candidate exceeds it.
+
+## Stdlib speedup comparisons
+
 The [parallel hashing report](crypto-hash-results.md) compares saved and current
 BLAKE3 wrappers with `crypto_hash.py`, including all modes, tiny-call overhead,
 serial streams, raw paired samples, and the measured host's scheduling noise.

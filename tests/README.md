@@ -57,6 +57,7 @@ The [shared Hypothesis profiles](support/hypothesis/README.md) control depth.
 | `chaos` | [Recorded fault schedules and recovery](tooling/chaos/README.md) across files/processes, streams, clocks, and entropy |
 | `concurrency` | [Filesystem, UUID, and shared-state histories](tooling/concurrency/README.md) with controlled overlap and independent models |
 | `resources` | [Streaming memory, cleanup, cache lifetime, and JSON depth bounds](suites/assurance/adversarial/resources/README.md) in fresh workers |
+| `performance` | [Per-function latency ceilings](suites/assurance/evals/performance/README.md) with audited workloads and a frozen baseline for the selected worker |
 | `gates` | [Tests of repository and quality instruments](suites/assurance/gates/README.md), including dependency and release policy |
 
 Run opt-in correctness lanes explicitly:
@@ -69,10 +70,12 @@ uv run --no-sync python -m tests.tooling run resources -- -q
 
 The [fuzz runbook](tooling/fuzz/README.md) covers deterministic byte mutation,
 bounded Atheris/libFuzzer campaigns, artifacts, and reproduction. Standalone
-chaos/concurrency campaigns use their linked runbooks. The `performance` and
-`system-integration` lanes remain planned; the runner refuses to run them. Three
-existing benchmark timer calibration checks use `perf` and can be selected with
-`uv run --no-sync pytest -q -m perf` on a quiet machine. Source
+chaos/concurrency campaigns use their linked runbooks. The `performance` lane is
+active and opt-in: run `uv run --no-sync python -m tests.tooling run performance -- -q`
+on the baseline's recorded environment, or set `UNSTD_SPEED_BASELINE` to an
+unchanged baseline captured on the comparison worker. `pytest -m perf` selects
+this gate and the existing benchmark timer calibration checks. The
+`system-integration` lane remains planned and cannot run. Source
 [mutation testing](tooling/mutation/README.md) also remains planned.
 
 ## CI and evidence policy

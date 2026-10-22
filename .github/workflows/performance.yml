@@ -1,0 +1,118 @@
+name: Performance
+
+on:
+  pull_request:
+    paths:
+      - "src/unstd/**"
+      - "bench/**"
+      - "hatch_build.py"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/workflows/performance.yml"
+  workflow_dispatch:
+    inputs:
+      base_ref:
+        description: "Git ref to measure before the selected revision"
+        required: true
+        default: main
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: performance-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  compare:
+    name: Function latency / Python 3.13
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PYTHONHASHSEED: "0"
+      # A failed native build must fail the comparison, not select a fallback.
+      CIBUILDWHEEL: "1"
+    steps:
+      - name: Check out current source and harness
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Check out comparison source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.base.sha || inputs.base_ref }}
+          path: .local/performance/source-before
+          persist-credentials: false
+      - name: Set up Python and locked dependency cache
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          enable-cache: true
+          cache-dependency-glob: |
+            uv.lock
+            pyproject.toml
+          version: "latest-known"
+          python-version: "3.13"
+      - name: Install one shared dependency environment
+        run: >-
+          uv sync --locked --all-extras --group dev --group build
+          --no-install-project --python 3.13
+      - name: Record revision identities
+        run: |
+          mkdir -p .local/performance/evidence
+          git rev-parse HEAD > .local/performance/evidence/current-revision.txt
+          git -C .local/performance/source-before rev-parse HEAD > .local/performance/evidence/before-revision.txt
+      # Build each revision's own native modules. Neither measurement may load
+      # the other revision's Python source or compiled kernels.
+      - name: Build separate before and current installations
+        run: |
+          uv pip install --python .venv/bin/python --no-deps --no-build-isolation --no-cache --target .local/performance/installed-before .local/performance/source-before
+          uv pip install --python .venv/bin/python --no-deps --no-build-isolation --no-cache --target .local/performance/installed-current .
+      - name: Verify isolated product and shared harness imports
+        run: |
+          for revision in before current; do
+            export PERF_INSTALL_ROOT="$GITHUB_WORKSPACE/.local/performance/installed-$revision"
+            PYTHONPATH="$PERF_INSTALL_ROOT:$GITHUB_WORKSPACE" .venv/bin/python - <<'PY'
+          import importlib.util
+          import os
+          from pathlib import Path
+          import bench.speeds
+          import unstd
+          expected = Path(os.environ["PERF_INSTALL_ROOT"]) / "unstd"
+          if Path(unstd.__file__).resolve().parent != expected.resolve():
+              raise RuntimeError(f"wrong product import: {unstd.__file__}")
+          harness = Path(os.environ["GITHUB_WORKSPACE"]) / "bench/speeds.py"
+          if Path(bench.speeds.__file__).resolve() != harness.resolve():
+              raise RuntimeError(f"wrong benchmark harness: {bench.speeds.__file__}")
+          for name in bench.speeds._NATIVE:
+              spec = importlib.util.find_spec(f"unstd.{name}")
+              if spec and spec.origin and not Path(spec.origin).resolve().is_relative_to(expected.resolve()):
+                  raise RuntimeError(f"wrong native module import: {spec.origin}")
+          PY
+          done
+      # The committed laptop snapshot has a different environment. Record the
+      # old revision on THIS worker, then compare current against that file.
+      # Both passes use exactly the current workload definitions and backends.
+      - name: Freeze comparison revision on this worker
+        env:
+          PYTHONPATH: ${{ github.workspace }}/.local/performance/installed-before:${{ github.workspace }}
+        run: >-
+          .venv/bin/python -m bench.speeds freeze --rounds 9
+          --baseline .local/performance/evidence/baseline.json
+          --output .local/performance/evidence/before.json
+      - name: Verify current revision against the frozen worker baseline
+        env:
+          PYTHONPATH: ${{ github.workspace }}/.local/performance/installed-current:${{ github.workspace }}
+        run: >-
+          .venv/bin/python -m bench.speeds verify --rounds 9
+          --baseline .local/performance/evidence/baseline.json
+          --output .local/performance/evidence/current.json
+      - name: Retain baseline, measurements and revision identities
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: function-speeds-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .local/performance/evidence/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14

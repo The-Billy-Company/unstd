@@ -46,6 +46,16 @@ class Measurement:
     """Relative gap between the fastest and slowest batch — the noise floor of
     this run. Above ~0.25 the machine was busy and the number is soft."""
 
+    samples_ns: tuple[float, ...] = ()
+    """Raw wall-clock batch means, including the accepted calibration batch."""
+
+    cpu_samples_ns: tuple[float | None, ...] = ()
+    """Thread CPU batch means; calibration and unavailable CPU clocks are None.
+
+    CPU time is diagnostic only: blocked I/O and descheduling still count
+    toward the wall-clock latency that is compared with the frozen ceiling.
+    """
+
     @property
     def per_op_us(self) -> float:
         return self.per_op_ns / 1_000.0
@@ -78,7 +88,12 @@ def _calibrate(fn: Callable[[], Any]) -> tuple[int, int]:
     while iters < _MAX_ITERS:
         elapsed = _batch(fn, iters)
         if elapsed >= _MIN_BATCH_NS:
-            return iters, elapsed
+            # A preemption can turn a single cheap call into an apparently
+            # long-enough batch. Confirm at the same count before accepting:
+            # otherwise every later round inherits that undersized batch.
+            elapsed = min(elapsed, _batch(fn, iters))
+            if elapsed >= _MIN_BATCH_NS:
+                return iters, elapsed
         # Project the iteration count that would hit the target, then double it
         # for headroom, so calibration converges in a couple of steps instead of
         # walking a power-of-two ladder from 1.
@@ -102,7 +117,17 @@ def measure(fn: Callable[[], Any], *, rounds: int = 5) -> Measurement:
         iters, first = _calibrate(fn)
         if iters * (first / iters) > _MAX_BATCH_NS:
             rounds = min(rounds, 2)
-        samples = [first, *(_batch(fn, iters) for _ in range(rounds - 1))]
+        samples = [first]
+        cpu_samples: list[float | None] = [None]
+        cpu_clock = getattr(time, "thread_time_ns", None)
+        for _ in range(rounds - 1):
+            cpu_start = cpu_clock() if cpu_clock is not None else None
+            samples.append(_batch(fn, iters))
+            cpu_samples.append(
+                (cpu_clock() - cpu_start) / iters
+                if cpu_clock is not None and cpu_start is not None
+                else None
+            )
     finally:
         if gc_was_on:
             gc.enable()
@@ -114,4 +139,6 @@ def measure(fn: Callable[[], Any], *, rounds: int = 5) -> Measurement:
         iters=iters,
         rounds=len(samples),
         spread=(worst - best) / best if best else 0.0,
+        samples_ns=tuple(sample / iters for sample in samples),
+        cpu_samples_ns=tuple(cpu_samples),
     )
