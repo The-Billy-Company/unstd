@@ -28,7 +28,9 @@ if TYPE_CHECKING:
         SafeConstructor,
     )
     from ruamel.yaml.error import YAMLError
-    from ruamel.yaml.nodes import MappingNode, Node
+    from ruamel.yaml.nodes import MappingNode, Node, ScalarNode
+    from ruamel.yaml.representer import RoundTripRepresenter
+    from ruamel.yaml.scalarfloat import ScalarFloat
 
     _HAVE_YAML = True
 else:
@@ -40,6 +42,8 @@ else:
             SafeConstructor,
         )
         from ruamel.yaml.error import YAMLError
+        from ruamel.yaml.representer import RoundTripRepresenter
+        from ruamel.yaml.scalarfloat import ScalarFloat
     except ImportError:
         _YAML = None
         YAMLError = ValueError
@@ -142,6 +146,24 @@ if _HAVE_YAML:
         "tag:yaml.org,2002:str", RoundTripConstructor.construct_scalar
     )
 
+    class _Representer(RoundTripRepresenter):
+        """Keep parsed float spellings only while they still denote the value."""
+
+        @override
+        def represent_scalar_float(self, data: ScalarFloat) -> ScalarNode:
+            node: ScalarNode = super().represent_scalar_float(data)
+            try:
+                exact = float(node.value) == data
+            except ValueError:  # .inf and .nan spellings are exact
+                exact = True
+            if exact:
+                return node
+            # The backend truncates exponent mantissas instead of rounding them.
+            text = self.represent_float(float(data)).value
+            return self.represent_scalar(node.tag, text, anchor=node.anchor)
+
+    _Representer.add_representer(ScalarFloat, _Representer.represent_scalar_float)
+
 
 def _engine(*, editable: bool = False) -> _YAML:
     """A private parser/emitter session with fixed safe semantics."""
@@ -150,6 +172,7 @@ def _engine(*, editable: bool = False) -> _YAML:
     engine = _YAML(typ="rt" if editable else "safe", pure=True)
     engine.Constructor = _Constructor if editable else _SafeConstructor
     if editable:
+        engine.Representer = _Representer
         engine.preserve_quotes = True
     engine.allow_duplicate_keys = False
     engine.default_flow_style = False

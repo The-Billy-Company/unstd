@@ -1,0 +1,1 @@
+Fix parsed editable YAML floats whose retained presentation could change their numeric value when emitted. Preserve exact existing spellings and anchors; use the shortest exact form when the retained exponent presentation would round to another number.
