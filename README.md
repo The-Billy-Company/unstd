@@ -88,12 +88,14 @@ changes. Existing defaults and persisted canonical bytes remain unchanged:
   support, and standalone campaign tools.
 - [`bench/`](bench/README.md) contains benchmark drivers and recorded results.
 - [`native/`](native/README.md) contains the opt-in Rust text experiment.
-- [`.github/`](.github/README.md) contains CI, campaign, audit, and release workflows.
+- [`.github/`](.github/OVERVIEW.md) contains CI, campaign, audit, and release workflows.
 - [`changelog.d/`](changelog.d/README.md) contains unreleased change fragments.
 
-Each repository folder has a README describing its contents and role. Keep that
-README current when adding or moving files, and include one with new folders.
-Generated environments, caches, and build outputs are excluded from this policy.
+Each repository folder has a README describing its contents and role, except
+`.github/`, whose `OVERVIEW.md` keeps the project README on GitHub's repository
+page. Keep these guides current when adding or moving files, and include a README
+with new folders. Generated environments, caches, and build outputs are excluded
+from this policy.
 
 ## Security and shared logic
 
