@@ -238,6 +238,7 @@ def test_yaml_raw_safe_values_errors_and_recursive_aliases(raw):
         b"user: {<<: {role: reader}, role: reader, role: admin, date: 2001-32-15}\n",
         b"user: {<<: {role: reader}, role: admin}\n",
         b"user: {<<: {role: reader}, date: 2001-32-15}\n",
+        b"&d {a:,*d,a:}",
     ],
     ids=[
         "duplicate-target",
@@ -245,6 +246,7 @@ def test_yaml_raw_safe_values_errors_and_recursive_aliases(raw):
         "duplicate-before-invalid-date",
         "valid-override",
         "invalid-date-parity",
+        "unhashable-key-before-duplicate",
     ],
 )
 def test_yaml_raw_merge_policy_distinguishes_duplicates_from_overrides(raw):
@@ -257,6 +259,23 @@ def test_yaml_raw_merge_policy_cannot_accept_a_duplicate_key(monkeypatch):
     monkeypatch.setattr(target.yaml, "load", lambda *_: {"user": {"role": "admin"}})
     with pytest.raises(AssertionError):
         target.fuzz(b"\0user: {<<: {role: reader}, role: reader, role: admin}\n")
+
+
+def test_yaml_competing_errors_cannot_hide_acceptance_or_unrelated_refusal(monkeypatch):
+    target = _yaml()
+    raw = b"\0&d {a:,*d,a:}"
+    target.fuzz(raw)
+    monkeypatch.setattr(target.yaml, "loads", lambda *_: {})
+    with pytest.raises(AssertionError):
+        target.fuzz(raw)
+
+    def unrelated_error(_source):
+        msg = "unrelated scalar refusal"
+        raise ValueError(msg)
+
+    monkeypatch.setattr(target.yaml, "loads", unrelated_error)
+    with pytest.raises(AssertionError):
+        target.fuzz(raw)
 
 
 @pytest.mark.parametrize("raw", [b"date: 2001-32-15\n", b"date: 2001-02-30\n"])

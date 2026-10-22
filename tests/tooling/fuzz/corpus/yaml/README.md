@@ -14,6 +14,12 @@ separately configured pure safe ruamel parser; an independent round-trip check
 identifies merged duplicates when that reference misses them. Generated models
 and tag refusal also check the wrapper's own safe-construction policy.
 
+`raw-unhashable-before-duplicate.bin` minimizes a deterministic mutation finding
+(seed 65537, case 1721): a recursive alias used as a mapping key must retain the
+safe constructor's earlier unhashable-key error even when the round-trip loader
+reaches a later duplicate-key error. Neither acceptance nor an unrelated parser
+error satisfies the oracle.
+
 The target is installed-only and requires `ruamel.yaml`. After
 [dependency preparation](../../README.md), run from the repository root:
 

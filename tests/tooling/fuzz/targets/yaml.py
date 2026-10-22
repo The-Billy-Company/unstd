@@ -9,7 +9,8 @@ yaml extra and is installed-backend only.
 Raw safe-loader values/errors compare with a separately configured pure ruamel
 safe parser, preserving exact backend error types/messages. When that parser
 fails to identify merged duplicate keys, an independent round-trip parser
-identifies the explicit duplicate and requires the wrapper's stricter rejection.
+identifies the explicit duplicate and requires rejection. A safe constructor
+error reached before that duplicate retains its own exact diagnostics.
 Generated values
 have an independent Python model and exercise safe/editable/stream/multidocument
 paths. Explicit unknown and Python tags must fail every reader. These laws test
@@ -102,7 +103,18 @@ def fuzz(data: bytes) -> None:
             ):
                 result = _outcome(operation, source)
                 assert result[0] == "error"
-                assert result[1] is DuplicateKeyError
+                if result[1] is not DuplicateKeyError:
+                    # The round-trip loader can reach a duplicate after the
+                    # safe constructor already rejected an earlier key/value.
+                    # Require that exact safe error, never arbitrary refusal.
+                    safe = YAML(typ="safe", pure=True)
+                    safe.allow_duplicate_keys = False
+                    safe_source = (
+                        io.BytesIO(payload)
+                        if isinstance(source, io.BytesIO)
+                        else payload
+                    )
+                    assert result == _outcome(safe.load, safe_source)
                 if isinstance(source, io.BytesIO):
                     assert not source.closed
             return
