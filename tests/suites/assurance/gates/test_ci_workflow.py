@@ -6,8 +6,12 @@ import json
 import os
 import re
 import shlex
+import shutil
 import subprocess
+import sys
+import tomllib
 from typing import TYPE_CHECKING
+import zipfile
 
 import pytest
 
@@ -43,6 +47,26 @@ def _sync(job):
         for step in job["steps"]
         if step.get("run", "").startswith("uv sync ")
     )
+
+
+def _uv_runs(script):
+    # Bash removes escaped newlines before tokenizing a logical command.
+    for line in re.sub(r"\\\r?\n", "", script).splitlines():
+        if line.strip().startswith("uv run "):
+            yield shlex.split(line)
+
+
+@pytest.mark.parametrize(
+    ("command", "preserved"),
+    [
+        ("uv run --no-sync mypy \\\n  --python-version 3.13", True),
+        ("uv run \\\n  --no-sync mypy --python-version 3.13", True),
+        ("uv run mypy \\\n  --python-version 3.13", False),
+    ],
+)
+def test_uv_environment_check_reads_complete_shell_commands(command, preserved):
+    (tokens,) = _uv_runs(command)
+    assert ("--no-sync" in tokens) is preserved
 
 
 def test_every_owned_group_runs_in_every_supported_dependency_environment(workflow):
@@ -115,9 +139,8 @@ def test_test_commands_use_the_selected_group_and_preserve_its_resolved_environm
     # A later uv invocation must not replace floors, base, or native-only extras.
     for candidate in workflow["jobs"].values():
         for step in candidate.get("steps", []):
-            for line in step.get("run", "").splitlines():
-                if line.strip().startswith("uv run "):
-                    assert "--no-sync" in shlex.split(line)
+            for tokens in _uv_runs(step.get("run", "")):
+                assert "--no-sync" in tokens
 
 
 def test_cached_dependency_setup_rebuilds_source_before_running_tests(workflow):
@@ -156,6 +179,152 @@ def test_cached_dependency_setup_rebuilds_source_before_running_tests(workflow):
         if "-m pytest " in step.get("run", "")
     )
     assert rebuild < execution
+
+
+def test_floor_install_restores_canonical_lock_without_replacing_active_versions(
+    workflow, tmp_path: Path
+):
+    job = workflow["jobs"]["test"]
+    steps = job["steps"]
+    sync = next(
+        index for index, step in enumerate(steps) if step.get("run") == _sync(job)
+    )
+    restore = steps[sync + 1]
+    assert restore["if"] == "matrix.environment.id == 'floors'"
+    command = shlex.split(restore["run"])
+    assert command == ["git", "restore", "--source=HEAD", "--", "uv.lock"]
+    assert not restore.get("continue-on-error", False)
+    assert sync + 1 < next(
+        index
+        for index, step in enumerate(steps)
+        if step.get("run", "").startswith("uv build ")
+    )
+    assert sync + 1 < next(
+        index
+        for index, step in enumerate(steps)
+        if "tests.tooling.ci run " in step.get("run", "")
+    )
+
+    git, uv = shutil.which("git"), shutil.which("uv")
+    assert git is not None, "floor workflow probe requires git"
+    assert uv is not None, "floor workflow probe requires uv"
+    source = tmp_path / "source"
+    source.mkdir()
+    wheels = source / "wheels"
+    wheels.mkdir()
+    for version in ("1.0", "2.0"):
+        info = f"ci_floor_probe-{version}.dist-info"
+        files = {
+            "ci_floor_probe.py": f"VERSION = {version!r}\n",
+            f"{info}/METADATA": (
+                f"Metadata-Version: 2.3\nName: ci-floor-probe\nVersion: {version}\n\n"
+            ),
+            f"{info}/WHEEL": (
+                "Wheel-Version: 1.0\nRoot-Is-Purelib: true\nTag: py3-none-any\n\n"
+            ),
+        }
+        files[f"{info}/RECORD"] = "".join(
+            f"{name},,\n" for name in (*files, f"{info}/RECORD")
+        )
+        with zipfile.ZipFile(
+            wheels / f"ci_floor_probe-{version}-py3-none-any.whl", "w"
+        ) as wheel:
+            for name, data in files.items():
+                wheel.writestr(name, data)
+    (source / "pyproject.toml").write_text(
+        '[project]\nname = "floor-workflow-probe"\nversion = "0"\n'
+        'requires-python = ">=3.12"\ndependencies = ["ci-floor-probe>=1.0"]\n'
+        "[tool.uv]\npackage = false\n"
+    )
+    environment = {
+        name: value
+        for name, value in os.environ.items()
+        if not name.startswith("UV_")
+        and name not in {"VIRTUAL_ENV", "CONDA_PREFIX", "PYTHONHOME", "PYTHONPATH"}
+    }
+    environment.update(
+        GIT_CONFIG_NOSYSTEM="1",
+        GIT_CONFIG_GLOBAL=os.devnull,
+        UV_PYTHON_DOWNLOADS="never",
+    )
+
+    def execute(*arguments):
+        return subprocess.run(  # noqa: S603 — fixed tools and synthetic offline inputs
+            arguments,
+            cwd=source,
+            env=environment,
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=30,
+        )
+
+    options = (
+        "--offline",
+        "--no-index",
+        "--find-links",
+        str(wheels),
+        "--python",
+        sys.executable,
+    )
+    execute(uv, "lock", *options)
+    lock = source / "uv.lock"
+    canonical = lock.read_bytes()
+    assert (
+        next(
+            p["version"]
+            for p in tomllib.loads(canonical.decode())["package"]
+            if p["name"] == "ci-floor-probe"
+        )
+        == "2.0"
+    )
+    execute(git, "init", "--quiet")
+    execute(git, "add", "uv.lock")
+    execute(
+        git,
+        "-c",
+        "user.name=CI probe",
+        "-c",
+        "user.email=ci@example.invalid",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "commit",
+        "--quiet",
+        "-m",
+        "canonical lock",
+    )
+    execute(uv, "sync", *options, "--resolution", "lowest-direct")
+    assert lock.read_bytes() != canonical
+    assert (
+        next(
+            p["version"]
+            for p in tomllib.loads(lock.read_text())["package"]
+            if p["name"] == "ci-floor-probe"
+        )
+        == "1.0"
+    )
+    active = source / ".venv"
+    python = active / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
+    probe = (
+        str(python),
+        "-I",
+        "-c",
+        "from ci_floor_probe import VERSION; print(VERSION)",
+    )
+    assert execute(*probe).stdout.strip() == "1.0"
+    installed = {
+        p.relative_to(active): p.read_bytes()
+        for p in active.rglob("*")
+        if p.is_file() and not p.is_symlink()
+    }
+    execute(*command)
+    assert lock.read_bytes() == canonical
+    assert {
+        p.relative_to(active): p.read_bytes()
+        for p in active.rglob("*")
+        if p.is_file() and not p.is_symlink()
+    } == installed
+    assert execute(*probe).stdout.strip() == "1.0"
 
 
 def test_only_artifact_group_primes_offline_build_dependencies(workflow):

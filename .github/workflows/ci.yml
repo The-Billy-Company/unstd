@@ -171,6 +171,11 @@ jobs:
           python-version: ${{ matrix.environment.python }}
       - name: Install test environment & rebuild local extensions
         run: uv sync ${{ matrix.environment.sync }} --group dev --reinstall-package unstd --python ${{ matrix.environment.python }}
+      - name: Restore audited lock after installing dependency floors
+        if: matrix.environment.id == 'floors'
+        # Keep lowest-direct packages installed while release/export gates
+        # inspect the canonical highest-resolution lock. Tests use --no-sync.
+        run: git restore --source=HEAD -- uv.lock
       - name: Show resolved backend versions
         if: matrix.environment.id == 'floors' || matrix.environment.id == 'fallback'
         run: uv pip list

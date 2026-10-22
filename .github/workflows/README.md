@@ -16,3 +16,8 @@ and CI grouping in [`ci.py`](../../tests/tooling/ci.py). The
 [test guide](../../tests/README.md) documents local commands and retained reports;
 the campaign READMEs cover budgets, replay, and failure artifacts. Action pins,
 permissions, matrices, and schedule times are defined in the YAML files.
+
+The dependency-floor job restores the committed `uv.lock` immediately after
+installing its lowest-direct environment. Tests retain those installed versions
+with `--no-sync`, while release/export checks inspect the audited canonical lock
+instead of rejecting a temporary lock created with another resolution policy.
