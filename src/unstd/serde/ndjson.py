@@ -32,6 +32,7 @@ Conventions:
 
 from __future__ import annotations
 
+import errno
 import io
 from typing import TYPE_CHECKING, Protocol, overload
 
@@ -93,7 +94,7 @@ class _Writer(Protocol):
     """A binary sink, including gzip streams and write-only destinations."""
 
     def write(self, data: bytes, /) -> object:
-        """Accept a newline-terminated encoded record."""
+        """Write a prefix and return its count, or acknowledge a full write with None."""
         ...
 
 
@@ -117,6 +118,25 @@ def _encoder[T](codec: _Codec[T] | None) -> Callable[[T], bytes]:
         return encode(row) + b"\n"
 
     return line
+
+
+def _write_all[T: (str, bytes)](
+    write: Callable[[T], object], data: T, *, require_count: bool
+) -> None:
+    """Finish a record before consuming another, without spinning on a full sink."""
+    while data:
+        written = write(data)
+        if written is None and not require_count:
+            # Generic write-only sinks, including codecs.StreamWriter, may
+            # acknowledge a successful whole write without returning a count.
+            return
+        if written is None or written == 0:
+            msg = "NDJSON sink made no write progress"
+            raise BlockingIOError(errno.EAGAIN, msg)
+        if not isinstance(written, int) or not 0 < written <= len(data):
+            msg = "NDJSON sink returned an invalid write count"
+            raise OSError(msg)
+        data = data[written:]
 
 
 def dumps[T](rows: Iterable[T], *, codec: _Codec[T] | None = None) -> str:
@@ -285,17 +305,21 @@ def dump[T](
     The ``jsonx.dump(obj, fp)`` twin, plural and counting. Streams row by row (no
     full-corpus buffering) and picks ``bytes`` vs ``str`` output from whether *fp*
     is a text handle — so it serves ``open(p, "w")`` and ``open(p, "wb")`` /
-    ``gzip.open`` alike.
+    ``gzip.open`` alike. Short writes finish the current record before advancing.
+    A zero count raises ``BlockingIOError``. Standard ``io.IOBase`` streams also
+    use None for would-block; generic write-only sinks may use None to acknowledge
+    a complete write. Any prefix already written remains in the caller-owned sink.
     """
     n = 0
     encode = _encoder(codec)
+    require_count = isinstance(fp, io.IOBase)
     if isinstance(fp, io.TextIOBase):
         for row in rows:
-            fp.write(encode(row).decode())
+            _write_all(fp.write, encode(row).decode(), require_count=require_count)
             n += 1
     else:
         for row in rows:
-            fp.write(encode(row))
+            _write_all(fp.write, encode(row), require_count=require_count)
             n += 1
     return n
 

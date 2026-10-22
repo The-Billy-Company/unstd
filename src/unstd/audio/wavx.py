@@ -143,7 +143,10 @@ def read(path_or_file: PathOrFile, *, dtype: str = "float32") -> tuple[Samples, 
     with contextlib.closing(wave.open(path_or_file, "rb")) as w:
         nchannels, sampwidth = w.getnchannels(), w.getsampwidth()
         samplerate, nframes = w.getframerate(), w.getnframes()
-        raw = w.readframes(nframes)
+        # getnframes() floors the data chunk's byte length. Read one extra frame
+        # so partial sample/channel bytes reach the shared alignment check too;
+        # wave still bounds the read to this data chunk, excluding later chunks.
+        raw = w.readframes(nframes + 1)
     reader = _read_numpy if _HAVE_NUMPY else _read_array
     return reader(raw, nchannels, sampwidth, dtype), samplerate
 
@@ -163,8 +166,14 @@ def blocks(
     a ``wave.readframes(blocksize)`` loop decoded through the same helpers
     :func:`read` uses on its own fallback path — identical numbers, one
     chunk at a time instead of the whole file at once.
+
+    ``blocksize`` must be positive; nonpositive sizes raise ``ValueError``
+    before the input is opened or read.
     """
     _check_dtype(dtype)
+    if blocksize <= 0:
+        msg = "blocksize must be positive"
+        raise ValueError(msg)
     if _HAVE_SOUNDFILE:
         yield from _sf.blocks(
             path_or_file, blocksize=blocksize, dtype=dtype, always_2d=False

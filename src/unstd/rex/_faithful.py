@@ -1,8 +1,9 @@
 """Prove native semantics from Python's compiler, and own UTF-8 recovery.
 
-The backend's Unicode tables describe its own language, not Python's. Only
-compiler operations whose semantics survive that boundary may run natively.
-Unknown operations decline; no spelling or substring of a pattern decides this.
+The backend's Unicode tables describe its own language, not Python's. Compiler
+operations prove semantic eligibility, while an escape-aware class scanner
+rejects native set extensions that Python parses as literals. Unknown operations
+decline; documented POSIX bracket expressions retain their native meaning.
 """
 
 from __future__ import annotations
@@ -28,6 +29,69 @@ if TYPE_CHECKING:
 _SURROGATES = re.compile("[\ud800-\udfff]")
 
 
+_INLINE_FLAGS = re.compile(r"\(\?([aiLmsux]*)(?:-([imsx]+))?([:)])")
+_POSIX_TOKEN = re.compile(r"\[:\^?[A-Za-z]+:\]|\[([.=])(?:\\.|[^\[\\])*?\1\]")
+
+
+def _comment_end(source: str, index: int, terminator: str) -> int:
+    """Skip comment tokens, including escaped terminators and physical newlines."""
+    while index < len(source):
+        char = source[index]
+        index += 2 if char == "\\" else 1
+        if char == terminator:
+            break
+    return index
+
+
+def _faithful_classes(pattern: str | bytes, flags: int, *, faithful: bool) -> bool:
+    """Decline native nested sets and operators that Python treats as literals."""
+    source = pattern.decode("latin1") if isinstance(pattern, bytes) else pattern
+    verbose = bool(flags & re.VERBOSE)
+    scopes: list[bool] = []
+    in_class = False
+    first = 0
+    index = 0
+    while index < len(source):
+        char = source[index]
+        if char == "\\":
+            index += 2
+            continue
+        if in_class:
+            if char == "[":
+                posix = _POSIX_TOKEN.match(source, index)
+                if faithful or posix is None:
+                    return False
+                index = posix.end()
+                continue
+            if char in "&-|~" and source[index : index + 2] == char * 2:
+                return False
+            if char == "]" and index != first:
+                in_class = False
+        elif verbose and char == "#":
+            index = _comment_end(source, index + 1, "\n")
+            continue
+        elif source.startswith("(?#", index):
+            index = _comment_end(source, index + 3, ")")
+            continue
+        elif char == "(":
+            scoped = _INLINE_FLAGS.match(source, index)
+            if scoped is not None:
+                added, removed, end = scoped.groups()
+                if end == ":":
+                    scopes.append(verbose)
+                    verbose = (verbose or "x" in added) and "x" not in (removed or "")
+                index = scoped.end()
+                continue
+            scopes.append(verbose)
+        elif char == ")":
+            verbose = scopes.pop()
+        elif char == "[":
+            in_class = True
+            first = index + 1 + (source[index + 1 : index + 2] == "^")
+        index += 1
+    return True
+
+
 def native_profile(pattern: str | bytes, flags: int) -> bool | None:
     """Return the ASCII-subject requirement, or decline unrepresentable semantics."""
     # The authoritative compile already emitted any syntax warnings.
@@ -36,7 +100,13 @@ def native_profile(pattern: str | bytes, flags: int) -> bool | None:
     if parsed.getwidth()[0] == 0:
         return None
     byte_transport = isinstance(pattern, str) and bool(flags & re.ASCII)
-    return _profile(parsed, parsed.state.flags, byte_transport)
+    profile = _profile(parsed, parsed.state.flags, byte_transport)
+    return (
+        profile
+        if profile is not None
+        and _faithful_classes(pattern, parsed.state.flags, faithful=False)
+        else None
+    )
 
 
 def _profile(nodes: Any, flags: int, byte_transport: bool) -> bool | None:
