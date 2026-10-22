@@ -27,6 +27,7 @@ if TYPE_CHECKING:
         RoundTripConstructor,
         SafeConstructor,
     )
+    from ruamel.yaml.emitter import RoundTripEmitter
     from ruamel.yaml.error import YAMLError
     from ruamel.yaml.nodes import MappingNode, Node, ScalarNode
     from ruamel.yaml.representer import RoundTripRepresenter
@@ -41,6 +42,7 @@ else:
             RoundTripConstructor,
             SafeConstructor,
         )
+        from ruamel.yaml.emitter import RoundTripEmitter
         from ruamel.yaml.error import YAMLError
         from ruamel.yaml.representer import RoundTripRepresenter
         from ruamel.yaml.scalarfloat import ScalarFloat
@@ -146,6 +148,14 @@ if _HAVE_YAML:
         "tag:yaml.org,2002:str", RoundTripConstructor.construct_scalar
     )
 
+    class _Emitter(RoundTripEmitter):
+        """Escape NEL, which the backend reader folds outside double quotes."""
+
+        @override
+        def choose_scalar_style(self) -> str | None:
+            style: str | None = super().choose_scalar_style()
+            return '"' if "\x85" in self.event.value else style
+
     class _Representer(RoundTripRepresenter):
         """Keep parsed float spellings only while they still denote the value."""
 
@@ -172,6 +182,7 @@ def _engine(*, editable: bool = False) -> _YAML:
     engine = _YAML(typ="rt" if editable else "safe", pure=True)
     engine.Constructor = _Constructor if editable else _SafeConstructor
     if editable:
+        engine.Emitter = _Emitter
         engine.Representer = _Representer
         engine.preserve_quotes = True
     engine.allow_duplicate_keys = False
