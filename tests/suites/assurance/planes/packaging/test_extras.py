@@ -12,6 +12,7 @@ import pytest
 from tests.support.anchors import REPO_ROOT
 from tests.support.packaging import (
     CONSUMER_PROVENANCE,
+    _quarantine_args,
     create_consumer,
     install_extra_closure,
 )
@@ -49,6 +50,24 @@ _BACKEND_MODULES = {
     "ruamel-yaml": "ruamel.yaml",
     "zlib-ng": "zlib_ng",
 }
+
+
+def test_isolated_commands_preserve_the_frozen_resolver_policy(tmp_path: Path) -> None:
+    (tmp_path / "pyproject.toml").write_text(
+        '[tool.uv]\nexclude-newer = "P3D"\n'
+        "[tool.uv.exclude-newer-package]\n"
+        'example = "P1D"\nengine = false\n',
+        encoding="utf-8",
+    )
+    assert _quarantine_args(tmp_path) == [
+        "--exclude-newer",
+        "P3D",
+        "--exclude-newer-package",
+        "engine=false",
+        "--exclude-newer-package",
+        "example=P1D",
+    ]
+
 
 _EXTRA_CASES = {
     "serde": """

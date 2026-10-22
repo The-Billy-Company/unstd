@@ -242,6 +242,21 @@ def create_consumer(root: Path, wheel: Path) -> Consumer:
     return Consumer(root, python, wheel)
 
 
+def _quarantine_args(source: Path) -> list[str]:
+    """Carry the frozen project's release quarantine into isolated uv commands."""
+    with (source / "pyproject.toml").open("rb") as stream:
+        policy = tomllib.load(stream)["tool"]["uv"]
+    args = ["--exclude-newer", policy["exclude-newer"]]
+    for name, value in sorted(policy.get("exclude-newer-package", {}).items()):
+        args.extend(
+            [
+                "--exclude-newer-package",
+                f"{name}={'false' if value is False else value}",
+            ]
+        )
+    return args
+
+
 def install_extra_closure(
     artifacts: Artifacts, consumer: Consumer, extra: str
 ) -> dict[str, str]:
@@ -254,6 +269,7 @@ def install_extra_closure(
     # with the default highest strategy.
     resolution = lock_options.get("resolution-mode")
     resolver_args = ["--resolution", resolution] if resolution is not None else []
+    quarantine_args = _quarantine_args(artifacts.source)
     uv = uv_executable()
     checked_command(
         [
@@ -264,10 +280,7 @@ def install_extra_closure(
             "--no-config",
             "--no-sources",
             *resolver_args,
-            "--exclude-newer",
-            "P2D",
-            "--exclude-newer-package",
-            "irregex=false",
+            *quarantine_args,
             "--no-dev",
             "--no-default-groups",
             "--no-emit-project",
@@ -302,8 +315,7 @@ def install_extra_closure(
                 "--no-config",
                 "--no-deps",
                 "--require-hashes",
-                "--exclude-newer",
-                "P2D",
+                *quarantine_args,
                 "--link-mode",
                 "copy",
                 "--python",

@@ -21,6 +21,8 @@ Rust/Cargo toolchain; it has no crate dependencies and builds with `--locked --o
 Prepare Python build dependencies using the project's two-day quarantine before
 running this offline lane. Build commands explicitly use `--offline`, isolated
 build environments, no automatic interpreter downloads and `--exclude-newer P2D`.
+Per-extra exports and installs copy quarantine settings from the frozen project
+manifest, including all per-package exceptions, rather than duplicating policy.
 They never fall back to the network or an unisolated builder. Each command has a
 90-second ceiling; product consumer processes have a 30-second ceiling.
 For the required per-extra runtime matrix, prepare the locked artifact cache with
