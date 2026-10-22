@@ -98,6 +98,72 @@ jobs:
       # environment `test` already covers and pass no matter what the floors say.
       - run: uv run --no-sync --python 3.13 pytest --require-extras -q
 
+  native:
+    # Optional compiler failures are a consumer fallback, never a reason for
+    # native parity tests to disappear behind importorskip in CI. Serde alone
+    # leaves text's dependency-free implementation under test as well.
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13", "3.14"]
+    env:
+      CIBUILDWHEEL: "1"
+      PYTHONMALLOC: debug
+      PYTHONFAULTHANDLER: "1"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          enable-cache: false
+          version: "latest-known"
+          python-version: ${{ matrix.python-version }}
+      - run: uv sync --locked --extra serde --group dev --python ${{ matrix.python-version }}
+      - name: Every native module must import
+        run: >-
+          uv run --no-sync python -c
+          "import unstd.serde._json_native, unstd.clone._clone_native, unstd.text._text_native"
+      - name: Native compatibility with the debug allocator
+        run: >-
+          uv run --no-sync python -m pytest
+          tests/suites/product/clone tests/suites/product/text
+          tests/suites/product/serde -q
+
+  native-sanitizers:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONFAULTHANDLER: "1"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          enable-cache: false
+          version: "latest-known"
+          python-version: "3.13"
+      - run: uv sync --locked --extra serde --group dev --no-install-project --python 3.13
+      - name: Build our native modules with address and undefined behavior checks
+        env:
+          CC: gcc
+          CFLAGS: -O1 -g -fsanitize=address,undefined -fno-omit-frame-pointer
+          LDFLAGS: -fsanitize=address,undefined
+          CIBUILDWHEEL: "1"
+        run: uv pip install --python .venv/bin/python --no-deps --reinstall --editable .
+      - name: Native compatibility under ASan and UBSan
+        env:
+          # CPython and imported third-party runtimes own process-lifetime
+          # allocations. Bounds, use-after-free and UB checks remain fatal.
+          ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
+          UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
+          PYTHONMALLOC: malloc
+        run: |
+          export LD_PRELOAD="$(gcc -print-file-name=libasan.so)"
+          .venv/bin/python -c "import unstd.serde._json_native, unstd.clone._clone_native, unstd.text._text_native"
+          .venv/bin/python -m pytest tests/suites/product/clone tests/suites/product/text tests/suites/product/serde -q
+
   test-fallback:
     # A base install (no optional extras) is a load-bearing, documented contract
     # on nearly every module: each accelerated backend degrades to a
