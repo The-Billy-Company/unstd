@@ -1,0 +1,5015 @@
+{
+  "runs": 7,
+  "variants": {
+    "stdlib": {
+      "metadata": {
+        "python": "3.13.14 (main, Aug  5 2026, 15:33:38) [Clang 22.1.3 ]",
+        "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+        "machine": "arm64",
+        "zlib_version": "1.2.12",
+        "zlib_runtime_version": "1.2.12",
+        "versions": {
+          "unstd": "3.1.2",
+          "zlib-ng": "1.0.0"
+        },
+        "sources": {
+          "/Users/griffinstrier/.local/share/uv/python/cpython-3.13.14-macos-aarch64-none/lib/python3.13/gzip.py": "c397e928174259f77190fb7ab15421196eadec4c0b3f33ef1b57ec5a8052eb56"
+        },
+        "compression_native_calls": {
+          "zlib.compress": 1
+        },
+        "compression_output_sha256": "cafb6a9903e91900be9696640906228ca3401f9968b87401cc73f64e288a3194"
+      },
+      "cases": [
+        {
+          "name": "source_record_capture.json",
+          "operation": "decompress",
+          "fixture": "/Users/griffinstrier/Billy-Company/billy/services/ai/tests/support/fixtures/source_record_capture.json",
+          "raw_bytes": 18255,
+          "compressed_bytes": 3693,
+          "raw_sha256": "3598d59636d6636a6e5e7f7bff22621eab6b150a7b916e7289053a624e9c1db8",
+          "compressed_sha256": "cafb6a9903e91900be9696640906228ca3401f9968b87401cc73f64e288a3194",
+          "output_bytes": 18255,
+          "output_sha256": "3598d59636d6636a6e5e7f7bff22621eab6b150a7b916e7289053a624e9c1db8",
+          "identical_output": true,
+          "native_calls": {
+            "zlib.decompressobj": 1,
+            "zlib.decompress": 1,
+            "zlib.crc32": 1
+          },
+          "measurements": [
+            {
+              "per_op_ns": 13276.611328125,
+              "iters": 512,
+              "rounds": 2,
+              "spread": 0.07361026829223442,
+              "samples_ns": [
+                13276.611328125,
+                14253.90625
+              ],
+              "cpu_samples_ns": [
+                null,
+                14048.013671875
+              ]
+            },
+            {
+              "per_op_ns": 14548.5671875,
+              "iters": 640,
+              "rounds": 2,
+              "spread": 1.5804687811288978,
+              "samples_ns": [
+                14548.5671875,
+                37542.1234375
+              ],
+              "cpu_samples_ns": [
+                null,
+                13763.60625
+              ]
+            },
+            {
+              "per_op_ns": 21926.106770833332,
+              "iters": 384,
+              "rounds": 2,
+              "spread": 3.1257627269623054,
+              "samples_ns": [
+                21926.106770833332,
+                90461.9140625
+              ],
+              "cpu_samples_ns": [
+                null,
+                14130.640625
+              ]
+            },
+            {
+              "per_op_ns": 13638.103515625,
+              "iters": 512,
+              "rounds": 2,
+              "spread": 0.002899877397153454,
+              "samples_ns": [
+                13677.65234375,
+                13638.103515625
+              ],
+              "cpu_samples_ns": [
+                null,
+                13644.61328125
+              ]
+            },
+            {
+              "per_op_ns": 13778.4296875,
+              "iters": 384,
+              "rounds": 2,
+              "spread": 4.706178532001163e-05,
+              "samples_ns": [
+                13779.078125,
+                13778.4296875
+              ],
+              "cpu_samples_ns": [
+                null,
+                13783.528645833334
+              ]
+            },
+            {
+              "per_op_ns": 13590.684491978609,
+              "iters": 374,
+              "rounds": 2,
+              "spread": 0.2504221985962389,
+              "samples_ns": [
+                13590.684491978609,
+                16994.0935828877
+              ],
+              "cpu_samples_ns": [
+                null,
+                14390.264705882353
+              ]
+            },
+            {
+              "per_op_ns": 14070.745535714286,
+              "iters": 672,
+              "rounds": 2,
+              "spread": 0.030431997492264058,
+              "samples_ns": [
+                14070.745535714286,
+                14498.94642857143
+              ],
+              "cpu_samples_ns": [
+                null,
+                14166.108630952382
+              ]
+            }
+          ],
+          "median_ns": 13778.4296875
+        },
+        {
+          "name": "purchase_capture.json",
+          "operation": "decompress",
+          "fixture": "/Users/griffinstrier/Billy-Company/billy/services/ai/tests/support/fixtures/purchase_capture.json",
+          "raw_bytes": 9575,
+          "compressed_bytes": 1736,
+          "raw_sha256": "0ec6ec5e123ecac16323fc2e49295a296b516b3832412296ede76059d26b2188",
+          "compressed_sha256": "0cb49e05b356f201b69ba403047386d325ca05fcd3ec9f71bedaf28ed8b85913",
+          "output_bytes": 9575,
+          "output_sha256": "0ec6ec5e123ecac16323fc2e49295a296b516b3832412296ede76059d26b2188",
+          "identical_output": true,
+          "native_calls": {
+            "zlib.decompressobj": 1,
+            "zlib.decompress": 1,
+            "zlib.crc32": 1
+          },
+          "measurements": [
+            {
+              "per_op_ns": 7866.90234375,
+              "iters": 1024,
+              "rounds": 2,
+              "spread": 0.8469875025261591,
+              "samples_ns": [
+                7866.90234375,
+                14530.0703125
+              ],
+              "cpu_samples_ns": [
+                null,
+                8666.3818359375
+              ]
+            },
+            {
+              "per_op_ns": 8137.623263888889,
+              "iters": 1152,
+              "rounds": 2,
+              "spread": 0.002435638989083413,
+              "samples_ns": [
+                8137.623263888889,
+                8157.443576388889
+              ],
+              "cpu_samples_ns": [
+                null,
+                8159.144097222223
+              ]
+            },
+            {
+              "per_op_ns": 29866.048828125,
+              "iters": 1024,
+              "rounds": 2,
+              "spread": 0.36279064261997435,
+              "samples_ns": [
+                40701.171875,
+                29866.048828125
+              ],
+              "cpu_samples_ns": [
+                null,
+                9241.2109375
+              ]
+            },
+            {
+              "per_op_ns": 8566.447265625,
+              "iters": 1024,
+              "rounds": 2,
+              "spread": 2.5422386258524527,
+              "samples_ns": [
+                8566.447265625,
+                30344.400390625
+              ],
+              "cpu_samples_ns": [
+                null,
+                8606.689453125
+              ]
+            },
+            {
+              "per_op_ns": 8768.519097222223,
+              "iters": 576,
+              "rounds": 2,
+              "spread": 8.736197417093624,
+              "samples_ns": [
+                8768.519097222223,
+                85372.03298611111
+              ],
+              "cpu_samples_ns": [
+                null,
+                9069.083333333334
+              ]
+            },
+            {
+              "per_op_ns": 8231.9,
+              "iters": 640,
+              "rounds": 2,
+              "spread": 1.6511685865353078,
+              "samples_ns": [
+                8231.9,
+                21824.1546875
+              ],
+              "cpu_samples_ns": [
+                null,
+                8326.7578125
+              ]
+            },
+            {
+              "per_op_ns": 9403.18984375,
+              "iters": 1280,
+              "rounds": 2,
+              "spread": 1.8506956125177934,
+              "samples_ns": [
+                26805.63203125,
+                9403.18984375
+              ],
+              "cpu_samples_ns": [
+                null,
+                8732.94296875
+              ]
+            }
+          ],
+          "median_ns": 8566.447265625
+        },
+        {
+          "name": "dataset-100-decompress",
+          "operation": "decompress",
+          "fixture": null,
+          "raw_bytes": 991,
+          "compressed_bytes": 219,
+          "raw_sha256": "febd577beb38f231e6d237199127f5a03d9ca3000cbb50d09942c0c0d7f8ba4e",
+          "compressed_sha256": "03428019a441118f4ce2dd23f32b7ed2b361c822e293961c7360bb5db0ed9fb7",
+          "output_bytes": 991,
+          "output_sha256": "febd577beb38f231e6d237199127f5a03d9ca3000cbb50d09942c0c0d7f8ba4e",
+          "identical_output": true,
+          "native_calls": {
+            "zlib.decompressobj": 1,
+            "zlib.decompress": 1,
+            "zlib.crc32": 1
+          },
+          "measurements": [
+            {
+              "per_op_ns": 3294.175091911765,
+              "iters": 2176,
+              "rounds": 2,
+              "spread": 2.362089109774174,
+              "samples_ns": [
+                3294.175091911765,
+                11075.310202205883
+              ],
+              "cpu_samples_ns": [
+                null,
+                3587.9099264705883
+              ]
+            },
+            {
+              "per_op_ns": 3062.744140625,
+              "iters": 3072,
+              "rounds": 2,
+              "spread": 1.397431433506045,
+              "samples_ns": [
+                3062.744140625,
+                7342.719075520833
+              ],
+              "cpu_samples_ns": [
+                null,
+                3182.0341796875
+              ]
+            },
+            {
+              "per_op_ns": 3243.1903125,
+              "iters": 3200,
+              "rounds": 2,
+              "spread": 2.5393671489945904,
+              "samples_ns": [
+                11478.84125,
+                3243.1903125
+              ],
+              "cpu_samples_ns": [
+                null,
+                3244.0234375
+              ]
+            },
+            {
+              "per_op_ns": 3337.654119318182,
+              "iters": 2816,
+              "rounds": 2,
+              "spread": 0.0011082225731404555,
+              "samples_ns": [
+                3337.654119318182,
+                3341.3529829545455
+              ],
+              "cpu_samples_ns": [
+                null,
+                3342.1374289772725
+              ]
+            },
+            {
+              "per_op_ns": 3268.1751302083335,
+              "iters": 1536,
+              "rounds": 2,
+              "spread": 0.019264860355260854,
+              "samples_ns": [
+                3268.1751302083335,
+                3331.1360677083335
+              ],
+              "cpu_samples_ns": [
+                null,
+                3331.8684895833335
+              ]
+            },
+            {
+              "per_op_ns": 3340.79296875,
+              "iters": 1536,
+              "rounds": 2,
+              "spread": 0.009987414882865649,
+              "samples_ns": [
+                3374.1588541666665,
+                3340.79296875
+              ],
+              "cpu_samples_ns": [
+                null,
+                3341.6341145833335
+              ]
+            },
+            {
+              "per_op_ns": 3320.401278409091,
+              "iters": 2816,
+              "rounds": 2,
+              "spread": 0.7279574342932007,
+              "samples_ns": [
+                5737.512073863636,
+                3320.401278409091
+              ],
+              "cpu_samples_ns": [
+                null,
+                3321.2151988636365
+              ]
+            }
+          ],
+          "median_ns": 3294.175091911765
+        },
+        {
+          "name": "dataset-100-stream",
+          "operation": "stream",
+          "fixture": null,
+          "raw_bytes": 991,
+          "compressed_bytes": 219,
+          "raw_sha256": "febd577beb38f231e6d237199127f5a03d9ca3000cbb50d09942c0c0d7f8ba4e",
+          "compressed_sha256": "03428019a441118f4ce2dd23f32b7ed2b361c822e293961c7360bb5db0ed9fb7",
+          "output_bytes": 991,
+          "output_sha256": "febd577beb38f231e6d237199127f5a03d9ca3000cbb50d09942c0c0d7f8ba4e",
+          "identical_output": true,
+          "native_calls": {
+            "zlib.crc32": 4,
+            "zlib.decompress": 1
+          },
+          "measurements": [
+            {
+              "per_op_ns": 10007.8125,
+              "iters": 640,
+              "rounds": 2,
+              "spread": 0.00863903200624512,
+              "samples_ns": [
+                10007.8125,
+                10094.2703125
+              ],
+              "cpu_samples_ns": [
+                null,
+                10095.8984375
+              ]
+            },
+            {
+              "per_op_ns": 10023.645,
+              "iters": 800,
+              "rounds": 2,
+              "spread": 7.281065171402219,
+              "samples_ns": [
+                10023.645,
+                83006.4575
+              ],
+              "cpu_samples_ns": [
+                null,
+                11890.5725
+              ]
+            },
+            {
+              "per_op_ns": 9866.915364583334,
+              "iters": 768,
+              "rounds": 2,
+              "spread": 0.003629025925893179,
+              "samples_ns": [
+                9902.72265625,
+                9866.915364583334
+              ],
+              "cpu_samples_ns": [
+                null,
+                9869.736979166666
+              ]
+            },
+            {
+              "per_op_ns": 10209.147135416666,
+              "iters": 768,
+              "rounds": 2,
+              "spread": 1.9694593224392187,
+              "samples_ns": [
+                30315.647135416668,
+                10209.147135416666
+              ],
+              "cpu_samples_ns": [
+                null,
+                10152.506510416666
+              ]
+            },
+            {
+              "per_op_ns": 10011.23046875,
+              "iters": 512,
+              "rounds": 2,
+              "spread": 0.010201629029898063,
+              "samples_ns": [
+                10113.361328125,
+                10011.23046875
+              ],
+              "cpu_samples_ns": [
+                null,
+                10013.265625
+              ]
+            },
+            {
+              "per_op_ns": 10649.693080357143,
+              "iters": 896,
+              "rounds": 2,
+              "spread": 0.005039024326342402,
+              "samples_ns": [
+                10649.693080357143,
+                10703.357142857143
+              ],
+              "cpu_samples_ns": [
+                null,
+                10705.822544642857
+              ]
+            },
+            {
+              "per_op_ns": 10611.095982142857,
+              "iters": 896,
+              "rounds": 2,
+              "spread": 1.4172038367014312,
+              "samples_ns": [
+                10611.095982142857,
+                25649.18191964286
+              ],
+              "cpu_samples_ns": [
+                null,
+                10866.95424107143
+              ]
+            }
+          ],
+          "median_ns": 10023.645
+        },
+        {
+          "name": "upload-100-two-passes",
+          "operation": "upload",
+          "fixture": null,
+          "raw_bytes": 991,
+          "compressed_bytes": 219,
+          "raw_sha256": "febd577beb38f231e6d237199127f5a03d9ca3000cbb50d09942c0c0d7f8ba4e",
+          "compressed_sha256": "03428019a441118f4ce2dd23f32b7ed2b361c822e293961c7360bb5db0ed9fb7",
+          "output_bytes": 991,
+          "output_sha256": "febd577beb38f231e6d237199127f5a03d9ca3000cbb50d09942c0c0d7f8ba4e",
+          "identical_output": true,
+          "native_calls": {
+            "zlib.crc32": 8,
+            "zlib.decompress": 2
+          },
+          "measurements": [
+            {
+              "per_op_ns": 28677.302083333332,
+              "iters": 384,
+              "rounds": 2,
+              "spread": 1.0048279689838908,
+              "samples_ns": [
+                28677.302083333332,
+                57493.057291666664
+              ],
+              "cpu_samples_ns": [
+                null,
+                22497.830729166668
+              ]
+            },
+            {
+              "per_op_ns": 19587.995238095238,
+              "iters": 420,
+              "rounds": 2,
+              "spread": 15.297488087334347,
+              "samples_ns": [
+                19587.995238095238,
+                319235.11904761905
+              ],
+              "cpu_samples_ns": [
+                null,
+                21522.42142857143
+              ]
+            },
+            {
+              "per_op_ns": 19634.9296875,
+              "iters": 256,
+              "rounds": 2,
+              "spread": 0.0020640432329024606,
+              "samples_ns": [
+                19675.45703125,
+                19634.9296875
+              ],
+              "cpu_samples_ns": [
+                null,
+                19643.390625
+              ]
+            },
+            {
+              "per_op_ns": 19645.075520833332,
+              "iters": 384,
+              "rounds": 2,
+              "spread": 0.05208525408389958,
+              "samples_ns": [
+                20668.294270833332,
+                19645.075520833332
+              ],
+              "cpu_samples_ns": [
+                null,
+                19650.934895833332
+              ]
+            },
+            {
+              "per_op_ns": 19921.981770833332,
+              "iters": 384,
+              "rounds": 2,
+              "spread": 8.246426522419945,
+              "samples_ns": [
+                19921.981770833332,
+                184207.140625
+              ],
+              "cpu_samples_ns": [
+                null,
+                21519.421875
+              ]
+            },
+            {
+              "per_op_ns": 19241.96875,
+              "iters": 384,
+              "rounds": 2,
+              "spread": 0.19499382588731554,
+              "samples_ns": [
+                22994.033854166668,
+                19241.96875
+              ],
+              "cpu_samples_ns": [
+                null,
+                19248.9140625
+              ]
+            },
+            {
+              "per_op_ns": 20048.171875,
+              "iters": 64,
+              "rounds": 2,
+              "spread": 3.8820886879492598,
+              "samples_ns": [
+                97876.953125,
+                20048.171875
+              ],
+              "cpu_samples_ns": [
+                null,
+                20069.015625
+              ]
+            }
+          ],
+          "median_ns": 19645.075520833332
+        },
+        {
+          "name": "dataset-20001-decompress",
+          "operation": "decompress",
+          "fixture": null,
+          "raw_bytes": 248904,
+          "compressed_bytes": 47652,
+          "raw_sha256": "4cf6b5445411018f3da71d2320f62ee5e9e34cba753bd297c3f2560ed1b59e4f",
+          "compressed_sha256": "e96cea225377305fb2525937cf788b71611acbce8caaf3a8d1ebc963fd2b9dde",
+          "output_bytes": 248904,
+          "output_sha256": "4cf6b5445411018f3da71d2320f62ee5e9e34cba753bd297c3f2560ed1b59e4f",
+          "identical_output": true,
+          "native_calls": {
+            "zlib.decompressobj": 1,
+            "zlib.decompress": 1,
+            "zlib.crc32": 1
+          },
+          "measurements": [
+            {
+              "per_op_ns": 116940.21739130435,
+              "iters": 46,
+              "rounds": 2,
+              "spread": 0.08160208207463866,
+              "samples_ns": [
+                116940.21739130435,
+                126482.78260869565
+              ],
+              "cpu_samples_ns": [
+                null,
+                126502.71739130435
+              ]
+            },
+            {
+              "per_op_ns": 126060.31578947368,
+              "iters": 76,
+              "rounds": 2,
+              "spread": 0.05045788440454152,
+              "samples_ns": [
+                126060.31578947368,
+                132421.05263157896
+              ],
+              "cpu_samples_ns": [
+                null,
+                132439.68421052632
+              ]
+            },
+            {
+              "per_op_ns": 170680.1891891892,
+              "iters": 37,
+              "rounds": 2,
+              "spread": 0.49401559768728204,
+              "samples_ns": [
+                170680.1891891892,
+                254998.86486486485
+              ],
+              "cpu_samples_ns": [
+                null,
+                128649.75675675676
+              ]
+            },
+            {
+              "per_op_ns": 121580.28048780488,
+              "iters": 82,
+              "rounds": 2,
+              "spread": 2.5673048712268107,
+              "samples_ns": [
+                121580.28048780488,
+                433713.9268292683
+              ],
+              "cpu_samples_ns": [
+                null,
+                135455.29268292684
+              ]
+            },
+            {
+              "per_op_ns": 117345.08974358975,
+              "iters": 78,
+              "rounds": 2,
+              "spread": 0.030659515430982276,
+              "samples_ns": [
+                120942.83333333333,
+                117345.08974358975
+              ],
+              "cpu_samples_ns": [
+                null,
+                117364.84615384616
+              ]
+            },
+            {
+              "per_op_ns": 126447.62857142858,
+              "iters": 70,
+              "rounds": 2,
+              "spread": 7.745852094158915,
+              "samples_ns": [
+                126447.62857142858,
+                1105892.2571428572
+              ],
+              "cpu_samples_ns": [
+                null,
+                130629.15714285715
+              ]
+            },
+            {
+              "per_op_ns": 126769.14864864865,
+              "iters": 74,
+              "rounds": 2,
+              "spread": 1.9273169136876491,
+              "samples_ns": [
+                126769.14864864865,
+                371093.47297297296
+              ],
+              "cpu_samples_ns": [
+                null,
+                127957.77027027027
+              ]
+            }
+          ],
+          "median_ns": 126060.31578947368
+        },
+        {
+          "name": "dataset-20001-stream",
+          "operation": "stream",
+          "fixture": null,
+          "raw_bytes": 248904,
+          "compressed_bytes": 47652,
+          "raw_sha256": "4cf6b5445411018f3da71d2320f62ee5e9e34cba753bd297c3f2560ed1b59e4f",
+          "compressed_sha256": "e96cea225377305fb2525937cf788b71611acbce8caaf3a8d1ebc963fd2b9dde",
+          "output_bytes": 248904,
+          "output_sha256": "4cf6b5445411018f3da71d2320f62ee5e9e34cba753bd297c3f2560ed1b59e4f",
+          "identical_output": true,
+          "native_calls": {
+            "zlib.crc32": 7,
+            "zlib.decompress": 4
+          },
+          "measurements": [
+            {
+              "per_op_ns": 139670.25862068965,
+              "iters": 58,
+              "rounds": 2,
+              "spread": 0.10070405974663231,
+              "samples_ns": [
+                153735.62068965516,
+                139670.25862068965
+              ],
+              "cpu_samples_ns": [
+                null,
+                139727.72413793104
+              ]
+            },
+            {
+              "per_op_ns": 148926.38333333333,
+              "iters": 60,
+              "rounds": 2,
+              "spread": 0.0038609679972756114,
+              "samples_ns": [
+                148926.38333333333,
+                149501.38333333333
+              ],
+              "cpu_samples_ns": [
+                null,
+                149556.25
+              ]
+            },
+            {
+              "per_op_ns": 143113.8392857143,
+              "iters": 56,
+              "rounds": 2,
+              "spread": 0.02771582313031272,
+              "samples_ns": [
+                147080.35714285713,
+                143113.8392857143
+              ],
+              "cpu_samples_ns": [
+                null,
+                138780.5
+              ]
+            },
+            {
+              "per_op_ns": 136093.75,
+              "iters": 48,
+              "rounds": 2,
+              "spread": 0.0520921546115576,
+              "samples_ns": [
+                143183.16666666666,
+                136093.75
+              ],
+              "cpu_samples_ns": [
+                null,
+                136118.91666666666
+              ]
+            },
+            {
+              "per_op_ns": 605500.0,
+              "iters": 64,
+              "rounds": 2,
+              "spread": 0.8518828963666392,
+              "samples_ns": [
+                605500.0,
+                1121315.09375
+              ],
+              "cpu_samples_ns": [
+                null,
+                176536.453125
+              ]
+            },
+            {
+              "per_op_ns": 136413.2,
+              "iters": 60,
+              "rounds": 2,
+              "spread": 0.059531140192689076,
+              "samples_ns": [
+                136413.2,
+                144534.03333333333
+              ],
+              "cpu_samples_ns": [
+                null,
+                144590.96666666667
+              ]
+            },
+            {
+              "per_op_ns": 136151.20967741936,
+              "iters": 62,
+              "rounds": 2,
+              "spread": 0.07437070382491004,
+              "samples_ns": [
+                146276.87096774194,
+                136151.20967741936
+              ],
+              "cpu_samples_ns": [
+                null,
+                136174.7258064516
+              ]
+            }
+          ],
+          "median_ns": 139670.25862068965
+        },
+        {
+          "name": "upload-20001-two-passes",
+          "operation": "upload",
+          "fixture": null,
+          "raw_bytes": 248904,
+          "compressed_bytes": 47652,
+          "raw_sha256": "4cf6b5445411018f3da71d2320f62ee5e9e34cba753bd297c3f2560ed1b59e4f",
+          "compressed_sha256": "e96cea225377305fb2525937cf788b71611acbce8caaf3a8d1ebc963fd2b9dde",
+          "output_bytes": 248904,
+          "output_sha256": "4cf6b5445411018f3da71d2320f62ee5e9e34cba753bd297c3f2560ed1b59e4f",
+          "identical_output": true,
+          "native_calls": {
+            "zlib.crc32": 8,
+            "zlib.decompress": 2
+          },
+          "measurements": [
+            {
+              "per_op_ns": 269661.76470588235,
+              "iters": 34,
+              "rounds": 2,
+              "spread": 10.906804929923107,
+              "samples_ns": [
+                269661.76470588235,
+                3210810.029411765
+              ],
+              "cpu_samples_ns": [
+                null,
+                287156.8823529412
+              ]
+            },
+            {
+              "per_op_ns": 251206.73076923078,
+              "iters": 26,
+              "rounds": 2,
+              "spread": 7.549775659795984,
+              "samples_ns": [
+                251206.73076923078,
+                2147761.1923076925
+              ],
+              "cpu_samples_ns": [
+                null,
+                274666.6538461539
+              ]
+            },
+            {
+              "per_op_ns": 249471.08333333334,
+              "iters": 36,
+              "rounds": 2,
+              "spread": 14.454980030529034,
+              "samples_ns": [
+                249471.08333333334,
+                3855570.611111111
+              ],
+              "cpu_samples_ns": [
+                null,
+                259561.33333333334
+              ]
+            },
+            {
+              "per_op_ns": 256637.75,
+              "iters": 36,
+              "rounds": 2,
+              "spread": 0.17524063046496904,
+              "samples_ns": [
+                256637.75,
+                301611.1111111111
+              ],
+              "cpu_samples_ns": [
+                null,
+                273400.44444444444
+              ]
+            },
+            {
+              "per_op_ns": 266653.20588235295,
+              "iters": 34,
+              "rounds": 2,
+              "spread": 0.017339992934202155,
+              "samples_ns": [
+                266653.20588235295,
+                271276.9705882353
+              ],
+              "cpu_samples_ns": [
+                null,
+                271354.14705882355
+              ]
+            },
+            {
+              "per_op_ns": 271493.5,
+              "iters": 32,
+              "rounds": 2,
+              "spread": 7.612947915880122,
+              "samples_ns": [
+                271493.5,
+                2338359.375
+              ],
+              "cpu_samples_ns": [
+                null,
+                298907.5625
+              ]
+            },
+            {
+              "per_op_ns": 268498.6875,
+              "iters": 32,
+              "rounds": 2,
+              "spread": 12.797107364817194,
+              "samples_ns": [
+                268498.6875,
+                3704505.21875
+              ],
+              "cpu_samples_ns": [
+                null,
+                298341.15625
+              ]
+            }
+          ],
+          "median_ns": 266653.20588235295
+        },
+        {
+          "name": "dataset-40001-decompress",
+          "operation": "decompress",
+          "fixture": null,
+          "raw_bytes": 2017832,
+          "compressed_bytes": 201425,
+          "raw_sha256": "2badb266f2a9e4da80c83c9a1de0c6ca042421e93664c17681feb62e3b42e433",
+          "compressed_sha256": "cc33364e1c460d6d5a52882ca80602646dba5db92aa6987eefc95e19a7243df0",
+          "output_bytes": 2017832,
+          "output_sha256": "2badb266f2a9e4da80c83c9a1de0c6ca042421e93664c17681feb62e3b42e433",
+          "identical_output": true,
+          "native_calls": {
+            "zlib.decompressobj": 1,
+            "zlib.decompress": 1,
+            "zlib.crc32": 1
+          },
+          "measurements": [
+            {
+              "per_op_ns": 606119.75,
+              "iters": 8,
+              "rounds": 2,
+              "spread": 0.2843996586483117,
+              "samples_ns": [
+                778500.0,
+                606119.75
+              ],
+              "cpu_samples_ns": [
+                null,
+                606359.375
+              ]
+            },
+            {
+              "per_op_ns": 623044.6428571428,
+              "iters": 14,
+              "rounds": 2,
+              "spread": 0.014048752525759161,
+              "samples_ns": [
+                623044.6428571428,
+                631797.6428571428
+              ],
+              "cpu_samples_ns": [
+                null,
+                631946.4285714285
+              ]
+            },
+            {
+              "per_op_ns": 600692.625,
+              "iters": 8,
+              "rounds": 2,
+              "spread": 2.2076598659755478,
+              "samples_ns": [
+                1926817.625,
+                600692.625
+              ],
+              "cpu_samples_ns": [
+                null,
+                601020.875
+              ]
+            },
+            {
+              "per_op_ns": 605525.0,
+              "iters": 10,
+              "rounds": 2,
+              "spread": 0.010300978489740308,
+              "samples_ns": [
+                605525.0,
+                611762.5
+              ],
+              "cpu_samples_ns": [
+                null,
+                611958.3
+              ]
+            },
+            {
+              "per_op_ns": 597175.6428571428,
+              "iters": 14,
+              "rounds": 2,
+              "spread": 5.652291339506599,
+              "samples_ns": [
+                597175.6428571428,
+                3972586.3571428573
+              ],
+              "cpu_samples_ns": [
+                null,
+                611059.5
+              ]
+            },
+            {
+              "per_op_ns": 574807.3125,
+              "iters": 16,
+              "rounds": 2,
+              "spread": 0.03443175577207014,
+              "samples_ns": [
+                594598.9375,
+                574807.3125
+              ],
+              "cpu_samples_ns": [
+                null,
+                574960.9375
+              ]
+            },
+            {
+              "per_op_ns": 597440.125,
+              "iters": 16,
+              "rounds": 2,
+              "spread": 9.733315012111046,
+              "samples_ns": [
+                597440.125,
+                6412513.0625
+              ],
+              "cpu_samples_ns": [
+                null,
+                608041.625
+              ]
+            }
+          ],
+          "median_ns": 600692.625
+        },
+        {
+          "name": "dataset-40001-stream",
+          "operation": "stream",
+          "fixture": null,
+          "raw_bytes": 2017832,
+          "compressed_bytes": 201425,
+          "raw_sha256": "2badb266f2a9e4da80c83c9a1de0c6ca042421e93664c17681feb62e3b42e433",
+          "compressed_sha256": "cc33364e1c460d6d5a52882ca80602646dba5db92aa6987eefc95e19a7243df0",
+          "output_bytes": 2017832,
+          "output_sha256": "2badb266f2a9e4da80c83c9a1de0c6ca042421e93664c17681feb62e3b42e433",
+          "identical_output": true,
+          "native_calls": {
+            "zlib.crc32": 46,
+            "zlib.decompress": 43
+          },
+          "measurements": [
+            {
+              "per_op_ns": 808357.6666666666,
+              "iters": 12,
+              "rounds": 2,
+              "spread": 3.4519579410599186,
+              "samples_ns": [
+                3598774.3333333335,
+                808357.6666666666
+              ],
+              "cpu_samples_ns": [
+                null,
+                792263.9166666666
+              ]
+            },
+            {
+              "per_op_ns": 774239.5,
+              "iters": 8,
+              "rounds": 2,
+              "spread": 0.03570713584104143,
+              "samples_ns": [
+                774239.5,
+                801885.375
+              ],
+              "cpu_samples_ns": [
+                null,
+                792791.625
+              ]
+            },
+            {
+              "per_op_ns": 761302.0833333334,
+              "iters": 12,
+              "rounds": 2,
+              "spread": 0.35487446124375727,
+              "samples_ns": [
+                1031468.75,
+                761302.0833333334
+              ],
+              "cpu_samples_ns": [
+                null,
+                761548.5833333334
+              ]
+            },
+            {
+              "per_op_ns": 738659.75,
+              "iters": 12,
+              "rounds": 2,
+              "spread": 8.308836037160546,
+              "samples_ns": [
+                738659.75,
+                6876062.5
+              ],
+              "cpu_samples_ns": [
+                null,
+                846670.1666666666
+              ]
+            },
+            {
+              "per_op_ns": 716765.625,
+              "iters": 8,
+              "rounds": 2,
+              "spread": 18.87018507618861,
+              "samples_ns": [
+                716765.625,
+                14242265.625
+              ],
+              "cpu_samples_ns": [
+                null,
+                814640.625
+              ]
+            },
+            {
+              "per_op_ns": 775983.3,
+              "iters": 10,
+              "rounds": 2,
+              "spread": 0.014095148697143354,
+              "samples_ns": [
+                786920.9,
+                775983.3
+              ],
+              "cpu_samples_ns": [
+                null,
+                776266.7
+              ]
+            },
+            {
+              "per_op_ns": 838875.0,
+              "iters": 1,
+              "rounds": 2,
+              "spread": 9.956439278796006,
+              "samples_ns": [
+                9191083.0,
+                838875.0
+              ],
+              "cpu_samples_ns": [
+                null,
+                840792.0
+              ]
+            }
+          ],
+          "median_ns": 774239.5
+        },
+        {
+          "name": "upload-40001-two-passes",
+          "operation": "upload",
+          "fixture": null,
+          "raw_bytes": 2017832,
+          "compressed_bytes": 201425,
+          "raw_sha256": "2badb266f2a9e4da80c83c9a1de0c6ca042421e93664c17681feb62e3b42e433",
+          "compressed_sha256": "cc33364e1c460d6d5a52882ca80602646dba5db92aa6987eefc95e19a7243df0",
+          "output_bytes": 2017832,
+          "output_sha256": "2badb266f2a9e4da80c83c9a1de0c6ca042421e93664c17681feb62e3b42e433",
+          "identical_output": true,
+          "native_calls": {
+            "zlib.crc32": 30,
+            "zlib.decompress": 24
+          },
+          "measurements": [
+            {
+              "per_op_ns": 1454500.0,
+              "iters": 4,
+              "rounds": 2,
+              "spread": 0.06170505328291509,
+              "samples_ns": [
+                1544250.0,
+                1454500.0
+              ],
+              "cpu_samples_ns": [
+                null,
+                1455260.5
+              ]
+            },
+            {
+              "per_op_ns": 1421333.25,
+              "iters": 4,
+              "rounds": 2,
+              "spread": 0.0097399747736852,
+              "samples_ns": [
+                1435177.0,
+                1421333.25
+              ],
+              "cpu_samples_ns": [
+                null,
+                1422333.25
+              ]
+            },
+            {
+              "per_op_ns": 1455166.0,
+              "iters": 1,
+              "rounds": 2,
+              "spread": 4.773539238822237,
+              "samples_ns": [
+                8401458.0,
+                1455166.0
+              ],
+              "cpu_samples_ns": [
+                null,
+                1457417.0
+              ]
+            },
+            {
+              "per_op_ns": 1493305.6666666667,
+              "iters": 6,
+              "rounds": 2,
+              "spread": 0.25901707553956915,
+              "samples_ns": [
+                1493305.6666666667,
+                1880097.3333333333
+              ],
+              "cpu_samples_ns": [
+                null,
+                1556770.8333333333
+              ]
+            },
+            {
+              "per_op_ns": 1436389.0,
+              "iters": 6,
+              "rounds": 2,
+              "spread": 6.379635901787979,
+              "samples_ns": [
+                1436389.0,
+                10600027.833333334
+              ],
+              "cpu_samples_ns": [
+                null,
+                1539639.0
+              ]
+            },
+            {
+              "per_op_ns": 1408993.1666666667,
+              "iters": 6,
+              "rounds": 2,
+              "spread": 0.011532939774134224,
+              "samples_ns": [
+                1425243.0,
+                1408993.1666666667
+              ],
+              "cpu_samples_ns": [
+                null,
+                1409479.1666666667
+              ]
+            },
+            {
+              "per_op_ns": 1352284.6666666667,
+              "iters": 6,
+              "rounds": 2,
+              "spread": 31.201085866042998,
+              "samples_ns": [
+                1352284.6666666667,
+                43545034.666666664
+              ],
+              "cpu_samples_ns": [
+                null,
+                1557909.8333333333
+              ]
+            }
+          ],
+          "median_ns": 1436389.0
+        },
+        {
+          "name": "http-bounded-expansion",
+          "operation": "bounded",
+          "fixture": null,
+          "raw_bytes": 1000000,
+          "compressed_bytes": 1004,
+          "raw_sha256": "7e80c2132dad37d00ce8521934fe15d79171b2dfed31ba88c34cf654353b0424",
+          "compressed_sha256": "3ccd848688ef8e1add17ca86d104fe4eda3dd9f907a9f98dd445fd76eedfd592",
+          "output_bytes": 2009,
+          "output_sha256": "282a6a2b301d95d046d8ad8bcd7526a11315d3f832e6ad11d9e8c029641ee51a",
+          "identical_output": true,
+          "native_calls": {
+            "zlib.crc32": 2,
+            "zlib.decompress": 1
+          },
+          "measurements": [
+            {
+              "per_op_ns": 8606.011284722223,
+              "iters": 1152,
+              "rounds": 2,
+              "spread": 28.52332323830898,
+              "samples_ns": [
+                8606.011284722223,
+                254078.05295138888
+              ],
+              "cpu_samples_ns": [
+                null,
+                10269.784722222223
+              ]
+            },
+            {
+              "per_op_ns": 8656.6162109375,
+              "iters": 1024,
+              "rounds": 2,
+              "spread": 0.031018430515405766,
+              "samples_ns": [
+                8656.6162109375,
+                8925.130859375
+              ],
+              "cpu_samples_ns": [
+                null,
+                8928.1826171875
+              ]
+            },
+            {
+              "per_op_ns": 8600.4638671875,
+              "iters": 1024,
+              "rounds": 2,
+              "spread": 0.0020012774111134767,
+              "samples_ns": [
+                8600.4638671875,
+                8617.67578125
+              ],
+              "cpu_samples_ns": [
+                null,
+                8620.6865234375
+              ]
+            },
+            {
+              "per_op_ns": 8663.596153846154,
+              "iters": 624,
+              "rounds": 2,
+              "spread": 0.0010556624721332485,
+              "samples_ns": [
+                8672.741987179486,
+                8663.596153846154
+              ],
+              "cpu_samples_ns": [
+                null,
+                8667.801282051281
+              ]
+            },
+            {
+              "per_op_ns": 9785.807291666666,
+              "iters": 192,
+              "rounds": 2,
+              "spread": 2.2779141773667755,
+              "samples_ns": [
+                32077.036458333332,
+                9785.807291666666
+              ],
+              "cpu_samples_ns": [
+                null,
+                9353.078125
+              ]
+            },
+            {
+              "per_op_ns": 8646.240234375,
+              "iters": 1024,
+              "rounds": 2,
+              "spread": 0.002870760976987152,
+              "samples_ns": [
+                8646.240234375,
+                8671.0615234375
+              ],
+              "cpu_samples_ns": [
+                null,
+                8674.2763671875
+              ]
+            },
+            {
+              "per_op_ns": 8436.686197916666,
+              "iters": 768,
+              "rounds": 2,
+              "spread": 5.105295649657568,
+              "samples_ns": [
+                8436.686197916666,
+                51508.463541666664
+              ],
+              "cpu_samples_ns": [
+                null,
+                9113.76953125
+              ]
+            }
+          ],
+          "median_ns": 8646.240234375
+        },
+        {
+          "name": "journal-200-members",
+          "operation": "lines",
+          "fixture": null,
+          "raw_bytes": 15140,
+          "compressed_bytes": 2341,
+          "raw_sha256": "bf7bf2b97272913a835dae66de8be38967fe22dd712de87d49e2e8c101440093",
+          "compressed_sha256": "6df3ee6a614cc33011b69cab0aefabee5d0c058e277a8b6ea711dffbb9c340b8",
+          "output_bytes": 15140,
+          "output_sha256": "bf7bf2b97272913a835dae66de8be38967fe22dd712de87d49e2e8c101440093",
+          "identical_output": true,
+          "native_calls": {
+            "zlib.crc32": 5,
+            "zlib.decompress": 2
+          },
+          "measurements": [
+            {
+              "per_op_ns": 154247.6851851852,
+              "iters": 54,
+              "rounds": 2,
+              "spread": 0.2503738875966084,
+              "samples_ns": [
+                154247.6851851852,
+                192867.27777777778
+              ],
+              "cpu_samples_ns": [
+                null,
+                69439.03703703704
+              ]
+            },
+            {
+              "per_op_ns": 54106.4453125,
+              "iters": 128,
+              "rounds": 2,
+              "spread": 0.4556387329663388,
+              "samples_ns": [
+                54106.4453125,
+                78759.4375
+              ],
+              "cpu_samples_ns": [
+                null,
+                58414.71875
+              ]
+            },
+            {
+              "per_op_ns": 53919.07692307692,
+              "iters": 104,
+              "rounds": 2,
+              "spread": 19.28419601026039,
+              "samples_ns": [
+                53919.07692307692,
+                1093705.125
+              ],
+              "cpu_samples_ns": [
+                null,
+                61944.317307692305
+              ]
+            },
+            {
+              "per_op_ns": 51964.515625,
+              "iters": 128,
+              "rounds": 2,
+              "spread": 4.665343147321986,
+              "samples_ns": [
+                51964.515625,
+                294396.8125
+              ],
+              "cpu_samples_ns": [
+                null,
+                55714.84375
+              ]
+            },
+            {
+              "per_op_ns": 50190.7578125,
+              "iters": 128,
+              "rounds": 2,
+              "spread": 19.868047793286145,
+              "samples_ns": [
+                50190.7578125,
+                1047383.1328125
+              ],
+              "cpu_samples_ns": [
+                null,
+                57264.96875
+              ]
+            },
+            {
+              "per_op_ns": 55312.5,
+              "iters": 62,
+              "rounds": 2,
+              "spread": 0.739566247494077,
+              "samples_ns": [
+                96219.75806451614,
+                55312.5
+              ],
+              "cpu_samples_ns": [
+                null,
+                55358.209677419356
+              ]
+            },
+            {
+              "per_op_ns": 83056.70491803279,
+              "iters": 61,
+              "rounds": 2,
+              "spread": 0.3285412948175442,
+              "samples_ns": [
+                83056.70491803279,
+                110344.26229508196
+              ],
+              "cpu_samples_ns": [
+                null,
+                63060.7868852459
+              ]
+            }
+          ],
+          "median_ns": 54106.4453125
+        },
+        {
+          "name": "journal-20000-members",
+          "operation": "lines",
+          "fixture": null,
+          "raw_bytes": 1673560,
+          "compressed_bytes": 235019,
+          "raw_sha256": "c1005eb7020978a1b655b4aee18795fa86667a7690bf73ea5f4fdf6f3ff16f7d",
+          "compressed_sha256": "113e9cdbe14ad5138e463c8a846b2e98ebc33ad5fbd641a0250f8709b820093d",
+          "output_bytes": 1673560,
+          "output_sha256": "c1005eb7020978a1b655b4aee18795fa86667a7690bf73ea5f4fdf6f3ff16f7d",
+          "identical_output": true,
+          "native_calls": {
+            "zlib.crc32": 501,
+            "zlib.decompress": 300
+          },
+          "measurements": [
+            {
+              "per_op_ns": 6072000.0,
+              "iters": 1,
+              "rounds": 2,
+              "spread": 0.006704216073781291,
+              "samples_ns": [
+                6112708.0,
+                6072000.0
+              ],
+              "cpu_samples_ns": [
+                null,
+                6075292.0
+              ]
+            },
+            {
+              "per_op_ns": 6041584.0,
+              "iters": 1,
+              "rounds": 2,
+              "spread": 0.07466303538939457,
+              "samples_ns": [
+                6492667.0,
+                6041584.0
+              ],
+              "cpu_samples_ns": [
+                null,
+                6044791.0
+              ]
+            },
+            {
+              "per_op_ns": 5920125.0,
+              "iters": 1,
+              "rounds": 2,
+              "spread": 0.03345233419902451,
+              "samples_ns": [
+                6118167.0,
+                5920125.0
+              ],
+              "cpu_samples_ns": [
+                null,
+                5922708.0
+              ]
+            },
+            {
+              "per_op_ns": 6156792.0,
+              "iters": 1,
+              "rounds": 2,
+              "spread": 0.0033025315781335476,
+              "samples_ns": [
+                6156792.0,
+                6177125.0
+              ],
+              "cpu_samples_ns": [
+                null,
+                6180167.0
+              ]
+            },
+            {
+              "per_op_ns": 6025125.0,
+              "iters": 1,
+              "rounds": 2,
+              "spread": 0.029660463475861498,
+              "samples_ns": [
+                6203833.0,
+                6025125.0
+              ],
+              "cpu_samples_ns": [
+                null,
+                6028541.0
+              ]
+            },
+            {
+              "per_op_ns": 6049667.0,
+              "iters": 1,
+              "rounds": 2,
+              "spread": 0.0626204715069441,
+              "samples_ns": [
+                6049667.0,
+                6428500.0
+              ],
+              "cpu_samples_ns": [
+                null,
+                6060333.0
+              ]
+            },
+            {
+              "per_op_ns": 6409959.0,
+              "iters": 1,
+              "rounds": 2,
+              "spread": 0.027912191014014286,
+              "samples_ns": [
+                6409959.0,
+                6588875.0
+              ],
+              "cpu_samples_ns": [
+                null,
+                6591500.0
+              ]
+            }
+          ],
+          "median_ns": 6049667.0
+        }
+      ]
+    },
+    "candidate": {
+      "metadata": {
+        "python": "3.13.14 (main, Aug  5 2026, 15:33:38) [Clang 22.1.3 ]",
+        "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+        "machine": "arm64",
+        "zlib_version": "1.2.12",
+        "zlib_runtime_version": "1.2.12",
+        "versions": {
+          "unstd": "3.1.2",
+          "zlib-ng": "1.0.0"
+        },
+        "sources": {
+          "/Users/griffinstrier/Billy-Company/unstd/src/unstd/compress/gzipx.py": "25b2fcfac0736b0a2c99dff1689ba0f533c615f69a84a490194a080e0db80e7f",
+          "/Users/griffinstrier/Billy-Company/unstd/src/unstd/compress/_backend.py": "4e14ee01a8edef3fea2e98bc84830fbeb79bda124cbeca653e97a7639397fe32"
+        },
+        "compression_native_calls": {
+          "zlib_ng.zlib_ng.compress": 1
+        },
+        "compression_output_sha256": "2622ef87a1e21930f7cb896a463f223881445a3e049864b9a14b16ea22e9ae84"
+      },
+      "cases": [
+        {
+          "name": "source_record_capture.json",
+          "operation": "decompress",
+          "fixture": "/Users/griffinstrier/Billy-Company/billy/services/ai/tests/support/fixtures/source_record_capture.json",
+          "raw_bytes": 18255,
+          "compressed_bytes": 3693,
+          "raw_sha256": "3598d59636d6636a6e5e7f7bff22621eab6b150a7b916e7289053a624e9c1db8",
+          "compressed_sha256": "cafb6a9903e91900be9696640906228ca3401f9968b87401cc73f64e288a3194",
+          "output_bytes": 18255,
+          "output_sha256": "3598d59636d6636a6e5e7f7bff22621eab6b150a7b916e7289053a624e9c1db8",
+          "identical_output": true,
+          "native_calls": {
+            "zlib.decompressobj": 1,
+            "zlib.decompress": 1
+          },
+          "measurements": [
+            {
+              "per_op_ns": 11798.067708333334,
+              "iters": 768,
+              "rounds": 2,
+              "spread": 0.0004553623496785535,
+              "samples_ns": [
+                11798.067708333334,
+                11803.440104166666
+              ],
+              "cpu_samples_ns": [
+                null,
+                11808.919270833334
+              ]
+            },
+            {
+              "per_op_ns": 11019.856770833334,
+              "iters": 384,
+              "rounds": 2,
+              "spread": 0.33518447404956725,
+              "samples_ns": [
+                14713.541666666666,
+                11019.856770833334
+              ],
+              "cpu_samples_ns": [
+                null,
+                11030.0546875
+              ]
+            },
+            {
+              "per_op_ns": 11803.646875,
+              "iters": 640,
+              "rounds": 2,
+              "spread": 5.317433144999943,
+              "samples_ns": [
+                11803.646875,
+                74568.75
+              ],
+              "cpu_samples_ns": [
+                null,
+                12143.8796875
+              ]
+            },
+            {
+              "per_op_ns": 12720.515625,
+              "iters": 448,
+              "rounds": 2,
+              "spread": 0.0068656667703728734,
+              "samples_ns": [
+                12807.85044642857,
+                12720.515625
+              ],
+              "cpu_samples_ns": [
+                null,
+                12595.145089285714
+              ]
+            },
+            {
+              "per_op_ns": 11835.611979166666,
+              "iters": 768,
+              "rounds": 2,
+              "spread": 7.06006303803735,
+              "samples_ns": [
+                11835.611979166666,
+                95395.77864583333
+              ],
+              "cpu_samples_ns": [
+                null,
+                13482.91015625
+              ]
+            },
+            {
+              "per_op_ns": 18211.802083333332,
+              "iters": 192,
+              "rounds": 2,
+              "spread": 1.3915875865753262,
+              "samples_ns": [
+                43555.119791666664,
+                18211.802083333332
+              ],
+              "cpu_samples_ns": [
+                null,
+                12968.96875
+              ]
+            },
+            {
+              "per_op_ns": 12343.34375,
+              "iters": 512,
+              "rounds": 2,
+              "spread": 0.055440906915923814,
+              "samples_ns": [
+                12343.34375,
+                13027.669921875
+              ],
+              "cpu_samples_ns": [
+                null,
+                13032.6328125
+              ]
+            }
+          ],
+          "median_ns": 11835.611979166666
+        },
+        {
+          "name": "purchase_capture.json",
+          "operation": "decompress",
+          "fixture": "/Users/griffinstrier/Billy-Company/billy/services/ai/tests/support/fixtures/purchase_capture.json",
+          "raw_bytes": 9575,
+          "compressed_bytes": 1736,
+          "raw_sha256": "0ec6ec5e123ecac16323fc2e49295a296b516b3832412296ede76059d26b2188",
+          "compressed_sha256": "0cb49e05b356f201b69ba403047386d325ca05fcd3ec9f71bedaf28ed8b85913",
+          "output_bytes": 9575,
+          "output_sha256": "0ec6ec5e123ecac16323fc2e49295a296b516b3832412296ede76059d26b2188",
+          "identical_output": true,
+          "native_calls": {
+            "zlib.decompressobj": 1,
+            "zlib.decompress": 1
+          },
+          "measurements": [
+            {
+              "per_op_ns": 11857.710069444445,
+              "iters": 576,
+              "rounds": 2,
+              "spread": 1.4690614595139326,
+              "samples_ns": [
+                29277.414930555555,
+                11857.710069444445
+              ],
+              "cpu_samples_ns": [
+                null,
+                6718.967013888889
+              ]
+            },
+            {
+              "per_op_ns": 6944.376953125,
+              "iters": 1024,
+              "rounds": 2,
+              "spread": 0.00048037966868990506,
+              "samples_ns": [
+                6944.376953125,
+                6947.712890625
+              ],
+              "cpu_samples_ns": [
+                null,
+                6949.625
+              ]
+            },
+            {
+              "per_op_ns": 6907.137784090909,
+              "iters": 1408,
+              "rounds": 2,
+              "spread": 0.0031318475103467775,
+              "samples_ns": [
+                6928.769886363636,
+                6907.137784090909
+              ],
+              "cpu_samples_ns": [
+                null,
+                6908.824573863636
+              ]
+            },
+            {
+              "per_op_ns": 6945.1171875,
+              "iters": 1280,
+              "rounds": 2,
+              "spread": 5.92259804831407,
+              "samples_ns": [
+                6945.1171875,
+                48078.2546875
+              ],
+              "cpu_samples_ns": [
+                null,
+                7108.59375
+              ]
+            },
+            {
+              "per_op_ns": 7350.45625,
+              "iters": 640,
+              "rounds": 2,
+              "spread": 1.2442537580575355,
+              "samples_ns": [
+                16496.2890625,
+                7350.45625
+              ],
+              "cpu_samples_ns": [
+                null,
+                7354.4921875
+              ]
+            },
+            {
+              "per_op_ns": 9296.984375,
+              "iters": 384,
+              "rounds": 2,
+              "spread": 0.7848647158772922,
+              "samples_ns": [
+                16593.859375,
+                9296.984375
+              ],
+              "cpu_samples_ns": [
+                null,
+                7729.057291666667
+              ]
+            },
+            {
+              "per_op_ns": 6897.313920454545,
+              "iters": 704,
+              "rounds": 2,
+              "spread": 0.12108592174695806,
+              "samples_ns": [
+                7732.481534090909,
+                6897.313920454545
+              ],
+              "cpu_samples_ns": [
+                null,
+                6901.455965909091
+              ]
+            }
+          ],
+          "median_ns": 6945.1171875
+        },
+        {
+          "name": "dataset-100-decompress",
+          "operation": "decompress",
+          "fixture": null,
+          "raw_bytes": 991,
+          "compressed_bytes": 219,
+          "raw_sha256": "febd577beb38f231e6d237199127f5a03d9ca3000cbb50d09942c0c0d7f8ba4e",
+          "compressed_sha256": "03428019a441118f4ce2dd23f32b7ed2b361c822e293961c7360bb5db0ed9fb7",
+          "output_bytes": 991,
+          "output_sha256": "febd577beb38f231e6d237199127f5a03d9ca3000cbb50d09942c0c0d7f8ba4e",
+          "identical_output": true,
+          "native_calls": {
+            "zlib.decompressobj": 1,
+            "zlib.decompress": 1
+          },
+          "measurements": [
+            {
+              "per_op_ns": 2473.9358836206898,
+              "iters": 3712,
+              "rounds": 2,
+              "spread": 0.009705169738382381,
+              "samples_ns": [
+                2473.9358836206898,
+                2497.9458512931033
+              ],
+              "cpu_samples_ns": [
+                null,
+                2498.473599137931
+              ]
+            },
+            {
+              "per_op_ns": 2256.34765625,
+              "iters": 2304,
+              "rounds": 2,
+              "spread": 0.010571641539830244,
+              "samples_ns": [
+                2256.34765625,
+                2280.2009548611113
+              ],
+              "cpu_samples_ns": [
+                null,
+                2280.906684027778
+              ]
+            },
+            {
+              "per_op_ns": 2362.8680889423076,
+              "iters": 3328,
+              "rounds": 2,
+              "spread": 0.004366052552099064,
+              "samples_ns": [
+                2362.8680889423076,
+                2373.1844951923076
+              ],
+              "cpu_samples_ns": [
+                null,
+                2373.860576923077
+              ]
+            },
+            {
+              "per_op_ns": 2276.5265265265266,
+              "iters": 3996,
+              "rounds": 2,
+              "spread": 0.0855089589974717,
+              "samples_ns": [
+                2276.5265265265266,
+                2471.18993993994
+              ],
+              "cpu_samples_ns": [
+                null,
+                2471.7424924924926
+              ]
+            },
+            {
+              "per_op_ns": 2286.333533653846,
+              "iters": 1664,
+              "rounds": 2,
+              "spread": 0.7126831962179117,
+              "samples_ns": [
+                3915.7650240384614,
+                2286.333533653846
+              ],
+              "cpu_samples_ns": [
+                null,
+                2287.8106971153848
+              ]
+            },
+            {
+              "per_op_ns": 2274.59375,
+              "iters": 3712,
+              "rounds": 2,
+              "spread": 0.047972046921982564,
+              "samples_ns": [
+                2383.7106681034484,
+                2274.59375
+              ],
+              "cpu_samples_ns": [
+                null,
+                2275.1099137931033
+              ]
+            },
+            {
+              "per_op_ns": 2265.8125,
+              "iters": 4224,
+              "rounds": 2,
+              "spread": 6.38925263447372,
+              "samples_ns": [
+                2265.8125,
+                16742.660984848484
+              ],
+              "cpu_samples_ns": [
+                null,
+                2724.7573390151515
+              ]
+            }
+          ],
+          "median_ns": 2276.5265265265266
+        },
+        {
+          "name": "dataset-100-stream",
+          "operation": "stream",
+          "fixture": null,
+          "raw_bytes": 991,
+          "compressed_bytes": 219,
+          "raw_sha256": "febd577beb38f231e6d237199127f5a03d9ca3000cbb50d09942c0c0d7f8ba4e",
+          "compressed_sha256": "03428019a441118f4ce2dd23f32b7ed2b361c822e293961c7360bb5db0ed9fb7",
+          "output_bytes": 991,
+          "output_sha256": "febd577beb38f231e6d237199127f5a03d9ca3000cbb50d09942c0c0d7f8ba4e",
+          "identical_output": true,
+          "native_calls": {
+            "zlib.crc32": 4,
+            "zlib.decompress": 1
+          },
+          "measurements": [
+            {
+              "per_op_ns": 10403.134803921568,
+              "iters": 816,
+              "rounds": 2,
+              "spread": 4.083839500678411,
+              "samples_ns": [
+                10403.134803921568,
+                52887.867647058825
+              ],
+              "cpu_samples_ns": [
+                null,
+                11538.80637254902
+              ]
+            },
+            {
+              "per_op_ns": 14258.64955357143,
+              "iters": 448,
+              "rounds": 2,
+              "spread": 0.054562902373637555,
+              "samples_ns": [
+                15036.642857142857,
+                14258.64955357143
+              ],
+              "cpu_samples_ns": [
+                null,
+                12102.957589285714
+              ]
+            },
+            {
+              "per_op_ns": 10357.421875,
+              "iters": 768,
+              "rounds": 2,
+              "spread": 0.0556341693381105,
+              "samples_ns": [
+                10933.6484375,
+                10357.421875
+              ],
+              "cpu_samples_ns": [
+                null,
+                10360.73046875
+              ]
+            },
+            {
+              "per_op_ns": 11207.953125,
+              "iters": 768,
+              "rounds": 2,
+              "spread": 0.09056324866038672,
+              "samples_ns": [
+                12222.981770833334,
+                11207.953125
+              ],
+              "cpu_samples_ns": [
+                null,
+                11211.317708333334
+              ]
+            },
+            {
+              "per_op_ns": 10380.208705357143,
+              "iters": 896,
+              "rounds": 2,
+              "spread": 0.228970997456419,
+              "samples_ns": [
+                10380.208705357143,
+                12756.97544642857
+              ],
+              "cpu_samples_ns": [
+                null,
+                10891.6953125
+              ]
+            },
+            {
+              "per_op_ns": 11041.9921875,
+              "iters": 768,
+              "rounds": 2,
+              "spread": 0.002034138144512249,
+              "samples_ns": [
+                11064.453125,
+                11041.9921875
+              ],
+              "cpu_samples_ns": [
+                null,
+                11044.325520833334
+              ]
+            },
+            {
+              "per_op_ns": 11470.485632183909,
+              "iters": 696,
+              "rounds": 2,
+              "spread": 0.12905861094277693,
+              "samples_ns": [
+                11470.485632183909,
+                12950.850574712644
+              ],
+              "cpu_samples_ns": [
+                null,
+                11850.635057471265
+              ]
+            }
+          ],
+          "median_ns": 11041.9921875
+        },
+        {
+          "name": "upload-100-two-passes",
+          "operation": "upload",
+          "fixture": null,
+          "raw_bytes": 991,
+          "compressed_bytes": 219,
+          "raw_sha256": "febd577beb38f231e6d237199127f5a03d9ca3000cbb50d09942c0c0d7f8ba4e",
+          "compressed_sha256": "03428019a441118f4ce2dd23f32b7ed2b361c822e293961c7360bb5db0ed9fb7",
+          "output_bytes": 991,
+          "output_sha256": "febd577beb38f231e6d237199127f5a03d9ca3000cbb50d09942c0c0d7f8ba4e",
+          "identical_output": true,
+          "native_calls": {
+            "zlib.crc32": 8,
+            "zlib.decompress": 2
+          },
+          "measurements": [
+            {
+              "per_op_ns": 20593.09765625,
+              "iters": 256,
+              "rounds": 2,
+              "spread": 0.14586975725520895,
+              "samples_ns": [
+                23597.0078125,
+                20593.09765625
+              ],
+              "cpu_samples_ns": [
+                null,
+                20601.890625
+              ]
+            },
+            {
+              "per_op_ns": 20380.35714285714,
+              "iters": 420,
+              "rounds": 2,
+              "spread": 0.0648529454715383,
+              "samples_ns": [
+                21702.083333333332,
+                20380.35714285714
+              ],
+              "cpu_samples_ns": [
+                null,
+                20387.00238095238
+              ]
+            },
+            {
+              "per_op_ns": 19872.721354166668,
+              "iters": 384,
+              "rounds": 2,
+              "spread": 0.0527991613294239,
+              "samples_ns": [
+                19872.721354166668,
+                20921.984375
+              ],
+              "cpu_samples_ns": [
+                null,
+                20023.653645833332
+              ]
+            },
+            {
+              "per_op_ns": 20389.5390625,
+              "iters": 384,
+              "rounds": 2,
+              "spread": 0.04114216555338899,
+              "samples_ns": [
+                20389.5390625,
+                21228.408854166668
+              ],
+              "cpu_samples_ns": [
+                null,
+                20707.247395833332
+              ]
+            },
+            {
+              "per_op_ns": 20964.302083333332,
+              "iters": 384,
+              "rounds": 2,
+              "spread": 0.23052989879124883,
+              "samples_ns": [
+                25797.200520833332,
+                20964.302083333332
+              ],
+              "cpu_samples_ns": [
+                null,
+                19329.643229166668
+              ]
+            },
+            {
+              "per_op_ns": 20014.97265625,
+              "iters": 256,
+              "rounds": 2,
+              "spread": 0.0020004555183590097,
+              "samples_ns": [
+                20014.97265625,
+                20055.01171875
+              ],
+              "cpu_samples_ns": [
+                null,
+                20058.91796875
+              ]
+            },
+            {
+              "per_op_ns": 19831.380208333332,
+              "iters": 384,
+              "rounds": 2,
+              "spread": 0.03031745510652966,
+              "samples_ns": [
+                19831.380208333332,
+                20432.6171875
+              ],
+              "cpu_samples_ns": [
+                null,
+                20438.911458333332
+              ]
+            }
+          ],
+          "median_ns": 20380.35714285714
+        },
+        {
+          "name": "dataset-20001-decompress",
+          "operation": "decompress",
+          "fixture": null,
+          "raw_bytes": 248904,
+          "compressed_bytes": 47652,
+          "raw_sha256": "4cf6b5445411018f3da71d2320f62ee5e9e34cba753bd297c3f2560ed1b59e4f",
+          "compressed_sha256": "e96cea225377305fb2525937cf788b71611acbce8caaf3a8d1ebc963fd2b9dde",
+          "output_bytes": 248904,
+          "output_sha256": "4cf6b5445411018f3da71d2320f62ee5e9e34cba753bd297c3f2560ed1b59e4f",
+          "identical_output": true,
+          "native_calls": {
+            "zlib.decompressobj": 1,
+            "zlib.decompress": 1
+          },
+          "measurements": [
+            {
+              "per_op_ns": 134450.0,
+              "iters": 35,
+              "rounds": 2,
+              "spread": 1.0802830579610052,
+              "samples_ns": [
+                279694.0571428572,
+                134450.0
+              ],
+              "cpu_samples_ns": [
+                null,
+                134538.08571428573
+              ]
+            },
+            {
+              "per_op_ns": 114948.77027027027,
+              "iters": 74,
+              "rounds": 2,
+              "spread": 0.07977008324154744,
+              "samples_ns": [
+                114948.77027027027,
+                124118.24324324324
+              ],
+              "cpu_samples_ns": [
+                null,
+                124158.78378378379
+              ]
+            },
+            {
+              "per_op_ns": 123448.4375,
+              "iters": 80,
+              "rounds": 2,
+              "spread": 3.9352546483223008,
+              "samples_ns": [
+                123448.4375,
+                609249.475
+              ],
+              "cpu_samples_ns": [
+                null,
+                124683.85
+              ]
+            },
+            {
+              "per_op_ns": 114633.53846153847,
+              "iters": 78,
+              "rounds": 2,
+              "spread": 0.00365344817867774,
+              "samples_ns": [
+                115052.34615384616,
+                114633.53846153847
+              ],
+              "cpu_samples_ns": [
+                null,
+                114673.07692307692
+              ]
+            },
+            {
+              "per_op_ns": 116126.07692307692,
+              "iters": 78,
+              "rounds": 2,
+              "spread": 0.05998487055514597,
+              "samples_ns": [
+                116126.07692307692,
+                123091.88461538461
+              ],
+              "cpu_samples_ns": [
+                null,
+                123129.80769230769
+              ]
+            },
+            {
+              "per_op_ns": 123555.09677419355,
+              "iters": 62,
+              "rounds": 2,
+              "spread": 0.0018385424499139473,
+              "samples_ns": [
+                123555.09677419355,
+                123782.25806451614
+              ],
+              "cpu_samples_ns": [
+                null,
+                123823.25806451614
+              ]
+            },
+            {
+              "per_op_ns": 119728.65853658537,
+              "iters": 82,
+              "rounds": 2,
+              "spread": 0.03094731481245703,
+              "samples_ns": [
+                119728.65853658537,
+                123433.93902439025
+              ],
+              "cpu_samples_ns": [
+                null,
+                123471.03658536586
+              ]
+            }
+          ],
+          "median_ns": 119728.65853658537
+        },
+        {
+          "name": "dataset-20001-stream",
+          "operation": "stream",
+          "fixture": null,
+          "raw_bytes": 248904,
+          "compressed_bytes": 47652,
+          "raw_sha256": "4cf6b5445411018f3da71d2320f62ee5e9e34cba753bd297c3f2560ed1b59e4f",
+          "compressed_sha256": "e96cea225377305fb2525937cf788b71611acbce8caaf3a8d1ebc963fd2b9dde",
+          "output_bytes": 248904,
+          "output_sha256": "4cf6b5445411018f3da71d2320f62ee5e9e34cba753bd297c3f2560ed1b59e4f",
+          "identical_output": true,
+          "native_calls": {
+            "zlib.crc32": 7,
+            "zlib.decompress": 4
+          },
+          "measurements": [
+            {
+              "per_op_ns": 137946.53333333333,
+              "iters": 60,
+              "rounds": 2,
+              "spread": 4.887053341439533,
+              "samples_ns": [
+                137946.53333333333,
+                812098.6
+              ],
+              "cpu_samples_ns": [
+                null,
+                170200.7
+              ]
+            },
+            {
+              "per_op_ns": 148023.82142857142,
+              "iters": 56,
+              "rounds": 2,
+              "spread": 0.011133705072084199,
+              "samples_ns": [
+                148023.82142857142,
+                149671.875
+              ],
+              "cpu_samples_ns": [
+                null,
+                149719.5
+              ]
+            },
+            {
+              "per_op_ns": 138927.39393939395,
+              "iters": 66,
+              "rounds": 2,
+              "spread": 11.776103454082403,
+              "samples_ns": [
+                138927.39393939395,
+                1774950.7575757576
+              ],
+              "cpu_samples_ns": [
+                null,
+                152265.77272727274
+              ]
+            },
+            {
+              "per_op_ns": 139062.5,
+              "iters": 58,
+              "rounds": 2,
+              "spread": 7.3832725920185975,
+              "samples_ns": [
+                139062.5,
+                1165798.8448275863
+              ],
+              "cpu_samples_ns": [
+                null,
+                146528.0172413793
+              ]
+            },
+            {
+              "per_op_ns": 146582.33333333334,
+              "iters": 42,
+              "rounds": 2,
+              "spread": 0.010050421849706438,
+              "samples_ns": [
+                146582.33333333334,
+                148055.54761904763
+              ],
+              "cpu_samples_ns": [
+                null,
+                148105.16666666666
+              ]
+            },
+            {
+              "per_op_ns": 147708.33870967742,
+              "iters": 62,
+              "rounds": 2,
+              "spread": 3.5263931743430303,
+              "samples_ns": [
+                147708.33870967742,
+                668586.0161290322
+              ],
+              "cpu_samples_ns": [
+                null,
+                151746.62903225806
+              ]
+            },
+            {
+              "per_op_ns": 140376.73611111112,
+              "iters": 72,
+              "rounds": 2,
+              "spread": 5.950954598859715,
+              "samples_ns": [
+                140376.73611111112,
+                975752.3194444445
+              ],
+              "cpu_samples_ns": [
+                null,
+                144853.58333333334
+              ]
+            }
+          ],
+          "median_ns": 140376.73611111112
+        },
+        {
+          "name": "upload-20001-two-passes",
+          "operation": "upload",
+          "fixture": null,
+          "raw_bytes": 248904,
+          "compressed_bytes": 47652,
+          "raw_sha256": "4cf6b5445411018f3da71d2320f62ee5e9e34cba753bd297c3f2560ed1b59e4f",
+          "compressed_sha256": "e96cea225377305fb2525937cf788b71611acbce8caaf3a8d1ebc963fd2b9dde",
+          "output_bytes": 248904,
+          "output_sha256": "4cf6b5445411018f3da71d2320f62ee5e9e34cba753bd297c3f2560ed1b59e4f",
+          "identical_output": true,
+          "native_calls": {
+            "zlib.crc32": 8,
+            "zlib.decompress": 2
+          },
+          "measurements": [
+            {
+              "per_op_ns": 250746.5,
+              "iters": 24,
+              "rounds": 2,
+              "spread": 0.00454210394428902,
+              "samples_ns": [
+                250746.5,
+                251885.41666666666
+              ],
+              "cpu_samples_ns": [
+                null,
+                251960.04166666666
+              ]
+            },
+            {
+              "per_op_ns": 249554.41666666666,
+              "iters": 36,
+              "rounds": 2,
+              "spread": 16.25242546187043,
+              "samples_ns": [
+                249554.41666666666,
+                4305418.972222222
+              ],
+              "cpu_samples_ns": [
+                null,
+                255524.30555555556
+              ]
+            },
+            {
+              "per_op_ns": 250606.78125,
+              "iters": 32,
+              "rounds": 2,
+              "spread": 0.0026029323578010723,
+              "samples_ns": [
+                250606.78125,
+                251259.09375
+              ],
+              "cpu_samples_ns": [
+                null,
+                251356.75
+              ]
+            },
+            {
+              "per_op_ns": 250953.125,
+              "iters": 24,
+              "rounds": 2,
+              "spread": 0.006032501089595916,
+              "samples_ns": [
+                250953.125,
+                252467.0
+              ],
+              "cpu_samples_ns": [
+                null,
+                252557.29166666666
+              ]
+            },
+            {
+              "per_op_ns": 292162.75,
+              "iters": 32,
+              "rounds": 2,
+              "spread": 12.666456238860018,
+              "samples_ns": [
+                292162.75,
+                3992829.4375
+              ],
+              "cpu_samples_ns": [
+                null,
+                303868.46875
+              ]
+            },
+            {
+              "per_op_ns": 255112.94736842104,
+              "iters": 38,
+              "rounds": 2,
+              "spread": 0.05017983778495634,
+              "samples_ns": [
+                267914.4736842105,
+                255112.94736842104
+              ],
+              "cpu_samples_ns": [
+                null,
+                255183.13157894736
+              ]
+            },
+            {
+              "per_op_ns": 269177.0625,
+              "iters": 32,
+              "rounds": 2,
+              "spread": 0.0016303162904157185,
+              "samples_ns": [
+                269177.0625,
+                269615.90625
+              ],
+              "cpu_samples_ns": [
+                null,
+                269667.96875
+              ]
+            }
+          ],
+          "median_ns": 250953.125
+        },
+        {
+          "name": "dataset-40001-decompress",
+          "operation": "decompress",
+          "fixture": null,
+          "raw_bytes": 2017832,
+          "compressed_bytes": 201425,
+          "raw_sha256": "2badb266f2a9e4da80c83c9a1de0c6ca042421e93664c17681feb62e3b42e433",
+          "compressed_sha256": "cc33364e1c460d6d5a52882ca80602646dba5db92aa6987eefc95e19a7243df0",
+          "output_bytes": 2017832,
+          "output_sha256": "2badb266f2a9e4da80c83c9a1de0c6ca042421e93664c17681feb62e3b42e433",
+          "identical_output": true,
+          "native_calls": {
+            "zlib.decompressobj": 1,
+            "zlib.decompress": 1
+          },
+          "measurements": [
+            {
+              "per_op_ns": 600006.9166666666,
+              "iters": 12,
+              "rounds": 2,
+              "spread": 1.664431090586039,
+              "samples_ns": [
+                600006.9166666666,
+                1598677.0833333333
+              ],
+              "cpu_samples_ns": [
+                null,
+                614454.8333333334
+              ]
+            },
+            {
+              "per_op_ns": 589908.875,
+              "iters": 16,
+              "rounds": 2,
+              "spread": 0.003721443417849918,
+              "samples_ns": [
+                589908.875,
+                592104.1875
+              ],
+              "cpu_samples_ns": [
+                null,
+                592291.6875
+              ]
+            },
+            {
+              "per_op_ns": 581291.6666666666,
+              "iters": 12,
+              "rounds": 2,
+              "spread": 0.008595512866461185,
+              "samples_ns": [
+                581291.6666666666,
+                586288.1666666666
+              ],
+              "cpu_samples_ns": [
+                null,
+                586531.25
+              ]
+            },
+            {
+              "per_op_ns": 587916.6875,
+              "iters": 16,
+              "rounds": 2,
+              "spread": 0.0037252302010903544,
+              "samples_ns": [
+                590106.8125,
+                587916.6875
+              ],
+              "cpu_samples_ns": [
+                null,
+                588093.75
+              ]
+            },
+            {
+              "per_op_ns": 587401.7857142857,
+              "iters": 14,
+              "rounds": 2,
+              "spread": 0.001808813023453769,
+              "samples_ns": [
+                587401.7857142857,
+                588464.2857142857
+              ],
+              "cpu_samples_ns": [
+                null,
+                588639.8571428572
+              ]
+            },
+            {
+              "per_op_ns": 579172.6428571428,
+              "iters": 14,
+              "rounds": 2,
+              "spread": 0.035215381744673466,
+              "samples_ns": [
+                579172.6428571428,
+                599568.4285714285
+              ],
+              "cpu_samples_ns": [
+                null,
+                599735.1428571428
+              ]
+            },
+            {
+              "per_op_ns": 548878.0,
+              "iters": 14,
+              "rounds": 2,
+              "spread": 0.007596535894263258,
+              "samples_ns": [
+                553047.5714285715,
+                548878.0
+              ],
+              "cpu_samples_ns": [
+                null,
+                549005.9285714285
+              ]
+            }
+          ],
+          "median_ns": 587401.7857142857
+        },
+        {
+          "name": "dataset-40001-stream",
+          "operation": "stream",
+          "fixture": null,
+          "raw_bytes": 2017832,
+          "compressed_bytes": 201425,
+          "raw_sha256": "2badb266f2a9e4da80c83c9a1de0c6ca042421e93664c17681feb62e3b42e433",
+          "compressed_sha256": "cc33364e1c460d6d5a52882ca80602646dba5db92aa6987eefc95e19a7243df0",
+          "output_bytes": 2017832,
+          "output_sha256": "2badb266f2a9e4da80c83c9a1de0c6ca042421e93664c17681feb62e3b42e433",
+          "identical_output": true,
+          "native_calls": {
+            "zlib.crc32": 46,
+            "zlib.decompress": 43
+          },
+          "measurements": [
+            {
+              "per_op_ns": 802229.2,
+              "iters": 10,
+              "rounds": 2,
+              "spread": 0.0018073388502936568,
+              "samples_ns": [
+                802229.2,
+                803679.1
+              ],
+              "cpu_samples_ns": [
+                null,
+                797075.0
+              ]
+            },
+            {
+              "per_op_ns": 771072.9166666666,
+              "iters": 12,
+              "rounds": 2,
+              "spread": 0.07481901571133297,
+              "samples_ns": [
+                771072.9166666666,
+                828763.8333333334
+              ],
+              "cpu_samples_ns": [
+                null,
+                774725.75
+              ]
+            },
+            {
+              "per_op_ns": 1139183.4,
+              "iters": 5,
+              "rounds": 2,
+              "spread": 0.2046422024759139,
+              "samples_ns": [
+                1139183.4,
+                1372308.4
+              ],
+              "cpu_samples_ns": [
+                null,
+                868125.0
+              ]
+            },
+            {
+              "per_op_ns": 807732.6666666666,
+              "iters": 12,
+              "rounds": 2,
+              "spread": 0.07822813075943444,
+              "samples_ns": [
+                870920.0833333334,
+                807732.6666666666
+              ],
+              "cpu_samples_ns": [
+                null,
+                785048.5833333334
+              ]
+            },
+            {
+              "per_op_ns": 770198.0,
+              "iters": 8,
+              "rounds": 2,
+              "spread": 0.008513719848662293,
+              "samples_ns": [
+                770198.0,
+                776755.25
+              ],
+              "cpu_samples_ns": [
+                null,
+                777156.25
+              ]
+            },
+            {
+              "per_op_ns": 719350.6666666666,
+              "iters": 12,
+              "rounds": 2,
+              "spread": 0.0019452728664554886,
+              "samples_ns": [
+                719350.6666666666,
+                720750.0
+              ],
+              "cpu_samples_ns": [
+                null,
+                720864.5833333334
+              ]
+            },
+            {
+              "per_op_ns": 701302.0,
+              "iters": 8,
+              "rounds": 2,
+              "spread": 0.09487585234321305,
+              "samples_ns": [
+                767838.625,
+                701302.0
+              ],
+              "cpu_samples_ns": [
+                null,
+                701557.25
+              ]
+            }
+          ],
+          "median_ns": 771072.9166666666
+        },
+        {
+          "name": "upload-40001-two-passes",
+          "operation": "upload",
+          "fixture": null,
+          "raw_bytes": 2017832,
+          "compressed_bytes": 201425,
+          "raw_sha256": "2badb266f2a9e4da80c83c9a1de0c6ca042421e93664c17681feb62e3b42e433",
+          "compressed_sha256": "cc33364e1c460d6d5a52882ca80602646dba5db92aa6987eefc95e19a7243df0",
+          "output_bytes": 2017832,
+          "output_sha256": "2badb266f2a9e4da80c83c9a1de0c6ca042421e93664c17681feb62e3b42e433",
+          "identical_output": true,
+          "native_calls": {
+            "zlib.crc32": 30,
+            "zlib.decompress": 24
+          },
+          "measurements": [
+            {
+              "per_op_ns": 2400250.0,
+              "iters": 2,
+              "rounds": 2,
+              "spread": 0.09826247265909802,
+              "samples_ns": [
+                2636104.5,
+                2400250.0
+              ],
+              "cpu_samples_ns": [
+                null,
+                1667229.0
+              ]
+            },
+            {
+              "per_op_ns": 1444021.0,
+              "iters": 4,
+              "rounds": 2,
+              "spread": 0.05030795951028413,
+              "samples_ns": [
+                1516666.75,
+                1444021.0
+              ],
+              "cpu_samples_ns": [
+                null,
+                1445062.5
+              ]
+            },
+            {
+              "per_op_ns": 1463118.0,
+              "iters": 6,
+              "rounds": 2,
+              "spread": 0.33967606622751323,
+              "samples_ns": [
+                1960104.1666666667,
+                1463118.0
+              ],
+              "cpu_samples_ns": [
+                null,
+                1463639.0
+              ]
+            },
+            {
+              "per_op_ns": 3102562.5,
+              "iters": 6,
+              "rounds": 2,
+              "spread": 0.20909914519583947,
+              "samples_ns": [
+                3751305.6666666665,
+                3102562.5
+              ],
+              "cpu_samples_ns": [
+                null,
+                1641645.8333333333
+              ]
+            },
+            {
+              "per_op_ns": 1411625.0,
+              "iters": 6,
+              "rounds": 2,
+              "spread": 0.0020809350925351986,
+              "samples_ns": [
+                1411625.0,
+                1414562.5
+              ],
+              "cpu_samples_ns": [
+                null,
+                1415000.0
+              ]
+            },
+            {
+              "per_op_ns": 1427798.5,
+              "iters": 6,
+              "rounds": 2,
+              "spread": 0.0037354710766260087,
+              "samples_ns": [
+                1427798.5,
+                1433132.0
+              ],
+              "cpu_samples_ns": [
+                null,
+                1433673.6666666667
+              ]
+            },
+            {
+              "per_op_ns": 1348083.3333333333,
+              "iters": 6,
+              "rounds": 2,
+              "spread": 0.011322618532484391,
+              "samples_ns": [
+                1363347.1666666667,
+                1348083.3333333333
+              ],
+              "cpu_samples_ns": [
+                null,
+                1348541.6666666667
+              ]
+            }
+          ],
+          "median_ns": 1444021.0
+        },
+        {
+          "name": "http-bounded-expansion",
+          "operation": "bounded",
+          "fixture": null,
+          "raw_bytes": 1000000,
+          "compressed_bytes": 1004,
+          "raw_sha256": "7e80c2132dad37d00ce8521934fe15d79171b2dfed31ba88c34cf654353b0424",
+          "compressed_sha256": "3ccd848688ef8e1add17ca86d104fe4eda3dd9f907a9f98dd445fd76eedfd592",
+          "output_bytes": 2009,
+          "output_sha256": "282a6a2b301d95d046d8ad8bcd7526a11315d3f832e6ad11d9e8c029641ee51a",
+          "identical_output": true,
+          "native_calls": {
+            "zlib.crc32": 2,
+            "zlib.decompress": 1
+          },
+          "measurements": [
+            {
+              "per_op_ns": 8928.01953125,
+              "iters": 1024,
+              "rounds": 2,
+              "spread": 0.005769887901195893,
+              "samples_ns": [
+                8979.533203125,
+                8928.01953125
+              ],
+              "cpu_samples_ns": [
+                null,
+                8931.2744140625
+              ]
+            },
+            {
+              "per_op_ns": 8874.0234375,
+              "iters": 768,
+              "rounds": 2,
+              "spread": 0.06772194710392135,
+              "samples_ns": [
+                9474.989583333334,
+                8874.0234375
+              ],
+              "cpu_samples_ns": [
+                null,
+                8878.364583333334
+              ]
+            },
+            {
+              "per_op_ns": 8742.919921875,
+              "iters": 1024,
+              "rounds": 2,
+              "spread": 0.00286694032559828,
+              "samples_ns": [
+                8767.9853515625,
+                8742.919921875
+              ],
+              "cpu_samples_ns": [
+                null,
+                8745.890625
+              ]
+            },
+            {
+              "per_op_ns": 8696.072916666666,
+              "iters": 768,
+              "rounds": 2,
+              "spread": 0.0033875444255848245,
+              "samples_ns": [
+                8725.53125,
+                8696.072916666666
+              ],
+              "cpu_samples_ns": [
+                null,
+                8699.65234375
+              ]
+            },
+            {
+              "per_op_ns": 8843.61049107143,
+              "iters": 896,
+              "rounds": 2,
+              "spread": 0.010511523717877932,
+              "samples_ns": [
+                8936.5703125,
+                8843.61049107143
+              ],
+              "cpu_samples_ns": [
+                null,
+                8846.029017857143
+              ]
+            },
+            {
+              "per_op_ns": 8911.7021484375,
+              "iters": 1024,
+              "rounds": 2,
+              "spread": 10.43018303597699,
+              "samples_ns": [
+                8911.7021484375,
+                101862.38671875
+              ],
+              "cpu_samples_ns": [
+                null,
+                9083.4150390625
+              ]
+            },
+            {
+              "per_op_ns": 8851.07421875,
+              "iters": 1024,
+              "rounds": 2,
+              "spread": 0.006486677332156451,
+              "samples_ns": [
+                8908.48828125,
+                8851.07421875
+              ],
+              "cpu_samples_ns": [
+                null,
+                8853.6376953125
+              ]
+            }
+          ],
+          "median_ns": 8851.07421875
+        },
+        {
+          "name": "journal-200-members",
+          "operation": "lines",
+          "fixture": null,
+          "raw_bytes": 15140,
+          "compressed_bytes": 2341,
+          "raw_sha256": "bf7bf2b97272913a835dae66de8be38967fe22dd712de87d49e2e8c101440093",
+          "compressed_sha256": "6df3ee6a614cc33011b69cab0aefabee5d0c058e277a8b6ea711dffbb9c340b8",
+          "output_bytes": 15140,
+          "output_sha256": "bf7bf2b97272913a835dae66de8be38967fe22dd712de87d49e2e8c101440093",
+          "identical_output": true,
+          "native_calls": {
+            "zlib.crc32": 5,
+            "zlib.decompress": 2
+          },
+          "measurements": [
+            {
+              "per_op_ns": 54857.09375,
+              "iters": 128,
+              "rounds": 2,
+              "spread": 13.361012163992008,
+              "samples_ns": [
+                54857.09375,
+                787803.390625
+              ],
+              "cpu_samples_ns": [
+                null,
+                59823.5703125
+              ]
+            },
+            {
+              "per_op_ns": 56385.7421875,
+              "iters": 128,
+              "rounds": 2,
+              "spread": 4.56316070593533,
+              "samples_ns": [
+                56385.7421875,
+                313682.9453125
+              ],
+              "cpu_samples_ns": [
+                null,
+                61097.0
+              ]
+            },
+            {
+              "per_op_ns": 104048.828125,
+              "iters": 64,
+              "rounds": 2,
+              "spread": 0.1525850618512192,
+              "samples_ns": [
+                104048.828125,
+                119925.125
+              ],
+              "cpu_samples_ns": [
+                null,
+                62322.265625
+              ]
+            },
+            {
+              "per_op_ns": 55867.5,
+              "iters": 100,
+              "rounds": 2,
+              "spread": 3.8201324562581105,
+              "samples_ns": [
+                55867.5,
+                269288.75
+              ],
+              "cpu_samples_ns": [
+                null,
+                57786.67
+              ]
+            },
+            {
+              "per_op_ns": 97917.3125,
+              "iters": 64,
+              "rounds": 2,
+              "spread": 0.11248601339012444,
+              "samples_ns": [
+                97917.3125,
+                108931.640625
+              ],
+              "cpu_samples_ns": [
+                null,
+                77970.046875
+              ]
+            },
+            {
+              "per_op_ns": 51621.916666666664,
+              "iters": 108,
+              "rounds": 2,
+              "spread": 0.049856443762133044,
+              "samples_ns": [
+                51621.916666666664,
+                54195.601851851854
+              ],
+              "cpu_samples_ns": [
+                null,
+                54218.36111111111
+              ]
+            },
+            {
+              "per_op_ns": 53410.18032786885,
+              "iters": 122,
+              "rounds": 2,
+              "spread": 13.590139075223886,
+              "samples_ns": [
+                53410.18032786885,
+                779261.9590163934
+              ],
+              "cpu_samples_ns": [
+                null,
+                58779.37704918033
+              ]
+            }
+          ],
+          "median_ns": 55867.5
+        },
+        {
+          "name": "journal-20000-members",
+          "operation": "lines",
+          "fixture": null,
+          "raw_bytes": 1673560,
+          "compressed_bytes": 235019,
+          "raw_sha256": "c1005eb7020978a1b655b4aee18795fa86667a7690bf73ea5f4fdf6f3ff16f7d",
+          "compressed_sha256": "113e9cdbe14ad5138e463c8a846b2e98ebc33ad5fbd641a0250f8709b820093d",
+          "output_bytes": 1673560,
+          "output_sha256": "c1005eb7020978a1b655b4aee18795fa86667a7690bf73ea5f4fdf6f3ff16f7d",
+          "identical_output": true,
+          "native_calls": {
+            "zlib.crc32": 501,
+            "zlib.decompress": 300
+          },
+          "measurements": [
+            {
+              "per_op_ns": 9327208.0,
+              "iters": 1,
+              "rounds": 2,
+              "spread": 4.448624926130091,
+              "samples_ns": [
+                9327208.0,
+                50820458.0
+              ],
+              "cpu_samples_ns": [
+                null,
+                8954375.0
+              ]
+            },
+            {
+              "per_op_ns": 5972000.0,
+              "iters": 1,
+              "rounds": 2,
+              "spread": 2.6656689551239117,
+              "samples_ns": [
+                5972000.0,
+                21891375.0
+              ],
+              "cpu_samples_ns": [
+                null,
+                6478791.0
+              ]
+            },
+            {
+              "per_op_ns": 6024833.0,
+              "iters": 1,
+              "rounds": 2,
+              "spread": 0.07186937795620227,
+              "samples_ns": [
+                6457834.0,
+                6024833.0
+              ],
+              "cpu_samples_ns": [
+                null,
+                6028250.0
+              ]
+            },
+            {
+              "per_op_ns": 5869333.0,
+              "iters": 1,
+              "rounds": 2,
+              "spread": 0.029815994423897912,
+              "samples_ns": [
+                5869333.0,
+                6044333.0
+              ],
+              "cpu_samples_ns": [
+                null,
+                6047375.0
+              ]
+            },
+            {
+              "per_op_ns": 6055375.0,
+              "iters": 1,
+              "rounds": 2,
+              "spread": 0.002855644778399356,
+              "samples_ns": [
+                6072667.0,
+                6055375.0
+              ],
+              "cpu_samples_ns": [
+                null,
+                6058333.0
+              ]
+            },
+            {
+              "per_op_ns": 6385666.0,
+              "iters": 1,
+              "rounds": 2,
+              "spread": 1.0993307510915855,
+              "samples_ns": [
+                6385666.0,
+                13405625.0
+              ],
+              "cpu_samples_ns": [
+                null,
+                6530042.0
+              ]
+            },
+            {
+              "per_op_ns": 6250417.0,
+              "iters": 1,
+              "rounds": 2,
+              "spread": 10.613898400698705,
+              "samples_ns": [
+                6250417.0,
+                72591708.0
+              ],
+              "cpu_samples_ns": [
+                null,
+                6951833.0
+              ]
+            }
+          ],
+          "median_ns": 6055375.0
+        }
+      ]
+    },
+    "baseline": {
+      "metadata": {
+        "python": "3.13.14 (main, Aug  5 2026, 15:33:38) [Clang 22.1.3 ]",
+        "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+        "machine": "arm64",
+        "zlib_version": "1.2.12",
+        "zlib_runtime_version": "1.2.12",
+        "versions": {
+          "unstd": "3.1.2",
+          "zlib-ng": "1.0.0"
+        },
+        "sources": {
+          "/Users/griffinstrier/Billy-Company/unstd/.local/gzip-read-before/src/unstd/compress/gzipx.py": "a511cbff26c78cac212c27aa3e32749db6c1638f946a00ddd757d2ccb17d1542",
+          "/Users/griffinstrier/Billy-Company/unstd/.local/gzip-read-before/src/unstd/compress/_inflate.py": "4ba6f281e608b2d6512375b1fe99e64f0849c7b60df4c0e676af2ff52c4847d2",
+          "/Users/griffinstrier/Billy-Company/unstd/.local/gzip-read-before/src/unstd/compress/_backend.py": "85bbba7729891333d0a66c64e068fed98849b263406336a416427764548f37df"
+        },
+        "compression_native_calls": {
+          "zlib_ng.zlib_ng.compress": 1
+        },
+        "compression_output_sha256": "2622ef87a1e21930f7cb896a463f223881445a3e049864b9a14b16ea22e9ae84"
+      },
+      "cases": [
+        {
+          "name": "source_record_capture.json",
+          "operation": "decompress",
+          "fixture": "/Users/griffinstrier/Billy-Company/billy/services/ai/tests/support/fixtures/source_record_capture.json",
+          "raw_bytes": 18255,
+          "compressed_bytes": 3693,
+          "raw_sha256": "3598d59636d6636a6e5e7f7bff22621eab6b150a7b916e7289053a624e9c1db8",
+          "compressed_sha256": "cafb6a9903e91900be9696640906228ca3401f9968b87401cc73f64e288a3194",
+          "output_bytes": 18255,
+          "output_sha256": "3598d59636d6636a6e5e7f7bff22621eab6b150a7b916e7289053a624e9c1db8",
+          "identical_output": true,
+          "native_calls": {},
+          "measurements": [
+            {
+              "per_op_ns": 19383.895833333332,
+              "iters": 384,
+              "rounds": 2,
+              "spread": 0.0008453108089081679,
+              "samples_ns": [
+                19383.895833333332,
+                19400.28125
+              ],
+              "cpu_samples_ns": [
+                null,
+                19406.033854166668
+              ]
+            },
+            {
+              "per_op_ns": 42460.611328125,
+              "iters": 512,
+              "rounds": 2,
+              "spread": 4.905844998901325,
+              "samples_ns": [
+                42460.611328125,
+                250765.7890625
+              ],
+              "cpu_samples_ns": [
+                null,
+                22256.673828125
+              ]
+            },
+            {
+              "per_op_ns": 19579.9140625,
+              "iters": 256,
+              "rounds": 2,
+              "spread": 0.1305997975444383,
+              "samples_ns": [
+                22137.046875,
+                19579.9140625
+              ],
+              "cpu_samples_ns": [
+                null,
+                19589.6796875
+              ]
+            },
+            {
+              "per_op_ns": 36471.599609375,
+              "iters": 512,
+              "rounds": 2,
+              "spread": 3.126906803929577,
+              "samples_ns": [
+                150514.892578125,
+                36471.599609375
+              ],
+              "cpu_samples_ns": [
+                null,
+                21580.728515625
+              ]
+            },
+            {
+              "per_op_ns": 19476.888020833332,
+              "iters": 384,
+              "rounds": 2,
+              "spread": 0.001754884428325506,
+              "samples_ns": [
+                19476.888020833332,
+                19511.067708333332
+              ],
+              "cpu_samples_ns": [
+                null,
+                19514.432291666668
+              ]
+            },
+            {
+              "per_op_ns": 24489.09375,
+              "iters": 256,
+              "rounds": 2,
+              "spread": 0.9813839323882698,
+              "samples_ns": [
+                24489.09375,
+                48522.296875
+              ],
+              "cpu_samples_ns": [
+                null,
+                22790.36328125
+              ]
+            },
+            {
+              "per_op_ns": 20806.75,
+              "iters": 384,
+              "rounds": 2,
+              "spread": 0.03604599468922345,
+              "samples_ns": [
+                20806.75,
+                21556.75
+              ],
+              "cpu_samples_ns": [
+                null,
+                21562.390625
+              ]
+            }
+          ],
+          "median_ns": 20806.75
+        },
+        {
+          "name": "purchase_capture.json",
+          "operation": "decompress",
+          "fixture": "/Users/griffinstrier/Billy-Company/billy/services/ai/tests/support/fixtures/purchase_capture.json",
+          "raw_bytes": 9575,
+          "compressed_bytes": 1736,
+          "raw_sha256": "0ec6ec5e123ecac16323fc2e49295a296b516b3832412296ede76059d26b2188",
+          "compressed_sha256": "0cb49e05b356f201b69ba403047386d325ca05fcd3ec9f71bedaf28ed8b85913",
+          "output_bytes": 9575,
+          "output_sha256": "0ec6ec5e123ecac16323fc2e49295a296b516b3832412296ede76059d26b2188",
+          "identical_output": true,
+          "native_calls": {},
+          "measurements": [
+            {
+              "per_op_ns": 10101.050223214286,
+              "iters": 896,
+              "rounds": 2,
+              "spread": 0.0014641113719058342,
+              "samples_ns": [
+                10101.050223214286,
+                10115.839285714286
+              ],
+              "cpu_samples_ns": [
+                null,
+                10117.885044642857
+              ]
+            },
+            {
+              "per_op_ns": 10800.86328125,
+              "iters": 512,
+              "rounds": 2,
+              "spread": 0.01591307986449289,
+              "samples_ns": [
+                10800.86328125,
+                10972.73828125
+              ],
+              "cpu_samples_ns": [
+                null,
+                10977.5390625
+              ]
+            },
+            {
+              "per_op_ns": 10865.466517857143,
+              "iters": 896,
+              "rounds": 2,
+              "spread": 0.0010871599466609583,
+              "samples_ns": [
+                10877.279017857143,
+                10865.466517857143
+              ],
+              "cpu_samples_ns": [
+                null,
+                10866.768973214286
+              ]
+            },
+            {
+              "per_op_ns": 68162.109375,
+              "iters": 64,
+              "rounds": 2,
+              "spread": 0.37252253646236283,
+              "samples_ns": [
+                93554.03125,
+                68162.109375
+              ],
+              "cpu_samples_ns": [
+                null,
+                14677.09375
+              ]
+            },
+            {
+              "per_op_ns": 10821.533203125,
+              "iters": 512,
+              "rounds": 2,
+              "spread": 0.0037151043429216016,
+              "samples_ns": [
+                10861.736328125,
+                10821.533203125
+              ],
+              "cpu_samples_ns": [
+                null,
+                10826.25390625
+              ]
+            },
+            {
+              "per_op_ns": 10739.583984375,
+              "iters": 512,
+              "rounds": 2,
+              "spread": 0.742172239199064,
+              "samples_ns": [
+                10739.583984375,
+                18710.205078125
+              ],
+              "cpu_samples_ns": [
+                null,
+                11133.21875
+              ]
+            },
+            {
+              "per_op_ns": 10966.9921875,
+              "iters": 640,
+              "rounds": 2,
+              "spread": 0.018028672686149844,
+              "samples_ns": [
+                11164.7125,
+                10966.9921875
+              ],
+              "cpu_samples_ns": [
+                null,
+                10970.246875
+              ]
+            }
+          ],
+          "median_ns": 10821.533203125
+        },
+        {
+          "name": "dataset-100-decompress",
+          "operation": "decompress",
+          "fixture": null,
+          "raw_bytes": 991,
+          "compressed_bytes": 219,
+          "raw_sha256": "febd577beb38f231e6d237199127f5a03d9ca3000cbb50d09942c0c0d7f8ba4e",
+          "compressed_sha256": "03428019a441118f4ce2dd23f32b7ed2b361c822e293961c7360bb5db0ed9fb7",
+          "output_bytes": 991,
+          "output_sha256": "febd577beb38f231e6d237199127f5a03d9ca3000cbb50d09942c0c0d7f8ba4e",
+          "identical_output": true,
+          "native_calls": {},
+          "measurements": [
+            {
+              "per_op_ns": 3520.1822916666665,
+              "iters": 2688,
+              "rounds": 2,
+              "spread": 0.0035492615392744855,
+              "samples_ns": [
+                3532.676339285714,
+                3520.1822916666665
+              ],
+              "cpu_samples_ns": [
+                null,
+                3521.096726190476
+              ]
+            },
+            {
+              "per_op_ns": 8482.33695652174,
+              "iters": 1472,
+              "rounds": 2,
+              "spread": 0.20039444177478777,
+              "samples_ns": [
+                10182.150135869566,
+                8482.33695652174
+              ],
+              "cpu_samples_ns": [
+                null,
+                3590.4096467391305
+              ]
+            },
+            {
+              "per_op_ns": 3942.2203125,
+              "iters": 1280,
+              "rounds": 2,
+              "spread": 0.015482431577065747,
+              "samples_ns": [
+                4003.25546875,
+                3942.2203125
+              ],
+              "cpu_samples_ns": [
+                null,
+                3789.2578125
+              ]
+            },
+            {
+              "per_op_ns": 4752.3765625,
+              "iters": 1280,
+              "rounds": 2,
+              "spread": 0.5373817902292964,
+              "samples_ns": [
+                4752.3765625,
+                7306.2171875
+              ],
+              "cpu_samples_ns": [
+                null,
+                3860.25390625
+              ]
+            },
+            {
+              "per_op_ns": 3556.9069602272725,
+              "iters": 1408,
+              "rounds": 2,
+              "spread": 0.03202296268563584,
+              "samples_ns": [
+                3670.809659090909,
+                3556.9069602272725
+              ],
+              "cpu_samples_ns": [
+                null,
+                3558.1207386363635
+              ]
+            },
+            {
+              "per_op_ns": 3270.0427827380954,
+              "iters": 2688,
+              "rounds": 2,
+              "spread": 0.07168281687737312,
+              "samples_ns": [
+                3504.448660714286,
+                3270.0427827380954
+              ],
+              "cpu_samples_ns": [
+                null,
+                3270.6473214285716
+              ]
+            },
+            {
+              "per_op_ns": 3335.5978260869565,
+              "iters": 2944,
+              "rounds": 2,
+              "spread": 0.0186949083503055,
+              "samples_ns": [
+                3335.5978260869565,
+                3397.9565217391305
+              ],
+              "cpu_samples_ns": [
+                null,
+                3398.6216032608695
+              ]
+            }
+          ],
+          "median_ns": 3556.9069602272725
+        },
+        {
+          "name": "dataset-100-stream",
+          "operation": "stream",
+          "fixture": null,
+          "raw_bytes": 991,
+          "compressed_bytes": 219,
+          "raw_sha256": "febd577beb38f231e6d237199127f5a03d9ca3000cbb50d09942c0c0d7f8ba4e",
+          "compressed_sha256": "03428019a441118f4ce2dd23f32b7ed2b361c822e293961c7360bb5db0ed9fb7",
+          "output_bytes": 991,
+          "output_sha256": "febd577beb38f231e6d237199127f5a03d9ca3000cbb50d09942c0c0d7f8ba4e",
+          "identical_output": true,
+          "native_calls": {
+            "zlib.crc32": 4,
+            "zlib_ng.decompress": 1
+          },
+          "measurements": [
+            {
+              "per_op_ns": 17624.567708333332,
+              "iters": 384,
+              "rounds": 2,
+              "spread": 0.06408357533591988,
+              "samples_ns": [
+                17624.567708333332,
+                18754.013020833332
+              ],
+              "cpu_samples_ns": [
+                null,
+                18757.270833333332
+              ]
+            },
+            {
+              "per_op_ns": 18547.19921875,
+              "iters": 256,
+              "rounds": 2,
+              "spread": 2.7028891449454444,
+              "samples_ns": [
+                68678.22265625,
+                18547.19921875
+              ],
+              "cpu_samples_ns": [
+                null,
+                18558.91796875
+              ]
+            },
+            {
+              "per_op_ns": 17541.91015625,
+              "iters": 512,
+              "rounds": 2,
+              "spread": 0.7832154868396646,
+              "samples_ns": [
+                17541.91015625,
+                31281.005859375
+              ],
+              "cpu_samples_ns": [
+                null,
+                18094.400390625
+              ]
+            },
+            {
+              "per_op_ns": 17583.578125,
+              "iters": 512,
+              "rounds": 2,
+              "spread": 6.292802388414616,
+              "samples_ns": [
+                17583.578125,
+                128233.560546875
+              ],
+              "cpu_samples_ns": [
+                null,
+                20984.86328125
+              ]
+            },
+            {
+              "per_op_ns": 17282.876953125,
+              "iters": 512,
+              "rounds": 2,
+              "spread": 0.014507562748669796,
+              "samples_ns": [
+                17282.876953125,
+                17533.609375
+              ],
+              "cpu_samples_ns": [
+                null,
+                17539.0625
+              ]
+            },
+            {
+              "per_op_ns": 18385.009765625,
+              "iters": 512,
+              "rounds": 2,
+              "spread": 6.173153548901135,
+              "samples_ns": [
+                18385.009765625,
+                131878.498046875
+              ],
+              "cpu_samples_ns": [
+                null,
+                24599.529296875
+              ]
+            },
+            {
+              "per_op_ns": 18949.298828125,
+              "iters": 512,
+              "rounds": 2,
+              "spread": 0.1642223528018486,
+              "samples_ns": [
+                18949.298828125,
+                22061.197265625
+              ],
+              "cpu_samples_ns": [
+                null,
+                19910.5625
+              ]
+            }
+          ],
+          "median_ns": 17624.567708333332
+        },
+        {
+          "name": "upload-100-two-passes",
+          "operation": "upload",
+          "fixture": null,
+          "raw_bytes": 991,
+          "compressed_bytes": 219,
+          "raw_sha256": "febd577beb38f231e6d237199127f5a03d9ca3000cbb50d09942c0c0d7f8ba4e",
+          "compressed_sha256": "03428019a441118f4ce2dd23f32b7ed2b361c822e293961c7360bb5db0ed9fb7",
+          "output_bytes": 991,
+          "output_sha256": "febd577beb38f231e6d237199127f5a03d9ca3000cbb50d09942c0c0d7f8ba4e",
+          "identical_output": true,
+          "native_calls": {
+            "zlib.crc32": 8,
+            "zlib_ng.decompress": 2
+          },
+          "measurements": [
+            {
+              "per_op_ns": 31545.5703125,
+              "iters": 256,
+              "rounds": 2,
+              "spread": 0.17387123241600136,
+              "samples_ns": [
+                31545.5703125,
+                37030.4375
+              ],
+              "cpu_samples_ns": [
+                null,
+                31366.86328125
+              ]
+            },
+            {
+              "per_op_ns": 31542.20779220779,
+              "iters": 154,
+              "rounds": 2,
+              "spread": 0.15337951621204324,
+              "samples_ns": [
+                36380.13636363636,
+                31542.20779220779
+              ],
+              "cpu_samples_ns": [
+                null,
+                31551.136363636364
+              ]
+            },
+            {
+              "per_op_ns": 27879.5546875,
+              "iters": 256,
+              "rounds": 2,
+              "spread": 0.020357099722775118,
+              "samples_ns": [
+                28447.1015625,
+                27879.5546875
+              ],
+              "cpu_samples_ns": [
+                null,
+                27844.88671875
+              ]
+            },
+            {
+              "per_op_ns": 31280.43359375,
+              "iters": 256,
+              "rounds": 2,
+              "spread": 0.0012124442308746569,
+              "samples_ns": [
+                31280.43359375,
+                31318.359375
+              ],
+              "cpu_samples_ns": [
+                null,
+                31331.0546875
+              ]
+            },
+            {
+              "per_op_ns": 31093.91015625,
+              "iters": 256,
+              "rounds": 2,
+              "spread": 0.00862658873239472,
+              "samples_ns": [
+                31093.91015625,
+                31362.14453125
+              ],
+              "cpu_samples_ns": [
+                null,
+                31366.69921875
+              ]
+            },
+            {
+              "per_op_ns": 29223.54,
+              "iters": 200,
+              "rounds": 2,
+              "spread": 0.08715148814962184,
+              "samples_ns": [
+                31770.415,
+                29223.54
+              ],
+              "cpu_samples_ns": [
+                null,
+                29229.79
+              ]
+            },
+            {
+              "per_op_ns": 31392.07786885246,
+              "iters": 244,
+              "rounds": 2,
+              "spread": 0.6531287848414298,
+              "samples_ns": [
+                31392.07786885246,
+                51895.147540983606
+              ],
+              "cpu_samples_ns": [
+                null,
+                35684.08606557377
+              ]
+            }
+          ],
+          "median_ns": 31280.43359375
+        },
+        {
+          "name": "dataset-20001-decompress",
+          "operation": "decompress",
+          "fixture": null,
+          "raw_bytes": 248904,
+          "compressed_bytes": 47652,
+          "raw_sha256": "4cf6b5445411018f3da71d2320f62ee5e9e34cba753bd297c3f2560ed1b59e4f",
+          "compressed_sha256": "e96cea225377305fb2525937cf788b71611acbce8caaf3a8d1ebc963fd2b9dde",
+          "output_bytes": 248904,
+          "output_sha256": "4cf6b5445411018f3da71d2320f62ee5e9e34cba753bd297c3f2560ed1b59e4f",
+          "identical_output": true,
+          "native_calls": {},
+          "measurements": [
+            {
+              "per_op_ns": 169672.44444444444,
+              "iters": 36,
+              "rounds": 2,
+              "spread": 0.003096980325489898,
+              "samples_ns": [
+                170197.91666666666,
+                169672.44444444444
+              ],
+              "cpu_samples_ns": [
+                null,
+                169703.69444444444
+              ]
+            },
+            {
+              "per_op_ns": 170631.69642857142,
+              "iters": 56,
+              "rounds": 2,
+              "spread": 8.412542678858758,
+              "samples_ns": [
+                170631.69642857142,
+                1606078.125
+              ],
+              "cpu_samples_ns": [
+                null,
+                174805.80357142858
+              ]
+            },
+            {
+              "per_op_ns": 191918.39583333334,
+              "iters": 48,
+              "rounds": 2,
+              "spread": 3.2621196530686927,
+              "samples_ns": [
+                191918.39583333334,
+                817979.1666666666
+              ],
+              "cpu_samples_ns": [
+                null,
+                207814.22916666666
+              ]
+            },
+            {
+              "per_op_ns": 157796.875,
+              "iters": 32,
+              "rounds": 2,
+              "spread": 14.519242697296763,
+              "samples_ns": [
+                157796.875,
+                2448888.0
+              ],
+              "cpu_samples_ns": [
+                null,
+                169946.59375
+              ]
+            },
+            {
+              "per_op_ns": 170348.6,
+              "iters": 30,
+              "rounds": 2,
+              "spread": 0.005299720690396047,
+              "samples_ns": [
+                171251.4,
+                170348.6
+              ],
+              "cpu_samples_ns": [
+                null,
+                170420.83333333334
+              ]
+            },
+            {
+              "per_op_ns": 160729.1724137931,
+              "iters": 58,
+              "rounds": 2,
+              "spread": 0.04680533499701576,
+              "samples_ns": [
+                168252.1551724138,
+                160729.1724137931
+              ],
+              "cpu_samples_ns": [
+                null,
+                160775.1551724138
+              ]
+            },
+            {
+              "per_op_ns": 170319.03125,
+              "iters": 32,
+              "rounds": 2,
+              "spread": 2.14511645333234,
+              "samples_ns": [
+                170319.03125,
+                535673.1875
+              ],
+              "cpu_samples_ns": [
+                null,
+                198975.28125
+              ]
+            }
+          ],
+          "median_ns": 170319.03125
+        },
+        {
+          "name": "dataset-20001-stream",
+          "operation": "stream",
+          "fixture": null,
+          "raw_bytes": 248904,
+          "compressed_bytes": 47652,
+          "raw_sha256": "4cf6b5445411018f3da71d2320f62ee5e9e34cba753bd297c3f2560ed1b59e4f",
+          "compressed_sha256": "e96cea225377305fb2525937cf788b71611acbce8caaf3a8d1ebc963fd2b9dde",
+          "output_bytes": 248904,
+          "output_sha256": "4cf6b5445411018f3da71d2320f62ee5e9e34cba753bd297c3f2560ed1b59e4f",
+          "identical_output": true,
+          "native_calls": {
+            "zlib.crc32": 7,
+            "zlib_ng.decompress": 4
+          },
+          "measurements": [
+            {
+              "per_op_ns": 185294.43333333332,
+              "iters": 30,
+              "rounds": 2,
+              "spread": 0.00372542222441293,
+              "samples_ns": [
+                185984.73333333334,
+                185294.43333333332
+              ],
+              "cpu_samples_ns": [
+                null,
+                185372.23333333334
+              ]
+            },
+            {
+              "per_op_ns": 274042.0,
+              "iters": 2,
+              "rounds": 2,
+              "spread": 12.439012998007605,
+              "samples_ns": [
+                3682854.0,
+                274042.0
+              ],
+              "cpu_samples_ns": [
+                null,
+                242917.0
+              ]
+            },
+            {
+              "per_op_ns": 174522.125,
+              "iters": 32,
+              "rounds": 2,
+              "spread": 0.02203194867126446,
+              "samples_ns": [
+                178367.1875,
+                174522.125
+              ],
+              "cpu_samples_ns": [
+                null,
+                174602.84375
+              ]
+            },
+            {
+              "per_op_ns": 364659.75,
+              "iters": 12,
+              "rounds": 2,
+              "spread": 1.0580449766300413,
+              "samples_ns": [
+                750486.1666666666,
+                364659.75
+              ],
+              "cpu_samples_ns": [
+                null,
+                224555.58333333334
+              ]
+            },
+            {
+              "per_op_ns": 184118.91666666666,
+              "iters": 48,
+              "rounds": 2,
+              "spread": 0.0051955778579695095,
+              "samples_ns": [
+                184118.91666666666,
+                185075.52083333334
+              ],
+              "cpu_samples_ns": [
+                null,
+                185134.5625
+              ]
+            },
+            {
+              "per_op_ns": 180902.79166666666,
+              "iters": 48,
+              "rounds": 2,
+              "spread": 0.02431853939972826,
+              "samples_ns": [
+                185302.08333333334,
+                180902.79166666666
+              ],
+              "cpu_samples_ns": [
+                null,
+                180938.35416666666
+              ]
+            },
+            {
+              "per_op_ns": 187593.32,
+              "iters": 50,
+              "rounds": 2,
+              "spread": 17.569957608298633,
+              "samples_ns": [
+                187593.32,
+                3483600.0
+              ],
+              "cpu_samples_ns": [
+                null,
+                220200.0
+              ]
+            }
+          ],
+          "median_ns": 185294.43333333332
+        },
+        {
+          "name": "upload-20001-two-passes",
+          "operation": "upload",
+          "fixture": null,
+          "raw_bytes": 248904,
+          "compressed_bytes": 47652,
+          "raw_sha256": "4cf6b5445411018f3da71d2320f62ee5e9e34cba753bd297c3f2560ed1b59e4f",
+          "compressed_sha256": "e96cea225377305fb2525937cf788b71611acbce8caaf3a8d1ebc963fd2b9dde",
+          "output_bytes": 248904,
+          "output_sha256": "4cf6b5445411018f3da71d2320f62ee5e9e34cba753bd297c3f2560ed1b59e4f",
+          "identical_output": true,
+          "native_calls": {
+            "zlib.crc32": 8,
+            "zlib_ng.decompress": 2
+          },
+          "measurements": [
+            {
+              "per_op_ns": 303400.0,
+              "iters": 30,
+              "rounds": 2,
+              "spread": 0.014978356405185673,
+              "samples_ns": [
+                303400.0,
+                307944.43333333335
+              ],
+              "cpu_samples_ns": [
+                null,
+                308031.9666666667
+              ]
+            },
+            {
+              "per_op_ns": 301633.9285714286,
+              "iters": 28,
+              "rounds": 2,
+              "spread": 0.0018056418908918687,
+              "samples_ns": [
+                302178.5714285714,
+                301633.9285714286
+              ],
+              "cpu_samples_ns": [
+                null,
+                301690.46428571426
+              ]
+            },
+            {
+              "per_op_ns": 303211.1,
+              "iters": 30,
+              "rounds": 2,
+              "spread": 0.006458756512102185,
+              "samples_ns": [
+                303211.1,
+                305169.4666666667
+              ],
+              "cpu_samples_ns": [
+                null,
+                305250.0
+              ]
+            },
+            {
+              "per_op_ns": 304162.21428571426,
+              "iters": 28,
+              "rounds": 2,
+              "spread": 1.9491479053352875e-05,
+              "samples_ns": [
+                304168.14285714284,
+                304162.21428571426
+              ],
+              "cpu_samples_ns": [
+                null,
+                304258.9285714286
+              ]
+            },
+            {
+              "per_op_ns": 616687.5,
+              "iters": 12,
+              "rounds": 2,
+              "spread": 0.006373568460524982,
+              "samples_ns": [
+                620618.0,
+                616687.5
+              ],
+              "cpu_samples_ns": [
+                null,
+                330291.6666666667
+              ]
+            },
+            {
+              "per_op_ns": 303427.8846153846,
+              "iters": 26,
+              "rounds": 2,
+              "spread": 29.49709784038154,
+              "samples_ns": [
+                303427.8846153846,
+                9253669.884615384
+              ],
+              "cpu_samples_ns": [
+                null,
+                369334.92307692306
+              ]
+            },
+            {
+              "per_op_ns": 326303.5714285714,
+              "iters": 28,
+              "rounds": 2,
+              "spread": 0.0028411317244021236,
+              "samples_ns": [
+                327230.64285714284,
+                326303.5714285714
+              ],
+              "cpu_samples_ns": [
+                null,
+                326416.6785714286
+              ]
+            }
+          ],
+          "median_ns": 303427.8846153846
+        },
+        {
+          "name": "dataset-40001-decompress",
+          "operation": "decompress",
+          "fixture": null,
+          "raw_bytes": 2017832,
+          "compressed_bytes": 201425,
+          "raw_sha256": "2badb266f2a9e4da80c83c9a1de0c6ca042421e93664c17681feb62e3b42e433",
+          "compressed_sha256": "cc33364e1c460d6d5a52882ca80602646dba5db92aa6987eefc95e19a7243df0",
+          "output_bytes": 2017832,
+          "output_sha256": "2badb266f2a9e4da80c83c9a1de0c6ca042421e93664c17681feb62e3b42e433",
+          "identical_output": true,
+          "native_calls": {},
+          "measurements": [
+            {
+              "per_op_ns": 1029906.25,
+              "iters": 4,
+              "rounds": 2,
+              "spread": 0.2798999908972297,
+              "samples_ns": [
+                1318177.0,
+                1029906.25
+              ],
+              "cpu_samples_ns": [
+                null,
+                1030583.5
+              ]
+            },
+            {
+              "per_op_ns": 918760.375,
+              "iters": 8,
+              "rounds": 2,
+              "spread": 1.0876919349074017,
+              "samples_ns": [
+                918760.375,
+                1918088.625
+              ],
+              "cpu_samples_ns": [
+                null,
+                972682.25
+              ]
+            },
+            {
+              "per_op_ns": 921179.2,
+              "iters": 10,
+              "rounds": 2,
+              "spread": 0.6688212239268971,
+              "samples_ns": [
+                921179.2,
+                1537283.4
+              ],
+              "cpu_samples_ns": [
+                null,
+                961362.5
+              ]
+            },
+            {
+              "per_op_ns": 8406042.0,
+              "iters": 1,
+              "rounds": 2,
+              "spread": 1.3847578920019672,
+              "samples_ns": [
+                8406042.0,
+                20046375.0
+              ],
+              "cpu_samples_ns": [
+                null,
+                1211750.0
+              ]
+            },
+            {
+              "per_op_ns": 917557.25,
+              "iters": 8,
+              "rounds": 2,
+              "spread": 0.14652805042955086,
+              "samples_ns": [
+                917557.25,
+                1052005.125
+              ],
+              "cpu_samples_ns": [
+                null,
+                933244.75
+              ]
+            },
+            {
+              "per_op_ns": 912578.125,
+              "iters": 8,
+              "rounds": 2,
+              "spread": 20.578649088262992,
+              "samples_ns": [
+                912578.125,
+                19692203.125
+              ],
+              "cpu_samples_ns": [
+                null,
+                945546.875
+              ]
+            },
+            {
+              "per_op_ns": 964720.9,
+              "iters": 10,
+              "rounds": 2,
+              "spread": 0.014987028890946594,
+              "samples_ns": [
+                979179.2,
+                964720.9
+              ],
+              "cpu_samples_ns": [
+                null,
+                965008.4
+              ]
+            }
+          ],
+          "median_ns": 921179.2
+        },
+        {
+          "name": "dataset-40001-stream",
+          "operation": "stream",
+          "fixture": null,
+          "raw_bytes": 2017832,
+          "compressed_bytes": 201425,
+          "raw_sha256": "2badb266f2a9e4da80c83c9a1de0c6ca042421e93664c17681feb62e3b42e433",
+          "compressed_sha256": "cc33364e1c460d6d5a52882ca80602646dba5db92aa6987eefc95e19a7243df0",
+          "output_bytes": 2017832,
+          "output_sha256": "2badb266f2a9e4da80c83c9a1de0c6ca042421e93664c17681feb62e3b42e433",
+          "identical_output": true,
+          "native_calls": {
+            "zlib.crc32": 46,
+            "zlib_ng.decompress": 43
+          },
+          "measurements": [
+            {
+              "per_op_ns": 889091.6,
+              "iters": 10,
+              "rounds": 2,
+              "spread": 0.10590404858172094,
+              "samples_ns": [
+                889091.6,
+                983250.0
+              ],
+              "cpu_samples_ns": [
+                null,
+                955191.7
+              ]
+            },
+            {
+              "per_op_ns": 943312.5,
+              "iters": 8,
+              "rounds": 2,
+              "spread": 0.06692943748757703,
+              "samples_ns": [
+                943312.5,
+                1006447.875
+              ],
+              "cpu_samples_ns": [
+                null,
+                970192.625
+              ]
+            },
+            {
+              "per_op_ns": 948114.625,
+              "iters": 8,
+              "rounds": 2,
+              "spread": 0.008174117132725381,
+              "samples_ns": [
+                948114.625,
+                955864.625
+              ],
+              "cpu_samples_ns": [
+                null,
+                956250.0
+              ]
+            },
+            {
+              "per_op_ns": 886406.25,
+              "iters": 4,
+              "rounds": 2,
+              "spread": 0.8024678300722722,
+              "samples_ns": [
+                1597718.75,
+                886406.25
+              ],
+              "cpu_samples_ns": [
+                null,
+                886958.5
+              ]
+            },
+            {
+              "per_op_ns": 1051104.1666666667,
+              "iters": 6,
+              "rounds": 2,
+              "spread": 0.2677937882781995,
+              "samples_ns": [
+                1332583.3333333333,
+                1051104.1666666667
+              ],
+              "cpu_samples_ns": [
+                null,
+                1051687.5
+              ]
+            },
+            {
+              "per_op_ns": 952375.0,
+              "iters": 2,
+              "rounds": 2,
+              "spread": 5.744170101063132,
+              "samples_ns": [
+                6422979.0,
+                952375.0
+              ],
+              "cpu_samples_ns": [
+                null,
+                953083.0
+              ]
+            },
+            {
+              "per_op_ns": 948750.0,
+              "iters": 8,
+              "rounds": 2,
+              "spread": 0.02136034255599473,
+              "samples_ns": [
+                969015.625,
+                948750.0
+              ],
+              "cpu_samples_ns": [
+                null,
+                949125.0
+              ]
+            }
+          ],
+          "median_ns": 948114.625
+        },
+        {
+          "name": "upload-40001-two-passes",
+          "operation": "upload",
+          "fixture": null,
+          "raw_bytes": 2017832,
+          "compressed_bytes": 201425,
+          "raw_sha256": "2badb266f2a9e4da80c83c9a1de0c6ca042421e93664c17681feb62e3b42e433",
+          "compressed_sha256": "cc33364e1c460d6d5a52882ca80602646dba5db92aa6987eefc95e19a7243df0",
+          "output_bytes": 2017832,
+          "output_sha256": "2badb266f2a9e4da80c83c9a1de0c6ca042421e93664c17681feb62e3b42e433",
+          "identical_output": true,
+          "native_calls": {
+            "zlib.crc32": 30,
+            "zlib_ng.decompress": 24
+          },
+          "measurements": [
+            {
+              "per_op_ns": 1830989.75,
+              "iters": 4,
+              "rounds": 2,
+              "spread": 0.0356535311025089,
+              "samples_ns": [
+                1830989.75,
+                1896271.0
+              ],
+              "cpu_samples_ns": [
+                null,
+                1896823.0
+              ]
+            },
+            {
+              "per_op_ns": 2185187.5,
+              "iters": 4,
+              "rounds": 2,
+              "spread": 3.165789548951749,
+              "samples_ns": [
+                2185187.5,
+                9103031.25
+              ],
+              "cpu_samples_ns": [
+                null,
+                1845208.25
+              ]
+            },
+            {
+              "per_op_ns": 1665479.25,
+              "iters": 4,
+              "rounds": 2,
+              "spread": 0.06391418566157459,
+              "samples_ns": [
+                1771927.0,
+                1665479.25
+              ],
+              "cpu_samples_ns": [
+                null,
+                1666354.25
+              ]
+            },
+            {
+              "per_op_ns": 1731604.25,
+              "iters": 4,
+              "rounds": 2,
+              "spread": 0.008457908324029581,
+              "samples_ns": [
+                1746250.0,
+                1731604.25
+              ],
+              "cpu_samples_ns": [
+                null,
+                1732489.5
+              ]
+            },
+            {
+              "per_op_ns": 1734583.25,
+              "iters": 4,
+              "rounds": 2,
+              "spread": 0.5746818436071027,
+              "samples_ns": [
+                2731416.75,
+                1734583.25
+              ],
+              "cpu_samples_ns": [
+                null,
+                1735489.75
+              ]
+            },
+            {
+              "per_op_ns": 1760104.25,
+              "iters": 4,
+              "rounds": 2,
+              "spread": 20.50879926572531,
+              "samples_ns": [
+                1760104.25,
+                37857729.0
+              ],
+              "cpu_samples_ns": [
+                null,
+                1981843.75
+              ]
+            },
+            {
+              "per_op_ns": 1824312.5,
+              "iters": 2,
+              "rounds": 2,
+              "spread": 0.3742960704374936,
+              "samples_ns": [
+                2507145.5,
+                1824312.5
+              ],
+              "cpu_samples_ns": [
+                null,
+                1825687.5
+              ]
+            }
+          ],
+          "median_ns": 1760104.25
+        },
+        {
+          "name": "http-bounded-expansion",
+          "operation": "bounded",
+          "fixture": null,
+          "raw_bytes": 1000000,
+          "compressed_bytes": 1004,
+          "raw_sha256": "7e80c2132dad37d00ce8521934fe15d79171b2dfed31ba88c34cf654353b0424",
+          "compressed_sha256": "3ccd848688ef8e1add17ca86d104fe4eda3dd9f907a9f98dd445fd76eedfd592",
+          "output_bytes": 2009,
+          "output_sha256": "282a6a2b301d95d046d8ad8bcd7526a11315d3f832e6ad11d9e8c029641ee51a",
+          "identical_output": true,
+          "native_calls": {
+            "zlib.crc32": 2,
+            "zlib_ng.decompress": 1
+          },
+          "measurements": [
+            {
+              "per_op_ns": 13812.606770833334,
+              "iters": 384,
+              "rounds": 2,
+              "spread": 0.015570015390152528,
+              "samples_ns": [
+                14027.669270833334,
+                13812.606770833334
+              ],
+              "cpu_samples_ns": [
+                null,
+                13819.661458333334
+              ]
+            },
+            {
+              "per_op_ns": 19119.466796875,
+              "iters": 512,
+              "rounds": 2,
+              "spread": 0.21465473007049526,
+              "samples_ns": [
+                23223.55078125,
+                19119.466796875
+              ],
+              "cpu_samples_ns": [
+                null,
+                15251.056640625
+              ]
+            },
+            {
+              "per_op_ns": 13768.06640625,
+              "iters": 512,
+              "rounds": 2,
+              "spread": 0.005148349115154095,
+              "samples_ns": [
+                13838.94921875,
+                13768.06640625
+              ],
+              "cpu_samples_ns": [
+                null,
+                13774.005859375
+              ]
+            },
+            {
+              "per_op_ns": 13910.484375,
+              "iters": 128,
+              "rounds": 2,
+              "spread": 3.490603423002659,
+              "samples_ns": [
+                62466.46875,
+                13910.484375
+              ],
+              "cpu_samples_ns": [
+                null,
+                13921.5546875
+              ]
+            },
+            {
+              "per_op_ns": 13579.101503759399,
+              "iters": 266,
+              "rounds": 2,
+              "spread": 0.4051379815456137,
+              "samples_ns": [
+                19080.51127819549,
+                13579.101503759399
+              ],
+              "cpu_samples_ns": [
+                null,
+                13588.5
+              ]
+            },
+            {
+              "per_op_ns": 13873.2421875,
+              "iters": 640,
+              "rounds": 2,
+              "spread": 7.094132646309358,
+              "samples_ns": [
+                13873.2421875,
+                112291.8625
+              ],
+              "cpu_samples_ns": [
+                null,
+                14956.70625
+              ]
+            },
+            {
+              "per_op_ns": 14000.0,
+              "iters": 384,
+              "rounds": 2,
+              "spread": 0.042689732142857144,
+              "samples_ns": [
+                14000.0,
+                14597.65625
+              ],
+              "cpu_samples_ns": [
+                null,
+                14138.020833333334
+              ]
+            }
+          ],
+          "median_ns": 13873.2421875
+        },
+        {
+          "name": "journal-200-members",
+          "operation": "lines",
+          "fixture": null,
+          "raw_bytes": 15140,
+          "compressed_bytes": 2341,
+          "raw_sha256": "bf7bf2b97272913a835dae66de8be38967fe22dd712de87d49e2e8c101440093",
+          "compressed_sha256": "6df3ee6a614cc33011b69cab0aefabee5d0c058e277a8b6ea711dffbb9c340b8",
+          "output_bytes": 15140,
+          "output_sha256": "bf7bf2b97272913a835dae66de8be38967fe22dd712de87d49e2e8c101440093",
+          "identical_output": true,
+          "native_calls": {
+            "zlib.crc32": 5,
+            "zlib_ng.decompress": 2
+          },
+          "measurements": [
+            {
+              "per_op_ns": 71189.98809523809,
+              "iters": 84,
+              "rounds": 2,
+              "spread": 0.052355375680669385,
+              "samples_ns": [
+                74917.16666666667,
+                71189.98809523809
+              ],
+              "cpu_samples_ns": [
+                null,
+                71217.26190476191
+              ]
+            },
+            {
+              "per_op_ns": 68722.82608695653,
+              "iters": 92,
+              "rounds": 2,
+              "spread": 0.007822538552787663,
+              "samples_ns": [
+                69260.41304347826,
+                68722.82608695653
+              ],
+              "cpu_samples_ns": [
+                null,
+                68756.33695652174
+              ]
+            },
+            {
+              "per_op_ns": 69021.9298245614,
+              "iters": 114,
+              "rounds": 2,
+              "spread": 0.004564656541907606,
+              "samples_ns": [
+                69336.99122807017,
+                69021.9298245614
+              ],
+              "cpu_samples_ns": [
+                null,
+                69047.87719298246
+              ]
+            },
+            {
+              "per_op_ns": 69127.71739130435,
+              "iters": 92,
+              "rounds": 2,
+              "spread": 0.01276921262628248,
+              "samples_ns": [
+                70010.42391304347,
+                69127.71739130435
+              ],
+              "cpu_samples_ns": [
+                null,
+                69155.34782608696
+              ]
+            },
+            {
+              "per_op_ns": 76104.16326530612,
+              "iters": 98,
+              "rounds": 2,
+              "spread": 0.31491599590679153,
+              "samples_ns": [
+                76104.16326530612,
+                100070.58163265306
+              ],
+              "cpu_samples_ns": [
+                null,
+                72789.11224489796
+              ]
+            },
+            {
+              "per_op_ns": 63583.3359375,
+              "iters": 128,
+              "rounds": 2,
+              "spread": 0.002221862621974827,
+              "samples_ns": [
+                63724.609375,
+                63583.3359375
+              ],
+              "cpu_samples_ns": [
+                null,
+                63604.8203125
+              ]
+            },
+            {
+              "per_op_ns": 71496.525,
+              "iters": 120,
+              "rounds": 2,
+              "spread": 6.948424416431428,
+              "samples_ns": [
+                71496.525,
+                568284.725
+              ],
+              "cpu_samples_ns": [
+                null,
+                76056.59166666666
+              ]
+            }
+          ],
+          "median_ns": 69127.71739130435
+        },
+        {
+          "name": "journal-20000-members",
+          "operation": "lines",
+          "fixture": null,
+          "raw_bytes": 1673560,
+          "compressed_bytes": 235019,
+          "raw_sha256": "c1005eb7020978a1b655b4aee18795fa86667a7690bf73ea5f4fdf6f3ff16f7d",
+          "compressed_sha256": "113e9cdbe14ad5138e463c8a846b2e98ebc33ad5fbd641a0250f8709b820093d",
+          "output_bytes": 1673560,
+          "output_sha256": "c1005eb7020978a1b655b4aee18795fa86667a7690bf73ea5f4fdf6f3ff16f7d",
+          "identical_output": true,
+          "native_calls": {
+            "zlib.crc32": 501,
+            "zlib_ng.decompress": 300
+          },
+          "measurements": [
+            {
+              "per_op_ns": 6766625.0,
+              "iters": 1,
+              "rounds": 2,
+              "spread": 0.06460015147876526,
+              "samples_ns": [
+                6766625.0,
+                7203750.0
+              ],
+              "cpu_samples_ns": [
+                null,
+                7206750.0
+              ]
+            },
+            {
+              "per_op_ns": 6853959.0,
+              "iters": 1,
+              "rounds": 2,
+              "spread": 0.00035862484733276053,
+              "samples_ns": [
+                6853959.0,
+                6856417.0
+              ],
+              "cpu_samples_ns": [
+                null,
+                6859834.0
+              ]
+            },
+            {
+              "per_op_ns": 7407875.0,
+              "iters": 1,
+              "rounds": 2,
+              "spread": 6.76162745726676,
+              "samples_ns": [
+                7407875.0,
+                57497166.0
+              ],
+              "cpu_samples_ns": [
+                null,
+                6676792.0
+              ]
+            },
+            {
+              "per_op_ns": 6621458.0,
+              "iters": 1,
+              "rounds": 2,
+              "spread": 0.0018122896800070317,
+              "samples_ns": [
+                6621458.0,
+                6633458.0
+              ],
+              "cpu_samples_ns": [
+                null,
+                6635834.0
+              ]
+            },
+            {
+              "per_op_ns": 6809125.0,
+              "iters": 1,
+              "rounds": 2,
+              "spread": 0.002924898573605272,
+              "samples_ns": [
+                6809125.0,
+                6829041.0
+              ],
+              "cpu_samples_ns": [
+                null,
+                6832333.0
+              ]
+            },
+            {
+              "per_op_ns": 6789542.0,
+              "iters": 1,
+              "rounds": 2,
+              "spread": 8.7671598467172,
+              "samples_ns": [
+                6789542.0,
+                66314542.0
+              ],
+              "cpu_samples_ns": [
+                null,
+                7521333.0
+              ]
+            },
+            {
+              "per_op_ns": 7431666.0,
+              "iters": 1,
+              "rounds": 2,
+              "spread": 0.04146109364979535,
+              "samples_ns": [
+                7431666.0,
+                7739791.0
+              ],
+              "cpu_samples_ns": [
+                null,
+                7281166.0
+              ]
+            }
+          ],
+          "median_ns": 6809125.0
+        }
+      ]
+    }
+  },
+  "sample_order": [
+    [
+      "stdlib",
+      "candidate",
+      "baseline"
+    ],
+    [
+      "baseline",
+      "candidate",
+      "stdlib"
+    ],
+    [
+      "stdlib",
+      "candidate",
+      "baseline"
+    ],
+    [
+      "baseline",
+      "candidate",
+      "stdlib"
+    ],
+    [
+      "stdlib",
+      "candidate",
+      "baseline"
+    ],
+    [
+      "baseline",
+      "candidate",
+      "stdlib"
+    ],
+    [
+      "stdlib",
+      "candidate",
+      "baseline"
+    ]
+  ]
+}

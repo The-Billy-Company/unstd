@@ -124,6 +124,17 @@ def _drain(module, data: bytes):
     return bytes(delivered), None
 
 
+def test_invalid_deflate_keeps_stdlib_buffered_delivery_history() -> None:
+    payload = b"a" * 9216
+    # A nonfinal stored block followed by reserved BTYPE=3. A smaller read-ahead
+    # budget can expose valid bytes before the corruption that stdlib sees first.
+    block = b"\0" + struct.pack("<HH", len(payload), 65535 - len(payload))
+    packed = _header(mtime=0, xfl=0) + block + payload + b"\x07" + _trailer(payload)
+    expected = _drain(gzip, packed)
+    assert expected[1] is zlib.error
+    assert _drain(gzipx, packed) == expected
+
+
 @pytest.mark.parametrize("case", list(_damaged_second_member()))
 def test_damage_in_a_later_member_matches_stdlib(case) -> None:
     data = _damaged_second_member()[case]

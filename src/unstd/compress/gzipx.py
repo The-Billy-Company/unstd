@@ -1,8 +1,8 @@
-"""Stdlib gzip calls with optional zlib-ng codecs and faithful stream errors.
+"""Stdlib gzip calls with optional zlib-ng compression and faithful reads.
 
 The native backend lives behind ``unstd[compress]``. Base installs bind directly
-to stdlib ``gzip``. Native streams keep stdlib header/trailer parsing, ownership,
-seeking and buffering; only their codecs change. Compressed bytes and ratios may
+to stdlib ``gzip``. Read streams use stdlib framing, inflation and buffering;
+single-member buffers use zlib's C gzip decoder. Compressed bytes and ratios may
 differ between backends, while decoded bytes and exception families stay faithful.
 """
 
@@ -50,8 +50,6 @@ type _TextMode = Literal["rt", "wt", "at", "xt"]
 
 
 if TYPE_CHECKING or _backend is not None:
-    from unstd.compress._inflate import _Reader
-
     _level: object = inspect.signature(_stdlib.open).parameters["compresslevel"].default
     _mtime: object = inspect.signature(_stdlib.compress).parameters["mtime"].default
     if not isinstance(_level, int) or not (
@@ -64,7 +62,7 @@ if TYPE_CHECKING or _backend is not None:
     _DEFAULT_MTIME: float | None = _mtime
 
     class GzipFile(_Base):
-        """A gzip binary file with native codecs and stdlib stream semantics."""
+        """A gzip binary file with native compression and stdlib reads."""
 
         _buffer: io.BufferedReader | io.BufferedWriter
 
@@ -77,39 +75,44 @@ if TYPE_CHECKING or _backend is not None:
             mtime: float | None = None,
         ) -> None:
             """Open a binary stream; explicit file objects remain caller-owned."""
-            if fileobj is not None:
-                effective_mode: object = (
-                    mode if mode is not None else getattr(fileobj, "mode", "rb")
+            effective_mode: object = (
+                mode if mode is not None else getattr(fileobj, "mode", "rb")
+            )
+            if fileobj is not None and isinstance(effective_mode, str):
+                operation = (
+                    "read"
+                    if effective_mode.startswith("r")
+                    else "write"
+                    if effective_mode.startswith(("w", "a", "x"))
+                    else None
                 )
-                if isinstance(effective_mode, str):
-                    operation = (
-                        "read"
-                        if effective_mode.startswith("r")
-                        else "write"
-                        if effective_mode.startswith(("w", "a", "x"))
-                        else None
-                    )
-                    if (
-                        operation is not None
-                        and "t" not in effective_mode
-                        and "U" not in effective_mode
-                        and not callable(getattr(fileobj, operation, None))
-                    ):
-                        msg = f"gzip file object must provide {operation}()"
-                        raise TypeError(msg)
+                if (
+                    operation is not None
+                    and "t" not in effective_mode
+                    and "U" not in effective_mode
+                    and not callable(getattr(fileobj, operation, None))
+                ):
+                    msg = f"gzip file object must provide {operation}()"
+                    raise TypeError(msg)
             try:
-                super().__init__(filename, mode, compresslevel, fileobj, mtime)
-                if self.readable():
-                    # Failed setup must leave the original buffer open so
-                    # stdlib close() still releases an owned source handle.
-                    replacement: io.BufferedReader = io.BufferedReader(
-                        _Reader(self.fileobj)
+                if isinstance(effective_mode, str) and effective_mode.startswith("r"):
+                    # Keep the complete stdlib read path: the native inflater
+                    # and its compatibility adapter slow common JSON reads.
+                    _stdlib.GzipFile.__init__(
+                        self, filename, mode, compresslevel, fileobj, mtime
                     )
-                    self._buffer.close()
-                    self._buffer = replacement
+                else:
+                    super().__init__(filename, mode, compresslevel, fileobj, mtime)
             except BaseException as error:
                 with suppress(Exception):
                     self.close()
+                # Older stdlib constructors can fail before assigning fileobj,
+                # leaving close() unable to release an already-owned handle.
+                owned = self.myfileobj
+                self.myfileobj = None
+                if owned is not None:
+                    with suppress(Exception):
+                        owned.close()
                 if isinstance(error, _native.error):
                     raise zlib.error(str(error)) from error
                 raise
@@ -220,12 +223,26 @@ if TYPE_CHECKING or _backend is not None:
         return result
 
     def decompress(data: Buffer) -> bytes:
-        """Decode concatenated gzip members, with stdlib diagnostics on failure."""
-        try:
-            result: bytes = _backend.decompress(data)
-        except (_native.error, EOFError, BadGzipFile):
+        """Decode a member in C; delegate other framing and errors to stdlib."""
+        # gzip slices its input by element; non-byte views and subclasses can
+        # give those slices different meanings from the C buffer protocol.
+        if type(data) is not bytes and type(data) is not bytearray:
             return _stdlib.decompress(data)
-        return result
+        decoder = zlib.decompressobj(wbits=31)
+        try:
+            result = decoder.decompress(data)
+        except (zlib.error, TypeError):
+            pass
+        else:
+            if decoder.eof and not decoder.unused_data.lstrip(b"\0"):
+                return result
+            del result
+        # Release the first output and buffered remainder before any replay.
+        del decoder
+        # Concatenations and truncation retain gzip's exact behavior.
+        # Its parser also accepts reserved flags and ignores header checksums
+        # that the C decoder rejects; codec errors above take the same fallback.
+        return _stdlib.decompress(data)
 
 else:
     # Exact bindings keep the dependency-free base path free of wrapper overhead.

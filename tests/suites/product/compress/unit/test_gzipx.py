@@ -7,6 +7,7 @@ headers with defined meaning, error families, and file behavior against stdlib
 
 from __future__ import annotations
 
+from array import array
 import gzip
 import inspect
 import io
@@ -388,6 +389,77 @@ def test_one_shot_malformed_inputs_match_stdlib_error_families(
     assert _outcome(lambda: gzip_module.decompress(data)) == _outcome(
         lambda: gzip.decompress(data)
     )
+
+
+@pytest.mark.parametrize("data", CORRUPT_STREAMS)
+def test_one_shot_errors_retain_exact_stdlib_diagnostics(gzip_module, data) -> None:
+    try:
+        expected = gzip.decompress(data)
+    except (OSError, EOFError, zlib.error) as error:
+        error_type, error_message = type(error), str(error)
+    else:
+        assert gzip_module.decompress(data) == expected
+        return
+    with pytest.raises(error_type) as caught:
+        gzip_module.decompress(data)
+    assert str(caught.value) == error_message
+
+
+@pytest.mark.parametrize("flag", [0x20, 0x40, 0x80])
+def test_reserved_header_flags_keep_stdlib_acceptance(gzip_module, flag) -> None:
+    header = bytearray(MEMBER)
+    header[3] |= flag
+    assert gzip_module.decompress(header) == gzip.decompress(header) == PAYLOAD
+
+
+@pytest.mark.parametrize("data", [None, 0, False, [], "gzip", object()])
+def test_non_buffer_inputs_keep_stdlib_outcomes(gzip_module, data) -> None:
+    # In particular, BytesIO(None) is empty: gzip historically accepts None.
+    assert _outcome(lambda: gzip_module.decompress(data)) == _outcome(
+        lambda: gzip.decompress(data)
+    )
+
+
+def test_one_shot_noncontiguous_buffer_keeps_stdlib_error(gzip_module) -> None:
+    data = memoryview(MEMBER)[::2]
+    with pytest.raises(BufferError) as expected:
+        gzip.decompress(data)
+    with pytest.raises(type(expected.value)) as caught:
+        gzip_module.decompress(data)
+    assert str(caught.value) == str(expected.value)
+
+
+@pytest.mark.parametrize("shape", ["integers", "array", "multidimensional"])
+def test_element_indexed_buffers_keep_stdlib_slice_semantics(
+    gzip_module, shape
+) -> None:
+    raw = gzip.compress(bytes(range(128)), mtime=0)
+    raw += b"\0" * (-len(raw) % 4)
+    data = (
+        memoryview(raw).cast("I")
+        if shape == "integers"
+        else array("I", raw)
+        if shape == "array"
+        else memoryview(raw).cast("B", shape=(len(raw) // 4, 4))
+    )
+    assert _outcome(lambda: gzip_module.decompress(data)) == _outcome(
+        lambda: gzip.decompress(data)
+    )
+
+
+def test_input_subclass_slice_callbacks_propagate_unchanged(gzip_module) -> None:
+    failure = RuntimeError("application buffer slice failed")
+
+    class SlicedBytes(bytes):
+        def __getitem__(self, key):
+            if isinstance(key, slice):
+                raise failure
+            return super().__getitem__(key)
+
+    for module in (gzip, gzip_module):
+        with pytest.raises(RuntimeError) as caught:
+            module.decompress(SlicedBytes(MEMBER))
+        assert caught.value is failure
 
 
 @pytest.mark.parametrize("method", READ_METHODS)

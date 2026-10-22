@@ -6,6 +6,9 @@ audits, baseline floors, source isolation, workload coverage, paired timing, and
 observed native dispatch. Deliberately wrong outputs and declined native calls
 must fail before they can support an acceleration claim.
 
+`test_gzip_reads.py` rejects changed decoded bytes and incorrectly imported
+comparison sources, and checks bounded output, concatenated lines and rewinds.
+
 `test_crypto_hash.py` verifies saved crypto helper isolation, missing-helper
 failures, source hashes despite stale bytecode, crossover workload coverage,
 output/type checks, and retained alternating samples.
