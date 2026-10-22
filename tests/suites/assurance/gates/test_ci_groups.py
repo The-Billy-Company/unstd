@@ -6,11 +6,13 @@ import json
 from pathlib import Path
 import subprocess
 import sys
+from xml.etree import ElementTree
 
 import pytest
 
 from tests.support.environment.anchors import REPO_ROOT
 from tests.tooling.ci import groups as ci
+from tests.tooling.ci.sharding import parse_shard, selected_nodeids
 from tests.tooling.suites import runner
 
 
@@ -304,3 +306,65 @@ def test_existing_native_or_resource_reports_append_counts_and_preserve_failure(
     assert "Native safety" in text
     assert "7 tests: 5 passed" in text
     assert ("— passed." in text) == (returncode == 0)
+
+
+@pytest.mark.parametrize("count", [1, 2, 3, 7])
+def test_shards_are_order_independent_disjoint_and_complete(count):
+    identities = [f"test_example.py::test_value[{number}]" for number in range(29)]
+    partitions = [
+        selected_nodeids(identities, (index, count)) for index in range(1, count + 1)
+    ]
+    assert set.union(*partitions) == set(identities)
+    assert sum(map(len, partitions)) == len(identities)
+    assert max(map(len, partitions)) - min(map(len, partitions)) <= 1
+    assert partitions == [
+        selected_nodeids(list(reversed(identities)), (index, count))
+        for index in range(1, count + 1)
+    ]
+
+
+@pytest.mark.parametrize("value", ["0/3", "4/3", "1/0", "-1/3", "1", "1/2/3", "a/3"])
+def test_invalid_shard_selection_cannot_start_a_subset(value):
+    with pytest.raises(ValueError, match="INDEX/TOTAL"):
+        parse_shard(value)
+
+
+def test_duplicate_identities_cannot_hide_overlapping_tests():
+    with pytest.raises(pytest.UsageError, match="duplicate test identities"):
+        selected_nodeids(["test_same", "test_same"], (1, 2))
+
+
+def test_real_group_shards_execute_the_complete_selection_and_keep_failures(
+    repo: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("PYTHONPATH", str(REPO_ROOT))
+    for identity in ("unit", "regression"):
+        path = repo / "tests/suites" / identity / "test_contract.py"
+        with path.open("a", encoding="utf-8") as stream:
+            for number in range(7):
+                stream.write(f"def test_value_{number}(): pass\n")
+    with (repo / "tests/suites/unit/test_contract.py").open(
+        "a", encoding="utf-8"
+    ) as stream:
+        stream.write("def test_failure(): assert False, 'fixture regression'\n")
+    assert ci.main(["run", "api", "--", "-q"], repo_root=repo) == 1
+
+    def identities(path):
+        root = ElementTree.parse(path).getroot()  # noqa: S314 — local pytest output
+        return {
+            (case.attrib["classname"], case.attrib["name"])
+            for case in root.iter("testcase")
+        }
+
+    expected = identities(repo / ".local/ci/api.xml")
+    selected = []
+    outcomes = []
+    for index in range(1, 4):
+        outcomes.append(
+            ci.main(["run", "--shard", f"{index}/3", "api", "--", "-q"], repo_root=repo)
+        )
+        selected.append(identities(repo / f".local/ci/api-{index}-of-3.xml"))
+    assert sorted(outcomes) == [0, 0, 1]
+    assert len(expected) == 17
+    assert set.union(*selected) == expected
+    assert sum(map(len, selected)) == len(expected)

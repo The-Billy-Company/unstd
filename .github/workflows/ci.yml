@@ -132,11 +132,18 @@ jobs:
       - name: Check type contracts
         shell: bash
         run: |
-          for python in 3.12 3.13 3.14; do
-            for platform in linux darwin win32; do
-              uv run --no-sync mypy --python-version "$python" --platform "$platform" --cache-dir ".mypy_cache/$platform-$python"
+          status=0
+          for platform in linux darwin win32; do
+            pids=()
+            for python in 3.12 3.13 3.14; do
+              uv run --no-sync mypy --python-version "$python" --platform "$platform" --cache-dir ".mypy_cache/$platform-$python" &
+              pids+=("$!")
+            done
+            for pid in "${pids[@]}"; do
+              wait "$pid" || status=1
             done
           done
+          exit "$status"
 
   test:
     name: ${{ matrix.group.name }} / ${{ matrix.environment.name }}
@@ -147,10 +154,12 @@ jobs:
       matrix:
         # Groups select owned suite paths. Every environment retains full coverage.
         group:
-          - {id: api, name: API & regressions}
-          - {id: contracts, name: Compatibility & boundaries}
-          - {id: tooling, name: Test tooling & corpus}
-          - {id: packaging, name: Packaging & consumers}
+          - {id: api, name: API & regressions, shard: "", report: api}
+          - {id: contracts, name: Compatibility & boundaries (1/3), shard: "--shard 1/3", report: contracts-1-of-3}
+          - {id: contracts, name: Compatibility & boundaries (2/3), shard: "--shard 2/3", report: contracts-2-of-3}
+          - {id: contracts, name: Compatibility & boundaries (3/3), shard: "--shard 3/3", report: contracts-3-of-3}
+          - {id: tooling, name: Test tooling & corpus, shard: "", report: tooling}
+          - {id: packaging, name: Packaging & consumers, shard: "", report: packaging}
         environment:
           - {id: py312, name: Python 3.12, python: "3.12", sync: "--locked --all-extras", pytest: "--require-extras"}
           - {id: py313, name: Python 3.13, python: "3.13", sync: "--locked --all-extras", pytest: "--require-extras"}
@@ -192,13 +201,13 @@ jobs:
           UV_PROJECT_ENVIRONMENT: ${{ runner.temp }}/unstd-canonical-cache
         run: uv sync --locked --all-extras --no-default-groups --no-install-project --python ${{ matrix.environment.python }}
       - name: Run ${{ matrix.group.name }}
-        run: uv run --no-sync python -m tests.tooling.ci run ${{ matrix.group.id }} -- ${{ matrix.environment.pytest }} -q
+        run: uv run --no-sync python -m tests.tooling.ci run ${{ matrix.group.shard }} ${{ matrix.group.id }} -- ${{ matrix.environment.pytest }} -q
       - name: Retain grouped test results
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: tests-${{ matrix.group.id }}-${{ matrix.environment.id }}-${{ github.run_attempt }}
-          path: .local/ci/${{ matrix.group.id }}.xml
+          name: tests-${{ matrix.group.report }}-${{ matrix.environment.id }}-${{ github.run_attempt }}
+          path: .local/ci/${{ matrix.group.report }}.xml
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 14
@@ -215,8 +224,10 @@ jobs:
       matrix:
         os: [macos-latest, windows-latest]
         group:
-          - {id: api, name: API & regressions}
-          - {id: contracts, name: Compatibility & boundaries}
+          - {id: api, name: API & regressions, shard: "", report: api}
+          - {id: contracts, name: Compatibility & boundaries (1/3), shard: "--shard 1/3", report: contracts-1-of-3}
+          - {id: contracts, name: Compatibility & boundaries (2/3), shard: "--shard 2/3", report: contracts-2-of-3}
+          - {id: contracts, name: Compatibility & boundaries (3/3), shard: "--shard 3/3", report: contracts-3-of-3}
     defaults:
       run:
         shell: bash
@@ -238,13 +249,13 @@ jobs:
       - name: Install test environment & rebuild local extensions
         run: uv sync --locked --all-extras --group dev --reinstall-package unstd --python 3.13
       - name: Run ${{ matrix.group.name }}
-        run: uv run --no-sync python -m tests.tooling.ci run ${{ matrix.group.id }} -- --require-extras -q
+        run: uv run --no-sync python -m tests.tooling.ci run ${{ matrix.group.shard }} ${{ matrix.group.id }} -- --require-extras -q
       - name: Retain platform test results
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: platforms-${{ matrix.group.id }}-${{ matrix.os }}-${{ github.run_attempt }}
-          path: .local/ci/${{ matrix.group.id }}.xml
+          name: platforms-${{ matrix.group.report }}-${{ matrix.os }}-${{ github.run_attempt }}
+          path: .local/ci/${{ matrix.group.report }}.xml
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 14
@@ -410,12 +421,13 @@ jobs:
           retention-days: 14
     timeout-minutes: 15
   native-sanitizers:
-    name: Native safety / ASan & UBSan
+    name: Native safety / ASan & UBSan / text ${{ matrix.rust-text }} / shard ${{ matrix.shard }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         rust-text: ["0", "1"]
+        shard: [1, 2, 3]
     env:
       PYTHONFAULTHANDLER: "1"
       UNSTD_TEXT_RUST: ${{ matrix.rust-text }}
@@ -460,19 +472,19 @@ jobs:
           LD_PRELOAD="$(gcc -print-file-name=libasan.so)"
           export LD_PRELOAD
           .venv/bin/python -c "import unstd.serde._json_native, unstd.clone._clone_native, unstd.crypto._stream_native, unstd.text._text_native"
-          .venv/bin/python -m pytest tests/suites/product/clone tests/suites/product/text tests/suites/product/serde tests/suites/product/crypto -q --junitxml=.local/native-sanitizers.xml
+          .venv/bin/python -m pytest tests/suites/product/clone tests/suites/product/text tests/suites/product/serde tests/suites/product/crypto -p tests.tooling.ci.sharding --ci-shard ${{ matrix.shard }}/3 -q --junitxml=.local/native-sanitizers-${{ matrix.shard }}.xml
 
       - name: Summarize sanitizer checks
         if: always() && steps.tests.outcome != 'skipped'
         env:
           TEST_EXIT: ${{ steps.tests.outcome == 'success' && '0' || '1' }}
-        run: uv run --no-sync python -m tests.tooling.ci report "Native sanitizers" .local/native-sanitizers.xml --exit-code "$TEST_EXIT"
+        run: uv run --no-sync python -m tests.tooling.ci report "Native sanitizers" .local/native-sanitizers-${{ matrix.shard }}.xml --exit-code "$TEST_EXIT"
       - name: Retain native test results
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: native-sanitizers-${{ matrix.rust-text }}-${{ github.run_attempt }}
-          path: .local/native-sanitizers.xml
+          name: native-sanitizers-${{ matrix.rust-text }}-${{ matrix.shard }}-${{ github.run_attempt }}
+          path: .local/native-sanitizers-${{ matrix.shard }}.xml
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 14

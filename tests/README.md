@@ -93,6 +93,7 @@ default suites must join exactly one group.
 uv run --no-sync python -m tests.tooling.ci list
 uv run --no-sync python -m tests.tooling.ci check
 uv run --no-sync python -m tests.tooling.ci run contracts -- --require-extras -q
+uv run --no-sync python -m tests.tooling.ci run --shard 1/3 contracts -- --require-extras -q
 ```
 
 Each group writes `.local/ci/<group>.xml` and a job summary; CI retains reports
@@ -101,6 +102,11 @@ native safety, and Linux/macOS resource bounds. The aggregate `CI / Required gro
 requires its dependencies to succeed; releases invoke the same CI workflow.
 Fuzz, chaos, and concurrency workflows run explicit bounded campaigns and retain
 failure artifacts.
+
+The contracts group and both sanitizer variants run three deterministic shards.
+Each test belongs to exactly one shard; generation budgets and assertions remain
+unchanged. Sharded reports use `<group>-<index>-of-<total>.xml`, keeping every
+partition's evidence distinct.
 
 Use stdlib behavior, standards, published vectors, independent models, or reviewed
 frozen cases as expectations. A round trip alone cannot prove fidelity. Pair

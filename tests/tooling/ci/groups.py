@@ -151,6 +151,7 @@ def main(argv: Sequence[str] | None = None, *, repo_root: Path | None = None) ->
     commands.add_parser("check", help="validate complete, disjoint CI ownership")
     commands.add_parser("list", help="list CI groups and their suite owners")
     run = commands.add_parser("run", help="run one CI group through pytest")
+    run.add_argument("--shard", help="run a complete partition, INDEX/TOTAL")
     run.add_argument("group", choices=[group.id for group in GROUPS])
     run.add_argument("pytest_args", nargs=argparse.REMAINDER)
     report_command = commands.add_parser(
@@ -178,7 +179,18 @@ def main(argv: Sequence[str] | None = None, *, repo_root: Path | None = None) ->
             print(f"{group.id}\t{group.title}\t{', '.join(group.suites)}")
         return 0
     group = next(group for group in GROUPS if group.id == args.group)
-    report = root / ".local/ci" / f"{group.id}.xml"
+    shard_arguments = []
+    suffix = ""
+    if args.shard is not None:
+        from tests.tooling.ci.sharding import parse_shard
+
+        try:
+            index, count = parse_shard(args.shard)
+        except ValueError as error:
+            parser.error(str(error))
+        suffix = f"-{index}-of-{count}"
+        shard_arguments = ["-p", "tests.tooling.ci.sharding", "--ci-shard", args.shard]
+    report = root / ".local/ci" / f"{group.id}{suffix}.xml"
     report.parent.mkdir(parents=True, exist_ok=True)
     report.unlink(missing_ok=True)
     extra = args.pytest_args
@@ -191,6 +203,7 @@ def main(argv: Sequence[str] | None = None, *, repo_root: Path | None = None) ->
         *(path for suite in groups[group.id] for path in suite.paths),
         "-m",
         DEFAULT_SELECTION,
+        *shard_arguments,
         *extra,
         f"--junitxml={report}",
     ]

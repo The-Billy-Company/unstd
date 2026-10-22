@@ -395,24 +395,23 @@ def _walk_descriptors(root: Path) -> Iterator[Path]:
     try:
         while stack:
             path, fd, scan, owned = stack[-1]
-            try:
-                entry = next(scan)
-            except StopIteration:
+            for entry in scan:
+                child = path / entry.name
+                try:
+                    directory = entry.is_dir(follow_symlinks=False)
+                    regular = not directory and entry.is_file(follow_symlinks=False)
+                except OSError:
+                    continue  # an entry vanished or became unreadable during its check
+                if directory:
+                    opened = _open_walk_dir(entry.name, parent_fd=fd)
+                    if opened is not None:
+                        stack.append((child, *opened))
+                        break  # resume this anchored scan after its child closes
+                elif regular:
+                    yield child
+            else:
                 stack.pop()
                 owned.close()
-                continue
-            child = path / entry.name
-            try:
-                directory = entry.is_dir(follow_symlinks=False)
-                regular = not directory and entry.is_file(follow_symlinks=False)
-            except OSError:
-                continue  # an entry vanished or became unreadable during its check
-            if directory:
-                opened = _open_walk_dir(entry.name, parent_fd=fd)
-                if opened is not None:
-                    stack.append((child, *opened))
-            elif regular:
-                yield child
     finally:
         # Close every live frame on exhaustion, generator.close(), or an error.
         # ExitStack still closes the remaining frames if one cleanup raises.

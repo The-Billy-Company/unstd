@@ -107,6 +107,11 @@ doc_radar:
   wheel RECORD checks produce a SHA256 manifest that is verified again in the
   isolated Trusted Publishing job. Test reports and dependency evidence stay
   outside the distribution handoff.
+- Split long correctness and sanitizer jobs into complete, disjoint shards and
+  run type-check targets concurrently. Release builds run alongside validation
+  and build Python versions independently. Publication still requires verified
+  archives and successful CI for the exact commit; recent repository-owned CI
+  evidence can be reused instead of repeating the entire matrix.
 - Resource tests now cover streaming memory growth, file-descriptor and scratch
   cleanup, cache lifetime and deep JSON in bounded Linux/macOS workers.
 - Native profiles distinguish completed C work from rejected dispatch attempts,

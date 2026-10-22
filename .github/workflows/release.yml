@@ -15,24 +15,46 @@ permissions:
   contents: read
 
 jobs:
+  ci-status:
+    name: Reuse recent exact-commit CI
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      reused: ${{ steps.ci.outputs.reused }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Authenticate existing CI evidence or request the full gate
+        id: ci
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python tests/tooling/release/reuse_ci.py
+
   # A tag push used to publish unconditionally — nothing stood between `git tag`
   # and PyPI, and a release is the one artifact that cannot be taken back. The
-  # full CI gate (lint + type + the 3.12/3.13/3.14 matrix + the base-install
-  # fallback leg) runs first, by reference rather than by copy, so the bar is
-  # the same one every pull request clears.
+  # CI and artifact construction run concurrently. Publication requires both
+  # verified artifacts and successful exact-commit CI evidence. A recent main
+  # or manual CI run is reused; otherwise the complete reusable gate runs.
   gate:
+    needs: ci-status
+    if: needs.ci-status.outputs.reused != 'true'
     uses: ./.github/workflows/ci.yml
     permissions:
       contents: read
       security-events: write
 
   wheels:
-    needs: [gate, sdist]
+    needs: sdist
     timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, ubuntu-24.04-arm, macos-15-intel, macos-14, windows-latest, windows-11-arm]
+        python: ["312", "313", "314"]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -41,11 +63,11 @@ jobs:
       - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           enable-cache: true
-          cache-suffix: release-${{ matrix.os }}
+          cache-suffix: release-${{ matrix.os }}-${{ matrix.python }}
           cache-dependency-glob: "uv.lock\npyproject.toml\n"
           version: "0.13.0"
           python-version: "3.13"
-      - name: Download the tested source distribution
+      - name: Download the shared source distribution
         uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: release-raw-source
@@ -57,6 +79,7 @@ jobs:
       - name: Build and test CPython wheels
         shell: bash
         env:
+          CIBW_BUILD: cp${{ matrix.python }}-*
           # Use uv's fast isolated builder and authenticate the build closure
           # exported from the same lock embedded in the published sdist.
           CIBW_BEFORE_BUILD: >-
@@ -76,12 +99,11 @@ jobs:
         run: uv run --no-sync cibuildwheel source/*.tar.gz --output-dir dist
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
-          name: release-raw-wheels-${{ matrix.os }}
+          name: release-raw-wheels-${{ matrix.os }}-${{ matrix.python }}
           path: dist/*.whl
           if-no-files-found: error
 
   sdist:
-    needs: gate
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -142,8 +164,11 @@ jobs:
           if-no-files-found: error
 
   pypi:
-    needs: verify
-    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [ci-status, gate, verify]
+    if: >-
+      !cancelled() && startsWith(github.ref, 'refs/tags/v') && needs.verify.result == 'success' &&
+      needs.ci-status.result == 'success' &&
+      (needs.gate.result == 'success' || needs.ci-status.outputs.reused == 'true')
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment: pypi

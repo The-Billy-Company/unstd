@@ -16,3 +16,9 @@ uv run --no-sync pytest tests/suites/assurance/gates/release -q
 These tests participate in the default `gates` suite. Acceptance of actual built
 artifacts is covered by the [packaging plane](../../planes/packaging/README.md);
 the [supply-chain runbook](../supply_chain/README.md) describes publication wiring.
+
+`test_ci_reuse.py` checks that releases reuse only recent repository-owned CI
+for the exact commit, wait for pending runs, and reject failed or altered
+evidence. Missing or stale evidence requests the complete reusable CI gate.
+Artifact construction can run concurrently, but publication requires both a
+successful CI decision and verified distributions.

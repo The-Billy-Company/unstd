@@ -298,12 +298,35 @@ def test_release_verification_uses_only_named_build_outputs_and_separate_evidenc
     assert all(not step.get("continue-on-error", False) for step in steps)
 
 
+def test_release_wheel_shards_keep_every_platform_and_supported_interpreter(workflows):
+    wheels = workflows["release"]["jobs"]["wheels"]
+    matrix = wheels["strategy"]["matrix"]
+    assert set(matrix) == {"os", "python"}
+    assert set(matrix["os"]) == {
+        "ubuntu-latest",
+        "ubuntu-24.04-arm",
+        "macos-15-intel",
+        "macos-14",
+        "windows-latest",
+        "windows-11-arm",
+    }
+    assert matrix["python"] == ["312", "313", "314"]
+    assert wheels["strategy"]["fail-fast"] is False
+    build = next(s for s in wheels["steps"] if "cibuildwheel " in s.get("run", ""))
+    assert build["env"]["CIBW_BUILD"] == "cp${{ matrix.python }}-*"
+    (upload,) = _uses(wheels["steps"], "actions/upload-artifact")
+    assert upload["with"]["name"] == (
+        "release-raw-wheels-${{ matrix.os }}-${{ matrix.python }}"
+    )
+
+
 def test_wheels_use_the_published_sdist_and_authenticated_locked_build_tools(workflows):
     jobs = workflows["release"]["jobs"]
     source = jobs["sdist"]
     wheels = jobs["wheels"]
-    assert "gate" in _needs(source)
-    assert {"gate", "sdist"} <= _needs(wheels)
+    assert not _needs(source)
+    assert _needs(wheels) == {"sdist"}
+    assert {"gate", "ci-status", "verify"} <= _needs(jobs["pypi"])
     (source_upload,) = _uses(source["steps"], "actions/upload-artifact")
     (source_download,) = _uses(wheels["steps"], "actions/download-artifact")
     assert source_upload["with"]["name"] == "release-raw-source"

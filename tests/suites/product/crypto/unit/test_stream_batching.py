@@ -469,7 +469,9 @@ def test_pending_signals_are_handled_between_c_backend_updates(monkeypatch):
 @pytest.mark.skipif(not hasattr(signal, "setitimer"), reason="requires interval timers")
 def test_native_empty_chunk_loop_remains_interruptible(native_absorb):
     script = """
+import gc
 import signal
+import time
 from blake3 import blake3
 from unstd.crypto._stream_native import absorb
 
@@ -477,19 +479,40 @@ class Interrupted(Exception):
     pass
 
 def interrupt(signum, frame):
-    raise Interrupted('interrupt empty chunk traversal')
+    for reference in gc.get_referrers(chunks):
+        if type(reference) is iterator_type:
+            position = reference.__reduce__()[2]
+            if 0 < position < len(chunks):
+                raise Interrupted('interrupt empty chunk traversal')
 
-chunks = [b''] * 2_000_000
+chunks = [b''] * 1_000_000
+iterator_type = type(iter(chunks))
+hasher = blake3()
+# Calibrate CPU work, excluding scheduler pauses. macOS can coalesce a 1 ms
+# timer past a short traversal. Bound the pointer array to 256 MB and retries
+# to three; the outer worker deadline bounds the entire experiment.
+maximum = 32_000_000
+while True:
+    started = time.process_time()
+    absorb(hasher, chunks)
+    if time.process_time() - started >= 0.1 or len(chunks) == maximum:
+        break
+    chunks *= 2
+
 signal.signal(signal.SIGALRM, interrupt)
-signal.setitimer(signal.ITIMER_REAL, 0.001)
-try:
-    absorb(blake3(), chunks)
-except Interrupted:
-    pass
+for attempt in range(3):
+    signal.setitimer(signal.ITIMER_REAL, 0.01)
+    try:
+        absorb(hasher, chunks)
+    except Interrupted:
+        print('INTERRUPTED_DURING_EMPTY_TRAVERSAL')
+        break
+    finally:
+        signal.setitimer(signal.ITIMER_REAL, 0)
+    if len(chunks) < maximum:
+        chunks *= 2
 else:
-    raise AssertionError('native traversal completed without checking pending signals')
-finally:
-    signal.setitimer(signal.ITIMER_REAL, 0)
+    raise AssertionError('no signal handled inside the native empty-chunk traversal')
 """
     result = subprocess.run(  # noqa: S603  # explicit interpreter and fixture source
         [sys.executable, "-c", script],
@@ -499,3 +522,4 @@ finally:
         timeout=10,
     )
     assert result.returncode == 0, result.stdout + result.stderr
+    assert result.stdout == "INTERRUPTED_DURING_EMPTY_TRAVERSAL\n"

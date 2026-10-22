@@ -18,6 +18,7 @@ import pytest
 from tests.support.environment.anchors import REPO_ROOT
 from tests.support.environment.backends import require_backend
 from tests.tooling.ci import groups as ci
+from tests.tooling.ci.sharding import parse_shard
 
 
 if TYPE_CHECKING:
@@ -49,14 +50,36 @@ def _sync(job):
     )
 
 
+def _assert_complete_partitions(rows):
+    partitions = {}
+    assert len({row["report"] for row in rows}) == len(rows)
+    for row in rows:
+        flags = shlex.split(row["shard"])
+        if flags:
+            assert len(flags) == 2
+            assert flags[0] == "--shard"
+            index, count = parse_shard(flags[1])
+            assert row["report"] == f"{row['id']}-{index}-of-{count}"
+        else:
+            index, count = 1, 1
+            assert row["report"] == row["id"]
+        partitions.setdefault(row["id"], []).append((index, count))
+    for members in partitions.values():
+        counts = {count for _, count in members}
+        assert len(counts) == 1
+        (count,) = counts
+        assert sorted(members) == [(index, count) for index in range(1, count + 1)]
+    return partitions
+
+
 def test_every_owned_group_runs_in_every_supported_dependency_environment(workflow):
     job = workflow["jobs"]["test"]
     matrix = job["strategy"]["matrix"]
     # An include-only row or exclusion could quietly leave a group untested.
     assert set(matrix) == {"group", "environment"}
     groups = matrix["group"]
-    assert len(groups) == len({group.id for group in ci.GROUPS})
-    assert {group["id"] for group in groups} == {group.id for group in ci.GROUPS}
+    partitions = _assert_complete_partitions(groups)
+    assert set(partitions) == {group.id for group in ci.GROUPS}
     assert all(group["name"] for group in groups)
     assert "${{ matrix.group.name }}" in job["name"]
     assert "${{ matrix.environment.name }}" in job["name"]
@@ -102,7 +125,7 @@ def test_test_commands_use_the_selected_group_and_preserve_its_resolved_environm
             tokens = shlex.split(
                 _render(commands[0], group=group, environment=environment)
             )
-            assert tokens[:8] == [
+            assert tokens == [
                 "uv",
                 "run",
                 "--no-sync",
@@ -110,10 +133,13 @@ def test_test_commands_use_the_selected_group_and_preserve_its_resolved_environm
                 "-m",
                 "tests.tooling.ci",
                 "run",
+                *shlex.split(group["shard"]),
                 group["id"],
+                "--",
+                *shlex.split(environment["pytest"]),
+                "-q",
             ]
-            assert tokens[8] == "--"
-            assert ("--require-extras" in tokens[9:]) == (
+            assert ("--require-extras" in tokens) == (
                 "--all-extras" in shlex.split(environment["sync"])
             )
     # A later uv invocation must not replace floors, base, or native-only extras.
@@ -137,15 +163,100 @@ def test_public_contract_groups_run_on_every_other_supported_os(workflow):
     matrix = job["strategy"]["matrix"]
     assert set(matrix) == {"os", "group"}
     assert set(matrix["os"]) == {"macos-latest", "windows-latest"}
-    assert {group["id"] for group in matrix["group"]} == {"api", "contracts"}
+    assert set(_assert_complete_partitions(matrix["group"])) == {"api", "contracts"}
     assert job["runs-on"] == "${{ matrix.os }}"
     assert job["strategy"]["fail-fast"] is False
     sync = shlex.split(_sync(job))
     assert {"--locked", "--all-extras"} <= set(sync)
     assert _group_runs(job) == [
-        "uv run --no-sync python -m tests.tooling.ci run ${{ matrix.group.id }}"
+        "uv run --no-sync python -m tests.tooling.ci run ${{ matrix.group.shard }} ${{ matrix.group.id }}"
         " -- --require-extras -q"
     ]
+
+
+def test_sanitizer_shards_retain_both_engines_every_module_and_failure_evidence(
+    workflow,
+):
+    job = workflow["jobs"]["native-sanitizers"]
+    matrix = job["strategy"]["matrix"]
+    assert set(matrix) == {"rust-text", "shard"}
+    assert matrix["rust-text"] == ["0", "1"]
+    assert matrix["shard"] == [1, 2, 3]
+    assert job["strategy"]["fail-fast"] is False
+    step = next(step for step in job["steps"] if step.get("id") == "tests")
+    command = next(line for line in step["run"].splitlines() if "-m pytest " in line)
+    paths = {
+        "tests/suites/product/clone",
+        "tests/suites/product/text",
+        "tests/suites/product/serde",
+        "tests/suites/product/crypto",
+    }
+    for shard in matrix["shard"]:
+        tokens = shlex.split(command.replace("${{ matrix.shard }}", str(shard)))
+        assert {token for token in tokens if token.startswith("tests/suites/")} == paths
+        assert tokens[tokens.index("--ci-shard") + 1] == f"{shard}/3"
+        assert tokens[tokens.index("-p") + 1] == "tests.tooling.ci.sharding"
+        assert f"--junitxml=.local/native-sanitizers-{shard}.xml" in tokens
+    summary = next(step for step in job["steps"] if "Summarize" in step.get("name", ""))
+    artifact = next(
+        step for step in job["steps"] if "upload-artifact@" in step.get("uses", "")
+    )
+    assert ".local/native-sanitizers-${{ matrix.shard }}.xml" in summary["run"]
+    assert (
+        artifact["with"]["path"] == ".local/native-sanitizers-${{ matrix.shard }}.xml"
+    )
+    assert "${{ matrix.shard }}" in artifact["with"]["name"]
+
+
+def test_parallel_type_matrix_runs_every_combination_and_preserves_failure(
+    workflow, tmp_path, monkeypatch
+):
+    command = next(
+        step["run"]
+        for step in workflow["jobs"]["lint"]["steps"]
+        if step.get("name") == "Check type contracts"
+    )
+    tools = tmp_path / "tools"
+    tools.mkdir()
+    executable = tools / "uv"
+    executable.write_text(
+        f"#!{sys.executable}\n"
+        "import json, os, sys\n"
+        "from pathlib import Path\n"
+        "args = sys.argv[1:]\n"
+        "with Path(os.environ['TYPE_MATRIX_CALLS']).open('a') as stream:\n"
+        "    stream.write(json.dumps(args) + '\\n')\n"
+        "python = args[args.index('--python-version') + 1]\n"
+        "platform = args[args.index('--platform') + 1]\n"
+        "raise SystemExit(23 if (python, platform) == ('3.13', 'darwin') else 0)\n"
+    )
+    executable.chmod(0o755)
+    calls = tmp_path / "calls.jsonl"
+    monkeypatch.setenv("PATH", str(tools) + os.pathsep + os.environ["PATH"])
+    monkeypatch.setenv("TYPE_MATRIX_CALLS", str(calls))
+    shell = shutil.which("bash")
+    assert shell is not None
+    result = subprocess.run(  # noqa: S603 — reviewed workflow with fixture-only tool
+        [shell, "-e", "-c", command],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=20,
+    )
+    assert result.returncode == 1, result.stderr
+    observed = [json.loads(line) for line in calls.read_text().splitlines()]
+    assert len(observed) == 9
+    assert {
+        (args[args.index("--python-version") + 1], args[args.index("--platform") + 1])
+        for args in observed
+    } == {
+        (python, platform)
+        for python in ("3.12", "3.13", "3.14")
+        for platform in ("linux", "darwin", "win32")
+    }
+    assert len({args[args.index("--cache-dir") + 1] for args in observed}) == 9
+    assert all(args[:3] == ["run", "--no-sync", "mypy"] for args in observed)
 
 
 def test_every_declared_extra_runs_alone_and_requires_exactly_what_it_installs(
@@ -420,7 +531,7 @@ def test_only_artifact_group_primes_offline_build_dependencies(workflow):
     assert job["steps"][index].get("continue-on-error", False) is False
 
 
-def test_release_reuses_the_complete_ci_gate_before_building_publishable_artifacts(
+def test_release_requires_complete_ci_and_verified_artifacts_before_publication(
     workflow,
 ):
     yaml = require_backend("ruamel.yaml")
@@ -430,9 +541,14 @@ def test_release_reuses_the_complete_ci_gate_before_building_publishable_artifac
     assert "workflow_call" in workflow["on"]
     jobs = release["jobs"]
     assert jobs["gate"]["uses"] == "./.github/workflows/ci.yml"
-    for identity in ("wheels", "sdist"):
-        needs = jobs[identity]["needs"]
-        assert "gate" in ([needs] if isinstance(needs, str) else needs)
+    assert set(jobs["pypi"]["needs"]) == {"ci-status", "gate", "verify"}
+    assert "!cancelled()" in jobs["pypi"]["if"]
+    assert "needs.verify.result == 'success'" in jobs["pypi"]["if"]
+    assert "needs.ci-status.result == 'success'" in jobs["pypi"]["if"]
+    assert "needs.gate.result == 'success'" in jobs["pypi"]["if"]
+    assert "needs.ci-status.outputs.reused == 'true'" in jobs["pypi"]["if"]
+    assert jobs["wheels"]["needs"] == "sdist"
+    assert "needs" not in jobs["sdist"]
 
 
 @pytest.mark.parametrize("result", ["success", "failure", "cancelled", "skipped"])
