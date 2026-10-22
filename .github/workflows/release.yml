@@ -75,7 +75,7 @@ jobs:
       - name: Install audited release tools from the lock
         run: uv sync --locked --only-group release --no-install-project
       - name: Constrain platform repair tools to audited versions
-        run: uv export --locked --only-group release --no-emit-project --no-header --output-file release-constraints.txt
+        run: uv export --locked --only-group release --no-emit-project --no-header --output-file "${{ runner.temp }}/release-constraints.txt"
       - name: Build and test CPython wheels
         shell: bash
         env:
@@ -86,7 +86,9 @@ jobs:
             uv export --project "{package}" --locked --only-group build
             --no-emit-project --no-header --output-file build-constraints.txt
           CIBW_BUILD_FRONTEND: "uv; args: --build-constraints build-constraints.txt --require-hashes"
-          CIBW_DEPENDENCY_VERSIONS: release-constraints.txt
+          # cibuildwheel changes the host cwd after extracting the sdist.
+          # It resolves this file on the host before copying it into containers.
+          CIBW_DEPENDENCY_VERSIONS: ${{ runner.temp }}/release-constraints.txt
           # Test dependencies execute beside the files being released. Install
           # the audited hashes instead of resolving test-extras/test-requires.
           CIBW_TEST_EXTRAS: ""
