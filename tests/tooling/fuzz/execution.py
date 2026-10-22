@@ -8,6 +8,8 @@ memory; a wall watchdog remains effective during startup and native hangs.
 from __future__ import annotations
 
 import base64
+import errno
+from functools import cache
 import hashlib
 import json
 import math
@@ -79,6 +81,67 @@ def _limits(wall_seconds, cpu_seconds, memory_mb, per_input_seconds, max_input_b
         "per_input_seconds": per_input_seconds,
         "max_input_bytes": max_input_bytes,
     }
+
+
+@cache
+def _darwin_waitid_adapter():
+    """Bind Darwin's waitid when CPython 3.12 does not expose its OS wrapper."""
+    import ctypes
+
+    if sys.platform != "darwin" or ctypes.sizeof(ctypes.c_void_p) != 8:
+        msg = "the waitid backport requires 64-bit Darwin"
+        raise RuntimeError(msg)
+
+    class Siginfo(ctypes.Structure):
+        # SDK sys/signal.h: six 32-bit fields, then address, sigval, band and
+        # seven reserved unsigned longs. The opaque tail retains 8-byte
+        # alignment and the complete 104-byte siginfo_t storage on Darwin64.
+        _fields_ = (
+            ("si_signo", ctypes.c_int),
+            ("si_errno", ctypes.c_int),
+            ("si_code", ctypes.c_int),
+            ("si_pid", ctypes.c_int),
+            ("si_uid", ctypes.c_uint),
+            ("si_status", ctypes.c_int),
+            ("_reserved", ctypes.c_ulong * 10),
+        )
+
+    operation = ctypes.CDLL(None, use_errno=True).waitid
+    # SDK sys/wait.h: idtype_t is an int enum, id_t an unsigned 32-bit int.
+    # A void buffer pointer also keeps concurrent lazy bindings type-compatible.
+    operation.argtypes = (ctypes.c_int, ctypes.c_uint, ctypes.c_void_p, ctypes.c_int)
+    operation.restype = ctypes.c_int
+    return operation, Siginfo
+
+
+def _darwin_waitid_state(pid: int):
+    """Observe an owned Darwin child without consuming its waitable status."""
+    import ctypes
+
+    operation, info_type = _darwin_waitid_adapter()
+    info = info_type()
+    # SDK sys/wait.h: P_PID=1, WEXITED=4, WNOHANG=1, WNOWAIT=32.
+    if operation(1, pid, ctypes.byref(info), 4 | 1 | 32) != 0:
+        number = ctypes.get_errno()
+        if number == errno.EINTR:
+            return None  # The caller's monotonic deadline still bounds retries.
+        raise OSError(number, os.strerror(number))
+    if info.si_pid == 0:
+        return None
+    if info.si_pid != pid or info.si_code not in (1, 2, 3):
+        msg = "Darwin waitid returned an unexpected child or nonterminal status"
+        raise RuntimeError(msg)
+    return info
+
+
+def _waitid_state(pid: int):
+    """Use native POSIX observation, or the Darwin-only CPython 3.12 backport."""
+    if hasattr(os, "waitid"):
+        return os.waitid(os.P_PID, pid, os.WEXITED | os.WNOHANG | os.WNOWAIT)
+    if sys.platform == "darwin":
+        return _darwin_waitid_state(pid)
+    msg = "POSIX fuzz supervision requires non-reaping waitid observation"
+    raise RuntimeError(msg)
 
 
 class _Child:
@@ -164,6 +227,29 @@ class _Child:
             json.dumps(message, ensure_ascii=True).encode() + b"\n"
         )
         self.process.stdin.flush()
+
+    def wait_exit(self, timeout: float) -> int:
+        """Observe terminal status while retaining the POSIX leader for cleanup.
+
+        Reaping the leader here could release its PID before ``close`` signals
+        the owned process group. WNOWAIT keeps the child kernel-waitable and
+        leaves Popen.returncode unset until group cleanup has finished.
+        """
+        if os.name != "posix":
+            return self.process.wait(timeout=timeout)
+        deadline = time.monotonic() + timeout
+        while True:
+            state = _waitid_state(self.process.pid)
+            if state is not None:
+                return (
+                    state.si_status
+                    if state.si_code == getattr(os, "CLD_EXITED", 1)
+                    else -state.si_status
+                )
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise subprocess.TimeoutExpired(self.process.args, timeout)
+            time.sleep(min(0.01, remaining))
 
     def _close_pipes(self, error: BaseException | None = None):
         """Finish readers before closing handles they might still be using."""
@@ -430,9 +516,7 @@ def run_inputs(
                 }
                 break
             elif kind == "eof":
-                code = child.process.wait(
-                    timeout=max(0.01, deadline - time.monotonic())
-                )
+                code = child.wait_exit(timeout=max(0.01, deadline - time.monotonic()))
                 if (
                     ready
                     and complete
@@ -596,7 +680,7 @@ def run_atheris(
                     }
                     break
                 elif kind == "eof":
-                    code = child.process.wait(
+                    code = child.wait_exit(
                         timeout=max(0.01, deadline - time.monotonic())
                     )
                     if (

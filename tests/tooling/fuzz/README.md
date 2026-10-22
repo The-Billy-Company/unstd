@@ -117,6 +117,18 @@ which controls were actually enforced. Darwin's address-space limit is not
 claimed as a reliable resident-memory bound. Process groups are killed and the
 leader reaped on POSIX; other platforms report their cleanup capability.
 
+POSIX exit observation uses `waitid(..., WNOWAIT)` without reaping the leader or
+setting its `Popen.returncode`. The leader remains kernel-waitable until group
+cleanup finishes, keeping its identity reserved before the final reap. macOS
+Python 3.12 uses a contained `ctypes` adapter to Darwin's existing `waitid` API;
+newer Python wrappers and other POSIX platforms use `os.waitid`. The adapter's
+104-byte, eight-byte-aligned Darwin64 `siginfo_t` layout and option constants
+are checked against the SDK and real exited, signaled and timed-out children.
+Non-POSIX workers retain stdlib waiting and their reported narrower cleanup scope.
+Group-cleanup errors remain failures. Removing premature reaping closes a real
+PID-reuse window; it does not establish the cause of every observed Darwin
+permission error.
+
 Failures include assertions, unexpected exceptions, startup/protocol failures,
 input/wall/CPU limits, explicit memory failures and crashes. SIGKILL alone is
 reported as a kill, not invented OOM evidence. Bounded stderr capture preserves
