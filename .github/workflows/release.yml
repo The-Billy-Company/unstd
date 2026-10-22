@@ -26,7 +26,8 @@ jobs:
       contents: read
 
   wheels:
-    needs: gate
+    needs: [gate, sdist]
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
@@ -38,19 +39,50 @@ jobs:
           persist-credentials: false
       - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
-          enable-cache: false
-          version: "latest-known"
+          enable-cache: true
+          cache-suffix: release-${{ matrix.os }}
+          cache-dependency-glob: "uv.lock\npyproject.toml\n"
+          version: "0.13.0"
+          python-version: "3.13"
+      - name: Download the tested source distribution
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: release-raw-source
+          path: source
+      - name: Install audited release tools from the lock
+        run: uv sync --locked --only-group release --no-install-project
+      - name: Constrain platform repair tools to audited versions
+        run: uv export --locked --only-group release --no-emit-project --no-header --output-file release-constraints.txt
       - name: Build and test CPython wheels
-        run: uvx --from cibuildwheel==4.3.1 cibuildwheel --output-dir dist
+        shell: bash
+        env:
+          # Use uv's fast isolated builder and authenticate the build closure
+          # exported from the same lock embedded in the published sdist.
+          CIBW_BEFORE_BUILD: >-
+            uv export --project "{package}" --locked --only-group build
+            --no-emit-project --no-header --output-file build-constraints.txt
+          CIBW_BUILD_FRONTEND: "uv; args: --build-constraints build-constraints.txt --require-hashes"
+          CIBW_DEPENDENCY_VERSIONS: release-constraints.txt
+          # Test dependencies execute beside the files being released. Install
+          # the audited hashes instead of resolving test-extras/test-requires.
+          CIBW_TEST_EXTRAS: ""
+          CIBW_TEST_REQUIRES: ""
+          CIBW_BEFORE_TEST: >-
+            uv export --project "{package}" --locked --extra serde
+            --no-default-groups --group supply-chain
+            --no-emit-project --no-header --output-file test-requirements.txt &&
+            uv pip install --no-deps --require-hashes --requirements test-requirements.txt
+        run: uv run --no-sync cibuildwheel source/*.tar.gz --output-dir dist
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
-          name: wheels-${{ matrix.os }}
+          name: release-raw-wheels-${{ matrix.os }}
           path: dist/*.whl
           if-no-files-found: error
 
   sdist:
     needs: gate
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -58,36 +90,77 @@ jobs:
       - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           enable-cache: false
-          version: "latest-known"
-      - run: uv build --sdist
+          version: "0.13.0"
+          python-version: "3.13"
+      - name: Export authenticated build requirements
+        run: uv export --locked --only-group build --no-emit-project --no-header --output-file "$RUNNER_TEMP/build-constraints.txt"
+      - name: Build the source distribution with audited tools
+        run: uv build --sdist --build-constraints "$RUNNER_TEMP/build-constraints.txt" --require-hashes
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
-          name: source
+          name: release-raw-source
           path: dist/*.tar.gz
           if-no-files-found: error
 
-  pypi:
+  verify:
     needs: [wheels, sdist]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out the artifact verifier
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Download only release distributions
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          pattern: release-raw-*
+          path: dist
+          merge-multiple: true
+      - name: Verify every archive, metadata field & wheel RECORD
+        env:
+          RELEASE_TAG: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || '' }}
+        run: |
+          mkdir -p evidence
+          tag_args=()
+          if [ -n "$RELEASE_TAG" ]; then tag_args=(--tag "$RELEASE_TAG"); fi
+          python -m tests.tooling.release verify --dist dist "${tag_args[@]}" --manifest evidence/manifest.json
+          cp tests/tooling/release.py evidence/release.py
+      - name: Retain verified distributions
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: release-verified
+          path: dist/*
+          if-no-files-found: error
+      - name: Retain release checksums & standalone verifier
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: release-evidence
+          path: evidence/*
+          if-no-files-found: error
+
+  pypi:
+    needs: verify
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     environment: pypi
     permissions:
       id-token: write
     steps:
       - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
+          name: release-verified
           path: dist
-          merge-multiple: true
-      - name: The tag agrees with package metadata
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: release-evidence
+          path: evidence
+      - name: Authenticate the exact files at the publishing boundary
         env:
           TAG: ${{ github.ref_name }}
-        run: |
-          python - <<'PY'
-          import os, pathlib, tarfile, tomllib
-          source, = pathlib.Path("dist").glob("*.tar.gz")
-          with tarfile.open(source) as archive:
-              manifest, = (item for item in archive.getmembers() if item.name.endswith("/pyproject.toml"))
-              version = tomllib.loads(archive.extractfile(manifest).read().decode())["project"]["version"]
-          assert os.environ["TAG"] == "v" + version
-          PY
+        run: python -I evidence/release.py verify --dist dist --expected-manifest evidence/manifest.json --tag "$TAG"
       - uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
+        with:
+          attestations: true

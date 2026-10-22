@@ -121,6 +121,21 @@ Changelog = "https://github.com/The-Billy-Company/unstd/blob/main/CHANGELOG.md"
 Issues = "https://github.com/The-Billy-Company/unstd/issues"
 
 [dependency-groups]
+# The supply gate needs neither compilers, runtime extras, nor type/lint tools.
+supply-chain = [
+  "pytest>=8.0",
+  "hypothesis>=6.100",
+  "packaging>=24",
+  "ruamel-yaml>=0.19",
+]
+# Build and release tools belong to the audited lock, outside runtime extras.
+build = ["hatchling", "setuptools>=77"]
+release = [
+  "cibuildwheel==4.3.1",
+  "delocate==0.13.0 ; sys_platform == 'darwin'",
+  # GHSA-6q48-6c7w-9gw2: do not restore compromised certificate roots.
+  "certifi>=2026.10.19",
+]
 dev = [
   "pytest>=8.0",
   "hypothesis>=6.100",
@@ -146,6 +161,9 @@ exclude-newer = "P2D"
 [tool.uv.exclude-newer-package]
 # Our engine is released by the same verified publisher; upstreams keep P2D.
 irregex = false
+# Security fix reviewed against GHSA-6q48-6c7w-9gw2. Keep a one-day
+# quarantine for certifi so the repaired CA bundle can enter the release tools.
+certifi = "P1D"
 
 [tool.pytest.ini_options]
 testpaths = ["tests/suites"]

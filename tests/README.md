@@ -14,6 +14,12 @@ product assertions. The [coverage plan](COVERAGE.md) records obligations and gap
 
 ## Run and inspect
 
+The [supply chain gate](suites/assurance/gates/supply_chain/README.md) checks
+dependency sources and hashes, audits all locked environments, and retains a
+CycloneDX inventory. Its tamper controls run in ordinary tooling coverage and a
+small dedicated CI job. Release builds authenticate their build/test closures,
+then validate the exact archives and checksums handed to the PyPI publisher.
+
 From the repository root, prepare a full environment with
 `uv sync --locked --all-extras --group dev`; omit `--all-extras` for the fallback
 configuration. `--no-sync` preserves the backend combination already installed.

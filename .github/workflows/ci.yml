@@ -18,6 +18,12 @@ concurrency:
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
+  supply-chain:
+    name: Supply chain
+    uses: ./.github/workflows/supply-chain.yml
+    permissions:
+      contents: read
+
   lint:
     name: Quality / Style, types & inventories
     runs-on: ubuntu-latest
@@ -266,6 +272,7 @@ jobs:
     name: CI / Required groups
     if: always()
     needs:
+      - supply-chain
       - lint
       - test
       - resources

@@ -12,6 +12,13 @@ result summary when `GITHUB_STEP_SUMMARY` is set. The group validator rejects
 new active default suites until their CI group is declared; planned suites and
 explicit chaos/concurrency/resource campaigns remain separate.
 
+[`supply_chain.py`](supply_chain.py) checks dependency trust offline, exports a
+deterministic CycloneDX inventory of every lockfile platform branch, and rejects
+incomplete or non-clean `uv audit` reports. [`release.py`](release.py) verifies
+archives without importing their contents and authenticates the exact files
+handed to PyPI. See [supply chain testing](../suites/assurance/gates/supply_chain/README.md)
+for local commands, CI ownership, release handoff and limits.
+
 [`fuzz/`](fuzz/README.md) contains executable parser/token targets, authenticated
 seed corpora, deterministic replay and mutation, and bounded Atheris campaigns.
 [`chaos/`](chaos/README.md) runs recorded fault/recovery schedules in bounded
