@@ -15,10 +15,10 @@ from typing import TYPE_CHECKING, Any
 
 import pytest
 
-from tests.support.anchors import REPO_ROOT
-from tests.support.chaos import ordered
-from tests.support.chaos_fs_process import ATOMIC_ACTIONS, PROCESS_ACTIONS
-from tests.support.process import python_worker, run_python, worker_line
+from tests.support.chaos.fs_process import ATOMIC_ACTIONS, PROCESS_ACTIONS
+from tests.support.chaos.journal import ordered
+from tests.support.environment.anchors import REPO_ROOT
+from tests.support.environment.process import python_worker, run_python, worker_line
 from unstd import fs
 
 
@@ -35,7 +35,7 @@ import json
 from pathlib import Path
 import sys
 sys.path.insert(0, {str(REPO_ROOT)!r})
-from tests.support.chaos_fs_process import {name}
+from tests.support.chaos.fs_process import {name}
 def record(event):
     print(json.dumps({{'progress': event}}, sort_keys=True), flush=True)
 result = {name}(Path.cwd(), tuple(json.loads(sys.argv[1])), record=record)
@@ -67,6 +67,34 @@ def test_atomic_fault_history_preserves_model_and_recovers_after_every_step(
     assert sum(event["rollback"] for event in report["events"]) == 16
     assert sum(event["orphan_count"] for event in report["events"]) == 2
     assert all(event["committed_sha256"] for event in report["events"])
+
+
+@pytest.mark.skipif(os.name != "posix", reason="strict directory-sync acknowledgments")
+def test_strict_durability_history_retains_commit_state_and_recovers(
+    tmp_path: Path, chaos_seed: int, chaos_journal: Any
+) -> None:
+    actions = ordered(
+        chaos_seed,
+        "strict-durability-history",
+        (
+            "success",
+            "preflight-fsync",
+            "post-commit-fsync",
+            "post-commit-cancel",
+            "post-commit-fsync-close",
+        )
+        * 2,
+    )
+    chaos_journal.record("schedule", actions=list(actions))
+    report = _schedule_worker(
+        "strict_atomic_schedule", actions, tmp_path, chaos_journal
+    )
+    events = report["events"]
+    assert [event["action"] for event in events] == list(actions)
+    assert sum(not event["committed_at_failure"] for event in events) == 2
+    assert all(event["recovered"] for event in events)
+    assert sum("directory-close" in event["hits"] for event in events) == 2
+    chaos_journal.record("observed", evidence=report)
 
 
 def test_process_fault_history_preserves_outputs_reaps_and_recovers(
@@ -209,7 +237,7 @@ from pathlib import Path
 import sys
 sys.path.insert(0, {str(REPO_ROOT)!r})
 from unstd import fs
-from tests.support.chaos_fs_process import atomic_schedule
+from tests.support.chaos.fs_process import atomic_schedule
 original = fs.atomic_write
 def broken(path, data, **kwargs):
     if data.startswith(b'recovered:'):
@@ -245,7 +273,7 @@ from pathlib import Path
 import sys
 sys.path.insert(0, {str(REPO_ROOT)!r})
 from unstd import proc
-from tests.support.chaos_fs_process import process_schedule
+from tests.support.chaos.fs_process import process_schedule
 original = proc.run
 def broken(*args, **kwargs):
     try:

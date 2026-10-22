@@ -21,8 +21,8 @@ import zlib
 
 import pytest
 
-from tests.support.chaos import ordered
-from tests.support.chaos_streams import BytesStream, TextStream
+from tests.support.chaos.journal import ordered
+from tests.support.chaos.streams import BytesStream, TextStream
 from unstd.compress import gzipx
 from unstd.serde import jsonx, ndjson
 

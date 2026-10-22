@@ -11,7 +11,7 @@ from __future__ import annotations
 import errno
 import os
 from pathlib import Path
-from typing import IO, Any
+from typing import IO, Any, Self
 
 import pytest
 
@@ -23,7 +23,7 @@ class _FailingStream:
         self.stream = stream
         self.boundary = boundary
 
-    def __enter__(self) -> _FailingStream:
+    def __enter__(self) -> Self:
         self.stream.__enter__()
         return self
 
@@ -66,7 +66,7 @@ class _Boundary:
         self.reached.append(stage)
         raise self.error
 
-    def open(self, path: Path, flags: int, mode: int = 0o777) -> int:
+    def open(self, path: Path, flags: int, mode: int = 0o600) -> int:
         if self.stage == "open":
             self.fail("open")
         descriptor = os.open(path, flags, mode)
@@ -88,8 +88,24 @@ class _Boundary:
             self.fail("chmod")
         path.chmod(mode)
 
+    if hasattr(os, "fchmod"):
+
+        def fchmod(self, descriptor: int, mode: int) -> None:
+            if self.stage == "chmod":
+                self.fail("chmod")
+            os.fchmod(descriptor, mode)
+
 
 _STAGES = ("open", "fdopen", "write", "flush", "fsync", "close", "replace")
+
+
+def _assert_descriptor_closed(descriptor: int) -> None:
+    with pytest.raises(OSError) as closed:  # noqa: PT011 — exact OS codes checked below
+        os.fstat(descriptor)
+    if (winerror := getattr(closed.value, "winerror", None)) is not None:
+        assert winerror == 6  # ERROR_INVALID_HANDLE
+    else:
+        assert closed.value.errno == errno.EBADF
 
 
 @pytest.mark.parametrize("prior", [None, b"previous committed version\x00\xff"])
@@ -123,9 +139,7 @@ def test_atomic_write_fault_rolls_back_and_recovers(
         [dest.name] if prior is not None else []
     )
     for descriptor in boundary.descriptors:
-        with pytest.raises(OSError, match="Bad file descriptor") as closed:
-            os.fstat(descriptor)
-        assert closed.value.errno == errno.EBADF
+        _assert_descriptor_closed(descriptor)
     fs.atomic_write(dest, b"successful recovery")
     assert dest.read_bytes() == b"successful recovery"
 
@@ -148,8 +162,7 @@ def test_chmod_failure_closes_descriptor_and_preserves_mode_and_data(
     assert dest.stat().st_mode == old_mode
     assert list(tmp_path.iterdir()) == [dest]
     for descriptor in boundary.descriptors:
-        with pytest.raises(OSError, match="Bad file descriptor"):
-            os.fstat(descriptor)
+        _assert_descriptor_closed(descriptor)
     fs.atomic_write(dest, b"recovered")
     assert dest.read_bytes() == b"recovered"
 
@@ -212,8 +225,7 @@ def test_descriptor_close_failure_does_not_mask_original_write_error(
     assert boundary.reached == ["write", "descriptor_close"]
     assert any("descriptor close failed" in note for note in error.__notes__)
     for fd in boundary.descriptors:
-        with pytest.raises(OSError, match="Bad file descriptor"):
-            os.fstat(fd)
+        _assert_descriptor_closed(fd)
     assert dest.read_bytes() == b"old"
     assert list(tmp_path.iterdir()) == [dest]
     fs.atomic_write(dest, b"recovered")
@@ -250,9 +262,7 @@ def test_unlink_failure_retains_original_error_and_identifies_orphan(
     assert any("unlink refusal" in note for note in error.__notes__)
     assert dest.read_bytes() == b"old"
     for descriptor in boundary.descriptors:
-        with pytest.raises(OSError, match="Bad file descriptor") as closed:
-            os.fstat(descriptor)
-        assert closed.value.errno == errno.EBADF
+        _assert_descriptor_closed(descriptor)
     cleanup_paths[0].unlink()
     fs.atomic_write(dest, b"recovered")
     assert dest.read_bytes() == b"recovered"
@@ -281,9 +291,7 @@ def test_invalid_text_encoding_releases_unwrapped_descriptor(
         with pytest.raises(LookupError, match="unknown encoding"):
             fs.atomic_write(dest, "new", encoding="not-an-encoding")
     assert len(descriptors) == 1
-    with pytest.raises(OSError, match="Bad file descriptor") as closed:
-        os.fstat(descriptors[0])
-    assert closed.value.errno == errno.EBADF
+    _assert_descriptor_closed(descriptors[0])
     assert dest.read_text() == "old"
     assert list(tmp_path.iterdir()) == [dest]
 

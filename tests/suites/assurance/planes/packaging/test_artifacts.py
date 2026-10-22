@@ -21,8 +21,8 @@ import zipfile
 from packaging.utils import parse_wheel_filename
 import pytest
 
-from tests.support.anchors import REPO_ROOT
-from tests.support.packaging import (
+from tests.support.environment.anchors import REPO_ROOT
+from tests.support.packaging.artifacts import (
     checked_command,
     clean_environment,
     create_consumer,
@@ -34,11 +34,19 @@ if TYPE_CHECKING:
     from email.message import Message
     from pathlib import Path
 
-    from tests.support.packaging import Artifacts
+    from tests.support.packaging.artifacts import Artifacts
 
 
 with (REPO_ROOT / "pyproject.toml").open("rb") as _manifest:
     _EXTRAS = tuple(sorted(tomllib.load(_manifest)["project"]["optional-dependencies"]))
+
+
+_NATIVE_MODULES = (
+    "unstd.serde._json_native",
+    "unstd.clone._clone_native",
+    "unstd.crypto._stream_native",
+    "unstd.text._text_native",
+)
 
 
 def _wheel_files(wheel: Path) -> dict[str, bytes]:
@@ -56,9 +64,24 @@ def _metadata(wheel: Path) -> Message:
 
 
 def _native_file(name: str) -> bool:
-    return bool(
-        re.fullmatch(r"unstd/serde/_json_native(?:\.[a-zA-Z0-9_-]+)?\.(?:so|pyd)", name)
+    return any(
+        re.fullmatch(
+            re.escape(module.replace(".", "/")) + r"(?:\.[a-zA-Z0-9_-]+)?\.(?:so|pyd)",
+            name,
+        )
+        for module in _NATIVE_MODULES
     )
+
+
+def _native_modules(files: dict[str, bytes]) -> set[str]:
+    return {
+        module
+        for module in _NATIVE_MODULES
+        if any(
+            _native_file(name) and name.startswith(module.replace(".", "/") + ".")
+            for name in files
+        )
+    }
 
 
 def _requirement(requirement: str) -> str:
@@ -90,8 +113,11 @@ def test_wheel_contains_every_source_module_and_data_file(
     binaries = [
         name for name in files if name.endswith((".pyc", ".so", ".pyd", ".dylib"))
     ]
-    assert len(binaries) <= 1
+    assert len(binaries) <= len(_NATIVE_MODULES)
     assert all(_native_file(name) for name in binaries)
+    for module in _NATIVE_MODULES:
+        prefix = module.replace(".", "/") + "."
+        assert sum(name.startswith(prefix) for name in binaries) <= 1
 
 
 def test_wheel_paths_are_safe_and_confined_to_package_or_dist_info(wheel: Path) -> None:
@@ -216,6 +242,7 @@ def test_sdist_contains_all_sources_and_rebuild_inputs_without_local_caches(
                 ".hypothesis",
                 ".mypy_cache",
                 ".ruff_cache",
+                "target",
                 ".env",
             }
             assert not member.name.endswith(".pyc")
@@ -229,8 +256,16 @@ def test_sdist_contains_all_sources_and_rebuild_inputs_without_local_caches(
         "README.md",
         "LICENSE",
         "NOTICE",
+        "native/text/Cargo.toml",
+        "native/text/Cargo.lock",
+        "native/text/src/lib.rs",
+        "native/text/adapter.c",
     ):
         assert files[required] == (artifacts.source / required).read_bytes()
+    for source in (artifacts.source / "native").rglob("*"):
+        if source.is_file():
+            name = source.relative_to(artifacts.source).as_posix()
+            assert files[name] == source.read_bytes()
     for name, content in artifacts.package_files.items():
         assert files[f"src/{name}"] == content
     metadata = BytesParser(policy=default).parsebytes(files["PKG-INFO"])
@@ -286,6 +321,15 @@ def test_missing_compiler_builds_a_portable_fallback(
     assert len(wheels) == 1
     assert wheels[0].name.endswith("-py3-none-any.whl")
     assert not any(_native_file(name) for name in _wheel_files(wheels[0]))
+    consumer = create_consumer(tmp_path / "consumer", wheels[0])
+    consumer.run("""
+from unstd import clone
+from unstd.text import fuzz
+from unstd.serde import jsonx
+assert clone.deep({'items': [1, 2]}) == {'items': [1, 2]}
+assert fuzz.distance('kitten', 'sitting') == 3
+assert jsonx.dumpb([1]) == b'[1]'
+""")
 
 
 @pytest.mark.skipif(os.name == "nt", reason="MSVC does not choose its compiler via CC")
@@ -294,8 +338,12 @@ def test_failed_editable_build_clears_its_stale_native_module(
 ) -> None:
     source = tmp_path / "editable"
     shutil.copytree(artifacts.source, source)
-    stale = source / "src/unstd/serde/_json_native.abi3.so"
-    stale.write_bytes(b"stale compiler output")
+    stale = [
+        source / "src" / (module.replace(".", "/") + ".abi3.so")
+        for module in _NATIVE_MODULES
+    ]
+    for native in stale:
+        native.write_bytes(b"stale compiler output")
     consumer = create_consumer(tmp_path / "consumer", artifacts.wheel)
     checked_command(
         [
@@ -312,5 +360,244 @@ def test_failed_editable_build_clears_its_stale_native_module(
         cwd=tmp_path,
         env={**clean_environment(), "CC": str(tmp_path / "missing-compiler")},
     )
+    assert not any(native.exists() for native in stale)
+    consumer.run("""
+from unstd import clone
+from unstd.text import fuzz
+from unstd.serde import jsonx
+assert clone.deep({'items': [1, 2]}) == {'items': [1, 2]}
+assert fuzz.distance('kitten', 'sitting') == 3
+assert jsonx.dumpb([1]) == b'[1]'
+""")
+
+
+@pytest.mark.parametrize("failed_module", _NATIVE_MODULES)
+def test_optional_compiler_failure_preserves_other_native_modules(
+    artifacts: Artifacts, tmp_path: Path, failed_module: str
+) -> None:
+    if _native_modules(_wheel_files(artifacts.wheel)) != set(_NATIVE_MODULES):
+        pytest.skip("requires a compiler that can build every native module")
+    source = tmp_path / "partial"
+    shutil.copytree(artifacts.source, source)
+    (source / "src" / (failed_module.replace(".", "/") + ".c")).write_text(
+        "#error unstd_test_native_failure\n", encoding="utf-8"
+    )
+    output = tmp_path / "output"
+    checked_command(
+        [
+            uv_executable(),
+            "build",
+            "--offline",
+            "--no-config",
+            "--no-sources",
+            "--no-python-downloads",
+            "--python",
+            sys.executable,
+            "--wheel",
+            "--out-dir",
+            output,
+            source,
+        ],
+        cwd=tmp_path,
+    )
+    wheels = list(output.glob("*.whl"))
+    assert len(wheels) == 1
+    assert _native_modules(_wheel_files(wheels[0])) == set(_NATIVE_MODULES) - {
+        failed_module
+    }
+    assert not wheels[0].name.endswith("-py3-none-any.whl")
+    strict = checked_command(
+        [
+            uv_executable(),
+            "build",
+            "--offline",
+            "--no-config",
+            "--no-sources",
+            "--no-python-downloads",
+            "--python",
+            sys.executable,
+            "--wheel",
+            "--out-dir",
+            tmp_path / "strict",
+            source,
+        ],
+        cwd=tmp_path,
+        env={**clean_environment(), "CIBUILDWHEEL": "1"},
+        expected_code=2,
+    )
+    assert "unstd_test_native_failure" in strict.stdout + strict.stderr
+    assert not list((tmp_path / "strict").glob("*.whl"))
+
+
+@pytest.mark.parametrize("failure", ["missing-cargo", "invalid-rust"])
+def test_optional_rust_failure_preserves_c_modules_and_fails_release_builds(
+    artifacts: Artifacts, tmp_path: Path, failure: str
+) -> None:
+    if _native_modules(_wheel_files(artifacts.wheel)) != set(_NATIVE_MODULES):
+        pytest.skip("requires a compiler that can build every C native module")
+    if failure == "invalid-rust" and shutil.which("cargo") is None:
+        pytest.skip("requires Cargo to exercise a Rust compilation failure")
+    source = tmp_path / "partial-rust"
+    shutil.copytree(artifacts.source, source)
+    environment = {**clean_environment(), "UNSTD_TEXT_RUST": "1"}
+    if failure == "missing-cargo":
+        marker = "unstd-missing-cargo"
+        environment["CARGO"] = str(tmp_path / marker)
+    else:
+        marker = "unstd_test_rust_failure"
+        (source / "native/text/src/lib.rs").write_text(
+            f'compile_error!("{marker}");\n', encoding="utf-8"
+        )
+    common = [
+        uv_executable(),
+        "build",
+        "--offline",
+        "--no-config",
+        "--no-sources",
+        "--no-python-downloads",
+        "--python",
+        sys.executable,
+        "--wheel",
+        source,
+    ]
+    output = tmp_path / "output"
+    checked_command([*common, "--out-dir", output], cwd=tmp_path, env=environment)
+    wheels = list(output.glob("*.whl"))
+    assert len(wheels) == 1
+    assert _native_modules(_wheel_files(wheels[0])) == {
+        "unstd.serde._json_native",
+        "unstd.clone._clone_native",
+        "unstd.crypto._stream_native",
+    }
+    consumer = create_consumer(tmp_path / "consumer", wheels[0])
+    consumer.run("""
+from unstd.text import fuzz
+assert fuzz.distance('kitten', 'sitting') == 3
+assert fuzz.jaro_winkler('MARTHA', 'MARHTA') == 0.9611111111111111
+""")
+    strict = checked_command(
+        [*common, "--out-dir", tmp_path / "strict"],
+        cwd=tmp_path,
+        env={**environment, "CIBUILDWHEEL": "1"},
+        expected_code=2,
+    )
+    assert marker in strict.stdout + strict.stderr
+    assert not list((tmp_path / "strict").glob("*.whl"))
+
+
+def test_missing_cargo_editable_build_clears_only_stale_text_module(
+    artifacts: Artifacts, tmp_path: Path
+) -> None:
+    if _native_modules(_wheel_files(artifacts.wheel)) != set(_NATIVE_MODULES):
+        pytest.skip("requires a compiler that can build every C native module")
+    source = tmp_path / "editable-rust"
+    shutil.copytree(artifacts.source, source)
+    suffix = ".pyd" if os.name == "nt" else ".so"
+    stale = source / "src/unstd/text" / ("_text_native.abi3" + suffix)
+    stale.write_bytes(b"stale Rust compiler output")
+    consumer = create_consumer(tmp_path / "consumer", artifacts.wheel)
+    checked_command(
+        [
+            uv_executable(),
+            "pip",
+            "install",
+            "--offline",
+            "--no-deps",
+            "--python",
+            consumer.python,
+            "--editable",
+            source,
+        ],
+        cwd=tmp_path,
+        env={
+            **clean_environment(),
+            "CARGO": str(tmp_path / "missing-cargo"),
+            "UNSTD_TEXT_RUST": "1",
+        },
+    )
     assert not stale.exists()
-    consumer.run("from unstd.serde import jsonx; assert jsonx.dumpb([1]) == b'[1]'")
+    for module in _NATIVE_MODULES[:-1]:
+        relative = module.replace(".", "/")
+        assert any(
+            path.suffix in {".so", ".pyd"}
+            for path in (source / "src" / relative).parent.glob(
+                relative.split("/")[-1] + ".*"
+            )
+        )
+    assert not list((source / "src/unstd/text").glob("_text_native.*" + suffix))
+
+
+def test_default_c_build_does_not_require_cargo(
+    artifacts: Artifacts, tmp_path: Path
+) -> None:
+    if _native_modules(_wheel_files(artifacts.wheel)) != set(_NATIVE_MODULES):
+        pytest.skip("requires a compiler that can build every C native module")
+    output = tmp_path / "default-without-cargo"
+    checked_command(
+        [
+            uv_executable(),
+            "build",
+            "--offline",
+            "--no-config",
+            "--no-sources",
+            "--no-python-downloads",
+            "--python",
+            sys.executable,
+            "--wheel",
+            "--out-dir",
+            output,
+            artifacts.source,
+        ],
+        cwd=tmp_path,
+        env={
+            **clean_environment(),
+            "CARGO": str(tmp_path / "missing-cargo"),
+            "CIBUILDWHEEL": "1",
+        },
+    )
+    wheels = list(output.glob("*.whl"))
+    assert len(wheels) == 1
+    assert _native_modules(_wheel_files(wheels[0])) == set(_NATIVE_MODULES)
+
+
+def test_opted_in_rust_build_from_sdist_has_no_extra_runtime_dependency(
+    artifacts: Artifacts, tmp_path: Path
+) -> None:
+    if _native_modules(_wheel_files(artifacts.wheel)) != set(_NATIVE_MODULES):
+        pytest.skip("requires a compiler that can build every C native module")
+    if shutil.which("cargo") is None:
+        pytest.skip("requires Cargo to build the opt-in Rust experiment")
+    output = tmp_path / "rust-from-sdist"
+    checked_command(
+        [
+            uv_executable(),
+            "build",
+            "--offline",
+            "--no-config",
+            "--no-sources",
+            "--no-python-downloads",
+            "--python",
+            sys.executable,
+            "--wheel",
+            "--out-dir",
+            output,
+            artifacts.sdist,
+        ],
+        cwd=tmp_path,
+        env={**clean_environment(), "UNSTD_TEXT_RUST": "1", "CIBUILDWHEEL": "1"},
+    )
+    wheels = list(output.glob("*.whl"))
+    assert len(wheels) == 1
+    assert _native_modules(_wheel_files(wheels[0])) == set(_NATIVE_MODULES)
+    assert _metadata(wheels[0]).get_all("Requires-Dist", []) == _metadata(
+        artifacts.wheel
+    ).get_all("Requires-Dist", [])
+    consumer = create_consumer(tmp_path / "consumer", wheels[0])
+    consumer.run("""
+import importlib.metadata
+from unstd.text import _text_native, fuzz
+assert {dist.metadata['Name'].lower() for dist in importlib.metadata.distributions()} == {'unstd'}
+assert 'Rust text kernels' in _text_native.__doc__
+assert _text_native.distance('kitten', 'sitting') == 3
+assert fuzz.jaro_winkler('MARTHA', 'MARHTA') == 0.9611111111111111
+""")

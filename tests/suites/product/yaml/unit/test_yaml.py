@@ -16,6 +16,8 @@ from typing import TYPE_CHECKING
 
 import pytest
 
+from tests.support.environment.backends import require_backend
+
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -24,8 +26,8 @@ if TYPE_CHECKING:
 
 @pytest.fixture
 def yaml_backend() -> ModuleType:
-    """The public YAML surface, skipped only when the backend is absent."""
-    pytest.importorskip("ruamel.yaml")
+    """The public YAML surface; an absent backend skips locally, fails when required."""
+    require_backend("ruamel.yaml")
     from unstd import yaml
 
     return yaml

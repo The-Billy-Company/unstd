@@ -86,13 +86,22 @@ output is a unique ignored `.local/concurrency` directory.
 
 ## CI and limits of the evidence
 
-[`concurrency.yml`](../../../.github/workflows/concurrency.yml) derives three
-groups × installed/stdlib × Linux/macOS from executable discovery. Pull requests,
-main pushes and manual runs execute one round; nightly runs execute ten. Jobs
-have a 30-minute outer timeout and retain successful/failing artifacts for
-fourteen days. Actions are pinned and permissions read-only. Ordinary CI checks
-discovery and runs campaign/selection/replay/CI gates alongside the shared
-engine's watchdog, crash, cleanup and resource-control gates.
+[`concurrency.yml`](../../../.github/workflows/concurrency.yml) has four named jobs:
+`Concurrency / Linux / installed`, `Linux / stdlib`, `macOS / installed` and
+`macOS / stdlib`. Each job installs dependencies once, then `--group all`
+discovers and runs every executable group. New groups join automatically without
+adding another setup job. Pull requests, main pushes and manual runs execute one
+round per group; nightly jobs execute ten recorded rounds. Independent per-group
+worker bounds remain unchanged. The 65-minute outer timeout accommodates three
+groups × ten rounds × 120 seconds plus setup, cleanup and evidence upload.
+
+Each worker has a folded log section. The GitHub job summary lists each group,
+seed, result, case counts, duration and replay-report path inside the artifact.
+All reports and journals upload after success or failure and remain for fourteen
+days. Dependencies are cached by the lockfile and project configuration; unstd
+is rebuilt from the current checkout. Actions are pinned and repository
+permissions are read-only. Ordinary CI validates discovery and runs the harness
+gates; campaign scenarios stay explicitly selected.
 
 These are controlled finite histories on the tested builds. They do not establish
 free-threaded Python support, Windows handle semantics, arbitrary shared mutable

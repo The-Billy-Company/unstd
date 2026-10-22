@@ -13,6 +13,7 @@ import sys
 import tempfile
 from uuid import uuid4
 
+from tests.tooling.ci.campaigns import append_campaign_summary, campaign_group
 from tests.tooling.fuzz import execution, mutate, registry
 
 
@@ -152,69 +153,83 @@ def _execute(args: argparse.Namespace, targets: tuple[registry.Target, ...]) -> 
         "provenance": provenance,
         "reports": [],
     }
+    rows = []
     for target in selected:
         seeds = registry.load_seeds(target)
         stages = ["reproduce"] if args.command == "reproduce" else ["replay"]
         if args.command == "campaign":
             stages.append("campaign")
         for stage in stages:
-            output = directory / target.name / args.backend / stage
-            limits = _limits(args, target, output)
-            if stage == "reproduce":
-                with args.input.open("rb") as stream:
-                    data = stream.read(limits["max_input_bytes"] + 1)
-                case_id = "reproduce/" + hashlib.sha256(data).hexdigest()
-                report = execution.run_inputs(target.name, [(case_id, data)], **limits)
-            elif stage == "replay":
-                report = execution.run_inputs(
-                    target.name,
-                    [(seed.identity, seed.data) for seed in seeds],
-                    **limits,
-                )
-            elif args.engine == "deterministic":
-                report = execution.run_inputs(
-                    target.name,
-                    mutate.mutations(
-                        seeds,
-                        runs=args.runs,
-                        seed=args.seed,
-                        max_input_bytes=limits["max_input_bytes"],
-                    ),
-                    **limits,
-                )
-                report.update(
-                    engine="deterministic-mutation", runs=args.runs, seed=args.seed
-                )
-            else:
-                # seeds.json is provenance, never a parser input. Only the
-                # authenticated bytes enter libFuzzer's disposable directory.
-                with tempfile.TemporaryDirectory(
-                    prefix="unstd-reviewed-corpus-"
-                ) as temporary:
-                    raw = Path(temporary)
-                    for seed in seeds:
-                        (raw / seed.file).write_bytes(seed.data)
-                    report = execution.run_atheris(
-                        target.name, raw, runs=args.runs, seed=args.seed, **limits
+            with campaign_group(f"{target.name} / {args.backend} / {stage}"):
+                output = directory / target.name / args.backend / stage
+                limits = _limits(args, target, output)
+                if stage == "reproduce":
+                    with args.input.open("rb") as stream:
+                        data = stream.read(limits["max_input_bytes"] + 1)
+                    case_id = "reproduce/" + hashlib.sha256(data).hexdigest()
+                    report = execution.run_inputs(
+                        target.name, [(case_id, data)], **limits
                     )
-            report.update(
-                stage=stage,
-                provenance=provenance,
-                reviewed_corpus_sha256=registry.corpus_digest(seeds),
-            )
-            path = output / "report.json"
-            _write(path, report)
-            summary["reports"].append(
-                {
-                    "target": target.name,
-                    "stage": stage,
-                    "status": report["status"],
-                    "completed": report["completed"],
-                    "path": str(path),
-                }
-            )
-            print(
-                f"{target.name}/{args.backend}/{stage}: {report['status']} ({report['completed']} completed)"
+                elif stage == "replay":
+                    report = execution.run_inputs(
+                        target.name,
+                        [(seed.identity, seed.data) for seed in seeds],
+                        **limits,
+                    )
+                elif args.engine == "deterministic":
+                    report = execution.run_inputs(
+                        target.name,
+                        mutate.mutations(
+                            seeds,
+                            runs=args.runs,
+                            seed=args.seed,
+                            max_input_bytes=limits["max_input_bytes"],
+                        ),
+                        **limits,
+                    )
+                    report.update(
+                        engine="deterministic-mutation", runs=args.runs, seed=args.seed
+                    )
+                else:
+                    # seeds.json is provenance, never a parser input. Only the
+                    # authenticated bytes enter libFuzzer's disposable directory.
+                    with tempfile.TemporaryDirectory(
+                        prefix="unstd-reviewed-corpus-"
+                    ) as temporary:
+                        raw = Path(temporary)
+                        for seed in seeds:
+                            (raw / seed.file).write_bytes(seed.data)
+                        report = execution.run_atheris(
+                            target.name, raw, runs=args.runs, seed=args.seed, **limits
+                        )
+                report.update(
+                    stage=stage,
+                    provenance=provenance,
+                    reviewed_corpus_sha256=registry.corpus_digest(seeds),
+                )
+                path = output / "report.json"
+                _write(path, report)
+                summary["reports"].append(
+                    {
+                        "target": target.name,
+                        "stage": stage,
+                        "status": report["status"],
+                        "completed": report["completed"],
+                        "path": str(path),
+                    }
+                )
+                print(
+                    f"{target.name}/{args.backend}/{stage}: {report['status']} ({report['completed']} completed)"
+                )
+            rows.append(
+                (
+                    target.name,
+                    stage,
+                    report["status"],
+                    report["completed"],
+                    f"{report.get('duration_seconds', 0):.2f}s",
+                    f"`{path.relative_to(directory.parent)}`",
+                )
             )
             if report["status"] != "passed":
                 break
@@ -226,6 +241,12 @@ def _execute(args: argparse.Namespace, targets: tuple[registry.Target, ...]) -> 
     )
     _write(directory / "summary.json", summary)
     print(f"Reports: {directory / 'summary.json'}")
+    engine = args.engine if args.command == "campaign" else args.command
+    append_campaign_summary(
+        f"Parser fuzzing / {args.backend} / {engine}: {summary['status']}",
+        ("Target", "Stage", "Result", "Completed", "Time", "Evidence report"),
+        rows,
+    )
     if unsupported:
         print("Unsupported in this backend: " + ", ".join(unsupported))
     return 0 if summary["status"] == "passed" else 1

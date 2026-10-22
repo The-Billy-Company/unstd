@@ -113,6 +113,33 @@ def test_fixture_is_complete_and_zero_length_seed_is_real_evidence(tree):
     assert registry.corpus_digest(renamed) != registry.corpus_digest(seeds)
 
 
+def test_corpus_readmes_leave_authenticated_seed_inputs_unchanged(tree):
+    (target,) = registry.check(tree)
+    before = registry.load_seeds(target, tree)
+    for directory in (tree / "corpus", tree / "corpus/sample"):
+        (directory / "README.md").write_text("# Reviewed corpus documentation\n")
+    assert registry.check(tree) == (target,)
+    after = registry.load_seeds(target, tree)
+    assert after == before
+    assert registry.corpus_digest(after) == registry.corpus_digest(before)
+
+
+@pytest.mark.parametrize("directory", ["corpus", "corpus/sample"])
+@pytest.mark.parametrize("entry", ["other.md", "readme-directory", "readme-symlink"])
+def test_only_regular_exact_readme_files_are_excluded_from_corpus_inventory(
+    tree, directory, entry
+):
+    path = tree / directory / ("other.md" if entry == "other.md" else "README.md")
+    if entry == "readme-directory":
+        path.mkdir()
+    elif entry == "readme-symlink":
+        path.symlink_to(tree / "registry.toml")
+    else:
+        path.touch()
+    with pytest.raises(registry.RegistryError):
+        registry.check(tree)
+
+
 @pytest.mark.parametrize(
     ("field", "value"),
     [

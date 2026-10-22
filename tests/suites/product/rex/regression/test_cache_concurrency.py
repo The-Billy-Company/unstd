@@ -15,7 +15,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from tests.support.process import run_python
+from tests.support.environment.process import run_python
 
 
 if TYPE_CHECKING:
@@ -31,8 +31,8 @@ def test_duplicate_oldest_eviction_keeps_cache_bounded(
     if backend == "stdlib":
         environment["UNSTD_CHAOS_BACKEND"] = "stdlib"
     code = (
-        "from tests.support.chaos import apply_backend_policy; apply_backend_policy(); "
-        "from tests.support.concurrency_shared_state import main; main()"
+        "from tests.support.chaos.journal import apply_backend_policy; apply_backend_policy(); "
+        "from tests.support.concurrency.shared_state import main; main()"
     )
     result = run_python(
         code,

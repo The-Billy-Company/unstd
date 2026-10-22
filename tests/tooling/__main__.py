@@ -1,6 +1,6 @@
 """The ``python -m tests.tooling`` entry point."""
 
-from tests.tooling.runner import main
+from tests.tooling.suites.runner import main
 
 
 raise SystemExit(main())

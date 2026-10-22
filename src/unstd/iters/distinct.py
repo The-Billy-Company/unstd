@@ -21,6 +21,27 @@ if TYPE_CHECKING:
 __all__ = ["unique_everseen", "unique_justseen"]
 
 
+def _remember_unhashable(
+    candidate: object,
+    seen: set[object],
+    unhashable: list[object],
+    comparison_error: TypeError,
+) -> bool:
+    """Remember an unhashable first occurrence or preserve a comparison error."""
+    try:
+        hash(candidate)
+    except TypeError:
+        pass
+    else:
+        raise comparison_error
+    if candidate in unhashable or any(
+        previous is candidate or previous == candidate for previous in seen
+    ):
+        return False
+    unhashable.append(candidate)
+    return True
+
+
 def unique_everseen[T](
     iterable: Iterable[T], key: Callable[[T], object] | None = None
 ) -> Iterator[T]:
@@ -30,6 +51,9 @@ def unique_everseen[T](
     a ``set`` (O(1) membership), while the first unhashable key transparently
     switches *that* item onto a ``list`` seen-log (O(n) membership) so a key like a
     ``dict`` or ``list`` still de-dupes correctly instead of raising ``TypeError``.
+    Equality is checked across both histories, so equal hashable/unhashable keys
+    (for example ``frozenset({1})`` and ``{1}``) share one first occurrence.
+    Exceptions raised by hashable keys' comparisons propagate to the caller.
     Lazy — reads only as far as the caller pulls. Deliberately diverges from
     ``more-itertools`` ``>=11.0``, which removed its own silent unhashable-key
     fallback and now raises ``TypeError`` there (recommending ``key=tuple``/
@@ -39,28 +63,35 @@ def unique_everseen[T](
     seen: set[object] = set()
     remember = seen.add
     unhashable: list[object] = []
-    if key is None:  # the common call — no key lookup per element
+    if key is None:
+        # Until the first unhashable item there is only one history. Keep this
+        # common prefix free of projection and mixed-history checks, then resume
+        # the shared mixed-key loop with the same iterator and histories.
+        iterable = iter(iterable)
         for element in iterable:
             try:
                 if element in seen:
                     continue
                 remember(element)
-            except TypeError:  # unhashable → the linear seen-log
-                if element in unhashable:
-                    continue
-                unhashable.append(element)
+            except TypeError as error:
+                first_unhashable = _remember_unhashable(
+                    element, seen, unhashable, error
+                )
+                break
             yield element
-        return
+        else:
+            return
+        if first_unhashable:
+            yield element
     for element in iterable:
-        k = key(element)
+        candidate = element if key is None else key(element)
         try:
-            if k in seen:
+            if candidate in seen or candidate in unhashable:
                 continue
-            remember(k)
-        except TypeError:
-            if k in unhashable:
+            remember(candidate)
+        except TypeError as error:
+            if not _remember_unhashable(candidate, seen, unhashable, error):
                 continue
-            unhashable.append(k)
         yield element
 
 

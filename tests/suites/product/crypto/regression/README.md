@@ -1,8 +1,18 @@
-# regression
+# Cryptography regressions
 
-Status: **planned**. Minimized confirmed defects with an independent assertion and original failure reference.
+`test_derive_key_context.py` retains the KDF mode drop: `digest.derive_key(None, material)`
+returned `digest.raw(material)` because the BLAKE3 backend reads a `None`
+context as plain hashing. A missing context must raise `TypeError` on the serial
+and parallel paths, and the published `derive_key` vector must still hold
+afterwards. The test failed against the original implementation.
 
-No executable coverage is claimed by this directory. Follow
-[the coverage plan](../../../../COVERAGE.md) before adding tests, then activate this lane in
-`tests/tooling/inventory.toml`. A required lane must fail when its prerequisites
-are absent. Use success controls, explicit bounds, and independent expectations.
+These tests require BLAKE3 from the `crypto` extra; `--require-extras` turns its
+absence into a failure.
+
+Run from the repository root:
+
+```console
+uv run --no-sync pytest tests/suites/product/crypto/regression -q
+```
+
+See [the module test overview](../README.md) for related evidence.

@@ -244,7 +244,7 @@ def test_bad_argument_syntax_exits_two_without_artifacts(tmp_path, arguments):
 
 
 def test_actual_assertion_returns_one_and_preserves_failed_case_journal(
-    tmp_path, monkeypatch
+    tmp_path, monkeypatch, capsys
 ):
     real_run = execution.run_group
 
@@ -252,6 +252,12 @@ def test_actual_assertion_returns_one_and_preserves_failed_case_journal(
         return real_run(group, _fixture="assertion", **options)
 
     monkeypatch.setattr(execution, "run_group", failing)
+    # Ordinary CI gates deliberately provoke failures; only real campaign jobs
+    # opt into GitHub reporting so these probes cannot pollute their summaries.
+    monkeypatch.setenv("GITHUB_ACTIONS", "true")
+    github_summary = tmp_path / "github-summary.md"
+    monkeypatch.setenv("GITHUB_STEP_SUMMARY", str(github_summary))
+    monkeypatch.delenv("UNSTD_CAMPAIGN_REPORTING", raising=False)
     assert (
         cli.main(
             [
@@ -272,10 +278,12 @@ def test_actual_assertion_returns_one_and_preserves_failed_case_journal(
     assert report["failed"] > 0
     assert report["journals"]
     assert any(case["outcome"] == "failed" for case in report["cases"])
+    assert "::group::" not in capsys.readouterr().out
+    assert not github_summary.exists()
 
 
 def test_all_groups_and_seed_wrap_are_counted_without_overwriting_rounds(
-    tmp_path, monkeypatch
+    tmp_path, monkeypatch, capsys
 ):
     real_run = execution.run_group
     calls = []
@@ -287,6 +295,10 @@ def test_all_groups_and_seed_wrap_are_counted_without_overwriting_rounds(
         return real_run(group, _fixture="pass", **options)
 
     monkeypatch.setattr(execution, "run_group", control)
+    monkeypatch.setenv("GITHUB_ACTIONS", "true")
+    monkeypatch.setenv("UNSTD_CAMPAIGN_REPORTING", "1")
+    github_summary = tmp_path / "github-summary.md"
+    monkeypatch.setenv("GITHUB_STEP_SUMMARY", str(github_summary))
     assert (
         cli.main(
             [
@@ -316,6 +328,15 @@ def test_all_groups_and_seed_wrap_are_counted_without_overwriting_rounds(
     assert len(summary["reports"]) == len(expected)
     assert summary["status"] == "passed"
     assert all(Path(item["path"]).is_file() for item in summary["reports"])
+    logs = capsys.readouterr().out
+    assert logs.count("::group::") == logs.count("::endgroup::") == len(expected)
+    markdown = github_summary.read_text()
+    assert "Fault injection / stdlib: passed" in markdown
+    assert "Time | Replay report" in markdown
+    for group, seed, _backend in expected:
+        assert f"{group} | {seed} | passed" in markdown
+    for item in summary["reports"]:
+        assert str(Path(item["path"]).relative_to(tmp_path)) in markdown
 
 
 def _valid_replay():

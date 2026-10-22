@@ -23,6 +23,7 @@ Install with the extra: `pip install 'unstd[crypto]'`.
 | File        | Role                                                                                                      |
 | ----------- | --------------------------------------------------------------------------------------------------------- |
 | `digest.py` | BLAKE3-256 - `raw` (bytes) / `hex` (full or truncated) / `Stream`, `derive_key`, and the `legacy_blake2b` escape hatch. |
+| `_stream_native.c` | Optional bounded batching of small immutable chunks before the BLAKE3 backend absorbs them. |
 | `token.py`  | Keyed-BLAKE3 `mac_raw` / `mac_hex` / `verify_mac`, constant-time `equal`, and the claims envelope.         |
 | `tls.py`    | A verifying TLS client context with no parameter for skipping verification.                                |
 
@@ -38,7 +39,8 @@ splitting it out would imply a keystore that does not exist.
 What makes it safe is the *context*. Register one versioned string per purpose,
 somewhere your program can be read: two unrelated uses then cannot derive the
 same subkey out of the same material, and a context differing by one character
-gives a wholly unrelated key.
+gives a wholly unrelated key. A context that is not a `str`, including `None`,
+raises `TypeError` rather than falling back to the plain digest.
 
 ## The token format
 
@@ -64,13 +66,46 @@ every value already addressed by one would stop resolving - so `digest` and
 `pip install 'unstd[crypto]'` when it is missing. `tls` is pure stdlib and
 imports on a base install.
 
+One-shot hashes, MACs, and key derivation use four workers for exact `bytes`
+inputs from 1 MiB, and eight workers from 4 MiB, capped by the reported CPU
+count. Smaller inputs and other accepted buffer types retain the serial
+backend. The public signatures, algorithms, digest values, truncation rules,
+and validation behavior stay the same.
+
+Each parallel call creates a fresh bounded worker pool, avoiding inherited
+global pools after `fork()` and retaining no cached keys or key material. If
+the backend cannot create its worker pool, hashing retries serially.
+
+When the optional native helper is available, `Stream` batches small exact
+`bytes` chunks from exact lists and tuples with at least eight elements. Each
+batch is at most 64 KiB, regardless of the total input size. Mutable buffers,
+subclasses, and larger chunks reach the backend unchanged, after preceding
+bytes have been absorbed. Generators and other iterators retain the eager
+Python loop, so they can inspect or update the stream between yields. Streams
+remain serial and reusable after a fork. Compiler-free installs retain the
+Python implementation. The helper owns no cryptographic implementation and
+retains no messages, keys, hashers, or worker pools between calls.
+
+Hex output uses Python's byte-to-hex conversion after BLAKE3 finalization.
+[Current paired measurements](../../../bench/crypto-hash-adaptive-results.md)
+cover adaptive workers and native stream batching. The
+[previous tuning report](../../../bench/crypto-hash-tuning-results.md) records
+the 4 MiB crossover and hex-output savings; the
+[initial report](../../../bench/crypto-hash-results.md) covers the earlier
+16 MiB threshold.
+
+TLS certificate paths use `None` for omission. Explicitly empty `cafile`,
+`certfile` or `keyfile` values raise `ValueError`, preventing a configured pin
+or client identity from silently disappearing.
+
 Randomness is the one thing the seam does not re-implement: an opaque bearer
 with no claims inside is `unstd.rand.crypto.token_urlsafe()`, which is always
 stdlib `secrets` and never seedable. One randomness door in the program, not two.
 
 ## Known-answer vectors
 
-`tests/crypto/blake3_reference_vectors.json` is the BLAKE3 team's own published
+[`blake3_reference_vectors.json`](../../../tests/suites/product/crypto/unit/blake3_reference_vectors.json)
+is the BLAKE3 team's own published
 [test vector set](https://github.com/BLAKE3-team/BLAKE3/blob/master/test_vectors/test_vectors.json),
 vendored verbatim, and it drives all three modes - plain hash, keyed hash, and
 `derive_key` - across 35 input lengths that span the chunk and subtree

@@ -10,9 +10,12 @@ tail and ``strict`` guard, ``partition`` walks the source **once**, and
 
 from __future__ import annotations
 
+from collections.abc import Generator
 from itertools import count, islice
 from typing import TYPE_CHECKING
 
+from hypothesis import given
+from hypothesis import strategies as st
 import pytest
 
 from unstd.iters import (
@@ -361,9 +364,6 @@ def test_flatten_one_level_only() -> None:
 
 # ── fast paths agree with the naive definitions they replace ───────────────────
 
-from hypothesis import given  # noqa: E402
-from hypothesis import strategies as st  # noqa: E402
-
 
 def _naive_windows(xs: list[int], n: int, step: int) -> list[tuple[int, ...]]:
     return (
@@ -405,3 +405,154 @@ def test_last_agrees_across_its_exact_type_fast_path(xs: object) -> None:
     seq = list(xs)  # type: ignore[call-overload]
     assert last(xs, None) == (seq[-1] if seq else None)  # type: ignore[arg-type]
     assert last(iter(seq), None) == (seq[-1] if seq else None)
+
+
+@pytest.mark.parametrize("truthy_first", [False, True])
+def test_partition_freezes_a_mutable_predicate_result(truthy_first: bool) -> None:
+    class Verdict:
+        value = False
+
+        def __bool__(self) -> bool:
+            return self.value
+
+    verdict = Verdict()
+    observed = []
+
+    def pred(value: int) -> Verdict:
+        observed.append(value)
+        verdict.value = value % 2 == 1
+        return verdict
+
+    falsy, truthy = partition(range(6), pred)
+    if truthy_first:
+        accepted, rejected = list(truthy), list(falsy)
+    else:
+        rejected, accepted = list(falsy), list(truthy)
+    assert accepted == [1, 3, 5]
+    assert rejected == [0, 2, 4]
+    assert observed == list(range(6))
+
+
+@pytest.mark.parametrize("truthy_first", [False, True])
+def test_partition_observes_truth_exactly_once_per_item(truthy_first: bool) -> None:
+    observed = []
+
+    class Verdict:
+        def __init__(self, value: int) -> None:
+            self.value = value
+
+        def __bool__(self) -> bool:
+            observed.append(self.value)
+            return self.value % 2 == 1
+
+    falsy, truthy = partition(range(6), Verdict)
+    if truthy_first:
+        accepted, rejected = list(truthy), list(falsy)
+    else:
+        rejected, accepted = list(falsy), list(truthy)
+    assert (rejected, accepted) == ([0, 2, 4], [1, 3, 5])
+    assert observed == list(range(6))
+
+
+@pytest.mark.parametrize("keyed", [False, True])
+@pytest.mark.parametrize("frozen_first", [False, True])
+def test_unique_everseen_merges_equal_hashable_and_unhashable_keys(
+    keyed: bool, frozen_first: bool
+) -> None:
+    values = [{1}, frozenset({1}), {2}, frozenset({2})]
+    if frozen_first:
+        values = [values[1], values[0], values[3], values[2]]
+    if keyed:
+        records = list(enumerate(values))
+        result = list(unique_everseen(records, key=lambda row: row[1]))
+        assert result == [records[0], records[2]]
+    else:
+        result = list(unique_everseen(values))
+        assert result == [values[0], values[2]]
+        assert result[0] is values[0]
+        assert result[1] is values[2]
+
+
+@pytest.mark.parametrize("keyed", [False, True])
+def test_unique_everseen_does_not_swallow_comparison_typeerrors(keyed: bool) -> None:
+    failure = TypeError("comparison refused")
+
+    class Key:
+        def __hash__(self) -> int:
+            return 0
+
+        def __eq__(self, other: object) -> bool:
+            raise failure
+
+    values = [Key(), Key()]
+    result = unique_everseen(values, key=(lambda value: value) if keyed else None)
+    assert next(result) is values[0]
+    with pytest.raises(TypeError, match="comparison refused") as error:
+        next(result)
+    assert error.value is failure
+
+
+@pytest.mark.parametrize("keyed", [False, True])
+@pytest.mark.parametrize("yielded", [1, 2])
+def test_unique_everseen_preserves_injected_errors_and_consumption(
+    keyed: bool, yielded: int
+) -> None:
+    source = Spy([1, 1, [], [], 2])
+    result = unique_everseen(source, key=(lambda value: value) if keyed else None)
+    assert isinstance(result, Generator)
+    assert list(islice(result, yielded)) == [1, []][:yielded]
+    consumed = source.count
+    assert consumed == (1 if yielded == 1 else 3)
+    failure = TypeError("caller cancelled iteration")
+    with pytest.raises(TypeError, match="caller cancelled iteration") as error:
+        result.throw(failure)
+    assert error.value is failure
+    assert source.count == consumed
+    assert list(result) == []
+
+
+@pytest.mark.parametrize("keyed", [False, True])
+@pytest.mark.parametrize("mixed", [False, True])
+def test_unique_everseen_preserves_source_errors(keyed: bool, mixed: bool) -> None:
+    failure = TypeError("source refused the next item")
+
+    def source() -> Iterator[object]:
+        yield 1
+        if mixed:
+            yield []
+        raise failure
+
+    result = unique_everseen(source(), key=(lambda value: value) if keyed else None)
+    assert next(result) == 1
+    if mixed:
+        assert next(result) == []
+    with pytest.raises(TypeError, match="source refused the next item") as error:
+        next(result)
+    assert error.value is failure
+
+
+@given(
+    st.lists(
+        st.one_of(
+            st.integers(min_value=-3, max_value=3),
+            st.booleans(),
+            st.sets(st.integers(min_value=-3, max_value=3), max_size=4),
+            st.sets(st.integers(min_value=-3, max_value=3), max_size=4).map(frozenset),
+            st.lists(st.integers(min_value=-3, max_value=3), max_size=4),
+        ),
+        max_size=40,
+    )
+)
+def test_unique_everseen_matches_an_independent_linear_equality_history(values) -> None:
+    expected = []
+    indices = []
+    for index, value in enumerate(values):
+        if value not in expected:
+            expected.append(value)
+            indices.append(index)
+    result = list(unique_everseen(iter(values)))
+    assert len(result) == len(expected)
+    assert all(actual is first for actual, first in zip(result, expected, strict=True))
+    assert list(unique_everseen(enumerate(values), key=lambda row: row[1])) == [
+        (index, values[index]) for index in indices
+    ]

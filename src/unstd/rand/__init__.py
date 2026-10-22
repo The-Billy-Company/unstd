@@ -10,8 +10,9 @@ site:
 2. **Explicit crypto** — :mod:`unstd.rand.crypto`, **always** stdlib ``secrets``
    (a CSPRNG), never numpy and unseedable by design.
 3. **One seed entrypoint** — :func:`seed` reseeds the bulk / scalar PRNG on both
-   backends so an ML / eval run is reproducible; it deliberately never touches the
-   crypto path.
+   backends for reproducible runs with the same backend and call sequence; it
+   deliberately never touches the crypto path. :class:`Generator` provides
+   independent streams with an explicitly selected backend (stdlib by default).
 
 A stdlib-``random``-faithful scalar surface (``random``, ``randint``, ``uniform``,
 ``choice``, ``shuffle``, ``sample``) is stdlib ``random`` itself, bound to the
@@ -35,6 +36,7 @@ from __future__ import annotations
 from unstd.rand import crypto
 from unstd.rand.draw import (
     HAVE_NUMPY,
+    Generator,
     choice,
     choices,
     floats,
@@ -50,6 +52,7 @@ from unstd.rand.draw import (
 
 __all__ = [
     "HAVE_NUMPY",
+    "Generator",
     "choice",
     "choices",
     "crypto",

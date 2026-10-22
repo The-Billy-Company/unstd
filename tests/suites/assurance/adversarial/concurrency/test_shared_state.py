@@ -14,14 +14,14 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from tests.support.backends import require_backend
-from tests.support.process import run_python
+from tests.support.environment.backends import require_backend
+from tests.support.environment.process import run_python
 
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from tests.support.chaos import ChaosJournal
+    from tests.support.chaos.journal import ChaosJournal
 
 
 CASES = (
@@ -39,7 +39,7 @@ CASES = (
     ("yaml_failure_isolation", "ruamel.yaml"),
     ("map_forks", "immutables"),
 )
-_WORKER = "from tests.support.concurrency_shared_state import main; main()"
+_WORKER = "from tests.support.concurrency.shared_state import main; main()"
 _BARRIERS = {
     "clone_admission": ["simultaneous cold class admission"],
     "clone_fields": ["simultaneous inherited field discovery"],

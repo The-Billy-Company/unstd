@@ -82,24 +82,22 @@ __all__ = [
     "urlsafe_b64encode",
 ]
 
+_URL_ENCODING = bytes.maketrans(b"+/", b"-_")
 _URL_TRANSLATION = bytes.maketrans(b"-_", b"+/")
-_URL_IGNORED = bytes(
-    value
-    for value in range(256)
-    if value not in b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
+_URL_IGNORED = bytes(range(256)).translate(
+    None, b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
 )
 _URL_INPUT_IGNORED = _URL_IGNORED.translate(None, b"-_")
 
 
 def b64encode(s: Buffer, altchars: Buffer | None = None) -> bytes:
     """Stdlib ``b64encode``: bytes output with optional alternative alphabet."""
-    if _HAVE_PYBASE64 and type(s) is bytes and altchars is None:
+    if altchars is not None:
+        # Stdlib owns alphabet validation, translation, buffer errors and their order.
+        return _stdlib.b64encode(s, altchars)
+    if _HAVE_PYBASE64 and type(s) is bytes:
         return _b64.b64encode(s)
-    if altchars is None:
-        # This is stdlib's entire no-alternate-alphabet implementation.
-        return _b2a_base64(s, newline=False)
-    # Stdlib owns alphabet validation, translation, buffer errors and their order.
-    return _stdlib.b64encode(s, altchars)
+    return _b2a_base64(s, newline=False)
 
 
 def b64decode(
@@ -107,12 +105,11 @@ def b64decode(
 ) -> bytes:
     """Stdlib ``b64decode``, including lenient defaults and exact diagnostics."""
     if altchars is None and (type(s) is bytes or (type(s) is str and s.isascii())):
-        # Native keyword dispatch costs more than binascii on tiny documents.
-        # Exact ASCII strings are accepted directly by both native codecs;
-        # subclasses retain stdlib's observable encode/coercion hooks below.
+        # Native dispatch costs more than binascii on tiny documents. Exact ASCII
+        # strings suit both codecs; subclasses keep stdlib's coercion hooks below.
         if _HAVE_PYBASE64 and validate is True and len(s) >= 256:
             try:
-                return _b64.b64decode(s, validate=True, padded=True)
+                return _b64.b64decode(s, None, True)
             except Error:
                 # Backend errors are less specific, and supported Python patch
                 # releases can differ on excess padding. Stdlib is authoritative.
@@ -138,8 +135,8 @@ def standard_b64decode(s: str | Buffer) -> bytes:
 def urlsafe_b64encode(s: Buffer) -> bytes:
     """Stdlib URL-safe encoding, retaining padding and returning bytes."""
     if _HAVE_PYBASE64 and type(s) is bytes:
-        return _b64.b64encode(s, altchars=b"-_")
-    return _stdlib.urlsafe_b64encode(s)
+        return _b64.b64encode(s, b"-_")
+    return _b2a_base64(s, newline=False).translate(_URL_ENCODING)
 
 
 def encode(data: Buffer, *, url: bool = False, pad: bool = True) -> str:
@@ -149,17 +146,11 @@ def encode(data: Buffer, *, url: bool = False, pad: bool = True) -> str:
     ``pad=False`` drops the trailing ``=``.
     """
     if _HAVE_PYBASE64 and type(data) is bytes:
-        # `altchars` rides the same SIMD encoder straight to `str`, where
-        # `urlsafe_b64encode` round-trips through `bytes` first — ~1.8x slower.
-        out = (
-            _b64.b64encode_as_string(data, altchars=b"-_")
-            if url
-            else _b64.b64encode_as_string(data)
-        )
+        # The SIMD encoder writes `str` directly; a `bytes` round trip is ~1.8x slower.
+        out = _b64.b64encode_as_string(data, b"-_" if url else None)
     else:
-        out = (
-            _stdlib.urlsafe_b64encode(data) if url else _stdlib.b64encode(data)
-        ).decode("ascii")
+        raw = _b2a_base64(data, newline=False)
+        out = (raw.translate(_URL_ENCODING) if url else raw).decode("ascii")
     return out if pad else out.rstrip("=")
 
 
@@ -191,53 +182,41 @@ def decode(s: str | Buffer, *, url: bool = False) -> bytes:
     lenient url-safe alphabet, padded or not.
     """
     if not url:
-        if type(s) is bytes or (type(s) is str and s.isascii()):
-            if _HAVE_PYBASE64 and len(s) >= 256:
-                try:
-                    return _b64.b64decode(s, validate=True, padded=True)
-                except Error:
-                    pass
-            return _a2b_base64(s, strict_mode=True)
-        return _stdlib.b64decode(s, validate=True)
+        return b64decode(s, validate=True)
     native_rejected = False
     raw: bytes | bytearray
     if type(s) is bytes:
         raw = s
     elif type(s) is str and s.isascii():
-        # A clean exact string can go straight to the native codec, avoiding
-        # a Python-level ASCII bytes copy before its own input conversion.
+        # A clean exact string goes straight to the native codec, skipping a
+        # Python-level ASCII copy; a rejection is not repeated on the bytes path.
         if _HAVE_PYBASE64 and len(s) >= 128 and "+" not in s and "/" not in s:
             try:
-                return _b64.b64decode(
-                    s, altchars=b"-_", validate=True, padded=s.endswith("=")
-                )
+                return _b64.b64decode(s, b"-_", True, padded=s.endswith("="))
             except Error:
-                # The bytes path must not repeat the same rejected attempt.
                 native_rejected = True
         raw = s.encode("ascii")
     else:
         raw = _decode_input(s)
     if type(raw) is bytes:
-        source_size = len(raw)
-        # For tiny values, native keyword dispatch costs more than normalization.
-        native = _HAVE_PYBASE64 and source_size >= 128 and not native_rejected
+        size = len(raw)
+        # For tiny values, native dispatch costs more than normalization.
+        big = _HAVE_PYBASE64 and size >= 128
+        native = big and not native_rejected
         if native and b"+" not in raw and b"/" not in raw:
-            # Native strict decoding proves this is already a clean URL value.
-            # Its unpadded mode is only used when no terminal '=' is present;
-            # partial or unusual padding returns to the lenient stdlib path.
+            # Strict native decoding proves a clean URL value. Unpadded mode only
+            # applies without a terminal '='; odd padding takes the stdlib path.
             try:
-                return _b64.b64decode(
-                    raw, altchars=b"-_", validate=True, padded=raw.endswith(b"=")
-                )
+                return _b64.b64decode(raw, b"-_", True, padded=raw.endswith(b"="))
             except Error:
                 native = False
-        # Exact bytes have no translation hooks. Translate and remove ignored
-        # characters together, retaining both alphabets until translation.
+        # Exact bytes have no translation hooks: translate and drop ignored
+        # characters in one pass, keeping both alphabets until translation.
         raw = raw.translate(_URL_TRANSLATION, _URL_INPUT_IGNORED)
-        # Retry a rejected native value only if filtering changed its content.
-        # Padding-only failures already have a cheap authoritative stdlib path.
-        if len(raw) < source_size:
-            native = _HAVE_PYBASE64 and source_size >= 128
+        # Retry a rejected native value only if filtering changed its content;
+        # padding-only failures already have a cheap authoritative stdlib path.
+        if len(raw) < size:
+            native = big
     else:
         # A subclass's translation and its result's normalization are observable.
         # Preserve both before filtering, without invoking that subclass twice.
@@ -249,11 +228,11 @@ def decode(s: str | Buffer, *, url: bool = False) -> bytes:
     raw += b"=" * (-len(raw) % 4)
     if native:
         try:
-            return _b64.b64decode(raw, validate=True, padded=True)
+            return _b64.b64decode(raw, None, True)
         except Error:
             # Internal '=' and trailing data retain stdlib's lenient meaning.
             pass
-    return _stdlib.b64decode(raw)
+    return _a2b_base64(raw)
 
 
 def decode_text(s: str | Buffer, *, url: bool = False, errors: str = "replace") -> str:

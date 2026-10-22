@@ -1,18 +1,19 @@
 # unstd
 
-stdlib-faithful replacements, with optional native acceleration where it
-preserves the contract. Modules follow the stdlib call surface, so migrating a
-call site is an import swap. JSON proves native eligibility and falls back to
-stdlib codecs to preserve formatting, values, callbacks and errors.
+Stdlib-compatible codecs and focused utility APIs, with optional native
+acceleration. Documented stdlib replacements preserve their call surface;
+additional helpers have their own contracts. JSON proves native eligibility
+and falls back to stdlib codecs to preserve formatting, values, callbacks and
+errors.
 
 ```python
 import json  # →
 from unstd.serde import jsonx  # faithful json API; dumpb for compact transport
 ```
 
-The base install is pure stdlib: depending on `unstd` adds zero third-party
-closure. Every accelerated backend rides an optional extra with a guarded
-import that falls back to the stdlib (or raises a clear `ImportError` where
+The base install adds zero third-party runtime dependencies. External accelerated
+backends ride optional extras with guarded imports that fall back to the stdlib
+(or raise a clear `ImportError` where
 no fallback is faithful). Install `unstd` and you pay nothing. Install
 `unstd[serde]` and the serde modules light up.
 
@@ -23,11 +24,14 @@ python3 -m pip install unstd
 python3 -m pip install 'unstd[serde,ids,crypto]'
 ```
 
-CPython platform wheels include an optional C guard for fast, compatible JSON
-encoding. Source builds use it when a compiler is available and otherwise keep
+CPython platform wheels include optional C acceleration for compatible JSON,
+exact builtin structural cloning, and exact-string Levenshtein/Jaro scoring.
+Source builds use these modules when a compiler is available and otherwise keep
 the portable fallback. The runtime dependency set and public APIs are unchanged.
 See the [Billy fixture measurements](bench/billy-serde-optimization-results.md)
 for release comparisons, including remaining overhead relative to 2.1.1.
+The [native kernel audit](bench/native-results.md) records clone and text
+measurements and compatibility boundaries.
 
 ## Groups
 
@@ -42,7 +46,7 @@ for release comparisons, including remaining overhead relative to 2.1.1.
 | [`containers`](src/unstd/containers/README.md) | `unstd[containers]` | sortedcontainers + immutables (required) |
 | [`rand`](src/unstd/rand/README.md) | `unstd[rand]` | numpy PCG64 → stdlib `random`; `crypto` is always `secrets` |
 | [`pack`](src/unstd/pack/README.md) | `unstd[pack]` | numpy → stdlib `struct` |
-| [`clone`](src/unstd/clone/README.md) | — | stdlib; exact-type walk, `copy.deepcopy` per foreign node |
+| [`clone`](src/unstd/clone/README.md) | — | bundled C → Python exact-type walk, `copy.deepcopy` per foreign node |
 | [`text`](src/unstd/text/README.md) | `unstd[text]` | rapidfuzz → stdlib `difflib` |
 | [`audio`](src/unstd/audio/README.md) | `unstd[audio]` | soundfile + numpy → stdlib `wave` |
 | [`toml`](src/unstd/toml/README.md) | `unstd[toml]` | read is `tomllib`; write requires tomlkit |
@@ -53,6 +57,49 @@ for release comparisons, including remaining overhead relative to 2.1.1.
 | [`iters`](src/unstd/iters/README.md) | — | stdlib `itertools` |
 
 `clone`, `proc`, `fs`, and `iters` ship in the base install.
+
+Check the module contract when migrating: `clone.deep` intentionally duplicates
+shared references, text similarity uses different algorithms across backends,
+and random bulk draws can return arrays or lists with different seeded streams.
+These helpers extend the stdlib rather than promising an import-only migration.
+
+Opt into explicit contracts when results or guarantees must survive backend
+changes. Existing defaults and persisted canonical bytes remain unchanged:
+
+- [Text](src/unstd/text/README.md): `indel_ratio` or `difflib_ratio`, selected
+  through `scorer=` on matching helpers, keep the algorithm explicit.
+- [Packing](src/unstd/pack/README.md): `pack_array_portable` and
+  `unpack_array_portable` use struct validation and owned Python results.
+- [Randomness](src/unstd/rand/README.md): `Generator(seed, backend="stdlib")`
+  owns an independent stream and keeps stdlib semantics with NumPy installed.
+- [Identity](src/unstd/serde/README.md): `canonical_strict` rejects unsupported
+  identity values instead of converting them implicitly.
+- [Regex](src/unstd/rex/README.md): `compile_faithful` preserves Python matching
+  semantics; `compile_linear` guarantees a single `search`, `match`, or
+  `fullmatch` and refuses fallback and iterative operations.
+- [Filesystem](src/unstd/fs/README.md): `durable="strict"` and
+  `sync_dir(..., strict=True)` report directory-sync failures.
+
+## Repository layout
+
+- [`src/`](src/README.md) contains the installable Python package and bundled C
+  extensions; [`src/unstd/`](src/unstd/README.md) indexes the module APIs.
+- [`tests/`](tests/README.md) contains product and assurance suites, shared
+  support, and standalone campaign tools.
+- [`bench/`](bench/README.md) contains benchmark drivers and recorded results.
+- [`native/`](native/README.md) contains the opt-in Rust text experiment.
+- [`.github/`](.github/README.md) contains CI, campaign, audit, and release workflows.
+- [`changelog.d/`](changelog.d/README.md) contains unreleased change fragments.
+
+Each repository folder has a README describing its contents and role. Keep that
+README current when adding or moving files, and include one with new folders.
+Generated environments, caches, and build outputs are excluded from this policy.
+
+## Security and shared logic
+
+The [static analysis policy](SECURITY.md) documents required SAST and duplication
+checks, local commands, reviewed exceptions, and failure handling. CI and release
+both require clean security analysis and production duplicate-code checks.
 
 ## Testing
 
@@ -65,6 +112,18 @@ penetration, fault injection, packaging, concurrency, resource, and performance
 obligations. Inspect implemented and planned lanes with
 `uv run --no-sync python -m tests.tooling list`; run the active suite with
 `uv run --no-sync pytest -q`.
+
+The quality gate runs `uv run --no-sync ruff check .`,
+`uv run --no-sync ruff format --check .`, and `uv run --no-sync mypy`.
+CI checks Python 3.12–3.14 type contracts for Linux, macOS, and Windows.
+Production and benchmark code require complete annotations; mypy also rejects
+missing type information, unsafe overrides, unused awaitables, possibly
+uninitialized values, and incomplete pattern matches. Development stubs cover
+protobuf and sorted containers without adding runtime dependencies. Compatible
+exceptions for dynamic stdlib APIs, private regex internals, and deliberately
+invalid test inputs are documented in `pyproject.toml`. The
+[typing gate tests](tests/suites/assurance/gates/test_typing.py)
+verify that the actual analyzers accept valid code and reject seeded mistakes.
 
 The [fuzz runner](tests/tooling/fuzz/README.md) supplies eleven parser/token
 targets, authenticated corpora, deterministic mutation, and bounded Atheris

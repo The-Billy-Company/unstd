@@ -34,13 +34,16 @@ reader supports cycles; the editable reader rejects unresolved recursive aliases
 that its backend would otherwise silently replace with null.
 
 Both readers reject duplicate keys and unknown tags, including Python object tags.
+Duplicate explicit keys remain errors in mappings containing merges; a single
+explicit key may override an inherited value, preserving normal merge precedence.
 The editable reader retains comments, quote style, key order, anchors and merges;
 the emitter can normalize indentation. We create an isolated parser for each
 operation and use `pure=True`: ruamel's optional C loader has
 [different scalar semantics](https://yaml.dev/doc/ruamel.yaml/basicuse/).
 Documents without a version directive default to YAML 1.2; an explicit YAML 1.1
 directive retains its declared resolution rules. Safe loading prevents arbitrary
-object construction; it does not impose input size or resource limits.
+object construction; it does not impose input size or resource limits. Repeated
+merges of one anchor are not copied again, so merge cost follows the source size.
 
 Parser errors retain ruamel's source marks and inherit `yaml.YAMLError`. Native
 scalar conversion errors propagate from the backend. Arbitrary Python objects

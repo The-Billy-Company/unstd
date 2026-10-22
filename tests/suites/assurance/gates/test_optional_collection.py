@@ -2,8 +2,72 @@
 
 from __future__ import annotations
 
-from tests.support.anchors import REPO_ROOT
-from tests.support.process import run_python
+import pytest
+
+from tests.support.environment.anchors import REPO_ROOT
+from tests.support.environment.process import run_python
+
+
+_PARTIAL = """
+from importlib import metadata
+from pathlib import Path
+import sys
+import tomllib
+from packaging.requirements import Requirement
+import pytest
+real = metadata.version
+extras = tomllib.loads(Path('pyproject.toml').read_text())['project']['optional-dependencies']
+available = {{}}
+for requirements in extras.values():
+    for text in requirements:
+        requirement = Requirement(text)
+        available[requirement.name] = next(
+            bound.version for bound in requirement.specifier if bound.operator == '>='
+        )
+def version(name):
+    if name in {absent!r}:
+        raise metadata.PackageNotFoundError(name)
+    if name in available:
+        return available[name]
+    return real(name)
+metadata.version = version
+raise SystemExit(pytest.main([
+    'tests/suites/assurance/gates/test_optional_collection.py',
+    '--collect-only', '-q', *{flags!r},
+]))
+"""
+
+
+@pytest.mark.parametrize(
+    ("absent", "flags", "status", "message"),
+    [
+        # The partial lane's own extra is present; every other extra is absent.
+        ({"numpy", "rapidfuzz"}, ["--require-extra", "serde"], 0, None),
+        ({"msgspec"}, ["--require-extra", "serde"], 4, "msgspec>=0.22"),
+        (
+            {"msgspec"},
+            ["--require-extra", "text", "--require-extra", "serde"],
+            4,
+            "msgspec",
+        ),
+        (
+            set(),
+            ["--require-extra", "nonexistent"],
+            4,
+            "unknown extras requested: nonexistent",
+        ),
+        ({"rapidfuzz"}, ["--require-extras"], 4, "rapidfuzz>=3.12.0"),
+    ],
+)
+def test_partial_extra_admission_fails_only_for_the_named_extras(
+    absent: set[str], flags: list[str], status: int, message: str | None
+):
+    completed = run_python(
+        _PARTIAL.format(absent=absent, flags=flags), cwd=REPO_ROOT, timeout=30
+    )
+    assert completed.returncode == status, (completed.stdout, completed.stderr)
+    if message is not None:
+        assert message in completed.stderr
 
 
 def test_all_benchmark_gate_modules_are_ignored_when_bench_cannot_import():

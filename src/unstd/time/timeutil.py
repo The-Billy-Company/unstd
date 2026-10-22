@@ -18,9 +18,10 @@ the stdlib functions, bound directly: no wrapper frame on the hottest calls in a
 program, and patching the module attribute in a test still redirects every
 caller that reads it through the module.
 
-Everything here is absolute-instant work, which stdlib ``datetime`` does
-correctly once both sides are aware. DST-correct *wall-clock* work — "9am in
-New York next Tuesday" — is :mod:`unstd.time.zoned`, behind the ``time`` extra.
+Everything here is absolute-instant work. Durations account for each endpoint's
+UTC offset so a shared IANA zone cannot select wall-clock arithmetic.
+DST-correct *wall-clock* work — "9am in New York next Tuesday" — is
+:mod:`unstd.time.zoned`, behind the ``time`` extra.
 
 Backend: **pure stdlib** — works in a base ``unstd`` install with no extra. The
 only third-party touchpoint is the protobuf ``Timestamp`` bridge
@@ -30,10 +31,10 @@ only third-party touchpoint is the protobuf ``Timestamp`` bridge
 
 from __future__ import annotations
 
-from datetime import UTC, date, datetime, tzinfo
+from datetime import UTC, date, datetime, timedelta, tzinfo
 from functools import cache, partial
 import time as _time
-from typing import TYPE_CHECKING, Literal, cast
+from typing import TYPE_CHECKING, Literal
 from zoneinfo import ZoneInfo
 
 
@@ -126,8 +127,7 @@ def today(*, utc: bool = False) -> date:
     The two disagree by a day for roughly half of every day at either end of the
     world; pick by whether the caller's day boundary is the user's or the fleet's.
     """
-    now = datetime.now(UTC)
-    return (now if utc else now.astimezone()).date()
+    return datetime.now(UTC if utc else None).date()
 
 
 # ── formatting ─────────────────────────────────────────────────────────────────
@@ -147,10 +147,8 @@ def iso(dt: datetime | None = None, *, ms: bool = False) -> str:
         dt = datetime.now(UTC)
     elif dt.tzinfo is not None:
         dt = dt.astimezone(UTC)
-    return (
-        dt.replace(tzinfo=None).isoformat("T", "milliseconds" if ms else "seconds")
-        + "Z"
-    )
+    spec = "milliseconds" if ms else "seconds"
+    return f"{dt.replace(tzinfo=None).isoformat('T', spec)}Z"
 
 
 def human(tz: str = "") -> str:
@@ -186,8 +184,7 @@ def parse_utc(raw: str) -> datetime | None:
     The lenient reading: use it where a legacy tz-less stamp should still anchor
     somewhere rather than crash an aware/naive compare.
     """
-    dt = parse_iso(raw)
-    if dt is None:
+    if (dt := parse_iso(raw)) is None:
         return None
     return dt.replace(tzinfo=UTC) if dt.tzinfo is None else dt.astimezone(UTC)
 
@@ -207,19 +204,33 @@ def from_epoch_s(s: float, tz: tzinfo = UTC) -> datetime:
 
 def from_epoch_ms(ms: int, tz: tzinfo = UTC) -> datetime:
     """The aware datetime *ms* milliseconds after the Unix epoch, in *tz*."""
-    return datetime.fromtimestamp(ms / 1000, tz=tz)
+    # Float division loses millisecond alignment at far-calendar timestamps.
+    s, rem = divmod(ms, 1000)
+    result = datetime.fromtimestamp(s, UTC)
+    if type(ms) is int:
+        # Integer divmod guarantees 0 <= rem < 1000; setting the UTC field
+        # avoids allocating and adding a timedelta for the fractional second.
+        if rem:
+            result = result.replace(microsecond=rem * 1000)
+    else:
+        # Keep timedelta's numeric coercion and rounding for other input types.
+        result += timedelta(milliseconds=rem)
+    return result if tz is UTC else result.astimezone(tz)
 
 
 # ── instant arithmetic ─────────────────────────────────────────────────────────
 
 
-def _instant(value: str | datetime | None, assume_utc: bool) -> datetime | None:
+def _endpoint(value: str | datetime | None) -> datetime | None:
     if value is None:
         return datetime.now(UTC)
-    dt = value if isinstance(value, datetime) else parse_iso(value)
-    if dt is None or dt.tzinfo is not None:
-        return dt
-    return dt.replace(tzinfo=UTC) if assume_utc else None
+    return value if isinstance(value, datetime) else parse_iso(value)
+
+
+def _instant(dt: datetime, assume_utc: bool) -> tuple[datetime, timedelta] | None:
+    if (offset := dt.utcoffset()) is None and not assume_utc:
+        return None
+    return dt.replace(tzinfo=None), offset or timedelta()
 
 
 def span(
@@ -237,14 +248,29 @@ def span(
     lenient reading for legacy tz-less stamps — an event's own offset cancels in
     the subtraction, so a duration between two floating values is still exact.
     Negative when *end* precedes *start*; clamp if you only want elapsed time.
+    Each endpoint's UTC offset is accounted for, including two local datetimes
+    in the same zone on opposite sides of a DST transition.
 
         span(created_at, unit="days", assume_utc=True)  # age
         span(now, deadline, unit="minutes")  # time remaining
     """
-    a, b = _instant(start, assume_utc), _instant(end, assume_utc)
+    a, b = _endpoint(start), _endpoint(end)
     if a is None or b is None:
         return None
-    return (b - a).total_seconds() / _SECONDS[unit]
+    if (
+        type(a) is datetime
+        and type(b) is datetime
+        and a.tzinfo is UTC
+        and b.tzinfo is UTC
+    ):
+        return (b - a).total_seconds() / _SECONDS[unit]
+    first, last = _instant(a, assume_utc), _instant(b, assume_utc)
+    if first is None or last is None:
+        return None
+    # Subtract wall fields and offsets separately: direct aware subtraction
+    # ignores offsets for a shared tzinfo, while constructing UTC endpoints can
+    # overflow at datetime.min/max even when the duration is representable.
+    return (last[0] - first[0] - last[1] + first[1]).total_seconds() / _SECONDS[unit]
 
 
 # ── protobuf Timestamp bridge (the `proto` extra) ──────────────────────────────
@@ -257,9 +283,7 @@ def _timestamp() -> type[Timestamp]:
         from google.protobuf.timestamp_pb2 import Timestamp
     except ImportError as exc:
         raise ImportError(_PROTO_HINT) from exc
-    # protobuf's generated modules carry no stubs, so the imported symbol lands
-    # as `Any` and the declared return type would be silently unenforced.
-    return cast("type[Timestamp]", Timestamp)
+    return Timestamp
 
 
 def proto_timestamp(value: str | datetime | None) -> Timestamp | None:
@@ -275,18 +299,17 @@ def proto_timestamp(value: str | datetime | None) -> Timestamp | None:
     if not value:
         return None
     if isinstance(value, datetime):
-        dt: datetime | None = value if value.tzinfo else value.replace(tzinfo=UTC)
+        dt = value.astimezone(UTC) if value.tzinfo else value.replace(tzinfo=UTC)
     else:
-        dt = parse_utc(value.strip())
-    if dt is None:
-        return None
-    ts = timestamp()
-    ts.FromDatetime(dt.astimezone(UTC))
+        parsed = parse_utc(value.strip())
+        if parsed is None:
+            return None
+        dt = parsed
+    (ts := timestamp()).FromDatetime(dt)
     return ts
 
 
 def proto_timestamp_ms(ms: int) -> Timestamp:
     """A ``google.protobuf.Timestamp`` from epoch milliseconds (the ``proto`` extra)."""
-    ts = _timestamp()()
-    ts.FromMilliseconds(ms)
+    (ts := _timestamp()()).FromMilliseconds(ms)
     return ts

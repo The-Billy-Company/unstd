@@ -7,17 +7,20 @@ its startup explicitly; the deterministic worker never imports that engine.
 
 from __future__ import annotations
 
+import errno
 import hashlib
 import importlib.util
 import json
 import os
 from pathlib import Path
+import signal
 import subprocess
 import sys
 import time
 
 import pytest
 
+from tests.tooling.fuzz import execution
 from tests.tooling.fuzz.execution import run_atheris, run_inputs
 
 
@@ -316,3 +319,74 @@ def test_actual_coverage_engine_runs_or_reports_missing_dependency(tmp_path):
         assert report["failure"]["exception"] == "ModuleNotFoundError"
     assert seed.read_bytes() == original
     assert list(corpus.iterdir()) == [seed]
+
+
+@pytest.mark.skipif(
+    sys.platform != "darwin", reason="Darwin zombie-only process groups"
+)
+def test_fuzz_close_accepts_real_zombie_group_and_reaps_the_worker():
+    worker = execution._Child([sys.executable, "-c", "pass"])
+    try:
+        deadline = time.monotonic() + 5
+        while (event := worker.next(deadline))["event"] == "tick":
+            pass
+        assert event["event"] == "eof"
+        observed = subprocess.run(  # noqa: S603 — OS-owned ps and fixture-owned group
+            ["/bin/ps", "-o", "stat=", "-g", str(worker.process.pid)],
+            capture_output=True,
+            timeout=1,
+            check=True,
+        )
+        assert observed.stdout.strip().startswith(b"Z")
+        with pytest.raises(PermissionError) as error:
+            os.killpg(worker.process.pid, signal.SIGKILL)
+        assert error.value.errno == errno.EPERM
+        worker.close()
+        assert worker.process.returncode == 0
+        assert all(not reader.is_alive() for reader in worker.readers)
+    finally:
+        if worker.process.poll() is None:
+            worker.process.kill()
+        worker.process.wait(timeout=5)
+
+
+@pytest.mark.skipif(os.name != "posix", reason="POSIX group cleanup ownership")
+def test_fuzz_close_reaps_worker_and_closes_pipes_when_group_cleanup_fails(monkeypatch):
+    worker = execution._Child(
+        [
+            sys.executable,
+            "-u",
+            "-c",
+            'import time; print(\'{"event":"ready"}\'); time.sleep(60)',
+        ]
+    )
+    refused = PermissionError(errno.EPERM, "fixture group denied")
+
+    def deny(_group):
+        raise refused
+
+    try:
+        deadline = time.monotonic() + 5
+        while (event := worker.next(deadline))["event"] == "tick":
+            pass
+        assert event["event"] == "ready"
+        monkeypatch.setattr(execution, "kill_owned_process_group", deny)
+        with pytest.raises(PermissionError, match="fixture group denied") as error:
+            worker.close()
+        assert error.value is refused
+        assert worker.process.returncode == -signal.SIGKILL
+        assert all(not reader.is_alive() for reader in worker.readers)
+        assert all(
+            stream.closed
+            for stream in (
+                worker.process.stdin,
+                worker.process.stdout,
+                worker.process.stderr,
+            )
+        )
+        with pytest.raises(ChildProcessError):
+            os.waitpid(worker.process.pid, os.WNOHANG)
+    finally:
+        if worker.process.poll() is None:
+            worker.process.kill()
+        worker.process.wait(timeout=5)

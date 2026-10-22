@@ -15,6 +15,7 @@ assertions run here and are exact (never `approx`-weakened).
 from __future__ import annotations
 
 import difflib
+import math
 
 from hypothesis import given
 from hypothesis import strategies as st
@@ -195,7 +196,8 @@ def test_extract_ranks_best_first() -> None:
     scores = [s for _, s in results]
     assert scores == sorted(scores, reverse=True)  # monotonically non-increasing
     assert results[0][1] == pytest.approx(max(_dl("aple", c) for c in choices))
-    assert "zzzzz" not in {c for c, _ in results} or results[-1][0] == "zzzzz"
+    assert len(results) == len(choices)  # default limit 5 keeps all four
+    assert results[-1] == ("zzzzz", 0.0)  # disjoint from the query
 
 
 def test_extract_limit_caps_result_count() -> None:
@@ -277,6 +279,57 @@ def test_jaro_winkler_withholds_the_bonus_below_the_boost_threshold() -> None:
     ), "under the threshold the weight cannot matter — no bonus is being awarded"
 
 
+@pytest.mark.parametrize("native", [False, True], ids=["portable", "rapidfuzz"])
+@pytest.mark.parametrize(
+    "weight",
+    [
+        -1.0,
+        math.nextafter(0.0, -math.inf),
+        math.nextafter(1.0, math.inf),
+        2.0,
+        -math.inf,
+        math.inf,
+    ],
+)
+@pytest.mark.parametrize(
+    ("a", "b"),
+    [("", ""), ("", "a"), ("abc", "xyz"), ("same", "same"), ("martha", "marhta")],
+)
+def test_jaro_winkler_rejects_weights_outside_the_closed_unit_interval(
+    native: bool, weight: float, a: str, b: str
+) -> None:
+    """Weights are validated even when no prefix bonus would be needed."""
+    if native and not _HAVE_RAPIDFUZZ:
+        pytest.skip("rapidfuzz is not installed")
+    scorer = fuzz.jaro_winkler if native else fuzz._jaro_winkler
+    with pytest.raises(
+        ValueError, match=r"prefix_weight has to be in the range 0\.0 - 1\.0"
+    ):
+        scorer(a, b, prefix_weight=weight)
+
+
+@pytest.mark.parametrize("native", [False, True], ids=["portable", "rapidfuzz"])
+@pytest.mark.parametrize(
+    ("a", "b", "expected"),
+    [
+        ("", "", 0.0),
+        ("", "a", 0.0),
+        ("abc", "xyz", 0.0),
+        ("same", "same", 0.0),
+        ("martha", "marhta", 0.0),
+        ("Jane", "John", 2 / 3),
+    ],
+)
+def test_jaro_winkler_nan_weight_preserves_the_default_native_cutoff(
+    native: bool, a: str, b: str, expected: float
+) -> None:
+    """NaN cannot escape as a score, including empty and identical strings."""
+    if native and not _HAVE_RAPIDFUZZ:
+        pytest.skip("rapidfuzz is not installed")
+    scorer = fuzz.jaro_winkler if native else fuzz._jaro_winkler
+    assert scorer(a, b, prefix_weight=math.nan) == expected
+
+
 @pytest.mark.skipif(not _HAVE_RAPIDFUZZ, reason="fast-path-only: rapidfuzz absent")
 def test_jaro_winkler_fallback_is_exactly_the_kernel() -> None:
     """Unlike ``ratio``, this one has no licensed divergence: the formula is
@@ -346,14 +399,13 @@ def test_cdist_matches_pairwise_ratio() -> None:
     for row, q in zip(matrix, queries, strict=True):
         assert len(row) == len(choices)
         for score, c in zip(row, choices, strict=True):
-            assert score == pytest.approx(fuzz.ratio(q, c), abs=1e-6)
+            assert score == fuzz.ratio(q, c)
 
 
 def test_cdist_score_cutoff_zeroes_weak_pairs() -> None:
     """Test cdist score cutoff zeroes weak pairs."""
     matrix = fuzz.cdist(["apple"], ["apple", "zzzzzzzz"], score_cutoff=0.5)
-    assert matrix[0][0] == pytest.approx(1.0)
-    assert matrix[0][1] == 0.0
+    assert matrix == [[1.0, 0.0]]
 
 
 def test_cdist_empty_inputs() -> None:
@@ -399,7 +451,7 @@ def test_every_batch_helper_keeps_a_pair_scoring_exactly_at_the_cutoff(
 @given(
     a=st.text(alphabet="abcdeé ", max_size=14),
     b=st.text(alphabet="abcdeé ", max_size=14),
-    weight=st.sampled_from([0.05, 0.1, 0.25]),
+    weight=st.floats(min_value=0.0, max_value=1.0),
 )
 def test_portable_fallbacks_agree_with_the_kernels_they_stand_in_for(
     a: str, b: str, weight: float

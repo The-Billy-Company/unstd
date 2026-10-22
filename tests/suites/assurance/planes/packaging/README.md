@@ -15,9 +15,14 @@ uv run --no-sync pytest -q --require-extras tests/suites/assurance/planes/packag
 ```
 
 The host needs `uv`, the project's dev environment, and cached Hatchling and
-setuptools build dependencies. Prepare them using the project's two-day quarantine before
+setuptools build dependencies. Default native builds retain the C kernels and do
+not require Cargo. The opt-in `UNSTD_TEXT_RUST=1` text experiment needs a stable
+Rust/Cargo toolchain; it has no crate dependencies and builds with `--locked --offline`.
+Prepare Python build dependencies using the project's two-day quarantine before
 running this offline lane. Build commands explicitly use `--offline`, isolated
 build environments, no automatic interpreter downloads and `--exclude-newer P2D`.
+Per-extra exports and installs copy quarantine settings from the frozen project
+manifest, including all per-package exceptions, rather than duplicating policy.
 They never fall back to the network or an unisolated builder. Each command has a
 90-second ceiling; product consumer processes have a 30-second ceiling.
 For the required per-extra runtime matrix, prepare the locked artifact cache with
@@ -35,9 +40,15 @@ cache, backend, resolver, import or native library failure is skipped there.
   native CPython or portable wheel tags, metadata, supported Python and
   license metadata are checked. An explicit compiler failure verifies the
   portable fallback; native release builds require the extension to compile.
+  In opted-in Rust builds, missing Cargo and invalid Rust sources independently
+  disable only the text extension, clear stale editable text binaries, and fail
+  required native builds. C compilation failures remain independent.
 - The sdist preserves all build inputs and package files, excludes local
   environments and caches, has safe non-link members, and reconstructs the
   entire wheel payload, including dependency metadata and RECORD.
+  Rust sources, Cargo manifest and lockfile are included; Cargo `target/` outputs
+  stay outside both artifacts. Wheels contain the linked extension without a
+  separate Rust runtime or any new Python dependency.
 - Every advertised extra has its own metadata assertion, including empty
   `clone`; every requirement is guarded by exactly one extra, proving the base
   metadata has no unconditional dependency.
@@ -79,7 +90,8 @@ cache, backend, resolver, import or native library failure is skipped there.
   called, not merely imported.
 - The host's mypy checks an external strict consumer against the fresh
   interpreter's installed package. A successful fixture uses `assert_type`; a
-  negative control requires five real type errors, so a missing typing marker or
+  negative control requires seven real type errors, including invalid explicit
+  durability/backend policies, so a missing typing marker or
   `Any` leakage cannot masquerade as success. No type checker is installed into
   the consumer environment.
 

@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from tests.support.packaging import (
+from tests.support.packaging.artifacts import (
     Artifacts,
     Consumer,
     build_artifacts,

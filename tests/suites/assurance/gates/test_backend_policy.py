@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from tests.support import backends
+from tests.support.environment import backends
 
 
 def test_required_missing_backend_is_a_failure_with_success_control(monkeypatch):

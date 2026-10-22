@@ -32,6 +32,7 @@ Conventions:
 
 from __future__ import annotations
 
+import errno
 import io
 from typing import TYPE_CHECKING, Protocol, overload
 
@@ -69,11 +70,9 @@ class _MethodCodec[T](Protocol):
 
     def encode(self, value: T, /) -> bytes:
         """One record as JSON bytes, without a trailing newline."""
-        ...
 
     def decode(self, raw: str | bytes, /) -> T:
         """One decoded record, raising msgspec decode errors on invalid input."""
-        ...
 
 
 class _CallableCodec[T](Protocol):
@@ -93,8 +92,7 @@ class _Writer(Protocol):
     """A binary sink, including gzip streams and write-only destinations."""
 
     def write(self, data: bytes, /) -> object:
-        """Accept a newline-terminated encoded record."""
-        ...
+        """Write a prefix and return its count, or acknowledge a full write with None."""
 
 
 class NDJSONDecodeError(ValueError):
@@ -102,8 +100,7 @@ class NDJSONDecodeError(ValueError):
 
     def __init__(self, lineno: int, err: Exception) -> None:
         """Initialize the instance."""
-        self.lineno = lineno
-        self.err = err
+        self.lineno, self.err = lineno, err
         super().__init__(f"line {lineno}: {err}")
 
 
@@ -112,11 +109,27 @@ def _encoder[T](codec: _Codec[T] | None) -> Callable[[T], bytes]:
     if codec is None:
         return _line
     encode = codec.encode
+    return lambda row: encode(row) + b"\n"
 
-    def line(row: T) -> bytes:
-        return encode(row) + b"\n"
 
-    return line
+def _write_remainder[T: (str, bytes)](
+    write: Callable[[T], object], data: T, written: object, *, require_count: bool
+) -> None:
+    """Finish a record before consuming another, without spinning on a full sink."""
+    while data:
+        if written is None and not require_count:
+            # Generic write-only sinks, including codecs.StreamWriter, may
+            # acknowledge a successful whole write without returning a count.
+            return
+        if written is None or written == 0:
+            msg = "NDJSON sink made no write progress"
+            raise BlockingIOError(errno.EAGAIN, msg)
+        if not isinstance(written, int) or not 0 < written <= len(data):
+            msg = "NDJSON sink returned an invalid write count"
+            raise OSError(msg)
+        data = data[written:]
+        if data:
+            written = write(data)
 
 
 def dumps[T](rows: Iterable[T], *, codec: _Codec[T] | None = None) -> str:
@@ -126,14 +139,7 @@ def dumps[T](rows: Iterable[T], *, codec: _Codec[T] | None = None) -> str:
 
 def dumpb[T](rows: Iterable[T], *, codec: _Codec[T] | None = None) -> bytes:
     """Serialize *rows* straight to NDJSON ``bytes`` for file/socket writes."""
-    if codec is None:
-        return b"".join(map(_line, rows))
-    encode = codec.encode
-
-    def line(row: T) -> bytes:
-        return encode(row) + b"\n"
-
-    return b"".join(map(line, rows))
+    return b"".join(map(_encoder(codec), rows))
 
 
 @overload
@@ -174,17 +180,16 @@ def iter_loads[T](
     """
     decode: Callable[[str | bytes], Json | T] = _parse
     errors: tuple[type[Exception], ...] = (ValueError, RecursionError)
-    if codec is not None:
+    if typed := codec is not None:
         try:
             from msgspec import DecodeError
         except ImportError:
             missing("serde.ndjson.iter_loads", "serde")()
-        decode = codec.decode
-        errors = (DecodeError,)
+        decode, errors = codec.decode, (DecodeError,)
     for lineno, line in enumerate(lines, 1):
         if not line or line.isspace():  # exactly the lines `strip()` empties, no copy
             continue
-        if codec is not None:
+        if typed:
             # Normalize before a typed decode: retrying a schema failure could
             # run a caller's conversion hook twice for the same record.
             line = line.strip()
@@ -192,7 +197,7 @@ def iter_loads[T](
             value = decode(line)
         except errors as original:
             cause = original
-            if codec is None and (stripped := line.strip()) != line:
+            if not typed and (stripped := line.strip()) != line:
                 try:
                     value = decode(stripped)
                 except errors as stripped_error:
@@ -244,17 +249,17 @@ def loads[T](
     unescaped, and over-splitting there silently corrupts a record. A ``\\r\\n``
     writer is still tolerated — :func:`iter_loads` strips the trailing ``\\r``.
     """
+    parse = _parse
     if (
         codec is None
         and skip_errors is False
         and on_error is None
         and _loads_lines is not None
-        and jsonx._HAVE_MSGSPEC is True
-        and _parse is jsonx.loads
+        and jsonx._HAVE_MSGSPEC
+        and parse is jsonx.loads
+        and isinstance(result := _loads_lines(text), list)
     ):
-        result = _loads_lines(text)
-        if isinstance(result, list):
-            return result
+        return result
     lines = (
         text.split(b"\n") if isinstance(text, bytes | bytearray) else text.split("\n")
     )
@@ -263,15 +268,10 @@ def loads[T](
         # blob. A failure re-walks through `iter_loads`, which strips exotic
         # padding and names the line — so the answer, and the error, are its.
         try:
-            return [_parse(line) for line in lines if line and not line.isspace()]
+            return [parse(line) for line in lines if line and not line.isspace()]
         except (ValueError, RecursionError):
             pass
-    if codec is None:
-        return list(iter_loads(lines, skip_errors=skip_errors, on_error=on_error))
-    typed_rows: list[T] = list(
-        iter_loads(lines, codec=codec, skip_errors=skip_errors, on_error=on_error)
-    )
-    return typed_rows
+    return load(lines, codec=codec, skip_errors=skip_errors, on_error=on_error)
 
 
 def dump[T](
@@ -285,17 +285,29 @@ def dump[T](
     The ``jsonx.dump(obj, fp)`` twin, plural and counting. Streams row by row (no
     full-corpus buffering) and picks ``bytes`` vs ``str`` output from whether *fp*
     is a text handle — so it serves ``open(p, "w")`` and ``open(p, "wb")`` /
-    ``gzip.open`` alike.
+    ``gzip.open`` alike. Short writes finish the current record before advancing.
+    A zero count raises ``BlockingIOError``. Standard ``io.IOBase`` streams also
+    use None for would-block; generic write-only sinks may use None to acknowledge
+    a complete write. Any prefix already written remains in the caller-owned sink.
     """
-    n = 0
-    encode = _encoder(codec)
+    n, encode, require_count = 0, _encoder(codec), isinstance(fp, io.IOBase)
     if isinstance(fp, io.TextIOBase):
+        write_text = fp.write
         for row in rows:
-            fp.write(encode(row).decode())
+            data_text = encode(row).decode()
+            written_text = write_text(data_text)
+            if type(written_text) is not int or written_text != len(data_text):
+                _write_remainder(
+                    write_text, data_text, written_text, require_count=require_count
+                )
             n += 1
     else:
+        write = fp.write
         for row in rows:
-            fp.write(encode(row))
+            data = encode(row)
+            written = write(data)
+            if type(written) is not int or written != len(data):
+                _write_remainder(write, data, written, require_count=require_count)
             n += 1
     return n
 
@@ -330,7 +342,4 @@ def load[T](
     """Read every NDJSON record from file object *fp* into a ``list`` (the ``jsonx.load`` twin)."""
     if codec is None:
         return list(iter_loads(fp, skip_errors=skip_errors, on_error=on_error))
-    typed_rows: list[T] = list(
-        iter_loads(fp, codec=codec, skip_errors=skip_errors, on_error=on_error)
-    )
-    return typed_rows
+    return list(iter_loads(fp, codec=codec, skip_errors=skip_errors, on_error=on_error))

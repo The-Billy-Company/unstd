@@ -40,7 +40,7 @@ from collections.abc import Callable, Iterator, Sequence
 import contextlib
 import struct
 import sys
-from typing import IO, TYPE_CHECKING, Protocol, cast
+from typing import IO, TYPE_CHECKING, Protocol, Self, cast
 import wave
 
 
@@ -53,7 +53,7 @@ if TYPE_CHECKING:
 
         def write(self, data: NDArray[_np.generic]) -> None: ...
         def close(self) -> None: ...
-        def __enter__(self) -> _SoundFileHandle: ...
+        def __enter__(self) -> Self: ...
         def __exit__(self, *exc: object) -> None: ...
 
     class _Soundfile(Protocol):
@@ -143,7 +143,10 @@ def read(path_or_file: PathOrFile, *, dtype: str = "float32") -> tuple[Samples, 
     with contextlib.closing(wave.open(path_or_file, "rb")) as w:
         nchannels, sampwidth = w.getnchannels(), w.getsampwidth()
         samplerate, nframes = w.getframerate(), w.getnframes()
-        raw = w.readframes(nframes)
+        # getnframes() floors the data chunk's byte length. Read one extra frame
+        # so partial sample/channel bytes reach the shared alignment check too;
+        # wave still bounds the read to this data chunk, excluding later chunks.
+        raw = w.readframes(nframes + 1)
     reader = _read_numpy if _HAVE_NUMPY else _read_array
     return reader(raw, nchannels, sampwidth, dtype), samplerate
 
@@ -163,8 +166,14 @@ def blocks(
     a ``wave.readframes(blocksize)`` loop decoded through the same helpers
     :func:`read` uses on its own fallback path — identical numbers, one
     chunk at a time instead of the whole file at once.
+
+    ``blocksize`` must be positive; nonpositive sizes raise ``ValueError``
+    before the input is opened or read.
     """
     _check_dtype(dtype)
+    if blocksize <= 0:
+        msg = "blocksize must be positive"
+        raise ValueError(msg)
     if _HAVE_SOUNDFILE:
         yield from _sf.blocks(
             path_or_file, blocksize=blocksize, dtype=dtype, always_2d=False
@@ -249,7 +258,7 @@ def write(
     if _HAVE_SOUNDFILE:
         _sf.write(
             path_or_file,
-            _sf_samples(samples),
+            _sf_samples(samples, subtype),
             int(samplerate),
             subtype=subtype,
             format="WAV",
@@ -276,8 +285,9 @@ class Writer:
     write mode — its writer already streams. Fallback: stdlib ``wave`` +
     ``writeframesraw``, which defers the RIFF/``data``-chunk sizes to
     ``close()`` — this **requires `path_or_file` be seekable** (a real file
-    path, or a file object opened on one); a genuinely non-seekable sink (a raw
-    socket) needs the ``audio`` extra.
+    path, or a file object opened on one). libsndfile also seeks to finalize
+    WAV output, so the ``audio`` extra does not make a raw socket a supported
+    sink either.
     """
 
     def __init__(
@@ -297,6 +307,7 @@ class Writer:
         self._sf_handle: _SoundFileHandle | None = None
         self._wave: wave.Wave_write | None = None
         self._spec: tuple[int, str, int] | None = None
+        self._subtype = subtype
         if _HAVE_SOUNDFILE:
             self._sf_handle = _sf.SoundFile(
                 path_or_file,
@@ -324,7 +335,7 @@ class Writer:
     def write(self, samples: Samples) -> None:
         """Append one chunk of samples — same shape/dtype rules as :func:`write`."""
         if self._sf_handle is not None:
-            self._sf_handle.write(_sf_samples(samples))
+            self._sf_handle.write(_sf_samples(samples, self._subtype))
             return
         # __init__ binds exactly one handle or raises, so this is the `wave`
         # branch by elimination — hoisted into a local so the invariant is stated
@@ -335,18 +346,25 @@ class Writer:
             raise ValueError(msg)
         if self._spec is not None:  # numpy fallback
             _, code, scale = self._spec
-            wav.writeframesraw(_quantize(_np.asarray(samples), code, scale))
+            arr = _sample_array(samples)
+            _check_channels(
+                wav, 1 if arr.ndim == 1 else arr.shape[1] if arr.ndim == 2 else 0
+            )
+            wav.writeframesraw(_quantize(arr, code, scale))
         else:  # pure-stdlib array floor — 16-bit PCM only
-            wav.writeframesraw(_pcm16(samples)[0])
+            raw, nchannels = _pcm16(samples)
+            _check_channels(wav, nchannels)
+            wav.writeframesraw(raw)
 
     def close(self) -> None:
         """Finalize the header (patching RIFF/``data`` sizes if needed) and close the file."""
         if self._sf_handle is not None:
             self._sf_handle.close()
         elif self._wave is not None:
-            self._wave.close()
+            wav, self._wave = self._wave, None
+            wav.close()
 
-    def __enter__(self) -> Writer:
+    def __enter__(self) -> Self:
         """Enter the writer's context, returning self."""
         return self
 
@@ -355,15 +373,45 @@ class Writer:
         self.close()
 
 
-def _sf_samples(samples: Samples) -> NDArray[_np.generic]:
-    """Coerce integer samples to a libsndfile-accepted dtype.
+def _python_integers(samples: object) -> bool:
+    """Whether a plain Python sample tree contains only integer sample counts."""
+    if isinstance(samples, int):
+        return True
+    return isinstance(samples, list | tuple) and all(map(_python_integers, samples))
 
-    A plain Python ``list`` of ints (or a ``numpy`` int64 array) is ambiguous —
-    ``numpy`` widens it to int64, which libsndfile rejects. Downcast any integer
-    input that isn't already int16/int32 to int16 (the documented integer sample
-    type), matching what the stdlib fallback does. Float input passes through.
-    """
+
+def _sample_array(samples: Samples) -> NDArray[_np.generic]:
+    """Keep mixed signed/unsigned Python integers out of NumPy's float promotion."""
     arr = _np.asarray(samples)
+    if _np.issubdtype(arr.dtype, _np.floating) and _python_integers(samples):
+        # [-1, 2**63] has no common native integer dtype. Preserve counts until
+        # clipping rather than interpreting -1 as normalized negative full scale.
+        arr = _np.asarray(samples, dtype=object)
+    return arr
+
+
+def _sf_samples(samples: Samples, subtype: str) -> NDArray[_np.generic]:
+    """Prepare integer sample counts without libsndfile's source-width scaling.
+
+    libsndfile aligns integer inputs to the destination's full-scale range: an
+    int16 value written as PCM32 is shifted left by 16 bits, and an int32 value
+    written as PCM16 loses its low 16 bits. Our PCM16/PCM32 contract instead uses
+    raw integer sample counts. Clip before converting to the destination width,
+    matching the fallback quantizer and avoiding overflow from a narrowing cast.
+    Object arrays of Python integers can exceed int64 and need the same clipping.
+    Normalized float input retains libsndfile's existing quantization behavior.
+    """
+    arr = _sample_array(samples) if subtype in _SUBTYPE else _np.asarray(samples)
+    if (spec := _SUBTYPE.get(subtype)) is not None and not _np.issubdtype(
+        arr.dtype, _np.floating
+    ):
+        width, _, scale = spec
+        return cast(
+            "NDArray[_np.generic]",
+            _np.clip(arr, -scale, scale - 1).astype(
+                _np.int16 if width == 2 else _np.int32
+            ),
+        )
     if _np.issubdtype(arr.dtype, _np.integer) and arr.dtype not in (
         _np.int16,
         _np.int32,
@@ -407,7 +455,7 @@ def _write_numpy(
     if spec is None:
         raise ValueError(_bad_subtype(subtype))
     width, code, scale = spec
-    arr = _np.asarray(samples)
+    arr = _sample_array(samples)
     nchannels = 1 if arr.ndim == 1 else arr.shape[1]
     _write_frames(fp, _quantize(arr, code, scale), nchannels, width, samplerate)
 
@@ -467,16 +515,22 @@ def _flatten(samples: Samples) -> tuple[list[float], int]:
     seq: list[object] = list(samples)
     if seq and isinstance(seq[0], list | tuple):
         nchannels = len(seq[0])
-        return [v for frame in seq for v in _frame(frame)], nchannels
+        return (
+            [_scalar(v) for frame in seq for v in _frame(frame, nchannels)],
+            nchannels,
+        )
     return [_scalar(v) for v in seq], 1
 
 
-def _frame(frame: object) -> Sequence[float]:
+def _frame(frame: object, nchannels: int) -> Sequence[float]:
     """Narrow one multichannel frame to a sequence — mixed mono/frame input is a bug."""
-    if isinstance(frame, list | tuple):
-        return frame
-    msg = f"expected a per-frame sequence of samples, got {type(frame).__name__}"
-    raise TypeError(msg)
+    if not isinstance(frame, list | tuple):
+        msg = f"expected a per-frame sequence of samples, got {type(frame).__name__}"
+        raise TypeError(msg)
+    if len(frame) != nchannels:
+        msg = f"expected {nchannels} samples per frame, got {len(frame)}"
+        raise ValueError(msg)
+    return frame
 
 
 def _scalar(v: object) -> float:
@@ -499,6 +553,13 @@ def _check_pcm_frames(raw: bytes, nchannels: int, sampwidth: int) -> None:
     """Reject truncated interleaved frames before decoding or channel indexing."""
     if len(raw) % (nchannels * sampwidth):
         msg = "PCM data is not a whole number of frames"
+        raise ValueError(msg)
+
+
+def _check_channels(wav: wave.Wave_write, nchannels: int) -> None:
+    """A streamed chunk must match the channel count fixed in the header."""
+    if nchannels != (expected := wav.getnchannels()):
+        msg = f"expected {expected}-channel frames, got {nchannels}"
         raise ValueError(msg)
 
 

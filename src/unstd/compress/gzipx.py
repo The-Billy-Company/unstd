@@ -13,7 +13,7 @@ import gzip as _stdlib
 import inspect
 import io
 from os import PathLike
-from typing import TYPE_CHECKING, Literal, overload
+from typing import TYPE_CHECKING, Literal, cast, overload, override
 import zlib
 
 
@@ -21,9 +21,16 @@ if TYPE_CHECKING:
     from collections.abc import Buffer
     from gzip import GzipFile as _Base
     from gzip import _ReadableFileobj, _WritableFileobj
+    from typing import Protocol
 
     from unstd.compress._backend import gzip as _backend
     from unstd.compress._backend import native as _native
+
+    class _Compressor(Protocol):
+        def __call__(
+            self, data: Buffer, compresslevel: int, *, mtime: float | None
+        ) -> bytes: ...
+
 else:
     try:
         from unstd.compress._backend import gzip as _backend
@@ -107,6 +114,7 @@ if TYPE_CHECKING or _backend is not None:
                     raise zlib.error(str(error)) from error
                 raise
 
+        @override
         def write(self, data: Buffer) -> int:
             """Write a buffer with native compression and stdlib errors."""
             try:
@@ -114,6 +122,7 @@ if TYPE_CHECKING or _backend is not None:
             except _native.error as exc:
                 raise zlib.error(str(exc)) from exc
 
+        @override
         def flush(self, zlib_mode: int = zlib.Z_SYNC_FLUSH) -> None:
             """Flush buffered input and the native compressor."""
             try:
@@ -121,6 +130,7 @@ if TYPE_CHECKING or _backend is not None:
             except _native.error as exc:
                 raise zlib.error(str(exc)) from exc
 
+        @override
         def close(self) -> None:
             """Finalize a member, closing only handles owned by this file."""
             try:
@@ -203,7 +213,10 @@ if TYPE_CHECKING or _backend is not None:
         try:
             result: bytes = _backend.compress(data, compresslevel, mtime=mtime)
         except _native.error:
-            return _stdlib.compress(memoryview(data), compresslevel, mtime=mtime)
+            # Python 3.14 retains None for the current time, although its
+            # typeshed signature currently permits only numeric timestamps.
+            compressor = cast("_Compressor", _stdlib.compress)
+            return compressor(memoryview(data), compresslevel, mtime=mtime)
         return result
 
     def decompress(data: Buffer) -> bytes:

@@ -33,9 +33,11 @@ successful acceleration and every fallback boundary against the running stdlib.
 
 from __future__ import annotations
 
+from collections.abc import Callable  # noqa: TC003 — public annotation introspection
 from functools import wraps
 import json as _stdlib
-from typing import TYPE_CHECKING, Any
+from math import isfinite
+from typing import TYPE_CHECKING, Any, Protocol
 
 from unstd.serde._json_common import _check_headroom
 from unstd.serde._json_encode import (
@@ -48,55 +50,46 @@ from unstd.serde._json_encode import (
 )
 
 
+class _TextWriter(Protocol):
+    """A text sink accepted by stdlib's streaming JSON encoder."""
+
+    def write(self, text: str, /) -> object:
+        """Write one encoder chunk."""
+        ...
+
+
+class _Reader(Protocol):
+    """A text or binary source accepted by JSON loading."""
+
+    def read(self) -> str | bytes | bytearray:
+        """Read the complete document once."""
+        ...
+
+
 if TYPE_CHECKING:
-    from collections.abc import Callable
     from types import NotImplementedType
-    from typing import Protocol
 
     import msgspec
     import numpy as np
     import orjson
 
-    _HAVE_ORJSON = True
-    _HAVE_MSGSPEC = True
-    _HAVE_NUMPY = True
-
-    class _TextWriter(Protocol):
-        """A text sink accepted by stdlib's streaming JSON encoder."""
-
-        def write(self, text: str, /) -> object:
-            """Write one encoder chunk."""
-            ...
-
-    class _Reader(Protocol):
-        """A text or binary source accepted by JSON loading."""
-
-        def read(self) -> str | bytes | bytearray:
-            """Read the complete document once."""
-            ...
-
+    _HAVE_ORJSON = _HAVE_MSGSPEC = _HAVE_NUMPY = True
 else:
     try:
         import orjson
-
-        _HAVE_ORJSON = True
     except ImportError:  # base install without the `serde` extra — stdlib fallback
         orjson = None
-        _HAVE_ORJSON = False
     try:
         import msgspec
-
-        _HAVE_MSGSPEC = True
     except ImportError:
         msgspec = None
-        _HAVE_MSGSPEC = False
     try:
         import numpy as np
-
-        _HAVE_NUMPY = True
     except ImportError:  # numpy is not part of the `serde` extra — opt-in only
         np = None
-        _HAVE_NUMPY = False
+    _HAVE_ORJSON, _HAVE_MSGSPEC, _HAVE_NUMPY = (
+        backend is not None for backend in (orjson, msgspec, np)
+    )
 
 
 JSONDecodeError = _stdlib.JSONDecodeError
@@ -112,6 +105,7 @@ __all__ = [
     "JSONEncoder",
     "Json",
     "canonical",
+    "canonical_strict",
     "dump",
     "dumpb",
     "dumps",
@@ -126,6 +120,8 @@ if _HAVE_ORJSON:
     _SORT = orjson.OPT_SORT_KEYS
     _INDENT = orjson.OPT_INDENT_2
     _NEWLINE = orjson.OPT_APPEND_NEWLINE
+    # Proof failures that leave stdlib to decide on the original object.
+    _ENCODE_ERRORS = (orjson.JSONEncodeError, RecursionError, RuntimeError)
 else:
     _SORT = _INDENT = _NEWLINE = 0
 if _HAVE_MSGSPEC:
@@ -135,31 +131,32 @@ _NO_NUMPY = "numpy=True requires numpy to be installed"
 _DEFAULT_ENCODER = _stdlib.JSONEncoder()
 _native_dumpb: (
     Callable[[object, bool, object, bool], bytes | NotImplementedType] | None
-) = _native.dumpb if _native is not None else None
+) = _native.dumpb if _native else None
 _native_line: Callable[[object], bytes | NotImplementedType] | None = (
-    _native.line if _native is not None else None
+    _native.line if _native else None
 )
 
 
 def _numpy_default(
-    user_default: Callable[[object], object] | None,
+    default: Callable[[object], object] | None,
 ) -> Callable[[object], object]:
-    """Wrap *user_default* so numpy values degrade to JSON-native ones first.
+    """Wrap *default* so numpy values degrade to JSON-native ones first.
 
     An ndarray/numpy scalar becomes a JSON-native value before falling through
     to whatever the caller already supplied.
 
     The extension uses the same conversion regardless of installed backends.
     """
+    if not _HAVE_NUMPY:
+        raise TypeError(_NO_NUMPY)
 
     def _default(o: object) -> object:
-        if _HAVE_NUMPY:
-            if isinstance(o, np.ndarray):
-                return o.tolist()
-            if isinstance(o, np.generic):
-                return o.item()
-        if user_default is not None:
-            return user_default(o)
+        if isinstance(o, np.ndarray):
+            return o.tolist()
+        if isinstance(o, np.generic):
+            return o.item()
+        if default is not None:
+            return default(o)
         msg = f"Object of type {type(o).__name__} is not JSON serializable"
         raise TypeError(msg)
 
@@ -189,11 +186,8 @@ def dumps(
     unchanged to that encoder, as in stdlib.
     """
     if cls is None and kw and kw.pop("numpy", False):
-        if not _HAVE_NUMPY:
-            raise TypeError(_NO_NUMPY)
         default = _numpy_default(default)
-    encoder = None
-    style = -1
+    encoder, style = None, -1
     if cls is None and default is None and not kw:
         if (
             skipkeys is False
@@ -205,8 +199,7 @@ def dumps(
             and separators is None
         ):
             # Default calls need neither format classification nor a cache lookup.
-            style = 1
-            encoder = _DEFAULT_ENCODER
+            encoder, style = _DEFAULT_ENCODER, 1
         elif (
             type(skipkeys)
             is type(ensure_ascii)
@@ -231,17 +224,12 @@ def dumps(
             **kw,
         )
     if _HAVE_ORJSON and style < 3 and type(obj) is not str:
+        option = (_SORT if sort_keys else 0) | (_INDENT if style == 2 else 0)
         try:
-            result = _exact_encode(
-                obj,
-                ensure_ascii,
-                style,
-                (_SORT if sort_keys else 0) | (_INDENT if style == 2 else 0),
-                _encode,
-            )
+            result = _exact_encode(obj, ensure_ascii, style, option, _encode)
             if result is not None:
                 return result
-        except (orjson.JSONEncodeError, RecursionError, RuntimeError):
+        except _ENCODE_ERRORS:
             # No callbacks have run; stdlib decides errors on the original
             # object, including a dict changed during the snapshot walk.
             pass
@@ -272,29 +260,25 @@ def dumpb(
     use stdlib. For the package's identity format use :func:`canonical`.
     """
     if _native_dumpb is not None:
-        native_result = _native_dumpb(obj, sort_keys, default, numpy)
-        if native_result is not NotImplemented:
-            return native_result
+        native = _native_dumpb(obj, sort_keys, default, numpy)
+        if native is not NotImplemented:
+            return native
     if numpy and not _HAVE_NUMPY:
         raise TypeError(_NO_NUMPY)
-    if _HAVE_ORJSON and not numpy and default is None and type(sort_keys) is bool:
-        try:
-            result = _exact_bytes(obj, _SORT if sort_keys else 0, _encode)
-            if result is not None:
-                return result
-        except (orjson.JSONEncodeError, RecursionError, RuntimeError):
-            # Lone surrogates and a low Python recursion limit take stdlib's
-            # path. No user callback has run during this eligibility probe.
-            pass
-    if (
-        type(numpy) is bool
-        and not numpy
-        and default is None
-        and type(sort_keys) is bool
-    ):
-        # The native proof has already failed. Reusing the stdlib encoder here
-        # avoids copying and proving the same tree again through dumps().
-        return _compact_bytes(obj, sort_keys)
+    if not numpy and default is None and type(sort_keys) is bool:
+        if _HAVE_ORJSON:
+            try:
+                result = _exact_bytes(obj, _SORT if sort_keys else 0, _encode)
+                if result is not None:
+                    return result
+            except _ENCODE_ERRORS:
+                # Lone surrogates and a low Python recursion limit take stdlib's
+                # path. No user callback has run during this eligibility probe.
+                pass
+        if numpy is False:
+            # The native proof has already failed. Reusing the stdlib encoder here
+            # avoids copying and proving the same tree again through dumps().
+            return _compact_bytes(obj, sort_keys)
     return dumps(
         obj,
         ensure_ascii=False,
@@ -307,16 +291,13 @@ def dumpb(
 
 def _line(obj: object) -> bytes:
     """One newline-terminated compact record for :mod:`unstd.serde.ndjson`."""
-    if _native_line is not None:
-        native_result = _native_line(obj)
-        if native_result is not NotImplemented:
-            return native_result
+    if _native_line is not None and (native := _native_line(obj)) is not NotImplemented:
+        return native
     if _HAVE_ORJSON:
         try:
-            result = _exact_bytes(obj, _NEWLINE, _encode)
-            if result is not None:
+            if (result := _exact_bytes(obj, _NEWLINE, _encode)) is not None:
                 return result
-        except (orjson.JSONEncodeError, RecursionError, RuntimeError):
+        except _ENCODE_ERRORS:
             pass
     return _compact_bytes(obj, False) + b"\n"
 
@@ -324,19 +305,16 @@ def _line(obj: object) -> bytes:
 def canonical(
     obj: object, *, default: Callable[[object], object] | None = str
 ) -> bytes:
-    """Stable canonical JSON *bytes* for identity — digests, HMACs, cache keys, fingerprints.
+    """The legacy sorted, compact, ASCII-escaped JSON byte format.
 
-    Sorted keys, compact separators, ASCII-escaped. Deterministic and independent
-    of the active codec (stdlib vs orjson) *and* of any Unicode-handling change,
-    which is exactly what a hash/identity input needs. Deliberately stdlib-backed
-    (identity is never the hot path): the ASCII escaping makes the bytes
-    reproducible across versions, and this form is byte-identical to the historic
-    ``json.dumps(obj, sort_keys=True, separators=(",", ":"))`` output — so swapping
-    a hash site onto it changes nothing on the wire.
+    Sorted keys, compact separators and ASCII escaping are independent of the
+    installed accelerator. The format retains stdlib number spellings and is
+    not RFC 8785/JCS. Existing identity inputs retain their historical bytes.
 
-    Use this whenever serialized bytes feed something *compared or persisted across
-    time*; use :func:`dumps`/:func:`dumpb` for machine transport where only the
-    parsed value matters.
+    The default ``str`` conversion is retained for compatibility with existing
+    persisted bytes. Unsupported values can stringify nondeterministically or
+    collide with strings. Use :func:`canonical_strict` for new identity inputs;
+    use :func:`dumps`/:func:`dumpb` for transport.
     """
     if default is str:
         return _CANONICAL.encode(obj).encode()
@@ -344,6 +322,65 @@ def canonical(
         obj, sort_keys=True, separators=(",", ":"), ensure_ascii=True, default=default
     ).encode()
 
+
+def _identity_snapshot(obj: object, active: set[int]) -> Json:
+    """Own an exact JSON tree, rejecting coercions and cycles before encoding."""
+    if type(obj) is str:
+        obj.encode()  # Reject surrogate code points, including explicit pairs.
+        return obj
+    if obj is None or type(obj) is int or type(obj) is bool:
+        return obj
+    if type(obj) is float:
+        if isfinite(obj):
+            return obj
+        msg = "identity JSON requires finite numbers"
+        raise ValueError(msg)
+    if type(obj) is not list and type(obj) is not dict:
+        msg = f"unsupported identity JSON type: {type(obj).__name__}"
+        raise TypeError(msg)
+    if (identity := id(obj)) in active:
+        msg = "circular reference in identity JSON"
+        raise ValueError(msg)
+    active.add(identity)
+    try:
+        if isinstance(obj, list):
+            return [_identity_snapshot(value, active) for value in obj]
+        result: dict[str, Json] = {}
+        for key, value in obj.items():
+            if type(key) is not str:
+                msg = "identity JSON requires exact string keys"
+                raise TypeError(msg)
+            key.encode()
+            result[key] = _identity_snapshot(value, active)
+        return result
+    finally:
+        active.remove(identity)
+
+
+def canonical_strict(obj: object) -> bytes:
+    """Encode an exact JSON value using the version-1 identity byte format.
+
+    Accepts exact builtin dicts with exact string keys, lists, strings, integers,
+    finite floats, booleans and None. Other types, subclasses, non-finite numbers,
+    surrogate code points (including explicit pairs) and cycles are rejected
+    without a user conversion hook.
+    Shared acyclic branches are accepted. A private snapshot owns every mutable
+    branch before serialization, so validation and encoding see the same values.
+
+    Version 1 is sorted-key, compact, ASCII-escaped stdlib JSON with finite
+    numbers. It matches :func:`canonical` on this restricted domain; it is not
+    RFC 8785/JCS. Unicode normalization is not applied, and integer/float and
+    signed-zero spellings remain distinct. Normalize application values before
+    calling when those distinctions should not be part of an identity. Future
+    incompatible formats require a separate API; existing canonical bytes stay
+    unchanged. Interpreter integer-conversion and recursion limits still apply.
+    """
+    return _IDENTITY.encode(_identity_snapshot(obj, set())).encode()
+
+
+_IDENTITY = _stdlib.JSONEncoder(
+    sort_keys=True, separators=(",", ":"), ensure_ascii=True, allow_nan=False
+)
 
 # `json.dumps` builds a fresh `JSONEncoder` whenever it is passed a non-default
 # kwarg, which is every canonical call — a third of its cost on a small payload.
@@ -382,8 +419,6 @@ def dump(
 ) -> None:
     """Stream JSON text to ``fp`` with stdlib's encoder and write behavior."""
     if cls is None and kw and kw.pop("numpy", False):
-        if not _HAVE_NUMPY:
-            raise TypeError(_NO_NUMPY)
         default = _numpy_default(default)
     _stdlib.dump(
         obj,

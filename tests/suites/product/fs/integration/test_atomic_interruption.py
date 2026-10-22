@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from tests.support.process import python_worker, run_python, worker_line
+from tests.support.environment.process import python_worker, run_python, worker_line
 from unstd import fs
 
 

@@ -38,29 +38,41 @@ from __future__ import annotations
 import hashlib
 from typing import TYPE_CHECKING, Self
 
-from unstd.crypto._blake3 import blake3
+from unstd.crypto._blake3 import _PARALLEL_MIN_BYTES, _parallel_hasher, blake3
 
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
+    from collections.abc import Callable, Iterable
+    from types import NotImplementedType
+
+
+_native_absorb: Callable[[blake3, Iterable[bytes]], NotImplementedType | None] | None
+try:
+    from unstd.crypto._stream_native import absorb as _native_absorb
+except ImportError:
+    _native_absorb = None
 
 
 DIGEST_BYTES = 32
 """BLAKE3's output width — the ceiling on :func:`hex` truncation and the width of a :func:`derive_key` subkey."""
 
 
-def _hexdigest(hasher: blake3, n: int | None) -> str:
-    """*hasher*'s full hex digest, or its first *n* bytes' — the one width check both :func:`hex` spellings share."""
-    if n is None:
-        return hasher.hexdigest()
+def _hexdigest(hasher: blake3, n: int) -> str:
+    """*hasher*'s first *n* bytes as hex — the one truncation check both :func:`hex` spellings share."""
     if not 1 <= n <= DIGEST_BYTES:
         msg = f"truncation width must be 1..{DIGEST_BYTES} bytes, got {n}"
         raise ValueError(msg)
-    return hasher.hexdigest(length=n)
+    if type(n) is not int:
+        # Custom comparisons can disagree with __index__. Keep the backend's
+        # hex-specific conversion and overflow checks for those objects.
+        return hasher.hexdigest(length=n)
+    return hasher.digest(length=n).hex()
 
 
 def raw(data: bytes) -> bytes:
     """BLAKE3-256 digest of *data* (32 bytes)."""
+    if type(data) is bytes and len(data) >= _PARALLEL_MIN_BYTES:
+        return _parallel_hasher(data).digest()
     return blake3(data).digest()
 
 
@@ -72,7 +84,13 @@ def hex(data: bytes, n: int | None = None) -> str:
     costs collision resistance quadratically — *n* = 8 gives a 64-bit digest, so
     only truncate for a short human-facing id, never for a security decision.
     """
-    return _hexdigest(blake3(data), n)
+    if type(data) is bytes and len(data) >= _PARALLEL_MIN_BYTES:
+        hasher = _parallel_hasher(data)
+    else:
+        hasher = blake3(data)
+    if n is None:
+        return hasher.digest().hex()
+    return _hexdigest(hasher, n)
 
 
 def derive_key(context: str, material: bytes) -> bytes:
@@ -88,6 +106,12 @@ def derive_key(context: str, material: bytes) -> bytes:
     BLAKE3 hashes the context separately from the material, so two contexts
     differing by one character give two unrelated keys.
     """
+    if not isinstance(context, str):
+        # The backend reads a None context as plain hashing mode.
+        msg = f"{type(context).__name__!r} object is not an instance of 'str'"
+        raise TypeError(msg)
+    if type(material) is bytes and len(material) >= _PARALLEL_MIN_BYTES:
+        return _parallel_hasher(material, derive_key_context=context).digest()
     return blake3(material, derive_key_context=context).digest()
 
 
@@ -118,6 +142,13 @@ class Stream:
     def __init__(self, chunks: Iterable[bytes] = ()) -> None:
         """Start a stream, absorbing *chunks* (if any) in order."""
         self._hasher = blake3()
+        if (
+            _native_absorb is not None
+            and (type(chunks) is tuple or type(chunks) is list)
+            and len(chunks) >= 8
+        ):
+            _native_absorb(self._hasher, chunks)
+            return
         for chunk in chunks:
             self._hasher.update(chunk)
 
@@ -132,6 +163,8 @@ class Stream:
 
     def hex(self, n: int | None = None) -> str:
         """The hex digest of everything absorbed so far — see :func:`hex` for *n*."""
+        if n is None:
+            return self._hasher.digest().hex()
         return _hexdigest(self._hasher, n)
 
 

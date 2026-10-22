@@ -17,6 +17,8 @@ into a misleading secondary error. Real encoding failures exercise text streams.
 files, directories and symlinks, symlink replacement without changing its
 referent, non-inherited scratch descriptors, parent-directory handle cleanup,
 file-sync/rename/directory-sync ordering, best-effort directory sync failures,
+strict sync errors and preflight, newly created parent acknowledgments,
+post-commit failure state and cross-directory strict moves,
 atomic-replace refusal, blocked parent paths, and traversal escape/cycle controls.
 OS injection is scoped to the product module rather than patching Python's
 global `os` functions. Tests never change the process-wide umask.
@@ -32,6 +34,7 @@ must prove all 64 pre-commit and post-commit reads occurred. Worker and readines
 deadlines bound hangs, and fixture teardown kills and reaps owned workers.
 
 These are syscall-error and process-interruption contracts. They do not simulate
-power loss or prove storage-device persistence. Directory sync remains a
-best-effort portability operation. POSIX-only symlink and descriptor controls
+power loss or prove storage-device persistence. Default directory sync remains
+best effort; strict mode requires OS acknowledgments and propagates failures.
+POSIX-only symlink and descriptor controls
 carry precise platform guards; ordinary stream and process cases remain portable.

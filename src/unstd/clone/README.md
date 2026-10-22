@@ -2,7 +2,9 @@
 
 Part of [`unstd`](../README.md). A fast **structural deep clone** for data, and
 `dataclasses.asdict` on the same walker, behind a stdlib-`copy`-faithful surface.
-Pure stdlib; no extra needed.
+No extra or third-party runtime dependency is needed. CPython builds optionally
+include a bounded C walker for exact builtin data trees, with the Python walker
+retained for other shapes and builds without a compiler.
 
 ```python
 from unstd import clone
@@ -19,10 +21,21 @@ exact = clone.deepcopy(payload)  # re-exported stdlib copy.deepcopy
 probe, and for anything but a builtin container a `__reduce_ex__` round-trip.
 `deep` walks data with exact-type dispatch instead.
 
+The bundled C path admits exact `dict` (exact string keys), `list`, and `tuple`
+trees containing exact scalar builtins. It preserves dictionary order, atomic
+identity and independent mutable branches. Other trees use the existing Python
+walker, including copy hooks, subclasses, dataclasses, sets and cyclic graphs.
+Native work is bounded by 128 container levels and 65,536 visited values;
+exceeding either bound selects Python rather than limiting the public API.
+See the [native measurements](../../../bench/native-results.md) for comparisons
+against the previous Python implementation.
+
 - **Leaves never pay a call.** Each container comprehension tests its children's
   exact type inline and returns atoms (`str`, `int`, `float`, `bool`, `None`,
-  `bytes`, the immutable `datetime` values, …) as the same objects `deepcopy`
-  returns for them.
+  `bytes`, immutable dates and durations, …) as shared objects. Datetimes and
+  times stay shared when naive or using an exact `datetime.timezone` or
+  `zoneinfo.ZoneInfo`. Values with custom `tzinfo` use `deepcopy`, preserving
+  timezone copy hooks and isolating mutable timezone state.
 - **Data classes are rebuilt the way `deepcopy` rebuilds them**, with the walker
   in place of the recursion. A plain dataclass is `cls.__new__` plus its walked
   `__dict__`. A pydantic model mirrors `BaseModel.__deepcopy__` line for line

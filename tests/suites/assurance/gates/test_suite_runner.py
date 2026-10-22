@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from tests.tooling import runner
+from tests.tooling.suites import runner
 
 
 if TYPE_CHECKING:
@@ -20,10 +20,10 @@ if TYPE_CHECKING:
 def repo(tmp_path: Path) -> Path:
     (tmp_path / "pyproject.toml").write_text(
         "[tool.pytest.ini_options]\n"
-        'markers = ["unit: unit evidence", "chaos: faults", "concurrency: histories", "perf: timing"]\n',
+        'markers = ["unit: unit evidence", "chaos: faults", "concurrency: histories", "resources: bounds", "perf: timing"]\n',
         encoding="utf-8",
     )
-    (tmp_path / "tests/tooling").mkdir(parents=True)
+    (tmp_path / "tests/tooling/suites").mkdir(parents=True)
     path = tmp_path / "tests/suites/product/serde/unit"
     path.mkdir(parents=True)
     (path / "test_contract.py").write_text(
@@ -50,7 +50,7 @@ def _inventory(root: Path, *rows: dict[str, object]) -> None:
         + "".join(f"{key} = {json.dumps(value)}\n" for key, value in row.items())
         for row in records
     )
-    (root / "tests/tooling/inventory.toml").write_text(text, encoding="utf-8")
+    (root / "tests/tooling/suites/inventory.toml").write_text(text, encoding="utf-8")
 
 
 def test_active_suite_is_validated_and_listed(
@@ -233,10 +233,14 @@ def test_planned_suite_with_tests_must_be_activated(repo: Path) -> None:
 @pytest.mark.parametrize(
     ("marker", "selection"),
     [
-        ("unit", "unit and not perf and not chaos and not concurrency"),
+        (
+            "unit",
+            "unit and not perf and not chaos and not concurrency and not resources",
+        ),
         ("perf", "perf"),
         ("concurrency", "concurrency"),
         ("chaos", "chaos"),
+        ("resources", "resources"),
     ],
 )
 def test_run_preserves_pytest_exit_arguments_and_lane_selection(
@@ -287,7 +291,7 @@ def test_explicit_pytest_marker_override_remains_last(
     assert runner.main(["run", "unit", "--", "-m", "unit or perf"], repo_root=repo) == 0
     assert calls[0][-4:] == [
         "-m",
-        "unit and not perf and not chaos and not concurrency",
+        "unit and not perf and not chaos and not concurrency and not resources",
         "-m",
         "unit or perf",
     ]
@@ -311,7 +315,9 @@ def test_run_refuses_inventory_drift_before_starting_pytest(
 def test_malformed_inventory_is_an_actionable_failure(
     repo: Path, contents: str, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    (repo / "tests/tooling/inventory.toml").write_text(contents, encoding="utf-8")
+    (repo / "tests/tooling/suites/inventory.toml").write_text(
+        contents, encoding="utf-8"
+    )
     assert runner.main(["check"], repo_root=repo) == 2
     assert "suite inventory:" in capsys.readouterr().err
 
@@ -319,7 +325,7 @@ def test_malformed_inventory_is_an_actionable_failure(
 def test_missing_inventory_is_an_actionable_failure(
     repo: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    (repo / "tests/tooling/inventory.toml").unlink()
+    (repo / "tests/tooling/suites/inventory.toml").unlink()
     assert runner.main(["check"], repo_root=repo) == 2
     assert "cannot read" in capsys.readouterr().err
 

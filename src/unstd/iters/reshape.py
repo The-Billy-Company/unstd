@@ -29,15 +29,16 @@ def partition[T](
 
     Iterable first, like every other combinator here. The current ``itertools``
     recipe: :func:`itertools.tee` shares a *single* walk of *iterable* between
-    both sides, and the verdicts are teed alongside it, so each element is drawn
-    **once** and *pred* runs **once** per element (not once per side — a
+    both sides, and immutable truth verdicts are teed alongside it, so each element is drawn
+    **once** and *pred* and its result's truth test run **once** per element (not
+    once per side — a
     side-effecting or expensive predicate is safe). Order-preserving within each
     side, fully lazy, and a C-level walk end to end. ``tee`` buffers whatever one
     side has read ahead of the other — pull the two roughly in step for bounded
     memory.
     """
     t1, t2, p = tee(iterable, 3)
-    p1, p2 = tee(map(pred, p))
+    p1, p2 = tee(map(bool, map(pred, p)))
     return compress(t1, map(not_, p1)), compress(t2, p2)
 
 

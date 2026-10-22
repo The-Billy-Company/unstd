@@ -5,6 +5,8 @@ optional native acceleration, safe boundary helpers, and a zero-dependency base
 install. It describes evidence to build, not a claim that every lane already
 exists. The selected packaging, TLS, filesystem/process, and parser/token P0
 modules are implemented; [P0.md](P0.md) maps their executable evidence.
+The P1 product breadth for every public module, macOS/Windows contract jobs and
+per-extra partial installs are implemented; [P1.md](P1.md) maps that evidence.
 Parser/token fuzz targets, authenticated retained corpora, finite replay and
 bounded deterministic/Atheris campaigns are also implemented; the
 [fuzz runbook](tooling/fuzz/README.md) maps their commands and evidence limits.
@@ -46,19 +48,19 @@ duplicating a scenario under multiple paths.
 | --- | --- | --- |
 | `unit` | Active, existing tests | Public outcomes, state, errors, and boundaries owned by a module. Several inherited files also contain properties or integrations awaiting finer separation. |
 | `parity` | Active | Explicit stdlib JSON, Base64 and regex differential suites. Additional parity assertions remain inside unit and property files. |
-| `properties` | Active, existing tests | Generated serde, pack, TOML, clone, UUID, and audio laws. Other generated tests remain in inherited files. |
-| `security-contracts` | Active, existing tests | Existing crypto adverse contracts, including TLS context configuration. Reference-vector cases remain in the inherited crypto unit files. This is not a complete penetration campaign. |
+| `properties` | Active | Generated laws and state machines for every product module except proc, fs and rex (whose generated cases live in their parity/security owners): serde, digest streams, pack, audio, gzip, clone, model, UUID clocks, instants/zones, containers, rand, text, iters, TOML and YAML. Other generated tests remain in inherited files. |
+| `security-contracts` | Active | Module-owned bearer authentication, TLS policy, strict encodings, msgspec/TOML/YAML/RIFF malformed input, YAML construction and hostile corpora, and observed native regex boundaries. Reference-vector cases remain in crypto unit files. |
 | `gates` | Active | Package description, optional dependencies, typing marker, benchmark-harness integrity, fuzz registry/corpus authentication, target oracles, recorded chaos/concurrency schedules, lane/replay selection and bounded worker failure handling. Isolated artifact installation belongs to `packaging`. |
-| `regression` | Active | Confirmed regex surrogate/cache capacity, UUID fork-lock, partial WAV frame and interrupted-child reaping defects, with direct assertions owned by the affected module. |
-| `integration` | Active | Real filesystem/process fault schedules, interruption, cleanup and recovery. Broader application scenarios remain separately planned. |
+| `regression` | Active | Confirmed defects with direct assertions owned by the affected module: regex surrogate/cache capacity, UUID fork-lock, WAV partial/ragged frames and closed writers, interrupted-child reaping, filesystem modes, BLAKE3 contexts, pack dtypes/buffer sizes, msgspec non-UTF-8 cache misses, epoch-millisecond precision, `windowed` laziness, NumPy weight totals and YAML merge/emission defects. |
+| `integration` | Active | Real filesystem/process fault schedules, interruption, cleanup and recovery; audio/gzip/TOML/YAML stream faults and ownership; UUID backend selection and settings sources in fresh interpreters. Broader application scenarios remain separately planned. |
 | `pentest` | Active | Real loopback TLS trust/identity/protocol/mTLS probes with authenticated controls and bounded fixture PKI. Module-owned parser/token probes live under security contracts. |
 | `packaging` | Active | Offline artifact rebuilds, pristine base and each-extra consumers, complete module probes, installed typing and negative controls. |
 | `system-integration` | Planned | Broader cross-module application scenarios beyond the implemented filesystem/process boundaries. |
-| `security-structure` | Planned | Early structural canaries and security-policy checks. Behavioral attack tests carry the security guarantee. |
+| `security-structure` | Active | Runtime observation of complete constant-time comparisons and honored rejection decisions; stdlib secrets identity, seed separation and deterministic entropy failure/recovery. Behavioral attack tests retain their existing owners. |
 | `chaos` | Active | Seeded mixed filesystem/process histories, barrier-selected writer kills, stream interruptions and clock/entropy provider outages; independent state/progress/ownership/recovery assertions and bounded installed/stdlib campaigns. |
 | `concurrency` | Active | Bounded thread/process atomic-file histories, exact fallback UUID reservation models and fork safety, shared clone/regex caches, msgspec/YAML isolation and immutable-map branches; observed histories, corruption controls and installed/stdlib campaigns. |
-| `resources` | Planned | Time, memory, descriptors, handles, scratch files, and cache bounds in controlled workers. |
-| `performance` | Planned | Reproducible throughput/latency evidence with audited semantics and stable baselines. The existing `bench` program remains the current instrument. |
+| `resources` | Active | Finite installed/stdlib workers check NDJSON/WAV streaming allocation growth, filesystem descriptors/scratch cleanup, regex capacity/purge, clone class lifetime and JSON depth; CPU/memory/output/wall containment and measured reports. Sustained soak and Windows handles remain planned. |
+| `performance` | Active, opt-in | Every public callable has an audited representative workload and a frozen latency ceiling in `bench.speeds`; verification requires the recorded worker environment. Scaling and sustained measurements remain separate work. |
 | `fuzz-replay` | Active | Authenticated reviewed parser/token inputs replay real oracles in eleven installed and eight import-blocked stdlib workers during ordinary validation. Exact case counts, bounds and normal exit are required. |
 
 Further module-owned `regression` leaves are added as defects are confirmed; cross-module
@@ -68,7 +70,7 @@ interruption, concurrency, resources and corpus replay under
 `assurance/adversarial/{chaos,concurrency,resources,fuzz_replay}`; and measured
 performance under `assurance/evals/performance`. A module-local integration still
 belongs with its owning product. The inventory distinguishes implemented destinations from reserved future
-coverage. The [inventory](tooling/inventory.toml) is authoritative if selection
+coverage. The [inventory](tooling/suites/inventory.toml) is authoritative if selection
 details change.
 
 Property testing and fuzzing are complementary. Hypothesis explores structured
@@ -90,18 +92,22 @@ on Python 3.12/3.13/3.14, lowest-direct dependency tests on 3.13, and a fallback
 installation on 3.13. The reorganization must preserve those gates while adding
 precise selection. The following gaps require explicit follow-up:
 
-1. **Platform delivery.** Linux CI remains the existing required matrix. Add
-   macOS/Windows jobs, keeping named POSIX probes explicit. A local POSIX pass
-   does not establish Windows handle-sharing or process-tree semantics.
+1. **Platform delivery.** Linux CI remains the full interpreter/dependency
+   matrix. Required macOS/Windows jobs now run the `api` and `contracts` groups
+   with every extra; named POSIX probes stay explicit. A local POSIX pass does
+   not establish Windows handle-sharing or process-tree semantics, and the
+   Windows lane awaits its first executed run.
 2. **Deeper campaigns.** Standalone deterministic mutation and genuine bounded
    Atheris/libFuzzer campaigns now execute real parser/token oracles. Native
    sanitizer/instrumented builds, sustained chaos, broad resource/soak gates
    and source-mutation campaigns remain separate work.
-3. **Performance execution.** `bench verify` has equivalence checks and speedup
-   baselines, but CI still tests its instrument rather than enforcing speed on
-   a stable worker. Wall-clock calibration remains explicitly selected `perf`.
-4. **Broader product depth.** P1 module laws, state machines, platform combinations
-   and whole-application scenarios remain governed by the matrix below.
+3. **Performance execution.** `bench.speeds` registers every public callable and
+   enforces frozen latency ceilings through the opt-in `performance` lane.
+   A stable required CI worker and scaling workloads remain follow-up work.
+   Wall-clock timing stays outside ordinary correctness execution.
+4. **Broader product depth.** P1 module laws, state machines and partial-extra
+   combinations are implemented ([P1.md](P1.md)). Whole-application scenarios
+   remain governed by the matrix below.
 
 The P0 timeout refusal, real TLS handshakes, independent artifact consumers,
 backend admission and deterministic failure probes are implemented. Required CI
@@ -113,7 +119,10 @@ P0 protects published fidelity, dependency boundaries, and security guarantees.
 P1 builds broad generated and integration evidence for the remaining surface.
 P2 expands sustained campaigns and stable performance/resource measurement.
 Every row records contract obligations. Implemented P0 cases are mapped in
-[P0.md](P0.md); the remaining product/campaign expansion remains a backlog.
+[P0.md](P0.md) and P1 cases in [P1.md](P1.md); campaign expansion remains a
+backlog. `compress.gzipx` follows the same P1 standard although it predates
+this matrix: RFC 1952 layout, multi-member and truncation parity with stdlib
+`gzip`, and stream faults.
 
 | Module and priority | Existing evidence to retain | Concrete cases to add or expand | Independent oracle or invariant |
 | --- | --- | --- | --- |
@@ -171,11 +180,16 @@ needed to penetrate this local library's boundaries. SQL injection, browser
 sessions, distributed authorization, and Kubernetes chaos have no target in the
 current API. Add such evidence only when an actual product surface requires it.
 
-Structural canaries may pin use of a constant-time primitive, guarded import, or
-security configuration. They detect early drift but do not replace behavioral
-verification. Timing assertions on a shared machine cannot prove constant-time
-cryptographic execution, and statistical randomness tests cannot prove a secure
-generator.
+The [security scope](suites/assurance/security/README.md) maps these obligations
+to their executable owners. The active structural canaries observe actual
+constant-time primitive calls with complete operands and prove that a primitive
+refusal cannot be ignored by equality, MAC or bearer verification. Deterministic
+secure-random checks pin stdlib secrets bindings across seeding and prove exact
+token output, entropy-error propagation and recovery. These replace substring
+and noncollision checks, without adding a scanner or runner. They detect drift
+but do not replace behavioral verification. Timing assertions on a shared
+machine cannot prove constant-time cryptographic execution, and statistical
+randomness tests cannot prove a secure generator.
 
 ## Failure injection, chaos, concurrency, and resources
 
@@ -227,6 +241,16 @@ contract. Examples include constant-memory NDJSON/audio streaming, bounded rex
 cache, clone class-cache churn, repeated failed writer cleanup, and expected
 all-pairs text matrix allocation. Use process termination, not a thread timeout,
 to contain code that may hold the GIL or loop inside a native dependency.
+
+The [resource lane](suites/assurance/adversarial/resources/README.md) implements
+the first finite slice with one small shared harness and the existing suite
+runner. Linux address-space limits and a macOS RSS watchdog complement CPU and
+wall limits. Traced Python allocations, peak RSS, exact processed work and OS
+ownership observations are retained in pytest/JUnit reports. Eager-output and
+leaking-cache/descriptor controls must fail. Clone class churn exposed strong
+metadata caches retaining generated classes; weak keys and a module-owned
+lifetime regression now cover that defect. Digest streams, text matrices,
+sustained soak, Windows handles and broader parser resource corpora remain open.
 
 ## Standalone campaigns
 
@@ -282,10 +306,10 @@ on stable runners; broad algorithmic/resource regressions can run on shared CI.
 | Dimension | Existing baseline | Required extension |
 | --- | --- | --- |
 | Python | 3.12, 3.13, 3.14 with all extras | Preserve all supported interpreters. Exercise base installation across that range because 3.14 selects a different UUID fallback. |
-| OS | Linux CI | macOS and Windows public-contract lanes, especially filesystem, processes, time formatting, native imports and audio. Skip only a named unsupported capability, not an entire module without review. |
+| OS | Linux CI; macOS and Windows `api`/`contracts` jobs with every extra | Skip only a named unsupported capability, not an entire module without review. Extend macOS/Windows to the opt-in chaos/concurrency lanes once their platform policies are reviewed. |
 | Architecture | Whatever the current runner supplies | Record architecture. Add aarch64/x86_64 artifact/native-backend smoke where distribution support or claimed performance depends on it. |
 | Base install | No requested extras, but test dependencies present | Build artifact, create a fresh consumer environment with unstd only, run stdlib-only smoke outside checkout, then add test tooling in a separate environment for deeper fallback contracts. |
-| Extras | All extras together | Each declared extra alone, absent-backend behavior, and meaningful partial combinations: audio with/without NumPy/soundfile, text with/without NumPy/rapidfuzz, proto independent of time, and model/struct dependencies independently missing. |
+| Extras | All extras together; each declared extra alone; text with NumPy. Each partial lane requires exactly its own extras via `--require-extra`, so audio without soundfile (`pack`), text without NumPy, proto independent of time, and model/struct dependencies independently missing all execute | Add further combinations when a new backend-selection branch appears. |
 | Versions | Locked versions plus lowest-direct on 3.13 | Preserve floor resolution, record resolved versions, and deliberately validate latest admissible dependencies under the release quarantine. Expand floor legs when an interpreter/backend combination exposes risk. |
 | Artifacts | Source/editable checkout tests | Wheel and sdist built from the intended tree, wheel built from sdist, metadata/files/licenses/typing marker checked, isolated import and representative calls. Verify package origin resolves outside the checkout. |
 | Downstream typing | Strict mypy over source and bench | A tiny consumer type-checks against the installed artifact without backend stubs being accidentally supplied by the checkout. |
@@ -338,22 +362,24 @@ strength. Seed replay, actual fault journals, explicit backend admission and
 bounded Linux/macOS campaigns are implemented; broader resource/soak claims
 remain separate.
 
-### P1 — broaden product and integration evidence
+### P1 — implemented product and integration breadth
 
-1. Expand each matrix row using independent oracles and shared generated values
-   on native/fallback paths. Separate intentional divergence from missing parity.
-2. Add state machines for containers/clock sequences, generated mixed clone
-   shapes, numeric/audio boundary corpora, iterator consumption faults, settings
-   process isolation, and timezone transition families.
-3. Add macOS/Windows and partial-extra jobs; complete ordinary integration,
-   resource lanes and expand concurrency with explicit supported guarantees.
-4. Convert verified failures into minimal regression tests and retained corpus
-   entries. Split inherited mixed files only when doing so improves honest lane
-   selection and preserves collection.
+Every public module now has a reviewed contract inventory in its suite README,
+generated laws or state machines against an independent reference on its
+native/fallback paths, and real-boundary evidence where the contract has one.
+State machines cover sorted containers, persistent-map histories, UUID clock
+sequences, digest streams and TOML edits; generated mixed clone shapes,
+numeric/audio boundary corpora, iterator consumption faults, isolated settings
+sources and timezone transition families are implemented. Intentional
+divergences are pinned separately from missing parity. Each new file was shown
+to fail against a deliberately broken source. See [P1.md](P1.md).
 
-P1 is complete when every public module has a reviewed contract inventory,
-relevant generated and real-boundary evidence, and stated dependency/platform
-coverage. Raw line coverage alone is insufficient.
+The macOS/Windows contract jobs and the per-extra partial installs state the
+platform and dependency coverage. Thirteen confirmed defects became minimal
+module-owned regressions with production fixes. The remaining P1-adjacent work
+is explicit: the first executed Windows run; new defects as retained fuzz
+corpus entries once the corpus review admits them; and macOS/Windows extension
+of the opt-in resource and concurrency lanes.
 
 ### P2 — sustained assurance
 

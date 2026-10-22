@@ -1,0 +1,67 @@
+name: Supply chain
+
+on:
+  workflow_call:
+  workflow_dispatch:
+  schedule:
+    # Recheck unchanged locks when new advisories are published.
+    - cron: "37 8 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: supply-chain-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  audit:
+    name: Supply chain / Trust, advisories & SBOM
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up pinned uv & dependency cache
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: "0.13.0"
+          python-version: "3.13"
+          enable-cache: true
+          cache-suffix: supply-chain
+          cache-dependency-glob: |
+            uv.lock
+            pyproject.toml
+      - name: Check dependency trust before installing
+        run: python -m tests.tooling.supply_chain check --json
+      - name: Require a fresh committed lock
+        run: uv lock --check
+      - name: Export complete Python & Rust dependency inventory
+        run: python -m tests.tooling.supply_chain sbom --output .local/supply-chain/sbom.cdx.json
+      - name: Audit all locked extras, groups & platform branches
+        # uv's default is universal: do not pass python-version/platform filters.
+        # This does not install or build the packages being audited.
+        run: uv audit --locked --output-format json > .local/supply-chain/audit.json
+      - name: Reject vulnerabilities, adverse statuses & malformed reports
+        run: python -m tests.tooling.supply_chain audit-report .local/supply-chain/audit.json
+      - name: Install only harness dependencies
+        run: uv sync --locked --only-group supply-chain --no-install-project --python 3.13
+      - name: Require the workflow parser
+        run: uv run --no-sync python -c "import ruamel.yaml"
+      - name: Prove trust checks & release validation reject tampering
+        run: >-
+          uv run --no-sync python -m pytest
+          tests/suites/assurance/gates/supply_chain
+          tests/suites/assurance/gates/release
+          -q --junitxml=.local/supply-chain/tests.xml
+      - name: Retain audit, SBOM & tamper-test evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: supply-chain-evidence-${{ github.run_attempt }}
+          path: .local/supply-chain/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30

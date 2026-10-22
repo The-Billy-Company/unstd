@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import ast
-import contextlib
 import hashlib
 import json
 import math
@@ -18,7 +17,8 @@ import tempfile
 import threading
 import time
 
-from tests.support.chaos import MAX_EVENTS, MAX_JOURNAL_BYTES, VERSION
+from tests.support.chaos.journal import MAX_EVENTS, MAX_JOURNAL_BYTES, VERSION
+from tests.support.environment.process import kill_owned_process_group
 
 
 REPO = Path(__file__).resolve().parents[3]
@@ -78,6 +78,9 @@ class _Capture:
 
     def finish(self):
         self.thread.join(timeout=2)
+        if self.thread.is_alive():
+            message = "worker capture pipe did not close"
+            raise TimeoutError(message)
         self.stream.close()
         return {
             "text": self.buffer.decode("utf-8", "replace"),
@@ -259,12 +262,12 @@ def run_group(
         raise ValueError(message)
     source_files = [
         *sorted((REPO / "src/unstd").rglob("*.py")),
-        *sorted((REPO / "tests/support").glob("*.py")),
+        *sorted((REPO / "tests/support").rglob("*.py")),
         *sorted((CASES if lane == "chaos" else CASES.with_name(lane)).glob("*.py")),
         *sorted(Path(__file__).parent.glob("*.py")),
         *sorted((REPO / "tests/tooling" / lane).glob("*.py")),
         REPO / "tests/conftest.py",
-        REPO / "tests/tooling/inventory.toml",
+        REPO / "tests/tooling/suites/inventory.toml",
     ]
     report = {
         "schema_version": 1,
@@ -366,18 +369,31 @@ def run_group(
                     break
                 time.sleep(0.02)
         finally:
-            if os.name == "posix":
-                with contextlib.suppress(ProcessLookupError):
-                    os.killpg(child.pid, signal.SIGKILL)
-            elif child.poll() is None:
-                child.kill()
-            child.wait(timeout=5)
-            report.update(
-                duration_seconds=round(time.monotonic() - started, 6),
-                worker_returncode=child.returncode,
-                stdout=stdout.finish(),
-                stderr=stderr.finish(),
-            )
+            try:
+                if os.name == "posix":
+                    kill_owned_process_group(child.pid)
+                elif child.poll() is None:
+                    child.kill()
+            except BaseException as error:
+                try:
+                    child.kill()
+                    child.wait(timeout=5)
+                except BaseException as cleanup_error:
+                    error.add_note(f"direct-child cleanup failed: {cleanup_error}")
+                for capture in (stdout, stderr):
+                    try:
+                        capture.finish()
+                    except BaseException as cleanup_error:
+                        error.add_note(f"worker pipe cleanup failed: {cleanup_error}")
+                raise
+            else:
+                child.wait(timeout=5)
+                report.update(
+                    duration_seconds=round(time.monotonic() - started, 6),
+                    worker_returncode=child.returncode,
+                    stdout=stdout.finish(),
+                    stderr=stderr.finish(),
+                )
         try:
             admission = _read(directory / "admission.json")
             report["admission"] = admission

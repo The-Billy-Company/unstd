@@ -11,7 +11,7 @@ import time
 
 import pytest
 
-from tests.support.chaos import ChaosJournal, journal_sink
+from tests.support.chaos.journal import ChaosJournal, journal_sink
 
 
 LANE = os.environ.get("UNSTD_CAMPAIGN_LANE", "chaos")

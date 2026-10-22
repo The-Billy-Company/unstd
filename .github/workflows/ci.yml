@@ -1,4 +1,4 @@
-name: ci
+name: CI
 
 on:
   push:
@@ -18,113 +18,496 @@ concurrency:
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
-  lint:
-    # Style, import order, docstring shape (ruff) and the type contract (mypy,
-    # strict) — neither of which the test suite can observe. `--all-extras` so
-    # mypy resolves the real backends instead of typing the fallbacks alone;
-    # mypy judges against `python_version = "3.12"` from pyproject regardless of
-    # the interpreter running it, so this needs one leg, not the matrix.
-    runs-on: ubuntu-latest
+  static-analysis:
+    name: Static analysis
+    uses: ./.github/workflows/static-analysis.yml
+    permissions:
+      contents: read
+      security-events: write
+
+  supply-chain:
+    name: Supply chain
+    uses: ./.github/workflows/supply-chain.yml
+    permissions:
+      contents: read
+
+  native-rust:
+    name: Rust experiment / ${{ matrix.os }}
+    # Explicit opt-in keeps published/default wheels on the existing C kernels.
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    env:
+      UNSTD_TEXT_RUST: "1"
+      CIBUILDWHEEL: "1"
+      PYTHONMALLOC: debug
+      PYTHONFAULTHANDLER: "1"
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+      - name: Select the stable Rust toolchain
+        run: |
+          rustup toolchain install stable --profile minimal --component rustfmt
+          rustup default stable
+      - name: Install both macOS architectures for universal Python
+        if: runner.os == 'macOS'
+        run: rustup target add aarch64-apple-darwin x86_64-apple-darwin
+      - name: Check Rust formatting
+        run: cargo fmt --manifest-path native/text/Cargo.toml --check
+      - name: Check Rust kernels in debug mode
+        run: cargo test --manifest-path native/text/Cargo.toml --locked --offline
+      - name: Check Rust kernels in release mode
+        run: cargo test --manifest-path native/text/Cargo.toml --locked --offline --release
+      - name: Set up Python
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           enable-cache: false
           version: "latest-known"
           python-version: "3.13"
-      - run: uv sync --locked --all-extras --group dev --python 3.13
-      - run: uv run --no-sync --python 3.13 python -m tests.tooling check
-      - run: uv run --no-sync --python 3.13 python -m tests.tooling.fuzz check
-      - run: uv run --no-sync --python 3.13 python -m tests.tooling.chaos check
-      - run: uv run --no-sync --python 3.13 python -m tests.tooling.concurrency check
-      - run: uv run --python 3.13 ruff check .
-      - run: uv run --python 3.13 ruff format --check .
-      - run: uv run --python 3.13 mypy
+      - name: Build experimental Rust text extension
+        run: uv sync --locked --group dev --python 3.13 --reinstall-package unstd
+      - name: Rust text extension must import
+        run: >-
+          uv run --no-sync python -c
+          "from unstd.text import _text_native; assert 'Rust text kernels' in _text_native.__doc__"
+      - name: Check Rust text compatibility
+        id: tests
+        run: >-
+          uv run --no-sync python -m pytest tests/suites/product/text -q
+          --junitxml=.local/native-rust.xml
+      - name: Summarize Rust compatibility checks
+        if: always() && steps.tests.outcome != 'skipped'
+        shell: bash
+        env:
+          TEST_EXIT: ${{ steps.tests.outcome == 'success' && '0' || '1' }}
+        run: uv run --no-sync python -m tests.tooling.ci report "Rust text compatibility" .local/native-rust.xml --exit-code "$TEST_EXIT"
+      - name: Retain Rust compatibility results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: native-rust-${{ matrix.os }}-${{ github.run_attempt }}
+          path: .local/native-rust.xml
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+
+  lint:
+    name: Quality / Style, types & inventories
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Python & dependency cache
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          enable-cache: auto
+          cache-suffix: quality
+          cache-dependency-glob: |
+            uv.lock
+            pyproject.toml
+          version: "latest-known"
+          python-version: "3.13"
+      - name: Install quality tools & backends
+        run: uv sync --locked --all-extras --group dev --reinstall-package unstd --python 3.13
+      - name: Validate test ownership & CI groups
+        run: uv run --no-sync python -m tests.tooling.ci check
+      - name: Validate fuzz targets & corpus
+        run: uv run --no-sync python -m tests.tooling.fuzz check
+      - name: Validate fault-injection scenarios
+        run: uv run --no-sync python -m tests.tooling.chaos check
+      - name: Validate concurrency scenarios
+        run: uv run --no-sync python -m tests.tooling.concurrency check
+      - name: Check style & imports
+        run: uv run --no-sync ruff check .
+      - name: Check formatting
+        run: uv run --no-sync ruff format --check .
+      - name: Check type contracts
+        shell: bash
+        run: |
+          status=0
+          for platform in linux darwin win32; do
+            pids=()
+            for python in 3.12 3.13 3.14; do
+              uv run --no-sync mypy --python-version "$python" --platform "$platform" --cache-dir ".mypy_cache/$platform-$python" &
+              pids+=("$!")
+            done
+            for pid in "${pids[@]}"; do
+              wait "$pid" || status=1
+            done
+          done
+          exit "$status"
 
   test:
+    name: ${{ matrix.group.name }} / ${{ matrix.environment.name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        # Groups select owned suite paths. Every environment retains full coverage.
+        group:
+          - {id: api, name: API & regressions, shard: "", report: api}
+          - {id: contracts, name: Compatibility & boundaries (1/3), shard: "--shard 1/3", report: contracts-1-of-3}
+          - {id: contracts, name: Compatibility & boundaries (2/3), shard: "--shard 2/3", report: contracts-2-of-3}
+          - {id: contracts, name: Compatibility & boundaries (3/3), shard: "--shard 3/3", report: contracts-3-of-3}
+          - {id: tooling, name: Test tooling & corpus, shard: "", report: tooling}
+          - {id: packaging, name: Packaging & consumers, shard: "", report: packaging}
+        environment:
+          - {id: py312, name: Python 3.12, python: "3.12", sync: "--locked --all-extras", pytest: "--require-extras"}
+          - {id: py313, name: Python 3.13, python: "3.13", sync: "--locked --all-extras", pytest: "--require-extras"}
+          - {id: py314, name: Python 3.14, python: "3.14", sync: "--locked --all-extras", pytest: "--require-extras"}
+          # Floors remain unlocked; --no-sync below preserves lowest-direct.
+          - {id: floors, name: Dependency floors (3.13), python: "3.13", sync: "--all-extras --resolution lowest-direct", pytest: "--require-extras"}
+          - {id: fallback, name: Base install (3.13), python: "3.13", sync: "--locked", pytest: ""}
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Python & dependency cache
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          enable-cache: auto
+          cache-suffix: tests-${{ matrix.environment.id }}-${{ matrix.group.id }}
+          cache-dependency-glob: |
+            uv.lock
+            pyproject.toml
+          version: "latest-known"
+          python-version: ${{ matrix.environment.python }}
+      - name: Install test environment & rebuild local extensions
+        run: uv sync ${{ matrix.environment.sync }} --group dev --reinstall-package unstd --python ${{ matrix.environment.python }}
+      - name: Restore audited lock after installing dependency floors
+        if: matrix.environment.id == 'floors'
+        # Keep lowest-direct packages installed while release/export gates
+        # inspect the canonical highest-resolution lock. Tests use --no-sync.
+        run: git restore --source=HEAD -- uv.lock
+      - name: Show resolved backend versions
+        if: matrix.environment.id == 'floors' || matrix.environment.id == 'fallback'
+        run: uv pip list
+      - name: Prime offline artifact build dependencies
+        if: matrix.group.id == 'packaging'
+        run: uv build --python ${{ matrix.environment.python }} --sdist --wheel --out-dir "$RUNNER_TEMP/unstd-build-cache"
+      - name: Prime canonical artifacts without replacing dependency floors
+        if: matrix.group.id == 'packaging' && matrix.environment.id == 'floors'
+        env:
+          UV_PROJECT_ENVIRONMENT: ${{ runner.temp }}/unstd-canonical-cache
+        run: uv sync --locked --all-extras --no-default-groups --no-install-project --python ${{ matrix.environment.python }}
+      - name: Run ${{ matrix.group.name }}
+        run: uv run --no-sync python -m tests.tooling.ci run ${{ matrix.group.shard }} ${{ matrix.group.id }} -- ${{ matrix.environment.pytest }} -q
+      - name: Retain grouped test results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: tests-${{ matrix.group.report }}-${{ matrix.environment.id }}-${{ github.run_attempt }}
+          path: .local/ci/${{ matrix.group.report }}.xml
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+
+  platforms:
+    # Linux owns the interpreter/dependency matrix. The same public contracts
+    # must hold on every other supported OS; POSIX-only probes name the
+    # capability they skip rather than dropping a module.
+    name: ${{ matrix.group.name }} / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+        group:
+          - {id: api, name: API & regressions, shard: "", report: api}
+          - {id: contracts, name: Compatibility & boundaries (1/3), shard: "--shard 1/3", report: contracts-1-of-3}
+          - {id: contracts, name: Compatibility & boundaries (2/3), shard: "--shard 2/3", report: contracts-2-of-3}
+          - {id: contracts, name: Compatibility & boundaries (3/3), shard: "--shard 3/3", report: contracts-3-of-3}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Python & dependency cache
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          enable-cache: auto
+          cache-suffix: platforms-${{ matrix.os }}-${{ matrix.group.id }}
+          cache-dependency-glob: |
+            uv.lock
+            pyproject.toml
+          version: "latest-known"
+          python-version: "3.13"
+      - name: Install test environment & rebuild local extensions
+        run: uv sync --locked --all-extras --group dev --reinstall-package unstd --python 3.13
+      - name: Run ${{ matrix.group.name }}
+        run: uv run --no-sync python -m tests.tooling.ci run ${{ matrix.group.shard }} ${{ matrix.group.id }} -- --require-extras -q
+      - name: Retain platform test results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: platforms-${{ matrix.group.report }}-${{ matrix.os }}-${{ github.run_attempt }}
+          path: .local/ci/${{ matrix.group.report }}.xml
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+
+  extras:
+    # Each declared extra alone, plus combinations that select different
+    # backends. A lane requires only its own extras; every other backend is
+    # genuinely absent, so fallbacks and missing-extra errors execute for real.
+    name: Partial extras / ${{ matrix.install.name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        install:
+          - {id: serde, name: serde, sync: "--extra serde", pytest: "--require-extra serde"}
+          - {id: ids, name: ids, sync: "--extra ids", pytest: "--require-extra ids"}
+          - {id: crypto, name: crypto, sync: "--extra crypto", pytest: "--require-extra crypto"}
+          - {id: time, name: time without protobuf, sync: "--extra time", pytest: "--require-extra time"}
+          - {id: proto, name: proto without whenever, sync: "--extra proto", pytest: "--require-extra proto"}
+          - {id: model, name: model without msgspec, sync: "--extra model", pytest: "--require-extra model"}
+          - {id: rex, name: rex, sync: "--extra rex", pytest: "--require-extra rex"}
+          - {id: containers, name: containers, sync: "--extra containers", pytest: "--require-extra containers"}
+          - {id: rand, name: rand, sync: "--extra rand", pytest: "--require-extra rand"}
+          - {id: pack, name: pack (audio without soundfile), sync: "--extra pack", pytest: "--require-extra pack"}
+          - {id: text, name: text without NumPy, sync: "--extra text", pytest: "--require-extra text"}
+          - {id: text-numpy, name: text with NumPy, sync: "--extra text --extra rand", pytest: "--require-extra text --require-extra rand"}
+          - {id: audio, name: audio, sync: "--extra audio", pytest: "--require-extra audio"}
+          - {id: toml, name: toml, sync: "--extra toml", pytest: "--require-extra toml"}
+          - {id: yaml, name: yaml, sync: "--extra yaml", pytest: "--require-extra yaml"}
+          - {id: compress, name: compress, sync: "--extra compress", pytest: "--require-extra compress"}
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Python & dependency cache
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          enable-cache: auto
+          cache-suffix: extras-${{ matrix.install.id }}
+          cache-dependency-glob: |
+            uv.lock
+            pyproject.toml
+          version: "latest-known"
+          python-version: "3.13"
+      - name: Install one partial environment & rebuild local extensions
+        run: uv sync --locked ${{ matrix.install.sync }} --group dev --reinstall-package unstd --python 3.13
+      - name: Show resolved backend versions
+        run: uv pip list
+      - name: Run API & regressions
+        run: uv run --no-sync python -m tests.tooling.ci run api -- ${{ matrix.install.pytest }} -q
+      - name: Run Compatibility & boundaries
+        if: ${{ !cancelled() }}
+        run: uv run --no-sync python -m tests.tooling.ci run contracts -- ${{ matrix.install.pytest }} -q
+      - name: Retain partial-extra test results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: extras-${{ matrix.install.id }}-${{ github.run_attempt }}
+          path: |
+            .local/ci/api.xml
+            .local/ci/contracts.xml
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+
+  resources:
+    name: Resource bounds / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Python & dependency cache
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          enable-cache: auto
+          version: "latest-known"
+          python-version: "3.13"
+          cache-suffix: resources
+          cache-dependency-glob: "uv.lock\npyproject.toml\n"
+      - name: Install test environment
+        run: uv sync --locked --all-extras --group dev --python 3.13 --reinstall-package unstd
+      # The suite owns both installed and import-blocked stdlib worker policies.
+      - name: Check memory, cleanup, cache lifetime & depth
+        id: tests
+        run: >-
+          uv run --no-sync python -m tests.tooling run resources --
+          --require-extras -q --junitxml=.local/resources.xml
+      - name: Summarize resource bounds
+        if: always() && steps.tests.outcome != 'skipped'
+        env:
+          TEST_EXIT: ${{ steps.tests.outcome == 'success' && '0' || '1' }}
+        run: uv run --no-sync python -m tests.tooling.ci report "Resource bounds" .local/resources.xml --exit-code "$TEST_EXIT"
+      - name: Retain resource measurements and failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: resources-${{ matrix.os }}-${{ github.run_attempt }}
+          path: .local/resources.xml
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+
+  native:
+    # Optional compiler failures are a consumer fallback, never a reason for
+    # native parity tests to disappear behind importorskip in CI. Serde alone
+    # leaves text's dependency-free implementation under test as well.
+    name: Native safety / Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        # requires-python = ">=3.12" in pyproject.toml — test the whole claimed
-        # range, not just the pinned dev version. A change only exercised on
-        # one interpreter silently drifts to that interpreter's syntax/stdlib
-        # shape (e.g. PEP 758 bare-tuple `except`, 3.13's `batched(strict=)`).
         python-version: ["3.12", "3.13", "3.14"]
+    env:
+      CIBUILDWHEEL: "1"
+      PYTHONMALLOC: debug
+      PYTHONFAULTHANDLER: "1"
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+      - name: Set up Python & dependency cache
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
-          enable-cache: false
+          enable-cache: auto
           version: "latest-known"
           python-version: ${{ matrix.python-version }}
-      - run: uv sync --locked --all-extras --group dev --python ${{ matrix.python-version }}
-      - run: uv build --python ${{ matrix.python-version }} --sdist --wheel --out-dir "$RUNNER_TEMP/unstd-build-cache"
-      - run: uv run --no-sync --python ${{ matrix.python-version }} pytest --require-extras -q
+          cache-suffix: native
+          cache-dependency-glob: "uv.lock\npyproject.toml\n"
+      - name: Install test environment
+        run: uv sync --locked --extra serde --extra crypto --group dev --python ${{ matrix.python-version }} --reinstall-package unstd
+      - name: Every native module must import
+        run: >-
+          uv run --no-sync python -c
+          "import unstd.serde._json_native, unstd.clone._clone_native, unstd.crypto._stream_native, unstd.text._text_native"
+      - name: Native compatibility with the debug allocator
+        id: tests
+        run: >
+          uv run --no-sync python -m pytest tests/suites/product/clone tests/suites/product/text tests/suites/product/serde tests/suites/product/crypto -q --junitxml=.local/native.xml
 
-  floors:
-    # Every extra declares a floor, and a floor is a promise: install this old a
-    # backend and the library still works. Nothing else in this matrix tests it —
-    # `test` resolves the newest of everything, so the floors could be fiction
-    # for years and only a consumer with an older pin would ever find out, as a
-    # resolver error blamed on their own manifest.
-    #
-    # `lowest-direct` takes the oldest version each DIRECT floor admits while
-    # leaving transitives modern, which is the environment a downstream
-    # application actually produces. A failure here means the floor is wrong, not
-    # the code: raise it to the version that works and say so in the changelog.
+      - name: Summarize native safety
+        if: always() && steps.tests.outcome != 'skipped'
+        env:
+          TEST_EXIT: ${{ steps.tests.outcome == 'success' && '0' || '1' }}
+        run: uv run --no-sync python -m tests.tooling.ci report "Native safety" .local/native.xml --exit-code "$TEST_EXIT"
+      - name: Retain native test results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: native-${{ github.run_attempt }}-${{ matrix.python-version }}
+          path: .local/native.xml
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+    timeout-minutes: 15
+  native-sanitizers:
+    name: Native safety / ASan & UBSan / text ${{ matrix.rust-text }} / shard ${{ matrix.shard }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        rust-text: ["0", "1"]
+        shard: [1, 2, 3]
+    env:
+      PYTHONFAULTHANDLER: "1"
+      UNSTD_TEXT_RUST: ${{ matrix.rust-text }}
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+      - name: Select the stable Rust toolchain
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+      - name: Set up Python & dependency cache
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
-          enable-cache: false
+          enable-cache: auto
           version: "latest-known"
           python-version: "3.13"
-      - run: uv sync --all-extras --group dev --python 3.13 --resolution lowest-direct
-      # Which versions the floors admitted — the first thing anyone reading a
-      # failure here needs, and not recoverable from the traceback.
-      - run: uv pip list
-      - run: uv build --python 3.13 --sdist --wheel --out-dir "$RUNNER_TEMP/unstd-build-cache"
-      # `--no-sync` is what makes this job mean anything. A bare `uv run`
-      # re-resolves in the default `highest` mode and quietly reinstalls the
-      # newest of everything first, so the suite would run against the same
-      # environment `test` already covers and pass no matter what the floors say.
-      - run: uv run --no-sync --python 3.13 pytest --require-extras -q
+          cache-suffix: native-sanitizers
+          cache-dependency-glob: "uv.lock\npyproject.toml\n"
+      - name: Install test environment
+        run: uv sync --locked --extra serde --extra crypto --group dev --no-install-project --python 3.13
+      # Stable Rust kernels retain their bounds checks and unit tests. These
+      # sanitizer flags instrument our C modules and the text CPython shim.
+      - name: Build C boundaries with address and undefined behavior checks
+        env:
+          CC: gcc
+          CFLAGS: -O1 -g -fsanitize=address,undefined -fno-omit-frame-pointer
+          LDFLAGS: -fsanitize=address,undefined
+          CIBUILDWHEEL: "1"
+        run: uv pip install --python .venv/bin/python --no-deps --reinstall --editable .
+      - name: Native compatibility under ASan and UBSan
+        id: tests
+        env:
+          # CPython and imported third-party runtimes own process-lifetime
+          # allocations. Bounds, use-after-free and UB checks remain fatal.
+          ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
+          UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
+          PYTHONMALLOC: malloc
+          UNSTD_NATIVE_SANITIZERS: "1"
+        run: |
+          LD_PRELOAD="$(gcc -print-file-name=libasan.so)"
+          export LD_PRELOAD
+          .venv/bin/python -c "import unstd.serde._json_native, unstd.clone._clone_native, unstd.crypto._stream_native, unstd.text._text_native"
+          .venv/bin/python -m pytest tests/suites/product/clone tests/suites/product/text tests/suites/product/serde tests/suites/product/crypto -p tests.tooling.ci.sharding --ci-shard ${{ matrix.shard }}/3 -q --junitxml=.local/native-sanitizers-${{ matrix.shard }}.xml
 
-  test-fallback:
-    # A base install (no optional extras) is a load-bearing, documented contract
-    # on nearly every module: each accelerated backend degrades to a
-    # stdlib-faithful fallback. `test` above runs `--all-extras` on every leg, so
-    # those fallback branches were only ever reached through monkeypatch-forced
-    # fixtures inside the suite. This job takes the real path.
-    #
-    # Which modules can't be collected without their extra is decided by
-    # `tests/conftest.py`, which centralizes module importability probes.
-    # A hardcoded `--ignore` roster here would be a second copy of that
-    # decision, and the copy that lives in CI is the one nobody updates.
+      - name: Summarize sanitizer checks
+        if: always() && steps.tests.outcome != 'skipped'
+        env:
+          TEST_EXIT: ${{ steps.tests.outcome == 'success' && '0' || '1' }}
+        run: uv run --no-sync python -m tests.tooling.ci report "Native sanitizers" .local/native-sanitizers-${{ matrix.shard }}.xml --exit-code "$TEST_EXIT"
+      - name: Retain native test results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: native-sanitizers-${{ matrix.rust-text }}-${{ matrix.shard }}-${{ github.run_attempt }}
+          path: .local/native-sanitizers-${{ matrix.shard }}.xml
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+    timeout-minutes: 15
+  result:
+    name: CI / Required groups
+    if: always()
+    needs: [static-analysis, supply-chain, lint, test, platforms, extras, resources, native, native-rust, native-sanitizers]
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
-        with:
-          enable-cache: false
-          version: "latest-known"
-          python-version: "3.13"
-      - run: uv sync --locked --group dev --python 3.13
-      - run: uv build --python 3.13 --sdist --wheel --out-dir "$RUNNER_TEMP/unstd-build-cache"
-      # A diagnostic, not a gate — the zero-closure claim is asserted offline by
-      # `tests/suites/assurance/gates/packaging/test_package.py`. A failure that reproduces
-      # only on the fallback leg is nearly unreadable without knowing which
-      # backends were actually present when it ran (the test tooling drags in a
-      # couple of its own, e.g. hypothesis → sortedcontainers).
-      - run: uv pip list
-      - run: uv run --python 3.13 pytest -q
+      - name: Require every group to pass
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: |
+          python - <<'PYTHON'
+          import json, os
+          results = json.loads(os.environ["RESULTS"])
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as summary:
+              summary.write("| Required group | Result |\n| --- | --- |\n")
+              for name, job in results.items():
+                  summary.write(f"| {name} | {job['result']} |\n")
+          failed = [name for name, job in results.items() if job["result"] != "success"]
+          if failed:
+              raise SystemExit("Required groups did not pass: " + ", ".join(failed))
+          PYTHON

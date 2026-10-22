@@ -7,10 +7,9 @@ The remaining bytes are passed unchanged to both Codec and raw msgspec codecs.
 Selector bits also choose deterministic/sorted/default encoding. Valid generated
 rows derive at most 128 payload bytes, exercising encode, decode and decode_or;
 all raw rejection classes and diagnostics must equal msgspec's own. DecodeError
-becomes a default; malformed UTF-8 can raise UnicodeDecodeError and must escape
-decode_or unchanged in type and diagnostics. A reviewed
-custom-type hook additionally proves decode_or preserves non-DecodeError caller
-exceptions with exact identity. No arbitrary schema or hook code is evaluated.
+and UnicodeError become defaults. A reviewed custom-type hook additionally proves
+decode_or preserves caller RuntimeError exceptions with exact identity. No
+arbitrary schema or hook code is evaluated.
 """
 
 # Fuzz entry points run without pytest; inspect exact rejection objects directly.
@@ -92,26 +91,17 @@ def _decode(
     default = object()
     try:
         expected = decoder.decode(raw)
-    except (msgspec.DecodeError, UnicodeDecodeError) as expected_error:
+    except (msgspec.DecodeError, UnicodeError) as expected_error:
         try:
             codec.decode(raw)
-        except (msgspec.DecodeError, UnicodeDecodeError) as actual_error:
+        except (msgspec.DecodeError, UnicodeError) as actual_error:
             assert type(actual_error) is type(expected_error)
             assert actual_error.args == expected_error.args
         else:
             msg = "Codec accepted payload rejected by raw msgspec"
             raise AssertionError(msg)
-        if isinstance(expected_error, msgspec.DecodeError):
-            assert codec.decode_or(raw, default) is default
-            assert codec.decode_or(raw) is None
-        else:
-            try:
-                codec.decode_or(raw, default)
-            except UnicodeDecodeError as actual_error:
-                assert actual_error.args == expected_error.args
-            else:
-                msg = "Codec.decode_or swallowed a non-DecodeError UTF-8 failure"
-                raise AssertionError(msg)
+        assert codec.decode_or(raw, default) is default
+        assert codec.decode_or(raw) is None
     else:
         actual = codec.decode(raw)
         assert type(actual) is type(expected)
@@ -145,8 +135,8 @@ def fuzz(data: bytes) -> None:
     assert codec.encode(generated) == expected
     assert len(expected) <= 4096
     _decode(codec, decoder, encoder, expected)
-    # DecodeError is the entire suppression contract. A caller hook failure must
-    # escape unchanged rather than becoming a cache miss or a validation error.
+    # A caller RuntimeError is outside the decode/Unicode suppression contract
+    # and must escape unchanged rather than becoming a cache miss.
     try:
         _HOOK_CODEC.decode_or(b'"raise"', object())
     except _HookError as error:

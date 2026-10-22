@@ -65,7 +65,7 @@ def test_mutable_and_nonstdlib_inputs_bypass_native_decoder(
 
 @pytest.mark.parametrize("container", [str, bytes])
 def test_source_type_checks_do_not_call_metaclass_equality(
-    container: type[str] | type[bytes],
+    container: type[str | bytes],
 ) -> None:
     class Equality(type):
         def __eq__(cls, other: object) -> bool:

@@ -511,7 +511,7 @@ def test_base_install_binds_the_exact_stdlib_surface() -> None:
         raw = gzipx.compress(payload, mtime=0)
         assert gzip.decompress(raw) == payload
         stream = io.BytesIO()
-        with gzipx.open(stream, "wt", encoding="utf-8") as handle:
+        with gzipx.open(stream, "wt", encoding="utf-8", newline="\\n") as handle:
             handle.write("café\\n")
         assert not stream.closed
         assert gzip.decompress(stream.getvalue()) == "café\\n".encode()

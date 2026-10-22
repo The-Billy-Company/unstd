@@ -1,0 +1,6 @@
+"""Optional bounded exact-string scoring kernels."""
+
+from types import NotImplementedType
+
+def distance(a: object, b: object, /) -> int | NotImplementedType: ...
+def jaro(a: object, b: object, /) -> float | NotImplementedType: ...

@@ -19,27 +19,27 @@ from uuid import RFC_4122, UUID
 
 import pytest
 
-from tests.support.backends import require_backend
-from tests.support.chaos import ordered
-from tests.support.concurrency_ids import (
+from tests.support.chaos.journal import ordered
+from tests.support.concurrency.ids import (
     BASE_MS,
     TAIL,
     fallback_model,
     validate_history,
 )
-from tests.support.process import run_python
+from tests.support.environment.backends import require_backend
+from tests.support.environment.process import run_python
 
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from tests.support.chaos import ChaosJournal
+    from tests.support.chaos.journal import ChaosJournal
 
 
 def _run(scenario: str, config: dict, directory: Path, journal: ChaosJournal) -> dict:
     journal.record("ids.plan", scenario=scenario, config=config)
     completed = run_python(
-        "from tests.support.concurrency_ids import main; main()",
+        "from tests.support.concurrency.ids import main; main()",
         (scenario, json.dumps(config)),
         cwd=directory,
         timeout=18,

@@ -1,7 +1,7 @@
 """Adversarial + parity tests for ``unstd.clone`` — structural deep clone.
 
 The walker is pure stdlib, so the core runs in every environment; the pydantic
-and ``msgspec.Struct`` shapes are proven under ``pytest.importorskip``.
+and ``msgspec.Struct`` shapes use the shared optional-backend policy.
 
 Independence is asserted adversarially: we mutate the clone and assert the
 original is untouched *and* that the two genuinely diverged — a shallow-copy bug
@@ -16,9 +16,12 @@ import copyreg
 import dataclasses
 import datetime as dt
 import enum
+from typing import Self
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import pytest
 
+from tests.support.environment.backends import require_backend
 from unstd import clone
 
 
@@ -156,6 +159,152 @@ def test_immutable_leaves_are_shared_like_deepcopy_shares_atoms() -> None:
     assert cloned["t"] is when
 
 
+class _MutableTimezone(dt.tzinfo):
+    def __init__(self) -> None:
+        self.hours = [1]
+
+    def utcoffset(self, _value: dt.datetime | None) -> dt.timedelta:
+        return dt.timedelta(hours=self.hours[-1])
+
+    def dst(self, _value: dt.datetime | None) -> dt.timedelta:
+        return dt.timedelta(0)
+
+
+@dataclasses.dataclass
+class _TemporalBox:
+    value: dt.datetime | dt.time
+
+
+@pytest.mark.parametrize("kind", [dt.datetime, dt.time])
+@pytest.mark.parametrize("operation", ["deep", "asdict"])
+def test_custom_timezone_state_is_independent_in_datetime_and_time(
+    kind: type[dt.datetime | dt.time], operation: str
+) -> None:
+    """An immutable temporal value can still contain a mutable timezone."""
+    zone = _MutableTimezone()
+    original = (
+        dt.datetime(2026, 10, 21, 12, 30, tzinfo=zone, fold=1)
+        if kind is dt.datetime
+        else dt.time(12, 30, tzinfo=zone, fold=1)
+    )
+    cloned = (
+        clone.deep(original)
+        if operation == "deep"
+        else clone.asdict(_TemporalBox(original))["value"]
+    )
+    expected = _stdlib_copy.deepcopy(original)
+
+    assert cloned == expected
+    assert cloned.fold == expected.fold == 1
+    assert cloned is not original
+    assert cloned.tzinfo is not zone
+    assert cloned.tzinfo.hours is not zone.hours
+    cloned.tzinfo.hours.append(2)
+    assert zone.hours == [1]
+    assert original.utcoffset() == dt.timedelta(hours=1)
+    assert cloned.utcoffset() == dt.timedelta(hours=2)
+
+
+@pytest.mark.parametrize("kind", [dt.datetime, dt.time])
+def test_custom_timezone_is_copied_through_every_structural_shortcut(
+    kind: type[dt.datetime | dt.time],
+) -> None:
+    """Container values, keys, sets, and dataclass fields all copy timezone state."""
+    zone = _MutableTimezone()
+    value = (
+        dt.datetime(2026, 10, 21, tzinfo=zone)
+        if kind is dt.datetime
+        else dt.time(12, tzinfo=zone)
+    )
+    original = {
+        "value": value,
+        "list": [value],
+        "tuple": (value,),
+        "set": {value},
+        "frozenset": frozenset({value}),
+        "record": _TemporalBox(value),
+        value: "key",
+    }
+    cloned = clone.deep(original)
+    values = [
+        cloned["value"],
+        cloned["list"][0],
+        cloned["tuple"][0],
+        next(iter(cloned["set"])),
+        next(iter(cloned["frozenset"])),
+        cloned["record"].value,
+        next(key for key in cloned if type(key) is kind),
+    ]
+    for copied in values:
+        assert copied == value
+        assert copied is not value
+        assert copied.tzinfo is not zone
+        assert copied.tzinfo.hours is not zone.hours
+
+
+@pytest.mark.parametrize("kind", [dt.datetime, dt.time])
+def test_custom_timezone_deepcopy_protocol_is_preserved(
+    kind: type[dt.datetime | dt.time],
+) -> None:
+    """Temporal reconstruction delegates to a custom timezone's copy protocol."""
+    calls = []
+
+    class CustomTimezone(_MutableTimezone):
+        def __deepcopy__(self, memo: dict[int, object]) -> dt.timezone:
+            calls.append(memo)
+            return dt.timezone(dt.timedelta(hours=8))
+
+    zone = CustomTimezone()
+    original = (
+        dt.datetime(2026, 10, 21, tzinfo=zone)
+        if kind is dt.datetime
+        else dt.time(12, tzinfo=zone)
+    )
+    expected = _stdlib_copy.deepcopy(original)
+    calls.clear()
+    cloned = clone.deep(original)
+    assert len(calls) == 1
+    assert cloned == expected
+    assert cloned.utcoffset() == dt.timedelta(hours=8)
+
+
+@pytest.mark.parametrize("kind", [dt.datetime, dt.time])
+@pytest.mark.parametrize("zone_kind", ["naive", "utc", "fixed", "zoneinfo"])
+def test_safe_temporal_values_keep_the_fast_identity_path(
+    kind: type[dt.datetime | dt.time],
+    zone_kind: str,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Naive values and exact immutable timezone types never invoke deepcopy."""
+    from unstd.clone import structural
+
+    if zone_kind == "zoneinfo":
+        try:
+            zone = ZoneInfo("UTC")
+        except ZoneInfoNotFoundError:
+            pytest.skip("IANA timezone data not installed")
+    else:
+        zone = {
+            "naive": None,
+            "utc": dt.UTC,
+            "fixed": dt.timezone(dt.timedelta(hours=3)),
+        }[zone_kind]
+    value = (
+        dt.datetime(2026, 10, 21, tzinfo=zone)
+        if kind is dt.datetime
+        else dt.time(12, tzinfo=zone)
+    )
+
+    def refuse(_obj: object, _memo: object = None) -> object:
+        pytest.fail("safe immutable temporal values must not invoke deepcopy")
+
+    monkeypatch.setattr(structural._stdlib, "deepcopy", refuse)
+    assert clone.deep(value) is value
+    assert clone.deep([value])[0] is value
+    assert clone.deep(_TemporalBox(value)).value is value
+    assert clone.asdict(_TemporalBox(value))["value"] is value
+
+
 def test_shared_reference_is_cloned_twice() -> None:
     """The documented divergence: aliasing is not preserved (deepcopy's memo is not kept)."""
     inner = [1]
@@ -259,7 +408,7 @@ def test_dataclass_with_pickle_constructor_arguments_keeps_its_protocol() -> Non
     class WithNewArgs:
         items: list[int]
 
-        def __new__(cls, items: list[int]) -> WithNewArgs:
+        def __new__(cls, items: list[int]) -> Self:
             return super().__new__(cls)
 
         def __getnewargs__(self) -> tuple[list[int]]:
@@ -310,7 +459,7 @@ def test_non_json_types_survive_unmangled() -> None:
 
 def test_struct_clone_is_independent_and_runs_post_init_like_deepcopy() -> None:
     """Struct rebuilds through its own reducer, so ``__post_init__`` fires as under deepcopy."""
-    msgspec = pytest.importorskip("msgspec")
+    msgspec = require_backend("msgspec")
     inits: list[int] = []
 
     class Point(msgspec.Struct, kw_only=True):
@@ -332,7 +481,7 @@ def test_struct_clone_is_independent_and_runs_post_init_like_deepcopy() -> None:
 
 def test_model_clone_matches_model_copy_deep() -> None:
     """The walker mirrors ``BaseModel.__deepcopy__``: fields, extras, private attrs, fields-set."""
-    pydantic = pytest.importorskip("pydantic")
+    pydantic = require_backend("pydantic")
 
     class Inner(pydantic.BaseModel):
         tags: list[str]
@@ -360,8 +509,8 @@ def test_model_clone_matches_model_copy_deep() -> None:
 
 def test_model_private_attributes_filter_undefined_and_clone_values() -> None:
     """Private attributes are filtered and copied in the same way as pydantic."""
-    pydantic = pytest.importorskip("pydantic")
-    pydantic_core = pytest.importorskip("pydantic_core")
+    pydantic = require_backend("pydantic")
+    pydantic_core = require_backend("pydantic_core")
 
     class Model(pydantic.BaseModel):
         _ready: list[int] = pydantic.PrivateAttr(default_factory=lambda: [1])
@@ -380,7 +529,7 @@ def test_model_private_attributes_filter_undefined_and_clone_values() -> None:
 @pytest.mark.parametrize("custom_mapping", [False, True])
 def test_model_private_copy_hooks_see_a_snapshot(custom_mapping: bool) -> None:
     """A private value's copy hook can mutate the original private attribute mapping."""
-    pydantic = pytest.importorskip("pydantic")
+    pydantic = require_backend("pydantic")
 
     class Model(pydantic.BaseModel):
         _cache: object = pydantic.PrivateAttr()
@@ -410,7 +559,7 @@ def test_msgspec_custom_reducers_keep_their_copy_protocol(
     protocol: str, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """Registered reducers and both reducer methods take precedence over the fast path."""
-    msgspec = pytest.importorskip("msgspec")
+    msgspec = require_backend("msgspec")
 
     class Point(msgspec.Struct):
         x: int

@@ -24,16 +24,15 @@ produces (compact UTF-8, no inter-token whitespace) and ``decode`` validates aga
 the schema exactly as msgspec does. The only added surface is :meth:`Codec.decode_or`,
 which encodes the "malformed payload → cache miss" convention every Redis/HTTP cache
 reader shares: catch ``msgspec.DecodeError`` (``ValidationError`` is a subclass, so a
-typed-wrong field is caught too) and return a default; any *other* exception
-propagates untouched.
+typed-wrong field is caught too) and the ``UnicodeError`` msgspec raises for
+non-UTF-8 string content, and return a default; any *other* exception propagates
+untouched (msgspec already wraps hook ``ValueError``/``TypeError`` as validation).
 
-:func:`float_enc_hook` is the shared ``enc_hook`` for structs whose numeric values
-arrive as non-native scalars — ``numpy`` ``float32``/``float64``, ``Decimal`` — which
-msgspec routes to ``enc_hook`` because it dispatches on the *exact* type. It coerces
-anything ``float()``-able to ``float`` (so a numpy-scalar-bearing struct serializes
-identically to one built from native ``float``) and raises on a genuinely
-unencodable value, so a nan-in-the-map bug surfaces rather than silently corrupting
-the wire.
+:func:`float_enc_hook` handles numeric scalars that msgspec does not encode
+natively, including ``numpy.float32``/``float64``. It coerces anything
+``float()``-able to ``float`` and raises on an unsupported value. Types msgspec
+already supports bypass the hook: ``Decimal`` uses ``decimal_format`` instead,
+which defaults to JSON strings; choose ``"number"`` for numeric output.
 
 Every other msgspec constructor knob is forwarded straight through, not
 reinvented: ``order`` gives the typed path the same canonical-bytes capability
@@ -74,7 +73,12 @@ __all__ = [
 
 
 def float_enc_hook(obj: object) -> float:
-    """Coerce a non-native numeric scalar (numpy ``float32``/``float64``, ``Decimal``) to ``float``. msgspec dispatches on the *exact* type — routing any ``float`` subclass here — so anything ``float()``-able is accepted and anything else raises."""
+    """Coerce an unsupported numeric scalar to ``float``.
+
+    msgspec calls this hook only for types it cannot encode natively, such as
+    numpy float scalars. Decimal encoding is controlled by ``decimal_format``
+    and bypasses this hook. Direct calls accept any ``SupportsFloat`` value.
+    """
     if isinstance(obj, SupportsFloat):
         return float(obj)
     msg = f"unencodable value of type {type(obj).__name__}"
@@ -96,7 +100,7 @@ class Codec[T]:
     encode: Callable[[T], bytes]
     """Serialize a value to compact UTF-8 JSON bytes."""
     decode: Callable[[bytes | str], T]
-    """Decode + validate into a ``T``; raises ``msgspec.DecodeError`` on a malformed or schema-invalid payload."""
+    """Decode + validate into a ``T``; raises ``msgspec.DecodeError`` on a malformed or schema-invalid payload (``UnicodeError`` for non-UTF-8 string content, exactly as msgspec does)."""
 
     def __init__(
         self,
@@ -137,8 +141,8 @@ class Codec[T]:
         self.decode = decoder.decode
 
     def decode_or(self, raw: bytes | str, default: T | None = None) -> T | None:
-        """Decode ``raw``, or return ``default`` when it is malformed / schema-invalid (the "malformed → cache miss" convention). Only ``msgspec.DecodeError`` (``ValidationError`` included) is swallowed; any other exception propagates."""
+        """Decode ``raw``, or return ``default`` when it is malformed / schema-invalid (the "malformed → cache miss" convention). Only ``msgspec.DecodeError`` (``ValidationError`` included) and the ``UnicodeError`` msgspec raises for non-UTF-8 payload text are swallowed; any other exception propagates."""
         try:
             return self.decode(raw)
-        except msgspec.DecodeError:
+        except (msgspec.DecodeError, UnicodeError):
             return default

@@ -9,9 +9,10 @@ from packaging.requirements import Requirement
 from packaging.utils import canonicalize_name
 import pytest
 
-from tests.support.anchors import REPO_ROOT
-from tests.support.packaging import (
+from tests.support.environment.anchors import REPO_ROOT
+from tests.support.packaging.artifacts import (
     CONSUMER_PROVENANCE,
+    _quarantine_args,
     create_consumer,
     install_extra_closure,
 )
@@ -20,7 +21,7 @@ from tests.support.packaging import (
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from tests.support.packaging import Artifacts
+    from tests.support.packaging.artifacts import Artifacts
 
 
 with (REPO_ROOT / "pyproject.toml").open("rb") as _manifest:
@@ -49,6 +50,24 @@ _BACKEND_MODULES = {
     "ruamel-yaml": "ruamel.yaml",
     "zlib-ng": "zlib_ng",
 }
+
+
+def test_isolated_commands_preserve_the_frozen_resolver_policy(tmp_path: Path) -> None:
+    (tmp_path / "pyproject.toml").write_text(
+        '[tool.uv]\nexclude-newer = "P3D"\n'
+        "[tool.uv.exclude-newer-package]\n"
+        'example = "P1D"\nengine = false\n',
+        encoding="utf-8",
+    )
+    assert _quarantine_args(tmp_path) == [
+        "--exclude-newer",
+        "P3D",
+        "--exclude-newer-package",
+        "engine=false",
+        "--exclude-newer-package",
+        "example=P1D",
+    ]
+
 
 _EXTRA_CASES = {
     "serde": """
@@ -95,6 +114,23 @@ import blake3
 from unstd.crypto import digest, token
 assert digest.blake3 is blake3.blake3
 assert digest.hex(b'') == 'af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262'
+native_absorb = digest._native_absorb
+native_calls = []
+if native_absorb is not None:
+    from unstd.crypto import _stream_native
+    assert native_absorb is _stream_native.absorb
+    def observed_absorb(hasher, chunks):
+        native_calls.append(type(chunks))
+        return native_absorb(hasher, chunks)
+    digest._native_absorb = observed_absorb
+chunks = [bytes(range(251))] * 1024
+stream = digest.Stream(chunks)
+assert stream.raw() == blake3.blake3(b''.join(chunks)).digest()
+assert stream.update(memoryview(b'suffix')).raw() == blake3.blake3(b''.join(chunks) + b'suffix').digest()
+assert digest.Stream(iter(chunks)).hex() == digest.Stream(tuple(chunks)).hex()
+if native_absorb is not None:
+    assert native_calls == [list, tuple]
+    digest._native_absorb = native_absorb
 key = bytes(range(32))
 claims = b'{"subject":"installed"}'
 assert token.mac_raw(key, claims) == blake3.blake3(claims, key=key).digest()
@@ -154,6 +190,9 @@ match = pattern.fullmatch('item123')
 assert isinstance(match, irgx.Match)
 assert match.group() == 'item123' and match.span() == (0, 7)
 assert pattern.fullmatch('item') is None
+strict = rex.compile_linear('[a-z]+[0-9]+')
+assert strict.fullmatch('item123').span() == (0, 7)
+assert rex.compile_faithful('a$').search('a\\n').span() == (0, 1)
 """,
     "containers": """
 import immutables, sortedcontainers
@@ -170,7 +209,7 @@ old = containers.Map({'a': 1}); new = old.set('a', 2)
 assert old['a'] == 1 and new['a'] == 2
 """,
     "rand": """
-import numpy
+import numpy, random
 from unstd import rand
 from unstd.rand import draw
 assert rand.HAVE_NUMPY is True
@@ -182,6 +221,11 @@ assert numpy.array_equal(first, second)
 assert bool(numpy.all((first >= 0) & (first < 1)))
 assert isinstance(rand.ints(4, 1, 2), numpy.ndarray)
 assert rand.choices(['only'], 3) == ['only', 'only', 'only']
+explicit = rand.Generator(173)
+reference = random.Random(173)
+assert explicit.backend == 'stdlib'
+assert explicit.floats(3) == [reference.uniform(0.0, 1.0) for _ in range(3)]
+assert isinstance(rand.Generator(173, backend='numpy').floats(3), numpy.ndarray)
 """,
     "pack": """
 import numpy, struct
@@ -193,6 +237,13 @@ values = binpack.unpack_array('>i2', wire)
 assert isinstance(values, numpy.ndarray)
 assert values.tolist() == [1, -2, 300]
 assert values.base is wire
+assert binpack.unpack_array_portable('>i2', wire) == [1, -2, 300]
+try:
+    binpack.pack_array_portable('u1', [1.9])
+except struct.error:
+    pass
+else:
+    raise AssertionError('portable packing silently truncated a float')
 """,
     "clone": """
 from dataclasses import dataclass
@@ -214,6 +265,9 @@ assert fuzz.ratio('abcd', 'abdc') == 0.75
 assert fuzz.distance('kitten', 'sitting') == 3
 assert fuzz.extract('needle', ['other', 'needle'], limit=1) == [('needle', 1.0)]
 assert fuzz.cdist(['same'], ['same', 'xxxx']) == [[1.0, 0.0]]
+assert fuzz.indel_ratio('abcbc', 'bcabc') == 0.8
+assert fuzz.difflib_ratio('abcbc', 'bcabc') == 0.6
+assert fuzz.extract('abcbc', ['bcabc'], scorer=fuzz.difflib_ratio) == [('bcabc', 0.6)]
 """,
     "audio": """
 import io, numpy, soundfile, struct, wave

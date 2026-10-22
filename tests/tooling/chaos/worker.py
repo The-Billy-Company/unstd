@@ -24,7 +24,7 @@ def _write(path, data):
 
 
 def _backend_evidence():
-    from tests.support.chaos import BLOCKED_BACKENDS
+    from tests.support.chaos.journal import BLOCKED_BACKENDS
 
     distributions = {
         "uuid_utils": "uuid-utils",
@@ -174,7 +174,7 @@ def main():
         OPENBLAS_NUM_THREADS="1",
         OMP_NUM_THREADS="1",
     )
-    from tests.support.chaos import apply_backend_policy
+    from tests.support.chaos.journal import apply_backend_policy
 
     apply_backend_policy()
     _write(

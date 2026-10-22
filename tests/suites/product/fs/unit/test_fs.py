@@ -115,14 +115,12 @@ def test_atomic_write_preserves_existing_file_mode(tmp_path: Path) -> None:
 
 @pytest.mark.skipif(sys.platform == "win32", reason="POSIX permission bits")
 def test_atomic_write_new_file_respects_umask(tmp_path: Path) -> None:
-    """A brand-new destination gets the umask-respecting mode a plain ``open()``
-    would produce, not ``mkstemp``'s ``0o600`` scratch-file default.
-    """
+    """New atomic data remains owner-only even when umask permits public reads."""
     old_umask = os.umask(0o022)
     try:
         dest = tmp_path / "fresh.txt"
         fs.atomic_write(dest, "hello")
-        assert stat.S_IMODE(dest.stat().st_mode) == 0o644
+        assert stat.S_IMODE(dest.stat().st_mode) == 0o600
     finally:
         os.umask(old_umask)
 

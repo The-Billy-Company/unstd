@@ -2,7 +2,7 @@
 
 A harness nobody checks is a harness that reports whatever it feels like, and the
 failure is invisible: a broken timer still prints plausible microseconds. So the
-measurement primitive is held to a known cost with a synthetic sleep, and the
+measurement primitive is held to known costs with an independent virtual clock, and the
 parts that decide *whether a claim passed* — the equivalence audit, the skip
 rule, and the one-way floor ratchet — are exercised directly, since those are
 what a green run actually rests on.
@@ -12,12 +12,13 @@ from __future__ import annotations
 
 import json
 import time
+from types import SimpleNamespace
 from typing import TYPE_CHECKING, Any
 
 import pytest
 
 from bench import cases as case_mod
-from bench import report
+from bench import report, timing
 from bench.__main__ import main
 from bench.cases import Case
 from bench.timing import measure
@@ -30,16 +31,30 @@ if TYPE_CHECKING:
 # --------------------------------------------------------------- timing
 
 
-@pytest.mark.perf
-def test_measure_recovers_a_known_cost() -> None:
-    """A callable that sleeps 200 µs must be reported at roughly 200 µs.
+@pytest.mark.parametrize("cost_ns", [200, 200_000, 2_000_000, 300_000_000])
+def test_measure_recovers_a_known_cost(
+    monkeypatch: pytest.MonkeyPatch, cost_ns: int
+) -> None:
+    """Known elapsed work must be divided by calls, independent of scheduling."""
+    elapsed = 0
+    calls = 0
 
-    The bound is loose on purpose — a shared laptop cannot promise better — but
-    it is tight enough to catch a wrong divisor, which is the bug that makes a
-    benchmark harness confidently lie.
-    """
-    got = measure(lambda: time.sleep(0.0002), rounds=3)
-    assert 150_000 < got.per_op_ns < 600_000
+    def work() -> None:
+        nonlocal elapsed, calls
+        elapsed += cost_ns
+        calls += 1
+
+    # Replace only the timer used by the instrument. The callable independently
+    # advances elapsed work, covering cheap and over-budget batches without
+    # assuming that an OS scheduler wakes a 200us sleep within 600us.
+    monkeypatch.setattr(
+        timing, "time", SimpleNamespace(perf_counter_ns=lambda: elapsed)
+    )
+    got = measure(work, rounds=3)
+    assert calls > 1
+    assert got.per_op_ns == cost_ns
+    assert got.spread == 0
+    assert got.rounds >= 1
 
 
 @pytest.mark.perf

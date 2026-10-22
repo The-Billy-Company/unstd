@@ -1,0 +1,16 @@
+# Structural cloning contracts
+
+Contracts for `unstd.clone`: value and type fidelity, mutation isolation, copy protocols, and optional native traversal.
+
+- [unit/](unit/README.md): API, class admission and lifetime, copy-hook failures, recursion-limited workers, and native ownership contracts.
+- [properties/](properties/README.md): generated mixed-tree, model/struct, native agreement, and dataclass conversion laws.
+
+Core contracts use the stdlib. Pydantic and msgspec cases skip locally when absent and fail under `--require-extras`; compiled-extension cases skip when the extension is not built.
+
+Run from the repository root:
+
+```console
+uv run --no-sync pytest tests/suites/product/clone -q
+```
+
+See [the module documentation](../../../../src/unstd/clone/README.md) for the public contract and [the test guide](../../../README.md) for environment setup.

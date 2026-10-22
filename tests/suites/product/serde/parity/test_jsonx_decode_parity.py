@@ -176,7 +176,7 @@ def test_binary_encoding_detection_matches_stdlib(
     encoding: str,
     bom: bytes,
     with_bom: bool,
-    container: type[bytes] | type[bytearray],
+    container: type[bytes | bytearray],
     document: str,
 ) -> None:
     encoded = document.encode(encoding)

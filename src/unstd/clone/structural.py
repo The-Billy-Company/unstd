@@ -8,8 +8,9 @@ none of that generality, so :func:`deep` walks it with exact-type dispatch inste
 
 - **Leaves never pay a call.** The container comprehensions test each child's
   exact type inline and return atoms (``str``/``int``/``float``/``bool``/``None``/
-  ``bytes``/the immutable ``datetime`` values …) as-is, the same objects
-  ``deepcopy`` itself returns for them.
+  ``bytes``/immutable date and duration values …) as-is. Datetimes and times
+  also stay shared when their timezone is absent or an exact immutable stdlib
+  type; custom timezones retain ``deepcopy``'s copy protocol.
 - **Data classes are rebuilt the way ``deepcopy`` rebuilds them**, with the walker
   in place of the recursive ``deepcopy``: a plain dataclass is ``cls.__new__`` plus
   its walked ``__dict__`` (what ``object.__reduce_ex__(4)`` reconstructs to); a
@@ -35,7 +36,9 @@ deep-copied — without ``asdict``'s ``fields()`` call per instance and
 walker does not (namedtuples, ``dict``/``list``/``tuple`` subclasses) hand the
 whole call back to the stdlib, so the result is always ``dataclasses.asdict``'s.
 
-Pure stdlib: no extra is needed. The ``copy``/``deepcopy`` re-exports keep a file
+No extra is needed. An optional bundled C walker accelerates bounded exact
+dict/list/tuple trees; other shapes retain this Python implementation. The
+``copy``/``deepcopy`` re-exports keep a file
 migrating off ``import copy`` working after a one-line import swap.
 """
 
@@ -51,6 +54,14 @@ import sys
 import types
 from typing import Any
 import weakref
+from zoneinfo import ZoneInfo
+
+
+_native_clone: Callable[[Any], Any] | None
+try:
+    from unstd.clone._clone_native import clone as _native_clone
+except ImportError:
+    _native_clone = None
 
 
 copy = _stdlib.copy
@@ -79,15 +90,17 @@ _ATOMS: frozenset[type] = frozenset(
         types.NotImplementedType,
         weakref.ref,
         _dt.date,
-        _dt.time,
-        _dt.datetime,
         _dt.timedelta,
         _dt.timezone,
     }
 )
+# A datetime/time is immutable, but a caller's tzinfo can own mutable state.
+# Admit only exact immutable timezone types; subclasses keep their copy hooks.
+_TIMEZONES = frozenset({type(None), _dt.timezone, ZoneInfo})
 
 type _Clone = Callable[[Any], Any]
-_NODES: dict[type, _Clone | None] = {}
+# Admission metadata must not keep dynamically generated classes alive.
+_NODES: weakref.WeakKeyDictionary[type, _Clone | None] = weakref.WeakKeyDictionary()
 
 
 def _walk(o: Any) -> Any:
@@ -105,6 +118,8 @@ def _walk(o: Any) -> Any:
         return tuple([v if type(v) in _ATOMS else _walk(v) for v in o])
     if t in _ATOMS:
         return o
+    if t is _dt.datetime or t is _dt.time:
+        return o if type(o.tzinfo) in _TIMEZONES else _stdlib.deepcopy(o)
     if t is set:
         return {v if type(v) in _ATOMS else _walk(v) for v in o}
     if t is frozenset:
@@ -242,15 +257,22 @@ def deep[T](obj: T) -> T:
     the source. Unlike ``deepcopy``, an object reached twice is cloned twice; a
     cyclic graph falls back to ``deepcopy`` whole.
     """
-    if type(obj) in _ATOMS:
+    kind = type(obj)
+    if kind in _ATOMS:
         return obj
     try:
+        if _native_clone is not None and (
+            kind is dict or kind is list or kind is tuple
+        ):
+            cloned = _native_clone(obj)
+            if cloned is not NotImplemented:
+                return cloned  # type: ignore[no-any-return]
         return _walk(obj)  # type: ignore[no-any-return]
     except RecursionError:
         return _stdlib.deepcopy(obj)
 
 
-_FIELDS: dict[type, tuple[str, ...]] = {}
+_FIELDS: weakref.WeakKeyDictionary[type, tuple[str, ...]] = weakref.WeakKeyDictionary()
 
 
 class _DeferError(Exception):

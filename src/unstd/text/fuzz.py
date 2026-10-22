@@ -1,62 +1,32 @@
-"""Drop-in accelerated fuzzy string similarity — rapidfuzz under a stdlib-``difflib``-faithful surface.
-
-The stdlib way to score "how alike are two strings" is
-``difflib.SequenceMatcher(None, a, b).ratio()`` — a pure-Python O(n·m)
-implementation of the Ratcliff-Obershelp *gestalt* pattern-matching algorithm
-(Ratcliff & Metzener, *Dr. Dobb's Journal*, 1988). ``rapidfuzz`` (Max Bachmann,
-https://github.com/rapidfuzz/RapidFuzz) computes the same class of score with a
-bit-parallel C++/SIMD Indel kernel — an order of magnitude faster on the hot
-matching path.
+"""String similarity with optional acceleration and explicit stable algorithms.
 
     from unstd.text import fuzz
 
-    fuzz.ratio("kitten", "sitting")        # 0.0 .. 1.0 (difflib scale)
-    fuzz.best_match("aple", ["apple", "grape"])   # ("apple", 0.888…)
-    fuzz.extract("aple", choices, limit=3)        # ranked [(choice, score), …]
-    fuzz.distance("kitten", "sitting")     # 3  (uniform Levenshtein edits)
-    fuzz.jaro_winkler("Jon", "Jonathan")   # 0.925 — prefix-weighted, for names
+    fuzz.indel_ratio("abcbc", "bcabc")     # 0.8, with or without RapidFuzz
+    fuzz.difflib_ratio("abcbc", "bcabc")   # 0.6, always stdlib SequenceMatcher
+    fuzz.best_match("aple", ["apple", "grape"], scorer=fuzz.indel_ratio)
+    fuzz.distance("kitten", "sitting")     # 3 (uniform Levenshtein edits)
 
-Backend & fallback: rapidfuzz is provided by the ``text`` extra. When
-it is installed the fast Indel/Levenshtein kernels are used; when it is **not**
-(a base ``unstd`` install — the case in this dev env) every function
-transparently falls back to the stdlib (``difflib`` for ``ratio``/``best_match``/
-``extract``, a pure-Python DP for ``distance``), so the module imports and works
-everywhere and only the speed differs.
+``indel_ratio`` is normalized Indel similarity: mathematically
+``2·LCS / (len(a) + len(b))``, with two empty strings scoring ``1.0``.
+It uses RapidFuzz when installed and a portable bit-vector LCS implementation
+otherwise, with the same floating-point normalization on both paths.
+``difflib_ratio`` always calls ``difflib.SequenceMatcher(None, a, b).ratio()``,
+including its ``autojunk`` heuristic and order-sensitive matching decisions.
+Both named scorers retain their algorithm when dependencies change.
 
-Scale normalization — the deliberate difflib faithfulness choice:
+The historical ``ratio`` keeps its backend-dependent behavior for compatibility:
+RapidFuzz's Indel scorer with the ``text`` extra, stdlib difflib otherwise.
+These algorithms share a ``0.0 .. 1.0`` scale, but their scores and rankings can
+differ. For example, ``"abcbc"`` / ``"bcabc"`` scores 0.8 with Indel and 0.6
+with difflib; difflib's ``autojunk`` also affects long repetitive strings.
+Pass a named scorer to ``best_match``, ``extract``, and ``cdist`` when rankings
+or cutoff decisions must be independent of installed dependencies. Omitting
+``scorer`` retains the historical ``ratio`` selection and accelerated paths.
 
-- ``difflib`` scores in ``0.0 .. 1.0``; ``rapidfuzz.fuzz.ratio`` scores in
-  ``0.0 .. 100.0``. This module scores every rapidfuzz call with
-  ``Indel.normalized_similarity`` directly, which is ``0.0 .. 1.0`` natively, so
-  ``fuzz.ratio`` is a true drop-in for ``SequenceMatcher.ratio``. ``score_cutoff``
-  arguments are likewise ``0.0 .. 1.0`` on both paths.
-
-Ratio faithfulness — semantics, and the one pinned divergence:
-
-- ``ratio`` uses ``rapidfuzz.distance.Indel.normalized_similarity`` on the fast
-  path, which is ``2·LCS / (len(a) + len(b))`` — the **normalized Indel
-  similarity** (insertions + deletions only; Levenshtein with substitution cost
-  2). This is the metric rapidfuzz uses for ``fuzz.ratio`` and is the closest
-  faithful analogue of difflib's ratio (see rapidfuzz ``api_differences.md``,
-  which notes fuzzywuzzy switched between the two and rapidfuzz standardized on
-  Indel for consistency).
-- difflib's Ratcliff-Obershelp counts characters in the *longest contiguous*
-  matching block, recursively — a greedy match whose total ``M`` is **≤ LCS**.
-  So ``ratio`` (Indel path) ``≥`` ``SequenceMatcher.ratio`` for all inputs, with
-  **equality on the overwhelming majority** (identical, disjoint, and typical
-  single-edit real-world strings all agree exactly). They can diverge only where
-  the greedy gestalt block choice underperforms the LCS — e.g. ``"abcbc"`` vs
-  ``"bcabc"``, where gestalt matches only ``"abc"`` (M=3, ratio 0.6) but the LCS
-  is ``"bcbc"`` (Indel 0.8). The rapidfuzz path is therefore *not byte-identical*
-  to difflib on those adversarial cases; the
-  fallback path (difflib itself) is exact. This is pinned as a regression guard
-  in ``tests/text/test_text.py`` and must never be shipped silently.
-- ``difflib`` additionally applies an ``autojunk`` heuristic (treating characters
-  that appear in >1% of a sequence ≥200 long as "popular junk"), which can lower
-  its ratio on long, repetitive strings. The fallback preserves it exactly
-  (default ``SequenceMatcher(None, a, b)``); the Indel path does not model it
-  (and is arguably more correct there). Another documented source of divergence
-  on the fast path for long inputs.
+Optional bundled C kernels accelerate bounded exact-string Levenshtein and
+Jaro calls without RapidFuzz; unsupported values and source builds without a
+compiler retain the Python bodies.
 
 ``distance`` is the uniform Levenshtein edit distance (weights ``(1, 1, 1)`` —
 insertion, deletion, substitution), matching ``rapidfuzz.distance.Levenshtein.
@@ -89,13 +59,19 @@ agrees to within one float epsilon (1.1e-16) at three prefix weights.
 
 from __future__ import annotations
 
+from collections.abc import (  # noqa: TC003 — runtime type introspection
+    Callable,
+    Iterable,
+    Sequence,
+)
 import difflib
+from itertools import compress
+from operator import itemgetter, ne
+from types import NotImplementedType  # noqa: TC003 — runtime type introspection
 from typing import TYPE_CHECKING, Final, Protocol
 
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable, Sequence
-
     import rapidfuzz as _rf
 
     _HAVE_RAPIDFUZZ = True
@@ -109,11 +85,22 @@ else:
         _HAVE_RAPIDFUZZ = False
 
 
+_native_distance: Callable[[object, object], int | NotImplementedType] | None
+_native_jaro: Callable[[object, object], float | NotImplementedType] | None
+try:
+    from unstd.text._text_native import distance as _native_distance
+    from unstd.text._text_native import jaro as _native_jaro
+except ImportError:  # source-only installs retain the portable scoring bodies
+    _native_distance = _native_jaro = None
+
+
 __all__ = [
     "best_match",
     "cdist",
+    "difflib_ratio",
     "distance",
     "extract",
+    "indel_ratio",
     "jaro_winkler",
     "ratio",
 ]
@@ -133,8 +120,69 @@ _PREFIX_MAX: Final[int] = 4
 # ── portable scorers — the base-install bodies, and the oracle the kernels are held to ──
 
 
-def _difflib_ratio(a: str, b: str, /) -> float:
+def difflib_ratio(a: str, b: str, /) -> float:
+    """Stdlib SequenceMatcher similarity, including autojunk, on every backend.
+
+    Retains difflib's order-sensitive block matching and ``0.0 .. 1.0`` scale.
+    Two empty strings score ``1.0``. This algorithm can differ from Indel.
+    """
     return difflib.SequenceMatcher(None, a, b).ratio()
+
+
+_difflib_ratio = difflib_ratio
+
+
+def _masks(a: str) -> dict[str, int] | None:
+    """Per-character position bitmasks of *a*, or ``None`` past 256 distinct characters.
+
+    A separate arbitrary-width integer for every distinct character can need
+    quadratic storage, so diverse Unicode falls back to a bounded DP row.
+    """
+    if len(set(a)) > 256:
+        return None
+    masks: dict[str, int] = {}
+    for i, char in enumerate(a):
+        masks[char] = masks.get(char, 0) | 1 << i
+    return masks
+
+
+def _indel_ratio(a: str, b: str, /) -> float:
+    """Normalized Indel similarity with RapidFuzz's float arithmetic."""
+    # RapidFuzz reads Unicode storage directly. Use the same string value for
+    # subclasses, rather than their overridden equality/length/iteration hooks.
+    if type(a) is not str or type(b) is not str:
+        a, b = str.__str__(a), str.__str__(b)
+    if a == b:
+        return 1.0
+    if not a or not b:
+        return 0.0
+    if len(a) > len(b):
+        a, b = b, a
+    if (masks := _masks(a)) is None:
+        common = _lcs_length(a, b)
+    else:
+        get, row = masks.get, 0
+        for char in b:
+            matches = row | get(char, 0)
+            row = matches & ~(matches - ((row << 1) | 1))
+        common = row.bit_count()
+    total = len(a) + len(b)
+    # 2*common/total is mathematically equivalent but can round differently.
+    # Match Indel.normalized_similarity's 1-normalized_distance evaluation so
+    # an inclusive cutoff does not move when the optional backend is installed.
+    return 1.0 - (total - 2 * common) / total
+
+
+def _lcs_length(a: str, b: str, /) -> int:
+    """Longest common subsequence length with a single bounded DP row."""
+    row = [0] * (len(a) + 1)
+    for cb in b:
+        diagonal = left = 0
+        for j, ca in enumerate(a, 1):
+            up = row[j]
+            row[j] = left = diagonal + 1 if ca == cb else max(left, up)
+            diagonal = up
+    return row[-1]
 
 
 def _jaro(a: str, b: str) -> float:
@@ -149,24 +197,34 @@ def _jaro(a: str, b: str) -> float:
         return 1.0
     if not a or not b:
         return 0.0
-    window = max(max(len(a), len(b)) // 2 - 1, 0)
-    b_taken = [False] * len(b)
+    exact = type(a) is str and type(b) is str
+    if exact and _native_jaro is not None:
+        result = _native_jaro(a, b)
+        if result is not NotImplemented:
+            return result
+    size = len(b)
+    window = max(max(len(a), size) // 2 - 1, 0)
+    taken = [False] * size
     a_matched: list[str] = []
     for i, ca in enumerate(a):
-        for j in range(max(0, i - window), min(len(b), i + window + 1)):
-            if not b_taken[j] and b[j] == ca:
-                b_taken[j] = True
-                a_matched.append(ca)
-                break
+        lo, hi = max(0, i - window), min(size, i + window + 1)
+        if exact:  # str.find scans the window in C; subclasses keep their hooks
+            j = b.find(ca, lo, hi)
+            while j >= 0 and taken[j]:
+                j = b.find(ca, j + 1, hi)
+        else:
+            j = next((j for j in range(lo, hi) if not taken[j] and b[j] == ca), -1)
+        if j >= 0:
+            taken[j] = True
+            a_matched.append(ca)
     if not (m := len(a_matched)):
         return 0.0
-    b_matched = [cb for cb, taken in zip(b, b_taken, strict=True) if taken]
     # Half the mismatched positions, floored — the transposition count every
     # implementation uses. An odd mismatch count means the matched sequences
     # differ by a cycle longer than a swap, and rounding it up would charge the
     # pair for a transposition that isn't one.
-    swaps = sum(x != y for x, y in zip(a_matched, b_matched, strict=True)) // 2
-    return (m / len(a) + m / len(b) + (m - swaps) / m) / 3
+    swaps: int = sum(map(ne, a_matched, compress(b, taken))) // 2
+    return (m / len(a) + m / size + (m - swaps) / m) / 3
 
 
 def _jaro_winkler(a: str, b: str, /, *, prefix_weight: float = 0.1) -> float:
@@ -176,15 +234,20 @@ def _jaro_winkler(a: str, b: str, /, *, prefix_weight: float = 0.1) -> float:
     names: "Jane"/"John" sits at 0.667 and stays there, where an unconditional
     bonus would read 0.70 and cross thresholds callers set just above it.
     """
-    sim = _jaro(a, b)
-    if sim <= _BOOST_MIN:
+    if prefix_weight < 0.0 or prefix_weight > 1.0:
+        msg = "prefix_weight has to be in the range 0.0 - 1.0"
+        raise ValueError(msg)
+    if (sim := _jaro(a, b)) <= _BOOST_MIN:
         return sim
     prefix = 0
     for ca, cb in zip(a[:_PREFIX_MAX], b[:_PREFIX_MAX], strict=False):
         if ca != cb:
             break
         prefix += 1
-    return min(sim + prefix * prefix_weight * (1.0 - sim), 1.0)
+    score = sim + prefix * prefix_weight * (1.0 - sim)
+    # RapidFuzz applies its default zero cutoff after the boost. A NaN weight
+    # fails that comparison, while scores below the boost threshold bypass it.
+    return min(score, 1.0) if score >= 0.0 else 0.0
 
 
 def _levenshtein(a: Sequence[object], b: Sequence[object], /) -> int:
@@ -196,22 +259,24 @@ def _levenshtein(a: Sequence[object], b: Sequence[object], /) -> int:
     """
     if a == b:
         return 0
-    if not a:
-        return len(b)
-    if not b:
-        return len(a)
-    if type(a) is str and type(b) is str:
-        return _string_distance(a, b)
-    return _sequence_distance(a, b)
+    if not a or not b:
+        return len(a) or len(b)
+    if type(a) is not str or type(b) is not str:
+        return _sequence_distance(a, b)
+    if _native_distance is not None:
+        result = _native_distance(a, b)
+        if result is not NotImplemented:
+            return result
+    return _string_distance(a, b)
 
 
 def _sequence_distance(a: Sequence[object], b: Sequence[object]) -> int:
     """Wagner-Fischer DP for arbitrary sequences, without hashing their elements."""
     prev = list(range(len(b) + 1))
     for i, ca in enumerate(a, 1):
-        cur = [i]
-        for j, cb in enumerate(b, 1):
-            cur.append(min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (ca != cb)))
+        cur = [left := i]
+        for cb, diagonal, up in zip(b, prev, prev[1:], strict=False):
+            cur.append(left := min(left + 1, up + 1, diagonal + (ca != cb)))
         prev = cur
     return prev[-1]
 
@@ -226,35 +291,23 @@ def _string_distance(a: str, b: str) -> int:
     """
     if len(a) > len(b):
         a, b = b, a
-    masks: dict[str, int] = {}
-    bit = 1
-    for char in a:
-        masks[char] = masks.get(char, 0) | bit
-        if len(masks) > 256:
-            # A distinct mask per character can otherwise need quadratic space.
-            return _sequence_distance(b, a)
-        bit <<= 1
-    width_mask = bit - 1
-    positive = width_mask
-    negative = 0
-    high_bit = bit >> 1
-    score = len(a)
+    if (masks := _masks(a)) is None:
+        return _sequence_distance(b, a)
+    get, width = masks.get, (1 << len(a)) - 1
+    high, positive, negative, score = (width + 1) >> 1, width, 0, len(a)
     for char in b:
-        matches = masks.get(char, 0)
-        differences = (
-            (((matches & positive) + positive) ^ positive) | matches | negative
-        )
-        horizontal_positive = negative | ~(differences | positive)
-        horizontal_negative = differences & positive
-        score += bool(horizontal_positive & high_bit)
-        score -= bool(horizontal_negative & high_bit)
-        horizontal_positive = (horizontal_positive << 1) | 1
+        matches = get(char, 0)
+        diff = (((matches & positive) + positive) ^ positive) | matches | negative
+        h_pos, h_neg = negative | ~(diff | positive), diff & positive
+        if h_pos & high:
+            score += 1
+        elif h_neg & high:
+            score -= 1
+        h_pos = (h_pos << 1) | 1
         # Python's complement has infinitely many sign bits. Discard the rows
         # outside the pattern so shifts cannot grow state with the text length.
-        positive = (
-            (horizontal_negative << 1) | ~(differences | horizontal_positive)
-        ) & width_mask
-        negative = differences & horizontal_positive & width_mask
+        positive = ((h_neg << 1) | ~(diff | h_pos)) & width
+        negative = diff & h_pos & width
     return score
 
 
@@ -270,19 +323,29 @@ class _NameSimilarity(Protocol):
     def __call__(self, a: str, b: str, /, *, prefix_weight: float = ...) -> float: ...
 
 
-# The three pairwise scores *are* the rapidfuzz kernels when the extra is present —
+indel_ratio: _Similarity = (
+    _rf.distance.Indel.normalized_similarity if _HAVE_RAPIDFUZZ else _indel_ratio
+)
+"""Normalized Indel similarity for strings, identical across optional backends.
+
+Mathematically ``2·LCS / (len(a)+len(b))``; two empty strings score ``1.0``.
+Normalization evaluates ``1 - Indel_distance / (len(a)+len(b))`` to preserve
+RapidFuzz's floating-point results, including at inclusive score cutoffs.
+String subclasses are scored by their underlying Unicode value, ignoring
+custom equality, length, iteration, and string-conversion methods.
+"""
+
+# The legacy pairwise scores are the rapidfuzz kernels when the extra is present —
 # bound directly, so a call pays no forwarding frame (~30% of a short-string
 # score) — and the portable definitions below the fold otherwise.
 ratio: _Similarity = (
     _rf.distance.Indel.normalized_similarity if _HAVE_RAPIDFUZZ else _difflib_ratio
 )
-"""Similarity of *a* and *b* in ``0.0 .. 1.0`` — a drop-in for ``difflib.SequenceMatcher(None, a, b).ratio()``.
+"""Historical similarity on a ``0.0 .. 1.0`` scale, with a backend-selected metric.
 
-Fast path (``text`` extra): normalized Indel similarity
-(``2·LCS / (len(a)+len(b))``), which equals difflib's ratio on almost all
-inputs and is ``≥`` it otherwise (see module docstring). Fallback path:
-difflib itself, so the score is exact. Two empty strings score ``1.0`` on
-both paths.
+RapidFuzz selects Indel; the portable path selects difflib SequenceMatcher.
+Scores and rankings can differ. Use :func:`indel_ratio` or :func:`difflib_ratio`
+to choose a backend-independent algorithm. Two empty strings score ``1.0``.
 """
 
 distance: _Distance = (
@@ -313,30 +376,45 @@ Matches ``rapidfuzz.distance.JaroWinkler.similarity`` on both paths.
 """
 
 
+def _accelerated(scorer: _Similarity | None) -> bool:
+    """Whether a batch call may hand the whole job to RapidFuzz's Indel kernel."""
+    return _HAVE_RAPIDFUZZ and (
+        scorer is None or scorer is _rf.distance.Indel.normalized_similarity
+    )
+
+
 def best_match(
-    query: str, choices: Iterable[str], *, score_cutoff: float = 0.0
+    query: str,
+    choices: Iterable[str],
+    *,
+    score_cutoff: float = 0.0,
+    scorer: _Similarity | None = None,
 ) -> tuple[str, float] | None:
     """Return the single best ``(choice, score)`` for *query*, or ``None``.
 
-    *score_cutoff* is on the ``0.0 .. 1.0`` :func:`ratio` scale: choices scoring
-    below it are excluded (``None`` if none qualify or *choices* is empty). On
-    the fast path this is ``rapidfuzz.process.extractOne``; the fallback scans
-    with :func:`ratio` (the ``difflib.get_close_matches`` idiom, scored). Ties
-    resolve to the first choice in iteration order on both paths.
+    *scorer* is a two-string similarity callable on the ``0.0 .. 1.0`` scale;
+    higher scores win. Omit it to retain the backend-selected :func:`ratio`, or
+    choose :func:`indel_ratio` / :func:`difflib_ratio` for stable semantics.
+    Scores below *score_cutoff* are excluded (``None`` if none qualify or
+    *choices* is empty). Ties resolve to the first choice in iteration order.
+    With an explicit scorer, mappings supply their iterated keys, like other
+    iterables; a NaN cutoff admits no choices.
     """
-    if _HAVE_RAPIDFUZZ:
+    if _HAVE_RAPIDFUZZ and (
+        scorer is None or scorer is _rf.distance.Indel.normalized_similarity
+    ):
         hit = _rf.process.extractOne(
             query,
-            choices,
+            choices if scorer is None else iter(choices),
             scorer=_rf.distance.Indel.normalized_similarity,
         )
         return (hit[0], hit[1]) if hit and hit[1] >= score_cutoff else None
-    best: tuple[str, float] | None = None
-    for choice in choices:
-        score = ratio(query, choice)
-        if score >= score_cutoff and (best is None or score > best[1]):
-            best = (choice, score)
-    return best
+    similarity = ratio if scorer is None else scorer
+    return max(
+        ((c, s) for c in choices if (s := similarity(query, c)) >= score_cutoff),
+        key=itemgetter(1),
+        default=None,
+    )
 
 
 def extract(
@@ -345,15 +423,19 @@ def extract(
     *,
     limit: int | None = 5,
     score_cutoff: float = 0.0,
+    scorer: _Similarity | None = None,
 ) -> list[tuple[str, float]]:
     """Top-*limit* ``(choice, score)`` for *query*, best first.
 
-    *score_cutoff* is on the ``0.0 .. 1.0`` :func:`ratio` scale; ``limit=None``
-    returns every qualifying choice. Fast path: ``rapidfuzz.process.extract``.
-    Fallback: score every choice with :func:`ratio`, filter, and stably sort
-    descending (the scored ``difflib.get_close_matches`` equivalent).
+    *scorer* selects the similarity as in :func:`best_match`; omission retains
+    the backend-selected :func:`ratio`. Scores below *score_cutoff* are excluded.
+    ``limit=None`` returns every qualifying choice; explicit scorers require a
+    nonnegative limit. Equal scores retain their original iteration order.
     """
-    if _HAVE_RAPIDFUZZ:
+    if scorer is not None and limit is not None and limit < 0:
+        msg = "unstd.text: limit must be nonnegative when a scorer is selected"
+        raise ValueError(msg)
+    if _accelerated(scorer):
         hits = _rf.process.extract(
             query,
             list(choices),
@@ -361,9 +443,9 @@ def extract(
             limit=limit,
         )
         return [(choice, score) for choice, score, _ in hits if score >= score_cutoff]
-    scored = [(c, s) for c in choices if (s := ratio(query, c)) >= score_cutoff]
-    scored.sort(key=lambda cs: cs[1], reverse=True)
-    return scored if limit is None else scored[:limit]
+    similarity = ratio if scorer is None else scorer
+    scored = [(c, s) for c in choices if (s := similarity(query, c)) >= score_cutoff]
+    return sorted(scored, key=itemgetter(1), reverse=True)[:limit]
 
 
 def cdist(
@@ -372,6 +454,7 @@ def cdist(
     *,
     score_cutoff: float = 0.0,
     workers: int = 1,
+    scorer: _Similarity | None = None,
 ) -> list[list[float]]:
     """All-pairs similarity matrix between *queries* and *choices*, on the ``0.0 .. 1.0`` :func:`ratio` scale.
 
@@ -383,14 +466,15 @@ def cdist(
     many-query fuzzy matching. *workers* forwards to it (``-1`` = all cores);
     ignored on the fallback, which has no parallel path. A pair scoring below
     *score_cutoff* reads ``0.0`` on both paths, matching ``cdist``'s own
-    zeroing convention. Fallback: a nested-loop matrix of :func:`ratio` calls —
-    identical numbers, no batch speedup.
+    zeroing convention. *scorer* selects a similarity as in :func:`best_match`;
+    omission retains the backend-selected :func:`ratio`. Custom scorers and
+    :func:`difflib_ratio` use a nested-loop matrix, ignoring *workers*.
 
     ``rapidfuzz.process.cdist`` itself additionally requires ``numpy`` (absent
     from the ``text`` extra's own dependencies); when it's missing this
     degrades to the same fallback the extra-absent case takes.
     """
-    if _HAVE_RAPIDFUZZ:
+    if _accelerated(scorer):
         try:
             import numpy as np  # cdist is numpy-backed; numpy isn't a `text`-extra dep
 
@@ -404,10 +488,17 @@ def cdist(
         except ImportError:
             pass
         else:
-            matrix[matrix < score_cutoff] = 0.0
+            # Explicit scorers use the same inclusive predicate as the Python
+            # path, including NaN (which admits no score). Preserve the legacy
+            # omitted-scorer predicate for existing installations.
+            rejected = (
+                matrix < score_cutoff if scorer is None else ~(matrix >= score_cutoff)
+            )
+            matrix[rejected] = 0.0
             rows: list[list[float]] = matrix.tolist()
             return rows
+    similarity = ratio if scorer is None else scorer
     return [
-        [s if (s := ratio(q, c)) >= score_cutoff else 0.0 for c in choices]
+        [s if (s := similarity(q, c)) >= score_cutoff else 0.0 for c in choices]
         for q in queries
     ]

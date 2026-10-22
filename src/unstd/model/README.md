@@ -19,20 +19,23 @@ class CreateProjectInput(StrictModel):  # extra='forbid' + validate_by_name
 | Class            | Config                                                     | For                                                                         |
 | ---------------- | ---------------------------------------------------------- | --------------------------------------------------------------------------- |
 | `StrictModel`    | `extra="forbid"`, `validate_by_name=True`                  | tool `args_schema`, wire/CRUD bodies, extraction targets — the default base |
-| `FrozenModel`    | `StrictModel` + `frozen=True`                              | immutable, hashable value objects                                           |
+| `FrozenModel`    | `StrictModel` + `frozen=True`                              | prevents field assignment; hashable when all field values are hashable      |
 | `StrictSettings` | `BaseSettings` + `extra="ignore"`, `validate_by_name=True` | a service's env-validated config tree                                       |
 
 ## The contract
 
 | Config             | Value                      | Why it's parity-safe                                                                                                                                                                                                                                                                                                 |
 | ------------------ | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `extra`            | `"forbid"` (models)        | The AI tool-call chokepoint already forbids unknown args on LLM input (unless a schema declares `extra="allow"`). Declarative parity for `args_schema` models; tightens the emitted JSON schema to `additionalProperties: false` (better constrained decoding). A real, tested tightening for any other constructor. |
-| `extra`            | `"ignore"` (settings root) | A `BaseSettings` root reads the real process env + `.env`, full of unrelated vars — `forbid` would crash startup on a stray one. Strictness for config comes from typed fields, not from rejecting the ambient environment. Nested group models stay on `StrictModel` (`forbid`).                                    |
+| `extra`            | `"forbid"` (models)        | Rejects unknown constructor fields and emits `additionalProperties: false` in JSON Schema. Child models can override this configuration. |
+| `extra`            | `"ignore"` (settings root) | Ignores extra constructor fields and extra keys from a configured dotenv source. Unrelated process environment variables are already filtered by the settings source. Dotenv loading is opt-in through `env_file` or `_env_file`; this base does not configure a `.env` file. Nested group models can use `StrictModel` to reject extras. |
 | `validate_by_name` | `True`                     | Strict superset — an aliased field may be populated by alias **or** Python name. `validate_by_alias` stays `True` (default), so no alias-keyed caller breaks. Supersedes the deprecated `populate_by_name`.                                                                                                          |
 
 **Deliberately not set** (each mutates values or adds a failure mode — later,
 separately-proven passes own them): `str_strip_whitespace`, `use_enum_values`,
 `validate_assignment`, and any serialization default.
+
+These bases do not set Pydantic's `strict=True`: ordinary field coercion still
+applies. Frozen models also retain any mutable objects stored inside fields.
 
 ## Backend
 
@@ -44,7 +47,8 @@ for msgspec.
 
 ## Migrating a model
 
-Swap the base — nothing else changes:
+Swap the base, then check callers for the changed unknown-field and alias/name
+population rules:
 
 ```diff
 -class Foo(BaseModel):
@@ -66,9 +70,14 @@ part of a base swap.
   validate-on-decode (cache blobs, internal envelopes). See the
   [`serde` README](../serde/README.md).
 
-## Enforcement
+## Validation
 
-The `py-strict-model` ratchet (`quality/discipline/lint/ratchets/py/strict-model/`)
-keeps the migration permanent: a new class whose direct base is raw
-`pydantic.BaseModel` in a covered path fails the gate; existing files are
-grandfathered at a baseline that may only shrink.
+[`tests/suites/product/model/unit/`](../../../tests/suites/product/model/unit/README.md)
+checks field-name and alias population, unknown-field handling, frozen models,
+emitted schemas, and missing-extra errors.
+[`properties/`](../../../tests/suites/product/model/properties/README.md) compares
+generated layouts with explicitly configured Pydantic twins, and
+[`integration/`](../../../tests/suites/product/model/integration/README.md) checks
+environment and dotenv precedence in isolated workers. Run from the repository root with
+`uv run --no-sync pytest tests/suites/product/model -q`; install the `model`
+extra to exercise these contracts.

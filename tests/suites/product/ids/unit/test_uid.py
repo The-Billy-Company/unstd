@@ -35,6 +35,12 @@ _VECTORS = [
         "python.org",
         "886313e1-3b8a-5372-9b90-0c9aee199e5d",
     ),
+    # RFC 9562 Appendix A.4: namespace DNS, "www.example.com".
+    (
+        "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+        "www.example.com",
+        "2ed6657d-e927-568b-95e1-2665a8aea6a2",
+    ),
     # tools/email/inbox/gmail.py — every Gmail push notification re-derives the
     # conversation from the provider's thread id.
     (
@@ -101,6 +107,10 @@ def test_new_hex_is_the_same_id_unhyphenated() -> None:
     h = uid.new_hex()
     assert len(h) == 32
     assert "-" not in h
+    parsed = UUID(hex=h)
+    assert parsed.hex == h  # lowercase, exactly the canonical digits
+    assert parsed.version == 7
+    assert parsed.variant == RFC_4122
 
 
 # ── stdlib fallback internals: monotonic counter (RFC 9562 §6.2 Method 1) ──────
@@ -139,6 +149,26 @@ def test_stdlib_fallback_exact_wire_layout(
     assert type(generated) is UUID
     assert generated.is_safe is SafeUUID.unknown
     assert requests == [2, 8]
+
+
+def test_stdlib_fallback_reproduces_the_rfc_9562_uuidv7_example(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """RFC 9562 Appendix A.6: unix_ts_ms 0x017F22E279B0 (2022-02-22T19:22:22Z),
+    rand_a 0xCC3 and rand_b 0x18C4DC0C0C07398F.
+    """
+    monkeypatch.setattr(uid, "_last_ms", None)
+    monkeypatch.setattr(uid, "_last_counter", 0)
+    monkeypatch.setattr(uid.time, "time_ns", lambda: 0x017F22E279B0 * 1_000_000)
+    monkeypatch.setattr(
+        uid.os,
+        "urandom",
+        lambda size: b"\x0c\xc3" if size == 2 else (0x18C4DC0C0C07398F).to_bytes(8),
+    )
+    monkeypatch.setattr(uid, "_uuid7", uid._stdlib_uuid7)
+
+    assert uid.new() == "017f22e2-79b0-7cc3-98c4-dc0c0c07398f"
+    assert uid.new_hex() == "017f22e279b07cc498c4dc0c0c07398f"
 
 
 def test_stdlib_fallback_sorts_in_mint_order() -> None:

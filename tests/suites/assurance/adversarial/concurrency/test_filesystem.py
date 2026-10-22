@@ -18,8 +18,8 @@ from typing import TYPE_CHECKING, Any
 
 import pytest
 
-from tests.support.chaos import ordered
-from tests.support.process import python_worker
+from tests.support.chaos.journal import ordered
+from tests.support.environment.process import python_worker
 
 
 if TYPE_CHECKING:
@@ -30,7 +30,7 @@ _WORKER = """
 import json
 from pathlib import Path
 import sys
-from tests.support.concurrency_filesystem import atomic_history
+from tests.support.concurrency.filesystem import atomic_history
 options = json.loads(sys.argv[1])
 def record(row):
     print(json.dumps({'progress': row}, sort_keys=True), flush=True)
