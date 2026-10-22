@@ -97,7 +97,9 @@ binpack.unpack_array_portable("<i2", b"\x01\x00\xfe\xff")  # [1, -2]
 Packing snapshots the iterable once before numeric conversion. Unpacking
 requires contiguous buffers and a whole number of elements; trailing partial
 elements always raise `binpack.error`. Typed, scalar, and multidimensional
-memoryviews use their full byte storage. Decoded lists do not alias the input
+memoryviews, `array.array` and ndarrays use their full byte storage. Dtype
+strings must be an exact typestr or alias: `"i 4"`, `"i04"` or other numeric
+spellings of a size raise `binpack.error`. Decoded lists do not alias the input
 buffer. This stable contract gives up NumPy's broader dtype/coercion surface and
 its zero-copy array result.
 

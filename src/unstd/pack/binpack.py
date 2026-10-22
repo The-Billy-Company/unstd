@@ -102,17 +102,17 @@ __all__ = [
 
 # NumPy typestr kind+itemsize → stdlib ``struct` format char (standard sizes).
 _STRUCT_CHAR = {
-    ("i", 1): "b",
-    ("u", 1): "B",
-    ("i", 2): "h",
-    ("u", 2): "H",
-    ("i", 4): "i",
-    ("u", 4): "I",
-    ("i", 8): "q",
-    ("u", 8): "Q",
-    ("f", 2): "e",
-    ("f", 4): "f",
-    ("f", 8): "d",
+    "i1": "b",
+    "u1": "B",
+    "i2": "h",
+    "u2": "H",
+    "i4": "i",
+    "u4": "I",
+    "i8": "q",
+    "u8": "Q",
+    "f2": "e",
+    "f4": "f",
+    "f8": "d",
 }
 # Spelled-out dtype names → the ``kind+size`` typestr the parser understands.
 _ALIAS = {
@@ -157,13 +157,13 @@ def _parse_struct_spec(dtype: DTypeLike) -> tuple[str, str, int]:
         order = "=" if s[0] == "|" else s[0]
         s = s[1:]
     s = _ALIAS.get(s, s)
+    # Exact typestr lookup: int() would also admit "i 4", "i0_4" or Unicode digits.
     try:
-        size = int(s[1:])
-        char = _STRUCT_CHAR[s[:1], size]
-    except (KeyError, ValueError) as exc:
+        char = _STRUCT_CHAR[s]
+    except KeyError as exc:
         msg = f"unstd.pack: unsupported array dtype {dtype!r}"
         raise error(msg) from exc
-    return order, char, size
+    return order, char, int(s[1:])
 
 
 @lru_cache(maxsize=128)
@@ -252,10 +252,14 @@ def _unpack_array_struct(
 ) -> list[float]:
     """Shared struct body, retaining legacy dtype-object and buffer handling."""
     order, char, size = _struct_spec(dtype)
-    # A memoryview's length counts its first dimension, not bytes; scalar
-    # views have no length at all. Keep the original buffer for struct's
+    # Other exporters' lengths count elements or a first dimension, not bytes;
+    # scalar views have no length at all. Keep the original buffer for struct's
     # contiguous-buffer checks without copying or changing its interpretation.
-    nbytes = buf.nbytes if isinstance(buf, memoryview) else len(buf)
+    if type(buf) is bytes or type(buf) is bytearray:
+        nbytes = len(buf)
+    else:
+        with memoryview(buf) as view:
+            nbytes = view.nbytes
     if nbytes % size:
         msg = f"unstd.pack: buffer size {nbytes} is not a multiple of itemsize {size}"
         raise error(msg)
