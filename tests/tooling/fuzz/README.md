@@ -21,10 +21,13 @@ uv run --no-sync python -m tests.tooling.fuzz check
 
 `registry.toml` owns target identities, supported backends, installed imports,
 envelope versions and input budgets. `check` authenticates every `seeds.json`
-manifest and its exact files: hashes, sizes, uniqueness, reviewed labels/origins,
+manifest and its exact inputs: hashes, sizes, uniqueness, reviewed labels/origins,
 valid/invalid/boundary controls, minimum seed counts and discovery parity.
 Unregistered targets, orphan files, altered seeds, symlinks and empty or
-underfed corpora fail admission. Each target has at least twelve reviewed seeds.
+underfed corpora fail admission. Regular, non-symlinked `README.md` files are
+documentation, excluded from corpus discovery. Each target has at least twelve
+reviewed seeds. [Corpus READMEs](corpus/README.md) explain retained inputs;
+[target documentation](targets/README.md) maps modules to their contracts.
 The JSON listing with `--all-backends` enumerates all nineteen supported pairs.
 
 `installed` requires the named extension imports and never silently substitutes
@@ -181,8 +184,8 @@ case. Full envelope and rejection rules live in each target's module docstring.
 | [`pack`](targets/pack.py) | `numpy` | Independent `struct` byte/value oracles for every supported numeric width, byte order and aliases, sized/iterator encoding and buffer decoding, NaNs and partial-element rejection. |
 | [`wav`](targets/wav.py) | `soundfile`, `numpy` | Genuine `wave`/PCM16 fixtures, exact sample scaling, headers, blocks and writers; RIFF child extents/channels/declared allocations checked before native reads; 64-KiB sample allocation budget. |
 | [`toml`](targets/toml.py) | `tomlkit` | `tomllib` raw value/error fidelity, binary handle ownership, independently known models and style-preserving writer round trips in the shared TOML-1.0 domain. Base mode keeps read laws and explicitly omits unavailable writers. |
-| [`yaml`](targets/yaml.py) | `ruamel.yaml`; installed only | Independently known safe models, explicit constructor refusal and shared-node alias identity; raw wrapper parity with separately configured pure safe ruamel. Alias depth/fanout bounded and graphs traversed by identity without exponential expansion. |
-| [`rex`](targets/rex.py) | `irgx` | `re` diagnostics, spans, captures, regions, substitutions and callback histories over explicit shared grammar; generated literal alternatives, text/bytes and Unicode/fallback paths. Arbitrary raw patterns compile only (256 bytes); executed subjects capped at 4,096 bytes. Documented dollar/POSIX divergences are compilation-only. |
+| [`yaml`](targets/yaml.py) | `ruamel.yaml`; installed only | Independently known safe models, explicit constructor refusal and shared-node alias identity; raw wrapper parity with separately configured pure safe ruamel, supplemented by round-trip duplicate detection for merged keys missed by that reference. Alias depth/fanout bounded and graphs traversed by identity without exponential expansion. |
+| [`rex`](targets/rex.py) | `irgx` | `re` diagnostics, spans, captures, regions, substitutions and callback histories over explicit shared grammar; generated literal alternatives, text/bytes and Unicode/fallback paths. Arbitrary raw patterns compile only (256 bytes); executed subjects use fixed controls plus at most 4,096 payload bytes. Documented dollar/POSIX divergences are compilation-only. |
 | [`gzip`](targets/gzip.py) | `zlib_ng` | Stdlib real members, concatenation, one-shot/stream/readinto/seek and exact error families; ISIZE check plus an independent 65,537-byte streaming preflight enforces a 64-KiB decoded budget even with forged sizes. |
 
 Installed backend admission establishes that required extensions loaded. A

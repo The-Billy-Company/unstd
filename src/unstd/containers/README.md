@@ -68,8 +68,9 @@ m1["a"], "c" in m1  # (1, False)
 m2["c"]  # 3
 ```
 
-That makes "snapshot this state, hand it to a concurrent reader" an `O(log n)`
-no-copy, no-lock operation — the property stdlib has no container for.
+Updates share unchanged trie branches rather than copying the whole mapping.
+Stored values are shared references: a `Map` containing a list does not freeze
+that list, so snapshot isolation also depends on how callers manage its values.
 
 Backed by `immutables`, a Hash Array Mapped Trie — Phil Bagwell's structure
 ("Ideal Hash Trees", 2001) — and the very implementation CPython vendored to back

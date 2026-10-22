@@ -18,8 +18,8 @@ exists to protect. There is nothing to `pip install 'unstd[iters]'`; just:
 from unstd.iters import chunked, windowed, first, unique_everseen, partition
 ```
 
-Everything returns a **lazy iterator** unless the name implies materialization
-(`take` → `list`). Nothing re-implements a primitive stdlib already provides
+Combinators return **lazy iterators**; selectors (`first`, `last`, `nth`) return
+one item, `ilen` returns a count, and `take` materializes a list. Nothing re-implements a primitive stdlib already provides
 identically — only the missing combinators, plus two convenience re-exports
 (`itertools.batched`, `itertools.pairwise`) so this is a single import home.
 
@@ -27,7 +27,7 @@ identically — only the missing combinators, plus two convenience re-exports
 
 | Function                                | Returns                  | What it does                                                                                                                          |
 | --------------------------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `chunked(iterable, n, *, strict=False)` | `Iterator[tuple]`        | consecutive `n`-length tuples; superset of stdlib `itertools.batched` (3.13) with a validated `n` and `strict` uneven-tail guard      |
+| `chunked(iterable, n, *, strict=False)` | `Iterator[tuple]`        | consecutive `n`-length tuples; validates `n` and supports a `strict` uneven-tail guard on Python 3.12+, where stdlib `batched` gained `strict` in 3.13 |
 | `windowed(iterable, n, step=1)`         | `Iterator[tuple]`        | overlapping length-`n` sliding windows (complete windows only); size/stride superset of `itertools.pairwise`                          |
 | `runs(iterable, key)`       | `Iterator[(key, tuple)]` | run-length grouping — merge _consecutive_ equal-keyed items (each run materialized so `groupby`'s transient sub-iterators can't bite) |
 | `first(iterable, default=…)`            | item                     | first item (consumes one); `ValueError`/`default` on empty                                                                            |

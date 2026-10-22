@@ -36,15 +36,14 @@ third-party dependency and byte-for-byte `tomllib` semantics — including `load
 requirement that the file be opened in **binary** mode. The write path has **no
 stdlib equivalent** (`tomllib` is read-only _by design_), so it hard-requires the
 `toml` extra (`pip install 'unstd[toml]'`); the module still imports without it
-(reads keep working) and only the write calls fail loud — the same posture as
-[`serde.structs`](../serde/README.md#structs--typed-msgspec-codecs),
-`crypto`, and `time.zoned`.
+(reads keep working) and calls needing tomlkit raise the installation error.
 
 ## Style preservation
 
 `tomlkit` treats a TOML document as an editable, comment-aware tree: `parse` →
-mutate → `dumps` rewrites a config file **in place** without reflowing the parts
-you didn't touch (comments, key order, whitespace, array layout all survive).
+mutate → `dumps` returns updated text while retaining comments, key order,
+whitespace, and array layout in the document. Write that text back to the file
+to persist an edit.
 Use `loads` when you only need the values as a plain `dict`; use `parse` /
 `document` when you are editing a file a human will read again.
 

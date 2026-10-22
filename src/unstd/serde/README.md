@@ -1,7 +1,7 @@
 # `serde` — serialization/deserialization helpers
 
-Part of [`unstd`](../README.md). Every module wraps a best-in-class
-codec behind a stdlib-faithful surface. All untyped JSON goes through `jsonx`,
+Part of [`unstd`](../README.md). Stdlib-compatible JSON and Base64 codecs,
+typed codecs, and newline-delimited JSON helpers. All untyped JSON goes through `jsonx`,
 which proves eligibility for native acceleration and uses stdlib otherwise.
 The native backends live behind the **`serde`
 extra** (`unstd[serde]`); without it, `jsonx`/`b64`/`ndjson` fall back to the
@@ -252,7 +252,7 @@ Decimal output, including when `float_enc_hook` is installed.
 Typed codecs have no stdlib fallback — importing `structs` without the `serde`
 extra raises a clear `ImportError`.
 
-`codec()`/`Codec()` also forward every constructor knob msgspec itself exposes:
+`Codec()` also forwards the supported msgspec encoder and decoder options:
 `order="deterministic"` (sort dict keys/set elements) or `"sorted"` (also sort
 struct fields by name) for deterministic bytes worth hashing or diffing;
 `decimal_format`/

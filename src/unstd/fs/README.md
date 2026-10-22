@@ -4,8 +4,9 @@ Part of [`unstd`](../README.md). **Pure stdlib — no optional extra.**
 `pathlib` is best-in-class path _algebra_ (joins, suffixes, parents); it stops at
 the durable-write and fast-walk _operations_ every service otherwise re-rolls.
 `unstd.fs` is exactly those operations — it is **not** a `pathlib` replacement.
-Keep `Path` for path math; reach here for the I/O around it. Every function
-returns / yields `pathlib.Path` for interop with the rest of the codebase.
+Keep `Path` for path math; reach here for the I/O around it. Path-returning
+operations use `pathlib.Path`; `atomic_writer` yields a writable handle and
+`sync_dir` returns `None`.
 
 ```python
 from unstd import fs
@@ -19,7 +20,7 @@ from unstd import fs
 | `atomic_writer(path, *, mode="w"\|"wb", encoding="utf-8", durable=False)` | Context-manager form — yields a handle; commits atomically on clean exit, discards the temp file if the body raises. |
 | `atomic_replace(src, dest, *, durable=False)`                             | Atomic `os.replace` of an existing file onto `dest` (same-filesystem rename).                                        |
 | `ensure_dir(path)`                                                        | `mkdir(parents=True, exist_ok=True)`, idempotent.                                                                    |
-| `sync_dir(path)`                                                          | `fsync` a directory handle so a create/rename inside it is durable.                                                  |
+| `sync_dir(path)`                                                          | Best-effort directory `fsync`; OS errors are suppressed.                                                           |
 | `walk_files(root, *, follow_symlinks=False)`                              | `os.scandir` generator — every file, recursively.                                                                    |
 
 ## The atomic-write idiom
@@ -34,10 +35,12 @@ durable-write pattern `pathlib` has no equivalent for:
 3. `os.replace(tmp, dest)` — an atomic same-filesystem rename. A reader ever
    sees the whole old file or the whole new file, never a torn half-write.
 
-If the body raises, the temp file is removed and the destination is left exactly
-as it was. Pass `durable=True` to also `fsync` the **parent directory**: the
-rename is atomic but not _persisted_ across a power loss until the containing
-directory is synced (the "fsync the directory too" nuance — see references).
+If the body raises, the destination is left as it was and cleanup attempts to
+remove the scratch file. Cleanup failures are attached as notes to the original
+exception and can leave a scratch file behind. A killed writer may also leave
+one. Pass `durable=True` to attempt `fsync` on the parent directory after the
+rename. `sync_dir` suppresses OS errors, so this is best effort and does not
+guarantee persistence when directory syncing fails or is unsupported.
 
 Rewriting an existing file preserves its permissions from scratch creation, so
 an initially broader mode cannot leak replacement data through a retained read

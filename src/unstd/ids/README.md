@@ -23,7 +23,8 @@ defect rather than a new expectation.
 
 `derive` is plain RFC 4122 v5, so an implementation in any other language agrees
 with it byte for byte — which is the point, when two planes read and write the
-same derived id column. The vectors are pinned in `tests/ids/test_uid.py`.
+same derived id column. The vectors are pinned in
+[`test_uid.py`](../../../tests/suites/product/ids/unit/test_uid.py).
 
 ## Backend
 

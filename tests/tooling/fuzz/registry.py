@@ -279,7 +279,12 @@ def load_seeds(target: Target, root: Path = ROOT) -> tuple[Seed, ...]:
                 row["origin"],
             )
         )
-    actual = {path.name for path in directory.iterdir() if path.name != "seeds.json"}
+    actual = {
+        path.name
+        for path in directory.iterdir()
+        if path.name != "seeds.json"
+        and not (path.name == "README.md" and path.is_file() and not path.is_symlink())
+    }
     if actual != files:
         _fail(
             f"{target.name}: orphan or missing corpus inputs: {sorted(actual ^ files)}"
@@ -294,7 +299,11 @@ def check(root: Path = ROOT) -> tuple[Target, ...]:
     targets = load_registry(root)
     for target in targets:
         load_seeds(target, root)
-    actual = {path.name for path in (root / "corpus").iterdir()}
+    actual = {
+        path.name
+        for path in (root / "corpus").iterdir()
+        if not (path.name == "README.md" and path.is_file() and not path.is_symlink())
+    }
     if actual != {target.name for target in targets}:
         _fail("orphan or missing target corpus directories")
     return targets

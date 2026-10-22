@@ -63,6 +63,21 @@ shared references, text similarity uses different algorithms across backends,
 and random bulk draws can return arrays or lists with different seeded streams.
 These helpers extend the stdlib rather than promising an import-only migration.
 
+## Repository layout
+
+- [`src/`](src/README.md) contains the installable Python package and bundled C
+  extensions; [`src/unstd/`](src/unstd/README.md) indexes the module APIs.
+- [`tests/`](tests/README.md) contains product and assurance suites, shared
+  support, and standalone campaign tools.
+- [`bench/`](bench/README.md) contains benchmark drivers and recorded results.
+- [`native/`](native/README.md) contains the opt-in Rust text experiment.
+- [`.github/`](.github/README.md) contains CI, campaign, audit, and release workflows.
+- [`changelog.d/`](changelog.d/README.md) contains unreleased change fragments.
+
+Each repository folder has a README describing its contents and role. Keep that
+README current when adding or moving files, and include one with new folders.
+Generated environments, caches, and build outputs are excluded from this policy.
+
 ## Testing
 
 The [test suite](tests/README.md) follows Billy's owner-first Python layout:

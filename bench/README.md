@@ -1,9 +1,8 @@
 # `bench` — the harness behind the speedup claims
 
-`unstd` exists because a native backend is faster than the stdlib module it
-stands in for. That is a measurable claim. Until this package landed it was an
-unmeasured one: the `clone` README carried a table of microseconds annotated
-"measured on this dev env" that nobody, including its author, could run again.
+Benchmark drivers and recorded measurements for `unstd` APIs, optional backends,
+and bundled native kernels. Cases validate comparable outputs before timing;
+reports retain gains, losses, and backend-specific limitations.
 
 ```console
 python3 -m bench                 # measure everything, print a table
@@ -85,7 +84,7 @@ argument or one mismatched dtype turns a rigorous ratio into a fabricated one,
 and it is the easiest mistake in the genre.
 
 Cases where the two sides *legitimately* compute different things are marked
-`[not like-for-like]` by `bench list` and carry a note saying so. RE2 versus a
+`[not like-for-like]` by `bench list` and carry a note saying so. irregex versus a
 backtracking engine, BLAKE3 versus BLAKE2b, and a PCG64 bulk draw versus a
 `random.randrange` loop are capability comparisons, not faster spellings of one
 algorithm, and the note has to say which.

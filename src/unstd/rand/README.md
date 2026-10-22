@@ -13,10 +13,10 @@ legible paths.
 
 The **`rand` extra** (`pip install 'unstd[rand]'`) provides
 [`numpy`](https://numpy.org/) — the bulk path rides its `Generator(PCG64)` for
-vectorized C-speed draws. Without the extra (this base install) the whole seedable
-surface transparently falls back to stdlib `random` (Mersenne Twister): identical
-API, scalar speed, and the bulk helpers return a Python `list` instead of an
-`ndarray`. `HAVE_NUMPY` exposes which backend is live. The `crypto` path never
+vectorized bulk draws. Scalar functions always use stdlib `random` (Mersenne
+Twister); bulk functions also use it when NumPy is absent. The bulk array helpers
+return a Python `list` on that fallback and an `ndarray` with NumPy.
+`HAVE_NUMPY` exposes which backend is live. The `crypto` path never
 touches the extra — it is always `secrets`.
 
 ## `draw` — seedable PRNG
@@ -27,7 +27,7 @@ from unstd import rand
 rand.seed(1234)  # single reproducibility entrypoint (both backends)
 x = rand.random()  # float in [0, 1)
 n = rand.randint(1, 6)  # inclusive both ends (stdlib semantics)
-u = rand.uniform(-1.0, 1.0)  # float in [a, b)
+u = rand.uniform(-1.0, 1.0)  # float between a and b; rounding can include b
 c = rand.choice(items)  # one element (original Python object)
 rand.shuffle(items)  # in place
 s = rand.sample(items, k=3)  # k distinct, without replacement
@@ -37,14 +37,15 @@ ks = rand.ints(10_000, 0, 100)  # bulk ints    — ndarray | list
 cs = rand.choices(items, 100, weights=w)  # bulk, with replacement (list)
 ```
 
-`seed(n)` reseeds **both** the numpy `Generator(PCG64)` and the stdlib fallback, so
-a run is reproducible whichever backend is active — and it never touches the crypto
-path.
+`seed(n)` reseeds both the NumPy `Generator(PCG64)` (when present) and stdlib's
+engine. Repeating the same calls with the same backend and seed reproduces the
+stream; switching backends changes the bulk sequence. It never touches the
+crypto path.
 
-**Divergence (deliberate, pinned in `tests/rand/test_rand.py`):** the bulk helpers
-`floats`/`ints` return a numpy `ndarray` on the numpy backend and a Python `list` on
-the stdlib fallback — same values, different container — so callers keep the
-vectorized array where it exists.
+The bulk helpers `floats`/`ints` return a NumPy `ndarray` on the NumPy backend and
+a Python `list` on the stdlib fallback, with different seeded sequences. These
+contracts are checked in
+[`test_rand.py`](../../../tests/suites/product/rand/unit/test_rand.py).
 
 ## `crypto` — the CSPRNG path
 

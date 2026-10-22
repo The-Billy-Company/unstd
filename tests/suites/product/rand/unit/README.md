@@ -1,0 +1,13 @@
+# Randomness API contracts
+
+`test_rand.py` checks secure token shapes, integer/sequence bounds, empty/error cases, and deterministic seeding for scalar and bulk draws. It explicitly forces stdlib generation and exercises the NumPy implementation when available.
+
+Seeded sequences are compared within their selected backend. Tests do not require NumPy and stdlib generators to produce identical sequences, and collision samples alone are not treated as proof of cryptographic security.
+
+Run from the repository root:
+
+```console
+uv run --no-sync pytest tests/suites/product/rand/unit -q
+```
+
+See [the module test overview](../README.md) for related evidence.

@@ -74,7 +74,8 @@ stdlib `secrets` and never seedable. One randomness door in the program, not two
 
 ## Known-answer vectors
 
-`tests/crypto/blake3_reference_vectors.json` is the BLAKE3 team's own published
+[`blake3_reference_vectors.json`](../../../tests/suites/product/crypto/unit/blake3_reference_vectors.json)
+is the BLAKE3 team's own published
 [test vector set](https://github.com/BLAKE3-team/BLAKE3/blob/master/test_vectors/test_vectors.json),
 vendored verbatim, and it drives all three modes - plain hash, keyed hash, and
 `derive_key` - across 35 input lengths that span the chunk and subtree

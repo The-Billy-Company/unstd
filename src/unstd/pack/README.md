@@ -45,9 +45,12 @@ arr = binpack.unpack_array("<f4", blob)  # ndarray (numpy) | list (fallback)
 
 ### `pack_array` / `unpack_array` — the accelerated array seam
 
-`dtype` is a NumPy dtype string — a typestr (`"<f4"`, `">i8"`, `"=u2"`, `"u1"`) or
-a spelled-out name (`"float32"`). Endianness prefixes `<` / `>` are explicit;
-`=` / `|` / no prefix mean native standard size.
+The portable dtype subset is signed/unsigned integers of 1, 2, 4, or 8 bytes
+and floats of 2, 4, or 8 bytes. Use typestrs (`"<f4"`, `">i8"`, `"=u2"`, `"u1"`)
+or their spelled-out names (`"float32"`, `"uint16"`, etc.). Endianness prefixes
+`<` / `>` are explicit; `=` / `|` / no prefix select native byte order on the
+fallback. NumPy accepts additional dtype forms, including booleans and complex
+numbers, which the fallback does not implement.
 
 - **With the `pack` extra (NumPy present):** `pack_array` encodes via
   `numpy.asarray(seq, dtype).tobytes()`; `unpack_array` returns a **zero-copy**
@@ -55,8 +58,13 @@ a spelled-out name (`"float32"`). Endianness prefixes `<` / `>` are explicit;
   follows the buffer: immutable bytes produce a read-only array, while a mutable
   buffer produces a writable view. Copy it (`arr.copy()`) for independent data.
 - **Without the extra (base install):** both fall back to stdlib `struct` — the
-  same dtype grammar, **byte-identical** encoded output, and `unpack_array`
-  returns a `list` of Python scalars instead of an `ndarray`.
+  portable dtype subset, with `unpack_array` returning a `list` of Python scalars
+  instead of an `ndarray`. Compatible values produce the same binary layout.
+
+Input conversion and errors follow the selected backend. For example, NumPy
+converts `1.5` to `1` for `"<i4"`, while `struct` rejects a float for that integer
+format. Callers needing backend-independent behavior should provide values
+already valid for the portable dtype rather than relying on NumPy coercion.
 
 Both paths require the buffer's byte size to be a whole multiple of the dtype's itemsize; a
 partial trailing element raises `binpack.error` (fallback) / `ValueError`
@@ -89,10 +97,9 @@ or about to become one. If you have a list and want bytes once, reach for
 ### Backend & fallback
 
 The scalar `struct` surface is pure stdlib and needs no extra. The array helpers
-prefer NumPy (the `pack` extra, `numpy==2.5.0`) and degrade gracefully:
-`try: import numpy … except ImportError: <stdlib struct path>`. The two backends
-are pinned to emit identical bytes and round-trip identically — asserted in
-`tests/pack/test_pack.py`.
+prefer NumPy (the `pack` extra, `numpy>=2.5`) and otherwise use `struct`.
+Tests compare the portable numeric layouts and buffer behavior in
+[`tests/suites/product/pack/unit/test_pack.py`](../../../tests/suites/product/pack/unit/test_pack.py).
 
 ### Prior art
 
