@@ -212,7 +212,11 @@ def _choices[T](
     p = None
     if weights is not None:
         w = _np.asarray(weights, dtype=float)
-        p = w / w.sum()
+        # Dividing by a negative total would flip signs past NumPy's own check.
+        if (total := w.sum()) <= 0.0:
+            msg = "Total of weights must be greater than zero"
+            raise ValueError(msg)
+        p = w / total
     # One C-level unbox of the whole index array, not an `int()` per element — ~1.8x.
     return list(map(items.__getitem__, gen.choice(len(items), size=n, p=p).tolist()))
 
