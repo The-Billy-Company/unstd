@@ -296,6 +296,9 @@ def atomic_writer(
     The temp file is co-located with the destination so the rename
     stays on one filesystem (``os.replace`` is only atomic within a filesystem).
     """
+    if mode not in ("w", "wb"):
+        msg = "mode must be 'w' or 'wb'"
+        raise ValueError(msg)
     return _atomic_writer(Path(path), mode, encoding, durable)
 
 
