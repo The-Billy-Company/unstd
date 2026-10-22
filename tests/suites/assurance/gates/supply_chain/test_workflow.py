@@ -76,6 +76,7 @@ def _repair_tool_export(workflows):
     (export,) = [step for step in steps if step.get("run", "").startswith("uv export ")]
     tokens = shlex.split(export["run"])
     assert tokens[tokens.index("--output-file") + 1] == constraints
+    assert constraints == "${{ runner.temp }}/release-constraints.txt"
     assert steps.index(export) < steps.index(build)
     return tokens
 
@@ -208,19 +209,25 @@ def test_ci_requires_the_reusable_supply_chain_gate(workflows):
     assert "supply-chain" in _needs(jobs["result"])
 
 
-def test_dedicated_gate_requires_its_parser_before_any_possible_optional_skip(
+def test_dedicated_gate_requires_parser_and_builder_before_any_optional_skip(
     workflows,
 ):
     steps = _steps(workflows["supply-chain"])
     sync = next(step for step in steps if step.get("run", "").startswith("uv sync "))
-    assert {"--locked", "--no-install-project"} <= set(shlex.split(sync["run"]))
-    assert "--only-group supply-chain" in sync["run"]
+    tokens = shlex.split(sync["run"])
+    assert {"--locked", "--no-install-project"} <= set(tokens)
+    assert {
+        tokens[index + 1]
+        for index, value in enumerate(tokens)
+        if value == "--only-group"
+    } == {"supply-chain", "release"}
     manifest = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text())
     assert {
         re.split(r"[<>=!~;\[]", requirement, maxsplit=1)[0]
         for requirement in manifest["dependency-groups"]["supply-chain"]
     } == {"pytest", "hypothesis", "packaging", "ruamel-yaml"}
     parser = next(step for step in steps if "import ruamel.yaml" in step.get("run", ""))
+    assert "cibuildwheel" in parser["run"]
     tests = next(step for step in steps if "-m pytest" in step.get("run", ""))
     assert steps.index(sync) < steps.index(parser) <= steps.index(tests)
     assert not parser.get("continue-on-error", False)
