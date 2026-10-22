@@ -405,3 +405,50 @@ def test_last_agrees_across_its_exact_type_fast_path(xs: object) -> None:
     seq = list(xs)  # type: ignore[call-overload]
     assert last(xs, None) == (seq[-1] if seq else None)  # type: ignore[arg-type]
     assert last(iter(seq), None) == (seq[-1] if seq else None)
+
+
+@pytest.mark.parametrize("truthy_first", [False, True])
+def test_partition_freezes_a_mutable_predicate_result(truthy_first: bool) -> None:
+    class Verdict:
+        value = False
+
+        def __bool__(self) -> bool:
+            return self.value
+
+    verdict = Verdict()
+    observed = []
+
+    def pred(value: int) -> Verdict:
+        observed.append(value)
+        verdict.value = value % 2 == 1
+        return verdict
+
+    falsy, truthy = partition(range(6), pred)
+    if truthy_first:
+        accepted, rejected = list(truthy), list(falsy)
+    else:
+        rejected, accepted = list(falsy), list(truthy)
+    assert accepted == [1, 3, 5]
+    assert rejected == [0, 2, 4]
+    assert observed == list(range(6))
+
+
+@pytest.mark.parametrize("truthy_first", [False, True])
+def test_partition_observes_truth_exactly_once_per_item(truthy_first: bool) -> None:
+    observed = []
+
+    class Verdict:
+        def __init__(self, value: int) -> None:
+            self.value = value
+
+        def __bool__(self) -> bool:
+            observed.append(self.value)
+            return self.value % 2 == 1
+
+    falsy, truthy = partition(range(6), Verdict)
+    if truthy_first:
+        accepted, rejected = list(truthy), list(falsy)
+    else:
+        rejected, accepted = list(falsy), list(truthy)
+    assert (rejected, accepted) == ([0, 2, 4], [1, 3, 5])
+    assert observed == list(range(6))
