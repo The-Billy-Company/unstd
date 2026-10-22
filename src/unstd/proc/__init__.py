@@ -46,7 +46,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import math
 import os
-import subprocess
+import subprocess  # nosec B404 # the public API is a subprocess wrapper
 import time
 from typing import TYPE_CHECKING, TypedDict, Unpack, override
 
@@ -186,7 +186,7 @@ def run(
     # Own the child explicitly. subprocess.run delegates exceptional reaping to
     # Popen.__exit__, whose KeyboardInterrupt path may skip wait() after
     # communicate() has already consumed its short SIGINT grace period.
-    with subprocess.Popen(  # noqa: S603 — shell=False + explicit argv
+    with subprocess.Popen(  # noqa: S603  # nosec B603 # shell=False + explicit argv
         cmd,
         stdin=subprocess.PIPE if stdin_text is not None else None,
         stdout=subprocess.PIPE,

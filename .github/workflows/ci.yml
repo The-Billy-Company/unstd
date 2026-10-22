@@ -18,6 +18,13 @@ concurrency:
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
+  static-analysis:
+    name: Static analysis
+    uses: ./.github/workflows/static-analysis.yml
+    permissions:
+      contents: read
+      security-events: write
+
   supply-chain:
     name: Supply chain
     uses: ./.github/workflows/supply-chain.yml
@@ -349,7 +356,7 @@ jobs:
   result:
     name: CI / Required groups
     if: always()
-    needs: [supply-chain, lint, test, resources, native, native-rust, native-sanitizers]
+    needs: [static-analysis, supply-chain, lint, test, resources, native, native-rust, native-sanitizers]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

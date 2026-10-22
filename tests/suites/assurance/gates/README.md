@@ -14,6 +14,7 @@ share the active `gates` inventory owner.
 | [packaging](packaging/README.md) | Published package descriptions and lazy import/version contracts |
 | [release](release/README.md) | Distribution validation and publication manifest integrity |
 | [resources](resources/README.md) | Resource budgets, measurements, failure controls, and cleanup |
+| [static_analysis](static_analysis/README.md) | SAST evidence validation, real scanner controls, and required workflow wiring |
 | [supply_chain](supply_chain/README.md) | Lock policy, advisory evidence, SBOMs, and release workflow wiring |
 
 Tests directly in this directory verify the inventory/runner, CI groups and

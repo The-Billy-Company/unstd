@@ -8,7 +8,7 @@ from pathlib import Path
 import re
 import shlex
 import shutil
-import subprocess
+import subprocess  # nosec B404 # build tools require explicit compiler processes
 import sys
 import sysconfig
 from tempfile import NamedTemporaryFile, TemporaryDirectory
@@ -150,7 +150,7 @@ class CustomBuildHook(BuildHookInterface):
             if target is not None:
                 command.extend(("--target", target))
             command.extend(("--", "--print=native-static-libs"))
-            result = subprocess.run(  # noqa: S603 — explicit compiler argv, no shell
+            result = subprocess.run(  # noqa: S603  # nosec B603 # explicit compiler argv, no shell
                 command, capture_output=True, text=True, check=False
             )
             messages = [result.stderr]
@@ -197,7 +197,7 @@ class CustomBuildHook(BuildHookInterface):
         if lipo is None:
             message = "macOS universal Rust archives require lipo"
             raise RuntimeError(message)
-        subprocess.run(  # noqa: S603 — fixed tool and explicit local archive paths
+        subprocess.run(  # noqa: S603  # nosec B603 # fixed tool and explicit local archive paths
             [
                 lipo,
                 "-create",

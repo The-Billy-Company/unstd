@@ -1,0 +1,164 @@
+name: Static analysis
+
+on:
+  workflow_call:
+  workflow_dispatch:
+  schedule:
+    # New CodeQL query packs can expose defects in otherwise unchanged source.
+    - cron: "19 9 * * 1"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: static-analysis-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  python:
+    name: SAST / Python & DRY
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Python & audited tools
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: "0.13.0"
+          python-version: "3.13"
+          enable-cache: false
+      - name: Install locked analyzers and gate-test dependencies
+        run: uv sync --locked --only-group static-analysis --only-group supply-chain --no-install-project
+      - name: Require both analyzers before gate tests
+        run: uv run --no-sync python -c "import bandit, pylint"
+      - name: Prepare evidence directory
+        run: python -c "from pathlib import Path; Path('.local/sast').mkdir(parents=True, exist_ok=True)"
+      - name: Scan every production Python module and build hook
+        run: uv run --no-sync bandit --recursive src hatch_build.py --severity-level all --confidence-level all --format json --output .local/sast/bandit.json
+      - name: Reject findings and incomplete Bandit scans
+        if: always()
+        run: python -m tests.tooling.static_analysis bandit .local/sast/bandit.json
+      - name: Reject duplicated production implementation
+        shell: bash
+        run: uv run --no-sync pylint src/unstd | tee .local/sast/duplicates.txt
+      - name: Prove findings and broken scans cannot pass
+        run: uv run --no-sync python -m pytest tests/suites/assurance/gates/static_analysis -q --junitxml=.local/sast/gates.xml
+      - name: Retain Python and duplication evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: sast-python-${{ github.run_attempt }}
+          path: .local/sast/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+
+  codeql:
+    name: SAST / CodeQL / ${{ matrix.language }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {language: python, build-mode: none}
+          - {language: c-cpp, build-mode: manual}
+          - {language: rust, build-mode: none}
+          - {language: actions, build-mode: none}
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: "0.13.0"
+          python-version: "3.13"
+          enable-cache: false
+      - name: Install locked build tools
+        if: matrix.language == 'c-cpp'
+        shell: bash
+        run: |
+          for python in 3.12 3.13 3.14; do
+            UV_PROJECT_ENVIRONMENT=".local/sast/build-$python" \
+              uv sync --locked --only-group build --no-install-project --python "$python"
+          done
+      - name: Initialize full-source security analysis
+        uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+          queries: security-extended
+      - name: Trace all C extensions and the Rust CPython adapter
+        if: matrix.language == 'c-cpp'
+        shell: bash
+        env:
+          CIBUILDWHEEL: "1"
+        run: |
+          # CPython's version guards select different native JSON internals.
+          # Explicit venv interpreters keep every build on its locked backend.
+          for python in 3.12 3.13 3.14; do
+            export VIRTUAL_ENV="$PWD/.local/sast/build-$python"
+            uv build --python "$VIRTUAL_ENV/bin/python" --no-build-isolation --wheel --out-dir ".local/sast/wheels/$python/c"
+            UNSTD_TEXT_RUST=1 uv build --python "$VIRTUAL_ENV/bin/python" --no-build-isolation --wheel --out-dir ".local/sast/wheels/$python/rust"
+          done
+      - name: Analyze full source and retain SARIF
+        id: analyze
+        uses: github/codeql-action/analyze@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          category: /language:${{ matrix.language }}
+          output: .local/sast/codeql
+          # GitHub default setup already owns code-scanning uploads. Keep it
+          # active; an advanced upload would be rejected by GitHub. This scan
+          # still runs all extended queries and blocks on every SARIF finding.
+          upload: never
+          upload-database: false
+      # CodeQL's analysis succeeding does not mean the source has no findings.
+      # Check the entire report, including preexisting alerts, before CI passes.
+      - name: Reject CodeQL findings and incomplete reports
+        if: always() && steps.analyze.outcome != 'skipped'
+        run: python -m tests.tooling.static_analysis sarif .local/sast/codeql
+      - name: Retain CodeQL evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: sast-codeql-${{ matrix.language }}-${{ github.run_attempt }}
+          path: .local/sast/codeql/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+
+  rust:
+    name: SAST / Rust Clippy
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Select stable Rust with Clippy
+        run: |
+          rustup toolchain install stable --profile minimal --component clippy
+          rustup default stable
+      - name: Reject all Rust warnings
+        shell: bash
+        run: |
+          mkdir -p .local/sast
+          cargo clippy --manifest-path native/text/Cargo.toml --locked --offline --all-targets -- -D warnings 2>&1 | tee .local/sast/clippy.txt
+      - name: Retain Rust analysis evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: sast-rust-${{ github.run_attempt }}
+          path: .local/sast/clippy.txt
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30

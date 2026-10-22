@@ -2,8 +2,9 @@
 
 | Workflow | Purpose and triggers |
 | --- | --- |
-| [`ci.yml`](ci.yml) | Pull requests, pushes to `main`, manual runs, and reusable calls. Runs quality and inventory checks, grouped Python 3.12–3.14 tests, dependency floors and base-install tests, resource bounds, native safety checks, and the opt-in Rust experiment. Calls the supply-chain workflow. |
+| [`ci.yml`](ci.yml) | Pull requests, pushes to `main`, manual runs, and reusable calls. Runs quality and inventory checks, grouped Python 3.12–3.14 tests, dependency floors and base-install tests, resource bounds, native safety checks, and the opt-in Rust experiment. Calls the supply-chain and static-analysis workflows. |
 | [`release.yml`](release.yml) | Version tags (`v*`) and manual runs. Requires CI, builds an sdist and platform wheels, verifies archive contents and checksums, then publishes verified version-tag refs through the `pypi` environment using Trusted Publishing. Manual branch runs build and verify; a manual run against a version tag can also publish. |
+| [`static-analysis.yml`](static-analysis.yml) | Reusable, manual, and weekly full-source SAST. Runs Bandit, CodeQL for Python/C/C++/Rust/Actions, Rust Clippy, and Python duplicate-code enforcement. Findings and incomplete evidence block CI and releases. |
 | [`supply-chain.yml`](supply-chain.yml) | Reusable, manual, and daily audit runs. Checks dependency trust and lock freshness, writes a CycloneDX SBOM, audits the lock, and tests tamper rejection. |
 | [`fuzz.yml`](fuzz.yml) | Pull requests, pushes to `main`, daily schedules, and manual runs. Runs deterministic and Atheris campaigns for installed and stdlib backends on Linux/Python 3.12. |
 | [`chaos.yml`](chaos.yml) | Pull requests, pushes to `main`, daily schedules, and manual runs. Exercises fault/recovery campaigns for installed and stdlib backends on Linux and macOS. |

@@ -95,6 +95,12 @@ Each repository folder has a README describing its contents and role. Keep that
 README current when adding or moving files, and include one with new folders.
 Generated environments, caches, and build outputs are excluded from this policy.
 
+## Security and shared logic
+
+The [static analysis policy](SECURITY.md) documents required SAST and duplication
+checks, local commands, reviewed exceptions, and failure handling. CI and release
+both require clean security analysis and production duplicate-code checks.
+
 ## Testing
 
 The [test suite](tests/README.md) follows Billy's owner-first Python layout:
