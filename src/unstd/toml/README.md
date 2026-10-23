@@ -75,3 +75,7 @@ Read such a document back with `tomlkit.parse` (or this module's `parse`) — no
   spec-compliant TOML 1.0.0 parser, read-only on purpose.
 - **[`tomlkit`](https://github.com/sdispater/tomlkit)** — Sébastien Eustace; the
   style-preserving TOML engine behind Poetry.
+
+## Implementation layout
+
+TOML dialect normalization lives in [`_internal/`](_internal/README.md). The public package keeps stdlib read aliases, optional write imports and document builders.
