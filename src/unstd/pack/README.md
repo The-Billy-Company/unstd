@@ -143,3 +143,7 @@ Tests compare the portable numeric layouts and buffer behavior in
 - Structure-aware numeric codecs (byte-plane splitting for f32, int8 scalar
   quantization, a self-describing frame header) — the direction a future `pack`
   array backend would go; NumPy is the backend for now.
+
+## Implementation layout
+
+Portable dtype grammar and bounded format caches live in [`_internal/`](_internal/README.md); `binpack` keeps public calls and optional-backend dispatch.
