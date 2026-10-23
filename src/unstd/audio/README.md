@@ -88,3 +88,7 @@ conversions and a quantization step to reproduce its own input.
   (Erik de Castro Lopo), the fast path this module wraps.
 - The stdlib [`wave`](https://docs.python.org/3/library/wave.html) module — the
   raw-frame surface `unstd.audio` replaces, and the fallback codec.
+
+## Implementation layout
+
+Pure sample conversion and frame checks live in [`_internal/`](_internal/README.md); `wavx` retains backend selection, I/O and its public definitions.
