@@ -143,8 +143,12 @@ backend-build = [
   # and provide CMake from a hashed wheel in the release test interpreter.
   "setuptools-scm>=8 ; sys_platform == 'win32' and platform_machine == 'ARM64'",
   "wheel>=0.45 ; sys_platform == 'win32' and platform_machine == 'ARM64'",
-  "cmake>=3.31,<4 ; sys_platform == 'win32' and platform_machine == 'ARM64'",
+  # VS 2026 ARM runners require CMake 4.2 and a native Maturin backend.
+  "cmake>=4.2,<5 ; sys_platform == 'win32' and platform_machine == 'ARM64'",
+  "maturin>=1.15,<2 ; sys_platform == 'win32' and platform_machine == 'ARM64'",
 ]
+# Linux build containers carry their own frontend independently of the host.
+release-uv = ["uv==0.13.4"]
 release = [
   "cibuildwheel==4.3.1",
   "delocate==0.13.0 ; sys_platform == 'darwin'",

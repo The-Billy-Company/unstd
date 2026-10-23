@@ -65,7 +65,7 @@ jobs:
           enable-cache: true
           cache-suffix: release-${{ matrix.os }}-${{ matrix.python }}
           cache-dependency-glob: "uv.lock\npyproject.toml\n"
-          version: "0.13.0"
+          version: "0.13.4"
           python-version: "3.13"
       - name: Download the shared source distribution
         uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
@@ -82,6 +82,11 @@ jobs:
           CIBW_BUILD: cp${{ matrix.python }}-*
           # Use uv's fast isolated builder and authenticate the build closure
           # exported from the same lock embedded in the published sdist.
+          CIBW_BEFORE_ALL_LINUX: >-
+            uv export --project "{package}" --locked --only-group release-uv
+            --no-emit-project --no-header --output-file release-uv.txt &&
+            python -m pip install --prefix /usr/local --no-deps --only-binary :all:
+            --require-hashes --requirement release-uv.txt
           CIBW_BEFORE_BUILD: >-
             uv export --project "{package}" --locked --only-group build
             --no-emit-project --no-header --output-file build-constraints.txt
@@ -120,7 +125,7 @@ jobs:
       - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           enable-cache: false
-          version: "0.13.0"
+          version: "0.13.4"
           python-version: "3.13"
       - name: Export authenticated build requirements
         run: uv export --locked --only-group build --no-emit-project --no-header --output-file "$RUNNER_TEMP/build-constraints.txt"
