@@ -100,13 +100,13 @@ from re import (  # faithful re-export of the flag + type vocabulary
 )
 from typing import TYPE_CHECKING, Any, Final
 
-from ._faithful import (
+from ._internal.patterns import (
     LinearRegexError,
     _absent_as_empty,
     _LinearPattern,
     _StrictLinearPattern,
-    native_profile,
 )
+from ._internal.profile import native_profile
 
 
 if TYPE_CHECKING:

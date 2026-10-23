@@ -1,8 +1,10 @@
 ---
 doc_radar:
   sentinels:
-    - file: src/unstd/rex/_faithful.py
-      contains: ['_parser.parse(pattern, flags)', 'parsed.getwidth()[0] == 0', 'started = True', 'if started:']
+    - file: src/unstd/rex/_internal/profile.py
+      contains: ['_parser.parse(pattern, flags)', 'parsed.getwidth()[0] == 0']
+    - file: src/unstd/rex/_internal/patterns.py
+      contains: ['started = True', 'if started:']
     - file: src/unstd/rex/__init__.py
       contains: ['python = _re.compile(pattern, flags)', 'profile, _irgx.error', '_MAXCACHE = 512']
     - file: pyproject.toml
@@ -132,3 +134,7 @@ We replaced RE2 once irregex supplied the existing API, retiring that dependency
 The safety primitive is [Thompson's automaton construction, explained by Russ
 Cox](https://swtch.com/~rsc/regexp/regexp1.html); the language contract comes from
 [Python's regex documentation](https://docs.python.org/3/library/re.html).
+
+## Implementation layout
+
+Semantic proofs and compiled-pattern adapters live in [`_internal/`](_internal/README.md). The public package owns compilation policy and caches; `_faithful` retains compatibility imports.
