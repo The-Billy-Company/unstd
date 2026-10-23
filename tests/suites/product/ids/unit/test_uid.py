@@ -180,10 +180,13 @@ def test_stdlib_fallback_sorts_in_mint_order() -> None:
     assert sorted(ids) == ids
 
 
-def test_stdlib_fallback_counter_increments_within_same_millisecond() -> None:
+def test_stdlib_fallback_counter_increments_within_same_millisecond(
+    monkeypatch,
+) -> None:
     """Two mints pinned to the identical millisecond must carry strictly
     increasing counters (bits 75..64), not independent random draws.
     """
+    monkeypatch.setattr(uid, "_seed_counter", lambda: 0)
     with uid._counter_lock:
         uid._last_ms = None  # force a clean reseed for a deterministic start
         uid._last_counter = 0
