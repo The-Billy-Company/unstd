@@ -49,13 +49,16 @@ Import the module, not its members::
 
 from __future__ import annotations
 
-from contextlib import AbstractContextManager, ExitStack, contextmanager, suppress
+from contextlib import AbstractContextManager, contextmanager
 import errno
 import os
 from pathlib import Path
 import secrets
 import stat
 from typing import IO, TYPE_CHECKING, Literal, overload
+
+from unstd.fs._internal.durability import sync_directory as _sync_directory
+from unstd.fs._internal.walk import _walk_descriptors, _walk_following, _walk_portable
 
 
 if TYPE_CHECKING:
@@ -82,13 +85,6 @@ def ensure_dir(path: _Pathish) -> Path:
     return p
 
 
-def _sync_directory_handle(fd: int, path: _Pathish, *, strict: bool) -> None:
-    """Validate strict handle ownership before asking the OS to persist it."""
-    if strict and not stat.S_ISDIR(os.fstat(fd).st_mode):
-        raise NotADirectoryError(errno.ENOTDIR, os.strerror(errno.ENOTDIR), path)
-    os.fsync(fd)
-
-
 def sync_dir(path: _Pathish, *, strict: bool = False) -> None:
     """Sync a directory, suppressing OS failures unless ``strict=True``.
 
@@ -97,29 +93,7 @@ def sync_dir(path: _Pathish, *, strict: bool = False) -> None:
     observes OS acknowledgments; it cannot establish physical power-loss safety
     independently of the filesystem and storage device.
     """
-    try:
-        flags = os.O_RDONLY | (getattr(os, "O_DIRECTORY", 0) if strict else 0)
-        fd = os.open(path, flags)
-    except OSError:
-        if strict:
-            raise
-        return  # e.g. Windows cannot open a directory as an ordinary file
-    try:
-        _sync_directory_handle(fd, path, strict=strict)
-    except BaseException as error:
-        try:
-            os.close(fd)
-        except OSError as cleanup_error:
-            if strict:
-                error.add_note(f"directory close failed: {cleanup_error}")
-        if strict or not isinstance(error, OSError):
-            raise
-    else:
-        if strict:
-            os.close(fd)
-            return
-        with suppress(OSError):
-            os.close(fd)
+    _sync_directory(path, strict=strict, os_api=os)
 
 
 def _prepare_parent(parent: Path, *, strict: bool) -> None:
@@ -372,120 +346,6 @@ _WALK_FLAGS = (
 )
 
 
-def _open_walk_dir(
-    path: _Pathish, *, parent_fd: int | None = None
-) -> tuple[int, Iterator[os.DirEntry[str]], ExitStack] | None:
-    """Acquire one no-follow directory and its scan, transferring both owners."""
-    try:
-        with ExitStack() as owned:
-            fd = os.open(path, _WALK_FLAGS, dir_fd=parent_fd)
-            owned.callback(os.close, fd)
-            scan = owned.enter_context(os.scandir(fd))
-            return fd, scan, owned.pop_all()
-    except OSError:
-        return None  # vanished, unreadable, or replaced by a symlink
-
-
-def _walk_descriptors(root: Path) -> Iterator[Path]:
-    """Anchor every child open to its parent's handle, with O(depth) owners."""
-    opened = _open_walk_dir(root)
-    if opened is None:
-        return
-    stack = [(root, *opened)]
-    try:
-        while stack:
-            path, fd, scan, owned = stack[-1]
-            for entry in scan:
-                child = path / entry.name
-                try:
-                    directory = entry.is_dir(follow_symlinks=False)
-                    regular = not directory and entry.is_file(follow_symlinks=False)
-                except OSError:
-                    continue  # an entry vanished or became unreadable during its check
-                if directory:
-                    opened = _open_walk_dir(entry.name, parent_fd=fd)
-                    if opened is not None:
-                        stack.append((child, *opened))
-                        break  # resume this anchored scan after its child closes
-                elif regular:
-                    yield child
-            else:
-                stack.pop()
-                owned.close()
-    finally:
-        # Close every live frame on exhaustion, generator.close(), or an error.
-        # ExitStack still closes the remaining frames if one cleanup raises.
-        with ExitStack() as cleanup:
-            for _, _, _, owned in stack:
-                cleanup.callback(owned.close)
-
-
-def _directory_identity(path: Path) -> tuple[int, int] | None:
-    """The identity of an ordinary directory, rejecting links/reparse points."""
-    try:
-        info = os.lstat(path)
-    except OSError:
-        return None
-    if not stat.S_ISDIR(info.st_mode) or (
-        getattr(info, "st_file_attributes", 0)
-        & getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0)
-    ):
-        return None
-    return info.st_dev, info.st_ino
-
-
-def _walk_portable(root: Path) -> Iterator[Path]:
-    """Best-effort no-follow traversal where directory handles are unavailable."""
-    identity = _directory_identity(root)
-    if identity is None:
-        return
-    stack = [(root, identity)]
-    while stack:
-        path, expected = stack.pop()
-        if _directory_identity(path) != expected:
-            continue
-        try:
-            scan = os.scandir(path)
-        except OSError:
-            continue
-        with scan as entries:
-            # Detect replacements both while queued and across the scan open.
-            # These path checks cannot close every race on a changing namespace.
-            if _directory_identity(path) != expected:
-                continue
-            for entry in entries:
-                if _directory_identity(path) != expected:
-                    break
-                child = path / entry.name
-                try:
-                    directory = entry.is_dir(follow_symlinks=False)
-                    regular = not directory and entry.is_file(follow_symlinks=False)
-                except OSError:
-                    continue
-                if directory:
-                    identity = _directory_identity(child)
-                    if identity is not None:
-                        stack.append((child, identity))
-                elif regular:
-                    yield child
-
-
-def _walk_following(root: _Pathish) -> Iterator[Path]:
-    """The explicitly opted-in path walk, including symlinked directories."""
-    stack: list[_Pathish] = [root]
-    while stack:
-        try:
-            scan = os.scandir(stack.pop())
-        except OSError:
-            continue  # vanished or unreadable directory — skip, don't abort the walk
-        with scan as it:
-            for entry in it:
-                if entry.is_dir(follow_symlinks=True):
-                    stack.append(entry.path)
-                elif entry.is_file(follow_symlinks=True):
-                    yield Path(entry.path)
-
-
 def walk_files(root: _Pathish, *, follow_symlinks: bool = False) -> Iterator[Path]:
     """Recursively yield files under *root* as ``Path``, via ``os.scandir``.
 
@@ -505,8 +365,8 @@ def walk_files(root: _Pathish, *, follow_symlinks: bool = False) -> Iterator[Pat
     may follow links outside *root* or encounter cycles.
     """
     if follow_symlinks:
-        yield from _walk_following(root)
+        yield from _walk_following(root, os)
     elif _FD_WALK_SUPPORTED:
-        yield from _walk_descriptors(Path(root))
+        yield from _walk_descriptors(Path(root), os, _WALK_FLAGS)
     else:
-        yield from _walk_portable(Path(root))
+        yield from _walk_portable(Path(root), os)
