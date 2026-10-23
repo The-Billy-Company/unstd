@@ -11,11 +11,32 @@ doc_radar:
       contains: ['TAG: ${{ github.ref_name }}', 'Build and test CPython wheels']
     - file: src/unstd/serde/structs.py
       contains: ['Callable[[Decimal], object]', 'decimal_format: _DecimalFormat']
+    - file: src/unstd/compress/_reader.py
+      contains: ['_factory = _accelerated.Inflater', '_zlib_globals["crc32"] = _crc32']
+    - file: native/compress/adapter.c
+      contains: ['libdeflate_gzip_decompress_ex(', 'MAX_OUTPUT_BYTES']
 ---
 
 # Changelog
 
 <!-- towncrier release notes start -->
+
+## [3.1.4] - 2026-10-22
+
+### Changed
+
+- Use compiled native bounded inflation and libdeflate CRC32 for gzip streams
+  with `unstd[compress]`, while preserving the running interpreter's framing,
+  buffering, seeking, ownership and malformed-stream delivery order. Eligible
+  complete single-member exact byte buffers use libdeflate after frame and
+  checksum validation. Other one-shot cases retain stdlib parsing and
+  diagnostics. Writes remain on zlib-ng; source builds without the read
+  extension retain the portable zlib-ng stream backend, and base installs keep
+  exact stdlib bindings.
+- Paired [gzip read measurements](bench/gzip-native-reads-results.json) record
+  identical recovered bytes and observed native execution before timing.
+  Require the read extension in native wheel and sanitizer coverage, including
+  exact input-boundary reads and malformed concatenated-member histories.
 
 ## [3.1.3] - 2026-10-22
 

@@ -1,7 +1,19 @@
+---
+doc_radar:
+  sentinels:
+    - file: src/unstd/compress/gzipx.py
+      contains: ['GzipFile = _stdlib.GzipFile', 'if type(data) is not bytes']
+    - file: src/unstd/compress/_reader.py
+      contains: ['_factory = _accelerated.Inflater', '_zlib_globals["crc32"] = _crc32']
+    - file: native/compress/adapter.c
+      contains: ['libdeflate_gzip_decompress_ex(', 'MAX_OUTPUT_BYTES']
+---
+
 # `unstd.compress`
 
-Gzip through a stdlib-compatible surface, with zlib-ng compression behind
-`unstd[compress]`. A base install uses stdlib `gzip` directly.
+Gzip through a stdlib-compatible surface, with native codecs behind
+`unstd[compress]`. A base install binds the five public names directly to stdlib
+`gzip`.
 
 ```python
 from unstd.compress import gzipx
@@ -31,18 +43,29 @@ Python 3.14, and one-shot `compress` timestamps defaulting to current time befor
 File writers retain `mtime=None`. Compressed bytes and ratios may differ between
 engines; the interchange contract is gzip streams and identical recovered bytes.
 
-Read streams use the running interpreter's complete stdlib reader, including
-bounded reads, seeking, header/trailer validation, CRC and concatenated members.
-The native inflater and compatibility adapter slowed common JSON reads; installing
-the compression extra now retains the stdlib read path. One-shot decompression
-uses stdlib zlib's C gzip parser for a complete single member, including optional
-zero padding. Concatenated members, incomplete input and codec failures fall back
-to `gzip.decompress` for its exact parsing rules and diagnostics. Streamed reads
-are never replayed. Native write errors become stdlib `zlib.error`;
-`BadGzipFile` is the stdlib class.
+With the compression extra and compiled read extension, streamed reads use a
+native C inflater and libdeflate CRC32. The inflater links platform `libz` on
+macOS and bundled zlib elsewhere. The running interpreter still supplies gzip
+framing, buffering, header/trailer checks, concatenated members and seeking.
+Small reads keep a bounded output budget rather than expanding the whole member.
+Bytes delivered before malformed-stream failures retain the interpreter's order.
 
-We use [python-zlib-ng](https://python-zlib-ng.readthedocs.io/en/stable/) for its
-native DEFLATE compressor. We retain [Python's gzip contract](https://docs.python.org/3/library/gzip.html)
-around that codec. Throughput and compression size must both be measured for
-the caller's payload and explicit compression level. Threaded streams, raw zlib,
-automatic format detection, and archive extraction are outside this interface.
+Eligible complete single-member exact `bytes` inputs use libdeflate for one-shot
+`decompress`. The native kernel validates framing, CRC32, original size and
+consumed input before returning output, with bounded speculative allocation.
+Concatenations, unusual buffers, oversized candidates and inputs requiring
+stdlib's permissive parsing or diagnostics use `gzip.decompress`. Bytearray,
+view and subclass inputs retain stdlib behavior through that fallback. Streamed
+reads do not replay a failed decode.
+
+Writes use [python-zlib-ng](https://python-zlib-ng.readthedocs.io/en/stable/).
+If a source build lacks the compiled read extension, streams use the zlib-ng
+inflater and CRC32; one-shot decompression uses stdlib. Without the compression
+extra, all five names remain exact stdlib bindings. Exceptions retain stdlib
+families, including the original `BadGzipFile` class.
+
+The [paired read measurements](../../../bench/gzip-native-reads-results.json)
+record workload outputs, observed native calls, source identities and raw timing
+samples. Throughput varies with platform, payload, compression level and read
+shape. Threaded streams, raw zlib, automatic format detection and archive
+extraction are outside this interface.

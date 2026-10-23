@@ -1,4 +1,11 @@
-# Native experiments
+# Native kernels and experiments
+
+[`compress/`](compress/) contains the compiled gzip reader, the libdeflate
+buffer and CRC kernels, and the source closure used for portable inflation.
+Each vendored directory retains its upstream license and an authenticated
+source manifest. macOS links platform zlib; other release platforms compile
+the vendored zlib sources with prefixed symbols. Gzip framing stays faithful
+to the running interpreter through the Python wrapper.
 
 [`text/`](text/README.md) contains an opt-in Rust implementation of the bundled
 text kernels, with a C adapter for CPython. It is selected at build time with

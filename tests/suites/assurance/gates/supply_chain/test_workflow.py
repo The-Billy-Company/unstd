@@ -52,7 +52,7 @@ def _audit_step(workflows):
     return steps[0]
 
 
-def _wheel_test_commands(workflows):
+def _wheel_setup_commands(workflows):
     build = next(
         step
         for step in workflows["release"]["jobs"]["wheels"]["steps"]
@@ -64,9 +64,19 @@ def _wheel_test_commands(workflows):
     assert settings["CIBW_TEST_EXTRAS"] == ""
     assert settings["CIBW_TEST_REQUIRES"] == ""
     tokens = shlex.split(settings["CIBW_BEFORE_TEST"])
-    assert tokens.count("&&") == 1
-    export, install = tokens[: tokens.index("&&")], tokens[tokens.index("&&") + 1 :]
-    return settings["CIBW_BEFORE_TEST"], export, install
+    commands = [[]]
+    for argument in tokens:
+        if argument == "&&":
+            commands.append([])
+        else:
+            commands[-1].append(argument)
+    assert len(commands) == 4
+    return settings["CIBW_BEFORE_TEST"], commands
+
+
+def _wheel_test_commands(workflows):
+    command, setup = _wheel_setup_commands(workflows)
+    return command, *setup[2:]
 
 
 def _repair_tool_export(workflows):
@@ -401,14 +411,37 @@ def test_wheel_test_dependencies_use_only_the_authenticated_locked_closure(workf
     assert export[export.index("--project") + 1] == "{package}"
     assert {
         export[index + 1] for index, option in enumerate(export) if option == "--extra"
-    } == {"serde", "crypto"}
+    } == {"serde", "crypto", "compress"}
     assert export[export.index("--group") + 1] == "supply-chain"
     assert install[:3] == ["uv", "pip", "install"]
-    assert {"--require-hashes", "--no-deps"} <= set(install)
+    assert {"--require-hashes", "--require-build-hashes", "--no-deps"} <= set(install)
     assert (
         install[install.index("--requirements") + 1]
         == export[export.index("--output-file") + 1]
     )
+
+
+def test_windows_arm_source_backend_uses_the_authenticated_build_closure(workflows):
+    _, (export, tools, _, install) = _wheel_setup_commands(workflows)
+    assert export[:2] == ["uv", "export"]
+    assert {"--locked", "--no-emit-project"} <= set(export)
+    assert export[export.index("--only-group") + 1] == "backend-build"
+    constraints = export[export.index("--output-file") + 1]
+    assert tools[:3] == ["uv", "pip", "install"]
+    assert {"--no-deps", "--require-hashes"} <= set(tools)
+    assert tools[tools.index("--only-binary") + 1] == ":all:"
+    assert tools[tools.index("--requirements") + 1] == constraints
+    assert install[install.index("--build-constraints") + 1] == constraints
+    assert "--require-build-hashes" in install
+    with (REPO_ROOT / "pyproject.toml").open("rb") as stream:
+        build = tomllib.load(stream)["dependency-groups"]["backend-build"]
+    for package in ("setuptools-scm", "wheel", "cmake"):
+        assert any(
+            requirement.startswith(package)
+            and "sys_platform == 'win32'" in requirement
+            and "platform_machine == 'ARM64'" in requirement
+            for requirement in build
+        )
 
 
 def test_platform_repair_tools_are_constrained_to_the_audited_release_group(workflows):
@@ -419,20 +452,21 @@ def test_platform_repair_tools_are_constrained_to_the_audited_release_group(work
 
 
 @pytest.mark.parametrize(
-    ("export_status", "install_status"), [(0, 0), (1, 0), (2, 0), (0, 1), (0, 2)]
+    ("failed_stage", "status"),
+    [(0, 0), *((stage, status) for stage in range(1, 5) for status in (1, 2))],
 )
 def test_wheel_test_setup_stops_when_export_or_authenticated_install_fails(
-    workflows, tmp_path: Path, export_status: int, install_status: int
+    workflows, tmp_path: Path, failed_stage: int, status: int
 ):
     command, _, _ = _wheel_test_commands(workflows)
     executable = tmp_path / "uv"
     calls = tmp_path / "uv-calls"
     executable.write_text(
         '#!/bin/sh\nprintf "%s\\n" "$*" >> "$SUPPLY_TEST_CALLS"\n'
-        'case "$1" in\n'
-        'export) exit "$SUPPLY_EXPORT_STATUS" ;;\n'
-        'pip) exit "$SUPPLY_INSTALL_STATUS" ;;\n'
-        "*) exit 99 ;;\nesac\n"
+        'count=$(wc -l < "$SUPPLY_TEST_CALLS")\n'
+        'if [ "$count" -eq "$SUPPLY_FAILED_STAGE" ]; then\n'
+        '  exit "$SUPPLY_STAGE_STATUS"\n'
+        "fi\nexit 0\n"
     )
     executable.chmod(0o700)
     process = subprocess.run(  # noqa: S603 — repository-owned workflow under test
@@ -442,30 +476,32 @@ def test_wheel_test_setup_stops_when_export_or_authenticated_install_fails(
             **os.environ,
             "PATH": f"{tmp_path}:{os.environ['PATH']}",
             "SUPPLY_TEST_CALLS": str(calls),
-            "SUPPLY_EXPORT_STATUS": str(export_status),
-            "SUPPLY_INSTALL_STATUS": str(install_status),
+            "SUPPLY_FAILED_STAGE": str(failed_stage),
+            "SUPPLY_STAGE_STATUS": str(status),
         },
         capture_output=True,
         text=True,
         check=False,
         timeout=10,
     )
-    assert process.returncode == (export_status or install_status)
+    assert process.returncode == status
     observed = [shlex.split(line) for line in calls.read_text().splitlines()]
     assert observed[0][0] == "export"
-    assert len(observed) == (1 if export_status else 2)
-    if not export_status:
+    assert len(observed) == (failed_stage or 4)
+    if len(observed) > 1:
         assert observed[1][:2] == ["pip", "install"]
 
 
-@pytest.mark.parametrize("purpose", ["tests", "repair"])
+@pytest.mark.parametrize("purpose", ["tests", "repair", "build"])
 def test_real_offline_wheel_export_keeps_every_transitive_locked_hash(
     workflows, tmp_path: Path, purpose: str
 ):
     if purpose == "tests":
         _, export, _ = _wheel_test_commands(workflows)
-    else:
+    elif purpose == "repair":
         export = _repair_tool_export(workflows)
+    else:
+        _, (export, _, _, _) = _wheel_setup_commands(workflows)
     # Freeze both inputs so concurrent development cannot change our closure
     # oracle while uv checks and exports the same snapshot.
     snapshot = tmp_path / "source"
@@ -504,8 +540,10 @@ def test_real_offline_wheel_export_keeps_every_transitive_locked_hash(
         for extra in manifest["tool"]["cibuildwheel"]["test-extras"]:
             seeds.extend(root["optional-dependencies"][extra])
         seeds.extend(root["dev-dependencies"]["supply-chain"])
-    else:
+    elif purpose == "repair":
         seeds.extend(root["dev-dependencies"]["release"])
+    else:
+        seeds.extend(root["dev-dependencies"]["backend-build"])
     pending = [edge["name"] for edge in seeds]
     closure = set()
     while pending:
@@ -546,7 +584,7 @@ def test_real_offline_wheel_export_keeps_every_transitive_locked_hash(
             re.split(r"[<>=!~;\[]", requirement, maxsplit=1)[0]
             for requirement in manifest["tool"]["cibuildwheel"]["test-requires"]
         } <= {name for name, _ in observed}
-    else:
+    elif purpose == "repair":
         assert ("delocate", "0.13.0") in observed
         assert (
             "delocate==0.13.0 ; sys_platform == 'darwin'"

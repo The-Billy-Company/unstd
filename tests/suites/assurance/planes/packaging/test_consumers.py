@@ -21,9 +21,10 @@ if TYPE_CHECKING:
 
 _STDLIB_CASES = {
     "compress.gzipx": """
-import gzip, io
+import gzip, io, sys
 from unstd.compress import gzipx
 payload = b'installed gzip payload' * 8
+assert 'unstd.compress._gzip_native' not in sys.modules
 assert gzipx.compress is gzip.compress
 assert gzipx.GzipFile is gzip.GzipFile
 assert gzip.decompress(gzipx.compress(payload, mtime=0)) == payload
@@ -411,6 +412,7 @@ for module in {_PROBE_MODULES[surface]!r}:
         "unstd.clone._clone_native",
         "unstd.crypto._stream_native",
         "unstd.text._text_native",
+        "unstd.compress._gzip_native",
     ],
 )
 def test_base_install_runs_packaged_accelerators_without_backend_extras(
@@ -456,6 +458,12 @@ assert next(pending) == b'next'
 assert native.distance('kitten', 'sitting') == 3
 assert native.distance('雪🙂', '雪x') == 1
 assert native.jaro('same', 'same') == 1.0
+""",
+        "unstd.compress._gzip_native": """
+import gzip
+payload = b'installed native gzip payload' * 128
+assert native.decompress(gzip.compress(payload, mtime=0)) == payload
+assert native.decompress(b'not a gzip frame') is None
 """,
     }[module]
     consumer.run(

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+import shutil
 import socket
 import subprocess
 import sys
@@ -124,6 +125,7 @@ def test_minimal_policy_counts_artifacts_and_accepts_dependency_floor_options(re
         "python_artifacts": 1,
         "rust_packages": 1,
         "rust_external_packages": 0,
+        "vendored_packages": 0,
     }
 
 
@@ -470,6 +472,82 @@ def test_sbom_contains_every_locked_component_hash_and_dependency_deterministica
     )
     assert supply_chain.check_policy(repo)["python_artifacts"] == 2
     assert supply_chain.build_sbom(repo) == expected
+
+
+@pytest.mark.parametrize(
+    (
+        "project",
+        "version",
+        "license_id",
+        "archive_sha256",
+        "archive_url",
+        "source_file",
+    ),
+    [
+        (
+            "libdeflate",
+            "1.25",
+            "MIT",
+            "fed5cd22f00f30cc4c2e5329f94e2b8a901df9fa45ee255cb70e2b0b42344477",
+            "https://github.com/ebiggers/libdeflate/releases/download/v1.25/libdeflate-1.25.tar.gz",
+            "lib/deflate_decompress.c",
+        ),
+        (
+            "zlib",
+            "1.3.2",
+            "Zlib",
+            "bb329a0a2cd0274d05519d61c667c062e06990d72e125ee2dfa8de64f0119d16",
+            "https://zlib.net/zlib-1.3.2.tar.gz",
+            "inflate.c",
+        ),
+    ],
+)
+def test_sbom_includes_authenticated_vendored_c_source_and_license(
+    repo, project, version, license_id, archive_sha256, archive_url, source_file
+):
+    source = REPO_ROOT / "native/compress" / project
+    destination = repo / "native/compress" / project
+    shutil.copytree(source, destination)
+    assert supply_chain.check_policy(repo)["vendored_packages"] == 1
+    component = next(
+        component
+        for component in supply_chain.build_sbom(repo)["components"]
+        if component["purl"] == f"pkg:generic/{project}@{version}"
+    )
+    assert component["hashes"] == [
+        {
+            "alg": "SHA-256",
+            "content": archive_sha256,
+        }
+    ]
+    assert component["licenses"] == [{"license": {"id": license_id}}]
+    assert component["externalReferences"] == [
+        {
+            "type": "distribution",
+            "url": archive_url,
+        }
+    ]
+    (destination / source_file).write_text("Changed source")
+    with pytest.raises(supply_chain.SupplyChainError, match="source hash mismatch"):
+        supply_chain.check_policy(repo)
+
+
+@pytest.mark.parametrize(
+    ("project", "source_file"),
+    [("libdeflate", "lib/deflate_decompress.c"), ("zlib", "inflate.c")],
+)
+def test_vendored_c_cannot_escape_the_source_checkout(
+    repo, tmp_path, project, source_file
+):
+    destination = repo / "native/compress" / project
+    shutil.copytree(REPO_ROOT / "native/compress" / project, destination)
+    outside = tmp_path.parent / f"{tmp_path.name}-outside.c"
+    outside.write_text("Changed source")
+    member = destination / source_file
+    member.unlink()
+    member.symlink_to(outside)
+    with pytest.raises(supply_chain.SupplyChainError, match="escapes the repository"):
+        supply_chain.check_policy(repo)
 
 
 def test_cli_json_and_saved_sbom_match_the_library_and_invalid_policy_creates_no_output(

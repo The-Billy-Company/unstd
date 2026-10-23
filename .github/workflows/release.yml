@@ -94,10 +94,15 @@ jobs:
           CIBW_TEST_EXTRAS: ""
           CIBW_TEST_REQUIRES: ""
           CIBW_BEFORE_TEST: >-
-            uv export --project "{package}" --locked --extra serde --extra crypto
+            uv export --project "{package}" --locked --only-group backend-build
+            --no-emit-project --no-header --output-file test-build-constraints.txt &&
+            uv pip install --no-deps --only-binary :all: --require-hashes
+            --requirements test-build-constraints.txt &&
+            uv export --project "{package}" --locked --extra serde --extra crypto --extra compress
             --no-default-groups --group supply-chain
             --no-emit-project --no-header --output-file test-requirements.txt &&
-            uv pip install --no-deps --require-hashes --requirements test-requirements.txt
+            uv pip install --no-deps --require-hashes --require-build-hashes
+            --build-constraints test-build-constraints.txt --requirements test-requirements.txt
         run: uv run --no-sync cibuildwheel source/*.tar.gz --output-dir dist
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:

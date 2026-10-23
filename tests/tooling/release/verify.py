@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import base64
 import csv
+from dataclasses import dataclass
 from email.parser import BytesParser
 from email.policy import default
 import hashlib
@@ -39,6 +40,53 @@ MAX_MEMBERS = 100_000
 MAX_UNPACKED_BYTES = 2 * 1024**3
 MAX_METADATA_BYTES = 8 * 1024**2
 CHUNK_BYTES = 1024**2
+
+
+@dataclass(frozen=True)
+class _Vendor:
+    project: str
+    version: str
+    license: str
+    license_file: str
+    archive_sha256: str
+    license_sha256: str
+    archive_url: str
+    provenance_sha256: str
+
+    @property
+    def root(self) -> str:
+        return f"native/compress/{self.project}"
+
+
+_VENDORS = (
+    _Vendor(
+        "libdeflate",
+        "1.25",
+        "MIT",
+        "COPYING",
+        "fed5cd22f00f30cc4c2e5329f94e2b8a901df9fa45ee255cb70e2b0b42344477",
+        "4ad69099cb4374836fd27583d9991e2838cd86b6e4666ab26b2d32582c91e73a",
+        "https://github.com/ebiggers/libdeflate/releases/download/v1.25/libdeflate-1.25.tar.gz",
+        "3471af922c51d680593fe7665590020fab9678dee751a4c3b494bfb8f8f1c54e",
+    ),
+    _Vendor(
+        "zlib",
+        "1.3.2",
+        "Zlib",
+        "LICENSE",
+        "bb329a0a2cd0274d05519d61c667c062e06990d72e125ee2dfa8de64f0119d16",
+        "e32ff4e00d9d94930537635291da39e7e612703334bf6fde8c7f1686fe8a45a2",
+        "https://zlib.net/zlib-1.3.2.tar.gz",
+        "99a44d7800d17c1e12c083071490262722d38069efaea09266e95051ce4f7840",
+    ),
+)
+_NATIVE_MODULES = (
+    "unstd/serde/_json_native",
+    "unstd/clone/_clone_native",
+    "unstd/crypto/_stream_native",
+    "unstd/text/_text_native",
+    "unstd/compress/_gzip_native",
+)
 
 
 class ReleaseError(ValueError):
@@ -84,6 +132,7 @@ def _dependency_metadata(data: bytes) -> dict[str, tuple[str, ...]]:
         "Requires-Dist",
         "Provides-Extra",
         "License-Expression",
+        "License-File",
     ):
         values = message.get_all(field, [])
         if field in {"Requires-Python", "License-Expression"}:
@@ -182,13 +231,69 @@ def _digest(stream: BinaryIO) -> tuple[str, int]:
     return base64.urlsafe_b64encode(digest.digest()).rstrip(b"=").decode("ascii"), size
 
 
-def _sdist(path: Path) -> tuple[tuple[str, str], dict[str, tuple[str, ...]]]:
+def _vendor_license(
+    stem: str,
+    metadata: dict[str, bytes],
+    hashes: dict[str, tuple[str, int]],
+    vendor: _Vendor,
+) -> tuple[str, str] | None:
+    root = f"{stem}/{vendor.root}/"
+    context = f"vendored {vendor.project}"
+    files = {name.removeprefix(root) for name in hashes if name.startswith(root)}
+    if not files:
+        return None
+    provenance = root + "UPSTREAM.json"
+    _require(provenance in metadata, f"{context} provenance is missing")
+    _require(
+        hashlib.sha256(metadata[provenance]).hexdigest() == vendor.provenance_sha256,
+        f"{context} provenance differs from the reviewed source selection",
+    )
+    upstream = json.loads(metadata[provenance])
+    _require(
+        isinstance(upstream, dict)
+        and upstream.get("project") == vendor.project
+        and upstream.get("version") == vendor.version
+        and upstream.get("license") == vendor.license
+        and upstream.get("archive_sha256") == vendor.archive_sha256
+        and upstream.get("archive_url") == vendor.archive_url,
+        f"{context} provenance differs from the reviewed release",
+    )
+    declared = upstream.get("files")
+    _require(
+        isinstance(declared, dict)
+        and declared.get(vendor.license_file) == vendor.license_sha256,
+        f"{context} license differs from the reviewed license",
+    )
+    assert isinstance(declared, dict)
+    _require(
+        files == declared.keys() | {"UPSTREAM.json"},
+        f"{context} file inventory differs from provenance",
+    )
+    for name, digest in declared.items():
+        _member_path(name, directory=False)
+        _require(
+            isinstance(digest, str)
+            and re.fullmatch(r"[0-9a-f]{64}", digest) is not None,
+            f"{context} provenance has an invalid source hash",
+        )
+        encoded = base64.urlsafe_b64encode(bytes.fromhex(digest)).rstrip(b"=").decode()
+        _require(
+            hashes[root + name][0] == encoded,
+            f"{context} source hash mismatch: {name!r}",
+        )
+    return f"{vendor.root}/{vendor.license_file}", hashes[root + vendor.license_file][0]
+
+
+def _sdist(
+    path: Path,
+) -> tuple[tuple[str, str], dict[str, tuple[str, ...]], tuple[tuple[str, str], ...]]:
     stem = path.name.removesuffix(".tar.gz")
     parts = stem.split("-")
     _require(len(parts) == 2, f"invalid sdist filename: {path.name}")
     filename_identity = _identity(*parts)
     names: dict[str, bool] = {}
     metadata: dict[str, bytes] = {}
+    hashes: dict[str, tuple[str, int]] = {}
     unpacked = 0
     with tarfile.open(path, mode="r:gz") as archive:
         for member in archive:
@@ -213,16 +318,22 @@ def _sdist(path: Path) -> tuple[tuple[str, str], dict[str, tuple[str, ...]]]:
                 _require(stream is not None, f"unreadable sdist member: {name!r}")
                 assert stream is not None
                 with stream:
-                    if name in {f"{stem}/PKG-INFO", f"{stem}/pyproject.toml"}:
+                    if name in {
+                        f"{stem}/PKG-INFO",
+                        f"{stem}/pyproject.toml",
+                        *(f"{stem}/{vendor.root}/UPSTREAM.json" for vendor in _VENDORS),
+                    }:
                         metadata[name] = _read_metadata(stream, member.size)
+                        hashes[name] = _digest(io.BytesIO(metadata[name]))
                     else:
-                        _, size = _digest(stream)
+                        hashes[name] = _digest(stream)
+                        _, size = hashes[name]
                         _require(
                             size == member.size, f"invalid sdist member size: {name!r}"
                         )
     _check_parents(names)
     _require(
-        set(metadata) == {f"{stem}/PKG-INFO", f"{stem}/pyproject.toml"},
+        {f"{stem}/PKG-INFO", f"{stem}/pyproject.toml"} <= metadata.keys(),
         "sdist must contain root PKG-INFO and pyproject.toml",
     )
     identity = _metadata(metadata[f"{stem}/PKG-INFO"])
@@ -240,13 +351,35 @@ def _sdist(path: Path) -> tuple[tuple[str, str], dict[str, tuple[str, ...]]]:
     )
     dependencies = _dependency_metadata(metadata[f"{stem}/PKG-INFO"])
     _source_dependencies(project, dependencies)
-    return identity, dependencies
+    licenses = tuple(
+        license_file
+        for vendor in _VENDORS
+        if (license_file := _vendor_license(stem, metadata, hashes, vendor)) is not None
+    )
+    if licenses:
+        _require(
+            len(licenses) == len(_VENDORS),
+            "sdist omits a reviewed native gzip source dependency",
+        )
+        expression = "Apache-2.0 AND MIT AND Zlib"
+        _require(
+            project.get("license") == expression
+            and dependencies["License-Expression"] == (expression,),
+            "sdist license expression must include both vendored gzip dependencies",
+        )
+    for license_file, _ in licenses:
+        _require(
+            license_file in dependencies["License-File"],
+            f"sdist metadata omits the vendored license: {license_file}",
+        )
+    return identity, dependencies, licenses
 
 
 def _wheel(
     path: Path,
     expected: tuple[str, str],
     expected_dependencies: dict[str, tuple[str, ...]],
+    vendor_licenses: tuple[tuple[str, str], ...],
 ) -> None:
     parts = path.name.removesuffix(".whl").split("-")
     _require(len(parts) in {5, 6}, f"invalid wheel filename: {path.name}")
@@ -322,6 +455,30 @@ def _wheel(
         _dependency_metadata(metadata[f"{root}/METADATA"]) == expected_dependencies,
         "wheel dependency metadata differs from sdist PKG-INFO",
     )
+    _require(
+        bool(vendor_licenses)
+        or not any(name.startswith("unstd/compress/_gzip_native.") for name in hashes),
+        "native gzip wheel has no authenticated vendored license",
+    )
+    for license_name, digest in vendor_licenses:
+        _require(
+            hashes.get(f"{root}/licenses/{license_name}", (None,))[0] == digest,
+            f"wheel omits or changes the vendored license: {license_name}",
+        )
+    if vendor_licenses and parts[-1] != "any":
+        for module in _NATIVE_MODULES:
+            matches = [
+                name
+                for name in hashes
+                if re.fullmatch(
+                    re.escape(module) + r"(?:\.[a-zA-Z0-9_-]+)?\.(?:so|pyd)",
+                    name,
+                )
+            ]
+            _require(
+                len(matches) == 1,
+                f"native wheel must contain exactly one accelerator: {module}",
+            )
     wheel_metadata = BytesParser(policy=default).parsebytes(metadata[f"{root}/WHEEL"])
     _require(
         wheel_metadata.get_all("Wheel-Version") == ["1.0"],
@@ -385,12 +542,12 @@ def verify(dist: Path, tag: str | None = None) -> dict[str, object]:
         "release requires exactly one sdist and at least one wheel",
     )
     try:
-        identity, dependencies = _sdist(sdists[0])
+        identity, dependencies, vendor_licenses = _sdist(sdists[0])
         if tag is None:
             tag = f"v{identity[1]}"
         _require(identity[1] == tag[1:], "release tag and artifact version mismatch")
         for path in wheels:
-            _wheel(path, identity, dependencies)
+            _wheel(path, identity, dependencies, vendor_licenses)
     except (
         OSError,
         EOFError,
@@ -402,6 +559,7 @@ def verify(dist: Path, tag: str | None = None) -> dict[str, object]:
         zipfile.BadZipFile,
         zlib.error,
         csv.Error,
+        json.JSONDecodeError,
         tomllib.TOMLDecodeError,
     ) as exc:
         message = f"invalid release archive: {exc}"

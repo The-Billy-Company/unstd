@@ -40,6 +40,7 @@ BASELINE = ROOT / "bench/speeds.json"
 _PROVIDERS = ("codecs", "runtime", "operations")
 _NATIVE = (
     "clone._clone_native",
+    "compress._gzip_native",
     "crypto._stream_native",
     "serde._json_native",
     "text._text_native",

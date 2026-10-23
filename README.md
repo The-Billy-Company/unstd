@@ -25,7 +25,8 @@ python3 -m pip install 'unstd[serde,ids,crypto]'
 ```
 
 CPython platform wheels include optional C acceleration for compatible JSON,
-exact builtin structural cloning, and exact-string Levenshtein/Jaro scoring.
+exact builtin structural cloning, exact-string Levenshtein/Jaro scoring, and
+gzip reads selected through the compression extra.
 Source builds use these modules when a compiler is available and otherwise keep
 the portable fallback. The runtime dependency set and public APIs are unchanged.
 See the [Billy fixture measurements](bench/billy-serde-optimization-results.md)
@@ -51,7 +52,7 @@ measurements and compatibility boundaries.
 | [`audio`](src/unstd/audio/README.md) | `unstd[audio]` | soundfile + numpy → stdlib `wave` |
 | [`toml`](src/unstd/toml/README.md) | `unstd[toml]` | read is `tomllib`; write requires tomlkit |
 | [`yaml`](src/unstd/yaml/README.md) | `unstd[yaml]` | ruamel.yaml: safe YAML 1.2 and comment-preserving edits (required) |
-| [`compress`](src/unstd/compress/README.md) | `unstd[compress]` | zlib-ng compression, stdlib read codecs and faithful gzip errors |
+| [`compress`](src/unstd/compress/README.md) | `unstd[compress]` | native writes, bounded inflation and CRC; interpreter gzip framing; stdlib base fallback |
 | [`proc`](src/unstd/proc/README.md) | — | stdlib `subprocess` |
 | [`fs`](src/unstd/fs/README.md) | — | stdlib `os` |
 | [`iters`](src/unstd/iters/README.md) | — | stdlib `itertools` |
@@ -87,7 +88,7 @@ changes. Existing defaults and persisted canonical bytes remain unchanged:
 - [`tests/`](tests/README.md) contains product and assurance suites, shared
   support, and standalone campaign tools.
 - [`bench/`](bench/README.md) contains benchmark drivers and recorded results.
-- [`native/`](native/README.md) contains the opt-in Rust text experiment.
+- [`native/`](native/README.md) contains the gzip kernels and opt-in Rust text experiment.
 - [`.github/`](.github/OVERVIEW.md) contains CI, campaign, audit, and release workflows.
 - [`changelog.d/`](changelog.d/README.md) contains unreleased change fragments.
 

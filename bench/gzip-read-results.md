@@ -1,13 +1,19 @@
 ---
 doc_radar:
   sentinels:
-    - file: src/unstd/compress/gzipx.py
-      contains: ['_stdlib.GzipFile.__init__(', 'zlib.decompressobj(wbits=31)', 'del decoder']
+    - file: bench/gzip-read-results.json
+      contains: ['"runs": 7', '"compression_native_calls"', '"output_sha256"']
+    - file: bench/gzip-read-py314-results.json
+      contains: ['"3.14.', '"identical_output": true']
     - file: bench/gzip_reads.py
       contains: ['requested source was not imported', 'decoded bytes differ from the source']
 ---
 
 # Gzip read workload measurements
+
+These historical measurements describe the 3.1.3 read-path change. The 3.1.4
+native read kernels supersede that implementation; their paired measurements
+are recorded in [the native read report](gzip-native-reads-results.json).
 
 Recorded on 2026-10-22, macOS arm64, with zlib-ng 1.0.0 and stdlib zlib 1.2.12.
 The comparison source is commit `15036df`, saved before this change. Full samples,

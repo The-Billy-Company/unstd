@@ -18,6 +18,7 @@ import zipfile
 
 import pytest
 
+from tests.support.environment.anchors import REPO_ROOT
 from tests.tooling.release import verify as release
 
 
@@ -125,6 +126,174 @@ def test_multiple_wheels_and_build_tags_are_verified(dist: Path) -> None:
     )
     _write_wheel(dist / "unstd-3.1.0-1-cp313-cp313-manylinux_2_17_x86_64.whl", files)
     assert len(release.verify(dist)["artifacts"]) == 3
+
+
+def _vendored_release(dist: Path, *, native: bool = True) -> list[tuple[str, bytes]]:
+    license_names = (
+        "native/compress/libdeflate/COPYING",
+        "native/compress/zlib/LICENSE",
+    )
+    metadata = (
+        METADATA.rstrip(b"\n")
+        + b"\nLicense-Expression: Apache-2.0 AND MIT AND Zlib\n"
+        + "".join(f"License-File: {name}\n" for name in license_names).encode()
+        + b"\n"
+    )
+    members = [
+        ("unstd-3.1.0/PKG-INFO", metadata),
+        (
+            "unstd-3.1.0/pyproject.toml",
+            b'[project]\nname = "unstd"\nversion = "3.1.0"\nlicense = "Apache-2.0 AND MIT AND Zlib"\n',
+        ),
+        *[
+            (f"unstd-3.1.0/{path.relative_to(REPO_ROOT).as_posix()}", path.read_bytes())
+            for project in ("libdeflate", "zlib")
+            for path in sorted((REPO_ROOT / "native/compress" / project).rglob("*"))
+            if path.is_file()
+        ],
+    ]
+    _write_sdist(dist / SDIST, members)
+    files = _wheel_files()
+    files[f"{INFO}/METADATA"] = metadata
+    for license_name in license_names:
+        files[f"{INFO}/licenses/{license_name}"] = (
+            REPO_ROOT / license_name
+        ).read_bytes()
+    if native:
+        (dist / WHEEL).unlink()
+        files[f"{INFO}/WHEEL"] = (
+            b"Wheel-Version: 1.0\nRoot-Is-Purelib: false\nTag: cp313-cp313-manylinux_2_17_x86_64\n\n"
+        )
+        for module in release._NATIVE_MODULES:
+            files[f"{module}.cpython-313-x86_64-linux-gnu.so"] = b"native fixture"
+        filename = "unstd-3.1.0-cp313-cp313-manylinux_2_17_x86_64.whl"
+    else:
+        filename = WHEEL
+    _write_wheel(dist / filename, files)
+    return members
+
+
+@pytest.mark.parametrize("native", [False, True])
+def test_vendored_sources_and_license_survive_both_wheel_routes(
+    dist: Path, native: bool
+) -> None:
+    _vendored_release(dist, native=native)
+    assert len(release.verify(dist)["artifacts"]) == 2
+
+
+@pytest.mark.parametrize("module", release._NATIVE_MODULES)
+def test_native_wheel_cannot_silently_omit_an_accelerator(
+    dist: Path, module: str
+) -> None:
+    _vendored_release(dist)
+    wheel = next(dist.glob("*.whl"))
+    with zipfile.ZipFile(wheel) as archive:
+        files = {name: archive.read(name) for name in archive.namelist()}
+    del files[RECORD]
+    del files[f"{module}.cpython-313-x86_64-linux-gnu.so"]
+    _write_wheel(wheel, files)
+    with pytest.raises(release.ReleaseError, match="exactly one accelerator"):
+        release.verify(dist)
+
+
+@pytest.mark.parametrize("mutation", ["missing", "changed"])
+@pytest.mark.parametrize("license_path", ["libdeflate/COPYING", "zlib/LICENSE"])
+def test_rehashed_native_wheel_must_retain_the_upstream_license(
+    dist: Path, mutation: str, license_path: str
+) -> None:
+    _vendored_release(dist)
+    wheel = next(dist.glob("*.whl"))
+    with zipfile.ZipFile(wheel) as archive:
+        files = {name: archive.read(name) for name in archive.namelist()}
+    del files[RECORD]
+    license_name = f"{INFO}/licenses/native/compress/{license_path}"
+    if mutation == "missing":
+        del files[license_name]
+    else:
+        files[license_name] = b"Changed license"
+    _write_wheel(wheel, files)
+    with pytest.raises(release.ReleaseError, match=r"omits or changes.*license"):
+        release.verify(dist)
+
+
+@pytest.mark.parametrize(
+    "mutation", ["source", "rehashed-source", "license", "missing", "unlisted"]
+)
+@pytest.mark.parametrize(
+    ("project", "source", "license_file"),
+    [
+        ("libdeflate", "lib/deflate_decompress.c", "COPYING"),
+        ("zlib", "inflate.c", "LICENSE"),
+    ],
+)
+def test_vendored_source_and_license_inventory_is_authenticated(
+    dist: Path, mutation: str, project: str, source: str, license_file: str
+) -> None:
+    members = _vendored_release(dist)
+    changed = dict(members)
+    root = f"unstd-3.1.0/native/compress/{project}/"
+    if mutation in {"source", "rehashed-source"}:
+        changed[root + source] += b"\n/* Changed source */\n"
+        if mutation == "rehashed-source":
+            upstream = json.loads(changed[root + "UPSTREAM.json"])
+            upstream["files"][source] = hashlib.sha256(
+                changed[root + source]
+            ).hexdigest()
+            changed[root + "UPSTREAM.json"] = json.dumps(upstream).encode()
+    elif mutation == "license":
+        changed[root + license_file] = b"Changed license"
+        upstream = json.loads(changed[root + "UPSTREAM.json"])
+        upstream["files"][license_file] = hashlib.sha256(b"Changed license").hexdigest()
+        changed[root + "UPSTREAM.json"] = json.dumps(upstream).encode()
+    elif mutation == "missing":
+        del changed[root + source]
+    else:
+        changed[root + "unlisted.c"] = b"unreviewed source"
+    _write_sdist(dist / SDIST, list(changed.items()))
+    with pytest.raises(release.ReleaseError, match=f"vendored {project}"):
+        release.verify(dist)
+
+
+@pytest.mark.parametrize("project", ["libdeflate", "zlib"])
+def test_native_gzip_source_dependencies_cannot_be_omitted(
+    dist: Path, project: str
+) -> None:
+    members = _vendored_release(dist)
+    prefix = f"unstd-3.1.0/native/compress/{project}/"
+    _write_sdist(
+        dist / SDIST,
+        [(name, data) for name, data in members if not name.startswith(prefix)],
+    )
+    with pytest.raises(
+        release.ReleaseError, match="omits a reviewed native gzip source dependency"
+    ):
+        release.verify(dist)
+
+
+def test_native_gzip_requires_vendored_provenance(dist: Path) -> None:
+    files = _wheel_files()
+    files["unstd/compress/_gzip_native.cpython-313-x86_64-linux-gnu.so"] = b"native"
+    _write_wheel(dist / WHEEL, files)
+    with pytest.raises(release.ReleaseError, match="no authenticated vendored license"):
+        release.verify(dist)
+
+
+@pytest.mark.parametrize("expression", ["Apache-2.0", "Apache-2.0 OR MIT OR Zlib"])
+def test_vendored_license_terms_cannot_be_omitted_or_presented_as_alternatives(
+    dist: Path, expression: str
+) -> None:
+    members = _vendored_release(dist)
+    _write_sdist(
+        dist / SDIST,
+        [
+            (name, data.replace(b"Apache-2.0 AND MIT AND Zlib", expression.encode()))
+            if name.endswith(("/PKG-INFO", "/pyproject.toml"))
+            else (name, data)
+            for name, data in members
+        ],
+    )
+    with pytest.raises(release.ReleaseError, match="license expression must include"):
+        release.verify(dist)
 
 
 @pytest.mark.parametrize(
