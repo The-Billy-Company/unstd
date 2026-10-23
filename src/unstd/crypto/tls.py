@@ -22,10 +22,11 @@ type TlsContext = ssl.SSLContext
 MINIMUM_VERSION = ssl.TLSVersion.TLSv1_3
 """The floor this policy asserts by default.
 
-1.3 closes the classical-downgrade path, and it is also the required transport
-for hybrid post-quantum key exchange (X25519MLKEM768) on OpenSSL >= 3.5 — TLS
-1.2 has no hybrid-PQC equivalent, so accepting a downgrade silently drops that
-protection too. Every counterparty worth dialing has negotiated 1.3 since 2018.
+TLS 1.3 is required for OpenSSL's hybrid post-quantum key exchange, including
+X25519MLKEM768 in OpenSSL >= 3.5. The protocol floor alone does not guarantee
+that group: negotiation also depends on the runtime, configuration and peer.
+Hybrid key shares increase wire size; this policy does not force a group or
+claim unchanged handshake overhead. TLS 1.2 remains an explicit legacy choice.
 """
 
 LEGACY_MINIMUM_VERSION = ssl.TLSVersion.TLSv1_2
@@ -68,6 +69,12 @@ def client_context(
     widening what the process will speak. There is deliberately no
     ``verify=False`` / ``insecure=True`` parameter: a seam that can be asked to
     skip verification is a seam that eventually is.
+
+    Construct once per trust/client-identity policy and reuse the returned
+    context for connections. Finish configuration before its first use and do
+    not mutate it while connections use it. Rebuild it when certificates or
+    trust policy rotate. Each call returns a fresh context owned by its caller;
+    there is no global cache sharing mutable security policy.
     """
     if minimum_version < _FLOOR:
         msg = f"TLS floor {minimum_version.name} is below {_FLOOR.name}; it will not be honored here"

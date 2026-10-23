@@ -91,6 +91,48 @@ def _repair_tool_export(workflows):
     return tokens
 
 
+@pytest.mark.parametrize("job", ["test", "native"])
+def test_ci_checks_the_actual_interpreter_before_crypto_tests(workflows, job):
+    steps = workflows["ci"]["jobs"][job]["steps"]
+    (preflight,) = [
+        step for step in steps if "-m tests.tooling.runtime" in step.get("run", "")
+    ]
+    assert preflight["run"] == "uv run --no-sync python -m tests.tooling.runtime --json"
+    assert "if" not in preflight
+    assert not preflight.get("continue-on-error", False)
+    tests = next(
+        step
+        for step in steps
+        if "python -m pytest" in step.get("run", "")
+        or "tests.tooling.ci run" in step.get("run", "")
+    )
+    assert steps.index(preflight) < steps.index(tests)
+
+
+def test_release_and_daily_audit_check_their_actual_interpreter(workflows):
+    for workflow, job in (("release", "wheels"), ("supply-chain", "audit")):
+        steps = workflows[workflow]["jobs"][job]["steps"]
+        (preflight,) = [
+            step for step in steps if "-m tests.tooling.runtime" in step.get("run", "")
+        ]
+        assert (
+            preflight["run"]
+            == "uv run --no-sync python -m tests.tooling.runtime --json"
+        )
+        assert "if" not in preflight
+        assert not preflight.get("continue-on-error", False)
+
+
+def test_wheel_tests_check_the_installed_interpreters_stdlib_tls_engine():
+    project = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text())
+    command = project["tool"]["cibuildwheel"]["test-command"][0]
+    assert shlex.split(command) == [
+        "python",
+        "{project}/tests/tooling/runtime/tls.py",
+        "--json",
+    ]
+
+
 def test_reusable_daily_gate_is_bounded_read_only_and_uses_pinned_actions(workflows):
     workflow = workflows["supply-chain"]
     assert {"workflow_call", "workflow_dispatch", "schedule"} <= workflow["on"].keys()

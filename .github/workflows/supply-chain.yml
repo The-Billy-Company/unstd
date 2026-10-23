@@ -48,6 +48,8 @@ jobs:
         run: python -m tests.tooling.supply_chain audit-report .local/supply-chain/audit.json
       - name: Install audited harness and release tools
         run: uv sync --locked --only-group supply-chain --only-group release --no-install-project --python 3.13
+      - name: Check the audit interpreter's TLS security fixes
+        run: uv run --no-sync python -m tests.tooling.runtime --json
       - name: Require the workflow parser and real wheel builder
         run: uv run --no-sync python -c "import ruamel.yaml, cibuildwheel"
       - name: Prove trust checks & release validation reject tampering

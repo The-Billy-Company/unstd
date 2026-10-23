@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import importlib
+import os
+import runpy
 
 import pytest
 
@@ -13,6 +15,50 @@ digest = importlib.import_module("unstd.crypto.digest")
 token = importlib.import_module("unstd.crypto.token")
 _KEY = bytes(range(32))
 _CONTEXT = "unstd adaptive hashing contract v1"
+
+
+@pytest.mark.parametrize("process_cpus", [None, 1, 2, 8, 64])
+def test_process_cpu_cap_is_resolved_only_once_at_import(monkeypatch, process_cpus):
+    calls = []
+
+    def process_cpu_count():
+        calls.append("process")
+        return process_cpus
+
+    def machine_cpu_count():
+        msg = "process CPU availability must take precedence"
+        raise AssertionError(msg)
+
+    monkeypatch.setattr(os, "process_cpu_count", process_cpu_count, raising=False)
+    monkeypatch.setattr(os, "cpu_count", machine_cpu_count)
+    loaded = runpy.run_path(backend.__file__)
+    assert loaded["_PARALLEL_THREADS"] == min(8, process_cpus or 1)
+    data = bytes(1024 * 1024)
+    expected = blake3(data).digest()
+    for _ in range(2):
+        assert loaded["_parallel_hasher"](data).digest() == expected
+    assert calls == ["process"]
+
+
+@pytest.mark.parametrize("machine_cpus", [None, 1, 2, 8, 64])
+def test_python_312_cpu_fallback_is_resolved_only_once_at_import(
+    monkeypatch, machine_cpus
+):
+    calls = []
+
+    def machine_cpu_count():
+        calls.append("machine")
+        return machine_cpus
+
+    monkeypatch.delattr(os, "process_cpu_count", raising=False)
+    monkeypatch.setattr(os, "cpu_count", machine_cpu_count)
+    loaded = runpy.run_path(backend.__file__)
+    assert loaded["_PARALLEL_THREADS"] == min(8, machine_cpus or 1)
+    data = bytes(1024 * 1024)
+    expected = blake3(data).digest()
+    for _ in range(2):
+        assert loaded["_parallel_hasher"](data).digest() == expected
+    assert calls == ["machine"]
 
 
 @pytest.mark.parametrize(

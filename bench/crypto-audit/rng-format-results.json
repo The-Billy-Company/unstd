@@ -1,0 +1,3382 @@
+{
+  "environment": {
+    "python": "3.13.16 (main, Oct  9 2026, 15:11:24) [Clang 22.1.3 ]",
+    "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+    "cpu_count": 18,
+    "load_average": [
+      40.3955078125,
+      24.68408203125,
+      23.45166015625
+    ],
+    "pybase64_version": "1.5.0"
+  },
+  "methodology": {
+    "rounds": 11,
+    "target_batch_seconds": 0.01,
+    "entropy_hook_active_during_timing": false,
+    "generation_scope": "Full OS-backed token_bytes call plus Base64 formatting, padding removal, and ASCII decoding; each arm draws independently.",
+    "format_only_scope": "Prepared identical immutable bytes; excludes OS entropy generation.",
+    "bootstrap": "Descriptive paired-median resampling:1999samples,seed29; no all-platform guarantee."
+  },
+  "contracts": {
+    "known_byte_checks": [
+      {
+        "input_bytes": 0,
+        "output_chars": 0
+      },
+      {
+        "input_bytes": 1,
+        "output_chars": 2
+      },
+      {
+        "input_bytes": 2,
+        "output_chars": 3
+      },
+      {
+        "input_bytes": 3,
+        "output_chars": 4
+      },
+      {
+        "input_bytes": 32,
+        "output_chars": 43
+      },
+      {
+        "input_bytes": 256,
+        "output_chars": 342
+      },
+      {
+        "input_bytes": 4096,
+        "output_chars": 5462
+      },
+      {
+        "input_bytes": 65536,
+        "output_chars": 87382
+      },
+      {
+        "input_bytes": 1048576,
+        "output_chars": 1398102
+      }
+    ],
+    "default_and_none_match": true,
+    "invalid_argument_outcomes": [
+      {
+        "argument_type": "int",
+        "before": [
+          "ValueError",
+          "negative argument not allowed"
+        ],
+        "after": [
+          "ValueError",
+          "negative argument not allowed"
+        ]
+      },
+      {
+        "argument_type": "float",
+        "before": [
+          "TypeError",
+          "'float' object cannot be interpreted as an integer"
+        ],
+        "after": [
+          "TypeError",
+          "'float' object cannot be interpreted as an integer"
+        ]
+      },
+      {
+        "argument_type": "str",
+        "before": [
+          "TypeError",
+          "'str' object cannot be interpreted as an integer"
+        ],
+        "after": [
+          "TypeError",
+          "'str' object cannot be interpreted as an integer"
+        ]
+      },
+      {
+        "argument_type": "object",
+        "before": [
+          "TypeError",
+          "'object' object cannot be interpreted as an integer"
+        ],
+        "after": [
+          "TypeError",
+          "'object' object cannot be interpreted as an integer"
+        ]
+      },
+      {
+        "argument_type": "int",
+        "before": [
+          "OverflowError",
+          "Python int too large to convert to C ssize_t"
+        ],
+        "after": [
+          "OverflowError",
+          "Python int too large to convert to C ssize_t"
+        ]
+      },
+      {
+        "argument_type": "bool",
+        "before": [
+          "str",
+          "zQ"
+        ],
+        "after": [
+          "str",
+          "mg"
+        ]
+      },
+      {
+        "argument_type": "bool",
+        "before": [
+          "str",
+          ""
+        ],
+        "after": [
+          "str",
+          ""
+        ]
+      }
+    ],
+    "index_contracts": [
+      {
+        "index": 0,
+        "calls": [
+          "index"
+        ],
+        "result_type": "str"
+      },
+      {
+        "index": 16,
+        "calls": [
+          "index"
+        ],
+        "result_type": "str"
+      },
+      {
+        "index": -1,
+        "calls": [
+          "index"
+        ],
+        "result_type": "ValueError"
+      }
+    ],
+    "entropy_exception_identity_preserved": true,
+    "production_alias_identity": true,
+    "candidate_is_exact_alias": false,
+    "production_signature": "(nbytes=None)",
+    "candidate_signature": "(nbytes: 'int | None' = None) -> 'str'"
+  },
+  "source_sha256": {
+    "/Users/griffinstrier/Billy-Company/unstd/bench/crypto_rng.py": "f20ae3a7b08280578890b1c0512a2998826a19bedce447a876ba11f89637e035",
+    "/Users/griffinstrier/Billy-Company/unstd/src/unstd/rand/crypto.py": "dde63b51dec92e542aba3e386fd27819d49a3db20e803f28250129f56b88edad",
+    "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-python/cpython-3.13.16-macos-aarch64-none/lib/python3.13/secrets.py": "277000574358a6ecda4bb40e73332ae81a3bc1c8e1fa36f50e5c6a7d4d3f0f17",
+    "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-python/cpython-3.13.16-macos-aarch64-none/lib/python3.13/random.py": "fb2625eb54412c880e8f1af449785a74e125556159fc7997814e51dd054cc5da",
+    "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-python/cpython-3.13.16-macos-aarch64-none/lib/python3.13/base64.py": "a80fc2454f7a0ad644f02259184de5b52084392ddb8b41c1ce372e50a09f3993",
+    "/Users/griffinstrier/Billy-Company/unstd/.venv/lib/python3.13/site-packages/pybase64/__init__.py": "48641c4d6fd6200ce7953cd8be46fb8f8a7d6bdb55d852f5b057015cc7f8069c",
+    "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-python/cpython-3.13.16-macos-aarch64-none/bin/python3.13": "08c31a4b53dc231eba8fe8785ea11a1b13095bf7f3fce292cffc50f74bbcc895",
+    "/Users/griffinstrier/Billy-Company/unstd/.venv/lib/python3.13/site-packages/pybase64/_pybase64.cpython-313-darwin.so": "61a43355785d1849b31e9b9404e49ca9642b7a8972394f63af4fff0c83ef0401"
+  },
+  "cases": {
+    "generation/default": {
+      "input_bytes": 32,
+      "samples": {
+        "before": [
+          {
+            "iterations": 1492,
+            "wall_ns": 20930.908847184986,
+            "cpu_ns": 1651.4745308310992
+          },
+          {
+            "iterations": 1492,
+            "wall_ns": 7878.546246648793,
+            "cpu_ns": 1735.254691689008
+          },
+          {
+            "iterations": 1492,
+            "wall_ns": 1591.6836461126006,
+            "cpu_ns": 1592.4932975871313
+          },
+          {
+            "iterations": 1492,
+            "wall_ns": 1603.5804289544235,
+            "cpu_ns": 1604.5576407506703
+          },
+          {
+            "iterations": 1492,
+            "wall_ns": 1580.1776139410188,
+            "cpu_ns": 1579.7587131367293
+          },
+          {
+            "iterations": 1492,
+            "wall_ns": 1526.8378016085792,
+            "cpu_ns": 1527.479892761394
+          },
+          {
+            "iterations": 1492,
+            "wall_ns": 1527.0891420911528,
+            "cpu_ns": 1527.479892761394
+          },
+          {
+            "iterations": 1492,
+            "wall_ns": 1523.6260053619303,
+            "cpu_ns": 1524.1286863270777
+          },
+          {
+            "iterations": 1492,
+            "wall_ns": 1527.759383378016,
+            "cpu_ns": 1528.8203753351206
+          },
+          {
+            "iterations": 1492,
+            "wall_ns": 1538.1756032171581,
+            "cpu_ns": 1538.2037533512064
+          },
+          {
+            "iterations": 1492,
+            "wall_ns": 1599.1400804289544,
+            "cpu_ns": 1599.8659517426274
+          }
+        ],
+        "after": [
+          {
+            "iterations": 107,
+            "wall_ns": 1756.2242990654206,
+            "cpu_ns": 1766.3551401869158
+          },
+          {
+            "iterations": 107,
+            "wall_ns": 1650.7009345794393,
+            "cpu_ns": 1654.2056074766356
+          },
+          {
+            "iterations": 107,
+            "wall_ns": 1727.803738317757,
+            "cpu_ns": 1738.3177570093458
+          },
+          {
+            "iterations": 107,
+            "wall_ns": 1665.8878504672898,
+            "cpu_ns": 1672.8971962616822
+          },
+          {
+            "iterations": 107,
+            "wall_ns": 1541.271028037383,
+            "cpu_ns": 1551.4018691588785
+          },
+          {
+            "iterations": 107,
+            "wall_ns": 1588.4018691588785,
+            "cpu_ns": 1588.785046728972
+          },
+          {
+            "iterations": 107,
+            "wall_ns": 1581.392523364486,
+            "cpu_ns": 1588.785046728972
+          },
+          {
+            "iterations": 107,
+            "wall_ns": 1573.9906542056074,
+            "cpu_ns": 1570.0934579439252
+          },
+          {
+            "iterations": 107,
+            "wall_ns": 1579.8317757009345,
+            "cpu_ns": 1588.785046728972
+          },
+          {
+            "iterations": 107,
+            "wall_ns": 1575.5420560747664,
+            "cpu_ns": 1588.785046728972
+          },
+          {
+            "iterations": 107,
+            "wall_ns": 1701.7196261682243,
+            "cpu_ns": 1710.2803738317757
+          }
+        ]
+      },
+      "order": [
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ]
+      ],
+      "metrics": {
+        "wall_ns": {
+          "median_before": 1580.1776139410188,
+          "median_after": 1588.4018691588785,
+          "paired_median_speedup": 0.9670392803057686,
+          "bootstrap_95_percent_interval": [
+            0.9612415039634146,
+            1.0252431825395294
+          ],
+          "paired_ratios": [
+            11.918129625198459,
+            4.772848964707266,
+            0.9212178506236552,
+            0.962598069554689,
+            1.0252431825395294,
+            0.9612415039634146,
+            0.965661035782691,
+            0.9680019390781605,
+            0.9670392803057686,
+            0.9762834303828732,
+            0.9397200665950777
+          ],
+          "noisy": true
+        },
+        "cpu_ns": {
+          "median_before": 1579.7587131367293,
+          "median_after": 1588.785046728972,
+          "paired_median_speedup": 0.9614138148557009,
+          "bootstrap_95_percent_interval": [
+            0.9354407477402248,
+            0.970724818077365
+          ],
+          "paired_ratios": [
+            0.9349617714228975,
+            1.0489957740718863,
+            0.9161117357087261,
+            0.9591489807839203,
+            1.018278206660422,
+            0.9614138148557009,
+            0.9614138148557009,
+            0.970724818077365,
+            0.9622575303579877,
+            0.9681635388739945,
+            0.9354407477402248
+          ],
+          "noisy": false
+        }
+      }
+    },
+    "generation/None": {
+      "input_bytes": 32,
+      "samples": {
+        "before": [
+          {
+            "iterations": 6364,
+            "wall_ns": 16431.319453174103,
+            "cpu_ns": 1781.5839094908863
+          },
+          {
+            "iterations": 6364,
+            "wall_ns": 8679.184946574482,
+            "cpu_ns": 1683.5323695788811
+          },
+          {
+            "iterations": 6364,
+            "wall_ns": 1603.6560339409177,
+            "cpu_ns": 1603.708359522313
+          },
+          {
+            "iterations": 6364,
+            "wall_ns": 7989.242771841609,
+            "cpu_ns": 1917.3475801382779
+          },
+          {
+            "iterations": 6364,
+            "wall_ns": 1603.9178189817724,
+            "cpu_ns": 1604.1797611565053
+          },
+          {
+            "iterations": 6364,
+            "wall_ns": 1612.2591137649276,
+            "cpu_ns": 1612.5078566939032
+          },
+          {
+            "iterations": 6364,
+            "wall_ns": 1557.118164676304,
+            "cpu_ns": 1557.3538654934005
+          },
+          {
+            "iterations": 6364,
+            "wall_ns": 1553.5433689503457,
+            "cpu_ns": 1553.5826524198617
+          },
+          {
+            "iterations": 6364,
+            "wall_ns": 1584.4987429289754,
+            "cpu_ns": 1584.5380263984914
+          },
+          {
+            "iterations": 6364,
+            "wall_ns": 1573.394563167819,
+            "cpu_ns": 1573.5386549340037
+          },
+          {
+            "iterations": 6364,
+            "wall_ns": 17385.46904462602,
+            "cpu_ns": 1584.6951602765557
+          }
+        ],
+        "after": [
+          {
+            "iterations": 6149,
+            "wall_ns": 27149.15693608717,
+            "cpu_ns": 1881.2815091884859
+          },
+          {
+            "iterations": 6149,
+            "wall_ns": 4541.321190437469,
+            "cpu_ns": 1712.636201008294
+          },
+          {
+            "iterations": 6149,
+            "wall_ns": 5892.638477801269,
+            "cpu_ns": 1741.0961131891365
+          },
+          {
+            "iterations": 6149,
+            "wall_ns": 1679.188973816881,
+            "cpu_ns": 1679.1348186697023
+          },
+          {
+            "iterations": 6149,
+            "wall_ns": 18234.550333387542,
+            "cpu_ns": 1818.5070743210279
+          },
+          {
+            "iterations": 6149,
+            "wall_ns": 25902.077573589202,
+            "cpu_ns": 1917.872824849569
+          },
+          {
+            "iterations": 6149,
+            "wall_ns": 5908.57586599447,
+            "cpu_ns": 1703.8542852496341
+          },
+          {
+            "iterations": 6149,
+            "wall_ns": 33605.01040819645,
+            "cpu_ns": 1844.0396812489835
+          },
+          {
+            "iterations": 6149,
+            "wall_ns": 1634.0936737680925,
+            "cpu_ns": 1634.2494714587738
+          },
+          {
+            "iterations": 6149,
+            "wall_ns": 32116.976906814118,
+            "cpu_ns": 1792.974467393072
+          },
+          {
+            "iterations": 6149,
+            "wall_ns": 1751.0367539437307,
+            "cpu_ns": 1644.1697837046675
+          }
+        ]
+      },
+      "order": [
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ]
+      ],
+      "metrics": {
+        "wall_ns": {
+          "median_before": 1603.9178189817724,
+          "median_after": 5908.57586599447,
+          "paired_median_speedup": 0.27214566785018396,
+          "bootstrap_95_percent_interval": [
+            0.06224439368558033,
+            1.9111585775632858
+          ],
+          "paired_ratios": [
+            0.605223929857405,
+            1.9111585775632858,
+            0.27214566785018396,
+            4.757798494639742,
+            0.08796037136407975,
+            0.06224439368558033,
+            0.26353527482619976,
+            0.04622951607750217,
+            0.9696498850492732,
+            0.04898949760224782,
+            9.92867168862676
+          ],
+          "noisy": true
+        },
+        "cpu_ns": {
+          "median_before": 1603.708359522313,
+          "median_after": 1741.0961131891365,
+          "paired_median_speedup": 0.9210912294697088,
+          "bootstrap_95_percent_interval": [
+            0.8776135318992462,
+            0.9695814831649242
+          ],
+          "paired_ratios": [
+            0.9470054857762328,
+            0.9830064134973451,
+            0.9210912294697088,
+            1.1418663700019633,
+            0.8821410616483054,
+            0.8407793445951676,
+            0.9140182226705087,
+            0.8424887317867299,
+            0.9695814831649242,
+            0.8776135318992462,
+            0.9638269575213196
+          ],
+          "noisy": false
+        }
+      }
+    },
+    "generation/0": {
+      "input_bytes": 0,
+      "samples": {
+        "before": [
+          {
+            "iterations": 28728,
+            "wall_ns": 1389.0484196602617,
+            "cpu_ns": 164.4040657198552
+          },
+          {
+            "iterations": 28728,
+            "wall_ns": 164.02116402116403,
+            "cpu_ns": 164.02116402116403
+          },
+          {
+            "iterations": 28728,
+            "wall_ns": 164.98565859092176,
+            "cpu_ns": 164.99582289055974
+          },
+          {
+            "iterations": 28728,
+            "wall_ns": 165.281537176274,
+            "cpu_ns": 165.30910609857978
+          },
+          {
+            "iterations": 28728,
+            "wall_ns": 161.68605541631857,
+            "cpu_ns": 161.723753829017
+          },
+          {
+            "iterations": 28728,
+            "wall_ns": 168.0604984683932,
+            "cpu_ns": 168.09384572542467
+          },
+          {
+            "iterations": 28728,
+            "wall_ns": 169.19179894179894,
+            "cpu_ns": 169.17293233082708
+          },
+          {
+            "iterations": 28728,
+            "wall_ns": 163.92978975215817,
+            "cpu_ns": 163.98635477582846
+          },
+          {
+            "iterations": 28728,
+            "wall_ns": 162.38220551378447,
+            "cpu_ns": 162.38512949039264
+          },
+          {
+            "iterations": 28728,
+            "wall_ns": 164.9276663881927,
+            "cpu_ns": 164.96101364522417
+          },
+          {
+            "iterations": 28728,
+            "wall_ns": 171.11212057922583,
+            "cpu_ns": 171.1918685602896
+          }
+        ],
+        "after": [
+          {
+            "iterations": 39855,
+            "wall_ns": 250.47359177016685,
+            "cpu_ns": 250.50809183289425
+          },
+          {
+            "iterations": 39855,
+            "wall_ns": 249.29642453895372,
+            "cpu_ns": 249.30372600677455
+          },
+          {
+            "iterations": 39855,
+            "wall_ns": 250.85414628026595,
+            "cpu_ns": 250.834274244135
+          },
+          {
+            "iterations": 39855,
+            "wall_ns": 249.45843683352152,
+            "cpu_ns": 249.47936268975033
+          },
+          {
+            "iterations": 39855,
+            "wall_ns": 248.90643582988332,
+            "cpu_ns": 248.90227073140133
+          },
+          {
+            "iterations": 39855,
+            "wall_ns": 251.74906536193703,
+            "cpu_ns": 251.73754861372475
+          },
+          {
+            "iterations": 39855,
+            "wall_ns": 6727.979550871911,
+            "cpu_ns": 280.1405093463806
+          },
+          {
+            "iterations": 39855,
+            "wall_ns": 255.69459289925982,
+            "cpu_ns": 255.7270104127462
+          },
+          {
+            "iterations": 39855,
+            "wall_ns": 3167.8699786726884,
+            "cpu_ns": 288.1696148538452
+          },
+          {
+            "iterations": 39855,
+            "wall_ns": 952.6105131100238,
+            "cpu_ns": 282.4739681344875
+          },
+          {
+            "iterations": 39855,
+            "wall_ns": 262.1576213774934,
+            "cpu_ns": 262.2004767281395
+          }
+        ]
+      },
+      "order": [
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ]
+      ],
+      "metrics": {
+        "wall_ns": {
+          "median_before": 164.98565859092176,
+          "median_after": 251.74906536193703,
+          "paired_median_speedup": 0.6527070228976225,
+          "bootstrap_95_percent_interval": [
+            0.17313231810737326,
+            0.6625614241565069
+          ],
+          "paired_ratios": [
+            5.545688109646484,
+            0.6579362873916187,
+            0.6576955614940966,
+            0.6625614241565069,
+            0.6495856761487032,
+            0.6675714892000666,
+            0.025147490069269394,
+            0.6411155898660097,
+            0.05125911309712947,
+            0.17313231810737326,
+            0.6527070228976225
+          ],
+          "noisy": true
+        },
+        "cpu_ns": {
+          "median_before": 164.96101364522417,
+          "median_after": 251.73754861372475,
+          "paired_median_speedup": 0.6529044900928557,
+          "bootstrap_95_percent_interval": [
+            0.6038860025118776,
+            0.6579170181223322
+          ],
+          "paired_ratios": [
+            0.6562824558558522,
+            0.6579170181223322,
+            0.6577881885869019,
+            0.6626163555827111,
+            0.6497480049249468,
+            0.6677344982943088,
+            0.6038860025118776,
+            0.6412555111450788,
+            0.5635053840522071,
+            0.5839866049769417,
+            0.6529044900928557
+          ],
+          "noisy": false
+        }
+      }
+    },
+    "format-only/0": {
+      "input_bytes": 0,
+      "samples": {
+        "before": [
+          {
+            "iterations": 85462,
+            "wall_ns": 148.1291919215558,
+            "cpu_ns": 123.43497694881935
+          },
+          {
+            "iterations": 85462,
+            "wall_ns": 145.42428213709016,
+            "cpu_ns": 126.03262268610611
+          },
+          {
+            "iterations": 85462,
+            "wall_ns": 1556.7786384591982,
+            "cpu_ns": 125.3305562706232
+          },
+          {
+            "iterations": 85462,
+            "wall_ns": 121.69102057054597,
+            "cpu_ns": 117.73653787648311
+          },
+          {
+            "iterations": 85462,
+            "wall_ns": 663.6921438768107,
+            "cpu_ns": 118.83644192740633
+          },
+          {
+            "iterations": 85462,
+            "wall_ns": 766.6926002199808,
+            "cpu_ns": 124.58168542744144
+          },
+          {
+            "iterations": 85462,
+            "wall_ns": 875.388090613372,
+            "cpu_ns": 125.88050829608481
+          },
+          {
+            "iterations": 85462,
+            "wall_ns": 1014.1832042311203,
+            "cpu_ns": 125.44756733987035
+          },
+          {
+            "iterations": 85462,
+            "wall_ns": 124.601179471578,
+            "cpu_ns": 124.61678874821558
+          },
+          {
+            "iterations": 85462,
+            "wall_ns": 120.61696426481946,
+            "cpu_ns": 120.63841239381246
+          },
+          {
+            "iterations": 85462,
+            "wall_ns": 1296.3329666986497,
+            "cpu_ns": 128.61856731646813
+          }
+        ],
+        "after": [
+          {
+            "iterations": 190,
+            "wall_ns": 54006.8,
+            "cpu_ns": 421.05263157894734
+          },
+          {
+            "iterations": 190,
+            "wall_ns": 245.39473684210526,
+            "cpu_ns": 252.6315789473684
+          },
+          {
+            "iterations": 190,
+            "wall_ns": 206.13684210526316,
+            "cpu_ns": 205.26315789473685
+          },
+          {
+            "iterations": 190,
+            "wall_ns": 251.97368421052633,
+            "cpu_ns": 252.6315789473684
+          },
+          {
+            "iterations": 190,
+            "wall_ns": 191.8842105263158,
+            "cpu_ns": 194.73684210526315
+          },
+          {
+            "iterations": 190,
+            "wall_ns": 250.44210526315788,
+            "cpu_ns": 257.89473684210526
+          },
+          {
+            "iterations": 190,
+            "wall_ns": 194.73684210526315,
+            "cpu_ns": 200.0
+          },
+          {
+            "iterations": 190,
+            "wall_ns": 246.2736842105263,
+            "cpu_ns": 247.3684210526316
+          },
+          {
+            "iterations": 190,
+            "wall_ns": 203.94736842105263,
+            "cpu_ns": 205.26315789473685
+          },
+          {
+            "iterations": 190,
+            "wall_ns": 216.8842105263158,
+            "cpu_ns": 221.05263157894737
+          },
+          {
+            "iterations": 190,
+            "wall_ns": 200.6578947368421,
+            "cpu_ns": 205.26315789473685
+          }
+        ]
+      },
+      "order": [
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ]
+      ],
+      "metrics": {
+        "wall_ns": {
+          "median_before": 663.6921438768107,
+          "median_after": 216.8842105263158,
+          "paired_median_speedup": 3.0613566333598765,
+          "bootstrap_95_percent_interval": [
+            0.5561352943679794,
+            4.495236140987586
+          ],
+          "paired_ratios": [
+            0.0027427877956397303,
+            0.5926136966444425,
+            7.552161091437667,
+            0.4829513087917229,
+            3.4588158246912624,
+            3.0613566333598765,
+            4.495236140987586,
+            4.118114395706805,
+            0.6109477186993503,
+            0.5561352943679794,
+            6.460413473383435
+          ],
+          "noisy": true
+        },
+        "cpu_ns": {
+          "median_before": 124.61678874821558,
+          "median_after": 221.05263157894737,
+          "paired_median_speedup": 0.5457451989243897,
+          "bootstrap_95_percent_interval": [
+            0.48307184145334436,
+            0.6105847613184208
+          ],
+          "paired_ratios": [
+            0.293158070253446,
+            0.4988791314658367,
+            0.6105847613184208,
+            0.46604046242774566,
+            0.6102411882758704,
+            0.48307184145334436,
+            0.6294025414804241,
+            0.5071284637143695,
+            0.6071074323631015,
+            0.5457451989243897,
+            0.626603276669973
+          ],
+          "noisy": true
+        }
+      }
+    },
+    "generation/32": {
+      "input_bytes": 32,
+      "samples": {
+        "before": [
+          {
+            "iterations": 6127,
+            "wall_ns": 1526.1343234862086,
+            "cpu_ns": 1526.1955279908602
+          },
+          {
+            "iterations": 6127,
+            "wall_ns": 27131.154561775747,
+            "cpu_ns": 1647.298841194712
+          },
+          {
+            "iterations": 6127,
+            "wall_ns": 6162.117186224906,
+            "cpu_ns": 1748.3270768728578
+          },
+          {
+            "iterations": 6127,
+            "wall_ns": 1621.504488330341,
+            "cpu_ns": 1621.8377672596703
+          },
+          {
+            "iterations": 6127,
+            "wall_ns": 1632.4532397584462,
+            "cpu_ns": 1632.6097600783419
+          },
+          {
+            "iterations": 6127,
+            "wall_ns": 9536.389423861596,
+            "cpu_ns": 2105.7613840378654
+          },
+          {
+            "iterations": 6127,
+            "wall_ns": 7079.987595887057,
+            "cpu_ns": 1941.2436755345193
+          },
+          {
+            "iterations": 6127,
+            "wall_ns": 1629.522278439693,
+            "cpu_ns": 1629.835155867472
+          },
+          {
+            "iterations": 6127,
+            "wall_ns": 17279.78619226375,
+            "cpu_ns": 1652.1952015668353
+          },
+          {
+            "iterations": 6127,
+            "wall_ns": 4941.597355965399,
+            "cpu_ns": 1735.9229639301452
+          },
+          {
+            "iterations": 6127,
+            "wall_ns": 1681.5462706055166,
+            "cpu_ns": 1681.8997878243838
+          }
+        ],
+        "after": [
+          {
+            "iterations": 5994,
+            "wall_ns": 1584.2647647647648,
+            "cpu_ns": 1584.5845845845845
+          },
+          {
+            "iterations": 5994,
+            "wall_ns": 1584.9044044044044,
+            "cpu_ns": 1584.9182515849182
+          },
+          {
+            "iterations": 5994,
+            "wall_ns": 13069.354020687353,
+            "cpu_ns": 2009.009009009009
+          },
+          {
+            "iterations": 5994,
+            "wall_ns": 1696.5647313980646,
+            "cpu_ns": 1696.6966966966968
+          },
+          {
+            "iterations": 5994,
+            "wall_ns": 27536.098598598597,
+            "cpu_ns": 1803.47013680347
+          },
+          {
+            "iterations": 5994,
+            "wall_ns": 1766.606940273607,
+            "cpu_ns": 1760.4270937604272
+          },
+          {
+            "iterations": 5994,
+            "wall_ns": 8273.801634968302,
+            "cpu_ns": 1844.0106773440107
+          },
+          {
+            "iterations": 5994,
+            "wall_ns": 17073.71955288622,
+            "cpu_ns": 2038.2048715382048
+          },
+          {
+            "iterations": 5994,
+            "wall_ns": 9518.761928595262,
+            "cpu_ns": 1816.1494828161494
+          },
+          {
+            "iterations": 5994,
+            "wall_ns": 8247.87987987988,
+            "cpu_ns": 1831.4981648314981
+          },
+          {
+            "iterations": 5994,
+            "wall_ns": 1726.1358024691358,
+            "cpu_ns": 1726.2262262262261
+          }
+        ]
+      },
+      "order": [
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ]
+      ],
+      "metrics": {
+        "wall_ns": {
+          "median_before": 4941.597355965399,
+          "median_after": 8247.87987987988,
+          "paired_median_speedup": 0.9557575130034268,
+          "bootstrap_95_percent_interval": [
+            0.4714936313203354,
+            1.815339675672908
+          ],
+          "paired_ratios": [
+            0.9633076222034216,
+            17.118480134435263,
+            0.4714936313203354,
+            0.9557575130034268,
+            0.05928411513755718,
+            5.3981387746527405,
+            0.8557115469102229,
+            0.09544037978322252,
+            1.815339675672908,
+            0.599135466075358,
+            0.9741680047422477
+          ],
+          "noisy": true
+        },
+        "cpu_ns": {
+          "median_before": 1652.1952015668353,
+          "median_after": 1803.47013680347,
+          "paired_median_speedup": 0.9558796044203012,
+          "bootstrap_95_percent_interval": [
+            0.9052602129426071,
+            1.039358868854853
+          ],
+          "paired_ratios": [
+            0.9631518208862094,
+            1.039358868854853,
+            0.870243522569001,
+            0.9558796044203012,
+            0.9052602129426071,
+            1.1961650621610087,
+            1.0527290863253334,
+            0.7996424592182718,
+            0.9097242364680884,
+            0.9478158358350602,
+            0.9743217674900316
+          ],
+          "noisy": true
+        }
+      }
+    },
+    "format-only/32": {
+      "input_bytes": 32,
+      "samples": {
+        "before": [
+          {
+            "iterations": 46717,
+            "wall_ns": 1659.5778838538433,
+            "cpu_ns": 219.55605026007663
+          },
+          {
+            "iterations": 46717,
+            "wall_ns": 620.6680651582935,
+            "cpu_ns": 222.1675193184494
+          },
+          {
+            "iterations": 46717,
+            "wall_ns": 213.8158058094484,
+            "cpu_ns": 213.90500246163066
+          },
+          {
+            "iterations": 46717,
+            "wall_ns": 2932.1223109360617,
+            "cpu_ns": 220.04837639403215
+          },
+          {
+            "iterations": 46717,
+            "wall_ns": 1077.0517156495494,
+            "cpu_ns": 202.859772673759
+          },
+          {
+            "iterations": 46717,
+            "wall_ns": 702.1355609307104,
+            "cpu_ns": 215.2535479589871
+          },
+          {
+            "iterations": 46717,
+            "wall_ns": 210.3971787571976,
+            "cpu_ns": 210.437314039857
+          },
+          {
+            "iterations": 46717,
+            "wall_ns": 209.4624654836569,
+            "cpu_ns": 209.495472740116
+          },
+          {
+            "iterations": 46717,
+            "wall_ns": 210.27232056852966,
+            "cpu_ns": 210.28747565126184
+          },
+          {
+            "iterations": 46717,
+            "wall_ns": 211.32206691354324,
+            "cpu_ns": 211.31493888734295
+          },
+          {
+            "iterations": 46717,
+            "wall_ns": 209.95836633345462,
+            "cpu_ns": 209.9663933899865
+          }
+        ],
+        "after": [
+          {
+            "iterations": 37667,
+            "wall_ns": 2931.636658082672,
+            "cpu_ns": 264.1304059256113
+          },
+          {
+            "iterations": 37667,
+            "wall_ns": 292.82039981947065,
+            "cpu_ns": 275.6524278546208
+          },
+          {
+            "iterations": 37667,
+            "wall_ns": 2443.7372235643934,
+            "cpu_ns": 273.20997159317176
+          },
+          {
+            "iterations": 37667,
+            "wall_ns": 389.8881248838506,
+            "cpu_ns": 266.9445403138025
+          },
+          {
+            "iterations": 37667,
+            "wall_ns": 1975.05442429713,
+            "cpu_ns": 252.79422305997292
+          },
+          {
+            "iterations": 37667,
+            "wall_ns": 606.5134467836568,
+            "cpu_ns": 297.6345342076619
+          },
+          {
+            "iterations": 37667,
+            "wall_ns": 859.0178405500836,
+            "cpu_ns": 272.8382934664295
+          },
+          {
+            "iterations": 37667,
+            "wall_ns": 259.59505668091435,
+            "cpu_ns": 259.64371996707996
+          },
+          {
+            "iterations": 37667,
+            "wall_ns": 258.4324475004646,
+            "cpu_ns": 258.4755887116043
+          },
+          {
+            "iterations": 37667,
+            "wall_ns": 258.98332758117186,
+            "cpu_ns": 259.00655746409325
+          },
+          {
+            "iterations": 37667,
+            "wall_ns": 258.1404146865957,
+            "cpu_ns": 258.15700746011095
+          }
+        ]
+      },
+      "order": [
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ]
+      ],
+      "metrics": {
+        "wall_ns": {
+          "median_before": 213.8158058094484,
+          "median_after": 389.8881248838506,
+          "paired_median_speedup": 0.8133494578458853,
+          "bootstrap_95_percent_interval": [
+            0.5453276134569526,
+            1.157658687790251
+          ],
+          "paired_ratios": [
+            0.5660926224531619,
+            2.1196203049410056,
+            0.08749541634332529,
+            7.520419637837274,
+            0.5453276134569526,
+            1.157658687790251,
+            0.24492760083127835,
+            0.8068815645481309,
+            0.8136452005244104,
+            0.8159678419735711,
+            0.8133494578458853
+          ],
+          "noisy": true
+        },
+        "cpu_ns": {
+          "median_before": 211.31493888734295,
+          "median_after": 264.1304059256113,
+          "paired_median_speedup": 0.8068574613192178,
+          "bootstrap_95_percent_interval": [
+            0.7829326331476282,
+            0.8158671384860133
+          ],
+          "paired_ratios": [
+            0.8312411041457741,
+            0.8059697534593117,
+            0.7829326331476282,
+            0.824322445910891,
+            0.8024699703111196,
+            0.723214288731707,
+            0.771289511330086,
+            0.8068574613192178,
+            0.8135680305419146,
+            0.8158671384860133,
+            0.8133282743542393
+          ],
+          "noisy": false
+        }
+      }
+    },
+    "generation/256": {
+      "input_bytes": 256,
+      "samples": {
+        "before": [
+          {
+            "iterations": 4607,
+            "wall_ns": 2115.241154764489,
+            "cpu_ns": 2115.476448882136
+          },
+          {
+            "iterations": 4607,
+            "wall_ns": 2097.197959626655,
+            "cpu_ns": 2097.4603863685697
+          },
+          {
+            "iterations": 4607,
+            "wall_ns": 2094.9010201866727,
+            "cpu_ns": 2095.0727154330366
+          },
+          {
+            "iterations": 4607,
+            "wall_ns": 32042.12784892555,
+            "cpu_ns": 2162.361623616236
+          },
+          {
+            "iterations": 4607,
+            "wall_ns": 16829.6702843499,
+            "cpu_ns": 2136.0972433253746
+          },
+          {
+            "iterations": 4607,
+            "wall_ns": 11645.991751682222,
+            "cpu_ns": 2584.1111352289995
+          },
+          {
+            "iterations": 4607,
+            "wall_ns": 8048.214673323204,
+            "cpu_ns": 2518.5587149989146
+          },
+          {
+            "iterations": 4607,
+            "wall_ns": 5510.545474278272,
+            "cpu_ns": 2206.425005426525
+          },
+          {
+            "iterations": 4607,
+            "wall_ns": 7934.149120902974,
+            "cpu_ns": 2256.7831560668546
+          },
+          {
+            "iterations": 4607,
+            "wall_ns": 14551.82331235077,
+            "cpu_ns": 2511.395702192316
+          },
+          {
+            "iterations": 4607,
+            "wall_ns": 11849.93857173866,
+            "cpu_ns": 2499.4573475146517
+          }
+        ],
+        "after": [
+          {
+            "iterations": 187,
+            "wall_ns": 1793.2245989304813,
+            "cpu_ns": 1796.7914438502673
+          },
+          {
+            "iterations": 187,
+            "wall_ns": 1784.5347593582887,
+            "cpu_ns": 1791.4438502673797
+          },
+          {
+            "iterations": 187,
+            "wall_ns": 1812.385026737968,
+            "cpu_ns": 1818.1818181818182
+          },
+          {
+            "iterations": 187,
+            "wall_ns": 1791.4438502673797,
+            "cpu_ns": 1796.7914438502673
+          },
+          {
+            "iterations": 187,
+            "wall_ns": 162111.18181818182,
+            "cpu_ns": 2582.8877005347595
+          },
+          {
+            "iterations": 187,
+            "wall_ns": 5557.486631016042,
+            "cpu_ns": 2048.128342245989
+          },
+          {
+            "iterations": 187,
+            "wall_ns": 6398.8395721925135,
+            "cpu_ns": 2053.475935828877
+          },
+          {
+            "iterations": 187,
+            "wall_ns": 5539.438502673796,
+            "cpu_ns": 2213.903743315508
+          },
+          {
+            "iterations": 187,
+            "wall_ns": 2251.561497326203,
+            "cpu_ns": 2251.336898395722
+          },
+          {
+            "iterations": 187,
+            "wall_ns": 2184.048128342246,
+            "cpu_ns": 2187.1657754010694
+          },
+          {
+            "iterations": 187,
+            "wall_ns": 2235.0695187165775,
+            "cpu_ns": 2240.6417112299464
+          }
+        ]
+      },
+      "order": [
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ]
+      ],
+      "metrics": {
+        "wall_ns": {
+          "median_before": 8048.214673323204,
+          "median_after": 2235.0695187165775,
+          "paired_median_speedup": 1.2577615960710113,
+          "bootstrap_95_percent_interval": [
+            1.1558807810044607,
+            5.301821027268599
+          ],
+          "paired_ratios": [
+            1.1795740232573573,
+            1.175207122544813,
+            1.1558807810044607,
+            17.88620270969874,
+            0.10381560417729521,
+            2.0955501155300222,
+            1.2577615960710113,
+            0.9947841232678045,
+            3.523842955355656,
+            6.662775935892958,
+            5.301821027268599
+          ],
+          "noisy": true
+        },
+        "cpu_ns": {
+          "median_before": 2206.425005426525,
+          "median_after": 2053.475935828877,
+          "paired_median_speedup": 1.15228999348817,
+          "bootstrap_95_percent_interval": [
+            1.002419121578389,
+            1.20345721314356
+          ],
+          "paired_ratios": [
+            1.177363380776665,
+            1.1708211708982763,
+            1.15228999348817,
+            1.20345721314356,
+            0.8270190155317703,
+            1.2616939485321748,
+            1.2264856242312423,
+            0.9966219227409665,
+            1.002419121578389,
+            1.148242044767636,
+            1.1155096037833887
+          ],
+          "noisy": true
+        }
+      }
+    },
+    "format-only/256": {
+      "input_bytes": 256,
+      "samples": {
+        "before": [
+          {
+            "iterations": 7156,
+            "wall_ns": 608.9819731693684,
+            "cpu_ns": 609.2789267747345
+          },
+          {
+            "iterations": 7156,
+            "wall_ns": 606.7751537171604,
+            "cpu_ns": 606.9032979318055
+          },
+          {
+            "iterations": 7156,
+            "wall_ns": 604.8711570709894,
+            "cpu_ns": 604.8071548351035
+          },
+          {
+            "iterations": 7156,
+            "wall_ns": 604.411263275573,
+            "cpu_ns": 604.66741196199
+          },
+          {
+            "iterations": 7156,
+            "wall_ns": 2203.6344326439353,
+            "cpu_ns": 607.1827836780324
+          },
+          {
+            "iterations": 7156,
+            "wall_ns": 592.0672163219676,
+            "cpu_ns": 592.230296254891
+          },
+          {
+            "iterations": 7156,
+            "wall_ns": 6772.5102012297375,
+            "cpu_ns": 612.9122414756847
+          },
+          {
+            "iterations": 7156,
+            "wall_ns": 606.8858300726663,
+            "cpu_ns": 593.4879821129123
+          },
+          {
+            "iterations": 7156,
+            "wall_ns": 856.4257965343768,
+            "cpu_ns": 646.3107881498044
+          },
+          {
+            "iterations": 7156,
+            "wall_ns": 10812.208775852432,
+            "cpu_ns": 647.987702627166
+          },
+          {
+            "iterations": 7156,
+            "wall_ns": 11669.409027389604,
+            "cpu_ns": 626.048071548351
+          }
+        ],
+        "after": [
+          {
+            "iterations": 33760,
+            "wall_ns": 297.57230450236966,
+            "cpu_ns": 297.6007109004739
+          },
+          {
+            "iterations": 33760,
+            "wall_ns": 3438.7317535545026,
+            "cpu_ns": 301.1255924170616
+          },
+          {
+            "iterations": 33760,
+            "wall_ns": 298.51895734597156,
+            "cpu_ns": 298.51895734597156
+          },
+          {
+            "iterations": 33760,
+            "wall_ns": 296.0159952606635,
+            "cpu_ns": 296.06042654028437
+          },
+          {
+            "iterations": 33760,
+            "wall_ns": 4085.3858116113743,
+            "cpu_ns": 314.4845971563981
+          },
+          {
+            "iterations": 33760,
+            "wall_ns": 1436.1386848341233,
+            "cpu_ns": 322.7191943127962
+          },
+          {
+            "iterations": 33760,
+            "wall_ns": 1559.4070793838862,
+            "cpu_ns": 335.3969194312796
+          },
+          {
+            "iterations": 33760,
+            "wall_ns": 761.5620260663507,
+            "cpu_ns": 320.29028436018956
+          },
+          {
+            "iterations": 33760,
+            "wall_ns": 1206.958441943128,
+            "cpu_ns": 332.46445497630333
+          },
+          {
+            "iterations": 33760,
+            "wall_ns": 1534.3071090047392,
+            "cpu_ns": 315.6101895734597
+          },
+          {
+            "iterations": 33760,
+            "wall_ns": 2093.9734004739335,
+            "cpu_ns": 316.3507109004739
+          }
+        ]
+      },
+      "order": [
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ]
+      ],
+      "metrics": {
+        "wall_ns": {
+          "median_before": 608.9819731693684,
+          "median_after": 1436.1386848341233,
+          "paired_median_speedup": 2.0262403515297285,
+          "bootstrap_95_percent_interval": [
+            0.5393944499392993,
+            4.343003370169079
+          ],
+          "paired_ratios": [
+            2.0465008468707104,
+            0.17645318018480421,
+            2.0262403515297285,
+            2.0418196075632506,
+            0.5393944499392993,
+            0.41226326020899057,
+            4.343003370169079,
+            0.7968961283526389,
+            0.709573558436349,
+            7.046965182130975,
+            5.572854471192634
+          ],
+          "noisy": true
+        },
+        "cpu_ns": {
+          "median_before": 607.1827836780324,
+          "median_after": 315.6101895734597,
+          "paired_median_speedup": 1.978968435905649,
+          "bootstrap_95_percent_interval": [
+            1.8529690443107296,
+            2.042378371969663
+          ],
+          "paired_ratios": [
+            2.0473033311351685,
+            2.015449079104638,
+            2.0260259522954054,
+            2.042378371969663,
+            1.9307234413648275,
+            1.8351257275415436,
+            1.827423586701326,
+            1.8529690443107296,
+            1.9439996621469524,
+            2.053126686127933,
+            1.978968435905649
+          ],
+          "noisy": false
+        }
+      }
+    },
+    "generation/4096": {
+      "input_bytes": 4096,
+      "samples": {
+        "before": [
+          {
+            "iterations": 357,
+            "wall_ns": 28191.526610644258,
+            "cpu_ns": 28193.277310924368
+          },
+          {
+            "iterations": 357,
+            "wall_ns": 79935.9243697479,
+            "cpu_ns": 30913.165266106444
+          },
+          {
+            "iterations": 357,
+            "wall_ns": 255963.46778711485,
+            "cpu_ns": 31607.843137254902
+          },
+          {
+            "iterations": 357,
+            "wall_ns": 109661.06442577031,
+            "cpu_ns": 30226.89075630252
+          },
+          {
+            "iterations": 357,
+            "wall_ns": 29111.81232492997,
+            "cpu_ns": 29117.647058823528
+          },
+          {
+            "iterations": 357,
+            "wall_ns": 28069.563025210085,
+            "cpu_ns": 28075.63025210084
+          },
+          {
+            "iterations": 357,
+            "wall_ns": 150534.78151260506,
+            "cpu_ns": 28372.549019607843
+          },
+          {
+            "iterations": 357,
+            "wall_ns": 380708.218487395,
+            "cpu_ns": 31700.280112044817
+          },
+          {
+            "iterations": 357,
+            "wall_ns": 28956.697478991595,
+            "cpu_ns": 28960.78431372549
+          },
+          {
+            "iterations": 357,
+            "wall_ns": 46329.13165266106,
+            "cpu_ns": 28392.156862745098
+          },
+          {
+            "iterations": 357,
+            "wall_ns": 281969.0700280112,
+            "cpu_ns": 32047.619047619046
+          }
+        ],
+        "after": [
+          {
+            "iterations": 437,
+            "wall_ns": 427338.2929061785,
+            "cpu_ns": 28720.823798627003
+          },
+          {
+            "iterations": 437,
+            "wall_ns": 131681.5400457666,
+            "cpu_ns": 26416.475972540047
+          },
+          {
+            "iterations": 437,
+            "wall_ns": 156331.52173913043,
+            "cpu_ns": 26496.567505720825
+          },
+          {
+            "iterations": 437,
+            "wall_ns": 28540.61784897025,
+            "cpu_ns": 27368.42105263158
+          },
+          {
+            "iterations": 437,
+            "wall_ns": 159910.27688787185,
+            "cpu_ns": 23237.986270022884
+          },
+          {
+            "iterations": 437,
+            "wall_ns": 251609.64988558352,
+            "cpu_ns": 23130.434782608696
+          },
+          {
+            "iterations": 437,
+            "wall_ns": 23141.400457665903,
+            "cpu_ns": 23144.1647597254
+          },
+          {
+            "iterations": 437,
+            "wall_ns": 23078.279176201373,
+            "cpu_ns": 23077.803203661326
+          },
+          {
+            "iterations": 437,
+            "wall_ns": 23522.691075514875,
+            "cpu_ns": 23526.315789473683
+          },
+          {
+            "iterations": 437,
+            "wall_ns": 302475.97254004574,
+            "cpu_ns": 23640.732265446226
+          },
+          {
+            "iterations": 437,
+            "wall_ns": 23461.956521739132,
+            "cpu_ns": 23466.819221967962
+          }
+        ]
+      },
+      "order": [
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ]
+      ],
+      "metrics": {
+        "wall_ns": {
+          "median_before": 79935.9243697479,
+          "median_after": 131681.5400457666,
+          "paired_median_speedup": 1.2310112557288593,
+          "bootstrap_95_percent_interval": [
+            0.15316632016623205,
+            6.504998769974544
+          ],
+          "paired_ratios": [
+            0.06597004546193024,
+            0.6070397137060043,
+            1.6373119441275554,
+            3.842280675424372,
+            0.18205091562278392,
+            0.1115599621794092,
+            6.504998769974544,
+            16.496386735800748,
+            1.2310112557288593,
+            0.15316632016623205,
+            12.018139653730383
+          ],
+          "noisy": true
+        },
+        "cpu_ns": {
+          "median_before": 29117.647058823528,
+          "median_after": 23526.315789473683,
+          "paired_median_speedup": 1.2137960447336829,
+          "bootstrap_95_percent_interval": [
+            1.1702229055170232,
+            1.2530193761404118
+          ],
+          "paired_ratios": [
+            0.981631916570309,
+            1.1702229055170232,
+            1.1929033121150696,
+            1.1044440853264381,
+            1.2530193761404118,
+            1.2137960447336829,
+            1.2259050743097317,
+            1.3736264163573213,
+            1.230995306399965,
+            1.2009846625708651,
+            1.3656567063685543
+          ],
+          "noisy": false
+        }
+      }
+    },
+    "format-only/4096": {
+      "input_bytes": 4096,
+      "samples": {
+        "before": [
+          {
+            "iterations": 1565,
+            "wall_ns": 36571.591693290735,
+            "cpu_ns": 6165.495207667732
+          },
+          {
+            "iterations": 1565,
+            "wall_ns": 31544.063258785944,
+            "cpu_ns": 6199.361022364217
+          },
+          {
+            "iterations": 1565,
+            "wall_ns": 40546.83194888179,
+            "cpu_ns": 6375.079872204473
+          },
+          {
+            "iterations": 1565,
+            "wall_ns": 21256.496485623004,
+            "cpu_ns": 6331.629392971246
+          },
+          {
+            "iterations": 1565,
+            "wall_ns": 6372.417252396166,
+            "cpu_ns": 6373.1629392971245
+          },
+          {
+            "iterations": 1565,
+            "wall_ns": 43476.54440894569,
+            "cpu_ns": 6435.782747603834
+          },
+          {
+            "iterations": 1565,
+            "wall_ns": 42715.09584664537,
+            "cpu_ns": 6672.843450479233
+          },
+          {
+            "iterations": 1565,
+            "wall_ns": 37739.13738019169,
+            "cpu_ns": 6549.520766773163
+          },
+          {
+            "iterations": 1565,
+            "wall_ns": 6146.192971246006,
+            "cpu_ns": 6143.769968051118
+          },
+          {
+            "iterations": 1565,
+            "wall_ns": 6076.597444089457,
+            "cpu_ns": 6076.67731629393
+          },
+          {
+            "iterations": 1565,
+            "wall_ns": 6387.672843450479,
+            "cpu_ns": 6387.859424920128
+          }
+        ],
+        "after": [
+          {
+            "iterations": 742,
+            "wall_ns": 1356.8625336927223,
+            "cpu_ns": 1208.8948787061995
+          },
+          {
+            "iterations": 742,
+            "wall_ns": 1041.3301886792453,
+            "cpu_ns": 1043.1266846361186
+          },
+          {
+            "iterations": 742,
+            "wall_ns": 1029.3126684636118,
+            "cpu_ns": 1029.6495956873316
+          },
+          {
+            "iterations": 742,
+            "wall_ns": 1099.3935309973047,
+            "cpu_ns": 1099.7304582210243
+          },
+          {
+            "iterations": 742,
+            "wall_ns": 1080.6374663072777,
+            "cpu_ns": 1080.8625336927223
+          },
+          {
+            "iterations": 742,
+            "wall_ns": 1098.888140161725,
+            "cpu_ns": 1099.7304582210243
+          },
+          {
+            "iterations": 742,
+            "wall_ns": 1083.7830188679245,
+            "cpu_ns": 1084.9056603773586
+          },
+          {
+            "iterations": 742,
+            "wall_ns": 1086.365229110512,
+            "cpu_ns": 1087.601078167116
+          },
+          {
+            "iterations": 742,
+            "wall_ns": 1063.566037735849,
+            "cpu_ns": 1063.3423180592993
+          },
+          {
+            "iterations": 742,
+            "wall_ns": 1191.4299191374664,
+            "cpu_ns": 1192.722371967655
+          },
+          {
+            "iterations": 742,
+            "wall_ns": 31709.737196765498,
+            "cpu_ns": 1262.8032345013478
+          }
+        ]
+      },
+      "order": [
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ]
+      ],
+      "metrics": {
+        "wall_ns": {
+          "median_before": 31544.063258785944,
+          "median_after": 1086.365229110512,
+          "paired_median_speedup": 26.953055880878797,
+          "bootstrap_95_percent_interval": [
+            5.77885411265125,
+            39.392143117604306
+          ],
+          "paired_ratios": [
+            26.953055880878797,
+            30.29208564364619,
+            39.392143117604306,
+            19.334747646132108,
+            5.8969057163748,
+            39.564121970182676,
+            39.412959146807644,
+            34.7389039789975,
+            5.77885411265125,
+            5.100255874460999,
+            0.20144199883504693
+          ],
+          "noisy": true
+        },
+        "cpu_ns": {
+          "median_before": 6373.1629392971245,
+          "median_after": 1087.601078167116,
+          "paired_median_speedup": 5.852145586669172,
+          "bootstrap_95_percent_interval": [
+            5.10010863332158,
+            6.021988115174333
+          ],
+          "paired_ratios": [
+            5.10010863332158,
+            5.943056690690244,
+            6.1915042737902075,
+            5.757437511745912,
+            5.896367706930756,
+            5.852145586669172,
+            6.150620919572162,
+            6.021988115174333,
+            5.777791275404219,
+            5.094796122813668,
+            5.058475659862043
+          ],
+          "noisy": false
+        }
+      }
+    },
+    "generation/65536": {
+      "input_bytes": 65536,
+      "samples": {
+        "before": [
+          {
+            "iterations": 5,
+            "wall_ns": 757375.0,
+            "cpu_ns": 495000.0
+          },
+          {
+            "iterations": 5,
+            "wall_ns": 454583.2,
+            "cpu_ns": 455000.0
+          },
+          {
+            "iterations": 5,
+            "wall_ns": 456041.8,
+            "cpu_ns": 456400.0
+          },
+          {
+            "iterations": 5,
+            "wall_ns": 457000.0,
+            "cpu_ns": 457400.0
+          },
+          {
+            "iterations": 5,
+            "wall_ns": 454841.6,
+            "cpu_ns": 455200.0
+          },
+          {
+            "iterations": 5,
+            "wall_ns": 456450.0,
+            "cpu_ns": 456600.0
+          },
+          {
+            "iterations": 5,
+            "wall_ns": 456250.0,
+            "cpu_ns": 456200.0
+          },
+          {
+            "iterations": 5,
+            "wall_ns": 457658.4,
+            "cpu_ns": 457600.0
+          },
+          {
+            "iterations": 5,
+            "wall_ns": 456050.0,
+            "cpu_ns": 456400.0
+          },
+          {
+            "iterations": 5,
+            "wall_ns": 457216.6,
+            "cpu_ns": 457200.0
+          },
+          {
+            "iterations": 5,
+            "wall_ns": 454758.4,
+            "cpu_ns": 455000.0
+          }
+        ],
+        "after": [
+          {
+            "iterations": 3,
+            "wall_ns": 372069.3333333333,
+            "cpu_ns": 372000.0
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 365486.0,
+            "cpu_ns": 366000.0
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 371472.0,
+            "cpu_ns": 372000.0
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 370791.6666666667,
+            "cpu_ns": 371000.0
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 370541.6666666667,
+            "cpu_ns": 370666.6666666667
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 371416.6666666667,
+            "cpu_ns": 371666.6666666667
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 371930.6666666667,
+            "cpu_ns": 372333.3333333333
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 371055.6666666667,
+            "cpu_ns": 371333.3333333333
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 371111.3333333333,
+            "cpu_ns": 371333.3333333333
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 371166.6666666667,
+            "cpu_ns": 371333.3333333333
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 35019875.0,
+            "cpu_ns": 444000.0
+          }
+        ]
+      },
+      "order": [
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ]
+      ],
+      "metrics": {
+        "wall_ns": {
+          "median_before": 456250.0,
+          "median_after": 371166.6666666667,
+          "paired_median_speedup": 1.2289432353601075,
+          "bootstrap_95_percent_interval": [
+            1.2275045991229054,
+            1.2333955282540714
+          ],
+          "paired_ratios": [
+            2.035574910769319,
+            1.2437773266281063,
+            1.2276613042167377,
+            1.2324980334869087,
+            1.2275045991229054,
+            1.2289432353601075,
+            1.2267071282102757,
+            1.2333955282540714,
+            1.2288765096547847,
+            1.2318363718006284,
+            0.012985723107235534
+          ],
+          "noisy": true
+        },
+        "cpu_ns": {
+          "median_before": 456400.0,
+          "median_after": 371333.3333333333,
+          "paired_median_speedup": 1.229084380610413,
+          "bootstrap_95_percent_interval": [
+            1.2268817204301075,
+            1.2328840970350405
+          ],
+          "paired_ratios": [
+            1.3306451612903225,
+            1.2431693989071038,
+            1.2268817204301075,
+            1.2328840970350405,
+            1.2280575539568344,
+            1.2285201793721972,
+            1.2252461951656222,
+            1.2323159784560145,
+            1.229084380610413,
+            1.2312387791741473,
+            1.0247747747747749
+          ],
+          "noisy": false
+        }
+      }
+    },
+    "format-only/65536": {
+      "input_bytes": 65536,
+      "samples": {
+        "before": [
+          {
+            "iterations": 54,
+            "wall_ns": 98915.11111111111,
+            "cpu_ns": 98925.92592592593
+          },
+          {
+            "iterations": 54,
+            "wall_ns": 98669.75925925926,
+            "cpu_ns": 98685.18518518518
+          },
+          {
+            "iterations": 54,
+            "wall_ns": 98666.66666666667,
+            "cpu_ns": 98685.18518518518
+          },
+          {
+            "iterations": 54,
+            "wall_ns": 98381.16666666667,
+            "cpu_ns": 98388.88888888889
+          },
+          {
+            "iterations": 54,
+            "wall_ns": 157591.8148148148,
+            "cpu_ns": 99870.37037037036
+          },
+          {
+            "iterations": 54,
+            "wall_ns": 98417.44444444444,
+            "cpu_ns": 98407.4074074074
+          },
+          {
+            "iterations": 54,
+            "wall_ns": 583806.3148148148,
+            "cpu_ns": 106296.29629629629
+          },
+          {
+            "iterations": 54,
+            "wall_ns": 150297.83333333334,
+            "cpu_ns": 101388.88888888889
+          },
+          {
+            "iterations": 54,
+            "wall_ns": 350597.22222222225,
+            "cpu_ns": 98296.29629629629
+          },
+          {
+            "iterations": 54,
+            "wall_ns": 97215.27777777778,
+            "cpu_ns": 94185.18518518518
+          },
+          {
+            "iterations": 54,
+            "wall_ns": 113504.62962962964,
+            "cpu_ns": 101074.07407407407
+          }
+        ],
+        "after": [
+          {
+            "iterations": 772,
+            "wall_ns": 12971.988341968912,
+            "cpu_ns": 12974.093264248704
+          },
+          {
+            "iterations": 772,
+            "wall_ns": 13051.597150259067,
+            "cpu_ns": 13053.108808290155
+          },
+          {
+            "iterations": 772,
+            "wall_ns": 238368.52331606217,
+            "cpu_ns": 13182.642487046633
+          },
+          {
+            "iterations": 772,
+            "wall_ns": 86893.35103626944,
+            "cpu_ns": 13366.580310880829
+          },
+          {
+            "iterations": 772,
+            "wall_ns": 122672.11787564767,
+            "cpu_ns": 15262.953367875647
+          },
+          {
+            "iterations": 772,
+            "wall_ns": 68966.53756476684,
+            "cpu_ns": 13709.844559585492
+          },
+          {
+            "iterations": 772,
+            "wall_ns": 127030.87176165803,
+            "cpu_ns": 13564.766839378239
+          },
+          {
+            "iterations": 772,
+            "wall_ns": 25391.029792746114,
+            "cpu_ns": 13630.82901554404
+          },
+          {
+            "iterations": 772,
+            "wall_ns": 70282.65284974093,
+            "cpu_ns": 13284.974093264249
+          },
+          {
+            "iterations": 772,
+            "wall_ns": 72500.75518134715,
+            "cpu_ns": 13199.481865284974
+          },
+          {
+            "iterations": 772,
+            "wall_ns": 70345.58549222798,
+            "cpu_ns": 15182.642487046633
+          }
+        ]
+      },
+      "order": [
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ]
+      ],
+      "metrics": {
+        "wall_ns": {
+          "median_before": 98915.11111111111,
+          "median_after": 70345.58549222798,
+          "paired_median_speedup": 1.6135288211108856,
+          "bootstrap_95_percent_interval": [
+            1.284658792428815,
+            5.919327989456791
+          ],
+          "paired_ratios": [
+            7.62528523025928,
+            7.559975849951875,
+            0.4139248978601116,
+            1.1322059224715848,
+            1.284658792428815,
+            1.4270318319521273,
+            4.595782951959763,
+            5.919327989456791,
+            4.988389140230278,
+            1.3408864160740375,
+            1.6135288211108856
+          ],
+          "noisy": true
+        },
+        "cpu_ns": {
+          "median_before": 98685.18518518518,
+          "median_after": 13366.580310880829,
+          "paired_median_speedup": 7.399058184549604,
+          "bootstrap_95_percent_interval": [
+            7.135521389888416,
+            7.560282123941943
+          ],
+          "paired_ratios": [
+            7.624881670808189,
+            7.560282123941943,
+            7.485994198974448,
+            7.3608123095476525,
+            6.543318842902989,
+            7.177864561462445,
+            7.836205189146365,
+            7.438204145416917,
+            7.399058184549604,
+            7.135521389888416,
+            6.657212284377202
+          ],
+          "noisy": false
+        }
+      }
+    },
+    "generation/1048576": {
+      "input_bytes": 1048576,
+      "samples": {
+        "before": [
+          {
+            "iterations": 1,
+            "wall_ns": 7259375.0,
+            "cpu_ns": 7261000.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 7333292.0,
+            "cpu_ns": 7334000.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 7300250.0,
+            "cpu_ns": 7301000.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 272432625.0,
+            "cpu_ns": 7970000.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 11922417.0,
+            "cpu_ns": 7694000.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 74981250.0,
+            "cpu_ns": 7480000.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 62005542.0,
+            "cpu_ns": 7705000.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 33049958.0,
+            "cpu_ns": 8368000.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 8601750.0,
+            "cpu_ns": 8512000.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 6741208.0,
+            "cpu_ns": 6743000.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 94419542.0,
+            "cpu_ns": 6783000.0
+          }
+        ],
+        "after": [
+          {
+            "iterations": 2,
+            "wall_ns": 5880000.0,
+            "cpu_ns": 5880500.0
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 5964521.0,
+            "cpu_ns": 5964500.0
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 5943645.5,
+            "cpu_ns": 5944500.0
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 5929479.5,
+            "cpu_ns": 5930000.0
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 22173229.0,
+            "cpu_ns": 6128500.0
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 5836687.5,
+            "cpu_ns": 5838500.0
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 32070062.5,
+            "cpu_ns": 6578000.0
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 44741771.0,
+            "cpu_ns": 6499000.0
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 47693875.0,
+            "cpu_ns": 5878500.0
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 5506042.0,
+            "cpu_ns": 5507500.0
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 22611625.0,
+            "cpu_ns": 5863500.0
+          }
+        ]
+      },
+      "order": [
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ]
+      ],
+      "metrics": {
+        "wall_ns": {
+          "median_before": 11922417.0,
+          "median_after": 5964521.0,
+          "paired_median_speedup": 1.2294854859258606,
+          "bootstrap_95_percent_interval": [
+            0.738682382510071,
+            4.1757079378417075
+          ],
+          "paired_ratios": [
+            1.2345875850340136,
+            1.2294854859258606,
+            1.2282445176112875,
+            45.94545355962526,
+            0.5376942167512003,
+            12.846541809887887,
+            1.9334400112254224,
+            0.738682382510071,
+            0.18035334725895097,
+            1.2243292005400612,
+            4.1757079378417075
+          ],
+          "noisy": true
+        },
+        "cpu_ns": {
+          "median_before": 7480000.0,
+          "median_after": 5930000.0,
+          "paired_median_speedup": 1.2347589490689568,
+          "bootstrap_95_percent_interval": [
+            1.2243304584657286,
+            1.2875827050315434
+          ],
+          "paired_ratios": [
+            1.2347589490689568,
+            1.2296085170592674,
+            1.2281941290268314,
+            1.3440134907251264,
+            1.2554458676674554,
+            1.2811509805600754,
+            1.1713286713286712,
+            1.2875827050315434,
+            1.4479884324232373,
+            1.2243304584657286,
+            1.1568176004093118
+          ],
+          "noisy": true
+        }
+      }
+    },
+    "format-only/1048576": {
+      "input_bytes": 1048576,
+      "samples": {
+        "before": [
+          {
+            "iterations": 1,
+            "wall_ns": 1576625.0,
+            "cpu_ns": 1578000.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 1560958.0,
+            "cpu_ns": 1563000.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 1571667.0,
+            "cpu_ns": 1573000.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 1559833.0,
+            "cpu_ns": 1561000.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 3474625.0,
+            "cpu_ns": 1582000.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 52080375.0,
+            "cpu_ns": 1525000.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 1660584.0,
+            "cpu_ns": 1661000.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 1651625.0,
+            "cpu_ns": 1652000.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 40778541.0,
+            "cpu_ns": 1660000.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 1506250.0,
+            "cpu_ns": 1507000.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 43810708.0,
+            "cpu_ns": 1646000.0
+          }
+        ],
+        "after": [
+          {
+            "iterations": 53,
+            "wall_ns": 570037.7358490566,
+            "cpu_ns": 195566.03773584907
+          },
+          {
+            "iterations": 53,
+            "wall_ns": 188963.05660377358,
+            "cpu_ns": 188981.1320754717
+          },
+          {
+            "iterations": 53,
+            "wall_ns": 1163625.0,
+            "cpu_ns": 205452.83018867925
+          },
+          {
+            "iterations": 53,
+            "wall_ns": 420489.77358490566,
+            "cpu_ns": 189132.0754716981
+          },
+          {
+            "iterations": 53,
+            "wall_ns": 1647753.924528302,
+            "cpu_ns": 205509.43396226416
+          },
+          {
+            "iterations": 53,
+            "wall_ns": 626973.2641509434,
+            "cpu_ns": 207566.03773584907
+          },
+          {
+            "iterations": 53,
+            "wall_ns": 199785.37735849057,
+            "cpu_ns": 199849.05660377358
+          },
+          {
+            "iterations": 53,
+            "wall_ns": 935439.4716981133,
+            "cpu_ns": 200283.01886792452
+          },
+          {
+            "iterations": 53,
+            "wall_ns": 200446.54716981133,
+            "cpu_ns": 200490.56603773584
+          },
+          {
+            "iterations": 53,
+            "wall_ns": 246484.28301886792,
+            "cpu_ns": 202018.8679245283
+          },
+          {
+            "iterations": 53,
+            "wall_ns": 198533.79245283018,
+            "cpu_ns": 198566.03773584907
+          }
+        ]
+      },
+      "order": [
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ]
+      ],
+      "metrics": {
+        "wall_ns": {
+          "median_before": 1651625.0,
+          "median_after": 420489.77358490566,
+          "paired_median_speedup": 6.1109373042040955,
+          "bootstrap_95_percent_interval": [
+            2.108703822990239,
+            83.06634106723519
+          ],
+          "paired_ratios": [
+            2.7658256652985567,
+            8.260651727671236,
+            1.3506645182081856,
+            3.709562272351047,
+            2.108703822990239,
+            83.06634106723519,
+            8.311839544794532,
+            1.7656139707273497,
+            203.43848061126164,
+            6.1109373042040955,
+            220.67128955091624
+          ],
+          "noisy": true
+        },
+        "cpu_ns": {
+          "median_before": 1578000.0,
+          "median_after": 200283.01886792452,
+          "paired_median_speedup": 8.248327837965144,
+          "bootstrap_95_percent_interval": [
+            7.656258609606025,
+            8.279691323169585
+          ],
+          "paired_ratios": [
+            8.068885672937771,
+            8.270666932907348,
+            7.656258609606025,
+            8.253491620111733,
+            7.697943444730077,
+            7.34705935824016,
+            8.311272658610273,
+            8.248327837965144,
+            8.279691323169585,
+            7.459699262164938,
+            8.28943367540859
+          ],
+          "noisy": false
+        }
+      }
+    },
+    "generation/self-control/32": {
+      "input_bytes": 32,
+      "samples": {
+        "before": [
+          {
+            "iterations": 1522,
+            "wall_ns": 3184.352168199737,
+            "cpu_ns": 1971.747700394218
+          },
+          {
+            "iterations": 1522,
+            "wall_ns": 1742.5262812089356,
+            "cpu_ns": 1743.101182654402
+          },
+          {
+            "iterations": 1522,
+            "wall_ns": 1686.8705650459922,
+            "cpu_ns": 1687.2536136662286
+          },
+          {
+            "iterations": 1522,
+            "wall_ns": 1649.7207621550592,
+            "cpu_ns": 1649.802890932983
+          },
+          {
+            "iterations": 1522,
+            "wall_ns": 1650.4047306176085,
+            "cpu_ns": 1650.4599211563732
+          },
+          {
+            "iterations": 1522,
+            "wall_ns": 1650.5151116951379,
+            "cpu_ns": 1651.1169513797636
+          },
+          {
+            "iterations": 1522,
+            "wall_ns": 1676.2483574244416,
+            "cpu_ns": 1672.7989487516427
+          },
+          {
+            "iterations": 1522,
+            "wall_ns": 2052.9185282522994,
+            "cpu_ns": 2045.335085413929
+          },
+          {
+            "iterations": 1522,
+            "wall_ns": 2203.406044678055,
+            "cpu_ns": 2024.3101182654402
+          },
+          {
+            "iterations": 1522,
+            "wall_ns": 2542.651773981603,
+            "cpu_ns": 2103.8107752956635
+          },
+          {
+            "iterations": 1522,
+            "wall_ns": 2101.0729303547964,
+            "cpu_ns": 2075.5584756898816
+          }
+        ],
+        "after": [
+          {
+            "iterations": 823,
+            "wall_ns": 1729.3948967193196,
+            "cpu_ns": 1731.4702308626975
+          },
+          {
+            "iterations": 823,
+            "wall_ns": 1740.127582017011,
+            "cpu_ns": 1742.4058323207776
+          },
+          {
+            "iterations": 823,
+            "wall_ns": 1653.3511543134873,
+            "cpu_ns": 1654.921020656136
+          },
+          {
+            "iterations": 823,
+            "wall_ns": 1651.023086269745,
+            "cpu_ns": 1651.2758201701095
+          },
+          {
+            "iterations": 823,
+            "wall_ns": 1649.6051032806804,
+            "cpu_ns": 1651.2758201701095
+          },
+          {
+            "iterations": 823,
+            "wall_ns": 1646.1628189550424,
+            "cpu_ns": 1647.6306196840826
+          },
+          {
+            "iterations": 823,
+            "wall_ns": 81926.58930741191,
+            "cpu_ns": 2140.947752126367
+          },
+          {
+            "iterations": 823,
+            "wall_ns": 2542.730255164034,
+            "cpu_ns": 2057.108140947752
+          },
+          {
+            "iterations": 823,
+            "wall_ns": 15328.117861482382,
+            "cpu_ns": 1789.793438639125
+          },
+          {
+            "iterations": 823,
+            "wall_ns": 5445.422843256379,
+            "cpu_ns": 2057.108140947752
+          },
+          {
+            "iterations": 823,
+            "wall_ns": 101046.57715674362,
+            "cpu_ns": 1946.5370595382747
+          }
+        ]
+      },
+      "order": [
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ]
+      ],
+      "metrics": {
+        "wall_ns": {
+          "median_before": 1742.5262812089356,
+          "median_after": 1740.127582017011,
+          "paired_median_speedup": 0.9992112017539209,
+          "bootstrap_95_percent_interval": [
+            0.143749289024906,
+            1.0026439017392328
+          ],
+          "paired_ratios": [
+            1.8413100294446842,
+            1.0013784616810362,
+            1.0202736186109376,
+            0.9992112017539209,
+            1.0004847386415923,
+            1.0026439017392328,
+            0.020460370333917847,
+            0.807367798484729,
+            0.143749289024906,
+            0.46693376201821085,
+            0.02079311332926803
+          ],
+          "noisy": true
+        },
+        "cpu_ns": {
+          "median_before": 1743.101182654402,
+          "median_after": 1742.4058323207776,
+          "paired_median_speedup": 1.0021159668034996,
+          "bootstrap_95_percent_interval": [
+            0.9991080053258609,
+            1.0662825377607819
+          ],
+          "paired_ratios": [
+            1.138770777139959,
+            1.0003990748427984,
+            1.0195372423254818,
+            0.9991080053258609,
+            0.9995058978011001,
+            1.0021159668034996,
+            0.7813357178334858,
+            0.9942768903104924,
+            1.131030025344506,
+            1.0227030526097645,
+            1.0662825377607819
+          ],
+          "noisy": true
+        }
+      }
+    }
+  },
+  "harness_source": "\"\"\"Compare complete secure-token generation with optional SIMD Base64 formatting.\n\nThis experiment never changes the production secrets aliases. A temporary\nstdlib entropy hook checks exact known-byte results outside measurements; timed\ngeneration uses the original OS CSPRNG. Codec-only cases isolate the formatting\nopportunity rather than presenting it as complete-generation throughput.\n\"\"\"\n\nfrom __future__ import annotations\n\nimport argparse\nimport base64\nfrom dataclasses import dataclass\nfrom functools import partial\nimport gc\nimport hashlib\nfrom importlib.metadata import version\nimport inspect\nimport json\nimport math\nimport os\nfrom pathlib import Path\nimport platform\nimport random\nimport secrets\nimport statistics\nimport sys\nimport time\nfrom typing import TYPE_CHECKING, Any\nfrom unittest.mock import patch\n\nimport pybase64\n\nfrom unstd.rand import crypto\n\n\nif TYPE_CHECKING:\n    from collections.abc import Callable\n\n\n@dataclass(frozen=True, slots=True)\nclass Workload:\n    \"\"\"Generation or formatting over one input size, prepared before timing.\"\"\"\n\n    name: str\n    input_bytes: int\n    before: Callable[[], str]\n    after: Callable[[], str]\n\n\ndef _candidate(nbytes: int | None = None) -> str:\n    return (\n        pybase64.urlsafe_b64encode(secrets.token_bytes(nbytes))\n        .rstrip(b\"=\")\n        .decode(\"ascii\")\n    )\n\n\ndef _stdlib_format(data: bytes) -> str:\n    return base64.urlsafe_b64encode(data).rstrip(b\"=\").decode(\"ascii\")\n\n\ndef _native_format(data: bytes) -> str:\n    return pybase64.urlsafe_b64encode(data).rstrip(b\"=\").decode(\"ascii\")\n\n\ndef _outcome(call: Callable[[], str]) -> tuple[str, str]:\n    try:\n        result = call()\n    except Exception as error:\n        return type(error).__name__, str(error)\n    return type(result).__name__, result\n\n\ndef _contracts() -> dict[str, Any]:\n    sizes = (0, 1, 2, 3, 32, 256, 4096, 65536, 1 << 20)\n    requests: list[int] = []\n\n    def entropy(size: int) -> bytes:\n        requests.append(size)\n        return (bytes(range(256)) * ((size + 255) // 256))[:size]\n\n    checks = []\n    with patch.object(random, \"_urandom\", entropy):\n        for size in sizes:\n            expected = _stdlib_format(entropy(size))\n            requests.clear()\n            assert secrets.token_urlsafe(size) == expected\n            assert _candidate(size) == expected\n            assert requests == [size, size]\n            checks.append({\"input_bytes\": size, \"output_chars\": len(expected)})\n        assert secrets.token_urlsafe() == _candidate()\n        assert secrets.token_urlsafe(None) == _candidate(None)\n    inputs: tuple[Any, ...] = (-1, 1.25, \"32\", object(), 1 << 100, True, False)\n    refusals = []\n    for argument in inputs:\n        before = _outcome(partial(secrets.token_urlsafe, argument))\n        after = _outcome(partial(_candidate, argument))\n        # Valid bool inputs still contain OS randomness. Their shape, rather\n        # than their independent random values, is the comparison contract.\n        if type(argument) is bool:\n            assert before[0] == after[0] == \"str\"\n            assert len(before[1]) == len(after[1])\n        else:\n            assert before == after\n        refusals.append(\n            {\"argument_type\": type(argument).__name__, \"before\": before, \"after\": after}\n        )\n    index_observations = []\n\n    class Indexed:\n        def __init__(self, value: int, observations: list[str]) -> None:\n            self.value = value\n            self.observations = observations\n\n        def __index__(self) -> int:\n            self.observations.append(\"index\")\n            return self.value\n\n    for indexed in (0, 16, -1):\n        calls: list[str] = []\n        argument = Indexed(indexed, calls)\n        # Only correctness probes replace entropy. The real syscall retains\n        # responsibility for __index__ conversion and exact refusal behavior.\n        before = _outcome(partial(secrets.token_urlsafe, argument))  # type: ignore[arg-type]\n        before_calls = calls.copy()\n        calls.clear()\n        after = _outcome(partial(_candidate, argument))  # type: ignore[arg-type]\n        assert calls == before_calls == [\"index\"]\n        if indexed >= 0:\n            assert before[0] == after[0] == \"str\"\n            assert len(before[1]) == len(after[1])\n        else:\n            assert before == after\n        index_observations.append(\n            {\"index\": indexed, \"calls\": calls, \"result_type\": before[0]}\n        )\n    failure = OSError(\"fixture entropy unavailable\")\n    with patch.object(random, \"_urandom\", side_effect=failure):\n        for call in (secrets.token_urlsafe, _candidate):\n            try:\n                call(32)\n            except OSError as error:\n                if error is not failure:\n                    msg = \"entropy failure identity changed\"\n                    raise AssertionError(msg) from error\n            else:\n                msg = \"entropy failure was swallowed\"\n                raise AssertionError(msg)\n    return {\n        \"known_byte_checks\": checks,\n        \"default_and_none_match\": True,\n        \"invalid_argument_outcomes\": refusals,\n        \"index_contracts\": index_observations,\n        \"entropy_exception_identity_preserved\": True,\n        \"production_alias_identity\": crypto.token_urlsafe is secrets.token_urlsafe,\n        \"candidate_is_exact_alias\": _candidate is secrets.token_urlsafe,\n        \"production_signature\": str(inspect.signature(crypto.token_urlsafe)),\n        \"candidate_signature\": str(inspect.signature(_candidate)),\n    }\n\n\ndef _batch(call: Callable[[], str], iterations: int) -> dict[str, int | float]:\n    cpu = time.process_time_ns()\n    wall = time.perf_counter_ns()\n    for _ in range(iterations):\n        call()\n    return {\n        \"iterations\": iterations,\n        \"wall_ns\": (time.perf_counter_ns() - wall) / iterations,\n        \"cpu_ns\": (time.process_time_ns() - cpu) / iterations,\n    }\n\n\ndef _calibrate(call: Callable[[], str], target_ns: int) -> int:\n    iterations = 1\n    while True:\n        elapsed = float(_batch(call, iterations)[\"wall_ns\"]) * iterations\n        if elapsed >= target_ns / 2:\n            return max(1, round(iterations * target_ns / elapsed))\n        iterations *= max(2, min(32, round(target_ns / max(1, elapsed))))\n\n\ndef _interval(ratios: list[float]) -> list[float]:\n    # Statistical resampling uses an isolated deterministic PRNG, never the\n    # production entropy provider or the process-global random state.\n    rng = random.Random(29)\n    samples = sorted(\n        statistics.median(rng.choices(ratios, k=len(ratios))) for _ in range(1999)\n    )\n    return [samples[49], samples[1949]]\n\n\ndef _measure(case: Workload, rounds: int, seconds: float, index: int) -> dict[str, Any]:\n    calls = {\"before\": case.before, \"after\": case.after}\n    iterations = {\n        side: _calibrate(call, round(seconds * 1e9)) for side, call in calls.items()\n    }\n    samples: dict[str, list[dict[str, int | float]]] = {side: [] for side in calls}\n    order = []\n    enabled = gc.isenabled()\n    gc.disable()\n    try:\n        for at in range(rounds):\n            sides = list(calls)[:: 1 if (index + at) % 2 == 0 else -1]\n            order.append(sides)\n            for side in sides:\n                samples[side].append(_batch(calls[side], iterations[side]))\n    finally:\n        if enabled:\n            gc.enable()\n    metrics = {}\n    for metric in (\"wall_ns\", \"cpu_ns\"):\n        old, new = [\n            [float(sample[metric]) for sample in samples[side]]\n            for side in (\"before\", \"after\")\n        ]\n        ratios = [left / right for left, right in zip(old, new, strict=True)]\n        metrics[metric] = {\n            \"median_before\": statistics.median(old),\n            \"median_after\": statistics.median(new),\n            \"paired_median_speedup\": statistics.median(ratios),\n            \"bootstrap_95_percent_interval\": _interval(ratios),\n            \"paired_ratios\": ratios,\n            \"noisy\": max(old) / min(old) > 1.25 or max(new) / min(new) > 1.25,\n        }\n    return {\n        \"input_bytes\": case.input_bytes,\n        \"samples\": samples,\n        \"order\": order,\n        \"metrics\": metrics,\n    }\n\n\ndef _hashes() -> dict[str, str]:\n    files = [\n        Path(__file__).resolve(),\n        Path(crypto.__file__).resolve(),\n        Path(secrets.__file__).resolve(),\n        Path(random.__file__).resolve(),\n        Path(base64.__file__).resolve(),\n        Path(pybase64.__file__).resolve(),\n        Path(sys.executable).resolve(),\n    ]\n    files.extend(Path(pybase64.__file__).parent.glob(\"*.so\"))\n    return {str(path): hashlib.sha256(path.read_bytes()).hexdigest() for path in files}\n\n\ndef main() -> None:\n    \"\"\"Check semantics and preserve complete generation and codec-only samples.\"\"\"\n    parser = argparse.ArgumentParser(description=__doc__)\n    parser.add_argument(\"--output\", type=Path, required=True)\n    parser.add_argument(\"--rounds\", type=int, default=11)\n    parser.add_argument(\"--seconds\", type=float, default=0.01)\n    args = parser.parse_args()\n    if args.rounds < 1 or not math.isfinite(args.seconds) or args.seconds < 0.001:\n        parser.error(\"rounds must be positive and seconds must be finite and >=0.001\")\n    original_entropy = vars(random)[\"_urandom\"]\n    contracts = _contracts()\n    assert vars(random)[\"_urandom\"] is original_entropy is os.urandom\n    assert crypto.token_urlsafe is secrets.token_urlsafe\n    hashes = _hashes()\n    sizes = (0, 32, 256, 4096, 65536, 1 << 20)\n    cases = [\n        Workload(\n            \"generation/default\",\n            secrets.DEFAULT_ENTROPY,\n            secrets.token_urlsafe,\n            _candidate,\n        ),\n        Workload(\n            \"generation/None\",\n            secrets.DEFAULT_ENTROPY,\n            partial(secrets.token_urlsafe, None),\n            partial(_candidate, None),\n        ),\n    ]\n    for size in sizes:\n        cases.append(\n            Workload(\n                f\"generation/{size}\",\n                size,\n                partial(secrets.token_urlsafe, size),\n                partial(_candidate, size),\n            )\n        )\n        data = (bytes(range(256)) * ((size + 255) // 256))[:size]\n        assert _stdlib_format(data) == _native_format(data)\n        cases.append(\n            Workload(\n                f\"format-only/{size}\",\n                size,\n                partial(_stdlib_format, data),\n                partial(_native_format, data),\n            )\n        )\n    cases.append(\n        Workload(\n            \"generation/self-control/32\",\n            32,\n            partial(secrets.token_urlsafe, 32),\n            partial(secrets.token_urlsafe, 32),\n        )\n    )\n    results = {}\n    for index, case in enumerate(cases):\n        result = _measure(case, args.rounds, args.seconds, index)\n        results[case.name] = result\n        print(\n            f\"{case.name}: {result['metrics']['wall_ns']['paired_median_speedup']:.3f}x wall; {result['metrics']['cpu_ns']['paired_median_speedup']:.3f}x CPU\",\n            flush=True,\n        )\n    assert hashes == _hashes()\n    assert vars(random)[\"_urandom\"] is original_entropy\n    assert crypto.token_urlsafe is secrets.token_urlsafe\n    report = {\n        \"environment\": {\n            \"python\": sys.version,\n            \"platform\": platform.platform(),\n            \"cpu_count\": os.cpu_count(),\n            \"load_average\": os.getloadavg() if sys.platform != \"win32\" else None,\n            \"pybase64_version\": version(\"pybase64\"),\n        },\n        \"methodology\": {\n            \"rounds\": args.rounds,\n            \"target_batch_seconds\": args.seconds,\n            \"entropy_hook_active_during_timing\": False,\n            \"generation_scope\": \"Full OS-backed token_bytes call plus Base64 formatting, padding removal, and ASCII decoding; each arm draws independently.\",\n            \"format_only_scope\": \"Prepared identical immutable bytes; excludes OS entropy generation.\",\n            \"bootstrap\": \"Descriptive paired-median resampling:1999samples,seed29; no all-platform guarantee.\",\n        },\n        \"contracts\": contracts,\n        \"source_sha256\": hashes,\n        \"cases\": results,\n        \"harness_source\": Path(__file__).read_text(),\n        \"decision\": \"Experimental only. Production remains the exact secrets.token_urlsafe alias; substitution would break identity and require an optional codec on the stdlib-only CSPRNG path.\",\n    }\n    args.output.write_text(json.dumps(report, indent=2) + \"\\n\", encoding=\"utf-8\")\n\n\nif __name__ == \"__main__\":\n    main()\n",
+  "decision": "Experimental only. Production remains the exact secrets.token_urlsafe alias; substitution would break identity and require an optional codec on the stdlib-only CSPRNG path.",
+  "post_measurement_metadata_portability_fix": {
+    "scope": "Only host-load collection after all timers changed from a conditional expression to a guarded helper, for Windows static typing and unavailable Unix metadata. Timed functions, contracts, case construction and all samples remain unchanged. Original executed source and hashes are retained in this report.",
+    "current_driver_sha256": "a59e1502a4ad1153ad7b7e1786aebbf99f863bd2e116a1380755c6a100e46dc4"
+  }
+}

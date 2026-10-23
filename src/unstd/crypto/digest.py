@@ -105,6 +105,9 @@ def derive_key(context: str, material: bytes) -> bytes:
 
     BLAKE3 hashes the context separately from the material, so two contexts
     differing by one character give two unrelated keys.
+
+    *material* must already have strong key entropy. This fast derivation mode
+    does not provide the guessing resistance required for password hashing.
     """
     if not isinstance(context, str):
         # The backend reads a None context as plain hashing mode.

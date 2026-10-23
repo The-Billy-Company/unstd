@@ -8,9 +8,11 @@ import shutil
 import socket
 import subprocess
 import sys
+import tomllib
 from typing import TYPE_CHECKING
 from urllib import request
 
+from packaging.requirements import Requirement
 import pytest
 
 from tests.support.environment.anchors import REPO_ROOT
@@ -79,6 +81,18 @@ _CARGO_LOCK = """version = 3
 name = "native-example"
 version = "0.1.0"
 """
+
+
+def test_crypto_minimum_excludes_releases_before_the_reviewed_backend_fixes():
+    manifest = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text())
+    requirements = [
+        Requirement(value)
+        for value in manifest["project"]["optional-dependencies"]["crypto"]
+    ]
+    backend = next(value for value in requirements if value.name == "blake3")
+    assert "1.0.9" not in backend.specifier
+    assert "1.0.10" in backend.specifier
+    assert "1.0.11" in backend.specifier
 
 
 @pytest.fixture

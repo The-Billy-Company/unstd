@@ -344,6 +344,14 @@
       "rounds": 11,
       "spread": 0.32214202156543326
     },
+    "unstd.crypto.token.prepare_verifier": {
+      "ceiling_ns": 381.00706380208334,
+      "iterations": 24576,
+      "measured_ns": 293.0823567708333,
+      "note": "prepare a fixed default limit and backend; repeated setup with helper already loaded",
+      "rounds": 11,
+      "spread": 0.1104085748970677
+    },
     "unstd.crypto.token.verify": {
       "ceiling_ns": 3205.4985887096773,
       "iterations": 1984,
@@ -359,6 +367,14 @@
       "note": "reject a claims envelope with a changed MAC",
       "rounds": 11,
       "spread": 0.41626174285183387
+    },
+    "unstd.crypto.token.verify#prepared": {
+      "ceiling_ns": 2217.6233803353657,
+      "iterations": 5248,
+      "measured_ns": 1705.864138719512,
+      "note": "authenticate the frozen envelope with a verifier prepared once before timing",
+      "rounds": 11,
+      "spread": 0.13972549183875788
     },
     "unstd.crypto.token.verify_mac": {
       "ceiling_ns": 2158.902360733696,
@@ -1793,6 +1809,58 @@
       "spread": 0.5597347537775845
     }
   },
+  "crypto_addition_provenance": {
+    "measurement_environment": {
+      "backends": {
+        "blake3": "1.0.10",
+        "immutables": "0.21",
+        "irregex": "2.6.0",
+        "msgspec": "0.22.0",
+        "numpy": "2.5.3",
+        "orjson": "3.12.0",
+        "protobuf": "7.36.2",
+        "pybase64": "1.5.0",
+        "pydantic": "2.13.5",
+        "pydantic-settings": "2.15.0",
+        "rapidfuzz": "3.14.6",
+        "ruamel-yaml": "0.19.1",
+        "sortedcontainers": "2.4.0",
+        "soundfile": "0.14.0",
+        "tomlkit": "0.15.1",
+        "uuid-utils": "1.0.0",
+        "whenever": "0.10.5",
+        "zlib-ng": "1.0.0"
+      },
+      "cpu": "Apple M5 Max",
+      "cpu_count": 18,
+      "implementation": "CPython",
+      "machine": "arm64",
+      "native": {
+        "clone._clone_native": true,
+        "compress._gzip_native": false,
+        "crypto._stream_native": true,
+        "serde._json_native": true,
+        "text._text_native": true
+      },
+      "native_implementations": {
+        "clone._clone_native": "c",
+        "crypto._stream_native": "c",
+        "serde._json_native": "c",
+        "text._text_native": "c"
+      },
+      "python": "3.13.14",
+      "python_debug": 0,
+      "python_free_threaded": 0,
+      "system": "Darwin",
+      "system_release": "25.6.0",
+      "thread_settings": {
+        "MKL_NUM_THREADS": null,
+        "OMP_NUM_THREADS": null,
+        "OPENBLAS_NUM_THREADS": null
+      }
+    },
+    "note": "Two new crypto cases measured using the existing frozen CPython 3.13.14 environment. The newly enumerated unavailable compress._gzip_native=False field is normalized to its previous absence. Existing case values and ceilings are byte-for-value unchanged. Project execution remains on patched CPython 3.13.16."
+  },
   "environment": {
     "backends": {
       "blake3": "1.0.10",
@@ -1847,6 +1915,6 @@
   "workload_sources": {
     "speed_cases_codecs.py": "8dda94b94688b43d9aecce530132dc6e278ab3a42aee0790c2e0f40b7fae5092",
     "speed_cases_operations.py": "54572576bc9cea79179d60a84d428a7f2f232e1d6de46233c3ee00ab196cf497",
-    "speed_cases_runtime.py": "fee324ee34137480828d89cb304f9a2d1697d053e618b9084ab7c8a94227bf2b"
+    "speed_cases_runtime.py": "aaaabeda9dc5cda40bf0eec8637b254d750711b6003ed3e8daaa4f6a1f71c431"
   }
 }

@@ -22,9 +22,15 @@ An opaque bearer (no claims inside) is just CSPRNG bytes:
 from __future__ import annotations
 
 import hmac
+import sys
+from typing import TYPE_CHECKING
 
 from unstd.crypto._blake3 import _PARALLEL_MIN_BYTES, _parallel_hasher, blake3
 from unstd.serde import b64
+
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 SEPARATOR = "."
@@ -35,6 +41,13 @@ KEY_BYTES = 32
 
 TAG_BYTES = 32
 """Width of a MAC tag, which is BLAKE3's output width."""
+
+_TAG_CHARS = 43
+_MIN_TOKEN_CHARS = _TAG_CHARS + 3  # At least two payload chars and one separator.
+_DEFAULT_MAX_TOKEN_CHARS = 8192
+_TWO_CHAR_END = "AQgw"
+_THREE_CHAR_END = "AEIMQUYcgkosw048"
+_str_len = str.__len__
 
 
 def equal(a: str | bytes, b: str | bytes) -> bool:
@@ -93,6 +106,10 @@ def mint(key: bytes, claims: bytes) -> str:
     Empty *claims* raises rather than minting ``".tag"``: :func:`verify` refuses an
     empty claims segment, because a bearer that asserts nothing grants nothing, so
     minting one would hand back a token that can never be redeemed.
+
+    The verifier defaults to an 8192-character envelope limit. Larger claims
+    remain mintable; their verifier must explicitly choose a larger limit or
+    ``max_token_chars=None`` after imposing its own request-size bound.
     """
     if not claims:
         msg = (
@@ -104,38 +121,138 @@ def mint(key: bytes, claims: bytes) -> str:
     return payload + SEPARATOR + b64.encode(tag, url=True, pad=False)
 
 
-def verify(key: bytes, token: str) -> bytes | None:
+def verify(
+    key: bytes, token: str, *, max_token_chars: int | None = _DEFAULT_MAX_TOKEN_CHARS
+) -> bytes | None:
     """Return the claims bytes if *token*'s MAC checks out under *key*, else None.
 
     Fails closed on every shape problem — a missing or extra separator, a
     noncanonical base64url segment, a tag of the wrong width — and compares the tag in
-    constant time. None means "do not trust this"; it never raises for
-    caller-supplied input.
+    constant time. None means "do not trust this"; malformed token text never
+    raises. Invalid signer keys remain configuration errors for canonical
+    envelopes within the chosen size limit.
+
+    The complete envelope, including separator and tag, is limited to 8192
+    characters before slicing, decoding, or hashing. Set *max_token_chars* to a
+    positive integer for a different bound, or explicitly to None when the
+    caller already bounds requests or handles large trusted envelopes. Invalid
+    limit types and nonpositive limits raise TypeError and ValueError.
     """
-    payload, sep, tag = token.partition(SEPARATOR)
-    if not sep or SEPARATOR in tag or not payload or not tag:
-        return None
-    if not all(
-        segment.isascii() and segment.replace("-", "a").replace("_", "a").isalnum()
-        for segment in (payload, tag)
+    if max_token_chars is not None:
+        # The actual default is already a validated exact int. Identity avoids
+        # repeating configuration checks without accepting equal floats or bools.
+        if max_token_chars is not _DEFAULT_MAX_TOKEN_CHARS:
+            if type(max_token_chars) is not int:
+                msg = "max_token_chars must be a positive integer or None"
+                raise TypeError(msg)
+            if max_token_chars <= 0:
+                msg = "max_token_chars must be a positive integer or None"
+                raise ValueError(msg)
+        token_chars = _str_len(token)
+        if token_chars < _MIN_TOKEN_CHARS or token_chars > max_token_chars:
+            return None
+    if type(token) is str:
+        if max_token_chars is None and _str_len(token) < _MIN_TOKEN_CHARS:
+            return None
+        # The full tag has a fixed encoded width, so the only possible separator
+        # is 44 characters from the end. Wrong-width tags and absent/appended
+        # separators fail before a search or either substring allocation.
+        if token[-44] != SEPARATOR:
+            return None
+        payload = token[:-44]
+        tag = token[-43:]
+    else:
+        # Preserve a string subclass's partition hooks on the compatible path;
+        # the bounded path above still uses its actual stored string length.
+        payload, _, tag = token.partition(SEPARATOR)
+        if len(tag) != _TAG_CHARS or not payload:
+            return None
+    # Unpadded Base64 has one spelling precisely when its alphabet, length,
+    # and unused terminal bits are canonical. Check those directly instead of
+    # allocating decoded claims and two re-encodings before authentication.
+    remainder = len(payload) % 4
+    if (
+        remainder == 1
+        or (remainder == 2 and payload[-1] not in _TWO_CHAR_END)
+        or (remainder == 3 and payload[-1] not in _THREE_CHAR_END)
+        or tag[-1] not in _THREE_CHAR_END
+        or not payload.isascii()
+        or not tag.isascii()
+        or not payload.replace("-", "a").replace("_", "a").isalnum()
+        or not tag.replace("-", "a").replace("_", "a").isalnum()
     ):
         return None
     try:
-        claims = b64.decode(payload, url=True)
         got = b64.decode(tag, url=True)
     except ValueError:  # binascii.Error and UnicodeEncodeError are both ValueErrors
         return None
-    # The general-purpose URL decoder intentionally follows stdlib's leniency.
-    # A bearer envelope must instead have one spelling: ignored junk, padding,
-    # alternate alphabets and unused-bit aliases must never authenticate.
-    if (
-        b64.encode(claims, url=True, pad=False) != payload
-        or b64.encode(got, url=True, pad=False) != tag
-    ):
+    payload_bytes = payload.encode("ascii")
+    if not equal(got, mac_raw(key, payload_bytes)):
         return None
-    if len(got) != TAG_BYTES or not equal(got, mac_raw(key, payload.encode("ascii"))):
-        return None
-    return claims
+    return b64.decode(payload_bytes, url=True)
+
+
+# Reuse a helper already loaded by digest without imposing its module-load cost
+# on token-only imports. Explicit setup below can select it for a token service.
+# Neither path caches signer keys, messages or BLAKE3 hashers, and no request
+# probes for an optional backend or changes the chosen implementation.
+_verify_python = verify
+_loaded_native = sys.modules.get(f"{__package__}._stream_native")
+_loaded_bind = getattr(_loaded_native, "bind_token_verifier", None)
+_native_verify: Callable[[bytes, str, int | None], bytes | None]
+if _loaded_bind is not None:
+    _native_verify = _loaded_bind(_verify_python)
+
+    def _verify_accelerated(
+        key: bytes,
+        token: str,
+        *,
+        max_token_chars: int | None = _DEFAULT_MAX_TOKEN_CHARS,
+    ) -> bytes | None:
+        return _native_verify(key, token, max_token_chars)
+
+    _verify_accelerated.__name__ = "verify"
+    _verify_accelerated.__qualname__ = "verify"
+    _verify_accelerated.__doc__ = _verify_python.__doc__
+    verify = _verify_accelerated
+
+
+def prepare_verifier(
+    *,
+    max_token_chars: int | None = _DEFAULT_MAX_TOKEN_CHARS,
+) -> Callable[[bytes, str], bytes | None]:
+    """Prepare a reusable verifier with an explicit envelope-size policy.
+
+    Validate the limit and load the optional parser during this setup call.
+    The returned function accepts ``(key, token)`` and retains only the chosen
+    limit and backend references; signer keys and messages stay per request.
+    Compiler-free installs retain the Python verifier and the same policy.
+
+    A token-only import keeps its direct Python path. Applications doing many
+    verifications can call this once during startup to pay optional native
+    loading and binding costs explicitly, before handling requests.
+    """
+    if max_token_chars is not None:
+        if type(max_token_chars) is not int:
+            msg = "max_token_chars must be a positive integer or None"
+            raise TypeError(msg)
+        if max_token_chars <= 0:
+            msg = "max_token_chars must be a positive integer or None"
+            raise ValueError(msg)
+    try:
+        from unstd.crypto._stream_native import bind_token_verifier
+    except ImportError:
+
+        def prepared(key: bytes, token: str) -> bytes | None:
+            return _verify_python(key, token, max_token_chars=max_token_chars)
+
+    else:
+        helper = bind_token_verifier(_verify_python)
+
+        def prepared(key: bytes, token: str) -> bytes | None:
+            return helper(key, token, max_token_chars)
+
+    return prepared
 
 
 __all__ = [
@@ -146,6 +263,7 @@ __all__ = [
     "mac_hex",
     "mac_raw",
     "mint",
+    "prepare_verifier",
     "verify",
     "verify_mac",
 ]

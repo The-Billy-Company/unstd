@@ -1,0 +1,873 @@
+{
+  "cpu_count": 18,
+  "created_utc": "2026-10-23T01:57:03.586423+00:00",
+  "cryptography": "50.0.2",
+  "load_average_after": [
+    24.2109375,
+    20.1416015625,
+    21.876953125
+  ],
+  "load_average_before": [
+    20.3896484375,
+    19.23974609375,
+    21.59716796875
+  ],
+  "machine": "arm64",
+  "method": {
+    "client_session": "fresh SSLObject each operation; no session passed; both session_reused flags asserted false",
+    "clocks": "perf_counter_ns and process_time_ns; calibration and proof outside timers",
+    "garbage_collection": "disabled equally for both timed paths; reference-counted SSLObject/context release retained",
+    "limitations": "single machine/interpreter; warmed same ephemeral PEM files; MemoryBIO handshakes do not measure network latency, wire overhead or record throughput; batch means are not per-handshake latency distributions",
+    "operations_per_batch": 64,
+    "policy_equivalence": "same factory, root, identity, TLS1.3 min/max, native default ciphers/groups; selected group/cipher/cert hashes compared before timing",
+    "rounds": 11,
+    "server_context": "one equally prepared context per profile; num_tickets=0",
+    "setup_accounting": "one caller-owned context setup measured separately; complete comparison also reports adding that setup to every reused batch",
+    "transport": "MemoryBIO; no socket/network/thread creation",
+    "verification": "CERT_REQUIRED plus hostname; pinned private root; separate wrong-hostname/untrusted-root negative controls"
+  },
+  "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+  "profiles": [
+    {
+      "caller_owned_context_setup": {
+        "cpu_ns": 251000,
+        "wall_ns": 251792
+      },
+      "complete_factory_and_verified_handshake": {
+        "cpu_ns": {
+          "median_paired_speedup": 1.2934113884597664,
+          "median_speedup_with_one_setup_per_batch": 1.2846721223215247,
+          "paired_ratios": [
+            1.2641028156578045,
+            1.4188230835859679,
+            1.4704490439796556,
+            1.2934113884597664,
+            1.27092866756393,
+            1.2130964750006334,
+            1.244761211634502,
+            1.4479975001302015,
+            1.4155509637974468,
+            1.480429973339384,
+            1.2386333480760725
+          ]
+        },
+        "first_pair_order": [
+          "fresh",
+          "reused"
+        ],
+        "fresh": {
+          "cpu_ns": {
+            "maximum_per_operation": 875171.875,
+            "median_per_operation": 805312.5,
+            "minimum_per_operation": 737734.375,
+            "relative_mad": 0.048971672487388436
+          },
+          "raw_batches": [
+            {
+              "cpu_ns": 51540000,
+              "wall_ns": 193099542
+            },
+            {
+              "cpu_ns": 52417000,
+              "wall_ns": 234122083
+            },
+            {
+              "cpu_ns": 54064000,
+              "wall_ns": 184171125
+            },
+            {
+              "cpu_ns": 47723000,
+              "wall_ns": 108309125
+            },
+            {
+              "cpu_ns": 47215000,
+              "wall_ns": 228320667
+            },
+            {
+              "cpu_ns": 47870000,
+              "wall_ns": 133402250
+            },
+            {
+              "cpu_ns": 49600000,
+              "wall_ns": 141003208
+            },
+            {
+              "cpu_ns": 55606000,
+              "wall_ns": 146230625
+            },
+            {
+              "cpu_ns": 50010000,
+              "wall_ns": 188802666
+            },
+            {
+              "cpu_ns": 52197000,
+              "wall_ns": 203988208
+            },
+            {
+              "cpu_ns": 56011000,
+              "wall_ns": 58490292
+            }
+          ],
+          "wall_ns": {
+            "maximum_per_operation": 3658157.546875,
+            "median_per_operation": 2877673.828125,
+            "minimum_per_operation": 913910.8125,
+            "relative_mad": 0.23439025525852655
+          }
+        },
+        "operations_per_batch": 64,
+        "reused": {
+          "cpu_ns": {
+            "maximum_per_operation": 706562.5,
+            "median_per_operation": 580468.75,
+            "minimum_per_operation": 550906.25,
+            "relative_mad": 0.04901749663526245
+          },
+          "raw_batches": [
+            {
+              "cpu_ns": 40772000,
+              "wall_ns": 191705917
+            },
+            {
+              "cpu_ns": 36944000,
+              "wall_ns": 146732167
+            },
+            {
+              "cpu_ns": 36767000,
+              "wall_ns": 102118916
+            },
+            {
+              "cpu_ns": 36897000,
+              "wall_ns": 106709875
+            },
+            {
+              "cpu_ns": 37150000,
+              "wall_ns": 88621000
+            },
+            {
+              "cpu_ns": 39461000,
+              "wall_ns": 134853625
+            },
+            {
+              "cpu_ns": 39847000,
+              "wall_ns": 107176375
+            },
+            {
+              "cpu_ns": 38402000,
+              "wall_ns": 102295834
+            },
+            {
+              "cpu_ns": 35329000,
+              "wall_ns": 35328208
+            },
+            {
+              "cpu_ns": 35258000,
+              "wall_ns": 122704458
+            },
+            {
+              "cpu_ns": 45220000,
+              "wall_ns": 304312209
+            }
+          ],
+          "wall_ns": {
+            "maximum_per_operation": 4754878.265625,
+            "median_per_operation": 1674630.859375,
+            "minimum_per_operation": 552003.25,
+            "relative_mad": 0.17312933937166655
+          }
+        },
+        "rounds": 11,
+        "wall_ns": {
+          "median_paired_speedup": 1.4294875879305113,
+          "median_speedup_with_one_setup_per_batch": 1.4259776720720965,
+          "paired_ratios": [
+            1.0072695982565838,
+            1.5955743569165717,
+            1.80349667048953,
+            1.014986897885505,
+            2.5763720450006207,
+            0.9892374046303909,
+            1.3156183720526096,
+            1.4294875879305113,
+            5.3442468975499695,
+            1.662435182265342,
+            0.1922048812704718
+          ]
+        }
+      },
+      "factory_only_including_context_release": {
+        "cpu_ns": {
+          "maximum_per_operation": 203796.875,
+          "median_per_operation": 147328.125,
+          "minimum_per_operation": 136718.75,
+          "relative_mad": 0.07201187824795843
+        },
+        "raw_batches": [
+          {
+            "cpu_ns": 13043000,
+            "wall_ns": 89339875
+          },
+          {
+            "cpu_ns": 9274000,
+            "wall_ns": 40918083
+          },
+          {
+            "cpu_ns": 9210000,
+            "wall_ns": 11597875
+          },
+          {
+            "cpu_ns": 8750000,
+            "wall_ns": 8750000
+          },
+          {
+            "cpu_ns": 9390000,
+            "wall_ns": 51604625
+          },
+          {
+            "cpu_ns": 8989000,
+            "wall_ns": 21704417
+          },
+          {
+            "cpu_ns": 10251000,
+            "wall_ns": 11396375
+          },
+          {
+            "cpu_ns": 11236000,
+            "wall_ns": 31106333
+          },
+          {
+            "cpu_ns": 9429000,
+            "wall_ns": 28491250
+          },
+          {
+            "cpu_ns": 11609000,
+            "wall_ns": 37971041
+          },
+          {
+            "cpu_ns": 10750000,
+            "wall_ns": 13675708
+          }
+        ],
+        "wall_ns": {
+          "maximum_per_operation": 1395935.546875,
+          "median_per_operation": 445175.78125,
+          "minimum_per_operation": 136718.75,
+          "relative_mad": 0.5200032290615539
+        }
+      },
+      "name": "pinned-server-authentication",
+      "negative_controls_rejected": [
+        "hostname",
+        "untrusted-root"
+      ],
+      "security_proof": {
+        "cipher": [
+          "TLS_AES_256_GCM_SHA384",
+          "TLSv1.3",
+          256
+        ],
+        "client_certificate_sha256": null,
+        "client_session_reused": false,
+        "selected_group": "0x11ec",
+        "server_certificate_sha256": "2ada12a7ce09acc047803316db1fd0c11d1eded0eda60eef521092c62deeafca",
+        "server_session_reused": false,
+        "version": "TLSv1.3"
+      },
+      "verified_handshake_only_contexts_prepared_outside_timer": {
+        "cpu_ns": {
+          "median_paired_speedup": 1.0386954726847393,
+          "paired_ratios": [
+            0.7776671534138678,
+            1.1548064216830207,
+            1.0301275865766055,
+            1.0386954726847393,
+            1.0712609170305676,
+            1.0940420560747663,
+            0.9676184197180241,
+            1.0505654568062053,
+            0.9922771640030034,
+            1.173107890499195,
+            1.0327947528395456
+          ]
+        },
+        "first_pair_order": [
+          "reused",
+          "fresh"
+        ],
+        "fresh": {
+          "cpu_ns": {
+            "maximum_per_operation": 660203.125,
+            "median_per_operation": 600500.0,
+            "minimum_per_operation": 549203.125,
+            "relative_mad": 0.03715653621981682
+          },
+          "raw_batches": [
+            {
+              "cpu_ns": 35149000,
+              "wall_ns": 35846000
+            },
+            {
+              "cpu_ns": 41073000,
+              "wall_ns": 231681042
+            },
+            {
+              "cpu_ns": 38432000,
+              "wall_ns": 97047916
+            },
+            {
+              "cpu_ns": 37741000,
+              "wall_ns": 111097792
+            },
+            {
+              "cpu_ns": 39251000,
+              "wall_ns": 137664917
+            },
+            {
+              "cpu_ns": 41206000,
+              "wall_ns": 79606333
+            },
+            {
+              "cpu_ns": 38159000,
+              "wall_ns": 120290500
+            },
+            {
+              "cpu_ns": 35486000,
+              "wall_ns": 47455000
+            },
+            {
+              "cpu_ns": 37004000,
+              "wall_ns": 84950292
+            },
+            {
+              "cpu_ns": 42253000,
+              "wall_ns": 98390125
+            },
+            {
+              "cpu_ns": 38736000,
+              "wall_ns": 101524042
+            }
+          ],
+          "wall_ns": {
+            "maximum_per_operation": 3620016.28125,
+            "median_per_operation": 1537345.703125,
+            "minimum_per_operation": 560093.75,
+            "relative_mad": 0.19091135416282884
+          }
+        },
+        "operations_per_batch": 64,
+        "reused": {
+          "cpu_ns": {
+            "maximum_per_operation": 706218.75,
+            "median_per_operation": 582687.5,
+            "minimum_per_operation": 527781.25,
+            "relative_mad": 0.025662340448353534
+          },
+          "raw_batches": [
+            {
+              "cpu_ns": 45198000,
+              "wall_ns": 183237542
+            },
+            {
+              "cpu_ns": 35567000,
+              "wall_ns": 74296708
+            },
+            {
+              "cpu_ns": 37308000,
+              "wall_ns": 113941458
+            },
+            {
+              "cpu_ns": 36335000,
+              "wall_ns": 89661083
+            },
+            {
+              "cpu_ns": 36640000,
+              "wall_ns": 104586542
+            },
+            {
+              "cpu_ns": 37664000,
+              "wall_ns": 112862708
+            },
+            {
+              "cpu_ns": 39436000,
+              "wall_ns": 111969708
+            },
+            {
+              "cpu_ns": 33778000,
+              "wall_ns": 104880750
+            },
+            {
+              "cpu_ns": 37292000,
+              "wall_ns": 85975250
+            },
+            {
+              "cpu_ns": 36018000,
+              "wall_ns": 93782917
+            },
+            {
+              "cpu_ns": 37506000,
+              "wall_ns": 73084750
+            }
+          ],
+          "wall_ns": {
+            "maximum_per_operation": 2863086.59375,
+            "median_per_operation": 1634164.71875,
+            "minimum_per_operation": 1141949.21875,
+            "relative_mad": 0.10329842438045231
+          }
+        },
+        "rounds": 11,
+        "wall_ns": {
+          "median_paired_speedup": 1.0491263030344855,
+          "paired_ratios": [
+            0.19562585051484702,
+            3.1183217700574297,
+            0.8517348970556441,
+            1.2390859923028144,
+            1.3162775474496518,
+            0.70533778969755,
+            1.0743128846955643,
+            0.45246625334010293,
+            0.9880784528105472,
+            1.0491263030344855,
+            1.3891275813353674
+          ]
+        }
+      }
+    },
+    {
+      "caller_owned_context_setup": {
+        "cpu_ns": 483000,
+        "wall_ns": 635958
+      },
+      "complete_factory_and_verified_handshake": {
+        "cpu_ns": {
+          "median_paired_speedup": 1.4508547422221363,
+          "median_speedup_with_one_setup_per_batch": 1.437413687279423,
+          "paired_ratios": [
+            1.6226586285460813,
+            1.3344671201814058,
+            1.288683169986695,
+            1.4367419511885358,
+            1.4508547422221363,
+            1.388022685763722,
+            1.5301756430533588,
+            1.534048280100884,
+            1.4757667748351304,
+            1.3735520845945837,
+            1.4976089266737513
+          ]
+        },
+        "first_pair_order": [
+          "reused",
+          "fresh"
+        ],
+        "fresh": {
+          "cpu_ns": {
+            "maximum_per_operation": 1257484.375,
+            "median_per_operation": 1128093.75,
+            "minimum_per_operation": 1060562.5,
+            "relative_mad": 0.023657165018421564
+          },
+          "raw_batches": [
+            {
+              "cpu_ns": 80479000,
+              "wall_ns": 307915666
+            },
+            {
+              "cpu_ns": 71797000,
+              "wall_ns": 152935375
+            },
+            {
+              "cpu_ns": 68768000,
+              "wall_ns": 242674417
+            },
+            {
+              "cpu_ns": 67876000,
+              "wall_ns": 211576416
+            },
+            {
+              "cpu_ns": 74941000,
+              "wall_ns": 295785458
+            },
+            {
+              "cpu_ns": 72198000,
+              "wall_ns": 182894750
+            },
+            {
+              "cpu_ns": 73528000,
+              "wall_ns": 226979042
+            },
+            {
+              "cpu_ns": 72381000,
+              "wall_ns": 263170625
+            },
+            {
+              "cpu_ns": 70490000,
+              "wall_ns": 260952458
+            },
+            {
+              "cpu_ns": 68065000,
+              "wall_ns": 180248542
+            },
+            {
+              "cpu_ns": 73281000,
+              "wall_ns": 294344875
+            }
+          ],
+          "wall_ns": {
+            "maximum_per_operation": 4811182.28125,
+            "median_per_operation": 3791787.765625,
+            "minimum_per_operation": 2389615.234375,
+            "relative_mad": 0.21292091123062223
+          }
+        },
+        "operations_per_batch": 64,
+        "reused": {
+          "cpu_ns": {
+            "maximum_per_operation": 840656.25,
+            "median_per_operation": 774281.25,
+            "minimum_per_operation": 737234.375,
+            "relative_mad": 0.04235783186019292
+          },
+          "raw_batches": [
+            {
+              "cpu_ns": 49597000,
+              "wall_ns": 173468250
+            },
+            {
+              "cpu_ns": 53802000,
+              "wall_ns": 135600042
+            },
+            {
+              "cpu_ns": 53363000,
+              "wall_ns": 318492375
+            },
+            {
+              "cpu_ns": 47243000,
+              "wall_ns": 118598291
+            },
+            {
+              "cpu_ns": 51653000,
+              "wall_ns": 219067541
+            },
+            {
+              "cpu_ns": 52015000,
+              "wall_ns": 171305291
+            },
+            {
+              "cpu_ns": 48052000,
+              "wall_ns": 138475875
+            },
+            {
+              "cpu_ns": 47183000,
+              "wall_ns": 47181167
+            },
+            {
+              "cpu_ns": 47765000,
+              "wall_ns": 128692833
+            },
+            {
+              "cpu_ns": 49554000,
+              "wall_ns": 153230625
+            },
+            {
+              "cpu_ns": 48932000,
+              "wall_ns": 143903667
+            }
+          ],
+          "wall_ns": {
+            "maximum_per_operation": 4976443.359375,
+            "median_per_operation": 2248494.796875,
+            "minimum_per_operation": 737205.734375,
+            "relative_mad": 0.17584941737447177
+          }
+        },
+        "rounds": 11,
+        "wall_ns": {
+          "median_paired_speedup": 1.6391233635461773,
+          "median_speedup_with_one_setup_per_batch": 1.6316300138177318,
+          "paired_ratios": [
+            1.7750548933306238,
+            1.1278416491935894,
+            0.7619473370437833,
+            1.7839752513803087,
+            1.3502021187155244,
+            1.0676538297932665,
+            1.6391233635461773,
+            5.577874430278505,
+            2.0277155449674495,
+            1.1763219134556164,
+            2.0454299819892707
+          ]
+        }
+      },
+      "factory_only_including_context_release": {
+        "cpu_ns": {
+          "maximum_per_operation": 430656.25,
+          "median_per_operation": 302562.5,
+          "minimum_per_operation": 257937.5,
+          "relative_mad": 0.05344970047510845
+        },
+        "raw_batches": [
+          {
+            "cpu_ns": 18329000,
+            "wall_ns": 71223541
+          },
+          {
+            "cpu_ns": 19687000,
+            "wall_ns": 78085292
+          },
+          {
+            "cpu_ns": 19364000,
+            "wall_ns": 122058875
+          },
+          {
+            "cpu_ns": 27562000,
+            "wall_ns": 40920416
+          },
+          {
+            "cpu_ns": 20641000,
+            "wall_ns": 26431333
+          },
+          {
+            "cpu_ns": 18528000,
+            "wall_ns": 19915209
+          },
+          {
+            "cpu_ns": 21048000,
+            "wall_ns": 24172708
+          },
+          {
+            "cpu_ns": 20371000,
+            "wall_ns": 23203667
+          },
+          {
+            "cpu_ns": 17756000,
+            "wall_ns": 18499125
+          },
+          {
+            "cpu_ns": 16508000,
+            "wall_ns": 165600416
+          },
+          {
+            "cpu_ns": 18749000,
+            "wall_ns": 42140500
+          }
+        ],
+        "wall_ns": {
+          "maximum_per_operation": 2587506.5,
+          "median_per_operation": 639381.5,
+          "minimum_per_operation": 289048.828125,
+          "relative_mad": 0.5133185107404578
+        }
+      },
+      "name": "mutual-tls",
+      "negative_controls_rejected": [
+        "hostname",
+        "untrusted-root"
+      ],
+      "security_proof": {
+        "cipher": [
+          "TLS_AES_256_GCM_SHA384",
+          "TLSv1.3",
+          256
+        ],
+        "client_certificate_sha256": "04d5f88e9b69b0b308ef71754c39fb6310b947a1dffb157bad8f36acc2cd75e3",
+        "client_session_reused": false,
+        "selected_group": "0x11ec",
+        "server_certificate_sha256": "2ada12a7ce09acc047803316db1fd0c11d1eded0eda60eef521092c62deeafca",
+        "server_session_reused": false,
+        "version": "TLSv1.3"
+      },
+      "verified_handshake_only_contexts_prepared_outside_timer": {
+        "cpu_ns": {
+          "median_paired_speedup": 1.0492102190080106,
+          "paired_ratios": [
+            0.985713718798365,
+            0.8188883739170737,
+            1.23985458049539,
+            1.0908245572302835,
+            0.998359967199344,
+            1.07152180669222,
+            0.974107627101621,
+            1.0634900913213643,
+            1.0492102190080106,
+            0.9615995712015927,
+            1.177025279771724
+          ]
+        },
+        "first_pair_order": [
+          "fresh",
+          "reused"
+        ],
+        "fresh": {
+          "cpu_ns": {
+            "maximum_per_operation": 884578.125,
+            "median_per_operation": 788171.875,
+            "minimum_per_operation": 717781.25,
+            "relative_mad": 0.0181194615704855
+          },
+          "raw_batches": [
+            {
+              "cpu_ns": 49678000,
+              "wall_ns": 82234333
+            },
+            {
+              "cpu_ns": 45938000,
+              "wall_ns": 45938041
+            },
+            {
+              "cpu_ns": 56613000,
+              "wall_ns": 313210125
+            },
+            {
+              "cpu_ns": 50443000,
+              "wall_ns": 189729458
+            },
+            {
+              "cpu_ns": 49917000,
+              "wall_ns": 230799458
+            },
+            {
+              "cpu_ns": 51717000,
+              "wall_ns": 192363584
+            },
+            {
+              "cpu_ns": 48494000,
+              "wall_ns": 395904666
+            },
+            {
+              "cpu_ns": 51357000,
+              "wall_ns": 127497667
+            },
+            {
+              "cpu_ns": 51213000,
+              "wall_ns": 134877208
+            },
+            {
+              "cpu_ns": 50233000,
+              "wall_ns": 151156792
+            },
+            {
+              "cpu_ns": 52799000,
+              "wall_ns": 241459667
+            }
+          ],
+          "wall_ns": {
+            "maximum_per_operation": 6186010.40625,
+            "median_per_operation": 2964522.78125,
+            "minimum_per_operation": 717781.890625,
+            "relative_mad": 0.2891077146280574
+          }
+        },
+        "operations_per_batch": 64,
+        "reused": {
+          "cpu_ns": {
+            "maximum_per_operation": 876531.25,
+            "median_per_operation": 762671.875,
+            "minimum_per_operation": 700906.25,
+            "relative_mad": 0.03251316301653316
+          },
+          "raw_batches": [
+            {
+              "cpu_ns": 50398000,
+              "wall_ns": 212642584
+            },
+            {
+              "cpu_ns": 56098000,
+              "wall_ns": 167551875
+            },
+            {
+              "cpu_ns": 45661000,
+              "wall_ns": 79177333
+            },
+            {
+              "cpu_ns": 46243000,
+              "wall_ns": 163483125
+            },
+            {
+              "cpu_ns": 49999000,
+              "wall_ns": 213191416
+            },
+            {
+              "cpu_ns": 48265000,
+              "wall_ns": 162620583
+            },
+            {
+              "cpu_ns": 49783000,
+              "wall_ns": 161844000
+            },
+            {
+              "cpu_ns": 48291000,
+              "wall_ns": 181089500
+            },
+            {
+              "cpu_ns": 48811000,
+              "wall_ns": 99625958
+            },
+            {
+              "cpu_ns": 52239000,
+              "wall_ns": 177241125
+            },
+            {
+              "cpu_ns": 44858000,
+              "wall_ns": 44856792
+            }
+          ],
+          "wall_ns": {
+            "maximum_per_operation": 3331115.875,
+            "median_per_operation": 2554423.828125,
+            "minimum_per_operation": 700887.375,
+            "relative_mad": 0.1076953661119458
+          }
+        },
+        "rounds": 11,
+        "wall_ns": {
+          "median_paired_speedup": 1.16054460055128,
+          "paired_ratios": [
+            0.3867256099559061,
+            0.27417204970102543,
+            3.9558054449750157,
+            1.16054460055128,
+            1.082592640596749,
+            1.182898132888873,
+            2.4462115741084007,
+            0.7040588603977591,
+            1.3538359952332906,
+            0.8528313730800343,
+            5.382900921670903
+          ]
+        }
+      }
+    }
+  ],
+  "runtime": {
+    "advisory": "https://openssl-library.org/news/secadv/20260929.txt",
+    "errors": [],
+    "executable": "/Users/griffinstrier/Billy-Company/unstd/.venv/bin/python",
+    "openssl": "OpenSSL 3.5.9 29 Sep 2026",
+    "openssl_version_info": [
+      3,
+      5,
+      0,
+      9,
+      0
+    ],
+    "policy_reviewed": "2026-10-22",
+    "python": "3.13.16",
+    "schema": 1,
+    "tls_1_3": true
+  },
+  "source_sha256": {
+    "bench/crypto_tls_reuse.py": "d590072d6a02a6c4676df67df51af260132e556b5a7cb16f242a261d13de2d01",
+    "src/unstd/crypto/tls.py": "e68e3bb3ad9b70e52265ed23bccbfc2a4a594dc9e5b23cfeee0f4c924374f6db",
+    "tests/support/security/tls.py": "07b038d025f15fa50d246fddef2d958423a952a8eb6d77ca007842d2a3294b25",
+    "tests/tooling/runtime/tls.py": "16fc04afad11bbe8ea6b5bc5cacf90309ad4acafbdd720868518c0655d8e20f0"
+  },
+  "ssl_extension": {
+    "hash_scope": "extension file, or interpreter binary when _ssl is built in",
+    "origin": "built-in",
+    "sha256": "08c31a4b53dc231eba8fe8785ea11a1b13095bf7f3fce292cffc50f74bbcc895"
+  },
+  "ssl_module_sha256": "a0b3f21ec6f5750ef303909bed13ae5cf37d06165e28283f7cef30c373eef063"
+}

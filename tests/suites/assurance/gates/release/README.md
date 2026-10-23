@@ -22,3 +22,10 @@ for the exact commit, wait for pending runs, and reject failed or altered
 evidence. Missing or stale evidence requests the complete reusable CI gate.
 Artifact construction can run concurrently, but publication requires both a
 successful CI decision and verified distributions.
+
+`test_tls_runtime.py` verifies the stdlib-only
+[`runtime/`](../../../../tooling/runtime/README.md) preflight against vulnerable
+and patched releases in every reviewed OpenSSL branch, prereleases, unknown
+engines, inconsistent version metadata and missing TLS 1.3. Its isolated CLI
+test runs with site packages disabled. Run the preflight with each actual build,
+test and deployment interpreter; a dependency's private OpenSSL is unrelated.

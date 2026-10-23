@@ -184,6 +184,8 @@ jobs:
           python-version: ${{ matrix.environment.python }}
       - name: Install test environment & rebuild local extensions
         run: uv sync ${{ matrix.environment.sync }} --group dev --reinstall-package unstd --python ${{ matrix.environment.python }}
+      - name: Check the test interpreter's TLS security fixes
+        run: uv run --no-sync python -m tests.tooling.runtime --json
       - name: Restore audited lock after installing dependency floors
         if: matrix.environment.id == 'floors'
         # Keep lowest-direct packages installed while release/export gates
@@ -396,6 +398,8 @@ jobs:
           cache-dependency-glob: "uv.lock\npyproject.toml\n"
       - name: Install test environment
         run: uv sync --locked --extra serde --extra crypto --extra compress --group dev --python ${{ matrix.python-version }} --reinstall-package unstd
+      - name: Check the native-test interpreter's TLS security fixes
+        run: uv run --no-sync python -m tests.tooling.runtime --json
       - name: Every native module must import
         run: >-
           uv run --no-sync python -c

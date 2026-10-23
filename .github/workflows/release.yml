@@ -74,6 +74,8 @@ jobs:
           path: source
       - name: Install audited release tools from the lock
         run: uv sync --locked --only-group release --no-install-project
+      - name: Check the release interpreter's TLS security fixes
+        run: uv run --no-sync python -m tests.tooling.runtime --json
       - name: Constrain platform repair tools to audited versions
         run: uv export --locked --only-group release --no-emit-project --no-header --output-file "${{ runner.temp }}/release-constraints.txt"
       - name: Build and test CPython wheels

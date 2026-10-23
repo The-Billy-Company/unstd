@@ -23,7 +23,7 @@ Install with the extra: `pip install 'unstd[crypto]'`.
 | File        | Role                                                                                                      |
 | ----------- | --------------------------------------------------------------------------------------------------------- |
 | `digest.py` | BLAKE3-256 - `raw` (bytes) / `hex` (full or truncated) / `Stream`, `derive_key`, and the `legacy_blake2b` escape hatch. |
-| `_stream_native.c` | Optional bounded batching of small immutable chunks before the BLAKE3 backend absorbs them. |
+| `_stream_native.c` | Optional bounded stream batching and canonical token-envelope parsing; cryptographic primitives remain in their existing backends. |
 | `token.py`  | Keyed-BLAKE3 `mac_raw` / `mac_hex` / `verify_mac`, constant-time `equal`, and the claims envelope.         |
 | `tls.py`    | A verifying TLS client context with no parameter for skipping verification.                                |
 
@@ -57,18 +57,58 @@ an object.
 non-base64 segment, a tag of the wrong width - and returns `None` rather than
 raising, because the input is attacker-controlled and a 500 is a signal.
 
+Verification defaults to an **8192-character limit for the complete token**,
+including its separator and tag. Oversized inputs return `None` before the
+verifier slices, scans, decodes, or hashes their contents. Applications can
+choose a smaller positive `max_token_chars` that matches their request policy.
+Limits must be exact integers; booleans, integer subclasses, and other types
+raise `TypeError`. Zero and negative limits raise `ValueError`. These are
+configuration errors, as are invalid
+signer keys on well-shaped tokens within the limit.
+
+This limit is a deliberate security tightening: previously accepted larger
+tokens need an explicit larger limit. `mint` still accepts arbitrary nonempty
+claims. For bulk envelopes already bounded at the application boundary, use
+`token.verify(key, bearer, max_token_chars=None)` to retain unbounded behavior.
+The wire format, exact claim bytes, and full 32-byte MAC stay the same.
+
+The verifier checks the URL alphabet, encoded lengths, and unused terminal
+bits directly, then authenticates the encoded payload before decoding claims.
+This preserves canonical spelling while avoiding claim decoding and
+re-encoding for forged tokens. Expiry, audience, replay, and authorization
+remain application policies applied after verification.
+
+For a service that verifies many tokens, prepare its size policy during startup:
+
+```python
+verify_bearer = token.prepare_verifier(max_token_chars=8192)
+claims = verify_bearer(key, bearer)
+```
+
+Setup validates the policy and loads the optional native parser explicitly.
+The returned callable keeps the policy and backend references; keys and tokens
+are supplied on each call. A compiler-free installation uses the Python path.
+Importing only `token` leaves `verify` as the direct Python implementation,
+avoiding an extra native-module load. If `digest` already loaded that helper,
+`token` selects its native parser once at import. Preparing a verifier later
+does not change the public `verify` function. Neither route probes backends or
+creates caches on requests. The helper still calls the same BLAKE3 MAC,
+constant-time comparison and Base64 decoder.
+
 ## Backend
 
 BLAKE3 has no stdlib equivalent; `hashlib` ships BLAKE2b, which is a *different*
 algorithm. A silent fallback would fork the digest rather than slow it down, and
 every value already addressed by one would stop resolving - so `digest` and
 `token` hard-require the `crypto` extra and raise an ImportError naming
-`pip install 'unstd[crypto]'` when it is missing. `tls` is pure stdlib and
+`pip install 'unstd[crypto]'` when it is missing. The reviewed minimum is
+`blake3>=1.0.10`; no version check runs inside library calls. `tls` is pure stdlib and
 imports on a base install.
 
 One-shot hashes, MACs, and key derivation use four workers for exact `bytes`
-inputs from 1 MiB, and eight workers from 4 MiB, capped by the reported CPU
-count. Smaller inputs and other accepted buffer types retain the serial
+inputs from 1 MiB, and eight workers from 4 MiB, capped by process CPU
+availability on Python 3.13+ (host CPU count on Python 3.12). The cap is sampled
+once at import. Smaller inputs and other accepted buffer types retain the serial
 backend. The public signatures, algorithms, digest values, truncation rules,
 and validation behavior stay the same.
 
@@ -97,6 +137,23 @@ the 4 MiB crossover and hex-output savings; the
 TLS certificate paths use `None` for omission. Explicitly empty `cafile`,
 `certfile` or `keyfile` values raise `ValueError`, preventing a configured pin
 or client identity from silently disappearing.
+
+Construct one `tls.client_context(...)` per trust/client-identity policy and
+reuse it for connections. Finish configuration before first use, keep it
+unchanged while connections use it, and rebuild it when certificates or trust
+rotate. The factory returns a fresh caller-owned stdlib context; it does not
+cache mutable contexts globally. This avoids repeatedly loading roots and PEMs
+without adding a wrapper to connection or record processing.
+
+TLS 1.3 is the default floor. Hybrid post-quantum key exchange also requires a
+capable linked engine, configuration and peer; a TLS 1.3 connection alone does
+not prove a hybrid group was negotiated. Hybrid shares increase handshake wire
+size. The library leaves group selection to OpenSSL's policy.
+
+Validate the actual interpreter with
+`python -m tests.tooling.runtime` during development and release provisioning;
+the [TLS runtime preflight](../../../tests/tooling/runtime/README.md) checks
+branch-specific OpenSSL fixes outside library imports and TLS hot calls.
 
 Randomness is the one thing the seam does not re-implement: an opaque bearer
 with no claims inside is `unstd.rand.crypto.token_urlsafe()`, which is always
