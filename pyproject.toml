@@ -11,6 +11,7 @@ archs = ["auto64"]
 test-extras = ["serde", "crypto", "compress"]
 test-requires = ["pytest>=8", "hypothesis>=6.100", "packaging>=24"]
 test-command = [
+  "python {project}/tests/tooling/runtime/tls.py --json",
   "python -c \"import unstd.serde._json_native, unstd.clone._clone_native, unstd.crypto._stream_native, unstd.text._text_native, unstd.compress._gzip_native\"",
   "python -m pytest {project}/tests/suites/product/serde {project}/tests/suites/product/clone {project}/tests/suites/product/crypto {project}/tests/suites/product/text {project}/tests/suites/product/compress -q",
 ]
@@ -55,9 +56,9 @@ dependencies = []
 # simply not co-installable. Applications are where an exact pin belongs, and a
 # consumer that wants one still has its own manifest and lockfile to say so in.
 #
-# The floor sits at the MINOR series, because that is where the API a backend
-# offers actually changes — pinning the patch we happened to develop against
-# rejects a consumer one bugfix behind for no reason we could state. CI's
+# Floors normally sit at the MINOR series, where backend APIs change. A patch
+# floor needs a documented security or correctness fix, rather than the version
+# we happened to develop against. CI's
 # `floors` job resolves `--resolution lowest-direct` and runs the whole suite
 # there, so each of these is a claim under test rather than a guess.
 [project.optional-dependencies]
@@ -70,7 +71,10 @@ ids = [
   "uuid-utils>=0.17",
 ]
 crypto = [
-  "blake3>=1.0",
+  # 1.0.10 fixes a shared parallel-update deadlock and removes arrayref after
+  # its publisher compromise. Older locked arrayref 0.3.9 was unaffected.
+  # https://github.com/oconnor663/blake3-py/releases/tag/1.0.10
+  "blake3>=1.0.10",
 ]
 time = [
   "whenever>=0.10",
