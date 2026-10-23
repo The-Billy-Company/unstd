@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -58,6 +59,13 @@ class CustomBuildHook(BuildHookInterface):
             and os.environ.get("UNSTD_TEXT_RUST") == "1"
         )
         gzip_buffers = module == "unstd.compress._gzip_native"
+        # An explicitly reviewed archive is a build-only experiment. Nothing
+        # probes for another inflater or loads Rust dependencies at runtime.
+        zlib_rs = (
+            self._zlib_rs_archive(temporary / "reviewed-zlib-rs")
+            if gzip_buffers
+            else None
+        )
         source = (
             Path(self.root) / "native/text/adapter.c"
             if rust_text
@@ -83,7 +91,7 @@ class CustomBuildHook(BuildHookInterface):
                     "lib/gzip_decompress.c",
                 )
             )
-            if sys.platform != "darwin":
+            if sys.platform != "darwin" and zlib_rs is None:
                 sources.extend(
                     str(Path(self.root) / "native/compress/zlib" / name)
                     for name in (
@@ -98,13 +106,23 @@ class CustomBuildHook(BuildHookInterface):
             module,
             sources,
             include_dirs=[str(gzip_root)] if gzip_buffers else [],
-            libraries=["z"] if gzip_buffers and sys.platform == "darwin" else [],
+            libraries=["z"]
+            if gzip_buffers and sys.platform == "darwin" and zlib_rs is None
+            else [],
             # Supply the same checked Python RAW allocators for zlib's default
             # ABI hooks too; do not compile its unused unchecked malloc hook.
-            define_macros=[("Z_PREFIX", None), ("MY_ZCALLOC", None)]
+            define_macros=[("UNSTD_ZLIB_RS", None)]
+            if zlib_rs is not None
+            else [("Z_PREFIX", None), ("MY_ZCALLOC", None)]
             if gzip_buffers and sys.platform != "darwin"
             else [],
-            optional=os.environ.get("CIBUILDWHEEL") != "1",
+            extra_objects=[str(zlib_rs)] if zlib_rs is not None else [],
+            extra_link_args=shlex.split(
+                os.environ.get("UNSTD_GZIP_ZLIB_RS_LINK_ARGS", "")
+            )
+            if zlib_rs is not None
+            else [],
+            optional=os.environ.get("CIBUILDWHEEL") != "1" and zlib_rs is None,
             # Jaro preserves Python's separate IEEE double operations exactly.
             # These trailing compiler arguments override caller fast-math/FMA
             # options rather than silently changing the public score's bits.
@@ -165,6 +183,57 @@ class CustomBuildHook(BuildHookInterface):
             build_data["force_include"][str(output)] = (
                 relative.parent / output.name
             ).as_posix()
+
+    @staticmethod
+    def _zlib_rs_archive(temporary: Path) -> Path | None:
+        """Verify an explicitly supplied, privately prefixed static archive.
+
+        The caller reviews/builds zlib-rs separately and supplies its expected
+        SHA256. This hook never fetches code, resolves Cargo dependencies, or
+        changes the platform inflater when the opt-in variable is absent.
+        """
+        selected = os.environ.get("UNSTD_GZIP_ZLIB_RS")
+        if selected is None:
+            return None
+        if os.environ.get("CIBUILDWHEEL") == "1":
+            message = (
+                "UNSTD_GZIP_ZLIB_RS is a local qualification experiment; "
+                "release wheels require a reviewed source/license/SBOM closure"
+            )
+            raise ValueError(message)
+        expected = os.environ.get("UNSTD_GZIP_ZLIB_RS_SHA256", "")
+        if not selected or re.fullmatch(r"[0-9a-fA-F]{64}", expected) is None:
+            message = (
+                "UNSTD_GZIP_ZLIB_RS requires a reviewed static archive path and "
+                "UNSTD_GZIP_ZLIB_RS_SHA256 with its expected SHA256"
+            )
+            raise ValueError(message)
+        archive = Path(selected).resolve(strict=True)
+        if not archive.is_file() or archive.suffix not in {".a", ".lib"}:
+            message = "UNSTD_GZIP_ZLIB_RS must name a static .a or .lib archive"
+            raise ValueError(message)
+        # The linker consumes only this private copy. Hashing the original and
+        # then linking its mutable pathname would leave a replacement window.
+        temporary.mkdir(parents=True, exist_ok=True)
+        staged: Path | None = None
+        try:
+            with NamedTemporaryFile(
+                dir=temporary, suffix=archive.suffix, delete=False
+            ) as output:
+                staged = Path(output.name)
+                with archive.open("rb") as stream:
+                    shutil.copyfileobj(stream, output)
+            with staged.open("rb") as stream:
+                actual = hashlib.file_digest(stream, "sha256").hexdigest()
+        except BaseException:
+            if staged is not None:
+                staged.unlink(missing_ok=True)
+            raise
+        if actual != expected.lower():
+            staged.unlink(missing_ok=True)
+            message = "UNSTD_GZIP_ZLIB_RS archive does not match its expected SHA256"
+            raise ValueError(message)
+        return staged
 
     def _build_text(self, temporary: Path) -> tuple[Path, list[str]]:
         """Build the dependency-free Rust kernel and discover its system libraries."""

@@ -32,6 +32,10 @@ The `ids` extra (`pip install 'unstd[ids]'`) provides `uuid-utils`. BLAKE3 hashi
 lives in `unstd.crypto.digest` behind the `crypto` extra. `uid` falls back to stdlib `uuid.uuid7` on Python 3.14+, and to a spec-correct
 hand-rolled RFC 9562 generator before that.
 
+The fallback uses a 12-bit monotonic counter plus 62 fresh random bits. CPython
+3.14's generator uses a 42-bit counter. Both emit the UUIDv7 wire format and
+order sequential mints, with different counter layouts and generation costs.
+
 The hand-rolled generator reserves counters under a thread lock. After a POSIX
 fork, the child gets a fresh unlocked counter and reseeds from its own entropy;
 the parent's state and selected backend are unchanged. Reservation order can

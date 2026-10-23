@@ -234,12 +234,15 @@ class Generator:
 
     ``Generator(seed)`` always uses stdlib, regardless of installed extras.
     ``backend="numpy"`` selects NumPy ``Generator(PCG64)`` for bulk draws and
-    raises :class:`ImportError` if NumPy is absent. Scalar draws always use the
-    instance's stdlib engine. On stdlib, scalar and bulk draws share state; on
+    raises :class:`ImportError` if NumPy is absent. Its ``bit_generator`` option
+    explicitly selects PCG64, PCG64DXSM, SFC64, or Philox; changing it changes the
+    bulk stream. Scalar draws always use the instance's stdlib engine.
+    On stdlib, scalar and bulk draws share state; on
     NumPy, they use separate engines seeded with the same value.
 
-    Reproducibility requires the same backend, calls, and compatible engine
-    versions. Instances never reseed module-level draws or the crypto path.
+    Reproducibility requires the same backend, bit generator, calls, and
+    compatible engine versions. Instances never reseed module-level draws or
+    the crypto path. These generators are for simulations, never secrets.
     """
 
     __slots__ = ("_backend", "_gen", "_py")
@@ -249,6 +252,7 @@ class Generator:
         seed: int | None = None,
         *,
         backend: Literal["stdlib", "numpy"] = "stdlib",
+        bit_generator: Literal["PCG64", "PCG64DXSM", "SFC64", "Philox"] | None = None,
     ) -> None:
         """Create a stream using *seed* and an explicit bulk *backend*."""
         if backend not in ("stdlib", "numpy"):
@@ -257,9 +261,34 @@ class Generator:
         if backend == "numpy" and not HAVE_NUMPY:
             msg = "NumPy backend requires the rand extra: pip install 'unstd[rand]'"
             raise ImportError(msg)
+        if bit_generator is not None:
+            if backend != "numpy":
+                msg = "bit_generator requires backend='numpy'"
+                raise ValueError(msg)
+            if bit_generator not in ("PCG64", "PCG64DXSM", "SFC64", "Philox"):
+                msg = "bit_generator must be 'PCG64', 'PCG64DXSM', 'SFC64', or 'Philox'"
+                raise ValueError(msg)
         self._backend = backend
+        if type(self) is Generator:
+            # Validate NumPy first, as seed() does, then initialize MT only once.
+            # No throwaway OS seed or additional per-instance slot is needed.
+            self._gen = (
+                _np.random.Generator(
+                    getattr(_np.random, bit_generator or "PCG64")(seed)
+                )
+                if backend == "numpy"
+                else None
+            )
+            self._py = _random.Random(seed)  # noqa: S311  # nosec B311 # simulation only
+            return
+        # Keep the initialized stdlib engine and virtual seed() hook available
+        # to subclasses, including hooks that draw before calling super().seed().
         self._py = _random.Random()  # noqa: S311  # nosec B311 # non-crypto PRNG; security draws use `crypto`
-        self._gen: _np.random.Generator | None = None
+        self._gen = (
+            _np.random.Generator(getattr(_np.random, bit_generator)(0))
+            if bit_generator is not None
+            else None
+        )
         self.seed(seed)
 
     @property
@@ -270,7 +299,11 @@ class Generator:
     def seed(self, n: int | None = None) -> None:
         """Reseed this instance, preserving both engines if validation fails."""
         replacement = (
-            _np.random.Generator(_np.random.PCG64(n))
+            _np.random.Generator(
+                type(self._gen.bit_generator)(n)
+                if self._gen is not None
+                else _np.random.PCG64(n)
+            )
             if self._backend == "numpy"
             else None
         )

@@ -129,16 +129,22 @@ def test_tls_workload_accepts_lazy_default_roots_and_rejects_insecure_policy(
         case.check(context)
 
 
+@pytest.mark.parametrize(
+    ("module_name", "name"),
+    [
+        ("unstd.serde.jsonx", "canonical_strict"),
+        ("unstd.crypto.token", "prepare_verifier"),
+    ],
+)
 def test_only_comparison_registry_accepts_apis_missing_from_an_older_revision(
-    all_backends: None, monkeypatch: pytest.MonkeyPatch
+    all_backends: None, monkeypatch: pytest.MonkeyPatch, module_name: str, name: str
 ) -> None:
     del all_backends
-    from unstd.serde import jsonx
-
-    monkeypatch.delattr(jsonx, "canonical_strict")
+    module = importlib.import_module(module_name)
+    monkeypatch.delattr(module, name)
     with speeds.registry(comparison=True) as cases:
-        assert "unstd.serde.jsonx.canonical_strict" not in {case.name for case in cases}
-    with pytest.raises(AttributeError, match="canonical_strict"), speeds.registry():
+        assert f"{module_name}.{name}" not in {case.name for case in cases}
+    with pytest.raises(AttributeError, match=name), speeds.registry():
         pass
 
 

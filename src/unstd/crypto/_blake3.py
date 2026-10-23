@@ -23,7 +23,9 @@ except ImportError as exc:  # fail loud, don't fork the digest
 # fresh, bounded pool for each hasher; AUTO uses Rayon's process-global pool,
 # which can deadlock after fork. Never cache keyed hashers or their secret keys.
 _PARALLEL_MIN_BYTES = 1024 * 1024
-_PARALLEL_THREADS = min(8, os.cpu_count() or 1)
+# Python 3.13+ accounts for the process's affinity and CPU-count override.
+# Resolve once at import; Python 3.12 keeps its existing CPU-count fallback.
+_PARALLEL_THREADS = min(8, getattr(os, "process_cpu_count", os.cpu_count)() or 1)
 
 
 class _HashOptions(TypedDict, total=False):

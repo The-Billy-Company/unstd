@@ -4,6 +4,12 @@ Benchmark drivers and recorded measurements for `unstd` APIs, optional backends,
 and bundled native kernels. Cases validate comparable outputs before timing;
 reports retain gains, losses, and backend-specific limitations.
 
+The [mathematical backend audit](math-audit/report.md) maps every public
+operation to its current provider, researches compatible alternatives, and
+retains security findings and raw random, numeric, and text measurements.
+Its [per-operation inventory](math-audit/functions.md) distinguishes active
+runtime backends from available source and unqualified replacement candidates.
+
 ## Frozen function speeds
 
 [`speeds.json`](speeds.json) freezes representative latency for every public
@@ -123,6 +129,13 @@ The [adaptive hashing report](crypto-hash-adaptive-results.md) covers the curren
 1 MiB crossover, bounded worker counts, and native batching of small stream chunks.
 Saved snapshots must include `unstd/crypto` and its private helpers, which load
 independently from the current source.
+
+The [crypto backend investigation](crypto-audit/README.md) inventories every
+crypto/RNG operation and primary-source replacement research. Its
+[implementation follow-up](crypto-audit/fixes.md) records bounded verification,
+runtime patching, accepted parser acceleration, setup/RSS costs, and rejected
+stream/pool experiments. `crypto_fixes.py` retains paired wall/CPU evidence for
+the Python, already-loaded native, and explicitly prepared token paths.
 
 ```console
 python3 -m bench                 # measure everything, print a table

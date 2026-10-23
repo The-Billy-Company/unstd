@@ -324,6 +324,35 @@ def test_temporary_copies_are_bounded_and_large_chunks_are_forwarded(
 
 
 @pytest.mark.parametrize("container", [tuple, list], ids=["tuple", "list"])
+def test_native_batch_storage_is_immutable_after_update_receives_it(
+    native_absorb, container
+):
+    retained = []
+    snapshots = []
+
+    class RetainingHasher:
+        def update(self, chunk):
+            # A conforming backend need not retain its inputs. Python callbacks
+            # may, and no later full or partial batch may mutate exposed bytes.
+            assert retained == snapshots
+            assert type(chunk) is bytes
+            retained.append(chunk)
+            snapshots.append(bytes(bytearray(chunk)))
+
+    chunks = container(
+        [b"a" * 2048] * 33
+        + [b"barrier" * 400]
+        + [b"b" * 1023] * 66
+        + [b"another barrier" * 200]
+        + [b"c"] * 9
+    )
+    assert native_absorb(RetainingHasher(), chunks) is None
+    assert retained == snapshots
+    assert b"".join(retained) == b"".join(chunks)
+    assert all(len(chunk) <= 65536 for chunk in retained)
+
+
+@pytest.mark.parametrize("container", [tuple, list], ids=["tuple", "list"])
 def test_stream_does_not_retain_supplied_message_objects(container):
     class MutableMessage(bytearray):
         pass

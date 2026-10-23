@@ -1,0 +1,263 @@
+{
+  "schema_version": 1,
+  "scope": "Optional bounded bearer-envelope parsing added to the existing CPython _stream_native module; all cryptography remains with existing module callbacks and keyed BLAKE3.",
+  "production_selection": "Token-only imports retain the direct Python verifier. An already-loaded native helper may be reused; prepare_verifier performs optional loading and policy binding during explicit setup.",
+  "host": {
+    "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+    "machine": "arm64",
+    "python": "3.13.16 (main, Oct  9 2026, 15:11:24) [Clang 22.1.3 ]"
+  },
+  "python_versions_tested": [
+    "3.12.15",
+    "3.13.16",
+    "3.14.8"
+  ],
+  "checks": [
+    {
+      "name": "isolated_table_prototype_contracts",
+      "command": ".venv/bin/python /tmp/unstd-token-native-20261022/validate.py",
+      "result": "passed",
+      "tests_passed": 323,
+      "note": "Snapshot before production integration; token boundary, adverse, vectors and constant-time primitive contracts."
+    },
+    {
+      "name": "isolated_python_native_differential",
+      "command": ".venv/bin/python /tmp/unstd-token-native-20261022/differential.py",
+      "result": "passed",
+      "cases": 27162,
+      "random_seed": 123,
+      "coverage": [
+        "valid and forged envelopes",
+        "random/mutated ASCII, Unicode and surrogates",
+        "valid, wrong and invalid-width keys",
+        "default, None, arbitrary-width positive/negative, zero, boolean and float limits",
+        "callback replacement ordering",
+        "stable callback/provider reference counts"
+      ]
+    },
+    {
+      "name": "production_full_crypto_security_fuzz_replay_after_factory",
+      "command": ".venv/bin/python -m pytest tests/suites/product/crypto tests/suites/assurance/security tests/suites/assurance/adversarial/fuzz_replay -q",
+      "result": "passed",
+      "tests_passed": 1096
+    },
+    {
+      "name": "dedicated_native_boundary_313",
+      "command": ".venv/bin/python -m pytest tests/suites/product/crypto/security/test_token_native.py -q",
+      "result": "passed",
+      "tests_passed": 61,
+      "python": "3.13.16"
+    },
+    {
+      "name": "dedicated_native_boundary_312",
+      "command": "PYTHONPATH=src .local/crypto-py312/bin/python -m pytest tests/suites/product/crypto/security/test_token_native.py -q",
+      "result": "passed",
+      "tests_passed": 61,
+      "python": "3.12.15"
+    },
+    {
+      "name": "dedicated_native_boundary_314",
+      "command": "PYTHONPATH=src .local/crypto-py314/bin/python -m pytest tests/suites/product/crypto/security/test_token_native.py -q",
+      "result": "passed",
+      "tests_passed": 61,
+      "python": "3.14.8"
+    },
+    {
+      "name": "ruff",
+      "command": ".venv/bin/python -m ruff check src/unstd/crypto/token.py src/unstd/crypto/_stream_native.pyi tests/suites/product/crypto/security/test_token_native.py",
+      "result": "passed"
+    },
+    {
+      "name": "ruff_format",
+      "command": ".venv/bin/python -m ruff format --check src/unstd/crypto/token.py src/unstd/crypto/_stream_native.pyi tests/suites/product/crypto/security/test_token_native.py",
+      "result": "passed",
+      "files": 3
+    },
+    {
+      "name": "mypy",
+      "command": ".venv/bin/python -m mypy src/unstd/crypto/token.py src/unstd/crypto/_stream_native.pyi",
+      "result": "passed",
+      "files": 2,
+      "note": "Only the repository-wide unused-module-override note was printed."
+    },
+    {
+      "name": "production_native_token_campaign",
+      "command": ".venv/bin/python -m tests.tooling.fuzz campaign --target tokens --backend installed --engine deterministic --runs 10000 --seed 17 --artifact-dir /tmp/unstd-token-native-20261022/fuzz-production",
+      "result": "passed",
+      "seed_cases": 20,
+      "mutation_cases": 10000,
+      "campaign_seed": 17,
+      "note": "Executed before factory-only integration adjustment, while the same native C verifier was selected by token import."
+    },
+    {
+      "name": "final_prepared_routes_token_campaign",
+      "command": ".venv/bin/python -m tests.tooling.fuzz campaign --target tokens --backend installed --engine deterministic --runs 10000 --seed 17 --artifact-dir /tmp/unstd-token-native-20261022/fuzz-final-prepared",
+      "result": "passed",
+      "seed_cases": 20,
+      "mutation_cases": 10000,
+      "campaign_seed": 17,
+      "routes": [
+        "public default",
+        "public explicit None",
+        "prepared default",
+        "prepared None"
+      ],
+      "note": "The final permanent target prepares both policies once during module setup and asserts every route against the independent model."
+    },
+    {
+      "name": "fuzz_gates_and_replay_after_prepared_routes",
+      "command": ".venv/bin/python -m pytest tests/suites/assurance/gates/fuzz tests/suites/assurance/adversarial/fuzz_replay -q",
+      "result": "passed",
+      "tests_passed": 1171,
+      "tests_skipped": 1,
+      "skip_reason": "Linux RLIMIT_AS coverage is platform-specific on this macOS worker."
+    }
+  ],
+  "boundary_coverage": [
+    "Public verify signature, default 8192, name, qualname, docstring and exports retained",
+    "Token-first and digest-first imports, explicit setup and compiler-free fallback",
+    "Prepared policy rejects booleans, integer subclasses, nonpositive and noninteger limits",
+    "No per-request optional backend probing or later public-function rewiring",
+    "Callbacks can replace codecs, MAC and comparison and trigger GC during a call",
+    "ValueError is caught only at tag decode; other exceptions and truthiness failures propagate as in Python",
+    "Missing module callbacks raise NameError",
+    "Helper/fallback/global reference cycles are collectible",
+    "Keys and callback operands/results are released on success, refusal and error after clearing legitimate Python traceback ownership",
+    "Exact strings, string subclass partition hooks and actual stored length bounds",
+    "No claims decoding before a successful full-width constant-time MAC comparison",
+    "Arbitrary-width exact integer limits and unbounded payloads crossing 64 KiB signal blocks"
+  ],
+  "signal_negative_control": {
+    "production_result": "passed on Python 3.12, 3.13 and 3.14",
+    "method": "A bounded subprocess scans a 128 MiB unbounded invalid envelope with a timer signal. Live C argument references are calibrated through a real codec callback; the signal handler must observe the same active-call ownership, excluding delivery only after C returned.",
+    "negative_control": "A scratch copy with PyErr_CheckSignals removed failed the active-call ownership assertion: observed [3], calibrated [4, 4].",
+    "negative_control_source": {
+      "path": "/tmp/unstd-token-native-20261022/_token_nosignals.c",
+      "bytes": 9980,
+      "sha256": "ade29b8ee68dfb593e8e15f6e59cd59e82e07e491cceb414c7548269c4fda491"
+    },
+    "note": "The scratch negative control was never copied into production."
+  },
+  "sanitizers": {
+    "result": "passed after correcting isolated subprocess runtime propagation",
+    "compile_command": ".venv/bin/python /tmp/unstd-token-native-20261022/build_sanitized.py",
+    "compile_flags": [
+      "-fsanitize=address,undefined",
+      "-fno-omit-frame-pointer",
+      "-O1",
+      "-g",
+      "-Wall",
+      "-Wextra",
+      "-Werror"
+    ],
+    "link_flags": [
+      "-fsanitize=address,undefined"
+    ],
+    "environment": {
+      "DYLD_INSERT_LIBRARIES": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/21/lib/darwin/libclang_rt.asan_osx_dynamic.dylib",
+      "ASAN_OPTIONS": "detect_leaks=0:abort_on_error=1",
+      "UBSAN_OPTIONS": "print_stacktrace=1:halt_on_error=1",
+      "PYTHONMALLOC": "malloc",
+      "PYTHONPATH": "/tmp/unstd-token-native-20261022/sanitized/bootstrap:/Users/griffinstrier/Billy-Company/unstd/src:/Users/griffinstrier/Billy-Company/unstd"
+    },
+    "initial_full_run": {
+      "pytest_arguments": [
+        "tests/suites/product/crypto",
+        "tests/suites/assurance/security/structure/test_mac_primitives.py",
+        "-q"
+      ],
+      "tests_passed": 1009,
+      "environment_failures": 5,
+      "reason": "macOS dyld removed DYLD_INSERT_LIBRARIES from the parent process environment; five child workers loaded ASAN too late and aborted with interceptor-startup errors. No C memory-safety finding was reported."
+    },
+    "correction": "The isolated sitecustomize bootstrap re-exported the same DYLD_INSERT_LIBRARIES path for child launches; no production source or binary was modified.",
+    "corrected_rerun": {
+      "pytest_arguments": [
+        "tests/suites/product/crypto/security/test_token_native.py",
+        "tests/suites/product/crypto/unit/test_hash_acceleration.py",
+        "tests/suites/product/crypto/unit/test_stream_batching.py",
+        "-q"
+      ],
+      "tests_passed": 573,
+      "result": "passed"
+    },
+    "mutation_run": {
+      "result": "passed",
+      "seed_cases": 20,
+      "mutation_cases": 10000,
+      "campaign_seed": 17,
+      "python": "3.13.16 (main, Oct  9 2026, 15:11:24) [Clang 22.1.3 ]",
+      "native_module": "/tmp/unstd-token-native-20261022/sanitized/lib/unstd/crypto/_stream_native.cpython-313-darwin.so",
+      "native_source_sha256": "33e16a4ac39cf2f74c5c8681e4a1dae64c841123f9ac29b69ddf3b766e9058ee",
+      "sanitizers": [
+        "address",
+        "undefined"
+      ],
+      "leak_detection": false,
+      "note": "Isolated ASAN/UBSAN extension and runtime; production binaries untouched",
+      "routes": [
+        "public native default",
+        "public native explicit None",
+        "prepared native default",
+        "prepared native None"
+      ]
+    },
+    "limitations": [
+      "LeakSanitizer was disabled (detect_leaks=0); object reference and GC ownership were tested separately.",
+      "Only this C extension was instrumented; CPython and third-party BLAKE3 were not rebuilt with sanitizers.",
+      "Local sanitizer coverage was macOS arm64 with CPython 3.13, not a cross-platform sanitizer certification.",
+      "The first full run and corrected subset overlap; their pass counts must not be added as unique tests."
+    ],
+    "production_binary_untouched": true
+  },
+  "binary_size_313": {
+    "baseline": {
+      "path": "/tmp/unstd-token-native-20261022/stream_baseline.cpython-313-darwin.so",
+      "bytes": 51816,
+      "sha256": "57e86acea70bc7dba268d723cb8fa083b91f3a09c5eb0371542c9771afae9ad6"
+    },
+    "integrated": {
+      "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/crypto/_stream_native.cpython-313-darwin.so",
+      "bytes": 53880,
+      "sha256": "b377c2182bd10d24c10cfbd93d95c9212f1d11d4fc6021b45dc5b9ec0ea5d640"
+    },
+    "delta_bytes": 2064
+  },
+  "source_fingerprints": [
+    {
+      "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/crypto/_stream_native.c",
+      "bytes": 14933,
+      "sha256": "33e16a4ac39cf2f74c5c8681e4a1dae64c841123f9ac29b69ddf3b766e9058ee"
+    },
+    {
+      "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/crypto/_stream_native.pyi",
+      "bytes": 394,
+      "sha256": "aa91b12c19f134ffc97c35ce8416c6dc0a6c6f677443e2c9e3d73bc7d7e8b653"
+    },
+    {
+      "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/crypto/token.py",
+      "bytes": 10842,
+      "sha256": "5b1a61c2974b8440ee6ccb52dc623732574bb14206eef76b6c2be909d75b07fe"
+    },
+    {
+      "path": "/Users/griffinstrier/Billy-Company/unstd/tests/suites/product/crypto/security/test_token_native.py",
+      "bytes": 15521,
+      "sha256": "237270504764cbe678ebc015654693571acffe57b87b0d9490bcbdf377b917a7"
+    },
+    {
+      "path": "/Users/griffinstrier/Billy-Company/unstd/tests/tooling/fuzz/targets/tokens.py",
+      "bytes": 6513,
+      "sha256": "d9a966e67f28e453541caff791e2261e1d34be5688b4c1b796104f7b953fb4fb"
+    }
+  ],
+  "safety_design": [
+    "Immutable nonsecret 128-byte alphabet table",
+    "Public CPython API and macros only; no private Rust ABI",
+    "Existing stream absorb implementation unchanged",
+    "No new extension module, dependency, cryptographic core or global secret cache",
+    "Bound helper retains only fallback/module globals and nonsecret keyword/name objects",
+    "Default bounds before slicing, scanning, decoding or hashing",
+    "GIL held during classification, with explicit signal checks after every 64 KiB unbounded block"
+  ],
+  "rejected_python_micro_experiments": "bench/crypto-audit/python-bound-overhead-results.json"
+}

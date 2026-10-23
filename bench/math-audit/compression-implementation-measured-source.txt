@@ -1,0 +1,77 @@
+from pathlib import Path
+import sys,os,json,time,resource,gzip,io,zlib,subprocess,statistics,hashlib
+ROOT=Path(__file__).resolve().parent
+if '--worker' in sys.argv:
+ start=time.perf_counter_ns();cpu=time.process_time_ns()
+ from unstd.compress import gzipx,_gzip_native as native,_reader
+ setup={'wall_ns':time.perf_counter_ns()-start,'process_cpu_ns':time.process_time_ns()-cpu,'peak_rss':resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,'module':native.__file__,'libdeflate':native.LIBDEFLATE_VERSION,'zlib_abi':native.ZLIB_RUNTIME_VERSION,'binary_bytes':Path(native.__file__).stat().st_size,'binary_sha256':hashlib.sha256(Path(native.__file__).read_bytes()).hexdigest()}
+ cases={};expected={}
+ for size in [0,32,4096,262145]:
+  raw=(bytes(range(256))*((size+255)//256))[:size];packed=gzip.compress(raw,mtime=0)
+  cases[f'crc-{size}']=lambda r=raw:native.crc32(r);expected[f'crc-{size}']=zlib.crc32(raw)
+  cases[f'native-decompress-{size}']=lambda p=packed:native.decompress(p);expected[f'native-decompress-{size}']=raw
+  cases[f'public-decompress-{size}']=lambda p=packed:gzipx.decompress(p);expected[f'public-decompress-{size}']=raw
+ raw=bytes(range(256))*16;packed=gzip.compress(raw,mtime=0);mutable=bytearray(packed)
+ cases['public-decompress-bytearray']=lambda:gzipx.decompress(mutable);expected['public-decompress-bytearray']=raw
+ multi=gzip.compress(raw[:2048],mtime=0)+gzip.compress(raw[2048:],mtime=0)
+ cases['public-decompress-multimember']=lambda:gzipx.decompress(multi);expected['public-decompress-multimember']=raw
+ def read(p,maximum=-1):
+  with gzipx.GzipFile(fileobj=io.BytesIO(p)) as f:return f.read(maximum)
+ for size in [32,4096]:
+  r=raw[:size];p=gzip.compress(r,mtime=0)
+  cases[f'stream-read-{size}']=lambda p=p:read(p);expected[f'stream-read-{size}']=r
+  cases[f'public-compress-{size}']=lambda r=r:gzipx.compress(r,mtime=0);expected[f'public-compress-{size}']=None
+ large=raw*256;lp=gzip.compress(large,mtime=0)
+ cases['stream-bounded']=lambda:read(lp,31);expected['stream-bounded']=large[:31]
+ def seek():
+  with gzipx.GzipFile(fileobj=io.BytesIO(packed)) as f:
+   a=f.read();f.seek(0);return a+f.read()
+ cases['stream-seek']=seek;expected['stream-seek']=raw*2
+ rp=zlib.compress(raw,wbits=-15)
+ def inflate(maximum=-1):return native.Inflater().decompress(rp,max_length=maximum)
+ cases['inflate-full']=inflate;expected['inflate-full']=raw
+ cases['inflate-bounded']=lambda:inflate(31);expected['inflate-bounded']=raw[:31]
+ for name,fn in cases.items():
+  actual=fn()
+  if name.startswith('public-compress'):assert gzip.decompress(actual)==raw[:int(name.rsplit('-',1)[1])]
+  else:assert actual==expected[name],name
+ print(json.dumps({'setup':setup,'cases':list(cases)}),flush=True)
+ for line in sys.stdin:
+  arg=json.loads(line)
+  if arg is None:break
+  fn=cases[arg['case']];n=arg['n'];w=time.perf_counter_ns();t=time.thread_time_ns();p=time.process_time_ns()
+  for _ in range(n):fn()
+  print(json.dumps({'wall_ns':time.perf_counter_ns()-w,'thread_cpu_ns':time.thread_time_ns()-t,'process_cpu_ns':time.process_time_ns()-p,'n':n}),flush=True)
+ sys.exit()
+variants=['baseline','libdeflate-1.26','zlib-rs'];workers={};ready={}
+try:
+ for name in variants:
+  env=os.environ.copy();env['PYTHONPATH']=str(ROOT/name/'source')
+  p=subprocess.Popen([sys.executable,str(Path(__file__).resolve()),'--worker'],env=env,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)
+  line=p.stdout.readline()
+  if not line:raise RuntimeError(name+': '+p.stderr.read())
+  workers[name]=p;ready[name]=json.loads(line)
+ def sample(variant,case,n):
+  p=workers[variant];p.stdin.write(json.dumps({'case':case,'n':n})+'\n');p.stdin.flush();line=p.stdout.readline()
+  if not line:raise RuntimeError(variant+': '+p.stderr.read())
+  return json.loads(line)
+ samples={};iterations={}
+ for case in ready['baseline']['cases']:
+  n=1
+  while True:
+   s=sample('baseline',case,n)
+   if s['process_cpu_ns']>=1_000_000:break
+   n*=max(2,min(10,1_000_000//max(s['process_cpu_ns'],1)))
+  iterations[case]=n;samples[case]={v:[] for v in variants}
+ for repeat in range(11):
+  for case in iterations:
+   order=variants[repeat%3:]+variants[:repeat%3]
+   if repeat%2:order=order[::-1]
+   for variant in order:samples[case][variant].append(sample(variant,case,iterations[case]))
+ summary={case:{v:{clock:statistics.median(a[clock]/b[clock] for a,b in zip(rows['baseline'],rows[v])) for clock in ['wall_ns','thread_cpu_ns','process_cpu_ns']} for v in variants[1:]} for case,rows in samples.items()}
+ result={'method':'11 alternating paired rounds, >=1 ms baseline process CPU calibrated per batch; fixtures/import/setup/validation excluded; public call and result allocation included; shared host exploratory','setup':ready,'iterations':iterations,'samples':samples,'paired_speedup':summary,'python':sys.version,'timestamp_utc':time.strftime('%Y-%m-%d %H:%M:%S',time.gmtime())}
+ (ROOT/'paired-results.json').write_text(json.dumps(result,indent=2)+'\n')
+ for case,rows in summary.items():print(case,*[f'{v}:{rows[v]["process_cpu_ns"]:.3f}' for v in variants[1:]])
+finally:
+ for p in workers.values():
+  p.stdin.write('null\n');p.stdin.flush();p.wait(timeout=10)

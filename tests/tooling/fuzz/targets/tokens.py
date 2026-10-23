@@ -8,7 +8,10 @@ model uses raw keyed BLAKE3, stdlib Base64 and hmac comparison. It demands exact
 two nonempty canonical unpadded Base64url segments and a 32-byte signature over
 the ASCII payload. No JSON, expiry, audience or other authorization policy is
 invented; opaque claims bytes alone are authenticated. Verification of arbitrary
-text has no permitted exceptions. The key and alternate key are test fixtures.
+text has no permitted exceptions. Both the default 8192-character envelope
+limit and explicit unbounded verification are checked. The key and alternate
+key are test fixtures. Setup also prepares both policies once, exercising the
+optional native parser alongside the public verifier on every candidate.
 """
 
 from __future__ import annotations
@@ -27,6 +30,8 @@ from .json import text
 KEY = bytes(range(32))
 OTHER_KEY = bytes(reversed(range(32)))
 _ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
+_PREPARED_DEFAULT = token.prepare_verifier()
+_PREPARED_UNBOUNDED = token.prepare_verifier(max_token_chars=None)
 
 
 def _encode(raw: bytes) -> str:
@@ -41,7 +46,11 @@ def _sign(payload: str, key: bytes = KEY) -> str:
     )
 
 
-def _model(candidate: str, key: bytes = KEY) -> bytes | None:
+def _model(
+    candidate: str, key: bytes = KEY, *, max_token_chars: int | None = 8192
+) -> bytes | None:
+    if max_token_chars is not None and len(candidate) > max_token_chars:
+        return None
     parts = candidate.split(".")
     if len(parts) != 2:
         return None
@@ -73,6 +82,10 @@ def _verify(candidate: str, key: bytes = KEY) -> None:
     actual = token.verify(key, candidate)
     expected = _model(candidate, key)
     assert actual == expected
+    assert _PREPARED_DEFAULT(key, candidate) == expected
+    unbounded = _model(candidate, key, max_token_chars=None)
+    assert token.verify(key, candidate, max_token_chars=None) == unbounded
+    assert _PREPARED_UNBOUNDED(key, candidate) == unbounded
     if actual is not None:
         assert type(actual) is bytes
         assert actual
@@ -97,7 +110,8 @@ def fuzz(data: bytes) -> None:
     assert token.mac_hex(KEY, claims) == blake3(claims, key=KEY).hexdigest()
     _verify(valid)
     _verify(valid, OTHER_KEY)
-    assert token.verify(KEY, valid) == claims
+    assert token.verify(KEY, valid) == (claims if len(valid) <= 8192 else None)
+    assert token.verify(KEY, valid, max_token_chars=None) == claims
     if mode == 1:
         changed_claims = bytearray(claims)
         changed_claims[selector % len(claims)] ^= 1

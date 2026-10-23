@@ -27,7 +27,7 @@ EXCLUSIONS = {
 def cases(stack: ExitStack, *, comparison: bool = False) -> list[Case]:
     """Build bounded workloads and register restoration of mutable PRNG state."""
     return [
-        *_crypto(),
+        *_crypto(comparison=comparison),
         *_random(stack, comparison=comparison),
         *_time(),
         *_identity(),
@@ -35,7 +35,7 @@ def cases(stack: ExitStack, *, comparison: bool = False) -> list[Case]:
     ]
 
 
-def _crypto() -> list[Case]:
+def _crypto(*, comparison: bool = False) -> list[Case]:
     from unstd.crypto import digest, tls, token
 
     # Published BLAKE3 reference input and outputs, independent of these wrappers.
@@ -58,6 +58,33 @@ def _crypto() -> list[Case]:
         "eyJzdWIiOiJ1MSIsImV4cCI6MTc2NzIyNTYwMCwiYXVkIjoiZXhhbXBsZSJ9"
         ".UM4aL4802CKbmyfa1vlnQ9Gs0A-zvS43YFLx7OTWViw"
     )
+    prepare = (
+        getattr(token, "prepare_verifier", None)
+        if comparison
+        else token.prepare_verifier
+    )
+    prepared_cases = []
+
+    def check_prepared(value: Any) -> None:
+        assert callable(value)
+        assert value(claims_key, bearer) == claims
+
+    if prepare is not None:
+        prepared_verifier = prepare()
+        prepared_cases = [
+            Case(
+                "unstd.crypto.token.prepare_verifier",
+                prepare,
+                check_prepared,
+                "prepare a fixed default limit and backend; repeated setup with helper already loaded",
+            ),
+            Case(
+                "unstd.crypto.token.verify#prepared",
+                partial(prepared_verifier, claims_key, bearer),
+                expect(claims),
+                "authenticate the frozen envelope with a verifier prepared once before timing",
+            ),
+        ]
 
     def check_stream(value: Any) -> None:
         assert type(value) is digest.Stream
@@ -180,6 +207,7 @@ def _crypto() -> list[Case]:
             expect(None),
             "reject a claims envelope with a changed MAC",
         ),
+        *prepared_cases,
         Case(
             "unstd.crypto.tls.client_context",
             tls.client_context,

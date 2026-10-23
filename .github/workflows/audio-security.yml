@@ -1,0 +1,132 @@
+name: Audio security
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  qualify:
+    name: Audio security / Patched Linux reference
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      UV_PROJECT_ENVIRONMENT: ${{ runner.temp }}/unstd-audio-security
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up pinned Python and uv
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: "0.13.4"
+          python-version: "3.13"
+          enable-cache: false
+      - name: Check dependency trust before installing
+        run: |
+          mkdir -p .local/audio-security
+          python -m tests.tooling.supply_chain check --json > .local/audio-security/dependency-policy.json
+          uv lock --check
+      - name: Install compiler and required codec development libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends build-essential cmake pkg-config patch xz-utils libflac-dev libvorbis-dev libogg-dev libopus-dev libmp3lame-dev libmpg123-dev
+      - name: Export authenticated Python build and test requirements
+        run: |
+          uv export --locked --only-group build --no-emit-project --no-header --output-file .local/audio-security/build-requirements.txt
+          uv export --locked --extra audio --no-default-groups --group dev --no-emit-project --no-header --output-file .local/audio-security/test-requirements.txt
+      - name: Install the isolated locked environment
+        run: |
+          uv venv --python 3.13 "$UV_PROJECT_ENVIRONMENT"
+          uv pip install --python "$UV_PROJECT_ENVIRONMENT/bin/python" --no-deps --only-binary :all: --require-hashes --requirements .local/audio-security/build-requirements.txt --requirements .local/audio-security/test-requirements.txt
+          uv pip install --python "$UV_PROJECT_ENVIRONMENT/bin/python" --no-deps --no-index --no-build-isolation .
+      - name: Check the isolated interpreter's TLS security fixes
+        run: |
+          "$UV_PROJECT_ENVIRONMENT/bin/python" -m tests.tooling.runtime --json > .local/audio-security/tls-runtime.json
+      - name: Fetch and authenticate the exact source and upstream fix
+        id: inputs
+        run: |
+          "$UV_PROJECT_ENVIRONMENT/bin/python" - <<'PYTHON'
+          import hashlib
+          from pathlib import Path
+          from urllib.request import urlopen
+
+          inputs = Path('.local/audio-security/inputs')
+          inputs.mkdir(parents=True, exist_ok=True)
+          sources = (
+              ('libsndfile-1.2.2.tar.xz', 'https://github.com/libsndfile/libsndfile/releases/download/1.2.2/libsndfile-1.2.2.tar.xz', '3799ca9924d3125038880367bf1468e53a1b7e3686a934f098b7e1d286cdb80e'),
+              ('official.patch', 'https://github.com/libsndfile/libsndfile/commit/474e4d328b1e6240b93ec6ed14efb7c6a44bee57.patch', '9be5ac68e236d2ff2011f68065eacbf1b6daf4f9aa37a9f21ac9d74135697cba'),
+          )
+          for name, url, expected in sources:
+              with urlopen(url, timeout=60) as response:
+                  data = response.read(64 * 1024 * 1024 + 1)
+              if len(data) > 64 * 1024 * 1024 or hashlib.sha256(data).hexdigest() != expected:
+                  raise SystemExit(f'Unauthenticated audio input: {name}')
+              (inputs / name).write_bytes(data)
+          PYTHON
+      - name: Build exact patched inputs and emit the same-job trusted policy
+        id: build
+        run: |
+          "$UV_PROJECT_ENVIRONMENT/bin/python" -m tests.tooling.runtime.audio_build --source .local/audio-security/inputs/libsndfile-1.2.2.tar.xz --patch .local/audio-security/inputs/official.patch --output .local/audio-security/build --cmake "$(command -v cmake)" --jobs 2 --trust-policy .local/audio-security/trusted-build.json
+      - name: Authenticate and install the staged patched wheel
+        id: install
+        run: |
+          "$UV_PROJECT_ENVIRONMENT/bin/python" - <<'PYTHON'
+          import hashlib
+          import json
+          from pathlib import Path
+
+          from tests.tooling.runtime.audio import trusted_manifest_digests
+
+          root = Path('.local/audio-security/build').resolve()
+          provenance = (root / 'provenance.json').read_bytes()
+          trusted = trusted_manifest_digests(Path('.local/audio-security/trusted-build.json'))
+          if hashlib.sha256(provenance).hexdigest() not in trusted:
+              raise SystemExit('Build provenance is not admitted by the same-job trusted builder')
+          output = json.loads(provenance)['output']
+          wheel = (root / output['wheel']).resolve(strict=True)
+          if wheel.parent != root or wheel.suffix != '.whl':
+              raise SystemExit('Patched wheel is outside the trusted build directory')
+          expected = output['wheel_sha256']
+          if hashlib.sha256(wheel.read_bytes()).hexdigest() != expected:
+              raise SystemExit('Patched wheel hash differs from the trusted build')
+          requirement = wheel.as_uri() + ' --hash=sha256:' + expected + '\n'
+          Path('.local/audio-security/patched-wheel.txt').write_text(requirement)
+          PYTHON
+          uv pip install --python "$UV_PROJECT_ENVIRONMENT/bin/python" --no-deps --no-index --require-hashes --reinstall --requirements .local/audio-security/patched-wheel.txt
+      - name: Admit SoundFile's actual loaded patched DSO
+        id: preflight
+        run: |
+          "$UV_PROJECT_ENVIRONMENT/bin/python" -m tests.tooling.runtime.audio --provenance .local/audio-security/build/provenance.json --trust-policy .local/audio-security/trusted-build.json --json > .local/audio-security/loaded-runtime.json
+      - name: Run real audio contracts with the qualified wheel
+        id: tests
+        run: |
+          "$UV_PROJECT_ENVIRONMENT/bin/python" -m pytest tests/suites/product/audio --require-extra audio -q --junitxml=.local/audio-security/tests.xml
+      - name: Summarize qualified audio contracts
+        if: always() && steps.tests.outcome != 'skipped'
+        env:
+          TEST_EXIT: ${{ steps.tests.outcome == 'success' && '0' || '1' }}
+        run: '"$UV_PROJECT_ENVIRONMENT/bin/python" -m tests.tooling.ci report "Qualified audio contracts" .local/audio-security/tests.xml --exit-code "$TEST_EXIT"'
+      - name: Retain checked wheel, provenance and test evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: audio-security-linux-${{ github.run_attempt }}
+          path: |
+            .local/audio-security/*.json
+            .local/audio-security/*.txt
+            .local/audio-security/*.xml
+            .local/audio-security/build/*.json
+            .local/audio-security/build/*.sha256
+            .local/audio-security/build/*.whl
+            .local/audio-security/build/build.log
+            .local/audio-security/build/inputs/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30

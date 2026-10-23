@@ -1,0 +1,40 @@
+"""Fresh-process paired audio startup clocks, peak RSS, and actual DSO identity."""
+
+import hashlib
+import json
+import os
+from pathlib import Path
+import statistics
+import subprocess
+import sys
+
+stage = Path('.local/audio-patched-474e4d3-r4/stage').resolve()
+worker = '''import io,json,resource,sys,time,wave
+sys.path.insert(0,sys.argv[1]) if sys.argv[1] else None
+cpu=time.process_time_ns(); wall=time.perf_counter_ns()
+import unstd.audio.wavx as wavx
+import soundfile
+import_wall=time.perf_counter_ns()-wall; import_cpu=time.process_time_ns()-cpu
+stream=io.BytesIO()
+with wave.open(stream,'wb') as f:
+    f.setnchannels(1);f.setsampwidth(2);f.setframerate(16000);f.writeframes(b'\\0\\0')
+stream.seek(0)
+cpu=time.process_time_ns();wall=time.perf_counter_ns()
+samples,rate=wavx.read(stream,dtype='int16')
+first_wall=time.perf_counter_ns()-wall;first_cpu=time.process_time_ns()-cpu
+assert samples.tolist()==[0] and rate==16000
+print(json.dumps(dict(import_wall_ns=import_wall,import_cpu_ns=import_cpu,first_read_wall_ns=first_wall,first_read_cpu_ns=first_cpu,peak_rss_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,library=soundfile._full_path)))
+'''
+samples = []
+env = os.environ.copy()
+env.pop('PYTHONPATH',None)
+for turn in range(9):
+    order = ('candidate','baseline') if turn%2 else ('baseline','candidate')
+    row = {'order':order}
+    for side in order:
+        p = subprocess.run([sys.executable,'-c',worker,str(stage) if side=='candidate' else ''],env=env,text=True,capture_output=True,check=True)
+        row[side]=json.loads(p.stdout)
+    samples.append(row)
+report = {'method':'nine alternating adjacent fresh subprocess pairs; warm filesystem cache; macOS ru_maxrss bytes; import includes numpy/CFFI/unstd.audio; no timing samples discarded','sources_sha256':{str(Path(__file__)):hashlib.sha256(Path(__file__).read_bytes()).hexdigest()},'worker':worker,'samples':samples,'median_paired_candidate_over_baseline':{key:statistics.median(r['candidate'][key]/r['baseline'][key] for r in samples) for key in ('import_wall_ns','import_cpu_ns','first_read_wall_ns','first_read_cpu_ns','peak_rss_bytes')}}
+Path('bench/math-audit/sndfile-startup-results.json').write_text(json.dumps(report,indent=2)+'\n')
+print(json.dumps(report['median_paired_candidate_over_baseline']))

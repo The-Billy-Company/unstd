@@ -53,16 +53,38 @@ run.seed(1234)  # reset only this instance
 
 vectorized = rand.Generator(1234, backend="numpy")  # explicit PCG64 bulk engine
 xs = vectorized.floats(100)  # always a NumPy ndarray
+
+parallel = rand.Generator(1234, backend="numpy", bit_generator="PCG64DXSM")
+fast_bulk = rand.Generator(1234, backend="numpy", bit_generator="SFC64")
+keyed_stream = rand.Generator(1234, backend="numpy", bit_generator="Philox")
 ```
+
+`bit_generator` accepts `"PCG64"`, `"PCG64DXSM"`, `"SFC64"`, or `"Philox"`
+only with `backend="numpy"`. Leaving it at `None` preserves PCG64. Selecting a
+different bit generator changes bulk values and state consumption; reseeding
+keeps the selected algorithm. Module-level draws keep their existing PCG64
+default. Algorithm selection happens during construction and reseeding;
+ordinary draws use the same dispatch as before, with no additional instance
+slot or per-draw selection.
+
+PCG64DXSM addresses the statistical weakness of very many long parallel PCG64
+streams. SFC64 is a fast option without jump/advance support; Philox supports
+independent keyed streams in NumPy. This wrapper seeds Philox normally; it does
+not expose NumPy's separate key/counter controls. Performance depends on
+distribution, batch size, platform, construction and conversion costs. These
+choices are all simulation PRNGs and must never generate tokens or keys.
+See NumPy's [engine comparison](https://numpy.org/doc/stable/reference/random/performance.html)
+and [PCG64DXSM rationale](https://numpy.org/doc/stable/reference/random/upgrading-pcg64.html).
 
 Requesting `backend="numpy"` without NumPy raises `ImportError` with installation
 instructions. Every instance has the same scalar and bulk methods as the module,
 and a read-only `backend` property. Instances never change module-level draws,
 other instances, stdlib's global random engine, or `crypto`. All scalar methods
 use the instance's stdlib engine. With `backend="stdlib"`, scalar and bulk draws
-share that engine; with `backend="numpy"`, bulk draws use a separate PCG64 engine.
+share that engine; with `backend="numpy"`, bulk draws use the separately selected
+NumPy engine.
 Both engines receive the same seed. Reproducibility requires the same backend,
-call sequence, and compatible engine versions; selecting NumPy does not promise
+bit generator, call sequence, and compatible engine versions; selecting NumPy does not promise
 stdlib's values. Negative integer seeds are accepted by stdlib and rejected by
 NumPy. A failed `seed()` call preserves both engines' previous state.
 

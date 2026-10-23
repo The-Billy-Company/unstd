@@ -80,6 +80,14 @@ class TestTlsPolicy:
         """A silently lowered floor is the whole downgrade class, so pin the value."""
         assert tls.MINIMUM_VERSION is ssl.TLSVersion.TLSv1_3
 
+    def test_context_configuration_is_owned_by_each_caller(self, tmp_path):
+        ca_pem, _ = _self_signed(tmp_path, "unstd-owned-context")
+        first = tls.client_context(cafile=str(ca_pem))
+        second = tls.client_context(cafile=str(ca_pem))
+        assert first is not second
+        first.minimum_version = tls.LEGACY_MINIMUM_VERSION
+        assert second.minimum_version is tls.MINIMUM_VERSION
+
     def test_the_legacy_floor_is_named_and_is_still_a_floor(self):
         """Dialing a 1.2-only peer is a stated exception, not a free-form version."""
         assert tls.LEGACY_MINIMUM_VERSION is ssl.TLSVersion.TLSv1_2

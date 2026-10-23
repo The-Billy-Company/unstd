@@ -429,15 +429,35 @@ def _read_numpy(raw: bytes, nchannels: int, sampwidth: int, dtype: str) -> Sampl
         raise ValueError(_bad_width(sampwidth, "8/16/32"))
     _check_pcm_frames(raw, nchannels, sampwidth)
     arr = _np.frombuffer(raw, dtype=code)
+    if dtype == "int16":
+        return _read_int16_numpy(arr, nchannels, sampwidth)
     if sampwidth == 1:  # 8-bit WAV is unsigned, centered on 128
         flt = (arr.astype(_np.float64) - 128.0) / 128.0
     else:
         flt = arr.astype(_np.float64) / float(1 << (8 * sampwidth - 1))
     if nchannels > 1:
         flt = flt.reshape(-1, nchannels)
-    if dtype == "int16":
-        return _f2i16_numpy(flt)
     return flt.astype(_np.float32 if dtype == "float32" else _np.float64)
+
+
+def _read_int16_numpy(
+    arr: NDArray[_np.generic], nchannels: int, sampwidth: int
+) -> NDArray[_np.int16]:
+    """Copy PCM16 counts directly; other widths retain their normalized conversion."""
+    if sampwidth == 2:
+        if nchannels > 1:
+            arr = arr.reshape(-1, nchannels)
+        # The raw-byte view is read-only and can alias caller-owned storage.
+        # Copy after reshaping to retain an owned, writable result in either shape.
+        return cast("NDArray[_np.int16]", arr.copy())
+    flt = (
+        (arr.astype(_np.float64) - 128.0) / 128.0
+        if sampwidth == 1
+        else arr.astype(_np.float64) / float(1 << (8 * sampwidth - 1))
+    )
+    if nchannels > 1:
+        flt = flt.reshape(-1, nchannels)
+    return _f2i16_numpy(flt)
 
 
 def _f2i16_numpy(flt: NDArray[_np.floating]) -> NDArray[_np.int16]:

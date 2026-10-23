@@ -1,0 +1,5877 @@
+{
+  "schema": 1,
+  "recorded_utc": "2026-10-23T01:14:55.012972+00:00",
+  "python": "3.13.16 (main, Oct  9 2026, 15:11:24) [Clang 22.1.3 ]",
+  "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+  "openssl": "OpenSSL 3.5.9 29 Sep 2026",
+  "blake3": "1.0.10",
+  "pybase64": "1.5.0",
+  "cpu_count": 18,
+  "load_start": [
+    29.20654296875,
+    30.7666015625,
+    36.0322265625
+  ],
+  "source_hashes": {
+    "before": {
+      "unstd/crypto/__init__.py": "6908e373f1ef84c7e673c59fc9f52a25871ba93eaa2f5a327940579d170e9270",
+      "unstd/crypto/_blake3.py": "8a0e61cdd7f902c40554ddb52bc6f0e9d24c2a4fea5beba28fedaa6b04f56f94",
+      "unstd/crypto/_stream_native.c": "1d2eed6f3c132617260bd7309685598988f3d33d273eb3dbbf28d2d815a3b141",
+      "unstd/crypto/_stream_native.cpython-313-darwin.so": "57e86acea70bc7dba268d723cb8fa083b91f3a09c5eb0371542c9771afae9ad6",
+      "unstd/crypto/_stream_native.pyi": "46faab7de5958606d9162fa5b858e779d64b8eea4675f11ee2678131e59a32bd",
+      "unstd/crypto/digest.py": "9aba8fd38ff6854bee4ceebe0c8436876c4335832c2174a10e977dc63dbcbb7d",
+      "unstd/crypto/tls.py": "bb36403b314a33afe7e3a5ebf0cf8b24ea6837ffc271a30975158e01eeb4f6f1",
+      "unstd/crypto/token.py": "c76c3dc42bd188805be28e332592ef1a5faf4f0a1a6418903eddaa3ceff9995f"
+    },
+    "after": {
+      "unstd/crypto/__init__.py": "6908e373f1ef84c7e673c59fc9f52a25871ba93eaa2f5a327940579d170e9270",
+      "unstd/crypto/_blake3.py": "d546a5f7a4918744a11fee94d1fd3f527e8356c189960488e3c0c08469f49dcb",
+      "unstd/crypto/_stream_native.c": "1d2eed6f3c132617260bd7309685598988f3d33d273eb3dbbf28d2d815a3b141",
+      "unstd/crypto/_stream_native.cpython-313-darwin.so": "57e86acea70bc7dba268d723cb8fa083b91f3a09c5eb0371542c9771afae9ad6",
+      "unstd/crypto/_stream_native.pyi": "46faab7de5958606d9162fa5b858e779d64b8eea4675f11ee2678131e59a32bd",
+      "unstd/crypto/digest.py": "9aba8fd38ff6854bee4ceebe0c8436876c4335832c2174a10e977dc63dbcbb7d",
+      "unstd/crypto/tls.py": "e68e3bb3ad9b70e52265ed23bccbfc2a4a594dc9e5b23cfeee0f4c924374f6db",
+      "unstd/crypto/token.py": "bb86a19b019b22c78d613558184672f643c12d90345cc5ab2ab1dfc6f5120d59"
+    }
+  },
+  "before_token_source": "\"\"\"Bearer tokens \u2014 the keyed-BLAKE3 MAC, constant-time compare, and the claims envelope.\n\nKeyed BLAKE3 is a PRF by construction, so it is a MAC with no HMAC\nouter/inner-pad wrapper around it, and it reuses the digest implementation the\nrest of this package already leans on. The claims envelope is::\n\n    base64url_nopad(claims_json) \".\" base64url_nopad(keyed_mac(base64url claims bytes))\n\nThe MAC covers the *encoded* payload, not the raw JSON, so a verifier never has\nto re-encode to check the tag. That one detail is what a second implementation\nof this envelope gets wrong silently, so it is pinned by its own test rather\nthan left to the whole-token golden.\n\nThe MAC comes in the two shapes :mod:`unstd.crypto.digest` names \u2014 :func:`mac_raw`\n(32 bytes) and :func:`mac_hex` (64 chars) \u2014 and :func:`verify_mac` accepts a tag\nin either. :func:`equal` is the constant-time compare every tag check rides.\n\nAn opaque bearer (no claims inside) is just CSPRNG bytes:\n``unstd.rand.crypto.token_urlsafe()``.\n\"\"\"\n\nfrom __future__ import annotations\n\nimport hmac\n\nfrom unstd.crypto._blake3 import _PARALLEL_MIN_BYTES, _parallel_hasher, blake3\nfrom unstd.serde import b64\n\n\nSEPARATOR = \".\"\n\"\"\"The one byte between payload and tag. Present exactly once in a valid token.\"\"\"\n\nKEY_BYTES = 32\n\"\"\"Keyed BLAKE3 takes exactly this much key \u2014 not a minimum, an equality.\"\"\"\n\nTAG_BYTES = 32\n\"\"\"Width of a MAC tag, which is BLAKE3's output width.\"\"\"\n\n\ndef equal(a: str | bytes, b: str | bytes) -> bool:\n    \"\"\"Constant-time equality for a token, digest, or MAC.\n\n    Never use ``==`` on one of those: it short-circuits on the first differing\n    byte, which leaks the length of the shared prefix and is enough to forge a\n    tag one byte at a time. Mismatched str/bytes is False rather than a\n    TypeError. Non-ASCII strings are also refused: wire tags are ASCII and\n    ``hmac.compare_digest`` otherwise raises for caller-controlled Unicode.\n    \"\"\"\n    if isinstance(a, str):\n        return (\n            isinstance(b, str)\n            and a.isascii()\n            and b.isascii()\n            and hmac.compare_digest(a, b)\n        )\n    return isinstance(b, bytes) and hmac.compare_digest(a, b)\n\n\ndef _keyed(key: bytes, data: bytes) -> blake3:\n    if len(key) != KEY_BYTES:\n        msg = f\"keyed BLAKE3 needs exactly {KEY_BYTES} bytes of key, got {len(key)}\"\n        raise ValueError(msg)\n    if type(data) is bytes and len(data) >= _PARALLEL_MIN_BYTES:\n        return _parallel_hasher(data, key=key)\n    return blake3(data, key=key)\n\n\ndef mac_raw(key: bytes, data: bytes) -> bytes:\n    \"\"\"Keyed BLAKE3 MAC of *data* as raw bytes (32). *key* must be exactly 32 bytes.\"\"\"\n    return _keyed(key, data).digest()\n\n\ndef mac_hex(key: bytes, data: bytes) -> str:\n    \"\"\"Keyed BLAKE3 MAC of *data* as hex (64 chars). *key* must be exactly 32 bytes.\"\"\"\n    return _keyed(key, data).digest().hex()\n\n\ndef verify_mac(key: bytes, data: bytes, tag: str | bytes) -> bool:\n    \"\"\"Recompute the MAC over *data* and compare it to *tag* \u2014 hex ``str`` or raw ``bytes`` \u2014 in constant time.\"\"\"\n    return equal(\n        mac_hex(key, data) if isinstance(tag, str) else mac_raw(key, data), tag\n    )\n\n\ndef mint(key: bytes, claims: bytes) -> str:\n    \"\"\"Encode *claims* and append its keyed MAC, producing ``payload.tag``.\n\n    *claims* is the already-serialized claims document \u2014 this function does not\n    serialize for you, because key order in the JSON is part of what the MAC\n    covers, and a minter that re-serialized would quietly produce a token a\n    stricter verifier rejects.\n\n    Empty *claims* raises rather than minting ``\".tag\"``: :func:`verify` refuses an\n    empty claims segment, because a bearer that asserts nothing grants nothing, so\n    minting one would hand back a token that can never be redeemed.\n    \"\"\"\n    if not claims:\n        msg = (\n            \"refusing to mint a token with no claims \u2014 an empty bearer asserts nothing\"\n        )\n        raise ValueError(msg)\n    payload = b64.encode(claims, url=True, pad=False)\n    tag = mac_raw(key, payload.encode(\"ascii\"))\n    return payload + SEPARATOR + b64.encode(tag, url=True, pad=False)\n\n\ndef verify(key: bytes, token: str) -> bytes | None:\n    \"\"\"Return the claims bytes if *token*'s MAC checks out under *key*, else None.\n\n    Fails closed on every shape problem \u2014 a missing or extra separator, a\n    noncanonical base64url segment, a tag of the wrong width \u2014 and compares the tag in\n    constant time. None means \"do not trust this\"; it never raises for\n    caller-supplied input.\n    \"\"\"\n    payload, sep, tag = token.partition(SEPARATOR)\n    if not sep or SEPARATOR in tag or not payload or not tag:\n        return None\n    if not all(\n        segment.isascii() and segment.replace(\"-\", \"a\").replace(\"_\", \"a\").isalnum()\n        for segment in (payload, tag)\n    ):\n        return None\n    try:\n        claims = b64.decode(payload, url=True)\n        got = b64.decode(tag, url=True)\n    except ValueError:  # binascii.Error and UnicodeEncodeError are both ValueErrors\n        return None\n    # The general-purpose URL decoder intentionally follows stdlib's leniency.\n    # A bearer envelope must instead have one spelling: ignored junk, padding,\n    # alternate alphabets and unused-bit aliases must never authenticate.\n    if (\n        b64.encode(claims, url=True, pad=False) != payload\n        or b64.encode(got, url=True, pad=False) != tag\n    ):\n        return None\n    if len(got) != TAG_BYTES or not equal(got, mac_raw(key, payload.encode(\"ascii\"))):\n        return None\n    return claims\n\n\n__all__ = [\n    \"KEY_BYTES\",\n    \"SEPARATOR\",\n    \"TAG_BYTES\",\n    \"equal\",\n    \"mac_hex\",\n    \"mac_raw\",\n    \"mint\",\n    \"verify\",\n    \"verify_mac\",\n]\n",
+  "after_token_source": "\"\"\"Bearer tokens \u2014 the keyed-BLAKE3 MAC, constant-time compare, and the claims envelope.\n\nKeyed BLAKE3 is a PRF by construction, so it is a MAC with no HMAC\nouter/inner-pad wrapper around it, and it reuses the digest implementation the\nrest of this package already leans on. The claims envelope is::\n\n    base64url_nopad(claims_json) \".\" base64url_nopad(keyed_mac(base64url claims bytes))\n\nThe MAC covers the *encoded* payload, not the raw JSON, so a verifier never has\nto re-encode to check the tag. That one detail is what a second implementation\nof this envelope gets wrong silently, so it is pinned by its own test rather\nthan left to the whole-token golden.\n\nThe MAC comes in the two shapes :mod:`unstd.crypto.digest` names \u2014 :func:`mac_raw`\n(32 bytes) and :func:`mac_hex` (64 chars) \u2014 and :func:`verify_mac` accepts a tag\nin either. :func:`equal` is the constant-time compare every tag check rides.\n\nAn opaque bearer (no claims inside) is just CSPRNG bytes:\n``unstd.rand.crypto.token_urlsafe()``.\n\"\"\"\n\nfrom __future__ import annotations\n\nimport hmac\n\nfrom unstd.crypto._blake3 import _PARALLEL_MIN_BYTES, _parallel_hasher, blake3\nfrom unstd.serde import b64\n\n\nSEPARATOR = \".\"\n\"\"\"The one byte between payload and tag. Present exactly once in a valid token.\"\"\"\n\nKEY_BYTES = 32\n\"\"\"Keyed BLAKE3 takes exactly this much key \u2014 not a minimum, an equality.\"\"\"\n\nTAG_BYTES = 32\n\"\"\"Width of a MAC tag, which is BLAKE3's output width.\"\"\"\n\n_TAG_CHARS = 43\n_MIN_TOKEN_CHARS = _TAG_CHARS + 3  # At least two payload chars and one separator.\n_DEFAULT_MAX_TOKEN_CHARS = 8192\n_TWO_CHAR_END = \"AQgw\"\n_THREE_CHAR_END = \"AEIMQUYcgkosw048\"\n\n\ndef equal(a: str | bytes, b: str | bytes) -> bool:\n    \"\"\"Constant-time equality for a token, digest, or MAC.\n\n    Never use ``==`` on one of those: it short-circuits on the first differing\n    byte, which leaks the length of the shared prefix and is enough to forge a\n    tag one byte at a time. Mismatched str/bytes is False rather than a\n    TypeError. Non-ASCII strings are also refused: wire tags are ASCII and\n    ``hmac.compare_digest`` otherwise raises for caller-controlled Unicode.\n    \"\"\"\n    if isinstance(a, str):\n        return (\n            isinstance(b, str)\n            and a.isascii()\n            and b.isascii()\n            and hmac.compare_digest(a, b)\n        )\n    return isinstance(b, bytes) and hmac.compare_digest(a, b)\n\n\ndef _keyed(key: bytes, data: bytes) -> blake3:\n    if len(key) != KEY_BYTES:\n        msg = f\"keyed BLAKE3 needs exactly {KEY_BYTES} bytes of key, got {len(key)}\"\n        raise ValueError(msg)\n    if type(data) is bytes and len(data) >= _PARALLEL_MIN_BYTES:\n        return _parallel_hasher(data, key=key)\n    return blake3(data, key=key)\n\n\ndef mac_raw(key: bytes, data: bytes) -> bytes:\n    \"\"\"Keyed BLAKE3 MAC of *data* as raw bytes (32). *key* must be exactly 32 bytes.\"\"\"\n    return _keyed(key, data).digest()\n\n\ndef mac_hex(key: bytes, data: bytes) -> str:\n    \"\"\"Keyed BLAKE3 MAC of *data* as hex (64 chars). *key* must be exactly 32 bytes.\"\"\"\n    return _keyed(key, data).digest().hex()\n\n\ndef verify_mac(key: bytes, data: bytes, tag: str | bytes) -> bool:\n    \"\"\"Recompute the MAC over *data* and compare it to *tag* \u2014 hex ``str`` or raw ``bytes`` \u2014 in constant time.\"\"\"\n    return equal(\n        mac_hex(key, data) if isinstance(tag, str) else mac_raw(key, data), tag\n    )\n\n\ndef mint(key: bytes, claims: bytes) -> str:\n    \"\"\"Encode *claims* and append its keyed MAC, producing ``payload.tag``.\n\n    *claims* is the already-serialized claims document \u2014 this function does not\n    serialize for you, because key order in the JSON is part of what the MAC\n    covers, and a minter that re-serialized would quietly produce a token a\n    stricter verifier rejects.\n\n    Empty *claims* raises rather than minting ``\".tag\"``: :func:`verify` refuses an\n    empty claims segment, because a bearer that asserts nothing grants nothing, so\n    minting one would hand back a token that can never be redeemed.\n\n    The verifier defaults to an 8192-character envelope limit. Larger claims\n    remain mintable; their verifier must explicitly choose a larger limit or\n    ``max_token_chars=None`` after imposing its own request-size bound.\n    \"\"\"\n    if not claims:\n        msg = (\n            \"refusing to mint a token with no claims \u2014 an empty bearer asserts nothing\"\n        )\n        raise ValueError(msg)\n    payload = b64.encode(claims, url=True, pad=False)\n    tag = mac_raw(key, payload.encode(\"ascii\"))\n    return payload + SEPARATOR + b64.encode(tag, url=True, pad=False)\n\n\ndef verify(\n    key: bytes, token: str, *, max_token_chars: int | None = _DEFAULT_MAX_TOKEN_CHARS\n) -> bytes | None:\n    \"\"\"Return the claims bytes if *token*'s MAC checks out under *key*, else None.\n\n    Fails closed on every shape problem \u2014 a missing or extra separator, a\n    noncanonical base64url segment, a tag of the wrong width \u2014 and compares the tag in\n    constant time. None means \"do not trust this\"; malformed token text never\n    raises. Invalid signer keys remain configuration errors for canonical\n    envelopes within the chosen size limit.\n\n    The complete envelope, including separator and tag, is limited to 8192\n    characters before slicing, decoding, or hashing. Set *max_token_chars* to a\n    positive integer for a different bound, or explicitly to None when the\n    caller already bounds requests or handles large trusted envelopes. Invalid\n    limit types and nonpositive limits raise TypeError and ValueError.\n    \"\"\"\n    if max_token_chars is not None:\n        # The actual default is already a validated exact int. Identity avoids\n        # repeating configuration checks without accepting equal floats or bools.\n        if max_token_chars is not _DEFAULT_MAX_TOKEN_CHARS:\n            if type(max_token_chars) is not int:\n                msg = \"max_token_chars must be a positive integer or None\"\n                raise TypeError(msg)\n            if max_token_chars <= 0:\n                msg = \"max_token_chars must be a positive integer or None\"\n                raise ValueError(msg)\n        token_chars = str.__len__(token)\n        if token_chars < _MIN_TOKEN_CHARS or token_chars > max_token_chars:\n            return None\n    payload, _, tag = token.partition(SEPARATOR)\n    if len(tag) != _TAG_CHARS or not payload:\n        return None\n    # Unpadded Base64 has one spelling precisely when its alphabet, length,\n    # and unused terminal bits are canonical. Check those directly instead of\n    # allocating decoded claims and two re-encodings before authentication.\n    remainder = len(payload) % 4\n    if (\n        remainder == 1\n        or (remainder == 2 and payload[-1] not in _TWO_CHAR_END)\n        or (remainder == 3 and payload[-1] not in _THREE_CHAR_END)\n        or tag[-1] not in _THREE_CHAR_END\n        or not payload.isascii()\n        or not tag.isascii()\n        or not payload.replace(\"-\", \"a\").replace(\"_\", \"a\").isalnum()\n        or not tag.replace(\"-\", \"a\").replace(\"_\", \"a\").isalnum()\n    ):\n        return None\n    try:\n        got = b64.decode(tag, url=True)\n    except ValueError:  # binascii.Error and UnicodeEncodeError are both ValueErrors\n        return None\n    payload_bytes = payload.encode(\"ascii\")\n    if not equal(got, mac_raw(key, payload_bytes)):\n        return None\n    return b64.decode(payload_bytes, url=True)\n\n\n__all__ = [\n    \"KEY_BYTES\",\n    \"SEPARATOR\",\n    \"TAG_BYTES\",\n    \"equal\",\n    \"mac_hex\",\n    \"mac_raw\",\n    \"mint\",\n    \"verify\",\n    \"verify_mac\",\n]\n",
+  "harness_sha256": "70f59b64c54366d83eee9b83efc60e9f7024120a3e0fecc2461a74fa1e5fa909",
+  "measured_harness_source": "\"\"\"Paired public-call checks for crypto hardening, with CPU and wall evidence.\n\nThe saved source contains unstd/crypto. All workloads compare identical values\nand types before timing. The intentional default token-size restriction is\ntested separately, not presented as a speedup over accepting a large token.\n\"\"\"\n\nfrom __future__ import annotations\n\nimport argparse\nfrom concurrent.futures import ThreadPoolExecutor\nfrom contextlib import ExitStack\nfrom dataclasses import dataclass\nfrom datetime import UTC, datetime\nfrom functools import partial\nimport gc\nimport hashlib\nfrom importlib.metadata import version\nimport json\nimport math\nimport os\nfrom pathlib import Path\nimport platform\nimport random\nimport ssl\nimport statistics\nimport sys\nimport time\nfrom typing import TYPE_CHECKING, Any\n\nfrom bench.crypto_hash import _calibrate, _load, _load_average, _source_hashes\nfrom unstd.crypto import digest, token\n\n\nif TYPE_CHECKING:\n    from collections.abc import Callable\n\n\n_KEY = bytes(range(32))\n_OTHER_KEY = bytes(reversed(range(32)))\n\n\n@dataclass(frozen=True, slots=True)\nclass Workload:\n    \"\"\"Public callables over preallocated inputs, with matching output contracts.\"\"\"\n\n    name: str\n    before: Callable[[], Any]\n    after: Callable[[], Any]\n    note: str\n\n\ndef _cases(before: Any) -> list[Workload]:\n    cases = []\n    for size in (1, 42, 256, 1024, 4096, 6111, 65536):\n        claims = bytes(at % 251 for at in range(size))\n        bearer = before.mint(_KEY, claims)\n        assert token.mint(_KEY, claims) == bearer\n        forged = bearer[:-2] + (\"A\" if bearer[-2] != \"A\" else \"B\") + bearer[-1]\n        options = {\"max_token_chars\": None} if len(bearer) > 8192 else {}\n        for name, key, value in (\n            (\"authentic\", _KEY, bearer),\n            (\"forged\", _KEY, forged),\n            (\"wrong-key\", _OTHER_KEY, bearer),\n        ):\n            cases.append(\n                Workload(\n                    f\"verify/{size}/{name}\",\n                    partial(before.verify, key, value),\n                    partial(token.verify, key, value, **options),\n                    \"Explicit unbounded opt-in for bulk only\"\n                    if options\n                    else \"Default bounded public verifier\",\n                )\n            )\n    good = before.mint(_KEY, b\"x\" * 42)\n    payload, tag = good.split(\".\")\n    for name, value in (\n        (\"empty\", \"\"),\n        (\"no-separator\", \"junk\"),\n        (\"tiny\", \"a.b\"),\n        (\"extra-separator\", good + \".extra\"),\n        (\"short-tag\", payload + \".\" + tag[:-1]),\n        (\"unicode\", \"\u00e9\" + payload + \".\" + tag),\n        (\"padding\", payload + \"=.\" + tag),\n        (\"invalid-payload-length\", \"a.\" + tag),\n        (\"invalid-pad-bits\", \"Zh.\" + tag),\n    ):\n        cases.append(\n            Workload(\n                f\"verify/malformed/{name}\",\n                partial(before.verify, _KEY, value),\n                partial(token.verify, _KEY, value),\n                \"Same rejection result; includes cheapest old reject paths\",\n            )\n        )\n    cases.extend(\n        [\n            Workload(\n                \"mint/control\",\n                partial(before.mint, _KEY, b\"x\" * 42),\n                partial(token.mint, _KEY, b\"x\" * 42),\n                \"Unchanged implementation control\",\n            ),\n            Workload(\n                \"mac/control\",\n                partial(before.mac_raw, _KEY, b\"x\" * 64),\n                partial(token.mac_raw, _KEY, b\"x\" * 64),\n                \"Unchanged implementation control\",\n            ),\n            Workload(\n                \"self/control\",\n                partial(before.verify, _KEY, good),\n                partial(before.verify, _KEY, good),\n                \"Exact same callable implementation on both sides\",\n            ),\n        ]\n    )\n    return cases\n\n\ndef _concurrent(executor: ThreadPoolExecutor, call: Callable[[], bytes]) -> list[bytes]:\n    \"\"\"Four independent public calls on an already-running application executor.\"\"\"\n    futures = [executor.submit(call) for _ in range(4)]\n    return [future.result() for future in futures]\n\n\ndef _pool_cases(source: Path, stack: ExitStack) -> list[Workload]:\n    candidates = {}\n    for cap in (1, 2, 4, 8):\n        module, _ = _load(source)\n        sys.modules[module.__package__ + \"._blake3\"].__dict__[\"_PARALLEL_THREADS\"] = cap\n        candidates[cap] = module\n    executor = stack.enter_context(ThreadPoolExecutor(max_workers=4))\n    cases = []\n    for size in (1 << 20, 4 << 20, 16 << 20, 64 << 20):\n        data = b\"x\" * size\n        for callers in (1, 4):\n            for cap, module in candidates.items():\n                old, new = partial(digest.raw, data), partial(module.raw, data)\n                cases.append(\n                    Workload(\n                        f\"raw/{size}/callers-{callers}/cap-{cap}\",\n                        old if callers == 1 else partial(_concurrent, executor, old),\n                        new if callers == 1 else partial(_concurrent, executor, new),\n                        f\"Current adaptive 4/8 workers versus cap {cap}; {callers * size} total input bytes; application executor setup excluded, submissions included equally\",\n                    )\n                )\n    return cases\n\n\ndef _batch(call: Callable[[], Any], iterations: int) -> dict[str, float | int]:\n    start_wall, start_cpu, start_thread = (\n        time.perf_counter_ns(),\n        time.process_time_ns(),\n        time.thread_time_ns(),\n    )\n    for _ in range(iterations):\n        call()\n    thread, cpu, wall = (\n        time.thread_time_ns() - start_thread,\n        time.process_time_ns() - start_cpu,\n        time.perf_counter_ns() - start_wall,\n    )\n    return {\n        \"iterations\": iterations,\n        \"wall_ns\": wall / iterations,\n        \"cpu_ns\": cpu / iterations,\n        \"thread_ns\": thread / iterations,\n    }\n\n\ndef _interval(samples: list[float]) -> list[float]:\n    # Deterministic resampling is benchmark statistics, never security entropy.\n    rng = random.Random(173)\n    medians = sorted(\n        statistics.median(rng.choices(samples, k=len(samples))) for _ in range(1999)\n    )\n    return [medians[49], medians[1949]]\n\n\ndef _measure(case: Workload, rounds: int, seconds: float, index: int) -> dict[str, Any]:\n    expected, actual = case.before(), case.after()\n    if type(expected) is not type(actual) or expected != actual:\n        msg = f\"different outputs: {case.name}\"\n        raise AssertionError(msg)\n    calls = {\"before\": case.before, \"after\": case.after}\n    iterations = {\n        label: _calibrate(call, round(seconds * 1e9)) for label, call in calls.items()\n    }\n    samples: dict[str, list[dict[str, float | int]]] = {label: [] for label in calls}\n    enabled = gc.isenabled()\n    gc.disable()\n    try:\n        for at in range(rounds):\n            for label in (\"before\", \"after\")[:: 1 if (at + index) % 2 == 0 else -1]:\n                samples[label].append(_batch(calls[label], iterations[label]))\n    finally:\n        if enabled:\n            gc.enable()\n    result: dict[str, Any] = {\"note\": case.note, \"samples\": samples, \"metrics\": {}}\n    for metric in (\"wall_ns\", \"cpu_ns\", \"thread_ns\"):\n        old, new = [\n            [float(row[metric]) for row in samples[label]]\n            for label in (\"before\", \"after\")\n        ]\n        ratios = [left / right for left, right in zip(old, new, strict=True)]\n        result[\"metrics\"][metric] = {\n            \"median_before\": statistics.median(old),\n            \"median_after\": statistics.median(new),\n            \"paired_median_speedup\": statistics.median(ratios),\n            \"bootstrap_95_percent_interval\": _interval(ratios),\n            \"paired_ratios\": ratios,\n            \"noisy\": max(old) / min(old) > 1.25 or max(new) / min(new) > 1.25,\n        }\n    return result\n\n\ndef main() -> None:\n    \"\"\"Validate old/current calls and record all diagnostic observations.\"\"\"\n    parser = argparse.ArgumentParser(description=__doc__)\n    parser.add_argument(\"--compare-source\", type=Path, required=True)\n    parser.add_argument(\"--output\", type=Path, required=True)\n    parser.add_argument(\"--rounds\", type=int, default=19)\n    parser.add_argument(\"--seconds\", type=float, default=0.015)\n    parser.add_argument(\"--mode\", choices=(\"tokens\", \"pools\"), default=\"tokens\")\n    args = parser.parse_args()\n    if (\n        args.rounds < 3\n        or not math.isfinite(args.seconds)\n        or not 0.001 <= args.seconds <= 1\n    ):\n        parser.error(\"at least three rounds and finite .001..1 seconds are required\")\n    source = Path(digest.__file__).resolve().parents[2]\n    before_digest, before_token = _load(args.compare_source.resolve())\n    assert before_digest.raw(b\"control\") == digest.raw(b\"control\")\n    harness = Path(__file__).read_bytes()\n    report: dict[str, Any] = {\n        \"schema\": 1,\n        \"recorded_utc\": datetime.now(UTC).isoformat(),\n        \"python\": sys.version,\n        \"platform\": platform.platform(),\n        \"openssl\": ssl.OPENSSL_VERSION,\n        \"blake3\": version(\"blake3\"),\n        \"pybase64\": version(\"pybase64\"),\n        \"cpu_count\": os.cpu_count(),\n        \"load_start\": _load_average(),\n        \"source_hashes\": {\n            \"before\": _source_hashes(args.compare_source.resolve()),\n            \"after\": _source_hashes(source),\n        },\n        \"before_token_source\": (\n            args.compare_source / \"unstd/crypto/token.py\"\n        ).read_text(),\n        \"after_token_source\": Path(token.__file__).read_text(),\n        \"harness_sha256\": hashlib.sha256(harness).hexdigest(),\n        \"measured_harness_source\": harness.decode(),\n        \"rounds\": args.rounds,\n        \"seconds\": args.seconds,\n        \"mode\": args.mode,\n        \"ratio\": \"before time / after time; >1 favors after\",\n        \"limitations\": \"Batched observations on a shared host; bootstrap intervals are exploratory, not independent-call tail-latency or portable no-regression certification.\",\n        \"cases\": {},\n    }\n    with ExitStack() as stack:\n        cases = (\n            _cases(before_token)\n            if args.mode == \"tokens\"\n            else _pool_cases(source, stack)\n        )\n        for at, case in enumerate(cases):\n            row = _measure(case, args.rounds, args.seconds, at)\n            report[\"cases\"][case.name] = row\n            wall, cpu = row[\"metrics\"][\"wall_ns\"], row[\"metrics\"][\"cpu_ns\"]\n            print(\n                f\"{case.name:45} wall {wall['paired_median_speedup']:5.2f}x CPU {cpu['paired_median_speedup']:5.2f}x\",\n                flush=True,\n            )\n    report[\"load_end\"] = _load_average()\n    args.output.parent.mkdir(parents=True, exist_ok=True)\n    args.output.write_text(json.dumps(report, indent=2) + \"\\n\")\n\n\nif __name__ == \"__main__\":\n    main()\n",
+  "rounds": 9,
+  "seconds": 0.005,
+  "mode": "pools",
+  "ratio": "before time / after time; >1 favors after",
+  "limitations": "Batched observations on a shared host; bootstrap intervals are exploratory, not independent-call tail-latency or portable no-regression certification.",
+  "cases": {
+    "raw/1048576/callers-1/cap-1": {
+      "note": "Current adaptive 4/8 workers versus cap 1; 1048576 total input bytes; application executor setup excluded, submissions included equally",
+      "samples": {
+        "before": [
+          {
+            "iterations": 11,
+            "wall_ns": 359784.0909090909,
+            "cpu_ns": 809000.0,
+            "thread_ns": 65977.27272727272
+          },
+          {
+            "iterations": 11,
+            "wall_ns": 306083.36363636365,
+            "cpu_ns": 785363.6363636364,
+            "thread_ns": 74219.72727272728
+          },
+          {
+            "iterations": 11,
+            "wall_ns": 301212.1818181818,
+            "cpu_ns": 764363.6363636364,
+            "thread_ns": 68200.72727272728
+          },
+          {
+            "iterations": 11,
+            "wall_ns": 355572.0,
+            "cpu_ns": 831000.0,
+            "thread_ns": 77443.18181818182
+          },
+          {
+            "iterations": 11,
+            "wall_ns": 343901.54545454547,
+            "cpu_ns": 827818.1818181818,
+            "thread_ns": 69553.09090909091
+          },
+          {
+            "iterations": 11,
+            "wall_ns": 320234.9090909091,
+            "cpu_ns": 788727.2727272727,
+            "thread_ns": 66348.54545454546
+          },
+          {
+            "iterations": 11,
+            "wall_ns": 340064.36363636365,
+            "cpu_ns": 784545.4545454546,
+            "thread_ns": 66950.81818181818
+          },
+          {
+            "iterations": 11,
+            "wall_ns": 400200.8181818182,
+            "cpu_ns": 784454.5454545454,
+            "thread_ns": 76473.45454545454
+          },
+          {
+            "iterations": 11,
+            "wall_ns": 483723.54545454547,
+            "cpu_ns": 768636.3636363636,
+            "thread_ns": 68356.09090909091
+          }
+        ],
+        "after": [
+          {
+            "iterations": 11,
+            "wall_ns": 449541.7272727273,
+            "cpu_ns": 448909.0909090909,
+            "thread_ns": 438564.36363636365
+          },
+          {
+            "iterations": 11,
+            "wall_ns": 446984.8181818182,
+            "cpu_ns": 439363.63636363635,
+            "thread_ns": 439136.36363636365
+          },
+          {
+            "iterations": 11,
+            "wall_ns": 441837.0909090909,
+            "cpu_ns": 444909.0909090909,
+            "thread_ns": 439257.54545454547
+          },
+          {
+            "iterations": 11,
+            "wall_ns": 432541.63636363635,
+            "cpu_ns": 432272.7272727273,
+            "thread_ns": 432189.45454545453
+          },
+          {
+            "iterations": 11,
+            "wall_ns": 460958.2727272727,
+            "cpu_ns": 463545.45454545453,
+            "thread_ns": 451916.63636363635
+          },
+          {
+            "iterations": 11,
+            "wall_ns": 476659.0909090909,
+            "cpu_ns": 450181.8181818182,
+            "thread_ns": 449840.9090909091
+          },
+          {
+            "iterations": 11,
+            "wall_ns": 435886.36363636365,
+            "cpu_ns": 442909.0909090909,
+            "thread_ns": 433818.1818181818
+          },
+          {
+            "iterations": 11,
+            "wall_ns": 439026.54545454547,
+            "cpu_ns": 434272.7272727273,
+            "thread_ns": 434053.0
+          },
+          {
+            "iterations": 11,
+            "wall_ns": 457159.0909090909,
+            "cpu_ns": 450636.36363636365,
+            "thread_ns": 439912.9090909091
+          }
+        ]
+      },
+      "metrics": {
+        "wall_ns": {
+          "median_before": 343901.54545454547,
+          "median_after": 446984.8181818182,
+          "paired_median_speedup": 0.7801674748422754,
+          "bootstrap_95_percent_interval": [
+            0.6817267902937488,
+            0.9115640553522131
+          ],
+          "paired_ratios": [
+            0.8003352505046047,
+            0.68477351173001,
+            0.6817267902937488,
+            0.8220526536804235,
+            0.7460578664091269,
+            0.6718321651647357,
+            0.7801674748422754,
+            0.9115640553522131,
+            1.0581076808351977
+          ],
+          "noisy": true
+        },
+        "cpu_ns": {
+          "median_before": 785363.6363636364,
+          "median_after": 444909.0909090909,
+          "paired_median_speedup": 1.7858403608550695,
+          "bootstrap_95_percent_interval": [
+            1.7180220678381692,
+            1.8063638266694577
+          ],
+          "paired_ratios": [
+            1.8021466180639936,
+            1.787502586385268,
+            1.7180220678381692,
+            1.922397476340694,
+            1.7858403608550695,
+            1.7520193861066236,
+            1.771346469622332,
+            1.8063638266694577,
+            1.7056687512608433
+          ],
+          "noisy": false
+        },
+        "thread_ns": {
+          "median_before": 68356.09090909091,
+          "median_after": 439136.36363636365,
+          "paired_median_speedup": 0.15526364425260558,
+          "bootstrap_95_percent_interval": [
+            0.15043920162646385,
+            0.17618460083320364
+          ],
+          "paired_ratios": [
+            0.15043920162646385,
+            0.16901293861919056,
+            0.15526364425260558,
+            0.17918804127146262,
+            0.1539069051955077,
+            0.1474933562370535,
+            0.15432921207041073,
+            0.17618460083320364,
+            0.1553855081233021
+          ],
+          "noisy": false
+        }
+      }
+    },
+    "raw/1048576/callers-1/cap-2": {
+      "note": "Current adaptive 4/8 workers versus cap 2; 1048576 total input bytes; application executor setup excluded, submissions included equally",
+      "samples": {
+        "before": [
+          {
+            "iterations": 12,
+            "wall_ns": 315031.25,
+            "cpu_ns": 768916.6666666666,
+            "thread_ns": 65357.666666666664
+          },
+          {
+            "iterations": 12,
+            "wall_ns": 381975.6666666667,
+            "cpu_ns": 804583.3333333334,
+            "thread_ns": 70562.5
+          },
+          {
+            "iterations": 12,
+            "wall_ns": 358416.6666666667,
+            "cpu_ns": 797000.0,
+            "thread_ns": 60316.0
+          },
+          {
+            "iterations": 12,
+            "wall_ns": 704583.3333333334,
+            "cpu_ns": 833833.3333333334,
+            "thread_ns": 78458.33333333333
+          },
+          {
+            "iterations": 12,
+            "wall_ns": 345395.8333333333,
+            "cpu_ns": 754166.6666666666,
+            "thread_ns": 61878.5
+          },
+          {
+            "iterations": 12,
+            "wall_ns": 355795.1666666667,
+            "cpu_ns": 762583.3333333334,
+            "thread_ns": 60545.166666666664
+          },
+          {
+            "iterations": 12,
+            "wall_ns": 2446677.0833333335,
+            "cpu_ns": 737166.6666666666,
+            "thread_ns": 77861.08333333333
+          },
+          {
+            "iterations": 12,
+            "wall_ns": 1472541.6666666667,
+            "cpu_ns": 791500.0,
+            "thread_ns": 82812.5
+          },
+          {
+            "iterations": 12,
+            "wall_ns": 353638.8333333333,
+            "cpu_ns": 733916.6666666666,
+            "thread_ns": 66250.0
+          }
+        ],
+        "after": [
+          {
+            "iterations": 13,
+            "wall_ns": 402096.1538461539,
+            "cpu_ns": 596153.8461538461,
+            "thread_ns": 40137.846153846156
+          },
+          {
+            "iterations": 13,
+            "wall_ns": 372429.53846153844,
+            "cpu_ns": 618307.6923076923,
+            "thread_ns": 48583.307692307695
+          },
+          {
+            "iterations": 13,
+            "wall_ns": 357682.6923076923,
+            "cpu_ns": 586307.6923076923,
+            "thread_ns": 42608.92307692308
+          },
+          {
+            "iterations": 13,
+            "wall_ns": 381900.6923076923,
+            "cpu_ns": 621000.0,
+            "thread_ns": 50939.07692307692
+          },
+          {
+            "iterations": 13,
+            "wall_ns": 392112.1538461539,
+            "cpu_ns": 588538.4615384615,
+            "thread_ns": 44468.0
+          },
+          {
+            "iterations": 13,
+            "wall_ns": 357384.6153846154,
+            "cpu_ns": 590076.9230769231,
+            "thread_ns": 39429.53846153846
+          },
+          {
+            "iterations": 13,
+            "wall_ns": 423323.6923076923,
+            "cpu_ns": 639923.0769230769,
+            "thread_ns": 47605.769230769234
+          },
+          {
+            "iterations": 13,
+            "wall_ns": 400628.1538461539,
+            "cpu_ns": 594692.3076923077,
+            "thread_ns": 42368.53846153846
+          },
+          {
+            "iterations": 13,
+            "wall_ns": 533599.3076923077,
+            "cpu_ns": 598846.1538461539,
+            "thread_ns": 44993.61538461538
+          }
+        ]
+      },
+      "metrics": {
+        "wall_ns": {
+          "median_before": 358416.6666666667,
+          "median_after": 392112.1538461539,
+          "paired_median_speedup": 1.0020520264881674,
+          "bootstrap_95_percent_interval": [
+            0.7834724281409918,
+            3.6755820891013586
+          ],
+          "paired_ratios": [
+            0.7834724281409918,
+            1.0256320383301554,
+            1.0020520264881674,
+            1.8449386123805713,
+            0.8808597997930209,
+            0.9955525541684604,
+            5.779683792314107,
+            3.6755820891013586,
+            0.6627423016396677
+          ],
+          "noisy": true
+        },
+        "cpu_ns": {
+          "median_before": 768916.6666666666,
+          "median_after": 596153.8461538461,
+          "paired_median_speedup": 1.2923456307304566,
+          "bootstrap_95_percent_interval": [
+            1.2255512738171697,
+            1.3427267847557702
+          ],
+          "paired_ratios": [
+            1.2897956989247312,
+            1.3012668988969065,
+            1.3593545001311993,
+            1.3427267847557702,
+            1.2814229076809132,
+            1.2923456307304566,
+            1.1519613735625276,
+            1.3309403699392057,
+            1.2255512738171697
+          ],
+          "noisy": false
+        },
+        "thread_ns": {
+          "median_before": 66250.0,
+          "median_after": 44468.0,
+          "paired_median_speedup": 1.535528160587663,
+          "bootstrap_95_percent_interval": [
+            1.4155720361932134,
+            1.6355388137076683
+          ],
+          "paired_ratios": [
+            1.628330190318492,
+            1.4524021387529429,
+            1.4155720361932134,
+            1.540238615862891,
+            1.391528739767923,
+            1.535528160587663,
+            1.6355388137076683,
+            1.954575328936021,
+            1.47243113125452
+          ],
+          "noisy": true
+        }
+      }
+    },
+    "raw/1048576/callers-1/cap-4": {
+      "note": "Current adaptive 4/8 workers versus cap 4; 1048576 total input bytes; application executor setup excluded, submissions included equally",
+      "samples": {
+        "before": [
+          {
+            "iterations": 13,
+            "wall_ns": 365576.92307692306,
+            "cpu_ns": 818692.3076923077,
+            "thread_ns": 62653.846153846156
+          },
+          {
+            "iterations": 13,
+            "wall_ns": 837660.2307692308,
+            "cpu_ns": 763846.1538461539,
+            "thread_ns": 71384.61538461539
+          },
+          {
+            "iterations": 13,
+            "wall_ns": 372384.6153846154,
+            "cpu_ns": 770692.3076923077,
+            "thread_ns": 66019.23076923077
+          },
+          {
+            "iterations": 13,
+            "wall_ns": 480814.07692307694,
+            "cpu_ns": 781615.3846153846,
+            "thread_ns": 67826.92307692308
+          },
+          {
+            "iterations": 13,
+            "wall_ns": 403708.3076923077,
+            "cpu_ns": 788230.7692307692,
+            "thread_ns": 62788.46153846154
+          },
+          {
+            "iterations": 13,
+            "wall_ns": 422419.8461538461,
+            "cpu_ns": 776692.3076923077,
+            "thread_ns": 64567.307692307695
+          },
+          {
+            "iterations": 13,
+            "wall_ns": 463038.46153846156,
+            "cpu_ns": 832923.0769230769,
+            "thread_ns": 70871.76923076923
+          },
+          {
+            "iterations": 13,
+            "wall_ns": 571410.3076923077,
+            "cpu_ns": 801846.1538461539,
+            "thread_ns": 65894.23076923077
+          },
+          {
+            "iterations": 13,
+            "wall_ns": 557830.0769230769,
+            "cpu_ns": 775846.1538461539,
+            "thread_ns": 68746.76923076923
+          }
+        ],
+        "after": [
+          {
+            "iterations": 14,
+            "wall_ns": 421380.9285714286,
+            "cpu_ns": 776857.1428571428,
+            "thread_ns": 61285.71428571428
+          },
+          {
+            "iterations": 14,
+            "wall_ns": 368642.85714285716,
+            "cpu_ns": 776357.1428571428,
+            "thread_ns": 61791.71428571428
+          },
+          {
+            "iterations": 14,
+            "wall_ns": 320910.71428571426,
+            "cpu_ns": 743000.0,
+            "thread_ns": 64056.57142857143
+          },
+          {
+            "iterations": 14,
+            "wall_ns": 396232.14285714284,
+            "cpu_ns": 784785.7142857143,
+            "thread_ns": 65089.28571428572
+          },
+          {
+            "iterations": 14,
+            "wall_ns": 427931.5714285714,
+            "cpu_ns": 820214.2857142857,
+            "thread_ns": 69083.35714285714
+          },
+          {
+            "iterations": 14,
+            "wall_ns": 549190.5,
+            "cpu_ns": 813000.0,
+            "thread_ns": 68226.14285714286
+          },
+          {
+            "iterations": 14,
+            "wall_ns": 619720.2142857143,
+            "cpu_ns": 815214.2857142857,
+            "thread_ns": 66470.21428571429
+          },
+          {
+            "iterations": 14,
+            "wall_ns": 449434.5,
+            "cpu_ns": 798285.7142857143,
+            "thread_ns": 66794.64285714286
+          },
+          {
+            "iterations": 14,
+            "wall_ns": 381166.64285714284,
+            "cpu_ns": 759571.4285714285,
+            "thread_ns": 58291.71428571428
+          }
+        ]
+      },
+      "metrics": {
+        "wall_ns": {
+          "median_before": 463038.46153846156,
+          "median_after": 421380.9285714286,
+          "paired_median_speedup": 1.1603994469722587,
+          "bootstrap_95_percent_interval": [
+            0.7691681595982562,
+            1.463480835420705
+          ],
+          "paired_ratios": [
+            0.867568744310064,
+            2.2722811917785757,
+            1.1603994469722587,
+            1.2134656049255175,
+            0.9433945393292699,
+            0.7691681595982562,
+            0.7471734031980171,
+            1.2713984077597686,
+            1.463480835420705
+          ],
+          "noisy": true
+        },
+        "cpu_ns": {
+          "median_before": 781615.3846153846,
+          "median_after": 784785.7142857143,
+          "paired_median_speedup": 1.0044601068223116,
+          "bootstrap_95_percent_interval": [
+            0.9610059017008421,
+            1.0372709390206025
+          ],
+          "paired_ratios": [
+            1.0538518120349678,
+            0.9838850081742713,
+            1.0372709390206025,
+            0.9959602607277132,
+            0.9610059017008421,
+            0.9553410918724573,
+            1.0217228666365614,
+            1.0044601068223116,
+            1.0214261946441747
+          ],
+          "noisy": false
+        },
+        "thread_ns": {
+          "median_before": 66019.23076923077,
+          "median_after": 65089.28571428572,
+          "paired_median_speedup": 1.030639469095655,
+          "bootstrap_95_percent_interval": [
+            0.946371947590584,
+            1.155245751146265
+          ],
+          "paired_ratios": [
+            1.0223238300161377,
+            1.155245751146265,
+            1.030639469095655,
+            1.042059723541205,
+            0.9088797090248752,
+            0.946371947590584,
+            1.066218455775325,
+            0.9865196960505074,
+            1.1793574794148265
+          ],
+          "noisy": false
+        }
+      }
+    },
+    "raw/1048576/callers-1/cap-8": {
+      "note": "Current adaptive 4/8 workers versus cap 8; 1048576 total input bytes; application executor setup excluded, submissions included equally",
+      "samples": {
+        "before": [
+          {
+            "iterations": 10,
+            "wall_ns": 566208.3,
+            "cpu_ns": 874400.0,
+            "thread_ns": 84304.2
+          },
+          {
+            "iterations": 10,
+            "wall_ns": 497191.6,
+            "cpu_ns": 843100.0,
+            "thread_ns": 74175.0
+          },
+          {
+            "iterations": 10,
+            "wall_ns": 592587.5,
+            "cpu_ns": 778800.0,
+            "thread_ns": 73141.7
+          },
+          {
+            "iterations": 10,
+            "wall_ns": 437745.8,
+            "cpu_ns": 776800.0,
+            "thread_ns": 63150.0
+          },
+          {
+            "iterations": 10,
+            "wall_ns": 793129.2,
+            "cpu_ns": 840800.0,
+            "thread_ns": 66783.4
+          },
+          {
+            "iterations": 10,
+            "wall_ns": 396683.4,
+            "cpu_ns": 833000.0,
+            "thread_ns": 66866.7
+          },
+          {
+            "iterations": 10,
+            "wall_ns": 395108.3,
+            "cpu_ns": 788400.0,
+            "thread_ns": 69612.5
+          },
+          {
+            "iterations": 10,
+            "wall_ns": 661379.1,
+            "cpu_ns": 768300.0,
+            "thread_ns": 59233.4
+          },
+          {
+            "iterations": 10,
+            "wall_ns": 352495.9,
+            "cpu_ns": 851000.0,
+            "thread_ns": 74083.4
+          }
+        ],
+        "after": [
+          {
+            "iterations": 15,
+            "wall_ns": 457586.13333333336,
+            "cpu_ns": 772666.6666666666,
+            "thread_ns": 63658.333333333336
+          },
+          {
+            "iterations": 15,
+            "wall_ns": 417580.6,
+            "cpu_ns": 826933.3333333334,
+            "thread_ns": 80727.8
+          },
+          {
+            "iterations": 15,
+            "wall_ns": 459058.3333333333,
+            "cpu_ns": 793266.6666666666,
+            "thread_ns": 72197.2
+          },
+          {
+            "iterations": 15,
+            "wall_ns": 464211.13333333336,
+            "cpu_ns": 812466.6666666666,
+            "thread_ns": 70938.86666666667
+          },
+          {
+            "iterations": 15,
+            "wall_ns": 389913.86666666664,
+            "cpu_ns": 812466.6666666666,
+            "thread_ns": 71861.06666666667
+          },
+          {
+            "iterations": 15,
+            "wall_ns": 377861.06666666665,
+            "cpu_ns": 839466.6666666666,
+            "thread_ns": 77736.13333333333
+          },
+          {
+            "iterations": 15,
+            "wall_ns": 434947.2,
+            "cpu_ns": 801466.6666666666,
+            "thread_ns": 70586.06666666667
+          },
+          {
+            "iterations": 15,
+            "wall_ns": 418222.2,
+            "cpu_ns": 845600.0,
+            "thread_ns": 79666.66666666667
+          },
+          {
+            "iterations": 15,
+            "wall_ns": 344022.26666666666,
+            "cpu_ns": 837466.6666666666,
+            "thread_ns": 78983.33333333333
+          }
+        ]
+      },
+      "metrics": {
+        "wall_ns": {
+          "median_before": 497191.6,
+          "median_after": 418222.2,
+          "paired_median_speedup": 1.1906482245583248,
+          "bootstrap_95_percent_interval": [
+            0.9429885855100129,
+            1.5814060085763022
+          ],
+          "paired_ratios": [
+            1.2373808093252243,
+            1.1906482245583248,
+            1.290876250294988,
+            0.9429885855100129,
+            2.0341138589924475,
+            1.049812841262997,
+            0.9084052041259261,
+            1.5814060085763022,
+            1.02463106070266
+          ],
+          "noisy": true
+        },
+        "cpu_ns": {
+          "median_before": 833000.0,
+          "median_after": 812466.6666666666,
+          "paired_median_speedup": 0.9922966963151207,
+          "bootstrap_95_percent_interval": [
+            0.9561007631082301,
+            1.0348732255682285
+          ],
+          "paired_ratios": [
+            1.131665228645384,
+            1.019550145114479,
+            0.981763173375914,
+            0.9561007631082301,
+            1.0348732255682285,
+            0.9922966963151207,
+            0.9836965563134255,
+            0.908585619678335,
+            1.016159847158096
+          ],
+          "noisy": false
+        },
+        "thread_ns": {
+          "median_before": 69612.5,
+          "median_after": 72197.2,
+          "paired_median_speedup": 0.9293405051970653,
+          "bootstrap_95_percent_interval": [
+            0.8601752767052988,
+            1.0130822247954214
+          ],
+          "paired_ratios": [
+            1.3243230789370335,
+            0.9188284581024133,
+            1.0130822247954214,
+            0.8902031138548403,
+            0.9293405051970653,
+            0.8601752767052988,
+            0.9862073818156747,
+            0.7435154811715481,
+            0.9379624393331927
+          ],
+          "noisy": true
+        }
+      }
+    },
+    "raw/1048576/callers-4/cap-1": {
+      "note": "Current adaptive 4/8 workers versus cap 1; 4194304 total input bytes; application executor setup excluded, submissions included equally",
+      "samples": {
+        "before": [
+          {
+            "iterations": 4,
+            "wall_ns": 11039562.5,
+            "cpu_ns": 3329750.0,
+            "thread_ns": 97635.5
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 2011270.75,
+            "cpu_ns": 3304750.0,
+            "thread_ns": 77948.0
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 1433968.75,
+            "cpu_ns": 3300750.0,
+            "thread_ns": 70552.25
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 1895218.75,
+            "cpu_ns": 3464500.0,
+            "thread_ns": 76812.5
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 1815041.75,
+            "cpu_ns": 3350750.0,
+            "thread_ns": 74187.5
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 1891812.5,
+            "cpu_ns": 3292000.0,
+            "thread_ns": 76625.0
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 1685593.75,
+            "cpu_ns": 3447500.0,
+            "thread_ns": 72406.25
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 2035510.25,
+            "cpu_ns": 3435250.0,
+            "thread_ns": 78229.0
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 1997156.25,
+            "cpu_ns": 3457250.0,
+            "thread_ns": 81031.25
+          }
+        ],
+        "after": [
+          {
+            "iterations": 7,
+            "wall_ns": 733881.0,
+            "cpu_ns": 1989142.857142857,
+            "thread_ns": 54916.71428571428
+          },
+          {
+            "iterations": 7,
+            "wall_ns": 928196.4285714285,
+            "cpu_ns": 1934000.0,
+            "thread_ns": 55904.71428571428
+          },
+          {
+            "iterations": 7,
+            "wall_ns": 703351.1428571428,
+            "cpu_ns": 1960428.5714285714,
+            "thread_ns": 43875.0
+          },
+          {
+            "iterations": 7,
+            "wall_ns": 784047.5714285715,
+            "cpu_ns": 1970714.2857142857,
+            "thread_ns": 55767.857142857145
+          },
+          {
+            "iterations": 7,
+            "wall_ns": 775154.7142857143,
+            "cpu_ns": 2007571.4285714286,
+            "thread_ns": 55940.42857142857
+          },
+          {
+            "iterations": 7,
+            "wall_ns": 856613.1428571428,
+            "cpu_ns": 1946142.857142857,
+            "thread_ns": 51702.42857142857
+          },
+          {
+            "iterations": 7,
+            "wall_ns": 890416.7142857143,
+            "cpu_ns": 1998000.0,
+            "thread_ns": 57083.42857142857
+          },
+          {
+            "iterations": 7,
+            "wall_ns": 732559.5714285715,
+            "cpu_ns": 1983857.142857143,
+            "thread_ns": 69261.85714285714
+          },
+          {
+            "iterations": 7,
+            "wall_ns": 850732.1428571428,
+            "cpu_ns": 1950285.7142857143,
+            "thread_ns": 53255.857142857145
+          }
+        ]
+      },
+      "metrics": {
+        "wall_ns": {
+          "median_before": 1895218.75,
+          "median_after": 784047.5714285715,
+          "paired_median_speedup": 2.341521913689857,
+          "bootstrap_95_percent_interval": [
+            2.0387665031366167,
+            2.77862760844218
+          ],
+          "paired_ratios": [
+            15.04271469080137,
+            2.166858962273226,
+            2.0387665031366167,
+            2.4172241826434364,
+            2.341521913689857,
+            2.2084794236171286,
+            1.8930392062015264,
+            2.77862760844218,
+            2.3475735186079216
+          ],
+          "noisy": true
+        },
+        "cpu_ns": {
+          "median_before": 3350750.0,
+          "median_after": 1970714.2857142857,
+          "paired_median_speedup": 1.7087642192347465,
+          "bootstrap_95_percent_interval": [
+            1.6739622234989946,
+            1.7579920260964117
+          ],
+          "paired_ratios": [
+            1.6739622234989946,
+            1.7087642192347465,
+            1.6836879691029658,
+            1.7579920260964117,
+            1.6690564292321923,
+            1.6915510533656317,
+            1.7254754754754755,
+            1.7316014978037013,
+            1.7726889832991504
+          ],
+          "noisy": false
+        },
+        "thread_ns": {
+          "median_before": 76812.5,
+          "median_after": 55767.857142857145,
+          "paired_median_speedup": 1.3943010172921784,
+          "bootstrap_95_percent_interval": [
+            1.2684285406823095,
+            1.60802849002849
+          ],
+          "paired_ratios": [
+            1.7778831321195474,
+            1.3943010172921784,
+            1.60802849002849,
+            1.377361511367275,
+            1.326187551553566,
+            1.4820386994808201,
+            1.2684285406823095,
+            1.1294672598606117,
+            1.5215462551402796
+          ],
+          "noisy": true
+        }
+      }
+    },
+    "raw/1048576/callers-4/cap-2": {
+      "note": "Current adaptive 4/8 workers versus cap 2; 4194304 total input bytes; application executor setup excluded, submissions included equally",
+      "samples": {
+        "before": [
+          {
+            "iterations": 2,
+            "wall_ns": 4271979.0,
+            "cpu_ns": 3011000.0,
+            "thread_ns": 63104.5
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 2756041.5,
+            "cpu_ns": 2922000.0,
+            "thread_ns": 60792.0
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 1288979.0,
+            "cpu_ns": 3105000.0,
+            "thread_ns": 93541.5
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 1749896.0,
+            "cpu_ns": 3097000.0,
+            "thread_ns": 86896.0
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 1773312.5,
+            "cpu_ns": 3196000.0,
+            "thread_ns": 54083.5
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 1252187.5,
+            "cpu_ns": 3232000.0,
+            "thread_ns": 57396.0
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 1563083.5,
+            "cpu_ns": 3373000.0,
+            "thread_ns": 83437.5
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 1864000.0,
+            "cpu_ns": 3247000.0,
+            "thread_ns": 72146.0
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 2277375.0,
+            "cpu_ns": 3303000.0,
+            "thread_ns": 81479.0
+          }
+        ],
+        "after": [
+          {
+            "iterations": 3,
+            "wall_ns": 1126472.0,
+            "cpu_ns": 2492333.3333333335,
+            "thread_ns": 59097.333333333336
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1089513.6666666667,
+            "cpu_ns": 2671333.3333333335,
+            "thread_ns": 89305.66666666667
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1248527.6666666667,
+            "cpu_ns": 2565666.6666666665,
+            "thread_ns": 58416.666666666664
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 799500.0,
+            "cpu_ns": 2506000.0,
+            "thread_ns": 64889.0
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1046611.3333333334,
+            "cpu_ns": 2618333.3333333335,
+            "thread_ns": 70847.0
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1795111.0,
+            "cpu_ns": 2591333.3333333335,
+            "thread_ns": 81736.33333333333
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 868389.0,
+            "cpu_ns": 2549666.6666666665,
+            "thread_ns": 65083.333333333336
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 821694.3333333334,
+            "cpu_ns": 2578000.0,
+            "thread_ns": 59833.333333333336
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1029347.3333333334,
+            "cpu_ns": 2611333.3333333335,
+            "thread_ns": 72916.66666666667
+          }
+        ]
+      },
+      "metrics": {
+        "wall_ns": {
+          "median_before": 1773312.5,
+          "median_after": 1046611.3333333334,
+          "paired_median_speedup": 2.1887379612257662,
+          "bootstrap_95_percent_interval": [
+            1.0323992286381052,
+            2.529607093807298
+          ],
+          "paired_ratios": [
+            3.792352583996762,
+            2.529607093807298,
+            1.0323992286381052,
+            2.1887379612257662,
+            1.694337184704669,
+            0.6975543573628594,
+            1.7999807689871705,
+            2.2684834547153176,
+            2.2124456208820993
+          ],
+          "noisy": true
+        },
+        "cpu_ns": {
+          "median_before": 3196000.0,
+          "median_after": 2578000.0,
+          "paired_median_speedup": 1.235833998403831,
+          "bootstrap_95_percent_interval": [
+            1.2081048548883242,
+            1.2648710748021443
+          ],
+          "paired_ratios": [
+            1.2081048548883242,
+            1.0938357873720987,
+            1.2102117708198,
+            1.235833998403831,
+            1.2206238064926798,
+            1.2472343709801903,
+            1.3229180285004576,
+            1.2595034910783554,
+            1.2648710748021443
+          ],
+          "noisy": false
+        },
+        "thread_ns": {
+          "median_before": 72146.0,
+          "median_after": 65083.333333333336,
+          "paired_median_speedup": 1.1174262857142856,
+          "bootstrap_95_percent_interval": [
+            0.7022091358800044,
+            1.339148391869192
+          ],
+          "paired_ratios": [
+            1.0678062179906593,
+            0.6807182821545478,
+            1.6012810271041371,
+            1.339148391869192,
+            0.763384476406905,
+            0.7022091358800044,
+            1.2820102432778488,
+            1.2057827298050139,
+            1.1174262857142856
+          ],
+          "noisy": true
+        }
+      }
+    },
+    "raw/1048576/callers-4/cap-4": {
+      "note": "Current adaptive 4/8 workers versus cap 4; 4194304 total input bytes; application executor setup excluded, submissions included equally",
+      "samples": {
+        "before": [
+          {
+            "iterations": 3,
+            "wall_ns": 1289111.0,
+            "cpu_ns": 3093000.0,
+            "thread_ns": 62402.666666666664
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 2339319.3333333335,
+            "cpu_ns": 3254000.0,
+            "thread_ns": 57486.333333333336
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1430514.0,
+            "cpu_ns": 2971666.6666666665,
+            "thread_ns": 58736.0
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1334153.0,
+            "cpu_ns": 3263666.6666666665,
+            "thread_ns": 56361.0
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1739278.0,
+            "cpu_ns": 2949333.3333333335,
+            "thread_ns": 52208.333333333336
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1249472.0,
+            "cpu_ns": 3096000.0,
+            "thread_ns": 65041.666666666664
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1442333.3333333333,
+            "cpu_ns": 3033666.6666666665,
+            "thread_ns": 65930.66666666667
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1759764.0,
+            "cpu_ns": 3048666.6666666665,
+            "thread_ns": 54013.666666666664
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1894819.3333333333,
+            "cpu_ns": 3037333.3333333335,
+            "thread_ns": 78805.66666666667
+          }
+        ],
+        "after": [
+          {
+            "iterations": 2,
+            "wall_ns": 1913520.5,
+            "cpu_ns": 3263000.0,
+            "thread_ns": 74375.0
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 944687.5,
+            "cpu_ns": 3256000.0,
+            "thread_ns": 81125.0
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 1523104.0,
+            "cpu_ns": 2930000.0,
+            "thread_ns": 58166.5
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 1391167.0,
+            "cpu_ns": 3163500.0,
+            "thread_ns": 59646.0
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 1701354.0,
+            "cpu_ns": 2892500.0,
+            "thread_ns": 64145.5
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 1416562.5,
+            "cpu_ns": 3107000.0,
+            "thread_ns": 58291.5
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 1177125.0,
+            "cpu_ns": 2995000.0,
+            "thread_ns": 43896.0
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 1306500.0,
+            "cpu_ns": 2937500.0,
+            "thread_ns": 62542.0
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 1437062.5,
+            "cpu_ns": 2972000.0,
+            "thread_ns": 66520.5
+          }
+        ]
+      },
+      "metrics": {
+        "wall_ns": {
+          "median_before": 1442333.3333333333,
+          "median_after": 1416562.5,
+          "paired_median_speedup": 1.0222904815811407,
+          "bootstrap_95_percent_interval": [
+            0.8820450915508493,
+            1.3185364821177459
+          ],
+          "paired_ratios": [
+            0.6736854922641278,
+            2.476289072665123,
+            0.9392096665756245,
+            0.9590171417234595,
+            1.0222904815811407,
+            0.8820450915508493,
+            1.2253017592297617,
+            1.3469299655568312,
+            1.3185364821177459
+          ],
+          "noisy": true
+        },
+        "cpu_ns": {
+          "median_before": 3048666.6666666665,
+          "median_after": 2995000.0,
+          "paired_median_speedup": 1.0142207053469852,
+          "bootstrap_95_percent_interval": [
+            0.9964596073382684,
+            1.031663242189558
+          ],
+          "paired_ratios": [
+            0.9479007048728164,
+            0.9993857493857494,
+            1.0142207053469852,
+            1.031663242189558,
+            1.0196485162777298,
+            0.9964596073382684,
+            1.0129104062326098,
+            1.0378439716312056,
+            1.021982951996411
+          ],
+          "noisy": false
+        },
+        "thread_ns": {
+          "median_before": 58736.0,
+          "median_after": 62542.0,
+          "paired_median_speedup": 0.9449250578412635,
+          "bootstrap_95_percent_interval": [
+            0.8139048465337917,
+            1.1846824161975131
+          ],
+          "paired_ratios": [
+            0.8390274509803921,
+            0.7086142783769903,
+            1.009790858999596,
+            0.9449250578412635,
+            0.8139048465337917,
+            1.1158001881349195,
+            1.5019743636474092,
+            0.8636383017279055,
+            1.1846824161975131
+          ],
+          "noisy": true
+        }
+      }
+    },
+    "raw/1048576/callers-4/cap-8": {
+      "note": "Current adaptive 4/8 workers versus cap 8; 4194304 total input bytes; application executor setup excluded, submissions included equally",
+      "samples": {
+        "before": [
+          {
+            "iterations": 1,
+            "wall_ns": 1803208.0,
+            "cpu_ns": 3420000.0,
+            "thread_ns": 65042.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 1550291.0,
+            "cpu_ns": 2991000.0,
+            "thread_ns": 60583.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 2715208.0,
+            "cpu_ns": 2953000.0,
+            "thread_ns": 39667.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 2901000.0,
+            "cpu_ns": 2951000.0,
+            "thread_ns": 59833.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 1303542.0,
+            "cpu_ns": 3291000.0,
+            "thread_ns": 51625.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 1441875.0,
+            "cpu_ns": 3360000.0,
+            "thread_ns": 86458.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 1500208.0,
+            "cpu_ns": 3104000.0,
+            "thread_ns": 76166.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 1515458.0,
+            "cpu_ns": 3365000.0,
+            "thread_ns": 85041.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 1089917.0,
+            "cpu_ns": 3241000.0,
+            "thread_ns": 69250.0
+          }
+        ],
+        "after": [
+          {
+            "iterations": 2,
+            "wall_ns": 2715208.5,
+            "cpu_ns": 2988500.0,
+            "thread_ns": 68770.5
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 1249916.5,
+            "cpu_ns": 2856500.0,
+            "thread_ns": 49687.5
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 1386604.5,
+            "cpu_ns": 2912000.0,
+            "thread_ns": 56750.0
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 16162187.5,
+            "cpu_ns": 3268000.0,
+            "thread_ns": 64437.5
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 10604833.0,
+            "cpu_ns": 3291500.0,
+            "thread_ns": 101604.0
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 1652312.5,
+            "cpu_ns": 3299000.0,
+            "thread_ns": 83666.5
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 1917187.5,
+            "cpu_ns": 3268500.0,
+            "thread_ns": 62958.5
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 1734479.0,
+            "cpu_ns": 3203000.0,
+            "thread_ns": 76208.0
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 1379458.0,
+            "cpu_ns": 3155500.0,
+            "thread_ns": 76812.5
+          }
+        ]
+      },
+      "metrics": {
+        "wall_ns": {
+          "median_before": 1515458.0,
+          "median_after": 1734479.0,
+          "paired_median_speedup": 0.7901052442336048,
+          "bootstrap_95_percent_interval": [
+            0.17949302964094432,
+            1.240315653085626
+          ],
+          "paired_ratios": [
+            0.6641140081875848,
+            1.240315653085626,
+            1.9581704804794735,
+            0.17949302964094432,
+            0.12291961599018109,
+            0.8726406173166396,
+            0.7825045802770986,
+            0.8737251935595646,
+            0.7901052442336048
+          ],
+          "noisy": true
+        },
+        "cpu_ns": {
+          "median_before": 3241000.0,
+          "median_after": 3203000.0,
+          "paired_median_speedup": 1.0184904516520157,
+          "bootstrap_95_percent_interval": [
+            0.9496711029524246,
+            1.0505775835154543
+          ],
+          "paired_ratios": [
+            1.1443868161284925,
+            1.0470855942587083,
+            1.0140796703296704,
+            0.902998776009792,
+            0.9998480935743582,
+            1.0184904516520157,
+            0.9496711029524246,
+            1.0505775835154543,
+            1.0270955474568215
+          ],
+          "noisy": false
+        },
+        "thread_ns": {
+          "median_before": 65042.0,
+          "median_after": 68770.5,
+          "paired_median_speedup": 0.9457834391199715,
+          "bootstrap_95_percent_interval": [
+            0.698977973568282,
+            1.2097810462447485
+          ],
+          "paired_ratios": [
+            0.9457834391199715,
+            1.219280503144654,
+            0.698977973568282,
+            0.9285431619786615,
+            0.5081000748002047,
+            1.0333646082960324,
+            1.2097810462447485,
+            1.115906466512702,
+            0.9015459723352319
+          ],
+          "noisy": true
+        }
+      }
+    },
+    "raw/4194304/callers-1/cap-1": {
+      "note": "Current adaptive 4/8 workers versus cap 1; 4194304 total input bytes; application executor setup excluded, submissions included equally",
+      "samples": {
+        "before": [
+          {
+            "iterations": 4,
+            "wall_ns": 1516260.5,
+            "cpu_ns": 2570750.0,
+            "thread_ns": 134364.5
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 1183114.5,
+            "cpu_ns": 2375000.0,
+            "thread_ns": 122614.5
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 593156.25,
+            "cpu_ns": 2513750.0,
+            "thread_ns": 131093.75
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 686427.0,
+            "cpu_ns": 2395750.0,
+            "thread_ns": 125875.0
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 792468.75,
+            "cpu_ns": 2403750.0,
+            "thread_ns": 117572.75
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 1228958.25,
+            "cpu_ns": 2631250.0,
+            "thread_ns": 138562.5
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 1364531.25,
+            "cpu_ns": 2709750.0,
+            "thread_ns": 131229.0
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 1374500.0,
+            "cpu_ns": 2842750.0,
+            "thread_ns": 147521.0
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 1167260.5,
+            "cpu_ns": 2619250.0,
+            "thread_ns": 133302.25
+          }
+        ],
+        "after": [
+          {
+            "iterations": 3,
+            "wall_ns": 1837639.0,
+            "cpu_ns": 1897333.3333333333,
+            "thread_ns": 1829722.3333333333
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1800750.0,
+            "cpu_ns": 1798666.6666666667,
+            "thread_ns": 1798333.3333333333
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1765861.0,
+            "cpu_ns": 1804666.6666666667,
+            "thread_ns": 1755152.6666666667
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1734583.3333333333,
+            "cpu_ns": 1733666.6666666667,
+            "thread_ns": 1733222.0
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1771569.6666666667,
+            "cpu_ns": 1811333.3333333333,
+            "thread_ns": 1750763.6666666667
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1941791.6666666667,
+            "cpu_ns": 1771666.6666666667,
+            "thread_ns": 1770597.0
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1924430.3333333333,
+            "cpu_ns": 1844000.0,
+            "thread_ns": 1765472.3333333333
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 2955902.6666666665,
+            "cpu_ns": 1821666.6666666667,
+            "thread_ns": 1820819.6666666667
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1812250.0,
+            "cpu_ns": 1839000.0,
+            "thread_ns": 1757638.6666666667
+          }
+        ]
+      },
+      "metrics": {
+        "wall_ns": {
+          "median_before": 1183114.5,
+          "median_after": 1812250.0,
+          "paired_median_speedup": 0.6328991266656653,
+          "bootstrap_95_percent_interval": [
+            0.3957301945712227,
+            0.7090572344266035
+          ],
+          "paired_ratios": [
+            0.8251133655739783,
+            0.6570120783007081,
+            0.3359020047444278,
+            0.3957301945712227,
+            0.44732576139163965,
+            0.6328991266656653,
+            0.7090572344266035,
+            0.4650017794902584,
+            0.6440946337425851
+          ],
+          "noisy": true
+        },
+        "cpu_ns": {
+          "median_before": 2570750.0,
+          "median_after": 1811333.3333333333,
+          "paired_median_speedup": 1.3929165127447358,
+          "bootstrap_95_percent_interval": [
+            1.327061096797939,
+            1.4851834430856068
+          ],
+          "paired_ratios": [
+            1.3549279690794098,
+            1.3204225352112675,
+            1.3929165127447358,
+            1.3818977119784657,
+            1.327061096797939,
+            1.4851834430856068,
+            1.4694956616052062,
+            1.5605215004574564,
+            1.4242794997281132
+          ],
+          "noisy": false
+        },
+        "thread_ns": {
+          "median_before": 131229.0,
+          "median_after": 1765472.3333333333,
+          "paired_median_speedup": 0.07433081647460917,
+          "bootstrap_95_percent_interval": [
+            0.0681822984244671,
+            0.07825750297780917
+          ],
+          "paired_ratios": [
+            0.07343436627087498,
+            0.0681822984244671,
+            0.07469079612827602,
+            0.07262485705812642,
+            0.06715512335474176,
+            0.07825750297780917,
+            0.07433081647460917,
+            0.0810190062753789,
+            0.07584166901198501
+          ],
+          "noisy": true
+        }
+      }
+    },
+    "raw/4194304/callers-1/cap-2": {
+      "note": "Current adaptive 4/8 workers versus cap 2; 4194304 total input bytes; application executor setup excluded, submissions included equally",
+      "samples": {
+        "before": [
+          {
+            "iterations": 3,
+            "wall_ns": 1679152.6666666667,
+            "cpu_ns": 2603000.0,
+            "thread_ns": 117916.66666666667
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1270847.3333333333,
+            "cpu_ns": 2801666.6666666665,
+            "thread_ns": 113250.0
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 911333.3333333334,
+            "cpu_ns": 2543000.0,
+            "thread_ns": 132097.0
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 906986.0,
+            "cpu_ns": 2812000.0,
+            "thread_ns": 145875.0
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1428875.0,
+            "cpu_ns": 2680333.3333333335,
+            "thread_ns": 135055.33333333334
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 682097.3333333334,
+            "cpu_ns": 2614333.3333333335,
+            "thread_ns": 110305.66666666667
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1235152.6666666667,
+            "cpu_ns": 2560333.3333333335,
+            "thread_ns": 152555.33333333334
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 847527.6666666666,
+            "cpu_ns": 2564333.3333333335,
+            "thread_ns": 126694.33333333333
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 2079916.6666666667,
+            "cpu_ns": 2631333.3333333335,
+            "thread_ns": 149277.66666666666
+          }
+        ],
+        "after": [
+          {
+            "iterations": 4,
+            "wall_ns": 1247937.5,
+            "cpu_ns": 2001250.0,
+            "thread_ns": 69885.25
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 1253104.25,
+            "cpu_ns": 2025000.0,
+            "thread_ns": 65031.25
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 1687729.25,
+            "cpu_ns": 2085000.0,
+            "thread_ns": 75760.5
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 1229729.25,
+            "cpu_ns": 2107750.0,
+            "thread_ns": 77375.0
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 1011916.5,
+            "cpu_ns": 1908000.0,
+            "thread_ns": 63156.25
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 1209885.5,
+            "cpu_ns": 2060250.0,
+            "thread_ns": 69864.5
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 1180052.0,
+            "cpu_ns": 2038500.0,
+            "thread_ns": 57948.0
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 1576656.25,
+            "cpu_ns": 2024250.0,
+            "thread_ns": 65020.75
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 1360958.5,
+            "cpu_ns": 1991250.0,
+            "thread_ns": 55593.75
+          }
+        ]
+      },
+      "metrics": {
+        "wall_ns": {
+          "median_before": 1235152.6666666667,
+          "median_after": 1247937.5,
+          "paired_median_speedup": 1.0141593034524727,
+          "bootstrap_95_percent_interval": [
+            0.5399760259729653,
+            1.41204832612177
+          ],
+          "paired_ratios": [
+            1.3455422780921855,
+            1.0141593034524727,
+            0.5399760259729653,
+            0.737549342670348,
+            1.41204832612177,
+            0.5637701529056538,
+            1.0466934225497408,
+            0.5375475260803784,
+            1.5282733945720364
+          ],
+          "noisy": true
+        },
+        "cpu_ns": {
+          "median_before": 2614333.3333333335,
+          "median_after": 2025000.0,
+          "paired_median_speedup": 1.3006870705808868,
+          "bootstrap_95_percent_interval": [
+            1.2559888807129427,
+            1.3835390946502057
+          ],
+          "paired_ratios": [
+            1.3006870705808868,
+            1.3835390946502057,
+            1.219664268585132,
+            1.3341240659471,
+            1.4047868623340323,
+            1.2689398535776404,
+            1.2559888807129427,
+            1.2668066362027088,
+            1.3214480016739905
+          ],
+          "noisy": false
+        },
+        "thread_ns": {
+          "median_before": 132097.0,
+          "median_after": 65031.25,
+          "paired_median_speedup": 1.8852988691437802,
+          "bootstrap_95_percent_interval": [
+            1.6872897595224554,
+            2.632624651986839
+          ],
+          "paired_ratios": [
+            1.6872897595224554,
+            1.7414704469005287,
+            1.7436130965344738,
+            1.8852988691437802,
+            2.1384317994392217,
+            1.5788514433892273,
+            2.632624651986839,
+            1.9485215617065834,
+            2.685151958028855
+          ],
+          "noisy": true
+        }
+      }
+    },
+    "raw/4194304/callers-1/cap-4": {
+      "note": "Current adaptive 4/8 workers versus cap 4; 4194304 total input bytes; application executor setup excluded, submissions included equally",
+      "samples": {
+        "before": [
+          {
+            "iterations": 3,
+            "wall_ns": 2415916.6666666665,
+            "cpu_ns": 2989666.6666666665,
+            "thread_ns": 158889.0
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 721611.3333333334,
+            "cpu_ns": 2377666.6666666665,
+            "thread_ns": 117875.0
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1335875.0,
+            "cpu_ns": 2541666.6666666665,
+            "thread_ns": 113083.33333333333
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1535263.6666666667,
+            "cpu_ns": 2348000.0,
+            "thread_ns": 123930.66666666667
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1284069.3333333333,
+            "cpu_ns": 2368666.6666666665,
+            "thread_ns": 102652.66666666667
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1214722.0,
+            "cpu_ns": 2287000.0,
+            "thread_ns": 112916.66666666667
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 828736.0,
+            "cpu_ns": 2305000.0,
+            "thread_ns": 118652.66666666667
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1541166.6666666667,
+            "cpu_ns": 2444666.6666666665,
+            "thread_ns": 124583.33333333333
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 4162541.6666666665,
+            "cpu_ns": 2378333.3333333335,
+            "thread_ns": 136055.66666666666
+          }
+        ],
+        "after": [
+          {
+            "iterations": 3,
+            "wall_ns": 810194.6666666666,
+            "cpu_ns": 2125333.3333333335,
+            "thread_ns": 79680.33333333333
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 806666.6666666666,
+            "cpu_ns": 2195333.3333333335,
+            "thread_ns": 104403.0
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1185041.6666666667,
+            "cpu_ns": 2140333.3333333335,
+            "thread_ns": 82652.66666666667
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1154014.0,
+            "cpu_ns": 2071333.3333333333,
+            "thread_ns": 72833.33333333333
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 991569.3333333334,
+            "cpu_ns": 2134000.0,
+            "thread_ns": 75763.66666666667
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1015097.3333333334,
+            "cpu_ns": 2019333.3333333333,
+            "thread_ns": 60097.0
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1110458.3333333333,
+            "cpu_ns": 2188666.6666666665,
+            "thread_ns": 73500.0
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 931194.6666666666,
+            "cpu_ns": 2116666.6666666665,
+            "thread_ns": 79625.0
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1451569.3333333333,
+            "cpu_ns": 2206666.6666666665,
+            "thread_ns": 77139.0
+          }
+        ]
+      },
+      "metrics": {
+        "wall_ns": {
+          "median_before": 1335875.0,
+          "median_after": 1015097.3333333334,
+          "paired_median_speedup": 1.29498693653293,
+          "bootstrap_95_percent_interval": [
+            0.8945595041322315,
+            2.8676147746301246
+          ],
+          "paired_ratios": [
+            2.981896531862301,
+            0.8945595041322315,
+            1.1272810379381877,
+            1.3303683201994663,
+            1.29498693653293,
+            1.1966556901604182,
+            0.7463008517504034,
+            1.6550424114685653,
+            2.8676147746301246
+          ],
+          "noisy": true
+        },
+        "cpu_ns": {
+          "median_before": 2377666.6666666665,
+          "median_after": 2134000.0,
+          "paired_median_speedup": 1.1325519973588642,
+          "bootstrap_95_percent_interval": [
+            1.077794561933535,
+            1.1875097336863416
+          ],
+          "paired_ratios": [
+            1.40668130489335,
+            1.0830549650774368,
+            1.1875097336863416,
+            1.133569359510782,
+            1.1099656357388314,
+            1.1325519973588642,
+            1.0531526043253123,
+            1.1549606299212598,
+            1.077794561933535
+          ],
+          "noisy": true
+        },
+        "thread_ns": {
+          "median_before": 118652.66666666667,
+          "median_after": 77139.0,
+          "paired_median_speedup": 1.6143219954648527,
+          "bootstrap_95_percent_interval": [
+            1.354906265536251,
+            1.8789068783244867
+          ],
+          "paired_ratios": [
+            1.9940805133847332,
+            1.1290384375927895,
+            1.368175255486816,
+            1.7015652173913045,
+            1.354906265536251,
+            1.8789068783244867,
+            1.6143219954648527,
+            1.564625850340136,
+            1.7637727565390613
+          ],
+          "noisy": true
+        }
+      }
+    },
+    "raw/4194304/callers-1/cap-8": {
+      "note": "Current adaptive 4/8 workers versus cap 8; 4194304 total input bytes; application executor setup excluded, submissions included equally",
+      "samples": {
+        "before": [
+          {
+            "iterations": 4,
+            "wall_ns": 1327677.25,
+            "cpu_ns": 2339250.0,
+            "thread_ns": 136364.75
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 1262510.5,
+            "cpu_ns": 2384500.0,
+            "thread_ns": 120687.5
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 954802.25,
+            "cpu_ns": 2351000.0,
+            "thread_ns": 135302.25
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 975458.25,
+            "cpu_ns": 2380250.0,
+            "thread_ns": 119333.5
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 1458135.5,
+            "cpu_ns": 2398000.0,
+            "thread_ns": 120823.0
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 1436812.5,
+            "cpu_ns": 2251000.0,
+            "thread_ns": 103927.25
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 1172406.25,
+            "cpu_ns": 2507500.0,
+            "thread_ns": 116239.5
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 834895.75,
+            "cpu_ns": 2488750.0,
+            "thread_ns": 98229.0
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 664271.0,
+            "cpu_ns": 2833750.0,
+            "thread_ns": 132593.75
+          }
+        ],
+        "after": [
+          {
+            "iterations": 2,
+            "wall_ns": 1564146.0,
+            "cpu_ns": 2316500.0,
+            "thread_ns": 126771.0
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 1167291.5,
+            "cpu_ns": 2137500.0,
+            "thread_ns": 100833.0
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 1368833.0,
+            "cpu_ns": 2387000.0,
+            "thread_ns": 119145.5
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 1480812.5,
+            "cpu_ns": 2530000.0,
+            "thread_ns": 135750.0
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 1080021.0,
+            "cpu_ns": 2284000.0,
+            "thread_ns": 143875.0
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 1653104.0,
+            "cpu_ns": 2593500.0,
+            "thread_ns": 134708.0
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 706417.0,
+            "cpu_ns": 2753500.0,
+            "thread_ns": 102500.0
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 608583.5,
+            "cpu_ns": 2624000.0,
+            "thread_ns": 106062.5
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 610125.0,
+            "cpu_ns": 2410000.0,
+            "thread_ns": 87062.5
+          }
+        ]
+      },
+      "metrics": {
+        "wall_ns": {
+          "median_before": 1172406.25,
+          "median_after": 1167291.5,
+          "paired_median_speedup": 1.0815725977615702,
+          "bootstrap_95_percent_interval": [
+            0.6975301223743144,
+            1.3718672129625598
+          ],
+          "paired_ratios": [
+            0.8488192598389153,
+            1.0815725977615702,
+            0.6975301223743144,
+            0.6587317773181952,
+            1.3500992110338594,
+            0.8691603795042538,
+            1.6596518062277663,
+            1.3718672129625598,
+            1.0887457488219627
+          ],
+          "noisy": true
+        },
+        "cpu_ns": {
+          "median_before": 2384500.0,
+          "median_after": 2410000.0,
+          "paired_median_speedup": 0.9849183074989527,
+          "bootstrap_95_percent_interval": [
+            0.9106591610677319,
+            1.1155555555555556
+          ],
+          "paired_ratios": [
+            1.0098208504208936,
+            1.1155555555555556,
+            0.9849183074989527,
+            0.9408102766798419,
+            1.0499124343257442,
+            0.8679390784653943,
+            0.9106591610677319,
+            0.9484565548780488,
+            1.1758298755186722
+          ],
+          "noisy": true
+        },
+        "thread_ns": {
+          "median_before": 120687.5,
+          "median_after": 119145.5,
+          "paired_median_speedup": 1.0756777969724938,
+          "bootstrap_95_percent_interval": [
+            0.8397775847089487,
+            1.196904783156308
+          ],
+          "paired_ratios": [
+            1.0756777969724938,
+            1.196904783156308,
+            1.13560520540012,
+            0.8790681399631676,
+            0.8397775847089487,
+            0.7715002078569944,
+            1.1340439024390243,
+            0.9261426045963465,
+            1.5229720028715004
+          ],
+          "noisy": true
+        }
+      }
+    },
+    "raw/4194304/callers-4/cap-1": {
+      "note": "Current adaptive 4/8 workers versus cap 1; 16777216 total input bytes; application executor setup excluded, submissions included equally",
+      "samples": {
+        "before": [
+          {
+            "iterations": 2,
+            "wall_ns": 2637416.5,
+            "cpu_ns": 9373500.0,
+            "thread_ns": 85812.5
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 3525896.0,
+            "cpu_ns": 9182500.0,
+            "thread_ns": 75062.5
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 2630000.0,
+            "cpu_ns": 9621500.0,
+            "thread_ns": 90667.0
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 2227583.5,
+            "cpu_ns": 9630000.0,
+            "thread_ns": 72062.5
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 2247604.5,
+            "cpu_ns": 9954500.0,
+            "thread_ns": 51292.0
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 1552437.5,
+            "cpu_ns": 11295500.0,
+            "thread_ns": 73666.5
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 1854625.0,
+            "cpu_ns": 10632500.0,
+            "thread_ns": 61292.0
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 1935812.5,
+            "cpu_ns": 10789000.0,
+            "thread_ns": 90416.5
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 1924062.5,
+            "cpu_ns": 10610500.0,
+            "thread_ns": 46708.5
+          }
+        ],
+        "after": [
+          {
+            "iterations": 2,
+            "wall_ns": 2333708.5,
+            "cpu_ns": 7290500.0,
+            "thread_ns": 88604.5
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 2074375.0,
+            "cpu_ns": 7345000.0,
+            "thread_ns": 47791.5
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 2162396.0,
+            "cpu_ns": 7311500.0,
+            "thread_ns": 63229.0
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 2158542.0,
+            "cpu_ns": 7292500.0,
+            "thread_ns": 64312.5
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 2144271.0,
+            "cpu_ns": 7431000.0,
+            "thread_ns": 88520.5
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 2236354.0,
+            "cpu_ns": 7384000.0,
+            "thread_ns": 79354.0
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 2091917.0,
+            "cpu_ns": 7266000.0,
+            "thread_ns": 53875.0
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 2184875.0,
+            "cpu_ns": 7278000.0,
+            "thread_ns": 76625.0
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 2188583.5,
+            "cpu_ns": 7308000.0,
+            "thread_ns": 41750.0
+          }
+        ]
+      },
+      "metrics": {
+        "wall_ns": {
+          "median_before": 2227583.5,
+          "median_after": 2162396.0,
+          "paired_median_speedup": 1.0319852474494358,
+          "bootstrap_95_percent_interval": [
+            0.8791359799614682,
+            1.2162434632694474
+          ],
+          "paired_ratios": [
+            1.1301396468324987,
+            1.6997389575173245,
+            1.2162434632694474,
+            1.0319852474494358,
+            1.048190503905523,
+            0.6941823611109869,
+            0.8865672012799743,
+            0.8860060644201614,
+            0.8791359799614682
+          ],
+          "noisy": true
+        },
+        "cpu_ns": {
+          "median_before": 9954500.0,
+          "median_after": 7308000.0,
+          "paired_median_speedup": 1.3395909029740278,
+          "bootstrap_95_percent_interval": [
+            1.2857142857142858,
+            1.4824127507557021
+          ],
+          "paired_ratios": [
+            1.2857142857142858,
+            1.2501701837985024,
+            1.3159406414552417,
+            1.3205347960233116,
+            1.3395909029740278,
+            1.5297264355362947,
+            1.4633223231489128,
+            1.4824127507557021,
+            1.4519020251778874
+          ],
+          "noisy": false
+        },
+        "thread_ns": {
+          "median_before": 73666.5,
+          "median_after": 64312.5,
+          "paired_median_speedup": 1.120505344995141,
+          "bootstrap_95_percent_interval": [
+            0.9283274945182347,
+            1.4339464486232583
+          ],
+          "paired_ratios": [
+            0.9684891850865363,
+            1.5706244834332466,
+            1.4339464486232583,
+            1.120505344995141,
+            0.5794364017374507,
+            0.9283274945182347,
+            1.1376705336426913,
+            1.1799869494290376,
+            1.1187664670658684
+          ],
+          "noisy": true
+        }
+      }
+    },
+    "raw/4194304/callers-4/cap-2": {
+      "note": "Current adaptive 4/8 workers versus cap 2; 16777216 total input bytes; application executor setup excluded, submissions included equally",
+      "samples": {
+        "before": [
+          {
+            "iterations": 3,
+            "wall_ns": 1808541.6666666667,
+            "cpu_ns": 10756000.0,
+            "thread_ns": 89402.66666666667
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1570583.3333333333,
+            "cpu_ns": 11040000.0,
+            "thread_ns": 88513.66666666667
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 2446458.3333333335,
+            "cpu_ns": 10136333.333333334,
+            "thread_ns": 60125.0
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1764694.6666666667,
+            "cpu_ns": 10193666.666666666,
+            "thread_ns": 67139.0
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1597986.3333333333,
+            "cpu_ns": 10880333.333333334,
+            "thread_ns": 89694.33333333333
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1714694.3333333333,
+            "cpu_ns": 11247666.666666666,
+            "thread_ns": 69472.33333333333
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1736625.0,
+            "cpu_ns": 10553333.333333334,
+            "thread_ns": 82889.0
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1726583.3333333333,
+            "cpu_ns": 11216666.666666666,
+            "thread_ns": 69805.33333333333
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 2836541.6666666665,
+            "cpu_ns": 10392333.333333334,
+            "thread_ns": 86625.0
+          }
+        ],
+        "after": [
+          {
+            "iterations": 4,
+            "wall_ns": 1208645.75,
+            "cpu_ns": 7698250.0,
+            "thread_ns": 61166.5
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 1406583.5,
+            "cpu_ns": 7852750.0,
+            "thread_ns": 70208.5
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 1297375.0,
+            "cpu_ns": 7835250.0,
+            "thread_ns": 60177.0
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 1381093.75,
+            "cpu_ns": 7877000.0,
+            "thread_ns": 63093.75
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 1501593.75,
+            "cpu_ns": 7923250.0,
+            "thread_ns": 71895.75
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 1275833.25,
+            "cpu_ns": 7906250.0,
+            "thread_ns": 69593.75
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 1265323.0,
+            "cpu_ns": 7759250.0,
+            "thread_ns": 48479.25
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 1254500.0,
+            "cpu_ns": 7840500.0,
+            "thread_ns": 64020.75
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 1254854.25,
+            "cpu_ns": 7818250.0,
+            "thread_ns": 58135.25
+          }
+        ]
+      },
+      "metrics": {
+        "wall_ns": {
+          "median_before": 1736625.0,
+          "median_after": 1275833.25,
+          "paired_median_speedup": 1.3724756445587412,
+          "bootstrap_95_percent_interval": [
+            1.1165944526815033,
+            1.885698686450204
+          ],
+          "paired_ratios": [
+            1.496337257353254,
+            1.1165944526815033,
+            1.885698686450204,
+            1.2777515405211752,
+            1.0641935166108232,
+            1.343979970214237,
+            1.3724756445587412,
+            1.3763119436694566,
+            2.2604550820676317
+          ],
+          "noisy": true
+        },
+        "cpu_ns": {
+          "median_before": 10756000.0,
+          "median_after": 7840500.0,
+          "paired_median_speedup": 1.3732159572565972,
+          "bootstrap_95_percent_interval": [
+            1.2941052007955651,
+            1.4226297760210802
+          ],
+          "paired_ratios": [
+            1.3972006624882278,
+            1.4058769220973544,
+            1.2936834604298948,
+            1.2941052007955651,
+            1.3732159572565972,
+            1.4226297760210802,
+            1.3600970884213466,
+            1.4306060412813808,
+            1.3292403457721784
+          ],
+          "noisy": false
+        },
+        "thread_ns": {
+          "median_before": 82889.0,
+          "median_after": 63093.75,
+          "paired_median_speedup": 1.2475609939855044,
+          "bootstrap_95_percent_interval": [
+            0.9991358824800173,
+            1.490059817408543
+          ],
+          "paired_ratios": [
+            1.4616279608391305,
+            1.2607257905619216,
+            0.9991358824800173,
+            1.0641149083704804,
+            1.2475609939855044,
+            0.9982553509953599,
+            1.7097830515117292,
+            1.090354819856583,
+            1.490059817408543
+          ],
+          "noisy": true
+        }
+      }
+    },
+    "raw/4194304/callers-4/cap-4": {
+      "note": "Current adaptive 4/8 workers versus cap 4; 16777216 total input bytes; application executor setup excluded, submissions included equally",
+      "samples": {
+        "before": [
+          {
+            "iterations": 2,
+            "wall_ns": 2579312.5,
+            "cpu_ns": 10507000.0,
+            "thread_ns": 96729.5
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 2340062.5,
+            "cpu_ns": 10226000.0,
+            "thread_ns": 72646.0
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 2068625.0,
+            "cpu_ns": 11220000.0,
+            "thread_ns": 71500.0
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 1964250.0,
+            "cpu_ns": 11632500.0,
+            "thread_ns": 68583.5
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 1714583.5,
+            "cpu_ns": 10515000.0,
+            "thread_ns": 82146.0
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 1573333.0,
+            "cpu_ns": 11140000.0,
+            "thread_ns": 59395.5
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 1818854.5,
+            "cpu_ns": 11365500.0,
+            "thread_ns": 52917.0
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 1558791.5,
+            "cpu_ns": 11464000.0,
+            "thread_ns": 52541.5
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 1401312.5,
+            "cpu_ns": 11306500.0,
+            "thread_ns": 64354.0
+          }
+        ],
+        "after": [
+          {
+            "iterations": 3,
+            "wall_ns": 1601861.0,
+            "cpu_ns": 8489333.333333334,
+            "thread_ns": 56528.0
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1787305.6666666667,
+            "cpu_ns": 8424333.333333334,
+            "thread_ns": 55389.0
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1423514.0,
+            "cpu_ns": 8494666.666666666,
+            "thread_ns": 76541.66666666667
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1326194.3333333333,
+            "cpu_ns": 8402000.0,
+            "thread_ns": 75041.66666666667
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1101458.3333333333,
+            "cpu_ns": 8331333.333333333,
+            "thread_ns": 49680.666666666664
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1265930.6666666667,
+            "cpu_ns": 8478666.666666666,
+            "thread_ns": 76444.66666666667
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1358236.0,
+            "cpu_ns": 8652000.0,
+            "thread_ns": 63597.333333333336
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1156486.0,
+            "cpu_ns": 8613666.666666666,
+            "thread_ns": 42000.0
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1145458.3333333333,
+            "cpu_ns": 8465333.333333334,
+            "thread_ns": 51500.0
+          }
+        ]
+      },
+      "metrics": {
+        "wall_ns": {
+          "median_before": 1818854.5,
+          "median_after": 1326194.3333333333,
+          "paired_median_speedup": 1.3478688890310822,
+          "bootstrap_95_percent_interval": [
+            1.2428271479849344,
+            1.5566485341403444
+          ],
+          "paired_ratios": [
+            1.6101974515891204,
+            1.3092682150805393,
+            1.4531820551115058,
+            1.4811177748459692,
+            1.5566485341403444,
+            1.2428271479849344,
+            1.339129945016919,
+            1.3478688890310822,
+            1.2233640100396495
+          ],
+          "noisy": true
+        },
+        "cpu_ns": {
+          "median_before": 11220000.0,
+          "median_after": 8478666.666666666,
+          "paired_median_speedup": 1.31388583110552,
+          "bootstrap_95_percent_interval": [
+            1.2376708025757812,
+            1.3356237202709087
+          ],
+          "paired_ratios": [
+            1.2376708025757812,
+            1.2138645985834684,
+            1.3208287552974416,
+            1.3844917876696026,
+            1.2621029046971273,
+            1.31388583110552,
+            1.313626907073509,
+            1.3309082465848845,
+            1.3356237202709087
+          ],
+          "noisy": false
+        },
+        "thread_ns": {
+          "median_before": 68583.5,
+          "median_after": 56528.0,
+          "paired_median_speedup": 1.2495922330097087,
+          "bootstrap_95_percent_interval": [
+            0.8320631892322529,
+            1.6534802270500935
+          ],
+          "paired_ratios": [
+            1.71117853099349,
+            1.311560057051039,
+            0.934131736526946,
+            0.9139389228206551,
+            1.6534802270500935,
+            0.7769737587972128,
+            0.8320631892322529,
+            1.2509880952380952,
+            1.2495922330097087
+          ],
+          "noisy": true
+        }
+      }
+    },
+    "raw/4194304/callers-4/cap-8": {
+      "note": "Current adaptive 4/8 workers versus cap 8; 16777216 total input bytes; application executor setup excluded, submissions included equally",
+      "samples": {
+        "before": [
+          {
+            "iterations": 3,
+            "wall_ns": 1629541.6666666667,
+            "cpu_ns": 11045666.666666666,
+            "thread_ns": 84541.66666666667
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1837097.0,
+            "cpu_ns": 11061000.0,
+            "thread_ns": 61777.666666666664
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1684125.0,
+            "cpu_ns": 11013333.333333334,
+            "thread_ns": 90250.0
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1848014.0,
+            "cpu_ns": 11082666.666666666,
+            "thread_ns": 103847.33333333333
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1867055.6666666667,
+            "cpu_ns": 10410333.333333334,
+            "thread_ns": 64750.0
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1703764.0,
+            "cpu_ns": 10475666.666666666,
+            "thread_ns": 75139.0
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1782861.0,
+            "cpu_ns": 10150333.333333334,
+            "thread_ns": 76028.0
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1744847.3333333333,
+            "cpu_ns": 9817333.333333334,
+            "thread_ns": 46791.666666666664
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 2189625.0,
+            "cpu_ns": 10501666.666666666,
+            "thread_ns": 67555.33333333333
+          }
+        ],
+        "after": [
+          {
+            "iterations": 3,
+            "wall_ns": 1868416.6666666667,
+            "cpu_ns": 11871000.0,
+            "thread_ns": 55250.0
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1997541.6666666667,
+            "cpu_ns": 11333666.666666666,
+            "thread_ns": 100041.66666666667
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1946388.6666666667,
+            "cpu_ns": 10988000.0,
+            "thread_ns": 73458.33333333333
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1894083.3333333333,
+            "cpu_ns": 11003666.666666666,
+            "thread_ns": 54819.333333333336
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1590388.6666666667,
+            "cpu_ns": 10690000.0,
+            "thread_ns": 78764.0
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 15365902.666666666,
+            "cpu_ns": 10387333.333333334,
+            "thread_ns": 66652.66666666667
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 2421097.3333333335,
+            "cpu_ns": 10486666.666666666,
+            "thread_ns": 85222.0
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 2483291.6666666665,
+            "cpu_ns": 10640333.333333334,
+            "thread_ns": 73027.66666666667
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 2037625.0,
+            "cpu_ns": 10231333.333333334,
+            "thread_ns": 94736.0
+          }
+        ]
+      },
+      "metrics": {
+        "wall_ns": {
+          "median_before": 1782861.0,
+          "median_after": 1997541.6666666667,
+          "paired_median_speedup": 0.8721511083359351,
+          "bootstrap_95_percent_interval": [
+            0.702634876424101,
+            1.0745966505122384
+          ],
+          "paired_ratios": [
+            0.8721511083359351,
+            0.9196789386954798,
+            0.8652562711866728,
+            0.9756772405297198,
+            1.1739618785009787,
+            0.11087952572392537,
+            0.7363855122443101,
+            0.702634876424101,
+            1.0745966505122384
+          ],
+          "noisy": true
+        },
+        "cpu_ns": {
+          "median_before": 10501666.666666666,
+          "median_after": 10690000.0,
+          "paired_median_speedup": 0.9759418840622335,
+          "bootstrap_95_percent_interval": [
+            0.930474826608261,
+            1.0085039471150758
+          ],
+          "paired_ratios": [
+            0.930474826608261,
+            0.9759418840622335,
+            1.0023055454435141,
+            1.0071794250401382,
+            0.9738384783286561,
+            1.0085039471150758,
+            0.9679275270184362,
+            0.9226527990977726,
+            1.0264221020394864
+          ],
+          "noisy": false
+        },
+        "thread_ns": {
+          "median_before": 75139.0,
+          "median_after": 73458.33333333333,
+          "paired_median_speedup": 0.892117058975382,
+          "bootstrap_95_percent_interval": [
+            0.7130904126555199,
+            1.5301659125188538
+          ],
+          "paired_ratios": [
+            1.5301659125188538,
+            0.6175193669304456,
+            1.2285876347135565,
+            1.8943560057887119,
+            0.8220760753643797,
+            1.1273217375648885,
+            0.892117058975382,
+            0.6407388980432073,
+            0.7130904126555199
+          ],
+          "noisy": true
+        }
+      }
+    },
+    "raw/16777216/callers-1/cap-1": {
+      "note": "Current adaptive 4/8 workers versus cap 1; 16777216 total input bytes; application executor setup excluded, submissions included equally",
+      "samples": {
+        "before": [
+          {
+            "iterations": 4,
+            "wall_ns": 1167583.25,
+            "cpu_ns": 8118250.0,
+            "thread_ns": 121333.25
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 1174218.75,
+            "cpu_ns": 8134500.0,
+            "thread_ns": 123708.25
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 1299312.5,
+            "cpu_ns": 8142750.0,
+            "thread_ns": 135333.25
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 1252031.25,
+            "cpu_ns": 8420500.0,
+            "thread_ns": 143468.75
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 1231093.75,
+            "cpu_ns": 8287500.0,
+            "thread_ns": 128864.5
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 1152000.0,
+            "cpu_ns": 8041750.0,
+            "thread_ns": 116573.0
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 1565625.0,
+            "cpu_ns": 8082000.0,
+            "thread_ns": 149885.5
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 1264781.25,
+            "cpu_ns": 8633500.0,
+            "thread_ns": 155573.0
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 1230260.25,
+            "cpu_ns": 8344000.0,
+            "thread_ns": 138750.0
+          }
+        ],
+        "after": [
+          {
+            "iterations": 1,
+            "wall_ns": 7881916.0,
+            "cpu_ns": 7441000.0,
+            "thread_ns": 7303791.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 7577083.0,
+            "cpu_ns": 7279000.0,
+            "thread_ns": 7278042.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 7438583.0,
+            "cpu_ns": 7274000.0,
+            "thread_ns": 7164792.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 7649208.0,
+            "cpu_ns": 7248000.0,
+            "thread_ns": 7246375.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 7769584.0,
+            "cpu_ns": 7392000.0,
+            "thread_ns": 7238209.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 7719875.0,
+            "cpu_ns": 7253000.0,
+            "thread_ns": 7250209.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 7495667.0,
+            "cpu_ns": 7322000.0,
+            "thread_ns": 7177250.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 7323750.0,
+            "cpu_ns": 7132000.0,
+            "thread_ns": 7127583.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 7925167.0,
+            "cpu_ns": 7541000.0,
+            "thread_ns": 7400625.0
+          }
+        ]
+      },
+      "metrics": {
+        "wall_ns": {
+          "median_before": 1231093.75,
+          "median_after": 7649208.0,
+          "paired_median_speedup": 0.15845040738345836,
+          "bootstrap_95_percent_interval": [
+            0.14922521413882997,
+            0.17467204439340128
+          ],
+          "paired_ratios": [
+            0.14813444472130888,
+            0.15496976211030022,
+            0.17467204439340128,
+            0.16368116150064163,
+            0.15845040738345836,
+            0.14922521413882997,
+            0.20887067154930974,
+            0.1726958525345622,
+            0.15523461524533175
+          ],
+          "noisy": true
+        },
+        "cpu_ns": {
+          "median_before": 8142750.0,
+          "median_after": 7279000.0,
+          "paired_median_speedup": 1.1175298804780875,
+          "bootstrap_95_percent_interval": [
+            1.10379677683693,
+            1.1617687637969094
+          ],
+          "paired_ratios": [
+            1.0910159924741298,
+            1.1175298804780875,
+            1.1194322243607369,
+            1.1617687637969094,
+            1.1211444805194806,
+            1.1087481042327312,
+            1.10379677683693,
+            1.2105300056085249,
+            1.106484551120541
+          ],
+          "noisy": false
+        },
+        "thread_ns": {
+          "median_before": 135333.25,
+          "median_after": 7246375.0,
+          "paired_median_speedup": 0.018748416518875096,
+          "bootstrap_95_percent_interval": [
+            0.01661236609864658,
+            0.020883416350273434
+          ],
+          "paired_ratios": [
+            0.01661236609864658,
+            0.01699746305393676,
+            0.018888650221806857,
+            0.01979869244967311,
+            0.01780336820890361,
+            0.016078570976367716,
+            0.020883416350273434,
+            0.02182689419400658,
+            0.018748416518875096
+          ],
+          "noisy": true
+        }
+      }
+    },
+    "raw/16777216/callers-1/cap-2": {
+      "note": "Current adaptive 4/8 workers versus cap 2; 16777216 total input bytes; application executor setup excluded, submissions included equally",
+      "samples": {
+        "before": [
+          {
+            "iterations": 4,
+            "wall_ns": 1446437.5,
+            "cpu_ns": 8396500.0,
+            "thread_ns": 140062.5
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 1249916.5,
+            "cpu_ns": 8446500.0,
+            "thread_ns": 156104.0
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 1134458.25,
+            "cpu_ns": 8142500.0,
+            "thread_ns": 133677.0
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 1168812.5,
+            "cpu_ns": 8076500.0,
+            "thread_ns": 134802.25
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 1508239.75,
+            "cpu_ns": 8136250.0,
+            "thread_ns": 128531.25
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 1185708.5,
+            "cpu_ns": 8438250.0,
+            "thread_ns": 118802.25
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 1324322.75,
+            "cpu_ns": 8175000.0,
+            "thread_ns": 127625.0
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 1496791.75,
+            "cpu_ns": 8457750.0,
+            "thread_ns": 113718.75
+          },
+          {
+            "iterations": 4,
+            "wall_ns": 1407781.25,
+            "cpu_ns": 8340250.0,
+            "thread_ns": 125656.25
+          }
+        ],
+        "after": [
+          {
+            "iterations": 1,
+            "wall_ns": 4181166.0,
+            "cpu_ns": 7442000.0,
+            "thread_ns": 66667.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 3813167.0,
+            "cpu_ns": 7392000.0,
+            "thread_ns": 91958.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 3620167.0,
+            "cpu_ns": 7133000.0,
+            "thread_ns": 71958.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 3597459.0,
+            "cpu_ns": 7233000.0,
+            "thread_ns": 46958.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 3577792.0,
+            "cpu_ns": 7083000.0,
+            "thread_ns": 56667.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 3863291.0,
+            "cpu_ns": 7540000.0,
+            "thread_ns": 55042.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 3697542.0,
+            "cpu_ns": 7283000.0,
+            "thread_ns": 59000.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 3752916.0,
+            "cpu_ns": 7472000.0,
+            "thread_ns": 50291.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 3832917.0,
+            "cpu_ns": 7346000.0,
+            "thread_ns": 70333.0
+          }
+        ]
+      },
+      "metrics": {
+        "wall_ns": {
+          "median_before": 1324322.75,
+          "median_after": 3752916.0,
+          "paired_median_speedup": 0.34594118004403557,
+          "bootstrap_95_percent_interval": [
+            0.31337180025120387,
+            0.3988343330892565
+          ],
+          "paired_ratios": [
+            0.34594118004403557,
+            0.32778960375981436,
+            0.31337180025120387,
+            0.3248994637603931,
+            0.42155601834874695,
+            0.3069166935651495,
+            0.35816300396317335,
+            0.3988343330892565,
+            0.36728717318950554
+          ],
+          "noisy": true
+        },
+        "cpu_ns": {
+          "median_before": 8340250.0,
+          "median_after": 7346000.0,
+          "paired_median_speedup": 1.1319258565310493,
+          "bootstrap_95_percent_interval": [
+            1.119131299734748,
+            1.1426542207792207
+          ],
+          "paired_ratios": [
+            1.1282585326525127,
+            1.1426542207792207,
+            1.1415253049207907,
+            1.1166182773399695,
+            1.1487011153466045,
+            1.119131299734748,
+            1.1224770012357546,
+            1.1319258565310493,
+            1.135345766403485
+          ],
+          "noisy": false
+        },
+        "thread_ns": {
+          "median_before": 128531.25,
+          "median_after": 59000.0,
+          "paired_median_speedup": 2.158392681951964,
+          "bootstrap_95_percent_interval": [
+            1.7865902208067337,
+            2.268185187145958
+          ],
+          "paired_ratios": [
+            2.100926995365023,
+            1.6975575806346375,
+            1.8577086633869757,
+            2.8706982835725543,
+            2.268185187145958,
+            2.158392681951964,
+            2.163135593220339,
+            2.2612147302698298,
+            1.7865902208067337
+          ],
+          "noisy": true
+        }
+      }
+    },
+    "raw/16777216/callers-1/cap-4": {
+      "note": "Current adaptive 4/8 workers versus cap 4; 16777216 total input bytes; application executor setup excluded, submissions included equally",
+      "samples": {
+        "before": [
+          {
+            "iterations": 3,
+            "wall_ns": 1770208.3333333333,
+            "cpu_ns": 8142333.333333333,
+            "thread_ns": 124013.66666666667
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1285680.3333333333,
+            "cpu_ns": 8212666.666666667,
+            "thread_ns": 137652.66666666666
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1164902.6666666667,
+            "cpu_ns": 8098000.0,
+            "thread_ns": 124819.66666666667
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1146055.3333333333,
+            "cpu_ns": 8127000.0,
+            "thread_ns": 117430.33333333333
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1366819.3333333333,
+            "cpu_ns": 8349333.333333333,
+            "thread_ns": 133014.0
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1848611.0,
+            "cpu_ns": 8173666.666666667,
+            "thread_ns": 121569.33333333333
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1313986.3333333333,
+            "cpu_ns": 8205000.0,
+            "thread_ns": 125666.66666666667
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1089777.6666666667,
+            "cpu_ns": 7869666.666666667,
+            "thread_ns": 103166.66666666667
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1492430.6666666667,
+            "cpu_ns": 8345333.333333333,
+            "thread_ns": 143472.33333333334
+          }
+        ],
+        "after": [
+          {
+            "iterations": 2,
+            "wall_ns": 2151104.0,
+            "cpu_ns": 7623500.0,
+            "thread_ns": 74041.5
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 1985812.5,
+            "cpu_ns": 7698500.0,
+            "thread_ns": 78395.5
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 1997916.5,
+            "cpu_ns": 7618000.0,
+            "thread_ns": 80937.5
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 2013312.5,
+            "cpu_ns": 7533500.0,
+            "thread_ns": 75292.0
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 1986729.5,
+            "cpu_ns": 7489000.0,
+            "thread_ns": 67646.0
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 2030875.0,
+            "cpu_ns": 7465500.0,
+            "thread_ns": 70042.0
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 2064896.0,
+            "cpu_ns": 7823000.0,
+            "thread_ns": 57458.5
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 1974250.0,
+            "cpu_ns": 7557500.0,
+            "thread_ns": 67917.0
+          },
+          {
+            "iterations": 2,
+            "wall_ns": 2154770.5,
+            "cpu_ns": 7477500.0,
+            "thread_ns": 81583.0
+          }
+        ]
+      },
+      "metrics": {
+        "wall_ns": {
+          "median_before": 1313986.3333333333,
+          "median_after": 2013312.5,
+          "paired_median_speedup": 0.6474328937567536,
+          "bootstrap_95_percent_interval": [
+            0.5692386717577789,
+            0.822930148116192
+          ],
+          "paired_ratios": [
+            0.822930148116192,
+            0.6474328937567536,
+            0.5830587347702804,
+            0.5692386717577789,
+            0.6879745497982153,
+            0.9102534621776328,
+            0.6363450427204728,
+            0.5519957789878013,
+            0.6926169940913275
+          ],
+          "noisy": true
+        },
+        "cpu_ns": {
+          "median_before": 8173666.666666667,
+          "median_after": 7557500.0,
+          "paired_median_speedup": 1.0680571041297742,
+          "bootstrap_95_percent_interval": [
+            1.048830371980059,
+            1.1148796011928606
+          ],
+          "paired_ratios": [
+            1.0680571041297742,
+            1.0667879024052305,
+            1.0630086636912575,
+            1.0787814428884317,
+            1.1148796011928606,
+            1.0948585716518207,
+            1.048830371980059,
+            1.041305546366744,
+            1.1160592889780452
+          ],
+          "noisy": false
+        },
+        "thread_ns": {
+          "median_before": 124819.66666666667,
+          "median_after": 74041.5,
+          "paired_median_speedup": 1.73566336388643,
+          "bootstrap_95_percent_interval": [
+            1.5421734877734878,
+            1.7586057552839849
+          ],
+          "paired_ratios": [
+            1.6749210465302118,
+            1.7558745931420383,
+            1.5421734877734878,
+            1.5596654801749632,
+            1.9663246902995004,
+            1.73566336388643,
+            2.187085751745463,
+            1.519010949639511,
+            1.7586057552839849
+          ],
+          "noisy": true
+        }
+      }
+    },
+    "raw/16777216/callers-1/cap-8": {
+      "note": "Current adaptive 4/8 workers versus cap 8; 16777216 total input bytes; application executor setup excluded, submissions included equally",
+      "samples": {
+        "before": [
+          {
+            "iterations": 3,
+            "wall_ns": 1682666.6666666667,
+            "cpu_ns": 7975666.666666667,
+            "thread_ns": 150139.0
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1334430.6666666667,
+            "cpu_ns": 8017666.666666667,
+            "thread_ns": 109402.66666666667
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1362513.6666666667,
+            "cpu_ns": 8219333.333333333,
+            "thread_ns": 110166.66666666667
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1633986.3333333333,
+            "cpu_ns": 7981000.0,
+            "thread_ns": 101402.66666666667
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1645583.3333333333,
+            "cpu_ns": 7981666.666666667,
+            "thread_ns": 132722.0
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1802791.6666666667,
+            "cpu_ns": 8059333.333333333,
+            "thread_ns": 103000.0
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 2852986.3333333335,
+            "cpu_ns": 8406333.333333334,
+            "thread_ns": 127819.33333333333
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1348291.6666666667,
+            "cpu_ns": 8168333.333333333,
+            "thread_ns": 134194.33333333334
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1166819.6666666667,
+            "cpu_ns": 8180000.0,
+            "thread_ns": 149347.0
+          }
+        ],
+        "after": [
+          {
+            "iterations": 3,
+            "wall_ns": 1393652.6666666667,
+            "cpu_ns": 8072000.0,
+            "thread_ns": 106833.33333333333
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1657194.3333333333,
+            "cpu_ns": 8342000.0,
+            "thread_ns": 128527.66666666667
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1439250.0,
+            "cpu_ns": 8077000.0,
+            "thread_ns": 122389.0
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1341166.6666666667,
+            "cpu_ns": 8495333.333333334,
+            "thread_ns": 129500.0
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1377958.3333333333,
+            "cpu_ns": 7987333.333333333,
+            "thread_ns": 119639.0
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1457055.6666666667,
+            "cpu_ns": 8256333.333333333,
+            "thread_ns": 130764.0
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 2241111.0,
+            "cpu_ns": 7895333.333333333,
+            "thread_ns": 105013.66666666667
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1152180.6666666667,
+            "cpu_ns": 8180000.0,
+            "thread_ns": 128277.66666666667
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 1103639.0,
+            "cpu_ns": 7895666.666666667,
+            "thread_ns": 98541.66666666667
+          }
+        ]
+      },
+      "metrics": {
+        "wall_ns": {
+          "median_before": 1633986.3333333333,
+          "median_after": 1393652.6666666667,
+          "paired_median_speedup": 1.1942184995917873,
+          "bootstrap_95_percent_interval": [
+            0.9466831104163048,
+            1.2372840021898042
+          ],
+          "paired_ratios": [
+            1.2073787873496935,
+            0.8052348718707906,
+            0.9466831104163048,
+            1.218332049210886,
+            1.1942184995917873,
+            1.2372840021898042,
+            1.2730232163125046,
+            1.170208549469383,
+            1.0572475842795215
+          ],
+          "noisy": true
+        },
+        "cpu_ns": {
+          "median_before": 8059333.333333333,
+          "median_after": 8077000.0,
+          "paired_median_speedup": 0.9985737571312143,
+          "bootstrap_95_percent_interval": [
+            0.9611204347478622,
+            1.0360113142229914
+          ],
+          "paired_ratios": [
+            0.9880657416584077,
+            0.9611204347478622,
+            1.0176220543931327,
+            0.9394569567605744,
+            0.9992905433603206,
+            0.9761395292502725,
+            1.064721776576881,
+            0.9985737571312143,
+            1.0360113142229914
+          ],
+          "noisy": false
+        },
+        "thread_ns": {
+          "median_before": 127819.33333333333,
+          "median_after": 122389.0,
+          "paired_median_speedup": 1.0461239030956286,
+          "bootstrap_95_percent_interval": [
+            0.787678565966168,
+            1.4053572542901718
+          ],
+          "paired_ratios": [
+            1.4053572542901718,
+            0.8511993526685564,
+            0.9001353607486512,
+            0.783032175032175,
+            1.1093539732027182,
+            0.787678565966168,
+            1.2171685590129537,
+            1.0461239030956286,
+            1.5155720930232557
+          ],
+          "noisy": true
+        }
+      }
+    },
+    "raw/16777216/callers-4/cap-1": {
+      "note": "Current adaptive 4/8 workers versus cap 1; 67108864 total input bytes; application executor setup excluded, submissions included equally",
+      "samples": {
+        "before": [
+          {
+            "iterations": 1,
+            "wall_ns": 3956083.0,
+            "cpu_ns": 32395000.0,
+            "thread_ns": 93167.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4078625.0,
+            "cpu_ns": 34648000.0,
+            "thread_ns": 40833.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4392167.0,
+            "cpu_ns": 35135000.0,
+            "thread_ns": 68042.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4321458.0,
+            "cpu_ns": 32970000.0,
+            "thread_ns": 76833.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 5258583.0,
+            "cpu_ns": 33690000.0,
+            "thread_ns": 56208.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 7554000.0,
+            "cpu_ns": 31709000.0,
+            "thread_ns": 83542.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 10137792.0,
+            "cpu_ns": 31029000.0,
+            "thread_ns": 98417.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 8004417.0,
+            "cpu_ns": 31425000.0,
+            "thread_ns": 89208.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 6245708.0,
+            "cpu_ns": 32603000.0,
+            "thread_ns": 54458.0
+          }
+        ],
+        "after": [
+          {
+            "iterations": 1,
+            "wall_ns": 7796458.0,
+            "cpu_ns": 28401000.0,
+            "thread_ns": 60834.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 7644167.0,
+            "cpu_ns": 28286000.0,
+            "thread_ns": 82708.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 7635834.0,
+            "cpu_ns": 28206000.0,
+            "thread_ns": 62084.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 7632750.0,
+            "cpu_ns": 28178000.0,
+            "thread_ns": 89917.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 7582667.0,
+            "cpu_ns": 27986000.0,
+            "thread_ns": 93875.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 7386042.0,
+            "cpu_ns": 27859000.0,
+            "thread_ns": 57833.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 11057166.0,
+            "cpu_ns": 28063000.0,
+            "thread_ns": 129875.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 12203166.0,
+            "cpu_ns": 28132000.0,
+            "thread_ns": 123875.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 7413708.0,
+            "cpu_ns": 27929000.0,
+            "thread_ns": 59750.0
+          }
+        ]
+      },
+      "metrics": {
+        "wall_ns": {
+          "median_before": 5258583.0,
+          "median_after": 7635834.0,
+          "paired_median_speedup": 0.6559295350075546,
+          "bootstrap_95_percent_interval": [
+            0.533560425877666,
+            0.9168526546494825
+          ],
+          "paired_ratios": [
+            0.507420549177588,
+            0.533560425877666,
+            0.5752046207395289,
+            0.5661731355016213,
+            0.6935004530727777,
+            1.0227399194318147,
+            0.9168526546494825,
+            0.6559295350075546,
+            0.8424540054720256
+          ],
+          "noisy": true
+        },
+        "cpu_ns": {
+          "median_before": 32603000.0,
+          "median_after": 28132000.0,
+          "paired_median_speedup": 1.1673529306455654,
+          "bootstrap_95_percent_interval": [
+            1.1170553106782313,
+            1.2249169200311107
+          ],
+          "paired_ratios": [
+            1.1406288510967924,
+            1.2249169200311107,
+            1.2456569524214707,
+            1.1700617503016537,
+            1.2038161938111913,
+            1.1381959151441186,
+            1.1056907672023661,
+            1.1170553106782313,
+            1.1673529306455654
+          ],
+          "noisy": false
+        },
+        "thread_ns": {
+          "median_before": 76833.0,
+          "median_after": 82708.0,
+          "paired_median_speedup": 0.8544880278479042,
+          "bootstrap_95_percent_interval": [
+            0.5987536617842876,
+            1.4445385852368025
+          ],
+          "paired_ratios": [
+            1.5314955452542987,
+            0.49370073028002126,
+            1.0959667547194125,
+            0.8544880278479042,
+            0.5987536617842876,
+            1.4445385852368025,
+            0.7577824831568816,
+            0.7201453077699294,
+            0.9114309623430963
+          ],
+          "noisy": true
+        }
+      }
+    },
+    "raw/16777216/callers-4/cap-2": {
+      "note": "Current adaptive 4/8 workers versus cap 2; 67108864 total input bytes; application executor setup excluded, submissions included equally",
+      "samples": {
+        "before": [
+          {
+            "iterations": 1,
+            "wall_ns": 4636125.0,
+            "cpu_ns": 33130000.0,
+            "thread_ns": 96667.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 5508792.0,
+            "cpu_ns": 33093000.0,
+            "thread_ns": 53083.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4746583.0,
+            "cpu_ns": 32964000.0,
+            "thread_ns": 58333.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4744292.0,
+            "cpu_ns": 35716000.0,
+            "thread_ns": 55125.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4944333.0,
+            "cpu_ns": 32264000.0,
+            "thread_ns": 74875.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4685459.0,
+            "cpu_ns": 31954000.0,
+            "thread_ns": 36292.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 3678125.0,
+            "cpu_ns": 31985000.0,
+            "thread_ns": 84083.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4243417.0,
+            "cpu_ns": 32753000.0,
+            "thread_ns": 79750.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 3489708.0,
+            "cpu_ns": 31130000.0,
+            "thread_ns": 79250.0
+          }
+        ],
+        "after": [
+          {
+            "iterations": 1,
+            "wall_ns": 3981750.0,
+            "cpu_ns": 28957000.0,
+            "thread_ns": 43000.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4361500.0,
+            "cpu_ns": 28844000.0,
+            "thread_ns": 60792.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4056875.0,
+            "cpu_ns": 28656000.0,
+            "thread_ns": 62666.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4927042.0,
+            "cpu_ns": 29238000.0,
+            "thread_ns": 71500.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4124583.0,
+            "cpu_ns": 29038000.0,
+            "thread_ns": 43833.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4745833.0,
+            "cpu_ns": 28989000.0,
+            "thread_ns": 69250.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4375834.0,
+            "cpu_ns": 29055000.0,
+            "thread_ns": 95000.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4307500.0,
+            "cpu_ns": 28984000.0,
+            "thread_ns": 73000.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4409708.0,
+            "cpu_ns": 28761000.0,
+            "thread_ns": 34375.0
+          }
+        ]
+      },
+      "metrics": {
+        "wall_ns": {
+          "median_before": 4685459.0,
+          "median_after": 4361500.0,
+          "paired_median_speedup": 0.9872785241284301,
+          "bootstrap_95_percent_interval": [
+            0.8405540520961261,
+            1.1987473642790072
+          ],
+          "paired_ratios": [
+            1.1643435675268412,
+            1.2630498681646223,
+            1.1700096749345248,
+            0.962908779750609,
+            1.1987473642790072,
+            0.9872785241284301,
+            0.8405540520961261,
+            0.9851229251305862,
+            0.7913694058654224
+          ],
+          "noisy": true
+        },
+        "cpu_ns": {
+          "median_before": 32753000.0,
+          "median_after": 28984000.0,
+          "paired_median_speedup": 1.1300372619376207,
+          "bootstrap_95_percent_interval": [
+            1.100843228360007,
+            1.1503350083752093
+          ],
+          "paired_ratios": [
+            1.1441102324135788,
+            1.1473096657883788,
+            1.1503350083752093,
+            1.22156098228333,
+            1.1110958054962463,
+            1.1022801752388838,
+            1.100843228360007,
+            1.1300372619376207,
+            1.0823684851013524
+          ],
+          "noisy": false
+        },
+        "thread_ns": {
+          "median_before": 74875.0,
+          "median_after": 62666.0,
+          "paired_median_speedup": 0.9308556474005043,
+          "bootstrap_95_percent_interval": [
+            0.7709790209790209,
+            2.2480697674418604
+          ],
+          "paired_ratios": [
+            2.2480697674418604,
+            0.8731905513883406,
+            0.9308556474005043,
+            0.7709790209790209,
+            1.7081878949649807,
+            0.524072202166065,
+            0.8850842105263158,
+            1.0924657534246576,
+            2.3054545454545456
+          ],
+          "noisy": true
+        }
+      }
+    },
+    "raw/16777216/callers-4/cap-4": {
+      "note": "Current adaptive 4/8 workers versus cap 4; 67108864 total input bytes; application executor setup excluded, submissions included equally",
+      "samples": {
+        "before": [
+          {
+            "iterations": 1,
+            "wall_ns": 4265875.0,
+            "cpu_ns": 33888000.0,
+            "thread_ns": 93250.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4625000.0,
+            "cpu_ns": 33175000.0,
+            "thread_ns": 66125.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 3801750.0,
+            "cpu_ns": 32943000.0,
+            "thread_ns": 74791.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 10792666.0,
+            "cpu_ns": 36029000.0,
+            "thread_ns": 86458.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 12938500.0,
+            "cpu_ns": 32497000.0,
+            "thread_ns": 139125.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 5272958.0,
+            "cpu_ns": 31227000.0,
+            "thread_ns": 82750.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4200958.0,
+            "cpu_ns": 33414000.0,
+            "thread_ns": 83625.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4096084.0,
+            "cpu_ns": 32337000.0,
+            "thread_ns": 74791.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4610459.0,
+            "cpu_ns": 33190000.0,
+            "thread_ns": 45208.0
+          }
+        ],
+        "after": [
+          {
+            "iterations": 1,
+            "wall_ns": 4335042.0,
+            "cpu_ns": 30428000.0,
+            "thread_ns": 71041.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4253875.0,
+            "cpu_ns": 29947000.0,
+            "thread_ns": 63666.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4865542.0,
+            "cpu_ns": 30789000.0,
+            "thread_ns": 101917.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 3980709.0,
+            "cpu_ns": 29636000.0,
+            "thread_ns": 50375.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 17576625.0,
+            "cpu_ns": 31522000.0,
+            "thread_ns": 96750.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 8648916.0,
+            "cpu_ns": 30020000.0,
+            "thread_ns": 77792.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4536083.0,
+            "cpu_ns": 29843000.0,
+            "thread_ns": 98500.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4193583.0,
+            "cpu_ns": 31705000.0,
+            "thread_ns": 88250.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 3958541.0,
+            "cpu_ns": 29770000.0,
+            "thread_ns": 109250.0
+          }
+        ]
+      },
+      "metrics": {
+        "wall_ns": {
+          "median_before": 4610459.0,
+          "median_after": 4335042.0,
+          "paired_median_speedup": 0.9767504303599094,
+          "bootstrap_95_percent_interval": [
+            0.7361197044370008,
+            1.1646864337138354
+          ],
+          "paired_ratios": [
+            0.9840446759224016,
+            1.0872439834268754,
+            0.7813620764140974,
+            2.711242143045372,
+            0.7361197044370008,
+            0.6096669224212606,
+            0.9261201790178883,
+            0.9767504303599094,
+            1.1646864337138354
+          ],
+          "noisy": true
+        },
+        "cpu_ns": {
+          "median_before": 33175000.0,
+          "median_after": 30020000.0,
+          "paired_median_speedup": 1.1077904297592414,
+          "bootstrap_95_percent_interval": [
+            1.0309307785039021,
+            1.119659551653654
+          ],
+          "paired_ratios": [
+            1.113711055606678,
+            1.1077904297592414,
+            1.0699600506674463,
+            1.2157173707652855,
+            1.0309307785039021,
+            1.0402065289806794,
+            1.119659551653654,
+            1.0199337643904747,
+            1.1148807524353377
+          ],
+          "noisy": false
+        },
+        "thread_ns": {
+          "median_before": 82750.0,
+          "median_after": 88250.0,
+          "paired_median_speedup": 1.0386234410831527,
+          "bootstrap_95_percent_interval": [
+            0.7338422441790869,
+            1.437984496124031
+          ],
+          "paired_ratios": [
+            1.312622288537605,
+            1.0386234410831527,
+            0.7338422441790869,
+            1.716287841191067,
+            1.437984496124031,
+            1.0637340600575895,
+            0.8489847715736041,
+            0.8474900849858357,
+            0.4138032036613272
+          ],
+          "noisy": true
+        }
+      }
+    },
+    "raw/16777216/callers-4/cap-8": {
+      "note": "Current adaptive 4/8 workers versus cap 8; 67108864 total input bytes; application executor setup excluded, submissions included equally",
+      "samples": {
+        "before": [
+          {
+            "iterations": 1,
+            "wall_ns": 3888500.0,
+            "cpu_ns": 30971000.0,
+            "thread_ns": 43041.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4158250.0,
+            "cpu_ns": 31377000.0,
+            "thread_ns": 43125.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4252708.0,
+            "cpu_ns": 32538000.0,
+            "thread_ns": 114000.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4238000.0,
+            "cpu_ns": 32775000.0,
+            "thread_ns": 91875.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4910667.0,
+            "cpu_ns": 32445000.0,
+            "thread_ns": 76917.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4095750.0,
+            "cpu_ns": 33339000.0,
+            "thread_ns": 71958.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4282042.0,
+            "cpu_ns": 32549000.0,
+            "thread_ns": 66083.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4376292.0,
+            "cpu_ns": 32056000.0,
+            "thread_ns": 101041.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 5027625.0,
+            "cpu_ns": 31466000.0,
+            "thread_ns": 82667.0
+          }
+        ],
+        "after": [
+          {
+            "iterations": 1,
+            "wall_ns": 4225667.0,
+            "cpu_ns": 32267000.0,
+            "thread_ns": 57333.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4511000.0,
+            "cpu_ns": 32088000.0,
+            "thread_ns": 66250.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4633417.0,
+            "cpu_ns": 33552000.0,
+            "thread_ns": 71541.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4198541.0,
+            "cpu_ns": 33318000.0,
+            "thread_ns": 64000.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4036333.0,
+            "cpu_ns": 32890000.0,
+            "thread_ns": 58375.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4405750.0,
+            "cpu_ns": 32007000.0,
+            "thread_ns": 64167.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4067334.0,
+            "cpu_ns": 32092000.0,
+            "thread_ns": 83875.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4430083.0,
+            "cpu_ns": 32567000.0,
+            "thread_ns": 66209.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4111833.0,
+            "cpu_ns": 32444000.0,
+            "thread_ns": 73125.0
+          }
+        ]
+      },
+      "metrics": {
+        "wall_ns": {
+          "median_before": 4252708.0,
+          "median_after": 4225667.0,
+          "paired_median_speedup": 0.9878577895718884,
+          "bootstrap_95_percent_interval": [
+            0.9202097562349328,
+            1.2166159234136529
+          ],
+          "paired_ratios": [
+            0.9202097562349328,
+            0.921802261139437,
+            0.9178340736437062,
+            1.0093982647781694,
+            1.2166159234136529,
+            0.929637405663054,
+            1.05278838669261,
+            0.9878577895718884,
+            1.2227211075936206
+          ],
+          "noisy": true
+        },
+        "cpu_ns": {
+          "median_before": 32445000.0,
+          "median_after": 32444000.0,
+          "paired_median_speedup": 0.9837025031514497,
+          "bootstrap_95_percent_interval": [
+            0.9697782546494993,
+            1.014240309111305
+          ],
+          "paired_ratios": [
+            0.9598351256701894,
+            0.9778421839940165,
+            0.9697782546494993,
+            0.9837025031514497,
+            0.986470051687443,
+            1.0416158965226356,
+            1.014240309111305,
+            0.9843092701200602,
+            0.96985575144865
+          ],
+          "noisy": false
+        },
+        "thread_ns": {
+          "median_before": 76917.0,
+          "median_after": 66209.0,
+          "paired_median_speedup": 1.1304888888888889,
+          "bootstrap_95_percent_interval": [
+            0.7507194809272147,
+            1.526091618964189
+          ],
+          "paired_ratios": [
+            0.7507194809272147,
+            0.6509433962264151,
+            1.5934918438377994,
+            1.435546875,
+            1.3176359743040684,
+            1.1214175510776567,
+            0.7878748137108793,
+            1.526091618964189,
+            1.1304888888888889
+          ],
+          "noisy": true
+        }
+      }
+    },
+    "raw/67108864/callers-1/cap-1": {
+      "note": "Current adaptive 4/8 workers versus cap 1; 67108864 total input bytes; application executor setup excluded, submissions included equally",
+      "samples": {
+        "before": [
+          {
+            "iterations": 1,
+            "wall_ns": 4340375.0,
+            "cpu_ns": 30914000.0,
+            "thread_ns": 140833.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4119667.0,
+            "cpu_ns": 30921000.0,
+            "thread_ns": 146792.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4146125.0,
+            "cpu_ns": 29612000.0,
+            "thread_ns": 138250.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4852125.0,
+            "cpu_ns": 29300000.0,
+            "thread_ns": 120917.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 5035542.0,
+            "cpu_ns": 29435000.0,
+            "thread_ns": 128417.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 14157625.0,
+            "cpu_ns": 30318000.0,
+            "thread_ns": 170041.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 23933708.0,
+            "cpu_ns": 29858000.0,
+            "thread_ns": 129833.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 5671041.0,
+            "cpu_ns": 33833000.0,
+            "thread_ns": 136834.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 5563458.0,
+            "cpu_ns": 31978000.0,
+            "thread_ns": 138583.0
+          }
+        ],
+        "after": [
+          {
+            "iterations": 1,
+            "wall_ns": 28589708.0,
+            "cpu_ns": 28350000.0,
+            "thread_ns": 28185250.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 28780542.0,
+            "cpu_ns": 28033000.0,
+            "thread_ns": 28031791.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 28400125.0,
+            "cpu_ns": 28127000.0,
+            "thread_ns": 28099875.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 28324458.0,
+            "cpu_ns": 27999000.0,
+            "thread_ns": 27997625.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 27522791.0,
+            "cpu_ns": 27641000.0,
+            "thread_ns": 27505125.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 30424667.0,
+            "cpu_ns": 27951000.0,
+            "thread_ns": 27950167.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 29476500.0,
+            "cpu_ns": 27848000.0,
+            "thread_ns": 27671833.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 27950417.0,
+            "cpu_ns": 27771000.0,
+            "thread_ns": 27768916.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 28101500.0,
+            "cpu_ns": 28094000.0,
+            "thread_ns": 27923208.0
+          }
+        ]
+      },
+      "metrics": {
+        "wall_ns": {
+          "median_before": 5035542.0,
+          "median_after": 28400125.0,
+          "paired_median_speedup": 0.18295898842526545,
+          "bootstrap_95_percent_interval": [
+            0.1459896743412221,
+            0.4653337701280346
+          ],
+          "paired_ratios": [
+            0.1518159961619755,
+            0.14314070249267716,
+            0.1459896743412221,
+            0.171305131416813,
+            0.18295898842526545,
+            0.4653337701280346,
+            0.811958950350279,
+            0.2028964719918132,
+            0.19797726100030247
+          ],
+          "noisy": true
+        },
+        "cpu_ns": {
+          "median_before": 30318000.0,
+          "median_after": 27999000.0,
+          "paired_median_speedup": 1.084683911130192,
+          "bootstrap_95_percent_interval": [
+            1.0527962456003128,
+            1.1382501601765502
+          ],
+          "paired_ratios": [
+            1.0904409171075837,
+            1.1030214390183,
+            1.0527962456003128,
+            1.046465945212329,
+            1.0649035852537896,
+            1.084683911130192,
+            1.072177535191037,
+            1.2182852616038313,
+            1.1382501601765502
+          ],
+          "noisy": false
+        },
+        "thread_ns": {
+          "median_before": 138250.0,
+          "median_after": 27950167.0,
+          "paired_median_speedup": 0.004927596021393129,
+          "bootstrap_95_percent_interval": [
+            0.004668838989097486,
+            0.005236625801041396
+          ],
+          "paired_ratios": [
+            0.004996691531918291,
+            0.005236625801041396,
+            0.0049199507115245174,
+            0.004318830615096816,
+            0.004668838989097486,
+            0.00608372035845081,
+            0.004691882897674324,
+            0.004927596021393129,
+            0.0049630042508009824
+          ],
+          "noisy": true
+        }
+      }
+    },
+    "raw/67108864/callers-1/cap-2": {
+      "note": "Current adaptive 4/8 workers versus cap 2; 67108864 total input bytes; application executor setup excluded, submissions included equally",
+      "samples": {
+        "before": [
+          {
+            "iterations": 1,
+            "wall_ns": 3983500.0,
+            "cpu_ns": 29115000.0,
+            "thread_ns": 150500.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4069542.0,
+            "cpu_ns": 29905000.0,
+            "thread_ns": 173333.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 3952500.0,
+            "cpu_ns": 29070000.0,
+            "thread_ns": 131583.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4116917.0,
+            "cpu_ns": 29952000.0,
+            "thread_ns": 158709.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 3940292.0,
+            "cpu_ns": 29637000.0,
+            "thread_ns": 151542.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4158167.0,
+            "cpu_ns": 29874000.0,
+            "thread_ns": 137666.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4216708.0,
+            "cpu_ns": 30252000.0,
+            "thread_ns": 141916.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 3741125.0,
+            "cpu_ns": 28873000.0,
+            "thread_ns": 142292.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4085208.0,
+            "cpu_ns": 29504000.0,
+            "thread_ns": 157000.0
+          }
+        ],
+        "after": [
+          {
+            "iterations": 1,
+            "wall_ns": 14359625.0,
+            "cpu_ns": 28393000.0,
+            "thread_ns": 75334.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 16468000.0,
+            "cpu_ns": 28413000.0,
+            "thread_ns": 76791.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 15333792.0,
+            "cpu_ns": 28473000.0,
+            "thread_ns": 80334.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 14436583.0,
+            "cpu_ns": 28504000.0,
+            "thread_ns": 57875.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 14473542.0,
+            "cpu_ns": 28478000.0,
+            "thread_ns": 70250.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 14032125.0,
+            "cpu_ns": 28026000.0,
+            "thread_ns": 82708.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 14265291.0,
+            "cpu_ns": 28307000.0,
+            "thread_ns": 76542.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 14596542.0,
+            "cpu_ns": 29048000.0,
+            "thread_ns": 72000.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 14371084.0,
+            "cpu_ns": 28476000.0,
+            "thread_ns": 88792.0
+          }
+        ]
+      },
+      "metrics": {
+        "wall_ns": {
+          "median_before": 4069542.0,
+          "median_after": 14436583.0,
+          "paired_median_speedup": 0.2774097512992157,
+          "bootstrap_95_percent_interval": [
+            0.2577640286238394,
+            0.2955921474016899
+          ],
+          "paired_ratios": [
+            0.2774097512992157,
+            0.24711816856934662,
+            0.2577640286238394,
+            0.285172537019321,
+            0.27224103125551435,
+            0.29633195257311346,
+            0.2955921474016899,
+            0.25630214334326584,
+            0.2842658215622426
+          ],
+          "noisy": false
+        },
+        "cpu_ns": {
+          "median_before": 29637000.0,
+          "median_after": 28473000.0,
+          "paired_median_speedup": 1.0406980827305288,
+          "bootstrap_95_percent_interval": [
+            1.020967232114635,
+            1.0659387711410833
+          ],
+          "paired_ratios": [
+            1.0254288028739478,
+            1.052511174462394,
+            1.020967232114635,
+            1.0507998877350548,
+            1.0406980827305288,
+            1.0659387711410833,
+            1.0687109195605327,
+            0.9939754888460479,
+            1.0361005759235848
+          ],
+          "noisy": false
+        },
+        "thread_ns": {
+          "median_before": 150500.0,
+          "median_after": 76542.0,
+          "paired_median_speedup": 1.9762777777777778,
+          "bootstrap_95_percent_interval": [
+            1.6644822749915364,
+            2.2572046203331118
+          ],
+          "paired_ratios": [
+            1.9977699312395465,
+            2.2572046203331118,
+            1.6379490626633804,
+            2.742272138228942,
+            2.1571814946619217,
+            1.6644822749915364,
+            1.8540931776018394,
+            1.9762777777777778,
+            1.768177313271466
+          ],
+          "noisy": true
+        }
+      }
+    },
+    "raw/67108864/callers-1/cap-4": {
+      "note": "Current adaptive 4/8 workers versus cap 4; 67108864 total input bytes; application executor setup excluded, submissions included equally",
+      "samples": {
+        "before": [
+          {
+            "iterations": 1,
+            "wall_ns": 4010959.0,
+            "cpu_ns": 29628000.0,
+            "thread_ns": 149875.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4305916.0,
+            "cpu_ns": 29471000.0,
+            "thread_ns": 159542.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4205209.0,
+            "cpu_ns": 29520000.0,
+            "thread_ns": 136584.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 3988167.0,
+            "cpu_ns": 29391000.0,
+            "thread_ns": 116709.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4224083.0,
+            "cpu_ns": 29929000.0,
+            "thread_ns": 166083.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4106542.0,
+            "cpu_ns": 29934000.0,
+            "thread_ns": 185709.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4008416.0,
+            "cpu_ns": 29619000.0,
+            "thread_ns": 109166.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4024792.0,
+            "cpu_ns": 29200000.0,
+            "thread_ns": 179833.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4120042.0,
+            "cpu_ns": 29957000.0,
+            "thread_ns": 147833.0
+          }
+        ],
+        "after": [
+          {
+            "iterations": 1,
+            "wall_ns": 7762333.0,
+            "cpu_ns": 29366000.0,
+            "thread_ns": 108625.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 7754458.0,
+            "cpu_ns": 29135000.0,
+            "thread_ns": 108292.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 7683917.0,
+            "cpu_ns": 29144000.0,
+            "thread_ns": 118459.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 7339791.0,
+            "cpu_ns": 28523000.0,
+            "thread_ns": 135583.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 7552375.0,
+            "cpu_ns": 29029000.0,
+            "thread_ns": 113333.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 7421292.0,
+            "cpu_ns": 28634000.0,
+            "thread_ns": 92250.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 7744875.0,
+            "cpu_ns": 29381000.0,
+            "thread_ns": 92708.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 7517250.0,
+            "cpu_ns": 28893000.0,
+            "thread_ns": 105750.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 7693250.0,
+            "cpu_ns": 29232000.0,
+            "thread_ns": 106750.0
+          }
+        ]
+      },
+      "metrics": {
+        "wall_ns": {
+          "median_before": 4106542.0,
+          "median_after": 7683917.0,
+          "paired_median_speedup": 0.5433624744900775,
+          "bootstrap_95_percent_interval": [
+            0.5175572233251021,
+            0.555282651605051
+          ],
+          "paired_ratios": [
+            0.5167208106119642,
+            0.555282651605051,
+            0.5472741311495166,
+            0.5433624744900775,
+            0.5593052516592463,
+            0.5533459672520634,
+            0.5175572233251021,
+            0.535407496092321,
+            0.5355398563675949
+          ],
+          "noisy": false
+        },
+        "cpu_ns": {
+          "median_before": 29619000.0,
+          "median_after": 29135000.0,
+          "paired_median_speedup": 1.012901454844908,
+          "bootstrap_95_percent_interval": [
+            1.0089218824490909,
+            1.0310034792793414
+          ],
+          "paired_ratios": [
+            1.0089218824490909,
+            1.0115325210228248,
+            1.012901454844908,
+            1.0304315815306946,
+            1.0310034792793414,
+            1.045400572745687,
+            1.0081004730948573,
+            1.0106254109992039,
+            1.0248015873015872
+          ],
+          "noisy": false
+        },
+        "thread_ns": {
+          "median_before": 149875.0,
+          "median_after": 108292.0,
+          "paired_median_speedup": 1.3848524590163935,
+          "bootstrap_95_percent_interval": [
+            1.1530065254645068,
+            1.700548463356974
+          ],
+          "paired_ratios": [
+            1.379746835443038,
+            1.473257489011192,
+            1.1530065254645068,
+            0.8607937573294587,
+            1.4654425454192512,
+            2.0131056910569107,
+            1.1775251326746343,
+            1.700548463356974,
+            1.3848524590163935
+          ],
+          "noisy": true
+        }
+      }
+    },
+    "raw/67108864/callers-1/cap-8": {
+      "note": "Current adaptive 4/8 workers versus cap 8; 67108864 total input bytes; application executor setup excluded, submissions included equally",
+      "samples": {
+        "before": [
+          {
+            "iterations": 1,
+            "wall_ns": 4020500.0,
+            "cpu_ns": 29732000.0,
+            "thread_ns": 142125.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 3912000.0,
+            "cpu_ns": 29476000.0,
+            "thread_ns": 111875.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4262667.0,
+            "cpu_ns": 30291000.0,
+            "thread_ns": 180417.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 3998709.0,
+            "cpu_ns": 29983000.0,
+            "thread_ns": 143917.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4038334.0,
+            "cpu_ns": 29782000.0,
+            "thread_ns": 125875.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 3941750.0,
+            "cpu_ns": 29512000.0,
+            "thread_ns": 125333.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4067125.0,
+            "cpu_ns": 29588000.0,
+            "thread_ns": 185209.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 3979208.0,
+            "cpu_ns": 29353000.0,
+            "thread_ns": 142666.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4045250.0,
+            "cpu_ns": 30429000.0,
+            "thread_ns": 126000.0
+          }
+        ],
+        "after": [
+          {
+            "iterations": 1,
+            "wall_ns": 3982958.0,
+            "cpu_ns": 29726000.0,
+            "thread_ns": 132708.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4008333.0,
+            "cpu_ns": 29521000.0,
+            "thread_ns": 140584.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 3898792.0,
+            "cpu_ns": 29271000.0,
+            "thread_ns": 121666.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4014250.0,
+            "cpu_ns": 29717000.0,
+            "thread_ns": 160208.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 3903375.0,
+            "cpu_ns": 29335000.0,
+            "thread_ns": 108875.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 4061542.0,
+            "cpu_ns": 29778000.0,
+            "thread_ns": 157500.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 3974708.0,
+            "cpu_ns": 29629000.0,
+            "thread_ns": 111750.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 3922167.0,
+            "cpu_ns": 29247000.0,
+            "thread_ns": 130500.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 3967666.0,
+            "cpu_ns": 29498000.0,
+            "thread_ns": 121333.0
+          }
+        ]
+      },
+      "metrics": {
+        "wall_ns": {
+          "median_before": 4020500.0,
+          "median_after": 3974708.0,
+          "paired_median_speedup": 1.014543235920347,
+          "bootstrap_95_percent_interval": [
+            0.9759668171282176,
+            1.0345749511640567
+          ],
+          "paired_ratios": [
+            1.009425658015977,
+            0.9759668171282176,
+            1.0933301904795125,
+            0.9961285420688796,
+            1.0345749511640567,
+            0.9705057832714767,
+            1.023251267766085,
+            1.014543235920347,
+            1.0195540652867454
+          ],
+          "noisy": false
+        },
+        "cpu_ns": {
+          "median_before": 29732000.0,
+          "median_after": 29521000.0,
+          "paired_median_speedup": 1.003624303347352,
+          "bootstrap_95_percent_interval": [
+            0.9984756613935842,
+            1.0315614617940199
+          ],
+          "paired_ratios": [
+            1.0002018435040032,
+            0.9984756613935842,
+            1.0348467766731577,
+            1.0089511054278695,
+            1.015237770581217,
+            0.9910672308415609,
+            0.9986162205946877,
+            1.003624303347352,
+            1.0315614617940199
+          ],
+          "noisy": false
+        },
+        "thread_ns": {
+          "median_before": 142125.0,
+          "median_after": 130500.0,
+          "paired_median_speedup": 1.070960303824939,
+          "bootstrap_95_percent_interval": [
+            0.7957875718431685,
+            1.4828875774661778
+          ],
+          "paired_ratios": [
+            1.070960303824939,
+            0.7957875718431685,
+            1.4828875774661778,
+            0.8983134425247179,
+            1.156142365097589,
+            0.7957650793650793,
+            1.657351230425056,
+            1.0932260536398468,
+            1.0384643913856906
+          ],
+          "noisy": true
+        }
+      }
+    },
+    "raw/67108864/callers-4/cap-1": {
+      "note": "Current adaptive 4/8 workers versus cap 1; 268435456 total input bytes; application executor setup excluded, submissions included equally",
+      "samples": {
+        "before": [
+          {
+            "iterations": 1,
+            "wall_ns": 15031875.0,
+            "cpu_ns": 117050000.0,
+            "thread_ns": 80000.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 12445292.0,
+            "cpu_ns": 122622000.0,
+            "thread_ns": 83500.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 12262833.0,
+            "cpu_ns": 118050000.0,
+            "thread_ns": 74959.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 12203750.0,
+            "cpu_ns": 118340000.0,
+            "thread_ns": 80375.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 13530334.0,
+            "cpu_ns": 115662000.0,
+            "thread_ns": 81833.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 12879250.0,
+            "cpu_ns": 117999000.0,
+            "thread_ns": 150084.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 12264834.0,
+            "cpu_ns": 116142000.0,
+            "thread_ns": 116750.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 13644625.0,
+            "cpu_ns": 117629000.0,
+            "thread_ns": 123792.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 12234875.0,
+            "cpu_ns": 118334000.0,
+            "thread_ns": 90584.0
+          }
+        ],
+        "after": [
+          {
+            "iterations": 1,
+            "wall_ns": 33325375.0,
+            "cpu_ns": 115972000.0,
+            "thread_ns": 87375.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 35648000.0,
+            "cpu_ns": 118179000.0,
+            "thread_ns": 105375.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 65560625.0,
+            "cpu_ns": 115751000.0,
+            "thread_ns": 47500.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 36200917.0,
+            "cpu_ns": 117128000.0,
+            "thread_ns": 65417.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 33063500.0,
+            "cpu_ns": 115160000.0,
+            "thread_ns": 58208.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 30038834.0,
+            "cpu_ns": 111972000.0,
+            "thread_ns": 88000.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 35904625.0,
+            "cpu_ns": 111947000.0,
+            "thread_ns": 98667.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 39577125.0,
+            "cpu_ns": 112208000.0,
+            "thread_ns": 83875.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 29656792.0,
+            "cpu_ns": 113266000.0,
+            "thread_ns": 119958.0
+          }
+        ]
+      },
+      "metrics": {
+        "wall_ns": {
+          "median_before": 12445292.0,
+          "median_after": 35648000.0,
+          "paired_median_speedup": 0.3491161355475763,
+          "bootstrap_95_percent_interval": [
+            0.3371116262054909,
+            0.4287533264440291
+          ],
+          "paired_ratios": [
+            0.45106394151603696,
+            0.3491161355475763,
+            0.18704570006768545,
+            0.3371116262054909,
+            0.4092226775749694,
+            0.4287533264440291,
+            0.3415948223940509,
+            0.3447603887346542,
+            0.41254883535616393
+          ],
+          "noisy": true
+        },
+        "cpu_ns": {
+          "median_before": 117999000.0,
+          "median_after": 115160000.0,
+          "paired_median_speedup": 1.0374730899443487,
+          "bootstrap_95_percent_interval": [
+            1.009295347152761,
+            1.048312063310994
+          ],
+          "paired_ratios": [
+            1.009295347152761,
+            1.0375955118929758,
+            1.019861599467823,
+            1.0103476538487808,
+            1.0043591524835012,
+            1.0538259564891224,
+            1.0374730899443487,
+            1.048312063310994,
+            1.0447442303957057
+          ],
+          "noisy": false
+        },
+        "thread_ns": {
+          "median_before": 83500.0,
+          "median_after": 87375.0,
+          "paired_median_speedup": 1.228656159713836,
+          "bootstrap_95_percent_interval": [
+            0.7924080664294187,
+            1.5780842105263158
+          ],
+          "paired_ratios": [
+            0.9155937052932761,
+            0.7924080664294187,
+            1.5780842105263158,
+            1.228656159713836,
+            1.4058720450797142,
+            1.7055,
+            1.1832730294830085,
+            1.4759105812220565,
+            0.755130962503543
+          ],
+          "noisy": true
+        }
+      }
+    },
+    "raw/67108864/callers-4/cap-2": {
+      "note": "Current adaptive 4/8 workers versus cap 2; 268435456 total input bytes; application executor setup excluded, submissions included equally",
+      "samples": {
+        "before": [
+          {
+            "iterations": 1,
+            "wall_ns": 19612000.0,
+            "cpu_ns": 120744000.0,
+            "thread_ns": 65667.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 14568708.0,
+            "cpu_ns": 117965000.0,
+            "thread_ns": 56041.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 16684083.0,
+            "cpu_ns": 118002000.0,
+            "thread_ns": 106292.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 17158875.0,
+            "cpu_ns": 119020000.0,
+            "thread_ns": 93166.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 12441000.0,
+            "cpu_ns": 118009000.0,
+            "thread_ns": 111625.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 13353167.0,
+            "cpu_ns": 119037000.0,
+            "thread_ns": 79041.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 16099458.0,
+            "cpu_ns": 121812000.0,
+            "thread_ns": 125875.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 15315375.0,
+            "cpu_ns": 118080000.0,
+            "thread_ns": 117709.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 13030875.0,
+            "cpu_ns": 117038000.0,
+            "thread_ns": 138208.0
+          }
+        ],
+        "after": [
+          {
+            "iterations": 1,
+            "wall_ns": 14903958.0,
+            "cpu_ns": 112632000.0,
+            "thread_ns": 83750.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 16050417.0,
+            "cpu_ns": 113573000.0,
+            "thread_ns": 89500.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 48657417.0,
+            "cpu_ns": 115117000.0,
+            "thread_ns": 113084.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 15551958.0,
+            "cpu_ns": 113355000.0,
+            "thread_ns": 86083.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 14834042.0,
+            "cpu_ns": 112560000.0,
+            "thread_ns": 112375.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 15019000.0,
+            "cpu_ns": 113039000.0,
+            "thread_ns": 98708.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 15562250.0,
+            "cpu_ns": 113114000.0,
+            "thread_ns": 99875.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 16896750.0,
+            "cpu_ns": 112462000.0,
+            "thread_ns": 99583.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 15517125.0,
+            "cpu_ns": 112677000.0,
+            "thread_ns": 97750.0
+          }
+        ]
+      },
+      "metrics": {
+        "wall_ns": {
+          "median_before": 15315375.0,
+          "median_after": 15551958.0,
+          "paired_median_speedup": 0.9064095166230193,
+          "bootstrap_95_percent_interval": [
+            0.83867903299721,
+            1.1033257034258965
+          ],
+          "paired_ratios": [
+            1.31589206035068,
+            0.9076840807313604,
+            0.34288879329537775,
+            1.1033257034258965,
+            0.83867903299721,
+            0.8890849590518677,
+            1.0345199440954875,
+            0.9064095166230193,
+            0.8397737983034873
+          ],
+          "noisy": true
+        },
+        "cpu_ns": {
+          "median_before": 118080000.0,
+          "median_after": 113039000.0,
+          "paired_median_speedup": 1.0499546513489,
+          "bootstrap_95_percent_interval": [
+            1.0386711630405114,
+            1.07202216066482
+          ],
+          "paired_ratios": [
+            1.07202216066482,
+            1.0386711630405114,
+            1.0250614592110636,
+            1.0499757399320717,
+            1.04840973702914,
+            1.0530613328143383,
+            1.0768958749580069,
+            1.0499546513489,
+            1.0387035508577616
+          ],
+          "noisy": false
+        },
+        "thread_ns": {
+          "median_before": 106292.0,
+          "median_after": 98708.0,
+          "paired_median_speedup": 0.9933259176863182,
+          "bootstrap_95_percent_interval": [
+            0.7840835820895522,
+            1.260325406758448
+          ],
+          "paired_ratios": [
+            0.7840835820895522,
+            0.6261564245810056,
+            0.9399384528315234,
+            1.0822810543312849,
+            0.9933259176863182,
+            0.8007557644770434,
+            1.260325406758448,
+            1.1820190193105249,
+            1.4138925831202045
+          ],
+          "noisy": true
+        }
+      }
+    },
+    "raw/67108864/callers-4/cap-4": {
+      "note": "Current adaptive 4/8 workers versus cap 4; 268435456 total input bytes; application executor setup excluded, submissions included equally",
+      "samples": {
+        "before": [
+          {
+            "iterations": 1,
+            "wall_ns": 12852125.0,
+            "cpu_ns": 118536000.0,
+            "thread_ns": 88625.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 14015125.0,
+            "cpu_ns": 116636000.0,
+            "thread_ns": 99750.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 12388666.0,
+            "cpu_ns": 116727000.0,
+            "thread_ns": 77041.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 13330041.0,
+            "cpu_ns": 116394000.0,
+            "thread_ns": 98750.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 13181042.0,
+            "cpu_ns": 116094000.0,
+            "thread_ns": 74792.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 14115500.0,
+            "cpu_ns": 118234000.0,
+            "thread_ns": 78792.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 12956250.0,
+            "cpu_ns": 116751000.0,
+            "thread_ns": 95709.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 11701959.0,
+            "cpu_ns": 115871000.0,
+            "thread_ns": 71916.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 11175333.0,
+            "cpu_ns": 115642000.0,
+            "thread_ns": 67833.0
+          }
+        ],
+        "after": [
+          {
+            "iterations": 1,
+            "wall_ns": 17030125.0,
+            "cpu_ns": 115142000.0,
+            "thread_ns": 94709.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 14843291.0,
+            "cpu_ns": 114439000.0,
+            "thread_ns": 95791.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 14487833.0,
+            "cpu_ns": 113759000.0,
+            "thread_ns": 97625.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 13755875.0,
+            "cpu_ns": 116001000.0,
+            "thread_ns": 87333.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 10777666.0,
+            "cpu_ns": 114089000.0,
+            "thread_ns": 89250.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 14564500.0,
+            "cpu_ns": 116507000.0,
+            "thread_ns": 80917.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 10612917.0,
+            "cpu_ns": 114073000.0,
+            "thread_ns": 68375.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 15042708.0,
+            "cpu_ns": 114500000.0,
+            "thread_ns": 97542.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 11852166.0,
+            "cpu_ns": 116485000.0,
+            "thread_ns": 85750.0
+          }
+        ]
+      },
+      "metrics": {
+        "wall_ns": {
+          "median_before": 12956250.0,
+          "median_after": 14487833.0,
+          "paired_median_speedup": 0.9442060389437895,
+          "bootstrap_95_percent_interval": [
+            0.7779157183666664,
+            0.9691716159154108
+          ],
+          "paired_ratios": [
+            0.7546700332499028,
+            0.9442060389437895,
+            0.8551082829295451,
+            0.9690434814215744,
+            1.2229959622055462,
+            0.9691716159154108,
+            1.2208000872898563,
+            0.7779157183666664,
+            0.9428937292980878
+          ],
+          "noisy": true
+        },
+        "cpu_ns": {
+          "median_before": 116636000.0,
+          "median_after": 114500000.0,
+          "paired_median_speedup": 1.0175739992462025,
+          "bootstrap_95_percent_interval": [
+            1.0033879018284324,
+            1.0260902434093127
+          ],
+          "paired_ratios": [
+            1.0294766462281357,
+            1.0191980006815857,
+            1.0260902434093127,
+            1.0033879018284324,
+            1.0175739992462025,
+            1.0148231436737707,
+            1.0234761950680704,
+            1.0119737991266375,
+            0.9927630166974288
+          ],
+          "noisy": false
+        },
+        "thread_ns": {
+          "median_before": 78792.0,
+          "median_after": 89250.0,
+          "paired_median_speedup": 0.9357611209072,
+          "bootstrap_95_percent_interval": [
+            0.7891523687580025,
+            1.1307295066011702
+          ],
+          "paired_ratios": [
+            0.9357611209072,
+            1.0413295612322662,
+            0.7891523687580025,
+            1.1307295066011702,
+            0.8380056022408964,
+            0.9737385221894039,
+            1.3997659963436928,
+            0.7372824014270776,
+            0.7910553935860059
+          ],
+          "noisy": true
+        }
+      }
+    },
+    "raw/67108864/callers-4/cap-8": {
+      "note": "Current adaptive 4/8 workers versus cap 8; 268435456 total input bytes; application executor setup excluded, submissions included equally",
+      "samples": {
+        "before": [
+          {
+            "iterations": 1,
+            "wall_ns": 9536458.0,
+            "cpu_ns": 116181000.0,
+            "thread_ns": 78125.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 11554000.0,
+            "cpu_ns": 116217000.0,
+            "thread_ns": 100583.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 12081542.0,
+            "cpu_ns": 117264000.0,
+            "thread_ns": 83708.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 15374125.0,
+            "cpu_ns": 119320000.0,
+            "thread_ns": 50125.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 10580791.0,
+            "cpu_ns": 115465000.0,
+            "thread_ns": 103083.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 12829084.0,
+            "cpu_ns": 117017000.0,
+            "thread_ns": 103083.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 11011667.0,
+            "cpu_ns": 115873000.0,
+            "thread_ns": 68167.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 11737500.0,
+            "cpu_ns": 123095000.0,
+            "thread_ns": 58375.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 10176083.0,
+            "cpu_ns": 118001000.0,
+            "thread_ns": 60084.0
+          }
+        ],
+        "after": [
+          {
+            "iterations": 1,
+            "wall_ns": 9682666.0,
+            "cpu_ns": 116193000.0,
+            "thread_ns": 65667.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 11228250.0,
+            "cpu_ns": 117284000.0,
+            "thread_ns": 72209.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 24823792.0,
+            "cpu_ns": 119115000.0,
+            "thread_ns": 123083.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 12172083.0,
+            "cpu_ns": 118109000.0,
+            "thread_ns": 119584.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 10273333.0,
+            "cpu_ns": 116645000.0,
+            "thread_ns": 170334.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 10934417.0,
+            "cpu_ns": 115394000.0,
+            "thread_ns": 77792.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 11033584.0,
+            "cpu_ns": 116097000.0,
+            "thread_ns": 73542.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 10088375.0,
+            "cpu_ns": 118157000.0,
+            "thread_ns": 71917.0
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 11622917.0,
+            "cpu_ns": 117348000.0,
+            "thread_ns": 82125.0
+          }
+        ]
+      },
+      "metrics": {
+        "wall_ns": {
+          "median_before": 11554000.0,
+          "median_after": 11033584.0,
+          "paired_median_speedup": 1.0290116447353772,
+          "bootstrap_95_percent_interval": [
+            0.8755188564110025,
+            1.1732755390616618
+          ],
+          "paired_ratios": [
+            0.9849000265009658,
+            1.0290116447353772,
+            0.4866920412481703,
+            1.2630644237309259,
+            1.0299277751436657,
+            1.1732755390616618,
+            0.9980136100835413,
+            1.1634678528504343,
+            0.8755188564110025
+          ],
+          "noisy": true
+        },
+        "cpu_ns": {
+          "median_before": 117017000.0,
+          "median_after": 117284000.0,
+          "paired_median_speedup": 0.9998967235547752,
+          "bootstrap_95_percent_interval": [
+            0.9898838355694629,
+            1.0140648560583738
+          ],
+          "paired_ratios": [
+            0.9998967235547752,
+            0.9909024248831895,
+            0.9844603954161945,
+            1.0102532406505855,
+            0.9898838355694629,
+            1.0140648560583738,
+            0.9980705789124611,
+            1.0417918532122514,
+            1.0055646453284248
+          ],
+          "noisy": false
+        },
+        "thread_ns": {
+          "median_before": 78125.0,
+          "median_after": 77792.0,
+          "paired_median_speedup": 0.8116995981478649,
+          "bootstrap_95_percent_interval": [
+            0.6051815844164994,
+            1.3251105512134924
+          ],
+          "paired_ratios": [
+            1.1897147730214568,
+            1.3929427079726904,
+            0.6800939203626821,
+            0.4191614262777629,
+            0.6051815844164994,
+            1.3251105512134924,
+            0.9269125125778467,
+            0.8116995981478649,
+            0.7316164383561644
+          ],
+          "noisy": true
+        }
+      }
+    }
+  },
+  "load_end": [
+    29.10986328125,
+    30.72021484375,
+    35.98486328125
+  ]
+}

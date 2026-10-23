@@ -8,6 +8,7 @@ Each tool owns a package; the root contains only this guide and the shared
 | [`suites/`](suites/) | Suite inventory, ownership validation, and pytest selection |
 | [`ci/`](ci/) | CI groups, JUnit summaries, and shared campaign reporting |
 | [`release/`](release/) | Archive verification and authenticated release handoff |
+| [`runtime/`](runtime/README.md) | Linked OpenSSL security preflight outside library hot calls |
 | [`supply_chain/`](supply_chain/) | Dependency trust, lockfile inventory, and audit evidence |
 | [`static_analysis/`](static_analysis/) | Bandit and SARIF evidence validation |
 | [`fuzz/`](fuzz/README.md) | Parser/token targets, corpora, replay, and campaigns |

@@ -1,0 +1,2496 @@
+{
+  "schema_version": 1,
+  "decision": "Keep the existing clean Python implementation; all additional micro-optimization candidates rejected because none removed the original-baseline cheap-rejection regression.",
+  "production_changed": false,
+  "python": "3.13.16 (main, Oct  9 2026, 15:11:24) [Clang 22.1.3 ]",
+  "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+  "root_driver": {
+    "artifact": "bench/crypto-audit/token-python-results.json",
+    "sha256": "168a57ef76ce36fbe710912ce710bc9cc299b797342a315c7761dfecf3978fa7",
+    "observed_cpu_overhead_ns_rounded": {
+      "empty": 6.4,
+      "no_separator": 5.0,
+      "extra_separator": 11.2
+    },
+    "rows": {
+      "verify/malformed/empty": {
+        "metrics": {
+          "wall_ns": {
+            "median_before": 42.75828699650372,
+            "median_after": 49.50534861770379,
+            "paired_median_speedup": 0.8677023638389436,
+            "bootstrap_95_percent_interval": [
+              0.8530423491427378,
+              0.9020884457891616
+            ],
+            "paired_ratios": [
+              0.8530136364230015,
+              0.8677023638389436,
+              0.8882304158884193,
+              0.7929676691360067,
+              0.835033494494351,
+              0.8794598965935433,
+              0.9985734629804166,
+              0.9016580286104311,
+              0.9020884457891616,
+              0.8590378165713081,
+              0.8621188971565519,
+              0.837180488883841,
+              0.8406014513340129,
+              0.9022935004612122,
+              0.9283615068793231,
+              0.8530423491427378,
+              0.9037800258353603,
+              0.8560287089826591,
+              0.9089082050964986
+            ],
+            "noisy": false
+          },
+          "cpu_ns": {
+            "median_before": 42.552574665592076,
+            "median_after": 49.163509021517584,
+            "paired_median_speedup": 0.869659439221184,
+            "bootstrap_95_percent_interval": [
+              0.857531531915857,
+              0.8994513570585877
+            ],
+            "paired_ratios": [
+              0.852854715122309,
+              0.869659439221184,
+              0.8891271658636887,
+              0.7944484524907247,
+              0.8352952283326622,
+              0.877790639190519,
+              1.002691201191332,
+              0.8985555368228184,
+              0.9006425360064615,
+              0.8598219464787207,
+              0.8656658598760476,
+              0.8381815853439779,
+              0.8399975334581186,
+              0.8994513570585877,
+              0.9165316948537133,
+              0.8670898910258984,
+              0.9024869371985224,
+              0.857531531915857,
+              0.903721462671807
+            ],
+            "noisy": false
+          },
+          "thread_ns": {
+            "median_before": 42.54919434796978,
+            "median_after": 49.1565257239785,
+            "paired_median_speedup": 0.8696478704076023,
+            "bootstrap_95_percent_interval": [
+              0.857549750709103,
+              0.8994894322613173
+            ],
+            "paired_ratios": [
+              0.8530261477061563,
+              0.8696478704076023,
+              0.8891463424640724,
+              0.794403882603806,
+              0.835234444936011,
+              0.8777713286308305,
+              1.002589126449632,
+              0.898537081330953,
+              0.9006746509910694,
+              0.8599269336678872,
+              0.8656197012613723,
+              0.8381781466097591,
+              0.8400087780833324,
+              0.8994894322613173,
+              0.9165530759564287,
+              0.8670214019571035,
+              0.9025677849741154,
+              0.857549750709103,
+              0.9037062523162357
+            ],
+            "noisy": false
+          }
+        },
+        "samples": {
+          "before": [
+            {
+              "iterations": 344938,
+              "wall_ns": 42.538079307005894,
+              "cpu_ns": 42.4018229362958,
+              "thread_ns": 42.399164487531095
+            },
+            {
+              "iterations": 344938,
+              "wall_ns": 42.95590801825256,
+              "cpu_ns": 42.75550968579861,
+              "thread_ns": 42.74886791249442
+            },
+            {
+              "iterations": 344938,
+              "wall_ns": 42.98671065524819,
+              "cpu_ns": 42.77000504438479,
+              "thread_ns": 42.76662182769077
+            },
+            {
+              "iterations": 344938,
+              "wall_ns": 42.51766694304484,
+              "cpu_ns": 42.36703407568896,
+              "thread_ns": 42.36341023604242
+            },
+            {
+              "iterations": 344938,
+              "wall_ns": 42.747899622540864,
+              "cpu_ns": 42.67143660599876,
+              "thread_ns": 42.66249876789452
+            },
+            {
+              "iterations": 344938,
+              "wall_ns": 41.05556650760427,
+              "cpu_ns": 40.963883364546675,
+              "thread_ns": 40.96110605384156
+            },
+            {
+              "iterations": 344938,
+              "wall_ns": 49.06050652581044,
+              "cpu_ns": 48.97691759098736,
+              "thread_ns": 48.96978877363468
+            },
+            {
+              "iterations": 344938,
+              "wall_ns": 41.926737558633725,
+              "cpu_ns": 41.71474293931083,
+              "thread_ns": 41.71196562860572
+            },
+            {
+              "iterations": 344938,
+              "wall_ns": 43.76329949150282,
+              "cpu_ns": 43.66581820501076,
+              "thread_ns": 43.66352503928242
+            },
+            {
+              "iterations": 344938,
+              "wall_ns": 42.85673367387763,
+              "cpu_ns": 42.44240994033711,
+              "thread_ns": 42.44011677460877
+            },
+            {
+              "iterations": 344938,
+              "wall_ns": 42.088117284845396,
+              "cpu_ns": 41.96116403527591,
+              "thread_ns": 41.956090659770744
+            },
+            {
+              "iterations": 344938,
+              "wall_ns": 42.29093344311151,
+              "cpu_ns": 42.27426378073741,
+              "thread_ns": 42.2695527891969
+            },
+            {
+              "iterations": 344938,
+              "wall_ns": 42.75828699650372,
+              "cpu_ns": 42.552574665592076,
+              "thread_ns": 42.54919434796978
+            },
+            {
+              "iterations": 344938,
+              "wall_ns": 42.630124834028145,
+              "cpu_ns": 42.343841501951076,
+              "thread_ns": 42.337559213539826
+            },
+            {
+              "iterations": 344938,
+              "wall_ns": 46.38720001855406,
+              "cpu_ns": 45.605297183841735,
+              "thread_ns": 45.60022380833657
+            },
+            {
+              "iterations": 344938,
+              "wall_ns": 44.96423995036789,
+              "cpu_ns": 44.521044361595415,
+              "thread_ns": 44.512709530408365
+            },
+            {
+              "iterations": 344938,
+              "wall_ns": 43.97903971148438,
+              "cpu_ns": 43.52376369086618,
+              "thread_ns": 43.5191744603378
+            },
+            {
+              "iterations": 344938,
+              "wall_ns": 42.24370176669431,
+              "cpu_ns": 41.82200859284857,
+              "thread_ns": 41.819231282143456
+            },
+            {
+              "iterations": 344938,
+              "wall_ns": 46.371376885121386,
+              "cpu_ns": 45.289298366663,
+              "thread_ns": 45.2813259194406
+            }
+          ],
+          "after": [
+            {
+              "iterations": 292412,
+              "wall_ns": 49.867994473551015,
+              "cpu_ns": 49.71752185272834,
+              "thread_ns": 49.70441363555531
+            },
+            {
+              "iterations": 292412,
+              "wall_ns": 49.50534861770379,
+              "cpu_ns": 49.163509021517584,
+              "thread_ns": 49.1565257239785
+            },
+            {
+              "iterations": 292412,
+              "wall_ns": 48.39590030504904,
+              "cpu_ns": 48.10336101117601,
+              "thread_ns": 48.098518528651354
+            },
+            {
+              "iterations": 292412,
+              "wall_ns": 53.61841169309057,
+              "cpu_ns": 53.32886475247254,
+              "thread_ns": 53.327295049450775
+            },
+            {
+              "iterations": 292412,
+              "wall_ns": 51.19303585352174,
+              "cpu_ns": 51.08545476929812,
+              "thread_ns": 51.07847147175902
+            },
+            {
+              "iterations": 292412,
+              "wall_ns": 46.68270454016935,
+              "cpu_ns": 46.66703144877775,
+              "thread_ns": 46.66489405359561
+            },
+            {
+              "iterations": 292412,
+              "wall_ns": 49.13059313571262,
+              "cpu_ns": 48.845464618415114,
+              "thread_ns": 48.843327223232976
+            },
+            {
+              "iterations": 292412,
+              "wall_ns": 46.499599879621904,
+              "cpu_ns": 46.424223356086614,
+              "thread_ns": 46.422085960904475
+            },
+            {
+              "iterations": 292412,
+              "wall_ns": 48.513313407110516,
+              "cpu_ns": 48.482962395524126,
+              "thread_ns": 48.47868760515984
+            },
+            {
+              "iterations": 292412,
+              "wall_ns": 49.88922821224847,
+              "cpu_ns": 49.3618592944202,
+              "thread_ns": 49.3531660807354
+            },
+            {
+              "iterations": 292412,
+              "wall_ns": 48.819388397193,
+              "cpu_ns": 48.47270289864985,
+              "thread_ns": 48.46942669931467
+            },
+            {
+              "iterations": 292412,
+              "wall_ns": 50.515909059819705,
+              "cpu_ns": 50.435686633927475,
+              "thread_ns": 50.430273039410146
+            },
+            {
+              "iterations": 292412,
+              "wall_ns": 50.86630165656676,
+              "cpu_ns": 50.65797573287006,
+              "thread_ns": 50.653273463469354
+            },
+            {
+              "iterations": 292412,
+              "wall_ns": 47.246405756261716,
+              "cpu_ns": 47.077411323748684,
+              "thread_ns": 47.0684342639837
+            },
+            {
+              "iterations": 292412,
+              "wall_ns": 49.9667421309659,
+              "cpu_ns": 49.75855984022544,
+              "thread_ns": 49.75186380859883
+            },
+            {
+              "iterations": 292412,
+              "wall_ns": 52.710442799885094,
+              "cpu_ns": 51.34536202344637,
+              "thread_ns": 51.3398047959728
+            },
+            {
+              "iterations": 292412,
+              "wall_ns": 48.66122115371462,
+              "cpu_ns": 48.226474973667294,
+              "thread_ns": 48.217070434865875
+            },
+            {
+              "iterations": 292412,
+              "wall_ns": 49.34846381133469,
+              "cpu_ns": 48.77022830800377,
+              "thread_ns": 48.765953517639495
+            },
+            {
+              "iterations": 292412,
+              "wall_ns": 51.01876803961534,
+              "cpu_ns": 50.11422239853358,
+              "thread_ns": 50.106243929797685
+            }
+          ]
+        }
+      },
+      "verify/malformed/no-separator": {
+        "metrics": {
+          "wall_ns": {
+            "median_before": 44.03558046918264,
+            "median_after": 48.93338409839593,
+            "paired_median_speedup": 0.8937065015074407,
+            "bootstrap_95_percent_interval": [
+              0.8808975554634808,
+              0.9025269170940841
+            ],
+            "paired_ratios": [
+              0.8625361101063156,
+              0.9017567944619753,
+              0.9181955225983239,
+              0.8418842502467627,
+              0.881967550575075,
+              0.8869995886020311,
+              0.8844035507574926,
+              0.8999251409380047,
+              0.907056918908544,
+              0.8786211439055154,
+              0.9146998061504096,
+              1.0072157748712491,
+              0.9079629123461286,
+              0.8808975554634808,
+              0.9025269170940841,
+              0.878180547469115,
+              0.8937065015074407,
+              0.8989117243121815,
+              0.872946186706565
+            ],
+            "noisy": false
+          },
+          "cpu_ns": {
+            "median_before": 43.83417186082407,
+            "median_after": 48.794053866145774,
+            "paired_median_speedup": 0.8952960936584968,
+            "bootstrap_95_percent_interval": [
+              0.8838017654914913,
+              0.9029378329544818
+            ],
+            "paired_ratios": [
+              0.8606471257084034,
+              0.9013768507188367,
+              0.9087312348146881,
+              0.8380952988680967,
+              0.8841405162184494,
+              0.8851488785512358,
+              0.8838017654914913,
+              0.8952960936584968,
+              0.9029378329544818,
+              0.8821867635571018,
+              0.9179502461438773,
+              1.0130401833145897,
+              0.9034254020422602,
+              0.8863762612831414,
+              0.9020229213586732,
+              0.8776194380906535,
+              0.8960958311219865,
+              0.9043979369740524,
+              0.8693004842102762
+            ],
+            "noisy": false
+          },
+          "thread_ns": {
+            "median_before": 43.829016978708864,
+            "median_after": 48.78908771871741,
+            "paired_median_speedup": 0.8951499918258234,
+            "bootstrap_95_percent_interval": [
+              0.8837514683723255,
+              0.9030206160767978
+            ],
+            "paired_ratios": [
+              0.8605373922525681,
+              0.9013386989254515,
+              0.9086996700614058,
+              0.8380571631457407,
+              0.8842132791571381,
+              0.8850740862954554,
+              0.8837514683723255,
+              0.8951499918258234,
+              0.9030206160767978,
+              0.8821276971073319,
+              0.9179303499094426,
+              1.0131072009614275,
+              0.9034169670271627,
+              0.8863511802451676,
+              0.9019808759644962,
+              0.8776206387986383,
+              0.896076654912556,
+              0.9044328866359558,
+              0.8693396181825556
+            ],
+            "noisy": false
+          }
+        },
+        "samples": {
+          "before": [
+            {
+              "iterations": 339484,
+              "wall_ns": 44.3366491498863,
+              "cpu_ns": 43.51604199314254,
+              "thread_ns": 43.50610043477749
+            },
+            {
+              "iterations": 339484,
+              "wall_ns": 43.33746214843704,
+              "cpu_ns": 43.0417928385432,
+              "thread_ns": 43.03847898575485
+            },
+            {
+              "iterations": 339484,
+              "wall_ns": 46.419468958772725,
+              "cpu_ns": 45.89612470690813,
+              "thread_ns": 45.88863687242992
+            },
+            {
+              "iterations": 339484,
+              "wall_ns": 44.168994709618126,
+              "cpu_ns": 43.94905209082019,
+              "thread_ns": 43.94046258439278
+            },
+            {
+              "iterations": 339484,
+              "wall_ns": 43.157656914611586,
+              "cpu_ns": 42.95931472469984,
+              "thread_ns": 42.95870203013986
+            },
+            {
+              "iterations": 339484,
+              "wall_ns": 44.05337806789127,
+              "cpu_ns": 43.94021515005125,
+              "thread_ns": 43.93064179755158
+            },
+            {
+              "iterations": 339484,
+              "wall_ns": 43.15875858656078,
+              "cpu_ns": 43.12427095238656,
+              "thread_ns": 43.122182488718174
+            },
+            {
+              "iterations": 339484,
+              "wall_ns": 43.79244088086626,
+              "cpu_ns": 43.495422464681695,
+              "thread_ns": 43.48523641762204
+            },
+            {
+              "iterations": 339484,
+              "wall_ns": 44.31554064403624,
+              "cpu_ns": 44.06098667389332,
+              "thread_ns": 44.057552049581126
+            },
+            {
+              "iterations": 339484,
+              "wall_ns": 42.554535707132,
+              "cpu_ns": 42.440880866255846,
+              "thread_ns": 42.43609419000601
+            },
+            {
+              "iterations": 339484,
+              "wall_ns": 44.13450412979699,
+              "cpu_ns": 43.96083467851209,
+              "thread_ns": 43.95494338466614
+            },
+            {
+              "iterations": 339484,
+              "wall_ns": 47.55967880665952,
+              "cpu_ns": 47.47499145762392,
+              "thread_ns": 47.469468369643344
+            },
+            {
+              "iterations": 339484,
+              "wall_ns": 44.337261844446274,
+              "cpu_ns": 44.069823614662255,
+              "thread_ns": 44.06430052668167
+            },
+            {
+              "iterations": 339484,
+              "wall_ns": 43.85786075337866,
+              "cpu_ns": 43.75463939390369,
+              "thread_ns": 43.750833618079206
+            },
+            {
+              "iterations": 339484,
+              "wall_ns": 44.03558046918264,
+              "cpu_ns": 43.83417186082407,
+              "thread_ns": 43.829016978708864
+            },
+            {
+              "iterations": 339484,
+              "wall_ns": 43.3102149143995,
+              "cpu_ns": 43.16256436238527,
+              "thread_ns": 43.1581458920008
+            },
+            {
+              "iterations": 339484,
+              "wall_ns": 43.97322996076398,
+              "cpu_ns": 43.8695196238998,
+              "thread_ns": 43.862647429628495
+            },
+            {
+              "iterations": 339484,
+              "wall_ns": 44.06503693841241,
+              "cpu_ns": 43.916649974667436,
+              "thread_ns": 43.91198406994144
+            },
+            {
+              "iterations": 339484,
+              "wall_ns": 43.733651659577475,
+              "cpu_ns": 43.51898764006551,
+              "thread_ns": 43.51542929858255
+            }
+          ],
+          "after": [
+            {
+              "iterations": 302045,
+              "wall_ns": 51.40265854425665,
+              "cpu_ns": 50.56200235064312,
+              "thread_ns": 50.55689715108676
+            },
+            {
+              "iterations": 302045,
+              "wall_ns": 48.05892499462001,
+              "cpu_ns": 47.75116290618948,
+              "thread_ns": 47.749507523713355
+            },
+            {
+              "iterations": 302045,
+              "wall_ns": 50.555102716482644,
+              "cpu_ns": 50.505719346454995,
+              "thread_ns": 50.499233557913556
+            },
+            {
+              "iterations": 302045,
+              "wall_ns": 52.4644506613253,
+              "cpu_ns": 52.43920607856445,
+              "thread_ns": 52.43134301180288
+            },
+            {
+              "iterations": 302045,
+              "wall_ns": 48.93338409839593,
+              "cpu_ns": 48.588786439106755,
+              "thread_ns": 48.58409508516943
+            },
+            {
+              "iterations": 302045,
+              "wall_ns": 49.66561273982354,
+              "cpu_ns": 49.64160969391978,
+              "thread_ns": 49.6349881640153
+            },
+            {
+              "iterations": 302045,
+              "wall_ns": 48.799847704812194,
+              "cpu_ns": 48.794053866145774,
+              "thread_ns": 48.7944677117648
+            },
+            {
+              "iterations": 302045,
+              "wall_ns": 48.6623152179311,
+              "cpu_ns": 48.58216490920227,
+              "thread_ns": 48.57871509212203
+            },
+            {
+              "iterations": 302045,
+              "wall_ns": 48.85640550249135,
+              "cpu_ns": 48.79736463109801,
+              "thread_ns": 48.78908771871741
+            },
+            {
+              "iterations": 302045,
+              "wall_ns": 48.433316227714414,
+              "cpu_ns": 48.10872552103164,
+              "thread_ns": 48.10652055157344
+            },
+            {
+              "iterations": 302045,
+              "wall_ns": 48.25026072273999,
+              "cpu_ns": 47.89021503418365,
+              "thread_ns": 47.884835041136256
+            },
+            {
+              "iterations": 302045,
+              "wall_ns": 47.21895744011654,
+              "cpu_ns": 46.86387789898856,
+              "thread_ns": 46.85532619311692
+            },
+            {
+              "iterations": 302045,
+              "wall_ns": 48.83157807611449,
+              "cpu_ns": 48.7808108063368,
+              "thread_ns": 48.77515270903342
+            },
+            {
+              "iterations": 302045,
+              "wall_ns": 49.78769719743747,
+              "cpu_ns": 49.36350543793144,
+              "thread_ns": 49.36060851859822
+            },
+            {
+              "iterations": 302045,
+              "wall_ns": 48.791431740303594,
+              "cpu_ns": 48.59540796901124,
+              "thread_ns": 48.591958151931
+            },
+            {
+              "iterations": 302045,
+              "wall_ns": 49.318121471966094,
+              "cpu_ns": 49.181413365558114,
+              "thread_ns": 49.176311476766706
+            },
+            {
+              "iterations": 302045,
+              "wall_ns": 49.20321144200368,
+              "cpu_ns": 48.95628134880564,
+              "thread_ns": 48.949659818901154
+            },
+            {
+              "iterations": 302045,
+              "wall_ns": 49.020427419755336,
+              "cpu_ns": 48.55898955453657,
+              "thread_ns": 48.55195417901306
+            },
+            {
+              "iterations": 302045,
+              "wall_ns": 50.098909102948234,
+              "cpu_ns": 50.062076842854545,
+              "thread_ns": 50.055730106441096
+            }
+          ]
+        }
+      },
+      "verify/malformed/extra-separator": {
+        "metrics": {
+          "wall_ns": {
+            "median_before": 72.39679893135204,
+            "median_after": 84.07898324513519,
+            "paired_median_speedup": 0.8525861461129661,
+            "bootstrap_95_percent_interval": [
+              0.8419785997680598,
+              0.897260818379753
+            ],
+            "paired_ratios": [
+              1.5616416270146702,
+              0.9175464483169486,
+              0.8419785997680598,
+              0.8469441263077898,
+              0.830347812941292,
+              0.9587833032767179,
+              0.9253634313161053,
+              0.8354122942992139,
+              0.8295055123937899,
+              0.9585506902302506,
+              0.8547643437158319,
+              0.8525861461129661,
+              0.897260818379753,
+              0.8449713134968918,
+              0.8912502658341804,
+              0.8449771307517313,
+              0.8751470443021969,
+              0.8184572149796128,
+              0.8262860139141517
+            ],
+            "noisy": true
+          },
+          "cpu_ns": {
+            "median_before": 71.98260521940922,
+            "median_after": 83.2345625427775,
+            "paired_median_speedup": 0.8482526416154959,
+            "bootstrap_95_percent_interval": [
+              0.8442886528056803,
+              0.8905005989664125
+            ],
+            "paired_ratios": [
+              0.8861670885916504,
+              0.9175575355049816,
+              0.848016316856195,
+              0.8482526416154959,
+              0.8313040293923792,
+              0.9556440617292509,
+              0.9298898307917163,
+              0.836852047764957,
+              0.8286700914140175,
+              0.9537516382123596,
+              0.8480507516820195,
+              0.8442886528056803,
+              0.894090824793386,
+              0.8569673402699446,
+              0.8905005989664125,
+              0.8458265373597738,
+              0.8726941905739195,
+              0.8170290355080617,
+              0.8360982179944503
+            ],
+            "noisy": false
+          },
+          "thread_ns": {
+            "median_before": 71.97569703440442,
+            "median_after": 83.22876428003049,
+            "paired_median_speedup": 0.8481811915033511,
+            "bootstrap_95_percent_interval": [
+              0.8443302867654672,
+              0.8905231067710349
+            ],
+            "paired_ratios": [
+              0.886030086570442,
+              0.917554269437717,
+              0.8479558742152602,
+              0.8481811915033511,
+              0.8313473651115421,
+              0.9556141908911878,
+              0.9298667488366364,
+              0.8368791578005788,
+              0.8286814538962688,
+              0.9537466906347097,
+              0.8479249284574412,
+              0.8443302867654672,
+              0.8940102696191057,
+              0.8569820645062578,
+              0.8905231067710349,
+              0.8458843838974915,
+              0.8726568973428305,
+              0.817156878998846,
+              0.8361223705297619
+            ],
+            "noisy": false
+          }
+        },
+        "samples": {
+          "before": [
+            {
+              "iterations": 205119,
+              "wall_ns": 174.70407422033063,
+              "cpu_ns": 80.84575295316377,
+              "thread_ns": 80.82442387102121
+            },
+            {
+              "iterations": 205119,
+              "wall_ns": 70.53487000229136,
+              "cpu_ns": 69.95451420882512,
+              "thread_ns": 69.94639209434523
+            },
+            {
+              "iterations": 205119,
+              "wall_ns": 69.01582983536386,
+              "cpu_ns": 68.55045120149767,
+              "thread_ns": 68.53907731609456
+            },
+            {
+              "iterations": 205119,
+              "wall_ns": 69.13202579965775,
+              "cpu_ns": 68.40906985700984,
+              "thread_ns": 68.40094774252995
+            },
+            {
+              "iterations": 205119,
+              "wall_ns": 72.99198026511439,
+              "cpu_ns": 71.98260521940922,
+              "thread_ns": 71.97691583909828
+            },
+            {
+              "iterations": 205119,
+              "wall_ns": 75.7958404633408,
+              "cpu_ns": 75.1661230797732,
+              "thread_ns": 75.15779133088597
+            },
+            {
+              "iterations": 205119,
+              "wall_ns": 77.80361643728763,
+              "cpu_ns": 77.3989732789259,
+              "thread_ns": 77.39166045076273
+            },
+            {
+              "iterations": 205119,
+              "wall_ns": 71.80567377961086,
+              "cpu_ns": 71.16844368391031,
+              "thread_ns": 71.15930264870636
+            },
+            {
+              "iterations": 205119,
+              "wall_ns": 78.51174196442065,
+              "cpu_ns": 76.540934774448,
+              "thread_ns": 76.53545015332563
+            },
+            {
+              "iterations": 205119,
+              "wall_ns": 80.08968939981182,
+              "cpu_ns": 78.82253716135511,
+              "thread_ns": 78.8121773214573
+            },
+            {
+              "iterations": 205119,
+              "wall_ns": 77.56249299187301,
+              "cpu_ns": 75.70727236384732,
+              "thread_ns": 75.68797624793413
+            },
+            {
+              "iterations": 205119,
+              "wall_ns": 77.43066220096627,
+              "cpu_ns": 75.12712132956966,
+              "thread_ns": 75.12123206528894
+            },
+            {
+              "iterations": 205119,
+              "wall_ns": 72.39679893135204,
+              "cpu_ns": 71.07093930840146,
+              "thread_ns": 71.05977018218692
+            },
+            {
+              "iterations": 205119,
+              "wall_ns": 73.39723282582305,
+              "cpu_ns": 71.98260521940922,
+              "thread_ns": 71.97569703440442
+            },
+            {
+              "iterations": 205119,
+              "wall_ns": 70.15785470873006,
+              "cpu_ns": 70.04226814678309,
+              "thread_ns": 70.03495531861992
+            },
+            {
+              "iterations": 205119,
+              "wall_ns": 71.89586532695655,
+              "cpu_ns": 71.87047518757404,
+              "thread_ns": 71.86519045042147
+            },
+            {
+              "iterations": 205119,
+              "wall_ns": 72.30761655429288,
+              "cpu_ns": 72.01673175083732,
+              "thread_ns": 72.00596726778114
+            },
+            {
+              "iterations": 205119,
+              "wall_ns": 68.90613741291641,
+              "cpu_ns": 68.75521039006625,
+              "thread_ns": 68.75460098771933
+            },
+            {
+              "iterations": 205119,
+              "wall_ns": 68.42247670864231,
+              "cpu_ns": 68.03367801130075,
+              "thread_ns": 68.02148996436215
+            }
+          ],
+          "after": [
+            {
+              "iterations": 179709,
+              "wall_ns": 111.87206539461017,
+              "cpu_ns": 91.23082316411532,
+              "thread_ns": 91.22085705223445
+            },
+            {
+              "iterations": 179709,
+              "wall_ns": 76.8733508060253,
+              "cpu_ns": 76.23992120594961,
+              "thread_ns": 76.23134066741231
+            },
+            {
+              "iterations": 179709,
+              "wall_ns": 81.96862705818852,
+              "cpu_ns": 80.8362408115342,
+              "thread_ns": 80.82858955311086
+            },
+            {
+              "iterations": 179709,
+              "wall_ns": 81.62524970925217,
+              "cpu_ns": 80.64704605779343,
+              "thread_ns": 80.64426378200312
+            },
+            {
+              "iterations": 179709,
+              "wall_ns": 87.90530802575275,
+              "cpu_ns": 86.58998714588584,
+              "thread_ns": 86.57862989610982
+            },
+            {
+              "iterations": 179709,
+              "wall_ns": 79.05419316784356,
+              "cpu_ns": 78.65493659193474,
+              "thread_ns": 78.64867647140655
+            },
+            {
+              "iterations": 179709,
+              "wall_ns": 84.07898324513519,
+              "cpu_ns": 83.2345625427775,
+              "thread_ns": 83.22876428003049
+            },
+            {
+              "iterations": 179709,
+              "wall_ns": 85.95237856757313,
+              "cpu_ns": 85.04304180647603,
+              "thread_ns": 85.02936413869088
+            },
+            {
+              "iterations": 179709,
+              "wall_ns": 94.64884897250555,
+              "cpu_ns": 92.36599168655994,
+              "thread_ns": 92.35810671697021
+            },
+            {
+              "iterations": 179709,
+              "wall_ns": 83.55289940960108,
+              "cpu_ns": 82.64472007523274,
+              "thread_ns": 82.6342865410191
+            },
+            {
+              "iterations": 179709,
+              "wall_ns": 90.74137633618795,
+              "cpu_ns": 89.27210100774029,
+              "thread_ns": 89.26259118908902
+            },
+            {
+              "iterations": 179709,
+              "wall_ns": 90.81857892481734,
+              "cpu_ns": 88.98274432554852,
+              "thread_ns": 88.97138151122091
+            },
+            {
+              "iterations": 179709,
+              "wall_ns": 80.6864597766389,
+              "cpu_ns": 79.48961932902637,
+              "thread_ns": 79.48428848861215
+            },
+            {
+              "iterations": 179709,
+              "wall_ns": 86.86357945344974,
+              "cpu_ns": 83.99690610932117,
+              "thread_ns": 83.98740185522149
+            },
+            {
+              "iterations": 179709,
+              "wall_ns": 78.71846707733057,
+              "cpu_ns": 78.65493659193474,
+              "thread_ns": 78.64473676888748
+            },
+            {
+              "iterations": 179709,
+              "wall_ns": 85.08616708122575,
+              "cpu_ns": 84.97070263592808,
+              "thread_ns": 84.9586442526529
+            },
+            {
+              "iterations": 179709,
+              "wall_ns": 82.62339114902426,
+              "cpu_ns": 82.52229994045929,
+              "thread_ns": 82.51349125530719
+            },
+            {
+              "iterations": 179709,
+              "wall_ns": 84.1902742767474,
+              "cpu_ns": 84.15271355357828,
+              "thread_ns": 84.13880217462676
+            },
+            {
+              "iterations": 179709,
+              "wall_ns": 82.8072550623508,
+              "cpu_ns": 81.37043776327285,
+              "thread_ns": 81.35351039736463
+            }
+          ]
+        }
+      }
+    }
+  },
+  "explanation": "The mandatory actual-length bound and strict configuration validation perform real work before attacker-controlled slicing, decoding or hashing. The pure Python path adds about 5\u201311 ns on the cheapest previously rejected malformed cases in the primary driver. All investigated alternatives retained measurable overhead. Bounds and subtype behavior were kept intact.",
+  "phases": [
+    {
+      "name": "identity-first configuration guard",
+      "harness": {
+        "path": "/tmp/unstd-token-native-20261022/python_micros.py",
+        "bytes": 4542,
+        "sha256": "0784f64dbaa1937aad75d9f45ffd907a4fbb0b519711273e887b66e5e594eeac",
+        "source": "import importlib.util\nimport inspect\nimport json\nfrom pathlib import Path\nimport random\nimport statistics\nimport time\nimport timeit\n\nfrom unstd.crypto import token\n\nroot = Path(__file__).parent\nspec = importlib.util.spec_from_file_location('token_original_baseline', '/tmp/unstd-token-baseline-20261022.py')\nbaseline = importlib.util.module_from_spec(spec)\nspec.loader.exec_module(baseline)\nsource = inspect.getsource(token._verify_python)\nstart = source.index('    if max_token_chars is not None:')\nend = source.index('    if type(token) is str:', start)\nconfigs = {\n    'identity_chain': '''    if max_token_chars is _DEFAULT_MAX_TOKEN_CHARS:\n        if not _MIN_TOKEN_CHARS <= _str_len(token) <= _DEFAULT_MAX_TOKEN_CHARS:\n            return None\n    elif max_token_chars is not None:\n        if type(max_token_chars) is not int:\n            msg = \"max_token_chars must be a positive integer or None\"\n            raise TypeError(msg)\n        if max_token_chars <= 0:\n            msg = \"max_token_chars must be a positive integer or None\"\n            raise ValueError(msg)\n        if not _MIN_TOKEN_CHARS <= _str_len(token) <= max_token_chars:\n            return None\n''',\n    'identity_local': '''    if max_token_chars is _DEFAULT_MAX_TOKEN_CHARS:\n        token_chars = _str_len(token)\n        if token_chars < _MIN_TOKEN_CHARS or token_chars > _DEFAULT_MAX_TOKEN_CHARS:\n            return None\n    elif max_token_chars is not None:\n        if type(max_token_chars) is not int:\n            msg = \"max_token_chars must be a positive integer or None\"\n            raise TypeError(msg)\n        if max_token_chars <= 0:\n            msg = \"max_token_chars must be a positive integer or None\"\n            raise ValueError(msg)\n        token_chars = _str_len(token)\n        if token_chars < _MIN_TOKEN_CHARS or token_chars > max_token_chars:\n            return None\n''',\n    'identity_inline': '''    if max_token_chars is _DEFAULT_MAX_TOKEN_CHARS:\n        if not 46 <= _str_len(token) <= 8192:\n            return None\n    elif max_token_chars is not None:\n        if type(max_token_chars) is not int:\n            msg = \"max_token_chars must be a positive integer or None\"\n            raise TypeError(msg)\n        if max_token_chars <= 0:\n            msg = \"max_token_chars must be a positive integer or None\"\n            raise ValueError(msg)\n        if not _MIN_TOKEN_CHARS <= _str_len(token) <= max_token_chars:\n            return None\n''',\n}\nfunctions = {'baseline': baseline.verify, 'current': token._verify_python}\nfor name, block in configs.items():\n    candidate_source = source[:start] + block + source[end:]\n    path = root / f'python-{name}.py'\n    path.write_text(candidate_source)\n    namespace = dict(token.__dict__)\n    exec(compile(candidate_source, str(path), 'exec'), namespace)\n    functions[name] = namespace['verify']\n\nkey = bytes(range(32))\ngood = token.mint(key, b'{\"sub\":\"u1\"}')\ncases = {'empty': '', 'no_separator': 'malformed', 'extra_dot': good + '.extra',\n         'valid': good, 'wrong_key': good, 'over_limit': 'A' * 8193}\nsamples = {name: {case: [] for case in cases} for name in functions}\ntimers = {(name, case): timeit.Timer('verify(key, bearer)', globals={\n    'verify': function, 'key': key[::-1] if case == 'wrong_key' else key, 'bearer': bearer}, timer=time.process_time_ns)\n    for name,function in functions.items() for case,bearer in cases.items()}\n# Calibrate once against the original rather than changing batch counts per\n# candidate. Pair interleaved rounds, retaining every per-call CPU sample.\ncounts = {}\nfor case in cases:\n    elapsed = timers['current', case].timeit(number=10000)\n    counts[case] = max(1000, int(10_000_000 / (elapsed / 10000)))\nrng = random.Random(321)\nfor round_number in range(17):\n    order = [(name,case) for case in cases for name in functions]\n    rng.shuffle(order)\n    for name,case in order:\n        count = counts[case]\n        samples[name][case].append(timers[name,case].timeit(number=count) / count)\nreport = {'rounds':17, 'target_cpu_ns_per_sample':10_000_000, 'samples_ns':samples, 'summary':{}}\nfor name in functions:\n    report['summary'][name] = {}\n    for case in cases:\n        median = statistics.median(samples[name][case])\n        ratios = [left/right for left,right in zip(samples['baseline'][case], samples[name][case])]\n        report['summary'][name][case] = {'median_ns': median,'baseline_ratio': statistics.median(ratios)}\n(root/'python-micro-results.json').write_text(json.dumps(report,indent=2)+'\\n')\nprint(json.dumps(report['summary'],indent=2))\n"
+      },
+      "results": {
+        "rounds": 17,
+        "target_cpu_ns_per_sample": 10000000,
+        "samples_ns": {
+          "baseline": {
+            "empty": [
+              49.65200691900137,
+              45.13694991896052,
+              48.42619958867354,
+              50.14913989185656,
+              48.18784816333201,
+              47.56813445744405,
+              50.224050339821034,
+              46.5738685117337,
+              49.3115048827992,
+              49.50899606379646,
+              45.007559145203686,
+              47.077811525312924,
+              48.725841380531456,
+              49.46132577872816,
+              48.7326514212555,
+              47.105051688209095,
+              46.43766769725283
+            ],
+            "no_separator": [
+              52.40526185430828,
+              50.767812422599555,
+              53.512948234581835,
+              51.084294245534856,
+              51.71725789140545,
+              47.740594985827116,
+              51.9718193576795,
+              50.77469246222858,
+              54.489913861903844,
+              50.86413297740595,
+              49.71516635935823,
+              51.78605828769574,
+              50.13484877672895,
+              52.15758042766326,
+              48.20155764097201,
+              49.98348790489033,
+              51.25629523626056
+            ],
+            "extra_dot": [
+              81.24730128721306,
+              79.24004247919802,
+              77.79294891993138,
+              90.61839909439952,
+              84.79501452928614,
+              82.09921926968455,
+              85.21513846584743,
+              81.63241489572758,
+              81.00222899088564,
+              83.37126118871734,
+              86.04371622962107,
+              83.41794162611303,
+              80.18532133646092,
+              83.52297261025336,
+              77.31447443662547,
+              77.45451574881257,
+              81.46903336484263
+            ],
+            "valid": [
+              2702.1803766105054,
+              2617.195242814668,
+              2726.9573835480674,
+              2663.528245787909,
+              3144.2021803766106,
+              3114.9653121902875,
+              2709.8612487611495,
+              2761.1496531219027,
+              2999.7522299306243,
+              2815.6590683845393,
+              2965.064420218038,
+              2772.794846382557,
+              2965.312190287413,
+              2986.3726461843407,
+              2986.3726461843407,
+              2558.2259663032705,
+              2661.0505450941528
+            ],
+            "wrong_key": [
+              2791.6295636687446,
+              2860.373998219056,
+              2780.587711487088,
+              2848.2635796972395,
+              2858.771148708816,
+              2819.768477292965,
+              2632.7693677649154,
+              2575.2448797862867,
+              2864.4701691896707,
+              3131.7898486197687,
+              2920.391807658059,
+              3066.4292074799646,
+              3051.825467497774,
+              2883.8824577025825,
+              3076.9367764915405,
+              2733.7488869100625,
+              2860.373998219056
+            ],
+            "over_limit": [
+              262.1467363608567,
+              254.4735807574147,
+              265.77219318297637,
+              280.28130050523436,
+              276.5684832777624,
+              281.8319477002373,
+              266.76955781074827,
+              262.5544182525007,
+              284.13243837451404,
+              274.4572734817489,
+              271.19581834859713,
+              280.39778104570405,
+              281.32234533568237,
+              279.3640162490354,
+              273.82391054294493,
+              280.703542464437,
+              272.6154249355717
+            ]
+          },
+          "current": {
+            "empty": [
+              59.546996091036625,
+              60.56169215891911,
+              62.14162160689721,
+              63.735171136323395,
+              62.80900559785348,
+              61.624058511869904,
+              57.933016439438305,
+              59.976028656651366,
+              61.5763882268016,
+              62.039470996036556,
+              62.06671115893273,
+              60.26886040778524,
+              60.00326881954754,
+              61.95775050734803,
+              61.58319826752564,
+              58.66169079691097,
+              62.40721319513491
+            ],
+            "no_separator": [
+              62.66340094118942,
+              60.551228775077746,
+              58.85185898670776,
+              63.12436359633431,
+              64.28021025401107,
+              63.91556815367257,
+              62.90420232820541,
+              62.03043729531882,
+              64.27333021438203,
+              64.28709029364009,
+              65.2846960398492,
+              63.48900569667281,
+              63.186283952995566,
+              64.21140985772078,
+              61.35619341167405,
+              63.13812367559237,
+              64.20452981809176
+            ],
+            "extra_dot": [
+              106.19799507521385,
+              106.76983043331116,
+              111.27449264199606,
+              119.71198170126854,
+              114.13366943248258,
+              112.66323565451809,
+              106.62978912112406,
+              109.97911050426542,
+              110.9593996895751,
+              111.14612143915788,
+              111.44954428222992,
+              108.12356311778642,
+              101.57663177303971,
+              110.5859561904095,
+              111.82298778139551,
+              109.3022441620278,
+              104.90261293748323
+            ],
+            "valid": [
+              2044.5986124876115,
+              1931.615460852329,
+              2119.177403369673,
+              2083.4985133795835,
+              2224.9752229930623,
+              2186.07532210109,
+              2448.9593657086225,
+              2450.693756194252,
+              2051.2884043607532,
+              2299.554013875124,
+              2257.4331020812688,
+              2403.617443012884,
+              2253.221010901883,
+              2149.4053518334986,
+              2072.101090188305,
+              2348.364717542121,
+              2007.4331020812685
+            ],
+            "wrong_key": [
+              1905.9661620658949,
+              1765.8058771148708,
+              1920.5699020480854,
+              1835.4407836153161,
+              1898.4861976847728,
+              1738.379341050757,
+              1641.139804096171,
+              1975.06678539626,
+              1926.6251113089938,
+              1690.4719501335708,
+              1883.1700801424754,
+              1932.3241317898487,
+              1771.326803205699,
+              1794.8352626892254,
+              1771.5048975957257,
+              1934.9955476402492,
+              1810.3294746215495
+            ],
+            "over_limit": [
+              72.21065505743947,
+              70.49256708551128,
+              76.55683522371544,
+              82.28622180806919,
+              79.53436903947234,
+              80.30605262008416,
+              71.92673374004455,
+              80.2478123498493,
+              79.4397286003407,
+              77.89636143911707,
+              79.57804924214848,
+              80.96853569400562,
+              76.5131550210393,
+              80.50989356590614,
+              80.79381488330105,
+              78.42052387123076,
+              70.6236076935397
+            ]
+          },
+          "identity_chain": {
+            "empty": [
+              58.15774778333174,
+              57.23839228558587,
+              59.00900287383718,
+              59.53337600958854,
+              59.42441535800384,
+              61.8896501001076,
+              57.62656460685635,
+              55.392871249370074,
+              60.11903951185628,
+              60.79323354353659,
+              59.45846556162406,
+              60.65703272905572,
+              62.75452527206113,
+              61.481047656664984,
+              56.843409923591345,
+              55.52907206385094,
+              56.7276392312826
+            ],
+            "no_separator": [
+              57.778572804579355,
+              60.97091119244847,
+              58.26017557861133,
+              62.697801139334565,
+              62.20931832567356,
+              61.49379420425462,
+              57.40705066461183,
+              63.01428296226986,
+              61.00531139059361,
+              57.186889396482925,
+              60.12466631807799,
+              58.088174587885625,
+              57.468971021273084,
+              59.96642540661034,
+              60.97091119244847,
+              59.29218152296557,
+              56.93232793020888
+            ],
+            "extra_dot": [
+              99.33597077804619,
+              95.05304064699087,
+              96.23172169123225,
+              101.83337417871606,
+              107.68009896252728,
+              107.38834622880417,
+              105.26438632729989,
+              104.28409714199022,
+              106.74649021461332,
+              107.1666141511746,
+              103.54888025300797,
+              100.73638389991714,
+              109.41894525551704,
+              109.57065667705307,
+              102.53358073965153,
+              103.58389058105475,
+              105.40442763948698
+            ],
+            "valid": [
+              2117.6907829534193,
+              2033.6967294350843,
+              2350.0991080277504,
+              2287.4132804757187,
+              2211.1000991080277,
+              2112.7353815659067,
+              2179.8810703666995,
+              2224.2319127849355,
+              2449.7026759167493,
+              2275.5203171456888,
+              2042.6164519326067,
+              2173.934588701685,
+              2229.187314172448,
+              2133.548067393459,
+              2320.1189296333005,
+              2176.412289395441,
+              2439.5441030723487
+            ],
+            "wrong_key": [
+              1888.8691006233303,
+              1938.5574354407836,
+              1697.239536954586,
+              1949.59928762244,
+              2005.1647373107746,
+              2006.4113980409618,
+              1807.1237756010685,
+              1707.0347284060551,
+              1879.4300979519146,
+              1834.372217275156,
+              1716.2956366874444,
+              2006.5894924309885,
+              1919.3232413178985,
+              1855.3873552983082,
+              1970.614425645592,
+              1687.26625111309,
+              1890.293855743544
+            ],
+            "over_limit": [
+              72.71297738821508,
+              71.40985134171022,
+              68.35951718815976,
+              72.5600966788486,
+              73.17889955009392,
+              71.5991322199735,
+              68.91279975539086,
+              71.650092456429,
+              69.90288434938338,
+              68.93463985672894,
+              67.68247404667957,
+              74.343704954791,
+              67.12191144566911,
+              73.03329887450678,
+              73.54290123906175,
+              69.87376421426596,
+              67.7625544182525
+            ]
+          },
+          "identity_local": {
+            "empty": [
+              56.3054167063919,
+              59.09753340324975,
+              53.7857016384958,
+              62.06671115893273,
+              61.47423761594094,
+              63.87137195080427,
+              59.85344792361858,
+              55.617602593263506,
+              55.787853611364596,
+              55.15451982402855,
+              59.69681698696558,
+              59.06348319962953,
+              57.98068672450661,
+              61.30398659783985,
+              58.79108157066779,
+              57.871726072921916,
+              56.482477765217034
+            ],
+            "no_separator": [
+              57.15248919833778,
+              58.49409692599829,
+              61.225472658722516,
+              59.50546275146545,
+              63.92244819330159,
+              60.96403115281944,
+              61.734595591270605,
+              63.06932327930209,
+              61.49379420425462,
+              62.07859757272202,
+              57.57905165533754,
+              62.13363788975425,
+              59.10642045298181,
+              63.29636458706002,
+              60.89523075652916,
+              62.801001733769986,
+              61.21171257946446
+            ],
+            "extra_dot": [
+              111.21614209525143,
+              107.56339786903803,
+              102.03176603764777,
+              111.63626603181272,
+              109.41894525551704,
+              108.96381099090898,
+              109.50063602095952,
+              104.03902484566281,
+              102.11345680309024,
+              114.09865910443581,
+              117.17956797255191,
+              103.29213784733163,
+              111.0644306737154,
+              104.1323857204542,
+              109.32558438072564,
+              116.4676913022675,
+              101.88005461611175
+            ],
+            "valid": [
+              1975.9663032705648,
+              2367.4430128840436,
+              2230.1783944499502,
+              2113.230921704658,
+              2427.898909811695,
+              2270.317145688801,
+              2243.3102081268585,
+              2239.0981169474726,
+              2353.3201189296333,
+              2551.536174430129,
+              2366.451932606541,
+              2409.5639246778987,
+              2089.692765113974,
+              2126.11496531219,
+              2282.705649157582,
+              2095.1437066402377,
+              2042.6164519326067
+            ],
+            "wrong_key": [
+              1709.5280498664292,
+              1751.5583259127338,
+              1723.7756010685664,
+              2041.674087266251,
+              1996.0819234194123,
+              1957.0792520035618,
+              2053.4283170080143,
+              1977.0258236865538,
+              1751.380231522707,
+              1792.3419412288513,
+              1869.4568121104185,
+              1954.9421193232413,
+              1961.353517364203,
+              1958.860195903829,
+              1917.8984861976849,
+              1758.147818343722,
+              1700.4452359750667
+            ],
+            "over_limit": [
+              75.5376304946055,
+              75.72691137286877,
+              67.90087506006027,
+              78.20940289162942,
+              75.51579039326742,
+              74.98434792737439,
+              70.0193648898531,
+              74.77322694777304,
+              76.97907718291813,
+              74.05978363739608,
+              75.4357100216945,
+              74.8969875220221,
+              75.58131069728164,
+              78.31132336454041,
+              76.6660357304058,
+              71.41713137548959,
+              71.5991322199735
+            ]
+          },
+          "identity_inline": {
+            "empty": [
+              55.34520096430177,
+              59.0430530774574,
+              58.1509377426077,
+              62.0462810367606,
+              60.568502199643156,
+              60.68427289195189,
+              56.271366502771684,
+              60.33696081502568,
+              59.13158360686997,
+              58.293948597812616,
+              59.32226474714319,
+              60.228000163440974,
+              55.15451982402855,
+              58.729791204151404,
+              58.532300023154136,
+              59.13158360686997,
+              54.84806799144659
+            ],
+            "no_separator": [
+              56.64336626578969,
+              59.876984891432976,
+              63.241324270027796,
+              63.681646806285606,
+              61.53507444202879,
+              58.70049811486914,
+              57.42769078349891,
+              58.47345680711121,
+              60.159066516223135,
+              57.104328920934584,
+              57.58593169496656,
+              60.79891020172276,
+              58.817458788562625,
+              57.186889396482925,
+              60.7094696865454,
+              56.28560420508022,
+              57.028648485015275
+            ],
+            "extra_dot": [
+              95.49650480225,
+              103.56055036235689,
+              101.05147685233811,
+              107.54005765034019,
+              101.69333286652896,
+              104.20240637654774,
+              105.56780917037193,
+              105.33440698339344,
+              103.31547806602948,
+              105.54446895167408,
+              97.25869131393762,
+              103.26879762863378,
+              102.16013724048594,
+              105.92958256018859,
+              102.11345680309024,
+              102.49857041160476,
+              102.06677636569455
+            ],
+            "valid": [
+              2206.8880079286423,
+              2141.7244796828545,
+              2072.8444003964323,
+              2565.9068384539146,
+              2137.7601585728444,
+              2105.550049554014,
+              2084.9851337958376,
+              2337.4628344895937,
+              2135.0346878097125,
+              2065.4112983151635,
+              2055.99603567889,
+              2509.167492566898,
+              2214.5688800792864,
+              2355.7978196233894,
+              2274.529236868186,
+              2153.121902874133,
+              2050.2973240832507
+            ],
+            "wrong_key": [
+              1968.6553873552982,
+              2004.452359750668,
+              1699.9109528049867,
+              2076.758682101514,
+              1825.8236865538736,
+              1780.053428317008,
+              1924.6660730187,
+              1687.4443455031167,
+              1945.859305431879,
+              1755.6544968833482,
+              1728.940338379341,
+              1941.0507569011577,
+              1778.6286731967944,
+              1926.4470169189672,
+              1873.7310774710597,
+              1931.4336598397151,
+              1690.6500445235974
+            ],
+            "over_limit": [
+              72.21065505743947,
+              66.65598928379028,
+              70.8420087069204,
+              71.03856961896304,
+              73.00417873938935,
+              72.60377688152472,
+              69.82280397781045,
+              70.87840887581719,
+              72.64017705042151,
+              69.92472445072146,
+              72.15969482098397,
+              66.23374732458758,
+              66.95447066874391,
+              69.77184374135496,
+              68.81087928247987,
+              67.71887421557636,
+              74.91882762336017
+            ]
+          }
+        },
+        "summary": {
+          "baseline": {
+            "empty": {
+              "median_ns": 48.42619958867354,
+              "baseline_ratio": 1.0
+            },
+            "no_separator": {
+              "median_ns": 51.084294245534856,
+              "baseline_ratio": 1.0
+            },
+            "extra_dot": {
+              "median_ns": 81.63241489572758,
+              "baseline_ratio": 1.0
+            },
+            "valid": {
+              "median_ns": 2772.794846382557,
+              "baseline_ratio": 1.0
+            },
+            "wrong_key": {
+              "median_ns": 2860.373998219056,
+              "baseline_ratio": 1.0
+            },
+            "over_limit": {
+              "median_ns": 274.4572734817489,
+              "baseline_ratio": 1.0
+            }
+          },
+          "current": {
+            "empty": {
+              "median_ns": 61.58319826752564,
+              "baseline_ratio": 0.7868362004487659
+            },
+            "no_separator": {
+              "median_ns": 63.186283952995566,
+              "baseline_ratio": 0.8092643051771118
+            },
+            "extra_dot": {
+              "median_ns": 110.5859561904095,
+              "baseline_ratio": 0.750104997900042
+            },
+            "valid": {
+              "median_ns": 2186.07532210109,
+              "baseline_ratio": 1.3160325489333626
+            },
+            "wrong_key": {
+              "median_ns": 1835.4407836153161,
+              "baseline_ratio": 1.5800295130349236
+            },
+            "over_limit": {
+              "median_ns": 79.4397286003407,
+              "baseline_ratio": 3.509473302511105
+            }
+          },
+          "identity_chain": {
+            "empty": {
+              "median_ns": 59.42441535800384,
+              "baseline_ratio": 0.8186074429771909
+            },
+            "no_separator": {
+              "median_ns": 59.96642540661034,
+              "baseline_ratio": 0.86977971546581
+            },
+            "extra_dot": {
+              "median_ns": 104.28409714199022,
+              "baseline_ratio": 0.7827887197851389
+            },
+            "valid": {
+              "median_ns": 2211.1000991080277,
+              "baseline_ratio": 1.2754729883747435
+            },
+            "wrong_key": {
+              "median_ns": 1888.8691006233303,
+              "baseline_ratio": 1.5241163650146878
+            },
+            "over_limit": {
+              "median_ns": 71.40985134171022,
+              "baseline_ratio": 3.871117684343968
+            }
+          },
+          "identity_local": {
+            "empty": {
+              "median_ns": 58.79108157066779,
+              "baseline_ratio": 0.8221605980226669
+            },
+            "no_separator": {
+              "median_ns": 61.225472658722516,
+              "baseline_ratio": 0.8373609081712937
+            },
+            "extra_dot": {
+              "median_ns": 109.32558438072564,
+              "baseline_ratio": 0.7624385222463685
+            },
+            "valid": {
+              "median_ns": 2243.3102081268585,
+              "baseline_ratio": 1.2604056747567123
+            },
+            "wrong_key": {
+              "median_ns": 1917.8984861976849,
+              "baseline_ratio": 1.5621606173192342
+            },
+            "over_limit": {
+              "median_ns": 75.4357100216945,
+              "baseline_ratio": 3.6910346132021936
+            }
+          },
+          "identity_inline": {
+            "empty": {
+              "median_ns": 59.0430530774574,
+              "baseline_ratio": 0.8325770796974985
+            },
+            "no_separator": {
+              "median_ns": 58.70049811486914,
+              "baseline_ratio": 0.8633213859020311
+            },
+            "extra_dot": {
+              "median_ns": 103.26879762863378,
+              "baseline_ratio": 0.7884763688443318
+            },
+            "valid": {
+              "median_ns": 2141.7244796828545,
+              "baseline_ratio": 1.2997029114676173
+            },
+            "wrong_key": {
+              "median_ns": 1873.7310774710597,
+              "baseline_ratio": 1.5657432696059306
+            },
+            "over_limit": {
+              "median_ns": 70.8420087069204,
+              "baseline_ratio": 3.881780808182092
+            }
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "identity_chain",
+          "path": "/tmp/unstd-token-native-20261022/python-identity_chain.py",
+          "bytes": 3304,
+          "sha256": "8cc2a64b200807726dfe18551abbbf7924d4a350d976828c12bccb0c9288d6b4",
+          "source": "def verify(\n    key: bytes, token: str, *, max_token_chars: int | None = _DEFAULT_MAX_TOKEN_CHARS\n) -> bytes | None:\n    \"\"\"Return the claims bytes if *token*'s MAC checks out under *key*, else None.\n\n    Fails closed on every shape problem \u2014 a missing or extra separator, a\n    noncanonical base64url segment, a tag of the wrong width \u2014 and compares the tag in\n    constant time. None means \"do not trust this\"; malformed token text never\n    raises. Invalid signer keys remain configuration errors for canonical\n    envelopes within the chosen size limit.\n\n    The complete envelope, including separator and tag, is limited to 8192\n    characters before slicing, decoding, or hashing. Set *max_token_chars* to a\n    positive integer for a different bound, or explicitly to None when the\n    caller already bounds requests or handles large trusted envelopes. Invalid\n    limit types and nonpositive limits raise TypeError and ValueError.\n    \"\"\"\n    if max_token_chars is _DEFAULT_MAX_TOKEN_CHARS:\n        if not _MIN_TOKEN_CHARS <= _str_len(token) <= _DEFAULT_MAX_TOKEN_CHARS:\n            return None\n    elif max_token_chars is not None:\n        if type(max_token_chars) is not int:\n            msg = \"max_token_chars must be a positive integer or None\"\n            raise TypeError(msg)\n        if max_token_chars <= 0:\n            msg = \"max_token_chars must be a positive integer or None\"\n            raise ValueError(msg)\n        if not _MIN_TOKEN_CHARS <= _str_len(token) <= max_token_chars:\n            return None\n    if type(token) is str:\n        if max_token_chars is None and _str_len(token) < _MIN_TOKEN_CHARS:\n            return None\n        # The full tag has a fixed encoded width, so the only possible separator\n        # is 44 characters from the end. Wrong-width tags and absent/appended\n        # separators fail before a search or either substring allocation.\n        if token[-44] != SEPARATOR:\n            return None\n        payload = token[:-44]\n        tag = token[-43:]\n    else:\n        # Preserve a string subclass's partition hooks on the compatible path;\n        # the bounded path above still uses its actual stored string length.\n        payload, _, tag = token.partition(SEPARATOR)\n        if len(tag) != _TAG_CHARS or not payload:\n            return None\n    # Unpadded Base64 has one spelling precisely when its alphabet, length,\n    # and unused terminal bits are canonical. Check those directly instead of\n    # allocating decoded claims and two re-encodings before authentication.\n    remainder = len(payload) % 4\n    if (\n        remainder == 1\n        or (remainder == 2 and payload[-1] not in _TWO_CHAR_END)\n        or (remainder == 3 and payload[-1] not in _THREE_CHAR_END)\n        or tag[-1] not in _THREE_CHAR_END\n        or not payload.isascii()\n        or not tag.isascii()\n        or not payload.replace(\"-\", \"a\").replace(\"_\", \"a\").isalnum()\n        or not tag.replace(\"-\", \"a\").replace(\"_\", \"a\").isalnum()\n    ):\n        return None\n    try:\n        got = b64.decode(tag, url=True)\n    except ValueError:  # binascii.Error and UnicodeEncodeError are both ValueErrors\n        return None\n    payload_bytes = payload.encode(\"ascii\")\n    if not equal(got, mac_raw(key, payload_bytes)):\n        return None\n    return b64.decode(payload_bytes, url=True)\n"
+        },
+        {
+          "name": "identity_local",
+          "path": "/tmp/unstd-token-native-20261022/python-identity_local.py",
+          "bytes": 3390,
+          "sha256": "8f521b290c3383dfb436b77e520e0f1f82e9697bce0942ce4293b011d70666cf",
+          "source": "def verify(\n    key: bytes, token: str, *, max_token_chars: int | None = _DEFAULT_MAX_TOKEN_CHARS\n) -> bytes | None:\n    \"\"\"Return the claims bytes if *token*'s MAC checks out under *key*, else None.\n\n    Fails closed on every shape problem \u2014 a missing or extra separator, a\n    noncanonical base64url segment, a tag of the wrong width \u2014 and compares the tag in\n    constant time. None means \"do not trust this\"; malformed token text never\n    raises. Invalid signer keys remain configuration errors for canonical\n    envelopes within the chosen size limit.\n\n    The complete envelope, including separator and tag, is limited to 8192\n    characters before slicing, decoding, or hashing. Set *max_token_chars* to a\n    positive integer for a different bound, or explicitly to None when the\n    caller already bounds requests or handles large trusted envelopes. Invalid\n    limit types and nonpositive limits raise TypeError and ValueError.\n    \"\"\"\n    if max_token_chars is _DEFAULT_MAX_TOKEN_CHARS:\n        token_chars = _str_len(token)\n        if token_chars < _MIN_TOKEN_CHARS or token_chars > _DEFAULT_MAX_TOKEN_CHARS:\n            return None\n    elif max_token_chars is not None:\n        if type(max_token_chars) is not int:\n            msg = \"max_token_chars must be a positive integer or None\"\n            raise TypeError(msg)\n        if max_token_chars <= 0:\n            msg = \"max_token_chars must be a positive integer or None\"\n            raise ValueError(msg)\n        token_chars = _str_len(token)\n        if token_chars < _MIN_TOKEN_CHARS or token_chars > max_token_chars:\n            return None\n    if type(token) is str:\n        if max_token_chars is None and _str_len(token) < _MIN_TOKEN_CHARS:\n            return None\n        # The full tag has a fixed encoded width, so the only possible separator\n        # is 44 characters from the end. Wrong-width tags and absent/appended\n        # separators fail before a search or either substring allocation.\n        if token[-44] != SEPARATOR:\n            return None\n        payload = token[:-44]\n        tag = token[-43:]\n    else:\n        # Preserve a string subclass's partition hooks on the compatible path;\n        # the bounded path above still uses its actual stored string length.\n        payload, _, tag = token.partition(SEPARATOR)\n        if len(tag) != _TAG_CHARS or not payload:\n            return None\n    # Unpadded Base64 has one spelling precisely when its alphabet, length,\n    # and unused terminal bits are canonical. Check those directly instead of\n    # allocating decoded claims and two re-encodings before authentication.\n    remainder = len(payload) % 4\n    if (\n        remainder == 1\n        or (remainder == 2 and payload[-1] not in _TWO_CHAR_END)\n        or (remainder == 3 and payload[-1] not in _THREE_CHAR_END)\n        or tag[-1] not in _THREE_CHAR_END\n        or not payload.isascii()\n        or not tag.isascii()\n        or not payload.replace(\"-\", \"a\").replace(\"_\", \"a\").isalnum()\n        or not tag.replace(\"-\", \"a\").replace(\"_\", \"a\").isalnum()\n    ):\n        return None\n    try:\n        got = b64.decode(tag, url=True)\n    except ValueError:  # binascii.Error and UnicodeEncodeError are both ValueErrors\n        return None\n    payload_bytes = payload.encode(\"ascii\")\n    if not equal(got, mac_raw(key, payload_bytes)):\n        return None\n    return b64.decode(payload_bytes, url=True)\n"
+        },
+        {
+          "name": "identity_inline",
+          "path": "/tmp/unstd-token-native-20261022/python-identity_inline.py",
+          "bytes": 3270,
+          "sha256": "5225a7f280d09357b32d2d4d4a8438e0af67e369cf3fdc0da23575fcc63af7e3",
+          "source": "def verify(\n    key: bytes, token: str, *, max_token_chars: int | None = _DEFAULT_MAX_TOKEN_CHARS\n) -> bytes | None:\n    \"\"\"Return the claims bytes if *token*'s MAC checks out under *key*, else None.\n\n    Fails closed on every shape problem \u2014 a missing or extra separator, a\n    noncanonical base64url segment, a tag of the wrong width \u2014 and compares the tag in\n    constant time. None means \"do not trust this\"; malformed token text never\n    raises. Invalid signer keys remain configuration errors for canonical\n    envelopes within the chosen size limit.\n\n    The complete envelope, including separator and tag, is limited to 8192\n    characters before slicing, decoding, or hashing. Set *max_token_chars* to a\n    positive integer for a different bound, or explicitly to None when the\n    caller already bounds requests or handles large trusted envelopes. Invalid\n    limit types and nonpositive limits raise TypeError and ValueError.\n    \"\"\"\n    if max_token_chars is _DEFAULT_MAX_TOKEN_CHARS:\n        if not 46 <= _str_len(token) <= 8192:\n            return None\n    elif max_token_chars is not None:\n        if type(max_token_chars) is not int:\n            msg = \"max_token_chars must be a positive integer or None\"\n            raise TypeError(msg)\n        if max_token_chars <= 0:\n            msg = \"max_token_chars must be a positive integer or None\"\n            raise ValueError(msg)\n        if not _MIN_TOKEN_CHARS <= _str_len(token) <= max_token_chars:\n            return None\n    if type(token) is str:\n        if max_token_chars is None and _str_len(token) < _MIN_TOKEN_CHARS:\n            return None\n        # The full tag has a fixed encoded width, so the only possible separator\n        # is 44 characters from the end. Wrong-width tags and absent/appended\n        # separators fail before a search or either substring allocation.\n        if token[-44] != SEPARATOR:\n            return None\n        payload = token[:-44]\n        tag = token[-43:]\n    else:\n        # Preserve a string subclass's partition hooks on the compatible path;\n        # the bounded path above still uses its actual stored string length.\n        payload, _, tag = token.partition(SEPARATOR)\n        if len(tag) != _TAG_CHARS or not payload:\n            return None\n    # Unpadded Base64 has one spelling precisely when its alphabet, length,\n    # and unused terminal bits are canonical. Check those directly instead of\n    # allocating decoded claims and two re-encodings before authentication.\n    remainder = len(payload) % 4\n    if (\n        remainder == 1\n        or (remainder == 2 and payload[-1] not in _TWO_CHAR_END)\n        or (remainder == 3 and payload[-1] not in _THREE_CHAR_END)\n        or tag[-1] not in _THREE_CHAR_END\n        or not payload.isascii()\n        or not tag.isascii()\n        or not payload.replace(\"-\", \"a\").replace(\"_\", \"a\").isalnum()\n        or not tag.replace(\"-\", \"a\").replace(\"_\", \"a\").isalnum()\n    ):\n        return None\n    try:\n        got = b64.decode(tag, url=True)\n    except ValueError:  # binascii.Error and UnicodeEncodeError are both ValueErrors\n        return None\n    payload_bytes = payload.encode(\"ascii\")\n    if not equal(got, mac_raw(key, payload_bytes)):\n        return None\n    return b64.decode(payload_bytes, url=True)\n"
+        }
+      ],
+      "production_adoption": "rejected",
+      "differential": {
+        "result": "not run for these rejected timing proposals; no production adoption"
+      }
+    },
+    {
+      "name": "exact-string builtin-length fast paths",
+      "harness": {
+        "path": "/tmp/unstd-token-native-20261022/python_fast_micros.py",
+        "bytes": 4207,
+        "sha256": "978610bbe238b590d4f650cfa38a0d998a8f3fd598ca8dd5d3a26a9263f5e1b3",
+        "source": "import importlib.util\nimport inspect\nimport json\nfrom pathlib import Path\nimport random\nimport statistics\nimport time\nimport timeit\n\nfrom unstd.crypto import token\n\nroot = Path(__file__).parent\nspec = importlib.util.spec_from_file_location('token_original_baseline', '/tmp/unstd-token-baseline-20261022.py')\nbaseline = importlib.util.module_from_spec(spec)\nspec.loader.exec_module(baseline)\nsource = inspect.getsource(token._verify_python)\nstart = source.index('    if max_token_chars is not None:')\nend = source.index('    # Unpadded Base64', start)\nold = source[start:end]\nvariants = {}\nfast = '''    if max_token_chars is _DEFAULT_MAX_TOKEN_CHARS and type(token) is str:\n        token_chars = len(token)\n        if token_chars < _MIN_TOKEN_CHARS or token_chars > _DEFAULT_MAX_TOKEN_CHARS:\n            return None\n        if token[-44] != SEPARATOR:\n            return None\n        payload = token[:-44]\n        tag = token[-43:]\n    else:\n'''\nvariants['exact_default'] = fast + ''.join('    ' + line if line.strip() else line for line in old.splitlines(keepends=True))\nvariants['exact_default_chain'] = variants['exact_default'].replace(\n    '        token_chars = len(token)\\n        if token_chars < _MIN_TOKEN_CHARS or token_chars > _DEFAULT_MAX_TOKEN_CHARS:',\n    '        if not _MIN_TOKEN_CHARS <= len(token) <= _DEFAULT_MAX_TOKEN_CHARS:')\nvariants['exact_bool'] = ('    is_plain = type(token) is str\\n' + old\n    .replace('token_chars = _str_len(token)', 'token_chars = len(token) if is_plain else _str_len(token)')\n    .replace('if type(token) is str:', 'if is_plain:'))\nfunctions = {'baseline':baseline.verify, 'current':token._verify_python}\nfor name, block in variants.items():\n    candidate = source[:start] + block + source[end:]\n    path = root / f'python-{name}.py'\n    path.write_text(candidate)\n    namespace = dict(token.__dict__)\n    exec(compile(candidate,str(path),'exec'),namespace)\n    functions[name]=namespace['verify']\n\nkey=bytes(range(32))\ngood=token.mint(key,b'x'*42)\ncases={'empty':'','no_separator':'junk','extra_dot':good+'.extra','valid':good,'wrong_key':good}\n# Check request/config behavior before timing candidates.\ndef outcome(function, key, bearer, limit):\n    try:return ('return',function(key,bearer,max_token_chars=limit))\n    except BaseException as error:return ('raise',type(error),str(error))\nrandomizer=random.Random(123)\nalphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_./= \\x00\u00e9\ud83d\ude00\\ud800'\ninputs=list(cases.values())+['A'*8193,'\u00e9'*8193,'\ud83d\ude00'*8193]\nfor _ in range(300):\n    value=list(good)\n    value[randomizer.randrange(len(value))]=randomizer.choice(alphabet)\n    inputs.append(''.join(value))\nfor name,function in functions.items():\n    if name in ('baseline','current'):continue\n    for bearer in inputs:\n        for key_variant in (key,b'',key[::-1]):\n            for limit in (8192,None,1,True,8192.0,0,-1,1<<10000,-(1<<10000)):\n                assert outcome(function,key_variant,bearer,limit)==outcome(token._verify_python,key_variant,bearer,limit),(name,bearer,limit)\nsamples={name:{case:[] for case in cases} for name in functions}\ntimers={(name,case):timeit.Timer('verify(key, bearer)',globals={'verify':function,'key':key[::-1] if case=='wrong_key' else key,'bearer':bearer},timer=time.process_time_ns)\n        for name,function in functions.items() for case,bearer in cases.items()}\ncounts={}\nfor case in cases:\n    elapsed=timers['current',case].timeit(number=10000)\n    counts[case]=max(1000,int(10_000_000/(elapsed/10000)))\nfor at in range(19):\n    order=[(name,case) for case in cases for name in functions]\n    randomizer.shuffle(order)\n    for name,case in order:\n        samples[name][case].append(timers[name,case].timeit(number=counts[case])/counts[case])\nsummary={name:{case:{'median_ns':statistics.median(samples[name][case]),'baseline_ratio':statistics.median([left/right for left,right in zip(samples['baseline'][case],samples[name][case])])} for case in cases} for name in functions}\n(root/'python-fast-micro-results.json').write_text(json.dumps({'rounds':19,'samples_ns':samples,'summary':summary,'differential_cases_per_candidate':len(inputs)*27},indent=2)+'\\n')\nprint(json.dumps(summary,indent=2))\n"
+      },
+      "results": {
+        "rounds": 19,
+        "samples_ns": {
+          "baseline": {
+            "empty": [
+              33.42675660332658,
+              34.852690724276194,
+              33.203255957409716,
+              34.65154014295101,
+              34.75435044007277,
+              33.855877843486965,
+              33.69048736550849,
+              32.993165350247864,
+              32.653444368454224,
+              32.03211257280534,
+              39.666894637325505,
+              32.130452857008756,
+              40.83803802192988,
+              34.736470388399425,
+              30.874379226955966,
+              43.23396494615869,
+              32.537224032577456,
+              31.37055066089141,
+              31.83990201731683
+            ],
+            "no_separator": [
+              41.387700413877006,
+              37.446210374462105,
+              39.706710397067106,
+              36.1967703619677,
+              35.181600351816,
+              37.068090370680906,
+              36.2378703623787,
+              35.637810356378104,
+              34.861020348610204,
+              34.7007303470073,
+              35.7487803574878,
+              35.2103703521037,
+              36.020040360200404,
+              33.508830335088305,
+              31.774410317744103,
+              34.437690344376904,
+              32.575860325758605,
+              34.9966503499665,
+              37.6393803763938
+            ],
+            "extra_dot": [
+              61.63436407208172,
+              64.91409705982436,
+              63.603651870461405,
+              63.03892963416135,
+              61.49680352734197,
+              62.59728788526002,
+              60.74384054560856,
+              58.55735188711347,
+              61.931205247572784,
+              59.96915747786361,
+              61.89500510422021,
+              60.35287899740083,
+              58.97727355000326,
+              57.42066738584285,
+              57.28310684110309,
+              58.991753607344286,
+              58.6804323745122,
+              59.66507627370204,
+              60.2804787106957
+            ],
+            "valid": [
+              2070.3895669620465,
+              2177.060692191941,
+              2074.569469988296,
+              2148.6373516134427,
+              2085.771610098646,
+              2091.1218859722453,
+              2076.4086273198463,
+              2099.648888145795,
+              2045.4773449255977,
+              2008.5270021735496,
+              2067.212840662097,
+              2183.414144791841,
+              2115.365323524494,
+              1953.1850861060022,
+              1948.5035947166025,
+              2023.5746530680487,
+              1936.1310817589033,
+              1991.1386055843504,
+              2095.8033773616453
+            ],
+            "wrong_key": [
+              1981.0487318324308,
+              2228.9826161299516,
+              2375.1781134226276,
+              2085.066970646908,
+              2158.44970076945,
+              2143.0607010544313,
+              2152.465089769165,
+              2039.4699344542605,
+              2131.6614420062697,
+              1944.998575092619,
+              2111.4277571957823,
+              2153.889997150185,
+              1908.948418352807,
+              1940.4388714733543,
+              1887.4323168994015,
+              2005.272157309775,
+              2046.5944713593617,
+              1942.4337418067826,
+              2007.6944998575093
+            ]
+          },
+          "current": {
+            "empty": [
+              43.60050600546236,
+              47.69950785157769,
+              44.512388640803174,
+              44.08326740064279,
+              47.68609781282268,
+              44.123497516907825,
+              44.709069209210014,
+              43.73460639301248,
+              43.54239583752397,
+              42.42489260793964,
+              44.20842776235623,
+              43.8687067805626,
+              43.33230523036212,
+              41.49959993384381,
+              45.49579148283738,
+              42.76014357681494,
+              45.66118196081587,
+              41.09282875827511,
+              42.795903680161636
+            ],
+            "no_separator": [
+              44.572950445729504,
+              46.948530469485306,
+              44.3016904430169,
+              44.7126904471269,
+              44.803110448031106,
+              46.07721046077211,
+              46.508760465087605,
+              45.7114204571142,
+              44.971620449716205,
+              43.204320432043204,
+              46.47177046471771,
+              44.3304604433046,
+              44.786670447866705,
+              41.186310411863104,
+              42.7234504272345,
+              44.535960445359606,
+              43.50846043508461,
+              44.3016904430169,
+              45.3045304530453
+            ],
+            "extra_dot": [
+              73.90621266860217,
+              80.15435741125535,
+              75.91170061033442,
+              77.80134809333845,
+              85.97534046234823,
+              76.9180645955358,
+              78.61947133310647,
+              79.77787592038864,
+              77.46830677449482,
+              75.34697837403436,
+              77.97510878143078,
+              75.32525828802282,
+              72.97948899877643,
+              75.49177894744463,
+              71.61836360871989,
+              78.43123058767313,
+              73.74693203785087,
+              78.17782958420516,
+              76.73706387877296
+            ],
+            "valid": [
+              1798.19428189266,
+              1819.929777629159,
+              1837.652566460458,
+              1819.093797023909,
+              1676.3083096472162,
+              1728.1391071727137,
+              1651.2288914897174,
+              1801.7054004347099,
+              1706.4036114362148,
+              1731.4830295937134,
+              1808.3932452767096,
+              1786.9921417823107,
+              1648.8881457950176,
+              1561.110182243772,
+              1559.103828791172,
+              1628.1558267848186,
+              1585.1864236749707,
+              1576.659421501421,
+              1567.9652232068215
+            ],
+            "wrong_key": [
+              1370.0484468509546,
+              1410.8007979481333,
+              1415.2180108292962,
+              1433.599316044457,
+              1364.6337988030778,
+              1368.4810487318325,
+              1371.615844970077,
+              1359.789113707609,
+              1303.6477628954117,
+              1288.4012539184953,
+              1398.9740666856653,
+              1432.174408663437,
+              1281.7041892277002,
+              1277.7144485608435,
+              1240.9518381305215,
+              1335.280706754061,
+              1291.2510686805358,
+              1306.2125961812483,
+              1334.995725277857
+            ]
+          },
+          "exact_default": {
+            "empty": [
+              46.04113305887454,
+              44.21289777527457,
+              41.249279210416915,
+              41.10623879703012,
+              42.246092091206144,
+              41.8214408639641,
+              41.3073893783553,
+              42.53664293089807,
+              40.44020687219786,
+              41.03024857741839,
+              46.17523344642466,
+              40.382096704259475,
+              39.54173427561206,
+              39.197543280900085,
+              43.89105684515428,
+              39.53726426269372,
+              39.058972880431625,
+              44.86998967427016,
+              42.43383263377631
+            ],
+            "no_separator": [
+              42.73167042731671,
+              44.1619504416195,
+              43.3276204332762,
+              43.56600043566,
+              42.768660427686605,
+              43.968780439687805,
+              44.9387404493874,
+              43.39338043393381,
+              42.4809604248096,
+              42.80154042801541,
+              41.852130418521305,
+              43.50846043508461,
+              42.5672704256727,
+              39.0655503906555,
+              38.831280388312805,
+              41.284950412849504,
+              41.5890904158909,
+              40.5040504050405,
+              42.73167042731671
+            ],
+            "extra_dot": [
+              60.895881147689344,
+              70.96676102837367,
+              63.8136127019063,
+              63.56745172710884,
+              64.91409705982436,
+              64.44349519624097,
+              67.43362703716306,
+              64.08873379138582,
+              62.966529347456216,
+              64.57381571231022,
+              66.81822460016942,
+              62.19908630838178,
+              57.051425923646654,
+              60.0705178792508,
+              60.591799943527775,
+              62.582807827919,
+              60.88864111901883,
+              60.57731988618675,
+              62.91584914676262
+            ],
+            "valid": [
+              1953.6866744691524,
+              1777.4619628824612,
+              1656.2447751212171,
+              1698.3781976258151,
+              1707.7411804046146,
+              1716.2681825781642,
+              1768.4333723457617,
+              1726.6343420832636,
+              1669.9548570473164,
+              1676.6427018893162,
+              1671.9612104999164,
+              1682.1601738839659,
+              1602.4076241431198,
+              1539.040294265173,
+              1582.845677980271,
+              1610.6002340745695,
+              1552.9175723123224,
+              1566.6276542384217,
+              1705.9020230730648
+            ],
+            "wrong_key": [
+              1356.6543174693645,
+              1399.4015388999715,
+              1370.6184098033627,
+              1341.4078084924479,
+              1344.2576232544884,
+              1341.692789968652,
+              1408.235964662297,
+              1306.7825591336564,
+              1310.7722998005129,
+              1318.4667996580222,
+              1323.738956967797,
+              1281.419207751496,
+              1281.7041892277002,
+              1240.6668566543174,
+              1217.4408663436877,
+              1278.2844115132516,
+              1275.7195782274152,
+              1204.1892277001996,
+              1272.0148190367627
+            ]
+          },
+          "exact_default_chain": {
+            "empty": [
+              40.7441677506448,
+              45.47791143116404,
+              44.5392087183132,
+              41.90190109649417,
+              42.196921949104436,
+              43.61391604421737,
+              44.382758266171386,
+              41.88849105773916,
+              42.13881178116605,
+              42.527702905061396,
+              42.76461358973327,
+              42.532172917979736,
+              41.12858886162181,
+              40.00661561911914,
+              39.96191548993576,
+              42.241622078287804,
+              39.34952372012355,
+              51.646529258469556,
+              45.848922503386035
+            ],
+            "no_separator": [
+              46.664940466649405,
+              44.055090440550906,
+              42.3699904236999,
+              42.542610425426105,
+              43.9934404399344,
+              42.5960404259604,
+              45.493590454935905,
+              42.164490421644906,
+              42.9618304296183,
+              42.559050425590506,
+              41.12055041120551,
+              44.15784044157841,
+              40.327320403273205,
+              39.665610396656106,
+              39.8382303983823,
+              46.311480463114805,
+              39.764250397642506,
+              42.937170429371704,
+              42.18093042180931
+            ],
+            "extra_dot": [
+              63.299570666299836,
+              63.69053221450757,
+              62.73484842999978,
+              64.32765473751276,
+              62.70588831531773,
+              63.89325301728195,
+              64.66069605635639,
+              59.16551429543661,
+              61.78640467416251,
+              61.8877650755497,
+              65.4208990667603,
+              64.79101657242563,
+              61.07688186445218,
+              55.024217895902865,
+              57.02970583763512,
+              60.32391888271878,
+              63.61089189913192,
+              66.8109845714989,
+              61.86604498953816
+            ],
+            "valid": [
+              1671.9612104999164,
+              1774.7868249456612,
+              1719.2777127570641,
+              1673.1315833472663,
+              1669.4532686841665,
+              1685.5040963049657,
+              1688.8480187259656,
+              1638.020397926768,
+              1676.9770941314162,
+              1703.5612773783648,
+              1775.4556094298612,
+              1766.0926266510617,
+              1615.1145293429192,
+              1635.6796522320683,
+              1548.7376692860726,
+              1635.8468483531183,
+              1555.0911218859721,
+              1606.9219194114696,
+              1649.5569302792176
+            ],
+            "wrong_key": [
+              1329.866058706184,
+              1425.6198347107438,
+              1324.1664291821032,
+              1361.4990025648333,
+              1343.8301510401825,
+              1346.8224565403248,
+              1423.7674551154175,
+              1372.6132801367912,
+              1364.7762895411797,
+              1314.1920775149615,
+              1440.7238529495582,
+              1317.184383015104,
+              1315.7594756340839,
+              1237.6745511541749,
+              1264.7477913935595,
+              1258.3357081789684,
+              1262.8954117982332,
+              1251.9236249643773,
+              1294.3858649187803
+            ]
+          },
+          "exact_bool": {
+            "empty": [
+              49.120971959608966,
+              50.65418639059867,
+              48.09733900130971,
+              48.508580189796746,
+              47.306146714764004,
+              48.517520215633425,
+              48.50411017687841,
+              47.94535856208624,
+              47.69056782574101,
+              46.1081832526496,
+              56.18806238350029,
+              48.00793874294297,
+              47.08264606884714,
+              44.68671914461833,
+              45.397451198633966,
+              47.14075623678553,
+              45.68800203832589,
+              44.637549002516614,
+              49.59926334187106
+            ],
+            "no_separator": [
+              46.40190046401901,
+              50.803710508037106,
+              48.40758048407581,
+              47.5362604753626,
+              49.0898404908984,
+              48.64596048645961,
+              47.992470479924705,
+              48.51855048518551,
+              47.626680476266806,
+              47.3677504736775,
+              47.6061304760613,
+              49.56249049562491,
+              48.370590483705904,
+              44.01399044013991,
+              45.267540452675405,
+              47.186910471869105,
+              46.79646046796461,
+              47.244450472444505,
+              48.033570480335705
+            ],
+            "extra_dot": [
+              75.38317851738692,
+              79.73443574836557,
+              73.08084940016363,
+              71.48080306398013,
+              74.27545413079835,
+              72.01656518559814,
+              75.39765857472796,
+              72.48716704918151,
+              76.73706387877296,
+              70.61923965218902,
+              89.18267316338573,
+              74.36957450351504,
+              74.53609516293685,
+              71.22016203184165,
+              70.04003735854793,
+              76.17958167114342,
+              72.08172544363276,
+              72.1541257303379,
+              71.53872329334425
+            ],
+            "valid": [
+              1717.940143788664,
+              1804.3805383715098,
+              1673.6331717104163,
+              1714.9306136097644,
+              1688.3464303628157,
+              1704.5644541046647,
+              1807.7244607925097,
+              1643.7050660424677,
+              1664.1029928105668,
+              1666.4437385052668,
+              1699.214178231065,
+              1818.257816418659,
+              1603.2436047483698,
+              1523.6582511285737,
+              1514.6296605918742,
+              1624.8119043638187,
+              1614.4457448587193,
+              1563.7853201805717,
+              1633.0045142952683
+            ],
+            "wrong_key": [
+              1439.013964092334,
+              1415.645483043602,
+              1498.2901111427757,
+              1326.3037902536335,
+              1395.9817611855228,
+              1353.662011969222,
+              1435.8791678540895,
+              1381.5901966372185,
+              1366.6286691365062,
+              1279.1393559418639,
+              1426.04730692505,
+              1325.5913365631234,
+              1220.290681105728,
+              1217.8683385579936,
+              1249.5012824166429,
+              1345.1125676831007,
+              1292.390994585352,
+              1299.9430037047591,
+              1315.7594756340839
+            ]
+          }
+        },
+        "summary": {
+          "baseline": {
+            "empty": {
+              "median_ns": 33.42675660332658,
+              "baseline_ratio": 1.0
+            },
+            "no_separator": {
+              "median_ns": 35.637810356378104,
+              "baseline_ratio": 1.0
+            },
+            "extra_dot": {
+              "median_ns": 60.35287899740083,
+              "baseline_ratio": 1.0
+            },
+            "valid": {
+              "median_ns": 2074.569469988296,
+              "baseline_ratio": 1.0
+            },
+            "wrong_key": {
+              "median_ns": 2046.5944713593617,
+              "baseline_ratio": 1.0
+            }
+          },
+          "current": {
+            "empty": {
+              "median_ns": 43.8687067805626,
+              "baseline_ratio": 0.7543949304987735
+            },
+            "no_separator": {
+              "median_ns": 44.7126904471269,
+              "baseline_ratio": 0.7942703504542926
+            },
+            "extra_dot": {
+              "median_ns": 76.9180645955358,
+              "baseline_ratio": 0.7959066013260305
+            },
+            "valid": {
+              "median_ns": 1706.4036114362148,
+              "baseline_ratio": 1.2213901487184897
+            },
+            "wrong_key": {
+              "median_ns": 1359.789113707609,
+              "baseline_ratio": 1.5096217650962176
+            }
+          },
+          "exact_default": {
+            "empty": {
+              "median_ns": 41.3073893783553,
+              "baseline_ratio": 0.8074499834199181
+            },
+            "no_separator": {
+              "median_ns": 42.73167042731671,
+              "baseline_ratio": 0.8341463414634146
+            },
+            "extra_dot": {
+              "median_ns": 62.966529347456216,
+              "baseline_ratio": 0.9581127733026468
+            },
+            "valid": {
+              "median_ns": 1676.6427018893162,
+              "baseline_ratio": 1.231012992500264
+            },
+            "wrong_key": {
+              "median_ns": 1310.7722998005129,
+              "baseline_ratio": 1.578357790971211
+            }
+          },
+          "exact_default_chain": {
+            "empty": {
+              "median_ns": 42.241622078287804,
+              "baseline_ratio": 0.7762631956544019
+            },
+            "no_separator": {
+              "median_ns": 42.559050425590506,
+              "baseline_ratio": 0.8447829240493213
+            },
+            "extra_dot": {
+              "median_ns": 62.73484842999978,
+              "baseline_ratio": 0.9779164666346615
+            },
+            "valid": {
+              "median_ns": 1671.9612104999164,
+              "baseline_ratio": 1.2383
+            },
+            "wrong_key": {
+              "median_ns": 1324.1664291821032,
+              "baseline_ratio": 1.5515592988845892
+            }
+          },
+          "exact_bool": {
+            "empty": {
+              "median_ns": 47.94535856208624,
+              "baseline_ratio": 0.6947164323800291
+            },
+            "no_separator": {
+              "median_ns": 47.626680476266806,
+              "baseline_ratio": 0.7407568508046977
+            },
+            "extra_dot": {
+              "median_ns": 73.08084940016363,
+              "baseline_ratio": 0.8141287569236356
+            },
+            "valid": {
+              "median_ns": 1666.4437385052668,
+              "baseline_ratio": 1.235393147157853
+            },
+            "wrong_key": {
+              "median_ns": 1345.1125676831007,
+              "baseline_ratio": 1.5461876084515669
+            }
+          }
+        },
+        "differential_cases_per_candidate": 8316
+      },
+      "variants": [
+        {
+          "name": "exact_default",
+          "path": "/tmp/unstd-token-native-20261022/python-exact_default.py",
+          "bytes": 3893,
+          "sha256": "01e731682e075d51993df338b45f67fa1c02499abb576c0a24ebfec121ccf3a3",
+          "source": "def verify(\n    key: bytes, token: str, *, max_token_chars: int | None = _DEFAULT_MAX_TOKEN_CHARS\n) -> bytes | None:\n    \"\"\"Return the claims bytes if *token*'s MAC checks out under *key*, else None.\n\n    Fails closed on every shape problem \u2014 a missing or extra separator, a\n    noncanonical base64url segment, a tag of the wrong width \u2014 and compares the tag in\n    constant time. None means \"do not trust this\"; malformed token text never\n    raises. Invalid signer keys remain configuration errors for canonical\n    envelopes within the chosen size limit.\n\n    The complete envelope, including separator and tag, is limited to 8192\n    characters before slicing, decoding, or hashing. Set *max_token_chars* to a\n    positive integer for a different bound, or explicitly to None when the\n    caller already bounds requests or handles large trusted envelopes. Invalid\n    limit types and nonpositive limits raise TypeError and ValueError.\n    \"\"\"\n    if max_token_chars is _DEFAULT_MAX_TOKEN_CHARS and type(token) is str:\n        token_chars = len(token)\n        if token_chars < _MIN_TOKEN_CHARS or token_chars > _DEFAULT_MAX_TOKEN_CHARS:\n            return None\n        if token[-44] != SEPARATOR:\n            return None\n        payload = token[:-44]\n        tag = token[-43:]\n    else:\n        if max_token_chars is not None:\n            # The actual default is already a validated exact int. Identity avoids\n            # repeating configuration checks without accepting equal floats or bools.\n            if max_token_chars is not _DEFAULT_MAX_TOKEN_CHARS:\n                if type(max_token_chars) is not int:\n                    msg = \"max_token_chars must be a positive integer or None\"\n                    raise TypeError(msg)\n                if max_token_chars <= 0:\n                    msg = \"max_token_chars must be a positive integer or None\"\n                    raise ValueError(msg)\n            token_chars = _str_len(token)\n            if token_chars < _MIN_TOKEN_CHARS or token_chars > max_token_chars:\n                return None\n        if type(token) is str:\n            if max_token_chars is None and _str_len(token) < _MIN_TOKEN_CHARS:\n                return None\n            # The full tag has a fixed encoded width, so the only possible separator\n            # is 44 characters from the end. Wrong-width tags and absent/appended\n            # separators fail before a search or either substring allocation.\n            if token[-44] != SEPARATOR:\n                return None\n            payload = token[:-44]\n            tag = token[-43:]\n        else:\n            # Preserve a string subclass's partition hooks on the compatible path;\n            # the bounded path above still uses its actual stored string length.\n            payload, _, tag = token.partition(SEPARATOR)\n            if len(tag) != _TAG_CHARS or not payload:\n                return None\n    # Unpadded Base64 has one spelling precisely when its alphabet, length,\n    # and unused terminal bits are canonical. Check those directly instead of\n    # allocating decoded claims and two re-encodings before authentication.\n    remainder = len(payload) % 4\n    if (\n        remainder == 1\n        or (remainder == 2 and payload[-1] not in _TWO_CHAR_END)\n        or (remainder == 3 and payload[-1] not in _THREE_CHAR_END)\n        or tag[-1] not in _THREE_CHAR_END\n        or not payload.isascii()\n        or not tag.isascii()\n        or not payload.replace(\"-\", \"a\").replace(\"_\", \"a\").isalnum()\n        or not tag.replace(\"-\", \"a\").replace(\"_\", \"a\").isalnum()\n    ):\n        return None\n    try:\n        got = b64.decode(tag, url=True)\n    except ValueError:  # binascii.Error and UnicodeEncodeError are both ValueErrors\n        return None\n    payload_bytes = payload.encode(\"ascii\")\n    if not equal(got, mac_raw(key, payload_bytes)):\n        return None\n    return b64.decode(payload_bytes, url=True)\n"
+        },
+        {
+          "name": "exact_default_chain",
+          "path": "/tmp/unstd-token-native-20261022/python-exact_default_chain.py",
+          "bytes": 3850,
+          "sha256": "36a4077fac4aef7e9d39588ab927a21cef13853d78cf4db97aca8cce8a48af39",
+          "source": "def verify(\n    key: bytes, token: str, *, max_token_chars: int | None = _DEFAULT_MAX_TOKEN_CHARS\n) -> bytes | None:\n    \"\"\"Return the claims bytes if *token*'s MAC checks out under *key*, else None.\n\n    Fails closed on every shape problem \u2014 a missing or extra separator, a\n    noncanonical base64url segment, a tag of the wrong width \u2014 and compares the tag in\n    constant time. None means \"do not trust this\"; malformed token text never\n    raises. Invalid signer keys remain configuration errors for canonical\n    envelopes within the chosen size limit.\n\n    The complete envelope, including separator and tag, is limited to 8192\n    characters before slicing, decoding, or hashing. Set *max_token_chars* to a\n    positive integer for a different bound, or explicitly to None when the\n    caller already bounds requests or handles large trusted envelopes. Invalid\n    limit types and nonpositive limits raise TypeError and ValueError.\n    \"\"\"\n    if max_token_chars is _DEFAULT_MAX_TOKEN_CHARS and type(token) is str:\n        if not _MIN_TOKEN_CHARS <= len(token) <= _DEFAULT_MAX_TOKEN_CHARS:\n            return None\n        if token[-44] != SEPARATOR:\n            return None\n        payload = token[:-44]\n        tag = token[-43:]\n    else:\n        if max_token_chars is not None:\n            # The actual default is already a validated exact int. Identity avoids\n            # repeating configuration checks without accepting equal floats or bools.\n            if max_token_chars is not _DEFAULT_MAX_TOKEN_CHARS:\n                if type(max_token_chars) is not int:\n                    msg = \"max_token_chars must be a positive integer or None\"\n                    raise TypeError(msg)\n                if max_token_chars <= 0:\n                    msg = \"max_token_chars must be a positive integer or None\"\n                    raise ValueError(msg)\n            token_chars = _str_len(token)\n            if token_chars < _MIN_TOKEN_CHARS or token_chars > max_token_chars:\n                return None\n        if type(token) is str:\n            if max_token_chars is None and _str_len(token) < _MIN_TOKEN_CHARS:\n                return None\n            # The full tag has a fixed encoded width, so the only possible separator\n            # is 44 characters from the end. Wrong-width tags and absent/appended\n            # separators fail before a search or either substring allocation.\n            if token[-44] != SEPARATOR:\n                return None\n            payload = token[:-44]\n            tag = token[-43:]\n        else:\n            # Preserve a string subclass's partition hooks on the compatible path;\n            # the bounded path above still uses its actual stored string length.\n            payload, _, tag = token.partition(SEPARATOR)\n            if len(tag) != _TAG_CHARS or not payload:\n                return None\n    # Unpadded Base64 has one spelling precisely when its alphabet, length,\n    # and unused terminal bits are canonical. Check those directly instead of\n    # allocating decoded claims and two re-encodings before authentication.\n    remainder = len(payload) % 4\n    if (\n        remainder == 1\n        or (remainder == 2 and payload[-1] not in _TWO_CHAR_END)\n        or (remainder == 3 and payload[-1] not in _THREE_CHAR_END)\n        or tag[-1] not in _THREE_CHAR_END\n        or not payload.isascii()\n        or not tag.isascii()\n        or not payload.replace(\"-\", \"a\").replace(\"_\", \"a\").isalnum()\n        or not tag.replace(\"-\", \"a\").replace(\"_\", \"a\").isalnum()\n    ):\n        return None\n    try:\n        got = b64.decode(tag, url=True)\n    except ValueError:  # binascii.Error and UnicodeEncodeError are both ValueErrors\n        return None\n    payload_bytes = payload.encode(\"ascii\")\n    if not equal(got, mac_raw(key, payload_bytes)):\n        return None\n    return b64.decode(payload_bytes, url=True)\n"
+        },
+        {
+          "name": "exact_bool",
+          "path": "/tmp/unstd-token-native-20261022/python-exact_bool.py",
+          "bytes": 3486,
+          "sha256": "0328b57f2606642fa0b995eda73680740e9c7d6b8b0becf235de08d46cef2b2c",
+          "source": "def verify(\n    key: bytes, token: str, *, max_token_chars: int | None = _DEFAULT_MAX_TOKEN_CHARS\n) -> bytes | None:\n    \"\"\"Return the claims bytes if *token*'s MAC checks out under *key*, else None.\n\n    Fails closed on every shape problem \u2014 a missing or extra separator, a\n    noncanonical base64url segment, a tag of the wrong width \u2014 and compares the tag in\n    constant time. None means \"do not trust this\"; malformed token text never\n    raises. Invalid signer keys remain configuration errors for canonical\n    envelopes within the chosen size limit.\n\n    The complete envelope, including separator and tag, is limited to 8192\n    characters before slicing, decoding, or hashing. Set *max_token_chars* to a\n    positive integer for a different bound, or explicitly to None when the\n    caller already bounds requests or handles large trusted envelopes. Invalid\n    limit types and nonpositive limits raise TypeError and ValueError.\n    \"\"\"\n    is_plain = type(token) is str\n    if max_token_chars is not None:\n        # The actual default is already a validated exact int. Identity avoids\n        # repeating configuration checks without accepting equal floats or bools.\n        if max_token_chars is not _DEFAULT_MAX_TOKEN_CHARS:\n            if type(max_token_chars) is not int:\n                msg = \"max_token_chars must be a positive integer or None\"\n                raise TypeError(msg)\n            if max_token_chars <= 0:\n                msg = \"max_token_chars must be a positive integer or None\"\n                raise ValueError(msg)\n        token_chars = len(token) if is_plain else _str_len(token)\n        if token_chars < _MIN_TOKEN_CHARS or token_chars > max_token_chars:\n            return None\n    if is_plain:\n        if max_token_chars is None and _str_len(token) < _MIN_TOKEN_CHARS:\n            return None\n        # The full tag has a fixed encoded width, so the only possible separator\n        # is 44 characters from the end. Wrong-width tags and absent/appended\n        # separators fail before a search or either substring allocation.\n        if token[-44] != SEPARATOR:\n            return None\n        payload = token[:-44]\n        tag = token[-43:]\n    else:\n        # Preserve a string subclass's partition hooks on the compatible path;\n        # the bounded path above still uses its actual stored string length.\n        payload, _, tag = token.partition(SEPARATOR)\n        if len(tag) != _TAG_CHARS or not payload:\n            return None\n    # Unpadded Base64 has one spelling precisely when its alphabet, length,\n    # and unused terminal bits are canonical. Check those directly instead of\n    # allocating decoded claims and two re-encodings before authentication.\n    remainder = len(payload) % 4\n    if (\n        remainder == 1\n        or (remainder == 2 and payload[-1] not in _TWO_CHAR_END)\n        or (remainder == 3 and payload[-1] not in _THREE_CHAR_END)\n        or tag[-1] not in _THREE_CHAR_END\n        or not payload.isascii()\n        or not tag.isascii()\n        or not payload.replace(\"-\", \"a\").replace(\"_\", \"a\").isalnum()\n        or not tag.replace(\"-\", \"a\").replace(\"_\", \"a\").isalnum()\n    ):\n        return None\n    try:\n        got = b64.decode(tag, url=True)\n    except ValueError:  # binascii.Error and UnicodeEncodeError are both ValueErrors\n        return None\n    payload_bytes = payload.encode(\"ascii\")\n    if not equal(got, mac_raw(key, payload_bytes)):\n        return None\n    return b64.decode(payload_bytes, url=True)\n"
+        }
+      ],
+      "production_adoption": "rejected",
+      "differential": {
+        "result": "passed",
+        "cases_per_candidate": 8316,
+        "candidates": 3,
+        "total_assertions": 24948,
+        "random_seed": 123,
+        "scope": [
+          "300 deterministic token mutations plus valid, forged, short and oversized Unicode fixtures",
+          "3 valid/wrong/invalid-width keys",
+          "9 default/None/custom/boolean/float/nonpositive/arbitrary-width limits"
+        ],
+        "oracle": "unchanged bounded Python implementation"
+      }
+    }
+  ],
+  "limitations": [
+    "Shared macOS host with no CPU affinity or frequency control; absolute times varied between runs.",
+    "Paired observations are diagnostic and do not prove universal zero overhead.",
+    "The standalone micro harness differs from the full workload driver; primary-driver values should be used for user-facing overhead statements.",
+    "No candidate code was copied into production."
+  ],
+  "sources": [
+    {
+      "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/crypto/token.py",
+      "bytes": 10842,
+      "sha256": "5b1a61c2974b8440ee6ccb52dc623732574bb14206eef76b6c2be909d75b07fe"
+    },
+    {
+      "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/crypto/_stream_native.c",
+      "bytes": 14933,
+      "sha256": "33e16a4ac39cf2f74c5c8681e4a1dae64c841123f9ac29b69ddf3b766e9058ee"
+    },
+    {
+      "path": "/Users/griffinstrier/Billy-Company/unstd/tests/tooling/fuzz/targets/tokens.py",
+      "bytes": 6513,
+      "sha256": "d9a966e67f28e453541caff791e2261e1d34be5688b4c1b796104f7b953fb4fb"
+    }
+  ],
+  "baseline": {
+    "path": "/tmp/unstd-token-baseline-20261022.py",
+    "bytes": 5711,
+    "sha256": "c76c3dc42bd188805be28e332592ef1a5faf4f0a1a6418903eddaa3ceff9995f",
+    "source": "\"\"\"Bearer tokens \u2014 the keyed-BLAKE3 MAC, constant-time compare, and the claims envelope.\n\nKeyed BLAKE3 is a PRF by construction, so it is a MAC with no HMAC\nouter/inner-pad wrapper around it, and it reuses the digest implementation the\nrest of this package already leans on. The claims envelope is::\n\n    base64url_nopad(claims_json) \".\" base64url_nopad(keyed_mac(base64url claims bytes))\n\nThe MAC covers the *encoded* payload, not the raw JSON, so a verifier never has\nto re-encode to check the tag. That one detail is what a second implementation\nof this envelope gets wrong silently, so it is pinned by its own test rather\nthan left to the whole-token golden.\n\nThe MAC comes in the two shapes :mod:`unstd.crypto.digest` names \u2014 :func:`mac_raw`\n(32 bytes) and :func:`mac_hex` (64 chars) \u2014 and :func:`verify_mac` accepts a tag\nin either. :func:`equal` is the constant-time compare every tag check rides.\n\nAn opaque bearer (no claims inside) is just CSPRNG bytes:\n``unstd.rand.crypto.token_urlsafe()``.\n\"\"\"\n\nfrom __future__ import annotations\n\nimport hmac\n\nfrom unstd.crypto._blake3 import _PARALLEL_MIN_BYTES, _parallel_hasher, blake3\nfrom unstd.serde import b64\n\n\nSEPARATOR = \".\"\n\"\"\"The one byte between payload and tag. Present exactly once in a valid token.\"\"\"\n\nKEY_BYTES = 32\n\"\"\"Keyed BLAKE3 takes exactly this much key \u2014 not a minimum, an equality.\"\"\"\n\nTAG_BYTES = 32\n\"\"\"Width of a MAC tag, which is BLAKE3's output width.\"\"\"\n\n\ndef equal(a: str | bytes, b: str | bytes) -> bool:\n    \"\"\"Constant-time equality for a token, digest, or MAC.\n\n    Never use ``==`` on one of those: it short-circuits on the first differing\n    byte, which leaks the length of the shared prefix and is enough to forge a\n    tag one byte at a time. Mismatched str/bytes is False rather than a\n    TypeError. Non-ASCII strings are also refused: wire tags are ASCII and\n    ``hmac.compare_digest`` otherwise raises for caller-controlled Unicode.\n    \"\"\"\n    if isinstance(a, str):\n        return (\n            isinstance(b, str)\n            and a.isascii()\n            and b.isascii()\n            and hmac.compare_digest(a, b)\n        )\n    return isinstance(b, bytes) and hmac.compare_digest(a, b)\n\n\ndef _keyed(key: bytes, data: bytes) -> blake3:\n    if len(key) != KEY_BYTES:\n        msg = f\"keyed BLAKE3 needs exactly {KEY_BYTES} bytes of key, got {len(key)}\"\n        raise ValueError(msg)\n    if type(data) is bytes and len(data) >= _PARALLEL_MIN_BYTES:\n        return _parallel_hasher(data, key=key)\n    return blake3(data, key=key)\n\n\ndef mac_raw(key: bytes, data: bytes) -> bytes:\n    \"\"\"Keyed BLAKE3 MAC of *data* as raw bytes (32). *key* must be exactly 32 bytes.\"\"\"\n    return _keyed(key, data).digest()\n\n\ndef mac_hex(key: bytes, data: bytes) -> str:\n    \"\"\"Keyed BLAKE3 MAC of *data* as hex (64 chars). *key* must be exactly 32 bytes.\"\"\"\n    return _keyed(key, data).digest().hex()\n\n\ndef verify_mac(key: bytes, data: bytes, tag: str | bytes) -> bool:\n    \"\"\"Recompute the MAC over *data* and compare it to *tag* \u2014 hex ``str`` or raw ``bytes`` \u2014 in constant time.\"\"\"\n    return equal(\n        mac_hex(key, data) if isinstance(tag, str) else mac_raw(key, data), tag\n    )\n\n\ndef mint(key: bytes, claims: bytes) -> str:\n    \"\"\"Encode *claims* and append its keyed MAC, producing ``payload.tag``.\n\n    *claims* is the already-serialized claims document \u2014 this function does not\n    serialize for you, because key order in the JSON is part of what the MAC\n    covers, and a minter that re-serialized would quietly produce a token a\n    stricter verifier rejects.\n\n    Empty *claims* raises rather than minting ``\".tag\"``: :func:`verify` refuses an\n    empty claims segment, because a bearer that asserts nothing grants nothing, so\n    minting one would hand back a token that can never be redeemed.\n    \"\"\"\n    if not claims:\n        msg = (\n            \"refusing to mint a token with no claims \u2014 an empty bearer asserts nothing\"\n        )\n        raise ValueError(msg)\n    payload = b64.encode(claims, url=True, pad=False)\n    tag = mac_raw(key, payload.encode(\"ascii\"))\n    return payload + SEPARATOR + b64.encode(tag, url=True, pad=False)\n\n\ndef verify(key: bytes, token: str) -> bytes | None:\n    \"\"\"Return the claims bytes if *token*'s MAC checks out under *key*, else None.\n\n    Fails closed on every shape problem \u2014 a missing or extra separator, a\n    noncanonical base64url segment, a tag of the wrong width \u2014 and compares the tag in\n    constant time. None means \"do not trust this\"; it never raises for\n    caller-supplied input.\n    \"\"\"\n    payload, sep, tag = token.partition(SEPARATOR)\n    if not sep or SEPARATOR in tag or not payload or not tag:\n        return None\n    if not all(\n        segment.isascii() and segment.replace(\"-\", \"a\").replace(\"_\", \"a\").isalnum()\n        for segment in (payload, tag)\n    ):\n        return None\n    try:\n        claims = b64.decode(payload, url=True)\n        got = b64.decode(tag, url=True)\n    except ValueError:  # binascii.Error and UnicodeEncodeError are both ValueErrors\n        return None\n    # The general-purpose URL decoder intentionally follows stdlib's leniency.\n    # A bearer envelope must instead have one spelling: ignored junk, padding,\n    # alternate alphabets and unused-bit aliases must never authenticate.\n    if (\n        b64.encode(claims, url=True, pad=False) != payload\n        or b64.encode(got, url=True, pad=False) != tag\n    ):\n        return None\n    if len(got) != TAG_BYTES or not equal(got, mac_raw(key, payload.encode(\"ascii\"))):\n        return None\n    return claims\n\n\n__all__ = [\n    \"KEY_BYTES\",\n    \"SEPARATOR\",\n    \"TAG_BYTES\",\n    \"equal\",\n    \"mac_hex\",\n    \"mac_raw\",\n    \"mint\",\n    \"verify\",\n    \"verify_mac\",\n]\n"
+  }
+}

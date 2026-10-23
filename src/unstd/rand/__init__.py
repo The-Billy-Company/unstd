@@ -12,7 +12,8 @@ site:
 3. **One seed entrypoint** — :func:`seed` reseeds the bulk / scalar PRNG on both
    backends for reproducible runs with the same backend and call sequence; it
    deliberately never touches the crypto path. :class:`Generator` provides
-   independent streams with an explicitly selected backend (stdlib by default).
+   independent streams with an explicitly selected backend (stdlib by default)
+   and optional NumPy bit generator (PCG64, PCG64DXSM, SFC64, or Philox).
 
 A stdlib-``random``-faithful scalar surface (``random``, ``randint``, ``uniform``,
 ``choice``, ``shuffle``, ``sample``) is stdlib ``random`` itself, bound to the

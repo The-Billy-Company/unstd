@@ -1,0 +1,138 @@
+"""Bounded local audit prototypes. Never import into production."""
+from __future__ import annotations
+import contextlib
+import gc
+import importlib.metadata
+import io
+import json
+from pathlib import Path
+import platform
+import random
+import struct
+import sys
+import time
+import wave
+import numpy as np
+from unstd.audio import wavx
+from unstd.pack import binpack
+
+ORIGINAL = wavx._read_numpy
+
+def direct_read(raw, nchannels, sampwidth, dtype):
+    code = wavx._PCM_CODE.get(sampwidth)
+    if code is None:
+        raise ValueError(wavx._bad_width(sampwidth, '8/16/32'))
+    wavx._check_pcm_frames(raw, nchannels, sampwidth)
+    arr = np.frombuffer(raw, dtype=code)
+    if nchannels > 1:
+        arr = arr.reshape(-1, nchannels)
+    if dtype == 'int16':
+        if sampwidth == 2:
+            return arr.copy()
+        return ORIGINAL(raw, nchannels, sampwidth, dtype)
+    flt = arr.astype(np.float32 if dtype == 'float32' else np.float64)
+    if sampwidth == 1:
+        flt -= 128.0
+        flt /= 128.0
+    else:
+        flt /= float(1 << (8 * sampwidth - 1))
+    return flt
+
+def wav_read(data, dtype, decode):
+    with contextlib.closing(wave.open(io.BytesIO(data), 'rb')) as w:
+        channels, width, rate, nframes = (w.getnchannels(), w.getsampwidth(), w.getframerate(), w.getnframes())
+        raw = w.readframes(nframes + 1)
+    return decode(raw, channels, width, dtype), rate
+
+def make_wav(raw, width, channels):
+    fp = io.BytesIO()
+    with wave.open(fp, 'wb') as out:
+        out.setnchannels(channels)
+        out.setsampwidth(width)
+        out.setframerate(16000)
+        out.writeframes(raw)
+    return fp.getvalue()
+
+def observation(fn):
+    try:
+        result=fn()
+        return ('ok', result.dtype.str, result.shape, result.tobytes(), result.flags.writeable, result.flags.owndata)
+    except Exception as error:
+        return (type(error).__name__, error.args)
+
+def verify():
+    rng=random.Random(8026)
+    values={1:list(range(256)),2:list(range(-32768,32768)),4:[-2147483648,-2147483647,-65537,-65536,-65535,-32769,-32768,-32767,-1,0,1,32767,32768,32769,65535,65536,65537,2147483646,2147483647]+[rng.randint(-2147483648,2147483647) for _ in range(100001)]}
+    checked=0
+    for width, xs in values.items():
+        raw=np.asarray(xs,dtype=wavx._PCM_CODE[width]).tobytes()
+        for channels in (1,2,4):
+            aligned=raw[:len(raw)//(width*channels)*(width*channels)]
+            for dtype in ('float32','float64','int16'):
+                a=observation(lambda:ORIGINAL(aligned,channels,width,dtype))
+                b=observation(lambda:direct_read(aligned,channels,width,dtype))
+                assert a==b,(width,channels,dtype,a[:3],b[:3])
+                checked+=1
+                assert observation(lambda:ORIGINAL(b'',channels,width,dtype))==observation(lambda:direct_read(b'',channels,width,dtype))
+                for cut in (1,3,5):
+                    broken=aligned[:cut]
+                    assert observation(lambda:ORIGINAL(broken,channels,width,dtype))==observation(lambda:direct_read(broken,channels,width,dtype))
+    for width in (0,3,5):
+        assert observation(lambda:ORIGINAL(b'',1,width,'float32'))==observation(lambda:direct_read(b'',1,width,'float32'))
+    # Ensure result owns its data and never aliases a mutable input.
+    mutable=bytearray(struct.pack('<4h',1,2,3,4))
+    for dtype in ('float32','float64','int16'):
+        a=direct_read(mutable,2,2,dtype)
+        before=a.tobytes()
+        mutable[:2]=b'\xff\x7f'
+        assert a.flags.owndata and a.flags.writeable and a.tobytes()==before
+    return {'decode_vectors':checked,'pcm8':'all 256 codes','pcm16':'all 65536 codes','pcm32':'100020 seeded and boundary codes','shapes':[1,2,4],'dtypes':['float32','float64','int16'],'malformed':'partial samples/channel frames and unsupported widths','ownership':'writeable owndata true and independent mutable input'}
+
+def sample(fn, iterations):
+    gc.disable()
+    try:
+        cpu=time.thread_time_ns(); wall=time.perf_counter_ns()
+        for _ in range(iterations): fn()
+        wall=time.perf_counter_ns()-wall; cpu=time.thread_time_ns()-cpu
+    finally: gc.enable()
+    return {'wall_ns':wall/iterations,'cpu_ns':cpu/iterations}
+
+def pair(name, base, alt, iterations=100, rounds=7, note=''):
+    base();alt()
+    samples=[]
+    for turn in range(rounds):
+        if turn%2:
+            b=sample(alt,iterations);a=sample(base,iterations)
+        else:
+            a=sample(base,iterations);b=sample(alt,iterations)
+        samples.append({'baseline':a,'candidate':b})
+    return {'name':name,'iterations':iterations,'samples':samples,'note':note}
+
+def main():
+    verified=verify()
+    rows=[]
+    for n in (1,16,1024,262144):
+        raw=np.resize(np.array([-32768,-1,0,1,32767],dtype='<i2'),n).tobytes()
+        data=make_wav(raw,2,1)
+        for dtype in ('float32','float64','int16'):
+            iters=500 if n<=1024 else 10
+            rows.append(pair(f'pcm16_decode_{n}_{dtype}',lambda raw=raw,dtype=dtype:ORIGINAL(raw,1,2,dtype),lambda raw=raw,dtype=dtype:direct_read(raw,1,2,dtype),iters,note='numpy fallback kernel, owned result'))
+            rows.append(pair(f'wav16_read_{n}_{dtype}',lambda data=data,dtype=dtype:wav_read(data,dtype,ORIGINAL),lambda data=data,dtype=dtype:wav_read(data,dtype,direct_read),iters,note='complete BytesIO wave parse and owned decode; fallback path only'))
+    for n in (1,16,1024,262144):
+        values=[float(i%257-128)/128 for i in range(n)]
+        arr=np.asarray(values,dtype='<f4')
+        packed=arr.tobytes()
+        for kind,seq in [('list',values),('ndarray',arr)]:
+            assert binpack.pack_array('<f4',seq)==binpack.pack_array_portable('<f4',seq)
+            iters=500 if n<=1024 else 5
+            rows.append(pair(f'pack_f4_{n}_{kind}',lambda seq=seq:binpack.pack_array('<f4',seq),lambda seq=seq:binpack.pack_array_portable('<f4',seq),iters,note='both include output bytes and conversion, portable semantic subset only'))
+        rows.append(pair(f'unpack_f4_{n}',lambda packed=packed:binpack.unpack_array('<f4',packed),lambda packed=packed:binpack.unpack_array_portable('<f4',packed),500 if n<=1024 else 5,note='different ownership/return type: ndarray view versus fresh Python list, not an admissible swap'))
+    payload={'date_utc':time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime()),'python':sys.version,'platform':platform.platform(),'versions':{p:importlib.metadata.version(p) for p in ['numpy','soundfile','sortedcontainers','immutables','whenever','protobuf']},'correctness':verified,'methods':{'clock':'paired alternating perf_counter_ns wall/thread_time_ns CPU','rounds':7,'gc':'disabled within batches','dependencies_installed':False,'performance_scope':'host-local warm evidence, unisolated OS scheduling, not a zero-overhead guarantee'},'results':rows}
+    Path(__file__).with_name('results.json').write_text(json.dumps(payload,indent=2))
+    from statistics import median
+    for row in rows:
+        ratio=median(s['baseline']['cpu_ns']/s['candidate']['cpu_ns'] for s in row['samples'])
+        print(row['name'],f'{ratio:.3f}x CPU baseline/candidate')
+    print('verified',verified)
+
+if __name__=='__main__': main()

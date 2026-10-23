@@ -54,6 +54,11 @@ quantization can differ by a quantization step between backends; callers should
 not rely on byte-identical float-to-PCM output. `PCM_16` has a normalized step
 of `1/32768`.
 
+On the NumPy fallback, reading PCM16 with `dtype="int16"` copies the existing
+sample counts directly into independent, writable arrays. It preserves their
+little-endian dtype and channel shape while avoiding an unnecessary float
+conversion. `blocks` gives each yielded chunk its own storage.
+
 ## Streaming — `Writer` / `blocks`
 
 `read`/`write` buffer the whole file; a live pipeline (streaming TTS

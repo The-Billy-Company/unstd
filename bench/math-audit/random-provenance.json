@@ -1,0 +1,20 @@
+{
+  "measured_driver": "random-measured-source.txt",
+  "measured_driver_sha256": "9e54d5c27f1024973fc51beb7b205b7708485e51883f9e1fefb433163494d69c",
+  "retained_driver": "probe_random.py",
+  "retained_driver_sha256": "962a8c7b76b3ea4344ba3cee020b6ae8493d009a42beb59e6055e1f32d3a0885",
+  "changes_after_measurement": [
+    "Formatted and annotated source; added guarded main and explicit --output/--validate-only CLI.",
+    "Changed bulk workload default-argument lambdas to functools.partial for strict type-checking; new timing is required for the retained driver, as call overhead can change.",
+    "Original measured driver preserved byte-for-byte; existing raw measurements were not changed.",
+    "Publication removed two redundant benchmark-scoped S311 noqa comments; no executable change from that cleanup."
+  ],
+  "validation": [
+    "ruff check current driver passed",
+    "ruff format current driver passed",
+    "mypy --follow-imports=silent current driver passed",
+    "--validate-only checked 113 workload registrations/contracts without collecting new timings"
+  ],
+  "original_measured_driver": ".local/math-audit-random/measured-benchmark.py",
+  "original_retained_driver": ".local/math-audit-random/benchmark.py"
+}
