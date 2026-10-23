@@ -23,6 +23,14 @@ evidence. Missing or stale evidence requests the complete reusable CI gate.
 Artifact construction can run concurrently, but publication requires both a
 successful CI decision and verified distributions.
 
+`test_wheel_tests.py` checks that the installed-wheel runner executes every test
+exactly once across complete partitions, starts bounded workers concurrently,
+preserves the caller's working directory, and retains all worker output and
+failures, including pytest's no-tests exit. The runner adds no dependencies and
+keeps each test's existing Hypothesis profile. Cibuildwheel invokes it as
+`python {project}/tests/tooling/release/wheel_tests.py --workers 4`; the worker
+count is capped by the CPUs available to the interpreter.
+
 `test_tls_runtime.py` verifies the stdlib-only
 [`runtime/`](../../../../tooling/runtime/README.md) preflight against vulnerable
 and patched releases in every reviewed OpenSSL branch, prereleases, unknown

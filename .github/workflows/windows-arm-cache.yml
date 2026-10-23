@@ -1,0 +1,77 @@
+# Populate default-branch caches before tags need the Windows ARM source builds.
+name: Windows ARM build cache
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "pyproject.toml"
+      - "uv.lock"
+      - "hatch_build.py"
+      - ".github/workflows/release.yml"
+      - ".github/workflows/windows-arm-cache.yml"
+      - "tests/tooling/release/cache_key.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-arm-cache-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dependencies:
+    runs-on: windows-11-arm
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["312", "313", "314"]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Identify reusable build dependencies
+        id: dependencies
+        run: python tests/tooling/release/cache_key.py
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          enable-cache: true
+          cache-suffix: release-windows-11-arm-${{ matrix.python }}-${{ steps.dependencies.outputs.key }}
+          cache-dependency-glob: ""
+          prune-cache: false
+          version: "0.13.4"
+          python-version: "3.13"
+      - name: Install audited release tools from the lock
+        run: uv sync --locked --only-group release --no-install-project
+      - name: Check the release interpreter's TLS security fixes
+        run: uv run --no-sync python -m tests.tooling.runtime --json
+      - name: Constrain platform repair tools to audited versions
+        run: uv export --locked --only-group release --no-emit-project --no-header --output-file "${{ runner.temp }}/release-constraints.txt"
+      - name: Cache the release builder and authenticated test dependencies
+        shell: bash
+        env:
+          CIBW_BUILD: cp${{ matrix.python }}-*
+          CIBW_CACHE_PATH: ${{ env.UV_CACHE_DIR }}/cibuildwheel
+          CIBW_BEFORE_BUILD: >-
+            uv export --project "{package}" --locked --only-group build
+            --no-emit-project --no-header --output-file build-constraints.txt
+          CIBW_BUILD_FRONTEND: "uv; args: --build-constraints build-constraints.txt --require-hashes"
+          CIBW_DEPENDENCY_VERSIONS: ${{ runner.temp }}/release-constraints.txt
+          CIBW_TEST_EXTRAS: ""
+          CIBW_TEST_REQUIRES: ""
+          # Match release.yml's authenticated setup, including source backends.
+          CIBW_BEFORE_TEST: >-
+            uv export --project "{package}" --locked --only-group backend-build
+            --no-emit-project --no-header --output-file test-build-constraints.txt &&
+            uv pip install --no-deps --only-binary :all: --require-hashes
+            --requirements test-build-constraints.txt &&
+            uv export --project "{package}" --locked --extra serde --extra crypto --extra compress
+            --no-default-groups --group supply-chain
+            --no-emit-project --no-header --output-file test-requirements.txt &&
+            uv pip install --no-deps --require-hashes --require-build-hashes
+            --build-constraints test-build-constraints.txt --requirements test-requirements.txt
+          # The release itself still executes every wheel contract.
+          CIBW_TEST_COMMAND: python -c "import blake3, zlib_ng.zlib_ng"
+        run: uv run --no-sync cibuildwheel . --output-dir "${{ runner.temp }}/warmup-wheels"

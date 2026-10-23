@@ -339,17 +339,24 @@ def test_floor_install_restores_canonical_lock_without_replacing_active_versions
     sync = next(
         index for index, step in enumerate(steps) if step.get("run") == _sync(job)
     )
-    restore = steps[sync + 1]
+    # Interpreter preflights can run before restoring the canonical lock.
+    restore_index = next(
+        index
+        for index, step in enumerate(steps)
+        if step.get("run") == "git restore --source=HEAD -- uv.lock"
+    )
+    assert sync < restore_index
+    restore = steps[restore_index]
     assert restore["if"] == "matrix.environment.id == 'floors'"
     command = shlex.split(restore["run"])
     assert command == ["git", "restore", "--source=HEAD", "--", "uv.lock"]
     assert not restore.get("continue-on-error", False)
-    assert sync + 1 < next(
+    assert restore_index < next(
         index
         for index, step in enumerate(steps)
         if step.get("run", "").startswith("uv build ")
     )
-    assert sync + 1 < next(
+    assert restore_index < next(
         index
         for index, step in enumerate(steps)
         if "tests.tooling.ci run " in step.get("run", "")

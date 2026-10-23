@@ -13,7 +13,7 @@ test-requires = ["pytest>=8", "hypothesis>=6.100", "packaging>=24"]
 test-command = [
   "python {project}/tests/tooling/runtime/tls.py --json",
   "python -c \"import unstd.serde._json_native, unstd.clone._clone_native, unstd.crypto._stream_native, unstd.text._text_native, unstd.compress._gzip_native\"",
-  "python -m pytest {project}/tests/suites/product/serde {project}/tests/suites/product/clone {project}/tests/suites/product/crypto {project}/tests/suites/product/text {project}/tests/suites/product/compress -q",
+  "python {project}/tests/tooling/release/wheel_tests.py --workers 4",
 ]
 
 [project]
