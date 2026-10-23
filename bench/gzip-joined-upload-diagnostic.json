@@ -1,0 +1,820 @@
+{
+  "schema": 1,
+  "kind": "historical joined-upload negative diagnostic",
+  "recorded_utc": "2026-10-23T01:08:26.645779+00:00",
+  "source_report": ".local/gzip-native-linux/reads-python314-slim-pinned-recheck.json",
+  "source_report_sha256": "23ea9bcbcc3e4532ef66f5936edea6ae6aecf6944c0e1f7562199b6d53c87a76",
+  "harness_sha256": "473a2b931336005ad65a6e8effe953e886223b6e77e5acac9f18524d80150bcf",
+  "original_harness_functions": {
+    "_cases": "def _cases(fixtures: list[Path]) -> list[_Case]:\n    def encoded(value: object) -> bytes:\n        return json.dumps(value, separators=(\",\", \":\"), ensure_ascii=False).encode()\n\n    cases = [\n        _Case(path.name, raw, gzip.compress(raw, mtime=0), fixture=str(path))\n        for path in fixtures\n        for raw in [path.read_bytes()]\n    ]\n    for count, titles in ((100, False), (20001, False), (40001, True)):\n        rows = [\n            {\"id\": i, **({\"title\": f\"private-source-canary-{i}\"} if titles else {})}\n            for i in range(count)\n        ]\n        raw = encoded(rows)\n        packed = gzip.compress(raw, mtime=0)\n        cases.append(_Case(f\"dataset-{count}-decompress\", raw, packed))\n        cases.append(_Case(f\"dataset-{count}-stream\", raw, packed, \"stream\"))\n        cases.append(_Case(f\"upload-{count}-two-passes\", raw, packed, \"upload\"))\n    raw = b\" \" * 1_000_000\n    packed = gzip.compress(raw, mtime=0)\n    cases.append(\n        _Case(\"http-bounded-expansion\", raw, packed, \"bounded\", len(packed) * 2)\n    )\n    for count in (200, 20000):\n        lines = [\n            encoded(\n                {\n                    \"s\": i,\n                    \"w\": float(i),\n                    \"m\": float(i),\n                    \"k\": \"tick\",\n                    \"p\": {\"dt\": 1.0, \"energy\": (i % 100) / 100},\n                    \"h\": i,\n                }\n            )\n            + b\"\\n\"\n            for i in range(count)\n        ]\n        raw = b\"\".join(lines)\n        packed = b\"\".join(\n            gzip.compress(b\"\".join(lines[i : i + 100]), mtime=0)\n            for i in range(0, count, 100)\n        )\n        cases.append(_Case(f\"journal-{count}-members\", raw, packed, \"lines\"))\n    return cases\n",
+    "_operation": "def _operation(codec: ModuleType, case: _Case) -> Callable[[], object]:\n    if case.operation == \"decompress\":\n        return lambda: codec.decompress(case.packed)\n\n    def consume() -> object:\n        with codec.GzipFile(fileobj=io.BytesIO(case.packed), mode=\"rb\") as source:\n            if case.operation == \"bounded\":\n                return source.read(case.limit + 1)\n            if case.operation == \"lines\":\n                return b\"\".join(source)\n            if case.operation == \"stream\":\n                return b\"\".join(iter(lambda: source.read(64 * 1024), b\"\"))\n            first = b\"\".join(iter(lambda: source.read(256 * 1024), b\"\"))\n            source.seek(0)\n            second = b\"\".join(iter(lambda: source.read(256 * 1024), b\"\"))\n            if first != second:\n                message = \"gzip rewind changed the uploaded bytes\"\n                raise AssertionError(message)\n            return second\n\n    return consume\n"
+  },
+  "runs": 31,
+  "require_native": true,
+  "method": {
+    "clock": "thread_time_ns CPU and perf_counter_ns wall",
+    "minimum_batch_cpu_ms": 20.0,
+    "iterations": "common across variants; fixed after joint calibration",
+    "gc": "disabled within timed batches",
+    "startup_and_ipc": "excluded"
+  },
+  "sample_order": [
+    [
+      "stdlib",
+      "candidate",
+      "baseline"
+    ],
+    [
+      "baseline",
+      "candidate",
+      "stdlib"
+    ],
+    [
+      "stdlib",
+      "candidate",
+      "baseline"
+    ],
+    [
+      "baseline",
+      "candidate",
+      "stdlib"
+    ],
+    [
+      "stdlib",
+      "candidate",
+      "baseline"
+    ],
+    [
+      "baseline",
+      "candidate",
+      "stdlib"
+    ],
+    [
+      "stdlib",
+      "candidate",
+      "baseline"
+    ],
+    [
+      "baseline",
+      "candidate",
+      "stdlib"
+    ],
+    [
+      "stdlib",
+      "candidate",
+      "baseline"
+    ],
+    [
+      "baseline",
+      "candidate",
+      "stdlib"
+    ],
+    [
+      "stdlib",
+      "candidate",
+      "baseline"
+    ],
+    [
+      "baseline",
+      "candidate",
+      "stdlib"
+    ],
+    [
+      "stdlib",
+      "candidate",
+      "baseline"
+    ],
+    [
+      "baseline",
+      "candidate",
+      "stdlib"
+    ],
+    [
+      "stdlib",
+      "candidate",
+      "baseline"
+    ],
+    [
+      "baseline",
+      "candidate",
+      "stdlib"
+    ],
+    [
+      "stdlib",
+      "candidate",
+      "baseline"
+    ],
+    [
+      "baseline",
+      "candidate",
+      "stdlib"
+    ],
+    [
+      "stdlib",
+      "candidate",
+      "baseline"
+    ],
+    [
+      "baseline",
+      "candidate",
+      "stdlib"
+    ],
+    [
+      "stdlib",
+      "candidate",
+      "baseline"
+    ],
+    [
+      "baseline",
+      "candidate",
+      "stdlib"
+    ],
+    [
+      "stdlib",
+      "candidate",
+      "baseline"
+    ],
+    [
+      "baseline",
+      "candidate",
+      "stdlib"
+    ],
+    [
+      "stdlib",
+      "candidate",
+      "baseline"
+    ],
+    [
+      "baseline",
+      "candidate",
+      "stdlib"
+    ],
+    [
+      "stdlib",
+      "candidate",
+      "baseline"
+    ],
+    [
+      "baseline",
+      "candidate",
+      "stdlib"
+    ],
+    [
+      "stdlib",
+      "candidate",
+      "baseline"
+    ],
+    [
+      "baseline",
+      "candidate",
+      "stdlib"
+    ],
+    [
+      "stdlib",
+      "candidate",
+      "baseline"
+    ]
+  ],
+  "case_order": [
+    "source_record_capture.json",
+    "purchase_capture.json",
+    "dataset-100-decompress",
+    "dataset-100-stream",
+    "upload-100-two-passes",
+    "dataset-20001-decompress",
+    "dataset-20001-stream",
+    "upload-20001-two-passes",
+    "dataset-40001-decompress",
+    "dataset-40001-stream",
+    "upload-40001-two-passes",
+    "http-bounded-expansion",
+    "journal-200-members",
+    "journal-20000-members"
+  ],
+  "execution": {
+    "affinity": [
+      0
+    ],
+    "cpu_max": "max 100000",
+    "python": "3.14.8 (main, Oct  6 2026, 02:02:59) [GCC 14.2.0]",
+    "platform": "Linux-7.0.14-linuxkit-aarch64-with-glibc2.41",
+    "docker_image": "python:3.14-slim",
+    "source_snapshot": "release-source",
+    "wheel": "dist/unstd-3.1.4-cp314-cp314-linux_aarch64.whl"
+  },
+  "interpretation": [
+    "The historical timed upload consumer joined both expanded passes and retained two complete outputs while comparing them.",
+    "Billy sandbox_upload_from instead hashes and counts bounded chunks on the first pass, rewinds, and streams bounded chunks on the second pass.",
+    "This negative diagnostic is preserved with its raw 31 samples and source/binary hashes; its joined-output timings are not directly comparable with the corrected bounded upload workload.",
+    "The observations do not establish allocator, alignment, cache, or codec causality. Correcting benchmark consumption does not cache decoded upload contents; each pass continues to execute native inflation."
+  ],
+  "variants": {
+    "stdlib": {
+      "metadata": {
+        "python": "3.14.8 (main, Oct  6 2026, 02:02:59) [GCC 14.2.0]",
+        "platform": "Linux-7.0.14-linuxkit-aarch64-with-glibc2.41",
+        "machine": "aarch64",
+        "zlib_version": "1.3.1",
+        "zlib_runtime_version": "1.3.1",
+        "versions": {
+          "unstd": "3.1.4",
+          "zlib-ng": "1.0.0"
+        },
+        "native_kernel_versions": {},
+        "sources": {
+          "/usr/local/lib/python3.14/gzip.py": "bc3f00153a2cfdf28ae0cb41f2dde3ee2e39d88efc220c1e47de87fc58e970cb"
+        },
+        "compression_native_calls": {
+          "zlib.compress": 1
+        },
+        "compression_output_sha256": "cafb6a9903e91900be9696640906228ca3401f9968b87401cc73f64e288a3194"
+      },
+      "case": {
+        "name": "upload-40001-two-passes",
+        "operation": "upload",
+        "fixture": null,
+        "raw_bytes": 2017832,
+        "compressed_bytes": 201425,
+        "raw_sha256": "2badb266f2a9e4da80c83c9a1de0c6ca042421e93664c17681feb62e3b42e433",
+        "compressed_sha256": "cc33364e1c460d6d5a52882ca80602646dba5db92aa6987eefc95e19a7243df0",
+        "output_bytes": 2017832,
+        "output_sha256": "2badb266f2a9e4da80c83c9a1de0c6ca042421e93664c17681feb62e3b42e433",
+        "identical_output": true,
+        "native_calls": {
+          "zlib.crc32": 28,
+          "zlib.decompress": 22
+        },
+        "native_decode_executed": false,
+        "measurements": [
+          {
+            "per_op_ns": 3944098.875,
+            "cpu_ns": 3935286.5,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3665073.0,
+            "cpu_ns": 3660479.25,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3644864.625,
+            "cpu_ns": 3644479.125,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 2969828.125,
+            "cpu_ns": 2964328.25,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3317760.375,
+            "cpu_ns": 3316822.875,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3464328.125,
+            "cpu_ns": 3456104.125,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3516692.625,
+            "cpu_ns": 3516171.875,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3870255.125,
+            "cpu_ns": 3851510.375,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3497177.0,
+            "cpu_ns": 3496656.125,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3285442.625,
+            "cpu_ns": 3281359.25,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3130802.125,
+            "cpu_ns": 3130369.75,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3886724.0,
+            "cpu_ns": 3875927.0,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3819640.625,
+            "cpu_ns": 3819276.125,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 6440208.375,
+            "cpu_ns": 6359104.25,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 4284812.5,
+            "cpu_ns": 4195307.375,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3829677.125,
+            "cpu_ns": 3822453.125,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3678875.0,
+            "cpu_ns": 3672156.25,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 4009317.75,
+            "cpu_ns": 4005828.125,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3697442.75,
+            "cpu_ns": 3694989.5,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3793901.0,
+            "cpu_ns": 3785057.375,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3352864.5,
+            "cpu_ns": 3349125.0,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3808348.875,
+            "cpu_ns": 3789333.375,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3746833.375,
+            "cpu_ns": 3742031.25,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3020875.0,
+            "cpu_ns": 3016713.5,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3098937.5,
+            "cpu_ns": 3097224.0,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3246708.375,
+            "cpu_ns": 3233619.875,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3322906.25,
+            "cpu_ns": 3321296.75,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3373166.625,
+            "cpu_ns": 3367979.0,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3228677.125,
+            "cpu_ns": 3221052.125,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 2898927.0,
+            "cpu_ns": 2893067.625,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3055760.375,
+            "cpu_ns": 3055208.25,
+            "iters": 8
+          }
+        ],
+        "iterations": 8,
+        "median_ns": 3516692.625,
+        "median_cpu_ns": 3516171.875
+      }
+    },
+    "candidate": {
+      "metadata": {
+        "python": "3.14.8 (main, Oct  6 2026, 02:02:59) [GCC 14.2.0]",
+        "platform": "Linux-7.0.14-linuxkit-aarch64-with-glibc2.41",
+        "machine": "aarch64",
+        "zlib_version": "1.3.1",
+        "zlib_runtime_version": "1.3.1",
+        "versions": {
+          "unstd": "3.1.4",
+          "zlib-ng": "1.0.0"
+        },
+        "native_kernel_versions": {
+          "ZLIB_RUNTIME_VERSION": "1.3.2",
+          "LIBDEFLATE_VERSION": "1.25"
+        },
+        "sources": {
+          "/out/candidate/unstd/compress/gzipx.py": "bcac0e763f4f9844254b11a24a9cf50005f990fc2eeaf9c80fdec9ea684ae036",
+          "/usr/local/lib/python3.14/gzip.py": "bc3f00153a2cfdf28ae0cb41f2dde3ee2e39d88efc220c1e47de87fc58e970cb",
+          "/out/candidate/unstd/compress/_reader.py": "88d64dbd4527e2e922dca3f896ac47e45ab0411da073ef79eeee1635d479704c",
+          "/out/candidate/unstd/compress/_backend.py": "4e14ee01a8edef3fea2e98bc84830fbeb79bda124cbeca653e97a7639397fe32",
+          "/out/candidate/unstd/compress/_gzip_native.cpython-314-aarch64-linux-gnu.so": "b4d5205041ed5bb6a7b945d60d14363fe27fccd06f00a46464b527f6de1271cc",
+          "/out/deps/zlib_ng/gzip_ng.py": "a4b59414593a47ff1c4ad64eb0209a607c6efd154da632617909b4cde62be414",
+          "/out/deps/zlib_ng/zlib_ng.cpython-314-aarch64-linux-gnu.so": "21420c5e74378ecbb239a5fbe4187d46e82e92e020ae913fa424a68bff6619a2"
+        },
+        "compression_native_calls": {
+          "zlib_ng.zlib_ng.compress": 1
+        },
+        "compression_output_sha256": "2622ef87a1e21930f7cb896a463f223881445a3e049864b9a14b16ea22e9ae84"
+      },
+      "case": {
+        "name": "upload-40001-two-passes",
+        "operation": "upload",
+        "fixture": null,
+        "raw_bytes": 2017832,
+        "compressed_bytes": 201425,
+        "raw_sha256": "2badb266f2a9e4da80c83c9a1de0c6ca042421e93664c17681feb62e3b42e433",
+        "compressed_sha256": "cc33364e1c460d6d5a52882ca80602646dba5db92aa6987eefc95e19a7243df0",
+        "output_bytes": 2017832,
+        "output_sha256": "2badb266f2a9e4da80c83c9a1de0c6ca042421e93664c17681feb62e3b42e433",
+        "identical_output": true,
+        "native_calls": {
+          "unstd.compress._gzip_native.decompress": 22,
+          "unstd.compress._gzip_native.crc32": 22
+        },
+        "native_decode_executed": true,
+        "measurements": [
+          {
+            "per_op_ns": 4951848.875,
+            "cpu_ns": 4947015.625,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 4639526.0,
+            "cpu_ns": 4626182.125,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 4582974.0,
+            "cpu_ns": 4578223.875,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3990666.75,
+            "cpu_ns": 3983369.875,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 4634802.0,
+            "cpu_ns": 4626182.25,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 4382750.0,
+            "cpu_ns": 4375989.625,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 4746838.5,
+            "cpu_ns": 4733531.125,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 4758442.625,
+            "cpu_ns": 4753114.625,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 4377255.25,
+            "cpu_ns": 4367755.25,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 4223130.25,
+            "cpu_ns": 4206531.25,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 4364260.375,
+            "cpu_ns": 4359588.5,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 4899599.0,
+            "cpu_ns": 4887609.375,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 5010479.125,
+            "cpu_ns": 4989776.0,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 5688098.875,
+            "cpu_ns": 5680442.625,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 4258083.375,
+            "cpu_ns": 4252442.75,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 5046583.375,
+            "cpu_ns": 5008140.5,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 4199781.25,
+            "cpu_ns": 4165448.0,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 4827218.75,
+            "cpu_ns": 4800802.125,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 5072729.125,
+            "cpu_ns": 5068437.5,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 5066921.875,
+            "cpu_ns": 5062281.125,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 4373255.125,
+            "cpu_ns": 4367671.875,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 5082046.875,
+            "cpu_ns": 5077583.25,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 4862963.5,
+            "cpu_ns": 4854833.375,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3690203.125,
+            "cpu_ns": 3686198.0,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3886984.375,
+            "cpu_ns": 3882822.875,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 4224786.375,
+            "cpu_ns": 4215161.375,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 4212843.75,
+            "cpu_ns": 4208947.875,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 4241244.875,
+            "cpu_ns": 4234526.0,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3786572.875,
+            "cpu_ns": 3782989.625,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 4041614.5,
+            "cpu_ns": 4035130.25,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 4425333.375,
+            "cpu_ns": 4420703.0,
+            "iters": 8
+          }
+        ],
+        "iterations": 8,
+        "median_ns": 4425333.375,
+        "median_cpu_ns": 4420703.0
+      }
+    },
+    "baseline": {
+      "metadata": {
+        "python": "3.14.8 (main, Oct  6 2026, 02:02:59) [GCC 14.2.0]",
+        "platform": "Linux-7.0.14-linuxkit-aarch64-with-glibc2.41",
+        "machine": "aarch64",
+        "zlib_version": "1.3.1",
+        "zlib_runtime_version": "1.3.1",
+        "versions": {
+          "unstd": "3.1.3",
+          "zlib-ng": "1.0.0"
+        },
+        "native_kernel_versions": {},
+        "sources": {
+          "/out/baseline/unstd/compress/gzipx.py": "368c4bb0e824ffb767c63e787cd3e3057fe82afc206c85037e82aa2b5e46dce1",
+          "/usr/local/lib/python3.14/gzip.py": "bc3f00153a2cfdf28ae0cb41f2dde3ee2e39d88efc220c1e47de87fc58e970cb",
+          "/out/baseline/unstd/compress/_backend.py": "4e14ee01a8edef3fea2e98bc84830fbeb79bda124cbeca653e97a7639397fe32",
+          "/out/deps/zlib_ng/gzip_ng.py": "a4b59414593a47ff1c4ad64eb0209a607c6efd154da632617909b4cde62be414",
+          "/out/deps/zlib_ng/zlib_ng.cpython-314-aarch64-linux-gnu.so": "21420c5e74378ecbb239a5fbe4187d46e82e92e020ae913fa424a68bff6619a2"
+        },
+        "compression_native_calls": {
+          "zlib_ng.zlib_ng.compress": 1
+        },
+        "compression_output_sha256": "2622ef87a1e21930f7cb896a463f223881445a3e049864b9a14b16ea22e9ae84"
+      },
+      "case": {
+        "name": "upload-40001-two-passes",
+        "operation": "upload",
+        "fixture": null,
+        "raw_bytes": 2017832,
+        "compressed_bytes": 201425,
+        "raw_sha256": "2badb266f2a9e4da80c83c9a1de0c6ca042421e93664c17681feb62e3b42e433",
+        "compressed_sha256": "cc33364e1c460d6d5a52882ca80602646dba5db92aa6987eefc95e19a7243df0",
+        "output_bytes": 2017832,
+        "output_sha256": "2badb266f2a9e4da80c83c9a1de0c6ca042421e93664c17681feb62e3b42e433",
+        "identical_output": true,
+        "native_calls": {
+          "zlib.crc32": 28,
+          "zlib.decompress": 22
+        },
+        "native_decode_executed": false,
+        "measurements": [
+          {
+            "per_op_ns": 4980442.75,
+            "cpu_ns": 4976145.75,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3931625.0,
+            "cpu_ns": 3923718.75,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3164500.0,
+            "cpu_ns": 3160125.0,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3007614.5,
+            "cpu_ns": 3006119.75,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3808921.875,
+            "cpu_ns": 3800791.625,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3616531.375,
+            "cpu_ns": 3613749.875,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3369692.625,
+            "cpu_ns": 3364468.75,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3278526.125,
+            "cpu_ns": 3278166.625,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3959427.0,
+            "cpu_ns": 3883468.625,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3670822.875,
+            "cpu_ns": 3669281.125,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 4095036.5,
+            "cpu_ns": 4066239.75,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3865739.625,
+            "cpu_ns": 3865239.5,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 4073885.5,
+            "cpu_ns": 4060072.75,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3739744.875,
+            "cpu_ns": 3739296.875,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 4196453.125,
+            "cpu_ns": 4184494.875,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3748093.75,
+            "cpu_ns": 3747770.75,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3135213.5,
+            "cpu_ns": 3129400.875,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3325192.75,
+            "cpu_ns": 3324765.625,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3730046.875,
+            "cpu_ns": 3722979.25,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3237322.875,
+            "cpu_ns": 3236578.125,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3220750.0,
+            "cpu_ns": 3208057.375,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3884380.25,
+            "cpu_ns": 3880635.375,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3728130.25,
+            "cpu_ns": 3708286.5,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3234307.25,
+            "cpu_ns": 3231140.625,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3236041.625,
+            "cpu_ns": 3232635.375,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3070958.375,
+            "cpu_ns": 3068197.875,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 6848463.5,
+            "cpu_ns": 6841244.75,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 4810505.25,
+            "cpu_ns": 4810046.875,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 2904260.5,
+            "cpu_ns": 2900927.0,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3369390.625,
+            "cpu_ns": 3367807.375,
+            "iters": 8
+          },
+          {
+            "per_op_ns": 3181265.625,
+            "cpu_ns": 3172593.625,
+            "iters": 8
+          }
+        ],
+        "iterations": 8,
+        "median_ns": 3670822.875,
+        "median_cpu_ns": 3669281.125
+      }
+    }
+  }
+}

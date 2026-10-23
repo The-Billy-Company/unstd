@@ -19,6 +19,12 @@ from typing import TYPE_CHECKING
 from urllib.parse import quote, urlsplit
 
 from tests.support.environment.anchors import REPO_ROOT
+from tests.tooling.release.verify import (
+    _VENDORS,
+    ReleaseError,
+    _digest,
+    _vendor_license,
+)
 
 
 if TYPE_CHECKING:
@@ -44,6 +50,8 @@ class _Package:
     hashes: tuple[str, ...]
     dependencies: tuple[str, ...]
     external: bool
+    license: str | None = None
+    source_url: str | None = None
 
     @property
     def purl(self) -> str:
@@ -369,15 +377,59 @@ def _cargo(root: Path) -> list[_Package]:
     return packages
 
 
+def _vendored(root: Path) -> list[_Package]:
+    packages = []
+    for vendor in _VENDORS:
+        directory = root / vendor.root
+        if not directory.exists():
+            continue
+        manifest = directory / "UPSTREAM.json"
+        try:
+            hashes: dict[str, tuple[str, int]] = {}
+            for path in sorted(directory.rglob("*")):
+                if not path.resolve().is_relative_to(root):
+                    _fail(
+                        f"{path.relative_to(root)}: dependency input escapes the repository"
+                    )
+                if path.is_file():
+                    with path.open("rb") as stream:
+                        hashes[f"source/{path.relative_to(root).as_posix()}"] = _digest(
+                            stream
+                        )
+            metadata = {
+                f"source/{manifest.relative_to(root).as_posix()}": manifest.read_bytes()
+            }
+            _vendor_license("source", metadata, hashes, vendor)
+        except (ReleaseError, OSError, UnicodeError, json.JSONDecodeError) as exc:
+            message = f"{manifest.relative_to(root)}: {exc}"
+            raise SupplyChainError(message) from exc
+        packages.append(
+            _Package(
+                "generic",
+                vendor.project,
+                vendor.version,
+                manifest.relative_to(root).as_posix(),
+                (vendor.archive_sha256,),
+                (),
+                True,
+                license=vendor.license,
+                source_url=vendor.archive_url,
+            )
+        )
+    return packages
+
+
 def _inventory(root: Path) -> tuple[list[_Package], dict[str, int]]:
     root = root.resolve()
     python, artifacts = _python(root)
     cargo = _cargo(root)
-    return python + cargo, {
+    vendored = _vendored(root)
+    return python + cargo + vendored, {
         "python_packages": len(python),
         "python_artifacts": artifacts,
         "rust_packages": len(cargo),
         "rust_external_packages": sum(package.external for package in cargo),
+        "vendored_packages": len(vendored),
     }
 
 
@@ -412,6 +464,12 @@ def build_sbom(repo_root: Path) -> dict:
         prop = {"name": "unstd:lockfile", "value": package.lockfile}
         if prop not in component["properties"]:
             component["properties"].append(prop)
+        if package.license is not None:
+            component["licenses"] = [{"license": {"id": package.license}}]
+        if package.source_url is not None:
+            component["externalReferences"] = [
+                {"type": "distribution", "url": package.source_url}
+            ]
         edges = dependencies.setdefault(package.purl, set())
         edges.update(
             candidate.purl

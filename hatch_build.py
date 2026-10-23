@@ -26,6 +26,7 @@ _NATIVE_MODULES = (
     "unstd.clone._clone_native",
     "unstd.crypto._stream_native",
     "unstd.text._text_native",
+    "unstd.compress._gzip_native",
 )
 
 
@@ -56,14 +57,53 @@ class CustomBuildHook(BuildHookInterface):
             module == "unstd.text._text_native"
             and os.environ.get("UNSTD_TEXT_RUST") == "1"
         )
+        gzip_buffers = module == "unstd.compress._gzip_native"
         source = (
             Path(self.root) / "native/text/adapter.c"
             if rust_text
+            else Path(self.root) / "native/compress/adapter.c"
+            if gzip_buffers
             else Path(self.root) / "src" / relative.with_suffix(".c")
         )
+        gzip_root = Path(self.root) / "native/compress/libdeflate"
+        sources = [str(source)]
+        if gzip_buffers:
+            sources.extend(
+                str(Path(self.root) / "native/compress" / name)
+                for name in ("stream.c", "inflate.c")
+            )
+            sources.extend(
+                str(gzip_root / name)
+                for name in (
+                    "lib/arm/cpu_features.c",
+                    "lib/x86/cpu_features.c",
+                    "lib/utils.c",
+                    "lib/deflate_decompress.c",
+                    "lib/crc32.c",
+                    "lib/gzip_decompress.c",
+                )
+            )
+            if sys.platform != "darwin":
+                sources.extend(
+                    str(Path(self.root) / "native/compress/zlib" / name)
+                    for name in (
+                        "inflate.c",
+                        "inffast.c",
+                        "inftrees.c",
+                        "adler32.c",
+                        "crc32.c",
+                    )
+                )
         extension = Extension(
             module,
-            [str(source)],
+            sources,
+            include_dirs=[str(gzip_root)] if gzip_buffers else [],
+            libraries=["z"] if gzip_buffers and sys.platform == "darwin" else [],
+            # Supply the same checked Python RAW allocators for zlib's default
+            # ABI hooks too; do not compile its unused unchecked malloc hook.
+            define_macros=[("Z_PREFIX", None), ("MY_ZCALLOC", None)]
+            if gzip_buffers and sys.platform != "darwin"
+            else [],
             optional=os.environ.get("CIBUILDWHEEL") != "1",
             # Jaro preserves Python's separate IEEE double operations exactly.
             # These trailing compiler arguments override caller fast-math/FMA

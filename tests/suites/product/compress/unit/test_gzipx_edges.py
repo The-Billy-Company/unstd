@@ -33,7 +33,7 @@ def native_backend():
 
 @pytest.mark.parametrize("mode", [None, "r", "rb"])
 @pytest.mark.parametrize("owned", [False, True])
-def test_reads_never_construct_a_native_stream_or_inflater(
+def test_reads_construct_one_native_inflater_without_redundant_readers(
     native_backend, monkeypatch: pytest.MonkeyPatch, tmp_path: Path, mode, owned: bool
 ) -> None:
     payload = b"first member\nsecond member\n" * 50
@@ -41,17 +41,28 @@ def test_reads_never_construct_a_native_stream_or_inflater(
     path = tmp_path / "payload.gz"
     path.write_bytes(packed)
     source = io.BytesIO(packed)
+    from unstd.compress import _reader
+
+    factory = _reader._factory
+    native_inflaters = []
+
+    def native_factory(**options):
+        inflater = factory(**options)
+        native_inflaters.append(inflater)
+        return inflater
 
     def unexpected(*_args, **_kwargs):
-        pytest.fail("reading entered the native gzip backend")
+        pytest.fail("reading constructed a redundant gzip reader")
 
-    monkeypatch.setattr(native_backend.native, "decompressobj", unexpected)
-    monkeypatch.setattr(native_backend.native, "_ZlibDecompressor", unexpected)
+    monkeypatch.setattr(_reader, "_factory", native_factory)
+    monkeypatch.setattr(gzip._GzipReader, "__init__", unexpected)
     monkeypatch.setattr(native_backend.gzipx._backend.GzipFile, "__init__", unexpected)
     with native_backend.gzipx.GzipFile(
         path if owned else None, mode=mode, fileobj=None if owned else source
     ) as handle:
+        assert len(native_inflaters) == 1
         assert handle.read(11) == payload[:11]
+        assert len(native_inflaters) == 1
         assert handle.seek(190) == 190
         assert handle.read(30) == payload[190:220]
         assert handle.seek(0) == 0
@@ -184,7 +195,7 @@ def test_reader_initialization_failure_closes_only_owned_files(
     def fail_reader(_source):
         raise failure
 
-    monkeypatch.setattr(gzip, "_GzipReader", fail_reader)
+    monkeypatch.setattr(native_backend.gzipx, "_Reader", fail_reader)
     monkeypatch.setattr(builtins, "open", record_open)
     try:
         with pytest.raises(_CallbackError) as caught:

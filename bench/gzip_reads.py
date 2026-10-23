@@ -9,6 +9,8 @@ from __future__ import annotations
 
 import argparse
 from dataclasses import asdict, dataclass
+from datetime import UTC, datetime
+import gc
 import gzip
 import hashlib
 import importlib
@@ -20,6 +22,7 @@ import platform
 import statistics
 import subprocess
 import sys
+from time import perf_counter_ns, thread_time_ns
 from typing import TYPE_CHECKING, Any
 import zlib
 
@@ -99,6 +102,23 @@ def _operation(codec: ModuleType, case: _Case) -> Callable[[], object]:
     if case.operation == "decompress":
         return lambda: codec.decompress(case.packed)
 
+    if case.operation == "upload":
+        from blake3 import blake3
+
+        def upload() -> tuple[bytes, int, int]:
+            with codec.GzipFile(fileobj=io.BytesIO(case.packed), mode="rb") as source:
+                digest, measured = blake3(), 0
+                while chunk := source.read(256 * 1024):
+                    digest.update(chunk)
+                    measured += len(chunk)
+                source.seek(0)
+                streamed = 0
+                while chunk := source.read(256 * 1024):
+                    streamed += len(chunk)
+                return digest.digest(), measured, streamed
+
+        return upload
+
     def consume() -> object:
         with codec.GzipFile(fileobj=io.BytesIO(case.packed), mode="rb") as source:
             if case.operation == "bounded":
@@ -107,15 +127,26 @@ def _operation(codec: ModuleType, case: _Case) -> Callable[[], object]:
                 return b"".join(source)
             if case.operation == "stream":
                 return b"".join(iter(lambda: source.read(64 * 1024), b""))
-            first = b"".join(iter(lambda: source.read(256 * 1024), b""))
-            source.seek(0)
-            second = b"".join(iter(lambda: source.read(256 * 1024), b""))
-            if first != second:
-                message = "gzip rewind changed the uploaded bytes"
-                raise AssertionError(message)
-            return second
+            message = f"unknown gzip benchmark operation: {case.operation}"
+            raise ValueError(message)
 
     return consume
+
+
+def _validate_upload_bytes(codec: ModuleType, case: _Case) -> None:
+    """Check both passes against source bytes outside the timed operation."""
+    with codec.GzipFile(fileobj=io.BytesIO(case.packed), mode="rb") as source:
+        for _pass in range(2):
+            position = 0
+            while chunk := source.read(256 * 1024):
+                if chunk != case.raw[position : position + len(chunk)]:
+                    message = f"{case.name}: decoded bytes differ from the source"
+                    raise AssertionError(message)
+                position += len(chunk)
+            if position != len(case.raw):
+                message = f"{case.name}: decoded bytes differ from the source"
+                raise AssertionError(message)
+            source.seek(0)
 
 
 def _native_calls(function: Callable[[], object]) -> dict[str, int]:
@@ -125,7 +156,9 @@ def _native_calls(function: Callable[[], object]) -> dict[str, int]:
         if event == "c_call":
             owner = getattr(value, "__self__", None)
             module = getattr(value, "__module__", None) or type(owner).__module__
-            if module == "zlib" or module.startswith("zlib_ng"):
+            if module == "zlib" or module.startswith(
+                ("zlib_ng", "unstd.compress._gzip_native")
+            ):
                 name = f"{module}.{value.__name__}"
                 calls[name] = calls.get(name, 0) + 1
 
@@ -140,19 +173,33 @@ def _native_calls(function: Callable[[], object]) -> dict[str, int]:
 
 def _metadata(codec: ModuleType, cases: list[_Case]) -> dict[str, object]:
     versions: dict[str, str | None] = {}
-    for package in ("unstd", "zlib-ng"):
+    for package in ("unstd", "zlib-ng", "blake3"):
         try:
             versions[package] = version(package)
         except PackageNotFoundError:
             versions[package] = None
     assert codec.__file__ is not None
-    paths = [Path(codec.__file__).resolve()]
+    paths = list(
+        dict.fromkeys((Path(codec.__file__).resolve(), Path(gzip.__file__).resolve()))
+    )
+    kernels: dict[str, str] = {}
     if codec is not gzip:
         paths.extend(
             path
-            for name in ("_inflate.py", "_backend.py")
+            for name in ("_inflate.py", "_reader.py", "_backend.py")
             if (path := paths[0].with_name(name)).exists()
         )
+        native = sys.modules.get("unstd.compress._gzip_native")
+        if native is not None and native.__file__ is not None:
+            paths.append(Path(native.__file__).resolve())
+            kernels = {
+                name: getattr(native, name)
+                for name in ("ZLIB_RUNTIME_VERSION", "LIBDEFLATE_VERSION")
+            }
+        for name in ("zlib_ng.gzip_ng", "zlib_ng.zlib_ng"):
+            backend = sys.modules.get(name)
+            if backend is not None and backend.__file__ is not None:
+                paths.append(Path(backend.__file__).resolve())
     packed = codec.compress(cases[0].raw, mtime=0)
     if gzip.decompress(packed) != cases[0].raw:
         message = "compression changed the source bytes"
@@ -170,6 +217,7 @@ def _metadata(codec: ModuleType, cases: list[_Case]) -> dict[str, object]:
         "zlib_version": zlib.ZLIB_VERSION,
         "zlib_runtime_version": zlib.ZLIB_RUNTIME_VERSION,
         "versions": versions,
+        "native_kernel_versions": kernels,
         "sources": {str(path): _hash(path.read_bytes()) for path in paths},
         "compression_native_calls": native_calls,
         "compression_output_sha256": _hash(packed),
@@ -200,30 +248,87 @@ def _worker(args: argparse.Namespace) -> None:
         expected = (
             case.raw[: case.limit + 1] if case.operation == "bounded" else case.raw
         )
-        if actual != expected:
+        upload_summary = None
+        if case.operation == "upload":
+            from blake3 import blake3
+
+            digest = blake3(case.raw).digest()
+            upload_summary = digest, len(case.raw), len(case.raw)
+            identical = actual == upload_summary
+            _validate_upload_bytes(codec, case)
+        else:
+            identical = actual == expected
+        if not identical:
             message = f"{case.name}: decoded bytes differ from the source"
             raise AssertionError(message)
-        evidence.append(
-            {
-                "name": case.name,
-                "operation": case.operation,
-                "fixture": case.fixture,
-                "raw_bytes": len(case.raw),
-                "compressed_bytes": len(case.packed),
-                "raw_sha256": _hash(case.raw),
-                "compressed_sha256": _hash(case.packed),
-                "output_bytes": len(expected),
-                "output_sha256": _hash(expected),
-                "identical_output": True,
-                "native_calls": _native_calls(function),
+        calls = _native_calls(function)
+        entry: dict[str, Any] = {
+            "name": case.name,
+            "operation": case.operation,
+            "fixture": case.fixture,
+            "raw_bytes": len(case.raw),
+            "compressed_bytes": len(case.packed),
+            "raw_sha256": _hash(case.raw),
+            "compressed_sha256": _hash(case.packed),
+            "output_bytes": len(expected),
+            "output_sha256": _hash(expected),
+            "identical_output": True,
+            "native_calls": calls,
+            "native_decode_executed": any(
+                name.startswith(("zlib_ng", "unstd.compress._gzip_native"))
+                and "decompress" in name
+                for name in calls
+            ),
+        }
+        if upload_summary is not None:
+            entry["upload_summary"] = {
+                "blake3": upload_summary[0].hex(),
+                "measured_bytes": upload_summary[1],
+                "streamed_bytes": upload_summary[2],
             }
-        )
+        native_buffer = getattr(codec, "_decode_buffer", None)
+        if case.operation == "decompress" and native_buffer is not None:
+            entry["native_buffer_accepts_fixture"] = (
+                native_buffer(case.packed) == expected
+            )
+        evidence.append(entry)
     print(
         json.dumps({"metadata": _metadata(codec, cases), "cases": evidence}), flush=True
     )
     for line in sys.stdin:
-        index = int(line)
-        print(json.dumps(asdict(measure(functions[index], rounds=2))), flush=True)
+        request = json.loads(line)
+        if isinstance(request, int):
+            result = asdict(measure(functions[request], rounds=2))
+        else:
+            index, iterations = request["case"], request["iterations"]
+            function = functions[index]
+            enabled = gc.isenabled()
+            gc.disable()
+            try:
+                wall, cpu = perf_counter_ns(), thread_time_ns()
+                for _ in range(iterations):
+                    function()
+                elapsed_cpu = thread_time_ns() - cpu
+                elapsed_wall = perf_counter_ns() - wall
+            finally:
+                if enabled:
+                    gc.enable()
+            result = {
+                "per_op_ns": elapsed_wall / iterations,
+                "cpu_ns": elapsed_cpu / iterations,
+                "iters": iterations,
+            }
+        print(json.dumps(result), flush=True)
+
+
+def _require_native(cases: list[dict[str, Any]]) -> None:
+    for case in cases:
+        if (
+            not case["native_decode_executed"]
+            or case.get("native_buffer_accepts_fixture") is False
+        ):
+            message = f"{case['name']}: accelerated decoder did not accept the workload"
+            raise AssertionError(message)
 
 
 def _main(args: argparse.Namespace) -> None:
@@ -231,7 +336,29 @@ def _main(args: argparse.Namespace) -> None:
     if args.baseline_source:
         variants["baseline"] = args.baseline_source
     processes: dict[str, subprocess.Popen[str]] = {}
-    report: dict[str, object] = {"runs": args.runs, "variants": {}}
+    report: dict[str, object] = {
+        "schema": 1,
+        "recorded_utc": datetime.now(UTC).isoformat(),
+        "harness_sha256": _hash(Path(__file__).read_bytes()),
+        "require_native": args.require_native,
+        "runs": args.runs,
+        "variants": {},
+        "method": {
+            "clock": "thread_time_ns CPU and perf_counter_ns wall",
+            "minimum_batch_cpu_ms": args.batch_ms,
+            "iterations": "common across variants; fixed after joint calibration",
+            "gc": "disabled within timed batches",
+            "startup_and_ipc": "excluded",
+            "upload_workload": {
+                "revision": "bounded-blake3-rewind-stream-v1",
+                "chunk_bytes": 256 * 1024,
+                "first_pass": "incremental BLAKE3 digest and byte count",
+                "second_pass": "rewind, count bytes and discard chunks",
+                "timed_result": "32-byte digest and both byte counts",
+                "byte_validation": "both passes checked against source before timing",
+            },
+        },
+    }
     records: dict[str, dict[str, Any]] = {}
     try:
         for name, source in variants.items():
@@ -263,25 +390,57 @@ def _main(args: argparse.Namespace) -> None:
                     if actual[field] != expected[field]:
                         message = f"variant fixture or output mismatch: {field}"
                         raise AssertionError(message)
+        if args.require_native:
+            _require_native(records["candidate"]["cases"])
+
+        def sample(name: str, index: int, iterations: int) -> dict[str, Any]:
+            child = processes[name]
+            assert child.stdin is not None
+            assert child.stdout is not None
+            child.stdin.write(
+                json.dumps({"case": index, "iterations": iterations}) + "\n"
+            )
+            child.stdin.flush()
+            response = child.stdout.readline()
+            if not response:
+                message = f"{name} worker stopped while measuring case {index}"
+                raise RuntimeError(message)
+            return dict(json.loads(response))
+
         order = list(variants)
         report["sample_order"] = [
             order if run % 2 == 0 else order[::-1] for run in range(args.runs)
         ]
         for index in range(len(reference)):
+            iterations = 1
+            calibration = []
+            while True:
+                pilot = {name: sample(name, index, iterations) for name in order}
+                calibration.append({"iterations": iterations, "measurements": pilot})
+                if (
+                    min(value["cpu_ns"] for value in pilot.values()) * iterations
+                    >= args.batch_ms * 1_000_000
+                ):
+                    break
+                if iterations >= 1 << 22:
+                    message = "batch calibration exceeded the iteration budget"
+                    raise RuntimeError(message)
+                iterations *= 2
+            for record in records.values():
+                record["cases"][index]["iterations"] = iterations
+                record["cases"][index]["calibration"] = calibration
             for run in range(args.runs):
                 for name in order if run % 2 == 0 else order[::-1]:
-                    child = processes[name]
-                    assert child.stdin is not None
-                    assert child.stdout is not None
-                    child.stdin.write(f"{index}\n")
-                    child.stdin.flush()
                     records[name]["cases"][index]["measurements"].append(
-                        json.loads(child.stdout.readline())
+                        sample(name, index, iterations)
                     )
         for record in records.values():
             for case in record["cases"]:
                 case["median_ns"] = statistics.median(
                     item["per_op_ns"] for item in case["measurements"]
+                )
+                case["median_cpu_ns"] = statistics.median(
+                    item["cpu_ns"] for item in case["measurements"]
                 )
         report["variants"] = records
         output = json.dumps(report, indent=2) + "\n"
@@ -312,10 +471,14 @@ if __name__ == "__main__":
     parser.add_argument("--fixture", type=Path, action="append", default=[])
     parser.add_argument("--output", type=Path)
     parser.add_argument("--runs", type=int, default=5)
+    parser.add_argument("--batch-ms", type=float, default=20)
+    parser.add_argument("--require-native", action="store_true")
     parser.add_argument("--worker", action="store_true", help=argparse.SUPPRESS)
     parser.add_argument("--stdlib", action="store_true", help=argparse.SUPPRESS)
     arguments = parser.parse_args()
     arguments.fixture = [path.resolve() for path in arguments.fixture]
     if arguments.runs < 1:
         parser.error("--runs must be positive")
+    if arguments.batch_ms <= 0:
+        parser.error("--batch-ms must be positive")
     (_worker if arguments.worker else _main)(arguments)

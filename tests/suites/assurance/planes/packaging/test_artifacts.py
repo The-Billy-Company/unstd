@@ -46,6 +46,7 @@ _NATIVE_MODULES = (
     "unstd.clone._clone_native",
     "unstd.crypto._stream_native",
     "unstd.text._text_native",
+    "unstd.compress._gzip_native",
 )
 
 
@@ -175,15 +176,25 @@ def test_wheel_metadata_identity_python_license_and_description(
     assert metadata["Version"] == project["version"]
     assert metadata["Requires-Python"] == project["requires-python"]
     assert metadata["Summary"] == project["description"]
-    assert metadata["License-Expression"] == project["license"] == "Apache-2.0"
-    assert set(metadata.get_all("License-File", [])) == {"LICENSE", "NOTICE"}
+    assert (
+        metadata["License-Expression"]
+        == project["license"]
+        == "Apache-2.0 AND MIT AND Zlib"
+    )
+    licenses = {
+        "LICENSE",
+        "NOTICE",
+        "native/compress/libdeflate/COPYING",
+        "native/compress/zlib/LICENSE",
+    }
+    assert set(metadata.get_all("License-File", [])) == licenses
     assert metadata["Description-Content-Type"] == "text/markdown"
     assert (
         metadata.get_payload(decode=True).decode("utf-8").strip()
         == (artifacts.source / "README.md").read_text(encoding="utf-8").strip()
     )
     files = _wheel_files(wheel)
-    for name in ("LICENSE", "NOTICE"):
+    for name in licenses:
         matches = [
             value for path, value in files.items() if path.endswith(f"/licenses/{name}")
         ]
@@ -260,6 +271,10 @@ def test_sdist_contains_all_sources_and_rebuild_inputs_without_local_caches(
         "native/text/Cargo.lock",
         "native/text/src/lib.rs",
         "native/text/adapter.c",
+        "native/compress/adapter.c",
+        "native/compress/libdeflate/UPSTREAM.json",
+        "native/compress/libdeflate/COPYING",
+        "native/compress/zlib/LICENSE",
     ):
         assert files[required] == (artifacts.source / required).read_bytes()
     for source in (artifacts.source / "native").rglob("*"):
@@ -326,9 +341,13 @@ def test_missing_compiler_builds_a_portable_fallback(
 from unstd import clone
 from unstd.text import fuzz
 from unstd.serde import jsonx
+from unstd.compress import gzipx
+import gzip
 assert clone.deep({'items': [1, 2]}) == {'items': [1, 2]}
 assert fuzz.distance('kitten', 'sitting') == 3
 assert jsonx.dumpb([1]) == b'[1]'
+assert gzipx.GzipFile is gzip.GzipFile
+assert gzipx.decompress(gzip.compress(b'portable gzip')) == b'portable gzip'
 """)
 
 
@@ -365,9 +384,13 @@ def test_failed_editable_build_clears_its_stale_native_module(
 from unstd import clone
 from unstd.text import fuzz
 from unstd.serde import jsonx
+from unstd.compress import gzipx
+import gzip
 assert clone.deep({'items': [1, 2]}) == {'items': [1, 2]}
 assert fuzz.distance('kitten', 'sitting') == 3
 assert jsonx.dumpb([1]) == b'[1]'
+assert gzipx.GzipFile is gzip.GzipFile
+assert gzipx.decompress(gzip.compress(b'portable gzip')) == b'portable gzip'
 """)
 
 
@@ -379,9 +402,12 @@ def test_optional_compiler_failure_preserves_other_native_modules(
         pytest.skip("requires a compiler that can build every native module")
     source = tmp_path / "partial"
     shutil.copytree(artifacts.source, source)
-    (source / "src" / (failed_module.replace(".", "/") + ".c")).write_text(
-        "#error unstd_test_native_failure\n", encoding="utf-8"
+    implementation = (
+        source / "native/compress/adapter.c"
+        if failed_module == "unstd.compress._gzip_native"
+        else source / "src" / (failed_module.replace(".", "/") + ".c")
     )
+    implementation.write_text("#error unstd_test_native_failure\n", encoding="utf-8")
     output = tmp_path / "output"
     checked_command(
         [
@@ -464,11 +490,10 @@ def test_optional_rust_failure_preserves_c_modules_and_fails_release_builds(
     checked_command([*common, "--out-dir", output], cwd=tmp_path, env=environment)
     wheels = list(output.glob("*.whl"))
     assert len(wheels) == 1
-    assert _native_modules(_wheel_files(wheels[0])) == {
-        "unstd.serde._json_native",
-        "unstd.clone._clone_native",
-        "unstd.crypto._stream_native",
-    }
+    expected = set(_NATIVE_MODULES) - {"unstd.text._text_native"}
+    if failure == "missing-cargo" and (source / "native/compress/Cargo.toml").is_file():
+        expected.remove("unstd.compress._gzip_native")
+    assert _native_modules(_wheel_files(wheels[0])) == expected
     consumer = create_consumer(tmp_path / "consumer", wheels[0])
     consumer.run("""
 from unstd.text import fuzz
@@ -516,7 +541,7 @@ def test_missing_cargo_editable_build_clears_only_stale_text_module(
         },
     )
     assert not stale.exists()
-    for module in _NATIVE_MODULES[:-1]:
+    for module in set(_NATIVE_MODULES) - {"unstd.text._text_native"}:
         relative = module.replace(".", "/")
         assert any(
             path.suffix in {".so", ".pyd"}

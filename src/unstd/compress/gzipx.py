@@ -1,35 +1,46 @@
-"""Stdlib gzip calls with optional zlib-ng compression and faithful reads.
+"""Stdlib-compatible gzip with optional native compression and read kernels.
 
-The native backend lives behind ``unstd[compress]``. Base installs bind directly
-to stdlib ``gzip``. Read streams use stdlib framing, inflation and buffering;
-single-member buffers use zlib's C gzip decoder. Compressed bytes and ratios may
-differ between backends, while decoded bytes and exception families stay faithful.
+``unstd[compress]`` enables zlib-ng writes, native bounded inflation and CRC, and
+libdeflate decoding for eligible byte buffers. Read framing and buffering follow
+the running interpreter's gzip implementation. Base installs bind directly to
+stdlib ``gzip``; unsupported buffer cases retain stdlib parsing and diagnostics.
 """
 
 from __future__ import annotations
 
+import builtins
 from contextlib import suppress
 import gzip as _stdlib
 import inspect
 import io
-from os import PathLike
+from os import PathLike, fspath
 from typing import TYPE_CHECKING, Literal, cast, overload, override
 import zlib
 
 
 if TYPE_CHECKING:
-    from collections.abc import Buffer
+    from collections.abc import Buffer, Callable
     from gzip import GzipFile as _Base
     from gzip import _ReadableFileobj, _WritableFileobj
-    from typing import Protocol
+    from typing import IO, Protocol
 
     from unstd.compress._backend import gzip as _backend
     from unstd.compress._backend import native as _native
+    from unstd.compress._reader import _Reader
+
+    _decode_buffer: Callable[[object], bytes | None] | None
 
     class _Compressor(Protocol):
         def __call__(
             self, data: Buffer, compresslevel: int, *, mtime: float | None
         ) -> bytes: ...
+
+    class _ReadState(Protocol):
+        # The running gzip implementation permits unset/closed handles and
+        # byte filenames; typeshed narrows those private fields too far.
+        fileobj: _ReadableFileobj | _WritableFileobj | None
+        myfileobj: IO[bytes] | None
+        name: str | bytes
 
 else:
     try:
@@ -37,8 +48,15 @@ else:
         from unstd.compress._backend import native as _native
     except ImportError:
         _backend = None
+        _decode_buffer = None
     else:
         _Base = _backend.GzipFile
+        from unstd.compress._reader import _Reader
+
+        try:
+            from unstd.compress._gzip_native import decompress as _decode_buffer
+        except ImportError:
+            _decode_buffer = None
 
 
 __all__ = ["BadGzipFile", "GzipFile", "compress", "decompress", "open"]
@@ -62,7 +80,7 @@ if TYPE_CHECKING or _backend is not None:
     _DEFAULT_MTIME: float | None = _mtime
 
     class GzipFile(_Base):
-        """A gzip binary file with native compression and stdlib reads."""
+        """Native gzip codecs with the interpreter's framing and file behavior."""
 
         _buffer: io.BufferedReader | io.BufferedWriter
 
@@ -94,13 +112,38 @@ if TYPE_CHECKING or _backend is not None:
                 ):
                     msg = f"gzip file object must provide {operation}()"
                     raise TypeError(msg)
+            if (
+                isinstance(effective_mode, str)
+                and effective_mode.startswith("r")
+                and mode
+                and ("t" in mode or "U" in mode)
+            ):
+                msg = f"Invalid mode: {mode!r}"
+                raise ValueError(msg)
             try:
                 if isinstance(effective_mode, str) and effective_mode.startswith("r"):
-                    # Keep the complete stdlib read path: the native inflater
-                    # and its compatibility adapter slow common JSON reads.
-                    _stdlib.GzipFile.__init__(
-                        self, filename, mode, compresslevel, fileobj, mtime
-                    )
+                    # Initialize only the read branch. The backend constructor
+                    # first creates a stdlib reader and then replaces it.
+                    state = cast("_ReadState", self)
+                    state.fileobj = None
+                    binary_mode = mode + "b" if mode and "b" not in mode else mode
+                    if fileobj is None:
+                        opened = builtins.open(  # noqa: SIM115, PTH123 — owned gzip handle and bytes paths
+                            cast("_Path", filename), binary_mode or "rb"
+                        )
+                        state.myfileobj = opened
+                        fileobj = opened
+                    if filename is None:
+                        name = getattr(fileobj, "name", "")
+                        if not isinstance(name, str | bytes):
+                            name = ""
+                    else:
+                        name = fspath(filename)
+                    self.mode = _stdlib.READ
+                    raw = _Reader(cast("_ReadableFileobj", fileobj))
+                    self._buffer = io.BufferedReader(raw)
+                    state.name = name
+                    state.fileobj = fileobj
                 else:
                     super().__init__(filename, mode, compresslevel, fileobj, mtime)
             except BaseException as error:
@@ -223,22 +266,15 @@ if TYPE_CHECKING or _backend is not None:
         return result
 
     def decompress(data: Buffer) -> bytes:
-        """Decode a member in C; delegate other framing and errors to stdlib."""
+        """Decode validated buffers natively; preserve other stdlib outcomes."""
         # gzip slices its input by element; non-byte views and subclasses can
         # give those slices different meanings from the C buffer protocol.
         if type(data) is not bytes and type(data) is not bytearray:
             return _stdlib.decompress(data)
-        decoder = zlib.decompressobj(wbits=31)
-        try:
-            result = decoder.decompress(data)
-        except (zlib.error, TypeError):
-            pass
-        else:
-            if decoder.eof and not decoder.unused_data.lstrip(b"\0"):
+        if _decode_buffer is not None:
+            result = _decode_buffer(data)
+            if result is not None:
                 return result
-            del result
-        # Release the first output and buffered remainder before any replay.
-        del decoder
         # Concatenations and truncation retain gzip's exact behavior.
         # Its parser also accepts reserved flags and ignores header checksums
         # that the C decoder rejects; codec errors above take the same fallback.
