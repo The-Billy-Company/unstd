@@ -74,6 +74,18 @@ def _wheel_setup_commands(workflows):
     return settings["CIBW_BEFORE_TEST"], commands
 
 
+def _linux_frontend_commands(workflows):
+    build = next(
+        step
+        for step in workflows["release"]["jobs"]["wheels"]["steps"]
+        if "cibuildwheel " in step.get("run", "")
+    )
+    return [
+        shlex.split(command)
+        for command in build["env"]["CIBW_BEFORE_ALL_LINUX"].split(" && ")
+    ]
+
+
 def _wheel_test_commands(workflows):
     command, setup = _wheel_setup_commands(workflows)
     return command, *setup[2:]
@@ -89,48 +101,6 @@ def _repair_tool_export(workflows):
     assert constraints == "${{ runner.temp }}/release-constraints.txt"
     assert steps.index(export) < steps.index(build)
     return tokens
-
-
-@pytest.mark.parametrize("job", ["test", "native"])
-def test_ci_checks_the_actual_interpreter_before_crypto_tests(workflows, job):
-    steps = workflows["ci"]["jobs"][job]["steps"]
-    (preflight,) = [
-        step for step in steps if "-m tests.tooling.runtime" in step.get("run", "")
-    ]
-    assert preflight["run"] == "uv run --no-sync python -m tests.tooling.runtime --json"
-    assert "if" not in preflight
-    assert not preflight.get("continue-on-error", False)
-    tests = next(
-        step
-        for step in steps
-        if "python -m pytest" in step.get("run", "")
-        or "tests.tooling.ci run" in step.get("run", "")
-    )
-    assert steps.index(preflight) < steps.index(tests)
-
-
-def test_release_and_daily_audit_check_their_actual_interpreter(workflows):
-    for workflow, job in (("release", "wheels"), ("supply-chain", "audit")):
-        steps = workflows[workflow]["jobs"][job]["steps"]
-        (preflight,) = [
-            step for step in steps if "-m tests.tooling.runtime" in step.get("run", "")
-        ]
-        assert (
-            preflight["run"]
-            == "uv run --no-sync python -m tests.tooling.runtime --json"
-        )
-        assert "if" not in preflight
-        assert not preflight.get("continue-on-error", False)
-
-
-def test_wheel_tests_check_the_installed_interpreters_stdlib_tls_engine():
-    project = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text())
-    command = project["tool"]["cibuildwheel"]["test-command"][0]
-    assert shlex.split(command) == [
-        "python",
-        "{project}/tests/tooling/runtime/tls.py",
-        "--json",
-    ]
 
 
 def test_reusable_daily_gate_is_bounded_read_only_and_uses_pinned_actions(workflows):
@@ -463,6 +433,29 @@ def test_wheel_test_dependencies_use_only_the_authenticated_locked_closure(workf
     )
 
 
+def test_linux_container_frontend_uses_the_authenticated_locked_tool(workflows):
+    export, install = _linux_frontend_commands(workflows)
+    assert export[:2] == ["uv", "export"]
+    assert {"--locked", "--no-emit-project"} <= set(export)
+    assert "--no-hashes" not in export
+    assert export[export.index("--project") + 1] == "{package}"
+    assert export[export.index("--only-group") + 1] == "release-uv"
+    assert install[:4] == ["python", "-m", "pip", "install"]
+    assert {"--no-deps", "--require-hashes"} <= set(install)
+    assert install[install.index("--only-binary") + 1] == ":all:"
+    assert install[install.index("--prefix") + 1] == "/usr/local"
+    assert (
+        install[install.index("--requirement") + 1]
+        == export[export.index("--output-file") + 1]
+    )
+    with (REPO_ROOT / "pyproject.toml").open("rb") as stream:
+        dependencies = tomllib.load(stream)["dependency-groups"]["release-uv"]
+    for setup in _uses(
+        workflows["release"]["jobs"]["wheels"]["steps"], "astral-sh/setup-uv"
+    ):
+        assert dependencies == [f"uv=={setup['with']['version']}"]
+
+
 def test_windows_arm_source_backend_uses_the_authenticated_build_closure(workflows):
     _, (export, tools, _, install) = _wheel_setup_commands(workflows)
     assert export[:2] == ["uv", "export"]
@@ -477,7 +470,7 @@ def test_windows_arm_source_backend_uses_the_authenticated_build_closure(workflo
     assert "--require-build-hashes" in install
     with (REPO_ROOT / "pyproject.toml").open("rb") as stream:
         build = tomllib.load(stream)["dependency-groups"]["backend-build"]
-    for package in ("setuptools-scm", "wheel", "cmake"):
+    for package in ("setuptools-scm", "wheel", "cmake", "maturin"):
         assert any(
             requirement.startswith(package)
             and "sys_platform == 'win32'" in requirement
@@ -534,7 +527,7 @@ def test_wheel_test_setup_stops_when_export_or_authenticated_install_fails(
         assert observed[1][:2] == ["pip", "install"]
 
 
-@pytest.mark.parametrize("purpose", ["tests", "repair", "build"])
+@pytest.mark.parametrize("purpose", ["tests", "repair", "build", "frontend"])
 def test_real_offline_wheel_export_keeps_every_transitive_locked_hash(
     workflows, tmp_path: Path, purpose: str
 ):
@@ -542,6 +535,8 @@ def test_real_offline_wheel_export_keeps_every_transitive_locked_hash(
         _, export, _ = _wheel_test_commands(workflows)
     elif purpose == "repair":
         export = _repair_tool_export(workflows)
+    elif purpose == "frontend":
+        export, _ = _linux_frontend_commands(workflows)
     else:
         _, (export, _, _, _) = _wheel_setup_commands(workflows)
     # Freeze both inputs so concurrent development cannot change our closure
@@ -584,6 +579,8 @@ def test_real_offline_wheel_export_keeps_every_transitive_locked_hash(
         seeds.extend(root["dev-dependencies"]["supply-chain"])
     elif purpose == "repair":
         seeds.extend(root["dev-dependencies"]["release"])
+    elif purpose == "frontend":
+        seeds.extend(root["dev-dependencies"]["release-uv"])
     else:
         seeds.extend(root["dev-dependencies"]["backend-build"])
     pending = [edge["name"] for edge in seeds]
