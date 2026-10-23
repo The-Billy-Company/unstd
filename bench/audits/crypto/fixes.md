@@ -39,7 +39,7 @@ was adopted on the strength of an unproven universal performance claim.
    input requirement. Entropy aliases, TLS hostname/trust policy and existing
    algorithms remain intact.
 
-The [stdlib-only runtime preflight](../../tests/tooling/runtime/README.md) is
+The [stdlib-only runtime preflight](../../../tests/tooling/runtime/README.md) is
 run in CI, release tooling, daily supply-chain validation and each wheel's test
 interpreter. Branch-specific floors follow the
 [OpenSSL September advisory](https://openssl-library.org/news/secadv/20260929.txt).

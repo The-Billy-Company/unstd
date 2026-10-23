@@ -41,7 +41,7 @@ Evidence is split into:
   18 current crypto workload baselines and six exact RNG-alias checks.
 - [C candidate contract probes](hash-c-candidate-contracts.json): 105 published
   reference-vector checks plus accepted-input and exception differences.
-- [Experiment driver](../crypto_backends.py): candidates load independently;
+- [Experiment driver](../../diagnostics/crypto_backends.py): candidates load independently;
   production dispatch and installed project dependencies are never patched.
 
 Observed runtime: CPython 3.13.14, macOS arm64, 18 logical CPUs; `blake3` 1.0.10,
@@ -175,7 +175,7 @@ two separately computed median costs. The artifact retains both estimators.
 The earlier committed adaptive report already recorded 1/2 MiB raw-hash
 regressions and small-stream dispatch overhead. Existing behavior therefore
 also has overhead; retaining it is not a declaration that the entire current
-stack is optimal. [Prior measurements](../crypto-hash-adaptive-results.md).
+stack is optimal. [Prior measurements](../../reports/crypto/crypto-hash-adaptive-results.md).
 
 ## Acceptance rule for a future swap
 

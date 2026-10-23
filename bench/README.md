@@ -4,15 +4,29 @@ Benchmark drivers and recorded measurements for `unstd` APIs, optional backends,
 and bundled native kernels. Cases validate comparable outputs before timing;
 reports retain gains, losses, and backend-specific limitations.
 
-The [mathematical backend audit](math-audit/report.md) maps every public
+| Folder | Responsibility |
+|---|---|
+| [`core/`](core/README.md) | Shared cases, timing and report generation |
+| [`workloads/`](workloads/README.md) | Fixtures for the latency registry in `speeds.py` |
+| [`profiles/`](profiles/README.md) | Output-checked implementation comparisons |
+| [`diagnostics/`](diagnostics/README.md) | Focused crypto, RNG and runtime investigations |
+| [`baselines/`](baselines/README.md) | Frozen comparison floors and latency ceilings |
+| [`reports/`](reports/README.md) | Historical measurements grouped by domain |
+| [`audits/`](audits/README.md) | Research, qualifications and measured source snapshots |
+
+`python -m bench` and `python -m bench.speeds` remain the main commands. Earlier
+`bench.NAME` imports and commands forward to the owning modules listed above;
+their compatibility files contain no benchmark implementation.
+
+The [mathematical backend audit](audits/math/report.md) maps every public
 operation to its current provider, researches compatible alternatives, and
 retains security findings and raw random, numeric, and text measurements.
-Its [per-operation inventory](math-audit/functions.md) distinguishes active
+Its [per-operation inventory](audits/math/functions.md) distinguishes active
 runtime backends from available source and unqualified replacement candidates.
 
 ## Frozen function speeds
 
-[`speeds.json`](speeds.json) freezes representative latency for every public
+[`speeds.json`](baselines/speeds.json) freezes representative latency for every public
 operation across all 18 packages. The shared registry currently has 224
 workloads, including constructors, locally declared public methods/properties,
 stdlib aliases, generator consumption and complete stream lifecycles. Nine
@@ -105,7 +119,7 @@ drift. It does not relax ceilings or exempt unchanged operations.
 For the random-workload investigation, use an alternating paired diagnosis:
 
 ```console
-uv run --no-sync python -m bench.rand_diagnose --output /tmp/rand-diagnosis.json
+uv run --no-sync python -m bench.diagnostics.rand_diagnose --output /tmp/rand-diagnosis.json
 ```
 
 This runs the original `crypto.bits`, `seed` and `shuffle` workloads beside
@@ -120,19 +134,19 @@ nonzero when the original candidate exceeds it.
 
 ## Stdlib speedup comparisons
 
-The [parallel hashing report](crypto-hash-results.md) compares saved and current
+The [parallel hashing report](reports/crypto/crypto-hash-results.md) compares saved and current
 BLAKE3 wrappers with `crypto_hash.py`, including all modes, tiny-call overhead,
 serial streams, raw paired samples, and the measured host's scheduling noise.
-The [follow-up tuning report](crypto-hash-tuning-results.md) measures the lower
+The [follow-up tuning report](reports/crypto/crypto-hash-tuning-results.md) measures the lower
 4 MiB crossover and faster hex output against that initial implementation.
-The [adaptive hashing report](crypto-hash-adaptive-results.md) covers the current
+The [adaptive hashing report](reports/crypto/crypto-hash-adaptive-results.md) covers the current
 1 MiB crossover, bounded worker counts, and native batching of small stream chunks.
 Saved snapshots must include `unstd/crypto` and its private helpers, which load
 independently from the current source.
 
-The [crypto backend investigation](crypto-audit/README.md) inventories every
+The [crypto backend investigation](audits/crypto/README.md) inventories every
 crypto/RNG operation and primary-source replacement research. Its
-[implementation follow-up](crypto-audit/fixes.md) records bounded verification,
+[implementation follow-up](audits/crypto/fixes.md) records bounded verification,
 runtime patching, accepted parser acceleration, setup/RSS costs, and rejected
 stream/pool experiments. `crypto_fixes.py` retains paired wall/CPU evidence for
 the Python, already-loaded native, and explicitly prepared token paths.
@@ -179,7 +193,7 @@ cannot share an iteration count without one of them drowning in loop overhead.
 
 ## Why the baseline pins floors, not values
 
-`bench/baseline.json` holds a **floor** per case, set at 70% of the ratio that
+`bench/baselines/baseline.json` holds a **floor** per case, set at 70% of the ratio that
 was observed when it was recorded. A gate that demanded its own number back would
 fail on every machine except the one that recorded it, and a gate that cries wolf
 gets switched off within a week. A floor well under the observed ratio still
@@ -255,7 +269,7 @@ The harness earned its keep on the first run:
 
 ## Adding a case
 
-One `case(...)` call in `bench/cases.py`, then `python3 -m bench update` to pin
+One `case(...)` call in `bench/core/cases.py`, then `python3 -m bench update` to pin
 its floor. Bind the callables at module import — a `__import__` or attribute walk
 inside the measured lambda adds a few hundred nanoseconds per iteration, which is
 invisible on the 1 MiB hash case and roughly the entire measurement on the small
@@ -276,7 +290,7 @@ measurement. The 1,000-row payload contains UTF-8 text, tags, attributes, and
 nested token usage; it measures ingestion with validation, not parsing alone.
 
 The historical relative floor currently fails on the measured Python 3.13
-environment. A [paired diagnosis](typed-ndjson-floor-results.md) found the typed
+environment. A [paired diagnosis](reports/serde/typed-ndjson-floor-results.md) found the typed
 reader substantially unchanged while its dictionary-decoding comparator became
 about 3.1× faster. The original floor remains intact; this ratio compares two
 current ingestion strategies and cannot independently establish a typed-reader
@@ -290,10 +304,10 @@ outputs, including types and dictionary order, before timing. Profiling and
 timing run separately so profiler overhead is excluded from workload timings.
 
 ```console
-uv run --no-sync python -m bench.serde_profile --output /tmp/serde.json
-uv run --no-sync python -m bench.serde_profile --compare-source /tmp/before/src --rounds 9 --repetitions 3 --output /tmp/serde-comparison.json
-uv run --no-sync python -m bench.serde_profile --compare-source /tmp/before/src --paired --rounds 9 --repetitions 3 --output /tmp/serde-paired.json
-uv run --no-sync python -m bench.serde_profile --fallback --output /tmp/serde-fallback.json
+uv run --no-sync python -m bench.profiles.serde_profile --output /tmp/serde.json
+uv run --no-sync python -m bench.profiles.serde_profile --compare-source /tmp/before/src --rounds 9 --repetitions 3 --output /tmp/serde-comparison.json
+uv run --no-sync python -m bench.profiles.serde_profile --compare-source /tmp/before/src --paired --rounds 9 --repetitions 3 --output /tmp/serde-paired.json
+uv run --no-sync python -m bench.profiles.serde_profile --fallback --output /tmp/serde-fallback.json
 ```
 
 The comparison source must contain `unstd/`; workers verify the actual import
@@ -312,8 +326,8 @@ rather than cProfile data. Use the ordinary worker mode for complete function
 profiles and signature comparisons.
 
 The measured audit and retained implementation choices are recorded in
-[`serde-results.md`](serde-results.md), with per-function profiles and all
-workload timings in [`serde-results.json`](serde-results.json). These are local
+[`serde-results.md`](reports/serde/serde-results.md), with per-function profiles and all
+workload timings in [`serde-results.json`](reports/serde/serde-results.json). These are local
 measurements, not a proof that one implementation is fastest for every input,
 interpreter, backend version, or machine.
 
@@ -327,10 +341,10 @@ clock/counter branches. Outputs are checked for type, key order, mutable
 reference isolation, UUID layout, and unchanged public signatures before timing.
 
 ```console
-uv run --no-sync python -m bench.clone_ids_profile --output /tmp/clone-ids.json
-uv run --no-sync python -m bench.clone_ids_profile --compare-source /tmp/before/src --rounds 9 --repetitions 3 --output /tmp/clone-ids-comparison.json
-uv run --no-sync python -m bench.clone_ids_profile --stdlib-only --profile-only --output /tmp/clone-ids-stdlib.json
-python bench/clone_ids_profile.py --stdlib-only --profile-only --output /tmp/clone-ids-stdlib.json
+uv run --no-sync python -m bench.profiles.clone_ids_profile --output /tmp/clone-ids.json
+uv run --no-sync python -m bench.profiles.clone_ids_profile --compare-source /tmp/before/src --rounds 9 --repetitions 3 --output /tmp/clone-ids-comparison.json
+uv run --no-sync python -m bench.profiles.clone_ids_profile --stdlib-only --profile-only --output /tmp/clone-ids-stdlib.json
+python bench/profiles/clone_ids_profile.py --stdlib-only --profile-only --output /tmp/clone-ids-stdlib.json
 ```
 
 The saved source must contain `unstd/clone/structural.py` and `unstd/ids/uid.py`.
@@ -349,11 +363,11 @@ Direct script execution also avoids loading other benchmark groups and their
 optional dependencies through `bench.__init__`.
 
 The implementation decisions and measured limits are in
-[`clone-ids-results.md`](clone-ids-results.md); complete profiles, source hashes,
+[`clone-ids-results.md`](reports/clone/clone-ids-results.md); complete profiles, source hashes,
 public signatures, backend versions, and timing samples are in
-[`clone-ids-results.json`](clone-ids-results.json).
+[`clone-ids-results.json`](reports/clone/clone-ids-results.json).
 Standard-only validation profiles for Python 3.12, 3.13, and 3.14 are saved in
-[`clone-ids-stdlib-results.json`](clone-ids-stdlib-results.json).
+[`clone-ids-stdlib-results.json`](reports/clone/clone-ids-stdlib-results.json).
 
 ## Bundled native kernel profiles
 
@@ -365,8 +379,8 @@ are rejected to avoid importing current kernels into the comparison. Build the
 current extensions before running the driver.
 
 ```console
-uv run --no-sync python -m bench.native_profile --compare-source /tmp/before/src --rounds 9 --repetitions 3 --output /tmp/native-comparison.json
-python bench/native_profile.py --compare-source /tmp/before/src --profile-only --output /tmp/native-profile.json
+uv run --no-sync python -m bench.profiles.native_profile --compare-source /tmp/before/src --rounds 9 --repetitions 3 --output /tmp/native-comparison.json
+python bench/profiles/native_profile.py --compare-source /tmp/before/src --profile-only --output /tmp/native-profile.json
 ```
 
 Text workloads explicitly select the base-install Python wrappers, which may
@@ -389,10 +403,10 @@ interpreter/machine details, and native dispatch evidence. Unit tests verify the
 evidence checks without enforcing machine-specific speedup thresholds.
 
 The measured results, safety boundaries, validation and known fallback overhead
-are recorded in [`native-results.md`](native-results.md), with complete evidence
-in [`native-results.json`](native-results.json).
+are recorded in [`native-results.md`](reports/native/native-results.md), with complete evidence
+in [`native-results.json`](reports/native/native-results.json).
 
-The separate [Rust text experiment](rust-text-results.md) compares the same
+The separate [Rust text experiment](reports/text/rust-text-results.md) compares the same
 base-install Python calls backed by C and by an explicitly selected Rust
 prototype. Default builds retain C because this prototype adds short-Jaro
 latency and binary-size overhead. `text_native_compare.py` records paired
@@ -402,12 +416,12 @@ fresh-process RSS. Build instructions are in
 
 ## Gzip throughput and size
 
-The [native read qualification](gzip-native-reads.md) records the 3.1.4 native
+The [native read qualification](reports/compress/gzip-native-reads.md) records the 3.1.4 native
 inflater, CRC32 and complete-buffer decoder on captured JSON, datasets, bounded
 HTTP reads, journal iteration and upload rewinds. Its paired runner verifies
 independent outputs and actual native decoding before timing.
 
-The [3.1.3 read follow-up](gzip-read-results.md) preserves the earlier stdlib-read
+The [3.1.3 read follow-up](reports/compress/gzip-read-results.md) preserves the earlier stdlib-read
 decision. The measurements below describe the earlier native reader.
 
 Run `uv run --locked --all-extras python -m bench --group compress --rounds 5`.

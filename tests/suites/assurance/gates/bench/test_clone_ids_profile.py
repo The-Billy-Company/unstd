@@ -6,7 +6,7 @@ from collections import defaultdict
 
 import pytest
 
-from bench.clone_ids_profile import (
+from bench.profiles.clone_ids_profile import (
     Record,
     _bundle,
     _fork_reset_control,

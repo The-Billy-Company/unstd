@@ -150,7 +150,7 @@ classification concerns attacker-supplied public syntax, not a secret tag
 comparison. It does not declare free-threaded extension support; adding a
 declaration requires a separate shared-state/concurrency review.
 
-`native/compress/adapter.c:checksum` calls `libdeflate_crc32`, using the gzip
+`native/compress/src/adapter.c:checksum` calls `libdeflate_crc32`, using the gzip
 IEEE polynomial, not CRC32C. Replacing it with the x86 SSE4.2 CRC32C instruction
 or a cryptographic digest changes results. CRC protects against corruption,
 not malicious forgery. `adapter.c:decompress` calls
@@ -161,7 +161,7 @@ and release it. Returning `None` causes stdlib fallback and may repeat work.
 The bound is a speculative-allocation bound, not a total decompressed-output
 limit on subsequent fallback.
 
-`native/compress/inflate.c` wraps `inflateInit2_`, `inflate`, `inflateEnd`; on
+`native/compress/src/inflate.c` wraps `inflateInit2_`, `inflate`, `inflateEnd`; on
 macOS source links platform libz and elsewhere bundles prefixed zlib 1.3.2.
 Allocation uses checked Python RAW-domain allocators. `stream.c` tracks bounded
 input/output and native status; `compress._reader` retains interpreter gzip

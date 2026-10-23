@@ -82,7 +82,7 @@ and required native probes. The complete report is
 
 ## Method and native evidence
 
-[`billy_serde.py`](billy_serde.py) imports Billy's original workload construction,
+[`billy_serde.py`](../../profiles/billy_serde.py) imports Billy's original workload construction,
 fixtures, independent references and CPU batch timer. Old and current module
 graphs stay distinct while their retained callables alternate within the same
 process. Fifteen batches across seven repetitions produce 105 neighboring pairs

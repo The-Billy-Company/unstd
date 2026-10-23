@@ -72,7 +72,7 @@ invented.
 
 ## Evidence and reproduction
 
-[`billy_serde.py`](billy_serde.py) imports Billy's existing saved-fixture benchmark.
+[`billy_serde.py`](../../profiles/billy_serde.py) imports Billy's existing saved-fixture benchmark.
 Billy continues to own workload construction, independent references, CPU batch
 timing and output checks. Workers use one interpreter and alternate source order
 across three repetitions, each containing nine alternating actual/reference

@@ -29,9 +29,9 @@ exact builtin structural cloning, exact-string Levenshtein/Jaro scoring, and
 gzip reads selected through the compression extra.
 Source builds use these modules when a compiler is available and otherwise keep
 the portable fallback. The runtime dependency set and public APIs are unchanged.
-See the [Billy fixture measurements](bench/billy-serde-optimization-results.md)
+See the [Billy fixture measurements](bench/reports/serde/billy-serde-optimization-results.md)
 for release comparisons, including remaining overhead relative to 2.1.1.
-The [native kernel audit](bench/native-results.md) records clone and text
+The [native kernel audit](bench/reports/native/native-results.md) records clone and text
 measurements and compatibility boundaries.
 
 ## Groups

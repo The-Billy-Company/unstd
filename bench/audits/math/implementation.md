@@ -42,12 +42,12 @@ are unchanged.
 
 ## Patched audio backend
 
-The [authenticated builder](../../tests/tooling/runtime/audio_build.py) applies
+The [authenticated builder](../../../tests/tooling/runtime/audio_build.py) applies
 the official libsndfile parser fix to verified 1.2.2 sources. It produces a
 host-qualified SoundFile wheel, exact source/backport/compiler/library
 provenance and optional trusted same-job policy. Codecs remain available;
 static archives are privately staged before hashing/linking. The external
-[admission tool](../../tests/tooling/runtime/audio.py) resolves SoundFile's
+[admission tool](../../../tests/tooling/runtime/audio.py) resolves SoundFile's
 actual CFFI function through the platform loader, hashes its library file and
 requires separately trusted provenance. Matching version strings alone fail.
 No production audio call imports or executes these checks.
@@ -98,7 +98,7 @@ The patched wheel is installed and admitted in both the external qualification
 environment and this checkout's `.venv`. The workspace editable package metadata
 was refreshed to 3.1.4 and the default native extensions rebuilt.
 
-The required [audio-security workflow](../../.github/workflows/audio-security.yml)
+The required [audio-security workflow](../../../.github/workflows/audio-security.yml)
 builds pinned inputs, installs its hash-bound wheel, admits the actual loaded
 library and runs audio contracts. It retains evidence and never publishes.
 Linux shared-codec builds are explicit host reference artifacts; this macOS
@@ -106,7 +106,7 @@ session cannot execute that GitHub runner. Windows build qualification remains.
 Downstream applications must provision and admit their exact binary. A normal
 registry SoundFile requirement does not guarantee the native fix, and a later
 `uv sync` can restore the registry wheel. See [provisioning instructions and
-trust limits](../../native/audio/README.md). The repository's generic allowlist
+trust limits](../../../native/audio/README.md). The repository's generic allowlist
 stays empty; the reviewed local artifact uses its separate trusted policy.
 
 ## Compression experiments and retained providers
@@ -125,12 +125,12 @@ tests; [their final identities](compression-final-artifacts.json) are distinct
 from the earlier measured builds. Another 202 build/artifact/supply tests passed.
 An earlier Linux ARM64 default build passed 465 tests with one optional skip.
 
-Libdeflate 1.26 is available through an [isolated qualification builder](../../native/compress/qualify_libdeflate.py)
+Libdeflate 1.26 is available through an [isolated qualification builder](../../../native/compress/experiments/qualify_libdeflate.py)
 that authenticates and stages its reviewed 24-file closure. Default vendored
 1.25 source, source manifests and compiler settings are unchanged: 1.26 adds
 first-use Linux ARM64 sysfs open/read operations. It has no advertised security
 fix to justify that added setup under the requested constraint. See [build
-instructions](../../native/compress/README.md).
+instructions](../../../native/compress/README.md).
 
 The current BLAKE3 worker threshold was rechecked at 1/2/4 MiB in raw, keyed and
 derive-key modes with nine alternating pairs and total-process CPU clocks.

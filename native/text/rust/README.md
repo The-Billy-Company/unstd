@@ -3,7 +3,7 @@
 This is an explicitly selected prototype. Ordinary builds and published wheels
 continue to compile [`../src/_text_native.c`](../src/_text_native.c); they never invoke Cargo.
 The experiment must meet the project's no-overhead requirement before it can
-replace that implementation. See the [comparison report](../../../bench/rust-text-results.md).
+replace that implementation. See the [comparison report](../../../bench/reports/text/rust-text-results.md).
 
 ## Implementation
 
@@ -52,9 +52,9 @@ UNSTD_TEXT_RUST=1 CIBUILDWHEEL=1 uv build --wheel --out-dir /tmp/unstd-rust
 ```
 
 Extract each wheel to a separate directory and pass its text extension path to
-`bench/text_native_compare.py --baseline-native PATH --candidate-native PATH
+`bench/profiles/text_native_compare.py --baseline-native PATH --candidate-native PATH
 --output /tmp/text-comparison.json`. The harness validates results and native
 dispatch before timing complete base-install Python calls. Direct kernel calls,
 all timing samples, noise, source/binary hashes and sizes, and approximate fresh
 process peak RSS are recorded separately. Python-only profiling results in
-`bench/native-results.md` are not a C-versus-Rust comparison.
+`bench/reports/native/native-results.md` are not a C-versus-Rust comparison.

@@ -98,7 +98,7 @@ the stable Rust core.
 
 ## Reproduce
 
-See [the prototype instructions](../native/text/README.md) to build and extract
+See [the prototype instructions](../../../native/text/README.md) to build and extract
 separate C and Rust wheels, then run:
 
 ```console
@@ -106,8 +106,8 @@ python bench/text_native_compare.py \
   --baseline-native /tmp/c/unstd/text/_text_native.cpython-313-darwin.so \
   --candidate-native /tmp/rust/unstd/text/_text_native.cpython-313-darwin.so \
   --baseline-source src/unstd/text/_text_native.c \
-  --candidate-source native/text/Cargo.toml \
-  --candidate-source native/text/Cargo.lock \
+  --candidate-source native/text/rust/Cargo.toml \
+  --candidate-source native/text/rust/Cargo.lock \
   --candidate-source native/text/adapter.c \
   --candidate-source native/text/src/lib.rs \
   --candidate-source native/text/src/core.rs \
@@ -118,5 +118,5 @@ python bench/text_native_compare.py \
 Use the extension suffix for the selected interpreter/platform. The harness
 rejects missing extensions, incorrect values/types/float bits, and native calls
 that silently refuse accepted workloads. The
-earlier [native kernel audit](native-results.md) compares Python with C and
+earlier [native kernel audit](../native/native-results.md) compares Python with C and
 cannot establish Rust parity.

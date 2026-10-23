@@ -97,7 +97,7 @@ def test_tls_workload_accepts_lazy_default_roots_and_rejects_insecure_policy(
     all_backends: None, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     del all_backends
-    from bench import speed_cases_runtime
+    from bench.workloads import speed_cases_runtime
 
     def lazy_context(*, cafile: str | None = None) -> ssl.SSLContext:
         assert cafile is None
@@ -152,7 +152,7 @@ def test_filesystem_workloads_reuse_bounded_private_storage(
     all_backends: None, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     del all_backends
-    from bench import speed_cases_operations
+    from bench.workloads import speed_cases_operations
 
     owned: list[Path] = []
 

@@ -79,7 +79,7 @@ Installed dependencies and native extensions were preserved during the
 project-local interpreter migration; another package's bundled OpenSSL was not
 mistaken for the engine used by `ssl`.
 
-The new [stdlib-only preflight](../../tests/tooling/runtime/README.md) runs as
+The new [stdlib-only preflight](../../../tests/tooling/runtime/README.md) runs as
 `python -m tests.tooling.runtime --json`, records the actual executable, Python
 version, OpenSSL string/numeric fields and TLS 1.3 support, and exits unsuccessfully
 for vulnerable/unreviewed engines. Its reviewed floors are 3.0.23, 3.4.8, 3.5.9,
@@ -104,7 +104,7 @@ engine changes retain the verified-transport evidence requirements above.
 
 ## Measured caller-owned context reuse
 
-The [paired runner](../crypto_tls_reuse.py) and
+The [paired runner](../../diagnostics/crypto_tls_reuse.py) and
 [complete evidence](tls-reuse-results.json) now measure the context reuse
 opportunity on CPython 3.13.16 / OpenSSL 3.5.9, macOS arm64. Run from the root:
 

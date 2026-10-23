@@ -35,7 +35,7 @@ doc_radar:
   diagnostics. Writes remain on zlib-ng; source builds without the read
   extension retain the portable zlib-ng stream backend, and base installs keep
   exact stdlib bindings.
-- Paired [gzip read measurements](bench/gzip-native-reads-results.json) record
+- Paired [gzip read measurements](bench/reports/compress/gzip-native-reads-results.json) record
   identical recovered bytes and observed native execution before timing.
   Require the read extension in native wheel and sanitizer coverage, including
   exact input-boundary reads and malformed concatenated-member histories.

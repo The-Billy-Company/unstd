@@ -90,7 +90,7 @@ proofs and fallback paths are part of the implementation.
 
 Speed depends on the payload and Python version. The benchmark harness compares
 identical outputs and separately measures native paths and fallback records.
-The [Billy fixture comparison](../../../bench/billy-serde-optimization-results.md)
+The [Billy fixture comparison](../../../bench/reports/serde/billy-serde-optimization-results.md)
 retains release regressions as well as gains. Compatibility checking has a cost relative
 to the permissive 2.1 codec; measured results are not a universal speed promise.
 

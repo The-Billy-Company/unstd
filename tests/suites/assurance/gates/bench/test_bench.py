@@ -17,11 +17,11 @@ from typing import TYPE_CHECKING, Any
 
 import pytest
 
-from bench import cases as case_mod
-from bench import report, timing
 from bench.__main__ import main
-from bench.cases import Case
-from bench.timing import measure
+from bench.core import cases as case_mod
+from bench.core import report, timing
+from bench.core.cases import Case
+from bench.core.timing import measure
 
 
 if TYPE_CHECKING:
@@ -237,7 +237,7 @@ def test_a_narrowed_update_keeps_every_case_it_did_not_run(
 
 
 def _stub(us: float) -> Any:
-    from bench.timing import Measurement
+    from bench.core.timing import Measurement
 
     return Measurement(per_op_ns=us * 1_000, iters=100, rounds=3, spread=0.0)
 
@@ -260,7 +260,7 @@ def test_a_skipped_result_cannot_fail() -> None:
 
 
 def test_a_noisy_result_is_flagged() -> None:
-    from bench.timing import Measurement
+    from bench.core.timing import Measurement
 
     jittery = Measurement(per_op_ns=1.0, iters=10, rounds=3, spread=0.9)
     assert report.Result(_case(), jittery, _stub(10.0), None).noisy
@@ -299,7 +299,7 @@ def test_one_group_measures_and_verifies(capsys: pytest.CaptureFixture[str]) -> 
 def test_serde_profile_inventory_excludes_declarations_and_keeps_nested_functions(
     tmp_path: Path,
 ) -> None:
-    from bench.serde_profile import _functions
+    from bench.profiles.serde_profile import _functions
 
     source = tmp_path / "codec.py"
     source.write_text(
@@ -325,7 +325,7 @@ def test_serde_profile_inventory_excludes_declarations_and_keeps_nested_function
 
 
 def test_serde_profile_oracle_keeps_types_and_dictionary_order() -> None:
-    from bench.serde_profile import _same
+    from bench.profiles.serde_profile import _same
 
     assert _same({"values": [1, True, None, 1.5]}, {"values": [1, True, None, 1.5]})
     assert not _same({"values": [1]}, {"values": [True]})
@@ -339,7 +339,7 @@ def test_serde_profile_refuses_to_measure_a_different_imported_source(
 ) -> None:
     import sys
 
-    from bench.serde_profile import _worker
+    from bench.profiles.serde_profile import _worker
 
     monkeypatch.setattr(sys, "path", list(sys.path))
     with pytest.raises(RuntimeError, match=r"requested .* imported"):
@@ -352,7 +352,7 @@ def test_serde_paired_imports_restore_the_original_modules(
     from pathlib import Path
     import sys
 
-    from bench import serde_profile
+    from bench.profiles import serde_profile
     from unstd.serde import jsonx
 
     original_path = sys.path[:]

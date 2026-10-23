@@ -11,7 +11,7 @@ uv sync --locked --all-extras --group dev
 uv run --no-sync python -m tests.tooling run performance -- -q
 ```
 
-The default baseline is `bench/speeds.json`. To compare revisions on another
+The default baseline is `bench/baselines/speeds.json`. To compare revisions on another
 quiet worker, freeze a separate baseline on the revision under comparison,
 retain it unchanged, and select it for the candidate run:
 

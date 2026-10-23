@@ -10,7 +10,7 @@ from types import ModuleType, SimpleNamespace
 
 import pytest
 
-from bench import crypto_hash as compare
+from bench.profiles import crypto_hash as compare
 import unstd.crypto
 
 

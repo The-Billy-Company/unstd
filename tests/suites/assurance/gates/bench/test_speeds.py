@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Any
 import pytest
 
 from bench import speeds
-from bench.timing import Measurement
+from bench.core.timing import Measurement
 
 
 if TYPE_CHECKING:

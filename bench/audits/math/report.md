@@ -202,7 +202,7 @@ precision/cutoff outcomes; the current float64 intermediate alone needs
 `8 * queries * choices` bytes before its mask and Python-list output.
 [RapidFuzz matrix/worker contracts](https://rapidfuzz.github.io/RapidFuzz/Usage/process.html).
 
-The earlier [C-versus-Rust experiment](../rust-text-results.md), on CPython
+The earlier [C-versus-Rust experiment](../../reports/text/rust-text-results.md), on CPython
 3.13.14, recorded a 0.72 Rust/C ratio for 64-code-point Levenshtein, but
 1.17–1.33 for several short Jaro cases and a 51,488-to-398,192-byte extension
 increase. Those are earlier measurements, not reruns here. Safe Rust improves
@@ -237,7 +237,7 @@ explicit verifier setup/RSS costs, and 5–11 ns extra work on some cheap Python
 rejects. Earlier parallel-hash measurements include raw speedups below one
 around 1–2 MiB and tiny stream-dispatch costs. Keep these losses visible;
 large-buffer gains cannot establish no overhead on tiny inputs or concurrent
-requests. See [existing implementation evidence](../crypto-audit/fixes.md) and
+requests. See [existing implementation evidence](../crypto/fixes.md) and
 [the full review](crypto.md).
 
 The current OpenSSL 3.5.9 meets the reviewed September 29 branch fix level.

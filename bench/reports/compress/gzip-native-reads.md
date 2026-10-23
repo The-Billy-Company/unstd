@@ -3,7 +3,7 @@ doc_radar:
   sentinels:
     - file: src/unstd/compress/_reader.py
       contains: ['_factory = _accelerated.Inflater', '_zlib_globals["crc32"] = _crc32']
-    - file: native/compress/adapter.c
+    - file: native/compress/src/adapter.c
       contains: ['libdeflate_gzip_decompress_ex(', 'MAX_OUTPUT_BYTES', 'sizeof(ModuleState)']
     - file: bench/gzip_reads.py
       contains: ['bounded-blake3-rewind-stream-v1', '_validate_upload_bytes']

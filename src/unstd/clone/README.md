@@ -27,7 +27,7 @@ identity and independent mutable branches. Other trees use the existing Python
 walker, including copy hooks, subclasses, dataclasses, sets and cyclic graphs.
 Native work is bounded by 128 container levels and 65,536 visited values;
 exceeding either bound selects Python rather than limiting the public API.
-See the [native measurements](../../../bench/native-results.md) for comparisons
+See the [native measurements](../../../bench/reports/native/native-results.md) for comparisons
 against the previous Python implementation.
 
 - **Leaves never pay a call.** Each container comprehension tests its children's

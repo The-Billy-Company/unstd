@@ -127,11 +127,11 @@ Python implementation. The helper owns no cryptographic implementation and
 retains no messages, keys, hashers, or worker pools between calls.
 
 Hex output uses Python's byte-to-hex conversion after BLAKE3 finalization.
-[Current paired measurements](../../../bench/crypto-hash-adaptive-results.md)
+[Current paired measurements](../../../bench/reports/crypto/crypto-hash-adaptive-results.md)
 cover adaptive workers and native stream batching. The
-[previous tuning report](../../../bench/crypto-hash-tuning-results.md) records
+[previous tuning report](../../../bench/reports/crypto/crypto-hash-tuning-results.md) records
 the 4 MiB crossover and hex-output savings; the
-[initial report](../../../bench/crypto-hash-results.md) covers the earlier
+[initial report](../../../bench/reports/crypto/crypto-hash-results.md) covers the earlier
 16 MiB threshold.
 
 TLS certificate paths use `None` for omission. Explicitly empty `cafile`,
