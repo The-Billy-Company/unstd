@@ -457,6 +457,21 @@ def test_sdist_builder_authenticates_the_exported_build_closure(workflows):
     assert steps.index(export) < steps.index(build)
 
 
+def test_every_workflow_uses_the_audited_uv_frontend_version():
+    with (REPO_ROOT / "pyproject.toml").open("rb") as stream:
+        (requirement,) = tomllib.load(stream)["dependency-groups"]["release-uv"]
+    version = requirement.removeprefix("uv==")
+    assert version != requirement
+    yaml = require_backend("ruamel.yaml").YAML(typ="safe", pure=True)
+    observed = []
+    for path in sorted((REPO_ROOT / ".github/workflows").glob("*.yml")):
+        workflow = yaml.load(path.read_text())
+        for step in _uses(_steps(workflow), "astral-sh/setup-uv"):
+            assert step["with"]["version"] == version, path.name
+            observed.append(path.name)
+    assert observed
+
+
 def test_wheel_test_dependencies_use_only_the_authenticated_locked_closure(workflows):
     _, export, install = _wheel_test_commands(workflows)
     assert export[:2] == ["uv", "export"]

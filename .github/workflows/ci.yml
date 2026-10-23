@@ -67,7 +67,7 @@ jobs:
         uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           enable-cache: false
-          version: "latest-known"
+          version: "0.13.4"
           python-version: "3.13"
       - name: Build experimental Rust text extension
         run: uv sync --locked --group dev --python 3.13 --reinstall-package unstd
@@ -113,7 +113,7 @@ jobs:
           cache-dependency-glob: |
             uv.lock
             pyproject.toml
-          version: "latest-known"
+          version: "0.13.4"
           python-version: "3.13"
       - name: Install quality tools & backends
         run: uv sync --locked --all-extras --group dev --reinstall-package unstd --python 3.13
@@ -180,7 +180,7 @@ jobs:
           cache-dependency-glob: |
             uv.lock
             pyproject.toml
-          version: "latest-known"
+          version: "0.13.4"
           python-version: ${{ matrix.environment.python }}
       - name: Install test environment & rebuild local extensions
         run: uv sync ${{ matrix.environment.sync }} --group dev --reinstall-package unstd --python ${{ matrix.environment.python }}
@@ -246,7 +246,7 @@ jobs:
           cache-dependency-glob: |
             uv.lock
             pyproject.toml
-          version: "latest-known"
+          version: "0.13.4"
           python-version: "3.13"
       - name: Install test environment & rebuild local extensions
         run: uv sync --locked --all-extras --group dev --reinstall-package unstd --python 3.13
@@ -302,7 +302,7 @@ jobs:
           cache-dependency-glob: |
             uv.lock
             pyproject.toml
-          version: "latest-known"
+          version: "0.13.4"
           python-version: "3.13"
       - name: Install one partial environment & rebuild local extensions
         run: uv sync --locked ${{ matrix.install.sync }} --group dev --reinstall-package unstd --python 3.13
@@ -342,7 +342,7 @@ jobs:
         uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           enable-cache: auto
-          version: "latest-known"
+          version: "0.13.4"
           python-version: "3.13"
           cache-suffix: resources
           cache-dependency-glob: "uv.lock\npyproject.toml\n"
@@ -392,7 +392,7 @@ jobs:
         uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           enable-cache: auto
-          version: "latest-known"
+          version: "0.13.4"
           python-version: ${{ matrix.python-version }}
           cache-suffix: native
           cache-dependency-glob: "uv.lock\npyproject.toml\n"
@@ -448,7 +448,7 @@ jobs:
         uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           enable-cache: auto
-          version: "latest-known"
+          version: "0.13.4"
           python-version: "3.13"
           cache-suffix: native-sanitizers
           cache-dependency-glob: "uv.lock\npyproject.toml\n"
