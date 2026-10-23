@@ -335,6 +335,7 @@ def test_floor_install_restores_canonical_lock_without_replacing_active_versions
     sync = next(
         index for index, step in enumerate(steps) if step.get("run") == _sync(job)
     )
+    # Interpreter preflights can run before restoring the canonical lock.
     restore_index = next(
         index
         for index, step in enumerate(steps)
