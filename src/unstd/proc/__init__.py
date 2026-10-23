@@ -43,12 +43,13 @@ pass a timeout and to capture output before raising.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import math
 import os
 import subprocess  # nosec B404 # the public API is a subprocess wrapper
 import time
-from typing import TYPE_CHECKING, TypedDict, Unpack, override
+from typing import TYPE_CHECKING, TypedDict, Unpack
+
+from unstd.proc._internal.results import CompletedProcess, ProcessError
 
 
 if TYPE_CHECKING:
@@ -76,50 +77,6 @@ __all__ = [
     "run",
     "run_ok",
 ]
-
-
-@dataclass(frozen=True, slots=True)
-class CompletedProcess:
-    """The captured outcome of a finished child — immutable, decoded, self-describing."""
-
-    argv: tuple[str, ...]
-    returncode: int
-    stdout: str
-    stderr: str
-    duration: float
-
-    @property
-    def ok(self) -> bool:
-        """``True`` iff the child exited zero."""
-        return self.returncode == 0
-
-
-class ProcessError(subprocess.CalledProcessError):
-    """Non-zero exit — a ``CalledProcessError`` that keeps (and prints) the output.
-
-    Subclasses stdlib ``CalledProcessError`` so existing ``except
-    subprocess.CalledProcessError`` / ``proc.CalledProcessError`` clauses keep
-    catching it, but carries the full :class:`CompletedProcess` and folds the
-    captured stderr into ``str(exc)`` — the detail a bare ``CalledProcessError``
-    throws away.
-    """
-
-    def __init__(self, result: CompletedProcess) -> None:
-        """Initialize the instance."""
-        super().__init__(
-            result.returncode,
-            list(result.argv),
-            output=result.stdout,
-            stderr=result.stderr,
-        )
-        self.result = result
-
-    @override
-    def __str__(self) -> str:
-        """The stdlib message, followed by the child's stderr."""
-        base = super().__str__()
-        tail = (self.stderr or "").strip()
-        return f"{base}\n{tail}" if tail else base
 
 
 def _argv(argv: Sequence[str]) -> tuple[str, ...]:
