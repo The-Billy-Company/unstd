@@ -117,17 +117,50 @@ def test_sdist_constraints_survive_real_builder_directory_changes(
         assert consumed.resolve() == build_file
         assert consumed.is_file()
         assert "--require-hashes" in flags
-        test_export, install = selected.before_test.split(" && ")
+        backend_export, backend_install, test_export, install = (
+            selected.before_test.split(" && ")
+        )
+        backend_export_tokens = shlex.split(
+            prepare_command(backend_export, project=package, package=package)
+        )
+        assert (
+            backend_export_tokens[backend_export_tokens.index("--only-group") + 1]
+            == "backend-build"
+        )
+        backend_file = export(backend_export)
+        backend_install_tokens = shlex.split(
+            prepare_command(backend_install, project=package, package=package)
+        )
+        assert backend_install_tokens[:3] == ["uv", "pip", "install"]
+        assert {"--no-deps", "--require-hashes"} <= set(backend_install_tokens)
+        assert (
+            backend_install_tokens[backend_install_tokens.index("--only-binary") + 1]
+            == ":all:"
+        )
+        backend_consumed = (
+            package
+            / backend_install_tokens[backend_install_tokens.index("--requirements") + 1]
+        )
+        assert backend_consumed.resolve() == backend_file
+        assert backend_consumed.is_file()
         test_file = export(test_export)
         install_tokens = shlex.split(
             prepare_command(install, project=package, package=package)
         )
+        assert install_tokens[:3] == ["uv", "pip", "install"]
         test_consumed = (
             package / install_tokens[install_tokens.index("--requirements") + 1]
         )
         assert test_consumed.resolve() == test_file
         assert test_consumed.is_file()
-        assert {"--no-deps", "--require-hashes"} <= set(install_tokens)
+        assert {"--no-deps", "--require-hashes", "--require-build-hashes"} <= set(
+            install_tokens
+        )
+        test_build_consumed = (
+            package / install_tokens[install_tokens.index("--build-constraints") + 1]
+        )
+        assert test_build_consumed.resolve() == backend_file
+        assert test_build_consumed.is_file()
         observed.append(identifier)
 
     monkeypatch.setattr(builder.ALL_PLATFORM_MODULES[platform], "build", inspect_build)

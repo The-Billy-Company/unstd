@@ -25,6 +25,23 @@ release(voidpf opaque, voidpf pointer)
     PyMem_RawFree(pointer);
 }
 
+#ifdef MY_ZCALLOC
+/* The vendored library also references these defaults in its native ABI.
+ * Keep them on the checked allocator even though our streams set callbacks.
+ * Z_PREFIX gives these symbols the same private prefix as the codec. */
+voidpf
+zcalloc(voidpf opaque, unsigned items, unsigned size)
+{
+    return allocate(opaque, items, size);
+}
+
+void
+zcfree(voidpf opaque, voidpf pointer)
+{
+    release(opaque, pointer);
+}
+#endif
+
 void *
 unstd_inflate_create(int wbits, int *status)
 {

@@ -236,6 +236,58 @@ def test_revision_environment_records_native_changes_but_requires_same_runtime()
     assert not speeds.comparable_environment(
         before, {**current, "python": "3.14"}, revision=True
     )
+    assert not speeds.comparable_environment(
+        {**before, "cpu_affinity": [2]},
+        {**current, "cpu_affinity": [3]},
+        revision=True,
+    )
+
+
+def test_cpu_pinning_uses_allowed_cpu_and_restores_after_failure(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    changes: list[tuple[int, set[int]]] = []
+    monkeypatch.setattr(
+        speeds.os, "sched_getaffinity", lambda pid: {7, 3}, raising=False
+    )
+    monkeypatch.setattr(
+        speeds.os,
+        "sched_setaffinity",
+        lambda pid, cpus: changes.append((pid, set(cpus))),
+        raising=False,
+    )
+
+    def interrupted() -> None:
+        with speeds._pin_cpu():
+            assert changes == [(0, {3})]
+            message = "fixture failure"
+            raise RuntimeError(message)
+
+    with pytest.raises(RuntimeError, match="fixture failure"):
+        interrupted()
+    assert changes == [(0, {3}), (0, {3, 7})]
+
+
+def test_cpu_pinning_is_portable_when_affinity_is_unavailable(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delattr(speeds.os, "sched_getaffinity", raising=False)
+    monkeypatch.delattr(speeds.os, "sched_setaffinity", raising=False)
+    with speeds._pin_cpu():
+        pass
+
+
+def test_cpu_pinning_failure_is_not_silently_ignored(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def refused(pid: int, cpus: set[int]) -> None:
+        message = "affinity refused"
+        raise PermissionError(message)
+
+    monkeypatch.setattr(speeds.os, "sched_getaffinity", lambda pid: {3}, raising=False)
+    monkeypatch.setattr(speeds.os, "sched_setaffinity", refused, raising=False)
+    with pytest.raises(PermissionError, match="affinity refused"), speeds._pin_cpu():
+        pytest.fail("timing must not run after affinity failed")
 
 
 def test_revision_cli_audits_additions_and_keeps_shared_slowdowns(

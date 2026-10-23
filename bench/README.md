@@ -90,6 +90,12 @@ may change and both route inventories remain in the reports. Ordinary committed
 baseline verification retains strict API and native-environment equality. The
 local committed snapshot remains separate from ephemeral CI worker baselines.
 
+On Linux, the CLI pins each run to the lowest logical CPU in its inherited
+allowed set and records that affinity; a comparison with different affinity
+fails. The original affinity is restored on exit. Before/current phases still
+run sequentially, so pinning does not eliminate CPU frequency or host-load
+drift. It does not relax ceilings or exempt unchanged operations.
+
 For the random-workload investigation, use an alternating paired diagnosis:
 
 ```console

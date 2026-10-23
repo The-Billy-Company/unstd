@@ -89,24 +89,29 @@ physical CPU.
 
 | Workload | 3.1.3 CPU µs | 3.1.4 CPU µs | Speedup |
 | --- | ---: | ---: | ---: |
-| source_record_capture.json | 21.76 | 12.05 | 1.805× |
-| purchase_capture.json | 11.47 | 6.24 | 1.838× |
-| dataset-100-decompress | 3.17 | 2.65 | 1.197× |
-| dataset-100-stream | 12.90 | 12.68 | 1.017× |
-| upload-100-two-passes | 24.70 | 22.88 | 1.080× |
-| dataset-20001-decompress | 261.35 | 93.73 | 2.788× |
-| dataset-20001-stream | 358.72 | 284.08 | 1.263× |
-| upload-20001-two-passes | 974.23 | 837.75 | 1.163× |
-| dataset-40001-decompress | 1328.68 | 554.07 | 2.398× |
-| dataset-40001-stream | 1870.34 | 1432.24 | 1.306× |
-| upload-40001-two-passes | 8190.02 | 7283.11 | 1.125× |
-| http-bounded-expansion | 72.49 | 48.46 | 1.496× |
-| journal-200-members | 82.46 | 77.77 | 1.060× |
-| journal-20000-members | 10016.49 | 9465.16 | 1.058× |
+| source_record_capture.json | 18.28 | 10.38 | 1.761× |
+| purchase_capture.json | 10.08 | 5.62 | 1.794× |
+| dataset-100-decompress | 3.09 | 2.56 | 1.206× |
+| dataset-100-stream | 10.55 | 10.45 | 1.009× |
+| upload-100-two-passes | 20.27 | 20.97 | 0.967× |
+| dataset-20001-decompress | 245.78 | 90.40 | 2.719× |
+| dataset-20001-stream | 272.81 | 213.10 | 1.280× |
+| upload-20001-two-passes | 804.44 | 709.59 | 1.134× |
+| dataset-40001-decompress | 1041.21 | 449.77 | 2.315× |
+| dataset-40001-stream | 1120.65 | 906.97 | 1.236× |
+| upload-40001-two-passes | 4774.49 | 4349.89 | 1.098× |
+| http-bounded-expansion | 55.80 | 38.24 | 1.459× |
+| journal-200-members | 61.64 | 64.68 | 0.953× |
+| journal-20000-members | 7714.62 | 7681.44 | 1.004× |
 
-All 14 Linux CPU medians improve against 3.1.3 in this run, from 1.017× to
-2.788×. These measurements cover local decoding and upload consumption, not
-network latency or every deployment architecture.
+Twelve Linux CPU medians improve against 3.1.3 in this run. The small upload
+adds 0.70 µs (3.4%) and the small journal adds 3.04 µs (4.9%); their median paired
+ratios are 1.013× and 0.998× respectively, so these small workloads remain close
+to baseline. Large one-shot reads improve 2.3–2.7×, streamed dataset reads
+1.2–1.3×, and bounded uploads 1.10–1.13×. The exact wheel also uses checked
+allocator hooks throughout the bundled zlib ABI. These measurements cover local
+decoding and upload consumption, not network latency or every deployment
+architecture.
 
 ## Historical joined-upload diagnostic
 

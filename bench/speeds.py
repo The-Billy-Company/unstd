@@ -260,6 +260,22 @@ def check_coverage(
     return exclusions
 
 
+@contextmanager
+def _pin_cpu() -> Iterator[None]:
+    """Keep separate revision processes on the same inherited logical CPU."""
+    get_affinity = getattr(os, "sched_getaffinity", None)
+    set_affinity = getattr(os, "sched_setaffinity", None)
+    if get_affinity is None or set_affinity is None:
+        yield
+        return
+    allowed = get_affinity(0)
+    set_affinity(0, {min(allowed)})
+    try:
+        yield
+    finally:
+        set_affinity(0, allowed)
+
+
 def environment() -> dict[str, object]:
     """Record the interpreter, CPU, optional backend versions and native routes."""
     cpu = platform.processor()
@@ -312,6 +328,11 @@ def environment() -> dict[str, object]:
         "machine": platform.machine(),
         "cpu": cpu,
         "cpu_count": os.cpu_count(),
+        **(
+            {"cpu_affinity": sorted(os.sched_getaffinity(0))}
+            if hasattr(os, "sched_getaffinity")
+            else {}
+        ),
         "backends": versions,
         "native": native,
         "native_implementations": implementations,
@@ -611,7 +632,7 @@ def main(argv: list[str] | None = None) -> int:
             if args.comparison_source is not None
             else registry()
         )
-        with prepared as all_cases:
+        with _pin_cpu(), prepared as all_cases:
             exclusions = (
                 check_coverage(all_cases, source=args.comparison_source)
                 if args.comparison_source is not None

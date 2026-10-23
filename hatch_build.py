@@ -100,7 +100,9 @@ class CustomBuildHook(BuildHookInterface):
             sources,
             include_dirs=[str(gzip_root)] if gzip_buffers else [],
             libraries=["z"] if gzip_buffers and sys.platform == "darwin" else [],
-            define_macros=[("Z_PREFIX", None)]
+            # Supply the same checked Python RAW allocators for zlib's default
+            # ABI hooks too; do not compile its unused unchecked malloc hook.
+            define_macros=[("Z_PREFIX", None), ("MY_ZCALLOC", None)]
             if gzip_buffers and sys.platform != "darwin"
             else [],
             optional=os.environ.get("CIBUILDWHEEL") != "1",
