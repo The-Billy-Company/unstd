@@ -175,7 +175,11 @@ def test_default_bound_covers_the_complete_envelope_and_is_inclusive():
     assert token.verify(_KEY, at_limit, max_token_chars=len(at_limit) - 1) is None
 
 
-@pytest.mark.parametrize("candidate", ["x" * 8193, "😀" * 8193, "\ud800" * 8193])
+@pytest.mark.parametrize(
+    "candidate",
+    ["x" * 8193, "😀" * 8193, "\ud800" * 8193],
+    ids=["ascii", "astral", "lone-surrogate"],
+)
 def test_oversized_text_is_rejected_before_slicing_scanning_decoding_or_hashing(
     monkeypatch, candidate
 ):
