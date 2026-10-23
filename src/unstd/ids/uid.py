@@ -14,9 +14,9 @@ UUIDv7 *does* have a faithful pure-stdlib construction, so when ``uuid-utils`` i
 absent (a base ``unstd`` install) this module falls back to a spec-correct
 stdlib generator — same 128-bit layout (48-bit big-endian ms timestamp · version
 7 · variant 0b10 · 74 bits split into a 12-bit monotonic counter + 62 random
-bits, RFC 9562 §6.2 Method 1 — mirroring the approach CPython 3.14's own
-``uuid.uuid7`` added natively), so the surface works everywhere, ids minted
-within the same millisecond still sort, and only the generation speed differs.
+bits, RFC 9562 §6.2 Method 1). CPython 3.14's native ``uuid.uuid7`` instead
+uses a 42-bit monotonic counter. Both preserve the UUIDv7 wire format and
+sequential mint order; counter layout and generation costs differ.
 """
 
 from __future__ import annotations
@@ -118,7 +118,7 @@ except (
 ):  # base install without the `ids` extra — spec-correct stdlib fallback
     import uuid as _uuid
 
-    # CPython 3.14 ships the same RFC 9562 Method 1 generator natively.
+    # CPython 3.14 supplies UUIDv7 with a 42-bit counter; our fallback uses 12.
     _uuid7 = getattr(_uuid, "uuid7", _stdlib_uuid7)
 
 

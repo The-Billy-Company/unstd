@@ -1,0 +1,1571 @@
+{
+  "schema": 1,
+  "environment": {
+    "python": "3.13.16",
+    "implementation": "CPython",
+    "system": "Darwin",
+    "system_release": "25.6.0",
+    "machine": "arm64",
+    "cpu": "Apple M5 Max",
+    "cpu_count": 18,
+    "backends": {
+      "blake3": "1.0.10",
+      "immutables": "0.21",
+      "irregex": "2.6.0",
+      "msgspec": "0.22.0",
+      "numpy": "2.5.3",
+      "orjson": "3.12.0",
+      "protobuf": "7.36.2",
+      "pybase64": "1.5.0",
+      "pydantic": "2.13.5",
+      "pydantic-settings": "2.15.0",
+      "rapidfuzz": "3.14.6",
+      "ruamel-yaml": "0.19.1",
+      "sortedcontainers": "2.4.0",
+      "soundfile": "0.14.0",
+      "tomlkit": "0.15.1",
+      "uuid-utils": "1.0.0",
+      "whenever": "0.10.5",
+      "zlib-ng": "1.0.0"
+    },
+    "native": {
+      "clone._clone_native": true,
+      "compress._gzip_native": false,
+      "crypto._stream_native": true,
+      "serde._json_native": true,
+      "text._text_native": true
+    },
+    "native_implementations": {
+      "clone._clone_native": "c",
+      "crypto._stream_native": "c",
+      "serde._json_native": "c",
+      "text._text_native": "c"
+    },
+    "python_debug": 0,
+    "python_free_threaded": 0,
+    "thread_settings": {
+      "OMP_NUM_THREADS": null,
+      "OPENBLAS_NUM_THREADS": null,
+      "MKL_NUM_THREADS": null
+    }
+  },
+  "python_full": "3.13.16 (main, Oct  9 2026, 15:11:24) [Clang 22.1.3 ]",
+  "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+  "rapidfuzz_version": "3.14.6",
+  "source_sha256": {
+    "/Users/griffinstrier/Billy-Company/unstd/bench/math-audit/probe_text.py": "827a7183183292f412776e01c0d37e4efd093f73600983165460d34ab7330be5",
+    "/Users/griffinstrier/Billy-Company/unstd/src/unstd/text/fuzz.py": "96bb910dda4e55925adfe133a2128bc13f914c7e01cd2fad614795cd5e2cf534",
+    "/Users/griffinstrier/Billy-Company/unstd/src/unstd/text/_text_native.cpython-313-darwin.so": "eb89cceff99acb2e8ae346289c4c304f7722e37a763d3633b228c7ee4f435174"
+  },
+  "limitation": "shared host; thread CPU excludes work in other native worker threads; no zero-overhead guarantee",
+  "rows": [
+    {
+      "name": "distance/12",
+      "note": "baseline=base-install wrapper including available C; candidate=already installed RapidFuzz direct binding",
+      "iterations": 49152,
+      "outputs_bit_identical_before_and_after": true,
+      "samples": [
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 197.74287923177084,
+            "thread_cpu_ns": 193.8671671549479
+          },
+          "candidate": {
+            "wall_ns": 108.54001871744792,
+            "thread_cpu_ns": 108.01188151041667
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 111.59853108723958,
+            "thread_cpu_ns": 108.46370442708333
+          },
+          "baseline": {
+            "wall_ns": 199.3272705078125,
+            "thread_cpu_ns": 194.3172810872396
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 188.61812337239584,
+            "thread_cpu_ns": 186.34796142578125
+          },
+          "candidate": {
+            "wall_ns": 112.67427571614583,
+            "thread_cpu_ns": 108.933349609375
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 106.45039876302083,
+            "thread_cpu_ns": 104.70664469401042
+          },
+          "baseline": {
+            "wall_ns": 198.1319783528646,
+            "thread_cpu_ns": 187.61698404947916
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 207.67974853515625,
+            "thread_cpu_ns": 188.8716023763021
+          },
+          "candidate": {
+            "wall_ns": 114.15354410807292,
+            "thread_cpu_ns": 106.43259684244792
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 104.19378662109375,
+            "thread_cpu_ns": 104.0513916015625
+          },
+          "baseline": {
+            "wall_ns": 219.53837076822916,
+            "thread_cpu_ns": 206.4658203125
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 203.3810017903646,
+            "thread_cpu_ns": 189.882080078125
+          },
+          "candidate": {
+            "wall_ns": 109.90313720703125,
+            "thread_cpu_ns": 106.29781087239583
+          }
+        }
+      ],
+      "median_ns": {
+        "baseline": 199.3272705078125,
+        "candidate": 109.90313720703125
+      },
+      "median_paired_candidate_over_baseline": 0.5488947017415992,
+      "spread": {
+        "baseline": 0.1639304158211048,
+        "candidate": 0.09558878518541958
+      },
+      "noisy": false
+    },
+    {
+      "name": "jaro_winkler/12",
+      "note": "baseline=base-install wrapper including available C; candidate=already installed RapidFuzz direct binding",
+      "iterations": 57344,
+      "outputs_bit_identical_before_and_after": true,
+      "samples": [
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 588.9979771205357,
+            "thread_cpu_ns": 570.496320452009
+          },
+          "candidate": {
+            "wall_ns": 160.21292550223214,
+            "thread_cpu_ns": 157.62765066964286
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 162.58021763392858,
+            "thread_cpu_ns": 160.02690778459822
+          },
+          "baseline": {
+            "wall_ns": 595.1799665178571,
+            "thread_cpu_ns": 588.2742745535714
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 578.093035016741,
+            "thread_cpu_ns": 572.5620814732143
+          },
+          "candidate": {
+            "wall_ns": 164.63797433035714,
+            "thread_cpu_ns": 162.61727469308036
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 156.02547781808036,
+            "thread_cpu_ns": 155.56117466517858
+          },
+          "baseline": {
+            "wall_ns": 591.921857561384,
+            "thread_cpu_ns": 573.2203892299107
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 576.4857700892857,
+            "thread_cpu_ns": 567.0107945033482
+          },
+          "candidate": {
+            "wall_ns": 160.60529436383928,
+            "thread_cpu_ns": 159.18259974888392
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 163.0089111328125,
+            "thread_cpu_ns": 161.03254045758928
+          },
+          "baseline": {
+            "wall_ns": 576.388410295759,
+            "thread_cpu_ns": 571.5506417410714
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 548.5418352399554,
+            "thread_cpu_ns": 544.9385811941964
+          },
+          "candidate": {
+            "wall_ns": 150.50108119419642,
+            "thread_cpu_ns": 150.27291434151786
+          }
+        }
+      ],
+      "median_ns": {
+        "baseline": 578.093035016741,
+        "candidate": 160.60529436383928
+      },
+      "median_paired_candidate_over_baseline": 0.27436573024254546,
+      "spread": {
+        "baseline": 0.08502201342127402,
+        "candidate": 0.0939321699484632
+      },
+      "noisy": false
+    },
+    {
+      "name": "indel_ratio/12",
+      "note": "baseline=base-install wrapper including available C; candidate=already installed RapidFuzz direct binding",
+      "iterations": 65536,
+      "outputs_bit_identical_before_and_after": true,
+      "samples": [
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 1878.7695617675781,
+            "thread_cpu_ns": 1855.312973022461
+          },
+          "candidate": {
+            "wall_ns": 154.78579711914062,
+            "thread_cpu_ns": 152.44674682617188
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 154.3019561767578,
+            "thread_cpu_ns": 151.44984436035156
+          },
+          "baseline": {
+            "wall_ns": 1930.4485321044922,
+            "thread_cpu_ns": 1897.1322326660156
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 1857.7842712402344,
+            "thread_cpu_ns": 1833.9773864746094
+          },
+          "candidate": {
+            "wall_ns": 144.70481872558594,
+            "thread_cpu_ns": 143.6176300048828
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 150.79562377929688,
+            "thread_cpu_ns": 149.20870971679688
+          },
+          "baseline": {
+            "wall_ns": 2063.241958618164,
+            "thread_cpu_ns": 1822.5199432373047
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 2166.5604858398438,
+            "thread_cpu_ns": 1946.4550018310547
+          },
+          "candidate": {
+            "wall_ns": 340.0071563720703,
+            "thread_cpu_ns": 152.57008361816406
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 192.63330078125,
+            "thread_cpu_ns": 146.9071807861328
+          },
+          "baseline": {
+            "wall_ns": 2075.4559936523438,
+            "thread_cpu_ns": 2048.8897857666016
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 2030.6345672607422,
+            "thread_cpu_ns": 2008.2162322998047
+          },
+          "candidate": {
+            "wall_ns": 157.67733764648438,
+            "thread_cpu_ns": 155.99313354492188
+          }
+        }
+      ],
+      "median_ns": {
+        "baseline": 2030.6345672607422,
+        "candidate": 154.78579711914062
+      },
+      "median_paired_candidate_over_baseline": 0.07993062421019038,
+      "spread": {
+        "baseline": 0.1662067116078414,
+        "candidate": 1.3496602211765327
+      },
+      "noisy": true
+    },
+    {
+      "name": "distance/64",
+      "note": "baseline=base-install wrapper including available C; candidate=already installed RapidFuzz direct binding",
+      "iterations": 32768,
+      "outputs_bit_identical_before_and_after": true,
+      "samples": [
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 583.01416015625,
+            "thread_cpu_ns": 580.62109375
+          },
+          "candidate": {
+            "wall_ns": 293.59564208984375,
+            "thread_cpu_ns": 287.9549865722656
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 301.8163146972656,
+            "thread_cpu_ns": 297.7930603027344
+          },
+          "baseline": {
+            "wall_ns": 607.3557434082031,
+            "thread_cpu_ns": 605.7485046386719
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 626.8997192382812,
+            "thread_cpu_ns": 618.8519897460938
+          },
+          "candidate": {
+            "wall_ns": 274.3492126464844,
+            "thread_cpu_ns": 272.0947265625
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 224.36651611328125,
+            "thread_cpu_ns": 222.78085327148438
+          },
+          "baseline": {
+            "wall_ns": 551.4501037597656,
+            "thread_cpu_ns": 551.116943359375
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 697.8797912597656,
+            "thread_cpu_ns": 583.5888977050781
+          },
+          "candidate": {
+            "wall_ns": 302.3783264160156,
+            "thread_cpu_ns": 238.05364990234375
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 435.75030517578125,
+            "thread_cpu_ns": 233.23440551757812
+          },
+          "baseline": {
+            "wall_ns": 938.1154479980469,
+            "thread_cpu_ns": 644.2972717285156
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 733.6209716796875,
+            "thread_cpu_ns": 700.726806640625
+          },
+          "candidate": {
+            "wall_ns": 278.7818908691406,
+            "thread_cpu_ns": 276.37353515625
+          }
+        }
+      ],
+      "median_ns": {
+        "baseline": 626.8997192382812,
+        "candidate": 293.59564208984375
+      },
+      "median_paired_candidate_over_baseline": 0.43762854604534557,
+      "spread": {
+        "baseline": 0.7011792029813972,
+        "candidate": 0.9421360759364541
+      },
+      "noisy": true
+    },
+    {
+      "name": "jaro_winkler/64",
+      "note": "baseline=base-install wrapper including available C; candidate=already installed RapidFuzz direct binding",
+      "iterations": 24576,
+      "outputs_bit_identical_before_and_after": true,
+      "samples": [
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 1444.1968994140625,
+            "thread_cpu_ns": 1430.9590657552083
+          },
+          "candidate": {
+            "wall_ns": 312.3609619140625,
+            "thread_cpu_ns": 312.2456868489583
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 282.562255859375,
+            "thread_cpu_ns": 279.3680826822917
+          },
+          "baseline": {
+            "wall_ns": 1345.8031412760417,
+            "thread_cpu_ns": 1330.2764892578125
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 1252.1870930989583,
+            "thread_cpu_ns": 1246.7295328776042
+          },
+          "candidate": {
+            "wall_ns": 316.2282307942708,
+            "thread_cpu_ns": 311.7743733723958
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 293.2993570963542,
+            "thread_cpu_ns": 290.3713785807292
+          },
+          "baseline": {
+            "wall_ns": 1366.5093587239583,
+            "thread_cpu_ns": 1349.334716796875
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 1182.0288899739583,
+            "thread_cpu_ns": 1172.760009765625
+          },
+          "candidate": {
+            "wall_ns": 261.0303955078125,
+            "thread_cpu_ns": 261.0965169270833
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 317.8829345703125,
+            "thread_cpu_ns": 305.5555419921875
+          },
+          "baseline": {
+            "wall_ns": 1163.5945638020833,
+            "thread_cpu_ns": 1159.5069173177083
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 1298.129638671875,
+            "thread_cpu_ns": 1275.4296061197917
+          },
+          "candidate": {
+            "wall_ns": 316.6435953776042,
+            "thread_cpu_ns": 301.878173828125
+          }
+        }
+      ],
+      "median_ns": {
+        "baseline": 1298.129638671875,
+        "candidate": 312.3609619140625
+      },
+      "median_paired_candidate_over_baseline": 0.22083250056059406,
+      "spread": {
+        "baseline": 0.24115129473886676,
+        "candidate": 0.2178004555825701
+      },
+      "noisy": false
+    },
+    {
+      "name": "indel_ratio/64",
+      "note": "baseline=base-install wrapper including available C; candidate=already installed RapidFuzz direct binding",
+      "iterations": 24576,
+      "outputs_bit_identical_before_and_after": true,
+      "samples": [
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 12591.127197265625,
+            "thread_cpu_ns": 12485.126098632812
+          },
+          "candidate": {
+            "wall_ns": 228.96830240885416,
+            "thread_cpu_ns": 223.69384765625
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 229.8736572265625,
+            "thread_cpu_ns": 222.013671875
+          },
+          "baseline": {
+            "wall_ns": 13034.869750976562,
+            "thread_cpu_ns": 12877.219278971354
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 13090.828776041666,
+            "thread_cpu_ns": 12221.581339518229
+          },
+          "candidate": {
+            "wall_ns": 213.95707194010416,
+            "thread_cpu_ns": 209.686279296875
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 194.05790201822916,
+            "thread_cpu_ns": 193.84765625
+          },
+          "baseline": {
+            "wall_ns": 11808.693806966146,
+            "thread_cpu_ns": 11696.494222005209
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 11358.656168619791,
+            "thread_cpu_ns": 11193.250854492188
+          },
+          "candidate": {
+            "wall_ns": 194.02058919270834,
+            "thread_cpu_ns": 192.32686360677084
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 194.00533040364584,
+            "thread_cpu_ns": 192.62015787760416
+          },
+          "baseline": {
+            "wall_ns": 12660.000244140625,
+            "thread_cpu_ns": 11457.122802734375
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 22354.031005859375,
+            "thread_cpu_ns": 12355.131388346354
+          },
+          "candidate": {
+            "wall_ns": 255.59659830729166,
+            "thread_cpu_ns": 253.37727864583334
+          }
+        }
+      ],
+      "median_ns": {
+        "baseline": 12660.000244140625,
+        "candidate": 213.95707194010416
+      },
+      "median_paired_candidate_over_baseline": 0.016433477333771762,
+      "spread": {
+        "baseline": 0.9680172261588627,
+        "candidate": 0.3174720394305639
+      },
+      "noisy": true
+    },
+    {
+      "name": "distance/1024",
+      "note": "baseline=base-install wrapper including available C; candidate=already installed RapidFuzz direct binding",
+      "iterations": 384,
+      "outputs_bit_identical_before_and_after": true,
+      "samples": [
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 29301.5390625,
+            "thread_cpu_ns": 29165.580729166668
+          },
+          "candidate": {
+            "wall_ns": 21138.453125,
+            "thread_cpu_ns": 20872.830729166668
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 20752.278645833332,
+            "thread_cpu_ns": 20596.138020833332
+          },
+          "baseline": {
+            "wall_ns": 29030.815104166668,
+            "thread_cpu_ns": 28759.765625
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 29250.760416666668,
+            "thread_cpu_ns": 28940.864583333332
+          },
+          "candidate": {
+            "wall_ns": 20779.080729166668,
+            "thread_cpu_ns": 20672.200520833332
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 20818.903645833332,
+            "thread_cpu_ns": 20702.0390625
+          },
+          "baseline": {
+            "wall_ns": 33426.213541666664,
+            "thread_cpu_ns": 33221.895833333336
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 30575.1953125,
+            "thread_cpu_ns": 29790.2578125
+          },
+          "candidate": {
+            "wall_ns": 21854.057291666668,
+            "thread_cpu_ns": 21195.747395833332
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 22297.635416666668,
+            "thread_cpu_ns": 21333.0078125
+          },
+          "baseline": {
+            "wall_ns": 29968.966145833332,
+            "thread_cpu_ns": 29603.190104166668
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 29260.6328125,
+            "thread_cpu_ns": 29059.677083333332
+          },
+          "candidate": {
+            "wall_ns": 21320.963541666668,
+            "thread_cpu_ns": 20939.34375
+          }
+        }
+      ],
+      "median_ns": {
+        "baseline": 29301.5390625,
+        "candidate": 21138.453125
+      },
+      "median_paired_candidate_over_baseline": 0.7148362376795562,
+      "spread": {
+        "baseline": 0.15140458239731425,
+        "candidate": 0.07446684757886168
+      },
+      "noisy": false
+    },
+    {
+      "name": "jaro_winkler/1024",
+      "note": "baseline=base-install wrapper including available C; candidate=already installed RapidFuzz direct binding",
+      "iterations": 1408,
+      "outputs_bit_identical_before_and_after": true,
+      "samples": [
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 156313.71306818182,
+            "thread_cpu_ns": 154531.84232954544
+          },
+          "candidate": {
+            "wall_ns": 5620.857244318182,
+            "thread_cpu_ns": 5551.965198863636
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 5448.923295454545,
+            "thread_cpu_ns": 5402.7578125
+          },
+          "baseline": {
+            "wall_ns": 128997.66264204546,
+            "thread_cpu_ns": 128230.20241477272
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 117294.59659090909,
+            "thread_cpu_ns": 116954.75213068182
+          },
+          "candidate": {
+            "wall_ns": 4700.076704545455,
+            "thread_cpu_ns": 4668.3828125
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 4614.583806818182,
+            "thread_cpu_ns": 4598.277698863636
+          },
+          "baseline": {
+            "wall_ns": 113198.30113636363,
+            "thread_cpu_ns": 112657.07883522728
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 117185.31036931818,
+            "thread_cpu_ns": 115070.96377840909
+          },
+          "candidate": {
+            "wall_ns": 5530.983664772727,
+            "thread_cpu_ns": 5454.841619318182
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 5571.880681818182,
+            "thread_cpu_ns": 5522.727272727273
+          },
+          "baseline": {
+            "wall_ns": 124504.3203125,
+            "thread_cpu_ns": 121608.36860795454
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 125782.34517045454,
+            "thread_cpu_ns": 122164.80255681818
+          },
+          "candidate": {
+            "wall_ns": 4946.081676136364,
+            "thread_cpu_ns": 4934.333096590909
+          }
+        }
+      ],
+      "median_ns": {
+        "baseline": 124504.3203125,
+        "candidate": 5448.923295454545
+      },
+      "median_paired_candidate_over_baseline": 0.04076548641184334,
+      "spread": {
+        "baseline": 0.3808839134421238,
+        "candidate": 0.21806374737700107
+      },
+      "noisy": true
+    },
+    {
+      "name": "indel_ratio/1024",
+      "note": "baseline=base-install wrapper including available C; candidate=already installed RapidFuzz direct binding",
+      "iterations": 1408,
+      "outputs_bit_identical_before_and_after": true,
+      "samples": [
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 246617.92755681818,
+            "thread_cpu_ns": 238906.1612215909
+          },
+          "candidate": {
+            "wall_ns": 6761.3046875,
+            "thread_cpu_ns": 6677.823153409091
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 6501.005681818182,
+            "thread_cpu_ns": 6483.339488636364
+          },
+          "baseline": {
+            "wall_ns": 249021.75071022726,
+            "thread_cpu_ns": 239516.98579545456
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 242278.55681818182,
+            "thread_cpu_ns": 240552.11292613635
+          },
+          "candidate": {
+            "wall_ns": 6976.710227272727,
+            "thread_cpu_ns": 6800.3671875
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 6779.089488636364,
+            "thread_cpu_ns": 6749.112215909091
+          },
+          "baseline": {
+            "wall_ns": 247131.00710227274,
+            "thread_cpu_ns": 242100.23082386365
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 241912.46448863635,
+            "thread_cpu_ns": 240031.96022727274
+          },
+          "candidate": {
+            "wall_ns": 6703.776278409091,
+            "thread_cpu_ns": 6697.739346590909
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 6808.209517045455,
+            "thread_cpu_ns": 6799.479403409091
+          },
+          "baseline": {
+            "wall_ns": 238096.29545454544,
+            "thread_cpu_ns": 236225.61576704544
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 240902.31392045456,
+            "thread_cpu_ns": 238583.68821022726
+          },
+          "candidate": {
+            "wall_ns": 6451.438210227273,
+            "thread_cpu_ns": 6439.364346590909
+          }
+        }
+      ],
+      "median_ns": {
+        "baseline": 242278.55681818182,
+        "candidate": 6761.3046875
+      },
+      "median_paired_candidate_over_baseline": 0.02743115713452705,
+      "spread": {
+        "baseline": 0.045886708295163725,
+        "candidate": 0.08141936726802346
+      },
+      "noisy": false
+    },
+    {
+      "name": "cdist-workers/1x1",
+      "note": "complete public float64 matrix/list conversion; only workers changes from 1 to 2",
+      "iterations": 4864,
+      "outputs_bit_identical_before_and_after": true,
+      "samples": [
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 1958.2563733552631,
+            "thread_cpu_ns": 1926.046875
+          },
+          "candidate": {
+            "wall_ns": 54828.88754111842,
+            "thread_cpu_ns": 33388.68914473684
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 106223.83840460527,
+            "thread_cpu_ns": 41573.76480263158
+          },
+          "baseline": {
+            "wall_ns": 2188.8447779605262,
+            "thread_cpu_ns": 2151.6069078947367
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 2261.059210526316,
+            "thread_cpu_ns": 2211.5028782894738
+          },
+          "candidate": {
+            "wall_ns": 72555.27857730263,
+            "thread_cpu_ns": 41874.22902960526
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 50269.72820723684,
+            "thread_cpu_ns": 32241.33943256579
+          },
+          "baseline": {
+            "wall_ns": 1799.2734375,
+            "thread_cpu_ns": 1792.703125
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 1809.1848273026317,
+            "thread_cpu_ns": 1795.8127055921052
+          },
+          "candidate": {
+            "wall_ns": 62721.58552631579,
+            "thread_cpu_ns": 37253.34950657895
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 55792.70333059211,
+            "thread_cpu_ns": 34255.59395559211
+          },
+          "baseline": {
+            "wall_ns": 1922.149259868421,
+            "thread_cpu_ns": 1892.8608141447369
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 1912.083675986842,
+            "thread_cpu_ns": 1882.4185855263158
+          },
+          "candidate": {
+            "wall_ns": 48646.65563322369,
+            "thread_cpu_ns": 30963.181743421053
+          }
+        }
+      ],
+      "median_ns": {
+        "baseline": 1922.149259868421,
+        "candidate": 55792.70333059211
+      },
+      "median_paired_candidate_over_baseline": 29.02620753521053,
+      "spread": {
+        "baseline": 0.25665124788811644,
+        "candidate": 1.1835794675278501
+      },
+      "noisy": true
+    },
+    {
+      "name": "cdist-workers/16x16",
+      "note": "complete public float64 matrix/list conversion; only workers changes from 1 to 2",
+      "iterations": 1280,
+      "outputs_bit_identical_before_and_after": true,
+      "samples": [
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 7738.834375,
+            "thread_cpu_ns": 7703.5484375
+          },
+          "candidate": {
+            "wall_ns": 73825.52109375,
+            "thread_cpu_ns": 42299.675
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 85239.0625,
+            "thread_cpu_ns": 48934.53828125
+          },
+          "baseline": {
+            "wall_ns": 8569.140625,
+            "thread_cpu_ns": 8383.65859375
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 8592.08984375,
+            "thread_cpu_ns": 8389.58359375
+          },
+          "candidate": {
+            "wall_ns": 87371.41875,
+            "thread_cpu_ns": 48879.525
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 73627.896875,
+            "thread_cpu_ns": 42857.16171875
+          },
+          "baseline": {
+            "wall_ns": 8365.3,
+            "thread_cpu_ns": 8249.38203125
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 8167.93671875,
+            "thread_cpu_ns": 8114.03046875
+          },
+          "candidate": {
+            "wall_ns": 77980.79453125,
+            "thread_cpu_ns": 44850.91171875
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 80396.64765625,
+            "thread_cpu_ns": 46557.746875
+          },
+          "baseline": {
+            "wall_ns": 8275.91171875,
+            "thread_cpu_ns": 8206.54296875
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 8164.0953125,
+            "thread_cpu_ns": 8132.84453125
+          },
+          "candidate": {
+            "wall_ns": 129681.0546875,
+            "thread_cpu_ns": 53638.5421875
+          }
+        }
+      ],
+      "median_ns": {
+        "baseline": 8275.91171875,
+        "candidate": 80396.64765625
+      },
+      "median_paired_candidate_over_baseline": 9.714536644234911,
+      "spread": {
+        "baseline": 0.11025632897719162,
+        "candidate": 0.7613032585687312
+      },
+      "noisy": true
+    },
+    {
+      "name": "cdist-workers/128x128",
+      "note": "complete public float64 matrix/list conversion; only workers changes from 1 to 2",
+      "iterations": 26,
+      "outputs_bit_identical_before_and_after": true,
+      "samples": [
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 342552.8846153846,
+            "thread_cpu_ns": 332995.1923076923
+          },
+          "candidate": {
+            "wall_ns": 348341.3461538461,
+            "thread_cpu_ns": 218262.84615384616
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 355299.6923076923,
+            "thread_cpu_ns": 221770.8076923077
+          },
+          "baseline": {
+            "wall_ns": 389415.07692307694,
+            "thread_cpu_ns": 379661.8461538461
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 353189.1153846154,
+            "thread_cpu_ns": 349767.6153846154
+          },
+          "candidate": {
+            "wall_ns": 366966.3461538461,
+            "thread_cpu_ns": 231514.42307692306
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 348530.42307692306,
+            "thread_cpu_ns": 220121.76923076922
+          },
+          "baseline": {
+            "wall_ns": 341873.3846153846,
+            "thread_cpu_ns": 337395.8076923077
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 343844.57692307694,
+            "thread_cpu_ns": 337387.8076923077
+          },
+          "candidate": {
+            "wall_ns": 360312.5,
+            "thread_cpu_ns": 233301.26923076922
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 362830.1153846154,
+            "thread_cpu_ns": 232822.11538461538
+          },
+          "baseline": {
+            "wall_ns": 342825.3076923077,
+            "thread_cpu_ns": 336878.23076923075
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 335149.03846153844,
+            "thread_cpu_ns": 329075.3076923077
+          },
+          "candidate": {
+            "wall_ns": 361129.8076923077,
+            "thread_cpu_ns": 230067.3076923077
+          }
+        }
+      ],
+      "median_ns": {
+        "baseline": 342825.3076923077,
+        "candidate": 360312.5
+      },
+      "median_paired_candidate_over_baseline": 1.039008084250353,
+      "spread": {
+        "baseline": 0.1619161394901809,
+        "candidate": 0.05346766958802007
+      },
+      "noisy": false
+    },
+    {
+      "name": "cdist-workers/512x512",
+      "note": "complete public float64 matrix/list conversion; only workers changes from 1 to 2",
+      "iterations": 2,
+      "outputs_bit_identical_before_and_after": true,
+      "samples": [
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 6298208.0,
+            "thread_cpu_ns": 6276979.0
+          },
+          "candidate": {
+            "wall_ns": 4679625.0,
+            "thread_cpu_ns": 3193708.5
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 5040791.5,
+            "thread_cpu_ns": 3535166.5
+          },
+          "baseline": {
+            "wall_ns": 6166854.5,
+            "thread_cpu_ns": 6074562.5
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 6166375.0,
+            "thread_cpu_ns": 6078917.0
+          },
+          "candidate": {
+            "wall_ns": 4872000.0,
+            "thread_cpu_ns": 3189145.5
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 4723833.0,
+            "thread_cpu_ns": 3107354.5
+          },
+          "baseline": {
+            "wall_ns": 6037187.5,
+            "thread_cpu_ns": 5947312.5
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 5412166.5,
+            "thread_cpu_ns": 5361687.5
+          },
+          "candidate": {
+            "wall_ns": 4276291.5,
+            "thread_cpu_ns": 2859146.0
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 4385541.5,
+            "thread_cpu_ns": 2929187.5
+          },
+          "baseline": {
+            "wall_ns": 5576437.5,
+            "thread_cpu_ns": 5501062.5
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 5988291.5,
+            "thread_cpu_ns": 5943042.0
+          },
+          "candidate": {
+            "wall_ns": 5905771.0,
+            "thread_cpu_ns": 3110271.0
+          }
+        }
+      ],
+      "median_ns": {
+        "baseline": 6037187.5,
+        "candidate": 4723833.0
+      },
+      "median_paired_candidate_over_baseline": 0.7900914232429912,
+      "spread": {
+        "baseline": 0.16371290498915725,
+        "candidate": 0.38104967820832614
+      },
+      "noisy": true
+    }
+  ]
+}

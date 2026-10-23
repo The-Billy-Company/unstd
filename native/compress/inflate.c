@@ -3,6 +3,16 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
+/* The optional experiment uses a caller-reviewed static archive with this
+ * private prefix, so it cannot resolve to the interpreter's/system zlib. The
+ * same public zlib ABI and checked Python allocators remain in use. */
+#ifdef UNSTD_ZLIB_RS
+#define inflateInit2_ unstd_zlib_rs_inflateInit2_
+#define inflate unstd_zlib_rs_inflate
+#define inflateEnd unstd_zlib_rs_inflateEnd
+#define zlibVersion unstd_zlib_rs_zlibVersion
+#endif
+
 #include "zlib/zlib.h"
 #include "stream.h"
 

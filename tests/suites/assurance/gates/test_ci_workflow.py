@@ -4,13 +4,13 @@ from __future__ import annotations
 
 import json
 import os
+from pathlib import Path
 import re
 import shlex
 import shutil
 import subprocess
 import sys
 import tomllib
-from typing import TYPE_CHECKING
 import zipfile
 
 import pytest
@@ -19,10 +19,6 @@ from tests.support.environment.anchors import REPO_ROOT
 from tests.support.environment.backends import require_backend
 from tests.tooling.ci import groups as ci
 from tests.tooling.ci.sharding import parse_shard
-
-
-if TYPE_CHECKING:
-    from pathlib import Path
 
 
 @pytest.fixture(scope="module")
@@ -339,17 +335,23 @@ def test_floor_install_restores_canonical_lock_without_replacing_active_versions
     sync = next(
         index for index, step in enumerate(steps) if step.get("run") == _sync(job)
     )
-    restore = steps[sync + 1]
+    restore_index = next(
+        index
+        for index, step in enumerate(steps)
+        if step.get("run", "").strip() == "git restore --source=HEAD -- uv.lock"
+    )
+    restore = steps[restore_index]
+    assert sync < restore_index
     assert restore["if"] == "matrix.environment.id == 'floors'"
     command = shlex.split(restore["run"])
     assert command == ["git", "restore", "--source=HEAD", "--", "uv.lock"]
     assert not restore.get("continue-on-error", False)
-    assert sync + 1 < next(
+    assert restore_index < next(
         index
         for index, step in enumerate(steps)
         if step.get("run", "").startswith("uv build ")
     )
-    assert sync + 1 < next(
+    assert restore_index < next(
         index
         for index, step in enumerate(steps)
         if "tests.tooling.ci run " in step.get("run", "")
@@ -572,6 +574,9 @@ def test_aggregate_gate_executes_and_rejects_any_non_success_dependency(
             ["/bin/bash", "-e", "-o", "pipefail", "-c", step["run"]],
             env={
                 **os.environ,
+                "PATH": str(Path(sys.executable).parent)
+                + os.pathsep
+                + os.environ["PATH"],
                 "RESULTS": json.dumps(dependencies),
                 "GITHUB_STEP_SUMMARY": str(summary),
             },

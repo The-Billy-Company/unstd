@@ -1,0 +1,108 @@
+{
+  "schema": 1,
+  "recorded_utc": "2026-10-23T04:12:25.401794+00:00",
+  "full_suite": {
+    "command": "PATH=/Users/griffinstrier/.cache/unstd/math-qualified/venv/bin:$PATH /Users/griffinstrier/.cache/unstd/math-qualified/venv/bin/python -m pytest -q --tb=short --junitxml=.local/math-audit-root/qualified-suite.xml",
+    "passed": 10162,
+    "skipped": 93,
+    "deselected": 269,
+    "junit": {
+      "name": "pytest",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "93",
+      "tests": "10255",
+      "time": "220.659",
+      "timestamp": "2026-10-22T21:03:38.007502-07:00",
+      "hostname": "The-Big-Book.local"
+    },
+    "junit_sha256": "0c6b960574686f674e0badc71d1785d3ea9b67bcec8e5210624d9b04fcd4c822",
+    "note": "external patched CPython3.13.16 standard library avoids pristine-consumer repository-path leakage; actual patched SoundFile wheel installed/admitted"
+  },
+  "workspace_product_suite": {
+    "passed": 1281,
+    "skipped": 12,
+    "junit": {
+      "name": "pytest",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "12",
+      "tests": "1293",
+      "time": "9.306",
+      "timestamp": "2026-10-22T21:10:37.742121-07:00",
+      "hostname": "The-Big-Book.local"
+    },
+    "command": ".venv/bin/python -m pytest tests/suites/product/audio tests/suites/product/rand tests/suites/product/compress -q --tb=short",
+    "junit_sha256": "0edb04518a8d7fc2f973cb16b4396ba0adc8c20ad4039fc96aaac5498e91c941"
+  },
+  "checks": {
+    "ruff": "passed across src/tests/bench/hatch_build.py/native qualifier",
+    "ruff_format": "570 files formatted",
+    "mypy": "82 source files passed",
+    "bandit": "7161 lines, clean gate passed",
+    "pylint": "10.00/10, exit0",
+    "git_diff_check": "owned files passed; authenticated upstream patch preserves original whitespace, with exact PATCH_SHA256 verified after staging",
+    "ci_inventory": "4groups/11suites valid",
+    "benchmark_coverage": "226workloads/18packages/9vocabularyexclusions passed",
+    "supply_chain": {
+      "python_artifacts": 1330,
+      "python_packages": 80,
+      "rust_external_packages": 0,
+      "rust_packages": 1,
+      "vendored_packages": 2
+    }
+  },
+  "workspace_audio_admission": {
+    "errors": [],
+    "executable": "/Users/griffinstrier/Billy-Company/unstd/.venv/bin/python",
+    "library_bytes": 2290672,
+    "library_path": "/Users/griffinstrier/Billy-Company/unstd/.venv/lib/python3.13/site-packages/_soundfile_data/libsndfile_arm64.dylib",
+    "library_sha256": "e65caa96729c3602a8fe6567bdb7cfd25db826302100396019088cc4c8ceae93",
+    "native_version": "libsndfile-1.2.2",
+    "policy_reviewed": "2026-10-22",
+    "provenance": ".local/audio-patched-474e4d3-r4/provenance.json",
+    "provenance_sha256": "43e14a7dc67c0b0b9030b2fe2164e43e8a4c29d39733449d3da463657c9e97fd",
+    "python": "3.13.16",
+    "schema": 1,
+    "soundfile": "0.14.0",
+    "symbol": "sf_version_string",
+    "symbol_address": 4407961460,
+    "trust_policy": ".local/audio-patched-trusted-r4.json"
+  },
+  "workspace_versions": {
+    "unstd": "3.1.4",
+    "soundfile_distribution": "0.14.0+unstd.474e4d3"
+  },
+  "additional_native_qualification": {
+    "final_default_compression": 469,
+    "final_zlib_rs_compression": 469,
+    "build_artifact_supply_tests": 202,
+    "earlier_linux_arm64_default": {
+      "passed": 465,
+      "skipped": 1
+    },
+    "note": "Linux audio GitHub workflow and Windows audio builds remain platform qualification work, not claimed local executions"
+  },
+  "source_sha256": {
+    "src/unstd/audio/wavx.py": "f3ba26455ee83965f2b94d9c7630e1f2f36d5ef1868d02b5803f8769a0186894",
+    "src/unstd/rand/draw.py": "dc178890d7c64ea2351dc2b8aa3858b6d1a5db8c1b6333a4294510a73e4a2aad",
+    "src/unstd/ids/uid.py": "e4a8537a73bb72d1d65725b8a63a654e05894e6d143d59affcabdc4d469045a3",
+    "hatch_build.py": "0b153edb354a3b1f9e1912504bea1960370b9a0592289dd3e3b19f1f2f97341e",
+    "native/compress/inflate.c": "ff7ff19905baf85ad17b48356c1e96578ed68576117ee336e2a04dc7dfe0e139",
+    "native/compress/qualify_libdeflate.py": "17e6cfb50d08e93011217e7ba4b833d0a9154e1e82269308089faf2f24fcdca2",
+    "native/compress/experiments/libdeflate-1.26.json": "fd7091752852f228ac2fff657d2c851d10a4ceadbe106e8c5ea06c9fb4a50cc6",
+    "native/compress/experiments/zlib-rs-0.6.7.json": "76f5a528ab45707ac6d218320672fde839b43ea955a09c900359bb32cf3d5605",
+    "tests/tooling/runtime/audio.py": "5878b5d27287112b2c3494ef2f3a2634a91c1ea78349ae1b5ce1f769b73a8583",
+    "tests/tooling/runtime/audio_build.py": "9d154e0b81c41d511f549d01d26686a11d84391023f3b005241ab32891c3f08d",
+    ".github/workflows/audio-security.yml": "94eadeac66b52ef3679e2d50833098761e7fda34b1184742bbd8de1c12f2b787",
+    ".github/workflows/ci.yml": "c3ba1d2c330fc8b0e9b61cf0d4bbb36edd44f60cd24daeeba98fede85a6b36b0",
+    "bench/math-audit/qualify_audio.py": "ddd9ab3716b0e76fe6976c66f57dbc76c99f08d43be188830272fad1af32516f",
+    "bench/math-audit/qualify_sndfile.py": "3ddbf2694f6ec83fed0d20d84f739ee5eb8ebb2e5c889f5c09f36c71ed134c3b"
+  },
+  "limits": [
+    "Default pytest excludes explicit performance, chaos, concurrency and resource markers (269deselected); optional/platform cases retain skips.",
+    "Original workspace interpreter standard library is inside repository, so full pristine-consumer verification uses external environment without weakening assertions.",
+    "No universal zero-overhead guarantee across inputs/platforms; material-overhead compression substitutions remain explicit experiments.",
+    "uv sync may restore registry SoundFile; reinstall and admit exact qualified wheel after synchronization."
+  ]
+}

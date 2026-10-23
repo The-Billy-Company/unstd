@@ -1,0 +1,4939 @@
+{
+  "method": "11 alternating paired rounds, >=1 ms baseline process CPU calibrated per batch; fixtures/import/setup/validation excluded; public call and result allocation included; shared host exploratory",
+  "setup": {
+    "baseline": {
+      "setup": {
+        "wall_ns": 216382875,
+        "process_cpu_ns": 14628000,
+        "peak_rss": 27262976,
+        "module": "/Users/griffinstrier/Billy-Company/unstd/.local/math-audit-crypto/implementation/baseline/source/unstd/compress/_gzip_native.cpython-313-darwin.so",
+        "libdeflate": "1.25",
+        "zlib_abi": "1.2.12",
+        "binary_bytes": 77824,
+        "binary_sha256": "6f8dadcbfb9cab8b6edcd2d19a01ca1bff0dd5a2310a20544dba0c322553b3cc"
+      },
+      "cases": [
+        "crc-0",
+        "native-decompress-0",
+        "public-decompress-0",
+        "crc-32",
+        "native-decompress-32",
+        "public-decompress-32",
+        "crc-4096",
+        "native-decompress-4096",
+        "public-decompress-4096",
+        "crc-262145",
+        "native-decompress-262145",
+        "public-decompress-262145",
+        "public-decompress-bytearray",
+        "public-decompress-multimember",
+        "stream-read-32",
+        "public-compress-32",
+        "stream-read-4096",
+        "public-compress-4096",
+        "stream-bounded",
+        "stream-seek",
+        "inflate-full",
+        "inflate-bounded"
+      ]
+    },
+    "libdeflate-1.26": {
+      "setup": {
+        "wall_ns": 198611083,
+        "process_cpu_ns": 13455000,
+        "peak_rss": 27131904,
+        "module": "/Users/griffinstrier/Billy-Company/unstd/.local/math-audit-crypto/implementation/libdeflate-1.26/source/unstd/compress/_gzip_native.cpython-313-darwin.so",
+        "libdeflate": "1.26",
+        "zlib_abi": "1.2.12",
+        "binary_bytes": 77104,
+        "binary_sha256": "133c785f3816fd19d623536f9d7ab514c629b251b87c5ad6eb3f9b38a687fa75"
+      },
+      "cases": [
+        "crc-0",
+        "native-decompress-0",
+        "public-decompress-0",
+        "crc-32",
+        "native-decompress-32",
+        "public-decompress-32",
+        "crc-4096",
+        "native-decompress-4096",
+        "public-decompress-4096",
+        "crc-262145",
+        "native-decompress-262145",
+        "public-decompress-262145",
+        "public-decompress-bytearray",
+        "public-decompress-multimember",
+        "stream-read-32",
+        "public-compress-32",
+        "stream-read-4096",
+        "public-compress-4096",
+        "stream-bounded",
+        "stream-seek",
+        "inflate-full",
+        "inflate-bounded"
+      ]
+    },
+    "zlib-rs": {
+      "setup": {
+        "wall_ns": 251413583,
+        "process_cpu_ns": 14340000,
+        "peak_rss": 27099136,
+        "module": "/Users/griffinstrier/Billy-Company/unstd/.local/math-audit-crypto/implementation/zlib-rs/source/unstd/compress/_gzip_native.cpython-313-darwin.so",
+        "libdeflate": "1.26",
+        "zlib_abi": "1.3.0-zlib-rs-0.6.7",
+        "binary_bytes": 1595664,
+        "binary_sha256": "7e05ccc5c8314e0c3fbc5f3a27ab3338ea9af63519ec58dee22a52bceec9ed97"
+      },
+      "cases": [
+        "crc-0",
+        "native-decompress-0",
+        "public-decompress-0",
+        "crc-32",
+        "native-decompress-32",
+        "public-decompress-32",
+        "crc-4096",
+        "native-decompress-4096",
+        "public-decompress-4096",
+        "crc-262145",
+        "native-decompress-262145",
+        "public-decompress-262145",
+        "public-decompress-bytearray",
+        "public-decompress-multimember",
+        "stream-read-32",
+        "public-compress-32",
+        "stream-read-4096",
+        "public-compress-4096",
+        "stream-bounded",
+        "stream-seek",
+        "inflate-full",
+        "inflate-bounded"
+      ]
+    }
+  },
+  "iterations": {
+    "crc-0": 40000,
+    "native-decompress-0": 20000,
+    "public-decompress-0": 20000,
+    "crc-32": 40000,
+    "native-decompress-32": 8000,
+    "public-decompress-32": 12000,
+    "crc-4096": 14000,
+    "native-decompress-4096": 2000,
+    "public-decompress-4096": 2000,
+    "crc-262145": 400,
+    "native-decompress-262145": 100,
+    "public-decompress-262145": 120,
+    "public-decompress-bytearray": 600,
+    "public-decompress-multimember": 200,
+    "stream-read-32": 200,
+    "public-compress-32": 400,
+    "stream-read-4096": 200,
+    "public-compress-4096": 80,
+    "stream-bounded": 200,
+    "stream-seek": 120,
+    "inflate-full": 800,
+    "inflate-bounded": 4000
+  },
+  "samples": {
+    "crc-0": {
+      "baseline": [
+        {
+          "wall_ns": 1594958,
+          "thread_cpu_ns": 1565750,
+          "process_cpu_ns": 1566000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 1709542,
+          "thread_cpu_ns": 1642291,
+          "process_cpu_ns": 1642000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 1928459,
+          "thread_cpu_ns": 1798375,
+          "process_cpu_ns": 1799000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 1675042,
+          "thread_cpu_ns": 1631584,
+          "process_cpu_ns": 1632000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 1978125,
+          "thread_cpu_ns": 1872375,
+          "process_cpu_ns": 1872000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 1815292,
+          "thread_cpu_ns": 1726542,
+          "process_cpu_ns": 1726000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 2066792,
+          "thread_cpu_ns": 1764250,
+          "process_cpu_ns": 1765000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 1660916,
+          "thread_cpu_ns": 1629500,
+          "process_cpu_ns": 1629000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 2067709,
+          "thread_cpu_ns": 1723791,
+          "process_cpu_ns": 1722000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 1846375,
+          "thread_cpu_ns": 1757083,
+          "process_cpu_ns": 1757000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 1717750,
+          "thread_cpu_ns": 1717166,
+          "process_cpu_ns": 1717000,
+          "n": 40000
+        }
+      ],
+      "libdeflate-1.26": [
+        {
+          "wall_ns": 1817958,
+          "thread_cpu_ns": 1719292,
+          "process_cpu_ns": 1719000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 1617250,
+          "thread_cpu_ns": 1582959,
+          "process_cpu_ns": 1584000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 1793417,
+          "thread_cpu_ns": 1745708,
+          "process_cpu_ns": 1746000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 1782875,
+          "thread_cpu_ns": 1657833,
+          "process_cpu_ns": 1653000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 1850125,
+          "thread_cpu_ns": 1803042,
+          "process_cpu_ns": 1803000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 1915167,
+          "thread_cpu_ns": 1820500,
+          "process_cpu_ns": 1821000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 1528916,
+          "thread_cpu_ns": 1528875,
+          "process_cpu_ns": 1528000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 1690125,
+          "thread_cpu_ns": 1621125,
+          "process_cpu_ns": 1621000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 1777625,
+          "thread_cpu_ns": 1694083,
+          "process_cpu_ns": 1694000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 2284500,
+          "thread_cpu_ns": 1864959,
+          "process_cpu_ns": 1865000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 2013667,
+          "thread_cpu_ns": 1799166,
+          "process_cpu_ns": 1800000,
+          "n": 40000
+        }
+      ],
+      "zlib-rs": [
+        {
+          "wall_ns": 1693208,
+          "thread_cpu_ns": 1640166,
+          "process_cpu_ns": 1640000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 1725292,
+          "thread_cpu_ns": 1635834,
+          "process_cpu_ns": 1635000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 1750500,
+          "thread_cpu_ns": 1694958,
+          "process_cpu_ns": 1695000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 2116750,
+          "thread_cpu_ns": 1854083,
+          "process_cpu_ns": 1854000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 1824666,
+          "thread_cpu_ns": 1769583,
+          "process_cpu_ns": 1769000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 1890625,
+          "thread_cpu_ns": 1718875,
+          "process_cpu_ns": 1719000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 1768708,
+          "thread_cpu_ns": 1685875,
+          "process_cpu_ns": 1686000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 1708084,
+          "thread_cpu_ns": 1654708,
+          "process_cpu_ns": 1654000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 2127541,
+          "thread_cpu_ns": 1872333,
+          "process_cpu_ns": 1872000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 2383167,
+          "thread_cpu_ns": 1907333,
+          "process_cpu_ns": 1908000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 2571041,
+          "thread_cpu_ns": 2023500,
+          "process_cpu_ns": 2024000,
+          "n": 40000
+        }
+      ]
+    },
+    "native-decompress-0": {
+      "baseline": [
+        {
+          "wall_ns": 1209083,
+          "thread_cpu_ns": 1078666,
+          "process_cpu_ns": 1079000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1068750,
+          "thread_cpu_ns": 1044584,
+          "process_cpu_ns": 1044000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1226542,
+          "thread_cpu_ns": 1168000,
+          "process_cpu_ns": 1168000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1314625,
+          "thread_cpu_ns": 1149250,
+          "process_cpu_ns": 1149000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1088083,
+          "thread_cpu_ns": 1071792,
+          "process_cpu_ns": 1072000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1380167,
+          "thread_cpu_ns": 1168541,
+          "process_cpu_ns": 1168000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1048083,
+          "thread_cpu_ns": 1036208,
+          "process_cpu_ns": 1036000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1512709,
+          "thread_cpu_ns": 1176500,
+          "process_cpu_ns": 1178000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1126750,
+          "thread_cpu_ns": 1097292,
+          "process_cpu_ns": 1097000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1248208,
+          "thread_cpu_ns": 1162458,
+          "process_cpu_ns": 1162000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1125125,
+          "thread_cpu_ns": 1123833,
+          "process_cpu_ns": 1123000,
+          "n": 20000
+        }
+      ],
+      "libdeflate-1.26": [
+        {
+          "wall_ns": 1167417,
+          "thread_cpu_ns": 1059875,
+          "process_cpu_ns": 1060000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1063209,
+          "thread_cpu_ns": 1039791,
+          "process_cpu_ns": 1039000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1220458,
+          "thread_cpu_ns": 1121833,
+          "process_cpu_ns": 1122000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1049833,
+          "thread_cpu_ns": 1015541,
+          "process_cpu_ns": 1015000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 986334,
+          "thread_cpu_ns": 986417,
+          "process_cpu_ns": 986000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 981333,
+          "thread_cpu_ns": 980625,
+          "process_cpu_ns": 980000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1193917,
+          "thread_cpu_ns": 1053667,
+          "process_cpu_ns": 1054000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1094334,
+          "thread_cpu_ns": 1070750,
+          "process_cpu_ns": 1070000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1152708,
+          "thread_cpu_ns": 1070792,
+          "process_cpu_ns": 1071000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1083333,
+          "thread_cpu_ns": 1083167,
+          "process_cpu_ns": 1084000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1312500,
+          "thread_cpu_ns": 1175417,
+          "process_cpu_ns": 1176000,
+          "n": 20000
+        }
+      ],
+      "zlib-rs": [
+        {
+          "wall_ns": 1224375,
+          "thread_cpu_ns": 1104250,
+          "process_cpu_ns": 1104000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1120417,
+          "thread_cpu_ns": 1087667,
+          "process_cpu_ns": 1088000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1395417,
+          "thread_cpu_ns": 1314208,
+          "process_cpu_ns": 1314000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1217583,
+          "thread_cpu_ns": 1139750,
+          "process_cpu_ns": 1140000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1281875,
+          "thread_cpu_ns": 1224792,
+          "process_cpu_ns": 1225000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1263084,
+          "thread_cpu_ns": 1182667,
+          "process_cpu_ns": 1183000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1503042,
+          "thread_cpu_ns": 1243625,
+          "process_cpu_ns": 1244000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1064875,
+          "thread_cpu_ns": 1035666,
+          "process_cpu_ns": 1035000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1070417,
+          "thread_cpu_ns": 1069750,
+          "process_cpu_ns": 1070000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1190375,
+          "thread_cpu_ns": 1121208,
+          "process_cpu_ns": 1121000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1667291,
+          "thread_cpu_ns": 1327709,
+          "process_cpu_ns": 1328000,
+          "n": 20000
+        }
+      ]
+    },
+    "public-decompress-0": {
+      "baseline": [
+        {
+          "wall_ns": 1508792,
+          "thread_cpu_ns": 1508666,
+          "process_cpu_ns": 1508000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1624834,
+          "thread_cpu_ns": 1579917,
+          "process_cpu_ns": 1580000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1691958,
+          "thread_cpu_ns": 1639333,
+          "process_cpu_ns": 1639000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1821416,
+          "thread_cpu_ns": 1732458,
+          "process_cpu_ns": 1732000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1875250,
+          "thread_cpu_ns": 1821125,
+          "process_cpu_ns": 1821000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1511167,
+          "thread_cpu_ns": 1511583,
+          "process_cpu_ns": 1511000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 2083208,
+          "thread_cpu_ns": 1701125,
+          "process_cpu_ns": 1701000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1673834,
+          "thread_cpu_ns": 1620959,
+          "process_cpu_ns": 1622000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1902458,
+          "thread_cpu_ns": 1744500,
+          "process_cpu_ns": 1746000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1663375,
+          "thread_cpu_ns": 1662750,
+          "process_cpu_ns": 1663000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 2595916,
+          "thread_cpu_ns": 1825166,
+          "process_cpu_ns": 1825000,
+          "n": 20000
+        }
+      ],
+      "libdeflate-1.26": [
+        {
+          "wall_ns": 1490291,
+          "thread_cpu_ns": 1490167,
+          "process_cpu_ns": 1491000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1688250,
+          "thread_cpu_ns": 1605958,
+          "process_cpu_ns": 1607000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1704250,
+          "thread_cpu_ns": 1629667,
+          "process_cpu_ns": 1630000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1785458,
+          "thread_cpu_ns": 1709917,
+          "process_cpu_ns": 1710000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1874708,
+          "thread_cpu_ns": 1825916,
+          "process_cpu_ns": 1826000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1690250,
+          "thread_cpu_ns": 1630958,
+          "process_cpu_ns": 1631000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 2381334,
+          "thread_cpu_ns": 1793667,
+          "process_cpu_ns": 1793000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 2169125,
+          "thread_cpu_ns": 1899708,
+          "process_cpu_ns": 1900000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 2066417,
+          "thread_cpu_ns": 1896459,
+          "process_cpu_ns": 1895000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 2056625,
+          "thread_cpu_ns": 1794875,
+          "process_cpu_ns": 1796000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 2546958,
+          "thread_cpu_ns": 1883334,
+          "process_cpu_ns": 1884000,
+          "n": 20000
+        }
+      ],
+      "zlib-rs": [
+        {
+          "wall_ns": 1752291,
+          "thread_cpu_ns": 1591000,
+          "process_cpu_ns": 1590000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1697792,
+          "thread_cpu_ns": 1660667,
+          "process_cpu_ns": 1661000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1565542,
+          "thread_cpu_ns": 1499375,
+          "process_cpu_ns": 1499000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1913667,
+          "thread_cpu_ns": 1758584,
+          "process_cpu_ns": 1759000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1831541,
+          "thread_cpu_ns": 1777875,
+          "process_cpu_ns": 1778000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1494333,
+          "thread_cpu_ns": 1494375,
+          "process_cpu_ns": 1494000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 2131459,
+          "thread_cpu_ns": 1622042,
+          "process_cpu_ns": 1622000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1792500,
+          "thread_cpu_ns": 1674708,
+          "process_cpu_ns": 1675000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1731000,
+          "thread_cpu_ns": 1719791,
+          "process_cpu_ns": 1720000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1711208,
+          "thread_cpu_ns": 1710417,
+          "process_cpu_ns": 1710000,
+          "n": 20000
+        },
+        {
+          "wall_ns": 1669125,
+          "thread_cpu_ns": 1668667,
+          "process_cpu_ns": 1668000,
+          "n": 20000
+        }
+      ]
+    },
+    "crc-32": {
+      "baseline": [
+        {
+          "wall_ns": 2003500,
+          "thread_cpu_ns": 1903375,
+          "process_cpu_ns": 1904000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 1808625,
+          "thread_cpu_ns": 1804041,
+          "process_cpu_ns": 1805000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 1760750,
+          "thread_cpu_ns": 1761208,
+          "process_cpu_ns": 1760000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 3021000,
+          "thread_cpu_ns": 2095125,
+          "process_cpu_ns": 2095000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 2179458,
+          "thread_cpu_ns": 2052042,
+          "process_cpu_ns": 2051000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 2191750,
+          "thread_cpu_ns": 2076833,
+          "process_cpu_ns": 2077000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 2041541,
+          "thread_cpu_ns": 1899500,
+          "process_cpu_ns": 1900000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 2742166,
+          "thread_cpu_ns": 2204958,
+          "process_cpu_ns": 2206000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 2283042,
+          "thread_cpu_ns": 2282292,
+          "process_cpu_ns": 2282000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 2201250,
+          "thread_cpu_ns": 2013083,
+          "process_cpu_ns": 2013000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 1960541,
+          "thread_cpu_ns": 1960333,
+          "process_cpu_ns": 1960000,
+          "n": 40000
+        }
+      ],
+      "libdeflate-1.26": [
+        {
+          "wall_ns": 1862125,
+          "thread_cpu_ns": 1843500,
+          "process_cpu_ns": 1843000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 1840667,
+          "thread_cpu_ns": 1826833,
+          "process_cpu_ns": 1827000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 2220833,
+          "thread_cpu_ns": 2092750,
+          "process_cpu_ns": 2093000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 2317791,
+          "thread_cpu_ns": 2111959,
+          "process_cpu_ns": 2112000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 2191792,
+          "thread_cpu_ns": 2102333,
+          "process_cpu_ns": 2103000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 1795917,
+          "thread_cpu_ns": 1796166,
+          "process_cpu_ns": 1796000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 2076500,
+          "thread_cpu_ns": 1853625,
+          "process_cpu_ns": 1854000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 1852834,
+          "thread_cpu_ns": 1852250,
+          "process_cpu_ns": 1851000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 2205916,
+          "thread_cpu_ns": 2117166,
+          "process_cpu_ns": 2118000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 2556750,
+          "thread_cpu_ns": 2201708,
+          "process_cpu_ns": 2202000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 2390750,
+          "thread_cpu_ns": 2107167,
+          "process_cpu_ns": 2108000,
+          "n": 40000
+        }
+      ],
+      "zlib-rs": [
+        {
+          "wall_ns": 1829042,
+          "thread_cpu_ns": 1808833,
+          "process_cpu_ns": 1809000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 1834583,
+          "thread_cpu_ns": 1834709,
+          "process_cpu_ns": 1835000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 1834958,
+          "thread_cpu_ns": 1827083,
+          "process_cpu_ns": 1827000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 2163917,
+          "thread_cpu_ns": 2021458,
+          "process_cpu_ns": 2023000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 2170958,
+          "thread_cpu_ns": 2087584,
+          "process_cpu_ns": 2087000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 2172084,
+          "thread_cpu_ns": 2080833,
+          "process_cpu_ns": 2081000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 2147208,
+          "thread_cpu_ns": 1935542,
+          "process_cpu_ns": 1935000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 2063292,
+          "thread_cpu_ns": 1915042,
+          "process_cpu_ns": 1915000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 2801208,
+          "thread_cpu_ns": 2247500,
+          "process_cpu_ns": 2248000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 2712750,
+          "thread_cpu_ns": 2228666,
+          "process_cpu_ns": 2228000,
+          "n": 40000
+        },
+        {
+          "wall_ns": 2038792,
+          "thread_cpu_ns": 2038584,
+          "process_cpu_ns": 2038000,
+          "n": 40000
+        }
+      ]
+    },
+    "native-decompress-32": {
+      "baseline": [
+        {
+          "wall_ns": 1048791,
+          "thread_cpu_ns": 1044041,
+          "process_cpu_ns": 1045000,
+          "n": 8000
+        },
+        {
+          "wall_ns": 986041,
+          "thread_cpu_ns": 976667,
+          "process_cpu_ns": 977000,
+          "n": 8000
+        },
+        {
+          "wall_ns": 1242250,
+          "thread_cpu_ns": 1216625,
+          "process_cpu_ns": 1216000,
+          "n": 8000
+        },
+        {
+          "wall_ns": 1297625,
+          "thread_cpu_ns": 1214500,
+          "process_cpu_ns": 1214000,
+          "n": 8000
+        },
+        {
+          "wall_ns": 1229334,
+          "thread_cpu_ns": 1178959,
+          "process_cpu_ns": 1178000,
+          "n": 8000
+        },
+        {
+          "wall_ns": 1260375,
+          "thread_cpu_ns": 1236209,
+          "process_cpu_ns": 1236000,
+          "n": 8000
+        },
+        {
+          "wall_ns": 1233709,
+          "thread_cpu_ns": 1040500,
+          "process_cpu_ns": 1040000,
+          "n": 8000
+        },
+        {
+          "wall_ns": 985125,
+          "thread_cpu_ns": 984250,
+          "process_cpu_ns": 984000,
+          "n": 8000
+        },
+        {
+          "wall_ns": 1030334,
+          "thread_cpu_ns": 1029292,
+          "process_cpu_ns": 1029000,
+          "n": 8000
+        },
+        {
+          "wall_ns": 1217000,
+          "thread_cpu_ns": 1120667,
+          "process_cpu_ns": 1121000,
+          "n": 8000
+        },
+        {
+          "wall_ns": 1300417,
+          "thread_cpu_ns": 1145083,
+          "process_cpu_ns": 1146000,
+          "n": 8000
+        }
+      ],
+      "libdeflate-1.26": [
+        {
+          "wall_ns": 1277917,
+          "thread_cpu_ns": 1191708,
+          "process_cpu_ns": 1191000,
+          "n": 8000
+        },
+        {
+          "wall_ns": 1222500,
+          "thread_cpu_ns": 1200542,
+          "process_cpu_ns": 1201000,
+          "n": 8000
+        },
+        {
+          "wall_ns": 1318459,
+          "thread_cpu_ns": 1259959,
+          "process_cpu_ns": 1261000,
+          "n": 8000
+        },
+        {
+          "wall_ns": 1223500,
+          "thread_cpu_ns": 1200416,
+          "process_cpu_ns": 1201000,
+          "n": 8000
+        },
+        {
+          "wall_ns": 1243833,
+          "thread_cpu_ns": 1206458,
+          "process_cpu_ns": 1206000,
+          "n": 8000
+        },
+        {
+          "wall_ns": 1244291,
+          "thread_cpu_ns": 1193917,
+          "process_cpu_ns": 1186000,
+          "n": 8000
+        },
+        {
+          "wall_ns": 1246125,
+          "thread_cpu_ns": 1062084,
+          "process_cpu_ns": 1062000,
+          "n": 8000
+        },
+        {
+          "wall_ns": 1115375,
+          "thread_cpu_ns": 996208,
+          "process_cpu_ns": 997000,
+          "n": 8000
+        },
+        {
+          "wall_ns": 1206875,
+          "thread_cpu_ns": 1099416,
+          "process_cpu_ns": 1100000,
+          "n": 8000
+        },
+        {
+          "wall_ns": 1150333,
+          "thread_cpu_ns": 1114458,
+          "process_cpu_ns": 1115000,
+          "n": 8000
+        },
+        {
+          "wall_ns": 1275542,
+          "thread_cpu_ns": 1154167,
+          "process_cpu_ns": 1155000,
+          "n": 8000
+        }
+      ],
+      "zlib-rs": [
+        {
+          "wall_ns": 1023334,
+          "thread_cpu_ns": 1009125,
+          "process_cpu_ns": 1009000,
+          "n": 8000
+        },
+        {
+          "wall_ns": 1102708,
+          "thread_cpu_ns": 1025667,
+          "process_cpu_ns": 1025000,
+          "n": 8000
+        },
+        {
+          "wall_ns": 1129416,
+          "thread_cpu_ns": 1078625,
+          "process_cpu_ns": 1079000,
+          "n": 8000
+        },
+        {
+          "wall_ns": 907500,
+          "thread_cpu_ns": 907458,
+          "process_cpu_ns": 907000,
+          "n": 8000
+        },
+        {
+          "wall_ns": 1185583,
+          "thread_cpu_ns": 1147584,
+          "process_cpu_ns": 1148000,
+          "n": 8000
+        },
+        {
+          "wall_ns": 1100375,
+          "thread_cpu_ns": 1072708,
+          "process_cpu_ns": 1072000,
+          "n": 8000
+        },
+        {
+          "wall_ns": 1014917,
+          "thread_cpu_ns": 957458,
+          "process_cpu_ns": 957000,
+          "n": 8000
+        },
+        {
+          "wall_ns": 1751125,
+          "thread_cpu_ns": 1261708,
+          "process_cpu_ns": 1262000,
+          "n": 8000
+        },
+        {
+          "wall_ns": 1550416,
+          "thread_cpu_ns": 1225750,
+          "process_cpu_ns": 1221000,
+          "n": 8000
+        },
+        {
+          "wall_ns": 1478459,
+          "thread_cpu_ns": 1263916,
+          "process_cpu_ns": 1266000,
+          "n": 8000
+        },
+        {
+          "wall_ns": 1200000,
+          "thread_cpu_ns": 1111709,
+          "process_cpu_ns": 1112000,
+          "n": 8000
+        }
+      ]
+    },
+    "public-decompress-32": {
+      "baseline": [
+        {
+          "wall_ns": 2135375,
+          "thread_cpu_ns": 2071958,
+          "process_cpu_ns": 2072000,
+          "n": 12000
+        },
+        {
+          "wall_ns": 2255500,
+          "thread_cpu_ns": 2179208,
+          "process_cpu_ns": 2179000,
+          "n": 12000
+        },
+        {
+          "wall_ns": 2640083,
+          "thread_cpu_ns": 2386667,
+          "process_cpu_ns": 2386000,
+          "n": 12000
+        },
+        {
+          "wall_ns": 2181500,
+          "thread_cpu_ns": 2111208,
+          "process_cpu_ns": 2111000,
+          "n": 12000
+        },
+        {
+          "wall_ns": 2145292,
+          "thread_cpu_ns": 2005417,
+          "process_cpu_ns": 2006000,
+          "n": 12000
+        },
+        {
+          "wall_ns": 2336500,
+          "thread_cpu_ns": 2267083,
+          "process_cpu_ns": 2267000,
+          "n": 12000
+        },
+        {
+          "wall_ns": 1823000,
+          "thread_cpu_ns": 1782917,
+          "process_cpu_ns": 1782000,
+          "n": 12000
+        },
+        {
+          "wall_ns": 1851250,
+          "thread_cpu_ns": 1842500,
+          "process_cpu_ns": 1842000,
+          "n": 12000
+        },
+        {
+          "wall_ns": 1900167,
+          "thread_cpu_ns": 1900625,
+          "process_cpu_ns": 1899000,
+          "n": 12000
+        },
+        {
+          "wall_ns": 2160417,
+          "thread_cpu_ns": 2071125,
+          "process_cpu_ns": 2072000,
+          "n": 12000
+        },
+        {
+          "wall_ns": 2378666,
+          "thread_cpu_ns": 2183958,
+          "process_cpu_ns": 2185000,
+          "n": 12000
+        }
+      ],
+      "libdeflate-1.26": [
+        {
+          "wall_ns": 2020583,
+          "thread_cpu_ns": 1972250,
+          "process_cpu_ns": 1972000,
+          "n": 12000
+        },
+        {
+          "wall_ns": 2307291,
+          "thread_cpu_ns": 2013834,
+          "process_cpu_ns": 2014000,
+          "n": 12000
+        },
+        {
+          "wall_ns": 2378834,
+          "thread_cpu_ns": 2128583,
+          "process_cpu_ns": 2128000,
+          "n": 12000
+        },
+        {
+          "wall_ns": 1796417,
+          "thread_cpu_ns": 1795791,
+          "process_cpu_ns": 1796000,
+          "n": 12000
+        },
+        {
+          "wall_ns": 2181667,
+          "thread_cpu_ns": 2100666,
+          "process_cpu_ns": 2100000,
+          "n": 12000
+        },
+        {
+          "wall_ns": 2324375,
+          "thread_cpu_ns": 2253916,
+          "process_cpu_ns": 2254000,
+          "n": 12000
+        },
+        {
+          "wall_ns": 2031208,
+          "thread_cpu_ns": 1934834,
+          "process_cpu_ns": 1935000,
+          "n": 12000
+        },
+        {
+          "wall_ns": 2180583,
+          "thread_cpu_ns": 1982917,
+          "process_cpu_ns": 1984000,
+          "n": 12000
+        },
+        {
+          "wall_ns": 2240584,
+          "thread_cpu_ns": 2000208,
+          "process_cpu_ns": 2000000,
+          "n": 12000
+        },
+        {
+          "wall_ns": 2808458,
+          "thread_cpu_ns": 2414541,
+          "process_cpu_ns": 2415000,
+          "n": 12000
+        },
+        {
+          "wall_ns": 2525000,
+          "thread_cpu_ns": 2219042,
+          "process_cpu_ns": 2220000,
+          "n": 12000
+        }
+      ],
+      "zlib-rs": [
+        {
+          "wall_ns": 2011250,
+          "thread_cpu_ns": 1883084,
+          "process_cpu_ns": 1882000,
+          "n": 12000
+        },
+        {
+          "wall_ns": 2025833,
+          "thread_cpu_ns": 1931334,
+          "process_cpu_ns": 1932000,
+          "n": 12000
+        },
+        {
+          "wall_ns": 2058333,
+          "thread_cpu_ns": 1914500,
+          "process_cpu_ns": 1914000,
+          "n": 12000
+        },
+        {
+          "wall_ns": 2363042,
+          "thread_cpu_ns": 2219292,
+          "process_cpu_ns": 2219000,
+          "n": 12000
+        },
+        {
+          "wall_ns": 2216541,
+          "thread_cpu_ns": 2077041,
+          "process_cpu_ns": 2078000,
+          "n": 12000
+        },
+        {
+          "wall_ns": 2044459,
+          "thread_cpu_ns": 1984375,
+          "process_cpu_ns": 1985000,
+          "n": 12000
+        },
+        {
+          "wall_ns": 1854416,
+          "thread_cpu_ns": 1820125,
+          "process_cpu_ns": 1821000,
+          "n": 12000
+        },
+        {
+          "wall_ns": 2082916,
+          "thread_cpu_ns": 2007833,
+          "process_cpu_ns": 2009000,
+          "n": 12000
+        },
+        {
+          "wall_ns": 2755833,
+          "thread_cpu_ns": 2169500,
+          "process_cpu_ns": 2169000,
+          "n": 12000
+        },
+        {
+          "wall_ns": 2401292,
+          "thread_cpu_ns": 2133042,
+          "process_cpu_ns": 2134000,
+          "n": 12000
+        },
+        {
+          "wall_ns": 2279750,
+          "thread_cpu_ns": 2116833,
+          "process_cpu_ns": 2117000,
+          "n": 12000
+        }
+      ]
+    },
+    "crc-4096": {
+      "baseline": [
+        {
+          "wall_ns": 1737334,
+          "thread_cpu_ns": 1664584,
+          "process_cpu_ns": 1666000,
+          "n": 14000
+        },
+        {
+          "wall_ns": 1856167,
+          "thread_cpu_ns": 1587916,
+          "process_cpu_ns": 1589000,
+          "n": 14000
+        },
+        {
+          "wall_ns": 1671125,
+          "thread_cpu_ns": 1610209,
+          "process_cpu_ns": 1610000,
+          "n": 14000
+        },
+        {
+          "wall_ns": 1852500,
+          "thread_cpu_ns": 1788667,
+          "process_cpu_ns": 1787000,
+          "n": 14000
+        },
+        {
+          "wall_ns": 2137209,
+          "thread_cpu_ns": 1783750,
+          "process_cpu_ns": 1784000,
+          "n": 14000
+        },
+        {
+          "wall_ns": 1791667,
+          "thread_cpu_ns": 1721583,
+          "process_cpu_ns": 1722000,
+          "n": 14000
+        },
+        {
+          "wall_ns": 1920625,
+          "thread_cpu_ns": 1714000,
+          "process_cpu_ns": 1714000,
+          "n": 14000
+        },
+        {
+          "wall_ns": 2051709,
+          "thread_cpu_ns": 1704917,
+          "process_cpu_ns": 1705000,
+          "n": 14000
+        },
+        {
+          "wall_ns": 1931000,
+          "thread_cpu_ns": 1908917,
+          "process_cpu_ns": 1908000,
+          "n": 14000
+        },
+        {
+          "wall_ns": 1727000,
+          "thread_cpu_ns": 1726708,
+          "process_cpu_ns": 1727000,
+          "n": 14000
+        },
+        {
+          "wall_ns": 1887042,
+          "thread_cpu_ns": 1782792,
+          "process_cpu_ns": 1783000,
+          "n": 14000
+        }
+      ],
+      "libdeflate-1.26": [
+        {
+          "wall_ns": 1836708,
+          "thread_cpu_ns": 1751125,
+          "process_cpu_ns": 1751000,
+          "n": 14000
+        },
+        {
+          "wall_ns": 1650583,
+          "thread_cpu_ns": 1614375,
+          "process_cpu_ns": 1615000,
+          "n": 14000
+        },
+        {
+          "wall_ns": 2092250,
+          "thread_cpu_ns": 1901167,
+          "process_cpu_ns": 1901000,
+          "n": 14000
+        },
+        {
+          "wall_ns": 1908916,
+          "thread_cpu_ns": 1836875,
+          "process_cpu_ns": 1837000,
+          "n": 14000
+        },
+        {
+          "wall_ns": 2139042,
+          "thread_cpu_ns": 1911375,
+          "process_cpu_ns": 1912000,
+          "n": 14000
+        },
+        {
+          "wall_ns": 1957708,
+          "thread_cpu_ns": 1892667,
+          "process_cpu_ns": 1893000,
+          "n": 14000
+        },
+        {
+          "wall_ns": 1835958,
+          "thread_cpu_ns": 1763542,
+          "process_cpu_ns": 1764000,
+          "n": 14000
+        },
+        {
+          "wall_ns": 1840125,
+          "thread_cpu_ns": 1772208,
+          "process_cpu_ns": 1772000,
+          "n": 14000
+        },
+        {
+          "wall_ns": 2063709,
+          "thread_cpu_ns": 1822042,
+          "process_cpu_ns": 1822000,
+          "n": 14000
+        },
+        {
+          "wall_ns": 1877834,
+          "thread_cpu_ns": 1851208,
+          "process_cpu_ns": 1852000,
+          "n": 14000
+        },
+        {
+          "wall_ns": 2374500,
+          "thread_cpu_ns": 1971459,
+          "process_cpu_ns": 1973000,
+          "n": 14000
+        }
+      ],
+      "zlib-rs": [
+        {
+          "wall_ns": 1857292,
+          "thread_cpu_ns": 1783291,
+          "process_cpu_ns": 1783000,
+          "n": 14000
+        },
+        {
+          "wall_ns": 1708542,
+          "thread_cpu_ns": 1663875,
+          "process_cpu_ns": 1665000,
+          "n": 14000
+        },
+        {
+          "wall_ns": 1612833,
+          "thread_cpu_ns": 1611541,
+          "process_cpu_ns": 1612000,
+          "n": 14000
+        },
+        {
+          "wall_ns": 2064208,
+          "thread_cpu_ns": 1958666,
+          "process_cpu_ns": 1959000,
+          "n": 14000
+        },
+        {
+          "wall_ns": 2204959,
+          "thread_cpu_ns": 1962083,
+          "process_cpu_ns": 1963000,
+          "n": 14000
+        },
+        {
+          "wall_ns": 1934458,
+          "thread_cpu_ns": 1864833,
+          "process_cpu_ns": 1865000,
+          "n": 14000
+        },
+        {
+          "wall_ns": 1639041,
+          "thread_cpu_ns": 1638542,
+          "process_cpu_ns": 1638000,
+          "n": 14000
+        },
+        {
+          "wall_ns": 1705500,
+          "thread_cpu_ns": 1705167,
+          "process_cpu_ns": 1704000,
+          "n": 14000
+        },
+        {
+          "wall_ns": 1964416,
+          "thread_cpu_ns": 1776125,
+          "process_cpu_ns": 1776000,
+          "n": 14000
+        },
+        {
+          "wall_ns": 2554792,
+          "thread_cpu_ns": 2044958,
+          "process_cpu_ns": 2046000,
+          "n": 14000
+        },
+        {
+          "wall_ns": 2398375,
+          "thread_cpu_ns": 2045166,
+          "process_cpu_ns": 2044000,
+          "n": 14000
+        }
+      ]
+    },
+    "native-decompress-4096": {
+      "baseline": [
+        {
+          "wall_ns": 1562666,
+          "thread_cpu_ns": 1511292,
+          "process_cpu_ns": 1511000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1241834,
+          "thread_cpu_ns": 1241791,
+          "process_cpu_ns": 1241000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1734042,
+          "thread_cpu_ns": 1593791,
+          "process_cpu_ns": 1593000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1924000,
+          "thread_cpu_ns": 1792209,
+          "process_cpu_ns": 1793000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1637875,
+          "thread_cpu_ns": 1546250,
+          "process_cpu_ns": 1547000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1240709,
+          "thread_cpu_ns": 1240417,
+          "process_cpu_ns": 1239000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1444875,
+          "thread_cpu_ns": 1370750,
+          "process_cpu_ns": 1371000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1734750,
+          "thread_cpu_ns": 1505875,
+          "process_cpu_ns": 1506000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 2064750,
+          "thread_cpu_ns": 1566875,
+          "process_cpu_ns": 1568000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1515625,
+          "thread_cpu_ns": 1429917,
+          "process_cpu_ns": 1429000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1888334,
+          "thread_cpu_ns": 1696542,
+          "process_cpu_ns": 1697000,
+          "n": 2000
+        }
+      ],
+      "libdeflate-1.26": [
+        {
+          "wall_ns": 1562084,
+          "thread_cpu_ns": 1485875,
+          "process_cpu_ns": 1486000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1475708,
+          "thread_cpu_ns": 1407875,
+          "process_cpu_ns": 1408000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1248583,
+          "thread_cpu_ns": 1248458,
+          "process_cpu_ns": 1248000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1277500,
+          "thread_cpu_ns": 1272666,
+          "process_cpu_ns": 1273000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1842791,
+          "thread_cpu_ns": 1649750,
+          "process_cpu_ns": 1650000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1416917,
+          "thread_cpu_ns": 1401875,
+          "process_cpu_ns": 1403000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1624125,
+          "thread_cpu_ns": 1392334,
+          "process_cpu_ns": 1392000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1744125,
+          "thread_cpu_ns": 1422459,
+          "process_cpu_ns": 1423000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1605459,
+          "thread_cpu_ns": 1482084,
+          "process_cpu_ns": 1482000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1847000,
+          "thread_cpu_ns": 1637375,
+          "process_cpu_ns": 1637000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1452667,
+          "thread_cpu_ns": 1391375,
+          "process_cpu_ns": 1392000,
+          "n": 2000
+        }
+      ],
+      "zlib-rs": [
+        {
+          "wall_ns": 1575000,
+          "thread_cpu_ns": 1548583,
+          "process_cpu_ns": 1548000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1533042,
+          "thread_cpu_ns": 1372291,
+          "process_cpu_ns": 1372000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1699708,
+          "thread_cpu_ns": 1641625,
+          "process_cpu_ns": 1642000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1732542,
+          "thread_cpu_ns": 1555875,
+          "process_cpu_ns": 1556000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1278500,
+          "thread_cpu_ns": 1261458,
+          "process_cpu_ns": 1260000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1997875,
+          "thread_cpu_ns": 1824958,
+          "process_cpu_ns": 1826000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 2036209,
+          "thread_cpu_ns": 1726792,
+          "process_cpu_ns": 1727000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1363709,
+          "thread_cpu_ns": 1325834,
+          "process_cpu_ns": 1325000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1342958,
+          "thread_cpu_ns": 1341833,
+          "process_cpu_ns": 1341000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1804334,
+          "thread_cpu_ns": 1657084,
+          "process_cpu_ns": 1657000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 2035250,
+          "thread_cpu_ns": 1784500,
+          "process_cpu_ns": 1784000,
+          "n": 2000
+        }
+      ]
+    },
+    "public-decompress-4096": {
+      "baseline": [
+        {
+          "wall_ns": 1610250,
+          "thread_cpu_ns": 1578542,
+          "process_cpu_ns": 1579000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1584708,
+          "thread_cpu_ns": 1551416,
+          "process_cpu_ns": 1551000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1371042,
+          "thread_cpu_ns": 1343458,
+          "process_cpu_ns": 1343000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1724791,
+          "thread_cpu_ns": 1655666,
+          "process_cpu_ns": 1655000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1620500,
+          "thread_cpu_ns": 1508125,
+          "process_cpu_ns": 1508000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1630333,
+          "thread_cpu_ns": 1562542,
+          "process_cpu_ns": 1563000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1441000,
+          "thread_cpu_ns": 1365416,
+          "process_cpu_ns": 1365000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1338000,
+          "thread_cpu_ns": 1337541,
+          "process_cpu_ns": 1336000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1883292,
+          "thread_cpu_ns": 1676584,
+          "process_cpu_ns": 1676000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 2037542,
+          "thread_cpu_ns": 1701042,
+          "process_cpu_ns": 1701000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1968292,
+          "thread_cpu_ns": 1799917,
+          "process_cpu_ns": 1801000,
+          "n": 2000
+        }
+      ],
+      "libdeflate-1.26": [
+        {
+          "wall_ns": 1717000,
+          "thread_cpu_ns": 1657959,
+          "process_cpu_ns": 1658000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1727459,
+          "thread_cpu_ns": 1657166,
+          "process_cpu_ns": 1658000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1798292,
+          "thread_cpu_ns": 1635417,
+          "process_cpu_ns": 1634000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1523500,
+          "thread_cpu_ns": 1444500,
+          "process_cpu_ns": 1445000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 2050459,
+          "thread_cpu_ns": 1813959,
+          "process_cpu_ns": 1815000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1859375,
+          "thread_cpu_ns": 1769916,
+          "process_cpu_ns": 1769000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 2233875,
+          "thread_cpu_ns": 1778708,
+          "process_cpu_ns": 1779000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1683708,
+          "thread_cpu_ns": 1482083,
+          "process_cpu_ns": 1482000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1413875,
+          "thread_cpu_ns": 1413417,
+          "process_cpu_ns": 1413000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1756458,
+          "thread_cpu_ns": 1600583,
+          "process_cpu_ns": 1601000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1965875,
+          "thread_cpu_ns": 1713917,
+          "process_cpu_ns": 1715000,
+          "n": 2000
+        }
+      ],
+      "zlib-rs": [
+        {
+          "wall_ns": 1503458,
+          "thread_cpu_ns": 1474625,
+          "process_cpu_ns": 1475000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1414334,
+          "thread_cpu_ns": 1382917,
+          "process_cpu_ns": 1383000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1322208,
+          "thread_cpu_ns": 1322041,
+          "process_cpu_ns": 1322000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1829291,
+          "thread_cpu_ns": 1747333,
+          "process_cpu_ns": 1748000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1839125,
+          "thread_cpu_ns": 1654834,
+          "process_cpu_ns": 1655000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1311084,
+          "thread_cpu_ns": 1310708,
+          "process_cpu_ns": 1311000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1409000,
+          "thread_cpu_ns": 1345292,
+          "process_cpu_ns": 1340000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1359667,
+          "thread_cpu_ns": 1359292,
+          "process_cpu_ns": 1358000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1401708,
+          "thread_cpu_ns": 1401041,
+          "process_cpu_ns": 1400000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 1895250,
+          "thread_cpu_ns": 1809958,
+          "process_cpu_ns": 1810000,
+          "n": 2000
+        },
+        {
+          "wall_ns": 2005334,
+          "thread_cpu_ns": 1834417,
+          "process_cpu_ns": 1835000,
+          "n": 2000
+        }
+      ]
+    },
+    "crc-262145": {
+      "baseline": [
+        {
+          "wall_ns": 1669334,
+          "thread_cpu_ns": 1660709,
+          "process_cpu_ns": 1662000,
+          "n": 400
+        },
+        {
+          "wall_ns": 2106958,
+          "thread_cpu_ns": 1875667,
+          "process_cpu_ns": 1875000,
+          "n": 400
+        },
+        {
+          "wall_ns": 1969291,
+          "thread_cpu_ns": 1866625,
+          "process_cpu_ns": 1866000,
+          "n": 400
+        },
+        {
+          "wall_ns": 1791333,
+          "thread_cpu_ns": 1731791,
+          "process_cpu_ns": 1733000,
+          "n": 400
+        },
+        {
+          "wall_ns": 2020458,
+          "thread_cpu_ns": 1877042,
+          "process_cpu_ns": 1878000,
+          "n": 400
+        },
+        {
+          "wall_ns": 2031125,
+          "thread_cpu_ns": 1961541,
+          "process_cpu_ns": 1961000,
+          "n": 400
+        },
+        {
+          "wall_ns": 1803875,
+          "thread_cpu_ns": 1757084,
+          "process_cpu_ns": 1758000,
+          "n": 400
+        },
+        {
+          "wall_ns": 2487000,
+          "thread_cpu_ns": 1979250,
+          "process_cpu_ns": 1980000,
+          "n": 400
+        },
+        {
+          "wall_ns": 2164958,
+          "thread_cpu_ns": 2020292,
+          "process_cpu_ns": 2021000,
+          "n": 400
+        },
+        {
+          "wall_ns": 1916333,
+          "thread_cpu_ns": 1906917,
+          "process_cpu_ns": 1908000,
+          "n": 400
+        },
+        {
+          "wall_ns": 1960375,
+          "thread_cpu_ns": 1960875,
+          "process_cpu_ns": 1962000,
+          "n": 400
+        }
+      ],
+      "libdeflate-1.26": [
+        {
+          "wall_ns": 2116292,
+          "thread_cpu_ns": 1955500,
+          "process_cpu_ns": 1952000,
+          "n": 400
+        },
+        {
+          "wall_ns": 1947375,
+          "thread_cpu_ns": 1868166,
+          "process_cpu_ns": 1868000,
+          "n": 400
+        },
+        {
+          "wall_ns": 2113875,
+          "thread_cpu_ns": 1994709,
+          "process_cpu_ns": 1995000,
+          "n": 400
+        },
+        {
+          "wall_ns": 1788625,
+          "thread_cpu_ns": 1770083,
+          "process_cpu_ns": 1771000,
+          "n": 400
+        },
+        {
+          "wall_ns": 1830917,
+          "thread_cpu_ns": 1787291,
+          "process_cpu_ns": 1788000,
+          "n": 400
+        },
+        {
+          "wall_ns": 1714375,
+          "thread_cpu_ns": 1714417,
+          "process_cpu_ns": 1714000,
+          "n": 400
+        },
+        {
+          "wall_ns": 2397084,
+          "thread_cpu_ns": 2038916,
+          "process_cpu_ns": 2039000,
+          "n": 400
+        },
+        {
+          "wall_ns": 1766042,
+          "thread_cpu_ns": 1766250,
+          "process_cpu_ns": 1766000,
+          "n": 400
+        },
+        {
+          "wall_ns": 2147458,
+          "thread_cpu_ns": 1937792,
+          "process_cpu_ns": 1937000,
+          "n": 400
+        },
+        {
+          "wall_ns": 2464875,
+          "thread_cpu_ns": 2127541,
+          "process_cpu_ns": 2129000,
+          "n": 400
+        },
+        {
+          "wall_ns": 1996042,
+          "thread_cpu_ns": 1880709,
+          "process_cpu_ns": 1881000,
+          "n": 400
+        }
+      ],
+      "zlib-rs": [
+        {
+          "wall_ns": 1746125,
+          "thread_cpu_ns": 1700417,
+          "process_cpu_ns": 1701000,
+          "n": 400
+        },
+        {
+          "wall_ns": 1906500,
+          "thread_cpu_ns": 1813792,
+          "process_cpu_ns": 1813000,
+          "n": 400
+        },
+        {
+          "wall_ns": 1989292,
+          "thread_cpu_ns": 1873375,
+          "process_cpu_ns": 1874000,
+          "n": 400
+        },
+        {
+          "wall_ns": 1945041,
+          "thread_cpu_ns": 1850584,
+          "process_cpu_ns": 1851000,
+          "n": 400
+        },
+        {
+          "wall_ns": 2122791,
+          "thread_cpu_ns": 1935000,
+          "process_cpu_ns": 1935000,
+          "n": 400
+        },
+        {
+          "wall_ns": 1829125,
+          "thread_cpu_ns": 1817417,
+          "process_cpu_ns": 1817000,
+          "n": 400
+        },
+        {
+          "wall_ns": 2064292,
+          "thread_cpu_ns": 1921000,
+          "process_cpu_ns": 1921000,
+          "n": 400
+        },
+        {
+          "wall_ns": 2051625,
+          "thread_cpu_ns": 1849459,
+          "process_cpu_ns": 1849000,
+          "n": 400
+        },
+        {
+          "wall_ns": 2368083,
+          "thread_cpu_ns": 2090333,
+          "process_cpu_ns": 2090000,
+          "n": 400
+        },
+        {
+          "wall_ns": 2576167,
+          "thread_cpu_ns": 2131750,
+          "process_cpu_ns": 2132000,
+          "n": 400
+        },
+        {
+          "wall_ns": 2005833,
+          "thread_cpu_ns": 1989667,
+          "process_cpu_ns": 1991000,
+          "n": 400
+        }
+      ]
+    },
+    "native-decompress-262145": {
+      "baseline": [
+        {
+          "wall_ns": 1589209,
+          "thread_cpu_ns": 1541333,
+          "process_cpu_ns": 1541000,
+          "n": 100
+        },
+        {
+          "wall_ns": 1651292,
+          "thread_cpu_ns": 1545167,
+          "process_cpu_ns": 1544000,
+          "n": 100
+        },
+        {
+          "wall_ns": 1929917,
+          "thread_cpu_ns": 1737459,
+          "process_cpu_ns": 1737000,
+          "n": 100
+        },
+        {
+          "wall_ns": 1476250,
+          "thread_cpu_ns": 1475667,
+          "process_cpu_ns": 1476000,
+          "n": 100
+        },
+        {
+          "wall_ns": 1413333,
+          "thread_cpu_ns": 1412375,
+          "process_cpu_ns": 1412000,
+          "n": 100
+        },
+        {
+          "wall_ns": 1698916,
+          "thread_cpu_ns": 1623000,
+          "process_cpu_ns": 1624000,
+          "n": 100
+        },
+        {
+          "wall_ns": 1770833,
+          "thread_cpu_ns": 1620125,
+          "process_cpu_ns": 1621000,
+          "n": 100
+        },
+        {
+          "wall_ns": 1483125,
+          "thread_cpu_ns": 1482792,
+          "process_cpu_ns": 1483000,
+          "n": 100
+        },
+        {
+          "wall_ns": 2066459,
+          "thread_cpu_ns": 1760875,
+          "process_cpu_ns": 1760000,
+          "n": 100
+        },
+        {
+          "wall_ns": 1822750,
+          "thread_cpu_ns": 1629000,
+          "process_cpu_ns": 1630000,
+          "n": 100
+        },
+        {
+          "wall_ns": 1641625,
+          "thread_cpu_ns": 1628542,
+          "process_cpu_ns": 1628000,
+          "n": 100
+        }
+      ],
+      "libdeflate-1.26": [
+        {
+          "wall_ns": 1982958,
+          "thread_cpu_ns": 1818792,
+          "process_cpu_ns": 1818000,
+          "n": 100
+        },
+        {
+          "wall_ns": 1785875,
+          "thread_cpu_ns": 1638958,
+          "process_cpu_ns": 1639000,
+          "n": 100
+        },
+        {
+          "wall_ns": 1808375,
+          "thread_cpu_ns": 1674959,
+          "process_cpu_ns": 1675000,
+          "n": 100
+        },
+        {
+          "wall_ns": 2283667,
+          "thread_cpu_ns": 1950417,
+          "process_cpu_ns": 1951000,
+          "n": 100
+        },
+        {
+          "wall_ns": 1583250,
+          "thread_cpu_ns": 1569417,
+          "process_cpu_ns": 1569000,
+          "n": 100
+        },
+        {
+          "wall_ns": 1793208,
+          "thread_cpu_ns": 1716125,
+          "process_cpu_ns": 1716000,
+          "n": 100
+        },
+        {
+          "wall_ns": 1809208,
+          "thread_cpu_ns": 1616625,
+          "process_cpu_ns": 1618000,
+          "n": 100
+        },
+        {
+          "wall_ns": 1477709,
+          "thread_cpu_ns": 1478166,
+          "process_cpu_ns": 1478000,
+          "n": 100
+        },
+        {
+          "wall_ns": 1788041,
+          "thread_cpu_ns": 1688834,
+          "process_cpu_ns": 1689000,
+          "n": 100
+        },
+        {
+          "wall_ns": 1872666,
+          "thread_cpu_ns": 1689209,
+          "process_cpu_ns": 1689000,
+          "n": 100
+        },
+        {
+          "wall_ns": 1816375,
+          "thread_cpu_ns": 1740000,
+          "process_cpu_ns": 1741000,
+          "n": 100
+        }
+      ],
+      "zlib-rs": [
+        {
+          "wall_ns": 1594500,
+          "thread_cpu_ns": 1547833,
+          "process_cpu_ns": 1548000,
+          "n": 100
+        },
+        {
+          "wall_ns": 1708625,
+          "thread_cpu_ns": 1559208,
+          "process_cpu_ns": 1559000,
+          "n": 100
+        },
+        {
+          "wall_ns": 1757292,
+          "thread_cpu_ns": 1642041,
+          "process_cpu_ns": 1644000,
+          "n": 100
+        },
+        {
+          "wall_ns": 1429084,
+          "thread_cpu_ns": 1429167,
+          "process_cpu_ns": 1429000,
+          "n": 100
+        },
+        {
+          "wall_ns": 1968250,
+          "thread_cpu_ns": 1798792,
+          "process_cpu_ns": 1799000,
+          "n": 100
+        },
+        {
+          "wall_ns": 1672417,
+          "thread_cpu_ns": 1631916,
+          "process_cpu_ns": 1632000,
+          "n": 100
+        },
+        {
+          "wall_ns": 2148916,
+          "thread_cpu_ns": 1825500,
+          "process_cpu_ns": 1827000,
+          "n": 100
+        },
+        {
+          "wall_ns": 1604458,
+          "thread_cpu_ns": 1539083,
+          "process_cpu_ns": 1540000,
+          "n": 100
+        },
+        {
+          "wall_ns": 1804625,
+          "thread_cpu_ns": 1673042,
+          "process_cpu_ns": 1673000,
+          "n": 100
+        },
+        {
+          "wall_ns": 1585417,
+          "thread_cpu_ns": 1585333,
+          "process_cpu_ns": 1585000,
+          "n": 100
+        },
+        {
+          "wall_ns": 1754417,
+          "thread_cpu_ns": 1697167,
+          "process_cpu_ns": 1696000,
+          "n": 100
+        }
+      ]
+    },
+    "public-decompress-262145": {
+      "baseline": [
+        {
+          "wall_ns": 1695542,
+          "thread_cpu_ns": 1689292,
+          "process_cpu_ns": 1688000,
+          "n": 120
+        },
+        {
+          "wall_ns": 2105042,
+          "thread_cpu_ns": 1918292,
+          "process_cpu_ns": 1920000,
+          "n": 120
+        },
+        {
+          "wall_ns": 1712666,
+          "thread_cpu_ns": 1712083,
+          "process_cpu_ns": 1711000,
+          "n": 120
+        },
+        {
+          "wall_ns": 2228917,
+          "thread_cpu_ns": 2143833,
+          "process_cpu_ns": 2144000,
+          "n": 120
+        },
+        {
+          "wall_ns": 2108833,
+          "thread_cpu_ns": 1939042,
+          "process_cpu_ns": 1940000,
+          "n": 120
+        },
+        {
+          "wall_ns": 1692583,
+          "thread_cpu_ns": 1692708,
+          "process_cpu_ns": 1693000,
+          "n": 120
+        },
+        {
+          "wall_ns": 2476166,
+          "thread_cpu_ns": 2100292,
+          "process_cpu_ns": 2100000,
+          "n": 120
+        },
+        {
+          "wall_ns": 2027292,
+          "thread_cpu_ns": 1859875,
+          "process_cpu_ns": 1860000,
+          "n": 120
+        },
+        {
+          "wall_ns": 1999333,
+          "thread_cpu_ns": 1983125,
+          "process_cpu_ns": 1985000,
+          "n": 120
+        },
+        {
+          "wall_ns": 2104125,
+          "thread_cpu_ns": 2017750,
+          "process_cpu_ns": 2018000,
+          "n": 120
+        },
+        {
+          "wall_ns": 1894250,
+          "thread_cpu_ns": 1894708,
+          "process_cpu_ns": 1895000,
+          "n": 120
+        }
+      ],
+      "libdeflate-1.26": [
+        {
+          "wall_ns": 2049833,
+          "thread_cpu_ns": 1939042,
+          "process_cpu_ns": 1938000,
+          "n": 120
+        },
+        {
+          "wall_ns": 2288750,
+          "thread_cpu_ns": 1964208,
+          "process_cpu_ns": 1964000,
+          "n": 120
+        },
+        {
+          "wall_ns": 2092292,
+          "thread_cpu_ns": 2021792,
+          "process_cpu_ns": 2022000,
+          "n": 120
+        },
+        {
+          "wall_ns": 2143750,
+          "thread_cpu_ns": 2013625,
+          "process_cpu_ns": 2014000,
+          "n": 120
+        },
+        {
+          "wall_ns": 2615625,
+          "thread_cpu_ns": 2190333,
+          "process_cpu_ns": 2190000,
+          "n": 120
+        },
+        {
+          "wall_ns": 1723625,
+          "thread_cpu_ns": 1724000,
+          "process_cpu_ns": 1724000,
+          "n": 120
+        },
+        {
+          "wall_ns": 1830833,
+          "thread_cpu_ns": 1755292,
+          "process_cpu_ns": 1755000,
+          "n": 120
+        },
+        {
+          "wall_ns": 2085750,
+          "thread_cpu_ns": 1845291,
+          "process_cpu_ns": 1845000,
+          "n": 120
+        },
+        {
+          "wall_ns": 2027833,
+          "thread_cpu_ns": 1929875,
+          "process_cpu_ns": 1930000,
+          "n": 120
+        },
+        {
+          "wall_ns": 2699083,
+          "thread_cpu_ns": 2335292,
+          "process_cpu_ns": 2334000,
+          "n": 120
+        },
+        {
+          "wall_ns": 2234917,
+          "thread_cpu_ns": 2069500,
+          "process_cpu_ns": 2071000,
+          "n": 120
+        }
+      ],
+      "zlib-rs": [
+        {
+          "wall_ns": 2013792,
+          "thread_cpu_ns": 1922667,
+          "process_cpu_ns": 1923000,
+          "n": 120
+        },
+        {
+          "wall_ns": 1991500,
+          "thread_cpu_ns": 1814792,
+          "process_cpu_ns": 1815000,
+          "n": 120
+        },
+        {
+          "wall_ns": 2489667,
+          "thread_cpu_ns": 2175208,
+          "process_cpu_ns": 2176000,
+          "n": 120
+        },
+        {
+          "wall_ns": 2080208,
+          "thread_cpu_ns": 1924375,
+          "process_cpu_ns": 1925000,
+          "n": 120
+        },
+        {
+          "wall_ns": 1963208,
+          "thread_cpu_ns": 1870500,
+          "process_cpu_ns": 1871000,
+          "n": 120
+        },
+        {
+          "wall_ns": 2138458,
+          "thread_cpu_ns": 2072041,
+          "process_cpu_ns": 2073000,
+          "n": 120
+        },
+        {
+          "wall_ns": 1928834,
+          "thread_cpu_ns": 1792250,
+          "process_cpu_ns": 1793000,
+          "n": 120
+        },
+        {
+          "wall_ns": 2587708,
+          "thread_cpu_ns": 2025583,
+          "process_cpu_ns": 2027000,
+          "n": 120
+        },
+        {
+          "wall_ns": 2052375,
+          "thread_cpu_ns": 1851042,
+          "process_cpu_ns": 1850000,
+          "n": 120
+        },
+        {
+          "wall_ns": 2527791,
+          "thread_cpu_ns": 2033916,
+          "process_cpu_ns": 2034000,
+          "n": 120
+        },
+        {
+          "wall_ns": 2175500,
+          "thread_cpu_ns": 2062208,
+          "process_cpu_ns": 2063000,
+          "n": 120
+        }
+      ]
+    },
+    "public-decompress-bytearray": {
+      "baseline": [
+        {
+          "wall_ns": 1991958,
+          "thread_cpu_ns": 1899542,
+          "process_cpu_ns": 1899000,
+          "n": 600
+        },
+        {
+          "wall_ns": 1845542,
+          "thread_cpu_ns": 1807208,
+          "process_cpu_ns": 1808000,
+          "n": 600
+        },
+        {
+          "wall_ns": 2658834,
+          "thread_cpu_ns": 2314833,
+          "process_cpu_ns": 2314000,
+          "n": 600
+        },
+        {
+          "wall_ns": 2238417,
+          "thread_cpu_ns": 2115917,
+          "process_cpu_ns": 2116000,
+          "n": 600
+        },
+        {
+          "wall_ns": 1700875,
+          "thread_cpu_ns": 1701209,
+          "process_cpu_ns": 1701000,
+          "n": 600
+        },
+        {
+          "wall_ns": 1748750,
+          "thread_cpu_ns": 1743500,
+          "process_cpu_ns": 1743000,
+          "n": 600
+        },
+        {
+          "wall_ns": 1780500,
+          "thread_cpu_ns": 1741750,
+          "process_cpu_ns": 1737000,
+          "n": 600
+        },
+        {
+          "wall_ns": 2448666,
+          "thread_cpu_ns": 2060834,
+          "process_cpu_ns": 2061000,
+          "n": 600
+        },
+        {
+          "wall_ns": 2025583,
+          "thread_cpu_ns": 1917541,
+          "process_cpu_ns": 1917000,
+          "n": 600
+        },
+        {
+          "wall_ns": 1915041,
+          "thread_cpu_ns": 1888375,
+          "process_cpu_ns": 1887000,
+          "n": 600
+        },
+        {
+          "wall_ns": 2483375,
+          "thread_cpu_ns": 2345667,
+          "process_cpu_ns": 2345000,
+          "n": 600
+        }
+      ],
+      "libdeflate-1.26": [
+        {
+          "wall_ns": 1851542,
+          "thread_cpu_ns": 1836583,
+          "process_cpu_ns": 1837000,
+          "n": 600
+        },
+        {
+          "wall_ns": 1861250,
+          "thread_cpu_ns": 1784125,
+          "process_cpu_ns": 1783000,
+          "n": 600
+        },
+        {
+          "wall_ns": 2380375,
+          "thread_cpu_ns": 2105334,
+          "process_cpu_ns": 2105000,
+          "n": 600
+        },
+        {
+          "wall_ns": 2481125,
+          "thread_cpu_ns": 2298417,
+          "process_cpu_ns": 2298000,
+          "n": 600
+        },
+        {
+          "wall_ns": 2247459,
+          "thread_cpu_ns": 2013084,
+          "process_cpu_ns": 2013000,
+          "n": 600
+        },
+        {
+          "wall_ns": 2113625,
+          "thread_cpu_ns": 2082125,
+          "process_cpu_ns": 2082000,
+          "n": 600
+        },
+        {
+          "wall_ns": 1888541,
+          "thread_cpu_ns": 1807791,
+          "process_cpu_ns": 1808000,
+          "n": 600
+        },
+        {
+          "wall_ns": 2351042,
+          "thread_cpu_ns": 2112208,
+          "process_cpu_ns": 2113000,
+          "n": 600
+        },
+        {
+          "wall_ns": 2454542,
+          "thread_cpu_ns": 2230500,
+          "process_cpu_ns": 2230000,
+          "n": 600
+        },
+        {
+          "wall_ns": 2699833,
+          "thread_cpu_ns": 2331459,
+          "process_cpu_ns": 2332000,
+          "n": 600
+        },
+        {
+          "wall_ns": 2056500,
+          "thread_cpu_ns": 2029833,
+          "process_cpu_ns": 2030000,
+          "n": 600
+        }
+      ],
+      "zlib-rs": [
+        {
+          "wall_ns": 1656750,
+          "thread_cpu_ns": 1657125,
+          "process_cpu_ns": 1657000,
+          "n": 600
+        },
+        {
+          "wall_ns": 2033834,
+          "thread_cpu_ns": 1824875,
+          "process_cpu_ns": 1825000,
+          "n": 600
+        },
+        {
+          "wall_ns": 2583167,
+          "thread_cpu_ns": 2290584,
+          "process_cpu_ns": 2291000,
+          "n": 600
+        },
+        {
+          "wall_ns": 2187292,
+          "thread_cpu_ns": 2136916,
+          "process_cpu_ns": 2138000,
+          "n": 600
+        },
+        {
+          "wall_ns": 2111334,
+          "thread_cpu_ns": 1957333,
+          "process_cpu_ns": 1957000,
+          "n": 600
+        },
+        {
+          "wall_ns": 1844791,
+          "thread_cpu_ns": 1828708,
+          "process_cpu_ns": 1830000,
+          "n": 600
+        },
+        {
+          "wall_ns": 1814042,
+          "thread_cpu_ns": 1744709,
+          "process_cpu_ns": 1745000,
+          "n": 600
+        },
+        {
+          "wall_ns": 2368792,
+          "thread_cpu_ns": 2055291,
+          "process_cpu_ns": 2055000,
+          "n": 600
+        },
+        {
+          "wall_ns": 2138417,
+          "thread_cpu_ns": 2021375,
+          "process_cpu_ns": 2022000,
+          "n": 600
+        },
+        {
+          "wall_ns": 1994584,
+          "thread_cpu_ns": 1952417,
+          "process_cpu_ns": 1953000,
+          "n": 600
+        },
+        {
+          "wall_ns": 1926291,
+          "thread_cpu_ns": 1901334,
+          "process_cpu_ns": 1901000,
+          "n": 600
+        }
+      ]
+    },
+    "public-decompress-multimember": {
+      "baseline": [
+        {
+          "wall_ns": 1012250,
+          "thread_cpu_ns": 1012375,
+          "process_cpu_ns": 1012000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1022000,
+          "thread_cpu_ns": 1022084,
+          "process_cpu_ns": 1022000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1590709,
+          "thread_cpu_ns": 1363042,
+          "process_cpu_ns": 1363000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1308375,
+          "thread_cpu_ns": 1221291,
+          "process_cpu_ns": 1221000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1345209,
+          "thread_cpu_ns": 1153167,
+          "process_cpu_ns": 1153000,
+          "n": 200
+        },
+        {
+          "wall_ns": 6357167,
+          "thread_cpu_ns": 1689417,
+          "process_cpu_ns": 1690000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1860875,
+          "thread_cpu_ns": 1539541,
+          "process_cpu_ns": 1539000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1017459,
+          "thread_cpu_ns": 1017292,
+          "process_cpu_ns": 1017000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1394208,
+          "thread_cpu_ns": 1337958,
+          "process_cpu_ns": 1338000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1319375,
+          "thread_cpu_ns": 1249209,
+          "process_cpu_ns": 1249000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1330542,
+          "thread_cpu_ns": 1294125,
+          "process_cpu_ns": 1289000,
+          "n": 200
+        }
+      ],
+      "libdeflate-1.26": [
+        {
+          "wall_ns": 1266125,
+          "thread_cpu_ns": 1229333,
+          "process_cpu_ns": 1230000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1353041,
+          "thread_cpu_ns": 1232417,
+          "process_cpu_ns": 1233000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1570334,
+          "thread_cpu_ns": 1392750,
+          "process_cpu_ns": 1393000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1468458,
+          "thread_cpu_ns": 1403708,
+          "process_cpu_ns": 1404000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1419709,
+          "thread_cpu_ns": 1283000,
+          "process_cpu_ns": 1283000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1398125,
+          "thread_cpu_ns": 1302791,
+          "process_cpu_ns": 1303000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1547833,
+          "thread_cpu_ns": 1387709,
+          "process_cpu_ns": 1388000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1330959,
+          "thread_cpu_ns": 1302209,
+          "process_cpu_ns": 1302000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1358416,
+          "thread_cpu_ns": 1251250,
+          "process_cpu_ns": 1252000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1573125,
+          "thread_cpu_ns": 1367292,
+          "process_cpu_ns": 1369000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1493083,
+          "thread_cpu_ns": 1435166,
+          "process_cpu_ns": 1435000,
+          "n": 200
+        }
+      ],
+      "zlib-rs": [
+        {
+          "wall_ns": 1317958,
+          "thread_cpu_ns": 1257208,
+          "process_cpu_ns": 1257000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1003291,
+          "thread_cpu_ns": 1003167,
+          "process_cpu_ns": 1002000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1329417,
+          "thread_cpu_ns": 1191750,
+          "process_cpu_ns": 1192000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1354083,
+          "thread_cpu_ns": 1314625,
+          "process_cpu_ns": 1314000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1523875,
+          "thread_cpu_ns": 1396083,
+          "process_cpu_ns": 1396000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1133208,
+          "thread_cpu_ns": 1059708,
+          "process_cpu_ns": 1060000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1695584,
+          "thread_cpu_ns": 1492000,
+          "process_cpu_ns": 1491000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1018166,
+          "thread_cpu_ns": 1018709,
+          "process_cpu_ns": 1019000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1679542,
+          "thread_cpu_ns": 1397583,
+          "process_cpu_ns": 1398000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1503541,
+          "thread_cpu_ns": 1371792,
+          "process_cpu_ns": 1371000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1298542,
+          "thread_cpu_ns": 1270750,
+          "process_cpu_ns": 1271000,
+          "n": 200
+        }
+      ]
+    },
+    "stream-read-32": {
+      "baseline": [
+        {
+          "wall_ns": 1092167,
+          "thread_cpu_ns": 1092541,
+          "process_cpu_ns": 1092000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1768583,
+          "thread_cpu_ns": 1616500,
+          "process_cpu_ns": 1622000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1355750,
+          "thread_cpu_ns": 1290875,
+          "process_cpu_ns": 1291000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1801334,
+          "thread_cpu_ns": 1714625,
+          "process_cpu_ns": 1715000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1321125,
+          "thread_cpu_ns": 1267750,
+          "process_cpu_ns": 1267000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1066083,
+          "thread_cpu_ns": 1060666,
+          "process_cpu_ns": 1061000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1452875,
+          "thread_cpu_ns": 1353292,
+          "process_cpu_ns": 1354000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1286917,
+          "thread_cpu_ns": 1222333,
+          "process_cpu_ns": 1223000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1725375,
+          "thread_cpu_ns": 1532250,
+          "process_cpu_ns": 1532000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1727166,
+          "thread_cpu_ns": 1564792,
+          "process_cpu_ns": 1565000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1475791,
+          "thread_cpu_ns": 1414583,
+          "process_cpu_ns": 1413000,
+          "n": 200
+        }
+      ],
+      "libdeflate-1.26": [
+        {
+          "wall_ns": 1532875,
+          "thread_cpu_ns": 1459125,
+          "process_cpu_ns": 1458000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1122250,
+          "thread_cpu_ns": 1122875,
+          "process_cpu_ns": 1122000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1419333,
+          "thread_cpu_ns": 1301875,
+          "process_cpu_ns": 1301000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1362750,
+          "thread_cpu_ns": 1336417,
+          "process_cpu_ns": 1336000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1627542,
+          "thread_cpu_ns": 1470583,
+          "process_cpu_ns": 1470000,
+          "n": 200
+        },
+        {
+          "wall_ns": 4361375,
+          "thread_cpu_ns": 1507000,
+          "process_cpu_ns": 1507000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1081333,
+          "thread_cpu_ns": 1077125,
+          "process_cpu_ns": 1078000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1834333,
+          "thread_cpu_ns": 1434542,
+          "process_cpu_ns": 1435000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1817750,
+          "thread_cpu_ns": 1586500,
+          "process_cpu_ns": 1586000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1946125,
+          "thread_cpu_ns": 1662750,
+          "process_cpu_ns": 1663000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1410666,
+          "thread_cpu_ns": 1360875,
+          "process_cpu_ns": 1361000,
+          "n": 200
+        }
+      ],
+      "zlib-rs": [
+        {
+          "wall_ns": 1407042,
+          "thread_cpu_ns": 1386375,
+          "process_cpu_ns": 1387000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1791708,
+          "thread_cpu_ns": 1563416,
+          "process_cpu_ns": 1563000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1875750,
+          "thread_cpu_ns": 1629000,
+          "process_cpu_ns": 1630000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1584625,
+          "thread_cpu_ns": 1526000,
+          "process_cpu_ns": 1525000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1697208,
+          "thread_cpu_ns": 1609375,
+          "process_cpu_ns": 1609000,
+          "n": 200
+        },
+        {
+          "wall_ns": 6263917,
+          "thread_cpu_ns": 1591208,
+          "process_cpu_ns": 1592000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1459625,
+          "thread_cpu_ns": 1397333,
+          "process_cpu_ns": 1398000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1985542,
+          "thread_cpu_ns": 1769500,
+          "process_cpu_ns": 1770000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1575291,
+          "thread_cpu_ns": 1496958,
+          "process_cpu_ns": 1497000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1871375,
+          "thread_cpu_ns": 1720250,
+          "process_cpu_ns": 1720000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1484459,
+          "thread_cpu_ns": 1469541,
+          "process_cpu_ns": 1470000,
+          "n": 200
+        }
+      ]
+    },
+    "public-compress-32": {
+      "baseline": [
+        {
+          "wall_ns": 1351334,
+          "thread_cpu_ns": 1352000,
+          "process_cpu_ns": 1352000,
+          "n": 400
+        },
+        {
+          "wall_ns": 1988000,
+          "thread_cpu_ns": 1763084,
+          "process_cpu_ns": 1764000,
+          "n": 400
+        },
+        {
+          "wall_ns": 1564875,
+          "thread_cpu_ns": 1482875,
+          "process_cpu_ns": 1483000,
+          "n": 400
+        },
+        {
+          "wall_ns": 1328291,
+          "thread_cpu_ns": 1328584,
+          "process_cpu_ns": 1329000,
+          "n": 400
+        },
+        {
+          "wall_ns": 1976375,
+          "thread_cpu_ns": 1778500,
+          "process_cpu_ns": 1778000,
+          "n": 400
+        },
+        {
+          "wall_ns": 3331875,
+          "thread_cpu_ns": 1487167,
+          "process_cpu_ns": 1487000,
+          "n": 400
+        },
+        {
+          "wall_ns": 1882500,
+          "thread_cpu_ns": 1667750,
+          "process_cpu_ns": 1661000,
+          "n": 400
+        },
+        {
+          "wall_ns": 1839417,
+          "thread_cpu_ns": 1595542,
+          "process_cpu_ns": 1595000,
+          "n": 400
+        },
+        {
+          "wall_ns": 1445250,
+          "thread_cpu_ns": 1445250,
+          "process_cpu_ns": 1445000,
+          "n": 400
+        },
+        {
+          "wall_ns": 2183417,
+          "thread_cpu_ns": 1898042,
+          "process_cpu_ns": 1898000,
+          "n": 400
+        },
+        {
+          "wall_ns": 1581250,
+          "thread_cpu_ns": 1548333,
+          "process_cpu_ns": 1548000,
+          "n": 400
+        }
+      ],
+      "libdeflate-1.26": [
+        {
+          "wall_ns": 1370375,
+          "thread_cpu_ns": 1371167,
+          "process_cpu_ns": 1372000,
+          "n": 400
+        },
+        {
+          "wall_ns": 1432166,
+          "thread_cpu_ns": 1380875,
+          "process_cpu_ns": 1381000,
+          "n": 400
+        },
+        {
+          "wall_ns": 1593291,
+          "thread_cpu_ns": 1537625,
+          "process_cpu_ns": 1538000,
+          "n": 400
+        },
+        {
+          "wall_ns": 2185084,
+          "thread_cpu_ns": 1773208,
+          "process_cpu_ns": 1773000,
+          "n": 400
+        },
+        {
+          "wall_ns": 2049542,
+          "thread_cpu_ns": 1814291,
+          "process_cpu_ns": 1815000,
+          "n": 400
+        },
+        {
+          "wall_ns": 5252709,
+          "thread_cpu_ns": 1602750,
+          "process_cpu_ns": 1603000,
+          "n": 400
+        },
+        {
+          "wall_ns": 1706500,
+          "thread_cpu_ns": 1513500,
+          "process_cpu_ns": 1514000,
+          "n": 400
+        },
+        {
+          "wall_ns": 1461875,
+          "thread_cpu_ns": 1455625,
+          "process_cpu_ns": 1455000,
+          "n": 400
+        },
+        {
+          "wall_ns": 1343084,
+          "thread_cpu_ns": 1342458,
+          "process_cpu_ns": 1343000,
+          "n": 400
+        },
+        {
+          "wall_ns": 1873042,
+          "thread_cpu_ns": 1704125,
+          "process_cpu_ns": 1704000,
+          "n": 400
+        },
+        {
+          "wall_ns": 1743458,
+          "thread_cpu_ns": 1707917,
+          "process_cpu_ns": 1708000,
+          "n": 400
+        }
+      ],
+      "zlib-rs": [
+        {
+          "wall_ns": 1347833,
+          "thread_cpu_ns": 1347625,
+          "process_cpu_ns": 1348000,
+          "n": 400
+        },
+        {
+          "wall_ns": 1731167,
+          "thread_cpu_ns": 1630791,
+          "process_cpu_ns": 1631000,
+          "n": 400
+        },
+        {
+          "wall_ns": 2021917,
+          "thread_cpu_ns": 1838625,
+          "process_cpu_ns": 1840000,
+          "n": 400
+        },
+        {
+          "wall_ns": 1923042,
+          "thread_cpu_ns": 1718625,
+          "process_cpu_ns": 1719000,
+          "n": 400
+        },
+        {
+          "wall_ns": 1992209,
+          "thread_cpu_ns": 1798042,
+          "process_cpu_ns": 1798000,
+          "n": 400
+        },
+        {
+          "wall_ns": 1701542,
+          "thread_cpu_ns": 1384250,
+          "process_cpu_ns": 1384000,
+          "n": 400
+        },
+        {
+          "wall_ns": 1350667,
+          "thread_cpu_ns": 1350792,
+          "process_cpu_ns": 1351000,
+          "n": 400
+        },
+        {
+          "wall_ns": 1493000,
+          "thread_cpu_ns": 1457500,
+          "process_cpu_ns": 1450000,
+          "n": 400
+        },
+        {
+          "wall_ns": 1447042,
+          "thread_cpu_ns": 1424584,
+          "process_cpu_ns": 1425000,
+          "n": 400
+        },
+        {
+          "wall_ns": 1424625,
+          "thread_cpu_ns": 1423875,
+          "process_cpu_ns": 1424000,
+          "n": 400
+        },
+        {
+          "wall_ns": 1730291,
+          "thread_cpu_ns": 1703250,
+          "process_cpu_ns": 1704000,
+          "n": 400
+        }
+      ]
+    },
+    "stream-read-4096": {
+      "baseline": [
+        {
+          "wall_ns": 1424166,
+          "thread_cpu_ns": 1424834,
+          "process_cpu_ns": 1425000,
+          "n": 200
+        },
+        {
+          "wall_ns": 2068000,
+          "thread_cpu_ns": 1978875,
+          "process_cpu_ns": 1979000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1713958,
+          "thread_cpu_ns": 1692833,
+          "process_cpu_ns": 1693000,
+          "n": 200
+        },
+        {
+          "wall_ns": 2235750,
+          "thread_cpu_ns": 2054292,
+          "process_cpu_ns": 2055000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1415917,
+          "thread_cpu_ns": 1412791,
+          "process_cpu_ns": 1412000,
+          "n": 200
+        },
+        {
+          "wall_ns": 2107625,
+          "thread_cpu_ns": 1788166,
+          "process_cpu_ns": 1789000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1577000,
+          "thread_cpu_ns": 1513208,
+          "process_cpu_ns": 1513000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1543250,
+          "thread_cpu_ns": 1543958,
+          "process_cpu_ns": 1544000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1846083,
+          "thread_cpu_ns": 1695958,
+          "process_cpu_ns": 1696000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1648125,
+          "thread_cpu_ns": 1640791,
+          "process_cpu_ns": 1642000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1868625,
+          "thread_cpu_ns": 1796375,
+          "process_cpu_ns": 1796000,
+          "n": 200
+        }
+      ],
+      "libdeflate-1.26": [
+        {
+          "wall_ns": 1708250,
+          "thread_cpu_ns": 1636292,
+          "process_cpu_ns": 1636000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1865292,
+          "thread_cpu_ns": 1803208,
+          "process_cpu_ns": 1804000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1495708,
+          "thread_cpu_ns": 1496458,
+          "process_cpu_ns": 1496000,
+          "n": 200
+        },
+        {
+          "wall_ns": 2152584,
+          "thread_cpu_ns": 1888750,
+          "process_cpu_ns": 1889000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1926417,
+          "thread_cpu_ns": 1769542,
+          "process_cpu_ns": 1770000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1570083,
+          "thread_cpu_ns": 1475833,
+          "process_cpu_ns": 1475000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1590666,
+          "thread_cpu_ns": 1543125,
+          "process_cpu_ns": 1540000,
+          "n": 200
+        },
+        {
+          "wall_ns": 2310375,
+          "thread_cpu_ns": 2054959,
+          "process_cpu_ns": 2051000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1982334,
+          "thread_cpu_ns": 1726417,
+          "process_cpu_ns": 1726000,
+          "n": 200
+        },
+        {
+          "wall_ns": 2253333,
+          "thread_cpu_ns": 1980083,
+          "process_cpu_ns": 1981000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1541334,
+          "thread_cpu_ns": 1538208,
+          "process_cpu_ns": 1538000,
+          "n": 200
+        }
+      ],
+      "zlib-rs": [
+        {
+          "wall_ns": 1962625,
+          "thread_cpu_ns": 1849875,
+          "process_cpu_ns": 1853000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1758708,
+          "thread_cpu_ns": 1728417,
+          "process_cpu_ns": 1729000,
+          "n": 200
+        },
+        {
+          "wall_ns": 2022084,
+          "thread_cpu_ns": 1940833,
+          "process_cpu_ns": 1941000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1999666,
+          "thread_cpu_ns": 1922000,
+          "process_cpu_ns": 1923000,
+          "n": 200
+        },
+        {
+          "wall_ns": 2301000,
+          "thread_cpu_ns": 1998250,
+          "process_cpu_ns": 1999000,
+          "n": 200
+        },
+        {
+          "wall_ns": 2724125,
+          "thread_cpu_ns": 1931208,
+          "process_cpu_ns": 1932000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1540791,
+          "thread_cpu_ns": 1541375,
+          "process_cpu_ns": 1542000,
+          "n": 200
+        },
+        {
+          "wall_ns": 2375125,
+          "thread_cpu_ns": 2068084,
+          "process_cpu_ns": 2068000,
+          "n": 200
+        },
+        {
+          "wall_ns": 2108458,
+          "thread_cpu_ns": 1897541,
+          "process_cpu_ns": 1898000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1946875,
+          "thread_cpu_ns": 1774708,
+          "process_cpu_ns": 1775000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1923375,
+          "thread_cpu_ns": 1884708,
+          "process_cpu_ns": 1885000,
+          "n": 200
+        }
+      ]
+    },
+    "public-compress-4096": {
+      "baseline": [
+        {
+          "wall_ns": 1374917,
+          "thread_cpu_ns": 1343917,
+          "process_cpu_ns": 1345000,
+          "n": 80
+        },
+        {
+          "wall_ns": 1953250,
+          "thread_cpu_ns": 1847833,
+          "process_cpu_ns": 1848000,
+          "n": 80
+        },
+        {
+          "wall_ns": 1759166,
+          "thread_cpu_ns": 1643208,
+          "process_cpu_ns": 1643000,
+          "n": 80
+        },
+        {
+          "wall_ns": 1993625,
+          "thread_cpu_ns": 1782084,
+          "process_cpu_ns": 1782000,
+          "n": 80
+        },
+        {
+          "wall_ns": 1888917,
+          "thread_cpu_ns": 1708750,
+          "process_cpu_ns": 1709000,
+          "n": 80
+        },
+        {
+          "wall_ns": 2732833,
+          "thread_cpu_ns": 1521834,
+          "process_cpu_ns": 1522000,
+          "n": 80
+        },
+        {
+          "wall_ns": 1198458,
+          "thread_cpu_ns": 1198958,
+          "process_cpu_ns": 1199000,
+          "n": 80
+        },
+        {
+          "wall_ns": 1925125,
+          "thread_cpu_ns": 1643833,
+          "process_cpu_ns": 1644000,
+          "n": 80
+        },
+        {
+          "wall_ns": 1275666,
+          "thread_cpu_ns": 1266084,
+          "process_cpu_ns": 1266000,
+          "n": 80
+        },
+        {
+          "wall_ns": 1480125,
+          "thread_cpu_ns": 1407042,
+          "process_cpu_ns": 1407000,
+          "n": 80
+        },
+        {
+          "wall_ns": 1681084,
+          "thread_cpu_ns": 1513834,
+          "process_cpu_ns": 1514000,
+          "n": 80
+        }
+      ],
+      "libdeflate-1.26": [
+        {
+          "wall_ns": 1174750,
+          "thread_cpu_ns": 1175208,
+          "process_cpu_ns": 1175000,
+          "n": 80
+        },
+        {
+          "wall_ns": 1161042,
+          "thread_cpu_ns": 1161000,
+          "process_cpu_ns": 1162000,
+          "n": 80
+        },
+        {
+          "wall_ns": 1839250,
+          "thread_cpu_ns": 1703833,
+          "process_cpu_ns": 1703000,
+          "n": 80
+        },
+        {
+          "wall_ns": 1834541,
+          "thread_cpu_ns": 1707666,
+          "process_cpu_ns": 1707000,
+          "n": 80
+        },
+        {
+          "wall_ns": 2005083,
+          "thread_cpu_ns": 1780167,
+          "process_cpu_ns": 1780000,
+          "n": 80
+        },
+        {
+          "wall_ns": 1972500,
+          "thread_cpu_ns": 1443042,
+          "process_cpu_ns": 1442000,
+          "n": 80
+        },
+        {
+          "wall_ns": 1759000,
+          "thread_cpu_ns": 1483417,
+          "process_cpu_ns": 1483000,
+          "n": 80
+        },
+        {
+          "wall_ns": 2137709,
+          "thread_cpu_ns": 1785917,
+          "process_cpu_ns": 1786000,
+          "n": 80
+        },
+        {
+          "wall_ns": 1447000,
+          "thread_cpu_ns": 1338000,
+          "process_cpu_ns": 1339000,
+          "n": 80
+        },
+        {
+          "wall_ns": 1774583,
+          "thread_cpu_ns": 1623042,
+          "process_cpu_ns": 1623000,
+          "n": 80
+        },
+        {
+          "wall_ns": 1613500,
+          "thread_cpu_ns": 1585125,
+          "process_cpu_ns": 1586000,
+          "n": 80
+        }
+      ],
+      "zlib-rs": [
+        {
+          "wall_ns": 1310542,
+          "thread_cpu_ns": 1297291,
+          "process_cpu_ns": 1298000,
+          "n": 80
+        },
+        {
+          "wall_ns": 1691958,
+          "thread_cpu_ns": 1570000,
+          "process_cpu_ns": 1570000,
+          "n": 80
+        },
+        {
+          "wall_ns": 1334666,
+          "thread_cpu_ns": 1268583,
+          "process_cpu_ns": 1269000,
+          "n": 80
+        },
+        {
+          "wall_ns": 1714875,
+          "thread_cpu_ns": 1637333,
+          "process_cpu_ns": 1637000,
+          "n": 80
+        },
+        {
+          "wall_ns": 1681375,
+          "thread_cpu_ns": 1569875,
+          "process_cpu_ns": 1571000,
+          "n": 80
+        },
+        {
+          "wall_ns": 2009291,
+          "thread_cpu_ns": 1431084,
+          "process_cpu_ns": 1431000,
+          "n": 80
+        },
+        {
+          "wall_ns": 1177208,
+          "thread_cpu_ns": 1177625,
+          "process_cpu_ns": 1178000,
+          "n": 80
+        },
+        {
+          "wall_ns": 1790334,
+          "thread_cpu_ns": 1524500,
+          "process_cpu_ns": 1525000,
+          "n": 80
+        },
+        {
+          "wall_ns": 2105333,
+          "thread_cpu_ns": 1893333,
+          "process_cpu_ns": 1894000,
+          "n": 80
+        },
+        {
+          "wall_ns": 2340958,
+          "thread_cpu_ns": 1984708,
+          "process_cpu_ns": 1986000,
+          "n": 80
+        },
+        {
+          "wall_ns": 1580292,
+          "thread_cpu_ns": 1530791,
+          "process_cpu_ns": 1532000,
+          "n": 80
+        }
+      ]
+    },
+    "stream-bounded": {
+      "baseline": [
+        {
+          "wall_ns": 1802750,
+          "thread_cpu_ns": 1766584,
+          "process_cpu_ns": 1766000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1464125,
+          "thread_cpu_ns": 1464375,
+          "process_cpu_ns": 1465000,
+          "n": 200
+        },
+        {
+          "wall_ns": 2201875,
+          "thread_cpu_ns": 2000709,
+          "process_cpu_ns": 2001000,
+          "n": 200
+        },
+        {
+          "wall_ns": 2470958,
+          "thread_cpu_ns": 2238250,
+          "process_cpu_ns": 2240000,
+          "n": 200
+        },
+        {
+          "wall_ns": 2776667,
+          "thread_cpu_ns": 2339750,
+          "process_cpu_ns": 2340000,
+          "n": 200
+        },
+        {
+          "wall_ns": 2680708,
+          "thread_cpu_ns": 1954958,
+          "process_cpu_ns": 1954000,
+          "n": 200
+        },
+        {
+          "wall_ns": 2370083,
+          "thread_cpu_ns": 1957333,
+          "process_cpu_ns": 1957000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1769625,
+          "thread_cpu_ns": 1742375,
+          "process_cpu_ns": 1742000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1599208,
+          "thread_cpu_ns": 1599958,
+          "process_cpu_ns": 1601000,
+          "n": 200
+        },
+        {
+          "wall_ns": 2005000,
+          "thread_cpu_ns": 1884958,
+          "process_cpu_ns": 1886000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1671917,
+          "thread_cpu_ns": 1672500,
+          "process_cpu_ns": 1673000,
+          "n": 200
+        }
+      ],
+      "libdeflate-1.26": [
+        {
+          "wall_ns": 1708459,
+          "thread_cpu_ns": 1666792,
+          "process_cpu_ns": 1667000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1531292,
+          "thread_cpu_ns": 1530541,
+          "process_cpu_ns": 1531000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1698500,
+          "thread_cpu_ns": 1618917,
+          "process_cpu_ns": 1619000,
+          "n": 200
+        },
+        {
+          "wall_ns": 2081375,
+          "thread_cpu_ns": 1995458,
+          "process_cpu_ns": 1995000,
+          "n": 200
+        },
+        {
+          "wall_ns": 2173708,
+          "thread_cpu_ns": 2020500,
+          "process_cpu_ns": 2021000,
+          "n": 200
+        },
+        {
+          "wall_ns": 2392500,
+          "thread_cpu_ns": 1573042,
+          "process_cpu_ns": 1573000,
+          "n": 200
+        },
+        {
+          "wall_ns": 2113042,
+          "thread_cpu_ns": 1998917,
+          "process_cpu_ns": 1998000,
+          "n": 200
+        },
+        {
+          "wall_ns": 2085000,
+          "thread_cpu_ns": 1964750,
+          "process_cpu_ns": 1966000,
+          "n": 200
+        },
+        {
+          "wall_ns": 2449500,
+          "thread_cpu_ns": 2184792,
+          "process_cpu_ns": 2186000,
+          "n": 200
+        },
+        {
+          "wall_ns": 2149833,
+          "thread_cpu_ns": 2005833,
+          "process_cpu_ns": 2007000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1978417,
+          "thread_cpu_ns": 1896958,
+          "process_cpu_ns": 1898000,
+          "n": 200
+        }
+      ],
+      "zlib-rs": [
+        {
+          "wall_ns": 1808792,
+          "thread_cpu_ns": 1792500,
+          "process_cpu_ns": 1792000,
+          "n": 200
+        },
+        {
+          "wall_ns": 2721667,
+          "thread_cpu_ns": 2518917,
+          "process_cpu_ns": 2519000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1815875,
+          "thread_cpu_ns": 1788917,
+          "process_cpu_ns": 1789000,
+          "n": 200
+        },
+        {
+          "wall_ns": 2463125,
+          "thread_cpu_ns": 2361375,
+          "process_cpu_ns": 2361000,
+          "n": 200
+        },
+        {
+          "wall_ns": 2424208,
+          "thread_cpu_ns": 2188875,
+          "process_cpu_ns": 2189000,
+          "n": 200
+        },
+        {
+          "wall_ns": 2962083,
+          "thread_cpu_ns": 1987416,
+          "process_cpu_ns": 1987000,
+          "n": 200
+        },
+        {
+          "wall_ns": 2074375,
+          "thread_cpu_ns": 1885000,
+          "process_cpu_ns": 1885000,
+          "n": 200
+        },
+        {
+          "wall_ns": 2320500,
+          "thread_cpu_ns": 2141958,
+          "process_cpu_ns": 2143000,
+          "n": 200
+        },
+        {
+          "wall_ns": 1972458,
+          "thread_cpu_ns": 1934709,
+          "process_cpu_ns": 1935000,
+          "n": 200
+        },
+        {
+          "wall_ns": 2847416,
+          "thread_cpu_ns": 2500625,
+          "process_cpu_ns": 2502000,
+          "n": 200
+        },
+        {
+          "wall_ns": 2078667,
+          "thread_cpu_ns": 2040542,
+          "process_cpu_ns": 2040000,
+          "n": 200
+        }
+      ]
+    },
+    "stream-seek": {
+      "baseline": [
+        {
+          "wall_ns": 1588625,
+          "thread_cpu_ns": 1579083,
+          "process_cpu_ns": 1578000,
+          "n": 120
+        },
+        {
+          "wall_ns": 1511250,
+          "thread_cpu_ns": 1512334,
+          "process_cpu_ns": 1512000,
+          "n": 120
+        },
+        {
+          "wall_ns": 2164125,
+          "thread_cpu_ns": 1985959,
+          "process_cpu_ns": 1986000,
+          "n": 120
+        },
+        {
+          "wall_ns": 1666416,
+          "thread_cpu_ns": 1662334,
+          "process_cpu_ns": 1663000,
+          "n": 120
+        },
+        {
+          "wall_ns": 2230583,
+          "thread_cpu_ns": 1963041,
+          "process_cpu_ns": 1963000,
+          "n": 120
+        },
+        {
+          "wall_ns": 1806375,
+          "thread_cpu_ns": 1638209,
+          "process_cpu_ns": 1638000,
+          "n": 120
+        },
+        {
+          "wall_ns": 1706041,
+          "thread_cpu_ns": 1706042,
+          "process_cpu_ns": 1706000,
+          "n": 120
+        },
+        {
+          "wall_ns": 2222709,
+          "thread_cpu_ns": 2008583,
+          "process_cpu_ns": 2008000,
+          "n": 120
+        },
+        {
+          "wall_ns": 1681750,
+          "thread_cpu_ns": 1682750,
+          "process_cpu_ns": 1683000,
+          "n": 120
+        },
+        {
+          "wall_ns": 2419291,
+          "thread_cpu_ns": 2130125,
+          "process_cpu_ns": 2130000,
+          "n": 120
+        },
+        {
+          "wall_ns": 1751958,
+          "thread_cpu_ns": 1730917,
+          "process_cpu_ns": 1732000,
+          "n": 120
+        }
+      ],
+      "libdeflate-1.26": [
+        {
+          "wall_ns": 1778958,
+          "thread_cpu_ns": 1751000,
+          "process_cpu_ns": 1751000,
+          "n": 120
+        },
+        {
+          "wall_ns": 1911750,
+          "thread_cpu_ns": 1848000,
+          "process_cpu_ns": 1848000,
+          "n": 120
+        },
+        {
+          "wall_ns": 1680417,
+          "thread_cpu_ns": 1653042,
+          "process_cpu_ns": 1653000,
+          "n": 120
+        },
+        {
+          "wall_ns": 1969333,
+          "thread_cpu_ns": 1768959,
+          "process_cpu_ns": 1769000,
+          "n": 120
+        },
+        {
+          "wall_ns": 2344334,
+          "thread_cpu_ns": 1991292,
+          "process_cpu_ns": 1992000,
+          "n": 120
+        },
+        {
+          "wall_ns": 2826166,
+          "thread_cpu_ns": 2090916,
+          "process_cpu_ns": 2092000,
+          "n": 120
+        },
+        {
+          "wall_ns": 1684917,
+          "thread_cpu_ns": 1632292,
+          "process_cpu_ns": 1632000,
+          "n": 120
+        },
+        {
+          "wall_ns": 1809750,
+          "thread_cpu_ns": 1728208,
+          "process_cpu_ns": 1728000,
+          "n": 120
+        },
+        {
+          "wall_ns": 1756250,
+          "thread_cpu_ns": 1716750,
+          "process_cpu_ns": 1717000,
+          "n": 120
+        },
+        {
+          "wall_ns": 3025500,
+          "thread_cpu_ns": 2484667,
+          "process_cpu_ns": 2485000,
+          "n": 120
+        },
+        {
+          "wall_ns": 1786125,
+          "thread_cpu_ns": 1786709,
+          "process_cpu_ns": 1786000,
+          "n": 120
+        }
+      ],
+      "zlib-rs": [
+        {
+          "wall_ns": 1689042,
+          "thread_cpu_ns": 1684583,
+          "process_cpu_ns": 1685000,
+          "n": 120
+        },
+        {
+          "wall_ns": 1602208,
+          "thread_cpu_ns": 1603083,
+          "process_cpu_ns": 1603000,
+          "n": 120
+        },
+        {
+          "wall_ns": 1871833,
+          "thread_cpu_ns": 1801333,
+          "process_cpu_ns": 1802000,
+          "n": 120
+        },
+        {
+          "wall_ns": 2522667,
+          "thread_cpu_ns": 2180458,
+          "process_cpu_ns": 2180000,
+          "n": 120
+        },
+        {
+          "wall_ns": 2683792,
+          "thread_cpu_ns": 2268292,
+          "process_cpu_ns": 2268000,
+          "n": 120
+        },
+        {
+          "wall_ns": 2089417,
+          "thread_cpu_ns": 1872334,
+          "process_cpu_ns": 1873000,
+          "n": 120
+        },
+        {
+          "wall_ns": 1791792,
+          "thread_cpu_ns": 1787917,
+          "process_cpu_ns": 1788000,
+          "n": 120
+        },
+        {
+          "wall_ns": 1755083,
+          "thread_cpu_ns": 1755250,
+          "process_cpu_ns": 1755000,
+          "n": 120
+        },
+        {
+          "wall_ns": 3120666,
+          "thread_cpu_ns": 2507917,
+          "process_cpu_ns": 2507000,
+          "n": 120
+        },
+        {
+          "wall_ns": 2418291,
+          "thread_cpu_ns": 2167541,
+          "process_cpu_ns": 2168000,
+          "n": 120
+        },
+        {
+          "wall_ns": 1721292,
+          "thread_cpu_ns": 1721917,
+          "process_cpu_ns": 1722000,
+          "n": 120
+        }
+      ]
+    },
+    "inflate-full": {
+      "baseline": [
+        {
+          "wall_ns": 1663625,
+          "thread_cpu_ns": 1664292,
+          "process_cpu_ns": 1664000,
+          "n": 800
+        },
+        {
+          "wall_ns": 1719458,
+          "thread_cpu_ns": 1715958,
+          "process_cpu_ns": 1717000,
+          "n": 800
+        },
+        {
+          "wall_ns": 1648958,
+          "thread_cpu_ns": 1649000,
+          "process_cpu_ns": 1649000,
+          "n": 800
+        },
+        {
+          "wall_ns": 2423584,
+          "thread_cpu_ns": 2296792,
+          "process_cpu_ns": 2297000,
+          "n": 800
+        },
+        {
+          "wall_ns": 2323291,
+          "thread_cpu_ns": 2068833,
+          "process_cpu_ns": 2070000,
+          "n": 800
+        },
+        {
+          "wall_ns": 2331375,
+          "thread_cpu_ns": 1817042,
+          "process_cpu_ns": 1815000,
+          "n": 800
+        },
+        {
+          "wall_ns": 2195708,
+          "thread_cpu_ns": 1991000,
+          "process_cpu_ns": 1991000,
+          "n": 800
+        },
+        {
+          "wall_ns": 1880375,
+          "thread_cpu_ns": 1847250,
+          "process_cpu_ns": 1848000,
+          "n": 800
+        },
+        {
+          "wall_ns": 2362208,
+          "thread_cpu_ns": 2118708,
+          "process_cpu_ns": 2119000,
+          "n": 800
+        },
+        {
+          "wall_ns": 2344084,
+          "thread_cpu_ns": 2121125,
+          "process_cpu_ns": 2121000,
+          "n": 800
+        },
+        {
+          "wall_ns": 2279208,
+          "thread_cpu_ns": 2143666,
+          "process_cpu_ns": 2143000,
+          "n": 800
+        }
+      ],
+      "libdeflate-1.26": [
+        {
+          "wall_ns": 1822625,
+          "thread_cpu_ns": 1797667,
+          "process_cpu_ns": 1797000,
+          "n": 800
+        },
+        {
+          "wall_ns": 2106042,
+          "thread_cpu_ns": 2015667,
+          "process_cpu_ns": 2015000,
+          "n": 800
+        },
+        {
+          "wall_ns": 2247000,
+          "thread_cpu_ns": 2173959,
+          "process_cpu_ns": 2174000,
+          "n": 800
+        },
+        {
+          "wall_ns": 2317000,
+          "thread_cpu_ns": 2101417,
+          "process_cpu_ns": 2101000,
+          "n": 800
+        },
+        {
+          "wall_ns": 1687000,
+          "thread_cpu_ns": 1685875,
+          "process_cpu_ns": 1685000,
+          "n": 800
+        },
+        {
+          "wall_ns": 3404959,
+          "thread_cpu_ns": 2022250,
+          "process_cpu_ns": 2021000,
+          "n": 800
+        },
+        {
+          "wall_ns": 2304625,
+          "thread_cpu_ns": 2001917,
+          "process_cpu_ns": 2002000,
+          "n": 800
+        },
+        {
+          "wall_ns": 2362584,
+          "thread_cpu_ns": 2009959,
+          "process_cpu_ns": 2009000,
+          "n": 800
+        },
+        {
+          "wall_ns": 2476375,
+          "thread_cpu_ns": 2204292,
+          "process_cpu_ns": 2205000,
+          "n": 800
+        },
+        {
+          "wall_ns": 2290334,
+          "thread_cpu_ns": 2104459,
+          "process_cpu_ns": 2105000,
+          "n": 800
+        },
+        {
+          "wall_ns": 2126958,
+          "thread_cpu_ns": 2083000,
+          "process_cpu_ns": 2083000,
+          "n": 800
+        }
+      ],
+      "zlib-rs": [
+        {
+          "wall_ns": 1298959,
+          "thread_cpu_ns": 1299375,
+          "process_cpu_ns": 1300000,
+          "n": 800
+        },
+        {
+          "wall_ns": 1655042,
+          "thread_cpu_ns": 1606833,
+          "process_cpu_ns": 1606000,
+          "n": 800
+        },
+        {
+          "wall_ns": 1276917,
+          "thread_cpu_ns": 1277209,
+          "process_cpu_ns": 1278000,
+          "n": 800
+        },
+        {
+          "wall_ns": 1980292,
+          "thread_cpu_ns": 1762958,
+          "process_cpu_ns": 1763000,
+          "n": 800
+        },
+        {
+          "wall_ns": 1840167,
+          "thread_cpu_ns": 1677167,
+          "process_cpu_ns": 1677000,
+          "n": 800
+        },
+        {
+          "wall_ns": 1693334,
+          "thread_cpu_ns": 1481459,
+          "process_cpu_ns": 1483000,
+          "n": 800
+        },
+        {
+          "wall_ns": 1733167,
+          "thread_cpu_ns": 1518792,
+          "process_cpu_ns": 1519000,
+          "n": 800
+        },
+        {
+          "wall_ns": 1930125,
+          "thread_cpu_ns": 1648791,
+          "process_cpu_ns": 1650000,
+          "n": 800
+        },
+        {
+          "wall_ns": 1420417,
+          "thread_cpu_ns": 1420166,
+          "process_cpu_ns": 1421000,
+          "n": 800
+        },
+        {
+          "wall_ns": 2003167,
+          "thread_cpu_ns": 1767625,
+          "process_cpu_ns": 1767000,
+          "n": 800
+        },
+        {
+          "wall_ns": 1579500,
+          "thread_cpu_ns": 1563000,
+          "process_cpu_ns": 1563000,
+          "n": 800
+        }
+      ]
+    },
+    "inflate-bounded": {
+      "baseline": [
+        {
+          "wall_ns": 1349542,
+          "thread_cpu_ns": 1349375,
+          "process_cpu_ns": 1349000,
+          "n": 4000
+        },
+        {
+          "wall_ns": 1406167,
+          "thread_cpu_ns": 1391916,
+          "process_cpu_ns": 1392000,
+          "n": 4000
+        },
+        {
+          "wall_ns": 1680042,
+          "thread_cpu_ns": 1535292,
+          "process_cpu_ns": 1536000,
+          "n": 4000
+        },
+        {
+          "wall_ns": 1568959,
+          "thread_cpu_ns": 1511250,
+          "process_cpu_ns": 1512000,
+          "n": 4000
+        },
+        {
+          "wall_ns": 1775750,
+          "thread_cpu_ns": 1606375,
+          "process_cpu_ns": 1606000,
+          "n": 4000
+        },
+        {
+          "wall_ns": 1643458,
+          "thread_cpu_ns": 1474708,
+          "process_cpu_ns": 1474000,
+          "n": 4000
+        },
+        {
+          "wall_ns": 1758458,
+          "thread_cpu_ns": 1522791,
+          "process_cpu_ns": 1522000,
+          "n": 4000
+        },
+        {
+          "wall_ns": 1529166,
+          "thread_cpu_ns": 1479750,
+          "process_cpu_ns": 1480000,
+          "n": 4000
+        },
+        {
+          "wall_ns": 1484583,
+          "thread_cpu_ns": 1484917,
+          "process_cpu_ns": 1485000,
+          "n": 4000
+        },
+        {
+          "wall_ns": 1738958,
+          "thread_cpu_ns": 1559292,
+          "process_cpu_ns": 1559000,
+          "n": 4000
+        },
+        {
+          "wall_ns": 1681625,
+          "thread_cpu_ns": 1606875,
+          "process_cpu_ns": 1607000,
+          "n": 4000
+        }
+      ],
+      "libdeflate-1.26": [
+        {
+          "wall_ns": 1337125,
+          "thread_cpu_ns": 1337125,
+          "process_cpu_ns": 1338000,
+          "n": 4000
+        },
+        {
+          "wall_ns": 1428542,
+          "thread_cpu_ns": 1416000,
+          "process_cpu_ns": 1416000,
+          "n": 4000
+        },
+        {
+          "wall_ns": 1390458,
+          "thread_cpu_ns": 1365583,
+          "process_cpu_ns": 1366000,
+          "n": 4000
+        },
+        {
+          "wall_ns": 1745334,
+          "thread_cpu_ns": 1660833,
+          "process_cpu_ns": 1661000,
+          "n": 4000
+        },
+        {
+          "wall_ns": 1742666,
+          "thread_cpu_ns": 1573250,
+          "process_cpu_ns": 1573000,
+          "n": 4000
+        },
+        {
+          "wall_ns": 1754625,
+          "thread_cpu_ns": 1514000,
+          "process_cpu_ns": 1513000,
+          "n": 4000
+        },
+        {
+          "wall_ns": 1982250,
+          "thread_cpu_ns": 1534042,
+          "process_cpu_ns": 1533000,
+          "n": 4000
+        },
+        {
+          "wall_ns": 1935792,
+          "thread_cpu_ns": 1595542,
+          "process_cpu_ns": 1595000,
+          "n": 4000
+        },
+        {
+          "wall_ns": 2295791,
+          "thread_cpu_ns": 1697958,
+          "process_cpu_ns": 1699000,
+          "n": 4000
+        },
+        {
+          "wall_ns": 1978375,
+          "thread_cpu_ns": 1692500,
+          "process_cpu_ns": 1693000,
+          "n": 4000
+        },
+        {
+          "wall_ns": 1727250,
+          "thread_cpu_ns": 1652666,
+          "process_cpu_ns": 1653000,
+          "n": 4000
+        }
+      ],
+      "zlib-rs": [
+        {
+          "wall_ns": 2633917,
+          "thread_cpu_ns": 2384833,
+          "process_cpu_ns": 2385000,
+          "n": 4000
+        },
+        {
+          "wall_ns": 2211292,
+          "thread_cpu_ns": 2211625,
+          "process_cpu_ns": 2212000,
+          "n": 4000
+        },
+        {
+          "wall_ns": 2930125,
+          "thread_cpu_ns": 2691709,
+          "process_cpu_ns": 2692000,
+          "n": 4000
+        },
+        {
+          "wall_ns": 3235208,
+          "thread_cpu_ns": 3004083,
+          "process_cpu_ns": 3005000,
+          "n": 4000
+        },
+        {
+          "wall_ns": 2958916,
+          "thread_cpu_ns": 2775125,
+          "process_cpu_ns": 2775000,
+          "n": 4000
+        },
+        {
+          "wall_ns": 2314667,
+          "thread_cpu_ns": 2313834,
+          "process_cpu_ns": 2313000,
+          "n": 4000
+        },
+        {
+          "wall_ns": 2937416,
+          "thread_cpu_ns": 2613583,
+          "process_cpu_ns": 2613000,
+          "n": 4000
+        },
+        {
+          "wall_ns": 2544208,
+          "thread_cpu_ns": 2478208,
+          "process_cpu_ns": 2478000,
+          "n": 4000
+        },
+        {
+          "wall_ns": 2965375,
+          "thread_cpu_ns": 2814000,
+          "process_cpu_ns": 2815000,
+          "n": 4000
+        },
+        {
+          "wall_ns": 3273084,
+          "thread_cpu_ns": 3015917,
+          "process_cpu_ns": 3016000,
+          "n": 4000
+        },
+        {
+          "wall_ns": 3556709,
+          "thread_cpu_ns": 3102334,
+          "process_cpu_ns": 3102000,
+          "n": 4000
+        }
+      ]
+    }
+  },
+  "paired_speedup": {
+    "crc-0": {
+      "libdeflate-1.26": {
+        "wall_ns": 0.9827178463131425,
+        "thread_cpu_ns": 1.005166165471509,
+        "process_cpu_ns": 1.0049352251696484
+      },
+      "zlib-rs": {
+        "wall_ns": 0.9718773927270967,
+        "thread_cpu_ns": 0.9847658922299282,
+        "process_cpu_ns": 0.9848851269649335
+      }
+    },
+    "native-decompress-0": {
+      "libdeflate-1.26": {
+        "wall_ns": 1.035690760028336,
+        "thread_cpu_ns": 1.041153184119205,
+        "process_cpu_ns": 1.0409982174688057
+      },
+      "zlib-rs": {
+        "wall_ns": 0.9875103624298112,
+        "thread_cpu_ns": 0.9768313334842653,
+        "process_cpu_ns": 0.9773550724637681
+      }
+    },
+    "public-decompress-0": {
+      "libdeflate-1.26": {
+        "wall_ns": 0.9624368428846438,
+        "thread_cpu_ns": 0.9691143472161603,
+        "process_cpu_ns": 0.9686836518046709
+      },
+      "zlib-rs": {
+        "wall_ns": 0.977362454544047,
+        "thread_cpu_ns": 1.0115151819322459,
+        "process_cpu_ns": 1.0113788487282462
+      }
+    },
+    "crc-32": {
+      "libdeflate-1.26": {
+        "wall_ns": 0.9943726411995298,
+        "thread_cpu_ns": 0.9920292013244575,
+        "process_cpu_ns": 0.9919507575757576
+      },
+      "zlib-rs": {
+        "wall_ns": 0.9858507355622503,
+        "thread_cpu_ns": 0.9832845426713446,
+        "process_cpu_ns": 0.9836512261580381
+      }
+    },
+    "native-decompress-32": {
+      "libdeflate-1.26": {
+        "wall_ns": 0.9883432904578027,
+        "thread_cpu_ns": 0.9796776902768519,
+        "process_cpu_ns": 0.9792843691148776
+      },
+      "zlib-rs": {
+        "wall_ns": 1.0369025196886257,
+        "thread_cpu_ns": 1.0300204459980085,
+        "process_cpu_ns": 1.0305755395683454
+      }
+    },
+    "public-decompress-32": {
+      "libdeflate-1.26": {
+        "wall_ns": 0.9775533298573955,
+        "thread_cpu_ns": 0.9841895736989206,
+        "process_cpu_ns": 0.9842342342342343
+      },
+      "zlib-rs": {
+        "wall_ns": 0.9830588174390212,
+        "thread_cpu_ns": 0.9795574479774741,
+        "process_cpu_ns": 0.9785831960461285
+      }
+    },
+    "crc-4096": {
+      "libdeflate-1.26": {
+        "wall_ns": 0.9458955914603737,
+        "thread_cpu_ns": 0.9505797701477622,
+        "process_cpu_ns": 0.9514563106796117
+      },
+      "zlib-rs": {
+        "wall_ns": 0.9692738050911605,
+        "thread_cpu_ns": 0.9334337469319365,
+        "process_cpu_ns": 0.9343802579921481
+      }
+    },
+    "native-decompress-4096": {
+      "libdeflate-1.26": {
+        "wall_ns": 0.9946248118684154,
+        "thread_cpu_ns": 1.0171057457726929,
+        "process_cpu_ns": 1.0168236877523553
+      },
+      "zlib-rs": {
+        "wall_ns": 0.9921688888888889,
+        "thread_cpu_ns": 0.9708617985228052,
+        "process_cpu_ns": 0.9701583434835567
+      }
+    },
+    "public-decompress-4096": {
+      "libdeflate-1.26": {
+        "wall_ns": 0.9173635958943165,
+        "thread_cpu_ns": 0.9361862360198073,
+        "process_cpu_ns": 0.9354644149577804
+      },
+      "zlib-rs": {
+        "wall_ns": 1.0369336745807014,
+        "thread_cpu_ns": 1.0149588342159175,
+        "process_cpu_ns": 1.0158850226928895
+      }
+    },
+    "crc-262145": {
+      "libdeflate-1.26": {
+        "wall_ns": 1.0015140121601789,
+        "thread_cpu_ns": 1.0040151678169926,
+        "process_cpu_ns": 1.003747323340471
+      },
+      "zlib-rs": {
+        "wall_ns": 0.9560220488223924,
+        "thread_cpu_ns": 0.9766480810295357,
+        "process_cpu_ns": 0.9770723104056437
+      }
+    },
+    "native-decompress-262145": {
+      "libdeflate-1.26": {
+        "wall_ns": 0.9474171429081288,
+        "thread_cpu_ns": 0.9457353048291937,
+        "process_cpu_ns": 0.9463869463869464
+      },
+      "zlib-rs": {
+        "wall_ns": 0.9966817184070241,
+        "thread_cpu_ns": 0.9945364834954741,
+        "process_cpu_ns": 0.9950980392156863
+      }
+    },
+    "public-decompress-262145": {
+      "libdeflate-1.26": {
+        "wall_ns": 0.9197343528126707,
+        "thread_cpu_ns": 0.9766236569650465,
+        "process_cpu_ns": 0.9775967413441955
+      },
+      "zlib-rs": {
+        "wall_ns": 0.8707193748563549,
+        "thread_cpu_ns": 0.9920517858161301,
+        "process_cpu_ns": 0.992133726647001
+      }
+    },
+    "public-decompress-bytearray": {
+      "libdeflate-1.26": {
+        "wall_ns": 0.9427912870305701,
+        "thread_cpu_ns": 0.9634686753059397,
+        "process_cpu_ns": 0.9607300884955752
+      },
+      "zlib-rs": {
+        "wall_ns": 0.9815097996628523,
+        "thread_cpu_ns": 0.9903187889581478,
+        "process_cpu_ns": 0.9906849315068493
+      }
+    },
+    "public-decompress-multimember": {
+      "libdeflate-1.26": {
+        "wall_ns": 0.8911373312803106,
+        "thread_cpu_ns": 0.9017249572523318,
+        "process_cpu_ns": 0.8986749805144193
+      },
+      "zlib-rs": {
+        "wall_ns": 0.9993056142122207,
+        "thread_cpu_ns": 0.9986090237742083,
+        "process_cpu_ns": 0.9980372914622179
+      }
+    },
+    "stream-read-32": {
+      "libdeflate-1.26": {
+        "wall_ns": 0.9491816806491542,
+        "thread_cpu_ns": 0.9658052316419792,
+        "process_cpu_ns": 0.9659520807061791
+      },
+      "zlib-rs": {
+        "wall_ns": 0.9229395497962728,
+        "thread_cpu_ns": 0.9096305769510246,
+        "process_cpu_ns": 0.9098837209302325
+      }
+    },
+    "public-compress-32": {
+      "libdeflate-1.26": {
+        "wall_ns": 0.9861052631578947,
+        "thread_cpu_ns": 0.986021396372579,
+        "process_cpu_ns": 0.9854227405247813
+      },
+      "zlib-rs": {
+        "wall_ns": 1.0025975028063565,
+        "thread_cpu_ns": 1.0145066910761318,
+        "process_cpu_ns": 1.0140350877192983
+      }
+    },
+    "stream-read-4096": {
+      "libdeflate-1.26": {
+        "wall_ns": 0.9914086300958215,
+        "thread_cpu_ns": 0.982357101441888,
+        "process_cpu_ns": 0.9826187717265353
+      },
+      "zlib-rs": {
+        "wall_ns": 0.8476195845474274,
+        "thread_cpu_ns": 0.9245413893440498,
+        "process_cpu_ns": 0.9250704225352113
+      }
+    },
+    "public-compress-4096": {
+      "libdeflate-1.26": {
+        "wall_ns": 0.9564583389968737,
+        "thread_cpu_ns": 0.959881853781134,
+        "process_cpu_ns": 0.9601123595505618
+      },
+      "zlib-rs": {
+        "wall_ns": 1.075288186450126,
+        "thread_cpu_ns": 1.0634134683917924,
+        "process_cpu_ns": 1.063591893780573
+      }
+    },
+    "stream-bounded": {
+      "libdeflate-1.26": {
+        "wall_ns": 1.055190671827653,
+        "thread_cpu_ns": 0.9791967350320199,
+        "process_cpu_ns": 0.9794794794794794
+      },
+      "zlib-rs": {
+        "wall_ns": 0.9050077259820201,
+        "thread_cpu_ns": 0.9478587687258483,
+        "process_cpu_ns": 0.9487505294366794
+      }
+    },
+    "stream-seek": {
+      "libdeflate-1.26": {
+        "wall_ns": 0.9514783303061765,
+        "thread_cpu_ns": 0.968773874201115,
+        "process_cpu_ns": 0.9697648376259799
+      },
+      "zlib-rs": {
+        "wall_ns": 0.9432295931614372,
+        "thread_cpu_ns": 0.943390953556366,
+        "process_cpu_ns": 0.9432314410480349
+      }
+    },
+    "inflate-full": {
+      "libdeflate-1.26": {
+        "wall_ns": 0.9527398166729946,
+        "thread_cpu_ns": 0.9611739279550985,
+        "process_cpu_ns": 0.9609977324263038
+      },
+      "zlib-rs": {
+        "wall_ns": 1.2668761867725384,
+        "thread_cpu_ns": 1.280840404040404,
+        "process_cpu_ns": 1.28
+      }
+    },
+    "inflate-bounded": {
+      "libdeflate-1.26": {
+        "wall_ns": 0.9366434423309824,
+        "thread_cpu_ns": 0.9740475561426685,
+        "process_cpu_ns": 0.9742233972240582
+      },
+      "zlib-rs": {
+        "wall_ns": 0.5733687129388678,
+        "thread_cpu_ns": 0.5703781500897757,
+        "process_cpu_ns": 0.5705794947994056
+      }
+    }
+  },
+  "python": "3.13.16 (main, Oct  9 2026, 15:11:24) [Clang 22.1.3 ]",
+  "timestamp_utc": "2026-10-23 03:44:11"
+}

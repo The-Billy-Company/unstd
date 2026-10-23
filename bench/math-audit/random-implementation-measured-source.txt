@@ -1,0 +1,451 @@
+"""Pair saved draw.py with the implementation, retaining every wall/CPU sample."""
+
+from __future__ import annotations
+
+import argparse
+from dataclasses import asdict, dataclass
+import dis
+from functools import partial
+import gc
+import hashlib
+import importlib.util
+import json
+from pathlib import Path
+import platform
+import random
+import statistics
+import subprocess
+import sys
+import time
+from typing import TYPE_CHECKING, Any, cast
+
+import numpy as np
+
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+    from types import ModuleType
+
+
+@dataclass(frozen=True)
+class Case:
+    """One existing-contract pair or explicitly different opt-in stream pair."""
+
+    name: str
+    baseline: Callable[[], object]
+    candidate: Callable[[], object]
+    note: str = "same public result contract and algorithm"
+
+
+@dataclass(frozen=True)
+class Batch:
+    """Raw clocks around one invocation loop, with no normalization or retry."""
+
+    iterations: int
+    wall_ns: int
+    thread_cpu_ns: int
+
+
+def _load(path: Path, name: str) -> ModuleType:
+    spec = importlib.util.spec_from_file_location(name, path)
+    if spec is None or spec.loader is None:
+        raise ValueError(path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _history(stream: object) -> tuple[object, ...]:
+    methods = {
+        name: getattr(stream, name)
+        for name in [
+            "random",
+            "randint",
+            "uniform",
+            "floats",
+            "ints",
+            "choices",
+            "shuffle",
+            "sample",
+        ]
+    }
+    shuffled = list(range(12))
+    result = (
+        methods["random"](),
+        methods["randint"](-3, 19),
+        methods["uniform"](-2.0, 3.0),
+        list(methods["floats"](17, low=-2.0, high=3.0)),
+        list(methods["ints"](19, -7, 21, endpoint=True)),
+        methods["choices"](["a", "b", "c"], 23, weights=[1.0, 2.0, 1.0]),
+        methods["sample"](["a", "b"], 4, counts=[3, 2]),
+    )
+    methods["shuffle"](shuffled)
+    return (*result, shuffled)
+
+
+def _require(condition: bool, message: str) -> None:
+    if not condition:
+        raise ValueError(message)
+
+
+def _batch(fn: Callable[[], object], iterations: int) -> Batch:
+    cpu = time.thread_time_ns()
+    wall = time.perf_counter_ns()
+    for _ in range(iterations):
+        fn()
+    wall = time.perf_counter_ns() - wall
+    cpu = time.thread_time_ns() - cpu
+    return Batch(iterations, wall, cpu)
+
+
+def _shuffle(stream: object, pool: list[int]) -> list[int]:
+    result = pool.copy()
+    cast("Any", stream).shuffle(result)
+    return result
+
+
+def _summary(pairs: list[dict[str, Any]]) -> dict[str, Any]:
+    base_wall: list[float] = []
+    cand_wall: list[float] = []
+    base_cpu: list[float] = []
+    cand_cpu: list[float] = []
+    for pair in pairs:
+        base = pair["baseline"]
+        cand = pair["candidate"]
+        if not isinstance(base, Batch) or not isinstance(cand, Batch):
+            msg = "unexpected batch"
+            raise TypeError(msg)
+        base_wall.append(base.wall_ns / base.iterations)
+        cand_wall.append(cand.wall_ns / cand.iterations)
+        base_cpu.append(base.thread_cpu_ns / base.iterations)
+        cand_cpu.append(cand.thread_cpu_ns / cand.iterations)
+    return {
+        "baseline_median_wall_ns": statistics.median(base_wall),
+        "candidate_median_wall_ns": statistics.median(cand_wall),
+        "baseline_median_thread_cpu_ns": statistics.median(base_cpu),
+        "candidate_median_thread_cpu_ns": statistics.median(cand_cpu),
+        "paired_median_wall_speedup": statistics.median(
+            [b / c for b, c in zip(base_wall, cand_wall, strict=True)]
+        ),
+        "paired_median_thread_cpu_speedup": statistics.median(
+            [b / c for b, c in zip(base_cpu, cand_cpu, strict=True)]
+        ),
+        "baseline_wall_spread": (max(base_wall) - min(base_wall))
+        / statistics.median(base_wall),
+        "candidate_wall_spread": (max(cand_wall) - min(cand_wall))
+        / statistics.median(cand_wall),
+        "baseline_cpu_spread": (max(base_cpu) - min(base_cpu))
+        / statistics.median(base_cpu),
+        "candidate_cpu_spread": (max(cand_cpu) - min(cand_cpu))
+        / statistics.median(cand_cpu),
+        "pairs": [
+            {
+                "repetition": pair["repetition"],
+                "order": pair["order"],
+                "baseline": asdict(pair["baseline"]),
+                "candidate": asdict(pair["candidate"]),
+            }
+            for pair in pairs
+        ],
+    }
+
+
+def main(
+    before_path: Path, after_path: Path, output: Path, *, validate_only: bool
+) -> int:
+    """Verify contracts, then collect seven adjacent alternating samples."""
+    before = _load(before_path, "_random_baseline")
+    after = _load(after_path, "_random_candidate")
+    evidence: dict[str, Any] = {}
+    for backend in ["stdlib", "numpy"]:
+        for seed in [-9, 0, 173, 2**128]:
+            if backend == "numpy" and seed < 0:
+                continue
+            first = before.Generator(seed, backend=backend)
+            second = after.Generator(seed, backend=backend)
+            _require(
+                _history(first) == _history(second), f"legacy history: {backend}/{seed}"
+            )
+            first.seed(seed)
+            second.seed(seed)
+            _require(
+                _history(first) == _history(second), f"legacy reseed: {backend}/{seed}"
+            )
+        evidence[f"{backend}_instance_sizes"] = {
+            "baseline": sys.getsizeof(before.Generator(173, backend=backend)),
+            "candidate": sys.getsizeof(after.Generator(173, backend=backend)),
+        }
+    draw_names = [
+        "random",
+        "randint",
+        "uniform",
+        "choice",
+        "shuffle",
+        "sample",
+        "floats",
+        "ints",
+        "choices",
+    ]
+    evidence["unchanged_instance_draw_instructions"] = {
+        name: [
+            (i.opname, i.argrepr)
+            for i in dis.get_instructions(getattr(before.Generator, name))
+        ]
+        == [
+            (i.opname, i.argrepr)
+            for i in dis.get_instructions(getattr(after.Generator, name))
+        ]
+        for name in draw_names
+    }
+    evidence["slots_unchanged"] = (
+        before.Generator.__slots__ == after.Generator.__slots__
+    )
+    _require(
+        all(evidence["unchanged_instance_draw_instructions"].values()),
+        "draw instruction change",
+    )
+    _require(evidence["slots_unchanged"], "instance slots changed")
+    for module in [before, after]:
+        _require(module.random.__self__ is module._py, "random is not a direct alias")
+        for name in ["randint", "uniform", "choice", "shuffle", "sample"]:
+            _require(
+                getattr(module, name).__func__ is getattr(random.Random, name),
+                f"not stdlib alias: {name}",
+            )
+    evidence["module_scalars_are_direct_stdlib_aliases"] = True
+    for engine in ["PCG64", "PCG64DXSM", "SFC64", "Philox"]:
+        subject = after.Generator(173, backend="numpy", bit_generator=engine)
+        expected = (
+            np.random.Generator(getattr(np.random, engine)(173))
+            .uniform(-2.0, 3.0, size=17)
+            .tolist()
+        )
+        _require(
+            list(subject.floats(17, low=-2.0, high=3.0)) == expected,
+            f"engine reference: {engine}",
+        )
+        subject.seed(173)
+        _require(
+            list(subject.floats(17, low=-2.0, high=3.0)) == expected,
+            f"engine reseed: {engine}",
+        )
+    cases: list[Case] = []
+    pool = list(range(64))
+    for backend in ["stdlib", "numpy"]:
+        cases.extend(
+            Case(
+                f"constructor/{backend}/{constructor_seed}",
+                partial(before.Generator, constructor_seed, backend=backend),
+                partial(after.Generator, constructor_seed, backend=backend),
+            )
+            for constructor_seed in [173, None]
+        )
+        base = before.Generator(173, backend=backend)
+        cand = after.Generator(173, backend=backend)
+        cases.append(
+            Case(f"reseed/{backend}", partial(base.seed, 173), partial(cand.seed, 173))
+        )
+        for name, args in [
+            ("random", ()),
+            ("randint", (-100, 100)),
+            ("uniform", (-2.0, 3.0)),
+            ("choice", (pool,)),
+            ("sample", (pool, 8)),
+        ]:
+            cases.append(
+                Case(
+                    f"instance/{backend}/{name}",
+                    partial(getattr(base, name), *args),
+                    partial(getattr(cand, name), *args),
+                )
+            )
+        cases.append(
+            Case(
+                f"instance/{backend}/shuffle64",
+                partial(_shuffle, base, pool),
+                partial(_shuffle, cand, pool),
+            )
+        )
+        for n in [1, 16, 1024]:
+            cases.append(
+                Case(
+                    f"bulk/{backend}/floats/{n}",
+                    partial(base.floats, n),
+                    partial(cand.floats, n),
+                )
+            )
+            cases.append(
+                Case(
+                    f"bulk/{backend}/ints/{n}",
+                    partial(base.ints, n, -100, 100),
+                    partial(cand.ints, n, -100, 100),
+                )
+            )
+            cases.append(
+                Case(
+                    f"bulk/{backend}/choices/{n}",
+                    partial(base.choices, pool, n),
+                    partial(cand.choices, pool, n),
+                )
+            )
+    stdlib = random.Random(173)  # noqa: S311 -- simulation performance reference
+    scalar_specs = [
+        ("random", ()),
+        ("randint", (-100, 100)),
+        ("uniform", (-2.0, 3.0)),
+        ("choice", (pool,)),
+    ]
+    for name, args in scalar_specs:
+        cases.append(
+            Case(
+                f"module_alias/{name}",
+                partial(getattr(before, name), *args),
+                partial(getattr(after, name), *args),
+            )
+        )
+        cases.append(
+            Case(
+                f"module_vs_direct_stdlib/{name}",
+                partial(getattr(stdlib, name), *args),
+                partial(getattr(after, name), *args),
+                "same bound stdlib implementation, independent seeded state",
+            )
+        )
+        independent = after.Generator(173)
+        cases.append(
+            Case(
+                f"instance_vs_direct_stdlib/{name}",
+                partial(getattr(stdlib, name), *args),
+                partial(getattr(independent, name), *args),
+                "instance wrapper vs direct stdlib; existing wrapper cost",
+            )
+        )
+    for engine in ["PCG64", "PCG64DXSM", "SFC64", "Philox"]:
+        note = "explicit new simulation stream vs legacy default PCG64; outputs differ except PCG64"
+        cases.append(
+            Case(
+                f"explicit_constructor/{engine}",
+                partial(before.Generator, 173, backend="numpy"),
+                partial(after.Generator, 173, backend="numpy", bit_generator=engine),
+                note,
+            )
+        )
+        base = before.Generator(173, backend="numpy")
+        cand = after.Generator(173, backend="numpy", bit_generator=engine)
+        cases.append(
+            Case(
+                f"explicit_reseed/{engine}",
+                partial(base.seed, 173),
+                partial(cand.seed, 173),
+                note,
+            )
+        )
+    if validate_only:
+        print(
+            json.dumps(
+                {"contract_evidence": evidence, "workloads": len(cases)}, indent=2
+            )
+        )
+        return 0
+    loops: dict[str, int] = {}
+    pairs: dict[str, list[dict[str, Any]]] = {case.name: [] for case in cases}
+    old_gc = gc.isenabled()
+    gc.disable()
+    try:
+        for case in cases:
+            n = 1
+            while True:
+                control = _batch(case.baseline, n)
+                candidate = _batch(case.candidate, n)
+                if (
+                    min(control.thread_cpu_ns, candidate.thread_cpu_ns) >= 2_000_000
+                    or n >= 1_048_576
+                ):
+                    break
+                n *= 2
+            loops[case.name] = n
+        for repetition in range(7):
+            order = (
+                ["baseline", "candidate"]
+                if repetition % 2 == 0
+                else ["candidate", "baseline"]
+            )
+            for case in cases:
+                samples = {
+                    name: _batch(getattr(case, name), loops[case.name])
+                    for name in order
+                }
+                pairs[case.name].append(
+                    {"repetition": repetition, "order": order, **samples}
+                )
+    finally:
+        if old_gc:
+            gc.enable()
+    cold: list[dict[str, object]] = []
+    snippet = "import importlib.util,json,resource,sys,time; c=time.thread_time_ns(); w=time.perf_counter_ns(); s=importlib.util.spec_from_file_location('_cold_draw',sys.argv[1]); m=importlib.util.module_from_spec(s); s.loader.exec_module(m); print(json.dumps({'wall_ns':time.perf_counter_ns()-w,'thread_cpu_ns':time.thread_time_ns()-c,'peak_rss':resource.getrusage(resource.RUSAGE_SELF).ru_maxrss}))"
+    for repetition in range(7):
+        order = (
+            ["baseline", "candidate"]
+            if repetition % 2 == 0
+            else ["candidate", "baseline"]
+        )
+        samples = {}
+        for name in order:
+            path = before_path if name == "baseline" else after_path
+            completed = subprocess.run(  # noqa: S603 -- current interpreter and fixed import-only snippet
+                [sys.executable, "-c", snippet, str(path.resolve())],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            samples[name] = json.loads(completed.stdout)
+        cold.append({"repetition": repetition, "order": order, **samples})
+    result: dict[str, Any] = {
+        "environment": {
+            "python": sys.version,
+            "platform": platform.platform(),
+            "numpy": np.__version__,
+            "measured_at_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        },
+        "method": {
+            "repetitions": 7,
+            "adjacent_alternating_pairs": True,
+            "calibration_thread_cpu_ns": 2_000_000,
+            "all_samples_retained": True,
+            "speedup_direction": "baseline / candidate; above 1 favors candidate",
+            "limitations": "Single host; thread CPU excludes descheduled time; no universal no-overhead claim. Cold imports load draw.py directly, not package __init__.",
+        },
+        "sources_sha256": {
+            str(p.resolve()): hashlib.sha256(p.read_bytes()).hexdigest()
+            for p in [Path(__file__), before_path, after_path]
+        },
+        "contracts": evidence,
+        "measurements": {
+            case.name: {"note": case.note, **_summary(pairs[case.name])}
+            for case in cases
+        },
+        "cold_source_module_imports": cold,
+    }
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(json.dumps(result, indent=2) + "\n")
+    print(json.dumps({"output": str(output.resolve()), "workloads": len(cases)}))
+    for name, row in result["measurements"].items():
+        if name.startswith(("constructor/", "reseed/", "explicit_")):
+            print(
+                name,
+                round(row["paired_median_thread_cpu_speedup"], 3),
+                round(row["paired_median_wall_speedup"], 3),
+            )
+    return 0
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--before", type=Path, required=True)
+    parser.add_argument("--after", type=Path, required=True)
+    parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--validate-only", action="store_true")
+    args = parser.parse_args()
+    raise SystemExit(
+        main(args.before, args.after, args.output, validate_only=args.validate_only)
+    )

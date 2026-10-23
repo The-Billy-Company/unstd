@@ -29,3 +29,9 @@ and patched releases in every reviewed OpenSSL branch, prereleases, unknown
 engines, inconsistent version metadata and missing TLS 1.3. Its isolated CLI
 test runs with site packages disabled. Run the preflight with each actual build,
 test and deployment interpreter; a dependency's private OpenSSL is unrelated.
+
+`test_audio_workflow.py` checks the required read-only Linux audio qualification
+job, authenticated build/test dependencies, pinned source/fix downloads,
+same-job builder trust policy, authenticated local wheel installation, and
+actual-loaded-library preflight before audio contracts. Negative checks reject
+download corruption and wheel/provenance tampering without network or builds.

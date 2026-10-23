@@ -1,0 +1,3104 @@
+{
+  "date_utc": "2026-10-23T03:16:29Z",
+  "python": "3.13.16 (main, Oct  9 2026, 15:11:24) [Clang 22.1.3 ]",
+  "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+  "versions": {
+    "numpy": "2.5.3",
+    "soundfile": "0.14.0",
+    "sortedcontainers": "2.4.0",
+    "immutables": "0.21",
+    "whenever": "0.10.5",
+    "protobuf": "7.36.2"
+  },
+  "correctness": {
+    "decode_vectors": 27,
+    "pcm8": "all 256 codes",
+    "pcm16": "all 65536 codes",
+    "pcm32": "100020 seeded and boundary codes",
+    "shapes": [
+      1,
+      2,
+      4
+    ],
+    "dtypes": [
+      "float32",
+      "float64",
+      "int16"
+    ],
+    "malformed": "partial samples/channel frames and unsupported widths",
+    "ownership": "writeable owndata true and independent mutable input"
+  },
+  "methods": {
+    "clock": "paired alternating perf_counter_ns wall/thread_time_ns CPU",
+    "rounds": 7,
+    "gc": "disabled within batches",
+    "dependencies_installed": false,
+    "performance_scope": "host-local warm evidence, unisolated OS scheduling, not a zero-overhead guarantee"
+  },
+  "results": [
+    {
+      "name": "pcm16_decode_1_float32",
+      "iterations": 500,
+      "samples": [
+        {
+          "baseline": {
+            "wall_ns": 854.25,
+            "cpu_ns": 834.0
+          },
+          "candidate": {
+            "wall_ns": 904.0,
+            "cpu_ns": 895.166
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 931.0,
+            "cpu_ns": 826.416
+          },
+          "candidate": {
+            "wall_ns": 995.918,
+            "cpu_ns": 940.5
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 1230.668,
+            "cpu_ns": 1097.918
+          },
+          "candidate": {
+            "wall_ns": 1184.834,
+            "cpu_ns": 1091.25
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 959.082,
+            "cpu_ns": 882.916
+          },
+          "candidate": {
+            "wall_ns": 983.416,
+            "cpu_ns": 925.5
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 869.75,
+            "cpu_ns": 817.582
+          },
+          "candidate": {
+            "wall_ns": 1141.75,
+            "cpu_ns": 1028.334
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 881.416,
+            "cpu_ns": 844.834
+          },
+          "candidate": {
+            "wall_ns": 1141.416,
+            "cpu_ns": 1049.416
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 842.916,
+            "cpu_ns": 827.5
+          },
+          "candidate": {
+            "wall_ns": 956.25,
+            "cpu_ns": 941.0
+          }
+        }
+      ],
+      "note": "numpy fallback kernel, owned result",
+      "summary": {
+        "cpu_ratio_median": 0.879383634431456,
+        "cpu_ratio_min": 0.7950549140648855,
+        "cpu_ratio_max": 1.0061104238258876,
+        "wall_ratio_median": 0.9348159185796421,
+        "baseline_cpu_median_ns": 834.0,
+        "candidate_cpu_median_ns": 941.0
+      }
+    },
+    {
+      "name": "wav16_read_1_float32",
+      "iterations": 500,
+      "samples": [
+        {
+          "baseline": {
+            "wall_ns": 5094.084,
+            "cpu_ns": 4732.666
+          },
+          "candidate": {
+            "wall_ns": 4316.582,
+            "cpu_ns": 4220.084
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 4073.25,
+            "cpu_ns": 4016.332
+          },
+          "candidate": {
+            "wall_ns": 4947.0,
+            "cpu_ns": 4611.918
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 4409.418,
+            "cpu_ns": 4266.666
+          },
+          "candidate": {
+            "wall_ns": 3968.334,
+            "cpu_ns": 3962.666
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 4053.75,
+            "cpu_ns": 4013.25
+          },
+          "candidate": {
+            "wall_ns": 4678.916,
+            "cpu_ns": 4436.166
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 4247.166,
+            "cpu_ns": 4124.084
+          },
+          "candidate": {
+            "wall_ns": 4028.0,
+            "cpu_ns": 3998.5
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 3856.418,
+            "cpu_ns": 3820.334
+          },
+          "candidate": {
+            "wall_ns": 4421.75,
+            "cpu_ns": 4193.668
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 4440.25,
+            "cpu_ns": 4204.834
+          },
+          "candidate": {
+            "wall_ns": 5036.582,
+            "cpu_ns": 4580.582
+          }
+        }
+      ],
+      "note": "complete BytesIO wave parse and owned decode; fallback path only",
+      "summary": {
+        "cpu_ratio_median": 0.9179693759439301,
+        "cpu_ratio_min": 0.8708593691388269,
+        "cpu_ratio_max": 1.1214625111727634,
+        "wall_ratio_median": 0.8815998627640729,
+        "baseline_cpu_median_ns": 4124.084,
+        "candidate_cpu_median_ns": 4220.084
+      }
+    },
+    {
+      "name": "pcm16_decode_1_float64",
+      "iterations": 500,
+      "samples": [
+        {
+          "baseline": {
+            "wall_ns": 1157.75,
+            "cpu_ns": 944.584
+          },
+          "candidate": {
+            "wall_ns": 846.084,
+            "cpu_ns": 841.916
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 793.0,
+            "cpu_ns": 793.5
+          },
+          "candidate": {
+            "wall_ns": 817.334,
+            "cpu_ns": 817.75
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 781.916,
+            "cpu_ns": 782.584
+          },
+          "candidate": {
+            "wall_ns": 831.75,
+            "cpu_ns": 825.916
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 809.0,
+            "cpu_ns": 804.75
+          },
+          "candidate": {
+            "wall_ns": 797.666,
+            "cpu_ns": 798.084
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 1040.0,
+            "cpu_ns": 951.666
+          },
+          "candidate": {
+            "wall_ns": 871.834,
+            "cpu_ns": 855.834
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 1090.916,
+            "cpu_ns": 971.75
+          },
+          "candidate": {
+            "wall_ns": 845.082,
+            "cpu_ns": 840.666
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 773.5,
+            "cpu_ns": 769.25
+          },
+          "candidate": {
+            "wall_ns": 823.668,
+            "cpu_ns": 819.084
+          }
+        }
+      ],
+      "note": "numpy fallback kernel, owned result",
+      "summary": {
+        "cpu_ratio_median": 1.0083525042476733,
+        "cpu_ratio_min": 0.9391588652690078,
+        "cpu_ratio_max": 1.1559287517277967,
+        "wall_ratio_median": 1.0142089546251187,
+        "baseline_cpu_median_ns": 804.75,
+        "candidate_cpu_median_ns": 825.916
+      }
+    },
+    {
+      "name": "wav16_read_1_float64",
+      "iterations": 500,
+      "samples": [
+        {
+          "baseline": {
+            "wall_ns": 3843.0,
+            "cpu_ns": 3815.5
+          },
+          "candidate": {
+            "wall_ns": 4106.168,
+            "cpu_ns": 3984.418
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 4679.916,
+            "cpu_ns": 4346.166
+          },
+          "candidate": {
+            "wall_ns": 3882.834,
+            "cpu_ns": 3857.25
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 5120.916,
+            "cpu_ns": 4702.668
+          },
+          "candidate": {
+            "wall_ns": 5214.5,
+            "cpu_ns": 5001.5
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 4153.082,
+            "cpu_ns": 4003.916
+          },
+          "candidate": {
+            "wall_ns": 5133.166,
+            "cpu_ns": 4839.832
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 4759.334,
+            "cpu_ns": 4708.832
+          },
+          "candidate": {
+            "wall_ns": 5053.832,
+            "cpu_ns": 5056.584
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 4728.0,
+            "cpu_ns": 4729.834
+          },
+          "candidate": {
+            "wall_ns": 4982.25,
+            "cpu_ns": 4979.416
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 4731.0,
+            "cpu_ns": 4732.666
+          },
+          "candidate": {
+            "wall_ns": 5059.832,
+            "cpu_ns": 5048.0
+          }
+        }
+      ],
+      "note": "complete BytesIO wave parse and owned decode; fallback path only",
+      "summary": {
+        "cpu_ratio_median": 0.9402515245426372,
+        "cpu_ratio_min": 0.8272840875468405,
+        "cpu_ratio_max": 1.126752479097803,
+        "wall_ratio_median": 0.9417277820077912,
+        "baseline_cpu_median_ns": 4702.668,
+        "candidate_cpu_median_ns": 4979.416
+      }
+    },
+    {
+      "name": "pcm16_decode_1_int16",
+      "iterations": 500,
+      "samples": [
+        {
+          "baseline": {
+            "wall_ns": 4529.084,
+            "cpu_ns": 4277.918
+          },
+          "candidate": {
+            "wall_ns": 358.168,
+            "cpu_ns": 343.916
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 4029.75,
+            "cpu_ns": 3678.668
+          },
+          "candidate": {
+            "wall_ns": 361.25,
+            "cpu_ns": 349.0
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 4643.834,
+            "cpu_ns": 4459.582
+          },
+          "candidate": {
+            "wall_ns": 341.0,
+            "cpu_ns": 341.5
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 4044.25,
+            "cpu_ns": 3532.584
+          },
+          "candidate": {
+            "wall_ns": 359.834,
+            "cpu_ns": 332.5
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 3986.0,
+            "cpu_ns": 3685.0
+          },
+          "candidate": {
+            "wall_ns": 363.75,
+            "cpu_ns": 344.916
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 3721.668,
+            "cpu_ns": 3521.25
+          },
+          "candidate": {
+            "wall_ns": 344.666,
+            "cpu_ns": 341.0
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 3617.166,
+            "cpu_ns": 3439.582
+          },
+          "candidate": {
+            "wall_ns": 449.166,
+            "cpu_ns": 430.668
+          }
+        }
+      ],
+      "note": "numpy fallback kernel, owned result",
+      "summary": {
+        "cpu_ratio_median": 10.624312781954886,
+        "cpu_ratio_min": 7.986620784455775,
+        "cpu_ratio_max": 13.058805270863838,
+        "wall_ratio_median": 11.155017301038063,
+        "baseline_cpu_median_ns": 3678.668,
+        "candidate_cpu_median_ns": 343.916
+      }
+    },
+    {
+      "name": "wav16_read_1_int16",
+      "iterations": 500,
+      "samples": [
+        {
+          "baseline": {
+            "wall_ns": 8973.082,
+            "cpu_ns": 8957.666
+          },
+          "candidate": {
+            "wall_ns": 4114.25,
+            "cpu_ns": 4044.916
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 8674.5,
+            "cpu_ns": 8132.916
+          },
+          "candidate": {
+            "wall_ns": 4049.666,
+            "cpu_ns": 3941.0
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 8165.75,
+            "cpu_ns": 7693.584
+          },
+          "candidate": {
+            "wall_ns": 3628.416,
+            "cpu_ns": 3511.334
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 9634.25,
+            "cpu_ns": 8993.082
+          },
+          "candidate": {
+            "wall_ns": 3762.918,
+            "cpu_ns": 3599.5
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 8887.084,
+            "cpu_ns": 8441.584
+          },
+          "candidate": {
+            "wall_ns": 3793.834,
+            "cpu_ns": 3643.666
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 8999.666,
+            "cpu_ns": 8340.082
+          },
+          "candidate": {
+            "wall_ns": 3811.25,
+            "cpu_ns": 3497.834
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 7945.75,
+            "cpu_ns": 7519.084
+          },
+          "candidate": {
+            "wall_ns": 3424.0,
+            "cpu_ns": 3371.916
+          }
+        }
+      ],
+      "note": "complete BytesIO wave parse and owned decode; fallback path only",
+      "summary": {
+        "cpu_ratio_median": 2.229914386953886,
+        "cpu_ratio_min": 2.0636681045419945,
+        "cpu_ratio_max": 2.498425336852341,
+        "wall_ratio_median": 2.3206045560747666,
+        "baseline_cpu_median_ns": 8340.082,
+        "candidate_cpu_median_ns": 3599.5
+      }
+    },
+    {
+      "name": "pcm16_decode_16_float32",
+      "iterations": 500,
+      "samples": [
+        {
+          "baseline": {
+            "wall_ns": 948.75,
+            "cpu_ns": 908.666
+          },
+          "candidate": {
+            "wall_ns": 858.084,
+            "cpu_ns": 818.084
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 1062.916,
+            "cpu_ns": 1064.0
+          },
+          "candidate": {
+            "wall_ns": 843.666,
+            "cpu_ns": 813.666
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 1058.834,
+            "cpu_ns": 1059.666
+          },
+          "candidate": {
+            "wall_ns": 989.0,
+            "cpu_ns": 989.666
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 1044.916,
+            "cpu_ns": 1026.5
+          },
+          "candidate": {
+            "wall_ns": 990.918,
+            "cpu_ns": 991.75
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 1055.584,
+            "cpu_ns": 999.584
+          },
+          "candidate": {
+            "wall_ns": 755.25,
+            "cpu_ns": 706.0
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 941.084,
+            "cpu_ns": 917.584
+          },
+          "candidate": {
+            "wall_ns": 723.334,
+            "cpu_ns": 702.082
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 1027.584,
+            "cpu_ns": 922.334
+          },
+          "candidate": {
+            "wall_ns": 908.416,
+            "cpu_ns": 846.334
+          }
+        }
+      ],
+      "note": "numpy fallback kernel, owned result",
+      "summary": {
+        "cpu_ratio_median": 1.1107245710709415,
+        "cpu_ratio_min": 1.0350390723468617,
+        "cpu_ratio_max": 1.415841359773371,
+        "wall_ratio_median": 1.1311821896576018,
+        "baseline_cpu_median_ns": 999.584,
+        "candidate_cpu_median_ns": 818.084
+      }
+    },
+    {
+      "name": "wav16_read_16_float32",
+      "iterations": 500,
+      "samples": [
+        {
+          "baseline": {
+            "wall_ns": 4423.334,
+            "cpu_ns": 4254.832
+          },
+          "candidate": {
+            "wall_ns": 4800.5,
+            "cpu_ns": 4673.0
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 4491.832,
+            "cpu_ns": 4330.582
+          },
+          "candidate": {
+            "wall_ns": 4792.25,
+            "cpu_ns": 4588.75
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 4463.584,
+            "cpu_ns": 4268.25
+          },
+          "candidate": {
+            "wall_ns": 4448.084,
+            "cpu_ns": 4198.666
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 3836.918,
+            "cpu_ns": 3808.25
+          },
+          "candidate": {
+            "wall_ns": 3998.666,
+            "cpu_ns": 3919.25
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 3819.168,
+            "cpu_ns": 3788.0
+          },
+          "candidate": {
+            "wall_ns": 4754.25,
+            "cpu_ns": 4393.082
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 5128.834,
+            "cpu_ns": 4799.75
+          },
+          "candidate": {
+            "wall_ns": 4045.916,
+            "cpu_ns": 3930.916
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 4873.25,
+            "cpu_ns": 4544.082
+          },
+          "candidate": {
+            "wall_ns": 4735.916,
+            "cpu_ns": 4737.584
+          }
+        }
+      ],
+      "note": "complete BytesIO wave parse and owned decode; fallback path only",
+      "summary": {
+        "cpu_ratio_median": 0.9591559748597599,
+        "cpu_ratio_min": 0.8622648063477986,
+        "cpu_ratio_max": 1.2210258372348837,
+        "wall_ratio_median": 0.9595495097615054,
+        "baseline_cpu_median_ns": 4268.25,
+        "candidate_cpu_median_ns": 4393.082
+      }
+    },
+    {
+      "name": "pcm16_decode_16_float64",
+      "iterations": 500,
+      "samples": [
+        {
+          "baseline": {
+            "wall_ns": 1085.584,
+            "cpu_ns": 1087.25
+          },
+          "candidate": {
+            "wall_ns": 897.834,
+            "cpu_ns": 898.584
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 1055.916,
+            "cpu_ns": 1056.75
+          },
+          "candidate": {
+            "wall_ns": 892.666,
+            "cpu_ns": 893.5
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 1058.084,
+            "cpu_ns": 1059.584
+          },
+          "candidate": {
+            "wall_ns": 903.332,
+            "cpu_ns": 904.0
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 930.668,
+            "cpu_ns": 901.582
+          },
+          "candidate": {
+            "wall_ns": 917.416,
+            "cpu_ns": 918.084
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 1056.0,
+            "cpu_ns": 950.25
+          },
+          "candidate": {
+            "wall_ns": 713.25,
+            "cpu_ns": 687.166
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 974.168,
+            "cpu_ns": 871.584
+          },
+          "candidate": {
+            "wall_ns": 735.334,
+            "cpu_ns": 709.5
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 1060.75,
+            "cpu_ns": 984.332
+          },
+          "candidate": {
+            "wall_ns": 796.166,
+            "cpu_ns": 730.082
+          }
+        }
+      ],
+      "note": "numpy fallback kernel, owned result",
+      "summary": {
+        "cpu_ratio_median": 1.2099592247358066,
+        "cpu_ratio_min": 0.9820256098570501,
+        "cpu_ratio_max": 1.3828536336198238,
+        "wall_ratio_median": 1.2091143797183,
+        "baseline_cpu_median_ns": 984.332,
+        "candidate_cpu_median_ns": 893.5
+      }
+    },
+    {
+      "name": "wav16_read_16_float64",
+      "iterations": 500,
+      "samples": [
+        {
+          "baseline": {
+            "wall_ns": 5385.166,
+            "cpu_ns": 4729.582
+          },
+          "candidate": {
+            "wall_ns": 4399.416,
+            "cpu_ns": 4058.916
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 4189.084,
+            "cpu_ns": 3956.5
+          },
+          "candidate": {
+            "wall_ns": 4493.834,
+            "cpu_ns": 3941.332
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 4285.832,
+            "cpu_ns": 3921.5
+          },
+          "candidate": {
+            "wall_ns": 3912.834,
+            "cpu_ns": 3762.5
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 4355.334,
+            "cpu_ns": 3995.75
+          },
+          "candidate": {
+            "wall_ns": 4040.25,
+            "cpu_ns": 3836.418
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 4319.668,
+            "cpu_ns": 4214.082
+          },
+          "candidate": {
+            "wall_ns": 4553.584,
+            "cpu_ns": 4406.084
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 4556.416,
+            "cpu_ns": 4440.75
+          },
+          "candidate": {
+            "wall_ns": 4470.75,
+            "cpu_ns": 4325.918
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 4586.916,
+            "cpu_ns": 4082.5
+          },
+          "candidate": {
+            "wall_ns": 4136.832,
+            "cpu_ns": 3990.0
+          }
+        }
+      ],
+      "note": "complete BytesIO wave parse and owned decode; fallback path only",
+      "summary": {
+        "cpu_ratio_median": 1.0265451171288962,
+        "cpu_ratio_min": 0.9564234363212323,
+        "cpu_ratio_max": 1.165232786290724,
+        "wall_ratio_median": 1.0779862632262855,
+        "baseline_cpu_median_ns": 4082.5,
+        "candidate_cpu_median_ns": 3990.0
+      }
+    },
+    {
+      "name": "pcm16_decode_16_int16",
+      "iterations": 500,
+      "samples": [
+        {
+          "baseline": {
+            "wall_ns": 4569.916,
+            "cpu_ns": 4417.75
+          },
+          "candidate": {
+            "wall_ns": 364.918,
+            "cpu_ns": 352.584
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 3996.5,
+            "cpu_ns": 3868.584
+          },
+          "candidate": {
+            "wall_ns": 420.084,
+            "cpu_ns": 399.75
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 3912.416,
+            "cpu_ns": 3787.916
+          },
+          "candidate": {
+            "wall_ns": 440.916,
+            "cpu_ns": 417.834
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 3641.0,
+            "cpu_ns": 3587.418
+          },
+          "candidate": {
+            "wall_ns": 349.582,
+            "cpu_ns": 349.916
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 4011.0,
+            "cpu_ns": 3935.916
+          },
+          "candidate": {
+            "wall_ns": 351.918,
+            "cpu_ns": 352.5
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 3978.832,
+            "cpu_ns": 3903.834
+          },
+          "candidate": {
+            "wall_ns": 398.666,
+            "cpu_ns": 380.834
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 4193.584,
+            "cpu_ns": 4103.916
+          },
+          "candidate": {
+            "wall_ns": 381.166,
+            "cpu_ns": 373.584
+          }
+        }
+      ],
+      "note": "numpy fallback kernel, owned result",
+      "summary": {
+        "cpu_ratio_median": 10.252226248585375,
+        "cpu_ratio_min": 9.065600214439227,
+        "cpu_ratio_max": 12.529638327320582,
+        "wall_ratio_median": 10.415295982058574,
+        "baseline_cpu_median_ns": 3903.834,
+        "candidate_cpu_median_ns": 373.584
+      }
+    },
+    {
+      "name": "wav16_read_16_int16",
+      "iterations": 500,
+      "samples": [
+        {
+          "baseline": {
+            "wall_ns": 7222.416,
+            "cpu_ns": 7112.834
+          },
+          "candidate": {
+            "wall_ns": 3439.082,
+            "cpu_ns": 3412.584
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 7286.582,
+            "cpu_ns": 7214.082
+          },
+          "candidate": {
+            "wall_ns": 3342.666,
+            "cpu_ns": 3325.25
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 7836.918,
+            "cpu_ns": 7575.582
+          },
+          "candidate": {
+            "wall_ns": 3955.166,
+            "cpu_ns": 3790.418
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 7268.084,
+            "cpu_ns": 7163.416
+          },
+          "candidate": {
+            "wall_ns": 3535.166,
+            "cpu_ns": 3486.334
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 7450.082,
+            "cpu_ns": 7305.416
+          },
+          "candidate": {
+            "wall_ns": 3479.75,
+            "cpu_ns": 3442.5
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 8083.75,
+            "cpu_ns": 7799.0
+          },
+          "candidate": {
+            "wall_ns": 3709.25,
+            "cpu_ns": 3565.082
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 8601.832,
+            "cpu_ns": 7950.166
+          },
+          "candidate": {
+            "wall_ns": 3835.5,
+            "cpu_ns": 3530.75
+          }
+        }
+      ],
+      "note": "complete BytesIO wave parse and owned decode; fallback path only",
+      "summary": {
+        "cpu_ratio_median": 2.1221251997095134,
+        "cpu_ratio_min": 1.9986138731928775,
+        "cpu_ratio_max": 2.251693266303193,
+        "wall_ratio_median": 2.1409819670953376,
+        "baseline_cpu_median_ns": 7305.416,
+        "candidate_cpu_median_ns": 3486.334
+      }
+    },
+    {
+      "name": "pcm16_decode_1024_float32",
+      "iterations": 500,
+      "samples": [
+        {
+          "baseline": {
+            "wall_ns": 1517.668,
+            "cpu_ns": 1384.668
+          },
+          "candidate": {
+            "wall_ns": 1147.834,
+            "cpu_ns": 1095.666
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 1564.084,
+            "cpu_ns": 1532.668
+          },
+          "candidate": {
+            "wall_ns": 1228.166,
+            "cpu_ns": 1151.668
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 1678.084,
+            "cpu_ns": 1604.666
+          },
+          "candidate": {
+            "wall_ns": 1372.916,
+            "cpu_ns": 1265.084
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 1719.834,
+            "cpu_ns": 1649.416
+          },
+          "candidate": {
+            "wall_ns": 1531.416,
+            "cpu_ns": 1474.666
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 1675.166,
+            "cpu_ns": 1531.084
+          },
+          "candidate": {
+            "wall_ns": 1240.166,
+            "cpu_ns": 1156.916
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 1486.416,
+            "cpu_ns": 1470.25
+          },
+          "candidate": {
+            "wall_ns": 1221.584,
+            "cpu_ns": 1142.75
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 1460.666,
+            "cpu_ns": 1450.5
+          },
+          "candidate": {
+            "wall_ns": 1167.832,
+            "cpu_ns": 1145.082
+          }
+        }
+      ],
+      "note": "numpy fallback kernel, owned result",
+      "summary": {
+        "cpu_ratio_median": 1.2684264444100153,
+        "cpu_ratio_min": 1.118501409810764,
+        "cpu_ratio_max": 1.3308245084520887,
+        "wall_ratio_median": 1.250750107892231,
+        "baseline_cpu_median_ns": 1531.084,
+        "candidate_cpu_median_ns": 1151.668
+      }
+    },
+    {
+      "name": "wav16_read_1024_float32",
+      "iterations": 500,
+      "samples": [
+        {
+          "baseline": {
+            "wall_ns": 5284.25,
+            "cpu_ns": 5117.25
+          },
+          "candidate": {
+            "wall_ns": 4677.834,
+            "cpu_ns": 4517.918
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 5028.166,
+            "cpu_ns": 4927.25
+          },
+          "candidate": {
+            "wall_ns": 4439.166,
+            "cpu_ns": 4374.166
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 5700.0,
+            "cpu_ns": 5453.584
+          },
+          "candidate": {
+            "wall_ns": 4633.0,
+            "cpu_ns": 4489.75
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 5619.082,
+            "cpu_ns": 5393.666
+          },
+          "candidate": {
+            "wall_ns": 4716.5,
+            "cpu_ns": 4603.5
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 4698.584,
+            "cpu_ns": 4677.0
+          },
+          "candidate": {
+            "wall_ns": 4326.916,
+            "cpu_ns": 4296.416
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 5103.084,
+            "cpu_ns": 4983.084
+          },
+          "candidate": {
+            "wall_ns": 4463.75,
+            "cpu_ns": 4412.5
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 4868.084,
+            "cpu_ns": 4846.584
+          },
+          "candidate": {
+            "wall_ns": 4409.5,
+            "cpu_ns": 4374.334
+          }
+        }
+      ],
+      "note": "complete BytesIO wave parse and owned decode; fallback path only",
+      "summary": {
+        "cpu_ratio_median": 1.129310821529745,
+        "cpu_ratio_min": 1.0885817388260355,
+        "cpu_ratio_max": 1.2146743137145721,
+        "wall_ratio_median": 1.1326825804666913,
+        "baseline_cpu_median_ns": 4983.084,
+        "candidate_cpu_median_ns": 4412.5
+      }
+    },
+    {
+      "name": "pcm16_decode_1024_float64",
+      "iterations": 500,
+      "samples": [
+        {
+          "baseline": {
+            "wall_ns": 1467.416,
+            "cpu_ns": 1460.082
+          },
+          "candidate": {
+            "wall_ns": 1319.75,
+            "cpu_ns": 1302.834
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 1417.668,
+            "cpu_ns": 1418.5
+          },
+          "candidate": {
+            "wall_ns": 1176.0,
+            "cpu_ns": 1166.5
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 1407.916,
+            "cpu_ns": 1408.334
+          },
+          "candidate": {
+            "wall_ns": 1130.166,
+            "cpu_ns": 1130.584
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 1400.084,
+            "cpu_ns": 1400.668
+          },
+          "candidate": {
+            "wall_ns": 1122.25,
+            "cpu_ns": 1122.666
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 1443.5,
+            "cpu_ns": 1436.084
+          },
+          "candidate": {
+            "wall_ns": 1133.584,
+            "cpu_ns": 1134.084
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 1430.5,
+            "cpu_ns": 1424.25
+          },
+          "candidate": {
+            "wall_ns": 1126.666,
+            "cpu_ns": 1127.166
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 1419.334,
+            "cpu_ns": 1420.084
+          },
+          "candidate": {
+            "wall_ns": 1277.416,
+            "cpu_ns": 1236.75
+          }
+        }
+      ],
+      "note": "numpy fallback kernel, owned result",
+      "summary": {
+        "cpu_ratio_median": 1.2456694947036222,
+        "cpu_ratio_min": 1.1206968807998563,
+        "cpu_ratio_max": 1.2662942074837489,
+        "wall_ratio_median": 1.2457603573280385,
+        "baseline_cpu_median_ns": 1420.084,
+        "candidate_cpu_median_ns": 1134.084
+      }
+    },
+    {
+      "name": "wav16_read_1024_float64",
+      "iterations": 500,
+      "samples": [
+        {
+          "baseline": {
+            "wall_ns": 4911.5,
+            "cpu_ns": 4863.418
+          },
+          "candidate": {
+            "wall_ns": 5370.75,
+            "cpu_ns": 5218.416
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 5248.416,
+            "cpu_ns": 5128.75
+          },
+          "candidate": {
+            "wall_ns": 4880.834,
+            "cpu_ns": 4808.332
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 4965.582,
+            "cpu_ns": 4889.75
+          },
+          "candidate": {
+            "wall_ns": 4834.668,
+            "cpu_ns": 4727.75
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 4917.334,
+            "cpu_ns": 4878.75
+          },
+          "candidate": {
+            "wall_ns": 5046.834,
+            "cpu_ns": 4872.166
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 4748.75,
+            "cpu_ns": 4718.75
+          },
+          "candidate": {
+            "wall_ns": 4614.332,
+            "cpu_ns": 4514.082
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 4750.418,
+            "cpu_ns": 4717.084
+          },
+          "candidate": {
+            "wall_ns": 4539.582,
+            "cpu_ns": 4481.584
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 4851.75,
+            "cpu_ns": 4770.084
+          },
+          "candidate": {
+            "wall_ns": 4316.416,
+            "cpu_ns": 4282.75
+          }
+        }
+      ],
+      "note": "complete BytesIO wave parse and owned decode; fallback path only",
+      "summary": {
+        "cpu_ratio_median": 1.045339894135729,
+        "cpu_ratio_min": 0.9319720773506749,
+        "cpu_ratio_max": 1.1137899713968828,
+        "wall_ratio_median": 1.0291305437060012,
+        "baseline_cpu_median_ns": 4863.418,
+        "candidate_cpu_median_ns": 4727.75
+      }
+    },
+    {
+      "name": "pcm16_decode_1024_int16",
+      "iterations": 500,
+      "samples": [
+        {
+          "baseline": {
+            "wall_ns": 5106.168,
+            "cpu_ns": 5084.25
+          },
+          "candidate": {
+            "wall_ns": 410.334,
+            "cpu_ns": 410.916
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 5158.166,
+            "cpu_ns": 5140.416
+          },
+          "candidate": {
+            "wall_ns": 408.168,
+            "cpu_ns": 408.584
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 6085.25,
+            "cpu_ns": 6029.834
+          },
+          "candidate": {
+            "wall_ns": 419.834,
+            "cpu_ns": 420.334
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 5928.416,
+            "cpu_ns": 5821.832
+          },
+          "candidate": {
+            "wall_ns": 451.916,
+            "cpu_ns": 445.666
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 5715.084,
+            "cpu_ns": 5618.584
+          },
+          "candidate": {
+            "wall_ns": 416.084,
+            "cpu_ns": 416.666
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 6269.416,
+            "cpu_ns": 6208.0
+          },
+          "candidate": {
+            "wall_ns": 407.834,
+            "cpu_ns": 408.25
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 5233.0,
+            "cpu_ns": 5196.5
+          },
+          "candidate": {
+            "wall_ns": 418.666,
+            "cpu_ns": 419.334
+          }
+        }
+      ],
+      "note": "numpy fallback kernel, owned result",
+      "summary": {
+        "cpu_ratio_median": 13.063217746025051,
+        "cpu_ratio_min": 12.372966737727419,
+        "cpu_ratio_max": 15.206368646662584,
+        "wall_ratio_median": 13.118402534984378,
+        "baseline_cpu_median_ns": 5618.584,
+        "candidate_cpu_median_ns": 416.666
+      }
+    },
+    {
+      "name": "wav16_read_1024_int16",
+      "iterations": 500,
+      "samples": [
+        {
+          "baseline": {
+            "wall_ns": 9491.584,
+            "cpu_ns": 9381.418
+          },
+          "candidate": {
+            "wall_ns": 3726.5,
+            "cpu_ns": 3700.084
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 10021.5,
+            "cpu_ns": 9764.918
+          },
+          "candidate": {
+            "wall_ns": 3633.834,
+            "cpu_ns": 3626.25
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 9203.416,
+            "cpu_ns": 9105.832
+          },
+          "candidate": {
+            "wall_ns": 3748.5,
+            "cpu_ns": 3668.084
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 12482.416,
+            "cpu_ns": 11501.75
+          },
+          "candidate": {
+            "wall_ns": 4107.584,
+            "cpu_ns": 3920.584
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 9743.5,
+            "cpu_ns": 9448.584
+          },
+          "candidate": {
+            "wall_ns": 4051.166,
+            "cpu_ns": 3880.832
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 11531.834,
+            "cpu_ns": 10827.584
+          },
+          "candidate": {
+            "wall_ns": 4488.416,
+            "cpu_ns": 3884.334
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 10977.918,
+            "cpu_ns": 10111.5
+          },
+          "candidate": {
+            "wall_ns": 4393.25,
+            "cpu_ns": 4071.416
+          }
+        }
+      ],
+      "note": "complete BytesIO wave parse and owned decode; fallback path only",
+      "summary": {
+        "cpu_ratio_median": 2.5354608165652457,
+        "cpu_ratio_min": 2.4346799861473007,
+        "cpu_ratio_max": 2.933682839087238,
+        "wall_ratio_median": 2.5470505836575876,
+        "baseline_cpu_median_ns": 9764.918,
+        "candidate_cpu_median_ns": 3880.832
+      }
+    },
+    {
+      "name": "pcm16_decode_262144_float32",
+      "iterations": 10,
+      "samples": [
+        {
+          "baseline": {
+            "wall_ns": 158729.2,
+            "cpu_ns": 141375.0
+          },
+          "candidate": {
+            "wall_ns": 103254.1,
+            "cpu_ns": 93854.1
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 151112.5,
+            "cpu_ns": 142087.5
+          },
+          "candidate": {
+            "wall_ns": 100854.1,
+            "cpu_ns": 92229.2
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 158770.8,
+            "cpu_ns": 143954.1
+          },
+          "candidate": {
+            "wall_ns": 90312.5,
+            "cpu_ns": 90466.7
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 152291.7,
+            "cpu_ns": 138808.4
+          },
+          "candidate": {
+            "wall_ns": 105925.0,
+            "cpu_ns": 94020.9
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 147866.7,
+            "cpu_ns": 136145.9
+          },
+          "candidate": {
+            "wall_ns": 103987.5,
+            "cpu_ns": 94770.8
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 151241.7,
+            "cpu_ns": 142258.4
+          },
+          "candidate": {
+            "wall_ns": 112066.6,
+            "cpu_ns": 94875.0
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 141425.0,
+            "cpu_ns": 135175.0
+          },
+          "candidate": {
+            "wall_ns": 89625.0,
+            "cpu_ns": 87762.5
+          }
+        }
+      ],
+      "note": "numpy fallback kernel, owned result",
+      "summary": {
+        "cpu_ratio_median": 1.5063273740838172,
+        "cpu_ratio_min": 1.4365806767485343,
+        "cpu_ratio_max": 1.5912385441272867,
+        "wall_ratio_median": 1.4983277824104324,
+        "baseline_cpu_median_ns": 141375.0,
+        "candidate_cpu_median_ns": 93854.1
+      }
+    },
+    {
+      "name": "wav16_read_262144_float32",
+      "iterations": 10,
+      "samples": [
+        {
+          "baseline": {
+            "wall_ns": 174841.6,
+            "cpu_ns": 162208.4
+          },
+          "candidate": {
+            "wall_ns": 100945.9,
+            "cpu_ns": 100145.8
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 159958.3,
+            "cpu_ns": 152941.7
+          },
+          "candidate": {
+            "wall_ns": 120854.1,
+            "cpu_ns": 110116.6
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 165966.6,
+            "cpu_ns": 154895.8
+          },
+          "candidate": {
+            "wall_ns": 112920.9,
+            "cpu_ns": 108287.5
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 173708.3,
+            "cpu_ns": 164708.3
+          },
+          "candidate": {
+            "wall_ns": 116745.9,
+            "cpu_ns": 108850.0
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 158958.3,
+            "cpu_ns": 151479.1
+          },
+          "candidate": {
+            "wall_ns": 111033.3,
+            "cpu_ns": 107545.9
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 175641.6,
+            "cpu_ns": 160737.5
+          },
+          "candidate": {
+            "wall_ns": 109370.8,
+            "cpu_ns": 104633.3
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 199229.2,
+            "cpu_ns": 170912.5
+          },
+          "candidate": {
+            "wall_ns": 123604.1,
+            "cpu_ns": 110654.1
+          }
+        }
+      ],
+      "note": "complete BytesIO wave parse and owned decode; fallback path only",
+      "summary": {
+        "cpu_ratio_median": 1.5131676619200733,
+        "cpu_ratio_min": 1.3889068496484636,
+        "cpu_ratio_max": 1.6197224446756628,
+        "wall_ratio_median": 1.487917776984031,
+        "baseline_cpu_median_ns": 160737.5,
+        "candidate_cpu_median_ns": 108287.5
+      }
+    },
+    {
+      "name": "pcm16_decode_262144_float64",
+      "iterations": 10,
+      "samples": [
+        {
+          "baseline": {
+            "wall_ns": 160233.3,
+            "cpu_ns": 146325.0
+          },
+          "candidate": {
+            "wall_ns": 115733.4,
+            "cpu_ns": 109158.3
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 158804.1,
+            "cpu_ns": 151416.7
+          },
+          "candidate": {
+            "wall_ns": 120045.8,
+            "cpu_ns": 110145.8
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 164783.3,
+            "cpu_ns": 146233.3
+          },
+          "candidate": {
+            "wall_ns": 107854.1,
+            "cpu_ns": 107954.2
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 169841.6,
+            "cpu_ns": 149241.6
+          },
+          "candidate": {
+            "wall_ns": 117004.1,
+            "cpu_ns": 111241.7
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 163025.0,
+            "cpu_ns": 145562.5
+          },
+          "candidate": {
+            "wall_ns": 116395.8,
+            "cpu_ns": 108362.5
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 150962.5,
+            "cpu_ns": 141445.8
+          },
+          "candidate": {
+            "wall_ns": 122925.0,
+            "cpu_ns": 113545.8
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 150137.5,
+            "cpu_ns": 140341.7
+          },
+          "candidate": {
+            "wall_ns": 119912.5,
+            "cpu_ns": 112862.5
+          }
+        }
+      ],
+      "note": "numpy fallback kernel, owned result",
+      "summary": {
+        "cpu_ratio_median": 1.3415976203168416,
+        "cpu_ratio_min": 1.2434750249197033,
+        "cpu_ratio_max": 1.3746933609815355,
+        "wall_ratio_median": 1.3845035227514269,
+        "baseline_cpu_median_ns": 146233.3,
+        "candidate_cpu_median_ns": 110145.8
+      }
+    },
+    {
+      "name": "wav16_read_262144_float64",
+      "iterations": 10,
+      "samples": [
+        {
+          "baseline": {
+            "wall_ns": 202458.3,
+            "cpu_ns": 186387.5
+          },
+          "candidate": {
+            "wall_ns": 135633.3,
+            "cpu_ns": 127641.7
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 179445.9,
+            "cpu_ns": 163854.2
+          },
+          "candidate": {
+            "wall_ns": 147375.0,
+            "cpu_ns": 131904.1
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 190625.0,
+            "cpu_ns": 167204.2
+          },
+          "candidate": {
+            "wall_ns": 153433.4,
+            "cpu_ns": 138279.2
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 173825.0,
+            "cpu_ns": 157683.3
+          },
+          "candidate": {
+            "wall_ns": 141912.5,
+            "cpu_ns": 132325.0
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 166279.2,
+            "cpu_ns": 155566.7
+          },
+          "candidate": {
+            "wall_ns": 162900.0,
+            "cpu_ns": 141454.2
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 204362.5,
+            "cpu_ns": 174487.5
+          },
+          "candidate": {
+            "wall_ns": 174812.5,
+            "cpu_ns": 143658.3
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 176654.1,
+            "cpu_ns": 163620.9
+          },
+          "candidate": {
+            "wall_ns": 141445.9,
+            "cpu_ns": 127983.3
+          }
+        }
+      ],
+      "note": "complete BytesIO wave parse and owned decode; fallback path only",
+      "summary": {
+        "cpu_ratio_median": 1.2146008967111543,
+        "cpu_ratio_min": 1.0997672744959146,
+        "cpu_ratio_max": 1.46023987458644,
+        "wall_ratio_median": 1.2248744825156346,
+        "baseline_cpu_median_ns": 163854.2,
+        "candidate_cpu_median_ns": 132325.0
+      }
+    },
+    {
+      "name": "pcm16_decode_262144_int16",
+      "iterations": 10,
+      "samples": [
+        {
+          "baseline": {
+            "wall_ns": 466683.4,
+            "cpu_ns": 438837.5
+          },
+          "candidate": {
+            "wall_ns": 8908.3,
+            "cpu_ns": 8008.3
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 473183.3,
+            "cpu_ns": 422845.9
+          },
+          "candidate": {
+            "wall_ns": 12625.0,
+            "cpu_ns": 11108.3
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 463862.5,
+            "cpu_ns": 422204.2
+          },
+          "candidate": {
+            "wall_ns": 12458.4,
+            "cpu_ns": 10816.7
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 461291.7,
+            "cpu_ns": 420804.2
+          },
+          "candidate": {
+            "wall_ns": 9308.3,
+            "cpu_ns": 8304.2
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 414712.5,
+            "cpu_ns": 400975.0
+          },
+          "candidate": {
+            "wall_ns": 8545.9,
+            "cpu_ns": 8325.0
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 442529.2,
+            "cpu_ns": 416608.3
+          },
+          "candidate": {
+            "wall_ns": 7200.0,
+            "cpu_ns": 7229.1
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 456100.0,
+            "cpu_ns": 417966.6
+          },
+          "candidate": {
+            "wall_ns": 9179.2,
+            "cpu_ns": 8854.2
+          }
+        }
+      ],
+      "note": "numpy fallback kernel, owned result",
+      "summary": {
+        "cpu_ratio_median": 48.16516516516516,
+        "cpu_ratio_min": 38.065761637694344,
+        "cpu_ratio_max": 57.62934528502856,
+        "wall_ratio_median": 49.55702974764458,
+        "baseline_cpu_median_ns": 420804.2,
+        "candidate_cpu_median_ns": 8325.0
+      }
+    },
+    {
+      "name": "wav16_read_262144_int16",
+      "iterations": 10,
+      "samples": [
+        {
+          "baseline": {
+            "wall_ns": 479200.0,
+            "cpu_ns": 442837.5
+          },
+          "candidate": {
+            "wall_ns": 40920.8,
+            "cpu_ns": 36516.7
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 516279.2,
+            "cpu_ns": 462508.4
+          },
+          "candidate": {
+            "wall_ns": 35708.3,
+            "cpu_ns": 33316.7
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 511308.3,
+            "cpu_ns": 460654.2
+          },
+          "candidate": {
+            "wall_ns": 37183.4,
+            "cpu_ns": 36408.3
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 472079.1,
+            "cpu_ns": 438062.5
+          },
+          "candidate": {
+            "wall_ns": 39800.0,
+            "cpu_ns": 37004.2
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 477691.7,
+            "cpu_ns": 441208.3
+          },
+          "candidate": {
+            "wall_ns": 40141.6,
+            "cpu_ns": 30441.7
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 461316.7,
+            "cpu_ns": 431258.4
+          },
+          "candidate": {
+            "wall_ns": 36791.7,
+            "cpu_ns": 30633.3
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 458845.9,
+            "cpu_ns": 435633.4
+          },
+          "candidate": {
+            "wall_ns": 32891.7,
+            "cpu_ns": 32666.7
+          }
+        }
+      ],
+      "note": "complete BytesIO wave parse and owned decode; fallback path only",
+      "summary": {
+        "cpu_ratio_median": 13.335702718670696,
+        "cpu_ratio_min": 11.838183233254604,
+        "cpu_ratio_max": 14.493549966000584,
+        "wall_ratio_median": 12.538607892540982,
+        "baseline_cpu_median_ns": 441208.3,
+        "candidate_cpu_median_ns": 33316.7
+      }
+    },
+    {
+      "name": "pack_f4_1_list",
+      "iterations": 500,
+      "samples": [
+        {
+          "baseline": {
+            "wall_ns": 254.916,
+            "cpu_ns": 249.582
+          },
+          "candidate": {
+            "wall_ns": 170.5,
+            "cpu_ns": 170.916
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 282.416,
+            "cpu_ns": 258.418
+          },
+          "candidate": {
+            "wall_ns": 213.25,
+            "cpu_ns": 198.084
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 221.834,
+            "cpu_ns": 222.332
+          },
+          "candidate": {
+            "wall_ns": 178.082,
+            "cpu_ns": 174.0
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 367.916,
+            "cpu_ns": 330.668
+          },
+          "candidate": {
+            "wall_ns": 197.75,
+            "cpu_ns": 192.168
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 276.916,
+            "cpu_ns": 259.0
+          },
+          "candidate": {
+            "wall_ns": 207.5,
+            "cpu_ns": 194.75
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 260.75,
+            "cpu_ns": 253.25
+          },
+          "candidate": {
+            "wall_ns": 153.584,
+            "cpu_ns": 154.0
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 274.082,
+            "cpu_ns": 248.666
+          },
+          "candidate": {
+            "wall_ns": 254.25,
+            "cpu_ns": 211.75
+          }
+        }
+      ],
+      "note": "both include output bytes and conversion, portable semantic subset only",
+      "summary": {
+        "cpu_ratio_median": 1.3299101412066752,
+        "cpu_ratio_min": 1.1743376623376622,
+        "cpu_ratio_max": 1.7207235335747888,
+        "wall_ratio_median": 1.334534939759036,
+        "baseline_cpu_median_ns": 253.25,
+        "candidate_cpu_median_ns": 192.168
+      }
+    },
+    {
+      "name": "pack_f4_1_ndarray",
+      "iterations": 500,
+      "samples": [
+        {
+          "baseline": {
+            "wall_ns": 154.916,
+            "cpu_ns": 147.666
+          },
+          "candidate": {
+            "wall_ns": 466.084,
+            "cpu_ns": 452.584
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 153.666,
+            "cpu_ns": 148.416
+          },
+          "candidate": {
+            "wall_ns": 481.0,
+            "cpu_ns": 439.25
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 127.75,
+            "cpu_ns": 128.166
+          },
+          "candidate": {
+            "wall_ns": 473.334,
+            "cpu_ns": 450.166
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 173.5,
+            "cpu_ns": 149.834
+          },
+          "candidate": {
+            "wall_ns": 425.668,
+            "cpu_ns": 401.25
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 172.832,
+            "cpu_ns": 165.5
+          },
+          "candidate": {
+            "wall_ns": 393.166,
+            "cpu_ns": 382.418
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 136.916,
+            "cpu_ns": 137.418
+          },
+          "candidate": {
+            "wall_ns": 391.334,
+            "cpu_ns": 379.084
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 124.168,
+            "cpu_ns": 124.582
+          },
+          "candidate": {
+            "wall_ns": 370.5,
+            "cpu_ns": 356.666
+          }
+        }
+      ],
+      "note": "both include output bytes and conversion, portable semantic subset only",
+      "summary": {
+        "cpu_ratio_median": 0.34929597999248596,
+        "cpu_ratio_min": 0.28470830760208454,
+        "cpu_ratio_max": 0.4327725159380573,
+        "wall_ratio_median": 0.33513630229419705,
+        "baseline_cpu_median_ns": 147.666,
+        "candidate_cpu_median_ns": 401.25
+      }
+    },
+    {
+      "name": "unpack_f4_1",
+      "iterations": 500,
+      "samples": [
+        {
+          "baseline": {
+            "wall_ns": 188.5,
+            "cpu_ns": 188.918
+          },
+          "candidate": {
+            "wall_ns": 213.916,
+            "cpu_ns": 214.25
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 224.666,
+            "cpu_ns": 210.5
+          },
+          "candidate": {
+            "wall_ns": 205.668,
+            "cpu_ns": 206.082
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 189.832,
+            "cpu_ns": 190.334
+          },
+          "candidate": {
+            "wall_ns": 245.418,
+            "cpu_ns": 234.166
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 227.332,
+            "cpu_ns": 209.332
+          },
+          "candidate": {
+            "wall_ns": 271.5,
+            "cpu_ns": 229.084
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 268.666,
+            "cpu_ns": 224.832
+          },
+          "candidate": {
+            "wall_ns": 230.834,
+            "cpu_ns": 211.416
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 207.5,
+            "cpu_ns": 200.416
+          },
+          "candidate": {
+            "wall_ns": 219.666,
+            "cpu_ns": 213.166
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 182.416,
+            "cpu_ns": 183.166
+          },
+          "candidate": {
+            "wall_ns": 232.916,
+            "cpu_ns": 228.25
+          }
+        }
+      ],
+      "note": "different ownership/return type: ndarray view versus fresh Python list, not an admissible swap",
+      "summary": {
+        "cpu_ratio_median": 0.9137783520455378,
+        "cpu_ratio_min": 0.8024797371303395,
+        "cpu_ratio_max": 1.063457827222159,
+        "wall_ratio_median": 0.8811870079844425,
+        "baseline_cpu_median_ns": 200.416,
+        "candidate_cpu_median_ns": 214.25
+      }
+    },
+    {
+      "name": "pack_f4_16_list",
+      "iterations": 500,
+      "samples": [
+        {
+          "baseline": {
+            "wall_ns": 471.0,
+            "cpu_ns": 451.584
+          },
+          "candidate": {
+            "wall_ns": 205.332,
+            "cpu_ns": 205.582
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 561.584,
+            "cpu_ns": 539.666
+          },
+          "candidate": {
+            "wall_ns": 280.832,
+            "cpu_ns": 269.084
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 544.832,
+            "cpu_ns": 521.0
+          },
+          "candidate": {
+            "wall_ns": 214.0,
+            "cpu_ns": 214.5
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 491.418,
+            "cpu_ns": 461.834
+          },
+          "candidate": {
+            "wall_ns": 381.25,
+            "cpu_ns": 266.5
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 410.75,
+            "cpu_ns": 411.166
+          },
+          "candidate": {
+            "wall_ns": 233.332,
+            "cpu_ns": 218.25
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 473.666,
+            "cpu_ns": 453.084
+          },
+          "candidate": {
+            "wall_ns": 221.668,
+            "cpu_ns": 214.166
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 420.084,
+            "cpu_ns": 420.584
+          },
+          "candidate": {
+            "wall_ns": 199.5,
+            "cpu_ns": 200.166
+          }
+        }
+      ],
+      "note": "both include output bytes and conversion, portable semantic subset only",
+      "summary": {
+        "cpu_ratio_median": 2.101176023900163,
+        "cpu_ratio_min": 1.7329606003752345,
+        "cpu_ratio_max": 2.428904428904429,
+        "wall_ratio_median": 2.1056842105263156,
+        "baseline_cpu_median_ns": 453.084,
+        "candidate_cpu_median_ns": 214.5
+      }
+    },
+    {
+      "name": "pack_f4_16_ndarray",
+      "iterations": 500,
+      "samples": [
+        {
+          "baseline": {
+            "wall_ns": 128.0,
+            "cpu_ns": 128.666
+          },
+          "candidate": {
+            "wall_ns": 800.25,
+            "cpu_ns": 749.75
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 144.082,
+            "cpu_ns": 139.666
+          },
+          "candidate": {
+            "wall_ns": 721.332,
+            "cpu_ns": 708.25
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 154.0,
+            "cpu_ns": 138.166
+          },
+          "candidate": {
+            "wall_ns": 727.084,
+            "cpu_ns": 722.0
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 129.25,
+            "cpu_ns": 129.582
+          },
+          "candidate": {
+            "wall_ns": 791.168,
+            "cpu_ns": 737.75
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 150.916,
+            "cpu_ns": 143.0
+          },
+          "candidate": {
+            "wall_ns": 839.582,
+            "cpu_ns": 755.832
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 150.834,
+            "cpu_ns": 138.25
+          },
+          "candidate": {
+            "wall_ns": 822.084,
+            "cpu_ns": 776.834
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 122.916,
+            "cpu_ns": 123.416
+          },
+          "candidate": {
+            "wall_ns": 904.332,
+            "cpu_ns": 814.668
+          }
+        }
+      ],
+      "note": "both include output bytes and conversion, portable semantic subset only",
+      "summary": {
+        "cpu_ratio_median": 0.17796594896721823,
+        "cpu_ratio_min": 0.1514923870828362,
+        "cpu_ratio_max": 0.19719872926226614,
+        "wall_ratio_median": 0.1797513524587235,
+        "baseline_cpu_median_ns": 138.166,
+        "candidate_cpu_median_ns": 749.75
+      }
+    },
+    {
+      "name": "unpack_f4_16",
+      "iterations": 500,
+      "samples": [
+        {
+          "baseline": {
+            "wall_ns": 302.0,
+            "cpu_ns": 247.166
+          },
+          "candidate": {
+            "wall_ns": 365.916,
+            "cpu_ns": 342.25
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 207.582,
+            "cpu_ns": 208.084
+          },
+          "candidate": {
+            "wall_ns": 337.334,
+            "cpu_ns": 311.918
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 190.668,
+            "cpu_ns": 191.084
+          },
+          "candidate": {
+            "wall_ns": 304.166,
+            "cpu_ns": 295.25
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 191.75,
+            "cpu_ns": 192.166
+          },
+          "candidate": {
+            "wall_ns": 298.834,
+            "cpu_ns": 283.084
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 204.168,
+            "cpu_ns": 200.334
+          },
+          "candidate": {
+            "wall_ns": 352.0,
+            "cpu_ns": 323.168
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 254.584,
+            "cpu_ns": 217.668
+          },
+          "candidate": {
+            "wall_ns": 288.084,
+            "cpu_ns": 282.584
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 187.334,
+            "cpu_ns": 187.75
+          },
+          "candidate": {
+            "wall_ns": 295.334,
+            "cpu_ns": 282.416
+          }
+        }
+      ],
+      "note": "different ownership/return type: ndarray view versus fresh Python list, not an admissible swap",
+      "summary": {
+        "cpu_ratio_median": 0.6671112279509358,
+        "cpu_ratio_min": 0.6199066739281117,
+        "cpu_ratio_max": 0.7702771565269089,
+        "wall_ratio_median": 0.6343123378953998,
+        "baseline_cpu_median_ns": 200.334,
+        "candidate_cpu_median_ns": 295.25
+      }
+    },
+    {
+      "name": "pack_f4_1024_list",
+      "iterations": 500,
+      "samples": [
+        {
+          "baseline": {
+            "wall_ns": 13872.584,
+            "cpu_ns": 13049.5
+          },
+          "candidate": {
+            "wall_ns": 4332.75,
+            "cpu_ns": 4116.5
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 14537.582,
+            "cpu_ns": 13440.0
+          },
+          "candidate": {
+            "wall_ns": 4590.084,
+            "cpu_ns": 4177.166
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 13533.582,
+            "cpu_ns": 12581.25
+          },
+          "candidate": {
+            "wall_ns": 4136.916,
+            "cpu_ns": 3921.584
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 13436.584,
+            "cpu_ns": 12778.5
+          },
+          "candidate": {
+            "wall_ns": 3889.082,
+            "cpu_ns": 3781.166
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 13773.75,
+            "cpu_ns": 12971.082
+          },
+          "candidate": {
+            "wall_ns": 4263.0,
+            "cpu_ns": 3990.332
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 13696.166,
+            "cpu_ns": 12800.0
+          },
+          "candidate": {
+            "wall_ns": 4310.416,
+            "cpu_ns": 4021.75
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 13596.25,
+            "cpu_ns": 12671.332
+          },
+          "candidate": {
+            "wall_ns": 4412.168,
+            "cpu_ns": 4119.584
+          }
+        }
+      ],
+      "note": "both include output bytes and conversion, portable semantic subset only",
+      "summary": {
+        "cpu_ratio_median": 3.208206173831799,
+        "cpu_ratio_min": 3.075876593364767,
+        "cpu_ratio_max": 3.3795130919933163,
+        "wall_ratio_median": 3.2017965495355147,
+        "baseline_cpu_median_ns": 12800.0,
+        "candidate_cpu_median_ns": 4021.75
+      }
+    },
+    {
+      "name": "pack_f4_1024_ndarray",
+      "iterations": 500,
+      "samples": [
+        {
+          "baseline": {
+            "wall_ns": 215.918,
+            "cpu_ns": 203.0
+          },
+          "candidate": {
+            "wall_ns": 25017.334,
+            "cpu_ns": 23078.0
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 229.5,
+            "cpu_ns": 225.25
+          },
+          "candidate": {
+            "wall_ns": 25424.0,
+            "cpu_ns": 23326.416
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 325.0,
+            "cpu_ns": 238.5
+          },
+          "candidate": {
+            "wall_ns": 25352.834,
+            "cpu_ns": 23261.416
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 292.834,
+            "cpu_ns": 254.25
+          },
+          "candidate": {
+            "wall_ns": 25672.334,
+            "cpu_ns": 24008.834
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 267.334,
+            "cpu_ns": 222.584
+          },
+          "candidate": {
+            "wall_ns": 26015.75,
+            "cpu_ns": 24067.166
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 211.584,
+            "cpu_ns": 212.0
+          },
+          "candidate": {
+            "wall_ns": 25846.916,
+            "cpu_ns": 24361.5
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 203.25,
+            "cpu_ns": 190.332
+          },
+          "candidate": {
+            "wall_ns": 25102.584,
+            "cpu_ns": 23740.418
+          }
+        }
+      ],
+      "note": "both include output bytes and conversion, portable semantic subset only",
+      "summary": {
+        "cpu_ratio_median": 0.009248450773140468,
+        "cpu_ratio_min": 0.008017213513258275,
+        "cpu_ratio_max": 0.01058985205195721,
+        "wall_ratio_median": 0.00902690371302706,
+        "baseline_cpu_median_ns": 222.584,
+        "candidate_cpu_median_ns": 23740.418
+      }
+    },
+    {
+      "name": "unpack_f4_1024",
+      "iterations": 500,
+      "samples": [
+        {
+          "baseline": {
+            "wall_ns": 240.332,
+            "cpu_ns": 233.334
+          },
+          "candidate": {
+            "wall_ns": 8603.916,
+            "cpu_ns": 8157.0
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 255.75,
+            "cpu_ns": 236.166
+          },
+          "candidate": {
+            "wall_ns": 9053.416,
+            "cpu_ns": 8451.832
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 264.334,
+            "cpu_ns": 207.166
+          },
+          "candidate": {
+            "wall_ns": 9813.084,
+            "cpu_ns": 9131.166
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 223.416,
+            "cpu_ns": 211.75
+          },
+          "candidate": {
+            "wall_ns": 9724.418,
+            "cpu_ns": 8917.75
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 204.666,
+            "cpu_ns": 199.084
+          },
+          "candidate": {
+            "wall_ns": 9693.084,
+            "cpu_ns": 9017.75
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 269.334,
+            "cpu_ns": 252.0
+          },
+          "candidate": {
+            "wall_ns": 9793.0,
+            "cpu_ns": 9116.0
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 242.0,
+            "cpu_ns": 226.166
+          },
+          "candidate": {
+            "wall_ns": 9288.75,
+            "cpu_ns": 8576.75
+          }
+        }
+      ],
+      "note": "different ownership/return type: ndarray view versus fresh Python list, not an admissible swap",
+      "summary": {
+        "cpu_ratio_median": 0.026369662168070657,
+        "cpu_ratio_min": 0.022076903884006543,
+        "cpu_ratio_max": 0.02860536962118426,
+        "wall_ratio_median": 0.026936893641183544,
+        "baseline_cpu_median_ns": 226.166,
+        "candidate_cpu_median_ns": 8917.75
+      }
+    },
+    {
+      "name": "pack_f4_262144_list",
+      "iterations": 5,
+      "samples": [
+        {
+          "baseline": {
+            "wall_ns": 3282991.6,
+            "cpu_ns": 3124250.0
+          },
+          "candidate": {
+            "wall_ns": 1296333.4,
+            "cpu_ns": 1209641.6
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 3352841.6,
+            "cpu_ns": 3201800.0
+          },
+          "candidate": {
+            "wall_ns": 1263016.8,
+            "cpu_ns": 1204958.4
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 3382308.4,
+            "cpu_ns": 3186633.4
+          },
+          "candidate": {
+            "wall_ns": 1392283.4,
+            "cpu_ns": 1335916.6
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 3594533.4,
+            "cpu_ns": 3335675.0
+          },
+          "candidate": {
+            "wall_ns": 1358116.8,
+            "cpu_ns": 1248750.0
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 3631916.8,
+            "cpu_ns": 3362625.0
+          },
+          "candidate": {
+            "wall_ns": 1476833.2,
+            "cpu_ns": 1337950.0
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 3465508.4,
+            "cpu_ns": 3174241.6
+          },
+          "candidate": {
+            "wall_ns": 1344566.8,
+            "cpu_ns": 1234675.0
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 3278508.2,
+            "cpu_ns": 3092641.6
+          },
+          "candidate": {
+            "wall_ns": 1294291.8,
+            "cpu_ns": 1196108.4
+          }
+        }
+      ],
+      "note": "both include output bytes and conversion, portable semantic subset only",
+      "summary": {
+        "cpu_ratio_median": 2.5827898114615104,
+        "cpu_ratio_min": 2.3853535467708085,
+        "cpu_ratio_max": 2.671211211211211,
+        "wall_ratio_median": 2.533051820308218,
+        "baseline_cpu_median_ns": 3186633.4,
+        "candidate_cpu_median_ns": 1234675.0
+      }
+    },
+    {
+      "name": "pack_f4_262144_ndarray",
+      "iterations": 5,
+      "samples": [
+        {
+          "baseline": {
+            "wall_ns": 18350.0,
+            "cpu_ns": 18575.0
+          },
+          "candidate": {
+            "wall_ns": 6858883.2,
+            "cpu_ns": 6603241.8
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 19750.0,
+            "cpu_ns": 19825.0
+          },
+          "candidate": {
+            "wall_ns": 6497441.6,
+            "cpu_ns": 6403400.0
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 15475.0,
+            "cpu_ns": 15525.0
+          },
+          "candidate": {
+            "wall_ns": 6713200.0,
+            "cpu_ns": 6522458.4
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 17466.6,
+            "cpu_ns": 17566.8
+          },
+          "candidate": {
+            "wall_ns": 8449200.0,
+            "cpu_ns": 7150125.0
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 14050.0,
+            "cpu_ns": 14108.2
+          },
+          "candidate": {
+            "wall_ns": 8329300.0,
+            "cpu_ns": 7414716.6
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 19025.0,
+            "cpu_ns": 18508.2
+          },
+          "candidate": {
+            "wall_ns": 8674708.2,
+            "cpu_ns": 7608733.4
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 15508.4,
+            "cpu_ns": 14958.2
+          },
+          "candidate": {
+            "wall_ns": 8125783.2,
+            "cpu_ns": 7247691.6
+          }
+        }
+      ],
+      "note": "both include output bytes and conversion, portable semantic subset only",
+      "summary": {
+        "cpu_ratio_median": 0.002432494217762972,
+        "cpu_ratio_min": 0.0019027294987916331,
+        "cpu_ratio_max": 0.003096011493893869,
+        "wall_ratio_median": 0.002193157344474135,
+        "baseline_cpu_median_ns": 17566.8,
+        "candidate_cpu_median_ns": 7150125.0
+      }
+    },
+    {
+      "name": "unpack_f4_262144",
+      "iterations": 5,
+      "samples": [
+        {
+          "baseline": {
+            "wall_ns": 6800.0,
+            "cpu_ns": 5391.6
+          },
+          "candidate": {
+            "wall_ns": 3772300.0,
+            "cpu_ns": 3492516.6
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 3191.8,
+            "cpu_ns": 3250.0
+          },
+          "candidate": {
+            "wall_ns": 3340183.4,
+            "cpu_ns": 3331900.0
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 300.0,
+            "cpu_ns": 341.6
+          },
+          "candidate": {
+            "wall_ns": 3341583.4,
+            "cpu_ns": 3200008.4
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 3058.4,
+            "cpu_ns": 3133.4
+          },
+          "candidate": {
+            "wall_ns": 3313175.0,
+            "cpu_ns": 3084100.0
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 341.6,
+            "cpu_ns": 383.4
+          },
+          "candidate": {
+            "wall_ns": 3404850.0,
+            "cpu_ns": 3112633.4
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 3925.0,
+            "cpu_ns": 4025.0
+          },
+          "candidate": {
+            "wall_ns": 3048483.4,
+            "cpu_ns": 2991208.4
+          }
+        },
+        {
+          "baseline": {
+            "wall_ns": 358.2,
+            "cpu_ns": 408.4
+          },
+          "candidate": {
+            "wall_ns": 3198441.8,
+            "cpu_ns": 2899041.6
+          }
+        }
+      ],
+      "note": "different ownership/return type: ndarray view versus fresh Python list, not an admissible swap",
+      "summary": {
+        "cpu_ratio_median": 0.0009754194303550526,
+        "cpu_ratio_min": 0.00010674971978198558,
+        "cpu_ratio_max": 0.0015437578736204147,
+        "wall_ratio_median": 0.0009231024621397904,
+        "baseline_cpu_median_ns": 3133.4,
+        "candidate_cpu_median_ns": 3112633.4
+      }
+    }
+  ],
+  "measured_script_sha256": "110bce139ce292453d918e66ed6a2e827782a0abab60370fc184d04529efe750",
+  "measured_script": "benchmark_measured.py",
+  "script_note": "benchmark_measured.py is the exact timed source. benchmark.py adds formatting, annotations, docstrings, and partial callback bindings, passing scoped Ruff/mypy and rerun correctness only. Results were not remeasured with the polished callback wrappers.",
+  "polished_script_sha256": "c40a8d2ccc49550aeab5117ae79e353f9e8147a0e03979db290db9de062fdc03"
+}

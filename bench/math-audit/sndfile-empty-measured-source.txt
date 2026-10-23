@@ -1,0 +1,36 @@
+"""Longer adjacent pairs for the only repeatedly borderline empty WAV case."""
+
+import gc
+import importlib.util
+import json
+from pathlib import Path
+import statistics
+import sys
+
+sys.path.insert(0,str(Path('bench/math-audit').resolve()))
+import qualify_sndfile as q
+from qualify_audio import batch,load,payload,signature
+
+baseline=load(q.ROOT/'src/unstd/audio/wavx.py','_empty_baseline')
+candidate=load(q.ROOT/'src/unstd/audio/wavx.py','_empty_candidate')
+control=load(q.ROOT/'src/unstd/audio/wavx.py','_empty_control')
+new_sf=load(Path(q.sf.__file__),'_empty_soundfile_candidate')
+new_sf._snd=new_sf._ffi.dlopen(str(Path('.local/audio-patched-474e4d3-r4/stage/_soundfile_data/libsndfile_arm64.dylib').resolve()))
+candidate._sf=new_sf
+control_sf=load(Path(q.sf.__file__),'_empty_soundfile_control')
+control._sf=control_sf
+data=payload(1,0)
+functions={k:lambda module=m:q.decode(module,data,'float64') for k,m in [('baseline',baseline),('candidate',candidate),('control',control)]}
+assert signature(functions['baseline']())==signature(functions['candidate']())==signature(functions['control']())
+for _ in range(100):
+    for fn in functions.values():fn()
+gc.disable()
+samples=[]
+for turn in range(21):
+    order=('baseline','candidate','control') if turn%2 else ('control','candidate','baseline')
+    row={'order':order}
+    for side in order:row[side]=batch(functions[side],2048)
+    samples.append(row)
+report={'case':'complete empty PCM8 WAV read float64','method':'21 alternating three-way adjacent batches of2048 calls; current-thread CPU; control=independent Python binding with original DSO; no samples discarded','samples':samples,'median_paired_candidate_over_baseline':{clock:statistics.median(r['candidate'][clock]/r['baseline'][clock] for r in samples) for clock in ('wall_ns','cpu_ns')},'median_paired_control_over_baseline':{clock:statistics.median(r['control'][clock]/r['baseline'][clock] for r in samples) for clock in ('wall_ns','cpu_ns')}}
+Path('bench/math-audit/sndfile-empty-qualification.json').write_text(json.dumps(report,indent=2)+'\n')
+print({k:v for k,v in report.items() if k!='samples'})

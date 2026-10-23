@@ -4,6 +4,12 @@ Benchmark drivers and recorded measurements for `unstd` APIs, optional backends,
 and bundled native kernels. Cases validate comparable outputs before timing;
 reports retain gains, losses, and backend-specific limitations.
 
+The [mathematical backend audit](math-audit/report.md) maps every public
+operation to its current provider, researches compatible alternatives, and
+retains security findings and raw random, numeric, and text measurements.
+Its [per-operation inventory](math-audit/functions.md) distinguishes active
+runtime backends from available source and unqualified replacement candidates.
+
 ## Frozen function speeds
 
 [`speeds.json`](speeds.json) freezes representative latency for every public

@@ -1,0 +1,28 @@
+from pathlib import Path
+import json,time,statistics,sys,hashlib,gc
+from functools import partial
+from blake3 import blake3
+from unstd.crypto import digest,token
+key=bytes(range(32));context='unstd math audit threshold v1'
+rows=[]
+def batch(fn,n):
+ w=time.perf_counter_ns();c=time.process_time_ns()
+ for _ in range(n):fn()
+ return {'wall_ns':(time.perf_counter_ns()-w)/n,'process_cpu_ns':(time.process_time_ns()-c)/n}
+gc.disable()
+try:
+ for size in (1024*1024,2*1024*1024,4*1024*1024):
+  data=bytes(size)
+  for mode,current,options in [('raw',partial(digest.raw,data),{}),('keyed',partial(token.mac_raw,key,data),{'key':key}),('kdf',partial(digest.derive_key,context,data),{'derive_key_context':context})]:
+   def serial(data=data,options=options):return blake3(data,**options).digest()
+   assert current()==serial()
+   samples=[]
+   for repeat in range(9):
+    funcs={'current':current,'serial':serial};order=('current','serial') if repeat%2==0 else ('serial','current');sample={}
+    for side in order:sample[side]=batch(funcs[side],16)
+    samples.append(sample)
+   rows.append({'size':size,'mode':mode,'samples':samples,'median_serial_over_current':{clock:statistics.median(s['serial'][clock]/s['current'][clock] for s in samples) for clock in ('wall_ns','process_cpu_ns')}})
+finally:gc.enable()
+report={'python':sys.version,'sha256':{p:hashlib.sha256(Path(p).read_bytes()).hexdigest() for p in ('src/unstd/crypto/_blake3.py','src/unstd/crypto/digest.py','src/unstd/crypto/token.py','.local/math-audit-hash/probe.py')},'iterations':16,'rounds':9,'rows':rows}
+Path('.local/math-audit-hash/threshold-results.json').write_text(json.dumps(report,indent=2)+'\n')
+for r in rows:print(r['size'],r['mode'],r['median_serial_over_current'])

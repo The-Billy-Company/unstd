@@ -1,0 +1,582 @@
+{
+  "scope": "audio/pack/iters/time/containers callable exports and Writer lifecycle; type aliases/exceptions and imported whenever type vocabularies excluded from operation count",
+  "count": 64,
+  "functions": [
+    {
+      "public_name": "unstd.audio.wavx.read",
+      "source": "src/unstd/audio/wavx.py",
+      "line": 131,
+      "backend": "SoundFile/libsndfile preferred; wave+NumPy; wave+array floor",
+      "operation": "PCM normalization/centering, optional int16 quantization, channel reshape",
+      "recommendation": "Retain preferred backend; investigate patched native build; owned PCM16/int16 fallback shortcut measured promising",
+      "security_or_contract_boundary": "Native parser CVE build provenance; frame alignment; arbitrary full-file memory; dtype and shape"
+    },
+    {
+      "public_name": "unstd.audio.wavx.blocks",
+      "source": "src/unstd/audio/wavx.py",
+      "line": 154,
+      "backend": "SoundFile.blocks or wave.readframes+same fallback decoders",
+      "operation": "Same PCM math per bounded chunk",
+      "recommendation": "Retain independent yielded arrays; no implicit reusable out buffer",
+      "security_or_contract_boundary": "Positive block size; input frame alignment; native parser; consumer retention"
+    },
+    {
+      "public_name": "unstd.audio.wavx.wrap_pcm",
+      "source": "src/unstd/audio/wavx.py",
+      "line": 189,
+      "backend": "Compiled stdlib struct.Struct",
+      "operation": "RIFF length, block size, sample/byte-rate products",
+      "recommendation": "Retain single header pack; zero quantization",
+      "security_or_contract_boundary": "Fixed-width header limits; width/rate checks; opaque raw frame alignment is caller responsibility"
+    },
+    {
+      "public_name": "unstd.audio.wavx.write",
+      "source": "src/unstd/audio/wavx.py",
+      "line": 243,
+      "backend": "SoundFile + NumPy preparation or wave+NumPy/array",
+      "operation": "Clipping, fixed-point scaling, rounding, integer narrowing",
+      "recommendation": "Retain; no measured native replacement",
+      "security_or_contract_boundary": "Raw integer counts vs normalized floats; large integers before narrowing; shapes; signed rails"
+    },
+    {
+      "public_name": "unstd.audio.wavx.Writer",
+      "source": "src/unstd/audio/wavx.py",
+      "line": 271,
+      "backend": "SoundFile.SoundFile or wave.Wave_write",
+      "operation": "Fixed stream metadata and same per-chunk quantization",
+      "recommendation": "Retain open-handle streaming",
+      "security_or_contract_boundary": "Seekable finalization, dtype/channel consistency, native provenance"
+    },
+    {
+      "public_name": "unstd.audio.wavx.Writer.__init__",
+      "source": "src/unstd/audio/wavx.py",
+      "line": 271,
+      "backend": "SoundFile.SoundFile or wave.Wave_write",
+      "operation": "Rate conversion, channel/sample-width metadata",
+      "recommendation": "Retain",
+      "security_or_contract_boundary": "Metadata fixed per lifetime; unsupported fallback subtype refused"
+    },
+    {
+      "public_name": "unstd.audio.wavx.Writer.write",
+      "source": "src/unstd/audio/wavx.py",
+      "line": 271,
+      "backend": "Native handle or NumPy/array fallback",
+      "operation": "Per-chunk quantization/clip/channel count",
+      "recommendation": "Retain; no benchmark of writer kernel",
+      "security_or_contract_boundary": "Wrong channels, ragged frames, narrowing overflow; no silent source mutation"
+    },
+    {
+      "public_name": "unstd.audio.wavx.Writer.close",
+      "source": "src/unstd/audio/wavx.py",
+      "line": 271,
+      "backend": "Native close/wave close",
+      "operation": "RIFF frame/byte counts finalized",
+      "recommendation": "Retain",
+      "security_or_contract_boundary": "Seekable finalization; idempotency and failure cleanup"
+    },
+    {
+      "public_name": "unstd.audio.wavx.Writer.__enter__",
+      "source": "src/unstd/audio/wavx.py",
+      "line": 271,
+      "backend": "Python self return",
+      "operation": "None",
+      "recommendation": "Retain",
+      "security_or_contract_boundary": "Handle lifetime"
+    },
+    {
+      "public_name": "unstd.audio.wavx.Writer.__exit__",
+      "source": "src/unstd/audio/wavx.py",
+      "line": 271,
+      "backend": "Writer.close",
+      "operation": "None beyond close",
+      "recommendation": "Retain",
+      "security_or_contract_boundary": "Exceptions still finalize/close"
+    },
+    {
+      "public_name": "unstd.pack.binpack.Struct",
+      "source": "src/unstd/pack/binpack.py",
+      "line": 86,
+      "backend": "Direct stdlib struct C alias",
+      "operation": "Fixed-width numeric binary codec, format size/offset arithmetic",
+      "recommendation": "Retain identity; no wrapper",
+      "security_or_contract_boundary": "Endianness/alignment, field range and contiguous buffer bounds follow struct"
+    },
+    {
+      "public_name": "unstd.pack.binpack.calcsize",
+      "source": "src/unstd/pack/binpack.py",
+      "line": 84,
+      "backend": "Direct stdlib struct C alias",
+      "operation": "Fixed-width numeric binary codec, format size/offset arithmetic",
+      "recommendation": "Retain identity; no wrapper",
+      "security_or_contract_boundary": "Endianness/alignment, field range and contiguous buffer bounds follow struct"
+    },
+    {
+      "public_name": "unstd.pack.binpack.iter_unpack",
+      "source": "src/unstd/pack/binpack.py",
+      "line": 85,
+      "backend": "Direct stdlib struct C alias",
+      "operation": "Fixed-width numeric binary codec, format size/offset arithmetic",
+      "recommendation": "Retain identity; no wrapper",
+      "security_or_contract_boundary": "Endianness/alignment, field range and contiguous buffer bounds follow struct"
+    },
+    {
+      "public_name": "unstd.pack.binpack.pack",
+      "source": "src/unstd/pack/binpack.py",
+      "line": 80,
+      "backend": "Direct stdlib struct C alias",
+      "operation": "Fixed-width numeric binary codec, format size/offset arithmetic",
+      "recommendation": "Retain identity; no wrapper",
+      "security_or_contract_boundary": "Endianness/alignment, field range and contiguous buffer bounds follow struct"
+    },
+    {
+      "public_name": "unstd.pack.binpack.pack_into",
+      "source": "src/unstd/pack/binpack.py",
+      "line": 83,
+      "backend": "Direct stdlib struct C alias",
+      "operation": "Fixed-width numeric binary codec, format size/offset arithmetic",
+      "recommendation": "Retain identity; no wrapper",
+      "security_or_contract_boundary": "Endianness/alignment, field range and contiguous buffer bounds follow struct"
+    },
+    {
+      "public_name": "unstd.pack.binpack.unpack",
+      "source": "src/unstd/pack/binpack.py",
+      "line": 81,
+      "backend": "Direct stdlib struct C alias",
+      "operation": "Fixed-width numeric binary codec, format size/offset arithmetic",
+      "recommendation": "Retain identity; no wrapper",
+      "security_or_contract_boundary": "Endianness/alignment, field range and contiguous buffer bounds follow struct"
+    },
+    {
+      "public_name": "unstd.pack.binpack.unpack_from",
+      "source": "src/unstd/pack/binpack.py",
+      "line": 82,
+      "backend": "Direct stdlib struct C alias",
+      "operation": "Fixed-width numeric binary codec, format size/offset arithmetic",
+      "recommendation": "Retain identity; no wrapper",
+      "security_or_contract_boundary": "Endianness/alignment, field range and contiguous buffer bounds follow struct"
+    },
+    {
+      "public_name": "unstd.pack.binpack.pack_array",
+      "source": "src/unstd/pack/binpack.py",
+      "line": 175,
+      "backend": "NumPy.asarray/fromiter+tobytes; portable struct fallback",
+      "operation": "Dtype coercion, element count and byte layout",
+      "recommendation": "Retain NumPy ndarray route; use explicit portable helper for suitable lists",
+      "security_or_contract_boundary": "NumPy dtype and coercion semantics; generator consumption; arbitrary dtype is not untrusted-schema validation"
+    },
+    {
+      "public_name": "unstd.pack.binpack.unpack_array",
+      "source": "src/unstd/pack/binpack.py",
+      "line": 221,
+      "backend": "NumPy.frombuffer; portable struct fallback",
+      "operation": "Dtype reinterpretation, element size/alignment",
+      "recommendation": "Retain zero-copy array view",
+      "security_or_contract_boundary": "Mutable input aliases output; backend-dependent dtype/return contract"
+    },
+    {
+      "public_name": "unstd.pack.binpack.pack_array_portable",
+      "source": "src/unstd/pack/binpack.py",
+      "line": 199,
+      "backend": "Cached stdlib Struct",
+      "operation": "Portable dtype parse, item count, scalar conversion",
+      "recommendation": "Retain explicit API; measured faster than NumPy on valid float lists",
+      "security_or_contract_boundary": "Integer __index__, bounded dtypes, range errors, single iterable consumption"
+    },
+    {
+      "public_name": "unstd.pack.binpack.unpack_array_portable",
+      "source": "src/unstd/pack/binpack.py",
+      "line": 237,
+      "backend": "stdlib struct.unpack+list",
+      "operation": "Buffer nbytes modulo/item count",
+      "recommendation": "Retain fresh-list contract",
+      "security_or_contract_boundary": "Contiguous buffers, full byte size for typed/multidimensional views, no alias"
+    },
+    {
+      "public_name": "unstd.iters.consecutive.chunked",
+      "source": "src/unstd/iters/consecutive.py",
+      "line": 32,
+      "backend": "itertools.batched + Python strict check",
+      "operation": "Batch size/count",
+      "recommendation": "Retain unless Python-floor-specific optimization fully preserves validation timing",
+      "security_or_contract_boundary": "n positive; incomplete strict tail and laziness"
+    },
+    {
+      "public_name": "unstd.iters.consecutive.windowed",
+      "source": "src/unstd/iters/consecutive.py",
+      "line": 63,
+      "backend": "tee/zip unit stride; deque/islice otherwise",
+      "operation": "Window size, stride/lag counters",
+      "recommendation": "Retain; generic Python objects preclude array conversion",
+      "security_or_contract_boundary": "n==0 behavior; complete windows only; tee lag/bounded n and exceptions"
+    },
+    {
+      "public_name": "unstd.iters.consecutive.runs",
+      "source": "src/unstd/iters/consecutive.py",
+      "line": 116,
+      "backend": "itertools.groupby + tuple",
+      "operation": "Consecutive equality-key grouping",
+      "recommendation": "Retain",
+      "security_or_contract_boundary": "Individual runs materialized; user key/equality execution"
+    },
+    {
+      "public_name": "unstd.iters.distinct.unique_everseen",
+      "source": "src/unstd/iters/distinct.py",
+      "line": 45,
+      "backend": "set + list fallback + Python loop",
+      "operation": "Dedup by hash/equality",
+      "recommendation": "Retain mixed-hashability contract",
+      "security_or_contract_boundary": "Unbounded unique-key memory; quadratic unhashable comparisons; custom callbacks"
+    },
+    {
+      "public_name": "unstd.iters.distinct.unique_justseen",
+      "source": "src/unstd/iters/distinct.py",
+      "line": 98,
+      "backend": "itertools.groupby + map",
+      "operation": "Consecutive dedup",
+      "recommendation": "Retain",
+      "security_or_contract_boundary": "Adjacent-only equality and custom callbacks"
+    },
+    {
+      "public_name": "unstd.iters.reshape.flatten",
+      "source": "src/unstd/iters/reshape.py",
+      "line": 45,
+      "backend": "Direct itertools.chain.from_iterable alias",
+      "operation": "One-level sequence flatten",
+      "recommendation": "Retain alias",
+      "security_or_contract_boundary": "Lazy, generic objects, no recursive flatten"
+    },
+    {
+      "public_name": "unstd.iters.reshape.partition",
+      "source": "src/unstd/iters/reshape.py",
+      "line": 25,
+      "backend": "tee/compress/map/bool",
+      "operation": "One predicate truth test per item",
+      "recommendation": "Retain",
+      "security_or_contract_boundary": "Lag buffers can grow; tee not thread-safe; no implicit locks"
+    },
+    {
+      "public_name": "unstd.iters.select.first",
+      "source": "src/unstd/iters/select.py",
+      "line": 46,
+      "backend": "Python for/return",
+      "operation": "First position",
+      "recommendation": "Retain",
+      "security_or_contract_boundary": "Consumes exactly one item, default/missing behavior"
+    },
+    {
+      "public_name": "unstd.iters.select.last",
+      "source": "src/unstd/iters/select.py",
+      "line": 65,
+      "backend": "Exact builtin tail indexing; reversed; deque maxlen1",
+      "operation": "Last position",
+      "recommendation": "Retain",
+      "security_or_contract_boundary": "Infinite sources do not terminate; custom reversed and defaults"
+    },
+    {
+      "public_name": "unstd.iters.select.nth",
+      "source": "src/unstd/iters/select.py",
+      "line": 94,
+      "backend": "islice+next",
+      "operation": "Nonnegative index/skip count",
+      "recommendation": "Retain",
+      "security_or_contract_boundary": "Consumption and missing/default behavior; negative rejection"
+    },
+    {
+      "public_name": "unstd.iters.select.take",
+      "source": "src/unstd/iters/select.py",
+      "line": 113,
+      "backend": "list(islice)",
+      "operation": "Bounded prefix count",
+      "recommendation": "Retain",
+      "security_or_contract_boundary": "Nonnegative n; materialization proportional to requested/present data"
+    },
+    {
+      "public_name": "unstd.iters.select.ilen",
+      "source": "src/unstd/iters/select.py",
+      "line": 125,
+      "backend": "itertools.count+zip+deque maxlen0",
+      "operation": "Integer sequence count",
+      "recommendation": "Retain C iterator composition",
+      "security_or_contract_boundary": "Consumes all input; infinite sources do not terminate; constant live storage"
+    },
+    {
+      "public_name": "unstd.iters.batched",
+      "source": "src/unstd/iters/__init__.py",
+      "line": 36,
+      "backend": "Direct itertools.batched",
+      "operation": "Batch/window iteration",
+      "recommendation": "Retain alias",
+      "security_or_contract_boundary": "Backend validation/laziness"
+    },
+    {
+      "public_name": "unstd.iters.pairwise",
+      "source": "src/unstd/iters/__init__.py",
+      "line": 36,
+      "backend": "Direct itertools.pairwise",
+      "operation": "Batch/window iteration",
+      "recommendation": "Retain alias",
+      "security_or_contract_boundary": "Backend validation/laziness"
+    },
+    {
+      "public_name": "unstd.time.timeutil.wall",
+      "source": "src/unstd/time/timeutil.py",
+      "line": 83,
+      "backend": "Direct time.time alias",
+      "operation": "Wall seconds float",
+      "recommendation": "Retain existing backend/identity; no measured compatible zero-overhead swap",
+      "security_or_contract_boundary": "Clock can jump; platform clock behavior"
+    },
+    {
+      "public_name": "unstd.time.timeutil.mono",
+      "source": "src/unstd/time/timeutil.py",
+      "line": 86,
+      "backend": "Direct time.monotonic alias",
+      "operation": "Monotonic float seconds",
+      "recommendation": "Retain existing backend/identity; no measured compatible zero-overhead swap",
+      "security_or_contract_boundary": "Only differences have meaning"
+    },
+    {
+      "public_name": "unstd.time.timeutil.mono_ns",
+      "source": "src/unstd/time/timeutil.py",
+      "line": 93,
+      "backend": "Direct time.monotonic_ns alias",
+      "operation": "Exact integer nanoseconds",
+      "recommendation": "Retain existing backend/identity; no measured compatible zero-overhead swap",
+      "security_or_contract_boundary": "Monotonic; no float conversion"
+    },
+    {
+      "public_name": "unstd.time.timeutil.perf",
+      "source": "src/unstd/time/timeutil.py",
+      "line": 96,
+      "backend": "Direct time.perf_counter alias",
+      "operation": "High-resolution float seconds",
+      "recommendation": "Retain existing backend/identity; no measured compatible zero-overhead swap",
+      "security_or_contract_boundary": "Only durations; platform clock behavior"
+    },
+    {
+      "public_name": "unstd.time.timeutil.elapsed_ms",
+      "source": "src/unstd/time/timeutil.py",
+      "line": 100,
+      "backend": "time.perf_counter+Python float",
+      "operation": "Subtract start and multiply1000",
+      "recommendation": "Retain existing backend/identity; no measured compatible zero-overhead swap",
+      "security_or_contract_boundary": "Start must be perf clock; float precision"
+    },
+    {
+      "public_name": "unstd.time.timeutil.epoch_s",
+      "source": "src/unstd/time/timeutil.py",
+      "line": 105,
+      "backend": "time.time_ns+Python int",
+      "operation": "Floor divide nanoseconds by1e9",
+      "recommendation": "Retain existing backend/identity; no measured compatible zero-overhead swap",
+      "security_or_contract_boundary": "Negative epochs and integer precision"
+    },
+    {
+      "public_name": "unstd.time.timeutil.epoch_ms",
+      "source": "src/unstd/time/timeutil.py",
+      "line": 110,
+      "backend": "time.time_ns+Python int",
+      "operation": "Floor divide nanoseconds by1e6",
+      "recommendation": "Retain existing backend/identity; no measured compatible zero-overhead swap",
+      "security_or_contract_boundary": "Negative epochs and integer precision"
+    },
+    {
+      "public_name": "unstd.time.timeutil.utcnow",
+      "source": "src/unstd/time/timeutil.py",
+      "line": 115,
+      "backend": "functools.partial(datetime.now,UTC)",
+      "operation": "Current aware UTC calendar",
+      "recommendation": "Retain existing backend/identity; no measured compatible zero-overhead swap",
+      "security_or_contract_boundary": "Datetime identity/awareness"
+    },
+    {
+      "public_name": "unstd.time.timeutil.now_tz",
+      "source": "src/unstd/time/timeutil.py",
+      "line": 119,
+      "backend": "datetime.now(tz)",
+      "operation": "Current calendar fields/timezone offset",
+      "recommendation": "Retain existing backend/identity; no measured compatible zero-overhead swap",
+      "security_or_contract_boundary": "Custom tzinfo callbacks"
+    },
+    {
+      "public_name": "unstd.time.timeutil.today",
+      "source": "src/unstd/time/timeutil.py",
+      "line": 124,
+      "backend": "datetime.now(...).date",
+      "operation": "Local/UTC day boundary",
+      "recommendation": "Retain existing backend/identity; no measured compatible zero-overhead swap",
+      "security_or_contract_boundary": "Explicit local-versus-UTC behavior"
+    },
+    {
+      "public_name": "unstd.time.timeutil.iso",
+      "source": "src/unstd/time/timeutil.py",
+      "line": 136,
+      "backend": "datetime.astimezone/replace/isoformat",
+      "operation": "UTC conversion and fractional truncation",
+      "recommendation": "Retain existing backend/identity; no measured compatible zero-overhead swap",
+      "security_or_contract_boundary": "Naive UTC policy, year bounds, no rounding into future"
+    },
+    {
+      "public_name": "unstd.time.timeutil.human",
+      "source": "src/unstd/time/timeutil.py",
+      "line": 154,
+      "backend": "datetime/ZoneInfo/strftime",
+      "operation": "Hour modulo12; timezone formatting",
+      "recommendation": "Retain existing backend/identity; no measured compatible zero-overhead swap",
+      "security_or_contract_boundary": "IANA data freshness; system local timezone and locale"
+    },
+    {
+      "public_name": "unstd.time.timeutil.parse_iso",
+      "source": "src/unstd/time/timeutil.py",
+      "line": 169,
+      "backend": "datetime.fromisoformat",
+      "operation": "Calendar/offset parse",
+      "recommendation": "Retain existing backend/identity; no measured compatible zero-overhead swap",
+      "security_or_contract_boundary": "Backend syntax including second-level offsets; invalid sentinel"
+    },
+    {
+      "public_name": "unstd.time.timeutil.parse_utc",
+      "source": "src/unstd/time/timeutil.py",
+      "line": 181,
+      "backend": "parse_iso+datetime UTC conversion",
+      "operation": "Offset subtraction or naive UTC assignment",
+      "recommendation": "Retain existing backend/identity; no measured compatible zero-overhead swap",
+      "security_or_contract_boundary": "Naive policy; year-range overflow; historical offsets"
+    },
+    {
+      "public_name": "unstd.time.timeutil.parse_date",
+      "source": "src/unstd/time/timeutil.py",
+      "line": 192,
+      "backend": "date.fromisoformat",
+      "operation": "Calendar date parse",
+      "recommendation": "Retain existing backend/identity; no measured compatible zero-overhead swap",
+      "security_or_contract_boundary": "Backend accepts basic/week forms as well as canonical dates; invalid sentinel"
+    },
+    {
+      "public_name": "unstd.time.timeutil.from_epoch_s",
+      "source": "src/unstd/time/timeutil.py",
+      "line": 200,
+      "backend": "datetime.fromtimestamp",
+      "operation": "Float or integer epoch to calendar",
+      "recommendation": "Retain existing backend/identity; no measured compatible zero-overhead swap",
+      "security_or_contract_boundary": "Platform range/errors, tzinfo callbacks"
+    },
+    {
+      "public_name": "unstd.time.timeutil.from_epoch_ms",
+      "source": "src/unstd/time/timeutil.py",
+      "line": 205,
+      "backend": "int divmod+datetime",
+      "operation": "Seconds/rem split, remainder*1000",
+      "recommendation": "Retain existing backend/identity; no measured compatible zero-overhead swap",
+      "security_or_contract_boundary": "Far-calendar millisecond precision; non-int timedelta compatibility"
+    },
+    {
+      "public_name": "unstd.time.timeutil.span",
+      "source": "src/unstd/time/timeutil.py",
+      "line": 236,
+      "backend": "datetime/timedelta+Python float",
+      "operation": "Wall delta minus endpoint offsets, total_seconds/unit",
+      "recommendation": "Retain existing backend/identity; no measured compatible zero-overhead swap",
+      "security_or_contract_boundary": "DST/shared tzinfo, calendar endpoints, unknown unit/naive policy"
+    },
+    {
+      "public_name": "unstd.time.timeutil.proto_timestamp",
+      "source": "src/unstd/time/timeutil.py",
+      "line": 289,
+      "backend": "google.protobuf.Timestamp.FromDatetime",
+      "operation": "UTC datetime to protobuf seconds/nanos",
+      "recommendation": "Retain existing backend/identity; no measured compatible zero-overhead swap",
+      "security_or_contract_boundary": "Actual Timestamp return type; calendar limits; sentinel parse"
+    },
+    {
+      "public_name": "unstd.time.timeutil.proto_timestamp_ms",
+      "source": "src/unstd/time/timeutil.py",
+      "line": 312,
+      "backend": "google.protobuf.Timestamp.FromMilliseconds",
+      "operation": "Integer milliseconds to protobuf seconds/nanos",
+      "recommendation": "Retain existing backend/identity; no measured compatible zero-overhead swap",
+      "security_or_contract_boundary": "Backend range/normalization and exact Timestamp identity"
+    },
+    {
+      "public_name": "unstd.time.zoned.now",
+      "source": "src/unstd/time/zoned.py",
+      "line": 69,
+      "backend": "Direct whenever.ZonedDateTime.now",
+      "operation": "Current instant in explicit zone",
+      "recommendation": "Retain existing backend",
+      "security_or_contract_boundary": "Zone data, native versus pure Python build"
+    },
+    {
+      "public_name": "unstd.time.zoned.instant",
+      "source": "src/unstd/time/zoned.py",
+      "line": 73,
+      "backend": "stdlib parse then whenever Instant/PlainDateTime",
+      "operation": "Absolute instant normalization",
+      "recommendation": "Retain; parse-once type bridge",
+      "security_or_contract_boundary": "Naive opt-in; stdlib parser acceptance"
+    },
+    {
+      "public_name": "unstd.time.zoned.parse",
+      "source": "src/unstd/time/zoned.py",
+      "line": 87,
+      "backend": "stdlib parse then whenever Instant/PlainDateTime",
+      "operation": "Zone conversion or wall-time resolution",
+      "recommendation": "Retain DST disambiguation",
+      "security_or_contract_boundary": "Fold/gap strategies, offset preserve, invalid sentinel"
+    },
+    {
+      "public_name": "unstd.time.zoned.wall",
+      "source": "src/unstd/time/zoned.py",
+      "line": 105,
+      "backend": "whenever.ZonedDateTime",
+      "operation": "Zone/calendar resolution",
+      "recommendation": "Retain; no faithful direct stdlib swap",
+      "security_or_contract_boundary": "Invalid field/zone returns None, fold/gap raise propagates"
+    },
+    {
+      "public_name": "unstd.time.zoned.to_utc",
+      "source": "src/unstd/time/zoned.py",
+      "line": 131,
+      "backend": "whenever.Instant.to_stdlib",
+      "operation": "UTC conversion",
+      "recommendation": "Retain stdlib return type",
+      "security_or_contract_boundary": "Timezone/instant preservation"
+    },
+    {
+      "public_name": "unstd.containers.Map",
+      "source": "src/unstd/containers/__init__.py",
+      "line": 30,
+      "backend": "Direct immutables.Map (C _map installed)",
+      "operation": "Persistent HAMT get/set/delete",
+      "recommendation": "Retain direct backend class identity",
+      "security_or_contract_boundary": "Custom hash/equality/comparison; immutable values are not deeply frozen; no generic memory limits"
+    },
+    {
+      "public_name": "unstd.containers.SortedList",
+      "source": "src/unstd/containers/__init__.py",
+      "line": 31,
+      "backend": "Direct sortedcontainers.SortedList",
+      "operation": "Sorted membership/rank/range/insertion",
+      "recommendation": "Retain direct backend class identity",
+      "security_or_contract_boundary": "Custom hash/equality/comparison; immutable values are not deeply frozen; no generic memory limits"
+    },
+    {
+      "public_name": "unstd.containers.SortedSet",
+      "source": "src/unstd/containers/__init__.py",
+      "line": 31,
+      "backend": "Direct sortedcontainers.SortedSet",
+      "operation": "Sorted membership/rank/range/insertion",
+      "recommendation": "Retain direct backend class identity",
+      "security_or_contract_boundary": "Custom hash/equality/comparison; immutable values are not deeply frozen; no generic memory limits"
+    },
+    {
+      "public_name": "unstd.containers.SortedDict",
+      "source": "src/unstd/containers/__init__.py",
+      "line": 31,
+      "backend": "Direct sortedcontainers.SortedDict",
+      "operation": "Sorted membership/rank/range/insertion",
+      "recommendation": "Retain direct backend class identity",
+      "security_or_contract_boundary": "Custom hash/equality/comparison; immutable values are not deeply frozen; no generic memory limits"
+    }
+  ]
+}

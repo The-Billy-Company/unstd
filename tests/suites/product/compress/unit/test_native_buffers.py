@@ -26,6 +26,21 @@ def native_buffers() -> ModuleType:
     return require_backend("unstd.compress._gzip_native")
 
 
+@pytest.mark.parametrize("size", [0, 1, 15, 16, 255, 256, 65535, 65536, 262145])
+@pytest.mark.parametrize("initial", [0, 1, -1, 0xFFFFFFFF, 2**65 + 7])
+def test_native_ieee_crc_matches_stdlib_and_incremental_updates(
+    native_buffers: ModuleType, size: int, initial: int
+) -> None:
+    payload = (bytes(range(256)) * ((size + 255) // 256))[:size]
+    assert native_buffers.crc32(payload, initial) == zlib.crc32(payload, initial)
+    boundary = size // 2
+    prefix = native_buffers.crc32(payload[:boundary], initial)
+    assert native_buffers.crc32(payload[boundary:], prefix) == zlib.crc32(
+        payload, initial
+    )
+    assert native_buffers.crc32(b"123456789") == 0xCBF43926
+
+
 @pytest.mark.parametrize("level", [0, 1, 9])
 @pytest.mark.parametrize("size", [0, 1, 256, 1024 * 1024])
 def test_native_accepts_complete_members_and_returns_exact_bytes(

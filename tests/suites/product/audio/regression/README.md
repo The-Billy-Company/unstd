@@ -4,6 +4,10 @@
 
 Array, NumPy, and soundfile cases run where supported. Partial-frame checks force fallback readers and require the documented `ValueError` for both one-shot and block reads.
 
+`test_pcm16_owned_decode.py` checks every PCM16 code through NumPy fallback
+whole-file and streaming reads. It pins independent writable array storage,
+little-endian dtype, empty/channel shapes and unchanged PCM8/PCM32 quantization.
+
 Run from the repository root:
 
 ```console
