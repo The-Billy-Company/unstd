@@ -82,6 +82,11 @@ jobs:
           CIBW_BUILD: cp${{ matrix.python }}-*
           # Use uv's fast isolated builder and authenticate the build closure
           # exported from the same lock embedded in the published sdist.
+          CIBW_BEFORE_ALL_LINUX: >-
+            uv export --project "{package}" --locked --only-group release-uv
+            --no-emit-project --no-header --output-file release-uv.txt &&
+            python -m pip install --prefix /usr/local --no-deps --only-binary :all:
+            --require-hashes --requirement release-uv.txt
           CIBW_BEFORE_BUILD: >-
             uv export --project "{package}" --locked --only-group build
             --no-emit-project --no-header --output-file build-constraints.txt
