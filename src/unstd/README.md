@@ -26,7 +26,8 @@ type information for consumers.
 
 Public modules retain their existing import paths. Larger implementations keep
 private mechanisms under their owning package's `_internal/` directory; smaller
-packages keep focused modules without extra nesting. See each package guide for supported exports.
+packages keep focused modules without extra nesting. The
+[public API inventory](../../docs/api.md) lists the exact supported exports.
 
 All C and Rust source lives under [`native/`](../../native/README.md), outside
 the installable Python tree. Private native extension names and `.pyi` stubs

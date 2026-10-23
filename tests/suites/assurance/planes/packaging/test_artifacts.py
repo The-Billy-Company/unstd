@@ -268,6 +268,8 @@ def test_sdist_contains_all_sources_and_rebuild_inputs_without_local_caches(
         "README.md",
         "LICENSE",
         "NOTICE",
+        "docs/api.md",
+        "docs/architecture.md",
         "native/text/rust/Cargo.toml",
         "native/text/rust/Cargo.lock",
         "native/text/rust/src/lib.rs",
