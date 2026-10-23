@@ -344,3 +344,7 @@ physical lines, including blanks; `err` retains the original decode/validation
 exception and schema field path. Exceptions from the callback, or codec hooks
 outside msgspec's decode-error family, propagate. Typed decoding processes each
 row once, so a later schema failure cannot replay earlier conversion hooks.
+
+## Implementation layout
+
+JSON encoding proofs and recursion helpers live in [`_internal/`](_internal/README.md). Public codec functions retain their module, signature and native-dispatch bindings.

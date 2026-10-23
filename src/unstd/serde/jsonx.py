@@ -39,8 +39,8 @@ import json as _stdlib
 from math import isfinite
 from typing import TYPE_CHECKING, Any, Protocol
 
-from unstd.serde._json_common import _check_headroom
-from unstd.serde._json_encode import (
+from unstd.serde._internal.json_common import _check_headroom
+from unstd.serde._internal.json_encode import (
     _compact_bytes,
     _encoder,
     _exact_bytes,
