@@ -11,6 +11,9 @@ on:
       - ".github/workflows/release.yml"
       - ".github/workflows/windows-arm-cache.yml"
       - "tests/tooling/release/cache_key.py"
+  # GitHub evicts unused caches after a week, even without dependency changes.
+  schedule:
+    - cron: "23 13 * * 1,4"
   workflow_dispatch:
 
 permissions:

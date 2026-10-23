@@ -36,6 +36,7 @@ def test_arm_warmup_runs_on_main_before_tags_need_its_cache(workflows):
     warmup = workflows["windows-arm-cache"]
     assert warmup["on"]["push"]["branches"] == ["main"]
     assert "workflow_dispatch" in warmup["on"]
+    assert warmup["on"]["schedule"] == [{"cron": "23 13 * * 1,4"}]
     assert {"pyproject.toml", "uv.lock", "tests/tooling/release/cache_key.py"} <= set(
         warmup["on"]["push"]["paths"]
     )
