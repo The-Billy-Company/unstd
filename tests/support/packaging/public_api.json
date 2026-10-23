@@ -1,0 +1,1105 @@
+{
+  "unstd": {
+    "exports": [],
+    "callables": {}
+  },
+  "unstd.audio": {
+    "exports": [],
+    "callables": {}
+  },
+  "unstd.audio.wavx": {
+    "exports": [
+      "Writer",
+      "blocks",
+      "read",
+      "wrap_pcm",
+      "write"
+    ],
+    "callables": {
+      "Writer": {
+        "signature": "(path_or_file: 'PathOrFile', samplerate: 'int', *, channels: 'int' = 1, subtype: 'str' = 'PCM_16') -> 'None'",
+        "module": "unstd.audio.wavx"
+      },
+      "blocks": {
+        "signature": "(path_or_file: 'PathOrFile', blocksize: 'int', *, dtype: 'str' = 'float32') -> 'Iterator[Samples]'",
+        "module": "unstd.audio.wavx"
+      },
+      "read": {
+        "signature": "(path_or_file: 'PathOrFile', *, dtype: 'str' = 'float32') -> 'tuple[Samples, int]'",
+        "module": "unstd.audio.wavx"
+      },
+      "wrap_pcm": {
+        "signature": "(raw: 'bytes', samplerate: 'int', *, channels: 'int' = 1, width: 'int' = 2) -> 'bytes'",
+        "module": "unstd.audio.wavx"
+      },
+      "write": {
+        "signature": "(path_or_file: 'PathOrFile', samples: 'Samples', samplerate: 'int', *, subtype: 'str' = 'PCM_16') -> 'None'",
+        "module": "unstd.audio.wavx"
+      }
+    }
+  },
+  "unstd.clone": {
+    "exports": [
+      "asdict",
+      "copy",
+      "deep",
+      "deepcopy"
+    ],
+    "callables": {
+      "asdict": {
+        "signature": "(obj: 'Any', *, dict_factory: 'Callable[[list[tuple[str, Any]]], Any]' = <class 'dict'>) -> 'Any'",
+        "module": "unstd.clone.structural"
+      },
+      "deep": {
+        "signature": "(obj: 'T') -> 'T'",
+        "module": "unstd.clone.structural"
+      }
+    }
+  },
+  "unstd.clone.structural": {
+    "exports": [
+      "asdict",
+      "copy",
+      "deep",
+      "deepcopy"
+    ],
+    "callables": {
+      "asdict": {
+        "signature": "(obj: 'Any', *, dict_factory: 'Callable[[list[tuple[str, Any]]], Any]' = <class 'dict'>) -> 'Any'",
+        "module": "unstd.clone.structural"
+      },
+      "deep": {
+        "signature": "(obj: 'T') -> 'T'",
+        "module": "unstd.clone.structural"
+      }
+    }
+  },
+  "unstd.compress": {
+    "exports": [],
+    "callables": {}
+  },
+  "unstd.compress.gzipx": {
+    "exports": [
+      "BadGzipFile",
+      "GzipFile",
+      "compress",
+      "decompress",
+      "open"
+    ],
+    "callables": {
+      "GzipFile": {
+        "signature": "(filename: '_Path | None' = None, mode: 'str | None' = None, compresslevel: 'int' = 9, fileobj: '_ReadableFileobj | _WritableFileobj | None' = None, mtime: 'float | None' = None) -> 'None'",
+        "module": "unstd.compress.gzipx"
+      },
+      "compress": {
+        "signature": "(data: 'Buffer', compresslevel: 'int' = 9, *, mtime: 'float | None' = None) -> 'bytes'",
+        "module": "unstd.compress.gzipx"
+      },
+      "decompress": {
+        "signature": "(data: 'Buffer') -> 'bytes'",
+        "module": "unstd.compress.gzipx"
+      },
+      "open": {
+        "signature": "(filename: '_Path | _ReadableFileobj | _WritableFileobj', mode: 'str' = 'rb', compresslevel: 'int' = 9, encoding: 'str | None' = None, errors: 'str | None' = None, newline: 'str | None' = None) -> 'GzipFile | io.TextIOWrapper'",
+        "module": "unstd.compress.gzipx"
+      }
+    }
+  },
+  "unstd.containers": {
+    "exports": [
+      "Map",
+      "SortedDict",
+      "SortedList",
+      "SortedSet"
+    ],
+    "callables": {}
+  },
+  "unstd.containers.persistent": {
+    "exports": [
+      "HAVE_IMMUTABLES",
+      "Map"
+    ],
+    "callables": {}
+  },
+  "unstd.containers.sorted": {
+    "exports": [
+      "HAVE_SORTEDCONTAINERS",
+      "SortedDict",
+      "SortedList",
+      "SortedSet"
+    ],
+    "callables": {}
+  },
+  "unstd.crypto": {
+    "exports": [],
+    "callables": {}
+  },
+  "unstd.crypto.digest": {
+    "exports": [
+      "DIGEST_BYTES",
+      "Stream",
+      "derive_key",
+      "hex",
+      "legacy_blake2b",
+      "raw"
+    ],
+    "callables": {
+      "Stream": {
+        "signature": "(chunks: 'Iterable[bytes]' = ()) -> 'None'",
+        "module": "unstd.crypto.digest"
+      },
+      "derive_key": {
+        "signature": "(context: 'str', material: 'bytes') -> 'bytes'",
+        "module": "unstd.crypto.digest"
+      },
+      "hex": {
+        "signature": "(data: 'bytes', n: 'int | None' = None) -> 'str'",
+        "module": "unstd.crypto.digest"
+      },
+      "legacy_blake2b": {
+        "signature": "(data: 'bytes', *, width: 'int') -> 'bytes'",
+        "module": "unstd.crypto.digest"
+      },
+      "raw": {
+        "signature": "(data: 'bytes') -> 'bytes'",
+        "module": "unstd.crypto.digest"
+      }
+    }
+  },
+  "unstd.crypto.tls": {
+    "exports": [
+      "LEGACY_MINIMUM_VERSION",
+      "MINIMUM_VERSION",
+      "TlsContext",
+      "client_context"
+    ],
+    "callables": {
+      "client_context": {
+        "signature": "(*, cafile: 'str | None' = None, certfile: 'str | None' = None, keyfile: 'str | None' = None, minimum_version: 'ssl.TLSVersion' = <TLSVersion.TLSv1_3: 772>) -> 'ssl.SSLContext'",
+        "module": "unstd.crypto.tls"
+      }
+    }
+  },
+  "unstd.crypto.token": {
+    "exports": [
+      "KEY_BYTES",
+      "SEPARATOR",
+      "TAG_BYTES",
+      "equal",
+      "mac_hex",
+      "mac_raw",
+      "mint",
+      "prepare_verifier",
+      "verify",
+      "verify_mac"
+    ],
+    "callables": {
+      "equal": {
+        "signature": "(a: 'str | bytes', b: 'str | bytes') -> 'bool'",
+        "module": "unstd.crypto.token"
+      },
+      "mac_hex": {
+        "signature": "(key: 'bytes', data: 'bytes') -> 'str'",
+        "module": "unstd.crypto.token"
+      },
+      "mac_raw": {
+        "signature": "(key: 'bytes', data: 'bytes') -> 'bytes'",
+        "module": "unstd.crypto.token"
+      },
+      "mint": {
+        "signature": "(key: 'bytes', claims: 'bytes') -> 'str'",
+        "module": "unstd.crypto.token"
+      },
+      "prepare_verifier": {
+        "signature": "(*, max_token_chars: 'int | None' = 8192) -> 'Callable[[bytes, str], bytes | None]'",
+        "module": "unstd.crypto.token"
+      },
+      "verify": {
+        "signature": "(key: 'bytes', token: 'str', *, max_token_chars: 'int | None' = 8192) -> 'bytes | None'",
+        "module": "unstd.crypto.token"
+      },
+      "verify_mac": {
+        "signature": "(key: 'bytes', data: 'bytes', tag: 'str | bytes') -> 'bool'",
+        "module": "unstd.crypto.token"
+      }
+    }
+  },
+  "unstd.fs": {
+    "exports": [
+      "atomic_replace",
+      "atomic_write",
+      "atomic_writer",
+      "ensure_dir",
+      "sync_dir",
+      "walk_files"
+    ],
+    "callables": {
+      "atomic_replace": {
+        "signature": "(src: '_Pathish', dest: '_Pathish', *, durable: '_Durability' = False) -> 'Path'",
+        "module": "unstd.fs"
+      },
+      "atomic_write": {
+        "signature": "(path: '_Pathish', data: 'str | bytes', *, encoding: 'str' = 'utf-8', durable: '_Durability' = False) -> 'Path'",
+        "module": "unstd.fs"
+      },
+      "atomic_writer": {
+        "signature": "(path: '_Pathish', *, mode: \"Literal['w', 'wb']\" = 'w', encoding: 'str' = 'utf-8', durable: '_Durability' = False) -> 'AbstractContextManager[IO[str] | IO[bytes]]'",
+        "module": "unstd.fs"
+      },
+      "ensure_dir": {
+        "signature": "(path: '_Pathish') -> 'Path'",
+        "module": "unstd.fs"
+      },
+      "sync_dir": {
+        "signature": "(path: '_Pathish', *, strict: 'bool' = False) -> 'None'",
+        "module": "unstd.fs"
+      },
+      "walk_files": {
+        "signature": "(root: '_Pathish', *, follow_symlinks: 'bool' = False) -> 'Iterator[Path]'",
+        "module": "unstd.fs"
+      }
+    }
+  },
+  "unstd.ids": {
+    "exports": [],
+    "callables": {}
+  },
+  "unstd.ids.uid": {
+    "exports": [],
+    "callables": {}
+  },
+  "unstd.iters": {
+    "exports": [
+      "batched",
+      "chunked",
+      "first",
+      "flatten",
+      "ilen",
+      "last",
+      "nth",
+      "pairwise",
+      "partition",
+      "runs",
+      "take",
+      "unique_everseen",
+      "unique_justseen",
+      "windowed"
+    ],
+    "callables": {
+      "chunked": {
+        "signature": "(iterable: 'Iterable[T]', n: 'int', *, strict: 'bool' = False) -> 'Iterator[tuple[T, ...]]'",
+        "module": "unstd.iters.consecutive"
+      },
+      "first": {
+        "signature": "(iterable: 'Iterable[T]', default: 'D | _Missing' = <no default>) -> 'T | D'",
+        "module": "unstd.iters.select"
+      },
+      "ilen": {
+        "signature": "(iterable: 'Iterable[object]') -> 'int'",
+        "module": "unstd.iters.select"
+      },
+      "last": {
+        "signature": "(iterable: 'Iterable[T]', default: 'D | _Missing' = <no default>) -> 'T | D'",
+        "module": "unstd.iters.select"
+      },
+      "nth": {
+        "signature": "(iterable: 'Iterable[T]', n: 'int', default: 'D | _Missing' = <no default>) -> 'T | D'",
+        "module": "unstd.iters.select"
+      },
+      "partition": {
+        "signature": "(iterable: 'Iterable[T]', pred: 'Callable[[T], object]') -> 'tuple[Iterator[T], Iterator[T]]'",
+        "module": "unstd.iters.reshape"
+      },
+      "runs": {
+        "signature": "(iterable: 'Iterable[T]', key: 'Callable[[T], K]') -> 'Iterator[tuple[K, tuple[T, ...]]]'",
+        "module": "unstd.iters.consecutive"
+      },
+      "take": {
+        "signature": "(iterable: 'Iterable[T]', n: 'int') -> 'list[T]'",
+        "module": "unstd.iters.select"
+      },
+      "unique_everseen": {
+        "signature": "(iterable: 'Iterable[T]', key: 'Callable[[T], object] | None' = None) -> 'Iterator[T]'",
+        "module": "unstd.iters.distinct"
+      },
+      "unique_justseen": {
+        "signature": "(iterable: 'Iterable[T]', key: 'Callable[[T], object] | None' = None) -> 'Iterator[T]'",
+        "module": "unstd.iters.distinct"
+      },
+      "windowed": {
+        "signature": "(iterable: 'Iterable[T]', n: 'int', step: 'int' = 1) -> 'Iterator[tuple[T, ...]]'",
+        "module": "unstd.iters.consecutive"
+      }
+    }
+  },
+  "unstd.iters.consecutive": {
+    "exports": [
+      "chunked",
+      "runs",
+      "windowed"
+    ],
+    "callables": {
+      "chunked": {
+        "signature": "(iterable: 'Iterable[T]', n: 'int', *, strict: 'bool' = False) -> 'Iterator[tuple[T, ...]]'",
+        "module": "unstd.iters.consecutive"
+      },
+      "runs": {
+        "signature": "(iterable: 'Iterable[T]', key: 'Callable[[T], K]') -> 'Iterator[tuple[K, tuple[T, ...]]]'",
+        "module": "unstd.iters.consecutive"
+      },
+      "windowed": {
+        "signature": "(iterable: 'Iterable[T]', n: 'int', step: 'int' = 1) -> 'Iterator[tuple[T, ...]]'",
+        "module": "unstd.iters.consecutive"
+      }
+    }
+  },
+  "unstd.iters.distinct": {
+    "exports": [
+      "unique_everseen",
+      "unique_justseen"
+    ],
+    "callables": {
+      "unique_everseen": {
+        "signature": "(iterable: 'Iterable[T]', key: 'Callable[[T], object] | None' = None) -> 'Iterator[T]'",
+        "module": "unstd.iters.distinct"
+      },
+      "unique_justseen": {
+        "signature": "(iterable: 'Iterable[T]', key: 'Callable[[T], object] | None' = None) -> 'Iterator[T]'",
+        "module": "unstd.iters.distinct"
+      }
+    }
+  },
+  "unstd.iters.reshape": {
+    "exports": [
+      "flatten",
+      "partition"
+    ],
+    "callables": {
+      "partition": {
+        "signature": "(iterable: 'Iterable[T]', pred: 'Callable[[T], object]') -> 'tuple[Iterator[T], Iterator[T]]'",
+        "module": "unstd.iters.reshape"
+      }
+    }
+  },
+  "unstd.iters.select": {
+    "exports": [
+      "first",
+      "ilen",
+      "last",
+      "nth",
+      "take"
+    ],
+    "callables": {
+      "first": {
+        "signature": "(iterable: 'Iterable[T]', default: 'D | _Missing' = <no default>) -> 'T | D'",
+        "module": "unstd.iters.select"
+      },
+      "ilen": {
+        "signature": "(iterable: 'Iterable[object]') -> 'int'",
+        "module": "unstd.iters.select"
+      },
+      "last": {
+        "signature": "(iterable: 'Iterable[T]', default: 'D | _Missing' = <no default>) -> 'T | D'",
+        "module": "unstd.iters.select"
+      },
+      "nth": {
+        "signature": "(iterable: 'Iterable[T]', n: 'int', default: 'D | _Missing' = <no default>) -> 'T | D'",
+        "module": "unstd.iters.select"
+      },
+      "take": {
+        "signature": "(iterable: 'Iterable[T]', n: 'int') -> 'list[T]'",
+        "module": "unstd.iters.select"
+      }
+    }
+  },
+  "unstd.model": {
+    "exports": [
+      "FrozenModel",
+      "StrictModel",
+      "StrictSettings"
+    ],
+    "callables": {
+      "FrozenModel": {
+        "signature": "() -> None",
+        "module": "unstd.model.base"
+      },
+      "StrictModel": {
+        "signature": "() -> None",
+        "module": "unstd.model.base"
+      },
+      "StrictSettings": {
+        "signature": "(_case_sensitive: 'bool | None' = None, _nested_model_default_partial_update: 'bool | None' = None, _env_prefix: 'str | None' = None, _env_prefix_target: 'EnvPrefixTarget | None' = None, _env_file: 'DotenvType | None' = PosixPath('.'), _env_file_encoding: 'str | None' = None, _env_ignore_empty: 'bool | None' = None, _env_nested_delimiter: 'str | None' = None, _env_nested_max_split: 'int | None' = None, _env_parse_none_str: 'str | None' = None, _env_parse_enums: 'bool | None' = None, _cli_prog_name: 'str | None' = None, _cli_parse_args: 'bool | list[str] | tuple[str, ...] | None' = None, _cli_settings_source: 'CliSettingsSource[Any] | None' = None, _cli_parse_none_str: 'str | None' = None, _cli_hide_none_type: 'bool | None' = None, _cli_avoid_json: 'bool | None' = None, _cli_enforce_required: 'bool | None' = None, _cli_use_class_docs_for_groups: 'bool | None' = None, _cli_show_env_vars: 'bool | None' = None, _cli_exit_on_error: 'bool | None' = None, _cli_prefix: 'str | None' = None, _cli_flag_prefix_char: 'str | None' = None, _cli_implicit_flags: \"bool | Literal['dual', 'toggle'] | None\" = None, _cli_ignore_unknown_args: 'bool | None' = None, _cli_kebab_case: \"bool | Literal['all', 'no_enums'] | None\" = None, _cli_shortcuts: 'Mapping[str, str | list[str]] | None' = None, _secrets_dir: 'PathType | None' = None, _build_sources: 'tuple[tuple[PydanticBaseSettingsSource, ...], dict[str, Any]] | None' = None) -> None",
+        "module": "unstd.model.settings"
+      }
+    }
+  },
+  "unstd.model.base": {
+    "exports": [
+      "FrozenModel",
+      "StrictModel"
+    ],
+    "callables": {
+      "FrozenModel": {
+        "signature": "() -> None",
+        "module": "unstd.model.base"
+      },
+      "StrictModel": {
+        "signature": "() -> None",
+        "module": "unstd.model.base"
+      }
+    }
+  },
+  "unstd.model.settings": {
+    "exports": [
+      "StrictSettings"
+    ],
+    "callables": {
+      "StrictSettings": {
+        "signature": "(_case_sensitive: 'bool | None' = None, _nested_model_default_partial_update: 'bool | None' = None, _env_prefix: 'str | None' = None, _env_prefix_target: 'EnvPrefixTarget | None' = None, _env_file: 'DotenvType | None' = PosixPath('.'), _env_file_encoding: 'str | None' = None, _env_ignore_empty: 'bool | None' = None, _env_nested_delimiter: 'str | None' = None, _env_nested_max_split: 'int | None' = None, _env_parse_none_str: 'str | None' = None, _env_parse_enums: 'bool | None' = None, _cli_prog_name: 'str | None' = None, _cli_parse_args: 'bool | list[str] | tuple[str, ...] | None' = None, _cli_settings_source: 'CliSettingsSource[Any] | None' = None, _cli_parse_none_str: 'str | None' = None, _cli_hide_none_type: 'bool | None' = None, _cli_avoid_json: 'bool | None' = None, _cli_enforce_required: 'bool | None' = None, _cli_use_class_docs_for_groups: 'bool | None' = None, _cli_show_env_vars: 'bool | None' = None, _cli_exit_on_error: 'bool | None' = None, _cli_prefix: 'str | None' = None, _cli_flag_prefix_char: 'str | None' = None, _cli_implicit_flags: \"bool | Literal['dual', 'toggle'] | None\" = None, _cli_ignore_unknown_args: 'bool | None' = None, _cli_kebab_case: \"bool | Literal['all', 'no_enums'] | None\" = None, _cli_shortcuts: 'Mapping[str, str | list[str]] | None' = None, _secrets_dir: 'PathType | None' = None, _build_sources: 'tuple[tuple[PydanticBaseSettingsSource, ...], dict[str, Any]] | None' = None) -> None",
+        "module": "unstd.model.settings"
+      }
+    }
+  },
+  "unstd.pack": {
+    "exports": [],
+    "callables": {}
+  },
+  "unstd.pack.binpack": {
+    "exports": [
+      "Struct",
+      "calcsize",
+      "error",
+      "iter_unpack",
+      "pack",
+      "pack_array",
+      "pack_array_portable",
+      "pack_into",
+      "unpack",
+      "unpack_array",
+      "unpack_array_portable",
+      "unpack_from"
+    ],
+    "callables": {
+      "pack_array": {
+        "signature": "(dtype: 'DTypeLike', seq: 'Iterable[float]') -> 'bytes'",
+        "module": "unstd.pack.binpack"
+      },
+      "pack_array_portable": {
+        "signature": "(dtype: 'str', seq: 'Iterable[float]') -> 'bytes'",
+        "module": "unstd.pack.binpack"
+      },
+      "unpack_array": {
+        "signature": "(dtype: 'DTypeLike', buf: 'bytes | bytearray | memoryview') -> '_ArrayResult'",
+        "module": "unstd.pack.binpack"
+      },
+      "unpack_array_portable": {
+        "signature": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'",
+        "module": "unstd.pack.binpack"
+      }
+    }
+  },
+  "unstd.proc": {
+    "exports": [
+      "DEFAULT_TIMEOUT",
+      "CalledProcessError",
+      "CompletedProcess",
+      "ProcessError",
+      "TimeoutExpired",
+      "capture",
+      "run",
+      "run_ok"
+    ],
+    "callables": {
+      "CompletedProcess": {
+        "signature": "(argv: 'tuple[str, ...]', returncode: 'int', stdout: 'str', stderr: 'str', duration: 'float') -> None",
+        "module": "unstd.proc"
+      },
+      "ProcessError": {
+        "signature": "(result: 'CompletedProcess') -> 'None'",
+        "module": "unstd.proc"
+      },
+      "capture": {
+        "signature": "(argv: 'Sequence[str]', **kw: 'Unpack[_RunKw]') -> 'str'",
+        "module": "unstd.proc"
+      },
+      "run": {
+        "signature": "(argv: 'Sequence[str]', *, timeout: 'float' = 60.0, check: 'bool' = True, cwd: 'str | os.PathLike[str] | None' = None, env: 'Mapping[str, str] | None' = None, stdin_text: 'str | None' = None, encoding: 'str' = 'utf-8', errors: 'str' = 'replace', log: 'Callable[[Mapping[str, object]], None] | None' = None) -> 'CompletedProcess'",
+        "module": "unstd.proc"
+      },
+      "run_ok": {
+        "signature": "(argv: 'Sequence[str]', **kw: 'Unpack[_RunKw]') -> 'bool'",
+        "module": "unstd.proc"
+      }
+    }
+  },
+  "unstd.rand": {
+    "exports": [
+      "HAVE_NUMPY",
+      "Generator",
+      "choice",
+      "choices",
+      "crypto",
+      "floats",
+      "ints",
+      "randint",
+      "random",
+      "sample",
+      "seed",
+      "shuffle",
+      "uniform"
+    ],
+    "callables": {
+      "Generator": {
+        "signature": "(seed: int | None = None, *, backend: Literal['stdlib', 'numpy'] = 'stdlib', bit_generator: Optional[Literal['PCG64', 'PCG64DXSM', 'SFC64', 'Philox']] = None) -> None",
+        "module": "unstd.rand.draw"
+      },
+      "choices": {
+        "signature": "(seq: collections.abc.Sequence[T], n: int, *, weights: collections.abc.Sequence[float] | None = None) -> list[T]",
+        "module": "unstd.rand.draw"
+      },
+      "floats": {
+        "signature": "(n: int, *, low: float = 0.0, high: float = 1.0) -> numpy.ndarray | list[float]",
+        "module": "unstd.rand.draw"
+      },
+      "ints": {
+        "signature": "(n: int, low: int, high: int, *, endpoint: bool = False) -> numpy.ndarray | list[int]",
+        "module": "unstd.rand.draw"
+      },
+      "seed": {
+        "signature": "(n: int | None = None) -> None",
+        "module": "unstd.rand.draw"
+      }
+    }
+  },
+  "unstd.rand.crypto": {
+    "exports": [
+      "below",
+      "bits",
+      "choice",
+      "token_bytes",
+      "token_hex",
+      "token_urlsafe"
+    ],
+    "callables": {}
+  },
+  "unstd.rand.draw": {
+    "exports": [
+      "HAVE_NUMPY",
+      "Generator",
+      "choice",
+      "choices",
+      "floats",
+      "ints",
+      "randint",
+      "random",
+      "sample",
+      "seed",
+      "shuffle",
+      "uniform"
+    ],
+    "callables": {
+      "Generator": {
+        "signature": "(seed: int | None = None, *, backend: Literal['stdlib', 'numpy'] = 'stdlib', bit_generator: Optional[Literal['PCG64', 'PCG64DXSM', 'SFC64', 'Philox']] = None) -> None",
+        "module": "unstd.rand.draw"
+      },
+      "choices": {
+        "signature": "(seq: collections.abc.Sequence[T], n: int, *, weights: collections.abc.Sequence[float] | None = None) -> list[T]",
+        "module": "unstd.rand.draw"
+      },
+      "floats": {
+        "signature": "(n: int, *, low: float = 0.0, high: float = 1.0) -> numpy.ndarray | list[float]",
+        "module": "unstd.rand.draw"
+      },
+      "ints": {
+        "signature": "(n: int, low: int, high: int, *, endpoint: bool = False) -> numpy.ndarray | list[int]",
+        "module": "unstd.rand.draw"
+      },
+      "seed": {
+        "signature": "(n: int | None = None) -> None",
+        "module": "unstd.rand.draw"
+      }
+    }
+  },
+  "unstd.rex": {
+    "exports": [
+      "ASCII",
+      "DEBUG",
+      "DOTALL",
+      "IGNORECASE",
+      "LOCALE",
+      "MULTILINE",
+      "NOFLAG",
+      "UNICODE",
+      "VERBOSE",
+      "A",
+      "I",
+      "L",
+      "LinearRegexError",
+      "M",
+      "Match",
+      "Pattern",
+      "RegexFlag",
+      "S",
+      "U",
+      "X",
+      "compile",
+      "compile_faithful",
+      "compile_linear",
+      "error",
+      "escape",
+      "findall",
+      "finditer",
+      "fullmatch",
+      "match",
+      "purge",
+      "search",
+      "split",
+      "sub",
+      "subn"
+    ],
+    "callables": {
+      "compile": {
+        "signature": "(pattern: '_Source[AnyStr]', flags: 'int' = 0) -> 'Pattern[AnyStr] | _IrgxPattern'",
+        "module": "unstd.rex"
+      },
+      "compile_faithful": {
+        "signature": "(pattern: '_Source[AnyStr]', flags: 'int' = 0) -> 'Pattern[AnyStr] | _IrgxPattern'",
+        "module": "unstd.rex"
+      },
+      "compile_linear": {
+        "signature": "(pattern: '_Source[AnyStr]', flags: 'int' = 0) -> '_StrictLinearPattern[AnyStr]'",
+        "module": "unstd.rex"
+      },
+      "findall": {
+        "signature": "(pattern: '_Source[AnyStr]', string: 'AnyStr', flags: 'int' = 0) -> 'list[AnyStr | tuple[AnyStr, ...]]'",
+        "module": "unstd.rex"
+      },
+      "finditer": {
+        "signature": "(pattern: '_Source[AnyStr]', string: 'AnyStr', flags: 'int' = 0) -> 'Iterator[Match[AnyStr] | _IrgxMatch]'",
+        "module": "unstd.rex"
+      },
+      "fullmatch": {
+        "signature": "(pattern: '_Source[AnyStr]', string: 'AnyStr', flags: 'int' = 0) -> 'Match[AnyStr] | _IrgxMatch | None'",
+        "module": "unstd.rex"
+      },
+      "match": {
+        "signature": "(pattern: '_Source[AnyStr]', string: 'AnyStr', flags: 'int' = 0) -> 'Match[AnyStr] | _IrgxMatch | None'",
+        "module": "unstd.rex"
+      },
+      "purge": {
+        "signature": "() -> 'None'",
+        "module": "unstd.rex"
+      },
+      "search": {
+        "signature": "(pattern: '_Source[AnyStr]', string: 'AnyStr', flags: 'int' = 0) -> 'Match[AnyStr] | _IrgxMatch | None'",
+        "module": "unstd.rex"
+      },
+      "split": {
+        "signature": "(pattern: '_Source[AnyStr]', string: 'AnyStr', maxsplit: 'int' = 0, flags: 'int' = 0) -> 'list[AnyStr | None]'",
+        "module": "unstd.rex"
+      },
+      "sub": {
+        "signature": "(pattern: '_Source[AnyStr]', repl: 'AnyStr | Callable[[Match[AnyStr] | _IrgxMatch], AnyStr]', string: 'AnyStr', count: 'int' = 0, flags: 'int' = 0) -> 'AnyStr'",
+        "module": "unstd.rex"
+      },
+      "subn": {
+        "signature": "(pattern: '_Source[AnyStr]', repl: 'AnyStr | Callable[[Match[AnyStr] | _IrgxMatch], AnyStr]', string: 'AnyStr', count: 'int' = 0, flags: 'int' = 0) -> 'tuple[AnyStr, int]'",
+        "module": "unstd.rex"
+      }
+    }
+  },
+  "unstd.serde": {
+    "exports": [],
+    "callables": {}
+  },
+  "unstd.serde.b64": {
+    "exports": [
+      "Error",
+      "b64decode",
+      "b64encode",
+      "decode",
+      "decode_file",
+      "decode_json",
+      "decode_text",
+      "decodebytes",
+      "encode",
+      "encode_file",
+      "encode_json",
+      "encodebytes",
+      "standard_b64decode",
+      "standard_b64encode",
+      "urlsafe_b64decode",
+      "urlsafe_b64encode"
+    ],
+    "callables": {
+      "b64decode": {
+        "signature": "(s: 'str | Buffer', altchars: 'str | Buffer | None' = None, validate: 'bool' = False) -> 'bytes'",
+        "module": "unstd.serde.b64"
+      },
+      "b64encode": {
+        "signature": "(s: 'Buffer', altchars: 'Buffer | None' = None) -> 'bytes'",
+        "module": "unstd.serde.b64"
+      },
+      "decode": {
+        "signature": "(s: 'str | Buffer', *, url: 'bool' = False) -> 'bytes'",
+        "module": "unstd.serde.b64"
+      },
+      "decode_json": {
+        "signature": "(s: 'str | Buffer') -> 'jsonx.Json'",
+        "module": "unstd.serde.b64"
+      },
+      "decode_text": {
+        "signature": "(s: 'str | Buffer', *, url: 'bool' = False, errors: 'str' = 'replace') -> 'str'",
+        "module": "unstd.serde.b64"
+      },
+      "encode": {
+        "signature": "(data: 'Buffer', *, url: 'bool' = False, pad: 'bool' = True) -> 'str'",
+        "module": "unstd.serde.b64"
+      },
+      "encode_json": {
+        "signature": "(obj: 'object') -> 'str'",
+        "module": "unstd.serde.b64"
+      },
+      "standard_b64decode": {
+        "signature": "(s: 'str | Buffer') -> 'bytes'",
+        "module": "unstd.serde.b64"
+      },
+      "standard_b64encode": {
+        "signature": "(s: 'Buffer') -> 'bytes'",
+        "module": "unstd.serde.b64"
+      },
+      "urlsafe_b64encode": {
+        "signature": "(s: 'Buffer') -> 'bytes'",
+        "module": "unstd.serde.b64"
+      }
+    }
+  },
+  "unstd.serde.jsonx": {
+    "exports": [
+      "JSONDecodeError",
+      "JSONDecoder",
+      "JSONEncoder",
+      "Json",
+      "canonical",
+      "canonical_strict",
+      "dump",
+      "dumpb",
+      "dumps",
+      "load",
+      "loads"
+    ],
+    "callables": {
+      "canonical": {
+        "signature": "(obj: 'object', *, default: 'Callable[[object], object] | None' = <class 'str'>) -> 'bytes'",
+        "module": "unstd.serde.jsonx"
+      },
+      "canonical_strict": {
+        "signature": "(obj: 'object') -> 'bytes'",
+        "module": "unstd.serde.jsonx"
+      },
+      "dump": {
+        "signature": "(obj: 'object', fp: '_TextWriter', *, skipkeys: 'bool' = False, ensure_ascii: 'bool' = True, check_circular: 'bool' = True, allow_nan: 'bool' = True, cls: 'type[JSONEncoder] | None' = None, indent: 'int | str | None' = None, separators: 'tuple[str, str] | None' = None, default: 'Callable[[Any], Any] | None' = None, sort_keys: 'bool' = False, **kw: 'Any') -> 'None'",
+        "module": "unstd.serde.jsonx"
+      },
+      "dumpb": {
+        "signature": "(obj: 'object', *, sort_keys: 'bool' = False, default: 'Callable[[object], object] | None' = None, numpy: 'bool' = False) -> 'bytes'",
+        "module": "unstd.serde.jsonx"
+      },
+      "dumps": {
+        "signature": "(obj: 'object', *, skipkeys: 'bool' = False, ensure_ascii: 'bool' = True, check_circular: 'bool' = True, allow_nan: 'bool' = True, cls: 'type[JSONEncoder] | None' = None, indent: 'int | str | None' = None, separators: 'tuple[str, str] | None' = None, default: 'Callable[[Any], Any] | None' = None, sort_keys: 'bool' = False, **kw: 'Any') -> 'str'",
+        "module": "unstd.serde.jsonx"
+      }
+    }
+  },
+  "unstd.serde.ndjson": {
+    "exports": [
+      "NDJSONDecodeError",
+      "dump",
+      "dumpb",
+      "dumps",
+      "iter_loads",
+      "load",
+      "loads"
+    ],
+    "callables": {
+      "NDJSONDecodeError": {
+        "signature": "(lineno: 'int', err: 'Exception') -> 'None'",
+        "module": "unstd.serde.ndjson"
+      },
+      "dump": {
+        "signature": "(rows: 'Iterable[T]', fp: 'io.TextIOBase | _Writer', *, codec: '_Codec[T] | None' = None) -> 'int'",
+        "module": "unstd.serde.ndjson"
+      },
+      "dumpb": {
+        "signature": "(rows: 'Iterable[T]', *, codec: '_Codec[T] | None' = None) -> 'bytes'",
+        "module": "unstd.serde.ndjson"
+      },
+      "dumps": {
+        "signature": "(rows: 'Iterable[T]', *, codec: '_Codec[T] | None' = None) -> 'str'",
+        "module": "unstd.serde.ndjson"
+      },
+      "iter_loads": {
+        "signature": "(lines: 'Iterable[str | bytes]', *, codec: '_Codec[T] | None' = None, skip_errors: 'bool' = False, on_error: 'Callable[[NDJSONDecodeError], None] | None' = None) -> 'Iterator[Json | T]'",
+        "module": "unstd.serde.ndjson"
+      },
+      "load": {
+        "signature": "(fp: 'Iterable[str | bytes]', *, codec: '_Codec[T] | None' = None, skip_errors: 'bool' = False, on_error: 'Callable[[NDJSONDecodeError], None] | None' = None) -> 'list[Json] | list[T]'",
+        "module": "unstd.serde.ndjson"
+      },
+      "loads": {
+        "signature": "(text: 'str | bytes', *, codec: '_Codec[T] | None' = None, skip_errors: 'bool' = False, on_error: 'Callable[[NDJSONDecodeError], None] | None' = None) -> 'list[Json] | list[T]'",
+        "module": "unstd.serde.ndjson"
+      }
+    }
+  },
+  "unstd.serde.structs": {
+    "exports": [
+      "Codec",
+      "DecHook",
+      "EncHook",
+      "FloatHook",
+      "Order",
+      "float_enc_hook"
+    ],
+    "callables": {
+      "Codec": {
+        "signature": "(spec: 'type[T]', *, enc_hook: 'EncHook | None' = None, dec_hook: 'DecHook | None' = None, order: 'Order' = None, decimal_format: '_DecimalFormat' = 'string', uuid_format: \"Literal['canonical', 'hex']\" = 'canonical', strict: 'bool' = True, float_hook: 'FloatHook | None' = None) -> 'None'",
+        "module": "unstd.serde.structs"
+      },
+      "float_enc_hook": {
+        "signature": "(obj: 'object') -> 'float'",
+        "module": "unstd.serde.structs"
+      }
+    }
+  },
+  "unstd.text": {
+    "exports": [],
+    "callables": {}
+  },
+  "unstd.text.fuzz": {
+    "exports": [
+      "best_match",
+      "cdist",
+      "difflib_ratio",
+      "distance",
+      "extract",
+      "indel_ratio",
+      "jaro_winkler",
+      "ratio"
+    ],
+    "callables": {
+      "best_match": {
+        "signature": "(query: 'str', choices: 'Iterable[str]', *, score_cutoff: 'float' = 0.0, scorer: '_Similarity | None' = None) -> 'tuple[str, float] | None'",
+        "module": "unstd.text.fuzz"
+      },
+      "cdist": {
+        "signature": "(queries: 'Sequence[str]', choices: 'Sequence[str]', *, score_cutoff: 'float' = 0.0, workers: 'int' = 1, scorer: '_Similarity | None' = None) -> 'list[list[float]]'",
+        "module": "unstd.text.fuzz"
+      },
+      "difflib_ratio": {
+        "signature": "(a: 'str', b: 'str', /) -> 'float'",
+        "module": "unstd.text.fuzz"
+      },
+      "extract": {
+        "signature": "(query: 'str', choices: 'Iterable[str]', *, limit: 'int | None' = 5, score_cutoff: 'float' = 0.0, scorer: '_Similarity | None' = None) -> 'list[tuple[str, float]]'",
+        "module": "unstd.text.fuzz"
+      }
+    }
+  },
+  "unstd.time": {
+    "exports": [],
+    "callables": {}
+  },
+  "unstd.time.timeutil": {
+    "exports": [
+      "Unit",
+      "elapsed_ms",
+      "epoch_ms",
+      "epoch_s",
+      "from_epoch_ms",
+      "from_epoch_s",
+      "human",
+      "iso",
+      "mono",
+      "mono_ns",
+      "now_tz",
+      "parse_date",
+      "parse_iso",
+      "parse_utc",
+      "perf",
+      "proto_timestamp",
+      "proto_timestamp_ms",
+      "span",
+      "today",
+      "utcnow",
+      "wall"
+    ],
+    "callables": {
+      "elapsed_ms": {
+        "signature": "(start: 'float') -> 'float'",
+        "module": "unstd.time.timeutil"
+      },
+      "epoch_ms": {
+        "signature": "() -> 'int'",
+        "module": "unstd.time.timeutil"
+      },
+      "epoch_s": {
+        "signature": "() -> 'int'",
+        "module": "unstd.time.timeutil"
+      },
+      "from_epoch_ms": {
+        "signature": "(ms: 'int', tz: 'tzinfo' = datetime.timezone.utc) -> 'datetime'",
+        "module": "unstd.time.timeutil"
+      },
+      "from_epoch_s": {
+        "signature": "(s: 'float', tz: 'tzinfo' = datetime.timezone.utc) -> 'datetime'",
+        "module": "unstd.time.timeutil"
+      },
+      "human": {
+        "signature": "(tz: 'str' = '') -> 'str'",
+        "module": "unstd.time.timeutil"
+      },
+      "iso": {
+        "signature": "(dt: 'datetime | None' = None, *, ms: 'bool' = False) -> 'str'",
+        "module": "unstd.time.timeutil"
+      },
+      "now_tz": {
+        "signature": "(tz: 'tzinfo') -> 'datetime'",
+        "module": "unstd.time.timeutil"
+      },
+      "parse_date": {
+        "signature": "(raw: 'str') -> 'date | None'",
+        "module": "unstd.time.timeutil"
+      },
+      "parse_iso": {
+        "signature": "(raw: 'str') -> 'datetime | None'",
+        "module": "unstd.time.timeutil"
+      },
+      "parse_utc": {
+        "signature": "(raw: 'str') -> 'datetime | None'",
+        "module": "unstd.time.timeutil"
+      },
+      "proto_timestamp": {
+        "signature": "(value: 'str | datetime | None') -> 'Timestamp | None'",
+        "module": "unstd.time.timeutil"
+      },
+      "proto_timestamp_ms": {
+        "signature": "(ms: 'int') -> 'Timestamp'",
+        "module": "unstd.time.timeutil"
+      },
+      "span": {
+        "signature": "(start: 'str | datetime', end: 'str | datetime | None' = None, *, unit: 'Unit', assume_utc: 'bool' = False) -> 'float | None'",
+        "module": "unstd.time.timeutil"
+      },
+      "today": {
+        "signature": "(*, utc: 'bool' = False) -> 'date'",
+        "module": "unstd.time.timeutil"
+      }
+    }
+  },
+  "unstd.time.zoned": {
+    "exports": [
+      "Disambiguate",
+      "Instant",
+      "PlainDateTime",
+      "RepeatedTime",
+      "SkippedTime",
+      "ZonedDateTime",
+      "instant",
+      "now",
+      "parse",
+      "to_utc",
+      "wall"
+    ],
+    "callables": {
+      "instant": {
+        "signature": "(raw: 'str', *, assume_utc: 'bool' = False) -> 'Instant | None'",
+        "module": "unstd.time.zoned"
+      },
+      "parse": {
+        "signature": "(raw: 'str', zone: 'str', *, disambiguate: 'Disambiguate' = 'compatible') -> 'ZonedDateTime | None'",
+        "module": "unstd.time.zoned"
+      },
+      "to_utc": {
+        "signature": "(z: 'ZonedDateTime') -> 'datetime'",
+        "module": "unstd.time.zoned"
+      },
+      "wall": {
+        "signature": "(year: 'int', month: 'int', day: 'int', hour: 'int', minute: 'int', zone: 'str', *, disambiguate: 'Disambiguate' = 'compatible') -> 'ZonedDateTime | None'",
+        "module": "unstd.time.zoned"
+      }
+    }
+  },
+  "unstd.toml": {
+    "exports": [
+      "TOMLDecodeError",
+      "aot",
+      "array",
+      "comment",
+      "document",
+      "dump",
+      "dumps",
+      "inline_table",
+      "item",
+      "load",
+      "loads",
+      "nl",
+      "parse",
+      "table"
+    ],
+    "callables": {
+      "dump": {
+        "signature": "(data: 'Mapping[str, Any]', fp: 'IO[str]', *, sort_keys: 'bool' = False) -> 'None'",
+        "module": "unstd.toml"
+      },
+      "dumps": {
+        "signature": "(data: 'Mapping[str, Any]', sort_keys: 'bool' = False) -> 'str'",
+        "module": "unstd.toml"
+      }
+    }
+  },
+  "unstd.yaml": {
+    "exports": [
+      "YAMLError",
+      "YamlScalar",
+      "YamlValue",
+      "dump",
+      "dump_all",
+      "dumps",
+      "load",
+      "load_all",
+      "loads",
+      "parse"
+    ],
+    "callables": {
+      "dump": {
+        "signature": "(value: 'object', fp: 'IO[str]') -> 'None'",
+        "module": "unstd.yaml"
+      },
+      "dump_all": {
+        "signature": "(values: 'Iterable[object]', fp: 'IO[str]') -> 'None'",
+        "module": "unstd.yaml"
+      },
+      "dumps": {
+        "signature": "(value: 'object') -> 'str'",
+        "module": "unstd.yaml"
+      },
+      "load": {
+        "signature": "(fp: 'IO[str] | IO[bytes]') -> 'YamlValue'",
+        "module": "unstd.yaml"
+      },
+      "load_all": {
+        "signature": "(source: 'str | bytes | IO[str] | IO[bytes]') -> 'Iterator[YamlValue]'",
+        "module": "unstd.yaml"
+      },
+      "loads": {
+        "signature": "(text: 'str | bytes') -> 'YamlValue'",
+        "module": "unstd.yaml"
+      },
+      "parse": {
+        "signature": "(text: 'str | bytes') -> 'YamlValue'",
+        "module": "unstd.yaml"
+      }
+    }
+  }
+}
