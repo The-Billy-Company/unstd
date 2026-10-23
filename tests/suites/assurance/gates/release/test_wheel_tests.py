@@ -3,6 +3,8 @@
 import json
 import os
 from pathlib import Path
+import subprocess
+import sys
 import textwrap
 
 import pytest
@@ -127,3 +129,35 @@ def test_real_pytest_shards_execute_every_contract_exactly_once(tmp_path, monkey
     assert set.union(*map(set, partitions)) == expected
     assert sum(map(len, partitions)) == len(expected)
     assert max(map(len, partitions)) - min(map(len, partitions)) <= 1
+
+
+@pytest.mark.parametrize("status", [0, 5])
+def test_redirected_legacy_windows_output_preserves_bytes_and_status(tmp_path, status):
+    stub = tmp_path / "stub"
+    stub.mkdir()
+    (stub / "pytest.py").write_text(
+        "import sys\n"
+        "print('stdout ' + chr(233))\n"
+        "print('stderr ' + chr(8364), file=sys.stderr)\n"
+        f"raise SystemExit({status})\n",
+        encoding="ascii",
+    )
+    source = (
+        "import os, sys; from pathlib import Path; "
+        "sys.path.insert(0, sys.argv[1]); "
+        "from tests.tooling.release.wheel_tests import run_tests; "
+        "os.environ['PYTHONPATH'] = sys.argv[2]; "
+        "raise SystemExit(run_tests(Path('.'), workers=1))"
+    )
+    result = subprocess.run(  # noqa: S603 — fixed interpreter and repository runner
+        [sys.executable, "-c", source, str(REPO_ROOT), str(stub)],
+        env={**os.environ, "PYTHONIOENCODING": "cp1252"},
+        capture_output=True,
+        check=False,
+        timeout=10,
+    )
+    assert result.returncode == status, result.stderr.decode("cp1252")
+    assert b"stdout \xe9" in result.stdout
+    assert b"stderr \x80" in result.stdout
+    assert b"\xef\xbf\xbd" not in result.stdout
+    assert result.stderr == b""

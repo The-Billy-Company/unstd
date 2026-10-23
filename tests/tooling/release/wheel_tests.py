@@ -66,8 +66,11 @@ def run_tests(project: Path, *, workers: int) -> int:
             for index, process, output in processes:
                 code = process.wait() if process is not None else 2
                 print(f"Wheel tests shard {index}/{workers} (exit {code})", flush=True)
-                with output.open(encoding="utf-8", errors="replace") as stream:
-                    shutil.copyfileobj(stream, sys.stdout)
+                # Redirected Windows streams can use a legacy encoding. Replay
+                # the original bytes without decoding or changing the child env.
+                with output.open("rb") as stream:
+                    shutil.copyfileobj(stream, sys.stdout.buffer)
+                sys.stdout.buffer.flush()
                 print(flush=True)
                 if code and not result:
                     result = max(1, code)
