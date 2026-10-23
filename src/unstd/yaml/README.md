@@ -49,3 +49,7 @@ Parser errors retain ruamel's source marks and inherit `yaml.YAMLError`. Native
 scalar conversion errors propagate from the backend. Arbitrary Python objects
 passed to the writer raise a representer error. We do not add interpolation,
 environment merging, or implicit schema coercion.
+
+## Implementation layout
+
+Parser safety policy and value validation live in [`_internal/`](_internal/README.md). Public operations keep per-call parser ownership and the existing engine injection point.
