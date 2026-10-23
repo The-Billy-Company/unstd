@@ -64,11 +64,11 @@ jobs:
         if: runner.os == 'macOS'
         run: rustup target add aarch64-apple-darwin x86_64-apple-darwin
       - name: Check Rust formatting
-        run: cargo fmt --manifest-path native/text/Cargo.toml --check
+        run: cargo fmt --manifest-path native/text/rust/Cargo.toml --check
       - name: Check Rust kernels in debug mode
-        run: cargo test --manifest-path native/text/Cargo.toml --locked --offline
+        run: cargo test --manifest-path native/text/rust/Cargo.toml --locked --offline
       - name: Check Rust kernels in release mode
-        run: cargo test --manifest-path native/text/Cargo.toml --locked --offline --release
+        run: cargo test --manifest-path native/text/rust/Cargo.toml --locked --offline --release
       - name: Set up Python
         uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:

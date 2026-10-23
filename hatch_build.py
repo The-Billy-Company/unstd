@@ -67,17 +67,21 @@ class CustomBuildHook(BuildHookInterface):
             else None
         )
         source = (
-            Path(self.root) / "native/text/adapter.c"
+            Path(self.root) / "native/text/rust/adapter.c"
             if rust_text
-            else Path(self.root) / "native/compress/adapter.c"
+            else Path(self.root) / "native/compress/src/adapter.c"
             if gzip_buffers
-            else Path(self.root) / "src" / relative.with_suffix(".c")
+            else Path(self.root)
+            / "native"
+            / relative.parts[1]
+            / "src"
+            / f"{relative.name}.c"
         )
-        gzip_root = Path(self.root) / "native/compress/libdeflate"
+        gzip_root = Path(self.root) / "native/compress/vendor/libdeflate"
         sources = [str(source)]
         if gzip_buffers:
             sources.extend(
-                str(Path(self.root) / "native/compress" / name)
+                str(Path(self.root) / "native/compress/src" / name)
                 for name in ("stream.c", "inflate.c")
             )
             sources.extend(
@@ -93,7 +97,7 @@ class CustomBuildHook(BuildHookInterface):
             )
             if sys.platform != "darwin" and zlib_rs is None:
                 sources.extend(
-                    str(Path(self.root) / "native/compress/zlib" / name)
+                    str(Path(self.root) / "native/compress/vendor/zlib" / name)
                     for name in (
                         "inflate.c",
                         "inffast.c",
@@ -105,7 +109,9 @@ class CustomBuildHook(BuildHookInterface):
         extension = Extension(
             module,
             sources,
-            include_dirs=[str(gzip_root)] if gzip_buffers else [],
+            include_dirs=[str(gzip_root), str(gzip_root.parent)]
+            if gzip_buffers
+            else [],
             libraries=["z"]
             if gzip_buffers and sys.platform == "darwin" and zlib_rs is None
             else [],
@@ -237,7 +243,7 @@ class CustomBuildHook(BuildHookInterface):
 
     def _build_text(self, temporary: Path) -> tuple[Path, list[str]]:
         """Build the dependency-free Rust kernel and discover its system libraries."""
-        manifest = Path(self.root) / "native/text/Cargo.toml"
+        manifest = Path(self.root) / "native/text/rust/Cargo.toml"
         archives = []
         libraries = []
         targets = self._rust_targets()

@@ -12,7 +12,7 @@ import shutil
 from typing import Any
 
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "native/compress/experiments/libdeflate-1.26.json"
 MANIFEST_SHA256 = "fd7091752852f228ac2fff657d2c851d10a4ceadbe106e8c5ea06c9fb4a50cc6"
 
@@ -53,10 +53,11 @@ def main() -> None:
     output.mkdir(parents=True, mode=0o700, exist_ok=False)
     source_root = output / "source"
     native = source_root / "native/compress"
-    manifest = stage_source(args.source.resolve(), native / "libdeflate")
+    manifest = stage_source(args.source.resolve(), native / "vendor/libdeflate")
+    (native / "src").mkdir()
     for name in ("adapter.c", "stream.c", "stream.h", "inflate.c"):
-        shutil.copyfile(ROOT / "native/compress" / name, native / name)
-    shutil.copytree(ROOT / "native/compress/zlib", native / "zlib")
+        shutil.copyfile(ROOT / "native/compress/src" / name, native / "src" / name)
+    shutil.copytree(ROOT / "native/compress/vendor/zlib", native / "vendor/zlib")
     shutil.copyfile(ROOT / "hatch_build.py", source_root / "hatch_build.py")
     spec = importlib.util.spec_from_file_location(
         "unstd_libdeflate_experiment", source_root / "hatch_build.py"

@@ -55,7 +55,7 @@ class _Vendor:
 
     @property
     def root(self) -> str:
-        return f"native/compress/{self.project}"
+        return f"native/compress/vendor/{self.project}"
 
 
 _VENDORS = (

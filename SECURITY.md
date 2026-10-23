@@ -9,7 +9,7 @@ baseline, changed-lines-only filter, or accepted duplicate budget.
 | --- | --- |
 | Bandit | All Python under `src/` and `hatch_build.py`, every severity and confidence. Findings, parse/read errors, absent reports and empty scans fail. |
 | CodeQL `security-extended` | Python, C/C++, Rust and GitHub Actions. C analysis traces all default extensions and the opt-in Rust CPython adapter on Python 3.12, 3.13 and 3.14. Every SARIF finding fails, including suppressed and unchanged alerts; malformed reports and failed invocations fail. |
-| Rust Clippy | Every target in `native/text`, using the locked offline crate. All warnings fail. |
+| Rust Clippy | Every target in `native/text/rust`, using the locked offline crate. All warnings fail. |
 | Pylint `duplicate-code` | All production Python modules. Repeated implementations of at least eight comparable lines fail. Comments, docstrings, imports and signatures do not count as executable duplication. |
 | Ruff and mypy | Existing style, security-pattern and strict type checks continue in the quality job. |
 
@@ -40,7 +40,7 @@ mkdir -p .local/sast
 uv run --no-sync bandit --recursive src hatch_build.py --severity-level all --confidence-level all --format json --output .local/sast/bandit.json
 uv run --no-sync python -m tests.tooling.static_analysis bandit .local/sast/bandit.json
 uv run --no-sync pylint src/unstd
-cargo clippy --manifest-path native/text/Cargo.toml --locked --offline --all-targets -- -D warnings
+cargo clippy --manifest-path native/text/rust/Cargo.toml --locked --offline --all-targets -- -D warnings
 uv run --no-sync pytest tests/suites/assurance/gates/static_analysis -q
 ```
 

@@ -106,6 +106,7 @@ def test_wheel_contains_every_source_module_and_data_file(
     assert actual == artifacts.package_files
     assert "unstd/py.typed" in actual
     assert actual["unstd/py.typed"] == b""
+    assert not any(name.endswith((".c", ".h", ".rs")) for name in actual)
     assert not any(
         part in {"tests", "bench", ".venv", "__pycache__"}
         for name in files
@@ -184,8 +185,8 @@ def test_wheel_metadata_identity_python_license_and_description(
     licenses = {
         "LICENSE",
         "NOTICE",
-        "native/compress/libdeflate/COPYING",
-        "native/compress/zlib/LICENSE",
+        "native/compress/vendor/libdeflate/COPYING",
+        "native/compress/vendor/zlib/LICENSE",
     }
     assert set(metadata.get_all("License-File", [])) == licenses
     assert metadata["Description-Content-Type"] == "text/markdown"
@@ -267,14 +268,14 @@ def test_sdist_contains_all_sources_and_rebuild_inputs_without_local_caches(
         "README.md",
         "LICENSE",
         "NOTICE",
-        "native/text/Cargo.toml",
-        "native/text/Cargo.lock",
-        "native/text/src/lib.rs",
-        "native/text/adapter.c",
-        "native/compress/adapter.c",
-        "native/compress/libdeflate/UPSTREAM.json",
-        "native/compress/libdeflate/COPYING",
-        "native/compress/zlib/LICENSE",
+        "native/text/rust/Cargo.toml",
+        "native/text/rust/Cargo.lock",
+        "native/text/rust/src/lib.rs",
+        "native/text/rust/adapter.c",
+        "native/compress/src/adapter.c",
+        "native/compress/vendor/libdeflate/UPSTREAM.json",
+        "native/compress/vendor/libdeflate/COPYING",
+        "native/compress/vendor/zlib/LICENSE",
     ):
         assert files[required] == (artifacts.source / required).read_bytes()
     for source in (artifacts.source / "native").rglob("*"):
@@ -403,9 +404,13 @@ def test_optional_compiler_failure_preserves_other_native_modules(
     source = tmp_path / "partial"
     shutil.copytree(artifacts.source, source)
     implementation = (
-        source / "native/compress/adapter.c"
+        source / "native/compress/src/adapter.c"
         if failed_module == "unstd.compress._gzip_native"
-        else source / "src" / (failed_module.replace(".", "/") + ".c")
+        else source
+        / "native"
+        / failed_module.split(".")[1]
+        / "src"
+        / f"{failed_module.rsplit('.', 1)[1]}.c"
     )
     implementation.write_text("#error unstd_test_native_failure\n", encoding="utf-8")
     output = tmp_path / "output"
@@ -471,7 +476,7 @@ def test_optional_rust_failure_preserves_c_modules_and_fails_release_builds(
         environment["CARGO"] = str(tmp_path / marker)
     else:
         marker = "unstd_test_rust_failure"
-        (source / "native/text/src/lib.rs").write_text(
+        (source / "native/text/rust/src/lib.rs").write_text(
             f'compile_error!("{marker}");\n', encoding="utf-8"
         )
     common = [

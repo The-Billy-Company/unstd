@@ -130,8 +130,8 @@ def test_multiple_wheels_and_build_tags_are_verified(dist: Path) -> None:
 
 def _vendored_release(dist: Path, *, native: bool = True) -> list[tuple[str, bytes]]:
     license_names = (
-        "native/compress/libdeflate/COPYING",
-        "native/compress/zlib/LICENSE",
+        "native/compress/vendor/libdeflate/COPYING",
+        "native/compress/vendor/zlib/LICENSE",
     )
     metadata = (
         METADATA.rstrip(b"\n")
@@ -148,7 +148,9 @@ def _vendored_release(dist: Path, *, native: bool = True) -> list[tuple[str, byt
         *[
             (f"unstd-3.1.0/{path.relative_to(REPO_ROOT).as_posix()}", path.read_bytes())
             for project in ("libdeflate", "zlib")
-            for path in sorted((REPO_ROOT / "native/compress" / project).rglob("*"))
+            for path in sorted(
+                (REPO_ROOT / "native/compress/vendor" / project).rglob("*")
+            )
             if path.is_file()
         ],
     ]
@@ -206,7 +208,7 @@ def test_rehashed_native_wheel_must_retain_the_upstream_license(
     with zipfile.ZipFile(wheel) as archive:
         files = {name: archive.read(name) for name in archive.namelist()}
     del files[RECORD]
-    license_name = f"{INFO}/licenses/native/compress/{license_path}"
+    license_name = f"{INFO}/licenses/native/compress/vendor/{license_path}"
     if mutation == "missing":
         del files[license_name]
     else:
@@ -231,7 +233,7 @@ def test_vendored_source_and_license_inventory_is_authenticated(
 ) -> None:
     members = _vendored_release(dist)
     changed = dict(members)
-    root = f"unstd-3.1.0/native/compress/{project}/"
+    root = f"unstd-3.1.0/native/compress/vendor/{project}/"
     if mutation in {"source", "rehashed-source"}:
         changed[root + source] += b"\n/* Changed source */\n"
         if mutation == "rehashed-source":
@@ -259,7 +261,7 @@ def test_native_gzip_source_dependencies_cannot_be_omitted(
     dist: Path, project: str
 ) -> None:
     members = _vendored_release(dist)
-    prefix = f"unstd-3.1.0/native/compress/{project}/"
+    prefix = f"unstd-3.1.0/native/compress/vendor/{project}/"
     _write_sdist(
         dist / SDIST,
         [(name, data) for name, data in members if not name.startswith(prefix)],

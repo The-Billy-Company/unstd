@@ -23,7 +23,7 @@ Install with the extra: `pip install 'unstd[crypto]'`.
 | File        | Role                                                                                                      |
 | ----------- | --------------------------------------------------------------------------------------------------------- |
 | `digest.py` | BLAKE3-256 - `raw` (bytes) / `hex` (full or truncated) / `Stream`, `derive_key`, and the `legacy_blake2b` escape hatch. |
-| `_stream_native.c` | Optional bounded stream batching and canonical token-envelope parsing; cryptographic primitives remain in their existing backends. |
+| [`native/crypto/src/_stream_native.c`](../../../native/crypto/src/_stream_native.c) | Optional bounded stream batching and canonical token-envelope parsing; cryptographic primitives remain in their existing backends. |
 | `token.py`  | Keyed-BLAKE3 `mac_raw` / `mac_hex` / `verify_mac`, constant-time `equal`, and the claims envelope.         |
 | `tls.py`    | A verifying TLS client context with no parameter for skipping verification.                                |
 

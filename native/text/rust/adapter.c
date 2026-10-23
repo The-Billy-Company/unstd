@@ -8,7 +8,7 @@
 #include <Python.h>
 #include <stddef.h>
 
-/* Keep these layouts synchronized with native/text/src/lib.rs. */
+/* Keep these layouts synchronized with native/text/rust/src/lib.rs. */
 typedef struct {
     const void *data;
     size_t length;

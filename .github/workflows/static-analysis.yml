@@ -152,7 +152,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p .local/sast
-          cargo clippy --manifest-path native/text/Cargo.toml --locked --offline --all-targets -- -D warnings 2>&1 | tee .local/sast/clippy.txt
+          cargo clippy --manifest-path native/text/rust/Cargo.toml --locked --offline --all-targets -- -D warnings 2>&1 | tee .local/sast/clippy.txt
       - name: Retain Rust analysis evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

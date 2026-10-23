@@ -5,7 +5,7 @@ doc_radar:
       contains: ['GzipFile = _stdlib.GzipFile', 'if type(data) is not bytes']
     - file: src/unstd/compress/_reader.py
       contains: ['_factory = _accelerated.Inflater', '_zlib_globals["crc32"] = _crc32']
-    - file: native/compress/adapter.c
+    - file: native/compress/src/adapter.c
       contains: ['libdeflate_gzip_decompress_ex(', 'MAX_OUTPUT_BYTES']
 ---
 

@@ -1,8 +1,10 @@
 ---
 doc_radar:
   sentinels:
-    - file: src/unstd/rex/_faithful.py
-      contains: ['_parser.parse(pattern, flags)', 'if started:']
+    - file: src/unstd/rex/_internal/profile.py
+      contains: ['_parser.parse(pattern, flags)']
+    - file: src/unstd/rex/_internal/patterns.py
+      contains: ['if started:']
     - file: pyproject.toml
       contains: ['"msgspec>=0.22"', 'exclude-newer = "P2D"']
     - file: .github/workflows/ci.yml
@@ -13,7 +15,7 @@ doc_radar:
       contains: ['Callable[[Decimal], object]', 'decimal_format: _DecimalFormat']
     - file: src/unstd/compress/_reader.py
       contains: ['_factory = _accelerated.Inflater', '_zlib_globals["crc32"] = _crc32']
-    - file: native/compress/adapter.c
+    - file: native/compress/src/adapter.c
       contains: ['libdeflate_gzip_decompress_ex(', 'MAX_OUTPUT_BYTES']
 ---
 

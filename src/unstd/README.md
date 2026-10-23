@@ -24,7 +24,13 @@ groups. [`_extra.py`](_extra.py) provides deferred `ImportError` placeholders fo
 capabilities without a fallback. [`py.typed`](py.typed) marks the package's inline
 type information for consumers.
 
-Optional C sources and stubs live beside their wrappers in `serde/`, `clone/`,
-and `text/`. Builds without those extensions retain Python implementations.
+Public modules retain their existing import paths. Larger implementations keep
+private mechanisms under their owning package's `_internal/` directory; smaller
+packages keep focused modules without extra nesting. See each package guide for supported exports.
+
+All C and Rust source lives under [`native/`](../../native/README.md), outside
+the installable Python tree. Private native extension names and `.pyi` stubs
+remain beside the wrappers for binary and typing compatibility. Builds without
+those extensions retain Python implementations.
 See the [project guide](../../README.md) for installation and the
 [product suites](../../tests/suites/product/README.md) for module-owned tests.
