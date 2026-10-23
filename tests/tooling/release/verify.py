@@ -77,7 +77,7 @@ _VENDORS = (
         "bb329a0a2cd0274d05519d61c667c062e06990d72e125ee2dfa8de64f0119d16",
         "e32ff4e00d9d94930537635291da39e7e612703334bf6fde8c7f1686fe8a45a2",
         "https://zlib.net/zlib-1.3.2.tar.gz",
-        "99a44d7800d17c1e12c083071490262722d38069efaea09266e95051ce4f7840",
+        "d82745c9e55db5936464cb2f7d353d949a47600e3b308597d98993484e1aa77c",
     ),
 )
 _NATIVE_MODULES = (

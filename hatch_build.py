@@ -90,7 +90,6 @@ class CustomBuildHook(BuildHookInterface):
                         "inflate.c",
                         "inffast.c",
                         "inftrees.c",
-                        "zutil.c",
                         "adler32.c",
                         "crc32.c",
                     )

@@ -52,7 +52,7 @@ unstd_inflate_create(int wbits, int *status)
     }
     stream->zalloc = allocate;
     stream->zfree = release;
-    *status = inflateInit2_(stream, wbits, zlibVersion(), (int)sizeof(*stream));
+    *status = inflateInit2_(stream, wbits, unstd_inflate_version(), (int)sizeof(*stream));
     if (*status != Z_OK) {
         PyMem_RawFree(stream);
         return NULL;
@@ -96,5 +96,9 @@ unstd_inflate_free(void *decoder)
 const char *
 unstd_inflate_version(void)
 {
+#ifdef MY_ZCALLOC
+    return ZLIB_VERSION;
+#else
     return zlibVersion();
+#endif
 }
