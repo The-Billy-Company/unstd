@@ -6,6 +6,7 @@ Historical JSON and Markdown reports are grouped by measured domain. JSON measur
 - [`clone/`](clone/README.md)
 - [`compress/`](compress/README.md)
 - [`crypto/`](crypto/README.md)
+- [`fs/`](fs/README.md)
 - [`general/`](general/README.md)
 - [`native/`](native/README.md)
 - [`serde/`](serde/README.md)

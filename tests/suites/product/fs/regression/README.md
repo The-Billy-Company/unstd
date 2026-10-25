@@ -39,3 +39,8 @@ count. Explicit fallback tests preserve normal portable traversal and prove
 identity rechecks reject deterministic replacements; they do not claim the
 portable fallback closes every namespace race or pin later opens of returned
 Paths. Those limits are documented in the public filesystem README.
+
+`test_walk_cleanup.py` injects nested scanner iteration and close failures.
+Every acquired scanner and directory descriptor must close, including all
+ancestors when one close fails. The same cases retain lazy acquisition,
+Unicode filenames, relative output names, and successful later traversal.

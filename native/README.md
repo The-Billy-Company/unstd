@@ -12,6 +12,7 @@ headers. Python module names remain independent of source filenames.
 | Source guide | Entry file | Responsibility |
 | --- | --- | --- |
 | [`clone/`](clone/README.md) | [`adapter.c`](clone/src/adapter.c) | Container graphs and admitted dataclasses |
+| [`fs/`](fs/README.md) | [`adapter.c`](fs/src/adapter.c) | Linux atomic writes with signal-aware rollback and durable commit reporting |
 | [`crypto/`](crypto/README.md) | [`adapter.c`](crypto/src/adapter.c) | Hash-stream batching and bearer-envelope parsing |
 | [`serde/`](serde/README.md) | [`adapter.c`](serde/src/adapter.c) | JSON proofs, codec dispatch and implementation headers |
 | [`text/`](text/README.md) | [`adapter.c`](text/src/adapter.c), [`rust/adapter.c`](text/rust/adapter.c) | Levenshtein and Jaro metrics |
@@ -19,12 +20,17 @@ headers. Python module names remain independent of source filenames.
 | [`rand/`](rand/README.md) | [`adapter.c`](rand/src/adapter.c), [`keyed.h`](rand/src/keyed.h) | Seed-faithful list shuffling and explicit SplitMix64-v1 integer batches |
 | [`audio/`](audio/README.md) | External build recipe | Reviewed libsndfile patch and build provenance |
 
-[`hatch_build.py`](../hatch_build.py) attempts six extensions on CPython,
-skipping free-threaded builds and other interpreters. Local compiler failures
+[`hatch_build.py`](../hatch_build.py) attempts the registered extensions on
+CPython, restricting the filesystem extension to Linux and skipping
+free-threaded builds and other interpreters. Local compiler failures
 leave Python fallbacks available; `CIBUILDWHEEL=1` makes those failures fatal.
 Default kernels use C; `UNSTD_TEXT_RUST=1` selects the Rust text implementation.
 The reviewed gzip archive experiment has separate
 [build requirements](compress/experiments/README.md).
+
+The [earlier Linux atomic-write experiment](fs/experiments/README.md) remains a
+historical profiling proof. Production builds use `fs/src/adapter.c` instead;
+the experiment is never compiled by the package build.
 
 From the repository root, build a wheel that fails on any native compiler error:
 

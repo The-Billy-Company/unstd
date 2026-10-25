@@ -283,7 +283,7 @@ _PROBE_MODULES = {
     "crypto.tls": ("unstd.crypto", "unstd.crypto.tls"),
     "crypto.digest": ("unstd.crypto.digest",),
     "crypto.token": ("unstd.crypto.token",),
-    "fs": ("unstd.fs",),
+    "fs": ("unstd.fs", "unstd.fs.durability", "unstd.fs.traversal"),
     "proc": ("unstd.proc",),
     "clone": ("unstd.clone", "unstd.clone.structural"),
     "ids.uid": ("unstd.ids", "unstd.ids.uid"),
@@ -417,6 +417,7 @@ for module in {_PROBE_MODULES[surface]!r}:
         "unstd.text._text_native",
         "unstd.compress._gzip_native",
         "unstd.rand._rand_native",
+        "unstd.fs._fs_native",
     ],
 )
 def test_base_install_runs_packaged_accelerators_without_backend_extras(
@@ -490,6 +491,29 @@ assert calls == [subject._py]
 assert actual == expected
 assert subject._py.getstate() == reference.getstate()
 assert rand.shuffle.__func__ is random.Random.shuffle
+""",
+        "unstd.fs._fs_native": """
+import tempfile
+from unstd import fs
+assert sys.platform == 'linux'
+assert fs._native is native
+calls = []
+atomic_write = native.atomic_write
+def observe(*arguments, **keywords):
+    outcome = atomic_write(*arguments, **keywords)
+    calls.append(outcome is not NotImplemented)
+    return outcome
+native.atomic_write = observe
+with tempfile.TemporaryDirectory() as directory:
+    destination = Path(directory) / 'nested' / 'state.json'
+    destination.parent.mkdir()
+    assert fs.atomic_write(destination, b'installed native fs', durable='strict') == destination
+    assert destination.read_bytes() == b'installed native fs'
+    assert calls == [True]
+    fs._native = None
+    assert fs.atomic_write(destination, 'portable fs fallback') == destination
+    assert destination.read_text() == 'portable fs fallback'
+    assert calls == [True]
 """,
     }[module]
     consumer.run(

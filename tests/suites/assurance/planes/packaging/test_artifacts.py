@@ -48,7 +48,20 @@ _NATIVE_MODULES = (
     "unstd.text._text_native",
     "unstd.compress._gzip_native",
     "unstd.rand._rand_native",
-)
+) + (("unstd.fs._fs_native",) if sys.platform == "linux" else ())
+
+
+_FS_FALLBACK = """
+from pathlib import Path
+import tempfile
+from unstd import fs
+assert fs._native is None
+with tempfile.TemporaryDirectory() as directory:
+    destination = Path(directory) / 'nested' / 'state.bin'
+    assert fs.atomic_write(destination, b'installed filesystem fallback') == destination
+    assert destination.read_bytes() == b'installed filesystem fallback'
+    assert list(destination.parent.iterdir()) == [destination]
+"""
 
 
 def _wheel_files(wheel: Path) -> dict[str, bytes]:
@@ -279,6 +292,7 @@ def test_sdist_contains_all_sources_and_rebuild_inputs_without_local_caches(
         "native/clone/src/adapter.c",
         "native/rand/src/adapter.c",
         "native/rand/src/keyed.h",
+        "native/fs/src/adapter.c",
         "native/crypto/src/adapter.c",
         "native/serde/src/adapter.c",
         "native/serde/src/encode.h",
@@ -363,6 +377,8 @@ assert gzipx.GzipFile is gzip.GzipFile
 assert gzipx.decompress(gzip.compress(b'portable gzip')) == b'portable gzip'
 """)
 
+    consumer.run(_FS_FALLBACK)
+
 
 @pytest.mark.skipif(os.name == "nt", reason="MSVC does not choose its compiler via CC")
 def test_failed_editable_build_clears_its_stale_native_module(
@@ -406,6 +422,8 @@ assert gzipx.GzipFile is gzip.GzipFile
 assert gzipx.decompress(gzip.compress(b'portable gzip')) == b'portable gzip'
 """)
 
+    consumer.run(_FS_FALLBACK)
+
 
 @pytest.mark.parametrize("failed_module", _NATIVE_MODULES)
 def test_optional_compiler_failure_preserves_other_native_modules(
@@ -443,6 +461,9 @@ def test_optional_compiler_failure_preserves_other_native_modules(
         failed_module
     }
     assert not wheels[0].name.endswith("-py3-none-any.whl")
+    if failed_module == "unstd.fs._fs_native":
+        consumer = create_consumer(tmp_path / "consumer", wheels[0])
+        consumer.run(_FS_FALLBACK)
     strict = checked_command(
         [
             uv_executable(),

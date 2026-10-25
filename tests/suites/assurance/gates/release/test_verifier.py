@@ -339,6 +339,7 @@ def _vendored_release(dist: Path, *, native: bool = True) -> list[tuple[str, byt
     ]
     _write_sdist(dist / SDIST, members)
     files = _wheel_files()
+    files["unstd/fs/_fs_native.pyi"] = b"def atomic_write(*args, **kwargs): ...\n"
     files[f"{INFO}/METADATA"] = metadata
     for license_name in license_names:
         files[f"{INFO}/licenses/{license_name}"] = (
@@ -379,6 +380,48 @@ def test_native_wheel_cannot_silently_omit_an_accelerator(
     _write_wheel(wheel, files)
     with pytest.raises(release.ReleaseError, match="exactly one accelerator"):
         release.verify(dist)
+
+
+@pytest.mark.parametrize("platform", ["win_amd64", "macosx_10_13_x86_64"])
+@pytest.mark.parametrize(
+    "fs_suffix",
+    [None, ".so", ".abi3.so", ".cpython-313-darwin.so", ".pyd", ".cp313-win_amd64.pyd"],
+    ids=["stub-only", "plain-so", "abi3-so", "cpython-so", "plain-pyd", "cpython-pyd"],
+)
+def test_non_linux_release_accepts_fs_stub_and_rejects_fs_binaries(
+    dist: Path, platform: str, fs_suffix: str | None
+) -> None:
+    _vendored_release(dist)
+    wheel = next(dist.glob("*.whl"))
+    with zipfile.ZipFile(wheel) as archive:
+        files = {name: archive.read(name) for name in archive.namelist()}
+    del files[RECORD]
+    for module in release._NATIVE_MODULES:
+        old = f"{module}.cpython-313-x86_64-linux-gnu.so"
+        del files[old]
+        if module == "unstd/fs/_fs_native":
+            continue
+        if platform.startswith("macosx"):
+            files[f"{module}.cpython-313-darwin.so"] = _macho(_deployment((10, 13, 0)))
+        else:
+            files[f"{module}.cp313-win_amd64.pyd"] = b"native fixture"
+    assert "unstd/fs/_fs_native.pyi" in files
+    if fs_suffix is not None:
+        files[f"unstd/fs/_fs_native{fs_suffix}"] = (
+            _macho(_deployment((10, 13, 0)))
+            if platform.startswith("macosx")
+            else b"native fixture"
+        )
+    files[f"{INFO}/WHEEL"] = (
+        f"Wheel-Version: 1.0\nRoot-Is-Purelib: false\nTag: cp313-cp313-{platform}\n\n"
+    ).encode()
+    wheel.unlink()
+    _write_wheel(dist / f"unstd-3.1.0-cp313-cp313-{platform}.whl", files)
+    if fs_suffix is not None:
+        with pytest.raises(release.ReleaseError, match="Linux-only filesystem"):
+            release.verify(dist)
+    else:
+        assert len(release.verify(dist)["artifacts"]) == 2
 
 
 @pytest.mark.parametrize("mutation", ["missing", "changed"])

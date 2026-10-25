@@ -209,6 +209,15 @@ destination. Monkeypatching `fsync` proves ordering/error handling, not survival
 of a real power loss. Any future crash-durability claim needs a controlled
 filesystem/VM experiment with its own environment and limitations.
 
+Linux filesystem contracts additionally exercise the real compiled atomic-write
+entrypoint and forced Python fallback. A test-only ELF observer injects signals,
+short writes and errors at syscall returns, distinguishing rollback from a
+committed replacement and retaining cleanup-error notes. Profile events prove
+native acceptance; installed direct/sdist consumers and compiler-failure checks
+cover packaging. The [fs integration guide](suites/product/fs/integration/README.md)
+maps these cases, and the [qualification report](../bench/reports/fs/production/README.md)
+retains interpreter, sanitizer and workload evidence with its platform limits.
+
 The [chaos runner](tooling/chaos/README.md) now executes repeated atomic-write
 and process histories, actual SIGINT/SIGKILL, stream faults and clock/entropy
 schedules. Journals retain planned/observed boundaries and recovery. Fresh

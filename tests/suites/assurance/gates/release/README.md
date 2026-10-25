@@ -1,5 +1,17 @@
 # Release verifier gates
 
+[`test_fs_build.py`](test_fs_build.py) checks Linux-only filesystem build and
+wheel preflight selection, free-threaded fallback, and inclusion of the full
+[fs suite](../../../product/fs/README.md) in the installed-wheel runner.
+Release verifier fixtures require the fs accelerator in supported Linux native
+wheels and reject its plain or ABI-suffixed `.so`/`.pyd` binaries in macOS or
+Windows wheels while accepting the cross-platform `_fs_native.pyi` typing stub.
+The source archive retains
+`native/fs/src/adapter.c`; ordinary optional compiler failure and strict release
+failure are exercised by the [packaging plane](../../planes/packaging/README.md).
+The Linux import preflight prevents missing binaries from silently skipping the
+62 native integration contracts in release-wheel testing.
+
 `test_verifier.py` constructs small wheel/sdist fixtures and corrupts them to
 check the stdlib-only [release verifier](../../../../tooling/release/verify.py). It
 requires safe archive members, consistent package/version/tag metadata, valid

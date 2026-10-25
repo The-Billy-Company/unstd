@@ -1,0 +1,64 @@
+{
+  "purpose": "Linux-only native atomic-write experiment for captured Billy consumers; public dispatch unchanged",
+  "container_image_sha256": "sha256:27d6dd95c50ac1ee9bac3c5683a1f468cbd529de5b39eaa5cde05635606f2abc",
+  "environment_file": "native-linux-environment.json",
+  "compiler_command": [
+    "gcc",
+    "-O3",
+    "-std=c11",
+    "-fPIC",
+    "-shared",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-Wno-missing-field-initializers",
+    "-I/usr/local/include/python3.14",
+    "/tmp/fs-native-proof/commit.c",
+    "-o",
+    "/tmp/fs-native-proof/build/_fs_experiment.cpython-314-aarch64-linux-gnu.so"
+  ],
+  "native_binary_sha256": "ae56c7fffd24933c5fbd70ff6cd8851a63029592591e8ec3ccf38a2a5da4b8b4",
+  "source_files_sha256": {
+    "native/fs/experiments/build.py": "438a0ec994ac549faeba1a19cf9bcc8e29a056d33f3311b0daa4d73c3e533c1a",
+    "native/fs/experiments/observe.c": "a589cf97f742b2effe6e98c549511a82a4c436b82ecef9ecc2c999d2bb940070",
+    "native/fs/experiments/commit.c": "1c9d2005c440cb92a027cafeaf344840b55554c73b471dcee1746a8a1e4f70ee",
+    "native/fs/experiments/README.md": "3121352cbeb2a139f3d3f51127d221120b129f6a075699abfb2c2d6509d8a669",
+    "native/fs/experiments/qualify.py": "b3131d91e15c13e41644b8253be5b1f56a08bc5f7bdf943d38370cb3847ba5a2",
+    "bench/profiles/billy_fs.py": "e0bbd4c8b32b73d220e8fe5887810ecc41495c1cc5098ea294cea1f99b86d786",
+    "bench/profiles/fs_backend.py": "36d6bd753ab1227a6c7e0f8b4d11f82c7625b94dc7f7c5674075e010d449d3cb",
+    "bench/workloads/billy_fs.json": "8e13569fef4c9b04a84ab67bf49c31d97c42c2b8728eac8292172d1a7c2c0a47"
+  },
+  "report_files_sha256": {
+    "billy-native-linux-overlay-py314.json": "bd0c0b2f078466da3b8a9b942c7a3e0f62dd63f2db1e158520c93cc8632bf062",
+    "billy-native-linux-tmpfs-py314.json": "7d0bf3c2f1c4142ebef96e65f599ccf39ff5150ad7e24d2a1d552d6fccb99780",
+    "billy-native-linux-overlay-followup-py314.json": "990ee98835f1059a5c9636bd45b6b1ee888515677a1a08273611d8c9f600fe08"
+  },
+  "validation": {
+    "fs_product_linux": {
+      "command": "PYTHONPATH=/work/linuxdeps:/work/repo/src PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest tests/suites/product/fs -q --basetemp=/tmp/unstd-fs-product-linux-final",
+      "passed": 163,
+      "observed_seconds": 1.94
+    },
+    "native_linux": {
+      "command": "python /tmp/fs-native-proof/qualify.py --extension-dir /tmp/fs-native-proof/build --observer /tmp/fs-native-proof/build/observe.so",
+      "passed": 14,
+      "receipt": "native-linux-tests.txt"
+    },
+    "harness_contracts": {
+      "billy_fs": 12,
+      "fs_backend": 14
+    },
+    "combined_development_host": {
+      "passed": 189,
+      "command": ".venv/bin/python -m pytest tests/suites/product/fs tests/suites/assurance/gates/bench/test_fs_backend.py tests/suites/assurance/gates/bench/test_billy_fs.py -q",
+      "observed_seconds": 7.61
+    },
+    "lint_format_mypy": "passed on the relevant fs runtime, drivers, tests and qualification Python files"
+  },
+  "limitations": [
+    "Linux arm64 Docker Desktop VM, not a production-device latency certification",
+    "Overlay storage and tmpfs measured; tmpfs offers no persistence claim",
+    "Synthetic byte-size scenarios carry no production frequency weights",
+    "Native cancellation/error admission is incomplete; proof is not installed or dispatched by public fs"
+  ]
+}

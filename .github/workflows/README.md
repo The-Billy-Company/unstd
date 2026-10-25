@@ -18,6 +18,15 @@ and CI grouping in [`ci/groups.py`](../../tests/tooling/ci/groups.py). The
 the campaign READMEs cover budgets, replay, and failure artifacts. Action pins,
 permissions, matrices, and schedule times are defined in the YAML files.
 
+Linux native allocator and ASan/UBSan jobs also require the filesystem extension
+to import and run the fs product contracts. Its signal/error observer is built
+only for tests and preserves sanitizer preload order. Release wheel tests include
+fs; the verifier requires the binary on supported Linux native wheels and rejects
+it on other platforms, while retaining the portable typing stub. Compiler-failure
+and pristine installed-consumer checks cover native dispatch and the Python
+fallback. The [filesystem qualification](../../bench/reports/fs/production/README.md)
+records the separate installed workload and sanitizer evidence.
+
 The dependency-floor job restores the committed `uv.lock` immediately after
 installing its lowest-direct environment. Tests retain those installed versions
 with `--no-sync`, while release/export checks inspect the audited canonical lock

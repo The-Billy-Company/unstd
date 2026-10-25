@@ -61,7 +61,7 @@ existing paths. Supporting modules use descriptive concern names and remain impl
 | `compress` | `gzipx.py` | `engines/native.py`, `engines/reader.py`, private native extension |
 | `containers` | Package exports, `persistent.py`, `sorted.py` | Guarded imports and deferred missing-extra placeholders |
 | `crypto` | `digest.py`, `tls.py`, `token.py` | `hashing.py` and private native stream extension |
-| `fs` | Package functions | `durability.py` and `traversal.py`; atomic-write orchestration retains public sync and cleanup hooks |
+| `fs` | Package functions | `durability.py` and `traversal.py`; public orchestration owns Linux native admission and injectable sync/cleanup hooks. |
 | `ids` | `uid.py` | Private UUID fallback state stays with the generator |
 | `iters` | Package functions and `consecutive.py`, `distinct.py`, `reshape.py`, `select.py` | Small focused combinator modules |
 | `model` | Package classes, `base.py`, `settings.py` | Strict Pydantic model and settings configuration |
@@ -93,6 +93,10 @@ native/
   audio/                         reviewed external libsndfile build policy
   clone/src/                     structural cloning kernel
   crypto/src/                    streaming digest/token kernel
+  fs/
+    src/                         Linux atomic-write kernel
+    qualification/               test-only syscall fault/signal observer
+    experiments/                 historical standalone profiling proof
   rand/src/                      stdlib-faithful shuffle and explicit keyed integers
   serde/src/                     JSON kernel and private headers
   text/
@@ -109,6 +113,7 @@ modules as before: `unstd.serde._json_native`, `unstd.clone._clone_native`,
 `unstd.crypto._stream_native`, `unstd.text._text_native` and
 `unstd.compress._gzip_native`. Rand also builds `unstd.rand._rand_native` for
 compatible shuffling and explicit keyed batches. Their typing stubs retain the same paths.
+Linux additionally builds `unstd.fs._fs_native`.
 Wheels contain Python interfaces and optional binaries; native source belongs
 in the source distribution. Vendored source contents, licenses and authenticated
 manifests retain their meaning after relocation.
@@ -116,6 +121,23 @@ manifests retain their meaning after relocation.
 These modules are private. Users call the documented Python APIs; builds and
 internal qualification tools may inspect the binary bindings. Python privacy is
 a naming and support boundary, not an access-control mechanism.
+
+Filesystem dispatch admits exact bytes and default UTF-8 text with an existing
+parent only when its OS/path/orchestration bindings retain their original
+identity. Unsupported inputs and missing native capabilities select the complete
+Python implementation before scratch creation; a native I/O exception never
+retries the write. Streaming `atomic_writer` remains Python. The kernel records
+descriptor ownership before checking signals and successful rename before
+reporting post-commit cancellation. The [filesystem source guide](../native/fs/README.md)
+maps production and test-only sources; its standalone experiment is excluded
+from package builds.
+
+Atomic-write acceleration is Linux-only and needs no extra. Its
+[installed-package qualification](../bench/reports/fs/production/README.md)
+checks native and forced-Python routes from direct wheels and sdist rebuilds,
+including cancellation, cleanup/error parity and 13 consumer workload shapes.
+Small-write CPU savings and variable disk wall time are recorded separately;
+the Linux arm64 measurements do not establish a speedup on every storage device.
 
 Rand's default streams retain exact engine output/state. The explicit
 `ints(..., seeds=...)` path instead uses versioned, stateless SplitMix64 values;

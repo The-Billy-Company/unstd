@@ -30,6 +30,7 @@ _NATIVE_MODULES = (
     "unstd.crypto._stream_native",
     "unstd.text._text_native",
     "unstd.compress._gzip_native",
+    "unstd.fs._fs_native",
     "unstd.rand._rand_native",
 )
 
@@ -185,6 +186,8 @@ class CustomBuildHook(BuildHookInterface):
         self._temporary = TemporaryDirectory(prefix="unstd-native-")
         temporary = Path(self._temporary.name)
         for index, module in enumerate(_NATIVE_MODULES):
+            if module == "unstd.fs._fs_native" and sys.platform != "linux":
+                continue
             self._build_module(module, temporary / str(index), version, build_data)
 
     def _build_module(

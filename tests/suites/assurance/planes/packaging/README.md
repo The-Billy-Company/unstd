@@ -1,5 +1,13 @@
 # Installed packaging contracts
 
+Linux wheels additionally exercise the packaged native filesystem writer
+through public `fs.atomic_write`, then select its Python fallback in the same
+pristine consumer. The native probe observes accepted strict byte publication
+through the real installed kernel, then verifies a text overwrite with
+`fs._native=None`. Non-Linux builds exclude that accelerator; free-threaded
+builds retain Python. Source archives retain its production C entrypoint
+`native/fs/src/adapter.c` independently of the historical experiment.
+
 This lane freezes the working tree's release inputs into an external session
 snapshot, including new/untracked package sources, before reading its oracles or
 building real artifacts. This keeps concurrent edits from changing inputs between
@@ -40,6 +48,10 @@ cache, backend, resolver, import or native library failure is skipped there.
   native CPython or portable wheel tags, metadata, supported Python and
   license metadata are checked. An explicit compiler failure verifies the
   portable fallback; native release builds require the extension to compile.
+  For fs, both a missing compiler and failure of only its C source are followed
+  by an isolated installed-consumer write with recursive parent creation and
+  scratch cleanup. A failure of only fs preserves the other native modules;
+  the same source failure must reject a strict release build without a wheel.
   In opted-in Rust builds, missing Cargo and invalid Rust sources independently
   disable only the text extension, clear stale editable text binaries, and fail
   required native builds. C compilation failures remain independent.
@@ -104,3 +116,9 @@ Platform coverage and combinations of multiple extras remain separate evidence.
 Per-extra runtime probes follow the versions in the frozen session lockfile;
 the dependency-floor job's re-resolved lock therefore drives its floor consumers.
 The lane itself needs no registry access.
+
+The [fs integration suite](../../../product/fs/integration/README.md) separately
+checks real Linux native/fallback cancellation and error parity, including the
+test-only ELF observer. The [production qualification](../../../../../bench/reports/fs/production/README.md)
+retains direct/sdist-installed suite receipts, compiler-failure evidence, and
+Billy workload profiles tied to the tested wheel bytes.

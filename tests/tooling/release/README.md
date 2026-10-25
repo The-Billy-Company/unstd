@@ -20,6 +20,18 @@ reusable build/test dependencies; [`reuse_ci.py`](reuse_ci.py) checks recent
 exact-commit CI evidence. [`wheel_tests.py`](wheel_tests.py) runs installed-wheel
 contracts in bounded parallel workers.
 
+The verifier requires `unstd.fs._fs_native` in supported Linux native release
+wheels and rejects that Linux-only binary in non-Linux wheels. Its `.pyi` typing
+stub remains valid on every platform. The build hook
+keeps Python usable when an optional local fs compile fails, while strict
+release builds fail visibly. Free-threaded configurations retain Python.
+Linux cibuildwheel tests import the packaged fs extension before running the
+full [fs contracts](../../suites/product/fs/README.md), including the 62 native
+integration cases. Their syscall-boundary checks compile a test-only ELF
+observer from the source tree when a compiler is available; it is not a
+production backend or a profiling dependency. Installed Billy performance
+qualification has a separate [driver and retained receipts](../../../bench/reports/fs/production/README.md).
+
 [`wheels.py`](wheels.py) keeps cibuildwheel's build, repair and test pipeline.
 Standard native CPython builds on macOS and CPython 3.12 builds on Windows use
 uv's managed provider and pass the existing TLS policy before compilation.

@@ -21,6 +21,9 @@ Install only the extras you need. Compatible CPython wheels include bundled C
 extensions; source builds use them when a compiler is available and retain
 portable fallbacks otherwise.
 
+Linux CPython wheels also accelerate [`fs.atomic_write`](src/unstd/fs/README.md)
+without an extra dependency, while retaining the complete Python fallback.
+
 ## Quick start
 
 ```python

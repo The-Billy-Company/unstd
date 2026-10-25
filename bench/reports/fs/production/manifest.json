@@ -1,0 +1,95 @@
+{
+  "purpose": "Linux production fs.atomic_write via installed public API, with native acceptance and forced Python fallback; recorded qualified package snapshot",
+  "qualified_fs_runtime_sha256": {
+    "src/unstd/fs/traversal.py": "4e28e2ac58856bbf580a0221828028b6e32e8cb2887b4fca8ebc87ae919ab9f7",
+    "src/unstd/fs/__init__.py": "270706bec74a145508f419b432ccf01d4cd8d335705fa579c65ba8f0a69f8984",
+    "src/unstd/fs/durability.py": "b0310342fcbc1905a5ef335ec1f42ac149e876f4b506f51ce6e0df88b6deb41a",
+    "src/unstd/fs/_fs_native.pyi": "cade3640f2068721ea79e5c130a4ca63d09fb7183b72dbfb566858f3d5b6deb6",
+    "native/fs/src/adapter.c": "e6759a7640c471eef5b3f993a8fb6bb6c1a85f6ff7b7495b63cfa640800dda99"
+  },
+  "artifacts": {
+    "direct": {
+      "path": "/Users/griffinstrier/Billy-Company/unstd/.local/fs-native-production/artifacts/direct/unstd-3.1.6-cp314-cp314-linux_aarch64.whl",
+      "sha256": "51c3aeb8e68210ab3b1fb40266ce063e816cedfb6ffc35eeb651f2753fb45b23",
+      "bytes": 967092
+    },
+    "sdist_wheel": {
+      "path": "/Users/griffinstrier/Billy-Company/unstd/.local/fs-native-production/artifacts/from-sdist/unstd-3.1.6-cp314-cp314-linux_aarch64.whl",
+      "sha256": "5b5c52352bb521a669bdd2b734fcb34be75be2f9fee0608bf1ea1993d7210e8c",
+      "bytes": 967211
+    },
+    "sdist": {
+      "path": "/Users/griffinstrier/Billy-Company/unstd/.local/fs-native-production/artifacts/source/unstd-3.1.6.tar.gz",
+      "sha256": "83c5a311af879b90bf48fd0ad798b0ea86b61ef5a3d39b4f6dd7dec993c7c2a9",
+      "bytes": 4221802
+    }
+  },
+  "benchmark_reports": {
+    "installed-direct-overlay.json": {
+      "sha256": "47581c29c713683fb7356201a646d8ad96b5bf147ef6cfa14e12b91112971bfb",
+      "cases": 13,
+      "native_routing_before_and_after_verified": true,
+      "compiled_backend_sha256": "2e295b3681c526a1a43463a2cf3b563b4cc6e62b1c6b5ef541e88e9e7f53ba67"
+    },
+    "installed-sdist-overlay.json": {
+      "sha256": "cac91758776f6cc184771c51d217a56a520bf560c6bdde5178d056a4954b5351",
+      "cases": 13,
+      "native_routing_before_and_after_verified": true,
+      "compiled_backend_sha256": "aab295c340789c29b892999fe0e026849d5c343e1c91d71864c8b95c8047f87a"
+    },
+    "installed-direct-tmpfs.json": {
+      "sha256": "2c8aa74dfa326167730c0339ff7f96a61bab5fdbe119a492ff00f800fd948dc2",
+      "cases": 13,
+      "native_routing_before_and_after_verified": true,
+      "compiled_backend_sha256": "2e295b3681c526a1a43463a2cf3b563b4cc6e62b1c6b5ef541e88e9e7f53ba67"
+    }
+  },
+  "validation": {
+    "linux_cp312": {
+      "passed": 236,
+      "receipt": "python-matrix.json"
+    },
+    "linux_cp313": {
+      "passed": 236,
+      "receipt": "python-matrix.json"
+    },
+    "linux_cp314_direct_wheel": {
+      "passed": 236,
+      "receipt": "tests-installed-direct.txt"
+    },
+    "linux_cp314_sdist_wheel": {
+      "passed": 236,
+      "receipt": "tests-installed-sdist.txt"
+    },
+    "compiler_failure_and_installed_consumers": {
+      "passed": 4,
+      "receipt": "packaging-fallback.txt"
+    },
+    "asan_ubsan": {
+      "passed": 236,
+      "receipt": "sanitizers.json",
+      "notes": "Test-only fork launcher; helper export-only metadata changes audited separately; actual tested hashes retained."
+    }
+  },
+  "scope": [
+    "Linux arm64 containers; no production-device latency or x86_64 certification",
+    "No Billy application code or credentials changed",
+    "Raw timing losses retained; no frozen speed floors changed",
+    "Wheels use the qualified fs helper layout and recorded fs Python/stub/C sources; later workspace revisions are outside these receipts"
+  ],
+  "snapshot_policy": {
+    "source_hashes": "qualified_fs_runtime_sha256 identifies retained wheel/sdist source bytes, not a moving latest-checkout hash map.",
+    "receipt_preservation": "Recorded report, binary, artifact and tested-source hashes are retained unchanged; later source or documentation edits do not imply requalification.",
+    "sanitizer_scope": "sanitizers.json retains actual tested helper hashes and separately audits subsequent empty-export metadata declarations."
+  },
+  "post_qualification_documentation_review": {
+    "file": "src/unstd/fs/__init__.py",
+    "qualified_sha256": "270706bec74a145508f419b432ccf01d4cd8d335705fa579c65ba8f0a69f8984",
+    "reviewed_source_sha256": "410c49187d8dbf9b5bae5b89c8902b781e0c01055e18006343c52908e100850e",
+    "comparison": "Compared the retained direct wheel source with the documentation-updated source after removing only leading module/function/class docstrings from both ASTs.",
+    "execution_ast_equivalent_excluding_docstrings": true,
+    "execution_ast_sha256": "0d81662a42e263a5bcedf6fa7ec4d10d9b08d2b7807d304d2e1735de9b05c578",
+    "tested_bytes_relabelled": false,
+    "builds_or_benchmarks_rerun": false
+  }
+}

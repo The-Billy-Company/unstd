@@ -177,9 +177,21 @@ Import `from unstd import fs`.
 
 `ensure_dir` returns a `Path`; `walk_files` yields paths. `atomic_writer` is a
 context manager for writing the replacement file; `atomic_write` and
-`atomic_replace` perform complete operations. Durability options and strict
-directory-sync failures retain their existing meanings. This package uses only
-the stdlib.
+`atomic_replace` perform complete operations and return the destination `Path`.
+All three write operations accept `durable=False`, `True`, or `"strict"`.
+Strict mode requires directory-sync acknowledgments before and after replacement;
+a post-commit failure reports that the new data is already committed.
+`sync_dir(path, *, strict=False)` returns `None` and suppresses OS errors by
+default, while `strict=True` reports them.
+
+This package needs no extra or third-party runtime dependency. Ordinary
+GIL-enabled Linux CPython builds use the bundled native `atomic_write` backend
+for exact bytes and default UTF-8 text with an existing parent. Other platforms,
+unsupported inputs, custom OS/path bindings, and unavailable native capabilities
+retain the complete Python path. Native I/O errors propagate without retrying
+the write. `atomic_writer` retains the Python streaming implementation.
+The [filesystem guide](../src/unstd/fs/README.md) describes admission, mode
+preservation, cancellation, cleanup notes, and the durability limits.
 
 ## Identifiers
 

@@ -7,6 +7,7 @@ and every product probe runs in a new isolated Python process outside the repo.
 
 from __future__ import annotations
 
+import ast
 from dataclasses import dataclass
 import os
 from pathlib import Path
@@ -104,6 +105,32 @@ class Artifacts:
     project: dict[str, object]
 
 
+def require_native_adapters(source: Path) -> tuple[Path, ...]:
+    """Require every registered native adapter in this frozen source tree.
+
+    Inspect the build declaration without executing the hook or applying the
+    host's platform filters: a macOS-created sdist still needs Linux sources.
+    """
+    declaration = next(
+        node
+        for node in ast.parse((source / "hatch_build.py").read_text()).body
+        if isinstance(node, ast.Assign)
+        and any(
+            isinstance(target, ast.Name) and target.id == "_NATIVE_MODULES"
+            for target in node.targets
+        )
+    )
+    modules = ast.literal_eval(declaration.value)
+    adapters = tuple(
+        source / "native" / module.split(".")[1] / "src/adapter.c" for module in modules
+    )
+    missing = [
+        path.relative_to(source).as_posix() for path in adapters if not path.is_file()
+    ]
+    assert not missing, f"frozen source lacks registered native adapters: {missing}"
+    return adapters
+
+
 def build_artifacts(root: Path) -> Artifacts:
     """Build an isolated wheel/sdist, then independently build that sdist offline."""
     assert not root.resolve().is_relative_to(REPO_ROOT)
@@ -151,6 +178,7 @@ def build_artifacts(root: Path) -> Artifacts:
             shutil.copytree(original, source / name, ignore=excluded)
         elif original.is_file():
             shutil.copy2(original, source / name)
+    require_native_adapters(source)
     output = root / "source"
     rebuilt = root / "from-sdist"
     package_files = {

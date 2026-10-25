@@ -2,14 +2,14 @@
 doc_radar:
   sentinels:
     - file: __init__.py
-      contains: ["from unstd.fs.durability import"]
+      contains: ['from unstd.fs.durability import']
     - file: traversal.py
-      contains: ["def _walk_descriptors("]
+      contains: ['def _walk_descriptors(']
 ---
 
 # `unstd.fs` — filesystem operations `pathlib`/`os` lack
 
-Part of [`unstd`](../README.md). **Pure stdlib — no optional extra.**
+Part of [`unstd`](../README.md). **No optional extra or third-party runtime dependency.**
 `pathlib` is best-in-class path _algebra_ (joins, suffixes, parents); it stops at
 the durable-write and fast-walk _operations_ every service otherwise re-rolls.
 `unstd.fs` is exactly those operations — it is **not** a `pathlib` replacement.
@@ -25,11 +25,11 @@ from unstd import fs
 
 | Function                                                                  | Does                                                                                                                 |
 | ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `atomic_write(path, data, *, encoding="utf-8", durable=False)`            | Crash-safe write of `str`/`bytes`: temp file in the same dir → `fsync` → `os.replace`.                               |
+| `atomic_write(path, data, *, encoding="utf-8", durable=False)`            | Atomic write of `str`/`bytes`: temp file in the same dir → `fsync` → `os.replace`.                                   |
 | `atomic_writer(path, *, mode="w"\|"wb", encoding="utf-8", durable=False)` | Context-manager form — yields a handle; commits atomically on clean exit, discards the temp file if the body raises. |
 | `atomic_replace(src, dest, *, durable=False)`                             | Atomic `os.replace` of an existing file onto `dest` (same-filesystem rename).                                        |
 | `ensure_dir(path)`                                                        | `mkdir(parents=True, exist_ok=True)`, idempotent.                                                                    |
-| `sync_dir(path)`                                                          | Best-effort directory `fsync`; OS errors are suppressed.                                                           |
+| `sync_dir(path, *, strict=False)`                                         | Directory `fsync`; OS errors are suppressed unless strict mode is requested.                                       |
 | `walk_files(root, *, follow_symlinks=False)`                              | `os.scandir` generator — every file, recursively.                                                                    |
 
 ## The atomic-write idiom
@@ -89,6 +89,42 @@ explicitly chosen group-sharing or world-write policy. Set a new file's sharing
 policy explicitly when needed. The writer never reads or changes the
 process-wide umask.
 
+## Linux acceleration and fallback
+
+Ordinary GIL-enabled Linux CPython wheels include a private native backend for
+`atomic_write`, without an extra dependency. It handles exact `bytes`, or exact
+`str` with the default `encoding="utf-8"`, and an existing parent directory.
+It owns scratch creation, writing, file syncing, closing, replacement, cleanup,
+and the requested directory-sync policy. Non-Linux platforms, other interpreters
+and free-threaded builds retain the stdlib-based Python implementation.
+
+Other encodings, subclasses, missing or non-directory parents, unsupported
+pathnames, and replaced OS/path/orchestration bindings retain Python behavior.
+An absent extension or optional local compiler failure also retains Python.
+Unavailable or policy-blocked native entropy (`getrandom` returning `ENOSYS`
+or `EPERM`) declines before scratch creation and uses Python's secure fallback.
+Native I/O errors propagate; they never trigger a second write through Python.
+`atomic_writer` continues to provide the Python streaming context manager.
+
+Source builds attempt the extension automatically. Local compiler failure keeps
+the package usable; `CIBUILDWHEEL=1` makes compilation failure fatal for release
+builds. [Native build and source ownership](../../../native/fs/README.md)
+documents the private kernel and qualification tools.
+
+The native writer checks Python signals at syscall boundaries while retaining
+ownership of acquired descriptors. Cancellation before replacement attempts
+scratch cleanup and preserves the destination. Cleanup errors add notes to the
+primary exception. A cancellation or strict-sync error
+after successful replacement reports that the new data is already committed.
+UTF-8 encoding happens after scratch acquisition, preserving stream-stage
+error ordering. The Python writer also confirms committed inode identity when
+a signal interrupts the return from a successful rename.
+
+The [installed-package qualification](../../../bench/reports/fs/production/README.md)
+records cancellation/error tests, compiler-failure fallback, Linux interpreter
+coverage, and 13 consumer workload shapes exercised through the installed public
+API. Its small-write CPU gains do not establish a uniform disk-latency gain.
+
 Reads and one-level listings are `Path.read_bytes` / `read_text` / `iterdir`:
 CPython already sizes a whole-file read from `fstat` and lists through `scandir`,
 so a wrapper here measured slower, not faster.
@@ -133,22 +169,48 @@ read untrusted, concurrently modified trees must also protect their file opens.
   cache; the parent-directory-fsync durability nuance is documented in LWN's
   _"Ensuring data reaches disk"_ and the SQLite atomic-commit docs.
 
+## Performance evidence
+
+The [backend evaluation](../../../bench/reports/fs/README.md) retains paired
+wall/CPU measurements and profiles on Python 3.12, 3.13, and 3.14. Descriptor
+traversal caches directory-name prefixes and constructs `Path` objects only
+for returned files. Existing-directory checks avoid a failed `mkdir`; creating
+a missing directory incurs an initial directory check. Strict writers reuse
+their successful parent check before preflight syncing.
+
+The evaluation includes real file and directory syncing. Local I/O timing is
+noisy, so it does not establish a consistent atomic-write speedup. The portable
+walk retains its per-entry identity checks.
+
+The earlier [Linux consumer evaluation](../../../bench/reports/fs/README.md)
+profiles actual consumer shapes and a separately built proof. The production
+follow-up above qualifies installed public dispatch; the historical proof
+remains outside the package build.
+
 ## Source ownership
 
-The package keeps its cohesive modules together as one code leaf.
+The package is one filesystem code leaf. [`__init__.py`](__init__.py) owns
+public calls, atomic-write orchestration and platform dispatch, passing its
+operating-system binding explicitly to the traversal and synchronization code.
 
 | File | Responsibility |
 | --- | --- |
-| [`__init__.py`](__init__.py) | Public filesystem operations and atomic commits |
+| [`__init__.py`](__init__.py) | Public operations, atomic commits and native dispatch |
 | [`durability.py`](durability.py) | Directory synchronization and descriptor cleanup |
 | [`traversal.py`](traversal.py) | Descriptor-anchored, portable and symlink-following walks |
+| [`_fs_native.pyi`](_fs_native.pyi) | Type contract for the optional Linux kernel |
 
-`durability.py` owns directory synchronization and descriptor cleanup.
-`traversal.py` owns descriptor-anchored, portable and symlink-following traversal.
-The public `unstd.fs` module passes its operating-system binding explicitly,
-keeping fault injection and platform behavior consistent. Atomic-write
-orchestration stays at the public module so its sync and cleanup hooks retain
-their existing behavior. These modules are private implementation details.
+The descriptor walker caches directory-name prefixes and constructs `Path`
+objects only for yielded files. Each traversal frame owns its descriptor and
+scanner; cleanup unwinds every live ancestor even if another close fails.
+Live handles remain bounded by traversal depth. Atomic-write orchestration
+keeps its injectable sync and cleanup hooks in the public package.
+
+Linux `atomic_write` can dispatch to the kernel in
+[`native/fs/src/`](../../../native/fs/src/README.md). Unsupported inputs,
+unavailable kernels and custom OS/path bindings retain Python execution.
+Streaming `atomic_writer` stays in Python and checks inode identity when
+reporting cancellation after a rename.
 
 Run the contracts from the repository root with
 `uv run --no-sync python -m pytest tests/suites/product/fs -q`.

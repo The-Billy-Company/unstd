@@ -6,6 +6,31 @@ audits, baseline floors, source isolation, workload coverage, paired timing, and
 observed native dispatch. Deliberately wrong outputs and declined native calls
 must fail before they can support an acceleration claim.
 
+`test_fs_backend.py` checks saved/current source isolation, stale-bytecode
+rejection, unchanged signatures, independent output checks, shared calibrated
+batch counts, alternating sample order, and repeatable filesystem fixtures.
+Its checks use no machine-speed thresholds.
+
+[`test_billy_fs.py`](test_billy_fs.py) pins consumer-source and payload receipts,
+synthetic-data boundaries, byte-oriented browser writes, retained quota checks,
+shared paths, independent content/mode checks, and native-entrypoint evidence.
+Untimed sentinel resets prevent a no-op native call from borrowing a preceding
+Python result.
+
+[`test_billy_fs_installed.py`](test_billy_fs_installed.py) gates the production
+[`billy_fs_installed.py`](../../../../../bench/profiles/billy_fs_installed.py)
+driver. Both independent public fs modules come from one selected installation;
+one retains native dispatch and the other forces Python fallback. The gates
+reject missing/noncompiled or ambient binaries, shared module state, inactive or
+declined native routes, no-op results, and wheel members that differ from the
+loaded fs sources/binary. Public text inputs stay text at dispatch. Support
+modules need file provenance and direct `--help` works without site packages.
+The driver proves each route and checks fresh sentinel/output state outside
+timing, preserving profile hooks on failure. The retained [production report](../../../../../bench/reports/fs/production/README.md)
+covers all 13 Billy shapes through direct and sdist-rebuilt Linux wheels, with
+disk and tmpfs results kept separate. These gates impose no machine-speed
+threshold and the test-only ELF observer is excluded from profiling.
+
 `test_gzip_reads.py` rejects changed decoded bytes and incorrectly imported
 comparison sources, and checks bounded output, concatenated lines and rewinds.
 

@@ -1,0 +1,115 @@
+* Getting build dependencies for wheel...
+* Building wheel...
+In file included from /work/current-layout/native/serde/src/adapter.c:462:
+/work/current-layout/native/serde/src/repeat.h:294:1: warning: ‘always_inline’ function might not be inlinable unless also declared ‘inline’ [-Wattributes]
+  294 | repeat_write_result_inner(PyObject *value, int ascii, int spaced,
+      | ^~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /work/current-layout/native/compress/src/../vendor/libdeflate/lib/matchfinder_common.h:8,
+                 from /work/current-layout/native/compress/src/fast.h:52,
+                 from /work/current-layout/native/compress/src/fast.c:5:
+/work/current-layout/native/compress/src/../vendor/libdeflate/lib/deflate_compress.c: In function ‘deflate_flush_block’:
+/work/current-layout/native/compress/src/../vendor/libdeflate/lib/deflate_compress.c:1836:51: warning: comparison of integer expressions of different signedness: ‘long int’ and ‘size_t’ {aka ‘long unsigned int’} [-Wsign-compare]
+ 1836 |                         ASSERT(os->end - out_next >=
+      |                                                   ^~
+/work/current-layout/native/compress/src/../vendor/libdeflate/lib/lib_common.h:99:29: note: in definition of macro ‘ASSERT’
+   99 | #define ASSERT(expr) (void)(expr)
+      |                             ^~~~
+In file included from /work/current-layout/native/compress/src/fast.c:6:
+/work/current-layout/native/compress/src/../vendor/libdeflate/lib/deflate_compress.c: In function ‘choose_max_block_end’:
+/work/current-layout/native/compress/src/../vendor/libdeflate/lib/deflate_compress.c:2384:37: warning: comparison of integer expressions of different signedness: ‘long int’ and ‘size_t’ {aka ‘long unsigned int’} [-Wsign-compare]
+ 2384 |         if (in_end - in_block_begin < soft_max_len + MIN_BLOCK_LENGTH)
+      |                                     ^
+/work/current-layout/native/compress/src/../vendor/libdeflate/lib/deflate_compress.c: In function ‘deflate_compress_none’:
+/work/current-layout/native/compress/src/../vendor/libdeflate/lib/deflate_compress.c:2424:40: warning: comparison of integer expressions of different signedness: ‘long int’ and ‘size_t’ {aka ‘long unsigned int’} [-Wsign-compare]
+ 2424 |                 if (out_end - out_next < 5 + len)
+      |                                        ^
+In file included from /work/current-layout/native/compress/src/../vendor/libdeflate/lib/lib_common.h:40:
+/work/current-layout/native/compress/src/../vendor/libdeflate/lib/deflate_compress.c: In function ‘deflate_compress_near_optimal’:
+/work/current-layout/native/compress/src/../vendor/libdeflate/lib/../common_defs.h:308:38: warning: comparison of integer expressions of different signedness: ‘long int’ and ‘long unsigned int’ [-Wsign-compare]
+  308 | #define MIN(a, b)               ((a) <= (b) ? (a) : (b))
+      |                                      ^~
+/work/current-layout/native/compress/src/../vendor/libdeflate/lib/deflate_compress.c:3602:27: note: in expansion of macro ‘MIN’
+ 3602 |                 in_next + MIN(in_end - in_next, MATCHFINDER_WINDOW_SIZE);
+      |                           ^~~
+/work/current-layout/native/compress/src/../vendor/libdeflate/lib/../common_defs.h:308:47: warning: operand of ‘?:’ changes signedness from ‘long int’ to ‘long unsigned int’ due to unsignedness of other operand [-Wsign-compare]
+  308 | #define MIN(a, b)               ((a) <= (b) ? (a) : (b))
+      |                                               ^~~
+/work/current-layout/native/compress/src/../vendor/libdeflate/lib/deflate_compress.c:3602:27: note: in expansion of macro ‘MIN’
+ 3602 |                 in_next + MIN(in_end - in_next, MATCHFINDER_WINDOW_SIZE);
+      |                           ^~~
+/work/current-layout/native/compress/vendor/libdeflate/lib/arm/cpu_features.c: In function ‘scan_auxv’:
+/work/current-layout/native/compress/vendor/libdeflate/lib/arm/cpu_features.c:84:33: warning: comparison of integer expressions of different signedness: ‘int’ and ‘long unsigned int’ [-Wsign-compare]
+   84 |                 } while (filled < 2 * sizeof(long));
+      |                                 ^
+/work/current-layout/native/compress/vendor/libdeflate/lib/arm/cpu_features.c:97:33: warning: comparison of integer expressions of different signedness: ‘int’ and ‘long unsigned int’ [-Wsign-compare]
+   97 |                 } while (filled >= 2 * sizeof(long));
+      |                                 ^~
+In file included from /work/current-layout/native/compress/vendor/libdeflate/lib/lib_common.h:40,
+                 from /work/current-layout/native/compress/vendor/libdeflate/lib/deflate_decompress.c:45:
+/work/current-layout/native/compress/vendor/libdeflate/lib/decompress_template.h: In function ‘deflate_decompress_default’:
+/work/current-layout/native/compress/vendor/libdeflate/lib/deflate_decompress.c:239:37: warning: comparison of integer expressions of different signedness: ‘long int’ and ‘long unsigned int’ [-Wsign-compare]
+  239 |             likely(in_end - in_next >= sizeof(bitbuf_t))) {             \
+      |                                     ^~
+/work/current-layout/native/compress/vendor/libdeflate/lib/../common_defs.h:231:53: note: in definition of macro ‘likely’
+  231 | #  define likely(expr)          __builtin_expect(!!(expr), 1)
+      |                                                     ^~~~
+/work/current-layout/native/compress/vendor/libdeflate/lib/decompress_template.h:77:9: note: in expansion of macro ‘REFILL_BITS’
+   77 |         REFILL_BITS();
+      |         ^~~~~~~~~~~
+/work/current-layout/native/compress/vendor/libdeflate/lib/deflate_decompress.c:239:37: warning: comparison of integer expressions of different signedness: ‘long int’ and ‘long unsigned int’ [-Wsign-compare]
+  239 |             likely(in_end - in_next >= sizeof(bitbuf_t))) {             \
+      |                                     ^~
+/work/current-layout/native/compress/vendor/libdeflate/lib/../common_defs.h:231:53: note: in definition of macro ‘likely’
+  231 | #  define likely(expr)          __builtin_expect(!!(expr), 1)
+      |                                                     ^~~~
+/work/current-layout/native/compress/vendor/libdeflate/lib/decompress_template.h:123:25: note: in expansion of macro ‘REFILL_BITS’
+  123 |                         REFILL_BITS();
+      |                         ^~~~~~~~~~~
+/work/current-layout/native/compress/vendor/libdeflate/lib/deflate_decompress.c:239:37: warning: comparison of integer expressions of different signedness: ‘long int’ and ‘long unsigned int’ [-Wsign-compare]
+  239 |             likely(in_end - in_next >= sizeof(bitbuf_t))) {             \
+      |                                     ^~
+/work/current-layout/native/compress/vendor/libdeflate/lib/../common_defs.h:231:53: note: in definition of macro ‘likely’
+  231 | #  define likely(expr)          __builtin_expect(!!(expr), 1)
+      |                                                     ^~~~
+/work/current-layout/native/compress/vendor/libdeflate/lib/decompress_template.h:137:41: note: in expansion of macro ‘REFILL_BITS’
+  137 |                                         REFILL_BITS();
+      |                                         ^~~~~~~~~~~
+/work/current-layout/native/compress/vendor/libdeflate/lib/deflate_decompress.c:239:37: warning: comparison of integer expressions of different signedness: ‘long int’ and ‘long unsigned int’ [-Wsign-compare]
+  239 |             likely(in_end - in_next >= sizeof(bitbuf_t))) {             \
+      |                                     ^~
+/work/current-layout/native/compress/vendor/libdeflate/lib/../common_defs.h:231:53: note: in definition of macro ‘likely’
+  231 | #  define likely(expr)          __builtin_expect(!!(expr), 1)
+      |                                                     ^~~~
+/work/current-layout/native/compress/vendor/libdeflate/lib/decompress_template.h:158:33: note: in expansion of macro ‘REFILL_BITS’
+  158 |                                 REFILL_BITS();
+      |                                 ^~~~~~~~~~~
+/work/current-layout/native/compress/vendor/libdeflate/lib/deflate_decompress.c:239:37: warning: comparison of integer expressions of different signedness: ‘long int’ and ‘long unsigned int’ [-Wsign-compare]
+  239 |             likely(in_end - in_next >= sizeof(bitbuf_t))) {             \
+      |                                     ^~
+/work/current-layout/native/compress/vendor/libdeflate/lib/../common_defs.h:231:53: note: in definition of macro ‘likely’
+  231 | #  define likely(expr)          __builtin_expect(!!(expr), 1)
+      |                                                     ^~~~
+/work/current-layout/native/compress/vendor/libdeflate/lib/decompress_template.h:686:17: note: in expansion of macro ‘REFILL_BITS’
+  686 |                 REFILL_BITS();
+      |                 ^~~~~~~~~~~
+/work/current-layout/native/compress/vendor/libdeflate/lib/deflate_decompress.c:239:37: warning: comparison of integer expressions of different signedness: ‘long int’ and ‘long unsigned int’ [-Wsign-compare]
+  239 |             likely(in_end - in_next >= sizeof(bitbuf_t))) {             \
+      |                                     ^~
+/work/current-layout/native/compress/vendor/libdeflate/lib/../common_defs.h:231:53: note: in definition of macro ‘likely’
+  231 | #  define likely(expr)          __builtin_expect(!!(expr), 1)
+      |                                                     ^~~~
+/work/current-layout/native/compress/vendor/libdeflate/lib/decompress_template.h:712:25: note: in expansion of macro ‘REFILL_BITS’
+  712 |                         REFILL_BITS();
+      |                         ^~~~~~~~~~~
+/work/current-layout/native/compress/vendor/libdeflate/lib/deflate_decompress.c:239:37: warning: comparison of integer expressions of different signedness: ‘long int’ and ‘long unsigned int’ [-Wsign-compare]
+  239 |             likely(in_end - in_next >= sizeof(bitbuf_t))) {             \
+      |                                     ^~
+/work/current-layout/native/compress/vendor/libdeflate/lib/../common_defs.h:231:53: note: in definition of macro ‘likely’
+  231 | #  define likely(expr)          __builtin_expect(!!(expr), 1)
+      |                                                     ^~~~
+/work/current-layout/native/compress/vendor/libdeflate/lib/decompress_template.h:720:33: note: in expansion of macro ‘REFILL_BITS’
+  720 |                                 REFILL_BITS();
+      |                                 ^~~~~~~~~~~
+* Getting build dependencies for sdist...
+* Building sdist...
+Successfully built unstd-3.1.6-cp314-cp314-linux_aarch64.whl and unstd-3.1.6.tar.gz

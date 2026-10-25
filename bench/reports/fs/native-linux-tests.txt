@@ -1,0 +1,33 @@
+test_best_effort_directory_failure_keeps_legacy_success (__main__.CommitTests.test_best_effort_directory_failure_keeps_legacy_success)
+Best-effort mode suppresses the directory sync error after commit. ... ok
+test_binary_roundtrip_nested_parents_and_permissions (__main__.CommitTests.test_binary_roundtrip_nested_parents_and_permissions)
+New files are private and explicit existing sharing is retained. ... ok
+test_default_real_file_sync_precedes_rename (__main__.CommitTests.test_default_real_file_sync_precedes_rename)
+The default lane keeps file fsync and adds no directory fsync. ... ok
+test_descriptor_counts_remain_bounded_after_success_and_errors (__main__.CommitTests.test_descriptor_counts_remain_bounded_after_success_and_errors)
+No file or directory handle survives success or failed rename. ... ok
+test_failed_file_sync_preserves_prior_contents (__main__.CommitTests.test_failed_file_sync_preserves_prior_contents)
+An injected kernel fsync error rolls back and discards the scratch. ... ok
+test_failed_postcommit_sync_identifies_the_committed_state (__main__.CommitTests.test_failed_postcommit_sync_identifies_the_committed_state)
+Post-rename strict errors retain new bytes and a commit note. ... ok
+test_failed_strict_preflight_keeps_prior_contents (__main__.CommitTests.test_failed_strict_preflight_keeps_prior_contents)
+A failed preflight happens before any payload scratch is committed. ... ok
+test_failure_to_replace_a_directory_discards_the_scratch (__main__.CommitTests.test_failure_to_replace_a_directory_discards_the_scratch)
+A failed rename preserves the old directory and leaves no scratch. ... ok
+test_interrupted_and_short_writes_publish_every_byte (__main__.CommitTests.test_interrupted_and_short_writes_publish_every_byte)
+A first EINTR and 7-byte writes must not truncate the payload. ... ok
+test_invalid_arguments_have_no_filesystem_effect (__main__.CommitTests.test_invalid_arguments_have_no_filesystem_effect)
+Reject unadmitted payloads, durability and lexical names before I/O. ... ok
+test_long_basename_uses_the_public_scratch_name_budget (__main__.CommitTests.test_long_basename_uses_the_public_scratch_name_budget)
+The scratch suffix adds 14 bytes, matching the Python implementation. ... ok
+test_real_readers_observe_only_complete_versions (__main__.CommitTests.test_real_readers_observe_only_complete_versions)
+Concurrent readers cannot observe partial payloads or absent files. ... ok
+test_strict_new_parent_entries_are_synced_in_order (__main__.CommitTests.test_strict_new_parent_entries_are_synced_in_order)
+Each new parent entry is synced before committing the file. ... ok
+test_strict_sync_preflight_and_postcommit_order (__main__.CommitTests.test_strict_sync_preflight_and_postcommit_order)
+Strict writes acknowledge the parent both before and after rename. ... ok
+
+----------------------------------------------------------------------
+Ran 14 tests in 0.194s
+
+OK
