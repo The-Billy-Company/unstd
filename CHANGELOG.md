@@ -67,6 +67,9 @@ doc_radar:
   check name and cannot replace the full performance gate. Existing speed ceilings
   remain unchanged.
 
+- We check native token-scan interruption at the C call boundary. A signal delivered
+  after the verifier returns cannot satisfy the native interruption check.
+
 The 3.1.5 tag failed release qualification and was not published to PyPI. This
 release includes its additions; the tag and its qualification evidence remain
 unchanged.
