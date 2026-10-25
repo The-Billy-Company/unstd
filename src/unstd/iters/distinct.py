@@ -83,6 +83,24 @@ def unique_everseen[T](
             return
         if first_unhashable:
             yield element
+    else:
+        iterable = iter(iterable)
+        for element in iterable:
+            candidate = key(element)
+            try:
+                if candidate in seen:
+                    continue
+                remember(candidate)
+            except TypeError as error:
+                first_unhashable = _remember_unhashable(
+                    candidate, seen, unhashable, error
+                )
+                break
+            yield element
+        else:
+            return
+        if first_unhashable:
+            yield element
     for element in iterable:
         candidate = element if key is None else key(element)
         try:
