@@ -7,11 +7,14 @@ gate freezes only the signatures and identities owned by unstd itself.
 
 from __future__ import annotations
 
+from functools import wraps
 import gzip
+from importlib import import_module
 import inspect
 import json
 import pickle
 import re
+from types import FunctionType
 
 import pytest
 
@@ -29,6 +32,43 @@ def _signature_spelling(signature: str) -> str:
     # Python 3.14 unified typing.Union with types.UnionType; the accepted
     # values and parameter contract are identical across this spelling change.
     return re.sub(r"Optional\[(Literal\[[^\]]+\])\]", r"\1 | None", signature)
+
+
+def _assert_signature(value, contract, *, signature=None) -> None:
+    """Freeze owned parameters; verify native projections against their owner."""
+    actual = inspect.signature(value, follow_wrapped=False)
+    if reference := contract.get("native_constructor"):
+        owner = getattr(import_module(reference["module"]), reference["attribute"])
+        assert inspect.isclass(value)
+        assert inspect.isclass(owner)
+        assert issubclass(value, owner)
+        for attribute in ("__init__", "__new__"):
+            assert inspect.getattr_static(value, attribute) is inspect.getattr_static(
+                owner, attribute
+            )
+        assert inspect.getattr_static(
+            type(value), "__call__"
+        ) is inspect.getattr_static(type(owner), "__call__")
+        assert actual == inspect.signature(owner, follow_wrapped=False)
+        return
+    parameters = dict(actual.parameters)
+    for name, reference in contract.get("native_defaults", {}).items():
+        owner = getattr(import_module(reference["module"]), reference["attribute"])
+        native = inspect.signature(owner, follow_wrapped=False).parameters[
+            reference["parameter"]
+        ]
+        assert name in parameters
+        parameter = parameters[name]
+        assert parameter.default is native.default
+        # Preserve the captured spelling while checking the live native value.
+        parameters[name] = parameter.replace(default=reference["frozen_default"])
+    actual = actual.replace(parameters=parameters.values())
+    expected = signature if signature is not None else contract["signature"]
+    assert _signature_spelling(str(actual)) == _signature_spelling(expected), (
+        value,
+        str(actual),
+        expected,
+    )
 
 
 def _assert_contract(name, module) -> None:
@@ -51,14 +91,7 @@ def _assert_contract(name, module) -> None:
         signature = contract["signature"]
         if name in {"unstd.rand", "unstd.rand.draw"} and not module.HAVE_NUMPY:
             signature = signature.replace("numpy.ndarray | ", "")
-        assert _signature_spelling(
-            str(inspect.signature(value))
-        ) == _signature_spelling(signature), (
-            name,
-            attribute,
-            str(inspect.signature(value)),
-            signature,
-        )
+        _assert_signature(value, contract, signature=signature)
         assert value.__module__ == contract["module"]
 
 
@@ -117,3 +150,123 @@ def test_process_result_pickle_keeps_its_public_identity() -> None:
     assert type(restored) is proc.CompletedProcess
     assert restored == result
     assert pickle.loads(pickle.dumps(proc.ProcessError)) is proc.ProcessError  # noqa: S301
+
+
+@pytest.fixture
+def compression_contract():
+    from unstd.compress import gzipx
+
+    if gzipx._backend is None:
+        pytest.skip("the native compression function requires the compress extra")
+    return gzipx.compress, _CONTRACT["unstd.compress.gzipx"]["callables"]["compress"]
+
+
+def test_native_default_cannot_be_replaced_by_an_owned_value(compression_contract):
+    value, contract = compression_contract
+    changed = FunctionType(
+        value.__code__, value.__globals__, value.__name__, value.__defaults__
+    )
+    changed.__annotations__ = dict(value.__annotations__)
+    changed.__kwdefaults__ = {**value.__kwdefaults__, "mtime": object()}
+    with pytest.raises(AssertionError):
+        _assert_signature(changed, contract)
+
+
+def test_wrapped_metadata_cannot_hide_an_added_owned_parameter(compression_contract):
+    value, contract = compression_contract
+
+    @wraps(value)
+    def changed(
+        data,
+        compresslevel=value.__defaults__[0],
+        *,
+        mtime=value.__kwdefaults__["mtime"],
+        added=None,
+    ):
+        return value(data, compresslevel, mtime=mtime)
+
+    assert inspect.signature(changed) == inspect.signature(value)
+    with pytest.raises(AssertionError):
+        _assert_signature(changed, contract)
+
+
+@pytest.fixture
+def settings_contract():
+    model = pytest.importorskip("unstd.model", exc_type=ImportError)
+    return model.StrictSettings, _CONTRACT["unstd.model"]["callables"]["StrictSettings"]
+
+
+def test_native_constructor_cannot_hide_owned_fields(settings_contract):
+    value, contract = settings_contract
+
+    class Expanded(value):
+        added: int = 0
+
+    assert Expanded.__init__ is value.__init__
+    with pytest.raises(AssertionError):
+        _assert_signature(Expanded, contract)
+
+
+def test_native_constructor_requires_the_original_inheritance(settings_contract):
+    value, contract = settings_contract
+    detached = type(
+        "Detached",
+        (),
+        {
+            "__init__": value.__init__,
+            "__new__": value.__new__,
+            "__signature__": inspect.signature(value),
+        },
+    )
+    with pytest.raises(AssertionError):
+        _assert_signature(detached, contract)
+
+
+def test_native_constructor_cannot_be_wrapped_with_the_same_signature(
+    settings_contract,
+):
+    value, contract = settings_contract
+
+    class Wrapped(value):
+        def __init__(self, **values):
+            super().__init__(**values)
+
+    Wrapped.__signature__ = inspect.signature(value)
+    with pytest.raises(AssertionError):
+        _assert_signature(Wrapped, contract)
+
+
+def test_native_constructor_cannot_change_its_binding_descriptor(settings_contract):
+    value, contract = settings_contract
+
+    class Unbound(value):
+        __init__ = staticmethod(value.__init__)
+
+    assert Unbound.__init__ is value.__init__
+    with pytest.raises(AssertionError):
+        _assert_signature(Unbound, contract)
+
+
+def test_native_constructor_cannot_be_replaced_by_owned_allocation(settings_contract):
+    value, contract = settings_contract
+
+    class Allocated(value):
+        def __new__(cls, *args, **kwargs):
+            return super().__new__(cls)
+
+    with pytest.raises(AssertionError):
+        _assert_signature(Allocated, contract)
+
+
+def test_native_constructor_cannot_be_replaced_by_an_owned_metaclass(settings_contract):
+    value, contract = settings_contract
+
+    class WrappedMeta(type(value)):
+        def __call__(cls, *args, **kwargs):
+            return super().__call__(*args, **kwargs)
+
+    class Wrapped(value, metaclass=WrappedMeta):
+        pass
+
+    with pytest.raises(AssertionError):
+        _assert_signature(Wrapped, contract)

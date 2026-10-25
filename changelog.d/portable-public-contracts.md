@@ -1,0 +1,1 @@
+We preserve the frozen public API while checking interpreter-derived defaults and inherited constructors against their actual native owners. Backend and Python upgrades keep their own parameter contracts; owned parameters, fields, wrappers and allocation hooks remain strictly checked.
