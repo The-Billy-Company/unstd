@@ -281,9 +281,11 @@ are the original stdlib exception classes. `run` returns `CompletedProcess`,
 continues to use explicit argument sequences, captured output, and finite
 positive timeouts.
 
-On Linux and macOS, bounded waits use kernel exit notifications where supported,
-with stdlib fallback when unavailable. The public signatures, captured output,
-timeout exceptions, and direct-child cleanup contracts are unchanged. See the
+On Linux and macOS, an optional bundled C backend accelerates admitted process
+creation and captured output without stdin; bounded waits use kernel exit
+notifications. Unsupported shapes retain stdlib execution. The public
+signatures, captured output, timeout exceptions and direct-child cleanup
+contracts are unchanged. See the
 [backend details and measurements](../src/unstd/proc/README.md#backend).
 
 `CompletedProcess(argv, returncode, stdout, stderr, duration)` is a frozen,
@@ -535,8 +537,9 @@ compatibility diagnostics rather than the supported capability API for new code:
 
 Private `_internal` packages own implementation details. The bundled extension
 modules `unstd.serde._json_native`, `unstd.clone._clone_native`,
-`unstd.crypto._stream_native`, `unstd.text._text_native`, and
-`unstd.compress._gzip_native` retain their private import names for build/runtime
+`unstd.crypto._stream_native`, `unstd.text._text_native`,
+`unstd.compress._gzip_native`, `unstd.containers._sorted_native`, and
+`unstd.proc._proc_native` retain their private import names for build/runtime
 compatibility. They are not user APIs, and users do not need to import them to
 enable acceleration. Their presence may differ between builds.
 

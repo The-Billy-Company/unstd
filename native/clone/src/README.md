@@ -40,5 +40,10 @@ the validated CPython 3.12–3.14 ABI; other interpreters use the Python walker.
 Keep recursive items owned across allocations: GC/finalizers can mutate live
 sources even with the GIL held. Lists are reread live, dictionary cursors check
 mutation, and incomplete presized sequences stay untracked until safe to expose.
+Scalar prefixes fill without allocations before recursive work. An initial
+adjacent run in a private builtin graph reuses its completed child directly;
+the memo owns both source and result across mutations. The run stops at the
+original allocation or current source length, leaving growth to the live loop.
+Caller memos and tree/foreign-node walks bypass this shortcut.
 The [Python walker](../../../src/unstd/clone/structural.py) owns protocol
 selection and whole-graph cycle fallback.

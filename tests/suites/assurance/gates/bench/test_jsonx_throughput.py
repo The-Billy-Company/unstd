@@ -34,6 +34,35 @@ def test_native_provenance_accepts_installed_wheel_without_c_sources(
     assert f"unstd/serde/{binary.name}" in result["sha256"]
 
 
+def test_native_provenance_records_dispatch_after_qualification_warms_it(
+    tmp_path, monkeypatch
+):
+    package = tmp_path / "unstd/serde"
+    package.mkdir(parents=True)
+    python = package / "jsonx.py"
+    python.write_text("# installed source\n")
+    binary = package / f"_json_native{profile.sysconfig.get_config_var('EXT_SUFFIX')}"
+    binary.write_bytes(b"native binary")
+    state = {"ready": False}
+    native = SimpleNamespace(
+        __file__=str(binary),
+        is_bound=lambda _: True,
+        dispatch_ready=lambda _: state["ready"],
+    )
+    jsonx = SimpleNamespace(
+        __file__=str(python), _native=native, loads=json.loads, dumpb=profile._compact
+    )
+
+    def qualify(_jsonx):
+        state["ready"] = True
+        return {"probes": True}
+
+    monkeypatch.setattr(profile, "_native_checks", qualify)
+    first = profile._provenance(tmp_path, jsonx, require_native=True)
+    assert all(result["ready"] for result in first["dispatch"].values())
+    assert profile._provenance(tmp_path, jsonx, require_native=True) == first
+
+
 @pytest.mark.parametrize("location", [None, "other/native.so", "unstd/serde/wrong.so"])
 def test_native_provenance_rejects_missing_wrong_root_or_wrong_abi(tmp_path, location):
     package = tmp_path / "unstd/serde"
@@ -101,6 +130,29 @@ def test_native_probes_require_native_module_and_optional_backends():
         profile._native_checks(SimpleNamespace(_native=None))
 
 
+@pytest.mark.parametrize("label", ["floats-256x256", "varied-floats-256x128"])
+def test_shared_matrix_case_has_an_equal_output_independent_control(label):
+    cases = {case.name: case for case in profile._workloads()}
+    for operation in ("dumps", "dumpb"):
+        shared = cases[f"{operation}/shared-{label}"]
+        independent = cases[f"{operation}/independent-{label}"]
+        shared_input = shared.call.args[0]
+        independent_input = independent.call.args[0]
+        assert len(shared_input) == len(independent_input) == 256
+        assert all(row is shared_input[0] for row in shared_input)
+        assert len({id(row) for row in independent_input}) == 256
+        expected = shared.reference()
+        assert independent.reference() == expected
+        assert shared.call() == independent.call() == expected
+        assert shared.input_bytes == independent.input_bytes
+        # A previous call must never hide later mutation of a shared row.
+        original = shared_input[0][0]
+        shared_input[0][0] = -0.0
+        assert shared.call() == shared.reference()
+        assert shared.call() != expected
+        shared_input[0][0] = original
+
+
 def test_real_installed_native_probes(tmp_path):
     pytest.importorskip("orjson")
     pytest.importorskip("msgspec")
@@ -154,6 +206,43 @@ def test_worker_rejects_empty_selection_without_timing(monkeypatch):
 
 def _simulated_worker(command, **_kwargs):
     source = command[command.index("--source") + 1]
+    if "--paired-worker" in command:
+        before = command[command.index("--compare-source") + 1]
+        repetition = int(command[command.index("--worker-repetition") + 1])
+        rounds = int(command[command.index("--rounds") + 1])
+        pairs = [
+            {
+                "round": index,
+                "before_ns": 10.0,
+                "after_ns": 20.0,
+                "after_over_before": 2.0,
+                "before_stdlib_ns": 100.0,
+                "after_stdlib_ns": 100.0,
+            }
+            for index in range(rounds)
+        ]
+        return json.dumps(
+            [
+                {
+                    "label": label,
+                    "repetition": repetition,
+                    "environment": {"same": True},
+                    "provenance": {"source": root},
+                    "timings": {
+                        "records": {
+                            "candidate": {
+                                "per_op_ns": 10.0 if label == "before" else 20.0,
+                                "cpu_samples_ns": [0.1],
+                            },
+                            "stdlib": {"per_op_ns": 100.0},
+                            "candidate_mib_s": 1.0,
+                            "paired_batches": pairs,
+                        }
+                    },
+                }
+                for label, root in (("before", before), ("after", source))
+            ]
+        )
     wall = 20.0 if source.endswith("after") else 10.0
     return json.dumps(
         {
@@ -199,9 +288,13 @@ def test_comparison_alternates_installed_roots_and_saves_wall_regression(
                 str(output),
             ]
         )
-    assert [command[command.index("--source") + 1] for command in observed] == [
-        str(tmp_path / name) for name in ("before", "after", "after", "before")
-    ]
+    assert len(observed) == 2
+    assert all("--paired-worker" in command for command in observed)
+    assert all(
+        command[command.index("--source") + 1] == str(tmp_path / "after")
+        and command[command.index("--compare-source") + 1] == str(tmp_path / "before")
+        for command in observed
+    )
     assert all("--require-native" in command for command in observed)
     report = json.loads(output.read_text())
     assert report["regressions"] == ["records"]
@@ -220,18 +313,21 @@ def test_wall_gate_pairs_repetitions_under_drift_and_keeps_persistent_regression
     before_samples = (100.0, 105.0, 200.0)
 
     def worker(command, **kwargs):
-        repetition = len(observed) // 2
-        source = command[command.index("--source") + 1]
-        observed.append(Path(source).name)
-        result = json.loads(_simulated_worker(command, **kwargs))
-        row = result["timings"]["records"]
-        row["candidate"]["per_op_ns"] = before_samples[repetition] * (
-            ratios[repetition] if source.endswith("after") else 1.0
-        )
-        # The independent control sees the same drifting worker speed; its
-        # timing remains diagnostic and never replaces either wall sample.
-        row["stdlib"]["per_op_ns"] = before_samples[repetition] * 10
-        return json.dumps(result)
+        repetition = int(command[command.index("--worker-repetition") + 1])
+        observed.append(repetition)
+        results = json.loads(_simulated_worker(command, **kwargs))
+        for result in results:
+            row = result["timings"]["records"]
+            row["candidate"]["per_op_ns"] = before_samples[repetition] * (
+                ratios[repetition] if result["label"] == "after" else 1.0
+            )
+            # Controls remain diagnostic and never replace wall samples.
+            row["stdlib"]["per_op_ns"] = before_samples[repetition] * 10
+            for pair in row["paired_batches"]:
+                pair["before_ns"] = before_samples[repetition]
+                pair["after_ns"] = before_samples[repetition] * ratios[repetition]
+                pair["after_over_before"] = ratios[repetition]
+        return json.dumps(results)
 
     monkeypatch.setattr(profile.subprocess, "check_output", worker)
     output = tmp_path / "paired.json"
@@ -254,7 +350,7 @@ def test_wall_gate_pairs_repetitions_under_drift_and_keeps_persistent_regression
             profile.main(arguments)
     else:
         profile.main(arguments)
-    assert observed == ["before", "after", "after", "before", "before", "after"]
+    assert observed == [0, 1, 2]
     report = json.loads(output.read_text())
     comparison = report["comparisons"]["records"]
     assert report["max_slowdown"] == 1.15
@@ -268,6 +364,7 @@ def test_wall_gate_pairs_repetitions_under_drift_and_keeps_persistent_regression
     assert comparison["after_ns"] / comparison["before_ns"] > 1.15
     assert report["regressions"] == (["records"] if fails else [])
     assert len(report["runs"]) == 6
+    assert len(comparison["batch_pairs"]) == 21
 
 
 def test_comparison_rejects_product_drift_between_repetitions(tmp_path, monkeypatch):

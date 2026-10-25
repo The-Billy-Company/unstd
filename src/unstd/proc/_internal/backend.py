@@ -1,9 +1,9 @@
-"""Stdlib process I/O with kernel notifications for bounded POSIX waits.
+"""Optional native process spawning and capture with bounded POSIX waits.
 
-``Popen.communicate`` already multiplexes captured pipes efficiently. Its final
-bounded POSIX wait, however, polls ``waitpid`` with exponential sleeps even when
-the child has just closed those pipes. Keep stdlib communication and ownership,
-replacing only that wait with pidfd or kqueue readiness where supported.
+The bundled kernels handle admitted spawning and captured output without stdin;
+other shapes retain stdlib execution and pipe communication. Native readiness
+avoids polling sleeps after captured pipes close. Stdlib owns text decoding,
+SIGINT grace, waitpid synchronization and final reaping.
 """
 
 from __future__ import annotations

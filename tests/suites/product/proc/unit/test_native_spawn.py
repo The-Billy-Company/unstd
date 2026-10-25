@@ -23,6 +23,26 @@ native = pytest.importorskip("unstd.proc._proc_native")
 pytestmark = pytest.mark.skipif(os.name != "posix", reason="POSIX native spawn")
 
 
+@pytest.fixture(scope="module", autouse=True)
+def admitted_native_platform():
+    operation = native.spawn
+    accepted = []
+
+    def observe(*args):
+        result = operation(*args)
+        accepted.append(result is not NotImplemented)
+        return result
+
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(native, "spawn", observe)
+        assert (
+            proc.capture([sys.executable, "-c", "print('admitted')"], timeout=3)
+            == "admitted"
+        )
+    if not any(accepted):
+        pytest.skip("platform libc lacks safe native spawn facilities")
+
+
 def test_public_run_reaches_native_spawn_and_publishes_ownership(monkeypatch):
     calls = []
     operation = native.spawn
@@ -50,7 +70,7 @@ def _executable(directory: Path, name: str = "runner") -> Path:
     directory.mkdir(parents=True)
     path = directory / name
     path.write_text(
-        f"#!{sys.executable}\n"
+        f"#!{getattr(sys, '_base_executable', sys.executable)}\n"
         "import json,os,sys\n"
         "print(json.dumps({'argv':sys.argv[1:],'cwd':os.getcwd(),"
         "'marker':os.environ.get('PROC_MARKER')},sort_keys=True))\n"
@@ -242,6 +262,7 @@ print('OWNED_ENVIRONMENT_ITEMS')
 def test_audit_refusal_happens_before_child_is_created(tmp_path):
     code = """
 import os,sys
+from pathlib import Path
 from unstd import proc
 refusal = RuntimeError('audit refused process')
 records = []
@@ -300,3 +321,155 @@ def test_cancellation_after_native_return_reaps_the_published_child(monkeypatch)
         os.waitpid(pids[0], os.WNOHANG)
     with pytest.raises(ProcessLookupError):
         os.kill(pids[0], 0)
+
+
+def test_executable_path_conversion_owns_candidates_across_foreign_hooks(tmp_path):
+    directory = tmp_path / "candidate-program"
+    _executable(directory)
+    code = f"""
+import json,os
+from unstd import proc
+candidates = []
+class MutatingDirectory:
+    def __fspath__(self):
+        candidates.clear()
+        return '/missing-native-candidate'
+candidates.extend([MutatingDirectory(), {str(directory)!r}])
+os.get_exec_path = lambda environment: candidates
+result = proc.run(['runner', 'owned candidates'], timeout=3)
+assert json.loads(result.stdout)['argv'] == ['owned candidates'], result
+assert candidates == []
+print('OWNED_EXECUTABLE_CANDIDATES')
+"""
+    result = run_python(code, cwd=tmp_path, timeout=10)
+    assert result.returncode == 0, result.stderr
+    assert result.stdout == "OWNED_EXECUTABLE_CANDIDATES\n"
+
+
+def test_empty_executable_search_never_publishes_process_group_pid(tmp_path):
+    code = """
+import os
+from unstd import proc
+os.get_exec_path = lambda environment: []
+try:
+    proc.run(['no-candidates'],timeout=3)
+except ValueError as error:
+    assert 'no executable candidates' in str(error), error
+else:
+    raise AssertionError('empty search published a fictitious child')
+try:
+    os.waitpid(-1, os.WNOHANG)
+except ChildProcessError:
+    pass
+else:
+    raise AssertionError('empty executable search created a child')
+print('EMPTY_SEARCH_REJECTED')
+"""
+    result = run_python(code, cwd=tmp_path, timeout=10)
+    assert result.returncode == 0, result.stderr
+    assert result.stdout == "EMPTY_SEARCH_REJECTED\n"
+
+
+def test_audit_hook_can_clear_argv_without_changing_selected_executable(tmp_path):
+    code = """
+import shutil,subprocess,sys
+from unstd import proc
+executable = shutil.which('true')
+assert executable is not None
+records = []
+def audit(event, arguments):
+    if event == 'subprocess.Popen':
+        records.append(event)
+        arguments[1].clear()
+sys.addaudithook(audit)
+expected_error = None
+try:
+    expected = subprocess.run([executable],capture_output=True,timeout=3)
+except Exception as error:
+    expected_error = error
+try:
+    actual = proc.run([executable],timeout=3)
+except Exception as error:
+    assert expected_error is not None, error
+    assert type(error) is type(expected_error), (error, expected_error)
+    assert error.args == expected_error.args, (error, expected_error)
+else:
+    assert expected_error is None, expected_error
+    assert actual.returncode == expected.returncode == 0
+    assert actual.stdout == expected.stdout.decode() == ''
+    assert actual.stderr == expected.stderr.decode() == ''
+assert records == ['subprocess.Popen','subprocess.Popen'], records
+print('EMPTY_AUDITED_ARGV')
+"""
+    result = run_python(code, cwd=tmp_path, timeout=10)
+    assert result.returncode == 0, result.stderr
+    assert result.stdout == "EMPTY_AUDITED_ARGV\n"
+
+
+def test_foreign_converters_cannot_observe_private_partial_owners(tmp_path):
+    directory = tmp_path / "gc-program"
+    _executable(directory)
+    code = f"""
+import gc,os,sys
+from unstd import proc
+mode = None
+prefix = b'UNSTD_NATIVE_GC_ENV_0='
+expected_directory = os.fsencode({str(directory)!r})
+class InspectingPath:
+    def __init__(self, value):
+        self.value = value
+    def __fspath__(self):
+        gc.collect()
+        for obj in gc.get_objects():
+            if mode == 'argv' and type(obj) is tuple and len(obj) == 131:
+                if type(obj[0]) is bytes:
+                    raise AssertionError('partial encoded argv tuple exposed to GC')
+            if mode == 'environment' and type(obj) is list and obj:
+                if type(obj[0]) is bytes and obj[0].startswith(prefix):
+                    raise AssertionError('mutable encoded environment owner exposed to GC')
+            if mode == 'paths' and type(obj) is tuple and len(obj) == 2:
+                if type(obj[0]) is bytes and obj[0] == expected_directory:
+                    raise AssertionError('partial executable tuple exposed to GC')
+        return self.value
+def audit(event, arguments):
+    if event != 'subprocess.Popen':
+        return
+    if mode == 'argv':
+        arguments[1][1] = InspectingPath('-c')
+        arguments[1].extend(['tail'] * 128)
+    elif mode == 'environment':
+        arguments[3]['LATE_NATIVE_GC_VALUE'] = InspectingPath('owned value')
+sys.addaudithook(audit)
+mode = 'argv'
+assert proc.capture([sys.executable, '-c', "print('argv safe')"],timeout=3) == 'argv safe'
+mode = 'environment'
+environment = {{f'UNSTD_NATIVE_GC_ENV_{{index}}':str(index) for index in range(128)}}
+assert proc.capture([sys.executable, '-c', "import os;print(os.environ['LATE_NATIVE_GC_VALUE'])"],
+                    env=environment, timeout=3) == 'owned value'
+mode = 'paths'
+os.get_exec_path = lambda environment: [{str(directory)!r},InspectingPath('/missing-native-gc-path')]
+assert proc.run(['runner', 'gc safe'],timeout=3).returncode == 0
+print('PRIVATE_OWNERS_NOT_GC_VISIBLE')
+"""
+    result = run_python(code, cwd=tmp_path, timeout=15)
+    assert result.returncode == 0, result.stderr
+    assert result.stdout == "PRIVATE_OWNERS_NOT_GC_VISIBLE\n"
+
+
+@pytest.mark.skipif(sys.platform != "linux", reason="glibc clearenv inheritance")
+def test_inherited_environment_accepts_null_libc_environ(tmp_path):
+    code = """
+import ctypes,os,sys
+from unstd import proc
+library = ctypes.CDLL(None, use_errno=True)
+clear = getattr(library, 'clearenv', None)
+assert clear is not None
+os.putenv('UNSTD_NATIVE_CLEARENV_MARKER', 'before clearenv')
+assert clear() == 0
+result = proc.run([sys.executable, '-c', "import os;print(os.environ.get('UNSTD_NATIVE_CLEARENV_MARKER', 'absent'))"],timeout=3)
+assert result.stdout == 'absent\\n', result
+print('NULL_ENVIRON_ACCEPTED')
+"""
+    result = run_python(code, cwd=tmp_path, timeout=10)
+    assert result.returncode == 0, result.stderr
+    assert result.stdout == "NULL_ENVIRON_ACCEPTED\n"

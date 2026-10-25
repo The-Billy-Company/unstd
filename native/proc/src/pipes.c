@@ -9,13 +9,12 @@
 #include <Python.h>
 #include "pipes.h"
 
-#ifndef _WIN32
+#if defined(__APPLE__) || defined(__linux__)
 #include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
 #include <math.h>
 #include <poll.h>
-#include <string.h>
 #include <time.h>
 #include <unistd.h>
 #ifdef __APPLE__
@@ -61,9 +60,10 @@ monotonic_now(double *result, const Clock *clock)
 }
 
 static int
-append(Output *output, const char *data, Py_ssize_t length)
+reserve(Output *output, Py_ssize_t length)
 {
     if (length > PY_SSIZE_T_MAX - output->length) {
+        PyErr_NoMemory();
         return -1;
     }
     Py_ssize_t wanted = output->length + length;
@@ -75,13 +75,12 @@ append(Output *output, const char *data, Py_ssize_t length)
         }
         char *grown = PyMem_RawRealloc(output->data, (size_t)capacity);
         if (grown == NULL) {
+            PyErr_NoMemory();
             return -1;
         }
         output->data = grown;
         output->capacity = capacity;
     }
-    memcpy(output->data + output->length, data, (size_t)length);
-    output->length = wanted;
     return 0;
 }
 
@@ -102,10 +101,8 @@ exchange(int outfd, int errfd, double deadline)
     int flags[2] = {-1, -1};
     Output outputs[2] = {{0}, {0}};
     int saved_error = 0;
-    int memory_error = 0;
     int timed_out = 0;
     PyObject *result = NULL;
-    char scratch[READ_CHUNK];
     Clock clock = {0};
 #ifdef __APPLE__
     if (mach_timebase_info(&clock.scale) != KERN_SUCCESS || clock.scale.denom == 0) {
@@ -148,6 +145,9 @@ exchange(int outfd, int errfd, double deadline)
         }
         int ready;
         int poll_error;
+        int grow[2] = {0, 0};
+        int probed[2] = {0, 0};
+        char probe_bytes[2];
         Py_BEGIN_ALLOW_THREADS
         ready = poll(pending, 2, timeout);
         poll_error = errno;
@@ -161,7 +161,7 @@ exchange(int outfd, int errfd, double deadline)
                 timed_out = 1;
             }
             for (int index = 0;
-                 index < 2 && !saved_error && !memory_error && !timed_out;
+                 index < 2 && !saved_error && !timed_out;
                  index++) {
                 if (!pending[index].revents) {
                     continue;
@@ -170,7 +170,21 @@ exchange(int outfd, int errfd, double deadline)
                     saved_error = EBADF;
                     break;
                 }
-                ssize_t received = read(descriptors[index], scratch, sizeof scratch);
+                Output *output = &outputs[index];
+                Py_ssize_t available = output->capacity - output->length;
+                /* A full buffer plus HUP often means exact-power-of-two output
+                 * has ended. Probe before growing, so EOF does not double RSS.
+                 * Ordinary readable chunks go directly into their final buffer. */
+                int probe = available == 0 && (pending[index].revents & POLLHUP);
+                if (available == 0 && !probe) {
+                    grow[index] = 1;
+                    continue;
+                }
+                size_t budget = available > READ_CHUNK ? READ_CHUNK : (size_t)available;
+                char *destination = probe ? &probe_bytes[index]
+                    : output->data + output->length;
+                ssize_t received = read(descriptors[index], destination,
+                                        probe ? 1 : budget);
                 if (received < 0) {
                     if (errno != EAGAIN && errno != EWOULDBLOCK && errno != EINTR) {
                         saved_error = errno;
@@ -181,16 +195,21 @@ exchange(int outfd, int errfd, double deadline)
                 if (received == 0) {
                     outputs[index].closed = 1;
                 }
-                else if (append(&outputs[index], scratch, (Py_ssize_t)received) < 0) {
-                    memory_error = 1;
+                else {
+                    if (probe) {
+                        probed[index] = 1;
+                    }
+                    else {
+                        output->length += (Py_ssize_t)received;
+                    }
                 }
             }
         }
         Py_END_ALLOW_THREADS
         /* One readiness round handles at most one chunk from each stream,
          * bounding signal latency and preventing a busy stream starving its peer.
-         * RAW buffer allocation is thread-safe without the GIL. */
-        if (PyErr_CheckSignals() < 0 || saved_error || memory_error) {
+         * Buffer allocation and pointer refresh happen only with the GIL. */
+        if (PyErr_CheckSignals() < 0 || saved_error) {
             goto done;
         }
         if (ready < 0 && poll_error != EINTR) {
@@ -200,26 +219,37 @@ exchange(int outfd, int errfd, double deadline)
         if (timed_out) {
             break;
         }
+        for (int index = 0; index < 2; index++) {
+            if (!grow[index] && !probed[index]) continue;
+            Output *output = &outputs[index];
+            Py_ssize_t growth = PY_SSIZE_T_MAX - output->length;
+            if (growth > READ_CHUNK) growth = READ_CHUNK;
+            if (growth == 0) {
+                PyErr_NoMemory();
+                goto done;
+            }
+            if (reserve(output, growth) < 0) goto done;
+            if (probed[index]) {
+                output->data[output->length++] = probe_bytes[index];
+            }
+        }
     }
 
     {
-        PyObject *out = PyBytes_FromStringAndSize(outputs[0].data, outputs[0].length);
-        if (out == NULL) {
-            goto done;
-        }
-        PyObject *err = PyBytes_FromStringAndSize(outputs[1].data, outputs[1].length);
-        if (err == NULL) {
-            Py_DECREF(out);
-            goto done;
-        }
         result = PyTuple_New(7);
-        if (result == NULL) {
-            Py_DECREF(out);
-            Py_DECREF(err);
-            goto done;
+        if (result == NULL) goto done;
+        PyObject_GC_UnTrack(result);
+        for (int index = 0; index < 2; index++) {
+            Output *output = &outputs[index];
+            PyObject *value = PyBytes_FromStringAndSize(output->data, output->length);
+            if (value == NULL) goto done;
+            PyTuple_SET_ITEM(result, index, value);
+            /* Publication copies initialized bytes once; no result aliases the
+             * private allocation, which can now be released before its peer. */
+            PyMem_RawFree(output->data);
+            output->data = NULL;
+            output->length = output->capacity = 0;
         }
-        PyTuple_SET_ITEM(result, 0, out);
-        PyTuple_SET_ITEM(result, 1, err);
         PyTuple_SET_ITEM(result, 2, PyBool_FromLong(timed_out));
         PyTuple_SET_ITEM(result, 3, PyBool_FromLong(outputs[0].observed));
         PyTuple_SET_ITEM(result, 4, PyBool_FromLong(outputs[1].observed));
@@ -239,10 +269,6 @@ done:
         Py_XDECREF(result);
         return NULL;
     }
-    if (memory_error) {
-        Py_XDECREF(result);
-        return PyErr_NoMemory();
-    }
     if (saved_error) {
         Py_XDECREF(result);
         errno = saved_error;
@@ -256,7 +282,7 @@ PyObject *
 proc_communicate(PyObject *module, PyObject *args)
 {
     (void)module;
-#ifdef _WIN32
+#if !defined(__APPLE__) && !defined(__linux__)
     (void)args;
     Py_RETURN_NOTIMPLEMENTED;
 #else

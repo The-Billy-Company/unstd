@@ -134,6 +134,22 @@ def test_partial_freeze_adds_cases_and_preserves_other_packages(store: Path) -> 
     assert after["cases"][other.name]["ceiling_ns"] == 260
 
 
+def test_freeze_preserves_additive_capture_metadata_and_original_row(
+    store: Path,
+) -> None:
+    raw = _freeze(store)
+    raw["addition_provenance"] = {"source": "historical capture"}
+    raw["cases"][_case().name].update(
+        captured_environment={"python": "fixture"},
+        captured_provenance={"evidence": "addition_provenance"},
+    )
+    store.write_text(json.dumps(raw))
+    other = _case("unstd.other.function")
+    after = speeds.freeze([other], {other.name: _measurement(200)}, store)
+    assert after["addition_provenance"] == raw["addition_provenance"]
+    assert after["cases"][_case().name] == raw["cases"][_case().name]
+
+
 @pytest.mark.parametrize("tolerance", [-0.01, 1.01, float("nan"), float("inf")])
 def test_invalid_tolerance_is_never_persisted(store: Path, tolerance: float) -> None:
     with pytest.raises(speeds.RegistryError, match="tolerance"):
@@ -158,6 +174,54 @@ def test_malformed_speed_cannot_become_a_pass(
 def test_missing_baseline_is_an_error(store: Path) -> None:
     with pytest.raises(speeds.RegistryError, match="invalid speed baseline"):
         speeds.load_baseline(store)
+
+
+@pytest.mark.parametrize("field", ["captured_environment", "captured_provenance"])
+@pytest.mark.parametrize("value", [None, {}, "unrecorded"])
+def test_additive_capture_requires_complete_environment_and_provenance(
+    store: Path, field: str, value: object
+) -> None:
+    raw = _freeze(store)
+    row = raw["cases"][_case().name]
+    row.update(
+        captured_environment={"python": "fixture"},
+        captured_provenance={"source": "a" * 64},
+    )
+    row[field] = value
+    store.write_text(json.dumps(raw))
+    with pytest.raises(speeds.RegistryError, match="captured measurement metadata"):
+        speeds.load_baseline(store)
+
+
+def test_only_selected_captured_rows_must_match_the_verification_runtime(
+    store: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    shared = _case()
+    added = _case("unstd.other.added")
+    measured = {case.name: _measurement() for case in (shared, added)}
+    raw = speeds.freeze([shared, added], measured, store)
+    raw["cases"][added.name].update(
+        captured_environment={"python": "another-runtime"},
+        captured_provenance={"source": "a" * 64},
+    )
+    store.write_text(json.dumps(raw))
+
+    @contextmanager
+    def toy_registry() -> Iterator[list[speeds.Case]]:
+        yield [shared, added]
+
+    monkeypatch.setattr(speeds, "registry", toy_registry)
+    monkeypatch.setattr(speeds, "check_coverage", lambda cases: {})
+    monkeypatch.setattr(
+        speeds,
+        "timings",
+        lambda cases, **kw: {case.name: measured[case.name] for case in cases},
+    )
+    common = ["verify", "--baseline", str(store)]
+    assert speeds.main([*common, "--group", "demo"]) == 0
+    assert speeds.main(common) == 2
+    assert f"captured environment differs for {added.name}" in capsys.readouterr().err
+    assert speeds.main([*common, "--revision-baseline"]) == 2
 
 
 @pytest.mark.parametrize(

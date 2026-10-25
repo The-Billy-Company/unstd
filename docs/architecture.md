@@ -66,7 +66,7 @@ existing paths. `_internal` packages are implementation details.
 | `iters` | Package functions and `consecutive.py`, `distinct.py`, `reshape.py`, `select.py` | Small focused combinator modules |
 | `model` | Package classes, `base.py`, `settings.py` | Strict Pydantic model and settings configuration |
 | `pack` | `binpack.py` | `_internal/dtype.py` owns portable dtype grammar and bounded struct caches |
-| `proc` | Package functions and classes | `_internal/results.py` implements result/error classes; `backend.py` adds kernel exit notifications to bounded stdlib waits; execution orchestration stays at the public module |
+| `proc` | Package functions and classes | `_internal/results.py` implements result/error classes; `backend.py` admits native spawning/capture and kernel exit notifications; execution orchestration stays at the public module |
 | `rand` | Package functions, `draw.py`, `crypto.py` | Seeded engines remain separate from unseedable security draws |
 | `rex` | Package functions, flags and types | `_internal/profile.py` proves semantic eligibility; `patterns.py` owns adapters; caches remain public-module state |
 | `serde` | `jsonx.py`, `b64.py`, `ndjson.py`, `structs.py` | `_internal/json_encode.py` and `json_common.py`; private native JSON extension |

@@ -8,10 +8,11 @@ you needed to debug the failure. This module is not a drop-in of every
 ``subprocess`` API; it is a **curated safe surface** that closes those three
 holes and nothing more.
 
-Backend: PURE STDLIB — no optional extra, no third-party backend.
-Linux and macOS use kernel exit notifications for bounded waits where available,
-avoiding polling sleeps after captured pipes close. Other waits retain stdlib
-behavior. It works in a base ``unstd`` install with zero dependency closure.
+Backend: stdlib with optional bundled C acceleration, no third-party dependency.
+On Linux and macOS, native spawning preserves descriptor isolation and a native
+pipe loop accelerates captured output without stdin. Other shapes retain stdlib
+execution. Bounded waits use kernel exit notifications where available. The
+package works in a base ``unstd`` install with zero dependency closure.
 
 The guarantees, versus a raw ``subprocess.run``:
 

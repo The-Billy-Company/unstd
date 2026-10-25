@@ -189,6 +189,46 @@ def test_declined_native_work_is_rejected(captured, tmp_path):
     assert prepared.path.read_bytes() == b"previous"
 
 
+def test_isolated_browser_candidates_encode_before_both_writers(
+    captured, tmp_path, monkeypatch
+):
+    root, path = captured
+    fixture = profile._load_fixtures(path, root)
+    fixture["cases"] = [
+        case for case in fixture["cases"] if case["name"] == "browser-write-4096"
+    ]
+    received = []
+
+    def python_write(path, value, **kwargs):
+        received.append(("python", type(value)))
+        return fs.atomic_write(path, value, **kwargs)
+
+    def native_write(path, value, **kwargs):
+        received.append(("native", type(value)))
+        fs.atomic_write(path, value, **kwargs)
+
+    prepared = profile._prepare(
+        fixture,
+        root,
+        tmp_path / "work",
+        SimpleNamespace(atomic_write=python_write),
+        SimpleNamespace(atomic_write=native_write),
+    )[0]
+    encoded = profile._encoded
+    wrapper_inputs = []
+
+    def observe_native_input(value):
+        wrapper_inputs.append(type(value))
+        return encoded(value)
+
+    monkeypatch.setattr(profile, "_encoded", observe_native_input)
+    for label, operation in prepared.calls.items():
+        prepared.setup(label)
+        prepared.check(label, operation())
+    assert received == [("python", bytes), ("native", bytes)]
+    assert wrapper_inputs == [bytes]
+
+
 def test_native_no_op_cannot_borrow_a_successful_python_write(
     captured, tmp_path, monkeypatch
 ):

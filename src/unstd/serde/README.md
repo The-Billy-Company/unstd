@@ -72,6 +72,10 @@ The accelerated paths are deliberately narrower than the supported API:
   caches; it shares the visit budget with the ordinary proof, requires compact
   integers, limits strings to 256 code points and private output to 1 MiB, and
   falls back outside that domain.
+  Eligible shared-row lists can reuse up to 32 completed flat branch spans
+  within the same call. Reuse requires the same object and depth, and every
+  repeated logical value still consumes the budget. The complete output is
+  allocated each time; mutations between calls remain visible.
   Compact output and default spaces use native formatting. The extension adds
   spaces only outside quoted strings, preserving punctuation and escaped quotes
   in text. Two-space indentation uses a native proof that reserves stdlib's
@@ -110,7 +114,9 @@ Python registry/core fixtures, with correctness oracles and separate profiles.
 The [second-pass results](../../../bench/reports/serde/jsonx-second-pass.md) and
 [memory-safety qualification](../../../bench/reports/serde/jsonx-second-safety.md)
 retain gains, measured losses, source hashes and sanitizer/failure-injection
-evidence. The 100× target has not been achieved.
+evidence. The [shared-branch qualification](../../../bench/reports/serde/jsonx-100x.md)
+reports cases exceeding 100× separately from the existing independent records;
+uniform 100× acceleration across arbitrary JSON is not established.
 The [Billy fixture comparison](../../../bench/reports/serde/billy-serde-optimization-results.md)
 retains release regressions as well as gains. Compatibility checking has a cost relative
 to the permissive 2.1 codec; measured results are not a universal speed promise.

@@ -1,4 +1,4 @@
-/* Bounded finite-float encoding.
+/* Bounded exact JSON and shared flat-branch encoding.
  *
  * The writer validates and emits a private result under the GIL, sharing the
  * original proof's 262144-visit budget. It allocates only untracked PyBytes
@@ -14,6 +14,14 @@ typedef struct {
     unsigned int distinct, replacement;
 } RepeatProof;
 
+/* Completed scalar-only branches are reusable only at their original depth.
+ * Hits still spend every logical visit; offsets survive private buffer growth. */
+typedef struct {
+    PyObject *key;
+    Py_ssize_t offset, size, visits;
+    int depth;
+} RepeatSpan;
+
 /* Cached spellings refer only to owned exact strings or copied float bits. */
 static PyObject *ascii_text(PyObject *, PyObject *);
 typedef struct {
@@ -25,6 +33,7 @@ typedef struct {
     Py_ssize_t number_sizes[4];
     struct { PyObject *key; Py_ssize_t offset, size; } strings[8];
     unsigned int string_count;
+    RepeatSpan *spans;
 } RepeatWriter;
 
 static inline Py_ALWAYS_INLINE int
@@ -82,6 +91,21 @@ repeat_string(RepeatWriter *writer, PyObject *value)
     if (PyUnicode_GET_LENGTH(value) > 256) { return 0; }
     static const char hex[] = "0123456789abcdef";
     Py_ssize_t start = writer->size;
+    if (PyUnicode_IS_ASCII(value)) {
+        const char *source = (const char *)PyUnicode_1BYTE_DATA(value);
+        Py_ssize_t length = PyUnicode_GET_LENGTH(value), index = 0;
+        for (; index < length; index++) {
+            unsigned char ch = (unsigned char)source[index];
+            if (ch < 32 || ch == '"' || ch == '\\' || (writer->ascii && ch == 127)) break;
+        }
+        if (index == length) {
+            if (repeat_reserve(writer, length + 2) < 0) return -1;
+            char *destination = PyBytes_AS_STRING(writer->bytes) + start;
+            destination[0] = '"'; memcpy(destination + 1, source, length); destination[length + 1] = '"';
+            writer->size += length + 2;
+            goto remember_string;
+        }
+    }
     if (repeat_append(writer, "\"", 1) < 0) {
         return -1;
     }
@@ -138,6 +162,7 @@ repeat_string(RepeatWriter *writer, PyObject *value)
     if (repeat_append(writer, "\"", 1) < 0) {
         return -1;
     }
+remember_string:
     if (writer->string_count < 8) {
         unsigned int slot = writer->string_count++;
         writer->strings[slot].key = Py_NewRef(value);
@@ -209,7 +234,20 @@ repeat_write(RepeatWriter *writer, PyObject *value, int depth)
     if (Py_EnterRecursiveCall(" while writing repeated JSON floats")) {
         return -1;
     }
-    int result = 0;
+    int result = 0, flat = 1;
+    unsigned int cache_index = ((uintptr_t)value >> 4) & 31;
+    Py_ssize_t cache_start = writer->size, cache_remaining = writer->proof->tree.remaining;
+    if (writer->spans != NULL && writer->spans[cache_index].key == value && writer->spans[cache_index].depth == depth) {
+        Py_ssize_t visits = writer->spans[cache_index].visits - 1;
+        if (visits > writer->proof->tree.remaining) goto done;
+        writer->proof->tree.remaining -= visits;
+        Py_ssize_t size = writer->spans[cache_index].size;
+        if ((result = repeat_reserve(writer,size)) < 0) goto done;
+        char *base = PyBytes_AS_STRING(writer->bytes);
+        memcpy(base + writer->size,base + writer->spans[cache_index].offset,size);
+        writer->size += size;
+        result = 1; goto done;
+    }
     if (PyList_CheckExact(value) || PyTuple_CheckExact(value)) {
         if ((result = repeat_append(writer, "[", 1)) < 0) { goto done; }
         int list = PyList_CheckExact(value);
@@ -217,6 +255,7 @@ repeat_write(RepeatWriter *writer, PyObject *value, int depth)
         PyObject **items = list ? ((PyListObject *)value)->ob_item : ((PyTupleObject *)value)->ob_item;
         for (Py_ssize_t index = 0; index < size; index++) {
             if (index && (result = repeat_append(writer, writer->spaced ? ", " : ",", writer->spaced ? 2 : 1)) < 0) { goto done; }
+            if (writer->spans != NULL && (PyList_CheckExact(items[index]) || PyTuple_CheckExact(items[index]) || PyDict_CheckExact(items[index]))) flat = 0;
             if ((result = repeat_write(writer, items[index], depth + 1)) != 1) { goto done; }
         }
         result = repeat_append(writer, "]", 1);
@@ -229,19 +268,29 @@ repeat_write(RepeatWriter *writer, PyObject *value, int depth)
             first = 0;
             if ((result = repeat_string(writer, key)) != 1) { goto done; }
             if ((result = repeat_append(writer, writer->spaced ? ": " : ":", writer->spaced ? 2 : 1)) < 0) { goto done; }
+            if (writer->spans != NULL && (PyList_CheckExact(item) || PyTuple_CheckExact(item) || PyDict_CheckExact(item))) flat = 0;
             if ((result = repeat_write(writer, item, depth + 1)) != 1) { goto done; }
         }
         result = repeat_append(writer, "}", 1);
     }
 done:
+    if (writer->spans != NULL && result == 1 && flat) {
+        Py_XDECREF(writer->spans[cache_index].key);
+        writer->spans[cache_index].key = Py_NewRef(value);
+        writer->spans[cache_index].offset = cache_start;
+        writer->spans[cache_index].size = writer->size - cache_start;
+        writer->spans[cache_index].visits = cache_remaining - writer->proof->tree.remaining + 1;
+        writer->spans[cache_index].depth = depth;
+    }
     Py_LeaveRecursiveCall();
     return result;
 }
 
-static PyObject *
-repeat_write_result(PyObject *value, int ascii, int spaced, RepeatProof *proof)
+static Py_ALWAYS_INLINE PyObject *
+repeat_write_result_inner(PyObject *value, int ascii, int spaced,
+                          RepeatProof *proof, RepeatSpan *spans)
 {
-    RepeatWriter writer = {.bytes = NULL, .capacity = 256, .ascii = ascii, .spaced = spaced, .proof = proof};
+    RepeatWriter writer = {.bytes = NULL, .capacity = 256, .ascii = ascii, .spaced = spaced, .proof = proof, .spans = spans};
     writer.bytes = PyBytes_FromStringAndSize(NULL, writer.capacity);
     if (writer.bytes == NULL) { return NULL; }
     int result = repeat_write(&writer, value, 0);
@@ -258,10 +307,37 @@ repeat_write_result(PyObject *value, int ascii, int spaced, RepeatProof *proof)
 }
 
 static PyObject *
+repeat_write_result(PyObject *value, int ascii, int spaced, RepeatProof *proof)
+{
+    return repeat_write_result_inner(value,ascii,spaced,proof,NULL);
+}
+
+/* A separate frame keeps memo storage off the ordinary scalar/record path. */
+static Py_NO_INLINE PyObject *
+repeat_write_shared(PyObject *value, int ascii, int spaced, RepeatProof *proof)
+{
+    RepeatSpan spans[32] = {{0}};
+    PyObject *result = repeat_write_result_inner(value,ascii,spaced,proof,spans);
+    for (unsigned int index = 0; index < 32; index++) Py_XDECREF(spans[index].key);
+    return result;
+}
+
+static PyObject *
 guarded_repeated_encode(NativeState *state, PyObject *value, PyObject *option, int ascii, int spaced)
 {
     if (option != NULL) {
         return guarded_encode_limits(state, value, option, spaced, MAX_WIDE_VALUES, 0);
+    }
+    if (PyList_CheckExact(value) && PyList_GET_SIZE(value) > 1
+        && PyList_GET_ITEM(value,0) == PyList_GET_ITEM(value,1)
+        && (PyList_CheckExact(PyList_GET_ITEM(value,0)) || PyDict_CheckExact(PyList_GET_ITEM(value,0)))) {
+        if (Py_EnterRecursiveCall(" while proving JSON encoding")) return NULL;
+        RepeatProof proof = {.tree = {.remaining = MAX_WIDE_VALUES}};
+        PyObject *result = repeat_write_shared(value,ascii,spaced,&proof);
+        Py_LeaveRecursiveCall();
+        if (result != Py_NotImplemented) return result;
+        Py_DECREF(result);
+        /* Preserve the existing backend domain when memo admission declines. */
     }
     if (Py_EnterRecursiveCall(" while proving JSON encoding")) { return NULL; }
     EncodeProof ordinary = {.remaining = MAX_WIDE_VALUES};

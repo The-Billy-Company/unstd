@@ -36,7 +36,7 @@ runtime backends from available source and unqualified replacement candidates.
 ## Frozen function speeds
 
 [`speeds.json`](baselines/speeds.json) freezes representative latency for every public
-operation across all 18 packages. The shared registry currently has 264
+operation across all 18 packages. The shared registry currently has 268
 workloads, including constructors, locally declared public methods/properties,
 stdlib aliases, generator consumption and complete stream lifecycles. Nine
 imported typing/enum/result vocabulary names have explicit exclusions. Private
@@ -86,6 +86,10 @@ Workload source fingerprints also detect fixture edits, including changed inputs
 without a note change. Review those edits and run `freeze` to acknowledge the
 new source snapshot; existing speed ceilings remain unchanged. A deliberately
 different input should normally receive a new `#variant` ID.
+Additive historical captures keep their recording environment and provenance;
+verification rejects a selected row recorded under another environment. The
+committed mixed historical artifact is not a substitute for a fresh worker
+baseline when comparing complete revisions.
 
 Absolute speeds belong to a machine and runtime. Verification requires the
 recorded CPU, OS, Python configuration, backend versions, thread settings and

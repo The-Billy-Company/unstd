@@ -19,12 +19,35 @@ def main() -> None:
     """Compile the private module independently from other native domains."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, default=ROOT / "src")
+    parser.add_argument("--sanitize", action="store_true")
+    parser.add_argument("--warnings-as-errors", action="store_true")
     args = parser.parse_args()
+    compile_args = []
+    link_args = []
+    if os.name != "nt":
+        compile_args = ["-O3", "-Wall", "-Wextra"]
+        if args.warnings_as_errors:
+            compile_args.append("-Werror")
+        if args.sanitize:
+            compile_args = [
+                "-O1",
+                "-g",
+                "-Wall",
+                "-Wextra",
+                "-fno-omit-frame-pointer",
+                "-fsanitize=address,undefined",
+                "-fno-sanitize-recover=all",
+                *(["-Werror"] if args.warnings_as_errors else []),
+            ]
+            link_args = ["-fsanitize=address,undefined", "-fno-sanitize-recover=all"]
+    elif args.sanitize:
+        parser.error("the focused sanitizer build requires a POSIX compiler")
     module = Extension(
         "unstd.proc._proc_native",
         [str(ROOT / "native/proc/src" / name) for name in ("adapter.c", "pipes.c")],
         libraries=["dl"] if sys.platform == "linux" else [],
-        extra_compile_args=["-O3", "-Wall", "-Wextra"] if os.name != "nt" else [],
+        extra_compile_args=compile_args,
+        extra_link_args=link_args,
     )
     with tempfile.TemporaryDirectory(prefix="unstd-proc-build-") as temporary:
         command = build_ext(Distribution({"ext_modules": [module]}))

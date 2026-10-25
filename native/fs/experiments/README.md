@@ -6,6 +6,11 @@ reduces the Python work in Billy's small state, token, report, and checkpoint
 writes. It does not claim an improvement until the Linux consumer measurements
 establish one.
 
+The [Billy/Linux evaluation](../../../bench/reports/fs/billy-linux.md) retains
+the measured CPU gains, variable disk latency, consumer boundaries, and raw
+profiles. It supports further work on small atomic writes, with this proof
+remaining outside production dispatch.
+
 ```python
 import _fs_experiment
 

@@ -425,11 +425,11 @@ jobs:
       - name: Every native module must import
         run: >-
           uv run --no-sync python -c
-          "import unstd.serde._json_native, unstd.clone._clone_native, unstd.crypto._stream_native, unstd.text._text_native, unstd.compress._gzip_native, unstd.containers._sorted_native"
+          "import unstd.serde._json_native, unstd.clone._clone_native, unstd.crypto._stream_native, unstd.text._text_native, unstd.compress._gzip_native, unstd.containers._sorted_native, unstd.proc._proc_native"
       - name: Native compatibility with the debug allocator
         id: tests
         run: >
-          uv run --no-sync python -m pytest tests/suites/product/clone tests/suites/product/text tests/suites/product/serde tests/suites/product/crypto tests/suites/product/compress tests/suites/product/containers -q --junitxml=.local/native.xml
+          uv run --no-sync python -m pytest tests/suites/product/clone tests/suites/product/text tests/suites/product/serde tests/suites/product/crypto tests/suites/product/compress tests/suites/product/containers tests/suites/product/proc -q --junitxml=.local/native.xml
 
       - name: Summarize native safety
         if: always() && steps.tests.outcome != 'skipped'
@@ -497,8 +497,11 @@ jobs:
         run: |
           LD_PRELOAD="$(gcc -print-file-name=libasan.so)"
           export LD_PRELOAD
-          .venv/bin/python -c "import unstd.serde._json_native, unstd.clone._clone_native, unstd.crypto._stream_native, unstd.text._text_native, unstd.compress._gzip_native, unstd.containers._sorted_native"
+          .venv/bin/python -c "import unstd.serde._json_native, unstd.clone._clone_native, unstd.crypto._stream_native, unstd.text._text_native, unstd.compress._gzip_native, unstd.containers._sorted_native, unstd.proc._proc_native"
           .venv/bin/python -m pytest tests/suites/product/clone tests/suites/product/text tests/suites/product/serde tests/suites/product/crypto tests/suites/product/compress tests/suites/product/containers -p tests.tooling.ci.sharding --ci-shard ${{ matrix.shard }}/3 -q --junitxml=.local/native-sanitizers-${{ matrix.shard }}.xml
+          if [ "${{ matrix.shard }}" = "1" ]; then
+            env -u LD_PRELOAD .venv/bin/python -m tests.tooling.runtime.proc_memory --sanitize --output .local/proc-memory --tests tests/suites/product/proc
+          fi
 
       - name: Summarize sanitizer checks
         if: always() && steps.tests.outcome != 'skipped'
@@ -510,7 +513,11 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: native-sanitizers-${{ matrix.rust-text }}-${{ matrix.shard }}-${{ github.run_attempt }}
-          path: .local/native-sanitizers-${{ matrix.shard }}.xml
+          path: |
+            .local/native-sanitizers-${{ matrix.shard }}.xml
+            .local/proc-memory/manifest.json
+            .local/proc-memory/tests.txt
+            .local/proc-memory/tests.xml
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 14

@@ -173,7 +173,7 @@ def test_common_clone_guard_checks_native_routes_and_both_latency_clocks(
     assert tokens[tokens.index("--compare-dir") + 1] == (
         ".local/performance/installed-before/unstd/clone"
     )
-    assert float(tokens[tokens.index("--max-slowdown") + 1]) == 1.30
+    assert float(tokens[tokens.index("--max-slowdown") + 1]) == 1.10
     assert int(tokens[tokens.index("--rounds") + 1]) >= 9
     assert tokens[tokens.index("--output") + 1] == (
         ".local/performance/evidence/clone-common.json"
@@ -332,6 +332,22 @@ def test_installed_json_checks_require_native_paths_and_retain_latency_evidence(
     assert shlex.split(smoke["run"])[-1].startswith(".local/performance/evidence/")
     assert steps.index(smoke) < steps.index(paired)
     assert steps.index(paired) < steps.index(_measurement_steps(workflow)["verify"])
+
+
+def test_shared_json_comparison_also_measures_the_independent_control(workflow):
+    steps = workflow["jobs"]["compare"]["steps"]
+    step = next(step for step in steps if "--include floats-256" in step.get("run", ""))
+    tokens = shlex.split(step["run"])
+    assert "--require-native" in tokens
+    assert tokens[tokens.index("--compare-source") + 1].endswith("installed-before")
+    assert tokens[tokens.index("--source") + 1].endswith("installed-current")
+    assert tokens[tokens.index("--output") + 1].endswith("/evidence/json-shared.json")
+    assert float(tokens[tokens.index("--max-slowdown") + 1]) == 1.15
+    assert (
+        step["env"]["PYTHONPATH"]
+        == (_measurement_steps(workflow)["verify"]["env"]["PYTHONPATH"])
+    )
+    assert step["if"] == "${{ !inputs.gzip_diagnostic }}"
 
 
 def test_billy_gzip_direct_parent_can_start_without_any_product_installation(

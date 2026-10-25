@@ -136,6 +136,17 @@ jobs:
           --require-native --include records-1k
           --rounds 7 --repetitions 3 --max-slowdown 1.15
           --output .local/performance/evidence/json-records.json
+      - name: Guard shared and independent JSON rows
+        if: ${{ !inputs.gzip_diagnostic }}
+        env:
+          PYTHONPATH: ${{ github.workspace }}/.local/performance/installed-current:${{ github.workspace }}
+        run: >-
+          .venv/bin/python -m bench.profiles.jsonx_throughput
+          --compare-source .local/performance/installed-before
+          --source .local/performance/installed-current
+          --require-native --include floats-256
+          --rounds 7 --repetitions 3 --max-slowdown 1.15
+          --output .local/performance/evidence/json-shared.json
       # The committed laptop snapshot has a different environment. Record the
       # old revision on THIS worker, then compare current against that file.
       # Both passes use exactly the current workload definitions and backends.
@@ -176,7 +187,7 @@ jobs:
           .venv/bin/python -m bench.profiles.clone_common_cpu
           --compare-dir .local/performance/installed-before/unstd/clone
           --infer-native-bindings --require-native --gc-enabled
-          --rounds 9 --max-slowdown 1.30
+          --rounds 9 --max-slowdown 1.10
           --output .local/performance/evidence/clone-common.json
       - name: Retain both native gzip builds for diagnosis
         if: ${{ inputs.gzip_diagnostic }}

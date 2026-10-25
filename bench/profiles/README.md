@@ -10,8 +10,10 @@ These drivers compare saved and current implementations, check outputs and impor
 - [`clone_common_cpu.py`](clone_common_cpu.py) — public Python clone entrypoints on common nested data and dataclasses, against saved native baselines
 - [`native_profile.py`](native_profile.py)
 - [`proc_backend.py`](proc_backend.py) — paired Linux/macOS process latency, exact captured I/O, source/signature checks, and separate wait-route profiles; run this file directly
+- [`billy_proc.py`](billy_proc.py) — source-backed Billy Git, metadata and capture workloads, native/Python/stdlib controls, exact outputs and separate native-route profiles; run this file directly
 - [`crypto_hash.py`](crypto_hash.py)
 - [`fs_backend.py`](fs_backend.py) — paired filesystem traversal and atomic-write timings with real syncing, independent output checks, source isolation, and profiles
+- [`billy_fs.py`](billy_fs.py) — Linux native-write experiments using captured Billy consumers, synthetic payloads, exact browser/notebook reference functions, and real syncing
 - [`billy_serde.py`](billy_serde.py)
 - [`billy_audio.py`](billy_audio.py) — exact PCM wrapping and raw normalization ports, paired timings, allocation peaks and captured Billy consumer source
 - [`gzip_reads.py`](gzip_reads.py) — paired CPU/wall read timings, including bounded-memory repetitive streams at 8, 64 and 256 KiB read sizes; records the selected native backend outside timing
@@ -22,9 +24,11 @@ These drivers compare saved and current implementations, check outputs and impor
 
 For installed clone baselines, add `--infer-native-bindings` to load only the
 entrypoints imported by that baseline's own Python wrapper. Use
-`--require-native --gc-enabled --max-slowdown 1.30` to prove successful native
-routes and gate both median wall and process CPU latency across all 25 common
-workloads. The output report is saved before a failed guard exits.
+`--require-native --gc-enabled --max-slowdown 1.10` to prove successful native
+routes and gate both wall and process CPU latency across all 25 common workloads.
+The guard takes the median of matched current/before batch ratios, retaining
+independent latency medians for inspection. The output report is saved before
+a failed guard exits.
 
 Run the Billy gzip comparison through its direct file entry point so neither
 product installation loads before a worker selects its source:
@@ -88,6 +92,17 @@ qualification for its newer float, ASCII and strict-identity paths. Remove
 `--include` to measure the complete workload set. `--max-slowdown` requires a
 comparison and retains the report before failing; measurements compare wall
 latency on one host, rather than assuming different machines have equal speed.
+Each fresh comparison worker retains both independent installations, checks
+their native bindings before and after timing, and alternates adjacent batches
+on one thread. All seven rounds and three repetitions retain their wall/CPU
+samples and both stdlib controls; the 15% limit uses matched wall-time ratios.
+
+The JSON profile separately labels shared-row and equal-valued independent-row
+matrices. Use `--include floats-256` to compare those eight cases on both
+installations. The original 50 workloads retain their inputs and names. Shared
+rows permit reuse only within one serialization call; every timed call still
+allocates the complete output, and mutation checks reject stale cross-call
+results. Report structural-sharing gains separately from independent records.
 The gate takes the median of matched after/before ratios from each alternating
 repetition. Reports retain all pairs, raw wall/CPU samples and independent
 latency medians, so drift and persistent slowdowns remain visible.

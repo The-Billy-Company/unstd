@@ -1,5 +1,9 @@
 # Filesystem backend evaluation
 
+The later [Billy/Linux native evaluation](billy-linux.md) profiles captured
+consumer operations and an explicitly built C proof on Linux. The historical
+measurements below describe the initial Python optimization on macOS.
+
 Measured October 25, 2026 on macOS arm64 with CPython 3.12.15, 3.13.17,
 and 3.14.9. This is local warm-cache evidence; storage behavior and scheduling
 vary substantially between samples.
@@ -136,5 +140,6 @@ descriptors, lazy acquisition, Unicode names, and relative paths. Existing
 permission, symlink-race, writer interruption, reader atomicity, rollback,
 strict-sync preflight, and post-commit failure tests remain in place.
 
-The portable branch was exercised on macOS. No Windows or Linux execution was
-performed for this change.
+The initial portable branch checks ran on macOS. The subsequent Linux follow-up
+passed all 163 fs product tests and retained a [Linux Python comparison](backend-linux-py314.json).
+Windows execution was not performed.

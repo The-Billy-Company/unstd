@@ -23,6 +23,7 @@ import json
 import math
 from pathlib import Path
 import platform
+import statistics
 import sys
 from typing import TYPE_CHECKING, Any
 
@@ -382,17 +383,49 @@ def _native_routes(
     return routes
 
 
+def _matched_slowdown(
+    current: dict[str, Any], before: dict[str, Any], metric: str
+) -> float:
+    """Pair rounds before taking the median so common worker drift cancels."""
+    current_samples = current.get("samples")
+    before_samples = before.get("samples")
+    if current_samples is None and before_samples is None:
+        return float(current[metric] / before[metric])
+    if (
+        not isinstance(current_samples, list)
+        or not isinstance(before_samples, list)
+        or not current_samples
+        or len(current_samples) != len(before_samples)
+    ):
+        message = "clone comparisons require nonempty matched timing rounds"
+        raise ValueError(message)
+    sample_metric = metric.removeprefix("median_")
+    ratios = []
+    for after, prior in zip(current_samples, before_samples, strict=True):
+        current_ns, before_ns = after[sample_metric], prior[sample_metric]
+        if (
+            not math.isfinite(current_ns)
+            or not math.isfinite(before_ns)
+            or current_ns <= 0
+            or before_ns <= 0
+        ):
+            message = "clone timing samples must be finite and positive"
+            raise ValueError(message)
+        ratios.append(current_ns / before_ns)
+    return float(statistics.median(ratios))
+
+
 def _regressions(
     workloads: dict[str, Any], max_slowdown: float
 ) -> list[dict[str, Any]]:
-    """Compare both median latency measures against the same-worker baseline."""
+    """Compare matched wall and CPU rounds against the same-worker baseline."""
     failures = []
     for name, workload in workloads.items():
         timings = workload["timings"]
         for metric in ("median_wall_ns", "median_cpu_ns"):
             before = timings["before"][metric]
             current = timings["current"][metric]
-            slowdown = current / before
+            slowdown = _matched_slowdown(timings["current"], timings["before"], metric)
             if not math.isfinite(slowdown) or slowdown > max_slowdown:
                 failures.append(
                     {
@@ -529,9 +562,15 @@ def main(argv: Sequence[str] | None = None) -> None:
         }
     failures: list[dict[str, Any]] = []
     if args.max_slowdown is not None:
-        failures = _regressions(output["workloads"], args.max_slowdown)
+        try:
+            failures = _regressions(output["workloads"], args.max_slowdown)
+        except ValueError as error:
+            output["timing_error"] = str(error)
+            _write_output(output, args.output)
+            raise SystemExit(1) from error
         output["performance_gate"] = {
             "max_slowdown": args.max_slowdown,
+            "comparison": "median of matched current/before batch ratios",
             "passed": not failures,
             "regressions": failures,
         }

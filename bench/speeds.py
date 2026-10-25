@@ -217,11 +217,22 @@ def public_apis(root: Path = ROOT / "src/unstd") -> set[str]:
                 qualified = f"{module_name}.{name}"
                 names.add(qualified)
                 if inspect.isclass(value) and value.__module__.startswith("unstd."):
+                    backend_type = getattr(value, "__unstd_backend__", None)
                     for method, member in vars(value).items():
                         if method.startswith("_") and method not in {
                             "__enter__",
                             "__exit__",
                         }:
+                            continue
+                        # Compatible backend subclasses retain the provider's
+                        # method vocabulary. Their focused paired profile
+                        # measures overridden kernels; only additional public
+                        # methods expand this package's API inventory.
+                        if (
+                            inspect.isclass(backend_type)
+                            and issubclass(value, backend_type)
+                            and hasattr(backend_type, method)
+                        ):
                             continue
                         if callable(member) or isinstance(
                             member, property | staticmethod | classmethod
@@ -463,6 +474,12 @@ def _validate_document(raw: Any) -> None:
                 _invalid(f"invalid {key} for {name}")
         if row["ceiling_ns"] < row["measured_ns"]:
             _invalid(f"ceiling below measurement for {name}")
+        capture_fields = ("captured_environment", "captured_provenance")
+        if any(field in row for field in capture_fields) and any(
+            not isinstance(row.get(field), dict) or not row[field]
+            for field in capture_fields
+        ):
+            _invalid(f"invalid captured measurement metadata for {name}")
 
 
 def load_baseline(path: Path = BASELINE) -> dict[str, Any]:
@@ -517,6 +534,24 @@ def comparable_environment(
     return {key: value for key, value in before.items() if key not in ignored} == {
         key: value for key, value in current.items() if key not in ignored
     }
+
+
+def _check_captured_environments(
+    cases: Sequence[Case],
+    baseline: dict[str, Any],
+    current: dict[str, object],
+    *,
+    revision: bool,
+) -> None:
+    """Reject selected historical additions captured under another runtime."""
+    for case in cases:
+        captured = baseline["cases"][case.name].get("captured_environment")
+        if captured is not None and not comparable_environment(
+            captured, current, revision=revision
+        ):
+            _invalid(
+                f"captured environment differs for {case.name}; freeze a separate --baseline file on this worker before comparing revisions"
+            )
 
 
 def audit(cases: Sequence[Case]) -> None:
@@ -582,6 +617,7 @@ def freeze(
                 "spread": result.spread,
             }
     raw = {
+        **(prior or {}),
         "schema": _SCHEMA,
         "recorded": prior["recorded"] if prior else datetime.now(UTC).isoformat(),
         "environment": current_environment,
@@ -737,6 +773,12 @@ def main(argv: list[str] | None = None) -> int:
                 ):
                     msg = "baseline environment differs; freeze a separate --baseline file on this worker before comparing revisions"
                     _invalid(msg)
+                _check_captured_environments(
+                    comparable,
+                    baseline,
+                    current_environment,
+                    revision=args.revision_baseline,
+                )
             current_provenance = provenance()
             # Compare the same workload history as the older revision. Added
             # APIs must not precondition shared allocation/caches in this pass.

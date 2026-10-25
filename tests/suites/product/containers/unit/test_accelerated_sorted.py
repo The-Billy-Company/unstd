@@ -153,7 +153,9 @@ def run(ctor):
             if sys.argv[3] == "clear":
                 collection.clear()
             else:
-                collection.__dict__ = collection.__dict__.copy()
+                replacement = collection.__dict__.copy()
+                replacement.pop("_payload", None)
+                collection.__dict__ = replacement
 
     class Result:
         def __init__(self, value): self.value = value
@@ -173,6 +175,12 @@ def run(ctor):
             return answer
 
     collection = ctor([Item(1), Item(3), Item(5)])
+    if sys.argv[3] == "finalizer-dict":
+        class Payload:
+            def __del__(self):
+                trace.append("finalize")
+                collection.__dict__ = collection.__dict__.copy()
+        collection._payload = Payload()
     trace.clear()
     armed = True
     error = None
@@ -247,6 +255,25 @@ def test_integer_comparison_replaces_instance_dictionary_before_insert() -> None
     assert list(target) == [1, 2, 3]
     assert len(target) == 3
     target._check()
+
+
+@requires_native
+def test_released_dictionary_finalizer_can_replace_dictionary_again(
+    tmp_path: Path,
+) -> None:
+    result = run_python(
+        _REENTRANT_COMPARISON,
+        ["lt", "add", "finalizer-dict"],
+        cwd=tmp_path,
+        timeout=30,
+    )
+    assert result.returncode == 0, result.stderr
+    before, current = json.loads(result.stdout)
+    assert before.pop("trace").count("finalize") == 1
+    assert current.pop("trace").count("finalize") == 1
+    assert current == before
+    assert current["values"] == [1, 3, 4, 5]
+    assert current["length"] == 4
 
 
 @requires_native

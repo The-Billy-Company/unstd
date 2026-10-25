@@ -631,6 +631,44 @@ clone_child(PyObject *source, PyObject **result, unsigned int depth,
         : clone_closed_value(source, result, depth, context);
 }
 
+/* Copy a first repeated non-atomic run into private reserved slots. */
+static int
+clone_initial_run(PyObject *source, PyObject *output, Py_ssize_t *written,
+                  Py_ssize_t size, int tuple, PyObject *first,
+                  unsigned int depth, CopyContext *context)
+{
+    Py_INCREF(first);
+    PyObject *copied = NULL;
+    int status = clone_closed_value(first, &copied, depth - 1, context);
+    Py_DECREF(first);
+    if (status != 1) {
+        return status;
+    }
+    /* The private memo owns source/result even if a callback replaced source
+     * slots. No allocation occurs while reusing the completed child. */
+    if (tuple) {
+        PyTuple_SET_ITEM(output, *written, copied);
+    } else {
+        PyList_SET_ITEM(output, *written, copied);
+    }
+    ++*written;
+    while (*written < size && *written < Py_SIZE(source)) {
+        PyObject *next = tuple
+            ? PyTuple_GET_ITEM(source, *written)
+            : PyList_GET_ITEM(source, *written);
+        if (next != first) {
+            break;
+        }
+        if (tuple) {
+            PyTuple_SET_ITEM(output, *written, Py_NewRef(copied));
+        } else {
+            PyList_SET_ITEM(output, *written, Py_NewRef(copied));
+        }
+        ++*written;
+    }
+    return 1;
+}
+
 /* 1: owned result; 0: unsupported (no exception); -1: real failure. */
 static inline Py_ALWAYS_INLINE int
 clone_sequence_impl(PyObject *source, PyObject **result, unsigned int depth,
@@ -641,6 +679,30 @@ clone_sequence_impl(PyObject *source, PyObject **result, unsigned int depth,
     PyObject *output = tuple ? PyTuple_New(size) : PyList_New(size);
     if (output == NULL) {
         return -1;
+    }
+    /* Atom-only prefixes cannot invoke callbacks or allocate. Complete a
+     * scalar sequence while its storage is private before recursive work
+     * requires hiding any incomplete slots from collector callbacks. */
+    Py_ssize_t written = 0;
+    if (!direct_graph && context->walk == NULL) {
+        while (written < size && written < Py_SIZE(source)) {
+            PyObject *item = tuple
+                ? PyTuple_GET_ITEM(source, written)
+                : PyList_GET_ITEM(source, written);
+            if (!atom(item)) {
+                break;
+            }
+            if (tuple) {
+                PyTuple_SET_ITEM(output, written, Py_NewRef(item));
+            } else {
+                PyList_SET_ITEM(output, written, Py_NewRef(item));
+            }
+            ++written;
+        }
+        if (written == size && written == Py_SIZE(source)) {
+            *result = output;
+            return 1;
+        }
     }
     /* No partially initialized list/tuple may appear in gc.get_objects() or
      * gc.get_referrers() during allocations further down the tree. A completed
@@ -659,7 +721,24 @@ clone_sequence_impl(PyObject *source, PyObject **result, unsigned int depth,
             return -1;
         }
     }
-    Py_ssize_t written = 0;
+    if (written < size - 1 && written < Py_SIZE(source) - 1
+        && !direct_graph && context->entries != NULL
+        && context->memo == NULL && context->walk == NULL) {
+        PyObject *first = tuple
+            ? PyTuple_GET_ITEM(source, written)
+            : PyList_GET_ITEM(source, written);
+        PyObject *next = tuple
+            ? PyTuple_GET_ITEM(source, written + 1)
+            : PyList_GET_ITEM(source, written + 1);
+        if (first == next && !atom(first)) {
+            int run_status = clone_initial_run(source, output, &written,
+                                              size, tuple, first, depth, context);
+            if (run_status != 1) {
+                Py_DECREF(output);
+                return run_status;
+            }
+        }
+    }
     PyObject *held = NULL;
     int status = 1;
     while (written < Py_SIZE(source)) {

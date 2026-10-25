@@ -347,6 +347,12 @@ static PyObject *
 native_loc(PyObject *self, PyTypeObject *defining_class,
            PyObject *const *args, size_t nargs, PyObject *kwnames)
 {
+    /* Upstream returns idx immediately for the first block without reading
+     * instance state. Keep that common path equally cheap and callback-free. */
+    if (Py_TYPE(self) == defining_class && nargs == 2 &&
+        (kwnames == NULL || PyTuple_GET_SIZE(kwnames) == 0) &&
+        PyLong_CheckExact(args[0]) && PyObject_IsTrue(args[0]) == 0)
+        return Py_NewRef(args[1]);
     Context context;
     int admitted = context_get(&context, self, defining_class);
     PyObject *result = NULL;

@@ -22,6 +22,12 @@ the writer shares a 262,144-value budget with admission and caps private output
 at 1 MiB. Only untracked buffers and raw formatter storage may be allocated
 while input references are borrowed. Unsupported values discard the complete
 private result and use the existing fallback.
+For eligible shared-row lists, a separate writer frame retains up to 32
+completed flat-container spans. Reuse requires object identity and equal depth;
+every repeated logical value still consumes the visit budget. All span owners
+are released before return, and each call emits its complete output. Ordinary
+independent records do not allocate the span cache. Safe ASCII string spans
+are copied in bulk rather than appended one character at a time.
 
 `identity.h` copies strict JSON trees through owned builtin iterators. It pins
 keys and values across allocation, keeps all partial outputs untracked and
@@ -40,6 +46,10 @@ reject every float before returning; otherwise the original document is retried
 with `msgspec`. `lines.h` trims/skips blank rows and uses that same decoder;
 refused or invalid rows discard the batch so Python can replay the whole input
 with its line numbers and diagnostics. Allocation failures propagate.
+The result proof finishes each child before its sibling with at most 64 C
+container frames. Its unchanged 65,536-value budget bounds the work; a wide
+array of shallow records no longer overflows a 64-entry sibling queue and
+needlessly parses the same document again.
 
 `encode.h` and `decode.h` install vectorcall bindings only on CPython 3.14.
 They retain the Python function objects and fall back to ordinary dispatch when

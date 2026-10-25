@@ -31,6 +31,7 @@ _NATIVE_MODULES = (
     "unstd.text._text_native",
     "unstd.compress._gzip_native",
     "unstd.containers._sorted_native",
+    "unstd.proc._proc_native",
 )
 
 _COMPILER_KEYS = {
@@ -201,6 +202,7 @@ class CustomBuildHook(BuildHookInterface):
             and os.environ.get("UNSTD_TEXT_RUST") == "1"
         )
         gzip_buffers = module == "unstd.compress._gzip_native"
+        proc_pipes = module == "unstd.proc._proc_native"
         # An explicitly reviewed archive is a build-only experiment. Nothing
         # probes for another inflater or loads Rust dependencies at runtime.
         zlib_rs = (
@@ -217,6 +219,8 @@ class CustomBuildHook(BuildHookInterface):
         )
         gzip_root = Path(self.root) / "native/compress/vendor/libdeflate"
         sources = [str(source)]
+        if proc_pipes:
+            sources.append(str(Path(self.root) / "native/proc/src/pipes.c"))
         if gzip_buffers:
             sources.extend(
                 str(Path(self.root) / "native/compress/src" / name)
@@ -252,6 +256,8 @@ class CustomBuildHook(BuildHookInterface):
             else [],
             libraries=["z"]
             if gzip_buffers and sys.platform == "darwin" and zlib_rs is None
+            else ["dl"]
+            if proc_pipes and sys.platform == "linux"
             else [],
             # Supply the same checked Python RAW allocators for zlib's default
             # ABI hooks too; do not compile its unused unchecked malloc hook.

@@ -12,7 +12,7 @@ requires `orjson`; decoding also needs `msgspec`. The Python
 | [`src/decode.h`](src/decode.h) | Parser selection, decoded-value proof and guarded `loads` binding |
 | [`src/lines.h`](src/lines.h) | Strict NDJSON batching over the single-document decoder |
 | [`src/escape.h`](src/escape.h) | Trusted UTF-8 output to stdlib ASCII escape spelling |
-| [`src/repeat.h`](src/repeat.h) | Bounded float-record encoding with operation-local spelling caches |
+| [`src/repeat.h`](src/repeat.h) | Bounded float encoding, ASCII spans and operation-local shared-branch reuse |
 | [`src/identity.h`](src/identity.h) | Owned strict-identity snapshots with guarded Python fallback |
 
 [`hatch_build.py`](../../hatch_build.py) compiles only `adapter.c`; the headers

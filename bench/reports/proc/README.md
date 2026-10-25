@@ -1,5 +1,9 @@
 # Process exit latency on Linux and macOS
 
+The subsequent [Billy native-backend qualification](billy-native.md) measures
+ordinary commands and large captured output, with source receipts and sanitizer
+evidence. The measurements below record the earlier Python wait optimization.
+
 Measured 2026-10-25 against the previous `proc` implementation at
 `6ef26acd9156bc12a2731f8651ab3a7dbcff7391`. Kernel exit notifications reduce
 complete-call latency by **23–27%** for children that close captured pipes before

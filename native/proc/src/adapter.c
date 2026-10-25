@@ -47,24 +47,20 @@ spawn_functions(CloseFrom *closefrom, ChdirFd *chdirfd)
 /* Own encoded arguments while C pointer arrays are live. Exact input admission
  * permits fallback before audit instead of invoking foreign conversion hooks. */
 static int
-encode_sequence(PyObject *values, PyObject **owner, char ***array)
+encode_sequence(PyObject *values, PyObject ***owners, Py_ssize_t *owner_count, char ***array)
 {
     PyObject *snapshot = PySequence_Tuple(values);
     if (snapshot == NULL) return -1;
     Py_ssize_t count = PyTuple_GET_SIZE(snapshot);
-    if (count == 0) {
-        Py_DECREF(snapshot);
-        PyErr_SetString(PyExc_ValueError, "args must not be empty");
-        return -1;
-    }
     if ((size_t)count >= SIZE_MAX / sizeof(char *) - 1) {
         Py_DECREF(snapshot);
         PyErr_NoMemory();
         return -1;
     }
-    *owner = PyTuple_New(count);
+    *owner_count = count;
+    *owners = count ? PyMem_Calloc((size_t)count, sizeof(PyObject *)) : NULL;
     *array = PyMem_Calloc((size_t)count + 1, sizeof(char *));
-    if (*owner == NULL || *array == NULL) {
+    if ((count && *owners == NULL) || *array == NULL) {
         Py_DECREF(snapshot);
         if (!PyErr_Occurred()) PyErr_NoMemory();
         return -1;
@@ -75,7 +71,7 @@ encode_sequence(PyObject *values, PyObject **owner, char ***array)
             Py_DECREF(snapshot);
             return -1;
         }
-        PyTuple_SET_ITEM(*owner, i, encoded);
+        (*owners)[i] = encoded;
         (*array)[i] = PyBytes_AS_STRING(encoded);
     }
     Py_DECREF(snapshot);
@@ -103,18 +99,27 @@ executable_paths(PyObject *executable, PyObject *environment)
         Py_DECREF(encoded);
         return NULL;
     }
-    PyObject *sequence = PySequence_Fast(paths, "executable paths must be a sequence");
+    PyObject *sequence = PySequence_Tuple(paths);
     Py_DECREF(paths);
     if (sequence == NULL) {
         Py_DECREF(encoded);
         return NULL;
     }
-    Py_ssize_t count = PySequence_Fast_GET_SIZE(sequence);
+    Py_ssize_t count = PyTuple_GET_SIZE(sequence);
+    if (count == 0) {
+        Py_DECREF(encoded);
+        Py_DECREF(sequence);
+        PyErr_SetString(PyExc_ValueError, "get_exec_path returned no executable candidates");
+        return NULL;
+    }
     PyObject *result = PyTuple_New(count);
     if (result == NULL) goto done;
+    /* A private bytes-only tuple must stay invisible to gc.get_objects while
+     * foreign directory conversions can inspect Python's tracked objects. */
+    PyObject_GC_UnTrack(result);
     for (Py_ssize_t i = 0; i < count; i++) {
         PyObject *path = NULL;
-        if (!PyUnicode_FSConverter(PySequence_Fast_GET_ITEM(sequence, i), &path)) {
+        if (!PyUnicode_FSConverter(PyTuple_GET_ITEM(sequence, i), &path)) {
             Py_CLEAR(result);
             goto done;
         }
@@ -146,14 +151,14 @@ done:
 }
 
 static int
-encode_environment(PyObject *environment, PyObject **owner, char ***array,
-                   char **raw_storage)
+encode_environment(PyObject *environment, PyObject ***owners, Py_ssize_t *owner_count,
+                   char ***array, char **raw_storage)
 {
     if (environment == Py_None) {
         /* os.putenv does not update os.environ. Copy libc's actual environment
          * while holding the GIL, before releasing it around posix_spawn. */
         size_t count = 0;
-        while (environ[count] != NULL) count++;
+        while (environ != NULL && environ[count] != NULL) count++;
         if (count >= SIZE_MAX / sizeof(char *) - 1) {
             PyErr_NoMemory();
             return -1;
@@ -189,24 +194,28 @@ encode_environment(PyObject *environment, PyObject **owner, char ***array,
     /* The audit hook may have changed dictionary values after admission.
      * Snapshot strong key/value references before any filesystem conversion,
      * allocation, or foreign __fspath__ callback can mutate the dictionary. */
-    PyObject *items = PyDict_Items(environment);
+    PyObject *dictionary_items = PyDict_Items(environment);
+    if (dictionary_items == NULL) return -1;
+    PyObject *items = PySequence_Tuple(dictionary_items);
+    Py_DECREF(dictionary_items);
     if (items == NULL) return -1;
-    Py_ssize_t count = PyList_GET_SIZE(items);
+    Py_ssize_t count = PyTuple_GET_SIZE(items);
     if ((size_t)count >= SIZE_MAX / sizeof(char *) - 1) {
         Py_DECREF(items);
         PyErr_NoMemory();
         return -1;
     }
-    *owner = PyList_New(0);
+    *owner_count = count;
+    *owners = count ? PyMem_Calloc((size_t)count, sizeof(PyObject *)) : NULL;
     *array = PyMem_Calloc((size_t)count + 1, sizeof(char *));
-    if (*owner == NULL || *array == NULL) {
+    if ((count && *owners == NULL) || *array == NULL) {
         Py_DECREF(items);
         if (!PyErr_Occurred()) PyErr_NoMemory();
         return -1;
     }
     int status = -1;
     for (Py_ssize_t i = 0; i < count; i++) {
-        PyObject *pair = PyList_GET_ITEM(items, i);
+        PyObject *pair = PyTuple_GET_ITEM(items, i);
         PyObject *key = NULL, *value = NULL;
         if (!PyUnicode_FSConverter(PyTuple_GET_ITEM(pair, 0), &key)
             || !PyUnicode_FSConverter(PyTuple_GET_ITEM(pair, 1), &value)) {
@@ -239,12 +248,8 @@ encode_environment(PyObject *environment, PyObject **owner, char ***array,
         memcpy(target + key_size + 1, PyBytes_AS_STRING(value), (size_t)value_size);
         Py_DECREF(key);
         Py_DECREF(value);
-        if (PyList_Append(*owner, encoded) < 0) {
-            Py_DECREF(encoded);
-            goto done;
-        }
+        (*owners)[i] = encoded;
         (*array)[i] = PyBytes_AS_STRING(encoded);
-        Py_DECREF(encoded);
     }
     status = 0;
 done:
@@ -265,6 +270,39 @@ string_admitted(PyObject *value, int environment_key)
     }
     return memchr(text, '\0', (size_t)length) == NULL
         && (!environment_key || memchr(text, '=', (size_t)length) == NULL);
+}
+
+/* Python's os.posix_spawn rejects an empty argv even though fork/exec can
+ * pass it to the kernel. Preserve the running subprocess route's exception
+ * when an audit hook clears an originally admitted argument list. */
+static int
+empty_argv_uses_stdlib_spawn(PyObject *executable, PyObject *cwd)
+{
+    if (cwd != Py_None) return 0;
+    Py_ssize_t slash = PyUnicode_FindChar(executable, '/', 0,
+                                         PyUnicode_GET_LENGTH(executable), 1);
+    if (slash == -2) return -1;
+    if (slash < 0) return 0;
+    PyObject *subprocess = PyImport_ImportModule("subprocess");
+    if (subprocess == NULL) return -1;
+    const char *names[] = {"_USE_POSIX_SPAWN", "_HAVE_POSIX_SPAWN_CLOSEFROM"};
+    int eligible = 1;
+    for (size_t i = 0; i < sizeof(names) / sizeof(names[0]); i++) {
+        PyObject *value = PyObject_GetAttrString(subprocess, names[i]);
+        if (value == NULL) {
+            if (PyErr_ExceptionMatches(PyExc_AttributeError)) {
+                PyErr_Clear();
+                eligible = 0;
+            }
+            else eligible = -1;
+            break;
+        }
+        eligible = PyObject_IsTrue(value);
+        Py_DECREF(value);
+        if (eligible <= 0) break;
+    }
+    Py_DECREF(subprocess);
+    return eligible;
 }
 
 static PyObject *
@@ -314,9 +352,20 @@ spawn_process(PyObject *module, PyObject *args)
         Py_DECREF(audit_argv);
         return NULL;
     }
+    if (PyList_GET_SIZE(audit_argv) == 0) {
+        int standard_spawn = empty_argv_uses_stdlib_spawn(executable, cwd);
+        if (standard_spawn != 0) {
+            Py_DECREF(audit_argv);
+            if (standard_spawn > 0) {
+                PyErr_SetString(PyExc_ValueError, "posix_spawn: argv must not be empty");
+            }
+            return NULL;
+        }
+    }
 
-    PyObject *argv_owner = NULL, *env_owner = NULL, *cwd_bytes = NULL;
-    PyObject *paths = NULL;
+    PyObject **argv_owners = NULL, **env_owners = NULL;
+    Py_ssize_t argv_count = 0, env_count = 0;
+    PyObject *cwd_bytes = NULL, *paths = NULL;
     char **argv_array = NULL, **env_array = NULL;
     char *raw_environment = NULL;
     int directory = -1, failure = 0, actions_live = 0, attr_live = 0;
@@ -327,8 +376,8 @@ spawn_process(PyObject *module, PyObject *args)
     PyObject *result = NULL;
     paths = executable_paths(executable, environment);
     if (paths == NULL
-        || encode_environment(environment, &env_owner, &env_array, &raw_environment) < 0
-        || encode_sequence(audit_argv, &argv_owner, &argv_array) < 0) goto done;
+        || encode_environment(environment, &env_owners, &env_count, &env_array, &raw_environment) < 0
+        || encode_sequence(audit_argv, &argv_owners, &argv_count, &argv_array) < 0) goto done;
     if (cwd != Py_None) {
         if (!PyUnicode_FSConverter(cwd, &cwd_bytes)) goto done;
         const char *path = PyBytes_AS_STRING(cwd_bytes);
@@ -431,6 +480,10 @@ spawn_process(PyObject *module, PyObject *args)
         if (first_failure) failure = first_failure;
         goto done;
     }
+    if (pid <= 0) {
+        PyErr_SetString(PyExc_RuntimeError, "posix_spawn returned an invalid child pid");
+        goto done;
+    }
     result = PyLong_FromLong((long)pid);
     if (result != NULL
         && (PyObject_SetAttrString(child, "pid", result) < 0
@@ -453,8 +506,14 @@ done:
     if (directory >= 0) close(directory);
     Py_DECREF(audit_argv);
     Py_XDECREF(paths);
-    Py_XDECREF(argv_owner);
-    Py_XDECREF(env_owner);
+    if (argv_owners != NULL) {
+        for (Py_ssize_t i = 0; i < argv_count; i++) Py_XDECREF(argv_owners[i]);
+    }
+    if (env_owners != NULL) {
+        for (Py_ssize_t i = 0; i < env_count; i++) Py_XDECREF(env_owners[i]);
+    }
+    PyMem_Free(argv_owners);
+    PyMem_Free(env_owners);
     Py_XDECREF(cwd_bytes);
     PyMem_Free(argv_array);
     PyMem_Free(raw_environment);

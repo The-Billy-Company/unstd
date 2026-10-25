@@ -49,6 +49,29 @@ class _Codec(Protocol):
     def compressobj(self, *, level: int, wbits: int) -> _Compressor: ...
 
 
+class _GzipSurface(Protocol):
+    def compress(self, data: Buffer, compresslevel: int, *, mtime: int) -> bytes: ...
+
+
+class _GzipCodec:
+    """Express Billy's one-shot gzip wire operation through the gzip API."""
+
+    def __init__(self, module: _GzipSurface) -> None:
+        self._module = module
+
+    def compress(self, data: Buffer, /, level: int = -1, wbits: int = 15) -> bytes:
+        if wbits != 31:
+            message = "the gzip request adapter requires the gzip window mode"
+            raise ValueError(message)
+        return self._module.compress(
+            data, compresslevel=6 if level == -1 else level, mtime=0
+        )
+
+    def compressobj(self, *, level: int, wbits: int) -> _Compressor:
+        message = "gzip request mode supports direct encodes only"
+        raise NotImplementedError(message)
+
+
 @dataclass(frozen=True)
 class Case:
     """One direct, fresh-scope or warmed checkpoint request sequence."""
@@ -313,16 +336,25 @@ def _worker(args: argparse.Namespace) -> None:
     source = args.source.resolve()
     source = source / "src" if (source / "src/unstd").exists() else source
     sys.path.insert(0, str(source))
-    module = zlib if args.stdlib else importlib.import_module("unstd.compress.zlibx")
+    namespace = getattr(args, "codec", "zlibx")
+    module = (
+        zlib if args.stdlib else importlib.import_module(f"unstd.compress.{namespace}")
+    )
     if (
         not args.stdlib
         and Path(cast("str", module.__file__)).resolve()
-        != source / "unstd/compress/zlibx.py"
+        != source / f"unstd/compress/{namespace}.py"
     ):
         message = "requested zlib source was not imported"
         raise RuntimeError(message)
-    codec = cast("_Codec", module)
+    codec: _Codec = (
+        _GzipCodec(cast("_GzipSurface", module))
+        if namespace == "gzipx" and not args.stdlib
+        else cast("_Codec", module)
+    )
     cases, receipts = _load(args.fixtures)
+    if namespace == "gzipx":
+        cases = [case for case in cases if case.mode == "direct"]
     if args.case:
         cases = [
             case
@@ -355,11 +387,14 @@ def _worker(args: argparse.Namespace) -> None:
         raise RuntimeError(message)
     provider = sys.modules.get("zlib_ng.zlib_ng")
     provider_path = getattr(provider, "__file__", None)
+    kernel = sys.modules.get("unstd.compress._gzip_native")
+    kernel_path = getattr(kernel, "__file__", None)
     print(
         json.dumps(
             {
                 "source": str(source),
                 "python": sys.version,
+                "codec": namespace,
                 "source_contracts": receipts,
                 "module_sha256": _hash(Path(cast("str", module.__file__)).read_bytes()),
                 "provider": {
@@ -369,6 +404,13 @@ def _worker(args: argparse.Namespace) -> None:
                     else None,
                     "version": getattr(provider, "ZLIBNG_RUNTIME_VERSION", None),
                 },
+                "native_kernel": {
+                    "path": kernel_path,
+                    "sha256": _hash(Path(kernel_path).read_bytes())
+                    if isinstance(kernel_path, str)
+                    else None,
+                    "libdeflate_version": getattr(kernel, "LIBDEFLATE_VERSION", None),
+                },
                 "cases": [
                     {
                         "name": case.name,
@@ -376,10 +418,13 @@ def _worker(args: argparse.Namespace) -> None:
                         "raw_sha256": [_hash(data) for data, _ in case.requests],
                         "levels": [level for _, level in case.requests],
                         "native_calls": calls,
+                        "packed_bytes": [len(value) for value in function()],
                         "eligible": case.name not in failures,
                         "contract_failure": failures.get(case.name),
                     }
-                    for case, calls in zip(cases, native, strict=True)
+                    for case, calls, function in zip(
+                        cases, native, functions, strict=True
+                    )
                 ],
             }
         ),
@@ -421,6 +466,7 @@ def _run(args: argparse.Namespace) -> None:
     records = {}
     report: dict[str, object] = {
         "schema": 1,
+        "codec": getattr(args, "codec", "zlibx"),
         "recorded_utc": datetime.now(UTC).isoformat(),
         "harness_sha256": _hash(Path(__file__).read_bytes()),
         "fixtures_sha256": _hash(args.fixtures.read_bytes()),
@@ -438,6 +484,8 @@ def _run(args: argparse.Namespace) -> None:
                 str(source),
                 "--fixtures",
                 str(args.fixtures),
+                "--codec",
+                getattr(args, "codec", "zlibx"),
             ]
             if args.require_native:
                 command.append("--require-native")
@@ -567,6 +615,12 @@ def main() -> None:
         command.add_argument("--fixtures", type=Path, required=True)
         command.add_argument("--require-native", action="store_true")
         command.add_argument("--case", action="append", default=[])
+        command.add_argument(
+            "--codec",
+            choices=("zlibx", "gzipx"),
+            default="zlibx",
+            help="gzipx measures direct request encodes; checkpoints use zlibx",
+        )
         if name == "worker":
             command.add_argument("--stdlib", action="store_true")
         else:

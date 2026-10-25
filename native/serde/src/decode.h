@@ -95,73 +95,79 @@ dense_entries(PyObject *dict)
 }
 
 static int
-exact_decoded_tree(PyObject *value)
+exact_decoded_tree_visit(PyObject *container, Py_ssize_t *remaining, int depth)
 {
-    PyObject *pending[64];
-    Py_ssize_t queued = 1, remaining = MAX_VALUES;
-    pending[0] = value;
-    while (queued) {
-        PyObject *container = pending[--queued];
-        if (PyList_CheckExact(container)) {
-            Py_ssize_t size = PyList_GET_SIZE(container);
-            if ((remaining -= size) < 0) {
-                return 0;
-            }
-            PyObject **items = ((PyListObject *)container)->ob_item;
-            Py_ssize_t index = 0;
-            while (index + 4 <= size
-                   && (PyUnicode_CheckExact(items[index])
-                       & PyUnicode_CheckExact(items[index + 1])
-                       & PyUnicode_CheckExact(items[index + 2])
-                       & PyUnicode_CheckExact(items[index + 3]))) {
-                index += 4;
-            }
-            for (; index < size; index++) {
-                PyObject *item = items[index];
-                if (PyUnicode_CheckExact(item)) {
-                    continue;
-                }
-                if (PyFloat_CheckExact(item)) {
-                    return 0;
-                }
-                if (PyList_CheckExact(item) || PyDict_CheckExact(item)) {
-                    if (queued == 64) {
-                        return 0;
-                    }
-                    pending[queued++] = item;
-                }
-            }
-        } else if (PyDict_CheckExact(container)) {
-            if ((remaining -= PyDict_GET_SIZE(container)) < 0) {
-                return 0;
-            }
-            Py_ssize_t position = 0;
-            NativeDictEntry *entries = dense_entries(container);
-            PyObject *item;
-            for (Py_ssize_t index = 0; index < PyDict_GET_SIZE(container); index++) {
-                if (entries != NULL) {
-                    item = entries[index].me_value;
-                } else if (!PyDict_Next(container, &position, NULL, &item)) {
-                    return 0;
-                }
-                if (PyUnicode_CheckExact(item)) {
-                    continue;
-                }
-                if (PyFloat_CheckExact(item)) {
-                    return 0;
-                }
-                if (PyList_CheckExact(item) || PyDict_CheckExact(item)) {
-                    if (queued == 64) {
-                        return 0;
-                    }
-                    pending[queued++] = item;
-                }
-            }
-        } else if (PyFloat_CheckExact(container)) {
+    /* Finish each child before its next sibling. Queuing all children made a
+     * shallow list of 65 records discard a complete parse and parse it again.
+     * The depth cap bounds this allocation-free C walk; the existing source
+     * stack guard runs before orjson, and refused proofs use the precise parser.
+     * The owned root and uninterrupted GIL span keep child references alive. */
+    if (depth >= 64) {
+        return 0;
+    }
+    if (PyList_CheckExact(container)) {
+        Py_ssize_t size = PyList_GET_SIZE(container);
+        if ((*remaining -= size) < 0) {
             return 0;
         }
+        PyObject **items = ((PyListObject *)container)->ob_item;
+        Py_ssize_t index = 0;
+        while (index + 4 <= size
+               && (PyUnicode_CheckExact(items[index])
+                   & PyUnicode_CheckExact(items[index + 1])
+                   & PyUnicode_CheckExact(items[index + 2])
+                   & PyUnicode_CheckExact(items[index + 3]))) {
+            index += 4;
+        }
+        for (; index < size; index++) {
+            PyObject *item = items[index];
+            if (PyUnicode_CheckExact(item)) {
+                continue;
+            }
+            if (PyFloat_CheckExact(item)) {
+                return 0;
+            }
+            if ((PyList_CheckExact(item) || PyDict_CheckExact(item))
+                && !exact_decoded_tree_visit(item, remaining, depth + 1)) {
+                return 0;
+            }
+        }
+    } else if (PyDict_CheckExact(container)) {
+        Py_ssize_t size = PyDict_GET_SIZE(container);
+        if ((*remaining -= size) < 0) {
+            return 0;
+        }
+        Py_ssize_t position = 0;
+        NativeDictEntry *entries = dense_entries(container);
+        for (Py_ssize_t index = 0; index < size; index++) {
+            PyObject *item;
+            if (entries != NULL) {
+                item = entries[index].me_value;
+            } else if (!PyDict_Next(container, &position, NULL, &item)) {
+                return 0;
+            }
+            if (PyUnicode_CheckExact(item)) {
+                continue;
+            }
+            if (PyFloat_CheckExact(item)) {
+                return 0;
+            }
+            if ((PyList_CheckExact(item) || PyDict_CheckExact(item))
+                && !exact_decoded_tree_visit(item, remaining, depth + 1)) {
+                return 0;
+            }
+        }
+    } else if (PyFloat_CheckExact(container)) {
+        return 0;
     }
     return 1;
+}
+
+static int
+exact_decoded_tree(PyObject *value)
+{
+    Py_ssize_t remaining = MAX_VALUES;
+    return exact_decoded_tree_visit(value, &remaining, 0);
 }
 
 static int

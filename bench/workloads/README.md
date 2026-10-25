@@ -13,6 +13,13 @@ bytes before measuring either installation.
 
 See the [benchmark guide](../README.md).
 
+[`billy_proc_receipts.json`](billy_proc_receipts.json) freezes 16 current process
+callsites across 14 Billy source files, with hashes, excerpts and argument/I/O
+contracts. [`billy_proc.py`](../profiles/billy_proc.py) creates disposable Git
+repositories and synthetic text scaling fixtures from those contracts. Its
+stdin case is explicitly synthetic; existing binary asyncio/media paths are
+recorded separately and retain their current APIs.
+
 [`billy_gzip_requests.json.gz`](billy_gzip_requests.json.gz) separately freezes
 eight public synthetic request sequences for
 [`../profiles/billy_gzip_requests.py`](../profiles/billy_gzip_requests.py).

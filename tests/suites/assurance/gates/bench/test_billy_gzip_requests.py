@@ -1,6 +1,7 @@
 """Billy request timings retain checkpoint byte identity and refuse invalid cases."""
 
 from argparse import Namespace
+import gzip
 import json
 from pathlib import Path
 from types import SimpleNamespace
@@ -9,6 +10,20 @@ import zlib
 import pytest
 
 from bench.profiles import billy_gzip_requests as profile
+
+
+def test_direct_gzip_api_preserves_request_wire_and_rejects_checkpoint_use():
+    codec = profile._GzipCodec(gzip)
+    body = profile._body(4096)
+    case = profile.Case("direct", "direct", ((body, 6),))
+    result = profile._operation(codec, case)()
+    profile._validate(codec, case, result)
+    assert result == (gzip.compress(body, compresslevel=6, mtime=0),)
+    assert codec.compress(body, wbits=31) == result[0]
+    with pytest.raises(ValueError, match="gzip window"):
+        codec.compress(body)
+    with pytest.raises(NotImplementedError, match="direct encodes"):
+        codec.compressobj(level=6, wbits=31)
 
 
 @pytest.mark.parametrize("size", [128 * 1024, 512 * 1024])

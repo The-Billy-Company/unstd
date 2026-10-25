@@ -7,15 +7,16 @@ then run this unchanged driver against both trees with the same interpreter::
         --compare-source /tmp/before/src --source src \
         --output /tmp/jsonx-throughput.json
 
-Each repetition launches isolated workers in alternating before/after order.
+Each repetition launches a fresh worker retaining both installed revisions.
+Before/after batches run adjacently on one thread in alternating order.
 Payload construction and output validation remain outside the timed calls.
-Every operation allocates its result; no encoded-result cache is used.
+Every operation allocates its full result; no result is cached between calls.
 
 Installed wheel roots are also accepted. For a deployment comparison, add
 ``--require-native --max-slowdown 1.15 --include records-1k``. Native mode
 rejects missing accelerators and inactive CPython 3.14 dispatch. The optional
 slowdown limit compares wall-clock latency and saves the report before failing.
-It uses the median of each repetition's paired after/before wall-clock ratio;
+It uses the median of the adjacent after/before wall-clock batch ratios;
 reports also retain independent latency medians and every original pair.
 """
 
@@ -24,6 +25,7 @@ from __future__ import annotations
 import argparse
 from dataclasses import asdict, dataclass
 from functools import partial
+import gc
 from hashlib import sha256
 from importlib.metadata import version
 import io
@@ -36,9 +38,12 @@ from statistics import median
 import subprocess
 import sys
 import sysconfig
+import time
 from typing import TYPE_CHECKING, Any
 
+from bench.core import timing
 from bench.core.timing import measure
+from bench.profiles.billy_serde import _retained
 
 
 if TYPE_CHECKING:
@@ -175,6 +180,30 @@ def _workloads() -> list[Workload]:
             len(json.dumps(records).encode()),
         )
     )
+    # These additional cases label structural sharing explicitly. The equal-
+    # valued independent matrix is a control; neither replaces existing rows.
+    # Every timed call still allocates the complete serialized output.
+    for label, shared_row in (
+        ("floats-256x256", [1.5] * 256),
+        ("varied-floats-256x128", [index / 7 for index in range(128)]),
+    ):
+        for name, matrix in (
+            (f"shared-{label}", [shared_row] * 256),
+            (f"independent-{label}", [list(shared_row) for _ in range(256)]),
+        ):
+            for operation, function, reference_function in (
+                ("dumps", jsonx.dumps, json.dumps),
+                ("dumpb", jsonx.dumpb, _compact),
+            ):
+                expected = reference_function(matrix)
+                workloads.append(
+                    Workload(
+                        f"{operation}/{name}",
+                        partial(function, matrix),
+                        partial(reference_function, matrix),
+                        len(expected.encode() if type(expected) is str else expected),
+                    )
+                )
     return workloads
 
 
@@ -277,6 +306,7 @@ def _provenance(
     ):
         message = f"requested native extension in {imported.parent}, imported {binary}"
         raise RuntimeError(message)
+    qualification = _native_checks(jsonx) if require_native else None
     dispatch = {}
     for name in ("loads", "dumpb"):
         function = getattr(jsonx, name)
@@ -292,8 +322,190 @@ def _provenance(
         "dispatch": dispatch,
         "sha256": files,
         "native_source_sha256": native_files,
-        "native_qualification": _native_checks(jsonx) if require_native else None,
+        "native_qualification": qualification,
     }
+
+
+def _environment() -> dict[str, Any]:
+    return {
+        "python": sys.version,
+        "platform": platform.platform(),
+        "backends": {name: version(name) for name in ("orjson", "msgspec")},
+        "compiler_configuration": {
+            name: sysconfig.get_config_var(name)
+            for name in ("CC", "CFLAGS", "PY_CFLAGS", "CONFIG_ARGS", "SOABI")
+        },
+        "cpu_affinity": sorted(os.sched_getaffinity(0))
+        if hasattr(os, "sched_getaffinity")
+        else None,
+    }
+
+
+def _retained_workloads(
+    source: Path, include: str, *, require_native: bool
+) -> tuple[Any, dict[str, Workload], dict[str, Any]]:
+    def load(_benchmark: Path) -> tuple[Any, list[Workload], dict[str, Any], None]:
+        from unstd.serde import jsonx
+
+        provenance = _provenance(source, jsonx, require_native=require_native)
+        cases = [case for case in _workloads() if not include or include in case.name]
+        return (
+            jsonx,
+            cases,
+            {"package_source": jsonx.__file__, "proof": provenance},
+            None,
+        )
+
+    jsonx, cases, metadata, _ = _retained(Path(__file__), source, loader=load)
+    if not cases:
+        message = f"no workloads match --include {include!r}"
+        raise ValueError(message)
+    return jsonx, {case.name: case for case in cases}, metadata["proof"]
+
+
+def _paired_measure(
+    cases: dict[str, Workload], rounds: int, repetition: int
+) -> tuple[dict[str, dict[str, Any]], list[dict[str, Any]]]:
+    """Keep before/after batches adjacent on one thread, with equal iterations."""
+    labels = ("before", "after")
+    samples: dict[str, dict[str, list[float]]] = {
+        label: {"candidate": [], "stdlib": []} for label in labels
+    }
+    cpu_samples: dict[str, dict[str, list[float]]] = {
+        label: {"candidate": [], "stdlib": []} for label in labels
+    }
+    calls = {
+        label: {"candidate": cases[label].call, "stdlib": cases[label].reference}
+        for label in labels
+    }
+    calibrations: dict[str, dict[str, tuple[int, int]]] = {
+        label: {} for label in labels
+    }
+    iterations = {}
+    enabled = gc.isenabled()
+    gc.disable()
+    try:
+        for metric in ("candidate", "stdlib"):
+            for label in labels:
+                calls[label][metric]()
+                calibrations[label][metric] = timing._calibrate(calls[label][metric])
+            iterations[metric] = max(calibrations[label][metric][0] for label in labels)
+        for index in range(rounds):
+            order = labels if (index + repetition) % 2 == 0 else labels[::-1]
+            for metric in ("candidate", "stdlib"):
+                for label in order:
+                    count = iterations[metric]
+                    start = time.thread_time_ns()
+                    elapsed = timing._batch(calls[label][metric], count)
+                    cpu = time.thread_time_ns() - start
+                    samples[label][metric].append(elapsed / count)
+                    cpu_samples[label][metric].append(cpu / count)
+    finally:
+        if enabled:
+            gc.enable()
+        gc.collect()
+    measurements: dict[str, dict[str, Any]] = {}
+    for label in labels:
+        measurements[label] = {}
+        for metric in ("candidate", "stdlib"):
+            values = samples[label][metric]
+            best, worst = min(values), max(values)
+            measurements[label][metric] = asdict(
+                timing.Measurement(
+                    per_op_ns=best,
+                    iters=iterations[metric],
+                    rounds=rounds,
+                    spread=(worst - best) / best if best else 0.0,
+                    samples_ns=tuple(values),
+                    cpu_samples_ns=tuple(cpu_samples[label][metric]),
+                )
+            )
+        measurements[label]["calibrations"] = calibrations[label]
+    pairs = [
+        {
+            "round": index,
+            "order": list(labels if (index + repetition) % 2 == 0 else labels[::-1]),
+            "before_ns": samples["before"]["candidate"][index],
+            "after_ns": samples["after"]["candidate"][index],
+            "after_over_before": samples["after"]["candidate"][index]
+            / samples["before"]["candidate"][index],
+            "before_stdlib_ns": samples["before"]["stdlib"][index],
+            "after_stdlib_ns": samples["after"]["stdlib"][index],
+        }
+        for index in range(rounds)
+    ]
+    return measurements, pairs
+
+
+def _paired_worker(
+    before: Path,
+    after: Path,
+    rounds: int,
+    include: str,
+    repetition: int,
+    *,
+    require_native: bool = False,
+) -> list[dict[str, Any]]:
+    sources = {"before": before, "after": after}
+    retained: dict[str, tuple[Any, dict[str, Workload], dict[str, Any]]] = {}
+    for label, source in sources.items():
+        if label == "after" and before == after:
+            retained[label] = retained["before"]
+        else:
+            retained[label] = _retained_workloads(
+                source, include, require_native=require_native
+            )
+    names = set(retained["before"][1])
+    if set(retained["after"][1]) != names:
+        message = "comparison sources selected different workloads"
+        raise RuntimeError(message)
+    for label, (jsonx, _cases, proof) in retained.items():
+        if _provenance(sources[label], jsonx, require_native=require_native) != proof:
+            message = (
+                f"{label} source, native binary or dispatch changed during loading"
+            )
+            raise RuntimeError(message)
+    results: dict[str, dict[str, Any]] = {"before": {}, "after": {}}
+    for name in retained["before"][1]:
+        cases = {label: retained[label][1][name] for label in sources}
+        expected = {label: case.reference() for label, case in cases.items()}
+        if not _same(expected["before"], expected["after"]):
+            message = f"comparison references differ: {name}"
+            raise AssertionError(message)
+        for label, case in cases.items():
+            if not _same(case.call(), expected[label]):
+                message = f"incorrect output: {name}/{label}"
+                raise AssertionError(message)
+        measurements, pairs = _paired_measure(cases, rounds, repetition)
+        for label, case in cases.items():
+            if not _same(case.call(), expected[label]):
+                message = f"incorrect output after timing: {name}/{label}"
+                raise AssertionError(message)
+            measured = measurements[label]
+            candidate = measured["candidate"]["per_op_ns"]
+            results[label][name] = {
+                "input_bytes": case.input_bytes,
+                "identical_output": True,
+                **measured,
+                "paired_batches": pairs,
+                "candidate_mib_s": case.input_bytes / candidate * 1e9 / 2**20,
+                "stdlib_over_candidate": measured["stdlib"]["per_op_ns"] / candidate,
+            }
+    for label, (jsonx, _cases, proof) in retained.items():
+        if _provenance(sources[label], jsonx, require_native=require_native) != proof:
+            message = f"{label} source, native binary or dispatch changed during timing"
+            raise RuntimeError(message)
+    environment = _environment()
+    return [
+        {
+            "label": label,
+            "repetition": repetition,
+            "environment": environment,
+            "provenance": retained[label][2],
+            "timings": results[label],
+        }
+        for label in sources
+    ]
 
 
 def _worker(
@@ -331,18 +543,7 @@ def _worker(
         message = "product source, native binary or dispatch changed during timing"
         raise RuntimeError(message)
     return {
-        "environment": {
-            "python": sys.version,
-            "platform": platform.platform(),
-            "backends": {name: version(name) for name in ("orjson", "msgspec")},
-            "compiler_configuration": {
-                name: sysconfig.get_config_var(name)
-                for name in ("CC", "CFLAGS", "PY_CFLAGS", "CONFIG_ARGS", "SOABI")
-            },
-            "cpu_affinity": sorted(os.sched_getaffinity(0))
-            if hasattr(os, "sched_getaffinity")
-            else None,
-        },
+        "environment": _environment(),
         "provenance": provenance,
         "timings": results,
     }
@@ -360,6 +561,10 @@ def main(argv: Sequence[str] | None = None) -> None:
     parser.add_argument("--require-native", action="store_true")
     parser.add_argument("--max-slowdown", type=float)
     parser.add_argument("--worker", action="store_true", help=argparse.SUPPRESS)
+    parser.add_argument("--paired-worker", action="store_true", help=argparse.SUPPRESS)
+    parser.add_argument(
+        "--worker-repetition", type=int, default=0, help=argparse.SUPPRESS
+    )
     args = parser.parse_args(argv)
     if args.rounds < 1 or args.repetitions < 1:
         parser.error("rounds and repetitions must be positive")
@@ -371,6 +576,22 @@ def main(argv: Sequence[str] | None = None) -> None:
         parser.error("--max-slowdown requires --compare-source")
     if args.max_slowdown is not None and args.output is None:
         parser.error("--max-slowdown requires --output to retain evidence")
+    if args.paired_worker:
+        if args.compare_source is None:
+            parser.error("--paired-worker requires --compare-source")
+        print(
+            json.dumps(
+                _paired_worker(
+                    args.compare_source.resolve(),
+                    args.source.resolve(),
+                    args.rounds,
+                    args.include,
+                    args.worker_repetition,
+                    require_native=args.require_native,
+                )
+            )
+        )
+        return
     if args.worker:
         print(
             json.dumps(
@@ -388,6 +609,46 @@ def main(argv: Sequence[str] | None = None) -> None:
         sources.insert(0, ("before", args.compare_source.resolve()))
     runs = []
     for repetition in range(args.repetitions):
+        if args.compare_source is not None:
+            command = [
+                sys.executable,
+                "-m",
+                "bench.profiles.jsonx_throughput",
+                "--paired-worker",
+                "--compare-source",
+                str(args.compare_source.resolve()),
+                "--source",
+                str(args.source.resolve()),
+                "--rounds",
+                str(args.rounds),
+                "--include",
+                args.include,
+                "--worker-repetition",
+                str(repetition),
+            ]
+            if args.require_native:
+                command.append("--require-native")
+            result = json.loads(
+                subprocess.check_output(  # noqa: S603
+                    command,
+                    text=True,
+                    env=dict(
+                        os.environ,
+                        PYTHONPATH=str(Path(__file__).resolve().parents[2]),
+                    ),
+                )
+            )
+            if (
+                not isinstance(result, list)
+                or len(result) != 2
+                or {row["label"] for row in result} != {"before", "after"}
+                or any(row["repetition"] != repetition for row in result)
+            ):
+                message = "paired worker did not retain both revision results"
+                raise RuntimeError(message)
+            runs.extend(result)
+            print(f"Measured paired repetition {repetition + 1}", file=sys.stderr)
+            continue
         for label, source in sources[:: 1 if repetition % 2 == 0 else -1]:
             command = [
                 sys.executable,
@@ -464,6 +725,14 @@ def main(argv: Sequence[str] | None = None) -> None:
             ]
             for pair in pairs:
                 pair["after_over_before"] = pair["after_ns"] / pair["before_ns"]
+            batch_pairs: list[dict[str, Any]] = []
+            for repetition in range(args.repetitions):
+                old = paired_timings["before"][repetition]["paired_batches"]
+                new = paired_timings["after"][repetition]["paired_batches"]
+                if old != new or len(new) != args.rounds:
+                    message = "comparison did not retain every adjacent batch pair"
+                    raise RuntimeError(message)
+                batch_pairs.extend({"repetition": repetition, **pair} for pair in new)
             before_ns = median(
                 row["candidate"]["per_op_ns"] for row in timings["before"]
             )
@@ -473,9 +742,10 @@ def main(argv: Sequence[str] | None = None) -> None:
                 "after_ns": after_ns,
                 "before_over_after": before_ns / after_ns,
                 "paired_after_over_before": median(
-                    pair["after_over_before"] for pair in pairs
+                    pair["after_ns"] / pair["before_ns"] for pair in batch_pairs
                 ),
                 "pairs": pairs,
+                "batch_pairs": batch_pairs,
                 "after_mib_s": median(
                     row["candidate_mib_s"] for row in timings["after"]
                 ),
@@ -488,7 +758,7 @@ def main(argv: Sequence[str] | None = None) -> None:
             }
     report = {
         "driver_sha256": sha256(Path(__file__).read_bytes()).hexdigest(),
-        "estimator": "median of paired after/before minimum wall-clock batch mean ratios; independent latency medians retained",
+        "estimator": "median of adjacent before/after wall-clock batch mean ratios on one thread; independent latency medians retained",
         "comparisons": comparisons,
         "runs": runs,
         "require_native": args.require_native,

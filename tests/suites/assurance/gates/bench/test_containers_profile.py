@@ -28,6 +28,9 @@ def test_all_public_operation_oracles_run_without_clocks_in_smoke(monkeypatch):
 
     monkeypatch.setattr(profile.time, "perf_counter_ns", forbidden)
     monkeypatch.setattr(profile.time, "process_time_ns", forbidden)
+    monkeypatch.setattr(profile.gc, "isenabled", forbidden)
+    monkeypatch.setattr(profile.gc, "disable", forbidden)
+    monkeypatch.setattr(profile.gc, "enable", forbidden)
     cases = _cases()
     assert len(cases) == 34
     assert {case.name for case in cases} >= {
@@ -81,18 +84,30 @@ def test_corrupt_operation_outputs_fail_independent_models(name):
 
 def test_state_setup_and_checks_remain_outside_timed_region(monkeypatch):
     events = []
+    collector = {"enabled": True}
+
+    def disable():
+        events.append("gc.disable")
+        collector["enabled"] = False
+
+    def enable():
+        events.append("gc.enable")
+        collector["enabled"] = True
 
     def setup():
         events.append("setup")
+        assert collector["enabled"]
         return []
 
     def run(state):
         events.append("run")
+        assert not collector["enabled"]
         state.append(1)
         return state
 
     def check(state, result):
         events.append("check")
+        assert collector["enabled"]
         assert state is result
         assert result == [1]
 
@@ -109,23 +124,79 @@ def test_state_setup_and_checks_remain_outside_timed_region(monkeypatch):
 
     monkeypatch.setattr(profile.time, "perf_counter_ns", wall_clock)
     monkeypatch.setattr(profile.time, "process_time_ns", cpu_clock)
+    monkeypatch.setattr(profile.gc, "isenabled", lambda: collector["enabled"])
+    monkeypatch.setattr(profile.gc, "disable", disable)
+    monkeypatch.setattr(profile.gc, "enable", enable)
     result = profile._sample(
         profile.Case("fixture", setup, run, check, 4), 2, smoke=False
     )
     assert events == [
         "setup",
         "setup",
+        "gc.disable",
         "cpu",
         "wall",
         "run",
         "run",
         "wall",
         "cpu",
+        "gc.enable",
         "check",
         "check",
     ]
     assert result["wall_ns_per_operation"] == 25
     assert result["cpu_ns_per_operation"] == 6.25
+
+
+@pytest.mark.parametrize("initially_enabled", [False, True])
+def test_timing_restores_original_collector_state_when_operation_raises(
+    monkeypatch, initially_enabled
+):
+    collector = {"enabled": initially_enabled}
+    events = []
+    failure = RuntimeError("operation failed")
+
+    def disable():
+        events.append("gc.disable")
+        collector["enabled"] = False
+
+    def enable():
+        events.append("gc.enable")
+        collector["enabled"] = True
+
+    def clock():
+        events.append("clock")
+        return 1
+
+    def run(_state):
+        events.append("run")
+        assert not collector["enabled"]
+        collector["enabled"] = not initially_enabled
+        raise failure
+
+    def check(_state, _result):
+        pytest.fail("failed operations must propagate before output checks")
+
+    monkeypatch.setattr(profile.gc, "isenabled", lambda: collector["enabled"])
+    monkeypatch.setattr(profile.gc, "disable", disable)
+    monkeypatch.setattr(profile.gc, "enable", enable)
+    monkeypatch.setattr(profile.time, "perf_counter_ns", clock)
+    monkeypatch.setattr(profile.time, "process_time_ns", clock)
+    with pytest.raises(RuntimeError) as caught:
+        profile._sample(
+            profile.Case("failure", lambda: None, run, check, 1), 1, smoke=False
+        )
+    assert caught.value is failure
+    assert collector["enabled"] is initially_enabled
+    assert events == [
+        "gc.disable",
+        "clock",
+        "clock",
+        "run",
+        "clock",
+        "clock",
+        "gc.enable" if initially_enabled else "gc.disable",
+    ]
 
 
 def test_wrong_product_provenance_is_rejected(tmp_path):
@@ -165,8 +236,25 @@ def test_dispatch_records_selected_types_and_descriptor_owners():
     if dispatch["native_module"]:
         selected = dispatch["classes"]["SortedList"]
         assert selected["native_configured"]
-        assert "add" in selected["native_descriptors"]
-        assert selected["native_descriptors"]["add"].startswith("unstd.containers.")
+        accelerated = {"add", "_loc", "_pos"}.intersection(
+            selected["native_descriptors"]
+        )
+        assert accelerated
+        assert all(
+            selected["native_descriptors"][method].startswith("unstd.containers.")
+            for method in accelerated
+        )
+
+
+def test_dispatch_uses_the_selected_facade_native_flag(monkeypatch):
+    pytest.importorskip("sortedcontainers")
+    pytest.importorskip("immutables")
+    import unstd.containers as containers
+    from unstd.containers import sorted as sorted_module
+
+    monkeypatch.setattr(sorted_module, "_HAVE_NATIVE", True, raising=False)
+    monkeypatch.setattr(sorted_module, "HAVE_NATIVE_SORTED", False, raising=False)
+    assert profile._dispatch(containers)["have_native_sorted"] is True
 
 
 def test_dispatch_rejects_native_binary_from_another_source(tmp_path, monkeypatch):
@@ -232,6 +320,8 @@ def test_source_order_alternates_and_smoke_has_no_cold_imports(tmp_path, monkeyp
     assert report["cold_imports"] == []
     assert report["warm_imports"] == []
     assert report["comparisons"] == {}
+    assert "no per-case collection" in report["gc_policy"]["operations"]
+    assert report["gc_policy"]["smoke"] == "collector state untouched"
     assert output.is_file()
 
 
@@ -328,7 +418,10 @@ def test_prewarm_rejects_wrong_source_before_measurement(tmp_path, monkeypatch):
         (None, True, {"add": "owner"}, False),
         ("native.so", False, {"add": "owner"}, False),
         ("native.so", True, {}, False),
+        ("native.so", True, {"update": "owner"}, False),
         ("native.so", True, {"add": "owner"}, True),
+        ("native.so", True, {"_loc": "owner"}, True),
+        ("native.so", True, {"_pos": "owner"}, True),
     ],
 )
 def test_native_requirement_needs_selected_configured_descriptors(

@@ -238,7 +238,7 @@ def _run_worker(benchmark: Path, runs: int) -> dict[str, Any]:
 
 
 def _retained(
-    benchmark: Path, source: Path
+    benchmark: Path, source: Path, *, loader: Any = None
 ) -> tuple[Any, list[Any], dict[str, Any], Any]:
     """Keep source-bound callables alive while restoring the import namespace."""
     saved = {
@@ -251,7 +251,7 @@ def _retained(
         for name in saved:
             del sys.modules[name]
         sys.path.insert(0, str(source))
-        loaded = _workloads(benchmark)
+        loaded = _workloads(benchmark) if loader is None else loader(benchmark)
         imported = Path(loaded[2]["package_source"]).resolve()
         if imported != source / "unstd/serde/jsonx.py":
             message = f"requested {source}, imported {imported}"

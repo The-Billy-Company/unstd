@@ -368,6 +368,8 @@ def _prepare(
                     if recipe["kind"] == "report"
                     else value
                 )
+                if recipe["consumer"] == "hosted":
+                    payload = payload.encode()
                 result = writer(
                     path,
                     payload,

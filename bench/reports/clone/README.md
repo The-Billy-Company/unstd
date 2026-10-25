@@ -4,6 +4,7 @@
 - [clone-cpu-results](clone-cpu-results.md) — paired CPU/wall evidence against the previous native implementation
 - [clone-common-cpu-results](clone-common-cpu-results.md) — further common dict/list and dataclass CPU work, measured through public Python entrypoints
 - [clone-foundry-results](clone-foundry-results.md) — Linux installed-wheel native qualification, common-shape performance on Python 3.13/3.14, and the ongoing latency guard
+- [clone-sequence-results](clone-sequence-results.md) — scalar prefixes and adjacent aliases, stricter paired latency guards, server scaling and sanitizer evidence
 
 See the [evidence index](../README.md) and [benchmark guide](../../README.md).
 

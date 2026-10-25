@@ -88,6 +88,7 @@ _NATIVE_MODULES = (
     "unstd/text/_text_native",
     "unstd/compress/_gzip_native",
     "unstd/containers/_sorted_native",
+    "unstd/proc/_proc_native",
 )
 _MACHO_ORDERS = {
     b"\xcf\xfa\xed\xfe": "<",  # 64-bit little endian

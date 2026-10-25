@@ -200,9 +200,9 @@ assert rex.compile_faithful('a$').search('a\\n').span() == (0, 1)
     "containers": """
 import immutables, sortedcontainers
 from unstd import containers
-assert containers.SortedList is sortedcontainers.SortedList
-assert containers.SortedDict is sortedcontainers.SortedDict
-assert containers.SortedSet is sortedcontainers.SortedSet
+assert issubclass(containers.SortedList, sortedcontainers.SortedList)
+assert issubclass(containers.SortedDict, sortedcontainers.SortedDict)
+assert issubclass(containers.SortedSet, sortedcontainers.SortedSet)
 assert containers.Map is immutables.Map
 values = containers.SortedList([3, 1]); values.add(2)
 assert list(values) == [1, 2, 3]

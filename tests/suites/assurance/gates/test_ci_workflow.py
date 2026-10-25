@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ast
 import json
 import os
 from pathlib import Path
@@ -19,6 +20,7 @@ from tests.support.environment.anchors import REPO_ROOT
 from tests.support.environment.backends import require_backend
 from tests.tooling.ci import groups as ci
 from tests.tooling.ci.sharding import parse_shard
+from tests.tooling.release import verify, wheel_tests
 
 
 @pytest.fixture(scope="module")
@@ -250,10 +252,48 @@ def test_sanitizer_shards_retain_both_engines_every_module_and_failure_evidence(
         step for step in job["steps"] if "upload-artifact@" in step.get("uses", "")
     )
     assert ".local/native-sanitizers-${{ matrix.shard }}.xml" in summary["run"]
-    assert (
-        artifact["with"]["path"] == ".local/native-sanitizers-${{ matrix.shard }}.xml"
-    )
+    assert artifact["with"]["path"].splitlines() == [
+        ".local/native-sanitizers-${{ matrix.shard }}.xml",
+        ".local/proc-memory/manifest.json",
+        ".local/proc-memory/tests.txt",
+        ".local/proc-memory/tests.xml",
+    ]
     assert "${{ matrix.shard }}" in artifact["with"]["name"]
+    assert 'if [ "${{ matrix.shard }}" = "1" ]; then' in step["run"]
+    assert (
+        "env -u LD_PRELOAD .venv/bin/python -m tests.tooling.runtime.proc_memory"
+        " --sanitize --output .local/proc-memory --tests tests/suites/product/proc"
+    ) in step["run"]
+
+
+def test_every_built_native_module_has_allocator_sanitizer_and_wheel_contracts(
+    workflow,
+):
+    build = ast.parse((REPO_ROOT / "hatch_build.py").read_text())
+    declaration = next(
+        node
+        for node in build.body
+        if isinstance(node, ast.Assign)
+        and any(
+            isinstance(target, ast.Name) and target.id == "_NATIVE_MODULES"
+            for target in node.targets
+        )
+    )
+    modules = set(ast.literal_eval(declaration.value))
+    owners = {module.split(".")[1] for module in modules}
+    assert set(verify._NATIVE_MODULES) == {
+        module.replace(".", "/") for module in modules
+    }
+    assert set(wheel_tests.MODULES) == owners
+    paths = {f"tests/suites/product/{owner}" for owner in owners}
+    for identity in ("native", "native-sanitizers"):
+        steps = workflow["jobs"][identity]["steps"]
+        tests = next(step for step in steps if step.get("id") == "tests")
+        assert set(re.findall(r"tests/suites/product/[a-z]+", tests["run"])) == paths
+        assert all(
+            module in "\n".join(step.get("run", "") for step in steps)
+            for module in modules
+        )
 
 
 def test_parallel_type_matrix_runs_every_combination_and_preserves_failure(

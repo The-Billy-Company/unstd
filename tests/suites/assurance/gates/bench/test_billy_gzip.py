@@ -230,6 +230,84 @@ def test_candidate_wall_slowdown_fails_and_retains_cpu_diagnostics(
 
 
 @pytest.mark.parametrize(
+    ("ratios", "fails"),
+    [
+        ((1.20, 1.31, 1.20), False),
+        ((1.40, 1.31, 1.40), True),
+        ((1.30, 1.40, 1.30), False),
+    ],
+)
+def test_wall_gate_matches_repetitions_under_drift_and_keeps_persistent_slowdowns(
+    tmp_path, monkeypatch, ratios, fails
+):
+    fixtures = tmp_path / "fixtures.json"
+    fixtures.write_text("{}")
+    before_samples = (100.0, 105.0, 200.0)
+    observed = []
+
+    def worker(command, **_options):
+        repetition = len(observed) // 2
+        source = command[command.index("--source") + 1]
+        candidate = source.endswith("candidate")
+        observed.append("candidate" if candidate else "baseline")
+        wall = before_samples[repetition] * (ratios[repetition] if candidate else 1)
+        result = {
+            "cases": {
+                "upload": {
+                    "per_op_ns": wall,
+                    # Faster CPU time cannot excuse slower wall-clock latency.
+                    "cpu_samples_ns": [50 if candidate else 100],
+                }
+            }
+        }
+        return SimpleNamespace(stdout=json.dumps(result))
+
+    monkeypatch.setattr(profile.subprocess, "run", worker)
+    output = tmp_path / "paired.json"
+    arguments = Namespace(
+        source=tmp_path / "candidate",
+        baseline_source=tmp_path / "baseline",
+        stdlib=False,
+        fixtures=fixtures,
+        rounds=7,
+        repetitions=3,
+        case=[],
+        output=output,
+        max_slowdown=1.3,
+    )
+    if fails:
+        with pytest.raises(RuntimeError, match="latency regressions"):
+            profile._run(arguments)
+    else:
+        profile._run(arguments)
+    assert observed == [
+        "candidate",
+        "baseline",
+        "baseline",
+        "candidate",
+        "candidate",
+        "baseline",
+    ]
+    report = json.loads(output.read_text())
+    comparison = report["comparisons"]["upload"]
+    assert report["max_slowdown"] == 1.3
+    assert comparison["paired_candidate_over_baseline"] == pytest.approx(ratios[0])
+    assert [pair["candidate_over_baseline"] for pair in comparison["pairs"]] == (
+        pytest.approx(ratios)
+    )
+    assert report["regressions"] == (["upload"] if fails else [])
+    # Independent medians select the middle repetition's slowdown even when
+    # two matched measurements are within the unchanged limit.
+    assert (
+        report["summary_wall_ns"]["candidate"]["upload"]
+        / report["summary_wall_ns"]["baseline"]["upload"]
+        > 1.3
+    )
+    assert len(report["records"]["candidate"]) == 3
+    assert len(report["records"]["baseline"]) == 3
+
+
+@pytest.mark.parametrize(
     ("maximum", "baseline"),
     [("nan", True), ("inf", True), ("0.99", True), ("-1", True), ("1.3", False)],
 )

@@ -104,6 +104,8 @@ communicate = backend._native.communicate
 calls = []
 def capture(*arguments):
     result = communicate(*arguments)
+    assert type(result[0]) is bytes
+    assert type(result[1]) is bytes
     calls.append(result[2:])
     return result
 backend._native.communicate = capture
@@ -112,6 +114,8 @@ try:
     proc.run([sys.executable, '-S', '-c', {child!r}], timeout=0.5, log=events.append)
 except proc.TimeoutExpired as error:
     assert error.timeout == 0.5
+    assert type(error.stdout) is bytes
+    assert type(error.stderr) is bytes
     assert error.stdout == b'partial\\xff\\n'
     assert error.stderr == b'error\\xfe\\n'
 else:
@@ -217,6 +221,8 @@ def test_native_timeout_and_setup_error_restore_pipe_flags(native):
     try:
         result = native.communicate(outread, errread, time.monotonic() + 0.002)
         assert result == (b"", b"", True, False, False, False, False)
+        assert type(result[0]) is bytes
+        assert type(result[1]) is bytes
         assert os.get_blocking(outread)
         assert os.get_blocking(errread)
         os.close(errread)
@@ -230,6 +236,116 @@ def test_native_timeout_and_setup_error_restore_pipe_flags(native):
         for descriptor in (outread, outwrite, errread, errwrite):
             if descriptor >= 0:
                 os.close(descriptor)
+
+
+@pytest.mark.parametrize("size", [0, 1, 65535, 65536, 65537, 131071, 131072, 131073])
+def test_private_output_buffers_are_exact_at_growth_boundaries(native, size):
+    expected = (bytes(range(256)) * ((size + 255) // 256))[:size]
+    child = subprocess.Popen(  # noqa: S603 — literal fixture code and integer size
+        [
+            sys.executable,
+            "-S",
+            "-c",
+            "import sys; size=int(sys.argv[1]); "
+            "value=(bytes(range(256))*((size+255)//256))[:size]; "
+            "sys.stdout.buffer.write(value); sys.stderr.buffer.write(value[::-1])",
+            str(size),
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    try:
+        result = native.communicate(
+            child.stdout.fileno(), child.stderr.fileno(), time.monotonic() + 3
+        )
+        assert result == (expected, expected[::-1], False, True, True, True, True)
+        # Only immutable copies escape the private native allocations.
+        assert type(result[0]) is bytes
+        assert type(result[1]) is bytes
+        assert child.wait(timeout=2) == 0
+    finally:
+        if child.poll() is None:
+            child.kill()
+        child.wait()
+        child.stdout.close()
+        child.stderr.close()
+
+
+@pytest.mark.skipif(
+    sys.platform != "linux" or os.environ.get("UNSTD_NATIVE_SANITIZERS") == "1",
+    reason="Linux address-space limit without sanitizer virtual reservations",
+)
+def test_allocation_limit_kills_reaps_and_recovers(tmp_path, native):
+    child = """
+import os
+from pathlib import Path
+import sys
+Path('pid').write_text(str(os.getpid()))
+chunk = b'O' * (1024 * 1024)
+for _ in range(128):
+    sys.stdout.buffer.write(chunk)
+sys.stdout.buffer.flush()
+Path('escaped').write_text('bad')
+"""
+    code = f"""
+import os
+from pathlib import Path
+import resource
+import sys
+from unstd import proc
+from unstd.proc._internal import backend
+assert backend._native is not None
+communicate = backend._native.communicate
+calls = []
+def observe(*arguments):
+    calls.append(True)
+    # Bound parent capture allocations after spawn. Applying the same bound
+    # before launch also constrains the child's transient interpreter startup
+    # mappings, which can fail before it reaches this fixture's output loop.
+    resource.setrlimit(resource.RLIMIT_AS, (limit, original[1]))
+    return communicate(*arguments)
+backend._native.communicate = observe
+original = resource.getrlimit(resource.RLIMIT_AS)
+pages = int(Path('/proc/self/statm').read_text().split()[0])
+limit = pages * os.sysconf('SC_PAGE_SIZE') + 32 * 1024 * 1024
+if original[1] != resource.RLIM_INFINITY and limit > original[1]:
+    print('EXISTING_HARD_LIMIT')
+    raise SystemExit(77)
+descriptors = len(os.listdir('/proc/self/fd'))
+failed = False
+try:
+    try:
+        proc.run([sys.executable, '-S', '-c', {child!r}], timeout=10)
+    except MemoryError:
+        failed = True
+finally:
+    resource.setrlimit(resource.RLIMIT_AS, original)
+    backend._native.communicate = communicate
+assert failed, 'native capture did not propagate allocation failure'
+assert calls == [True], calls
+assert len(os.listdir('/proc/self/fd')) == descriptors
+assert not Path('escaped').exists()
+pid = int(Path('pid').read_text())
+try:
+    os.waitpid(pid, os.WNOHANG)
+except ChildProcessError:
+    pass
+else:
+    raise AssertionError('allocation failure returned an unreaped child')
+try:
+    os.kill(pid, 0)
+except ProcessLookupError:
+    pass
+else:
+    raise AssertionError('allocation failure returned a live child')
+assert proc.capture([sys.executable, '-S', '-c', "print('recovered')"], timeout=3) == 'recovered'
+print('ALLOCATION_FAILURE_REAPED_RECOVERED')
+"""
+    result = run_python(code, cwd=tmp_path, timeout=20)
+    if result.returncode == 77 and result.stdout == "EXISTING_HARD_LIMIT\n":
+        pytest.skip("existing hard address-space limit prevents controlled allocation")
+    assert result.returncode == 0, result.stderr
+    assert result.stdout == "ALLOCATION_FAILURE_REAPED_RECOVERED\n"
 
 
 @pytest.mark.parametrize("api", ["run", "capture", "run_ok"])

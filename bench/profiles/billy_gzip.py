@@ -7,6 +7,8 @@ The timed region includes codec setup, parsing/hashing and close/flush. Async
 scheduling, gRPC and filesystem latency are excluded; no decoded-output cache is
 used. Fixture receipts retain the upstream consumer source locations and hashes.
 The dataset query lane explicitly requires Billy's optional ``ijson`` dependency.
+The latency gate uses the median candidate/baseline ratio within matched
+repetitions; independent latency medians and every pair remain in the report.
 """
 
 from __future__ import annotations
@@ -463,12 +465,37 @@ def _run(args: argparse.Namespace) -> None:
                 command, capture_output=True, text=True, check=True, timeout=180
             )
             records[name].append(json.loads(completed.stdout))
+    comparisons: dict[str, dict[str, Any]] = {}
+    if "baseline" in records:
+        for case in records["candidate"][0]["cases"]:
+            pairs = [
+                {
+                    "repetition": repetition,
+                    "candidate_ns": candidate["cases"][case]["per_op_ns"],
+                    "baseline_ns": baseline["cases"][case]["per_op_ns"],
+                    "candidate_over_baseline": (
+                        candidate["cases"][case]["per_op_ns"]
+                        / baseline["cases"][case]["per_op_ns"]
+                    ),
+                }
+                for repetition, (candidate, baseline) in enumerate(
+                    zip(records["candidate"], records["baseline"], strict=True)
+                )
+            ]
+            comparisons[case] = {
+                "paired_candidate_over_baseline": statistics.median(
+                    pair["candidate_over_baseline"] for pair in pairs
+                ),
+                "pairs": pairs,
+            }
     report: dict[str, Any] = {
         "schema": 1,
+        "estimator": "median of matched repetition candidate/baseline wall-clock ratios; independent latency medians retained",
         "recorded_utc": datetime.now(UTC).isoformat(),
         "harness_sha256": _sha(Path(__file__).read_bytes()),
         "fixture_manifest_sha256": _sha(args.fixtures.read_bytes()),
         "records": records,
+        "comparisons": comparisons,
         "summary_cpu_ns": {
             name: {
                 case: statistics.median(
@@ -496,8 +523,8 @@ def _run(args: argparse.Namespace) -> None:
     report["regressions"] = (
         [
             name
-            for name, measured in report["summary_wall_ns"]["candidate"].items()
-            if measured > report["summary_wall_ns"]["baseline"][name] * maximum
+            for name, comparison in comparisons.items()
+            if comparison["paired_candidate_over_baseline"] > maximum
         ]
         if maximum is not None
         else []

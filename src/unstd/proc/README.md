@@ -7,19 +7,25 @@ is a **curated safe surface**, not a drop-in of every `subprocess` API.
 
 ## Backend
 
-**Pure stdlib — no extra, no third-party backend.** It imports and works in a
-base `unstd` install and adds zero dependency closure.
+**No extra or third-party dependency.** The base install includes an optional
+bundled C backend on CPython and retains a stdlib fallback.
+
+On Linux and macOS, native spawning closes unrelated descriptors and preserves
+argv, cwd, PATH, environment and subprocess audit events. Captured output without
+stdin uses a native poll/read loop with private growing buffers. Text decoding,
+universal newlines, timeout exceptions and final reaping retain their existing
+contracts. Calls supplying `stdin_text` use stdlib pipe communication.
 
 Bounded child waits use Linux pidfds or macOS kqueue exit notifications when
 available. This removes stdlib's exponential polling sleeps after captured
 pipes close, including when a child closes stdout/stderr before it exits.
 Already completed children are checked before allocating a notification handle.
 Unavailable or restricted kernel facilities fall back to the stdlib wait with
-the remaining deadline; Windows retains stdlib waits. Pipe communication,
-decoding, process creation and direct-child reaping remain with `subprocess`.
+the remaining deadline; Windows retains stdlib execution. Unsupported
+native spawn shapes use `subprocess` without relaxing descriptor isolation.
 
-The optimization targets exit latency; process startup and the child's own work
-can dominate other commands. See the [paired Linux/macOS measurements](../../../bench/reports/proc/README.md).
+See the [Billy workload and memory-safety qualification](../../../bench/reports/proc/billy-native.md)
+and the earlier [exit-wait measurements](../../../bench/reports/proc/README.md).
 
 ## What it hardens
 

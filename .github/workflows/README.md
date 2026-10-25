@@ -37,8 +37,9 @@ check name and do not satisfy the normal performance checks.
 
 The clone comparison also checks 25 common graph and dataclass workloads with
 GC enabled. It proves successful native graph, dataclass and `asdict` routes in
-both installations, then fails if either median wall or CPU latency exceeds
-130% of the comparison revision. Baseline imports select that revision's own
+both installations, then fails if the median matched wall or CPU ratio exceeds
+110% of the comparison revision. Pairing rounds keeps worker drift from
+creating a false regression. Baseline imports select that revision's own
 native entrypoints. Raw timings and route evidence remain in `clone-common.json`
 even when the guard fails.
 
@@ -48,6 +49,10 @@ between the two installed revisions with `--require-native`. A wall-time
 slowdown above 15% fails after retaining the paired raw samples, stdlib controls,
 binary/source hashes and dispatch evidence. Every release wheel runs the same
 native qualification before its full installed-wheel tests.
+Shared-row JSON cases and equal-output independent controls have a separate
+paired check and retained report, with the same 15% regression limit. These
+workloads detect loss of operation-local branch reuse without changing the
+ordinary record fixtures.
 
 The Linux full-extra test environments and the isolated `archives` lane
 explicitly install native libarchive for runtime qualification. The Python

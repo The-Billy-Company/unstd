@@ -6,6 +6,8 @@ Run this file directly so each worker selects its source before product import::
         --source src --rounds 7 --output /tmp/containers.json
 
 Setup, reset, and independent result checks remain outside operation timings.
+Operation timings include allocation and reference-count cleanup, with cyclic
+garbage collection disabled outside the clocks and restored afterward.
 Cold imports use minimal fresh interpreters, before this harness or its metadata
 dependencies load. Both sources first populate one private bytecode cache;
 measured fresh processes read that cache with writes disabled. Samples alternate
@@ -18,6 +20,7 @@ from __future__ import annotations
 import argparse
 import bisect
 from dataclasses import dataclass
+import gc
 from hashlib import sha256
 from importlib.metadata import distribution
 import inspect
@@ -365,12 +368,22 @@ def _sample(case: Case, iterations: int, *, smoke: bool) -> dict[str, Any]:
             results[index] = case.run(state)
         timing: dict[str, Any] = {}
     else:
-        cpu_start = time.process_time_ns()
-        wall_start = time.perf_counter_ns()
-        for index, state in enumerate(states):
-            results[index] = case.run(state)
-        wall = time.perf_counter_ns() - wall_start
-        cpu = time.process_time_ns() - cpu_start
+        collector_enabled = gc.isenabled()
+        gc.disable()
+        try:
+            cpu_start = time.process_time_ns()
+            wall_start = time.perf_counter_ns()
+            try:
+                for index, state in enumerate(states):
+                    results[index] = case.run(state)
+            finally:
+                wall = time.perf_counter_ns() - wall_start
+                cpu = time.process_time_ns() - cpu_start
+        finally:
+            if collector_enabled:
+                gc.enable()
+            else:
+                gc.disable()
         timing = {
             "wall_ns": wall,
             "process_cpu_ns": cpu,
@@ -453,7 +466,7 @@ def _dispatch(types: Any) -> dict[str, Any]:
     return {
         "native_module": native_path,
         "native_kernel_version": getattr(native, "KERNEL_VERSION", None),
-        "have_native_sorted": getattr(sorted_module, "HAVE_NATIVE_SORTED", False),
+        "have_native_sorted": getattr(sorted_module, "_HAVE_NATIVE", False),
         "classes": {
             name: {
                 "module": cls.__module__,
@@ -660,7 +673,9 @@ def _collect(
             if (
                 not dispatch.get("native_module")
                 or not selected.get("native_configured")
-                or "add" not in selected.get("native_descriptors", {})
+                or not {"add", "_loc", "_pos"}.intersection(
+                    selected.get("native_descriptors", {})
+                )
             ):
                 message = "current source did not select native sorted operations"
                 raise RuntimeError(message)
@@ -705,6 +720,11 @@ def _collect(
         "complete": True,
         "fixture_seed": 1729,
         "bytecode_policy": "one private pycache prefix per comparison; both sources and dependency closures prewarmed with writes enabled; measured fresh interpreters read warm bytecode with writes disabled",
+        "gc_policy": {
+            "operations": "cyclic collector disabled outside timing clocks; original state restored after clocks even on failure; allocation and reference-count cleanup retained; setup and oracles outside timing; no per-case collection",
+            "cold_imports": "fresh interpreter default cyclic collector state",
+            "smoke": "collector state untouched",
+        },
         "warm_imports": warm_imports,
         "harness_sha256": sha256(Path(__file__).read_bytes()).hexdigest(),
         "parameters": {

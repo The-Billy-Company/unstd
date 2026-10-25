@@ -117,6 +117,7 @@ for _type, _base in (
     _type.__module__ = "unstd.containers.sorted"
     _owner: Any = _type
     _owner.__signature__ = signature(_base)
+    _owner.__unstd_backend__ = _base
 del _type, _base
 
 _sorted_native.install(SortedList, _SortedList)

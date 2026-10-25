@@ -48,6 +48,31 @@ def test_missing_backend_for_owned_exports_still_fails_discovery(
         speeds.public_apis(root)
 
 
+def test_backend_subclasses_retain_provider_vocabulary_and_count_new_methods(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = tmp_path / "inventory_backend_probe"
+    package = root / "containers"
+    package.mkdir(parents=True)
+    (tmp_path / "inventory_provider.py").write_text(
+        "class Provider:\n    def add(self, value): pass\n"
+    )
+    (package / "__init__.py").write_text(
+        "from inventory_provider import Provider\n"
+        "class Compatible(Provider):\n"
+        "    __module__ = 'unstd.inventory_probe'\n"
+        "    __unstd_backend__ = Provider\n"
+        "    def add(self, value): pass\n"
+        "    def additional(self): pass\n"
+        "__all__ = ['Compatible']\n"
+    )
+    monkeypatch.syspath_prepend(str(tmp_path))
+    assert speeds.public_apis(root) == {
+        "inventory_backend_probe.containers.Compatible",
+        "inventory_backend_probe.containers.Compatible.additional",
+    }
+
+
 @pytest.fixture(scope="module")
 def all_backends() -> None:
     """Optional local installs skip; required-extra CI rejects absence globally."""
@@ -120,6 +145,34 @@ def test_real_workload_oracles_survive_repeated_audits(
 ) -> None:
     speeds.audit(complete_cases)
     speeds.audit(complete_cases)
+
+
+def test_sorted_kernel_variants_check_stdlib_positions_and_fresh_insertions(
+    complete_cases: list[speeds.Case], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from unstd import containers
+
+    names = {
+        f"unstd.containers.SortedList#{suffix}"
+        for suffix in (
+            "add-duplicate",
+            "bisect-left",
+            "bisect-right",
+            "bisect-right-alias",
+        )
+    }
+    selected = {case.name: case for case in complete_cases if case.name in names}
+    assert selected.keys() == names
+    for case in selected.values():
+        case.check(case.run())
+        case.check(case.run())
+    for suffix in ("bisect-left", "bisect-right", "bisect-right-alias"):
+        with pytest.raises(speeds.RegistryError, match="expected"):
+            selected[f"unstd.containers.SortedList#{suffix}"].check(-1)
+    monkeypatch.setattr(containers.SortedList, "add", lambda *_args: None)
+    inserted = selected["unstd.containers.SortedList#add-duplicate"]
+    with pytest.raises(speeds.RegistryError, match="expected"):
+        inserted.check(inserted.run())
 
 
 def test_tls_workload_accepts_lazy_default_roots_and_rejects_insecure_policy(

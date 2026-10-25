@@ -6,10 +6,21 @@ audits, baseline floors, source isolation, workload coverage, paired timing, and
 observed native dispatch. Deliberately wrong outputs and declined native calls
 must fail before they can support an acceleration claim.
 
+SortedList operation variants use stdlib bisect positions and an independently
+sorted insertion model. Their fresh-list fixture cannot accumulate state across
+batches; a deliberately disabled insertion fails its output oracle. Additive
+capture checks reject incomplete provenance and incompatible selected runtimes
+while preserving every existing ceiling and historical capture record.
+
 `test_fs_backend.py` checks saved/current source isolation, stale-bytecode
 rejection, unchanged signatures, independent output checks, shared calibrated
 batch counts, alternating sample order, and repeatable filesystem fixtures.
 Its checks use no machine-speed thresholds.
+
+`test_billy_fs.py` pins consumer-source and payload receipts, synthetic-data
+boundaries, byte-oriented browser writes, retained quota checks, shared paths,
+independent content/mode checks, and native-entrypoint evidence. Untimed sentinel
+resets prevent a no-op native call from borrowing a preceding Python result.
 
 `test_jsonx_throughput.py` rejects missing/wrong installed native extensions,
 inactive bindings, incorrect native results, source changes and empty workload
@@ -18,6 +29,10 @@ limits, and evidence retention when a wall-time limit fails, without measuring
 machine speed in the correctness suite.
 Drifting-worker fixtures require matched repetition ratios and prove that a
 persistent wall-time regression still fails the same limit.
+`test_jsonx_pairing.py` checks adjacent batch order and equal iteration budgets,
+two real native installations with independent globals and bindings, complete
+module/path restoration on success and failure, and provenance drift on either
+side of timing.
 
 `test_gzip_reads.py` rejects changed decoded bytes and incorrectly imported
 comparison sources, and checks bounded output, concatenated lines and rewinds.
@@ -26,7 +41,10 @@ and position restoration, full-query EOF, per-entry journal writes and batch
 flushes, appended members, and fixture/output corruption rejection.
 It validates all 14 committed synthetic consumer shapes, rejects nonfinite or
 unpaired slowdown limits, and ensures faster CPU samples cannot hide a wall-time
-regression.
+regression. The wall gate uses the median of matched repetition ratios and keeps
+both independent latency medians and each original pair. Drifting-worker
+controls distinguish a mismatched median from a persistent slowdown above the
+unchanged 30% limit.
 `test_gzip_concurrency.py` checks isolated direct workers, bounded concurrency,
 alternating samples, native codec proof, validation failures and collector
 restoration, and the complete-worker byte denominator including both upload
@@ -67,6 +85,8 @@ baselines retain all three native proofs. Every revision still checks and times
 all 25 workloads with GC enabled and the same wall/CPU limits.
 Its unit tests reject declined native calls and separate wall/CPU regressions,
 check baseline entrypoint isolation, and require evidence to survive failure.
+Matched-round ratios reject persistent slowdowns while tolerating common worker
+drift; absent, unpaired or nonfinite measured samples fail qualification.
 
 `test_proc_backend.py` loads the process profile directly without optional
 product dependencies. It rejects incorrect outputs and changed signatures,

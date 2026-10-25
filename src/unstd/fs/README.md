@@ -137,6 +137,11 @@ The evaluation includes real file and directory syncing. Local I/O timing is
 noisy, so it does not establish a consistent atomic-write speedup. The portable
 walk retains its per-entry identity checks.
 
+The [Billy/Linux follow-up](../../../bench/reports/fs/billy-linux.md) profiles
+actual consumer shapes and a separately built native atomic-write proof. That
+experiment is outside public fs dispatch; its cancellation and error contracts
+require further qualification before integration.
+
 ## Implementation layout
 
 Traversal and directory-sync mechanisms live in [`_internal/`](_internal/README.md). The package keeps atomic-write orchestration and passes its OS binding explicitly to the private helpers.

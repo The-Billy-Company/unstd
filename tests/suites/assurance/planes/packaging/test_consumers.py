@@ -539,6 +539,7 @@ for module in {_PROBE_MODULES[surface]!r}:
         "unstd.crypto._stream_native",
         "unstd.text._text_native",
         "unstd.compress._gzip_native",
+        "unstd.proc._proc_native",
     ],
 )
 def test_base_install_runs_packaged_accelerators_without_backend_extras(
@@ -590,6 +591,24 @@ import gzip
 payload = b'installed native gzip payload' * 128
 assert native.decompress(gzip.compress(payload, mtime=0)) == payload
 assert native.decompress(b'not a gzip frame') is None
+""",
+        "unstd.proc._proc_native": """
+from unstd import proc
+from unstd.proc._internal import backend
+assert backend._native is native
+calls = []
+communicate = native.communicate
+def observe(*arguments):
+    outcome = communicate(*arguments)
+    calls.append(outcome is not NotImplemented)
+    return outcome
+native.communicate = observe
+result = proc.run([sys.executable, '-c', "import sys; print('installed proc'); print('detail', file=sys.stderr)"], timeout=5)
+assert result.stdout == 'installed proc\\n'
+assert result.stderr == 'detail\\n'
+assert result.returncode == 0
+if os.name == 'posix':
+    assert calls == [True]
 """,
     }[module]
     consumer.run(

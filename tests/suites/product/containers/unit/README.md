@@ -11,6 +11,12 @@ implementations across block splits, positional indexes, keys, user subclasses,
 copying, pickling and comparison failures. Blocking the native module or using
 an unqualified backend version retains the original upstream implementations.
 
+`test_native_memory.py` probes descriptor/capsule reclamation, reinstallation
+from active comparisons, corrupted state and overflow rejection, and 24,000
+mixed operations across keyed/keyless collections and small block loads. Unsafe
+state probes run in bounded owned interpreters. The native qualification driver
+also runs them under ASan/UBSan; ordinary runs support Python's debug allocator.
+
 `test_lazy_exports.py` checks fresh-process package discovery, imports of each
 family, cached class identity, star imports and reloads. Loading one family must
 leave the other backend unloaded, and `dir()` must discover all public names
