@@ -1,4 +1,4 @@
-"""Concurrent independent gzip streams over the frozen Billy consumer fixtures.
+"""Concurrent independent gzip streams over the frozen consumer fixtures.
 
 Run this file directly. Each measured process selects its installation before
 importing the benchmark or product packages. Executors and threads are warmed

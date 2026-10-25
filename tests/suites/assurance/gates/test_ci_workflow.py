@@ -427,6 +427,9 @@ def test_cached_dependency_setup_rebuilds_source_before_running_tests(workflow):
     # with the sanitizer environment before any import or pytest execution.
     sanitizer = workflow["jobs"]["native-sanitizers"]
     assert "--no-install-project" in _sync(sanitizer)
+    # The proc memory runner builds its audited extension in this interpreter;
+    # pip's isolated editable build does not install setuptools into the venv.
+    assert "--group build" in _sync(sanitizer)
     rebuild = next(
         index
         for index, step in enumerate(sanitizer["steps"])

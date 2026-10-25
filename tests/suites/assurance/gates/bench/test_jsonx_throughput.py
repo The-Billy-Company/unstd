@@ -181,6 +181,45 @@ class _Measurement:
     cpu_samples_ns: tuple[float, ...] = (1.0, 2.0)
 
 
+def test_paired_batches_stay_bounded_when_one_codec_is_much_faster(monkeypatch):
+    def slow():
+        return "same"
+
+    def fast():
+        return "same"
+
+    def control():
+        return "same"
+
+    def calibrate(function):
+        if function is slow:
+            return 1, 10_000_000
+        if function is fast:
+            return 100_000, 10_000_000
+        return 10_000, 10_000_000
+
+    batches = []
+
+    def batch(function, count):
+        per_op = 10_000_000 if function is slow else 100 if function is fast else 1000
+        batches.append((function, count))
+        assert count * per_op <= profile.timing._MAX_BATCH_NS
+        return count * per_op
+
+    monkeypatch.setattr(profile.timing, "_calibrate", calibrate)
+    monkeypatch.setattr(profile.timing, "_batch", batch)
+    cases = {
+        "before": profile.Workload("test", slow, control, 4),
+        "after": profile.Workload("test", fast, control, 4),
+    }
+    measurements, pairs = profile._paired_measure(cases, 3, 0)
+    assert measurements["before"]["candidate"]["iters"] == 25
+    assert measurements["after"]["candidate"]["iters"] == 25
+    assert len(pairs) == 3
+    assert all(pair["after_over_before"] == 0.00001 for pair in pairs)
+    assert len(batches) == 12
+
+
 def test_worker_audits_outputs_and_retains_raw_wall_and_cpu_samples(monkeypatch):
     monkeypatch.setattr(profile, "_provenance", lambda *_a, **_k: {})
     monkeypatch.setattr(
@@ -263,9 +302,11 @@ def test_comparison_alternates_installed_roots_and_saves_wall_regression(
     tmp_path, monkeypatch
 ):
     observed = []
+    environments = []
 
     def worker(command, **kwargs):
         observed.append(command)
+        environments.append(kwargs["env"])
         return _simulated_worker(command, **kwargs)
 
     monkeypatch.setattr(profile.subprocess, "check_output", worker)
@@ -296,10 +337,66 @@ def test_comparison_alternates_installed_roots_and_saves_wall_regression(
         for command in observed
     )
     assert all("--require-native" in command for command in observed)
+    assert all(
+        environment["PYTHONPATH"].split(profile.os.pathsep)
+        == [str(tmp_path / "after"), str(Path(profile.__file__).resolve().parents[2])]
+        for environment in environments
+    )
     report = json.loads(output.read_text())
     assert report["regressions"] == ["records"]
     assert report["comparisons"]["records"]["before_over_after"] == 0.5
     assert len(report["runs"]) == 4
+
+
+def test_paired_worker_bootstraps_without_a_globally_installed_product(
+    tmp_path, monkeypatch
+):
+    # Reproduce bench's eager product import in a dependency-only interpreter.
+    # -S excludes the developer environment's installed unstd, so omitting the
+    # selected --target root fails here as it does after CI's --no-install-project.
+    harness = tmp_path / "harness"
+    profiles = harness / "bench/profiles"
+    profiles.mkdir(parents=True)
+    (profiles.parent / "__init__.py").write_text("import unstd\n")
+    (profiles / "__init__.py").write_text("")
+    source = tmp_path / "after"
+    (source / "unstd").mkdir(parents=True)
+    (source / "unstd/__init__.py").write_text("")
+    arguments = [
+        "--compare-source",
+        str(tmp_path / "before"),
+        "--source",
+        str(source),
+        "--rounds",
+        "1",
+        "--repetitions",
+        "1",
+        "--output",
+        str(tmp_path / "report.json"),
+    ]
+    worker = profiles / "jsonx_throughput.py"
+    result = _simulated_worker(
+        ["--paired-worker", "--worker-repetition", "0", *arguments]
+    )
+    worker.write_text(
+        "import sys\nfrom pathlib import Path\nimport unstd\n"
+        "source = Path(sys.argv[sys.argv.index('--source') + 1]).resolve()\n"
+        "assert Path(unstd.__file__).resolve().parent == source / 'unstd'\n"
+        f"print({result!r})\n"
+    )
+    check_output = profile.subprocess.check_output
+
+    def dependency_only_worker(command, **kwargs):
+        return check_output(
+            [command[0], "-S", *command[1:]], cwd=tmp_path, timeout=30, **kwargs
+        )
+
+    monkeypatch.setattr(profile, "__file__", str(worker))
+    monkeypatch.setattr(profile.subprocess, "check_output", dependency_only_worker)
+    profile.main(arguments)
+    report = json.loads((tmp_path / "report.json").read_text())
+    assert len(report["runs"]) == 2
+    assert report["runs"][1]["provenance"]["source"] == str(source)
 
 
 @pytest.mark.parametrize(

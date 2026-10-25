@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
 
-MODULES = ("serde", "clone", "crypto", "text", "compress", "containers", "proc")
+MODULES = ("serde", "clone", "crypto", "text", "compress", "containers", "proc", "fs")
 
 
 def worker_count() -> int:

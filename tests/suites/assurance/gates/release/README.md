@@ -1,5 +1,10 @@
 # Release verifier gates
 
+`test_proc_memory.py` checks the process memory-audit bootstrap: native dispatch
+remains separate from the stdlib controller fallback, macOS loader selection is
+restored, source fingerprints exclude generated binaries, and help works without
+loading product code. Workflow gates require retained proc sanitizer receipts.
+
 `test_json_acceleration.py` verifies the standalone installed-JSON check and its
 release-wheel wiring. Missing backends, native refusals, detached bindings,
 inactive dispatch and shared strict snapshots fail despite correct public

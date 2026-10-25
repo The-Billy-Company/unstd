@@ -1,160 +1,81 @@
 # unstd
 
-Stdlib-compatible codecs and focused utility APIs, with optional native
-acceleration. Documented stdlib replacements preserve their call surface;
-additional helpers have their own contracts. JSON proves native eligibility
-and falls back to stdlib codecs to preserve formatting, values, callbacks and
-errors.
+**An accelerated Python standard library for hot-path operations.**
 
-```python
-import json  # →
-from unstd.serde import jsonx  # faithful json API; dumpb for compact transport
-```
+unstd speeds up serialization, compression, deep copying, hashing, and other
+operations that dominate busy Python services. It combines bundled native code
+and optional accelerated backends with familiar Python APIs and focused utility
+helpers.
 
-The base install adds zero third-party runtime dependencies. External accelerated
-backends ride optional extras with guarded imports that fall back to the stdlib
-(or raise a clear `ImportError` where
-no fallback is faithful). Install `unstd` and you pay nothing. Install
-`unstd[serde]` and the serde modules light up.
+Requires **Python 3.12+**. The base install has **no third-party runtime
+dependencies**.
 
 ## Install
 
-```console
-python3 -m pip install unstd
-python3 -m pip install 'unstd[serde,ids,crypto]'
+```sh
+python -m pip install unstd
+
+# Add accelerated serialization and compression backends:
+python -m pip install 'unstd[serde,compress]'
 ```
 
-CPython platform wheels include optional C acceleration for compatible JSON,
-exact builtin structural cloning, exact-string Levenshtein/Jaro scoring, and
-gzip reads selected through the compression extra.
-Source builds use these modules when a compiler is available and otherwise keep
-the portable fallback. The runtime dependency set and public APIs are unchanged.
-See the [Billy fixture measurements](bench/reports/serde/billy-serde-optimization-results.md)
-for release comparisons, including remaining overhead relative to 2.1.1.
-The [native kernel audit](bench/reports/native/native-results.md) records clone and text
-measurements and compatibility boundaries.
+Install only the extras you need. Compatible CPython wheels include bundled C
+extensions; source builds use them when a compiler is available and retain
+portable fallbacks otherwise.
 
-## Groups
+## Quick start
 
-| Group | Extra | Backend / fallback |
-|---|---|---|
-| [`serde`](src/unstd/serde/README.md) | `unstd[serde]` | orjson / msgspec / pybase64 → stdlib `json`/`base64` |
-| [`ids`](src/unstd/ids/README.md) | `unstd[ids]` | uuid-utils → `uid` falls back to stdlib UUIDv7 |
-| [`crypto`](src/unstd/crypto/README.md) | `unstd[crypto]` | blake3 (required; hashlib ships BLAKE2, a different algorithm) |
-| [`time`](src/unstd/time/README.md) | `unstd[time]` | `timeutil` is pure stdlib; `zoned` requires `whenever`, and `timeutil`'s protobuf `Timestamp` bridge requires `unstd[proto]` |
-| [`model`](src/unstd/model/README.md) | `unstd[model]` | pydantic (required) |
-| [`rex`](src/unstd/rex/README.md) | `unstd[rex]` | irregex → stdlib `re` |
-| [`containers`](src/unstd/containers/README.md) | `unstd[containers]` | sortedcontainers + immutables (required) |
-| [`rand`](src/unstd/rand/README.md) | `unstd[rand]` | numpy PCG64 → stdlib `random`; `crypto` is always `secrets` |
-| [`pack`](src/unstd/pack/README.md) | `unstd[pack]` | numpy → stdlib `struct` |
-| [`clone`](src/unstd/clone/README.md) | — | bundled C → Python exact-type walk, `copy.deepcopy` per foreign node |
-| [`text`](src/unstd/text/README.md) | `unstd[text]` | rapidfuzz → stdlib `difflib` |
-| [`audio`](src/unstd/audio/README.md) | `unstd[audio]` | soundfile + numpy → stdlib `wave` |
-| [`toml`](src/unstd/toml/README.md) | `unstd[toml]` | read is `tomllib`; write requires tomlkit |
-| [`yaml`](src/unstd/yaml/README.md) | `unstd[yaml]` | ruamel.yaml: safe YAML 1.2 and comment-preserving edits (required) |
-| [`compress`](src/unstd/compress/README.md) | `unstd[compress]`, `unstd[zstd]`, `unstd[archives]` | native gzip/zlib codecs; original bz2/lzma/zlib/archive modules; optional Zstandard and libarchive ports |
-| [`proc`](src/unstd/proc/README.md) | — | stdlib `subprocess` |
-| [`fs`](src/unstd/fs/README.md) | — | stdlib `os` |
-| [`iters`](src/unstd/iters/README.md) | — | stdlib `itertools` |
+```python
+from unstd import clone
+from unstd.compress import gzipx
+from unstd.serde import jsonx
 
-`clone`, `proc`, `fs`, and `iters` ship in the base install.
+payload = {"events": [{"name": "saved", "count": 1}]}
 
-Check the module contract when migrating: text similarity uses different
-algorithms across backends, and random bulk draws can return arrays or lists
-with different seeded streams.
-These helpers extend the stdlib rather than promising an import-only migration.
+text = jsonx.dumps(payload)  # str; stdlib JSON defaults and formatting
+raw = jsonx.dumpb(payload)  # bytes; compact UTF-8 JSON
+copy = clone.deep(payload)  # independent mutable copy
+packed = gzipx.compress(raw, mtime=0)
+restored = jsonx.loads(gzipx.decompress(packed))
+```
 
-Opt into explicit contracts when results or guarantees must survive backend
-changes. Existing defaults and persisted canonical bytes remain unchanged:
+To migrate existing JSON calls, use `from unstd.serde import jsonx as json`.
 
-- [Text](src/unstd/text/README.md): `indel_ratio` or `difflib_ratio`, selected
-  through `scorer=` on matching helpers, keep the algorithm explicit.
-- [Packing](src/unstd/pack/README.md): `pack_array_portable` and
-  `unpack_array_portable` use struct validation and owned Python results.
-- [Randomness](src/unstd/rand/README.md): `Generator(seed, backend="stdlib")`
-  owns an independent stream and keeps stdlib semantics with NumPy installed.
-- [Identity](src/unstd/serde/README.md): `canonical_strict` rejects unsupported
-  identity values instead of converting them implicitly.
-- [Regex](src/unstd/rex/README.md): `compile_faithful` preserves Python matching
-  semantics; `compile_linear` guarantees a single `search`, `match`, or
-  `fullmatch` and refuses fallback and iterative operations.
-- [Filesystem](src/unstd/fs/README.md): `durable="strict"` and
-  `sync_dir(..., strict=True)` report directory-sync failures.
+## Choose a module
 
-## Repository layout
+| Operation | Module | Optional extra |
+| --- | --- | --- |
+| JSON, Base64, NDJSON, typed codecs | [serde](src/unstd/serde/README.md) | `serde` |
+| Deep copying and dataclass conversion | [clone](src/unstd/clone/README.md) | None |
+| Gzip compression and streaming | [compress](src/unstd/compress/README.md) | `compress` |
+| UUIDs and BLAKE3 hashing | [ids](src/unstd/ids/README.md), [crypto](src/unstd/crypto/README.md) | `ids`, `crypto` |
+| Regex and fuzzy matching | [rex](src/unstd/rex/README.md), [text](src/unstd/text/README.md) | `rex`, `text` |
+| Bulk packing and random draws | [pack](src/unstd/pack/README.md), [rand](src/unstd/rand/README.md) | `pack`, `rand` |
+| Atomic files, subprocesses, iteration | [fs](src/unstd/fs/README.md), [proc](src/unstd/proc/README.md), [iters](src/unstd/iters/README.md) | None |
 
-The [architecture guide](docs/architecture.md) maps every package and repository
-area. The [public API inventory](docs/api.md) lists supported imports and exports,
-including the compatibility boundary around private native implementations.
+The [module index](src/unstd/README.md) also covers containers, time, models,
+TOML, YAML, audio, and their backend requirements.
 
-- [`src/`](src/README.md) contains the installable Python interfaces and private
-  Python implementations; [`src/unstd/`](src/unstd/README.md) indexes the module APIs.
-- [`tests/`](tests/README.md) contains product and assurance suites, shared
-  support, and standalone campaign tools.
-- [`bench/`](bench/README.md) separates benchmark runners, workloads, frozen
-  baselines, reports, and audits.
-- [`native/`](native/README.md) owns all bundled C sources, reviewed vendors,
-  and the opt-in Rust text experiment.
-- [`.github/`](.github/OVERVIEW.md) contains CI, campaign, audit, and release workflows.
-- [`changelog.d/`](changelog.d/README.md) contains unreleased change fragments.
+## Compatibility and performance
 
-Each repository folder has a README describing its contents and role, except
-`.github/`, whose `OVERVIEW.md` keeps the project README on GitHub's repository
-page. Keep these guides current when adding or moving files, and include a README
-with new folders. Generated environments, caches, and build outputs are excluded
-from this policy.
+Compatibility is defined per module. `jsonx` preserves stdlib JSON behavior,
+including formatting, hooks, and errors, falling back when needed. Additional
+helpers such as `clone.deep` and `proc.run` have their own documented contracts.
+Gzip streams remain interoperable, but compressed bytes can differ by backend.
 
-## Security and shared logic
+Without optional backends, modules use stdlib fallbacks where available;
+capabilities without a faithful fallback raise `ImportError`. Some helpers,
+including fuzzy matching and bulk randomness, can produce different results
+across backends. Check the module guide before migrating.
 
-The [static analysis policy](SECURITY.md) documents required SAST and duplication
-checks, local commands, reviewed exceptions, and failure handling. CI and release
-both require clean security analysis and production duplicate-code checks.
+Speed depends on your data, interpreter, platform, and installed backends.
+Profile your application and benchmark its actual hot paths. The
+[benchmark guide](bench/README.md) provides reproducible comparisons and reports
+both gains and regressions.
 
-## Testing
+## Development
 
-The [test suite](tests/README.md) follows Billy's owner-first Python layout:
-product contracts, cross-cutting assurance, shared support, and standalone tools.
-The [P0 boundary suites](tests/P0.md) exercise installed packaging, real TLS peers,
-filesystem/process failures, and parser/token security. The
-[coverage plan](tests/COVERAGE.md) maps parity, properties, fuzzing,
-penetration, fault injection, packaging, concurrency, resource, and performance
-obligations. Inspect implemented and planned lanes with
-`uv run --no-sync python -m tests.tooling list`; run the active suite with
-`uv run --no-sync pytest -q`.
+See the [test guide](tests/README.md), [architecture](docs/architecture.md),
+[API inventory](docs/api.md), and [security policy](SECURITY.md).
 
-The quality gate runs `uv run --no-sync ruff check .`,
-`uv run --no-sync ruff format --check .`, and `uv run --no-sync mypy`.
-CI checks Python 3.12–3.14 type contracts for Linux, macOS, and Windows.
-Production and benchmark code require complete annotations; mypy also rejects
-missing type information, unsafe overrides, unused awaitables, possibly
-uninitialized values, and incomplete pattern matches. Development stubs cover
-protobuf and sorted containers without adding runtime dependencies. Compatible
-exceptions for dynamic stdlib APIs, private regex internals, and deliberately
-invalid test inputs are documented in `pyproject.toml`. The
-[typing gate tests](tests/suites/assurance/gates/test_typing.py)
-verify that the actual analyzers accept valid code and reject seeded mistakes.
-
-The [fuzz runner](tests/tooling/fuzz/README.md) supplies eleven parser/token
-targets, authenticated corpora, deterministic mutation, and bounded Atheris
-campaigns. Run `uv run --no-sync python -m tests.tooling.fuzz check` to validate
-the inventory, or `uv run --no-sync python -m tests.tooling.fuzz replay` to
-replay every installed target. CI retains findings and coverage corpora.
-
-The [chaos runner](tests/tooling/chaos/README.md) exercises recorded filesystem,
-process, stream and clock/entropy failures and recovery. Run
-`uv run --no-sync python -m tests.tooling.chaos run --seed 173` for a bounded
-installed-backend campaign with per-case journals and reproducible schedules.
-
-The [concurrency runner](tests/tooling/concurrency/README.md) checks atomic file
-histories, UUID contention and fork safety, and shared cache/parser isolation.
-Run `uv run --no-sync python -m tests.tooling.concurrency run --seed 173` for
-bounded installed-backend workers with retained histories and replay.
-
-## Prior art
-
-- **orjson** (Kloss) / **msgspec** (Fitzgerald) / **pybase64** (aklomp libbase64) — the serde backends.
-- The guarded-optional-backend pattern is the one uvloop popularized: import the accelerator, fall back when it is absent.
-
-## License
-
-Apache-2.0
+Apache-2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE) for licensing details.

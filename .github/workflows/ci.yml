@@ -425,11 +425,11 @@ jobs:
       - name: Every native module must import
         run: >-
           uv run --no-sync python -c
-          "import unstd.serde._json_native, unstd.clone._clone_native, unstd.crypto._stream_native, unstd.text._text_native, unstd.compress._gzip_native, unstd.containers._sorted_native, unstd.proc._proc_native"
+          "import unstd.serde._json_native, unstd.clone._clone_native, unstd.crypto._stream_native, unstd.text._text_native, unstd.compress._gzip_native, unstd.containers._sorted_native, unstd.proc._proc_native, unstd.fs._fs_native"
       - name: Native compatibility with the debug allocator
         id: tests
         run: >
-          uv run --no-sync python -m pytest tests/suites/product/clone tests/suites/product/text tests/suites/product/serde tests/suites/product/crypto tests/suites/product/compress tests/suites/product/containers tests/suites/product/proc -q --junitxml=.local/native.xml
+          uv run --no-sync python -m pytest tests/suites/product/clone tests/suites/product/text tests/suites/product/serde tests/suites/product/crypto tests/suites/product/compress tests/suites/product/containers tests/suites/product/proc tests/suites/product/fs -q --junitxml=.local/native.xml
 
       - name: Summarize native safety
         if: always() && steps.tests.outcome != 'skipped'
@@ -475,7 +475,7 @@ jobs:
           cache-suffix: native-sanitizers
           cache-dependency-glob: "uv.lock\npyproject.toml\n"
       - name: Install test environment
-        run: uv sync --locked --extra serde --extra crypto --extra compress --extra containers --group dev --no-install-project --python 3.14
+        run: uv sync --locked --extra serde --extra crypto --extra compress --extra containers --group dev --group build --no-install-project --python 3.14
       # Stable Rust kernels retain their bounds checks and unit tests. These
       # sanitizer flags instrument our C modules and the text CPython shim.
       - name: Build C boundaries with address and undefined behavior checks
@@ -497,8 +497,8 @@ jobs:
         run: |
           LD_PRELOAD="$(gcc -print-file-name=libasan.so)"
           export LD_PRELOAD
-          .venv/bin/python -c "import unstd.serde._json_native, unstd.clone._clone_native, unstd.crypto._stream_native, unstd.text._text_native, unstd.compress._gzip_native, unstd.containers._sorted_native, unstd.proc._proc_native"
-          .venv/bin/python -m pytest tests/suites/product/clone tests/suites/product/text tests/suites/product/serde tests/suites/product/crypto tests/suites/product/compress tests/suites/product/containers -p tests.tooling.ci.sharding --ci-shard ${{ matrix.shard }}/3 -q --junitxml=.local/native-sanitizers-${{ matrix.shard }}.xml
+          .venv/bin/python -c "import unstd.serde._json_native, unstd.clone._clone_native, unstd.crypto._stream_native, unstd.text._text_native, unstd.compress._gzip_native, unstd.containers._sorted_native, unstd.proc._proc_native, unstd.fs._fs_native"
+          .venv/bin/python -m pytest tests/suites/product/clone tests/suites/product/text tests/suites/product/serde tests/suites/product/crypto tests/suites/product/compress tests/suites/product/containers tests/suites/product/fs -p tests.tooling.ci.sharding --ci-shard ${{ matrix.shard }}/3 -q --junitxml=.local/native-sanitizers-${{ matrix.shard }}.xml
           if [ "${{ matrix.shard }}" = "1" ]; then
             env -u LD_PRELOAD .venv/bin/python -m tests.tooling.runtime.proc_memory --sanitize --output .local/proc-memory --tests tests/suites/product/proc
           fi

@@ -381,6 +381,37 @@ def test_native_wheel_cannot_silently_omit_an_accelerator(
         release.verify(dist)
 
 
+@pytest.mark.parametrize("platform", ["win_amd64", "macosx_10_13_x86_64"])
+@pytest.mark.parametrize("include_fs", [False, True])
+def test_non_linux_release_does_not_require_or_admit_the_linux_fs_module(
+    dist: Path, platform: str, include_fs: bool
+) -> None:
+    _vendored_release(dist)
+    wheel = next(dist.glob("*.whl"))
+    with zipfile.ZipFile(wheel) as archive:
+        files = {name: archive.read(name) for name in archive.namelist()}
+    del files[RECORD]
+    for module in release._NATIVE_MODULES:
+        old = f"{module}.cpython-313-x86_64-linux-gnu.so"
+        del files[old]
+        if module == "unstd/fs/_fs_native" and not include_fs:
+            continue
+        if platform.startswith("macosx"):
+            files[f"{module}.cpython-313-darwin.so"] = _macho(_deployment((10, 13, 0)))
+        else:
+            files[f"{module}.cp313-win_amd64.pyd"] = b"native fixture"
+    files[f"{INFO}/WHEEL"] = (
+        f"Wheel-Version: 1.0\nRoot-Is-Purelib: false\nTag: cp313-cp313-{platform}\n\n"
+    ).encode()
+    wheel.unlink()
+    _write_wheel(dist / f"unstd-3.1.0-cp313-cp313-{platform}.whl", files)
+    if include_fs:
+        with pytest.raises(release.ReleaseError, match="Linux-only filesystem"):
+            release.verify(dist)
+    else:
+        assert len(release.verify(dist)["artifacts"]) == 2
+
+
 @pytest.mark.parametrize("mutation", ["missing", "changed"])
 @pytest.mark.parametrize("license_path", ["libdeflate/COPYING", "zlib/LICENSE"])
 def test_rehashed_native_wheel_must_retain_the_upstream_license(

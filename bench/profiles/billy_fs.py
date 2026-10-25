@@ -1,8 +1,8 @@
-"""Linux filesystem proof for captured Billy atomic-write consumers.
+"""Linux filesystem proof for captured atomic-write consumers.
 
 Fixtures contain synthetic payload recipes and source receipts, never credentials.
 Run this file directly. The hosted-state and notebook reference functions load
-from checked Billy source ASTs without importing their application dependencies.
+from checked source ASTs without importing their application dependencies.
 Candidate hosted functions replace only the captured atomic-publication block.
 """
 

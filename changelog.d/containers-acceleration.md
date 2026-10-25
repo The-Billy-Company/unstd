@@ -1,4 +1,4 @@
-Accelerate sorted collection operations with optional bundled CPython kernels
+Accelerate sorted collection rank and positional queries with bundled CPython kernels
 and compatible subclasses of the upstream types. Retain the original classes
 when native acceleration is unavailable or the backend version is unqualified;
 Map keeps its existing native backend. Load each container family on demand,

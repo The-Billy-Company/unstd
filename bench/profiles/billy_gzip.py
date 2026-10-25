@@ -1,12 +1,11 @@
-"""Checked gzip I/O ports of Billy's dataset, HTTP and journal consumers.
+"""Checked gzip I/O ports for dataset, HTTP and journal consumers.
 
-Run this file directly. Create transport-identical fixtures with
-``fixtures --billy-source ../billy``;
-then ``run --fixtures FILE --source INSTALL --baseline-source BEFORE --output FILE``.
+Run this file directly. Create transport-identical fixtures,
+then use ``run --fixtures FILE --source INSTALL --baseline-source BEFORE --output FILE``.
 The timed region includes codec setup, parsing/hashing and close/flush. Async
 scheduling, gRPC and filesystem latency are excluded; no decoded-output cache is
 used. Fixture receipts retain the upstream consumer source locations and hashes.
-The dataset query lane explicitly requires Billy's optional ``ijson`` dependency.
+The dataset query lane explicitly requires the optional ``ijson`` dependency.
 The latency gate uses the median candidate/baseline ratio within matched
 repetitions; independent latency medians and every pair remain in the report.
 """

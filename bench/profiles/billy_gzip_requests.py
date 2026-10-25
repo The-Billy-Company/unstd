@@ -1,7 +1,7 @@
-"""Paired C gzip request workloads ported from Billy's request-owned checkpoint.
+"""Paired C gzip encodes from requests and dataset materialization.
 
 Run this file directly so workers select an installation before importing unstd.
-The separate frozen fixture leaves the existing 14 Billy stream cases unchanged.
+The separate frozen fixture leaves the existing 14 stream cases unchanged.
 """
 
 from __future__ import annotations
@@ -34,6 +34,7 @@ if TYPE_CHECKING:
 
 _ROOT = Path(__file__).resolve().parents[2]
 _SOURCE = "services/ai/core/foundation/util/text/compress.py"
+_DATASETS = "services/ai/tools/base/datasets.py"
 _WINDOW = 1 << 16
 _THRESHOLD = 1024
 
@@ -54,7 +55,7 @@ class _GzipSurface(Protocol):
 
 
 class _GzipCodec:
-    """Express Billy's one-shot gzip wire operation through the gzip API."""
+    """Express the one-shot gzip wire operation through the gzip API."""
 
     def __init__(self, module: _GzipSurface) -> None:
         self._module = module
@@ -77,12 +78,12 @@ class Case:
     """One direct, fresh-scope or warmed checkpoint request sequence."""
 
     name: str
-    mode: Literal["direct", "scope", "warm"]
+    mode: Literal["direct", "scope", "warm", "materialize"]
     requests: tuple[tuple[bytes, int], ...]
 
 
 class _Prefix:
-    """Billy's 64 KiB immutable compressor checkpoint, with an injected codec."""
+    """64 KiB immutable compressor checkpoint, with an injected codec."""
 
     __slots__ = ("_closed", "_codec", "_lock", "_state")
 
@@ -129,7 +130,27 @@ def _request(codec: _Codec, data: bytes, level: int, owner: _Prefix | None) -> b
     return packed if len(packed) < len(data) else data
 
 
-def _operation(codec: _Codec, case: Case) -> Callable[[], tuple[bytes, ...]]:
+def _operation(codec: _Codec, case: Case) -> Callable[[], tuple[bytes | str, ...]]:
+    if case.mode == "materialize":
+        from unstd.serde import b64, jsonx
+
+        rows = [(json.loads(data), level) for data, level in case.requests]
+
+        def materialize() -> tuple[str, ...]:
+            return tuple(
+                b64.encode(
+                    codec.compress(
+                        jsonx.dumps(
+                            values, ensure_ascii=False, separators=(",", ":")
+                        ).encode(),
+                        level=level,
+                        wbits=31,
+                    )
+                )
+                for values, level in rows
+            )
+
+        return materialize
     owner = _Prefix(codec) if case.mode == "warm" else None
     if owner is not None:
         first, level = case.requests[0]
@@ -149,7 +170,20 @@ def _operation(codec: _Codec, case: Case) -> Callable[[], tuple[bytes, ...]]:
     return operation
 
 
-def _validate(codec: _Codec, case: Case, result: tuple[bytes, ...]) -> None:
+def _validate(codec: _Codec, case: Case, result: tuple[bytes | str, ...]) -> None:
+    if case.mode == "materialize":
+        materialized = tuple(
+            base64.b64encode(codec.compress(data, level=level, wbits=31)).decode()
+            for data, level in case.requests
+        )
+        if result != materialized:
+            message = f"{case.name}: materialized content changed"
+            raise AssertionError(message)
+        for value, (raw, _) in zip(result, case.requests, strict=True):
+            if gzip.decompress(base64.b64decode(value, validate=True)) != raw:
+                message = f"{case.name}: materialized rows changed"
+                raise AssertionError(message)
+        return
     expected = tuple(
         _request(codec, data, level, None) for data, level in case.requests
     )
@@ -157,6 +191,7 @@ def _validate(codec: _Codec, case: Case, result: tuple[bytes, ...]) -> None:
         message = f"{case.name}: checkpoint compressed bytes changed"
         raise AssertionError(message)
     for packed, (raw, _) in zip(result, case.requests, strict=True):
+        assert isinstance(packed, bytes)
         decoded = gzip.decompress(packed) if packed.startswith(b"\x1f\x8b") else packed
         if decoded != raw:
             message = f"{case.name}: recovered bytes changed"
@@ -229,6 +264,20 @@ def _cases() -> list[Case]:
             ),
         )
     )
+    source = json.loads(
+        gzip.decompress((_ROOT / "bench/workloads/billy_gzip.json.gz").read_bytes())
+    )
+    for item in source["cases"]:
+        if item["name"].startswith("dataset-query-"):
+            raw = base64.b64decode(item["raw"], validate=True)
+            assert _hash(raw) == item["raw_sha256"]
+            cases.append(
+                Case(
+                    item["name"].replace("query", "materialize"),
+                    "materialize",
+                    ((raw, 9),),
+                )
+            )
     return cases
 
 
@@ -257,6 +306,22 @@ def _fixtures(billy: Path, output: Path) -> None:
             "file_sha256": _hash(raw),
             "symbol_sha256": _hash(body.encode()),
         }
+    dataset_bytes = (billy / _DATASETS).read_bytes()
+    dataset_source = dataset_bytes.decode()
+    dataset_node = next(
+        node
+        for node in ast.parse(dataset_source).body
+        if isinstance(node, ast.AsyncFunctionDef) and node.name == "query_dataset"
+    )
+    body = ast.get_source_segment(dataset_source, dataset_node)
+    assert body is not None
+    receipts["dataset_materialize_encode"] = {
+        "path": _DATASETS,
+        "symbol": dataset_node.name,
+        "line": dataset_node.lineno,
+        "file_sha256": _hash(dataset_bytes),
+        "symbol_sha256": _hash(body.encode()),
+    }
     chunks = {}
     bodies = {}
     cases = _cases()
@@ -354,7 +419,7 @@ def _worker(args: argparse.Namespace) -> None:
     )
     cases, receipts = _load(args.fixtures)
     if namespace == "gzipx":
-        cases = [case for case in cases if case.mode == "direct"]
+        cases = [case for case in cases if case.mode in {"direct", "materialize"}]
     if args.case:
         cases = [
             case
@@ -414,6 +479,7 @@ def _worker(args: argparse.Namespace) -> None:
                 "cases": [
                     {
                         "name": case.name,
+                        "operation": case.mode,
                         "raw_bytes": sum(len(data) for data, _ in case.requests),
                         "raw_sha256": [_hash(data) for data, _ in case.requests],
                         "levels": [level for _, level in case.requests],

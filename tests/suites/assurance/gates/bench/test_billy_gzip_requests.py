@@ -1,4 +1,4 @@
-"""Billy request timings retain checkpoint byte identity and refuse invalid cases."""
+"""Request timings retain checkpoint byte identity and refuse invalid cases."""
 
 from argparse import Namespace
 import gzip
@@ -83,14 +83,32 @@ def test_frozen_request_fixture_checks_original_bytes_and_source_receipts():
         / "bench/workloads/billy_gzip_requests.json.gz"
     )
     cases, receipts = profile._load(fixture)
-    assert len(cases) == 8
-    assert set(receipts) == {"gzip_encode", "gzip_request", "_GzipPrefix"}
+    assert len(cases) == 11
+    assert set(receipts) == {
+        "gzip_encode",
+        "gzip_request",
+        "_GzipPrefix",
+        "dataset_materialize_encode",
+    }
     for case in cases:
         for body, _ in case.requests:
-            assert json.loads(body)["model"] == "benchmark-model"
+            if case.mode == "materialize":
+                assert isinstance(json.loads(body), list)
+            else:
+                assert json.loads(body)["model"] == "benchmark-model"
     first = cases[3].requests
     assert first[0][0][:65536] == first[-1][0][:65536]
     assert first[0][0] != first[-1][0]
+
+
+def test_materialization_preserves_canonical_rows_inside_base64_gzip():
+    body = b'[{"id":1,"text":"hello"},{"id":2,"text":"world"}]'
+    case = profile.Case("materialize", "materialize", ((body, 9),))
+    result = profile._operation(zlib, case)()
+    assert isinstance(result[0], str)
+    profile._validate(zlib, case, result)
+    with pytest.raises(AssertionError, match="materialized content changed"):
+        profile._validate(zlib, case, (result[0][:-1] + "!",))
 
 
 def test_contract_failure_is_retained_while_other_cases_are_timed(

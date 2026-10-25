@@ -6,21 +6,23 @@ platform-specific instructions or operating-system interfaces.
 
 `install(cls, base, keyed=False)` installs native descriptors on unstd's own
 Python subclasses. Upstream `sortedcontainers` classes remain unchanged.
-Keyless classes receive insertion, left/right rank lookup, positional-index
-translation and block/index maintenance. Keyed classes receive positional-index
-translation while retaining upstream key extraction and block maintenance.
+Keyless classes receive left/right rank lookup and positional-index translation.
+Keyed classes receive positional-index translation while retaining upstream key
+extraction. Insertions, deletions, block maintenance and positional-index
+building remain in the upstream implementation; native kernels perform no
+array mutations.
 `KERNEL_VERSION` identifies the implementation in benchmark receipts.
 The Python facade enables these layout-dependent kernels only with the verified
 `sortedcontainers` 2.4.0 release. Other versions retain their upstream classes.
 
 Methods inherited by arbitrary further subclasses delegate to the captured
 upstream method. Ordinary exact instances use exact Python lists and integers
-from their instance state. Unsupported state falls back before native changes;
+from their instance state. Unsupported argument or layout types fall back;
 invalid state produced by a comparison raises through checked list operations.
 Comparisons retain Python's operand ordering and exceptions. Temporary items are
 owned across comparison callbacks, and no list-storage pointer survives a
-callback. Native methods keep dynamic dispatch to `_expand`, `_loc` and
-`_build_index` so instance/class helper overrides remain effective.
+callback. Native methods keep dynamic dispatch to `_loc` and `_build_index` so
+instance/class helper overrides remain effective.
 
 Memory qualification covers dictionary replacement and finalizers during
 comparison, active-call kernel reinstallation, reclaimed ephemeral types,

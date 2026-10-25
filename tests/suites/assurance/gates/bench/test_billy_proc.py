@@ -1,4 +1,4 @@
-"""Billy process evidence checks exact output, provenance and native acceptance."""
+"""Process evidence checks exact output, provenance and native acceptance."""
 
 from __future__ import annotations
 

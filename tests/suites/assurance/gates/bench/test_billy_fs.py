@@ -1,4 +1,4 @@
-"""Billy filesystem evidence admits checked source and real atomic effects."""
+"""Filesystem evidence admits checked source and real atomic effects."""
 
 from __future__ import annotations
 

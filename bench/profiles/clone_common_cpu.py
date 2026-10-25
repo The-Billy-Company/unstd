@@ -183,6 +183,16 @@ def _workloads() -> list[base.Workload]:
             ),
         )
     )
+    shared = {"values": [1, 2, 3]}
+    cases.extend(
+        (
+            _case("scalar-list-1000", list(range(1000))),
+            _case("scalar-tuple-1000", tuple(range(1000))),
+            _case("scalar-list-100000", list(range(100000))),
+            _case("repeated-aliases-10000", [shared] * 10000),
+            _case("repeated-aliases-100000", [shared] * 100000),
+        )
+    )
     return cases
 
 

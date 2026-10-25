@@ -10,25 +10,21 @@
  */
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
-#include <limits.h>
 #include <stdint.h>
 
 #define CONFIG_NAME "unstd.containers.sorted-config.v1"
 #define CONFIG_ATTRIBUTE "_unstd_sorted_native_config"
 
-enum Method { ADD, BISECT_LEFT, BISECT_RIGHT, LOC, POS, EXPAND, METHOD_COUNT };
-enum Field { LISTS, MAXES, INDEX, OFFSET, LENGTH, LOAD, FIELD_COUNT };
+enum Method { BISECT_LEFT, BISECT_RIGHT, LOC, POS, METHOD_COUNT };
+enum Field { LISTS, MAXES, INDEX, OFFSET, LENGTH, FIELD_COUNT };
 
 typedef struct {
     PyObject *methods[METHOD_COUNT];
     PyObject *fields[FIELD_COUNT];
-    PyObject *expand_name;
     PyObject *loc_name;
     PyObject *build_name;
     PyObject *saved_loc_name;
-    PyObject *saved_expand_name;
     PyObject *bisect[2];
-    PyObject *insort;
 } Config;
 
 typedef struct {
@@ -38,10 +34,10 @@ typedef struct {
 } Context;
 
 static const char *method_names[METHOD_COUNT] = {
-    "add", "bisect_left", "bisect_right", "_loc", "_pos", "_expand"
+    "bisect_left", "bisect_right", "_loc", "_pos"
 };
 static const char *field_names[FIELD_COUNT] = {
-    "_lists", "_maxes", "_index", "_offset", "_len", "_load"
+    "_lists", "_maxes", "_index", "_offset", "_len"
 };
 
 static void
@@ -54,14 +50,11 @@ config_free(PyObject *capsule)
     }
     for (int i = 0; i < METHOD_COUNT; i++) Py_XDECREF(config->methods[i]);
     for (int i = 0; i < FIELD_COUNT; i++) Py_XDECREF(config->fields[i]);
-    Py_XDECREF(config->expand_name);
     Py_XDECREF(config->loc_name);
     Py_XDECREF(config->build_name);
     Py_XDECREF(config->saved_loc_name);
-    Py_XDECREF(config->saved_expand_name);
     Py_XDECREF(config->bisect[0]);
     Py_XDECREF(config->bisect[1]);
-    Py_XDECREF(config->insort);
     PyMem_Free(config);
 }
 
@@ -113,11 +106,10 @@ context_refresh(Context *context, PyObject *self)
 }
 
 static int
-helper_unchanged(Context *context, PyTypeObject *cls, int expand)
+helper_unchanged(Context *context, PyTypeObject *cls)
 {
-    PyObject *name = expand ? context->config->expand_name : context->config->loc_name;
-    PyObject *saved_name = expand ? context->config->saved_expand_name
-                                 : context->config->saved_loc_name;
+    PyObject *name = context->config->loc_name;
+    PyObject *saved_name = context->config->saved_loc_name;
     if (PyDict_GetItemWithError(context->dict, name) != NULL) return 0;
     PyObject *current = PyDict_GetItemWithError(cls->tp_dict, name);
     PyObject *saved = PyDict_GetItemWithError(cls->tp_dict, saved_name);
@@ -125,7 +117,6 @@ helper_unchanged(Context *context, PyTypeObject *cls, int expand)
 }
 
 static PyObject *loc_value(Context *, PyObject *, Py_ssize_t, Py_ssize_t);
-static PyObject *expand_value(Context *, PyObject *, Py_ssize_t);
 
 static PyObject *
 field(Context *context, enum Field name)
@@ -265,7 +256,7 @@ native_bisect(PyObject *self, PyTypeObject *defining_class,
     }
     if (bisect_list(context.config, sublist, value, right, &index) < 0) goto done;
     if (context_refresh(&context, self) < 0) goto done;
-    if (helper_unchanged(&context, defining_class, 0)) {
+    if (helper_unchanged(&context, defining_class)) {
         result = loc_value(&context, self, position, index);
         if (result != NULL || PyErr_Occurred()) goto done;
     }
@@ -464,184 +455,10 @@ done:
     return result;
 }
 
-static PyObject *
-expand_value(Context *context, PyObject *self, Py_ssize_t position)
-{
-    (void)self;
-    Py_ssize_t load;
-    PyObject *result = NULL, *lists = NULL, *index = NULL, *maxes = NULL;
-    PyObject *block = NULL, *half = NULL, *maximum = NULL;
-    lists = list_field(context, LISTS);
-    index = list_field(context, INDEX);
-    if (position < 0 || lists == NULL || index == NULL ||
-        !integer_field(context, LOAD, &load) || load < 1) goto done;
-    block = owned_item(lists, position);
-    if (block == NULL) goto done;
-    if (!PyList_CheckExact(block)) goto done;
-    Py_ssize_t length = PyList_GET_SIZE(block);
-    if (load <= PY_SSIZE_T_MAX / 2 && length > load * 2) {
-        maxes = list_field(context, MAXES);
-        if (maxes == NULL) goto done;
-        half = PyList_GetSlice(block, load, length);
-        if (half == NULL) goto done;
-        if (PyList_SetSlice(block, load, length, NULL) < 0) goto done;
-        maximum = owned_item(block, PyList_GET_SIZE(block) - 1);
-        if (maximum == NULL) goto done;
-        if (PyList_SetItem(maxes, position, maximum) < 0) {
-            maximum = NULL;
-            goto done;
-        }
-        maximum = NULL;
-        if (PyList_Insert(lists, position + 1, half) < 0) goto done;
-        maximum = owned_item(half, PyList_GET_SIZE(half) - 1);
-        if (maximum == NULL || PyList_Insert(maxes, position + 1, maximum) < 0)
-            goto done;
-        if (PyList_SetSlice(index, 0, PyList_GET_SIZE(index), NULL) < 0) goto done;
-    } else if (PyList_GET_SIZE(index)) {
-        Py_ssize_t offset;
-        if (!integer_field(context, OFFSET, &offset) || offset < 0 ||
-            position > PY_SSIZE_T_MAX - offset) goto done;
-        Py_ssize_t path[sizeof(Py_ssize_t) * CHAR_BIT + 1];
-        Py_ssize_t values[sizeof(Py_ssize_t) * CHAR_BIT + 1];
-        Py_ssize_t used = 0, child = offset + position;
-        while (1) {
-            PyObject *item = PyList_GetItem(index, child);
-            if (item == NULL) goto done;
-            if (!PyLong_CheckExact(item)) goto done;
-            Py_ssize_t value = PyLong_AsSsize_t(item);
-            if ((value == -1 && PyErr_Occurred()) || value == PY_SSIZE_T_MAX) {
-                PyErr_Clear();
-                goto done;
-            }
-            path[used] = child;
-            values[used++] = value + 1;
-            if (child == 0) break;
-            child = (child - 1) >> 1;
-        }
-        for (Py_ssize_t i = 0; i < used; i++) {
-            PyObject *value = PyLong_FromSsize_t(values[i]);
-            if (value == NULL) goto done;
-            if (PyList_SetItem(index, path[i], value) < 0) goto done;
-        }
-    }
-    result = Py_NewRef(Py_None);
-    goto done;
-done:
-    Py_XDECREF(maximum);
-    Py_XDECREF(half);
-    Py_XDECREF(block);
-    Py_XDECREF(maxes);
-    Py_XDECREF(index);
-    Py_XDECREF(lists);
-    return result;
-}
-
-static PyObject *
-native_expand(PyObject *self, PyTypeObject *defining_class,
-              PyObject *const *args, size_t nargs, PyObject *kwnames)
-{
-    Context context;
-    int admitted = context_get(&context, self, defining_class);
-    PyObject *result = NULL;
-    PyObject *argument = single_argument(args, nargs, kwnames, "pos");
-    if (admitted < 0) goto done;
-    if (!admitted || argument == NULL || !PyLong_CheckExact(argument)) goto slow;
-    Py_ssize_t position = PyLong_AsSsize_t(argument);
-    if (position == -1 && PyErr_Occurred()) { PyErr_Clear(); goto slow; }
-    result = expand_value(&context, self, position);
-    if (result != NULL || PyErr_Occurred()) goto done;
-slow:
-    result = fallback(&context, EXPAND, self, args, nargs, kwnames);
-done:
-    context_clear(&context);
-    return result;
-}
-
-static PyObject *
-native_add(PyObject *self, PyTypeObject *defining_class,
-           PyObject *const *args, size_t nargs, PyObject *kwnames)
-{
-    Context context;
-    int admitted = context_get(&context, self, defining_class);
-    PyObject *result = NULL, *lists = NULL, *maxes = NULL, *block = NULL;
-    PyObject *value = single_argument(args, nargs, kwnames, "value");
-    if (admitted < 0) goto done;
-    if (!admitted || value == NULL) goto slow;
-    Py_ssize_t initial_length;
-    if (!integer_field(&context, LENGTH, &initial_length) || initial_length < 0)
-        goto slow;
-    lists = list_field(&context, LISTS);
-    maxes = list_field(&context, MAXES);
-    if (lists == NULL || maxes == NULL) goto slow;
-    if (PyList_GET_SIZE(maxes)) {
-        Py_ssize_t position;
-        if (bisect_list(context.config, maxes, value, 1, &position) < 0) goto done;
-        int append = position == PyList_GET_SIZE(maxes);
-        if (append) position--;
-        block = owned_item(lists, position);
-        if (block == NULL) goto done;
-        if (!PyList_CheckExact(block)) {
-            PyErr_SetString(PyExc_TypeError, "sorted list block changed during comparison");
-            goto done;
-        }
-        if (append) {
-            if (PyList_Append(block, value) < 0) goto done;
-            if (PyList_SetItem(maxes, position, Py_NewRef(value)) < 0) goto done;
-        } else {
-            PyObject *arguments[] = {block, value};
-            PyObject *inserted = PyObject_Vectorcall(context.config->insort,
-                                                     arguments, 2, NULL);
-            if (inserted == NULL) goto done;
-            Py_DECREF(inserted);
-        }
-        if (context_refresh(&context, self) < 0) goto done;
-        PyObject *expanded = NULL;
-        if (helper_unchanged(&context, defining_class, 1))
-            expanded = expand_value(&context, self, position);
-        if (expanded == NULL && !PyErr_Occurred()) {
-            PyObject *pos = PyLong_FromSsize_t(position);
-            if (pos == NULL) goto done;
-            expanded = PyObject_CallMethodObjArgs(self, context.config->expand_name,
-                                                  pos, NULL);
-            Py_DECREF(pos);
-        }
-        if (expanded == NULL) goto done;
-        Py_DECREF(expanded);
-    } else {
-        block = PyList_New(0);
-        if (block == NULL || PyList_Append(block, value) < 0 ||
-            PyList_Append(lists, block) < 0 || PyList_Append(maxes, value) < 0)
-            goto done;
-    }
-    if (context_refresh(&context, self) < 0) goto done;
-    Py_ssize_t length;
-    if (!integer_field(&context, LENGTH, &length) || length == PY_SSIZE_T_MAX) {
-        PyErr_SetString(PyExc_TypeError, "sorted list length changed during insertion");
-        goto done;
-    }
-    PyObject *next = PyLong_FromSsize_t(length + 1);
-    if (next == NULL) goto done;
-    int updated = PyDict_SetItem(context.dict, context.config->fields[LENGTH], next);
-    Py_DECREF(next);
-    if (updated < 0) goto done;
-    result = Py_NewRef(Py_None);
-    goto done;
-slow:
-    result = fallback(&context, ADD, self, args, nargs, kwnames);
-done:
-    Py_XDECREF(block);
-    Py_XDECREF(maxes);
-    Py_XDECREF(lists);
-    context_clear(&context);
-    return result;
-}
-
 #define METHOD_FLAGS (METH_METHOD | METH_FASTCALL | METH_KEYWORDS)
 #define CMETHOD(function) ((PyCFunction)(void (*)(void))(function))
 
 static PyMethodDef kernels[] = {
-    {"add", CMETHOD(native_add), METHOD_FLAGS,
-     "add($self, value)\n--\n\nAdd value while retaining sorted order."},
     {"bisect_left", CMETHOD(native_bisect_left), METHOD_FLAGS,
      "bisect_left($self, value)\n--\n\nReturn the insertion rank before equal values."},
     {"bisect_right", CMETHOD(native_bisect_right), METHOD_FLAGS,
@@ -652,8 +469,6 @@ static PyMethodDef kernels[] = {
      "_loc($self, pos, idx)\n--\n\nTranslate a block offset to a global rank."},
     {"_pos", CMETHOD(native_pos), METHOD_FLAGS,
      "_pos($self, idx)\n--\n\nTranslate a global rank to a block offset."},
-    {"_expand", CMETHOD(native_expand), METHOD_FLAGS,
-     "_expand($self, pos)\n--\n\nSplit a block or maintain its positional index."},
     {NULL, NULL, 0, NULL}
 };
 
@@ -680,10 +495,8 @@ install(PyObject *module, PyObject *args, PyObject *kwargs)
     if (bisect_module == NULL) goto failed;
     config->bisect[0] = PyObject_GetAttrString(bisect_module, "bisect_left");
     config->bisect[1] = PyObject_GetAttrString(bisect_module, "bisect_right");
-    config->insort = PyObject_GetAttrString(bisect_module, "insort_right");
     Py_DECREF(bisect_module);
-    if (config->bisect[0] == NULL || config->bisect[1] == NULL ||
-        config->insort == NULL) goto failed;
+    if (config->bisect[0] == NULL || config->bisect[1] == NULL) goto failed;
     for (int i = 0; i < METHOD_COUNT; i++) {
         config->methods[i] = PyObject_GetAttrString(base, method_names[i]);
         if (config->methods[i] == NULL) goto failed;
@@ -692,14 +505,11 @@ install(PyObject *module, PyObject *args, PyObject *kwargs)
         config->fields[i] = PyUnicode_InternFromString(field_names[i]);
         if (config->fields[i] == NULL) goto failed;
     }
-    config->expand_name = PyUnicode_InternFromString("_expand");
     config->loc_name = PyUnicode_InternFromString("_loc");
     config->build_name = PyUnicode_InternFromString("_build_index");
     config->saved_loc_name = PyUnicode_InternFromString("_unstd_native_loc_descriptor");
-    config->saved_expand_name = PyUnicode_InternFromString("_unstd_native_expand_descriptor");
-    if (config->expand_name == NULL || config->loc_name == NULL ||
-        config->build_name == NULL || config->saved_loc_name == NULL ||
-        config->saved_expand_name == NULL ||
+    if (config->loc_name == NULL || config->build_name == NULL ||
+        config->saved_loc_name == NULL ||
         PyObject_SetAttrString(cls, CONFIG_ATTRIBUTE, capsule) < 0) goto failed;
     for (PyMethodDef *method = kernels; method->ml_name != NULL; method++) {
         if (keyed && method->ml_meth != CMETHOD(native_loc) &&
@@ -709,8 +519,6 @@ install(PyObject *module, PyObject *args, PyObject *kwargs)
         int result = PyObject_SetAttrString(cls, method->ml_name, descriptor);
         if (result == 0 && method->ml_meth == CMETHOD(native_loc))
             result = PyObject_SetAttr(cls, config->saved_loc_name, descriptor);
-        if (result == 0 && method->ml_meth == CMETHOD(native_expand))
-            result = PyObject_SetAttr(cls, config->saved_expand_name, descriptor);
         Py_DECREF(descriptor);
         if (result < 0) goto failed;
     }

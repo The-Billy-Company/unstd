@@ -51,7 +51,7 @@ _NATIVE_MODULES = (
     "unstd.compress._gzip_native",
     "unstd.containers._sorted_native",
     "unstd.proc._proc_native",
-)
+) + (("unstd.fs._fs_native",) if sys.platform == "linux" else ())
 
 
 def _wheel_files(wheel: Path) -> dict[str, bytes]:
@@ -302,6 +302,7 @@ def test_sdist_contains_all_sources_and_rebuild_inputs_without_local_caches(
         "native/proc/src/adapter.c",
         "native/proc/src/pipes.c",
         "native/proc/src/pipes.h",
+        "native/fs/src/adapter.c",
         "native/crypto/src/adapter.c",
         "native/serde/src/adapter.c",
         "native/serde/src/encode.h",

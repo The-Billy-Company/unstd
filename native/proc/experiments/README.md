@@ -19,3 +19,14 @@ AddressSanitizer/UndefinedBehaviorSanitizer build. Run its matching interpreter
 with the compiler's sanitizer runtime preloaded before importing the module;
 keep it separate from the normal installed extension. `--warnings-as-errors`
 also works alone for a strict release compilation.
+
+For complete child-process qualification, use the repository's isolated runner:
+
+```console
+python -m tests.tooling.runtime.proc_memory --sanitize --output /tmp/proc-memory
+```
+
+It builds the selected sources, preserves the sanitizer loader in fixture-owned
+workers, proves native dispatch and retains test/source/binary receipts without
+replacing production extensions. CI runs this qualification independently of
+the other native modules' sharded sanitizer suite.

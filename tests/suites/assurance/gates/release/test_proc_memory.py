@@ -46,7 +46,7 @@ def test_linux_bootstrap_changes_only_stdlib_controller_fallback(monkeypatch):
 def test_macos_bootstrap_restores_sanitizer_loader_for_children(monkeypatch):
     monkeypatch.setattr(sys, "platform", "darwin")
     monkeypatch.setattr(sys, "executable", "/fixture/original-python")
-    monkeypatch.delenv("DYLD_INSERT_LIBRARIES", raising=False)
+    monkeypatch.setenv("DYLD_INSERT_LIBRARIES", "")
     source = proc_memory._BOOTSTRAP.format(
         wrapper="/fixture/audit-python", sanitize=True, runtime="/fixture/libasan.dylib"
     )

@@ -1,4 +1,4 @@
-"""Billy's five Hypothesis profiles, applied once at collection."""
+"""Five Hypothesis profiles, applied once at collection."""
 
 import os
 

@@ -1,4 +1,4 @@
-"""Billy workload ports retain budgets, EOF, rewind, flush and byte evidence."""
+"""Workload ports retain budgets, EOF, rewind, flush and byte evidence."""
 
 from __future__ import annotations
 

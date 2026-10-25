@@ -1,4 +1,4 @@
-"""Paired gzip read workloads, including Billy's streaming consumption shapes.
+"""Paired gzip read workloads, including streaming consumption shapes.
 
 Run ``python bench/gzip_reads.py --baseline-source /saved/src --output reads.json``.
 Repeat ``--fixture`` for captured payloads; their original bytes are never rewritten.

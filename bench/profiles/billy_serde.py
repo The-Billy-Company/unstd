@@ -1,14 +1,10 @@
-"""Compare package sources using Billy's existing, output-checked serde fixtures.
+"""Compare package sources using existing, output-checked serde fixtures.
 
-Run with the consumer's interpreter so Python and optional backends stay fixed::
+Run with the consumer's interpreter so Python and optional backends stay fixed.
 
-    ../billy/.venv/bin/python bench/billy_serde.py \
-        --baseline-source .local/billy-serde-v3/src \
-        --output bench/billy-serde-results.json --check --max-regression 1.15
-
-The original Billy benchmark owns workloads, references and CPU measurement.
+The original benchmark owns workloads, references and CPU measurement.
 This runner alternates isolated workers or source-bound calls within one process,
-checks import provenance, and retains raw reports. Billy remains unchanged.
+checks import provenance, and retains raw reports.
 """
 
 from __future__ import annotations
@@ -106,7 +102,7 @@ def _native_calls(fn: Any) -> dict[str, int]:
 
 
 def _workloads(benchmark: Path) -> tuple[Any, list[Any], dict[str, Any], Any]:
-    """Bind the original Billy operations to the currently selected package."""
+    """Bind the original operations to the currently selected package."""
     spec = importlib.util.spec_from_file_location("_billy_serde_workloads", benchmark)
     if spec is None or spec.loader is None:
         message = f"cannot import Billy benchmark: {benchmark}"
@@ -227,7 +223,7 @@ def _verify(case: Any, probes: dict[str, Any]) -> dict[str, Any]:
 
 
 def _run_worker(benchmark: Path, runs: int) -> dict[str, Any]:
-    """Reuse Billy's cases and timers, extending only native-backend evidence."""
+    """Reuse existing cases and timers, extending only native-backend evidence."""
     module, selected, metadata, native_guard = _workloads(benchmark)
     measurements = {}
     for case in selected:
@@ -439,7 +435,7 @@ def _summarize(
 
 
 def main() -> None:
-    """Run existing Billy workers in alternating order and save their evidence."""
+    """Run existing workers in alternating order and save their evidence."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--billy-root", type=Path, default=_ROOT.parent / "billy")
     parser.add_argument("--source", type=Path, default=_ROOT / "src")

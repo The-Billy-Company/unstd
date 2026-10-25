@@ -91,12 +91,8 @@ class Probe(int):
 operation = sys.argv[1]
 result = getattr(values, operation)(Probe(63))
 model = list(range(128))
-if operation == "add":
-    bisect.insort(model, 63)
-    assert result is None
-else:
-    expected = getattr(bisect, operation)(model, 63)
-    assert result == expected
+expected = getattr(bisect, operation)(model, 63)
+assert result == expected
 assert installs == 1
 assert len(values) == len(model)
 assert list(values) == model
@@ -105,7 +101,7 @@ print(json.dumps({"operation": operation, "installs": installs, "length": len(va
 """
 
 
-@pytest.mark.parametrize("operation", ["add", "bisect_left", "bisect_right"])
+@pytest.mark.parametrize("operation", ["bisect_left", "bisect_right"])
 def test_reinstallation_from_active_comparison_keeps_old_configuration_alive(
     tmp_path: Path, operation: str
 ) -> None:
@@ -114,7 +110,7 @@ def test_reinstallation_from_active_comparison_keeps_old_configuration_alive(
     report = json.loads(result.stdout)
     assert report["operation"] == operation
     assert report["installs"] == 1
-    assert report["length"] == (129 if operation == "add" else 128)
+    assert report["length"] == 128
 
 
 def _bucket(value: int) -> int:
@@ -214,7 +210,7 @@ def probe(name):
     elif name == "block": values._lists[0] = object()
     elif name == "empty-lists": values._lists = []
     elif name == "length": values._len = object()
-    elif name == "load": values._load = object()
+    elif name == "index-container": values._index = object()
     elif name in ("index-item", "negative-count", "rank-overflow"):
         item = object() if name == "index-item" else -1 if name == "negative-count" else sys.maxsize
         values._index = [0, item, 0]
@@ -225,15 +221,14 @@ def probe(name):
     try:
         if name in ("index-item", "negative-count", "rank-overflow", "offset-overflow"):
             values._loc(2, 1)
-        elif name == "offset-type": values._pos(19)
-        elif name == "load": values._expand(0)
-        else: values.add(0)
+        elif name in ("offset-type", "index-container", "length"): values._pos(19)
+        else: values.bisect_left(0)
     except (TypeError, ValueError, IndexError, OverflowError, AttributeError) as error:
         return type(error).__name__
     raise AssertionError(f"corrupt shape {name} was accepted")
 
 names = ("outer-list", "missing-lists", "maxes", "block", "empty-lists", "length",
-    "load", "index-item", "negative-count", "rank-overflow", "offset-overflow", "offset-type")
+    "index-container", "index-item", "negative-count", "rank-overflow", "offset-overflow", "offset-type")
 report = {name: probe(name) for name in names}
 
 for mutation in ("replace", "delete"):
@@ -242,7 +237,7 @@ for mutation in ("replace", "delete"):
     values = Owned([1, 3])
     if mutation == "replace": Owned._unstd_sorted_native_config = object()
     else: del Owned._unstd_sorted_native_config
-    try: values.add(2)
+    try: values.bisect_left(2)
     except RuntimeError as error: report[f"config-{mutation}"] = type(error).__name__
     else: raise AssertionError("invalid native capsule was accepted")
 print(json.dumps(report))

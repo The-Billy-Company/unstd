@@ -89,6 +89,7 @@ _NATIVE_MODULES = (
     "unstd/compress/_gzip_native",
     "unstd/containers/_sorted_native",
     "unstd/proc/_proc_native",
+    "unstd/fs/_fs_native",
 )
 _MACHO_ORDERS = {
     b"\xcf\xfa\xed\xfe": "<",  # 64-bit little endian
@@ -586,8 +587,19 @@ def _wheel(
             hashes.get(f"{root}/licenses/{license_name}", (None,))[0] == digest,
             f"wheel omits or changes the vendored license: {license_name}",
         )
+    linux = all(
+        platform.startswith(("linux_", "manylinux", "musllinux"))
+        for platform in parts[-1].lower().split(".")
+    )
+    if not linux:
+        _require(
+            not any(name.startswith("unstd/fs/_fs_native.") for name in hashes),
+            "non-Linux wheel contains the Linux-only filesystem accelerator",
+        )
     if vendor_licenses and parts[-1] != "any":
         for module in _NATIVE_MODULES:
+            if module == "unstd/fs/_fs_native" and not linux:
+                continue
             matches = [
                 name
                 for name in hashes

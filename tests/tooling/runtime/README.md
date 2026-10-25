@@ -38,6 +38,21 @@ forced collection, allocation failures or ASan/UBSan. See the
 It records compiler/source provenance and preserves instrumentation in child
 processes without overwriting production extensions.
 
+`proc_memory` builds and tests an isolated native process backend, keeping its
+loader and source selection in fixture-owned children:
+
+```console
+python -m tests.tooling.runtime.proc_memory --sanitize --output /tmp/proc-memory
+```
+
+It records source/binary/bootstrap hashes, native dispatch proof, loader options,
+test output and JUnit results in the selected directory. Omit `--sanitize` for
+debug-allocator qualification. Sanitizer controllers force stdlib fallback
+launches through fork to avoid uninstrumented CPython vfork failures; admitted
+native proc launches still execute the C spawn kernel. Exact environment
+isolation runs in ordinary installed tests, and address-space allocation limits
+run without ASan's independent virtual reservations.
+
 `json_identity_gc` builds an isolated JSONX native extension with ASan/UBSan,
 explicit collection at strict-snapshot allocation and ownership boundaries,
 and audit-only deterministic allocation/insertion failures:

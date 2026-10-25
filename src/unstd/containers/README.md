@@ -56,7 +56,8 @@ Backed by `sortedcontainers` (Grant Jenks). Its **list-of-lists** design uses
 native list insertion and binary search within short runs. Performance depends
 on workload, collection size and load factor; the first positional query can
 also build an index. Range iteration costs time proportional to the number of
-returned values. On supported CPython builds, bundled C kernels accelerate
+returned values. On supported CPython builds, bundled C kernels accelerate rank
+and positional queries in
 compatible subclasses of the upstream sorted classes. The upstream APIs and
 ordering semantics apply, including keyed collections, views, range scans,
 copying and pickling. Accelerated classes have their own identities; they remain
@@ -109,5 +110,6 @@ entire batch is available so the backend can choose a merge/rebuild strategy.
 The [performance evaluation](../../../bench/reports/containers/README.md) records
 paired Linux and macOS startup and operation measurements. Lazy exports reduce
 startup work for consumers of one family. Native kernels target sorted-list
-operations and their use inside sorted dictionaries and sets; `Map` retains its
+queries and their use inside sorted dictionaries and sets. Mutations retain the
+upstream algorithms; `Map` retains its
 existing native `immutables` implementation.

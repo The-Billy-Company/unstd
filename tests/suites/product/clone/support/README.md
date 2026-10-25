@@ -26,3 +26,7 @@ campaign with AddressSanitizer and UndefinedBehaviorSanitizer. The generated
 wrapper preserves the overlay and sanitizer runtime in clean-environment
 subprocesses. Its manifest records source and binary hashes, compiler arguments,
 a successful public native walk, and verified child-process module provenance.
+On Linux, the sanitizer bootstrap removes inherited `LD_PRELOAD` after ASan has
+loaded into Python. The wrapper restores it at each Python exec, keeping both
+Python and the kernel instrumented while avoiding sanitizer injection into the
+intermediate shell and `env` launcher processes.

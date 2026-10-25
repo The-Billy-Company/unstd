@@ -1,9 +1,9 @@
 /* Captured POSIX output exchange. Popen retains descriptor ownership and reaping.
  *
- * Current Billy proc callers inherit stdin. Their two captured output streams
- * can be drained together without Python selector, allocation or append calls
- * per pipe chunk. Nonempty stdin remains on stdlib's complete communicate path:
- * closing its Python stream at the right moment is part of that contract.
+ * Both captured output streams can be drained together without Python selector,
+ * allocation or append calls per pipe chunk. Nonempty stdin remains on stdlib's
+ * complete communicate path: closing its Python stream at the right moment is
+ * part of that contract.
  */
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>

@@ -100,6 +100,11 @@ def test_common_workloads_cover_distinct_shapes_and_protocol_controls():
         "dataclasses-flat-500",
         "mixed-keys-1000",
         "foreign-last",
+        "scalar-list-1000",
+        "scalar-tuple-1000",
+        "scalar-list-100000",
+        "repeated-aliases-10000",
+        "repeated-aliases-100000",
     } <= names
     assert "cycle" not in names
     for case in cases:

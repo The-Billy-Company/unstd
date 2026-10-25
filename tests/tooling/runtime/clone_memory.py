@@ -125,9 +125,12 @@ def main() -> None:
     bootstrap = output / "bootstrap"
     bootstrap.mkdir(exist_ok=True)
     wrapper = output / "python"
-    (bootstrap / "sitecustomize.py").write_text(
-        "import sys\n" + f"sys.executable = {str(wrapper)!r}\n"
-    )
+    bootstrap_source = "import sys\n" + f"sys.executable = {str(wrapper)!r}\n"
+    if arguments.sanitize and sys.platform == "linux":
+        # ASan is already mapped into this Python process. The launcher restores
+        # LD_PRELOAD at Python exec; do not inject it into its shell/env stages.
+        bootstrap_source += "import os\nos.environ.pop('LD_PRELOAD', None)\n"
+    (bootstrap / "sitecustomize.py").write_text(bootstrap_source)
     environment = {
         "PYTHONPATH": os.pathsep.join(map(str, (source_root, bootstrap, _ROOT))),
         "PYTHONMALLOC": "malloc",

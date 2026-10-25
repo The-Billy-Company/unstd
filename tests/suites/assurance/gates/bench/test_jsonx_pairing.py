@@ -11,6 +11,7 @@ from types import SimpleNamespace
 import pytest
 
 from bench.profiles import jsonx_throughput as profile
+from tests.support.environment.process import run_python
 
 
 @pytest.mark.parametrize("repetition", [0, 1])
@@ -84,6 +85,23 @@ def test_two_retained_native_installations_keep_their_bindings_and_namespace(tmp
     pytest.importorskip("msgspec")
     pytest.importorskip("unstd.serde._json_native")
     roots = {label: _installed_copy(tmp_path, label) for label in ("before", "after")}
+    # Earlier profiler tests leave conservative native guards inactive on
+    # CPython 3.12/3.13. Deployment qualification owns a fresh interpreter.
+    result = run_python(
+        """
+from pathlib import Path
+import sys
+from tests.suites.assurance.gates.bench.test_jsonx_pairing import _qualify_retained_roots
+_qualify_retained_roots({'before': Path(sys.argv[1]), 'after': Path(sys.argv[2])})
+""",
+        args=(str(roots["before"]), str(roots["after"])),
+        cwd=tmp_path,
+        timeout=30,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def _qualify_retained_roots(roots):
     namespace, paths = _namespace(), sys.path.copy()
     retained = {
         label: profile._retained_workloads(root, "loads/small/str", require_native=True)

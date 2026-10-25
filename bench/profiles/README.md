@@ -25,7 +25,7 @@ These drivers compare saved and current implementations, check outputs and impor
 For installed clone baselines, add `--infer-native-bindings` to load only the
 entrypoints imported by that baseline's own Python wrapper. Use
 `--require-native --gc-enabled --max-slowdown 1.10` to prove successful native
-routes and gate both wall and process CPU latency across all 25 common workloads.
+routes and gate both wall and process CPU latency across all 30 common workloads.
 The guard takes the median of matched current/before batch ratios, retaining
 independent latency medians for inspection. The output report is saved before
 a failed guard exits.

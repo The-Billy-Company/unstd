@@ -35,7 +35,7 @@ The Linux/macOS and Python 3.13/3.14 jobs retain that evidence independently.
 No Billy checkout is required. Manual `gzip_diagnostic` runs keep their separate
 check name and do not satisfy the normal performance checks.
 
-The clone comparison also checks 25 common graph and dataclass workloads with
+The clone comparison also checks 30 common graph and dataclass workloads with
 GC enabled. It proves successful native graph, dataclass and `asdict` routes in
 both installations, then fails if the median matched wall or CPU ratio exceeds
 110% of the comparison revision. Pairing rounds keeps worker drift from

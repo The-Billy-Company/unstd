@@ -1,7 +1,7 @@
-"""Billy process contracts, profiled separately from paired full-call timings.
+"""Process contracts, profiled separately from paired full-call timings.
 
 Run this file directly. Disposable Git and pkg-config fixtures replay current
-Billy call shapes. Large text blobs are explicit scaling fixtures, not observed
+consumer call shapes. Large text blobs are explicit scaling fixtures, not observed
 production percentiles; asynchronous binary workers are outside this API.
 """
 
@@ -317,8 +317,6 @@ def _workloads(fixture: dict[str, Any]) -> tuple[list[Workload], dict[str, str]]
         )
     else:
         skipped["ps-process-inventory"] = "ps executable is unavailable"
-    # This control stresses both pipes without pretending to run Billy's tests
-    # or to exercise its asynchronous binary-media workers.
     python = (sys.executable, "-S", "-c")
     log = "qualification café ☃\n" * 32768
     cases.append(

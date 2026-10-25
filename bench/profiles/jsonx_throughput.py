@@ -389,7 +389,16 @@ def _paired_measure(
             for label in labels:
                 calls[label][metric]()
                 calibrations[label][metric] = timing._calibrate(calls[label][metric])
-            iterations[metric] = max(calibrations[label][metric][0] for label in labels)
+            requested = max(calibrations[label][metric][0] for label in labels)
+            slowest = max(
+                elapsed / count
+                for count, elapsed in (calibrations[label][metric] for label in labels)
+            )
+            # A 100x faster codec needs many more calibration iterations. Using
+            # that count for both can turn the old codec's batch into seconds.
+            # Keep equal counts while bounding the estimated slower batch.
+            ceiling = max(1, int(timing._MAX_BATCH_NS / max(slowest, 1)))
+            iterations[metric] = min(requested, ceiling)
         for index in range(rounds):
             order = labels if (index + repetition) % 2 == 0 else labels[::-1]
             for metric in ("candidate", "stdlib"):
@@ -634,7 +643,15 @@ def main(argv: Sequence[str] | None = None) -> None:
                     text=True,
                     env=dict(
                         os.environ,
-                        PYTHONPATH=str(Path(__file__).resolve().parents[2]),
+                        # Importing bench eagerly imports product workloads.
+                        # CI has dependencies installed globally and products
+                        # only in the two explicit target directories.
+                        PYTHONPATH=os.pathsep.join(
+                            (
+                                str(args.source.resolve()),
+                                str(Path(__file__).resolve().parents[2]),
+                            )
+                        ),
                     ),
                 )
             )

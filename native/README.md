@@ -14,6 +14,7 @@ headers. Python module names remain independent of source filenames.
 | [`clone/`](clone/README.md) | [`adapter.c`](clone/src/adapter.c) | Container graphs and admitted dataclasses |
 | [`containers/`](containers/README.md) | [`adapter.c`](containers/src/adapter.c) | Sorted collection operations and positional indexes |
 | [`proc/`](proc/README.md) | [`adapter.c`](proc/src/adapter.c), [`pipes.c`](proc/src/pipes.c) | POSIX spawning and captured-output exchange |
+| [`fs/`](fs/src/README.md) | [`adapter.c`](fs/src/adapter.c) | Linux atomic writes with signal-aware rollback and durable commit reporting |
 | [`crypto/`](crypto/README.md) | [`adapter.c`](crypto/src/adapter.c) | Hash-stream batching and bearer-envelope parsing |
 | [`serde/`](serde/README.md) | [`adapter.c`](serde/src/adapter.c) | JSON proofs, codec dispatch and implementation headers |
 | [`text/`](text/README.md) | [`adapter.c`](text/src/adapter.c), [`rust/adapter.c`](text/rust/adapter.c) | Levenshtein and Jaro metrics |
@@ -21,15 +22,16 @@ headers. Python module names remain independent of source filenames.
 | [`audio/`](audio/README.md) | External build recipe | Reviewed libsndfile patch and build provenance |
 
 [`hatch_build.py`](../hatch_build.py) attempts seven extensions on CPython,
+plus the filesystem extension on Linux,
 skipping free-threaded builds and other interpreters. Local compiler failures
 leave Python fallbacks available; `CIBUILDWHEEL=1` makes those failures fatal.
 Default kernels use C; `UNSTD_TEXT_RUST=1` selects the Rust text implementation.
 The reviewed gzip archive experiment has separate
 [build requirements](compress/experiments/README.md).
 
-The [Linux atomic-write experiment](fs/experiments/README.md) is built explicitly
-for Billy consumer profiling. It is outside the normal build and public fs
-dispatch; its admission limits include different cancellation checkpoints.
+The [earlier Linux atomic-write experiment](fs/experiments/README.md) remains a
+historical profiling proof. Production builds use `fs/src/adapter.c` instead;
+the experiment is never compiled by the package build.
 
 From the repository root, build a wheel that fails on any native compiler error:
 
