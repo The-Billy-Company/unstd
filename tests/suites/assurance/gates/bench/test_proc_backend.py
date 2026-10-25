@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import gc
+import importlib.util
 import json
 from pathlib import Path
 import shutil
@@ -12,7 +13,16 @@ from types import SimpleNamespace
 
 import pytest
 
-from bench.profiles import proc_backend as profile
+
+REPO_ROOT = Path(__file__).resolve().parents[5]
+_SPEC = importlib.util.spec_from_file_location(
+    "_proc_backend_gate_profile", REPO_ROOT / "bench" / "profiles" / "proc_backend.py"
+)
+assert _SPEC is not None
+assert _SPEC.loader is not None
+profile = importlib.util.module_from_spec(_SPEC)
+sys.modules[_SPEC.name] = profile
+_SPEC.loader.exec_module(profile)
 
 
 @pytest.mark.parametrize(

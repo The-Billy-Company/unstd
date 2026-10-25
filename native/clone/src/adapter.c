@@ -51,6 +51,7 @@ typedef struct {
 
 typedef struct {
     Py_ssize_t remaining;
+    ModuleState *module_state;
     PyTypeObject *record_type;
     unsigned int record_version;
     PyObject *walk;
@@ -77,6 +78,8 @@ static int clone_value_impl(PyObject *, PyObject **, unsigned int, CopyContext *
 static int atom(PyObject *);
 static int eligible(PyObject *, unsigned int, Proof *);
 static int record_current(CopyContext *);
+static int record_cached(PyTypeObject *, ModuleState *);
+static int record_cache_store(PyTypeObject *, unsigned int, ModuleState *);
 static int clone_record(PyObject *, PyObject **, unsigned int, CopyContext *);
 static int clone_record_impl(PyObject *, PyObject **, unsigned int, CopyContext *);
 static int clone_budget(unsigned int *, int *);
@@ -397,6 +400,11 @@ record_current(CopyContext *context)
     PyTypeObject *type = context->record_type;
     if (context->record_version != 0
         && context->record_version == type->tp_version_tag) {
+        return 1;
+    }
+    if (context->module_state != NULL
+        && record_cached(type, context->module_state)) {
+        context->record_version = type->tp_version_tag;
         return 1;
     }
     if (!record_admissible(type)) {
@@ -1529,6 +1537,7 @@ clone_direct_graph(PyObject *module, PyObject *source, PyTypeObject *type, PyObj
     }
     CopyContext context = {0};
     context.remaining = MAX_CONTAINERS;
+    context.module_state = state;
     context.record_type = type;
     context.record_version = type != NULL ? type->tp_version_tag : 0;
     context.walk = walk;
@@ -1545,6 +1554,12 @@ clone_direct_graph(PyObject *module, PyObject *source, PyTypeObject *type, PyObj
     Py_DECREF(update_name);
     Py_DECREF(memo_identity);
     for (unsigned int i = 0; i < context.recipe_count; i++) {
+        if (status == 1 && context.recipes[i].native
+            && record_cache_store(context.recipes[i].type,
+                                  context.recipes[i].version, state) < 0) {
+            Py_CLEAR(result);
+            status = -1;
+        }
         Py_DECREF(context.recipes[i].handler);
         Py_DECREF(context.recipes[i].type);
     }

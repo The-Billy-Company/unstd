@@ -1,0 +1,5088 @@
+{
+  "environment": {
+    "python": "3.14.9 (main, Oct 21 2026, 17:47:42) [Clang 23.1.3 ]",
+    "executable": "/Users/griffinstrier/Billy-Company/unstd/.venv/bin/python",
+    "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+    "machine": "arm64",
+    "filesystem_device": 16777231,
+    "fixture_device": 16777231
+  },
+  "harness_sha256": "36d6bd753ab1227a6c7e0f8b4d11f82c7625b94dc7f7c5674075e010d449d3cb",
+  "sources": {
+    "current": {
+      "source": "/Users/griffinstrier/Billy-Company/unstd/src",
+      "files_sha256": {
+        "unstd/fs/_internal/__init__.py": "64f815fae7af0a70ae4a84158e270135d4050d329f37f0c2243dab79dc04ed6c",
+        "unstd/fs/_internal/durability.py": "b20eacb1f1aa18040f73d7b9b9ea055344af4711fb9aa8d975ed4cd020abf99d",
+        "unstd/fs/_internal/walk.py": "bd7dc73228d318961a477ed4fad6982d9a9999ea82dcc4d778c23159c0953b91",
+        "unstd/fs/__init__.py": "77ca6360919dc5d9c640943874f8bf5648cfb97e311ecbace9111cd5404839e2"
+      },
+      "public_signatures": {
+        "atomic_replace": "(src: '_Pathish', dest: '_Pathish', *, durable: '_Durability' = False) -> 'Path'",
+        "atomic_write": "(path: '_Pathish', data: 'str | bytes', *, encoding: 'str' = 'utf-8', durable: '_Durability' = False) -> 'Path'",
+        "atomic_writer": "(path: '_Pathish', *, mode: \"Literal['w', 'wb']\" = 'w', encoding: 'str' = 'utf-8', durable: '_Durability' = False) -> 'AbstractContextManager[IO[str] | IO[bytes]]'",
+        "ensure_dir": "(path: '_Pathish') -> 'Path'",
+        "sync_dir": "(path: '_Pathish', *, strict: 'bool' = False) -> 'None'",
+        "walk_files": "(root: '_Pathish', *, follow_symlinks: 'bool' = False) -> 'Iterator[Path]'"
+      },
+      "descriptor_walk_supported": true
+    },
+    "before": {
+      "source": "/private/tmp/unstd-fs-before.wzFSHq",
+      "files_sha256": {
+        "unstd/fs/_internal/__init__.py": "64f815fae7af0a70ae4a84158e270135d4050d329f37f0c2243dab79dc04ed6c",
+        "unstd/fs/_internal/durability.py": "b20eacb1f1aa18040f73d7b9b9ea055344af4711fb9aa8d975ed4cd020abf99d",
+        "unstd/fs/_internal/walk.py": "0cb7bf3a8eb9082a99ca68d51c5bbed2d279e480408f1f2dadf0d20e9517b0a0",
+        "unstd/fs/__init__.py": "4638dd98acade39877c07f39e2db4a54160186f2dc7e9a1dced1d19e555585e0"
+      },
+      "public_signatures": {
+        "atomic_replace": "(src: '_Pathish', dest: '_Pathish', *, durable: '_Durability' = False) -> 'Path'",
+        "atomic_write": "(path: '_Pathish', data: 'str | bytes', *, encoding: 'str' = 'utf-8', durable: '_Durability' = False) -> 'Path'",
+        "atomic_writer": "(path: '_Pathish', *, mode: \"Literal['w', 'wb']\" = 'w', encoding: 'str' = 'utf-8', durable: '_Durability' = False) -> 'AbstractContextManager[IO[str] | IO[bytes]]'",
+        "ensure_dir": "(path: '_Pathish') -> 'Path'",
+        "sync_dir": "(path: '_Pathish', *, strict: 'bool' = False) -> 'None'",
+        "walk_files": "(root: '_Pathish', *, follow_symlinks: 'bool' = False) -> 'Iterator[Path]'"
+      },
+      "descriptor_walk_supported": true
+    }
+  },
+  "rounds": 31,
+  "repetitions": 100,
+  "method": "paired alternating warm-cache wall/process CPU batches; real fsync; checks and profiles excluded from timing; mutation fixtures shared between sources; GC left in its existing state",
+  "workloads": [
+    {
+      "name": "walk-nested",
+      "note": "2048 files; warm directory cache; list(Path) result",
+      "calibration": {
+        "current": {
+          "wall_ns": 518122292,
+          "process_cpu_ns": 375674000,
+          "operations": 100
+        },
+        "before": {
+          "wall_ns": 541112792,
+          "process_cpu_ns": 378792000,
+          "operations": 100
+        }
+      },
+      "target_batch_wall_ns": 20000000,
+      "samples": {
+        "current": [
+          {
+            "wall_ns": 892232625,
+            "process_cpu_ns": 609348000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 363867167,
+            "process_cpu_ns": 332526000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 383375250,
+            "process_cpu_ns": 337213000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 360667041,
+            "process_cpu_ns": 323551000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 394683084,
+            "process_cpu_ns": 343231000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 405900959,
+            "process_cpu_ns": 352112000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 485401375,
+            "process_cpu_ns": 384799000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 420149292,
+            "process_cpu_ns": 367110000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 473101417,
+            "process_cpu_ns": 377552000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 401636084,
+            "process_cpu_ns": 357197000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 348921084,
+            "process_cpu_ns": 316040000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 392182583,
+            "process_cpu_ns": 354799000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 340765250,
+            "process_cpu_ns": 314873000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 428706042,
+            "process_cpu_ns": 389771000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 363377459,
+            "process_cpu_ns": 328006000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 382900584,
+            "process_cpu_ns": 335252000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 428460500,
+            "process_cpu_ns": 384090000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 374458959,
+            "process_cpu_ns": 347912000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 550462750,
+            "process_cpu_ns": 457628000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 408697208,
+            "process_cpu_ns": 345594000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 396095375,
+            "process_cpu_ns": 342896000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 401968042,
+            "process_cpu_ns": 358666000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 401530209,
+            "process_cpu_ns": 353187000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 405614208,
+            "process_cpu_ns": 317912000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 376812750,
+            "process_cpu_ns": 328135000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 358231333,
+            "process_cpu_ns": 321819000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 333593333,
+            "process_cpu_ns": 295548000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 315164000,
+            "process_cpu_ns": 287319000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 360895834,
+            "process_cpu_ns": 299788000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 327420625,
+            "process_cpu_ns": 310213000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 364701875,
+            "process_cpu_ns": 332895000,
+            "operations": 100
+          }
+        ],
+        "before": [
+          {
+            "wall_ns": 535365625,
+            "process_cpu_ns": 458892000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 496819333,
+            "process_cpu_ns": 437464000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 437987083,
+            "process_cpu_ns": 347925000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 389813416,
+            "process_cpu_ns": 324864000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 379184208,
+            "process_cpu_ns": 347452000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 476249542,
+            "process_cpu_ns": 394387000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 417918125,
+            "process_cpu_ns": 365394000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 393108167,
+            "process_cpu_ns": 353760000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 385957875,
+            "process_cpu_ns": 352324000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 472120125,
+            "process_cpu_ns": 412519000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 420143541,
+            "process_cpu_ns": 373015000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 413636042,
+            "process_cpu_ns": 371998000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 416840791,
+            "process_cpu_ns": 350943000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 354858250,
+            "process_cpu_ns": 327970000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 329466417,
+            "process_cpu_ns": 306379000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 369210292,
+            "process_cpu_ns": 317405000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 470563542,
+            "process_cpu_ns": 376845000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 470110292,
+            "process_cpu_ns": 402533000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 411394250,
+            "process_cpu_ns": 364452000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 413051042,
+            "process_cpu_ns": 372441000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 529961583,
+            "process_cpu_ns": 441594000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 496249083,
+            "process_cpu_ns": 430704000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 420477750,
+            "process_cpu_ns": 353858000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 363097708,
+            "process_cpu_ns": 325808000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 372835125,
+            "process_cpu_ns": 330416000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 457064709,
+            "process_cpu_ns": 381022000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 492401542,
+            "process_cpu_ns": 374651000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 450199041,
+            "process_cpu_ns": 366293000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 377950459,
+            "process_cpu_ns": 335641000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 412888458,
+            "process_cpu_ns": 340360000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 460781250,
+            "process_cpu_ns": 385741000,
+            "operations": 100
+          }
+        ]
+      },
+      "median_per_operation_ns": {
+        "current": {
+          "wall_ns": 3921825.83,
+          "process_cpu_ns": 3428960.0
+        },
+        "before": {
+          "wall_ns": 4179181.25,
+          "process_cpu_ns": 3653940.0
+        }
+      },
+      "before_over_current": {
+        "wall_ns": 1.0656213282169136,
+        "process_cpu_ns": 1.065611730670524
+      },
+      "orders": [
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ]
+      ],
+      "profiles": {
+        "current": [
+          {
+            "file": "/Users/griffinstrier/Billy-Company/unstd/bench/profiles/fs_backend.py",
+            "line": 158,
+            "function": "_walk",
+            "calls": 1,
+            "self_seconds": 0.000125146,
+            "cumulative_seconds": 0.006618709
+          },
+          {
+            "file": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/fs/__init__.py",
+            "line": 351,
+            "function": "walk_files",
+            "calls": 2049,
+            "self_seconds": 0.000178445,
+            "cumulative_seconds": 0.006493563000000001
+          },
+          {
+            "file": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/fs/_internal/walk.py",
+            "line": 43,
+            "function": "_walk_descriptors",
+            "calls": 2049,
+            "self_seconds": 0.0009168760000000001,
+            "cumulative_seconds": 0.006302618
+          },
+          {
+            "file": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/fs/_internal/walk.py",
+            "line": 20,
+            "function": "_open_walk_dir",
+            "calls": 65,
+            "self_seconds": 1.7057e-05,
+            "cumulative_seconds": 0.0036853790000000003
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.scandir>",
+            "calls": 65,
+            "self_seconds": 0.002087285,
+            "cumulative_seconds": 0.002087285
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.open>",
+            "calls": 65,
+            "self_seconds": 0.001566328,
+            "cumulative_seconds": 0.0015810370000000002
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/pathlib/__init__.py",
+            "line": 135,
+            "function": "__init__",
+            "calls": 2049,
+            "self_seconds": 0.000687065,
+            "cumulative_seconds": 0.001077934
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/pathlib/__init__.py",
+            "line": 632,
+            "function": "__new__",
+            "calls": 2049,
+            "self_seconds": 0.000315998,
+            "cumulative_seconds": 0.00043385600000000004
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method builtins.isinstance>",
+            "calls": 4098,
+            "self_seconds": 0.00018131400000000002,
+            "cumulative_seconds": 0.00018131400000000002
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<method 'append' of 'list' objects>",
+            "calls": 2112,
+            "self_seconds": 0.00012362,
+            "cumulative_seconds": 0.00012362
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<method 'is_file' of 'posix.DirEntry' objects>",
+            "calls": 2112,
+            "self_seconds": 0.000122273,
+            "cumulative_seconds": 0.000122273
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method __new__ of type object at 0x1011def70>",
+            "calls": 2049,
+            "self_seconds": 0.00011785800000000001,
+            "cumulative_seconds": 0.00011785800000000001
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.fspath>",
+            "calls": 2050,
+            "self_seconds": 9.081e-05,
+            "cumulative_seconds": 9.081e-05
+          },
+          {
+            "file": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/fs/_internal/walk.py",
+            "line": 35,
+            "function": "_close_walk_dir",
+            "calls": 65,
+            "self_seconds": 1.8133e-05,
+            "cumulative_seconds": 5.8464e-05
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.close>",
+            "calls": 65,
+            "self_seconds": 3.5210000000000003e-05,
+            "cumulative_seconds": 3.5210000000000003e-05
+          }
+        ],
+        "before": [
+          {
+            "file": "/Users/griffinstrier/Billy-Company/unstd/bench/profiles/fs_backend.py",
+            "line": 158,
+            "function": "_walk",
+            "calls": 1,
+            "self_seconds": 0.000116799,
+            "cumulative_seconds": 0.007626000000000001
+          },
+          {
+            "file": "/private/tmp/unstd-fs-before.wzFSHq/unstd/fs/__init__.py",
+            "line": 349,
+            "function": "walk_files",
+            "calls": 2049,
+            "self_seconds": 0.00018658200000000002,
+            "cumulative_seconds": 0.007509201
+          },
+          {
+            "file": "/private/tmp/unstd-fs-before.wzFSHq/unstd/fs/_internal/walk.py",
+            "line": 33,
+            "function": "_walk_descriptors",
+            "calls": 2049,
+            "self_seconds": 0.000799015,
+            "cumulative_seconds": 0.0073190370000000005
+          },
+          {
+            "file": "/private/tmp/unstd-fs-before.wzFSHq/unstd/fs/_internal/walk.py",
+            "line": 19,
+            "function": "_open_walk_dir",
+            "calls": 65,
+            "self_seconds": 8.4863e-05,
+            "cumulative_seconds": 0.0033558760000000003
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/pathlib/__init__.py",
+            "line": 172,
+            "function": "__truediv__",
+            "calls": 2112,
+            "self_seconds": 0.000245652,
+            "cumulative_seconds": 0.0027846940000000003
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/pathlib/__init__.py",
+            "line": 157,
+            "function": "with_segments",
+            "calls": 2112,
+            "self_seconds": 0.00052811,
+            "cumulative_seconds": 0.002539042
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/pathlib/__init__.py",
+            "line": 135,
+            "function": "__init__",
+            "calls": 2113,
+            "self_seconds": 0.001058059,
+            "cumulative_seconds": 0.0016784430000000002
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.scandir>",
+            "calls": 65,
+            "self_seconds": 0.001589249,
+            "cumulative_seconds": 0.001589249
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.open>",
+            "calls": 65,
+            "self_seconds": 0.001412375,
+            "cumulative_seconds": 0.0014242920000000002
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/pathlib/__init__.py",
+            "line": 632,
+            "function": "__new__",
+            "calls": 2113,
+            "self_seconds": 0.0002066,
+            "cumulative_seconds": 0.000336071
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method builtins.isinstance>",
+            "calls": 6338,
+            "self_seconds": 0.000288599,
+            "cumulative_seconds": 0.000288599
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method __new__ of type object at 0x1011def70>",
+            "calls": 2113,
+            "self_seconds": 0.000129471,
+            "cumulative_seconds": 0.000129471
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/contextlib.py",
+            "line": 571,
+            "function": "__exit__",
+            "calls": 131,
+            "self_seconds": 6.4742e-05,
+            "cumulative_seconds": 0.000127495
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<method 'is_dir' of 'posix.DirEntry' objects>",
+            "calls": 2112,
+            "self_seconds": 0.000125497,
+            "cumulative_seconds": 0.000125497
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/contextlib.py",
+            "line": 625,
+            "function": "close",
+            "calls": 65,
+            "self_seconds": 1.8705e-05,
+            "cumulative_seconds": 0.00012403700000000002
+          }
+        ]
+      }
+    },
+    {
+      "name": "walk-empty-directories",
+      "note": "0 files; warm directory cache; list(Path) result",
+      "calibration": {
+        "current": {
+          "wall_ns": 189431959,
+          "process_cpu_ns": 153136000,
+          "operations": 100
+        },
+        "before": {
+          "wall_ns": 320717708,
+          "process_cpu_ns": 147945000,
+          "operations": 100
+        }
+      },
+      "target_batch_wall_ns": 20000000,
+      "samples": {
+        "current": [
+          {
+            "wall_ns": 194061459,
+            "process_cpu_ns": 97573000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 202338625,
+            "process_cpu_ns": 146650000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 123821417,
+            "process_cpu_ns": 107776000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 161549583,
+            "process_cpu_ns": 142551000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 199907875,
+            "process_cpu_ns": 158460000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 140695833,
+            "process_cpu_ns": 118897000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 155738583,
+            "process_cpu_ns": 119961000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 220398375,
+            "process_cpu_ns": 154056000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 161023417,
+            "process_cpu_ns": 132807000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 149788792,
+            "process_cpu_ns": 119188000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 156780417,
+            "process_cpu_ns": 131223000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 123646250,
+            "process_cpu_ns": 107529000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 142310584,
+            "process_cpu_ns": 111098000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 168436583,
+            "process_cpu_ns": 138774000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 176286125,
+            "process_cpu_ns": 132516000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 142251250,
+            "process_cpu_ns": 122617000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 157243958,
+            "process_cpu_ns": 131669000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 183757041,
+            "process_cpu_ns": 153472000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 169346125,
+            "process_cpu_ns": 141064000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 144200166,
+            "process_cpu_ns": 124773000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 100399500,
+            "process_cpu_ns": 92244000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 207920584,
+            "process_cpu_ns": 129318000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 115337000,
+            "process_cpu_ns": 101277000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 101160500,
+            "process_cpu_ns": 90333000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 115140583,
+            "process_cpu_ns": 99643000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 207159292,
+            "process_cpu_ns": 135662000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 174341292,
+            "process_cpu_ns": 143780000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 171312083,
+            "process_cpu_ns": 126943000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 171288500,
+            "process_cpu_ns": 138925000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 167523834,
+            "process_cpu_ns": 140236000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 173298209,
+            "process_cpu_ns": 119464000,
+            "operations": 100
+          }
+        ],
+        "before": [
+          {
+            "wall_ns": 147387875,
+            "process_cpu_ns": 124489000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 203388833,
+            "process_cpu_ns": 138504000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 168664625,
+            "process_cpu_ns": 132849000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 195548000,
+            "process_cpu_ns": 144984000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 217951584,
+            "process_cpu_ns": 154828000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 202106625,
+            "process_cpu_ns": 145097000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 192451584,
+            "process_cpu_ns": 150821000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 212961625,
+            "process_cpu_ns": 157506000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 193634250,
+            "process_cpu_ns": 145133000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 183528500,
+            "process_cpu_ns": 150759000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 166716250,
+            "process_cpu_ns": 136569000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 169585625,
+            "process_cpu_ns": 119000000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 182340500,
+            "process_cpu_ns": 123424000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 198199583,
+            "process_cpu_ns": 145331000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 235202250,
+            "process_cpu_ns": 160727000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 233780167,
+            "process_cpu_ns": 178313000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 189949958,
+            "process_cpu_ns": 140761000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 153116750,
+            "process_cpu_ns": 135337000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 206376083,
+            "process_cpu_ns": 151531000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 157548625,
+            "process_cpu_ns": 117283000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 157376375,
+            "process_cpu_ns": 118123000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 177503500,
+            "process_cpu_ns": 127238000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 139326041,
+            "process_cpu_ns": 120332000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 159264792,
+            "process_cpu_ns": 118306000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 135499625,
+            "process_cpu_ns": 114783000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 199114625,
+            "process_cpu_ns": 142389000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 189932583,
+            "process_cpu_ns": 153261000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 169619125,
+            "process_cpu_ns": 141013000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 208480209,
+            "process_cpu_ns": 169062000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 184806666,
+            "process_cpu_ns": 146064000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 172112417,
+            "process_cpu_ns": 139436000,
+            "operations": 100
+          }
+        ]
+      },
+      "median_per_operation_ns": {
+        "current": {
+          "wall_ns": 1615495.83,
+          "process_cpu_ns": 1293180.0
+        },
+        "before": {
+          "wall_ns": 1848066.66,
+          "process_cpu_ns": 1410130.0
+        }
+      },
+      "before_over_current": {
+        "wall_ns": 1.1439625071641317,
+        "process_cpu_ns": 1.0904359795233456
+      },
+      "orders": [
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ]
+      ],
+      "profiles": {
+        "current": [
+          {
+            "file": "/Users/griffinstrier/Billy-Company/unstd/bench/profiles/fs_backend.py",
+            "line": 158,
+            "function": "_walk",
+            "calls": 1,
+            "self_seconds": 2.2920000000000002e-06,
+            "cumulative_seconds": 0.0010328750000000002
+          },
+          {
+            "file": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/fs/__init__.py",
+            "line": 351,
+            "function": "walk_files",
+            "calls": 1,
+            "self_seconds": 4.417e-06,
+            "cumulative_seconds": 0.001030583
+          },
+          {
+            "file": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/fs/_internal/walk.py",
+            "line": 43,
+            "function": "_walk_descriptors",
+            "calls": 1,
+            "self_seconds": 9.8115e-05,
+            "cumulative_seconds": 0.001019542
+          },
+          {
+            "file": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/fs/_internal/walk.py",
+            "line": 20,
+            "function": "_open_walk_dir",
+            "calls": 65,
+            "self_seconds": 1.4552e-05,
+            "cumulative_seconds": 0.0008551300000000001
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.open>",
+            "calls": 65,
+            "self_seconds": 0.00059908,
+            "cumulative_seconds": 0.0006127890000000001
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.scandir>",
+            "calls": 65,
+            "self_seconds": 0.00022778900000000002,
+            "cumulative_seconds": 0.00022778900000000002
+          },
+          {
+            "file": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/fs/_internal/walk.py",
+            "line": 35,
+            "function": "_close_walk_dir",
+            "calls": 65,
+            "self_seconds": 1.379e-05,
+            "cumulative_seconds": 4.7128e-05
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.close>",
+            "calls": 65,
+            "self_seconds": 2.9211000000000002e-05,
+            "cumulative_seconds": 2.9211000000000002e-05
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/pathlib/__init__.py",
+            "line": 190,
+            "function": "__fspath__",
+            "calls": 1,
+            "self_seconds": 7.510000000000001e-07,
+            "cumulative_seconds": 1.3709e-05
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/pathlib/__init__.py",
+            "line": 251,
+            "function": "__str__",
+            "calls": 2,
+            "self_seconds": 2.2920000000000002e-06,
+            "cumulative_seconds": 1.2999e-05
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<method 'disable' of '_lsprof.Profiler' objects>",
+            "calls": 1,
+            "self_seconds": 1.0416e-05,
+            "cumulative_seconds": 1.0416e-05
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/pathlib/__init__.py",
+            "line": 341,
+            "function": "drive",
+            "calls": 1,
+            "self_seconds": 2.041e-06,
+            "cumulative_seconds": 9.583000000000001e-06
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/pathlib/__init__.py",
+            "line": 330,
+            "function": "_raw_path",
+            "calls": 1,
+            "self_seconds": 1.667e-06,
+            "cumulative_seconds": 5.208e-06
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<method 'is_file' of 'posix.DirEntry' objects>",
+            "calls": 64,
+            "self_seconds": 4.919000000000001e-06,
+            "cumulative_seconds": 4.919000000000001e-06
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<method 'is_dir' of 'posix.DirEntry' objects>",
+            "calls": 64,
+            "self_seconds": 4.163000000000001e-06,
+            "cumulative_seconds": 4.163000000000001e-06
+          }
+        ],
+        "before": [
+          {
+            "file": "/Users/griffinstrier/Billy-Company/unstd/bench/profiles/fs_backend.py",
+            "line": 158,
+            "function": "_walk",
+            "calls": 1,
+            "self_seconds": 1.0420000000000001e-06,
+            "cumulative_seconds": 0.0014172920000000001
+          },
+          {
+            "file": "/private/tmp/unstd-fs-before.wzFSHq/unstd/fs/__init__.py",
+            "line": 349,
+            "function": "walk_files",
+            "calls": 1,
+            "self_seconds": 3.0420000000000003e-06,
+            "cumulative_seconds": 0.0014162500000000002
+          },
+          {
+            "file": "/private/tmp/unstd-fs-before.wzFSHq/unstd/fs/_internal/walk.py",
+            "line": 33,
+            "function": "_walk_descriptors",
+            "calls": 1,
+            "self_seconds": 9.7081e-05,
+            "cumulative_seconds": 0.0014105830000000002
+          },
+          {
+            "file": "/private/tmp/unstd-fs-before.wzFSHq/unstd/fs/_internal/walk.py",
+            "line": 19,
+            "function": "_open_walk_dir",
+            "calls": 65,
+            "self_seconds": 6.6171e-05,
+            "cumulative_seconds": 0.001091457
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.open>",
+            "calls": 65,
+            "self_seconds": 0.000602623,
+            "cumulative_seconds": 0.0006111230000000001
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.scandir>",
+            "calls": 65,
+            "self_seconds": 0.000256834,
+            "cumulative_seconds": 0.000256834
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/contextlib.py",
+            "line": 571,
+            "function": "__exit__",
+            "calls": 131,
+            "self_seconds": 5.1237000000000004e-05,
+            "cumulative_seconds": 0.00010937300000000001
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/contextlib.py",
+            "line": 625,
+            "function": "close",
+            "calls": 65,
+            "self_seconds": 1.4000000000000001e-05,
+            "cumulative_seconds": 0.000105748
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/pathlib/__init__.py",
+            "line": 172,
+            "function": "__truediv__",
+            "calls": 64,
+            "self_seconds": 1.0741000000000001e-05,
+            "cumulative_seconds": 0.000102912
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/pathlib/__init__.py",
+            "line": 157,
+            "function": "with_segments",
+            "calls": 64,
+            "self_seconds": 1.9914000000000003e-05,
+            "cumulative_seconds": 9.217100000000001e-05
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/pathlib/__init__.py",
+            "line": 135,
+            "function": "__init__",
+            "calls": 65,
+            "self_seconds": 3.6676e-05,
+            "cumulative_seconds": 6.1334e-05
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/contextlib.py",
+            "line": 515,
+            "function": "enter_context",
+            "calls": 65,
+            "self_seconds": 1.8298e-05,
+            "cumulative_seconds": 5.6717000000000006e-05
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/contextlib.py",
+            "line": 481,
+            "function": "_exit_wrapper",
+            "calls": 65,
+            "self_seconds": 8.764000000000001e-06,
+            "cumulative_seconds": 4.5051e-05
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/contextlib.py",
+            "line": 534,
+            "function": "callback",
+            "calls": 65,
+            "self_seconds": 2.5542e-05,
+            "cumulative_seconds": 4.4585e-05
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.close>",
+            "calls": 65,
+            "self_seconds": 3.6287e-05,
+            "cumulative_seconds": 3.6287e-05
+          }
+        ]
+      }
+    },
+    {
+      "name": "walk-early-close",
+      "note": "first file at depth 80; close all active ancestors",
+      "calibration": {
+        "current": {
+          "wall_ns": 249878042,
+          "process_cpu_ns": 218965000,
+          "operations": 100
+        },
+        "before": {
+          "wall_ns": 246486792,
+          "process_cpu_ns": 209342000,
+          "operations": 100
+        }
+      },
+      "target_batch_wall_ns": 20000000,
+      "samples": {
+        "current": [
+          {
+            "wall_ns": 284887708,
+            "process_cpu_ns": 232224000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 343710459,
+            "process_cpu_ns": 273549000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 355886417,
+            "process_cpu_ns": 259797000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 305661208,
+            "process_cpu_ns": 270293000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 251126458,
+            "process_cpu_ns": 233418000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 284887000,
+            "process_cpu_ns": 228752000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 325592791,
+            "process_cpu_ns": 240880000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 310445041,
+            "process_cpu_ns": 258228000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 295314000,
+            "process_cpu_ns": 249288000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 233959667,
+            "process_cpu_ns": 202503000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 258176458,
+            "process_cpu_ns": 220528000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 315561625,
+            "process_cpu_ns": 257315000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 420220750,
+            "process_cpu_ns": 300261000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 292693333,
+            "process_cpu_ns": 274901000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 349238333,
+            "process_cpu_ns": 265076000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 442826167,
+            "process_cpu_ns": 293906000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 730615875,
+            "process_cpu_ns": 574350000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 283605792,
+            "process_cpu_ns": 227543000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 284238750,
+            "process_cpu_ns": 240216000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 229258000,
+            "process_cpu_ns": 189009000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 315721584,
+            "process_cpu_ns": 229919000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 266885000,
+            "process_cpu_ns": 229888000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 263167708,
+            "process_cpu_ns": 248693000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 233894292,
+            "process_cpu_ns": 199976000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 284518500,
+            "process_cpu_ns": 222474000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 252351542,
+            "process_cpu_ns": 229672000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 256892292,
+            "process_cpu_ns": 206283000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 303287416,
+            "process_cpu_ns": 266939000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 298759000,
+            "process_cpu_ns": 256396000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 338298292,
+            "process_cpu_ns": 288060000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 305776583,
+            "process_cpu_ns": 273679000,
+            "operations": 100
+          }
+        ],
+        "before": [
+          {
+            "wall_ns": 256250417,
+            "process_cpu_ns": 221019000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 283418250,
+            "process_cpu_ns": 233612000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 254786709,
+            "process_cpu_ns": 214549000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 339207625,
+            "process_cpu_ns": 268386000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 288940542,
+            "process_cpu_ns": 239070000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 230990250,
+            "process_cpu_ns": 188641000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 294648917,
+            "process_cpu_ns": 249187000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 386236167,
+            "process_cpu_ns": 315636000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 234846666,
+            "process_cpu_ns": 211451000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 203370292,
+            "process_cpu_ns": 190820000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 325674125,
+            "process_cpu_ns": 262208000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 327763833,
+            "process_cpu_ns": 292002000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 508244000,
+            "process_cpu_ns": 356134000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 490776375,
+            "process_cpu_ns": 316981000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 369199500,
+            "process_cpu_ns": 286707000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 262305959,
+            "process_cpu_ns": 236307000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 364295459,
+            "process_cpu_ns": 287265000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 386487541,
+            "process_cpu_ns": 287067000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 283391750,
+            "process_cpu_ns": 247449000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 274577500,
+            "process_cpu_ns": 234772000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 358053750,
+            "process_cpu_ns": 295884000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 296065250,
+            "process_cpu_ns": 262193000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 285929125,
+            "process_cpu_ns": 254832000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 268432291,
+            "process_cpu_ns": 241429000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 324368375,
+            "process_cpu_ns": 254563000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 305189125,
+            "process_cpu_ns": 266445000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 357350500,
+            "process_cpu_ns": 262060000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 312663583,
+            "process_cpu_ns": 256549000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 314546208,
+            "process_cpu_ns": 263304000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 351774667,
+            "process_cpu_ns": 302904000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 291352459,
+            "process_cpu_ns": 264630000,
+            "operations": 100
+          }
+        ]
+      },
+      "median_per_operation_ns": {
+        "current": {
+          "wall_ns": 2953140.0,
+          "process_cpu_ns": 2486930.0
+        },
+        "before": {
+          "wall_ns": 3051891.25,
+          "process_cpu_ns": 2620600.0
+        }
+      },
+      "before_over_current": {
+        "wall_ns": 1.0334394068686212,
+        "process_cpu_ns": 1.0537489997708018
+      },
+      "orders": [
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ]
+      ],
+      "profiles": {
+        "current": [
+          {
+            "file": "/Users/griffinstrier/Billy-Company/unstd/bench/profiles/fs_backend.py",
+            "line": 164,
+            "function": "_early_close",
+            "calls": 1,
+            "self_seconds": 4.542e-06,
+            "cumulative_seconds": 0.003399542
+          },
+          {
+            "file": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/fs/_internal/walk.py",
+            "line": 43,
+            "function": "_walk_descriptors",
+            "calls": 2,
+            "self_seconds": 0.00012403500000000001,
+            "cumulative_seconds": 0.0033745000000000003
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method builtins.next>",
+            "calls": 1,
+            "self_seconds": 9.59e-07,
+            "cumulative_seconds": 0.003196417
+          },
+          {
+            "file": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/fs/__init__.py",
+            "line": 351,
+            "function": "walk_files",
+            "calls": 2,
+            "self_seconds": 4.959e-06,
+            "cumulative_seconds": 0.0031958750000000004
+          },
+          {
+            "file": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/fs/_internal/walk.py",
+            "line": 20,
+            "function": "_open_walk_dir",
+            "calls": 81,
+            "self_seconds": 2.1559e-05,
+            "cumulative_seconds": 0.003041755
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.open>",
+            "calls": 81,
+            "self_seconds": 0.002422245,
+            "cumulative_seconds": 0.002435786
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.scandir>",
+            "calls": 81,
+            "self_seconds": 0.00058441,
+            "cumulative_seconds": 0.00058441
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<method 'close' of 'generator' objects>",
+            "calls": 1,
+            "self_seconds": 5.208e-06,
+            "cumulative_seconds": 0.000198583
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/contextlib.py",
+            "line": 571,
+            "function": "__exit__",
+            "calls": 1,
+            "self_seconds": 2.0997000000000002e-05,
+            "cumulative_seconds": 0.000131
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/contextlib.py",
+            "line": 481,
+            "function": "_exit_wrapper",
+            "calls": 81,
+            "self_seconds": 9.428e-06,
+            "cumulative_seconds": 0.000105755
+          },
+          {
+            "file": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/fs/_internal/walk.py",
+            "line": 35,
+            "function": "_close_walk_dir",
+            "calls": 81,
+            "self_seconds": 1.5043000000000001e-05,
+            "cumulative_seconds": 9.6327e-05
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/contextlib.py",
+            "line": 534,
+            "function": "callback",
+            "calls": 81,
+            "self_seconds": 2.5542e-05,
+            "cumulative_seconds": 4.4836e-05
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<method 'close' of 'posix.ScandirIterator' objects>",
+            "calls": 81,
+            "self_seconds": 4.4288e-05,
+            "cumulative_seconds": 4.4288e-05
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.close>",
+            "calls": 81,
+            "self_seconds": 3.6996e-05,
+            "cumulative_seconds": 3.6996e-05
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<method 'append' of 'list' objects>",
+            "calls": 81,
+            "self_seconds": 1.7669e-05,
+            "cumulative_seconds": 1.7669e-05
+          }
+        ],
+        "before": [
+          {
+            "file": "/Users/griffinstrier/Billy-Company/unstd/bench/profiles/fs_backend.py",
+            "line": 164,
+            "function": "_early_close",
+            "calls": 1,
+            "self_seconds": 2.042e-06,
+            "cumulative_seconds": 0.00305425
+          },
+          {
+            "file": "/private/tmp/unstd-fs-before.wzFSHq/unstd/fs/_internal/walk.py",
+            "line": 33,
+            "function": "_walk_descriptors",
+            "calls": 2,
+            "self_seconds": 7.774000000000001e-05,
+            "cumulative_seconds": 0.0030297920000000003
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method builtins.next>",
+            "calls": 1,
+            "self_seconds": 1.0420000000000001e-06,
+            "cumulative_seconds": 0.00278875
+          },
+          {
+            "file": "/private/tmp/unstd-fs-before.wzFSHq/unstd/fs/__init__.py",
+            "line": 349,
+            "function": "walk_files",
+            "calls": 2,
+            "self_seconds": 3.5830000000000003e-06,
+            "cumulative_seconds": 0.0027882920000000004
+          },
+          {
+            "file": "/private/tmp/unstd-fs-before.wzFSHq/unstd/fs/_internal/walk.py",
+            "line": 19,
+            "function": "_open_walk_dir",
+            "calls": 81,
+            "self_seconds": 8.697200000000001e-05,
+            "cumulative_seconds": 0.002561836
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.open>",
+            "calls": 81,
+            "self_seconds": 0.0018130840000000002,
+            "cumulative_seconds": 0.001825042
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.scandir>",
+            "calls": 81,
+            "self_seconds": 0.000437001,
+            "cumulative_seconds": 0.000437001
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<method 'close' of 'generator' objects>",
+            "calls": 1,
+            "self_seconds": 1.4582e-05,
+            "cumulative_seconds": 0.000263458
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/contextlib.py",
+            "line": 571,
+            "function": "__exit__",
+            "calls": 163,
+            "self_seconds": 0.000121514,
+            "cumulative_seconds": 0.00021775
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/contextlib.py",
+            "line": 481,
+            "function": "_exit_wrapper",
+            "calls": 162,
+            "self_seconds": 2.2846e-05,
+            "cumulative_seconds": 0.00017237800000000002
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/contextlib.py",
+            "line": 625,
+            "function": "close",
+            "calls": 81,
+            "self_seconds": 1.7116e-05,
+            "cumulative_seconds": 0.000160037
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/pathlib/__init__.py",
+            "line": 172,
+            "function": "__truediv__",
+            "calls": 81,
+            "self_seconds": 1.2708000000000001e-05,
+            "cumulative_seconds": 0.000143083
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/pathlib/__init__.py",
+            "line": 157,
+            "function": "with_segments",
+            "calls": 81,
+            "self_seconds": 2.6993e-05,
+            "cumulative_seconds": 0.000130375
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/contextlib.py",
+            "line": 534,
+            "function": "callback",
+            "calls": 162,
+            "self_seconds": 5.7464000000000004e-05,
+            "cumulative_seconds": 9.6335e-05
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/pathlib/__init__.py",
+            "line": 135,
+            "function": "__init__",
+            "calls": 82,
+            "self_seconds": 4.9431e-05,
+            "cumulative_seconds": 8.7416e-05
+          }
+        ]
+      }
+    },
+    {
+      "name": "atomic-write-bytes-1k",
+      "note": "rewrite existing file; real fsync; creation excluded",
+      "calibration": {
+        "current": {
+          "wall_ns": 28484917,
+          "process_cpu_ns": 23255000,
+          "operations": 100
+        },
+        "before": {
+          "wall_ns": 33943542,
+          "process_cpu_ns": 24098000,
+          "operations": 100
+        }
+      },
+      "target_batch_wall_ns": 20000000,
+      "samples": {
+        "current": [
+          {
+            "wall_ns": 114389875,
+            "process_cpu_ns": 26134000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 27657375,
+            "process_cpu_ns": 23498000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 27780875,
+            "process_cpu_ns": 22099000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 27272458,
+            "process_cpu_ns": 24751000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 65892084,
+            "process_cpu_ns": 30209000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 26599750,
+            "process_cpu_ns": 21551000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 33281500,
+            "process_cpu_ns": 22565000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 18745458,
+            "process_cpu_ns": 17274000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 24353750,
+            "process_cpu_ns": 18734000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 46885333,
+            "process_cpu_ns": 27563000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 30809708,
+            "process_cpu_ns": 25127000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 53428375,
+            "process_cpu_ns": 30703000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 48296292,
+            "process_cpu_ns": 26519000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 27680209,
+            "process_cpu_ns": 22845000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 29408875,
+            "process_cpu_ns": 21777000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 21475750,
+            "process_cpu_ns": 19975000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 22589959,
+            "process_cpu_ns": 20594000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 23480417,
+            "process_cpu_ns": 20837000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 31923959,
+            "process_cpu_ns": 24582000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 31005167,
+            "process_cpu_ns": 27276000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 23906375,
+            "process_cpu_ns": 22055000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 36503625,
+            "process_cpu_ns": 27704000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 74307458,
+            "process_cpu_ns": 37099000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 42155083,
+            "process_cpu_ns": 26058000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 45060083,
+            "process_cpu_ns": 25620000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 177849500,
+            "process_cpu_ns": 35821000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 27666958,
+            "process_cpu_ns": 25290000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 35522166,
+            "process_cpu_ns": 27389000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 33900083,
+            "process_cpu_ns": 27287000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 29888042,
+            "process_cpu_ns": 26232000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 36059791,
+            "process_cpu_ns": 23179000,
+            "operations": 100
+          }
+        ],
+        "before": [
+          {
+            "wall_ns": 29450500,
+            "process_cpu_ns": 23854000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 32357250,
+            "process_cpu_ns": 23247000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 45504666,
+            "process_cpu_ns": 24251000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 42792750,
+            "process_cpu_ns": 26890000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 30478208,
+            "process_cpu_ns": 27022000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 34853167,
+            "process_cpu_ns": 29719000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 19489000,
+            "process_cpu_ns": 17746000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 32171041,
+            "process_cpu_ns": 22710000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 38502959,
+            "process_cpu_ns": 21965000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 34047375,
+            "process_cpu_ns": 25228000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 42011959,
+            "process_cpu_ns": 33451000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 37844958,
+            "process_cpu_ns": 30341000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 36869000,
+            "process_cpu_ns": 24901000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 26510417,
+            "process_cpu_ns": 22237000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 42383500,
+            "process_cpu_ns": 24602000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 46280041,
+            "process_cpu_ns": 26204000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 27152792,
+            "process_cpu_ns": 21650000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 25490417,
+            "process_cpu_ns": 22124000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 31191084,
+            "process_cpu_ns": 26177000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 44155041,
+            "process_cpu_ns": 29457000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 23969000,
+            "process_cpu_ns": 20794000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 41883292,
+            "process_cpu_ns": 26641000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 47860042,
+            "process_cpu_ns": 31521000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 41111959,
+            "process_cpu_ns": 29626000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 37252000,
+            "process_cpu_ns": 27244000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 35615875,
+            "process_cpu_ns": 27593000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 32360750,
+            "process_cpu_ns": 26052000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 45785083,
+            "process_cpu_ns": 31258000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 38060417,
+            "process_cpu_ns": 31339000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 31051125,
+            "process_cpu_ns": 26180000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 31163083,
+            "process_cpu_ns": 23708000,
+            "operations": 100
+          }
+        ]
+      },
+      "median_per_operation_ns": {
+        "current": {
+          "wall_ns": 310051.67,
+          "process_cpu_ns": 251270.0
+        },
+        "before": {
+          "wall_ns": 356158.75,
+          "process_cpu_ns": 261770.0
+        }
+      },
+      "before_over_current": {
+        "wall_ns": 1.148707729908373,
+        "process_cpu_ns": 1.041787718390576
+      },
+      "orders": [
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ]
+      ],
+      "profiles": {
+        "current": [
+          {
+            "file": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/fs/__init__.py",
+            "line": 282,
+            "function": "atomic_write",
+            "calls": 1,
+            "self_seconds": 6.8330000000000005e-06,
+            "cumulative_seconds": 0.00028275
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method builtins.next>",
+            "calls": 2,
+            "self_seconds": 2.333e-06,
+            "cumulative_seconds": 0.000264667
+          },
+          {
+            "file": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/fs/__init__.py",
+            "line": 200,
+            "function": "_atomic_writer",
+            "calls": 2,
+            "self_seconds": 9.126e-06,
+            "cumulative_seconds": 0.000262334
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/contextlib.py",
+            "line": 136,
+            "function": "__enter__",
+            "calls": 1,
+            "self_seconds": 5.830000000000001e-07,
+            "cumulative_seconds": 0.000139333
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/contextlib.py",
+            "line": 145,
+            "function": "__exit__",
+            "calls": 1,
+            "self_seconds": 4.99e-07,
+            "cumulative_seconds": 0.00012641600000000002
+          },
+          {
+            "file": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/fs/__init__.py",
+            "line": 150,
+            "function": "_scratch",
+            "calls": 1,
+            "self_seconds": 6.4170000000000006e-06,
+            "cumulative_seconds": 9.866600000000001e-05
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/pathlib/__init__.py",
+            "line": 1081,
+            "function": "replace",
+            "calls": 1,
+            "self_seconds": 6.25e-07,
+            "cumulative_seconds": 8.175000000000001e-05
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.replace>",
+            "calls": 1,
+            "self_seconds": 8.0417e-05,
+            "cumulative_seconds": 8.1e-05
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.open>",
+            "calls": 1,
+            "self_seconds": 6.983300000000001e-05,
+            "cumulative_seconds": 7.0083e-05
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.fsync>",
+            "calls": 1,
+            "self_seconds": 2.4125e-05,
+            "cumulative_seconds": 2.4125e-05
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/pathlib/__init__.py",
+            "line": 381,
+            "function": "parent",
+            "calls": 1,
+            "self_seconds": 1.6260000000000002e-06,
+            "cumulative_seconds": 1.6917e-05
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<method 'disable' of '_lsprof.Profiler' objects>",
+            "calls": 1,
+            "self_seconds": 1.3917e-05,
+            "cumulative_seconds": 1.3917e-05
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.stat>",
+            "calls": 2,
+            "self_seconds": 6.7090000000000005e-06,
+            "cumulative_seconds": 1.2542000000000001e-05
+          },
+          {
+            "file": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/fs/__init__.py",
+            "line": 100,
+            "function": "_prepare_parent",
+            "calls": 1,
+            "self_seconds": 9.58e-07,
+            "cumulative_seconds": 1.25e-05
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/pathlib/__init__.py",
+            "line": 341,
+            "function": "drive",
+            "calls": 4,
+            "self_seconds": 3.334e-06,
+            "cumulative_seconds": 1.2459e-05
+          }
+        ],
+        "before": [
+          {
+            "file": "/private/tmp/unstd-fs-before.wzFSHq/unstd/fs/__init__.py",
+            "line": 280,
+            "function": "atomic_write",
+            "calls": 1,
+            "self_seconds": 2.6250000000000003e-06,
+            "cumulative_seconds": 0.000277042
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method builtins.next>",
+            "calls": 2,
+            "self_seconds": 1.8340000000000001e-06,
+            "cumulative_seconds": 0.0002675
+          },
+          {
+            "file": "/private/tmp/unstd-fs-before.wzFSHq/unstd/fs/__init__.py",
+            "line": 198,
+            "function": "_atomic_writer",
+            "calls": 2,
+            "self_seconds": 5.874e-06,
+            "cumulative_seconds": 0.000265666
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/contextlib.py",
+            "line": 145,
+            "function": "__exit__",
+            "calls": 1,
+            "self_seconds": 4.5800000000000005e-07,
+            "cumulative_seconds": 0.000152208
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/contextlib.py",
+            "line": 136,
+            "function": "__enter__",
+            "calls": 1,
+            "self_seconds": 5.84e-07,
+            "cumulative_seconds": 0.000116334
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/pathlib/__init__.py",
+            "line": 1081,
+            "function": "replace",
+            "calls": 1,
+            "self_seconds": 6.660000000000001e-07,
+            "cumulative_seconds": 0.00010733300000000001
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.replace>",
+            "calls": 1,
+            "self_seconds": 0.000105958,
+            "cumulative_seconds": 0.0001065
+          },
+          {
+            "file": "/private/tmp/unstd-fs-before.wzFSHq/unstd/fs/__init__.py",
+            "line": 148,
+            "function": "_scratch",
+            "calls": 1,
+            "self_seconds": 3.2500000000000002e-06,
+            "cumulative_seconds": 7.8084e-05
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.open>",
+            "calls": 1,
+            "self_seconds": 5.0875e-05,
+            "cumulative_seconds": 5.1083000000000005e-05
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.fsync>",
+            "calls": 1,
+            "self_seconds": 2.3208000000000002e-05,
+            "cumulative_seconds": 2.3208000000000002e-05
+          },
+          {
+            "file": "/private/tmp/unstd-fs-before.wzFSHq/unstd/fs/__init__.py",
+            "line": 99,
+            "function": "_prepare_parent",
+            "calls": 1,
+            "self_seconds": 5.000000000000001e-07,
+            "cumulative_seconds": 1.7375000000000002e-05
+          },
+          {
+            "file": "/private/tmp/unstd-fs-before.wzFSHq/unstd/fs/__init__.py",
+            "line": 81,
+            "function": "ensure_dir",
+            "calls": 1,
+            "self_seconds": 1.25e-06,
+            "cumulative_seconds": 1.6875e-05
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/pathlib/__init__.py",
+            "line": 1006,
+            "function": "mkdir",
+            "calls": 1,
+            "self_seconds": 1.041e-06,
+            "cumulative_seconds": 1.5e-05
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<method 'flush' of '_io.BufferedWriter' objects>",
+            "calls": 1,
+            "self_seconds": 1.3875e-05,
+            "cumulative_seconds": 1.3875e-05
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.stat>",
+            "calls": 2,
+            "self_seconds": 9.584e-06,
+            "cumulative_seconds": 1.1542e-05
+          }
+        ]
+      }
+    },
+    {
+      "name": "atomic-write-text-1k",
+      "note": "rewrite existing file; real fsync; creation excluded",
+      "calibration": {
+        "current": {
+          "wall_ns": 25974542,
+          "process_cpu_ns": 21298000,
+          "operations": 100
+        },
+        "before": {
+          "wall_ns": 21848167,
+          "process_cpu_ns": 17529000,
+          "operations": 100
+        }
+      },
+      "target_batch_wall_ns": 20000000,
+      "samples": {
+        "current": [
+          {
+            "wall_ns": 35890667,
+            "process_cpu_ns": 20988000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 30047375,
+            "process_cpu_ns": 23875000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 42738583,
+            "process_cpu_ns": 24214000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 22174208,
+            "process_cpu_ns": 20200000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 67017916,
+            "process_cpu_ns": 27351000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 43693333,
+            "process_cpu_ns": 24008000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 41458375,
+            "process_cpu_ns": 22114000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 29718625,
+            "process_cpu_ns": 26178000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 24223958,
+            "process_cpu_ns": 22312000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 20264291,
+            "process_cpu_ns": 18895000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 21625791,
+            "process_cpu_ns": 18212000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 24159292,
+            "process_cpu_ns": 21993000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 25722916,
+            "process_cpu_ns": 22444000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 21001209,
+            "process_cpu_ns": 19328000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 20056375,
+            "process_cpu_ns": 18177000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 15440250,
+            "process_cpu_ns": 14226000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 16919250,
+            "process_cpu_ns": 15381000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 18818917,
+            "process_cpu_ns": 15440000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 17779458,
+            "process_cpu_ns": 16212000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 37832334,
+            "process_cpu_ns": 21887000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 18897708,
+            "process_cpu_ns": 17293000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 54744083,
+            "process_cpu_ns": 19975000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 22654833,
+            "process_cpu_ns": 20910000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 44148375,
+            "process_cpu_ns": 24016000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 20748167,
+            "process_cpu_ns": 19044000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 36757750,
+            "process_cpu_ns": 23484000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 31542667,
+            "process_cpu_ns": 22285000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 58011375,
+            "process_cpu_ns": 23760000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 46280000,
+            "process_cpu_ns": 22239000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 47268500,
+            "process_cpu_ns": 25808000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 31066083,
+            "process_cpu_ns": 25347000,
+            "operations": 100
+          }
+        ],
+        "before": [
+          {
+            "wall_ns": 33881541,
+            "process_cpu_ns": 25383000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 42773084,
+            "process_cpu_ns": 26546000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 26562167,
+            "process_cpu_ns": 24039000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 24247000,
+            "process_cpu_ns": 21319000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 25145375,
+            "process_cpu_ns": 22953000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 39305542,
+            "process_cpu_ns": 21866000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 31084250,
+            "process_cpu_ns": 24740000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 21692833,
+            "process_cpu_ns": 20044000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 26262666,
+            "process_cpu_ns": 22243000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 24984333,
+            "process_cpu_ns": 21474000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 19536208,
+            "process_cpu_ns": 18149000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 25379666,
+            "process_cpu_ns": 19622000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 23568417,
+            "process_cpu_ns": 21787000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 26799541,
+            "process_cpu_ns": 21976000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 21068750,
+            "process_cpu_ns": 19636000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 19665875,
+            "process_cpu_ns": 18119000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 20717458,
+            "process_cpu_ns": 18685000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 29509708,
+            "process_cpu_ns": 19948000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 18667500,
+            "process_cpu_ns": 16679000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 21630833,
+            "process_cpu_ns": 18983000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 27521917,
+            "process_cpu_ns": 19014000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 22025167,
+            "process_cpu_ns": 18423000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 39442084,
+            "process_cpu_ns": 21658000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 28025750,
+            "process_cpu_ns": 23320000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 36640583,
+            "process_cpu_ns": 24300000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 29616500,
+            "process_cpu_ns": 24561000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 35421625,
+            "process_cpu_ns": 24145000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 33463417,
+            "process_cpu_ns": 21039000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 25574542,
+            "process_cpu_ns": 21429000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 27310417,
+            "process_cpu_ns": 20749000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 31858750,
+            "process_cpu_ns": 26488000,
+            "operations": 100
+          }
+        ]
+      },
+      "median_per_operation_ns": {
+        "current": {
+          "wall_ns": 297186.25,
+          "process_cpu_ns": 219930.0
+        },
+        "before": {
+          "wall_ns": 265621.67,
+          "process_cpu_ns": 214740.0
+        }
+      },
+      "before_over_current": {
+        "wall_ns": 0.8937885585218024,
+        "process_cpu_ns": 0.9764015823216478
+      },
+      "orders": [
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ]
+      ],
+      "profiles": {
+        "current": [
+          {
+            "file": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/fs/__init__.py",
+            "line": 282,
+            "function": "atomic_write",
+            "calls": 1,
+            "self_seconds": 3.6126e-05,
+            "cumulative_seconds": 0.00038725
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method builtins.next>",
+            "calls": 2,
+            "self_seconds": 3.124e-06,
+            "cumulative_seconds": 0.000337624
+          },
+          {
+            "file": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/fs/__init__.py",
+            "line": 200,
+            "function": "_atomic_writer",
+            "calls": 2,
+            "self_seconds": 8.417000000000001e-06,
+            "cumulative_seconds": 0.0003345
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/contextlib.py",
+            "line": 145,
+            "function": "__exit__",
+            "calls": 1,
+            "self_seconds": 1.542e-06,
+            "cumulative_seconds": 0.000224333
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/pathlib/__init__.py",
+            "line": 1081,
+            "function": "replace",
+            "calls": 1,
+            "self_seconds": 1.582e-06,
+            "cumulative_seconds": 0.000180583
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.replace>",
+            "calls": 1,
+            "self_seconds": 0.00017800000000000002,
+            "cumulative_seconds": 0.000178667
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/contextlib.py",
+            "line": 136,
+            "function": "__enter__",
+            "calls": 1,
+            "self_seconds": 4.59e-07,
+            "cumulative_seconds": 0.00011529200000000001
+          },
+          {
+            "file": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/fs/__init__.py",
+            "line": 150,
+            "function": "_scratch",
+            "calls": 1,
+            "self_seconds": 4.291e-06,
+            "cumulative_seconds": 7.175000000000001e-05
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.open>",
+            "calls": 1,
+            "self_seconds": 4.4374000000000006e-05,
+            "cumulative_seconds": 4.4666e-05
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.fsync>",
+            "calls": 1,
+            "self_seconds": 2.0083e-05,
+            "cumulative_seconds": 2.0083e-05
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/pathlib/__init__.py",
+            "line": 381,
+            "function": "parent",
+            "calls": 1,
+            "self_seconds": 1.875e-06,
+            "cumulative_seconds": 1.6958000000000003e-05
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.stat>",
+            "calls": 2,
+            "self_seconds": 8.334e-06,
+            "cumulative_seconds": 1.425e-05
+          },
+          {
+            "file": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/fs/__init__.py",
+            "line": 100,
+            "function": "_prepare_parent",
+            "calls": 1,
+            "self_seconds": 8.750000000000001e-07,
+            "cumulative_seconds": 1.375e-05
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<method 'flush' of '_io.TextIOWrapper' objects>",
+            "calls": 1,
+            "self_seconds": 1.3208000000000001e-05,
+            "cumulative_seconds": 1.3208000000000001e-05
+          },
+          {
+            "file": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/fs/__init__.py",
+            "line": 81,
+            "function": "ensure_dir",
+            "calls": 1,
+            "self_seconds": 9.170000000000001e-07,
+            "cumulative_seconds": 1.2875000000000001e-05
+          }
+        ],
+        "before": [
+          {
+            "file": "/private/tmp/unstd-fs-before.wzFSHq/unstd/fs/__init__.py",
+            "line": 280,
+            "function": "atomic_write",
+            "calls": 1,
+            "self_seconds": 3.5840000000000003e-06,
+            "cumulative_seconds": 0.00030341600000000004
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method builtins.next>",
+            "calls": 2,
+            "self_seconds": 2.542e-06,
+            "cumulative_seconds": 0.000290334
+          },
+          {
+            "file": "/private/tmp/unstd-fs-before.wzFSHq/unstd/fs/__init__.py",
+            "line": 198,
+            "function": "_atomic_writer",
+            "calls": 2,
+            "self_seconds": 7.668e-06,
+            "cumulative_seconds": 0.00028779200000000004
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/contextlib.py",
+            "line": 145,
+            "function": "__exit__",
+            "calls": 1,
+            "self_seconds": 3.75e-07,
+            "cumulative_seconds": 0.000153875
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/contextlib.py",
+            "line": 136,
+            "function": "__enter__",
+            "calls": 1,
+            "self_seconds": 5.82e-07,
+            "cumulative_seconds": 0.00013741600000000001
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/pathlib/__init__.py",
+            "line": 1081,
+            "function": "replace",
+            "calls": 1,
+            "self_seconds": 7.92e-07,
+            "cumulative_seconds": 0.00010091700000000001
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.replace>",
+            "calls": 1,
+            "self_seconds": 9.9207e-05,
+            "cumulative_seconds": 9.9833e-05
+          },
+          {
+            "file": "/private/tmp/unstd-fs-before.wzFSHq/unstd/fs/__init__.py",
+            "line": 148,
+            "function": "_scratch",
+            "calls": 1,
+            "self_seconds": 3.875e-06,
+            "cumulative_seconds": 8.9583e-05
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.open>",
+            "calls": 1,
+            "self_seconds": 5.8375e-05,
+            "cumulative_seconds": 5.8625e-05
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.fsync>",
+            "calls": 1,
+            "self_seconds": 2.6791e-05,
+            "cumulative_seconds": 2.6791e-05
+          },
+          {
+            "file": "/private/tmp/unstd-fs-before.wzFSHq/unstd/fs/__init__.py",
+            "line": 99,
+            "function": "_prepare_parent",
+            "calls": 1,
+            "self_seconds": 8.33e-07,
+            "cumulative_seconds": 1.9791e-05
+          },
+          {
+            "file": "/private/tmp/unstd-fs-before.wzFSHq/unstd/fs/__init__.py",
+            "line": 81,
+            "function": "ensure_dir",
+            "calls": 1,
+            "self_seconds": 1.333e-06,
+            "cumulative_seconds": 1.8958e-05
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/pathlib/__init__.py",
+            "line": 1006,
+            "function": "mkdir",
+            "calls": 1,
+            "self_seconds": 1.0000000000000002e-06,
+            "cumulative_seconds": 1.6875e-05
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<method 'flush' of '_io.TextIOWrapper' objects>",
+            "calls": 1,
+            "self_seconds": 1.5708e-05,
+            "cumulative_seconds": 1.5708e-05
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/pathlib/__init__.py",
+            "line": 381,
+            "function": "parent",
+            "calls": 1,
+            "self_seconds": 8.750000000000001e-07,
+            "cumulative_seconds": 1.3792000000000001e-05
+          }
+        ]
+      }
+    },
+    {
+      "name": "atomic-write-durable",
+      "note": "rewrite existing file; real fsync; creation excluded",
+      "calibration": {
+        "current": {
+          "wall_ns": 27552541,
+          "process_cpu_ns": 24260000,
+          "operations": 100
+        },
+        "before": {
+          "wall_ns": 41540042,
+          "process_cpu_ns": 24879000,
+          "operations": 100
+        }
+      },
+      "target_batch_wall_ns": 20000000,
+      "samples": {
+        "current": [
+          {
+            "wall_ns": 69616583,
+            "process_cpu_ns": 31772000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 40759000,
+            "process_cpu_ns": 24318000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 24150875,
+            "process_cpu_ns": 21824000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 38691083,
+            "process_cpu_ns": 27684000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 32213667,
+            "process_cpu_ns": 25954000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 34716750,
+            "process_cpu_ns": 24435000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 35308334,
+            "process_cpu_ns": 26269000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 27964208,
+            "process_cpu_ns": 23775000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 27532291,
+            "process_cpu_ns": 24163000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 30074000,
+            "process_cpu_ns": 25061000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 29342542,
+            "process_cpu_ns": 24852000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 28026500,
+            "process_cpu_ns": 21940000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 29483417,
+            "process_cpu_ns": 23542000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 34422459,
+            "process_cpu_ns": 22032000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 36610292,
+            "process_cpu_ns": 21800000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 34703375,
+            "process_cpu_ns": 28924000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 34656625,
+            "process_cpu_ns": 21447000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 21793209,
+            "process_cpu_ns": 19509000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 22418291,
+            "process_cpu_ns": 20383000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 22384625,
+            "process_cpu_ns": 20956000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 21878375,
+            "process_cpu_ns": 20276000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 30617208,
+            "process_cpu_ns": 21509000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 23287500,
+            "process_cpu_ns": 21219000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 20581500,
+            "process_cpu_ns": 19005000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 22933208,
+            "process_cpu_ns": 19521000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 24961291,
+            "process_cpu_ns": 21388000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 23198750,
+            "process_cpu_ns": 21332000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 20953000,
+            "process_cpu_ns": 19659000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 22886125,
+            "process_cpu_ns": 21204000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 20719542,
+            "process_cpu_ns": 18735000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 28269167,
+            "process_cpu_ns": 21861000,
+            "operations": 100
+          }
+        ],
+        "before": [
+          {
+            "wall_ns": 38268750,
+            "process_cpu_ns": 24652000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 42062792,
+            "process_cpu_ns": 25316000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 29852666,
+            "process_cpu_ns": 24694000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 31512542,
+            "process_cpu_ns": 24217000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 41306125,
+            "process_cpu_ns": 27617000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 28398000,
+            "process_cpu_ns": 25650000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 30835291,
+            "process_cpu_ns": 25961000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 36759792,
+            "process_cpu_ns": 26251000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 27007291,
+            "process_cpu_ns": 22718000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 25209334,
+            "process_cpu_ns": 23282000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 62210208,
+            "process_cpu_ns": 24830000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 35133375,
+            "process_cpu_ns": 22348000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 22999542,
+            "process_cpu_ns": 18548000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 28411666,
+            "process_cpu_ns": 22548000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 23889875,
+            "process_cpu_ns": 21423000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 29663083,
+            "process_cpu_ns": 23655000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 24752292,
+            "process_cpu_ns": 18682000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 80474458,
+            "process_cpu_ns": 24202000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 24289417,
+            "process_cpu_ns": 22191000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 27681459,
+            "process_cpu_ns": 20110000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 21375459,
+            "process_cpu_ns": 18152000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 30645208,
+            "process_cpu_ns": 22914000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 22717500,
+            "process_cpu_ns": 21288000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 22984667,
+            "process_cpu_ns": 19748000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 21282042,
+            "process_cpu_ns": 19297000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 23697125,
+            "process_cpu_ns": 20708000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 27584542,
+            "process_cpu_ns": 23288000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 25936167,
+            "process_cpu_ns": 23149000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 25081458,
+            "process_cpu_ns": 22071000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 28513625,
+            "process_cpu_ns": 19913000,
+            "operations": 100
+          },
+          {
+            "wall_ns": 25044750,
+            "process_cpu_ns": 22509000,
+            "operations": 100
+          }
+        ]
+      },
+      "median_per_operation_ns": {
+        "current": {
+          "wall_ns": 280265.0,
+          "process_cpu_ns": 218240.0
+        },
+        "before": {
+          "wall_ns": 276814.59,
+          "process_cpu_ns": 227180.0
+        }
+      },
+      "before_over_current": {
+        "wall_ns": 0.9876887588532283,
+        "process_cpu_ns": 1.0409640762463344
+      },
+      "orders": [
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ]
+      ],
+      "profiles": {
+        "current": [
+          {
+            "file": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/fs/__init__.py",
+            "line": 282,
+            "function": "atomic_write",
+            "calls": 1,
+            "self_seconds": 6.085e-06,
+            "cumulative_seconds": 0.000319459
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method builtins.next>",
+            "calls": 2,
+            "self_seconds": 2.5e-06,
+            "cumulative_seconds": 0.00030175000000000004
+          },
+          {
+            "file": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/fs/__init__.py",
+            "line": 200,
+            "function": "_atomic_writer",
+            "calls": 2,
+            "self_seconds": 1.2249e-05,
+            "cumulative_seconds": 0.00029925000000000004
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/contextlib.py",
+            "line": 145,
+            "function": "__exit__",
+            "calls": 1,
+            "self_seconds": 6.25e-07,
+            "cumulative_seconds": 0.00019050000000000002
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/contextlib.py",
+            "line": 136,
+            "function": "__enter__",
+            "calls": 1,
+            "self_seconds": 5.830000000000001e-07,
+            "cumulative_seconds": 0.00011245800000000001
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/pathlib/__init__.py",
+            "line": 1081,
+            "function": "replace",
+            "calls": 1,
+            "self_seconds": 1.125e-06,
+            "cumulative_seconds": 0.000108417
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.replace>",
+            "calls": 1,
+            "self_seconds": 0.000105834,
+            "cumulative_seconds": 0.00010704200000000001
+          },
+          {
+            "file": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/fs/__init__.py",
+            "line": 150,
+            "function": "_scratch",
+            "calls": 1,
+            "self_seconds": 4.707e-06,
+            "cumulative_seconds": 7.2583e-05
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.open>",
+            "calls": 2,
+            "self_seconds": 6.1541e-05,
+            "cumulative_seconds": 6.2208e-05
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.fsync>",
+            "calls": 2,
+            "self_seconds": 2.9667000000000002e-05,
+            "cumulative_seconds": 2.9667000000000002e-05
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/pathlib/__init__.py",
+            "line": 381,
+            "function": "parent",
+            "calls": 2,
+            "self_seconds": 3.1270000000000003e-06,
+            "cumulative_seconds": 2.3918e-05
+          },
+          {
+            "file": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/fs/__init__.py",
+            "line": 127,
+            "function": "_sync_committed",
+            "calls": 1,
+            "self_seconds": 5.830000000000001e-07,
+            "cumulative_seconds": 2.25e-05
+          },
+          {
+            "file": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/fs/__init__.py",
+            "line": 89,
+            "function": "sync_dir",
+            "calls": 1,
+            "self_seconds": 1.709e-06,
+            "cumulative_seconds": 2.1917e-05
+          },
+          {
+            "file": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/fs/_internal/durability.py",
+            "line": 28,
+            "function": "sync_directory",
+            "calls": 1,
+            "self_seconds": 3.249e-06,
+            "cumulative_seconds": 2.0208e-05
+          },
+          {
+            "file": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/fs/__init__.py",
+            "line": 100,
+            "function": "_prepare_parent",
+            "calls": 1,
+            "self_seconds": 9.58e-07,
+            "cumulative_seconds": 1.2625e-05
+          }
+        ],
+        "before": [
+          {
+            "file": "/private/tmp/unstd-fs-before.wzFSHq/unstd/fs/__init__.py",
+            "line": 280,
+            "function": "atomic_write",
+            "calls": 1,
+            "self_seconds": 2.6250000000000003e-06,
+            "cumulative_seconds": 0.000307708
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method builtins.next>",
+            "calls": 2,
+            "self_seconds": 2.041e-06,
+            "cumulative_seconds": 0.000296875
+          },
+          {
+            "file": "/private/tmp/unstd-fs-before.wzFSHq/unstd/fs/__init__.py",
+            "line": 198,
+            "function": "_atomic_writer",
+            "calls": 2,
+            "self_seconds": 7.457000000000001e-06,
+            "cumulative_seconds": 0.000294834
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/contextlib.py",
+            "line": 145,
+            "function": "__exit__",
+            "calls": 1,
+            "self_seconds": 3.75e-07,
+            "cumulative_seconds": 0.00018437500000000002
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/pathlib/__init__.py",
+            "line": 1081,
+            "function": "replace",
+            "calls": 1,
+            "self_seconds": 7.91e-07,
+            "cumulative_seconds": 0.000120458
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.replace>",
+            "calls": 1,
+            "self_seconds": 0.00011862600000000001,
+            "cumulative_seconds": 0.00011941700000000001
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/contextlib.py",
+            "line": 136,
+            "function": "__enter__",
+            "calls": 1,
+            "self_seconds": 5.830000000000001e-07,
+            "cumulative_seconds": 0.00011345800000000001
+          },
+          {
+            "file": "/private/tmp/unstd-fs-before.wzFSHq/unstd/fs/__init__.py",
+            "line": 148,
+            "function": "_scratch",
+            "calls": 1,
+            "self_seconds": 3.249e-06,
+            "cumulative_seconds": 6.6e-05
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.open>",
+            "calls": 2,
+            "self_seconds": 5.2042e-05,
+            "cumulative_seconds": 5.2667e-05
+          },
+          {
+            "file": "/private/tmp/unstd-fs-before.wzFSHq/unstd/fs/__init__.py",
+            "line": 99,
+            "function": "_prepare_parent",
+            "calls": 1,
+            "self_seconds": 5.84e-07,
+            "cumulative_seconds": 2.65e-05
+          },
+          {
+            "file": "/private/tmp/unstd-fs-before.wzFSHq/unstd/fs/__init__.py",
+            "line": 81,
+            "function": "ensure_dir",
+            "calls": 1,
+            "self_seconds": 1.54e-06,
+            "cumulative_seconds": 2.5916e-05
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.fsync>",
+            "calls": 2,
+            "self_seconds": 2.4251000000000002e-05,
+            "cumulative_seconds": 2.4251000000000002e-05
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/pathlib/__init__.py",
+            "line": 1006,
+            "function": "mkdir",
+            "calls": 1,
+            "self_seconds": 2.335e-06,
+            "cumulative_seconds": 2.3709000000000003e-05
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/pathlib/__init__.py",
+            "line": 341,
+            "function": "drive",
+            "calls": 5,
+            "self_seconds": 3.1670000000000003e-06,
+            "cumulative_seconds": 1.9625000000000003e-05
+          },
+          {
+            "file": "/private/tmp/unstd-fs-before.wzFSHq/unstd/fs/__init__.py",
+            "line": 125,
+            "function": "_sync_committed",
+            "calls": 1,
+            "self_seconds": 5.000000000000001e-07,
+            "cumulative_seconds": 1.9375e-05
+          }
+        ]
+      }
+    },
+    {
+      "name": "ensure-dir-create-remove",
+      "note": "one ensure_dir plus rmdir to restore fixture; combined creation/removal cost",
+      "calibration": {
+        "current": {
+          "wall_ns": 1001522208,
+          "process_cpu_ns": 723306000,
+          "operations": 10000
+        },
+        "before": {
+          "wall_ns": 781642042,
+          "process_cpu_ns": 635772000,
+          "operations": 10000
+        }
+      },
+      "target_batch_wall_ns": 20000000,
+      "samples": {
+        "current": [
+          {
+            "wall_ns": 727155709,
+            "process_cpu_ns": 671434000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 732319375,
+            "process_cpu_ns": 718050000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 632855542,
+            "process_cpu_ns": 597544000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 1110950125,
+            "process_cpu_ns": 1000031000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 649356125,
+            "process_cpu_ns": 643493000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 592798042,
+            "process_cpu_ns": 588534000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 621612000,
+            "process_cpu_ns": 575883000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 589009125,
+            "process_cpu_ns": 585969000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 600325375,
+            "process_cpu_ns": 592866000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 643907750,
+            "process_cpu_ns": 609176000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 659793292,
+            "process_cpu_ns": 636250000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 647334541,
+            "process_cpu_ns": 623958000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 551699750,
+            "process_cpu_ns": 548870000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 680690459,
+            "process_cpu_ns": 654341000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 599895125,
+            "process_cpu_ns": 573416000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 699733625,
+            "process_cpu_ns": 678879000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 622875417,
+            "process_cpu_ns": 595743000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 717560666,
+            "process_cpu_ns": 677173000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 589347167,
+            "process_cpu_ns": 567558000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 689028375,
+            "process_cpu_ns": 652742000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 540438000,
+            "process_cpu_ns": 519625000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 743656125,
+            "process_cpu_ns": 709398000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 572559875,
+            "process_cpu_ns": 558605000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 637517875,
+            "process_cpu_ns": 617012000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 569336958,
+            "process_cpu_ns": 562104000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 685458209,
+            "process_cpu_ns": 663088000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 658008292,
+            "process_cpu_ns": 635346000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 650109292,
+            "process_cpu_ns": 623908000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 649537458,
+            "process_cpu_ns": 628571000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 615485333,
+            "process_cpu_ns": 585719000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 786743083,
+            "process_cpu_ns": 730937000,
+            "operations": 10000
+          }
+        ],
+        "before": [
+          {
+            "wall_ns": 729947000,
+            "process_cpu_ns": 687040000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 710583959,
+            "process_cpu_ns": 676535000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 648108041,
+            "process_cpu_ns": 642489000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 623175167,
+            "process_cpu_ns": 599780000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 667697542,
+            "process_cpu_ns": 633060000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 695411875,
+            "process_cpu_ns": 683955000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 585401250,
+            "process_cpu_ns": 562342000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 618794625,
+            "process_cpu_ns": 589888000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 536747500,
+            "process_cpu_ns": 532618000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 613548625,
+            "process_cpu_ns": 593583000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 601973625,
+            "process_cpu_ns": 595344000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 721999875,
+            "process_cpu_ns": 616520000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 608696667,
+            "process_cpu_ns": 575335000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 615750541,
+            "process_cpu_ns": 595245000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 519828750,
+            "process_cpu_ns": 512253000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 629387166,
+            "process_cpu_ns": 599352000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 526417875,
+            "process_cpu_ns": 521143000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 550184958,
+            "process_cpu_ns": 547526000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 617021834,
+            "process_cpu_ns": 599546000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 632745417,
+            "process_cpu_ns": 615438000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 563651208,
+            "process_cpu_ns": 507279000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 991397459,
+            "process_cpu_ns": 847839000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 595202166,
+            "process_cpu_ns": 579527000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 584374916,
+            "process_cpu_ns": 555355000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 601097917,
+            "process_cpu_ns": 562018000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 556658666,
+            "process_cpu_ns": 549318000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 542900708,
+            "process_cpu_ns": 520884000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 557980833,
+            "process_cpu_ns": 553546000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 642498500,
+            "process_cpu_ns": 623209000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 615166625,
+            "process_cpu_ns": 585058000,
+            "operations": 10000
+          },
+          {
+            "wall_ns": 710960792,
+            "process_cpu_ns": 645851000,
+            "operations": 10000
+          }
+        ]
+      },
+      "median_per_operation_ns": {
+        "current": {
+          "wall_ns": 64733.4541,
+          "process_cpu_ns": 62390.8
+        },
+        "before": {
+          "wall_ns": 61516.6625,
+          "process_cpu_ns": 59358.3
+        }
+      },
+      "before_over_current": {
+        "wall_ns": 0.9503071225732723,
+        "process_cpu_ns": 0.9513950774793719
+      },
+      "orders": [
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ],
+        [
+          "before",
+          "current"
+        ],
+        [
+          "current",
+          "before"
+        ]
+      ],
+      "profiles": {
+        "current": [
+          {
+            "file": "/Users/griffinstrier/Billy-Company/unstd/bench/profiles/fs_backend.py",
+            "line": 367,
+            "function": "create_directory",
+            "calls": 1,
+            "self_seconds": 1.751e-06,
+            "cumulative_seconds": 8.7292e-05
+          },
+          {
+            "file": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/fs/__init__.py",
+            "line": 81,
+            "function": "ensure_dir",
+            "calls": 1,
+            "self_seconds": 3.7080000000000003e-06,
+            "cumulative_seconds": 6.25e-05
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/pathlib/__init__.py",
+            "line": 1006,
+            "function": "mkdir",
+            "calls": 1,
+            "self_seconds": 6.25e-07,
+            "cumulative_seconds": 3.3e-05
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.mkdir>",
+            "calls": 1,
+            "self_seconds": 3.2083000000000004e-05,
+            "cumulative_seconds": 3.2375e-05
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/pathlib/__init__.py",
+            "line": 1047,
+            "function": "rmdir",
+            "calls": 1,
+            "self_seconds": 7.070000000000001e-07,
+            "cumulative_seconds": 2.3041000000000002e-05
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.rmdir>",
+            "calls": 1,
+            "self_seconds": 2.2042e-05,
+            "cumulative_seconds": 2.2334e-05
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/pathlib/__init__.py",
+            "line": 674,
+            "function": "is_dir",
+            "calls": 1,
+            "self_seconds": 8.760000000000001e-07,
+            "cumulative_seconds": 1.9667e-05
+          },
+          {
+            "file": "<frozen genericpath>",
+            "line": 48,
+            "function": "isdir",
+            "calls": 1,
+            "self_seconds": 1.374e-06,
+            "cumulative_seconds": 1.8791e-05
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.stat>",
+            "calls": 1,
+            "self_seconds": 3.125e-06,
+            "cumulative_seconds": 1.7417e-05
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/pathlib/__init__.py",
+            "line": 190,
+            "function": "__fspath__",
+            "calls": 3,
+            "self_seconds": 1.001e-06,
+            "cumulative_seconds": 1.4876000000000001e-05
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/pathlib/__init__.py",
+            "line": 251,
+            "function": "__str__",
+            "calls": 3,
+            "self_seconds": 2.5850000000000002e-06,
+            "cumulative_seconds": 1.3875e-05
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/pathlib/__init__.py",
+            "line": 341,
+            "function": "drive",
+            "calls": 1,
+            "self_seconds": 1.875e-06,
+            "cumulative_seconds": 1.0166e-05
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<method 'disable' of '_lsprof.Profiler' objects>",
+            "calls": 1,
+            "self_seconds": 8.958000000000001e-06,
+            "cumulative_seconds": 8.958000000000001e-06
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/pathlib/__init__.py",
+            "line": 330,
+            "function": "_raw_path",
+            "calls": 1,
+            "self_seconds": 1.4990000000000002e-06,
+            "cumulative_seconds": 6e-06
+          },
+          {
+            "file": "<frozen posixpath>",
+            "line": 72,
+            "function": "join",
+            "calls": 1,
+            "self_seconds": 3.417e-06,
+            "cumulative_seconds": 4.417e-06
+          }
+        ],
+        "before": [
+          {
+            "file": "/Users/griffinstrier/Billy-Company/unstd/bench/profiles/fs_backend.py",
+            "line": 367,
+            "function": "create_directory",
+            "calls": 1,
+            "self_seconds": 6.660000000000001e-07,
+            "cumulative_seconds": 7.9916e-05
+          },
+          {
+            "file": "/private/tmp/unstd-fs-before.wzFSHq/unstd/fs/__init__.py",
+            "line": 81,
+            "function": "ensure_dir",
+            "calls": 1,
+            "self_seconds": 9.160000000000001e-07,
+            "cumulative_seconds": 4.8167e-05
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/pathlib/__init__.py",
+            "line": 1006,
+            "function": "mkdir",
+            "calls": 1,
+            "self_seconds": 5.84e-07,
+            "cumulative_seconds": 4.4750000000000004e-05
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.mkdir>",
+            "calls": 1,
+            "self_seconds": 3.5541000000000004e-05,
+            "cumulative_seconds": 4.4166000000000004e-05
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/pathlib/__init__.py",
+            "line": 1047,
+            "function": "rmdir",
+            "calls": 1,
+            "self_seconds": 6.240000000000001e-07,
+            "cumulative_seconds": 3.1083e-05
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.rmdir>",
+            "calls": 1,
+            "self_seconds": 3.0250000000000003e-05,
+            "cumulative_seconds": 3.0459e-05
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/pathlib/__init__.py",
+            "line": 190,
+            "function": "__fspath__",
+            "calls": 2,
+            "self_seconds": 3.7600000000000003e-07,
+            "cumulative_seconds": 8.834e-06
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/pathlib/__init__.py",
+            "line": 251,
+            "function": "__str__",
+            "calls": 2,
+            "self_seconds": 1.292e-06,
+            "cumulative_seconds": 8.458000000000001e-06
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<method 'disable' of '_lsprof.Profiler' objects>",
+            "calls": 1,
+            "self_seconds": 7.75e-06,
+            "cumulative_seconds": 7.75e-06
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/pathlib/__init__.py",
+            "line": 341,
+            "function": "drive",
+            "calls": 1,
+            "self_seconds": 7.91e-07,
+            "cumulative_seconds": 6.167e-06
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/pathlib/__init__.py",
+            "line": 330,
+            "function": "_raw_path",
+            "calls": 1,
+            "self_seconds": 9.170000000000001e-07,
+            "cumulative_seconds": 3.6670000000000002e-06
+          },
+          {
+            "file": "<frozen posixpath>",
+            "line": 72,
+            "function": "join",
+            "calls": 1,
+            "self_seconds": 2.002e-06,
+            "cumulative_seconds": 2.667e-06
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/pathlib/__init__.py",
+            "line": 281,
+            "function": "_parse_path",
+            "calls": 1,
+            "self_seconds": 1.25e-06,
+            "cumulative_seconds": 1.709e-06
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/pathlib/__init__.py",
+            "line": 135,
+            "function": "__init__",
+            "calls": 1,
+            "self_seconds": 1.209e-06,
+            "cumulative_seconds": 1.4170000000000002e-06
+          },
+          {
+            "file": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/pathlib/__init__.py",
+            "line": 632,
+            "function": "__new__",
+            "calls": 1,
+            "self_seconds": 1.001e-06,
+            "cumulative_seconds": 1.0840000000000001e-06
+          }
+        ]
+      }
+    }
+  ],
+  "source_hashes_verified_after_timing": true
+}

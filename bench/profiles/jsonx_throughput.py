@@ -15,6 +15,8 @@ Installed wheel roots are also accepted. For a deployment comparison, add
 ``--require-native --max-slowdown 1.15 --include records-1k``. Native mode
 rejects missing accelerators and inactive CPython 3.14 dispatch. The optional
 slowdown limit compares wall-clock latency and saves the report before failing.
+It uses the median of each repetition's paired after/before wall-clock ratio;
+reports also retain independent latency medians and every original pair.
 """
 
 from __future__ import annotations
@@ -434,6 +436,34 @@ def main(argv: Sequence[str] | None = None) -> None:
                 label: [run["timings"][name] for run in runs if run["label"] == label]
                 for label in ("before", "after")
             }
+            paired_timings = {
+                label: {
+                    run["repetition"]: run["timings"][name]
+                    for run in runs
+                    if run["label"] == label
+                }
+                for label in ("before", "after")
+            }
+            if any(
+                set(values) != set(range(args.repetitions))
+                for values in paired_timings.values()
+            ):
+                message = "comparison workers did not retain complete repetition pairs"
+                raise RuntimeError(message)
+            pairs = [
+                {
+                    "repetition": repetition,
+                    "before_ns": paired_timings["before"][repetition]["candidate"][
+                        "per_op_ns"
+                    ],
+                    "after_ns": paired_timings["after"][repetition]["candidate"][
+                        "per_op_ns"
+                    ],
+                }
+                for repetition in range(args.repetitions)
+            ]
+            for pair in pairs:
+                pair["after_over_before"] = pair["after_ns"] / pair["before_ns"]
             before_ns = median(
                 row["candidate"]["per_op_ns"] for row in timings["before"]
             )
@@ -442,6 +472,10 @@ def main(argv: Sequence[str] | None = None) -> None:
                 "before_ns": before_ns,
                 "after_ns": after_ns,
                 "before_over_after": before_ns / after_ns,
+                "paired_after_over_before": median(
+                    pair["after_over_before"] for pair in pairs
+                ),
+                "pairs": pairs,
                 "after_mib_s": median(
                     row["candidate_mib_s"] for row in timings["after"]
                 ),
@@ -454,7 +488,7 @@ def main(argv: Sequence[str] | None = None) -> None:
             }
     report = {
         "driver_sha256": sha256(Path(__file__).read_bytes()).hexdigest(),
-        "estimator": "median across repetitions of minimum wall-clock batch means",
+        "estimator": "median of paired after/before minimum wall-clock batch mean ratios; independent latency medians retained",
         "comparisons": comparisons,
         "runs": runs,
         "require_native": args.require_native,
@@ -463,7 +497,7 @@ def main(argv: Sequence[str] | None = None) -> None:
             name
             for name, result in comparisons.items()
             if args.max_slowdown is not None
-            and result["after_ns"] / result["before_ns"] > args.max_slowdown
+            and result["paired_after_over_before"] > args.max_slowdown
         ],
     }
     rendered = json.dumps(report, indent=2) + "\n"

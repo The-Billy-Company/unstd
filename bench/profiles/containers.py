@@ -20,10 +20,12 @@ import bisect
 from dataclasses import dataclass
 from hashlib import sha256
 from importlib.metadata import distribution
+import inspect
 import json
 import os
 from pathlib import Path
 import platform
+import random
 from statistics import median
 import subprocess
 import sys
@@ -58,12 +60,29 @@ def _cases(types: Any, size: int, batch: int) -> list[Case]:
     """Public calls with plain Python models rather than backend self-checks."""
     base = tuple(range(0, size * 2, 2))
     extra = tuple(range(1, batch * 2, 2))
+    rng = random.Random(1729)
+    random_extra = [2 * ((index * size) // batch) + 1 for index in range(batch)]
+    rng.shuffle(random_extra)
+    scrambled = list(base)
+    rng.shuffle(scrambled)
     victims = base[:batch]
-    probes = tuple(range(batch))
+    probes = tuple((index * size * 2) // batch for index in range(batch))
+    positions = tuple((index * size) // batch for index in range(batch))
+    signed_positions = tuple(
+        position if index % 2 else position - size
+        for index, position in enumerate(positions)
+    )
+    slices = (
+        slice(size // 5, size * 4 // 5),
+        slice(None, None, 3),
+        slice(None, None, -2),
+    )
     pairs = tuple((key, str(key)) for key in base)
     additions = tuple((key, str(key)) for key in extra)
+    random_additions = tuple((key, str(key)) for key in random_extra)
     mapping = dict(pairs)
     updated = mapping | dict(additions)
+    random_updated = mapping | dict(random_additions)
     cases: list[Case] = []
 
     def sequence(expected: Sequence[int]) -> Callable[[Any, Any], None]:
@@ -87,6 +106,7 @@ def _cases(types: Any, size: int, batch: int) -> list[Case]:
         key = (lambda value: -value) if keyed else None
         ordered = sorted(base, key=key)
         combined = sorted((*base, *extra), key=key)
+        random_combined = sorted((*base, *random_extra), key=key)
         remaining = sorted(base[batch:], key=key)
         # SortedKeyList.bisect_left accepts values and applies its key itself.
         search_keys = [-value for value in ordered] if keyed else ordered
@@ -100,7 +120,12 @@ def _cases(types: Any, size: int, batch: int) -> list[Case]:
             return types.SortedList(base, key=key)
 
         def construct(_state: Any, key: Any = key) -> Any:
-            return types.SortedList(base, key=key)
+            return types.SortedList(scrambled, key=key)
+
+        def setup_indexed(key: Any = key) -> Any:
+            state = types.SortedList(base, key=key)
+            state[len(state) // 2]
+            return state
 
         def add(state: Any) -> Any:
             for value in extra:
@@ -112,11 +137,46 @@ def _cases(types: Any, size: int, batch: int) -> list[Case]:
                 state.remove(value)
             return state
 
+        def add_random(state: Any) -> Any:
+            for value in random_extra:
+                state.add(value)
+            return state
+
+        def update(state: Any) -> Any:
+            state.update(random_extra)
+            return state
+
         def rank(state: Any) -> Any:
             return tuple(state.bisect_left(value) for value in probes)
 
         def check_ranks(_state: Any, result: Any, expected: Any = ranks) -> None:
             _equal(result, expected)
+
+        def getitem(state: Any) -> Any:
+            return tuple(state[index] for index in signed_positions)
+
+        def rank_values(state: Any) -> Any:
+            return tuple(state.index(value) for value in victims)
+
+        def read_slices(state: Any) -> Any:
+            return tuple(state[part] for part in slices)
+
+        range_start, range_stop = size // 4, max(size // 4 + 1, size * 3 // 4)
+
+        def read_range(
+            state: Any,
+            low: int = ordered[range_start],
+            high: int = ordered[range_stop - 1],
+        ) -> Any:
+            return list(state.irange(low, high))
+
+        def exact(expected: Any) -> Callable[[Any, Any], None]:
+            def check(_state: Any, result: Any) -> None:
+                _equal(result, expected)
+
+            return check
+
+        expected_indices = {value: index for index, value in enumerate(ordered)}
 
         cases.extend(
             (
@@ -128,8 +188,53 @@ def _cases(types: Any, size: int, batch: int) -> list[Case]:
                     size,
                 ),
                 Case(f"{prefix}.add", setup, add, sequence(combined), batch),
+                Case(
+                    f"{prefix}.add_random",
+                    setup,
+                    add_random,
+                    sequence(random_combined),
+                    batch,
+                ),
+                Case(
+                    f"{prefix}.add_indexed",
+                    setup_indexed,
+                    add_random,
+                    sequence(random_combined),
+                    batch,
+                ),
                 Case(f"{prefix}.remove", setup, remove, sequence(remaining), batch),
                 Case(f"{prefix}.bisect", setup, rank, check_ranks, batch),
+                Case(
+                    f"{prefix}.getitem",
+                    setup_indexed,
+                    getitem,
+                    exact(tuple(ordered[index] for index in signed_positions)),
+                    batch,
+                ),
+                Case(
+                    f"{prefix}.index",
+                    setup_indexed,
+                    rank_values,
+                    exact(tuple(expected_indices[value] for value in victims)),
+                    batch,
+                ),
+                Case(
+                    f"{prefix}.slices",
+                    setup,
+                    read_slices,
+                    exact(tuple(ordered[part] for part in slices)),
+                    len(slices),
+                ),
+                Case(
+                    f"{prefix}.irange",
+                    setup,
+                    read_range,
+                    sequence(ordered[range_start:range_stop]),
+                    1,
+                ),
+                Case(
+                    f"{prefix}.update", setup, update, sequence(random_combined), batch
+                ),
             )
         )
 
@@ -141,6 +246,24 @@ def _cases(types: Any, size: int, batch: int) -> list[Case]:
     def set_add(state: Any) -> Any:
         for value in extra:
             state.add(value)
+        return state
+
+    def dict_insert_random(state: Any) -> Any:
+        for key, value in random_additions:
+            state[key] = value
+        return state
+
+    def dict_update(state: Any) -> Any:
+        state.update(random_additions)
+        return state
+
+    def set_add_random(state: Any) -> Any:
+        for value in random_extra:
+            state.add(value)
+        return state
+
+    def set_update(state: Any) -> Any:
+        state.update(random_extra)
         return state
 
     def map_set(state: Any) -> Any:
@@ -171,6 +294,20 @@ def _cases(types: Any, size: int, batch: int) -> list[Case]:
                 batch,
             ),
             Case(
+                "sorted_dict.insert_random",
+                lambda: types.SortedDict(pairs),
+                dict_insert_random,
+                dictionary(random_updated),
+                batch,
+            ),
+            Case(
+                "sorted_dict.update",
+                lambda: types.SortedDict(pairs),
+                dict_update,
+                dictionary(random_updated),
+                batch,
+            ),
+            Case(
                 "sorted_set.construct",
                 lambda: None,
                 lambda _: types.SortedSet(base),
@@ -182,6 +319,20 @@ def _cases(types: Any, size: int, batch: int) -> list[Case]:
                 lambda: types.SortedSet(base),
                 set_add,
                 sequence(sorted((*base, *extra))),
+                batch,
+            ),
+            Case(
+                "sorted_set.add_random",
+                lambda: types.SortedSet(base),
+                set_add_random,
+                sequence(sorted((*base, *random_extra))),
+                batch,
+            ),
+            Case(
+                "sorted_set.update",
+                lambda: types.SortedSet(base),
+                set_update,
+                sequence(sorted((*base, *random_extra))),
                 batch,
             ),
             Case(
@@ -271,6 +422,80 @@ def _provenance(source: Path) -> dict[str, Any]:
     }
 
 
+def _dispatch(types: Any) -> dict[str, Any]:
+    """Describe selected classes and native descriptors without patching providers."""
+    classes = {
+        "SortedList": type(types.SortedList()),
+        "SortedKeyList": type(types.SortedList(key=lambda value: -value)),
+        "SortedDict": type(types.SortedDict()),
+        "SortedSet": type(types.SortedSet()),
+        "Map": type(types.Map()),
+    }
+    native = sys.modules.get("unstd.containers._sorted_native")
+    native_path = getattr(native, "__file__", None)
+    if native is not None and (
+        native_path is None
+        or Path(native_path).resolve().parent != Path(types.__file__).resolve().parent
+    ):
+        message = "native sorted extension resolved outside the requested source"
+        raise RuntimeError(message)
+    sorted_module = sys.modules.get("unstd.containers.sorted")
+    methods = (
+        "add",
+        "bisect_left",
+        "bisect_right",
+        "_loc",
+        "_pos",
+        "_expand",
+        "__getitem__",
+        "update",
+    )
+    return {
+        "native_module": native_path,
+        "native_kernel_version": getattr(native, "KERNEL_VERSION", None),
+        "have_native_sorted": getattr(sorted_module, "HAVE_NATIVE_SORTED", False),
+        "classes": {
+            name: {
+                "module": cls.__module__,
+                "qualname": cls.__qualname__,
+                "native_configured": any(
+                    attribute in vars(cls)
+                    for attribute in (
+                        "_unstd_native_config",
+                        "_unstd_sorted_native_config",
+                    )
+                ),
+                "native_configuration_attribute": next(
+                    (
+                        attribute
+                        for attribute in (
+                            "_unstd_native_config",
+                            "_unstd_sorted_native_config",
+                        )
+                        if attribute in vars(cls)
+                    ),
+                    None,
+                ),
+                "native_descriptors": {
+                    method: ".".join(
+                        (
+                            getattr(
+                                getattr(cls, method), "__objclass__", cls
+                            ).__module__,
+                            getattr(
+                                getattr(cls, method), "__objclass__", cls
+                            ).__qualname__,
+                        )
+                    )
+                    for method in methods
+                    if inspect.ismethoddescriptor(getattr(cls, method, None))
+                },
+            }
+            for name, cls in classes.items()
+        },
+    }
+
+
 def _worker(
     source: Path, size: int, batch: int, iterations: int, *, smoke: bool
 ) -> dict[str, Any]:
@@ -300,6 +525,7 @@ def _worker(
             },
         },
         "provenance": provenance,
+        "dispatch": _dispatch(containers),
         "cases": {case.name: _sample(case, iterations, smoke=smoke) for case in cases},
     }
 
@@ -425,6 +651,19 @@ def _collect(
                         {"round": round_, "label": label, "case": name, **result}
                     )
     _validate_runs(runs)
+    if getattr(args, "require_native", False):
+        for run in runs:
+            if run["label"] != "current":
+                continue
+            dispatch = run.get("dispatch", {})
+            selected = dispatch.get("classes", {}).get("SortedList", {})
+            if (
+                not dispatch.get("native_module")
+                or not selected.get("native_configured")
+                or "add" not in selected.get("native_descriptors", {})
+            ):
+                message = "current source did not select native sorted operations"
+                raise RuntimeError(message)
     comparisons: dict[str, Any] = {}
     if "before" in sources and not args.smoke:
         for name in runs[0]["cases"]:
@@ -464,6 +703,7 @@ def _collect(
     report = {
         "schema": 1,
         "complete": True,
+        "fixture_seed": 1729,
         "bytecode_policy": "one private pycache prefix per comparison; both sources and dependency closures prewarmed with writes enabled; measured fresh interpreters read warm bytecode with writes disabled",
         "warm_imports": warm_imports,
         "harness_sha256": sha256(Path(__file__).read_bytes()).hexdigest(),
@@ -492,6 +732,11 @@ def _validate_runs(runs: list[dict[str, Any]]) -> None:
         if any(run["provenance"] != selected[0]["provenance"] for run in selected[1:]):
             message = f"source changed between {label} samples"
             raise RuntimeError(message)
+        if any(
+            run.get("dispatch") != selected[0].get("dispatch") for run in selected[1:]
+        ):
+            message = f"selected dispatch changed between {label} samples"
+            raise RuntimeError(message)
     if any(set(run["cases"]) != set(runs[0]["cases"]) for run in runs[1:]):
         message = "worker case inventories differ"
         raise RuntimeError(message)
@@ -509,6 +754,11 @@ def _arguments(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--batch", type=int, default=256)
     parser.add_argument("--iterations", type=int, default=32)
     parser.add_argument("--smoke", action="store_true")
+    parser.add_argument(
+        "--require-native",
+        action="store_true",
+        help="require the current source to select native sorted operations",
+    )
     parser.add_argument("--worker", action="store_true", help=argparse.SUPPRESS)
     args = parser.parse_args(argv)
     if (

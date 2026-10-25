@@ -30,6 +30,7 @@ _NATIVE_MODULES = (
     "unstd.crypto._stream_native",
     "unstd.text._text_native",
     "unstd.compress._gzip_native",
+    "unstd.containers._sorted_native",
 )
 
 _COMPILER_KEYS = {

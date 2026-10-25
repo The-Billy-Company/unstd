@@ -209,6 +209,67 @@ def test_comparison_alternates_installed_roots_and_saves_wall_regression(
     assert len(report["runs"]) == 4
 
 
+@pytest.mark.parametrize(
+    ("ratios", "fails"),
+    [((1.10, 1.16, 1.10), False), ((1.20, 1.30, 1.20), True)],
+)
+def test_wall_gate_pairs_repetitions_under_drift_and_keeps_persistent_regressions(
+    tmp_path, monkeypatch, ratios, fails
+):
+    observed = []
+    before_samples = (100.0, 105.0, 200.0)
+
+    def worker(command, **kwargs):
+        repetition = len(observed) // 2
+        source = command[command.index("--source") + 1]
+        observed.append(Path(source).name)
+        result = json.loads(_simulated_worker(command, **kwargs))
+        row = result["timings"]["records"]
+        row["candidate"]["per_op_ns"] = before_samples[repetition] * (
+            ratios[repetition] if source.endswith("after") else 1.0
+        )
+        # The independent control sees the same drifting worker speed; its
+        # timing remains diagnostic and never replaces either wall sample.
+        row["stdlib"]["per_op_ns"] = before_samples[repetition] * 10
+        return json.dumps(result)
+
+    monkeypatch.setattr(profile.subprocess, "check_output", worker)
+    output = tmp_path / "paired.json"
+    arguments = [
+        "--compare-source",
+        str(tmp_path / "before"),
+        "--source",
+        str(tmp_path / "after"),
+        "--max-slowdown",
+        "1.15",
+        "--rounds",
+        "7",
+        "--repetitions",
+        "3",
+        "--output",
+        str(output),
+    ]
+    if fails:
+        with pytest.raises(RuntimeError, match="wall-clock slowdown exceeds"):
+            profile.main(arguments)
+    else:
+        profile.main(arguments)
+    assert observed == ["before", "after", "after", "before", "before", "after"]
+    report = json.loads(output.read_text())
+    comparison = report["comparisons"]["records"]
+    assert report["max_slowdown"] == 1.15
+    assert comparison["paired_after_over_before"] == pytest.approx(ratios[0])
+    assert [pair["after_over_before"] for pair in comparison["pairs"]] == (
+        pytest.approx(ratios)
+    )
+    assert comparison["before_ns"] == 105
+    # Independently taking medians selects the slow middle pair, which is
+    # already retained in the complete pair evidence rather than hidden.
+    assert comparison["after_ns"] / comparison["before_ns"] > 1.15
+    assert report["regressions"] == (["records"] if fails else [])
+    assert len(report["runs"]) == 6
+
+
 def test_comparison_rejects_product_drift_between_repetitions(tmp_path, monkeypatch):
     calls = 0
 

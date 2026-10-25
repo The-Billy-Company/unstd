@@ -33,7 +33,8 @@ print(json.dumps({
     "discoverable": all(name in visible for name in names),
     "cached": any(name in vars(containers) for name in names),
     "loaded": [name for name in ("sortedcontainers", "immutables",
-        "unstd.containers.sorted", "unstd.containers.persistent") if name in sys.modules],
+        "unstd.containers.sorted", "unstd.containers.persistent",
+        "unstd.containers._sorted_native") if name in sys.modules],
     "unknown": unknown,
 }))
 """,
@@ -49,6 +50,40 @@ print(json.dumps({
     assert report["unknown"] == (
         "module 'unstd.containers' has no attribute 'UnknownContainer'"
     )
+
+
+@pytest.mark.parametrize(
+    ("module", "backend", "unused", "flag"),
+    [
+        ("persistent", "immutables", "sortedcontainers", "HAVE_IMMUTABLES"),
+        ("sorted", "sortedcontainers", "immutables", "HAVE_SORTEDCONTAINERS"),
+    ],
+)
+@pytest.mark.parametrize("blocked", [False, True])
+def test_direct_submodule_attributes_remain_lazy_and_expose_backend_flags(
+    tmp_path: Path, module: str, backend: str, unused: str, flag: str, blocked: bool
+) -> None:
+    if not blocked:
+        require_backend(backend)
+    result = run_python(
+        f"""
+import sys
+import unstd.containers as containers
+assert {module!r} in dir(containers)
+assert {backend!r} not in sys.modules
+assert {unused!r} not in sys.modules
+if {blocked!r}:
+    sys.modules[{backend!r}] = None
+resolved = getattr(containers, {module!r})
+assert resolved is sys.modules[{f"unstd.containers.{module}"!r}]
+assert vars(containers)[{module!r}] is resolved
+assert getattr(resolved, {flag!r}) is {not blocked!r}
+assert {unused!r} not in sys.modules
+""",
+        cwd=tmp_path,
+        timeout=30,
+    )
+    assert result.returncode == 0, result.stderr
 
 
 @pytest.mark.parametrize(
@@ -78,7 +113,7 @@ print(json.dumps({
         ),
     ],
 )
-def test_one_family_import_preserves_identity_without_loading_the_other(
+def test_one_family_import_preserves_backend_type_without_loading_the_other(
     tmp_path: Path, statement: str, name: str, wanted: str, unused: str
 ) -> None:
     require_backend(wanted)
@@ -91,7 +126,10 @@ assert {unused!r} not in sys.modules
 import unstd.containers as containers
 backend = sys.modules[{wanted!r}]
 resolved = getattr(containers, {name!r})
-assert resolved is getattr(backend, {name!r})
+assert issubclass(resolved, getattr(backend, {name!r}))
+if {wanted!r} == "immutables":
+    assert resolved is backend.Map
+    assert "unstd.containers._sorted_native" not in sys.modules
 assert vars(containers)[{name!r}] is resolved
 assert getattr(containers, {name!r}) is resolved
 assert {unused!r} not in sys.modules
@@ -112,9 +150,9 @@ from unstd.containers import *
 import unstd.containers as containers
 import immutables, sortedcontainers
 assert Map is immutables.Map
-assert SortedDict is sortedcontainers.SortedDict
-assert SortedList is sortedcontainers.SortedList
-assert SortedSet is sortedcontainers.SortedSet
+assert issubclass(SortedDict, sortedcontainers.SortedDict)
+assert issubclass(SortedList, sortedcontainers.SortedList)
+assert issubclass(SortedSet, sortedcontainers.SortedSet)
 assert all(name in vars(containers) for name in containers.__all__)
 importlib.reload(containers)
 assert not any(name in vars(containers) for name in containers.__all__)

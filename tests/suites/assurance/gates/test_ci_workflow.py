@@ -237,6 +237,7 @@ def test_sanitizer_shards_retain_both_engines_every_module_and_failure_evidence(
         "tests/suites/product/serde",
         "tests/suites/product/crypto",
         "tests/suites/product/compress",
+        "tests/suites/product/containers",
     }
     for shard in matrix["shard"]:
         tokens = shlex.split(command.replace("${{ matrix.shard }}", str(shard)))

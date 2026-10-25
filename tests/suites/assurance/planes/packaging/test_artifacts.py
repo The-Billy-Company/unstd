@@ -49,6 +49,7 @@ _NATIVE_MODULES = (
     "unstd.crypto._stream_native",
     "unstd.text._text_native",
     "unstd.compress._gzip_native",
+    "unstd.containers._sorted_native",
 )
 
 
@@ -296,6 +297,7 @@ def test_sdist_contains_all_sources_and_rebuild_inputs_without_local_caches(
         "native/text/rust/adapter.c",
         "native/text/src/adapter.c",
         "native/clone/src/adapter.c",
+        "native/containers/src/adapter.c",
         "native/crypto/src/adapter.c",
         "native/serde/src/adapter.c",
         "native/serde/src/encode.h",

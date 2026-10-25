@@ -290,8 +290,13 @@ def _snapshot(directory: Path, label: str, *, infer_native_bindings: bool) -> An
     return module
 
 
-def _native_routes(module: Any, label: str) -> dict[str, list[str]]:
-    """Prove successful native execution through representative public calls."""
+def _native_routes(
+    module: Any, label: str, *, structural_baseline: bool = False
+) -> dict[str, list[str]]:
+    """Prove public native routes under the revision's actual copy contract."""
+    if structural_baseline and base._copy_contract(module) != "structural":
+        message = f"{label} does not have the historical structural copy contract"
+        raise RuntimeError(message)
     bindings = {
         name: getattr(module, name, None)
         for name in _NATIVE_BINDINGS
@@ -310,7 +315,7 @@ def _native_routes(module: Any, label: str) -> dict[str, list[str]]:
 
     shared = [1, {"values": [2, 3]}]
     record = base.Record("row", shared)
-    probes = (
+    probes: tuple[tuple[base.Workload, set[str]], ...] = (
         (
             _case("builtin-graph", {"left": shared, "right": shared}),
             {"_native_graph", "_native_root_graph", "_native_walk_graph"},
@@ -328,6 +333,16 @@ def _native_routes(module: Any, label: str) -> dict[str, list[str]]:
             {"_native_clone", "_native_records"},
         ),
     )
+    if structural_baseline:
+        # Older releases accelerate exact builtin trees and intentionally copy
+        # shared branches independently. Their mixed-record and asdict paths
+        # remain measured and checked below, but did not have native kernels.
+        probes = (
+            (
+                _case("builtin-tree", {"left": shared, "right": shared}),
+                {"_native_clone"},
+            ),
+        )
     routes: dict[str, list[str]] = {}
     try:
         for name, call in bindings.items():
@@ -338,8 +353,12 @@ def _native_routes(module: Any, label: str) -> dict[str, list[str]]:
         for case, accepted in probes:
             successful.clear()
             result = getattr(module, case.operation)(case.source)
-            valid = _check(case, "current", result, shared_aliases=True)
-            if case.name == "builtin-graph":
+            valid = _check(
+                case, "current", result, shared_aliases=not structural_baseline
+            )
+            if case.name == "builtin-tree":
+                valid = valid and result["left"] is not result["right"]
+            elif case.name == "builtin-graph":
                 valid = valid and result["left"] is result["right"]
             elif case.name == "mixed-dataclass":
                 valid = (
@@ -463,7 +482,13 @@ def main(argv: Sequence[str] | None = None) -> None:
         output["native_routes"] = {}
         try:
             for label in ("current", "before"):
-                output["native_routes"][label] = _native_routes(modules[label], label)
+                output["native_routes"][label] = _native_routes(
+                    modules[label],
+                    label,
+                    structural_baseline=(
+                        label == "before" and contracts[label] == "structural"
+                    ),
+                )
         except RuntimeError as error:
             output["native_error"] = str(error)
             _write_output(output, args.output)

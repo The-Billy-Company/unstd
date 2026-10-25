@@ -12,13 +12,14 @@ headers. Python module names remain independent of source filenames.
 | Source guide | Entry file | Responsibility |
 | --- | --- | --- |
 | [`clone/`](clone/README.md) | [`adapter.c`](clone/src/adapter.c) | Container graphs and admitted dataclasses |
+| [`containers/`](containers/README.md) | [`adapter.c`](containers/src/adapter.c) | Sorted collection operations and positional indexes |
 | [`crypto/`](crypto/README.md) | [`adapter.c`](crypto/src/adapter.c) | Hash-stream batching and bearer-envelope parsing |
 | [`serde/`](serde/README.md) | [`adapter.c`](serde/src/adapter.c) | JSON proofs, codec dispatch and implementation headers |
 | [`text/`](text/README.md) | [`adapter.c`](text/src/adapter.c), [`rust/adapter.c`](text/rust/adapter.c) | Levenshtein and Jaro metrics |
 | [`compress/`](compress/README.md) | [`adapter.c`](compress/src/adapter.c) | Gzip buffer decoding, stream inflation and checksums |
 | [`audio/`](audio/README.md) | External build recipe | Reviewed libsndfile patch and build provenance |
 
-[`hatch_build.py`](../hatch_build.py) attempts five extensions on CPython,
+[`hatch_build.py`](../hatch_build.py) attempts six extensions on CPython,
 skipping free-threaded builds and other interpreters. Local compiler failures
 leave Python fallbacks available; `CIBUILDWHEEL=1` makes those failures fatal.
 Default kernels use C; `UNSTD_TEXT_RUST=1` selects the Rust text implementation.

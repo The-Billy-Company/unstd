@@ -24,12 +24,19 @@
     "jsonx-server-macos-tests.txt": "8390edcbf118b3ef40b30c492c1f69d08616afcb1123e38454cba84b34937ca3"
   },
   "quality_checks": {
-    "assurance_tests_passed": 114,
+    "focused_json_gate_checks_passed": 64,
+    "initial_broader_gate_checks_passed": 114,
+    "final_broader_gate_checks": {
+      "passed": 113,
+      "failed": 3,
+      "cause": "Concurrent unrelated containers addition: wheel worker fixtures and release dependency export not yet updated."
+    },
     "ruff": "passed",
     "targeted_mypy": "passed using pristine mypy with the existing full dependency environment"
   },
   "limitations": [
     "Optional NumPy checks skipped in the serde-only pristine consumer; full report retains all skips.",
     "Absolute timing across different CPUs is not a portability contract."
-  ]
+  ],
+  "owned_temporary_directory_removed": true
 }

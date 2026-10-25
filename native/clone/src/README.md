@@ -27,8 +27,11 @@ their children, so foreign hooks can inspect and mutate them through the memo.
 Lists expose only their initialized prefix; tuples enter the memo after their
 children finish. A tuple completed through a mutable back-reference is reused.
 
-Single-record admission uses a bounded weak type/version cache; class changes
-invalidate it. Mixed walks keep a bounded per-call cache of owned class/handler
+Native record layout admission uses a bounded weak type/version cache in both
+single-record and general graph copying; class changes invalidate it. Python
+admission still runs for each class in each mixed walk. Successful graph copies
+populate the layout cache after reconstruction completes. Mixed walks keep a
+bounded per-call cache of owned class/handler
 recipes, selected after the current source is pinned. Destination state updates
 are captured before descendant hooks, and an allocated twin is finished rather
 than retried. The mixed continuation preserves Python recursion headroom on

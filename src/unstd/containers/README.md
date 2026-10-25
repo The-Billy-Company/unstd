@@ -26,8 +26,8 @@ slower-but-correct stdlib path**:
 unstd.containers import ...` never crashes.
 - **Backends load on first access to their types.** `import unstd.containers`
   loads neither backend; importing `Map` loads only `immutables`, and importing
-  a sorted type loads only `sortedcontainers`. Resolved names are cached and
-  remain the original upstream classes. `dir()` lists the public types without
+  a sorted type loads only its sorted backend. Resolved names are cached.
+  `dir()` lists the public types without
   loading them; importing all four types loads both backends.
 - **Constructing a backed type without its backend raises.** The placeholder
   raises a clear, actionable `ImportError` naming the extra (the deferred-raise
@@ -56,9 +56,16 @@ Backed by `sortedcontainers` (Grant Jenks). Its **list-of-lists** design uses
 native list insertion and binary search within short runs. Performance depends
 on workload, collection size and load factor; the first positional query can
 also build an index. Range iteration costs time proportional to the number of
-returned values. `unstd.containers.SortedDict`
-**is** `sortedcontainers.SortedDict` (a thin, faithful re-export — full upstream
-API and docs apply).
+returned values. On supported CPython builds, bundled C kernels accelerate
+compatible subclasses of the upstream sorted classes. The upstream APIs and
+ordering semantics apply, including keyed collections, views, range scans,
+copying and pickling. Accelerated classes have their own identities; they remain
+subclasses of their upstream counterparts.
+
+Without the native extension, on other interpreters or with an unqualified
+backend version, the original upstream classes remain available. The
+`containers` extra is required in either case; the extension accelerates the
+backend's algorithms rather than providing a substitute for the dependency.
 
 ## `Map` — persistent immutable HAMT
 
@@ -101,5 +108,6 @@ entire batch is available so the backend can choose a merge/rebuild strategy.
 
 The [performance evaluation](../../../bench/reports/containers/README.md) records
 paired Linux and macOS startup and operation measurements. Lazy exports reduce
-startup work for consumers of one family; individual operations still execute
-the same upstream implementations.
+startup work for consumers of one family. Native kernels target sorted-list
+operations and their use inside sorted dictionaries and sets; `Map` retains its
+existing native `immutables` implementation.

@@ -29,7 +29,7 @@ def test_all_public_operation_oracles_run_without_clocks_in_smoke(monkeypatch):
     monkeypatch.setattr(profile.time, "perf_counter_ns", forbidden)
     monkeypatch.setattr(profile.time, "process_time_ns", forbidden)
     cases = _cases()
-    assert len(cases) == 16
+    assert len(cases) == 34
     assert {case.name for case in cases} >= {
         "sorted_list.add",
         "sorted_list.keyed.remove",
@@ -39,6 +39,19 @@ def test_all_public_operation_oracles_run_without_clocks_in_smoke(monkeypatch):
         "map.set",
         "map.update",
         "map.mutate",
+        "sorted_list.add_random",
+        "sorted_list.add_indexed",
+        "sorted_list.getitem",
+        "sorted_list.index",
+        "sorted_list.slices",
+        "sorted_list.irange",
+        "sorted_list.update",
+        "sorted_list.keyed.add_random",
+        "sorted_list.keyed.getitem",
+        "sorted_dict.insert_random",
+        "sorted_dict.update",
+        "sorted_set.add_random",
+        "sorted_set.update",
     }
     for case in cases:
         assert profile._sample(case, 2, smoke=True) == {
@@ -47,7 +60,18 @@ def test_all_public_operation_oracles_run_without_clocks_in_smoke(monkeypatch):
         }
 
 
-@pytest.mark.parametrize("name", ["sorted_list.add", "sorted_dict.insert", "map.set"])
+@pytest.mark.parametrize(
+    "name",
+    [
+        "sorted_list.add",
+        "sorted_dict.insert",
+        "map.set",
+        "sorted_list.keyed.getitem",
+        "sorted_list.index",
+        "sorted_list.slices",
+        "sorted_list.irange",
+    ],
+)
 def test_corrupt_operation_outputs_fail_independent_models(name):
     case = next(case for case in _cases() if case.name == name)
     corrupted = replace(case, run=lambda _state: [])
@@ -111,17 +135,66 @@ def test_wrong_product_provenance_is_rejected(tmp_path):
         profile._provenance(tmp_path)
 
 
-@pytest.mark.parametrize("field", ["environment", "provenance", "cases"])
+def test_cross_block_read_and_warmed_index_mutation_oracles():
+    pytest.importorskip("sortedcontainers")
+    pytest.importorskip("immutables")
+    import unstd.containers as containers
+
+    cases = profile._cases(containers, size=4096, batch=64)
+    for case in cases:
+        if case.name.endswith(
+            (".add_indexed", ".getitem", ".index", ".slices", ".irange", ".update")
+        ):
+            profile._sample(case, 1, smoke=True)
+
+
+def test_dispatch_records_selected_types_and_descriptor_owners():
+    pytest.importorskip("sortedcontainers")
+    pytest.importorskip("immutables")
+    import unstd.containers as containers
+
+    dispatch = profile._dispatch(containers)
+    assert set(dispatch["classes"]) == {
+        "SortedList",
+        "SortedKeyList",
+        "SortedDict",
+        "SortedSet",
+        "Map",
+    }
+    assert dispatch["classes"]["Map"]["module"].startswith("immutables")
+    if dispatch["native_module"]:
+        selected = dispatch["classes"]["SortedList"]
+        assert selected["native_configured"]
+        assert "add" in selected["native_descriptors"]
+        assert selected["native_descriptors"]["add"].startswith("unstd.containers.")
+
+
+def test_dispatch_rejects_native_binary_from_another_source(tmp_path, monkeypatch):
+    pytest.importorskip("sortedcontainers")
+    pytest.importorskip("immutables")
+    import unstd.containers as containers
+
+    monkeypatch.setitem(
+        profile.sys.modules,
+        "unstd.containers._sorted_native",
+        SimpleNamespace(__file__=str(tmp_path / "elsewhere.so")),
+    )
+    with pytest.raises(RuntimeError, match="outside the requested source"):
+        profile._dispatch(containers)
+
+
+@pytest.mark.parametrize("field", ["environment", "provenance", "cases", "dispatch"])
 def test_drift_cannot_support_a_comparison(field):
     row = {
         "label": "current",
         "environment": {"dependency": "hash"},
         "provenance": {"source": "hash"},
         "cases": {"case": {}},
+        "dispatch": {"native": True},
     }
     changed = copy.deepcopy(row)
     changed[field] = {"changed": "hash"}
-    with pytest.raises(RuntimeError, match=r"differ|source changed"):
+    with pytest.raises(RuntimeError, match=r"differ|source changed|dispatch changed"):
         profile._validate_runs([row, changed])
 
 
@@ -247,6 +320,53 @@ def test_prewarm_rejects_wrong_source_before_measurement(tmp_path, monkeypatch):
     )
     with pytest.raises(RuntimeError, match="different source"):
         profile._compare(args)
+
+
+@pytest.mark.parametrize(
+    ("native", "configured", "descriptors", "accepted"),
+    [
+        (None, True, {"add": "owner"}, False),
+        ("native.so", False, {"add": "owner"}, False),
+        ("native.so", True, {}, False),
+        ("native.so", True, {"add": "owner"}, True),
+    ],
+)
+def test_native_requirement_needs_selected_configured_descriptors(
+    tmp_path, monkeypatch, native, configured, descriptors, accepted
+):
+    def run(_command, _source, _cache):
+        return {
+            "environment": {},
+            "provenance": {},
+            "cases": {"fixture": {}},
+            "dispatch": {
+                "native_module": native,
+                "classes": {
+                    "SortedList": {
+                        "native_configured": configured,
+                        "native_descriptors": descriptors,
+                    }
+                },
+            },
+        }
+
+    monkeypatch.setattr(profile, "_run", run)
+    args = Namespace(
+        source=tmp_path,
+        compare_source=None,
+        rounds=1,
+        size=32,
+        batch=8,
+        iterations=1,
+        smoke=True,
+        output=None,
+        require_native=True,
+    )
+    if accepted:
+        assert profile._compare(args)["complete"]
+    else:
+        with pytest.raises(RuntimeError, match="did not select native"):
+            profile._compare(args)
 
 
 def test_timing_cli_rejects_undersized_or_invalid_measurements():

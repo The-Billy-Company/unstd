@@ -81,7 +81,7 @@ def test_real_workers_all_start_keep_cwd_and_preserve_failures(
         result = json.loads((evidence / f"{index}.json").read_text())
         assert result["cwd"] == str(cwd)
         arguments = result["arguments"]
-        assert arguments[:5] == [
+        assert arguments[: len(wheel_tests.MODULES)] == [
             str(project / "tests/suites/product" / name) for name in wheel_tests.MODULES
         ]
         assert arguments[arguments.index("--ci-shard") + 1] == f"{index}/4"

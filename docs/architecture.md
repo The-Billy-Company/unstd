@@ -59,7 +59,7 @@ existing paths. `_internal` packages are implementation details.
 | `audio` | `wavx.py` | `_internal/pcm.py` owns pure sample conversion and frame validation; backend state and file I/O remain in `wavx` |
 | `clone` | Package exports and `structural.py` | Exact-type walker and optional private clone extension |
 | `compress` | `gzipx.py` | `_backend.py`, `_reader.py`, private native extension |
-| `containers` | Package exports, `persistent.py`, `sorted.py` | Guarded imports and deferred missing-extra placeholders |
+| `containers` | Lazy package exports, `persistent.py`, `sorted.py` | Guarded imports, compatible sorted subclasses and private native kernels |
 | `crypto` | `digest.py`, `tls.py`, `token.py` | `_blake3.py` and private native stream extension |
 | `fs` | Package functions | `_internal/durability.py` and `walk.py`; atomic-write orchestration retains public sync and cleanup hooks |
 | `ids` | `uid.py` | Private UUID fallback state stays with the generator |
@@ -156,8 +156,9 @@ those differences before making an absolute speed claim.
 
 The [API inventory](api.md) records supported names and retained compatibility
 attributes. No consumer import rewrite is needed. Existing upstream class
-aliases remain the original objects, including sorted containers, time types,
-JSON codec classes, regex types and TOML builders. Exported process classes keep
+aliases remain the original objects, including persistent maps, time types,
+JSON codec classes, regex types and TOML builders. Sorted containers use compatible
+subclasses when their bundled CPython accelerator is available. Exported process classes keep
 their historical `unstd.proc` identity for pickling and inspection.
 
 The [public API contract](../tests/support/packaging/public_api.json) captures the

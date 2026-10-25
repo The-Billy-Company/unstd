@@ -6,4 +6,8 @@ cancellation propagates only after the direct child is killed and reaped; a
 subsequent command proves recovery. The experiment uses a readiness handshake
 and an outer process deadline, not a timed guess.
 
+Each entrypoint runs both while captured pipes remain open and after the child
+closes stdout/stderr. The latter waits for backend entry before sending SIGINT,
+covering cancellation inside Linux pidfd/macOS kqueue exit waits.
+
 Run `uv run --no-sync python -m tests.tooling run regression -- -q`.

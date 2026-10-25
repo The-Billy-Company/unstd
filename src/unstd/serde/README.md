@@ -167,6 +167,9 @@ Linux/macOS worker with native dispatch required, retaining raw measurements
 before failing a slowdown above 15%. Run the same qualification with the
 deployment interpreter and the `serde` extra to detect an installation that has
 lost its native paths.
+The [Foundry qualification](../../../bench/reports/serde/jsonx-server.md) retains
+native code/source equality, installed wheel and source-build contracts, paired
+Linux/macOS gains, and shared-host timing variation.
 
 **Numpy extension:** with the default encoder, `numpy=True` on
 `dumps`/`dump`/`dumpb` converts arrays with `.tolist()` and scalars with `.item()`

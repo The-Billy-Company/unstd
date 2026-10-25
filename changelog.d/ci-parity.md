@@ -9,3 +9,5 @@ parser and product parity checks.
 Avoid whole-block gzip engine selection for small buffered reads, compare shared
 performance workloads before timing added APIs, and bound sanitizer-only stack
 boundary differences without dropping discarded-source recursion checks.
+Reuse the bounded weak type/version cache for native record layouts during
+general graph copying, retaining Python admission and mutation invalidation.

@@ -139,11 +139,14 @@ Import `from unstd.containers import Map, SortedDict, SortedList, SortedSet`.
 | [`unstd.containers.persistent`](../src/unstd/containers/persistent.py) | `Map` |
 | [`unstd.containers.sorted`](../src/unstd/containers/sorted.py) | `SortedDict`, `SortedList`, `SortedSet` |
 
-With the `containers` extra, these names are the actual `immutables.Map` and
-`sortedcontainers` classes. Their constructors, methods, generic typing,
-iteration, and class identities are retained. For example, `Map.set` and
+With the `containers` extra, `Map` is the actual `immutables.Map`. Sorted
+collections use compatible subclasses of `sortedcontainers` when the optional
+CPython kernels are available, and the original classes otherwise. Constructors,
+methods, generic typing and iteration retain the backend API; accelerated sorted
+class identities differ from the upstream classes. For example, `Map.set` and
 `Map.delete` return new persistent mappings. Missing backends leave importable
 placeholders that raise an actionable `ImportError` on construction.
+Each family loads on first access to its types or submodule.
 
 ## Cryptography and TLS
 

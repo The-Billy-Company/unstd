@@ -65,6 +65,8 @@ complete small DEFLATE block dominated by repeated short-distance matches.
 The bounded probe selects before decoding and preserves source consumption,
 output limits and the interpreter's framing. Incomplete probes keep Apple libz;
 Linux keeps its zlib-ng SIMD reader. Selection adds no package dependency.
+The [single-stream qualification](../../../bench/reports/compress/single-stream/README.md)
+records repetitive-stream gains, server parity, edge costs and streaming checks.
 
 Eligible complete single-member exact `bytes` inputs use libdeflate for one-shot
 `decompress`. The native kernel validates framing, CRC32, original size and

@@ -86,6 +86,20 @@ def test_missing_source_is_rejected_before_loading(tmp_path):
     assert sys.modules["unstd.fs"] is fs
 
 
+@pytest.mark.parametrize("change", ["edit", "remove"])
+def test_changed_sources_are_rejected_before_report_publication(tmp_path, change):
+    source = _source(tmp_path, "before")
+    _module, evidence = profile._load_source(source)
+    profile._check_source_hashes({"current": evidence})
+    path = source / "unstd" / "fs" / "_internal" / "walk.py"
+    if change == "edit":
+        path.write_text("def marker():\n    return 'after'\n", encoding="utf-8")
+    else:
+        path.unlink()
+    with pytest.raises(RuntimeError, match="source changed during measurement"):
+        profile._check_source_hashes({"current": evidence})
+
+
 def test_changed_public_signatures_are_rejected():
     with pytest.raises(RuntimeError, match="public fs signatures changed"):
         profile._check_signatures(
@@ -188,7 +202,7 @@ def test_prepared_cases_check_path_results_and_can_repeat_without_fixture_drift(
     source = Path(fs.__file__).resolve().parents[2]
     module, _evidence = profile._load_source(source)
     cases = profile._cases(
-        {"current": module},
+        {"current": module, "before": module},
         tmp_path,
         flat_files=3,
         directories=2,
@@ -210,9 +224,20 @@ def test_prepared_cases_check_path_results_and_can_repeat_without_fixture_drift(
         "sync-dir",
     }
     for case in cases:
-        case.setup("current")
         for _ in range(2):
-            case.check("current", case.calls["current"]())
+            results = {}
+            for label in ("current", "before"):
+                case.setup(label)
+                results[label] = case.calls[label]()
+                case.check(label, results[label])
+            assert results["current"] == results["before"]
+            if (
+                case.name.startswith("atomic-write")
+                or case.name == "ensure-dir-create-remove"
+            ):
+                assert results["current"].parent == tmp_path / "operations"
+    assert not (tmp_path / "current").exists()
+    assert not (tmp_path / "before").exists()
     flat = next(case for case in cases if case.name == "walk-flat")
     with pytest.raises(AssertionError):
         flat.check("current", [str(tmp_path / "flat" / "file-0")])

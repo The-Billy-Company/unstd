@@ -13,11 +13,20 @@ import select
 import subprocess  # nosec B404 # the private backend of the safe runner
 import sys
 import time
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, cast
 
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+    from types import ModuleType
+    from typing import TextIO
+
+
+_native: ModuleType | None
+try:
+    from unstd.proc import _proc_native as _native
+except ImportError:
+    _native = None
 
 
 def _exit_ready(pid: int, deadline: float) -> bool | None:
@@ -64,6 +73,143 @@ class Popen(subprocess.Popen[str]):
     and delegates actual reaping to stdlib. Windows and unavailable native
     facilities keep the stdlib implementation without changing global state.
     """
+
+    _communication_started: bool
+    _fileobj2output: dict[Any, list[bytes]]
+    text_mode: bool | str | None
+
+    def _execute_child(self, *arguments: Any) -> None:
+        """Use isolated native spawning for the runner's ordinary POSIX shape."""
+        standard_execute: Callable[..., None] = getattr(super(), "_execute_child")  # noqa: B009 # private stdlib method
+        if _native is None or os.name != "posix" or len(arguments) != 23:
+            standard_execute(*arguments)
+            return
+        (
+            argv,
+            executable,
+            preexec,
+            close_fds,
+            pass_fds,
+            cwd,
+            env,
+            startupinfo,
+            creationflags,
+            shell,
+            p2cread,
+            p2cwrite,
+            c2pread,
+            c2pwrite,
+            errread,
+            errwrite,
+            restore_signals,
+            gid,
+            gids,
+            uid,
+            umask,
+            new_session,
+            process_group,
+        ) = arguments
+        if (
+            not argv
+            or type(argv) is not tuple
+            or executable is not None
+            or preexec is not None
+            or not close_fds
+            or pass_fds
+            or startupinfo is not None
+            or creationflags
+            or shell
+            or gid is not None
+            or gids is not None
+            or uid is not None
+            or umask != -1
+            or new_session
+            or process_group != -1
+        ):
+            standard_execute(*arguments)
+            return
+        executable = argv[0]
+        try:
+            status = _native.spawn(
+                self,
+                argv,
+                env,
+                cwd,
+                executable,
+                p2cread,
+                p2cwrite,
+                c2pread,
+                c2pwrite,
+                errread,
+                errwrite,
+                restore_signals,
+            )
+            if status is NotImplemented:
+                standard_execute(*arguments)
+                return
+            # The C call publishes pid and ownership before returning, so a
+            # pending signal cannot lose an already-created child at this seam.
+            close_pipes: Callable[..., None] = getattr(self, "_close_pipe_fds")  # noqa: B009 # private stdlib method
+            close_pipes(p2cread, p2cwrite, c2pread, c2pwrite, errread, errwrite)
+        except BaseException:
+            if getattr(self, "_child_created", False):
+                self.kill()
+                self.wait()
+            raise
+
+    def _communicate(
+        self, input: str | None, endtime: float | None, orig_timeout: float | None
+    ) -> tuple[str | None, str | None]:
+        """Drain captured output natively; retain stdlib stdin and retry paths."""
+        standard_communicate: Callable[..., tuple[str | None, str | None]] = getattr(  # noqa: B009 # private stdlib method
+            super(), "_communicate"
+        )
+        if (
+            _native is None
+            or os.name != "posix"
+            or self.stdin is not None
+            or input is not None
+            or self._communication_started
+            or endtime is None
+            or orig_timeout is None
+            or not self.text_mode
+            or self.stdout is None
+            or self.stderr is None
+        ):
+            return standard_communicate(input, endtime, orig_timeout)
+        stdout_pipe = cast("TextIO", self.stdout)
+        stderr_pipe = cast("TextIO", self.stderr)
+        result = _native.communicate(
+            self.stdout.fileno(), self.stderr.fileno(), endtime
+        )
+        if result is NotImplemented:
+            return standard_communicate(input, endtime, orig_timeout)
+        stdout, stderr, expired, out_seen, err_seen, out_closed, err_closed = result
+        self._fileobj2output = {
+            self.stdout: [stdout] if out_seen else [],
+            self.stderr: [stderr] if err_seen else [],
+        }
+        if out_closed:
+            self.stdout.close()
+        if err_closed:
+            self.stderr.close()
+        if expired:
+            raise subprocess.TimeoutExpired(
+                self.args,
+                orig_timeout,
+                output=stdout if out_seen else None,
+                stderr=stderr if err_seen else None,
+            )
+        try:
+            self.wait(timeout=max(0.0, endtime - time.monotonic()))
+        except subprocess.TimeoutExpired as error:
+            error.timeout = orig_timeout
+            raise
+        translate: Callable[..., str] = getattr(self, "_translate_newlines")  # noqa: B009 # private stdlib method
+        return (
+            translate(stdout, stdout_pipe.encoding, stdout_pipe.errors),
+            translate(stderr, stderr_pipe.encoding, stderr_pipe.errors),
+        )
 
     def _wait(self, timeout: float | None) -> int:
         """Wait for child termination without POSIX timeout polling sleeps."""

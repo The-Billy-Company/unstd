@@ -124,6 +124,19 @@ read untrusted, concurrently modified trees must also protect their file opens.
   cache; the parent-directory-fsync durability nuance is documented in LWN's
   _"Ensuring data reaches disk"_ and the SQLite atomic-commit docs.
 
+## Performance evidence
+
+The [backend evaluation](../../../bench/reports/fs/README.md) retains paired
+wall/CPU measurements and profiles on Python 3.12, 3.13, and 3.14. Descriptor
+traversal caches directory-name prefixes and constructs `Path` objects only
+for returned files. Existing-directory checks avoid a failed `mkdir`; creating
+a missing directory incurs an initial directory check. Strict writers reuse
+their successful parent check before preflight syncing.
+
+The evaluation includes real file and directory syncing. Local I/O timing is
+noisy, so it does not establish a consistent atomic-write speedup. The portable
+walk retains its per-entry identity checks.
+
 ## Implementation layout
 
 Traversal and directory-sync mechanisms live in [`_internal/`](_internal/README.md). The package keeps atomic-write orchestration and passes its OS binding explicitly to the private helpers.

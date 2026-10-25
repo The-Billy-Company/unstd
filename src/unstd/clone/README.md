@@ -158,6 +158,10 @@ profiles the public Python APIs against the completed shared-identity baseline,
 including collector-enabled runs, cold admission, alternative algorithms and
 the remaining regressions. Its [safety evidence](../../../bench/reports/clone/clone-memory-safety.md)
 covers forced GC, allocation failures and sanitizers on the final native source.
+The [Foundry qualification](../../../bench/reports/clone/clone-foundry-results.md)
+checks Linux wheels on CPython 3.13 and 3.14, confirms successful native routes,
+and retains common-shape timings and their existing regressions. CI guards both
+CPU and wall latency with the same-worker native baseline.
 
 The [cloning contract tests](../../../tests/suites/product/clone/unit/README.md)
 cover shared fields, copy-hook boundaries, cyclic backreferences, source

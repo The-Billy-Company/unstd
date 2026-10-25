@@ -11,10 +11,12 @@ These drivers compare saved and current implementations, check outputs and impor
 - [`native_profile.py`](native_profile.py)
 - [`proc_backend.py`](proc_backend.py) — paired Linux/macOS process latency, exact captured I/O, source/signature checks, and separate wait-route profiles; run this file directly
 - [`crypto_hash.py`](crypto_hash.py)
+- [`fs_backend.py`](fs_backend.py) — paired filesystem traversal and atomic-write timings with real syncing, independent output checks, source isolation, and profiles
 - [`billy_serde.py`](billy_serde.py)
 - [`billy_audio.py`](billy_audio.py) — exact PCM wrapping and raw normalization ports, paired timings, allocation peaks and captured Billy consumer source
 - [`gzip_reads.py`](gzip_reads.py) — paired CPU/wall read timings, including bounded-memory repetitive streams at 8, 64 and 256 KiB read sizes; records the selected native backend outside timing
 - [`billy_gzip.py`](billy_gzip.py) — frozen Billy consumer receipts, real ijson batches, bounded HTTP reads, two-pass uploads, and journal writes/flushes/replay
+- [`billy_gzip_requests.py`](billy_gzip_requests.py) — direct request compression and fresh/warm 64 KiB compressor checkpoints, with strict compressed-byte equality and retained contract failures
 - [`gzip_concurrency.py`](gzip_concurrency.py) — independent Billy streams on 1, 2 and 4 warmed executor workers, with isolated installations and aggregate wall throughput
 - [`text_native_compare.py`](text_native_compare.py)
 
@@ -35,6 +37,24 @@ Both workers share the invoking interpreter and dependencies. The committed
 synthetic fixtures need no Billy checkout; their source receipts document the
 consumer contract. The optional slowdown limit compares wall time and writes
 the raw report before failing. CPU samples remain diagnostic.
+
+Measure Billy's separate request encoder and prefix-copy workloads with:
+
+```console
+python bench/profiles/billy_gzip_requests.py run --fixtures bench/workloads/billy_gzip_requests.json.gz --baseline-source /tmp/installed-before --source /tmp/installed-current --require-native --rounds 9 --batch-ms 20 --output /tmp/billy-gzip-requests.json
+```
+
+This profile leaves the original 14 stream fixtures unchanged. It captures
+`gzip_encode`, `gzip_request`, and `_GzipPrefix` source receipts, and measures
+public synthetic request bodies with direct level-six compression, first-use
+checkpoint construction, warmed copies, and level/prefix misses. Header mapping,
+context-variable lookup and network work are excluded. Each checkpoint must
+produce exactly its own codec's monolithic compressed bytes, with independent
+stdlib decoding. A failed contract marks that case ineligible; other cases are
+still measured, and the retained report then exits unsuccessfully. Repeat
+`--case` globs to select an explicit subset. Native provider paths, versions and
+binary hashes accompany the per-case C-call proof. No compression-level mapping
+or relaxed byte oracle is used.
 
 Measure concurrent upload streams through the direct entry point:
 
@@ -68,6 +88,9 @@ qualification for its newer float, ASCII and strict-identity paths. Remove
 `--include` to measure the complete workload set. `--max-slowdown` requires a
 comparison and retains the report before failing; measurements compare wall
 latency on one host, rather than assuming different machines have equal speed.
+The gate takes the median of matched after/before ratios from each alternating
+repetition. Reports retain all pairs, raw wall/CPU samples and independent
+latency medians, so drift and persistent slowdowns remain visible.
 
 Current `deep` workloads require shared-reference preservation; saved historical
 baselines retain their earlier alias-duplication checks. `asdict` keeps its

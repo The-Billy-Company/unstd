@@ -12,3 +12,11 @@ Billy checkout. The gate checks every shape and independently verifies decoded
 bytes before measuring either installation.
 
 See the [benchmark guide](../README.md).
+
+[`billy_gzip_requests.json.gz`](billy_gzip_requests.json.gz) separately freezes
+eight public synthetic request sequences for
+[`../profiles/billy_gzip_requests.py`](../profiles/billy_gzip_requests.py).
+Content-addressed 64 KiB chunks keep shared prefixes compact; every chunk and
+reassembled body has an independent SHA256 check. The source receipts cover
+Billy's direct encoder, request size/shrink gate and immutable compressor
+checkpoint. No production payloads or Billy source bodies are included.

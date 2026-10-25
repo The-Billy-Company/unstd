@@ -6,11 +6,18 @@ audits, baseline floors, source isolation, workload coverage, paired timing, and
 observed native dispatch. Deliberately wrong outputs and declined native calls
 must fail before they can support an acceleration claim.
 
+`test_fs_backend.py` checks saved/current source isolation, stale-bytecode
+rejection, unchanged signatures, independent output checks, shared calibrated
+batch counts, alternating sample order, and repeatable filesystem fixtures.
+Its checks use no machine-speed thresholds.
+
 `test_jsonx_throughput.py` rejects missing/wrong installed native extensions,
 inactive bindings, incorrect native results, source changes and empty workload
 filters. It verifies alternating installed-root comparisons, finite slowdown
 limits, and evidence retention when a wall-time limit fails, without measuring
 machine speed in the correctness suite.
+Drifting-worker fixtures require matched repetition ratios and prove that a
+persistent wall-time regression still fails the same limit.
 
 `test_gzip_reads.py` rejects changed decoded bytes and incorrectly imported
 comparison sources, and checks bounded output, concatenated lines and rewinds.
@@ -25,6 +32,12 @@ alternating samples, native codec proof, validation failures and collector
 restoration, and the complete-worker byte denominator including both upload
 passes. It rejects comparisons with different frozen inputs and uses no
 wall-time thresholds.
+
+`test_billy_gzip_requests.py` checks exact checkpoint/full compressed-byte
+identity, bounded prefix ownership and retirement, original fixture bytes,
+level/prefix misses, and the threshold/shrink gate. It proves that a contract
+failure remains ineligible while other cases can still be measured, and that
+the final report is retained before failure. It has no machine-speed assertions.
 
 `test_crypto_hash.py` verifies saved crypto helper isolation, missing-helper
 failures, source hashes despite stale bytecode, crossover workload coverage,
@@ -48,9 +61,18 @@ committed fixtures, 30% wall-time limit and retained report. These tests have no
 machine-speed assertions.
 
 The common clone guard requires successful native graph, dataclass and `asdict`
-calls in each isolated revision and checks all 25 workloads with GC enabled.
+calls in the candidate. A historical baseline with structural copying must prove
+its native builtin-tree route and independent alias copies; newer shared-graph
+baselines retain all three native proofs. Every revision still checks and times
+all 25 workloads with GC enabled and the same wall/CPU limits.
 Its unit tests reject declined native calls and separate wall/CPU regressions,
 check baseline entrypoint isolation, and require evidence to survive failure.
+
+`test_proc_backend.py` loads the process profile directly without optional
+product dependencies. It rejects incorrect outputs and changed signatures,
+checks source fingerprints and isolated imports, and verifies GC restoration
+after a failed measured call. Timing ratios remain evidence rather than unit
+test thresholds.
 
 `test_timing_noise.py` uses virtual clocks to reject preempted calibration
 batches and retain separate wall/CPU evidence. `test_rand_diagnose.py` exercises

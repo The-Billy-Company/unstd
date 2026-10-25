@@ -139,6 +139,22 @@ def _check_signatures(evidence: dict[str, dict[str, Any]]) -> None:
             raise RuntimeError(message)
 
 
+def _check_source_hashes(evidence: dict[str, dict[str, Any]]) -> None:
+    """Reject measurements if a selected source file changed while running."""
+    for label, item in evidence.items():
+        source = Path(item["source"])
+        for relative, expected in item["files_sha256"].items():
+            path = source / relative
+            try:
+                actual = hashlib.sha256(path.read_bytes()).hexdigest()
+            except OSError as error:
+                message = f"fs source changed during measurement: {label}: {relative}"
+                raise RuntimeError(message) from error
+            if actual != expected:
+                message = f"fs source changed during measurement: {label}: {relative}"
+                raise RuntimeError(message)
+
+
 def _walk(
     module: ModuleType, root: Path, *, follow_symlinks: bool = False
 ) -> list[Path]:
@@ -263,11 +279,9 @@ def _cases(
                 "explicitly follows one directory symlink; no cycles",
             )
         )
-    destinations = {}
-    for label in modules:
-        destination = root / label
-        destination.mkdir()
-        destinations[label] = destination
+    destination = root / "operations"
+    destination.mkdir()
+    destinations = dict.fromkeys(modules, destination)
     write_cases: list[tuple[str, str | bytes, dict[str, Any]]] = [
         ("atomic-write-bytes-1k", b"x" * 1024, {}),
         ("atomic-write-text-1k", "café\n" * 200, {}),
@@ -569,7 +583,7 @@ def main(argv: list[str] | None = None) -> None:
         "sources": evidence,
         "rounds": args.rounds,
         "repetitions": args.repetitions,
-        "method": "paired alternating warm-cache wall/process CPU batches; real fsync; checks and profiles excluded from timing; GC left in its existing state",
+        "method": "paired alternating warm-cache wall/process CPU batches; real fsync; checks and profiles excluded from timing; mutation fixtures shared between sources; GC left in its existing state",
         "workloads": [],
     }
     with tempfile.TemporaryDirectory(prefix="unstd-fs-profile-") as temporary:
@@ -586,6 +600,14 @@ def main(argv: list[str] | None = None) -> None:
             report["workloads"].append(result)
             ratio = result["before_over_current"].get("wall_ns")
             print(f"{case.name}: {ratio:.3f}x" if ratio else case.name, flush=True)
+    _check_source_hashes(evidence)
+    if (
+        hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+        != report["harness_sha256"]
+    ):
+        message = "benchmark harness changed during measurement"
+        raise RuntimeError(message)
+    report["source_hashes_verified_after_timing"] = True
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
 

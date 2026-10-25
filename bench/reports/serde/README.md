@@ -5,6 +5,7 @@
 - [jsonx-safety](jsonx-safety.md)
 - [jsonx-second-pass](jsonx-second-pass.md)
 - [jsonx-second-safety](jsonx-second-safety.md)
+- [jsonx-server](jsonx-server.md)
 - [jsonx-throughput](jsonx-throughput.md)
 - [serde-results](serde-results.md)
 - [typed-ndjson-floor-results](typed-ndjson-floor-results.md)

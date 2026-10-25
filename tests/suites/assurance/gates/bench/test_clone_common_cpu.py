@@ -174,6 +174,64 @@ def test_native_route_proofs_exercise_and_restore_public_bindings():
     }
 
 
+def _historical_wrapper():
+    native = pytest.importorskip("unstd.clone._clone_native")
+    wrapper = SimpleNamespace(_native_clone=native.clone)
+    wrapper.deep = lambda source: wrapper._native_clone(source)
+    return wrapper
+
+
+def test_historical_native_tree_proof_keeps_its_structural_alias_contract():
+    historical = _historical_wrapper()
+    original = historical._native_clone
+    assert base._copy_contract(historical) == "structural"
+    assert profile._native_routes(historical, "before", structural_baseline=True) == {
+        "builtin-tree": ["_native_clone"]
+    }
+    assert historical._native_clone is original
+    with pytest.raises(RuntimeError, match="before/builtin-graph"):
+        profile._native_routes(historical, "before")
+
+
+def test_historical_tree_proof_rejects_python_fallback_and_restores_bindings():
+    historical = _historical_wrapper()
+    original = historical._native_clone
+
+    def python_tree(source):
+        if isinstance(source, list):
+            return [python_tree(value) for value in source]
+        if isinstance(source, dict):
+            return {key: python_tree(value) for key, value in source.items()}
+        return source
+
+    historical.deep = python_tree
+    assert base._copy_contract(historical) == "structural"
+    with pytest.raises(RuntimeError, match="before/builtin-tree"):
+        profile._native_routes(historical, "before", structural_baseline=True)
+    assert historical._native_clone is original
+
+
+def test_historical_tree_proof_rejects_source_reuse_even_after_native_success():
+    historical = _historical_wrapper()
+    original = historical._native_clone
+
+    def reused(source):
+        result = historical._native_clone(source)
+        if isinstance(source, dict):
+            result["left"] = source["left"]
+        return result
+
+    historical.deep = reused
+    with pytest.raises(RuntimeError, match="before/builtin-tree"):
+        profile._native_routes(historical, "before", structural_baseline=True)
+    assert historical._native_clone is original
+
+
+def test_current_shared_graph_cannot_use_historical_tree_qualification():
+    with pytest.raises(RuntimeError, match="historical structural copy contract"):
+        profile._native_routes(structural, "current", structural_baseline=True)
+
+
 @pytest.mark.parametrize("route", ["mixed-dataclass", "asdict-tree"])
 def test_native_requirement_rejects_public_python_fallback(route, monkeypatch):
     pytest.importorskip("unstd.clone._clone_native")

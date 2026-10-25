@@ -41,6 +41,7 @@ _PROVIDERS = ("codecs", "runtime", "operations")
 _NATIVE = (
     "clone._clone_native",
     "compress._gzip_native",
+    "containers._sorted_native",
     "crypto._stream_native",
     "serde._json_native",
     "text._text_native",

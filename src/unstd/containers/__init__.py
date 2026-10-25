@@ -33,11 +33,14 @@ from typing import TYPE_CHECKING, Any
 
 
 if TYPE_CHECKING:
+    from unstd.containers import persistent as persistent
+    from unstd.containers import sorted as sorted
     from unstd.containers.persistent import Map
     from unstd.containers.sorted import SortedDict, SortedList, SortedSet
 
 
 __all__ = ["Map", "SortedDict", "SortedList", "SortedSet"]
+_SUBMODULES = ("persistent", "sorted")
 
 # A reload restores the same lazy surface even after earlier member access.
 for _name in __all__:
@@ -47,7 +50,12 @@ del _name
 
 def __getattr__(name: str) -> Any:
     """Resolve and cache a public type through its guarded backend module."""
-    if name == "Map":
+    resolved: Any
+    if name in _SUBMODULES:
+        from importlib import import_module
+
+        resolved = import_module(f"{__name__}.{name}")
+    elif name == "Map":
         from unstd.containers.persistent import Map
 
         resolved = Map
@@ -65,4 +73,4 @@ def __getattr__(name: str) -> Any:
 
 def __dir__() -> list[str]:
     """Include every public type without loading either backend."""
-    return _sorted({*globals(), *__all__})
+    return _sorted({*globals(), *__all__, *_SUBMODULES})
