@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import copy
+from types import SimpleNamespace
 
+from bench.diagnostics.clone_cold import _clear_caches
 from bench.profiles import clone_common_cpu as profile
 from bench.profiles import clone_cpu as base
 from unstd.clone import structural
@@ -55,6 +57,22 @@ def test_node_counts_distinguish_dataclass_clone_from_plain_conversion():
     counts = profile._node_counts(source)
     assert counts == {"lists": 2, "dicts": 2, "tuples": 0, "records": 2}
     assert profile._node_counts(source, plain=True) == {**counts, "records": 0}
+
+
+def test_cold_cache_control_clears_only_matching_admission_caches():
+    module = SimpleNamespace(
+        _NODES={"node": 1},
+        _RECORDS={"record": 2},
+        _FIELDS={"fields": 3},
+        unrelated={"retained": 4},
+    )
+    assert _clear_caches(module) == ["_NODES", "_RECORDS", "_FIELDS"]
+    assert not module._NODES
+    assert not module._RECORDS
+    assert not module._FIELDS
+    assert module.unrelated == {"retained": 4}
+    del module._RECORDS
+    assert _clear_caches(module) == ["_NODES", "_FIELDS"]
 
 
 def test_common_workloads_cover_distinct_shapes_and_protocol_controls():

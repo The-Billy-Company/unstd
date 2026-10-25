@@ -40,11 +40,11 @@ def test_value_check_observes_key_types_order_and_default_factory() -> None:
 def test_stdlib_profile_records_coverage_and_explicit_optional_skips() -> None:
     result = _bundle(REPO_ROOT / "src", "gate", stdlib_only=True)
     skipped = {row["function"] for row in result["functions"] if row["skipped"]}
-    expected_skips = {
-        "structural._model",
-        "structural._reduced",
-        "structural._record_class",
-    }
+    expected_skips = {"structural._model", "structural._reduced"}
+    from unstd.clone import structural
+
+    if structural._native_walk_graph is None:
+        expected_skips.add("structural._record_admit")
     assert skipped == expected_skips
     assert all(row["calls"] or row["skipped"] for row in result["functions"])
     locations = {
@@ -75,6 +75,8 @@ def test_python_only_profile_disables_secondary_native_kernel_and_metadata() -> 
     clone._native_clone = None
     clone._native_graph = None
     clone._native_records = None
+    clone._native_record_graph = None
+    clone._native_walk_graph = None
     clone._native_dataclass = None
     clone._RECORDS.add(Record)
     cases = _workloads(clone, uid, fallback, stdlib_only=True)
@@ -82,10 +84,10 @@ def test_python_only_profile_disables_secondary_native_kernel_and_metadata() -> 
     record_selector = next(
         row
         for row in result["functions"]
-        if row["function"] == "structural._record_class"
+        if row["function"] == "structural._record_admit"
     )
     assert record_selector["calls"] == 0
-    assert record_selector["skipped"] == "native record kernel unavailable"
+    assert record_selector["skipped"] == "native general walk unavailable"
     assert Record not in clone._RECORDS
 
 

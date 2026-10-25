@@ -22,28 +22,31 @@ exact = clone.deepcopy(payload)  # re-exported stdlib copy.deepcopy
 anything but a builtin container, a `__reduce_ex__` round-trip. `deep` walks data
 with exact-type dispatch and shares one identity memo across the entire call.
 
-The bundled C path admits exact `dict` (exact string keys), `list`, and `tuple`
-trees containing exact scalar builtins. It preserves dictionary order, atomic
-identity, shared references and independence from the source. Other trees use
-the Python walker, including copy hooks, subclasses and sets. Plain admitted
-dataclasses also use native reconstruction, and cycles follow the handling
-described below.
+The bundled C path copies exact `dict` (exact string keys), `list`, and `tuple`
+graphs containing exact scalar builtins with a private pointer memo. A second
+native walk handles mixtures of builtin containers and admitted dataclasses,
+sharing the actual Python memo with foreign copy hooks. It preserves dictionary
+order, atomic identity, shared references and independence from the source.
+Subclasses, sets and other foreign nodes use the Python walker at that node.
+Cycles follow the handling described below.
 Native work is bounded by 128 container levels and 65,536 container visits;
 scalar values do not consume that budget, so wide scalar arrays remain native.
 Exceeding either bound selects Python rather than limiting the public API.
 The graph copier detects builtin cycles during copying and discards its
 staged memo before selecting whole-graph `deepcopy`. The tree copier used by
 `asdict` retains its eligibility pass.
-Lists and tuples are filled into presized storage, and dictionaries retain
-owned item iterators with live mutation checks. Incomplete
-sequence storage stays hidden from the cyclic collector until it is safe to
-inspect. Dataclass/model state and `asdict` fields also use native copying when
-their contents qualify.
+Private lists and tuples use presized storage, and dictionary cursors retain
+owned items with live mutation checks. Incomplete sequence storage stays hidden
+from the cyclic collector. When a foreign hook can reach a destination through
+the memo, mutable containers remain tracked and expose only initialized items;
+hooks can safely inspect, append to or clear those destinations. Dataclass/model
+state and `asdict` fields also use native copying when their contents qualify.
 Builtin graphs track identities in a native pointer table. A successful root
-copy needs no Python memo export; state boundaries publish completed copies to
-the enclosing Python memo so aliases crossing object and copy-hook boundaries
-still agree. Python fallback also avoids allocating an unused keep-alive list
-for every node.
+copy needs no Python memo export. Mixed graphs publish mutable twins in the
+enclosing memo before traversing their children. Their per-call class recipes
+avoid repeating Python dispatch for every record while retaining source and
+class references across callbacks. Python fallback also avoids allocating an
+unused keep-alive list for every node.
 See the [native measurements](../../../bench/reports/native/native-results.md) for comparisons
 against the previous Python implementation.
 
@@ -65,7 +68,9 @@ against the previous Python implementation.
   Plain dataclasses also use native reconstruction for allocation, memo
   publication, state cloning and dictionary update. A bounded weak cache
   rechecks native layout admission when the class changes; custom allocators,
-  attribute access and inherited layouts retain the Python recipe.
+  attribute access and inherited layouts retain the Python recipe. Pydantic's
+  filtered private-state dictionary is treated as a separate view when needed,
+  preserving the contents and type of ordinary aliases to the source mapping.
 - **Everything else goes to `copy.deepcopy`, one node at a time.** A custom
   `__deepcopy__`, an `OrderedDict` or `defaultdict`, an lxml element, a lock: that
   node is copied by `deepcopy` with the same memo, so references crossing between
@@ -148,6 +153,11 @@ compare the native pointer table with the initial identity-preserving path.
 The [dataclass measurements](../../../bench/reports/clone/clone-dataclass-identity-results.md)
 compare native reconstruction with the previous Python recipe while preserving
 field, record and copy-hook aliases.
+The [common-data follow-up](../../../bench/reports/clone/clone-common-cpu-results.md)
+profiles the public Python APIs against the completed shared-identity baseline,
+including collector-enabled runs, cold admission, alternative algorithms and
+the remaining regressions. Its [safety evidence](../../../bench/reports/clone/clone-memory-safety.md)
+covers forced GC, allocation failures and sanitizers on the final native source.
 
 The [cloning contract tests](../../../tests/suites/product/clone/unit/README.md)
 cover shared fields, copy-hook boundaries, cyclic backreferences, source

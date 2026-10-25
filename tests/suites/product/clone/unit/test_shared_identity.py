@@ -20,10 +20,9 @@ def backend(request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatch) -> 
         native = pytest.importorskip("unstd.clone._clone_native")
         monkeypatch.setattr(structural, "_native_clone", native.clone_checked)
     else:
-        monkeypatch.setattr(structural, "_native_clone", None)
-        monkeypatch.setattr(structural, "_native_records", None)
-        if hasattr(structural, "_native_graph"):
-            monkeypatch.setattr(structural, "_native_graph", None)
+        for name in list(vars(structural)):
+            if name.startswith("_native_"):
+                monkeypatch.setattr(structural, name, None)
 
 
 @pytest.mark.parametrize("kind", [list, dict, tuple, set, frozenset, bytearray])
@@ -307,8 +306,10 @@ def test_immutable_temporal_aliases_cross_foreign_copy_boundaries(
 
 
 @pytest.mark.parametrize("private_first", [False, True])
-def test_pydantic_private_dict_aliases_keep_undefined_filtering(
-    backend: None, private_first: bool
+@pytest.mark.parametrize("undefined", [False, True])
+@pytest.mark.parametrize("subclassed", [False, True])
+def test_pydantic_private_views_preserve_outer_dictionary_values(
+    backend: None, private_first: bool, undefined: bool, subclassed: bool
 ) -> None:
     pydantic = require_backend("pydantic")
     pydantic_core = require_backend("pydantic_core")
@@ -320,7 +321,15 @@ def test_pydantic_private_dict_aliases_keep_undefined_filtering(
     record = Record()
     record._cache = shared
     private = record.__pydantic_private__
-    private["undefined"] = pydantic_core.PydanticUndefined
+    if subclassed:
+
+        class PrivateMap(dict):
+            pass
+
+        private = PrivateMap(private)
+        object.__setattr__(record, "__pydantic_private__", private)
+    if undefined:
+        private["undefined"] = pydantic_core.PydanticUndefined
     source = [private, record, shared] if private_first else [record, private, shared]
 
     actual = clone.deep(source)
@@ -328,11 +337,21 @@ def test_pydantic_private_dict_aliases_keep_undefined_filtering(
     outside = actual[0] if private_first else actual[1]
 
     assert copied is not record
-    assert copied.__pydantic_private__ is outside
-    assert "undefined" not in outside
+    assert type(outside) is type(private)
+    assert type(copied.__pydantic_private__) is dict
+    assert "undefined" not in copied.__pydantic_private__
+    if undefined or subclassed:
+        assert copied.__pydantic_private__ is not outside
+    else:
+        assert copied.__pydantic_private__ is outside
+    if undefined:
+        assert outside["undefined"] is pydantic_core.PydanticUndefined
+    else:
+        assert "undefined" not in outside
     assert outside["_cache"] is copied._cache is actual[2]
     assert actual[2] is not shared
-    assert private["undefined"] is pydantic_core.PydanticUndefined
+    if undefined:
+        assert private["undefined"] is pydantic_core.PydanticUndefined
 
 
 @pytest.mark.parametrize("foreign_first", [False, True])
@@ -360,3 +379,37 @@ def test_immutable_temporal_timezone_aliases_cross_foreign_copy_boundaries(
     assert copied is not foreign
     assert temporal.tzinfo is copied.zone
     assert temporal == value
+
+
+@pytest.mark.parametrize("private_first", [False, True])
+def test_pydantic_private_parent_memo_is_restored_after_a_descendant_override(
+    backend: None, private_first: bool
+) -> None:
+    pydantic = require_backend("pydantic")
+    calls = 0
+    private: Any = None
+
+    class Hook:
+        def __deepcopy__(self, memo: dict[int, Any]) -> list[int]:
+            nonlocal calls
+            calls += 1
+            memo[id(private)] = ["override"]
+            return [7]
+
+    class Record(pydantic.BaseModel):
+        _cache: Any = pydantic.PrivateAttr()
+
+    record = Record()
+    record._cache = Hook()
+    private = record.__pydantic_private__
+    source = [private, record] if private_first else [record, private]
+
+    actual = clone.deep(source)
+    copied = actual[1] if private_first else actual[0]
+    outside = actual[0] if private_first else actual[1]
+
+    assert type(outside) is dict
+    assert copied.__pydantic_private__ is outside
+    assert outside == {"_cache": [7]}
+    assert calls == 1
+    assert type(private["_cache"]) is Hook

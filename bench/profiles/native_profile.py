@@ -163,6 +163,7 @@ def _workloads(clone: Any, fuzz: Any) -> list[Workload]:
             [{"id": i, "name": "東京", "score": 1.5} for i in range(500)],
         ),
         ("mixed-custom-fallback", {"data": [1, 2], "custom": Custom()}),
+        ("dataclass-root", Record("root", [1, 2])),
         (
             "dataclass-records",
             [Record("row", [i, i + 1]) for i in range(200)],
@@ -356,7 +357,7 @@ def _assert_native_execution(profile: dict[str, Any]) -> dict[str, int]:
     }
     for module, function in (
         (_NATIVE_NAMES[0], "clone_graph"),
-        (_NATIVE_NAMES[0], "clone_dataclass"),
+        (_NATIVE_NAMES[0], "clone_walk_graph"),
         (_NATIVE_NAMES[1], "distance"),
         (_NATIVE_NAMES[1], "jaro"),
     ):
@@ -392,6 +393,7 @@ def _native_results(
     try:
         for module, attribute, name in (
             (clone, "_native_graph", "graph"),
+            (clone, "_native_walk_graph", "walk"),
             (clone, "_native_dataclass", "dataclass"),
             (fuzz, "_native_distance", "distance"),
             (fuzz, "_native_jaro", "jaro"),
@@ -445,14 +447,16 @@ def _checked_routes(
                 )
             elif case.name.startswith("clone.deep/dataclass-"):
                 valid = (
-                    any("_clone_native.clone_dataclass>" in name for name in c_calls)
-                    and completed.get("dataclass", False)
-                    and outcomes.get("graph") == [False, False, False]
-                    and bool(python_calls.get("_walk"))
+                    any("_clone_native.clone_walk_graph>" in name for name in c_calls)
+                    and completed.get("walk", False)
+                    and not python_calls.get("_walk")
                 )
             elif fallback:
-                valid = bool(python_calls.get("_walk")) and not any(
-                    any(results) for results in outcomes.values()
+                valid = (
+                    any("_clone_native.clone_walk_graph>" in name for name in c_calls)
+                    and completed.get("walk", False)
+                    and bool(python_calls.get("_foreign"))
+                    and bool(python_calls.get("deepcopy"))
                 )
             else:
                 valid = (
@@ -475,7 +479,13 @@ def _checked_routes(
             msg = f"unexpected native/fallback route: {case.name}"
             raise AssertionError(msg)
         routes[case.name] = {
-            "expected": "python fallback" if fallback else "native kernel",
+            "expected": (
+                "native walk with Python foreign nodes"
+                if case.name == "clone.deep/mixed-custom-fallback"
+                else "python fallback"
+                if fallback
+                else "native kernel"
+            ),
             "c_calls": c_calls,
             "native_returns": {
                 name: list(results) for name, results in outcomes.items()
@@ -519,6 +529,11 @@ def _bundle(source: Path, label: str, *, require_native: bool) -> dict[str, Any]
         "signatures": _signatures(clone, fuzz),
         "installed_signatures": installed_signatures,
         "installed_text_selection": selected,
+        "clone_alias_contract": (
+            "preserved"
+            if "memo" in inspect.signature(clone._walk).parameters
+            else "expanded"
+        ),
         "measured_text_selection": "base-install wrappers (rapidfuzz disabled)",
         "native_modules": native,
         "native_execution": execution,

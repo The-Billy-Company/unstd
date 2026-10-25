@@ -22,9 +22,9 @@ def backend(request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatch) -> 
         native = pytest.importorskip("unstd.clone._clone_native")
         monkeypatch.setattr(structural, "_native_clone", native.clone_checked)
     else:
-        monkeypatch.setattr(structural, "_native_clone", None)
-        if hasattr(structural, "_native_records"):
-            monkeypatch.setattr(structural, "_native_records", None)
+        for name in list(vars(structural)):
+            if name.startswith("_native_"):
+                monkeypatch.setattr(structural, name, None)
 
 
 def test_homogeneous_list_recipe_keeps_live_replacement_and_heterogeneous_append(
@@ -316,6 +316,117 @@ def test_dictionary_source_item_lives_through_the_next_mutation_check(
     assert source["replacement"] == [9]
 
 
+@pytest.mark.parametrize(
+    "protocol", ["descriptor", "metaclass-getattr", "metaclass-hash"]
+)
+@pytest.mark.parametrize("mutation", ["clear", "grow"])
+def test_native_recipe_probe_does_not_run_protocol_hooks_before_fetching_the_row(
+    backend: None, protocol: str, mutation: str
+) -> None:
+    source: list[Any] = []
+    armed = False
+    calls: list[str] = []
+    changed = False
+
+    def mutate_once() -> None:
+        nonlocal changed
+        if not changed:
+            changed = True
+            if mutation == "clear":
+                source.clear()
+            else:
+                source.append(Row([3, 4]))
+
+    class Meta(type):
+        def __getattribute__(cls, name: str) -> Any:
+            if armed and protocol == "metaclass-getattr" and name == "__deepcopy__":
+                calls.append("getattr")
+                mutate_once()
+            return super().__getattribute__(name)
+
+        def __hash__(cls) -> int:
+            if armed and protocol == "metaclass-hash":
+                calls.append("hash")
+                mutate_once()
+            return super().__hash__()
+
+    class NullCopy:
+        def __get__(self, instance: object, owner: type) -> None:
+            if armed:
+                calls.append("descriptor")
+                mutate_once()
+            return
+
+    if protocol == "descriptor":
+
+        @dataclasses.dataclass
+        class Row:
+            values: list[int]
+            __deepcopy__ = NullCopy()
+
+    else:
+
+        @dataclasses.dataclass
+        class Row(metaclass=Meta):
+            values: list[int]
+
+    first = Row([1, 2])
+    source.append(first)
+    armed = True
+    actual = clone.deep(source)
+    armed = False
+
+    assert calls
+    assert len(actual) == (1 if mutation == "clear" else 2)
+    if mutation == "clear":
+        assert source == []
+    else:
+        assert len(source) == 2
+        assert type(actual[1]) is Row
+        assert actual[1].values == [3, 4]
+        assert actual[1].values is not source[1].values
+    assert type(actual[0]) is Row
+    assert actual[0] is not first
+    assert actual[0].values == [1, 2]
+    assert actual[0].values is not first.values
+
+
+def test_class_changed_by_admission_keeps_the_already_selected_default_recipe(
+    backend: None,
+) -> None:
+    armed = False
+    current: Any = None
+    copied: list[str] = []
+
+    class NewClass:
+        def __deepcopy__(self, memo: object) -> str:
+            copied.append("new-copy-hook")
+            return "redispatched"
+
+    class ChangeClass:
+        def __get__(self, instance: object, owner: type) -> None:
+            if armed:
+                current.__class__ = NewClass
+
+    @dataclasses.dataclass
+    class Original:
+        values: list[int]
+        __deepcopy__ = ChangeClass()
+
+    current = Original([1, 2])
+    source = [current]
+    armed = True
+    actual = clone.deep(source)
+    armed = False
+
+    assert type(current) is NewClass
+    assert type(actual[0]) is NewClass
+    assert actual[0] is not current
+    assert actual[0].values == [1, 2]
+    assert actual[0].values is not current.values
+    assert copied == []
+
+
 def test_plain_dataclass_state_uses_the_native_record_helper(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -513,8 +624,13 @@ def test_cached_native_record_rechecks_a_replaced_allocator(
     source = Row([1])
     monkeypatch.setattr(structural, "_native_clone", native.clone_checked)
     monkeypatch.setattr(structural, "_native_dataclass", native.clone_dataclass)
-    warm = clone.deep(source)
+    # The public batch walker has its own per-call recipes. Warm this helper's
+    # weak layout cache directly before changing the allocator it admitted.
+    reference = weakref.ref(Row)
+    baseline = sys.getrefcount(reference)
+    warm = native.clone_dataclass(source, {}, structural._walk)
     assert warm.values is not source.values
+    assert sys.getrefcount(reference) > baseline
 
     monkeypatch.setattr(Row, "__new__", staticmethod(allocate))
     memo: dict[int, Any] = {}
@@ -571,11 +687,15 @@ def make_source():
     return transient(object()), weakref.ref(transient)
 
 source, old_class = make_source()
+opaque = source.value
 memo = {}
 calls = []
 
-def walk(state, supplied_memo):
+def walk(node, supplied_memo):
     assert supplied_memo is memo
+    # The continuing native state walk delegates at the unsupported field,
+    # retaining the already allocated twin and the selected source class.
+    assert node is opaque
     calls.append(True)
     source.__class__ = Replacement
     twin = supplied_memo[id(source)]
@@ -585,7 +705,7 @@ def walk(state, supplied_memo):
     for index in range(32):
         temporary = dataclasses.make_dataclass('Churn', [('value', object)])
         temporary(index)
-    return {'value': [9]}
+    return [9]
 
 actual = native.clone_dataclass(source, memo, walk)
 assert calls == [True]

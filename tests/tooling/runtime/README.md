@@ -31,3 +31,9 @@ This module is never imported by the package. It runs during provisioning,
 development/release validation, or explicitly at application startup, with no
 version checks in context creation, handshakes, record processing or other
 crypto operations.
+
+The separate `clone_memory` module builds an isolated native clone audit with
+forced collection, allocation failures or ASan/UBSan. See the
+[clone memory audit instructions](../../suites/product/clone/support/README.md).
+It records compiler/source provenance and preserves instrumentation in child
+processes without overwriting production extensions.

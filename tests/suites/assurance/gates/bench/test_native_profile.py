@@ -58,6 +58,7 @@ def test_workloads_cover_boundaries_fallbacks_and_compatibility() -> None:
         "clone.deep/records200",
         "clone.deep/records500",
         "clone.deep/mixed-custom-fallback",
+        "clone.deep/dataclass-root",
         "clone.deep/dataclass-records",
         "clone.deep/dataclass-wrapped",
         "clone.deep/shared-branch-semantics",
@@ -86,7 +87,7 @@ def test_base_selection_preserves_python_wrappers_and_records_prior_selection() 
 def test_native_proof_requires_each_real_extension_profile_entry() -> None:
     names = [
         "unstd.clone._clone_native.clone_graph",
-        "unstd.clone._clone_native.clone_dataclass",
+        "unstd.clone._clone_native.clone_walk_graph",
         "unstd.text._text_native.distance",
         "unstd.text._text_native.jaro",
     ]
@@ -217,7 +218,8 @@ def test_built_extensions_are_exercised_by_the_public_workloads() -> None:
         "graph": [True, True, True]
     }
     assert result["routes"]["clone.deep/mixed-custom-fallback"]["native_returns"] == {
-        "graph": [False, False, False]
+        "graph": [False, False, False],
+        "walk": [True, True, True],
     }
     cycle = result["routes"]["clone.deep/cycle-fallback"]
     assert cycle["native_returns"] == {}
@@ -225,9 +227,26 @@ def test_built_extensions_are_exercised_by_the_public_workloads() -> None:
     assert cycle["python_calls"]["deepcopy"]
     assert "_walk" not in cycle["python_calls"]
     records = result["routes"]["clone.deep/dataclass-records"]
-    assert records["native_returns"]["dataclass"] == [True] * 600
+    assert records["native_returns"]["walk"] == [True] * 3
     assert records["native_returns"]["graph"] == [False, False, False]
-    assert records["python_calls"]["_walk"]
+    assert "_walk" not in records["python_calls"]
+
+
+def test_clone_routes_are_proven_without_the_optional_text_extension() -> None:
+    native = pytest.importorskip("unstd.clone._clone_native")
+    assert structural._native_walk_graph is native.clone_walk_graph
+    text = SimpleNamespace(**vars(fuzz))
+    _base_text(text)
+    cases = [
+        case
+        for case in _workloads(structural, text)
+        if case.name.startswith("clone.deep/")
+    ]
+    routes = _routes(cases, REPO_ROOT / "src", structural, text)
+    for name in ("dataclass-root", "dataclass-records", "dataclass-wrapped"):
+        route = routes[f"clone.deep/{name}"]
+        assert route["native_returns"]["walk"] == [True] * 3
+        assert "_walk" not in route["python_calls"]
 
 
 def test_cycle_route_rejects_python_walking_before_deepcopy(monkeypatch) -> None:
@@ -240,6 +259,7 @@ def test_cycle_route_rejects_python_walking_before_deepcopy(monkeypatch) -> None
     # The legacy entry point refuses cycles, forcing the recursive Python walk.
     # Equal output cannot qualify that slower route as immediate cycle fallback.
     monkeypatch.setattr(clone, "_native_graph", lambda source: native.clone(source))
+    monkeypatch.setattr(clone, "_native_walk_graph", None)
     cases = [
         case
         for case in _workloads(clone, text)
@@ -258,9 +278,9 @@ def test_cycle_route_rejects_python_walking_before_deepcopy(monkeypatch) -> None
         ("clone", "_native_graph", "clone.deep/small", (object(),)),
         (
             "clone",
-            "_native_dataclass",
+            "_native_walk_graph",
             "clone.deep/dataclass-records",
-            (object(), {}, structural._walk),
+            (object(), structural._walk, structural._record_admit, {}),
         ),
         (
             "text",
@@ -290,7 +310,8 @@ def test_native_call_that_refuses_input_cannot_prove_acceleration(
 
     def refused(*args):
         # The real builtin executes, but the public wrapper must do the work.
-        return native(*unsupported)
+        native(*unsupported)
+        return NotImplemented
 
     monkeypatch.setattr(module, attribute, refused)
     cases = [case for case in _workloads(clone, text) if case.name == workload]
@@ -309,7 +330,7 @@ def test_current_native_calls_cannot_contaminate_python_comparison_baseline() ->
         _bundle(REPO_ROOT / "src", "contaminated_before", require_native=False)
 
 
-@pytest.mark.parametrize("kernel", ["graph", "dataclass"])
+@pytest.mark.parametrize("kernel", ["graph", "dataclass", "walk"])
 def test_secondary_clone_kernel_cannot_hide_in_a_python_only_baseline(
     monkeypatch,
     kernel,
@@ -322,6 +343,10 @@ def test_secondary_clone_kernel_cannot_hide_in_a_python_only_baseline(
         if relative == "clone/structural.py":
             module._native_clone = lambda source: NotImplemented
             module._native_records = None
+            module._native_record_graph = None
+            module._native_walk_graph = (
+                native.clone_walk_graph if kernel == "walk" else None
+            )
             module._native_graph = native.clone_graph if kernel == "graph" else None
             module._native_dataclass = (
                 native.clone_dataclass if kernel == "dataclass" else None

@@ -2,6 +2,7 @@
 
 - [clone-ids-results](clone-ids-results.md)
 - [clone-cpu-results](clone-cpu-results.md) — paired CPU/wall evidence against the previous native implementation
+- [clone-common-cpu-results](clone-common-cpu-results.md) — further common dict/list and dataclass CPU work, measured through public Python entrypoints
 
 See the [evidence index](../README.md) and [benchmark guide](../../README.md).
 

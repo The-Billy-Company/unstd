@@ -1,0 +1,8031 @@
+{
+  "python": "3.13.16 (main, Oct  9 2026, 15:11:24) [Clang 22.1.3 ]",
+  "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+  "rounds": 101,
+  "measurement": "one public clone call plus output destruction",
+  "cold_state": "known class-admission and field caches",
+  "warm_state": "imports, interpreter, allocator and prepared inputs",
+  "cache_reset_timed": false,
+  "gc_enabled_during_measurement": false,
+  "harness_sha256": "31c17caaab775ab450db1174ca6dddc0afd141cc8e3d4d8d2ed679f11de9a14d",
+  "timing_helper_sha256": "ee6c8968965fef626b090479eeaccf362ec9a0ff46b81a7972b585dcb7b12767",
+  "workload_helper_sha256": "daa59b900df3325911fcfe1aa96ee9ebff6dc80d3e54a9a2387ce98bf190c46d",
+  "implementations": {
+    "current": {
+      "source": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/clone/structural.py",
+      "copy_contract": "shared",
+      "source_sha256": "958c02654a63434fd3bdd2cea6a49ae79c64abee05f4f2761f2902257f210942",
+      "snapshot_manifest_sha256": null,
+      "native_source_sha256": "46f14a52dc14c1271683e4a5daf6d9a37ae138409a9b1d8c1dc1521851e24793",
+      "native": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/clone/_clone_native.cpython-313-darwin.so",
+      "native_entrypoint": "clone_checked",
+      "native_graph_entrypoint": "clone_graph",
+      "native_dataclass_entrypoint": "clone_dataclass",
+      "native_dataclass": {
+        "entrypoint": "clone_dataclass",
+        "module": "unstd.clone._clone_native",
+        "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/clone/_clone_native.cpython-313-darwin.so",
+        "source_sha256": "46f14a52dc14c1271683e4a5daf6d9a37ae138409a9b1d8c1dc1521851e24793",
+        "sha256": "f179e8f77ba45fba7b936d84769400699ed7b63ecf5a4ebee14cd1eddb7765aa"
+      },
+      "native_sha256": "f179e8f77ba45fba7b936d84769400699ed7b63ecf5a4ebee14cd1eddb7765aa",
+      "native_records": {
+        "entrypoint": "clone_records",
+        "module": "unstd.clone._clone_native",
+        "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/clone/_clone_native.cpython-313-darwin.so",
+        "source_sha256": "46f14a52dc14c1271683e4a5daf6d9a37ae138409a9b1d8c1dc1521851e24793",
+        "sha256": "f179e8f77ba45fba7b936d84769400699ed7b63ecf5a4ebee14cd1eddb7765aa"
+      },
+      "native_graph": {
+        "entrypoint": "clone_graph",
+        "module": "unstd.clone._clone_native",
+        "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/clone/_clone_native.cpython-313-darwin.so",
+        "source_sha256": "46f14a52dc14c1271683e4a5daf6d9a37ae138409a9b1d8c1dc1521851e24793",
+        "sha256": "f179e8f77ba45fba7b936d84769400699ed7b63ecf5a4ebee14cd1eddb7765aa"
+      },
+      "native_record_graph": {
+        "entrypoint": "clone_record_graph",
+        "module": "unstd.clone._clone_native",
+        "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/clone/_clone_native.cpython-313-darwin.so",
+        "source_sha256": "46f14a52dc14c1271683e4a5daf6d9a37ae138409a9b1d8c1dc1521851e24793",
+        "sha256": "f179e8f77ba45fba7b936d84769400699ed7b63ecf5a4ebee14cd1eddb7765aa"
+      },
+      "native_root_graph": null,
+      "native_walk_graph": {
+        "entrypoint": "clone_walk_graph",
+        "module": "unstd.clone._clone_native",
+        "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/clone/_clone_native.cpython-313-darwin.so",
+        "source_sha256": "46f14a52dc14c1271683e4a5daf6d9a37ae138409a9b1d8c1dc1521851e24793",
+        "sha256": "f179e8f77ba45fba7b936d84769400699ed7b63ecf5a4ebee14cd1eddb7765aa"
+      }
+    },
+    "before": {
+      "source": "/Users/griffinstrier/Billy-Company/unstd/.local/clone-main-finished-before/structural.py",
+      "copy_contract": "shared",
+      "source_sha256": "28016659924a5bfdfefd8a5199aad43697afb4301f0683dd6fcd91d3d258fc3c",
+      "snapshot_manifest_sha256": "c7b8767033b9e0c9da2ed8f9d66ded57521650e7e805ee0dbcb03bda7786dc08",
+      "native_source_sha256": "e1c881d6842a45880a4a70aa02a0c57fae2982eb4f4e6a303da28f1af7d76369",
+      "native": "/Users/griffinstrier/Billy-Company/unstd/.local/clone-main-finished-before/_clone_native.cpython-313-darwin.so",
+      "native_entrypoint": "clone_checked",
+      "native_graph_entrypoint": "clone_graph",
+      "native_dataclass_entrypoint": "clone_dataclass",
+      "native_dataclass": {
+        "entrypoint": "clone_dataclass",
+        "module": "_clone_cpu_cold_before._clone_native",
+        "path": "/Users/griffinstrier/Billy-Company/unstd/.local/clone-main-finished-before/_clone_native.cpython-313-darwin.so",
+        "source_sha256": "e1c881d6842a45880a4a70aa02a0c57fae2982eb4f4e6a303da28f1af7d76369",
+        "sha256": "c1add64066ee0b15c37d8b7d6a0437de4a8d4faa7a26e5ce2dc4e51b77f181f7"
+      },
+      "native_sha256": "c1add64066ee0b15c37d8b7d6a0437de4a8d4faa7a26e5ce2dc4e51b77f181f7",
+      "native_records": {
+        "entrypoint": "clone_records",
+        "module": "_clone_cpu_cold_before._clone_native",
+        "path": "/Users/griffinstrier/Billy-Company/unstd/.local/clone-main-finished-before/_clone_native.cpython-313-darwin.so",
+        "source_sha256": "e1c881d6842a45880a4a70aa02a0c57fae2982eb4f4e6a303da28f1af7d76369",
+        "sha256": "c1add64066ee0b15c37d8b7d6a0437de4a8d4faa7a26e5ce2dc4e51b77f181f7"
+      },
+      "native_graph": {
+        "entrypoint": "clone_graph",
+        "module": "_clone_cpu_cold_before._clone_native",
+        "path": "/Users/griffinstrier/Billy-Company/unstd/.local/clone-main-finished-before/_clone_native.cpython-313-darwin.so",
+        "source_sha256": "e1c881d6842a45880a4a70aa02a0c57fae2982eb4f4e6a303da28f1af7d76369",
+        "sha256": "c1add64066ee0b15c37d8b7d6a0437de4a8d4faa7a26e5ce2dc4e51b77f181f7"
+      },
+      "native_record_graph": null,
+      "native_root_graph": null,
+      "native_walk_graph": null
+    }
+  },
+  "workloads": {
+    "nested-200": {
+      "operation": "deep",
+      "cleared_caches": {
+        "current": [
+          "_NODES",
+          "_RECORDS",
+          "_FIELDS"
+        ],
+        "before": [
+          "_NODES",
+          "_RECORDS",
+          "_FIELDS"
+        ]
+      },
+      "timings": {
+        "current": {
+          "samples": [
+            {
+              "wall_ns": 26083.0,
+              "cpu_ns": 39000.0
+            },
+            {
+              "wall_ns": 22875.0,
+              "cpu_ns": 24000.0
+            },
+            {
+              "wall_ns": 21875.0,
+              "cpu_ns": 22000.0
+            },
+            {
+              "wall_ns": 21708.0,
+              "cpu_ns": 22000.0
+            },
+            {
+              "wall_ns": 20958.0,
+              "cpu_ns": 22000.0
+            },
+            {
+              "wall_ns": 21125.0,
+              "cpu_ns": 21000.0
+            },
+            {
+              "wall_ns": 20833.0,
+              "cpu_ns": 22000.0
+            },
+            {
+              "wall_ns": 20542.0,
+              "cpu_ns": 22000.0
+            },
+            {
+              "wall_ns": 20458.0,
+              "cpu_ns": 21000.0
+            },
+            {
+              "wall_ns": 21000.0,
+              "cpu_ns": 21000.0
+            },
+            {
+              "wall_ns": 21209.0,
+              "cpu_ns": 22000.0
+            },
+            {
+              "wall_ns": 21542.0,
+              "cpu_ns": 22000.0
+            },
+            {
+              "wall_ns": 21250.0,
+              "cpu_ns": 22000.0
+            },
+            {
+              "wall_ns": 20459.0,
+              "cpu_ns": 22000.0
+            },
+            {
+              "wall_ns": 20500.0,
+              "cpu_ns": 21000.0
+            },
+            {
+              "wall_ns": 20458.0,
+              "cpu_ns": 21000.0
+            },
+            {
+              "wall_ns": 20459.0,
+              "cpu_ns": 20000.0
+            },
+            {
+              "wall_ns": 20625.0,
+              "cpu_ns": 21000.0
+            },
+            {
+              "wall_ns": 20541.0,
+              "cpu_ns": 20000.0
+            },
+            {
+              "wall_ns": 21833.0,
+              "cpu_ns": 22000.0
+            },
+            {
+              "wall_ns": 21458.0,
+              "cpu_ns": 21000.0
+            },
+            {
+              "wall_ns": 20917.0,
+              "cpu_ns": 21000.0
+            },
+            {
+              "wall_ns": 21541.0,
+              "cpu_ns": 23000.0
+            },
+            {
+              "wall_ns": 20708.0,
+              "cpu_ns": 22000.0
+            },
+            {
+              "wall_ns": 21542.0,
+              "cpu_ns": 22000.0
+            },
+            {
+              "wall_ns": 21000.0,
+              "cpu_ns": 23000.0
+            },
+            {
+              "wall_ns": 21417.0,
+              "cpu_ns": 21000.0
+            },
+            {
+              "wall_ns": 21209.0,
+              "cpu_ns": 22000.0
+            },
+            {
+              "wall_ns": 20625.0,
+              "cpu_ns": 22000.0
+            },
+            {
+              "wall_ns": 21042.0,
+              "cpu_ns": 22000.0
+            },
+            {
+              "wall_ns": 21542.0,
+              "cpu_ns": 22000.0
+            },
+            {
+              "wall_ns": 21959.0,
+              "cpu_ns": 22000.0
+            },
+            {
+              "wall_ns": 21750.0,
+              "cpu_ns": 22000.0
+            },
+            {
+              "wall_ns": 21250.0,
+              "cpu_ns": 22000.0
+            },
+            {
+              "wall_ns": 20584.0,
+              "cpu_ns": 21000.0
+            },
+            {
+              "wall_ns": 20875.0,
+              "cpu_ns": 21000.0
+            },
+            {
+              "wall_ns": 20417.0,
+              "cpu_ns": 22000.0
+            },
+            {
+              "wall_ns": 20791.0,
+              "cpu_ns": 21000.0
+            },
+            {
+              "wall_ns": 21542.0,
+              "cpu_ns": 22000.0
+            },
+            {
+              "wall_ns": 20875.0,
+              "cpu_ns": 21000.0
+            },
+            {
+              "wall_ns": 20917.0,
+              "cpu_ns": 21000.0
+            },
+            {
+              "wall_ns": 20791.0,
+              "cpu_ns": 21000.0
+            },
+            {
+              "wall_ns": 20834.0,
+              "cpu_ns": 21000.0
+            },
+            {
+              "wall_ns": 30708.0,
+              "cpu_ns": 30000.0
+            },
+            {
+              "wall_ns": 24750.0,
+              "cpu_ns": 26000.0
+            },
+            {
+              "wall_ns": 23833.0,
+              "cpu_ns": 25000.0
+            },
+            {
+              "wall_ns": 22917.0,
+              "cpu_ns": 24000.0
+            },
+            {
+              "wall_ns": 22458.0,
+              "cpu_ns": 23000.0
+            },
+            {
+              "wall_ns": 22125.0,
+              "cpu_ns": 22000.0
+            },
+            {
+              "wall_ns": 22458.0,
+              "cpu_ns": 23000.0
+            },
+            {
+              "wall_ns": 22792.0,
+              "cpu_ns": 23000.0
+            },
+            {
+              "wall_ns": 22083.0,
+              "cpu_ns": 23000.0
+            },
+            {
+              "wall_ns": 22083.0,
+              "cpu_ns": 23000.0
+            },
+            {
+              "wall_ns": 23541.0,
+              "cpu_ns": 25000.0
+            },
+            {
+              "wall_ns": 22541.0,
+              "cpu_ns": 22000.0
+            },
+            {
+              "wall_ns": 22250.0,
+              "cpu_ns": 22000.0
+            },
+            {
+              "wall_ns": 21000.0,
+              "cpu_ns": 21000.0
+            },
+            {
+              "wall_ns": 21167.0,
+              "cpu_ns": 22000.0
+            },
+            {
+              "wall_ns": 21042.0,
+              "cpu_ns": 22000.0
+            },
+            {
+              "wall_ns": 21042.0,
+              "cpu_ns": 21000.0
+            },
+            {
+              "wall_ns": 20958.0,
+              "cpu_ns": 22000.0
+            },
+            {
+              "wall_ns": 21750.0,
+              "cpu_ns": 23000.0
+            },
+            {
+              "wall_ns": 20834.0,
+              "cpu_ns": 21000.0
+            },
+            {
+              "wall_ns": 21583.0,
+              "cpu_ns": 21000.0
+            },
+            {
+              "wall_ns": 21625.0,
+              "cpu_ns": 22000.0
+            },
+            {
+              "wall_ns": 20500.0,
+              "cpu_ns": 21000.0
+            },
+            {
+              "wall_ns": 21375.0,
+              "cpu_ns": 22000.0
+            },
+            {
+              "wall_ns": 21167.0,
+              "cpu_ns": 21000.0
+            },
+            {
+              "wall_ns": 21042.0,
+              "cpu_ns": 21000.0
+            },
+            {
+              "wall_ns": 21416.0,
+              "cpu_ns": 22000.0
+            },
+            {
+              "wall_ns": 21000.0,
+              "cpu_ns": 21000.0
+            },
+            {
+              "wall_ns": 21500.0,
+              "cpu_ns": 22000.0
+            },
+            {
+              "wall_ns": 20500.0,
+              "cpu_ns": 21000.0
+            },
+            {
+              "wall_ns": 21167.0,
+              "cpu_ns": 21000.0
+            },
+            {
+              "wall_ns": 20708.0,
+              "cpu_ns": 21000.0
+            },
+            {
+              "wall_ns": 20375.0,
+              "cpu_ns": 21000.0
+            },
+            {
+              "wall_ns": 20625.0,
+              "cpu_ns": 21000.0
+            },
+            {
+              "wall_ns": 20667.0,
+              "cpu_ns": 21000.0
+            },
+            {
+              "wall_ns": 21292.0,
+              "cpu_ns": 22000.0
+            },
+            {
+              "wall_ns": 21375.0,
+              "cpu_ns": 22000.0
+            },
+            {
+              "wall_ns": 20708.0,
+              "cpu_ns": 21000.0
+            },
+            {
+              "wall_ns": 21875.0,
+              "cpu_ns": 22000.0
+            },
+            {
+              "wall_ns": 20750.0,
+              "cpu_ns": 22000.0
+            },
+            {
+              "wall_ns": 21417.0,
+              "cpu_ns": 22000.0
+            },
+            {
+              "wall_ns": 20500.0,
+              "cpu_ns": 21000.0
+            },
+            {
+              "wall_ns": 21375.0,
+              "cpu_ns": 21000.0
+            },
+            {
+              "wall_ns": 20916.0,
+              "cpu_ns": 23000.0
+            },
+            {
+              "wall_ns": 20875.0,
+              "cpu_ns": 21000.0
+            },
+            {
+              "wall_ns": 21125.0,
+              "cpu_ns": 21000.0
+            },
+            {
+              "wall_ns": 20958.0,
+              "cpu_ns": 21000.0
+            },
+            {
+              "wall_ns": 20500.0,
+              "cpu_ns": 22000.0
+            },
+            {
+              "wall_ns": 20416.0,
+              "cpu_ns": 22000.0
+            },
+            {
+              "wall_ns": 20250.0,
+              "cpu_ns": 20000.0
+            },
+            {
+              "wall_ns": 21375.0,
+              "cpu_ns": 21000.0
+            },
+            {
+              "wall_ns": 20500.0,
+              "cpu_ns": 22000.0
+            },
+            {
+              "wall_ns": 20709.0,
+              "cpu_ns": 21000.0
+            },
+            {
+              "wall_ns": 20334.0,
+              "cpu_ns": 20000.0
+            },
+            {
+              "wall_ns": 20458.0,
+              "cpu_ns": 21000.0
+            },
+            {
+              "wall_ns": 20666.0,
+              "cpu_ns": 22000.0
+            },
+            {
+              "wall_ns": 20625.0,
+              "cpu_ns": 21000.0
+            },
+            {
+              "wall_ns": 20916.0,
+              "cpu_ns": 21000.0
+            }
+          ],
+          "median_cpu_ns": 22000.0,
+          "median_wall_ns": 21042.0,
+          "min_cpu_ns": 20000.0,
+          "min_wall_ns": 20250.0
+        },
+        "before": {
+          "samples": [
+            {
+              "wall_ns": 20584.0,
+              "cpu_ns": 22000.0
+            },
+            {
+              "wall_ns": 20417.0,
+              "cpu_ns": 21000.0
+            },
+            {
+              "wall_ns": 18542.0,
+              "cpu_ns": 19000.0
+            },
+            {
+              "wall_ns": 19167.0,
+              "cpu_ns": 20000.0
+            },
+            {
+              "wall_ns": 18333.0,
+              "cpu_ns": 18000.0
+            },
+            {
+              "wall_ns": 18375.0,
+              "cpu_ns": 20000.0
+            },
+            {
+              "wall_ns": 18084.0,
+              "cpu_ns": 19000.0
+            },
+            {
+              "wall_ns": 18375.0,
+              "cpu_ns": 19000.0
+            },
+            {
+              "wall_ns": 18958.0,
+              "cpu_ns": 19000.0
+            },
+            {
+              "wall_ns": 19625.0,
+              "cpu_ns": 20000.0
+            },
+            {
+              "wall_ns": 18709.0,
+              "cpu_ns": 19000.0
+            },
+            {
+              "wall_ns": 18666.0,
+              "cpu_ns": 20000.0
+            },
+            {
+              "wall_ns": 18542.0,
+              "cpu_ns": 18000.0
+            },
+            {
+              "wall_ns": 18750.0,
+              "cpu_ns": 19000.0
+            },
+            {
+              "wall_ns": 18292.0,
+              "cpu_ns": 19000.0
+            },
+            {
+              "wall_ns": 18708.0,
+              "cpu_ns": 20000.0
+            },
+            {
+              "wall_ns": 18875.0,
+              "cpu_ns": 20000.0
+            },
+            {
+              "wall_ns": 18209.0,
+              "cpu_ns": 18000.0
+            },
+            {
+              "wall_ns": 18292.0,
+              "cpu_ns": 19000.0
+            },
+            {
+              "wall_ns": 18458.0,
+              "cpu_ns": 18000.0
+            },
+            {
+              "wall_ns": 18583.0,
+              "cpu_ns": 19000.0
+            },
+            {
+              "wall_ns": 18750.0,
+              "cpu_ns": 19000.0
+            },
+            {
+              "wall_ns": 18209.0,
+              "cpu_ns": 18000.0
+            },
+            {
+              "wall_ns": 18709.0,
+              "cpu_ns": 19000.0
+            },
+            {
+              "wall_ns": 19250.0,
+              "cpu_ns": 19000.0
+            },
+            {
+              "wall_ns": 19458.0,
+              "cpu_ns": 19000.0
+            },
+            {
+              "wall_ns": 18458.0,
+              "cpu_ns": 20000.0
+            },
+            {
+              "wall_ns": 18709.0,
+              "cpu_ns": 20000.0
+            },
+            {
+              "wall_ns": 18625.0,
+              "cpu_ns": 19000.0
+            },
+            {
+              "wall_ns": 18416.0,
+              "cpu_ns": 19000.0
+            },
+            {
+              "wall_ns": 18416.0,
+              "cpu_ns": 19000.0
+            },
+            {
+              "wall_ns": 18667.0,
+              "cpu_ns": 19000.0
+            },
+            {
+              "wall_ns": 18792.0,
+              "cpu_ns": 19000.0
+            },
+            {
+              "wall_ns": 18500.0,
+              "cpu_ns": 19000.0
+            },
+            {
+              "wall_ns": 18334.0,
+              "cpu_ns": 19000.0
+            },
+            {
+              "wall_ns": 18375.0,
+              "cpu_ns": 20000.0
+            },
+            {
+              "wall_ns": 18250.0,
+              "cpu_ns": 19000.0
+            },
+            {
+              "wall_ns": 19458.0,
+              "cpu_ns": 20000.0
+            },
+            {
+              "wall_ns": 18541.0,
+              "cpu_ns": 20000.0
+            },
+            {
+              "wall_ns": 18667.0,
+              "cpu_ns": 19000.0
+            },
+            {
+              "wall_ns": 19125.0,
+              "cpu_ns": 19000.0
+            },
+            {
+              "wall_ns": 19417.0,
+              "cpu_ns": 20000.0
+            },
+            {
+              "wall_ns": 19375.0,
+              "cpu_ns": 20000.0
+            },
+            {
+              "wall_ns": 26416.0,
+              "cpu_ns": 26000.0
+            },
+            {
+              "wall_ns": 20333.0,
+              "cpu_ns": 21000.0
+            },
+            {
+              "wall_ns": 19833.0,
+              "cpu_ns": 20000.0
+            },
+            {
+              "wall_ns": 19541.0,
+              "cpu_ns": 20000.0
+            },
+            {
+              "wall_ns": 19500.0,
+              "cpu_ns": 19000.0
+            },
+            {
+              "wall_ns": 19083.0,
+              "cpu_ns": 21000.0
+            },
+            {
+              "wall_ns": 19583.0,
+              "cpu_ns": 20000.0
+            },
+            {
+              "wall_ns": 19625.0,
+              "cpu_ns": 21000.0
+            },
+            {
+              "wall_ns": 19542.0,
+              "cpu_ns": 19000.0
+            },
+            {
+              "wall_ns": 19333.0,
+              "cpu_ns": 20000.0
+            },
+            {
+              "wall_ns": 20875.0,
+              "cpu_ns": 21000.0
+            },
+            {
+              "wall_ns": 19292.0,
+              "cpu_ns": 20000.0
+            },
+            {
+              "wall_ns": 19375.0,
+              "cpu_ns": 21000.0
+            },
+            {
+              "wall_ns": 19833.0,
+              "cpu_ns": 20000.0
+            },
+            {
+              "wall_ns": 18666.0,
+              "cpu_ns": 19000.0
+            },
+            {
+              "wall_ns": 19000.0,
+              "cpu_ns": 20000.0
+            },
+            {
+              "wall_ns": 18708.0,
+              "cpu_ns": 19000.0
+            },
+            {
+              "wall_ns": 18417.0,
+              "cpu_ns": 18000.0
+            },
+            {
+              "wall_ns": 18958.0,
+              "cpu_ns": 19000.0
+            },
+            {
+              "wall_ns": 18166.0,
+              "cpu_ns": 19000.0
+            },
+            {
+              "wall_ns": 18500.0,
+              "cpu_ns": 20000.0
+            },
+            {
+              "wall_ns": 18416.0,
+              "cpu_ns": 18000.0
+            },
+            {
+              "wall_ns": 18833.0,
+              "cpu_ns": 19000.0
+            },
+            {
+              "wall_ns": 18708.0,
+              "cpu_ns": 20000.0
+            },
+            {
+              "wall_ns": 18791.0,
+              "cpu_ns": 19000.0
+            },
+            {
+              "wall_ns": 18333.0,
+              "cpu_ns": 18000.0
+            },
+            {
+              "wall_ns": 18583.0,
+              "cpu_ns": 20000.0
+            },
+            {
+              "wall_ns": 18250.0,
+              "cpu_ns": 18000.0
+            },
+            {
+              "wall_ns": 18583.0,
+              "cpu_ns": 19000.0
+            },
+            {
+              "wall_ns": 18666.0,
+              "cpu_ns": 20000.0
+            },
+            {
+              "wall_ns": 18500.0,
+              "cpu_ns": 19000.0
+            },
+            {
+              "wall_ns": 19167.0,
+              "cpu_ns": 19000.0
+            },
+            {
+              "wall_ns": 18458.0,
+              "cpu_ns": 19000.0
+            },
+            {
+              "wall_ns": 18291.0,
+              "cpu_ns": 19000.0
+            },
+            {
+              "wall_ns": 19250.0,
+              "cpu_ns": 20000.0
+            },
+            {
+              "wall_ns": 18458.0,
+              "cpu_ns": 19000.0
+            },
+            {
+              "wall_ns": 18500.0,
+              "cpu_ns": 19000.0
+            },
+            {
+              "wall_ns": 19583.0,
+              "cpu_ns": 20000.0
+            },
+            {
+              "wall_ns": 18500.0,
+              "cpu_ns": 19000.0
+            },
+            {
+              "wall_ns": 18375.0,
+              "cpu_ns": 18000.0
+            },
+            {
+              "wall_ns": 19250.0,
+              "cpu_ns": 19000.0
+            },
+            {
+              "wall_ns": 18625.0,
+              "cpu_ns": 19000.0
+            },
+            {
+              "wall_ns": 18500.0,
+              "cpu_ns": 19000.0
+            },
+            {
+              "wall_ns": 19167.0,
+              "cpu_ns": 20000.0
+            },
+            {
+              "wall_ns": 19375.0,
+              "cpu_ns": 21000.0
+            },
+            {
+              "wall_ns": 18459.0,
+              "cpu_ns": 19000.0
+            },
+            {
+              "wall_ns": 18792.0,
+              "cpu_ns": 19000.0
+            },
+            {
+              "wall_ns": 18166.0,
+              "cpu_ns": 18000.0
+            },
+            {
+              "wall_ns": 18209.0,
+              "cpu_ns": 18000.0
+            },
+            {
+              "wall_ns": 18042.0,
+              "cpu_ns": 18000.0
+            },
+            {
+              "wall_ns": 18417.0,
+              "cpu_ns": 20000.0
+            },
+            {
+              "wall_ns": 18333.0,
+              "cpu_ns": 18000.0
+            },
+            {
+              "wall_ns": 18583.0,
+              "cpu_ns": 19000.0
+            },
+            {
+              "wall_ns": 18416.0,
+              "cpu_ns": 20000.0
+            },
+            {
+              "wall_ns": 18542.0,
+              "cpu_ns": 18000.0
+            },
+            {
+              "wall_ns": 18292.0,
+              "cpu_ns": 18000.0
+            },
+            {
+              "wall_ns": 19042.0,
+              "cpu_ns": 19000.0
+            },
+            {
+              "wall_ns": 18334.0,
+              "cpu_ns": 19000.0
+            }
+          ],
+          "median_cpu_ns": 19000.0,
+          "median_wall_ns": 18666.0,
+          "min_cpu_ns": 18000.0,
+          "min_wall_ns": 18042.0
+        },
+        "stdlib": {
+          "samples": [
+            {
+              "wall_ns": 199709.0,
+              "cpu_ns": 200000.0
+            },
+            {
+              "wall_ns": 191042.0,
+              "cpu_ns": 191000.0
+            },
+            {
+              "wall_ns": 192417.0,
+              "cpu_ns": 193000.0
+            },
+            {
+              "wall_ns": 188000.0,
+              "cpu_ns": 190000.0
+            },
+            {
+              "wall_ns": 192458.0,
+              "cpu_ns": 193000.0
+            },
+            {
+              "wall_ns": 187334.0,
+              "cpu_ns": 187000.0
+            },
+            {
+              "wall_ns": 192167.0,
+              "cpu_ns": 192000.0
+            },
+            {
+              "wall_ns": 186875.0,
+              "cpu_ns": 187000.0
+            },
+            {
+              "wall_ns": 188083.0,
+              "cpu_ns": 189000.0
+            },
+            {
+              "wall_ns": 187500.0,
+              "cpu_ns": 188000.0
+            },
+            {
+              "wall_ns": 189750.0,
+              "cpu_ns": 190000.0
+            },
+            {
+              "wall_ns": 186666.0,
+              "cpu_ns": 187000.0
+            },
+            {
+              "wall_ns": 186625.0,
+              "cpu_ns": 186000.0
+            },
+            {
+              "wall_ns": 186125.0,
+              "cpu_ns": 186000.0
+            },
+            {
+              "wall_ns": 186541.0,
+              "cpu_ns": 187000.0
+            },
+            {
+              "wall_ns": 185708.0,
+              "cpu_ns": 186000.0
+            },
+            {
+              "wall_ns": 185292.0,
+              "cpu_ns": 186000.0
+            },
+            {
+              "wall_ns": 184000.0,
+              "cpu_ns": 185000.0
+            },
+            {
+              "wall_ns": 184208.0,
+              "cpu_ns": 185000.0
+            },
+            {
+              "wall_ns": 185667.0,
+              "cpu_ns": 186000.0
+            },
+            {
+              "wall_ns": 186583.0,
+              "cpu_ns": 187000.0
+            },
+            {
+              "wall_ns": 189375.0,
+              "cpu_ns": 190000.0
+            },
+            {
+              "wall_ns": 187250.0,
+              "cpu_ns": 187000.0
+            },
+            {
+              "wall_ns": 187708.0,
+              "cpu_ns": 188000.0
+            },
+            {
+              "wall_ns": 188375.0,
+              "cpu_ns": 189000.0
+            },
+            {
+              "wall_ns": 187625.0,
+              "cpu_ns": 188000.0
+            },
+            {
+              "wall_ns": 186875.0,
+              "cpu_ns": 187000.0
+            },
+            {
+              "wall_ns": 184750.0,
+              "cpu_ns": 184000.0
+            },
+            {
+              "wall_ns": 184625.0,
+              "cpu_ns": 185000.0
+            },
+            {
+              "wall_ns": 186833.0,
+              "cpu_ns": 188000.0
+            },
+            {
+              "wall_ns": 189250.0,
+              "cpu_ns": 189000.0
+            },
+            {
+              "wall_ns": 188833.0,
+              "cpu_ns": 189000.0
+            },
+            {
+              "wall_ns": 186375.0,
+              "cpu_ns": 186000.0
+            },
+            {
+              "wall_ns": 182458.0,
+              "cpu_ns": 182000.0
+            },
+            {
+              "wall_ns": 184167.0,
+              "cpu_ns": 184000.0
+            },
+            {
+              "wall_ns": 183542.0,
+              "cpu_ns": 183000.0
+            },
+            {
+              "wall_ns": 189291.0,
+              "cpu_ns": 191000.0
+            },
+            {
+              "wall_ns": 188000.0,
+              "cpu_ns": 188000.0
+            },
+            {
+              "wall_ns": 190667.0,
+              "cpu_ns": 191000.0
+            },
+            {
+              "wall_ns": 189166.0,
+              "cpu_ns": 190000.0
+            },
+            {
+              "wall_ns": 191083.0,
+              "cpu_ns": 193000.0
+            },
+            {
+              "wall_ns": 187833.0,
+              "cpu_ns": 188000.0
+            },
+            {
+              "wall_ns": 185833.0,
+              "cpu_ns": 186000.0
+            },
+            {
+              "wall_ns": 206583.0,
+              "cpu_ns": 203000.0
+            },
+            {
+              "wall_ns": 195917.0,
+              "cpu_ns": 196000.0
+            },
+            {
+              "wall_ns": 191583.0,
+              "cpu_ns": 192000.0
+            },
+            {
+              "wall_ns": 187084.0,
+              "cpu_ns": 188000.0
+            },
+            {
+              "wall_ns": 183833.0,
+              "cpu_ns": 184000.0
+            },
+            {
+              "wall_ns": 184417.0,
+              "cpu_ns": 184000.0
+            },
+            {
+              "wall_ns": 189209.0,
+              "cpu_ns": 189000.0
+            },
+            {
+              "wall_ns": 189583.0,
+              "cpu_ns": 190000.0
+            },
+            {
+              "wall_ns": 183958.0,
+              "cpu_ns": 185000.0
+            },
+            {
+              "wall_ns": 189334.0,
+              "cpu_ns": 191000.0
+            },
+            {
+              "wall_ns": 185458.0,
+              "cpu_ns": 185000.0
+            },
+            {
+              "wall_ns": 186875.0,
+              "cpu_ns": 187000.0
+            },
+            {
+              "wall_ns": 189375.0,
+              "cpu_ns": 189000.0
+            },
+            {
+              "wall_ns": 186416.0,
+              "cpu_ns": 187000.0
+            },
+            {
+              "wall_ns": 184542.0,
+              "cpu_ns": 186000.0
+            },
+            {
+              "wall_ns": 186000.0,
+              "cpu_ns": 186000.0
+            },
+            {
+              "wall_ns": 182333.0,
+              "cpu_ns": 183000.0
+            },
+            {
+              "wall_ns": 184708.0,
+              "cpu_ns": 185000.0
+            },
+            {
+              "wall_ns": 185958.0,
+              "cpu_ns": 187000.0
+            },
+            {
+              "wall_ns": 185583.0,
+              "cpu_ns": 186000.0
+            },
+            {
+              "wall_ns": 181750.0,
+              "cpu_ns": 182000.0
+            },
+            {
+              "wall_ns": 186375.0,
+              "cpu_ns": 187000.0
+            },
+            {
+              "wall_ns": 183875.0,
+              "cpu_ns": 184000.0
+            },
+            {
+              "wall_ns": 185459.0,
+              "cpu_ns": 185000.0
+            },
+            {
+              "wall_ns": 182708.0,
+              "cpu_ns": 184000.0
+            },
+            {
+              "wall_ns": 185916.0,
+              "cpu_ns": 188000.0
+            },
+            {
+              "wall_ns": 183041.0,
+              "cpu_ns": 183000.0
+            },
+            {
+              "wall_ns": 184084.0,
+              "cpu_ns": 184000.0
+            },
+            {
+              "wall_ns": 182791.0,
+              "cpu_ns": 183000.0
+            },
+            {
+              "wall_ns": 182875.0,
+              "cpu_ns": 183000.0
+            },
+            {
+              "wall_ns": 182542.0,
+              "cpu_ns": 183000.0
+            },
+            {
+              "wall_ns": 183833.0,
+              "cpu_ns": 185000.0
+            },
+            {
+              "wall_ns": 182208.0,
+              "cpu_ns": 183000.0
+            },
+            {
+              "wall_ns": 183334.0,
+              "cpu_ns": 184000.0
+            },
+            {
+              "wall_ns": 181625.0,
+              "cpu_ns": 182000.0
+            },
+            {
+              "wall_ns": 186375.0,
+              "cpu_ns": 188000.0
+            },
+            {
+              "wall_ns": 183000.0,
+              "cpu_ns": 183000.0
+            },
+            {
+              "wall_ns": 181875.0,
+              "cpu_ns": 182000.0
+            },
+            {
+              "wall_ns": 180458.0,
+              "cpu_ns": 181000.0
+            },
+            {
+              "wall_ns": 185167.0,
+              "cpu_ns": 186000.0
+            },
+            {
+              "wall_ns": 182542.0,
+              "cpu_ns": 183000.0
+            },
+            {
+              "wall_ns": 182500.0,
+              "cpu_ns": 182000.0
+            },
+            {
+              "wall_ns": 183333.0,
+              "cpu_ns": 183000.0
+            },
+            {
+              "wall_ns": 187875.0,
+              "cpu_ns": 188000.0
+            },
+            {
+              "wall_ns": 182042.0,
+              "cpu_ns": 182000.0
+            },
+            {
+              "wall_ns": 184042.0,
+              "cpu_ns": 184000.0
+            },
+            {
+              "wall_ns": 181541.0,
+              "cpu_ns": 182000.0
+            },
+            {
+              "wall_ns": 180625.0,
+              "cpu_ns": 181000.0
+            },
+            {
+              "wall_ns": 181250.0,
+              "cpu_ns": 181000.0
+            },
+            {
+              "wall_ns": 183916.0,
+              "cpu_ns": 184000.0
+            },
+            {
+              "wall_ns": 185041.0,
+              "cpu_ns": 185000.0
+            },
+            {
+              "wall_ns": 181459.0,
+              "cpu_ns": 182000.0
+            },
+            {
+              "wall_ns": 178208.0,
+              "cpu_ns": 178000.0
+            },
+            {
+              "wall_ns": 181458.0,
+              "cpu_ns": 182000.0
+            },
+            {
+              "wall_ns": 180333.0,
+              "cpu_ns": 181000.0
+            },
+            {
+              "wall_ns": 183458.0,
+              "cpu_ns": 184000.0
+            },
+            {
+              "wall_ns": 179792.0,
+              "cpu_ns": 180000.0
+            },
+            {
+              "wall_ns": 186500.0,
+              "cpu_ns": 186000.0
+            }
+          ],
+          "median_cpu_ns": 186000.0,
+          "median_wall_ns": 185708.0,
+          "min_cpu_ns": 178000.0,
+          "min_wall_ns": 178208.0
+        }
+      }
+    },
+    "dataclasses-200": {
+      "operation": "deep",
+      "cleared_caches": {
+        "current": [
+          "_NODES",
+          "_RECORDS",
+          "_FIELDS"
+        ],
+        "before": [
+          "_NODES",
+          "_RECORDS",
+          "_FIELDS"
+        ]
+      },
+      "timings": {
+        "current": {
+          "samples": [
+            {
+              "wall_ns": 79500.0,
+              "cpu_ns": 81000.0
+            },
+            {
+              "wall_ns": 68333.0,
+              "cpu_ns": 69000.0
+            },
+            {
+              "wall_ns": 66709.0,
+              "cpu_ns": 67000.0
+            },
+            {
+              "wall_ns": 64916.0,
+              "cpu_ns": 66000.0
+            },
+            {
+              "wall_ns": 65583.0,
+              "cpu_ns": 66000.0
+            },
+            {
+              "wall_ns": 66000.0,
+              "cpu_ns": 67000.0
+            },
+            {
+              "wall_ns": 63958.0,
+              "cpu_ns": 64000.0
+            },
+            {
+              "wall_ns": 77208.0,
+              "cpu_ns": 77000.0
+            },
+            {
+              "wall_ns": 71000.0,
+              "cpu_ns": 71000.0
+            },
+            {
+              "wall_ns": 71208.0,
+              "cpu_ns": 71000.0
+            },
+            {
+              "wall_ns": 69292.0,
+              "cpu_ns": 71000.0
+            },
+            {
+              "wall_ns": 68542.0,
+              "cpu_ns": 70000.0
+            },
+            {
+              "wall_ns": 66792.0,
+              "cpu_ns": 67000.0
+            },
+            {
+              "wall_ns": 67459.0,
+              "cpu_ns": 68000.0
+            },
+            {
+              "wall_ns": 66250.0,
+              "cpu_ns": 66000.0
+            },
+            {
+              "wall_ns": 67833.0,
+              "cpu_ns": 68000.0
+            },
+            {
+              "wall_ns": 65625.0,
+              "cpu_ns": 66000.0
+            },
+            {
+              "wall_ns": 67792.0,
+              "cpu_ns": 69000.0
+            },
+            {
+              "wall_ns": 66500.0,
+              "cpu_ns": 67000.0
+            },
+            {
+              "wall_ns": 66625.0,
+              "cpu_ns": 67000.0
+            },
+            {
+              "wall_ns": 65583.0,
+              "cpu_ns": 67000.0
+            },
+            {
+              "wall_ns": 66416.0,
+              "cpu_ns": 68000.0
+            },
+            {
+              "wall_ns": 66041.0,
+              "cpu_ns": 66000.0
+            },
+            {
+              "wall_ns": 68458.0,
+              "cpu_ns": 70000.0
+            },
+            {
+              "wall_ns": 84250.0,
+              "cpu_ns": 85000.0
+            },
+            {
+              "wall_ns": 71791.0,
+              "cpu_ns": 72000.0
+            },
+            {
+              "wall_ns": 68625.0,
+              "cpu_ns": 70000.0
+            },
+            {
+              "wall_ns": 68542.0,
+              "cpu_ns": 69000.0
+            },
+            {
+              "wall_ns": 66500.0,
+              "cpu_ns": 66000.0
+            },
+            {
+              "wall_ns": 68333.0,
+              "cpu_ns": 68000.0
+            },
+            {
+              "wall_ns": 66042.0,
+              "cpu_ns": 68000.0
+            },
+            {
+              "wall_ns": 64709.0,
+              "cpu_ns": 65000.0
+            },
+            {
+              "wall_ns": 64958.0,
+              "cpu_ns": 65000.0
+            },
+            {
+              "wall_ns": 65417.0,
+              "cpu_ns": 65000.0
+            },
+            {
+              "wall_ns": 65625.0,
+              "cpu_ns": 66000.0
+            },
+            {
+              "wall_ns": 66041.0,
+              "cpu_ns": 66000.0
+            },
+            {
+              "wall_ns": 65000.0,
+              "cpu_ns": 65000.0
+            },
+            {
+              "wall_ns": 65125.0,
+              "cpu_ns": 65000.0
+            },
+            {
+              "wall_ns": 65167.0,
+              "cpu_ns": 66000.0
+            },
+            {
+              "wall_ns": 65458.0,
+              "cpu_ns": 65000.0
+            },
+            {
+              "wall_ns": 65042.0,
+              "cpu_ns": 66000.0
+            },
+            {
+              "wall_ns": 65541.0,
+              "cpu_ns": 65000.0
+            },
+            {
+              "wall_ns": 64834.0,
+              "cpu_ns": 66000.0
+            },
+            {
+              "wall_ns": 65042.0,
+              "cpu_ns": 66000.0
+            },
+            {
+              "wall_ns": 64583.0,
+              "cpu_ns": 65000.0
+            },
+            {
+              "wall_ns": 64334.0,
+              "cpu_ns": 64000.0
+            },
+            {
+              "wall_ns": 64834.0,
+              "cpu_ns": 65000.0
+            },
+            {
+              "wall_ns": 64792.0,
+              "cpu_ns": 65000.0
+            },
+            {
+              "wall_ns": 64792.0,
+              "cpu_ns": 65000.0
+            },
+            {
+              "wall_ns": 65375.0,
+              "cpu_ns": 65000.0
+            },
+            {
+              "wall_ns": 64875.0,
+              "cpu_ns": 65000.0
+            },
+            {
+              "wall_ns": 64833.0,
+              "cpu_ns": 65000.0
+            },
+            {
+              "wall_ns": 64708.0,
+              "cpu_ns": 65000.0
+            },
+            {
+              "wall_ns": 64917.0,
+              "cpu_ns": 66000.0
+            },
+            {
+              "wall_ns": 64292.0,
+              "cpu_ns": 65000.0
+            },
+            {
+              "wall_ns": 65291.0,
+              "cpu_ns": 65000.0
+            },
+            {
+              "wall_ns": 64750.0,
+              "cpu_ns": 64000.0
+            },
+            {
+              "wall_ns": 65875.0,
+              "cpu_ns": 66000.0
+            },
+            {
+              "wall_ns": 64708.0,
+              "cpu_ns": 66000.0
+            },
+            {
+              "wall_ns": 77334.0,
+              "cpu_ns": 78000.0
+            },
+            {
+              "wall_ns": 70541.0,
+              "cpu_ns": 72000.0
+            },
+            {
+              "wall_ns": 70875.0,
+              "cpu_ns": 71000.0
+            },
+            {
+              "wall_ns": 68625.0,
+              "cpu_ns": 70000.0
+            },
+            {
+              "wall_ns": 66708.0,
+              "cpu_ns": 67000.0
+            },
+            {
+              "wall_ns": 65667.0,
+              "cpu_ns": 66000.0
+            },
+            {
+              "wall_ns": 65958.0,
+              "cpu_ns": 66000.0
+            },
+            {
+              "wall_ns": 65333.0,
+              "cpu_ns": 67000.0
+            },
+            {
+              "wall_ns": 66459.0,
+              "cpu_ns": 68000.0
+            },
+            {
+              "wall_ns": 65542.0,
+              "cpu_ns": 66000.0
+            },
+            {
+              "wall_ns": 66292.0,
+              "cpu_ns": 66000.0
+            },
+            {
+              "wall_ns": 65000.0,
+              "cpu_ns": 65000.0
+            },
+            {
+              "wall_ns": 65542.0,
+              "cpu_ns": 66000.0
+            },
+            {
+              "wall_ns": 65250.0,
+              "cpu_ns": 67000.0
+            },
+            {
+              "wall_ns": 65500.0,
+              "cpu_ns": 66000.0
+            },
+            {
+              "wall_ns": 64000.0,
+              "cpu_ns": 64000.0
+            },
+            {
+              "wall_ns": 66000.0,
+              "cpu_ns": 67000.0
+            },
+            {
+              "wall_ns": 64500.0,
+              "cpu_ns": 64000.0
+            },
+            {
+              "wall_ns": 66250.0,
+              "cpu_ns": 67000.0
+            },
+            {
+              "wall_ns": 64292.0,
+              "cpu_ns": 64000.0
+            },
+            {
+              "wall_ns": 64959.0,
+              "cpu_ns": 66000.0
+            },
+            {
+              "wall_ns": 64084.0,
+              "cpu_ns": 64000.0
+            },
+            {
+              "wall_ns": 64667.0,
+              "cpu_ns": 65000.0
+            },
+            {
+              "wall_ns": 63459.0,
+              "cpu_ns": 64000.0
+            },
+            {
+              "wall_ns": 64542.0,
+              "cpu_ns": 65000.0
+            },
+            {
+              "wall_ns": 63250.0,
+              "cpu_ns": 65000.0
+            },
+            {
+              "wall_ns": 64167.0,
+              "cpu_ns": 64000.0
+            },
+            {
+              "wall_ns": 63792.0,
+              "cpu_ns": 64000.0
+            },
+            {
+              "wall_ns": 65375.0,
+              "cpu_ns": 65000.0
+            },
+            {
+              "wall_ns": 64292.0,
+              "cpu_ns": 64000.0
+            },
+            {
+              "wall_ns": 64458.0,
+              "cpu_ns": 65000.0
+            },
+            {
+              "wall_ns": 63541.0,
+              "cpu_ns": 64000.0
+            },
+            {
+              "wall_ns": 64625.0,
+              "cpu_ns": 65000.0
+            },
+            {
+              "wall_ns": 63625.0,
+              "cpu_ns": 63000.0
+            },
+            {
+              "wall_ns": 64708.0,
+              "cpu_ns": 66000.0
+            },
+            {
+              "wall_ns": 63916.0,
+              "cpu_ns": 65000.0
+            },
+            {
+              "wall_ns": 65709.0,
+              "cpu_ns": 66000.0
+            },
+            {
+              "wall_ns": 63458.0,
+              "cpu_ns": 65000.0
+            },
+            {
+              "wall_ns": 64042.0,
+              "cpu_ns": 65000.0
+            },
+            {
+              "wall_ns": 63334.0,
+              "cpu_ns": 64000.0
+            },
+            {
+              "wall_ns": 64583.0,
+              "cpu_ns": 65000.0
+            },
+            {
+              "wall_ns": 63292.0,
+              "cpu_ns": 63000.0
+            }
+          ],
+          "median_cpu_ns": 66000.0,
+          "median_wall_ns": 65375.0,
+          "min_cpu_ns": 63000.0,
+          "min_wall_ns": 63250.0
+        },
+        "before": {
+          "samples": [
+            {
+              "wall_ns": 146458.0,
+              "cpu_ns": 147000.0
+            },
+            {
+              "wall_ns": 144542.0,
+              "cpu_ns": 146000.0
+            },
+            {
+              "wall_ns": 140208.0,
+              "cpu_ns": 141000.0
+            },
+            {
+              "wall_ns": 142000.0,
+              "cpu_ns": 142000.0
+            },
+            {
+              "wall_ns": 139459.0,
+              "cpu_ns": 139000.0
+            },
+            {
+              "wall_ns": 137000.0,
+              "cpu_ns": 137000.0
+            },
+            {
+              "wall_ns": 138500.0,
+              "cpu_ns": 139000.0
+            },
+            {
+              "wall_ns": 159542.0,
+              "cpu_ns": 161000.0
+            },
+            {
+              "wall_ns": 145250.0,
+              "cpu_ns": 147000.0
+            },
+            {
+              "wall_ns": 141333.0,
+              "cpu_ns": 141000.0
+            },
+            {
+              "wall_ns": 140459.0,
+              "cpu_ns": 141000.0
+            },
+            {
+              "wall_ns": 143166.0,
+              "cpu_ns": 143000.0
+            },
+            {
+              "wall_ns": 138750.0,
+              "cpu_ns": 139000.0
+            },
+            {
+              "wall_ns": 139792.0,
+              "cpu_ns": 141000.0
+            },
+            {
+              "wall_ns": 137958.0,
+              "cpu_ns": 139000.0
+            },
+            {
+              "wall_ns": 140833.0,
+              "cpu_ns": 141000.0
+            },
+            {
+              "wall_ns": 137709.0,
+              "cpu_ns": 137000.0
+            },
+            {
+              "wall_ns": 140416.0,
+              "cpu_ns": 141000.0
+            },
+            {
+              "wall_ns": 137834.0,
+              "cpu_ns": 139000.0
+            },
+            {
+              "wall_ns": 138458.0,
+              "cpu_ns": 139000.0
+            },
+            {
+              "wall_ns": 136709.0,
+              "cpu_ns": 137000.0
+            },
+            {
+              "wall_ns": 138000.0,
+              "cpu_ns": 138000.0
+            },
+            {
+              "wall_ns": 137167.0,
+              "cpu_ns": 138000.0
+            },
+            {
+              "wall_ns": 141667.0,
+              "cpu_ns": 143000.0
+            },
+            {
+              "wall_ns": 150750.0,
+              "cpu_ns": 152000.0
+            },
+            {
+              "wall_ns": 145167.0,
+              "cpu_ns": 145000.0
+            },
+            {
+              "wall_ns": 142584.0,
+              "cpu_ns": 142000.0
+            },
+            {
+              "wall_ns": 138917.0,
+              "cpu_ns": 140000.0
+            },
+            {
+              "wall_ns": 138375.0,
+              "cpu_ns": 139000.0
+            },
+            {
+              "wall_ns": 139917.0,
+              "cpu_ns": 140000.0
+            },
+            {
+              "wall_ns": 139500.0,
+              "cpu_ns": 139000.0
+            },
+            {
+              "wall_ns": 137583.0,
+              "cpu_ns": 137000.0
+            },
+            {
+              "wall_ns": 137333.0,
+              "cpu_ns": 138000.0
+            },
+            {
+              "wall_ns": 138209.0,
+              "cpu_ns": 140000.0
+            },
+            {
+              "wall_ns": 138041.0,
+              "cpu_ns": 140000.0
+            },
+            {
+              "wall_ns": 139542.0,
+              "cpu_ns": 139000.0
+            },
+            {
+              "wall_ns": 137917.0,
+              "cpu_ns": 138000.0
+            },
+            {
+              "wall_ns": 138667.0,
+              "cpu_ns": 139000.0
+            },
+            {
+              "wall_ns": 138708.0,
+              "cpu_ns": 140000.0
+            },
+            {
+              "wall_ns": 139667.0,
+              "cpu_ns": 140000.0
+            },
+            {
+              "wall_ns": 138750.0,
+              "cpu_ns": 139000.0
+            },
+            {
+              "wall_ns": 139542.0,
+              "cpu_ns": 140000.0
+            },
+            {
+              "wall_ns": 139417.0,
+              "cpu_ns": 139000.0
+            },
+            {
+              "wall_ns": 140250.0,
+              "cpu_ns": 141000.0
+            },
+            {
+              "wall_ns": 138625.0,
+              "cpu_ns": 140000.0
+            },
+            {
+              "wall_ns": 138417.0,
+              "cpu_ns": 139000.0
+            },
+            {
+              "wall_ns": 138500.0,
+              "cpu_ns": 139000.0
+            },
+            {
+              "wall_ns": 138292.0,
+              "cpu_ns": 139000.0
+            },
+            {
+              "wall_ns": 139542.0,
+              "cpu_ns": 140000.0
+            },
+            {
+              "wall_ns": 139584.0,
+              "cpu_ns": 140000.0
+            },
+            {
+              "wall_ns": 137834.0,
+              "cpu_ns": 138000.0
+            },
+            {
+              "wall_ns": 137875.0,
+              "cpu_ns": 139000.0
+            },
+            {
+              "wall_ns": 136958.0,
+              "cpu_ns": 138000.0
+            },
+            {
+              "wall_ns": 138042.0,
+              "cpu_ns": 138000.0
+            },
+            {
+              "wall_ns": 137958.0,
+              "cpu_ns": 138000.0
+            },
+            {
+              "wall_ns": 138666.0,
+              "cpu_ns": 139000.0
+            },
+            {
+              "wall_ns": 137458.0,
+              "cpu_ns": 137000.0
+            },
+            {
+              "wall_ns": 138667.0,
+              "cpu_ns": 139000.0
+            },
+            {
+              "wall_ns": 137416.0,
+              "cpu_ns": 138000.0
+            },
+            {
+              "wall_ns": 156791.0,
+              "cpu_ns": 157000.0
+            },
+            {
+              "wall_ns": 145000.0,
+              "cpu_ns": 146000.0
+            },
+            {
+              "wall_ns": 142042.0,
+              "cpu_ns": 143000.0
+            },
+            {
+              "wall_ns": 141500.0,
+              "cpu_ns": 142000.0
+            },
+            {
+              "wall_ns": 139959.0,
+              "cpu_ns": 140000.0
+            },
+            {
+              "wall_ns": 139500.0,
+              "cpu_ns": 140000.0
+            },
+            {
+              "wall_ns": 140000.0,
+              "cpu_ns": 142000.0
+            },
+            {
+              "wall_ns": 137875.0,
+              "cpu_ns": 138000.0
+            },
+            {
+              "wall_ns": 138792.0,
+              "cpu_ns": 139000.0
+            },
+            {
+              "wall_ns": 138166.0,
+              "cpu_ns": 138000.0
+            },
+            {
+              "wall_ns": 138917.0,
+              "cpu_ns": 141000.0
+            },
+            {
+              "wall_ns": 138875.0,
+              "cpu_ns": 140000.0
+            },
+            {
+              "wall_ns": 137583.0,
+              "cpu_ns": 138000.0
+            },
+            {
+              "wall_ns": 138375.0,
+              "cpu_ns": 138000.0
+            },
+            {
+              "wall_ns": 139417.0,
+              "cpu_ns": 140000.0
+            },
+            {
+              "wall_ns": 138625.0,
+              "cpu_ns": 140000.0
+            },
+            {
+              "wall_ns": 144958.0,
+              "cpu_ns": 146000.0
+            },
+            {
+              "wall_ns": 138084.0,
+              "cpu_ns": 139000.0
+            },
+            {
+              "wall_ns": 138417.0,
+              "cpu_ns": 140000.0
+            },
+            {
+              "wall_ns": 138292.0,
+              "cpu_ns": 138000.0
+            },
+            {
+              "wall_ns": 138041.0,
+              "cpu_ns": 138000.0
+            },
+            {
+              "wall_ns": 137625.0,
+              "cpu_ns": 138000.0
+            },
+            {
+              "wall_ns": 137000.0,
+              "cpu_ns": 138000.0
+            },
+            {
+              "wall_ns": 136084.0,
+              "cpu_ns": 137000.0
+            },
+            {
+              "wall_ns": 138000.0,
+              "cpu_ns": 138000.0
+            },
+            {
+              "wall_ns": 136500.0,
+              "cpu_ns": 136000.0
+            },
+            {
+              "wall_ns": 136583.0,
+              "cpu_ns": 137000.0
+            },
+            {
+              "wall_ns": 135917.0,
+              "cpu_ns": 137000.0
+            },
+            {
+              "wall_ns": 137166.0,
+              "cpu_ns": 138000.0
+            },
+            {
+              "wall_ns": 136667.0,
+              "cpu_ns": 137000.0
+            },
+            {
+              "wall_ns": 136584.0,
+              "cpu_ns": 137000.0
+            },
+            {
+              "wall_ns": 136541.0,
+              "cpu_ns": 137000.0
+            },
+            {
+              "wall_ns": 138792.0,
+              "cpu_ns": 138000.0
+            },
+            {
+              "wall_ns": 136542.0,
+              "cpu_ns": 136000.0
+            },
+            {
+              "wall_ns": 137500.0,
+              "cpu_ns": 137000.0
+            },
+            {
+              "wall_ns": 136333.0,
+              "cpu_ns": 137000.0
+            },
+            {
+              "wall_ns": 138000.0,
+              "cpu_ns": 139000.0
+            },
+            {
+              "wall_ns": 136500.0,
+              "cpu_ns": 137000.0
+            },
+            {
+              "wall_ns": 137041.0,
+              "cpu_ns": 138000.0
+            },
+            {
+              "wall_ns": 135583.0,
+              "cpu_ns": 136000.0
+            },
+            {
+              "wall_ns": 136792.0,
+              "cpu_ns": 138000.0
+            },
+            {
+              "wall_ns": 136667.0,
+              "cpu_ns": 137000.0
+            }
+          ],
+          "median_cpu_ns": 139000.0,
+          "median_wall_ns": 138458.0,
+          "min_cpu_ns": 136000.0,
+          "min_wall_ns": 135583.0
+        },
+        "stdlib": {
+          "samples": [
+            {
+              "wall_ns": 376542.0,
+              "cpu_ns": 377000.0
+            },
+            {
+              "wall_ns": 373375.0,
+              "cpu_ns": 373000.0
+            },
+            {
+              "wall_ns": 371041.0,
+              "cpu_ns": 371000.0
+            },
+            {
+              "wall_ns": 365375.0,
+              "cpu_ns": 366000.0
+            },
+            {
+              "wall_ns": 368625.0,
+              "cpu_ns": 369000.0
+            },
+            {
+              "wall_ns": 365375.0,
+              "cpu_ns": 366000.0
+            },
+            {
+              "wall_ns": 397709.0,
+              "cpu_ns": 393000.0
+            },
+            {
+              "wall_ns": 386542.0,
+              "cpu_ns": 387000.0
+            },
+            {
+              "wall_ns": 379958.0,
+              "cpu_ns": 380000.0
+            },
+            {
+              "wall_ns": 372250.0,
+              "cpu_ns": 372000.0
+            },
+            {
+              "wall_ns": 374958.0,
+              "cpu_ns": 375000.0
+            },
+            {
+              "wall_ns": 368583.0,
+              "cpu_ns": 370000.0
+            },
+            {
+              "wall_ns": 372833.0,
+              "cpu_ns": 374000.0
+            },
+            {
+              "wall_ns": 363500.0,
+              "cpu_ns": 364000.0
+            },
+            {
+              "wall_ns": 372750.0,
+              "cpu_ns": 373000.0
+            },
+            {
+              "wall_ns": 367917.0,
+              "cpu_ns": 368000.0
+            },
+            {
+              "wall_ns": 367083.0,
+              "cpu_ns": 368000.0
+            },
+            {
+              "wall_ns": 364459.0,
+              "cpu_ns": 364000.0
+            },
+            {
+              "wall_ns": 372375.0,
+              "cpu_ns": 372000.0
+            },
+            {
+              "wall_ns": 368291.0,
+              "cpu_ns": 368000.0
+            },
+            {
+              "wall_ns": 369500.0,
+              "cpu_ns": 370000.0
+            },
+            {
+              "wall_ns": 369625.0,
+              "cpu_ns": 370000.0
+            },
+            {
+              "wall_ns": 370583.0,
+              "cpu_ns": 372000.0
+            },
+            {
+              "wall_ns": 370250.0,
+              "cpu_ns": 371000.0
+            },
+            {
+              "wall_ns": 391334.0,
+              "cpu_ns": 392000.0
+            },
+            {
+              "wall_ns": 372750.0,
+              "cpu_ns": 373000.0
+            },
+            {
+              "wall_ns": 377000.0,
+              "cpu_ns": 377000.0
+            },
+            {
+              "wall_ns": 369458.0,
+              "cpu_ns": 370000.0
+            },
+            {
+              "wall_ns": 372791.0,
+              "cpu_ns": 373000.0
+            },
+            {
+              "wall_ns": 366375.0,
+              "cpu_ns": 366000.0
+            },
+            {
+              "wall_ns": 372500.0,
+              "cpu_ns": 372000.0
+            },
+            {
+              "wall_ns": 369417.0,
+              "cpu_ns": 370000.0
+            },
+            {
+              "wall_ns": 373917.0,
+              "cpu_ns": 375000.0
+            },
+            {
+              "wall_ns": 370250.0,
+              "cpu_ns": 371000.0
+            },
+            {
+              "wall_ns": 371167.0,
+              "cpu_ns": 371000.0
+            },
+            {
+              "wall_ns": 370667.0,
+              "cpu_ns": 371000.0
+            },
+            {
+              "wall_ns": 369125.0,
+              "cpu_ns": 370000.0
+            },
+            {
+              "wall_ns": 368333.0,
+              "cpu_ns": 369000.0
+            },
+            {
+              "wall_ns": 370583.0,
+              "cpu_ns": 371000.0
+            },
+            {
+              "wall_ns": 367875.0,
+              "cpu_ns": 369000.0
+            },
+            {
+              "wall_ns": 372708.0,
+              "cpu_ns": 373000.0
+            },
+            {
+              "wall_ns": 369834.0,
+              "cpu_ns": 371000.0
+            },
+            {
+              "wall_ns": 369709.0,
+              "cpu_ns": 369000.0
+            },
+            {
+              "wall_ns": 369250.0,
+              "cpu_ns": 369000.0
+            },
+            {
+              "wall_ns": 374125.0,
+              "cpu_ns": 375000.0
+            },
+            {
+              "wall_ns": 370459.0,
+              "cpu_ns": 371000.0
+            },
+            {
+              "wall_ns": 372500.0,
+              "cpu_ns": 374000.0
+            },
+            {
+              "wall_ns": 370833.0,
+              "cpu_ns": 371000.0
+            },
+            {
+              "wall_ns": 372000.0,
+              "cpu_ns": 372000.0
+            },
+            {
+              "wall_ns": 367125.0,
+              "cpu_ns": 369000.0
+            },
+            {
+              "wall_ns": 370750.0,
+              "cpu_ns": 371000.0
+            },
+            {
+              "wall_ns": 369167.0,
+              "cpu_ns": 370000.0
+            },
+            {
+              "wall_ns": 367416.0,
+              "cpu_ns": 367000.0
+            },
+            {
+              "wall_ns": 368875.0,
+              "cpu_ns": 369000.0
+            },
+            {
+              "wall_ns": 368625.0,
+              "cpu_ns": 369000.0
+            },
+            {
+              "wall_ns": 366459.0,
+              "cpu_ns": 367000.0
+            },
+            {
+              "wall_ns": 369791.0,
+              "cpu_ns": 370000.0
+            },
+            {
+              "wall_ns": 366417.0,
+              "cpu_ns": 368000.0
+            },
+            {
+              "wall_ns": 408458.0,
+              "cpu_ns": 403000.0
+            },
+            {
+              "wall_ns": 372959.0,
+              "cpu_ns": 374000.0
+            },
+            {
+              "wall_ns": 373166.0,
+              "cpu_ns": 373000.0
+            },
+            {
+              "wall_ns": 366834.0,
+              "cpu_ns": 368000.0
+            },
+            {
+              "wall_ns": 371292.0,
+              "cpu_ns": 373000.0
+            },
+            {
+              "wall_ns": 370750.0,
+              "cpu_ns": 371000.0
+            },
+            {
+              "wall_ns": 368958.0,
+              "cpu_ns": 369000.0
+            },
+            {
+              "wall_ns": 366583.0,
+              "cpu_ns": 366000.0
+            },
+            {
+              "wall_ns": 367084.0,
+              "cpu_ns": 368000.0
+            },
+            {
+              "wall_ns": 365500.0,
+              "cpu_ns": 366000.0
+            },
+            {
+              "wall_ns": 368417.0,
+              "cpu_ns": 370000.0
+            },
+            {
+              "wall_ns": 366750.0,
+              "cpu_ns": 367000.0
+            },
+            {
+              "wall_ns": 367000.0,
+              "cpu_ns": 368000.0
+            },
+            {
+              "wall_ns": 367792.0,
+              "cpu_ns": 369000.0
+            },
+            {
+              "wall_ns": 370875.0,
+              "cpu_ns": 371000.0
+            },
+            {
+              "wall_ns": 366750.0,
+              "cpu_ns": 367000.0
+            },
+            {
+              "wall_ns": 368667.0,
+              "cpu_ns": 369000.0
+            },
+            {
+              "wall_ns": 384375.0,
+              "cpu_ns": 379000.0
+            },
+            {
+              "wall_ns": 366084.0,
+              "cpu_ns": 366000.0
+            },
+            {
+              "wall_ns": 359667.0,
+              "cpu_ns": 360000.0
+            },
+            {
+              "wall_ns": 366084.0,
+              "cpu_ns": 367000.0
+            },
+            {
+              "wall_ns": 362292.0,
+              "cpu_ns": 364000.0
+            },
+            {
+              "wall_ns": 366417.0,
+              "cpu_ns": 368000.0
+            },
+            {
+              "wall_ns": 360167.0,
+              "cpu_ns": 360000.0
+            },
+            {
+              "wall_ns": 364250.0,
+              "cpu_ns": 365000.0
+            },
+            {
+              "wall_ns": 363292.0,
+              "cpu_ns": 364000.0
+            },
+            {
+              "wall_ns": 364000.0,
+              "cpu_ns": 364000.0
+            },
+            {
+              "wall_ns": 360291.0,
+              "cpu_ns": 361000.0
+            },
+            {
+              "wall_ns": 365459.0,
+              "cpu_ns": 365000.0
+            },
+            {
+              "wall_ns": 361125.0,
+              "cpu_ns": 362000.0
+            },
+            {
+              "wall_ns": 361709.0,
+              "cpu_ns": 363000.0
+            },
+            {
+              "wall_ns": 360417.0,
+              "cpu_ns": 360000.0
+            },
+            {
+              "wall_ns": 362125.0,
+              "cpu_ns": 362000.0
+            },
+            {
+              "wall_ns": 362625.0,
+              "cpu_ns": 363000.0
+            },
+            {
+              "wall_ns": 363208.0,
+              "cpu_ns": 363000.0
+            },
+            {
+              "wall_ns": 363792.0,
+              "cpu_ns": 363000.0
+            },
+            {
+              "wall_ns": 366000.0,
+              "cpu_ns": 366000.0
+            },
+            {
+              "wall_ns": 360166.0,
+              "cpu_ns": 361000.0
+            },
+            {
+              "wall_ns": 363083.0,
+              "cpu_ns": 363000.0
+            },
+            {
+              "wall_ns": 362458.0,
+              "cpu_ns": 362000.0
+            },
+            {
+              "wall_ns": 364166.0,
+              "cpu_ns": 365000.0
+            },
+            {
+              "wall_ns": 360167.0,
+              "cpu_ns": 360000.0
+            },
+            {
+              "wall_ns": 363417.0,
+              "cpu_ns": 364000.0
+            }
+          ],
+          "median_cpu_ns": 369000.0,
+          "median_wall_ns": 368625.0,
+          "min_cpu_ns": 360000.0,
+          "min_wall_ns": 359667.0
+        }
+      }
+    },
+    "nested-small-5": {
+      "operation": "deep",
+      "cleared_caches": {
+        "current": [
+          "_NODES",
+          "_RECORDS",
+          "_FIELDS"
+        ],
+        "before": [
+          "_NODES",
+          "_RECORDS",
+          "_FIELDS"
+        ]
+      },
+      "timings": {
+        "current": {
+          "samples": [
+            {
+              "wall_ns": 1042.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 750.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 666.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 0.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 0.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 667.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 666.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 667.0,
+              "cpu_ns": 0.0
+            },
+            {
+              "wall_ns": 709.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 666.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 667.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 666.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 666.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 667.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 667.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 791.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 0.0
+            },
+            {
+              "wall_ns": 750.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 709.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 667.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 667.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 750.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 667.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 750.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 666.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 667.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 750.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 709.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 666.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 0.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 625.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 709.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 667.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 667.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 792.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 709.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 709.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 667.0,
+              "cpu_ns": 0.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 667.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 667.0,
+              "cpu_ns": 0.0
+            },
+            {
+              "wall_ns": 792.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 792.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 667.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 709.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 750.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 667.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 666.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 625.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 667.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 750.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 667.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 666.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 750.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 709.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 709.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 667.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 0.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 709.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 709.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 666.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 667.0,
+              "cpu_ns": 0.0
+            },
+            {
+              "wall_ns": 667.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 666.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 750.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 709.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 667.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 667.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 667.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 709.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 709.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 0.0
+            },
+            {
+              "wall_ns": 667.0,
+              "cpu_ns": 0.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 2000.0
+            }
+          ],
+          "median_cpu_ns": 1000.0,
+          "median_wall_ns": 708.0,
+          "min_cpu_ns": 0.0,
+          "min_wall_ns": 625.0
+        },
+        "before": {
+          "samples": [
+            {
+              "wall_ns": 875.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 750.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 750.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 833.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 667.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 667.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 666.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 709.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 666.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 666.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 709.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 709.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 750.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 666.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 709.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 666.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 750.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 750.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 709.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 667.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 709.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 750.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 750.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 666.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 709.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 666.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 709.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 750.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 667.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 709.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 875.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 0.0
+            },
+            {
+              "wall_ns": 709.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 834.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 834.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 709.0,
+              "cpu_ns": 0.0
+            },
+            {
+              "wall_ns": 667.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 709.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 667.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 709.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 666.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 709.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 709.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 667.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 792.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 709.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 792.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 667.0,
+              "cpu_ns": 0.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 667.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 750.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 667.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 709.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 666.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 667.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 667.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 667.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 667.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 667.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 0.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 667.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 750.0,
+              "cpu_ns": 1000.0
+            },
+            {
+              "wall_ns": 750.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 708.0,
+              "cpu_ns": 1000.0
+            }
+          ],
+          "median_cpu_ns": 1000.0,
+          "median_wall_ns": 708.0,
+          "min_cpu_ns": 0.0,
+          "min_wall_ns": 666.0
+        },
+        "stdlib": {
+          "samples": [
+            {
+              "wall_ns": 6708.0,
+              "cpu_ns": 7000.0
+            },
+            {
+              "wall_ns": 6041.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 6459.0,
+              "cpu_ns": 7000.0
+            },
+            {
+              "wall_ns": 6125.0,
+              "cpu_ns": 7000.0
+            },
+            {
+              "wall_ns": 6209.0,
+              "cpu_ns": 7000.0
+            },
+            {
+              "wall_ns": 6042.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 5833.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 5667.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 6166.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 5875.0,
+              "cpu_ns": 7000.0
+            },
+            {
+              "wall_ns": 5959.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 5500.0,
+              "cpu_ns": 5000.0
+            },
+            {
+              "wall_ns": 5708.0,
+              "cpu_ns": 7000.0
+            },
+            {
+              "wall_ns": 5750.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 6125.0,
+              "cpu_ns": 8000.0
+            },
+            {
+              "wall_ns": 5791.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 5708.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 5584.0,
+              "cpu_ns": 7000.0
+            },
+            {
+              "wall_ns": 6084.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 5708.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 5958.0,
+              "cpu_ns": 7000.0
+            },
+            {
+              "wall_ns": 5625.0,
+              "cpu_ns": 5000.0
+            },
+            {
+              "wall_ns": 5792.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 5917.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 5709.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 5583.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 6125.0,
+              "cpu_ns": 8000.0
+            },
+            {
+              "wall_ns": 5750.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 6041.0,
+              "cpu_ns": 7000.0
+            },
+            {
+              "wall_ns": 6041.0,
+              "cpu_ns": 7000.0
+            },
+            {
+              "wall_ns": 6583.0,
+              "cpu_ns": 7000.0
+            },
+            {
+              "wall_ns": 6458.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 6541.0,
+              "cpu_ns": 7000.0
+            },
+            {
+              "wall_ns": 5875.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 6041.0,
+              "cpu_ns": 8000.0
+            },
+            {
+              "wall_ns": 5666.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 5875.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 6042.0,
+              "cpu_ns": 7000.0
+            },
+            {
+              "wall_ns": 6125.0,
+              "cpu_ns": 7000.0
+            },
+            {
+              "wall_ns": 5750.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 5750.0,
+              "cpu_ns": 7000.0
+            },
+            {
+              "wall_ns": 5709.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 6125.0,
+              "cpu_ns": 7000.0
+            },
+            {
+              "wall_ns": 5917.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 6083.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 5792.0,
+              "cpu_ns": 7000.0
+            },
+            {
+              "wall_ns": 5958.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 5750.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 5875.0,
+              "cpu_ns": 7000.0
+            },
+            {
+              "wall_ns": 5709.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 5917.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 5792.0,
+              "cpu_ns": 7000.0
+            },
+            {
+              "wall_ns": 5916.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 5625.0,
+              "cpu_ns": 7000.0
+            },
+            {
+              "wall_ns": 5750.0,
+              "cpu_ns": 5000.0
+            },
+            {
+              "wall_ns": 5625.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 5958.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 5666.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 5834.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 5875.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 6042.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 5584.0,
+              "cpu_ns": 7000.0
+            },
+            {
+              "wall_ns": 5833.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 5708.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 5834.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 5459.0,
+              "cpu_ns": 7000.0
+            },
+            {
+              "wall_ns": 5792.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 5292.0,
+              "cpu_ns": 5000.0
+            },
+            {
+              "wall_ns": 5792.0,
+              "cpu_ns": 7000.0
+            },
+            {
+              "wall_ns": 5667.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 5875.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 5667.0,
+              "cpu_ns": 7000.0
+            },
+            {
+              "wall_ns": 5958.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 5541.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 5792.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 5583.0,
+              "cpu_ns": 7000.0
+            },
+            {
+              "wall_ns": 5834.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 5667.0,
+              "cpu_ns": 7000.0
+            },
+            {
+              "wall_ns": 5792.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 5584.0,
+              "cpu_ns": 5000.0
+            },
+            {
+              "wall_ns": 5916.0,
+              "cpu_ns": 7000.0
+            },
+            {
+              "wall_ns": 5666.0,
+              "cpu_ns": 5000.0
+            },
+            {
+              "wall_ns": 5875.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 5666.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 5750.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 5625.0,
+              "cpu_ns": 7000.0
+            },
+            {
+              "wall_ns": 5958.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 5625.0,
+              "cpu_ns": 5000.0
+            },
+            {
+              "wall_ns": 5583.0,
+              "cpu_ns": 7000.0
+            },
+            {
+              "wall_ns": 5459.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 5625.0,
+              "cpu_ns": 7000.0
+            },
+            {
+              "wall_ns": 5666.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 5958.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 5625.0,
+              "cpu_ns": 5000.0
+            },
+            {
+              "wall_ns": 5959.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 5542.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 5750.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 5584.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 5583.0,
+              "cpu_ns": 7000.0
+            },
+            {
+              "wall_ns": 5542.0,
+              "cpu_ns": 6000.0
+            },
+            {
+              "wall_ns": 5792.0,
+              "cpu_ns": 7000.0
+            }
+          ],
+          "median_cpu_ns": 6000.0,
+          "median_wall_ns": 5792.0,
+          "min_cpu_ns": 5000.0,
+          "min_wall_ns": 5292.0
+        }
+      }
+    },
+    "dataclass-small": {
+      "operation": "deep",
+      "cleared_caches": {
+        "current": [
+          "_NODES",
+          "_RECORDS",
+          "_FIELDS"
+        ],
+        "before": [
+          "_NODES",
+          "_RECORDS",
+          "_FIELDS"
+        ]
+      },
+      "timings": {
+        "current": {
+          "samples": [
+            {
+              "wall_ns": 3208.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2292.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2209.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2166.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2083.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2042.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2042.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2042.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2041.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 1958.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2042.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2000.0,
+              "cpu_ns": 4000.0
+            },
+            {
+              "wall_ns": 2042.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2000.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 4000.0
+            },
+            {
+              "wall_ns": 2042.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2375.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2042.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2084.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2042.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2041.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2083.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2084.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2041.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2000.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2083.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 1958.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2042.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 1958.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2083.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2000.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2042.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2000.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2083.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2000.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2000.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2000.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2000.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2042.0,
+              "cpu_ns": 4000.0
+            },
+            {
+              "wall_ns": 2083.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2000.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2041.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 1958.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2000.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2000.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 1958.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2083.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 1958.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2083.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2000.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2083.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2041.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 1958.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2042.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2000.0,
+              "cpu_ns": 4000.0
+            },
+            {
+              "wall_ns": 2000.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 1916.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2083.0,
+              "cpu_ns": 4000.0
+            },
+            {
+              "wall_ns": 2000.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 1958.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2000.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2000.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2041.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2083.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 1958.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2167.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 1958.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2042.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2041.0,
+              "cpu_ns": 4000.0
+            },
+            {
+              "wall_ns": 2000.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 1959.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2000.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2000.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2041.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2000.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2000.0,
+              "cpu_ns": 4000.0
+            },
+            {
+              "wall_ns": 2000.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2041.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2000.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 1958.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2042.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2000.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2084.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2083.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2000.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2041.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2000.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2000.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 1959.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2042.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2000.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2000.0,
+              "cpu_ns": 4000.0
+            },
+            {
+              "wall_ns": 2000.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2083.0,
+              "cpu_ns": 3000.0
+            }
+          ],
+          "median_cpu_ns": 2000.0,
+          "median_wall_ns": 2041.0,
+          "min_cpu_ns": 2000.0,
+          "min_wall_ns": 1916.0
+        },
+        "before": {
+          "samples": [
+            {
+              "wall_ns": 3000.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2500.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2209.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2166.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2000.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2084.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2042.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 4000.0
+            },
+            {
+              "wall_ns": 2083.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2042.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2167.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2084.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2042.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2041.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2292.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2750.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2292.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2042.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2000.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2000.0,
+              "cpu_ns": 4000.0
+            },
+            {
+              "wall_ns": 2083.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2041.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2000.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2042.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2042.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2000.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2083.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 1959.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2084.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2042.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 1959.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2083.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2000.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2000.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 4000.0
+            },
+            {
+              "wall_ns": 2000.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2042.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 1958.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2083.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2083.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2083.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2084.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2084.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2000.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2000.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2083.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2083.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2167.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2083.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2084.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2084.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2083.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2042.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2458.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2042.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2042.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2042.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2041.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2042.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2083.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2208.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2042.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2084.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2000.0,
+              "cpu_ns": 4000.0
+            },
+            {
+              "wall_ns": 2167.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2000.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2084.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2042.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2083.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2083.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2209.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2041.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2084.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2083.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2083.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2042.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2083.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 1959.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2000.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2042.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2084.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 6958.0,
+              "cpu_ns": 8000.0
+            }
+          ],
+          "median_cpu_ns": 3000.0,
+          "median_wall_ns": 2083.0,
+          "min_cpu_ns": 2000.0,
+          "min_wall_ns": 1958.0
+        },
+        "stdlib": {
+          "samples": [
+            {
+              "wall_ns": 3000.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2584.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2791.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2208.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2291.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2167.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2291.0,
+              "cpu_ns": 4000.0
+            },
+            {
+              "wall_ns": 2042.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2250.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2209.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2167.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2208.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2208.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2375.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2333.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2167.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2417.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2250.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2292.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2250.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2334.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2166.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2250.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2167.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2041.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2167.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2208.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2084.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2041.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2167.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2083.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 1958.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2167.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2042.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2250.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2292.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2042.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2000.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2250.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2041.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2166.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2083.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2291.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2084.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2083.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2250.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2083.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2208.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2084.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2208.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2167.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2084.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2167.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2167.0,
+              "cpu_ns": 4000.0
+            },
+            {
+              "wall_ns": 2208.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 3208.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2208.0,
+              "cpu_ns": 4000.0
+            },
+            {
+              "wall_ns": 2041.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2250.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2166.0,
+              "cpu_ns": 4000.0
+            },
+            {
+              "wall_ns": 2083.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2084.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2166.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2042.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2000.0,
+              "cpu_ns": 4000.0
+            },
+            {
+              "wall_ns": 2208.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2208.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2209.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2208.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2042.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2042.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2083.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2167.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2042.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2250.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2208.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2042.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2167.0,
+              "cpu_ns": 2000.0
+            },
+            {
+              "wall_ns": 2125.0,
+              "cpu_ns": 3000.0
+            },
+            {
+              "wall_ns": 2750.0,
+              "cpu_ns": 3000.0
+            }
+          ],
+          "median_cpu_ns": 3000.0,
+          "median_wall_ns": 2166.0,
+          "min_cpu_ns": 2000.0,
+          "min_wall_ns": 1958.0
+        }
+      }
+    },
+    "dataclasses-flat-500": {
+      "operation": "deep",
+      "cleared_caches": {
+        "current": [
+          "_NODES",
+          "_RECORDS",
+          "_FIELDS"
+        ],
+        "before": [
+          "_NODES",
+          "_RECORDS",
+          "_FIELDS"
+        ]
+      },
+      "timings": {
+        "current": {
+          "samples": [
+            {
+              "wall_ns": 134417.0,
+              "cpu_ns": 135000.0
+            },
+            {
+              "wall_ns": 130708.0,
+              "cpu_ns": 131000.0
+            },
+            {
+              "wall_ns": 130667.0,
+              "cpu_ns": 131000.0
+            },
+            {
+              "wall_ns": 130000.0,
+              "cpu_ns": 131000.0
+            },
+            {
+              "wall_ns": 131167.0,
+              "cpu_ns": 131000.0
+            },
+            {
+              "wall_ns": 130834.0,
+              "cpu_ns": 132000.0
+            },
+            {
+              "wall_ns": 129459.0,
+              "cpu_ns": 129000.0
+            },
+            {
+              "wall_ns": 133416.0,
+              "cpu_ns": 134000.0
+            },
+            {
+              "wall_ns": 131875.0,
+              "cpu_ns": 133000.0
+            },
+            {
+              "wall_ns": 130666.0,
+              "cpu_ns": 130000.0
+            },
+            {
+              "wall_ns": 130750.0,
+              "cpu_ns": 132000.0
+            },
+            {
+              "wall_ns": 131417.0,
+              "cpu_ns": 131000.0
+            },
+            {
+              "wall_ns": 130583.0,
+              "cpu_ns": 131000.0
+            },
+            {
+              "wall_ns": 130750.0,
+              "cpu_ns": 131000.0
+            },
+            {
+              "wall_ns": 130250.0,
+              "cpu_ns": 131000.0
+            },
+            {
+              "wall_ns": 129292.0,
+              "cpu_ns": 129000.0
+            },
+            {
+              "wall_ns": 129875.0,
+              "cpu_ns": 131000.0
+            },
+            {
+              "wall_ns": 129875.0,
+              "cpu_ns": 130000.0
+            },
+            {
+              "wall_ns": 129208.0,
+              "cpu_ns": 130000.0
+            },
+            {
+              "wall_ns": 131416.0,
+              "cpu_ns": 131000.0
+            },
+            {
+              "wall_ns": 129500.0,
+              "cpu_ns": 129000.0
+            },
+            {
+              "wall_ns": 128959.0,
+              "cpu_ns": 129000.0
+            },
+            {
+              "wall_ns": 128625.0,
+              "cpu_ns": 130000.0
+            },
+            {
+              "wall_ns": 127208.0,
+              "cpu_ns": 128000.0
+            },
+            {
+              "wall_ns": 127458.0,
+              "cpu_ns": 128000.0
+            },
+            {
+              "wall_ns": 127625.0,
+              "cpu_ns": 129000.0
+            },
+            {
+              "wall_ns": 127750.0,
+              "cpu_ns": 128000.0
+            },
+            {
+              "wall_ns": 129917.0,
+              "cpu_ns": 130000.0
+            },
+            {
+              "wall_ns": 127417.0,
+              "cpu_ns": 128000.0
+            },
+            {
+              "wall_ns": 128625.0,
+              "cpu_ns": 128000.0
+            },
+            {
+              "wall_ns": 127542.0,
+              "cpu_ns": 128000.0
+            },
+            {
+              "wall_ns": 127666.0,
+              "cpu_ns": 128000.0
+            },
+            {
+              "wall_ns": 127750.0,
+              "cpu_ns": 128000.0
+            },
+            {
+              "wall_ns": 130792.0,
+              "cpu_ns": 131000.0
+            },
+            {
+              "wall_ns": 130709.0,
+              "cpu_ns": 131000.0
+            },
+            {
+              "wall_ns": 131875.0,
+              "cpu_ns": 132000.0
+            },
+            {
+              "wall_ns": 129416.0,
+              "cpu_ns": 129000.0
+            },
+            {
+              "wall_ns": 129542.0,
+              "cpu_ns": 129000.0
+            },
+            {
+              "wall_ns": 130167.0,
+              "cpu_ns": 130000.0
+            },
+            {
+              "wall_ns": 135500.0,
+              "cpu_ns": 136000.0
+            },
+            {
+              "wall_ns": 130875.0,
+              "cpu_ns": 131000.0
+            },
+            {
+              "wall_ns": 130875.0,
+              "cpu_ns": 131000.0
+            },
+            {
+              "wall_ns": 131292.0,
+              "cpu_ns": 133000.0
+            },
+            {
+              "wall_ns": 132625.0,
+              "cpu_ns": 134000.0
+            },
+            {
+              "wall_ns": 132084.0,
+              "cpu_ns": 132000.0
+            },
+            {
+              "wall_ns": 130458.0,
+              "cpu_ns": 131000.0
+            },
+            {
+              "wall_ns": 150125.0,
+              "cpu_ns": 145000.0
+            },
+            {
+              "wall_ns": 134125.0,
+              "cpu_ns": 134000.0
+            },
+            {
+              "wall_ns": 129958.0,
+              "cpu_ns": 131000.0
+            },
+            {
+              "wall_ns": 129334.0,
+              "cpu_ns": 129000.0
+            },
+            {
+              "wall_ns": 128458.0,
+              "cpu_ns": 129000.0
+            },
+            {
+              "wall_ns": 130375.0,
+              "cpu_ns": 132000.0
+            },
+            {
+              "wall_ns": 130834.0,
+              "cpu_ns": 131000.0
+            },
+            {
+              "wall_ns": 133125.0,
+              "cpu_ns": 133000.0
+            },
+            {
+              "wall_ns": 129833.0,
+              "cpu_ns": 130000.0
+            },
+            {
+              "wall_ns": 131500.0,
+              "cpu_ns": 132000.0
+            },
+            {
+              "wall_ns": 130042.0,
+              "cpu_ns": 130000.0
+            },
+            {
+              "wall_ns": 130625.0,
+              "cpu_ns": 131000.0
+            },
+            {
+              "wall_ns": 130042.0,
+              "cpu_ns": 130000.0
+            },
+            {
+              "wall_ns": 130500.0,
+              "cpu_ns": 131000.0
+            },
+            {
+              "wall_ns": 130625.0,
+              "cpu_ns": 131000.0
+            },
+            {
+              "wall_ns": 130209.0,
+              "cpu_ns": 131000.0
+            },
+            {
+              "wall_ns": 132042.0,
+              "cpu_ns": 133000.0
+            },
+            {
+              "wall_ns": 132500.0,
+              "cpu_ns": 134000.0
+            },
+            {
+              "wall_ns": 131583.0,
+              "cpu_ns": 132000.0
+            },
+            {
+              "wall_ns": 130916.0,
+              "cpu_ns": 133000.0
+            },
+            {
+              "wall_ns": 129208.0,
+              "cpu_ns": 129000.0
+            },
+            {
+              "wall_ns": 130375.0,
+              "cpu_ns": 130000.0
+            },
+            {
+              "wall_ns": 130041.0,
+              "cpu_ns": 131000.0
+            },
+            {
+              "wall_ns": 131959.0,
+              "cpu_ns": 132000.0
+            },
+            {
+              "wall_ns": 133209.0,
+              "cpu_ns": 134000.0
+            },
+            {
+              "wall_ns": 130666.0,
+              "cpu_ns": 131000.0
+            },
+            {
+              "wall_ns": 129375.0,
+              "cpu_ns": 130000.0
+            },
+            {
+              "wall_ns": 128916.0,
+              "cpu_ns": 131000.0
+            },
+            {
+              "wall_ns": 128417.0,
+              "cpu_ns": 128000.0
+            },
+            {
+              "wall_ns": 130042.0,
+              "cpu_ns": 131000.0
+            },
+            {
+              "wall_ns": 128750.0,
+              "cpu_ns": 129000.0
+            },
+            {
+              "wall_ns": 147166.0,
+              "cpu_ns": 147000.0
+            },
+            {
+              "wall_ns": 136000.0,
+              "cpu_ns": 136000.0
+            },
+            {
+              "wall_ns": 132375.0,
+              "cpu_ns": 133000.0
+            },
+            {
+              "wall_ns": 129708.0,
+              "cpu_ns": 131000.0
+            },
+            {
+              "wall_ns": 130959.0,
+              "cpu_ns": 132000.0
+            },
+            {
+              "wall_ns": 129416.0,
+              "cpu_ns": 130000.0
+            },
+            {
+              "wall_ns": 126334.0,
+              "cpu_ns": 127000.0
+            },
+            {
+              "wall_ns": 126500.0,
+              "cpu_ns": 127000.0
+            },
+            {
+              "wall_ns": 134875.0,
+              "cpu_ns": 136000.0
+            },
+            {
+              "wall_ns": 130250.0,
+              "cpu_ns": 131000.0
+            },
+            {
+              "wall_ns": 129000.0,
+              "cpu_ns": 129000.0
+            },
+            {
+              "wall_ns": 130375.0,
+              "cpu_ns": 130000.0
+            },
+            {
+              "wall_ns": 127458.0,
+              "cpu_ns": 128000.0
+            },
+            {
+              "wall_ns": 126125.0,
+              "cpu_ns": 126000.0
+            },
+            {
+              "wall_ns": 126334.0,
+              "cpu_ns": 127000.0
+            },
+            {
+              "wall_ns": 126167.0,
+              "cpu_ns": 126000.0
+            },
+            {
+              "wall_ns": 140459.0,
+              "cpu_ns": 141000.0
+            },
+            {
+              "wall_ns": 132583.0,
+              "cpu_ns": 133000.0
+            },
+            {
+              "wall_ns": 131459.0,
+              "cpu_ns": 131000.0
+            },
+            {
+              "wall_ns": 131167.0,
+              "cpu_ns": 132000.0
+            },
+            {
+              "wall_ns": 130667.0,
+              "cpu_ns": 132000.0
+            },
+            {
+              "wall_ns": 128042.0,
+              "cpu_ns": 128000.0
+            },
+            {
+              "wall_ns": 128750.0,
+              "cpu_ns": 129000.0
+            },
+            {
+              "wall_ns": 129416.0,
+              "cpu_ns": 130000.0
+            }
+          ],
+          "median_cpu_ns": 131000.0,
+          "median_wall_ns": 130375.0,
+          "min_cpu_ns": 126000.0,
+          "min_wall_ns": 126125.0
+        },
+        "before": {
+          "samples": [
+            {
+              "wall_ns": 302500.0,
+              "cpu_ns": 303000.0
+            },
+            {
+              "wall_ns": 304584.0,
+              "cpu_ns": 306000.0
+            },
+            {
+              "wall_ns": 304584.0,
+              "cpu_ns": 306000.0
+            },
+            {
+              "wall_ns": 296208.0,
+              "cpu_ns": 297000.0
+            },
+            {
+              "wall_ns": 303333.0,
+              "cpu_ns": 304000.0
+            },
+            {
+              "wall_ns": 296208.0,
+              "cpu_ns": 296000.0
+            },
+            {
+              "wall_ns": 317458.0,
+              "cpu_ns": 312000.0
+            },
+            {
+              "wall_ns": 306667.0,
+              "cpu_ns": 307000.0
+            },
+            {
+              "wall_ns": 296958.0,
+              "cpu_ns": 297000.0
+            },
+            {
+              "wall_ns": 306333.0,
+              "cpu_ns": 306000.0
+            },
+            {
+              "wall_ns": 299333.0,
+              "cpu_ns": 300000.0
+            },
+            {
+              "wall_ns": 301042.0,
+              "cpu_ns": 302000.0
+            },
+            {
+              "wall_ns": 300709.0,
+              "cpu_ns": 301000.0
+            },
+            {
+              "wall_ns": 303917.0,
+              "cpu_ns": 305000.0
+            },
+            {
+              "wall_ns": 302084.0,
+              "cpu_ns": 302000.0
+            },
+            {
+              "wall_ns": 300792.0,
+              "cpu_ns": 301000.0
+            },
+            {
+              "wall_ns": 301083.0,
+              "cpu_ns": 301000.0
+            },
+            {
+              "wall_ns": 296750.0,
+              "cpu_ns": 297000.0
+            },
+            {
+              "wall_ns": 298125.0,
+              "cpu_ns": 299000.0
+            },
+            {
+              "wall_ns": 301708.0,
+              "cpu_ns": 302000.0
+            },
+            {
+              "wall_ns": 295541.0,
+              "cpu_ns": 296000.0
+            },
+            {
+              "wall_ns": 301167.0,
+              "cpu_ns": 302000.0
+            },
+            {
+              "wall_ns": 298250.0,
+              "cpu_ns": 299000.0
+            },
+            {
+              "wall_ns": 296959.0,
+              "cpu_ns": 297000.0
+            },
+            {
+              "wall_ns": 296750.0,
+              "cpu_ns": 297000.0
+            },
+            {
+              "wall_ns": 296625.0,
+              "cpu_ns": 297000.0
+            },
+            {
+              "wall_ns": 295625.0,
+              "cpu_ns": 295000.0
+            },
+            {
+              "wall_ns": 295042.0,
+              "cpu_ns": 296000.0
+            },
+            {
+              "wall_ns": 297708.0,
+              "cpu_ns": 299000.0
+            },
+            {
+              "wall_ns": 300542.0,
+              "cpu_ns": 301000.0
+            },
+            {
+              "wall_ns": 297417.0,
+              "cpu_ns": 297000.0
+            },
+            {
+              "wall_ns": 298459.0,
+              "cpu_ns": 299000.0
+            },
+            {
+              "wall_ns": 296917.0,
+              "cpu_ns": 298000.0
+            },
+            {
+              "wall_ns": 299875.0,
+              "cpu_ns": 301000.0
+            },
+            {
+              "wall_ns": 301375.0,
+              "cpu_ns": 303000.0
+            },
+            {
+              "wall_ns": 299666.0,
+              "cpu_ns": 301000.0
+            },
+            {
+              "wall_ns": 302334.0,
+              "cpu_ns": 303000.0
+            },
+            {
+              "wall_ns": 302625.0,
+              "cpu_ns": 304000.0
+            },
+            {
+              "wall_ns": 326042.0,
+              "cpu_ns": 324000.0
+            },
+            {
+              "wall_ns": 306250.0,
+              "cpu_ns": 307000.0
+            },
+            {
+              "wall_ns": 298292.0,
+              "cpu_ns": 298000.0
+            },
+            {
+              "wall_ns": 305042.0,
+              "cpu_ns": 305000.0
+            },
+            {
+              "wall_ns": 299000.0,
+              "cpu_ns": 299000.0
+            },
+            {
+              "wall_ns": 300083.0,
+              "cpu_ns": 301000.0
+            },
+            {
+              "wall_ns": 300166.0,
+              "cpu_ns": 301000.0
+            },
+            {
+              "wall_ns": 297750.0,
+              "cpu_ns": 299000.0
+            },
+            {
+              "wall_ns": 308250.0,
+              "cpu_ns": 310000.0
+            },
+            {
+              "wall_ns": 301875.0,
+              "cpu_ns": 302000.0
+            },
+            {
+              "wall_ns": 303959.0,
+              "cpu_ns": 304000.0
+            },
+            {
+              "wall_ns": 299542.0,
+              "cpu_ns": 299000.0
+            },
+            {
+              "wall_ns": 299333.0,
+              "cpu_ns": 300000.0
+            },
+            {
+              "wall_ns": 297208.0,
+              "cpu_ns": 298000.0
+            },
+            {
+              "wall_ns": 302416.0,
+              "cpu_ns": 303000.0
+            },
+            {
+              "wall_ns": 296709.0,
+              "cpu_ns": 297000.0
+            },
+            {
+              "wall_ns": 296125.0,
+              "cpu_ns": 296000.0
+            },
+            {
+              "wall_ns": 305917.0,
+              "cpu_ns": 307000.0
+            },
+            {
+              "wall_ns": 299708.0,
+              "cpu_ns": 301000.0
+            },
+            {
+              "wall_ns": 300209.0,
+              "cpu_ns": 302000.0
+            },
+            {
+              "wall_ns": 299084.0,
+              "cpu_ns": 300000.0
+            },
+            {
+              "wall_ns": 302291.0,
+              "cpu_ns": 302000.0
+            },
+            {
+              "wall_ns": 300875.0,
+              "cpu_ns": 301000.0
+            },
+            {
+              "wall_ns": 305125.0,
+              "cpu_ns": 305000.0
+            },
+            {
+              "wall_ns": 303916.0,
+              "cpu_ns": 304000.0
+            },
+            {
+              "wall_ns": 309416.0,
+              "cpu_ns": 310000.0
+            },
+            {
+              "wall_ns": 304000.0,
+              "cpu_ns": 304000.0
+            },
+            {
+              "wall_ns": 304959.0,
+              "cpu_ns": 305000.0
+            },
+            {
+              "wall_ns": 300500.0,
+              "cpu_ns": 300000.0
+            },
+            {
+              "wall_ns": 302042.0,
+              "cpu_ns": 303000.0
+            },
+            {
+              "wall_ns": 301750.0,
+              "cpu_ns": 303000.0
+            },
+            {
+              "wall_ns": 303958.0,
+              "cpu_ns": 304000.0
+            },
+            {
+              "wall_ns": 304042.0,
+              "cpu_ns": 305000.0
+            },
+            {
+              "wall_ns": 300833.0,
+              "cpu_ns": 301000.0
+            },
+            {
+              "wall_ns": 300584.0,
+              "cpu_ns": 301000.0
+            },
+            {
+              "wall_ns": 299625.0,
+              "cpu_ns": 300000.0
+            },
+            {
+              "wall_ns": 296750.0,
+              "cpu_ns": 297000.0
+            },
+            {
+              "wall_ns": 300709.0,
+              "cpu_ns": 301000.0
+            },
+            {
+              "wall_ns": 296417.0,
+              "cpu_ns": 297000.0
+            },
+            {
+              "wall_ns": 340708.0,
+              "cpu_ns": 337000.0
+            },
+            {
+              "wall_ns": 305709.0,
+              "cpu_ns": 306000.0
+            },
+            {
+              "wall_ns": 302167.0,
+              "cpu_ns": 302000.0
+            },
+            {
+              "wall_ns": 299209.0,
+              "cpu_ns": 299000.0
+            },
+            {
+              "wall_ns": 299542.0,
+              "cpu_ns": 300000.0
+            },
+            {
+              "wall_ns": 298208.0,
+              "cpu_ns": 298000.0
+            },
+            {
+              "wall_ns": 292709.0,
+              "cpu_ns": 293000.0
+            },
+            {
+              "wall_ns": 294417.0,
+              "cpu_ns": 296000.0
+            },
+            {
+              "wall_ns": 307375.0,
+              "cpu_ns": 308000.0
+            },
+            {
+              "wall_ns": 300542.0,
+              "cpu_ns": 301000.0
+            },
+            {
+              "wall_ns": 297375.0,
+              "cpu_ns": 298000.0
+            },
+            {
+              "wall_ns": 296166.0,
+              "cpu_ns": 296000.0
+            },
+            {
+              "wall_ns": 298750.0,
+              "cpu_ns": 299000.0
+            },
+            {
+              "wall_ns": 293958.0,
+              "cpu_ns": 294000.0
+            },
+            {
+              "wall_ns": 297625.0,
+              "cpu_ns": 298000.0
+            },
+            {
+              "wall_ns": 300833.0,
+              "cpu_ns": 302000.0
+            },
+            {
+              "wall_ns": 317666.0,
+              "cpu_ns": 319000.0
+            },
+            {
+              "wall_ns": 303333.0,
+              "cpu_ns": 304000.0
+            },
+            {
+              "wall_ns": 298083.0,
+              "cpu_ns": 298000.0
+            },
+            {
+              "wall_ns": 294833.0,
+              "cpu_ns": 295000.0
+            },
+            {
+              "wall_ns": 305083.0,
+              "cpu_ns": 305000.0
+            },
+            {
+              "wall_ns": 292792.0,
+              "cpu_ns": 293000.0
+            },
+            {
+              "wall_ns": 293500.0,
+              "cpu_ns": 295000.0
+            },
+            {
+              "wall_ns": 294750.0,
+              "cpu_ns": 296000.0
+            }
+          ],
+          "median_cpu_ns": 301000.0,
+          "median_wall_ns": 300500.0,
+          "min_cpu_ns": 293000.0,
+          "min_wall_ns": 292709.0
+        },
+        "stdlib": {
+          "samples": [
+            {
+              "wall_ns": 820791.0,
+              "cpu_ns": 821000.0
+            },
+            {
+              "wall_ns": 823417.0,
+              "cpu_ns": 824000.0
+            },
+            {
+              "wall_ns": 830958.0,
+              "cpu_ns": 832000.0
+            },
+            {
+              "wall_ns": 833042.0,
+              "cpu_ns": 833000.0
+            },
+            {
+              "wall_ns": 829625.0,
+              "cpu_ns": 831000.0
+            },
+            {
+              "wall_ns": 821041.0,
+              "cpu_ns": 821000.0
+            },
+            {
+              "wall_ns": 833583.0,
+              "cpu_ns": 834000.0
+            },
+            {
+              "wall_ns": 823084.0,
+              "cpu_ns": 824000.0
+            },
+            {
+              "wall_ns": 827625.0,
+              "cpu_ns": 828000.0
+            },
+            {
+              "wall_ns": 824791.0,
+              "cpu_ns": 826000.0
+            },
+            {
+              "wall_ns": 824209.0,
+              "cpu_ns": 824000.0
+            },
+            {
+              "wall_ns": 817625.0,
+              "cpu_ns": 819000.0
+            },
+            {
+              "wall_ns": 826667.0,
+              "cpu_ns": 827000.0
+            },
+            {
+              "wall_ns": 826917.0,
+              "cpu_ns": 827000.0
+            },
+            {
+              "wall_ns": 827416.0,
+              "cpu_ns": 827000.0
+            },
+            {
+              "wall_ns": 822292.0,
+              "cpu_ns": 822000.0
+            },
+            {
+              "wall_ns": 826209.0,
+              "cpu_ns": 826000.0
+            },
+            {
+              "wall_ns": 830084.0,
+              "cpu_ns": 831000.0
+            },
+            {
+              "wall_ns": 824958.0,
+              "cpu_ns": 825000.0
+            },
+            {
+              "wall_ns": 821042.0,
+              "cpu_ns": 822000.0
+            },
+            {
+              "wall_ns": 818917.0,
+              "cpu_ns": 819000.0
+            },
+            {
+              "wall_ns": 824875.0,
+              "cpu_ns": 826000.0
+            },
+            {
+              "wall_ns": 825250.0,
+              "cpu_ns": 826000.0
+            },
+            {
+              "wall_ns": 823791.0,
+              "cpu_ns": 824000.0
+            },
+            {
+              "wall_ns": 814541.0,
+              "cpu_ns": 815000.0
+            },
+            {
+              "wall_ns": 813125.0,
+              "cpu_ns": 813000.0
+            },
+            {
+              "wall_ns": 812167.0,
+              "cpu_ns": 813000.0
+            },
+            {
+              "wall_ns": 819292.0,
+              "cpu_ns": 819000.0
+            },
+            {
+              "wall_ns": 817875.0,
+              "cpu_ns": 818000.0
+            },
+            {
+              "wall_ns": 824708.0,
+              "cpu_ns": 826000.0
+            },
+            {
+              "wall_ns": 818417.0,
+              "cpu_ns": 818000.0
+            },
+            {
+              "wall_ns": 823375.0,
+              "cpu_ns": 824000.0
+            },
+            {
+              "wall_ns": 812958.0,
+              "cpu_ns": 813000.0
+            },
+            {
+              "wall_ns": 813000.0,
+              "cpu_ns": 813000.0
+            },
+            {
+              "wall_ns": 826791.0,
+              "cpu_ns": 827000.0
+            },
+            {
+              "wall_ns": 820250.0,
+              "cpu_ns": 821000.0
+            },
+            {
+              "wall_ns": 824417.0,
+              "cpu_ns": 825000.0
+            },
+            {
+              "wall_ns": 825250.0,
+              "cpu_ns": 825000.0
+            },
+            {
+              "wall_ns": 833042.0,
+              "cpu_ns": 834000.0
+            },
+            {
+              "wall_ns": 819959.0,
+              "cpu_ns": 820000.0
+            },
+            {
+              "wall_ns": 828458.0,
+              "cpu_ns": 828000.0
+            },
+            {
+              "wall_ns": 813292.0,
+              "cpu_ns": 813000.0
+            },
+            {
+              "wall_ns": 819583.0,
+              "cpu_ns": 820000.0
+            },
+            {
+              "wall_ns": 816417.0,
+              "cpu_ns": 817000.0
+            },
+            {
+              "wall_ns": 821083.0,
+              "cpu_ns": 821000.0
+            },
+            {
+              "wall_ns": 815959.0,
+              "cpu_ns": 816000.0
+            },
+            {
+              "wall_ns": 829167.0,
+              "cpu_ns": 830000.0
+            },
+            {
+              "wall_ns": 821125.0,
+              "cpu_ns": 822000.0
+            },
+            {
+              "wall_ns": 820416.0,
+              "cpu_ns": 821000.0
+            },
+            {
+              "wall_ns": 819708.0,
+              "cpu_ns": 821000.0
+            },
+            {
+              "wall_ns": 824291.0,
+              "cpu_ns": 825000.0
+            },
+            {
+              "wall_ns": 825583.0,
+              "cpu_ns": 827000.0
+            },
+            {
+              "wall_ns": 821583.0,
+              "cpu_ns": 822000.0
+            },
+            {
+              "wall_ns": 825541.0,
+              "cpu_ns": 825000.0
+            },
+            {
+              "wall_ns": 819250.0,
+              "cpu_ns": 819000.0
+            },
+            {
+              "wall_ns": 828833.0,
+              "cpu_ns": 829000.0
+            },
+            {
+              "wall_ns": 830041.0,
+              "cpu_ns": 830000.0
+            },
+            {
+              "wall_ns": 817875.0,
+              "cpu_ns": 818000.0
+            },
+            {
+              "wall_ns": 828416.0,
+              "cpu_ns": 829000.0
+            },
+            {
+              "wall_ns": 825958.0,
+              "cpu_ns": 827000.0
+            },
+            {
+              "wall_ns": 825958.0,
+              "cpu_ns": 827000.0
+            },
+            {
+              "wall_ns": 827125.0,
+              "cpu_ns": 828000.0
+            },
+            {
+              "wall_ns": 834333.0,
+              "cpu_ns": 836000.0
+            },
+            {
+              "wall_ns": 829875.0,
+              "cpu_ns": 831000.0
+            },
+            {
+              "wall_ns": 827083.0,
+              "cpu_ns": 827000.0
+            },
+            {
+              "wall_ns": 829750.0,
+              "cpu_ns": 830000.0
+            },
+            {
+              "wall_ns": 831000.0,
+              "cpu_ns": 831000.0
+            },
+            {
+              "wall_ns": 827125.0,
+              "cpu_ns": 827000.0
+            },
+            {
+              "wall_ns": 833916.0,
+              "cpu_ns": 834000.0
+            },
+            {
+              "wall_ns": 822500.0,
+              "cpu_ns": 822000.0
+            },
+            {
+              "wall_ns": 826666.0,
+              "cpu_ns": 827000.0
+            },
+            {
+              "wall_ns": 828708.0,
+              "cpu_ns": 830000.0
+            },
+            {
+              "wall_ns": 833166.0,
+              "cpu_ns": 834000.0
+            },
+            {
+              "wall_ns": 825875.0,
+              "cpu_ns": 826000.0
+            },
+            {
+              "wall_ns": 826459.0,
+              "cpu_ns": 828000.0
+            },
+            {
+              "wall_ns": 825542.0,
+              "cpu_ns": 826000.0
+            },
+            {
+              "wall_ns": 823833.0,
+              "cpu_ns": 824000.0
+            },
+            {
+              "wall_ns": 819291.0,
+              "cpu_ns": 819000.0
+            },
+            {
+              "wall_ns": 845541.0,
+              "cpu_ns": 847000.0
+            },
+            {
+              "wall_ns": 822375.0,
+              "cpu_ns": 823000.0
+            },
+            {
+              "wall_ns": 821667.0,
+              "cpu_ns": 823000.0
+            },
+            {
+              "wall_ns": 815500.0,
+              "cpu_ns": 816000.0
+            },
+            {
+              "wall_ns": 822125.0,
+              "cpu_ns": 822000.0
+            },
+            {
+              "wall_ns": 808417.0,
+              "cpu_ns": 808000.0
+            },
+            {
+              "wall_ns": 812833.0,
+              "cpu_ns": 813000.0
+            },
+            {
+              "wall_ns": 839833.0,
+              "cpu_ns": 831000.0
+            },
+            {
+              "wall_ns": 814917.0,
+              "cpu_ns": 815000.0
+            },
+            {
+              "wall_ns": 807375.0,
+              "cpu_ns": 808000.0
+            },
+            {
+              "wall_ns": 805917.0,
+              "cpu_ns": 807000.0
+            },
+            {
+              "wall_ns": 802084.0,
+              "cpu_ns": 802000.0
+            },
+            {
+              "wall_ns": 814208.0,
+              "cpu_ns": 816000.0
+            },
+            {
+              "wall_ns": 812333.0,
+              "cpu_ns": 813000.0
+            },
+            {
+              "wall_ns": 803375.0,
+              "cpu_ns": 804000.0
+            },
+            {
+              "wall_ns": 842375.0,
+              "cpu_ns": 833000.0
+            },
+            {
+              "wall_ns": 822292.0,
+              "cpu_ns": 824000.0
+            },
+            {
+              "wall_ns": 813500.0,
+              "cpu_ns": 813000.0
+            },
+            {
+              "wall_ns": 801000.0,
+              "cpu_ns": 802000.0
+            },
+            {
+              "wall_ns": 805833.0,
+              "cpu_ns": 806000.0
+            },
+            {
+              "wall_ns": 807041.0,
+              "cpu_ns": 808000.0
+            },
+            {
+              "wall_ns": 804333.0,
+              "cpu_ns": 805000.0
+            },
+            {
+              "wall_ns": 802166.0,
+              "cpu_ns": 802000.0
+            }
+          ],
+          "median_cpu_ns": 824000.0,
+          "median_wall_ns": 823375.0,
+          "min_cpu_ns": 802000.0,
+          "min_wall_ns": 801000.0
+        }
+      }
+    },
+    "asdict-tree-200": {
+      "operation": "asdict",
+      "cleared_caches": {
+        "current": [
+          "_NODES",
+          "_RECORDS",
+          "_FIELDS"
+        ],
+        "before": [
+          "_NODES",
+          "_RECORDS",
+          "_FIELDS"
+        ]
+      },
+      "timings": {
+        "current": {
+          "samples": [
+            {
+              "wall_ns": 54417.0,
+              "cpu_ns": 56000.0
+            },
+            {
+              "wall_ns": 50542.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 49875.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 51000.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 51000.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 49750.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 49334.0,
+              "cpu_ns": 49000.0
+            },
+            {
+              "wall_ns": 49625.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 49208.0,
+              "cpu_ns": 49000.0
+            },
+            {
+              "wall_ns": 49542.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 48958.0,
+              "cpu_ns": 49000.0
+            },
+            {
+              "wall_ns": 49000.0,
+              "cpu_ns": 49000.0
+            },
+            {
+              "wall_ns": 49292.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 49750.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 49875.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 50042.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 49792.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 50000.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 49917.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 49583.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 49334.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 49125.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 49209.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 49666.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 49333.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 49666.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 49167.0,
+              "cpu_ns": 49000.0
+            },
+            {
+              "wall_ns": 49167.0,
+              "cpu_ns": 49000.0
+            },
+            {
+              "wall_ns": 49375.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 50542.0,
+              "cpu_ns": 52000.0
+            },
+            {
+              "wall_ns": 50292.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 49459.0,
+              "cpu_ns": 49000.0
+            },
+            {
+              "wall_ns": 49250.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 50083.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 49083.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 49958.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 49542.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 49792.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 50792.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 50209.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 49542.0,
+              "cpu_ns": 49000.0
+            },
+            {
+              "wall_ns": 48917.0,
+              "cpu_ns": 49000.0
+            },
+            {
+              "wall_ns": 63333.0,
+              "cpu_ns": 56000.0
+            },
+            {
+              "wall_ns": 50250.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 49958.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 50292.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 50083.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 50458.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 50458.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 50125.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 50375.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 50250.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 51583.0,
+              "cpu_ns": 52000.0
+            },
+            {
+              "wall_ns": 51291.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 51041.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 50083.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 49916.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 50042.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 49500.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 49625.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 50167.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 50083.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 50208.0,
+              "cpu_ns": 52000.0
+            },
+            {
+              "wall_ns": 50750.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 50250.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 49750.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 49917.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 49250.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 49667.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 49333.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 48917.0,
+              "cpu_ns": 49000.0
+            },
+            {
+              "wall_ns": 49500.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 49792.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 49167.0,
+              "cpu_ns": 49000.0
+            },
+            {
+              "wall_ns": 49125.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 50917.0,
+              "cpu_ns": 52000.0
+            },
+            {
+              "wall_ns": 50708.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 50792.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 50375.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 49667.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 49833.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 49667.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 49375.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 50166.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 49500.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 49125.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 49291.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 49084.0,
+              "cpu_ns": 49000.0
+            },
+            {
+              "wall_ns": 49250.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 49209.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 49500.0,
+              "cpu_ns": 49000.0
+            },
+            {
+              "wall_ns": 71209.0,
+              "cpu_ns": 64000.0
+            },
+            {
+              "wall_ns": 53834.0,
+              "cpu_ns": 55000.0
+            },
+            {
+              "wall_ns": 50583.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 49375.0,
+              "cpu_ns": 49000.0
+            },
+            {
+              "wall_ns": 50125.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 49875.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 50375.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 53166.0,
+              "cpu_ns": 53000.0
+            },
+            {
+              "wall_ns": 50500.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 49291.0,
+              "cpu_ns": 50000.0
+            }
+          ],
+          "median_cpu_ns": 50000.0,
+          "median_wall_ns": 49833.0,
+          "min_cpu_ns": 49000.0,
+          "min_wall_ns": 48917.0
+        },
+        "before": {
+          "samples": [
+            {
+              "wall_ns": 51458.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 51792.0,
+              "cpu_ns": 52000.0
+            },
+            {
+              "wall_ns": 51042.0,
+              "cpu_ns": 52000.0
+            },
+            {
+              "wall_ns": 51167.0,
+              "cpu_ns": 52000.0
+            },
+            {
+              "wall_ns": 50875.0,
+              "cpu_ns": 53000.0
+            },
+            {
+              "wall_ns": 50583.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 49834.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 50500.0,
+              "cpu_ns": 52000.0
+            },
+            {
+              "wall_ns": 49875.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 51084.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 50167.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 50291.0,
+              "cpu_ns": 52000.0
+            },
+            {
+              "wall_ns": 49917.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 49917.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 50750.0,
+              "cpu_ns": 52000.0
+            },
+            {
+              "wall_ns": 50708.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 50292.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 51042.0,
+              "cpu_ns": 52000.0
+            },
+            {
+              "wall_ns": 50416.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 50250.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 50042.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 50250.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 49625.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 50000.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 50500.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 50708.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 50167.0,
+              "cpu_ns": 52000.0
+            },
+            {
+              "wall_ns": 50375.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 49834.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 49875.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 50500.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 50708.0,
+              "cpu_ns": 52000.0
+            },
+            {
+              "wall_ns": 49917.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 50541.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 49833.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 50375.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 51167.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 51583.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 50250.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 49958.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 49917.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 51041.0,
+              "cpu_ns": 52000.0
+            },
+            {
+              "wall_ns": 58958.0,
+              "cpu_ns": 59000.0
+            },
+            {
+              "wall_ns": 51375.0,
+              "cpu_ns": 53000.0
+            },
+            {
+              "wall_ns": 50792.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 51208.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 50208.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 51041.0,
+              "cpu_ns": 52000.0
+            },
+            {
+              "wall_ns": 51125.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 52208.0,
+              "cpu_ns": 53000.0
+            },
+            {
+              "wall_ns": 50375.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 51709.0,
+              "cpu_ns": 52000.0
+            },
+            {
+              "wall_ns": 51583.0,
+              "cpu_ns": 52000.0
+            },
+            {
+              "wall_ns": 51792.0,
+              "cpu_ns": 52000.0
+            },
+            {
+              "wall_ns": 51167.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 51625.0,
+              "cpu_ns": 52000.0
+            },
+            {
+              "wall_ns": 50375.0,
+              "cpu_ns": 52000.0
+            },
+            {
+              "wall_ns": 50666.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 50292.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 51125.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 51167.0,
+              "cpu_ns": 52000.0
+            },
+            {
+              "wall_ns": 51750.0,
+              "cpu_ns": 52000.0
+            },
+            {
+              "wall_ns": 50750.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 50667.0,
+              "cpu_ns": 52000.0
+            },
+            {
+              "wall_ns": 50125.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 50917.0,
+              "cpu_ns": 52000.0
+            },
+            {
+              "wall_ns": 50583.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 50291.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 50042.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 51166.0,
+              "cpu_ns": 52000.0
+            },
+            {
+              "wall_ns": 50083.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 50625.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 50250.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 50833.0,
+              "cpu_ns": 52000.0
+            },
+            {
+              "wall_ns": 49875.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 51167.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 50625.0,
+              "cpu_ns": 52000.0
+            },
+            {
+              "wall_ns": 51291.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 50167.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 50959.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 50375.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 50333.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 50375.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 50500.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 49791.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 50334.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 49500.0,
+              "cpu_ns": 49000.0
+            },
+            {
+              "wall_ns": 50041.0,
+              "cpu_ns": 52000.0
+            },
+            {
+              "wall_ns": 50042.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 49833.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 50083.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 50334.0,
+              "cpu_ns": 50000.0
+            },
+            {
+              "wall_ns": 51417.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 51958.0,
+              "cpu_ns": 53000.0
+            },
+            {
+              "wall_ns": 52625.0,
+              "cpu_ns": 52000.0
+            },
+            {
+              "wall_ns": 53667.0,
+              "cpu_ns": 54000.0
+            },
+            {
+              "wall_ns": 49666.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 50917.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 51083.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 51042.0,
+              "cpu_ns": 51000.0
+            },
+            {
+              "wall_ns": 49875.0,
+              "cpu_ns": 50000.0
+            }
+          ],
+          "median_cpu_ns": 51000.0,
+          "median_wall_ns": 50500.0,
+          "min_cpu_ns": 49000.0,
+          "min_wall_ns": 49500.0
+        },
+        "stdlib": {
+          "samples": [
+            {
+              "wall_ns": 96167.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 95833.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 96500.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 94959.0,
+              "cpu_ns": 95000.0
+            },
+            {
+              "wall_ns": 95875.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 95125.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 97042.0,
+              "cpu_ns": 98000.0
+            },
+            {
+              "wall_ns": 95583.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 95959.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 94917.0,
+              "cpu_ns": 97000.0
+            },
+            {
+              "wall_ns": 96041.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 95542.0,
+              "cpu_ns": 95000.0
+            },
+            {
+              "wall_ns": 95917.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 95333.0,
+              "cpu_ns": 95000.0
+            },
+            {
+              "wall_ns": 96583.0,
+              "cpu_ns": 97000.0
+            },
+            {
+              "wall_ns": 95709.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 95667.0,
+              "cpu_ns": 97000.0
+            },
+            {
+              "wall_ns": 95750.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 95584.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 94916.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 95084.0,
+              "cpu_ns": 95000.0
+            },
+            {
+              "wall_ns": 94958.0,
+              "cpu_ns": 95000.0
+            },
+            {
+              "wall_ns": 95625.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 94917.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 102333.0,
+              "cpu_ns": 103000.0
+            },
+            {
+              "wall_ns": 96083.0,
+              "cpu_ns": 97000.0
+            },
+            {
+              "wall_ns": 95167.0,
+              "cpu_ns": 95000.0
+            },
+            {
+              "wall_ns": 95042.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 95125.0,
+              "cpu_ns": 95000.0
+            },
+            {
+              "wall_ns": 94167.0,
+              "cpu_ns": 94000.0
+            },
+            {
+              "wall_ns": 95166.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 93958.0,
+              "cpu_ns": 95000.0
+            },
+            {
+              "wall_ns": 94541.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 95250.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 95292.0,
+              "cpu_ns": 95000.0
+            },
+            {
+              "wall_ns": 94125.0,
+              "cpu_ns": 94000.0
+            },
+            {
+              "wall_ns": 95166.0,
+              "cpu_ns": 97000.0
+            },
+            {
+              "wall_ns": 94334.0,
+              "cpu_ns": 95000.0
+            },
+            {
+              "wall_ns": 95500.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 94292.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 95375.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 95500.0,
+              "cpu_ns": 95000.0
+            },
+            {
+              "wall_ns": 98000.0,
+              "cpu_ns": 99000.0
+            },
+            {
+              "wall_ns": 95167.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 95375.0,
+              "cpu_ns": 95000.0
+            },
+            {
+              "wall_ns": 93875.0,
+              "cpu_ns": 95000.0
+            },
+            {
+              "wall_ns": 96417.0,
+              "cpu_ns": 98000.0
+            },
+            {
+              "wall_ns": 95125.0,
+              "cpu_ns": 95000.0
+            },
+            {
+              "wall_ns": 95791.0,
+              "cpu_ns": 97000.0
+            },
+            {
+              "wall_ns": 95208.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 95583.0,
+              "cpu_ns": 95000.0
+            },
+            {
+              "wall_ns": 95250.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 96209.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 95042.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 96292.0,
+              "cpu_ns": 97000.0
+            },
+            {
+              "wall_ns": 95917.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 95708.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 94834.0,
+              "cpu_ns": 95000.0
+            },
+            {
+              "wall_ns": 95583.0,
+              "cpu_ns": 95000.0
+            },
+            {
+              "wall_ns": 94958.0,
+              "cpu_ns": 95000.0
+            },
+            {
+              "wall_ns": 95166.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 95375.0,
+              "cpu_ns": 97000.0
+            },
+            {
+              "wall_ns": 95792.0,
+              "cpu_ns": 97000.0
+            },
+            {
+              "wall_ns": 94875.0,
+              "cpu_ns": 95000.0
+            },
+            {
+              "wall_ns": 95750.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 95542.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 95166.0,
+              "cpu_ns": 95000.0
+            },
+            {
+              "wall_ns": 95459.0,
+              "cpu_ns": 97000.0
+            },
+            {
+              "wall_ns": 95875.0,
+              "cpu_ns": 97000.0
+            },
+            {
+              "wall_ns": 96000.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 95750.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 95000.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 95833.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 95166.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 96000.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 95500.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 95083.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 94167.0,
+              "cpu_ns": 95000.0
+            },
+            {
+              "wall_ns": 96208.0,
+              "cpu_ns": 97000.0
+            },
+            {
+              "wall_ns": 94458.0,
+              "cpu_ns": 95000.0
+            },
+            {
+              "wall_ns": 95375.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 94125.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 98875.0,
+              "cpu_ns": 99000.0
+            },
+            {
+              "wall_ns": 94459.0,
+              "cpu_ns": 95000.0
+            },
+            {
+              "wall_ns": 95417.0,
+              "cpu_ns": 95000.0
+            },
+            {
+              "wall_ns": 98000.0,
+              "cpu_ns": 99000.0
+            },
+            {
+              "wall_ns": 95541.0,
+              "cpu_ns": 95000.0
+            },
+            {
+              "wall_ns": 95167.0,
+              "cpu_ns": 95000.0
+            },
+            {
+              "wall_ns": 96083.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 95709.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 95334.0,
+              "cpu_ns": 95000.0
+            },
+            {
+              "wall_ns": 94958.0,
+              "cpu_ns": 95000.0
+            },
+            {
+              "wall_ns": 100583.0,
+              "cpu_ns": 101000.0
+            },
+            {
+              "wall_ns": 96167.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 96625.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 95000.0,
+              "cpu_ns": 95000.0
+            },
+            {
+              "wall_ns": 95542.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 94791.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 95750.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 94875.0,
+              "cpu_ns": 96000.0
+            },
+            {
+              "wall_ns": 95167.0,
+              "cpu_ns": 96000.0
+            }
+          ],
+          "median_cpu_ns": 96000.0,
+          "median_wall_ns": 95417.0,
+          "min_cpu_ns": 94000.0,
+          "min_wall_ns": 93875.0
+        }
+      }
+    }
+  },
+  "empty_call_timer_control": {
+    "samples": [
+      {
+        "wall_ns": 250.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 167.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 84.0,
+        "cpu_ns": 0.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 84.0,
+        "cpu_ns": 0.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 42.0,
+        "cpu_ns": 0.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 84.0,
+        "cpu_ns": 0.0
+      },
+      {
+        "wall_ns": 84.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 0.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 0.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 0.0
+      },
+      {
+        "wall_ns": 42.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 125.0,
+        "cpu_ns": 0.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 42.0,
+        "cpu_ns": 0.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 42.0,
+        "cpu_ns": 0.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 0.0
+      },
+      {
+        "wall_ns": 84.0,
+        "cpu_ns": 0.0
+      },
+      {
+        "wall_ns": 84.0,
+        "cpu_ns": 0.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 0.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 0.0
+      },
+      {
+        "wall_ns": 42.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 41.0,
+        "cpu_ns": 0.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 84.0,
+        "cpu_ns": 0.0
+      },
+      {
+        "wall_ns": 42.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 84.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 42.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 0.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 0.0
+      },
+      {
+        "wall_ns": 42.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 41.0,
+        "cpu_ns": 0.0
+      },
+      {
+        "wall_ns": 84.0,
+        "cpu_ns": 2000.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 0.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 0.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 84.0,
+        "cpu_ns": 0.0
+      },
+      {
+        "wall_ns": 42.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 84.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 84.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 84.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 84.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 84.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 84.0,
+        "cpu_ns": 0.0
+      },
+      {
+        "wall_ns": 41.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 42.0,
+        "cpu_ns": 0.0
+      },
+      {
+        "wall_ns": 84.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 0.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 42.0,
+        "cpu_ns": 0.0
+      },
+      {
+        "wall_ns": 41.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 84.0,
+        "cpu_ns": 0.0
+      },
+      {
+        "wall_ns": 41.0,
+        "cpu_ns": 2000.0
+      },
+      {
+        "wall_ns": 84.0,
+        "cpu_ns": 0.0
+      },
+      {
+        "wall_ns": 41.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 42.0,
+        "cpu_ns": 0.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 0.0
+      },
+      {
+        "wall_ns": 42.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 0.0
+      },
+      {
+        "wall_ns": 84.0,
+        "cpu_ns": 0.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 0.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 0.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 0.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 0.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 84.0,
+        "cpu_ns": 0.0
+      },
+      {
+        "wall_ns": 41.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 42.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 0.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 0.0
+      },
+      {
+        "wall_ns": 42.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 42.0,
+        "cpu_ns": 0.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 0.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 0.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 42.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 42.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 84.0,
+        "cpu_ns": 1000.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 0.0
+      },
+      {
+        "wall_ns": 83.0,
+        "cpu_ns": 1000.0
+      }
+    ],
+    "median_cpu_ns": 1000.0,
+    "median_wall_ns": 83.0,
+    "min_cpu_ns": 0.0,
+    "min_wall_ns": 41.0
+  }
+}

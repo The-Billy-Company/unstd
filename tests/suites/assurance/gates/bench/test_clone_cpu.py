@@ -68,6 +68,17 @@ def test_prepared_workloads_enforce_alias_semantics():
         assert not profile._check_result(case, label, shared_result)
 
 
+def test_shared_graph_baseline_overrides_historical_label_default():
+    case = next(
+        case for case in profile._workloads() if case.name == "repeated-aliases-500"
+    )
+    shared = copy.deepcopy(case.source)
+    distinct = [list(branch) for branch in case.source]
+    assert profile._check_result(case, "before", shared, shared_aliases=True)
+    assert not profile._check_result(case, "before", distinct, shared_aliases=True)
+    assert profile._check_result(case, "before", distinct, shared_aliases=False)
+
+
 @pytest.mark.parametrize("operation", ["deep", "asdict"])
 def test_operation_dispatch_selects_matching_implementation_and_stdlib(operation):
     source = profile.Record("root", [1, 2])
@@ -89,13 +100,12 @@ def test_operation_dispatch_selects_matching_implementation_and_stdlib(operation
     assert profile._isolated(control, source, reuse_tuples=True)
 
 
-@pytest.mark.parametrize("c_name", ["adapter.c", "_clone_native.c"])
 def test_snapshot_selects_matching_abi_backend_and_records_saved_source_hash(
-    tmp_path, monkeypatch, c_name
+    tmp_path, monkeypatch
 ):
     source = tmp_path / "structural.py"
     source.write_text("_native_clone = None\n")
-    c_source = tmp_path / c_name
+    c_source = tmp_path / "_clone_native.c"
     c_source.write_text("/* saved source */\n")
     selected = tmp_path / ("_clone_native" + importlib.machinery.EXTENSION_SUFFIXES[0])
     selected.write_bytes(b"matching ABI")
@@ -210,34 +220,84 @@ def test_snapshot_reads_entrypoint_when_current_native_import_is_unavailable(
     assert profile._snapshot(tmp_path, "missing_current")._native_clone is checked
 
 
-@pytest.mark.parametrize("kernel", ["graph", "dataclass"])
-@pytest.mark.parametrize("include_kernel", [False, True])
-def test_snapshot_optional_kernel_uses_only_the_saved_backend(
-    tmp_path, monkeypatch, kernel, include_kernel
+@pytest.mark.parametrize("include_graph", [False, True])
+def test_snapshot_graph_kernel_never_leaks_from_current_import(
+    tmp_path, monkeypatch, include_graph
 ):
     (tmp_path / "structural.py").write_text("_native_clone = None\n")
     selected = tmp_path / ("_clone_native" + importlib.machinery.EXTENSION_SUFFIXES[0])
     selected.write_bytes(b"matching ABI")
-    if include_kernel:
+    if include_graph:
         (tmp_path / "manifest.json").write_text(
-            f'{{"native_{kernel}_entrypoint": "clone_{kernel}"}}\n'
+            '{"native_graph_entrypoint": "clone_graph"}\n'
         )
 
-    def saved_kernel(*args):
+    def saved_graph(source, memo):
         return []
 
-    wrapper = SimpleNamespace(
-        _native_clone=None, **{f"_native_{kernel}": lambda: "leaked"}
-    )
-    backend = SimpleNamespace(
-        clone=lambda value: value, **{f"clone_{kernel}": saved_kernel}
-    )
+    wrapper = SimpleNamespace(_native_clone=None, _native_graph=lambda: "leaked")
+    backend = SimpleNamespace(clone=lambda value: value, clone_graph=saved_graph)
     monkeypatch.setattr(
         profile,
         "_load",
         lambda path, name: wrapper if path.name == "structural.py" else backend,
     )
-    actual = profile._snapshot(tmp_path, f"{kernel}_before")
-    assert getattr(actual, f"_native_{kernel}") is (
-        saved_kernel if include_kernel else None
+    actual = profile._snapshot(tmp_path, "graph_before")
+    assert actual._native_graph is (saved_graph if include_graph else None)
+
+
+@pytest.mark.parametrize(
+    ("attribute", "manifest_key", "entrypoint"),
+    [
+        (
+            "_native_record_graph",
+            "native_record_graph_entrypoint",
+            "clone_record_graph",
+        ),
+        ("_native_root_graph", "native_root_graph_entrypoint", "clone_root_graph"),
+        ("_native_walk_graph", "native_walk_graph_entrypoint", "clone_walk_graph"),
+        ("_native_dataclass", "native_dataclass_entrypoint", "clone_dataclass"),
+    ],
+)
+@pytest.mark.parametrize("include_binding", [False, True])
+def test_snapshot_new_graph_bindings_require_matching_manifest(
+    tmp_path, monkeypatch, attribute, manifest_key, entrypoint, include_binding
+):
+    import json
+
+    (tmp_path / "structural.py").write_text("_native_clone = None\n")
+    selected = tmp_path / ("_clone_native" + importlib.machinery.EXTENSION_SUFFIXES[0])
+    selected.write_bytes(b"matching ABI")
+    if include_binding:
+        (tmp_path / "manifest.json").write_text(json.dumps({manifest_key: entrypoint}))
+
+    def saved(*args):
+        return []
+
+    wrapper = SimpleNamespace(_native_clone=None, **{attribute: lambda: "leaked"})
+    backend = SimpleNamespace(clone=lambda value: value, **{entrypoint: saved})
+    monkeypatch.setattr(
+        profile,
+        "_load",
+        lambda path, name: wrapper if path.name == "structural.py" else backend,
     )
+    actual = profile._snapshot(tmp_path, "new_graph_before")
+    assert getattr(actual, attribute) is (saved if include_binding else None)
+
+
+def test_snapshot_declared_contract_must_match_public_output(tmp_path, monkeypatch):
+    (tmp_path / "structural.py").write_text("_native_clone = None\n")
+    selected = tmp_path / ("_clone_native" + importlib.machinery.EXTENSION_SUFFIXES[0])
+    selected.write_bytes(b"matching ABI")
+    (tmp_path / "manifest.json").write_text('{"copy_contract":"shared"}')
+    wrapper = SimpleNamespace(
+        _native_clone=None, deep=lambda source: [list(value) for value in source]
+    )
+    backend = SimpleNamespace(clone=lambda value: value)
+    monkeypatch.setattr(
+        profile,
+        "_load",
+        lambda path, name: wrapper if path.name == "structural.py" else backend,
+    )
+    with pytest.raises(AssertionError, match="copy contract"):
+        profile._snapshot(tmp_path, "wrong_contract")

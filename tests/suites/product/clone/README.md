@@ -2,7 +2,7 @@
 
 Contracts for `unstd.clone`: value and type fidelity, mutation isolation, copy protocols, and optional native traversal.
 
-- [unit/](unit/README.md): API, class admission and lifetime, copy-hook failures, recursion-limited workers, and native ownership contracts.
+- [unit/](unit/README.md): API, class admission and lifetime, memo and keep-alive ordering, copy-hook failures, recursion-limited workers, and native ownership contracts.
 - [properties/](properties/README.md): generated mixed-tree, model/struct, native agreement, and dataclass conversion laws.
 
 Core contracts use the stdlib. Pydantic and msgspec cases skip locally when absent and fail under `--require-extras`; compiled-extension cases skip when the extension is not built.

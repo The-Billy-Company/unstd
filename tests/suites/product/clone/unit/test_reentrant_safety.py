@@ -23,9 +23,9 @@ from unstd.clone import structural
 
 mode, backend = sys.argv[1:]
 if backend == 'python':
-    structural._native_clone = None
-    if hasattr(structural, '_native_records'):
-        structural._native_records = None
+    for name in list(vars(structural)):
+        if name.startswith('_native_'):
+            setattr(structural, name, None)
 
 first = [11, 12]
 second = [21, 22]
@@ -48,12 +48,13 @@ baseline = sys.getrefcount(first)
 mutated = False
 active = False
 native_depth = 0
-native_tree = structural._native_clone
-native_records = getattr(structural, '_native_records', None)
+native_kernels = tuple(getattr(structural, name, None) for name in (
+    '_native_clone', '_native_graph', '_native_root_graph',
+    '_native_record_graph', '_native_walk_graph', '_native_records'))
 
 def profile(frame, event, arg):
     global native_depth
-    if arg is native_tree or arg is native_records:
+    if any(arg is kernel for kernel in native_kernels):
         if event == 'c_call':
             native_depth += 1
         elif event in ('c_return', 'c_exception'):
@@ -65,8 +66,12 @@ def mutate(phase, info):
         return
     if backend == 'native' and native_depth == 0:
         return
-    # Native eligibility borrows references; the actual C traversal owns the
-    # first child. Ignore collections during a Python recipe-selection probe.
+    # A graph memo also pins completed sources. The fault-injection build
+    # identifies the source whose allocator is actually running, distinguishing
+    # this traversal step from later memo commit allocations.
+    if backend == 'native':
+        if getattr(sys, '_unstd_clone_fault_source', None) != id(first):
+            return
     if sys.getrefcount(first) <= baseline:
         return
     mutated = True
@@ -179,9 +184,9 @@ from unstd.clone import structural
 
 collection, backend = int(sys.argv[1]), sys.argv[2]
 if backend == 'python':
-    structural._native_clone = None
-    if hasattr(structural, '_native_records'):
-        structural._native_records = None
+    for name in list(vars(structural)):
+        if name.startswith('_native_'):
+            setattr(structural, name, None)
 
 @dataclasses.dataclass
 class Row:
@@ -195,12 +200,13 @@ mutated = False
 seen = 0
 finalized = []
 native_depth = 0
-native_tree = structural._native_clone
-native_records = getattr(structural, '_native_records', None)
+native_kernels = tuple(getattr(structural, name, None) for name in (
+    '_native_clone', '_native_graph', '_native_root_graph',
+    '_native_record_graph', '_native_walk_graph', '_native_records'))
 
 def profile(frame, event, arg):
     global native_depth
-    if arg is native_tree or arg is native_records:
+    if any(arg is kernel for kernel in native_kernels):
         if event == 'c_call':
             native_depth += 1
         elif event in ('c_return', 'c_exception'):
@@ -279,14 +285,19 @@ def test_gc_installed_finalizer_never_observes_abandoned_dataclass_twins(
     assert completed.returncode == 0, completed.stdout + completed.stderr
 
 
-def test_gc_observer_cannot_retrieve_a_partial_destination_dictionary() -> None:
+def test_gc_observer_can_traverse_every_visible_destination_dictionary() -> None:
     pytest.importorskip("unstd.clone._clone_native")
     code = """
+import dataclasses
 import gc
 from unstd import clone
 
+@dataclasses.dataclass
+class Row:
+    values: list
+
 marker = complex(345.0, 678.0)
-source = {'sentinel': marker}
+source = {'sentinel': marker, 'record': Row([1])}
 source.update({str(index): [index] for index in range(80)})
 expected_keys = list(source)
 partial = []
@@ -300,7 +311,7 @@ def inspect(phase, info):
     observations += 1
     for value in gc.get_referrers(marker):
         if type(value) is dict and value is not source and value.get('sentinel') is marker:
-            if list(value) != expected_keys:
+            if list(value) != expected_keys[:len(value)]:
                 partial.append(list(value))
             # Traversing all published values must always be safe as well.
             repr(value)
@@ -316,12 +327,15 @@ finally:
     active = False
     gc.callbacks.remove(inspect)
 assert observations, 'GC observer never ran'
-assert partial == [], ('private destination escaped through GC', partial)
+assert partial == [], ('invalid destination prefix exposed through GC', partial)
 assert list(actual) == expected_keys
 assert actual['sentinel'] is marker
 assert actual is not source
 for key, value in actual.items():
-    if key != 'sentinel':
+    if key == 'record':
+        assert type(value) is Row and value is not source[key]
+        assert value.values == [1] and value.values is not source[key].values
+    elif key != 'sentinel':
         assert type(value) is list and value == source[key] and value is not source[key]
 """
     completed = subprocess.run(  # noqa: S603 — fixed interpreter and literal test source
@@ -341,7 +355,7 @@ import sys
 from unstd.clone import structural
 
 mutation = sys.argv[1]
-if getattr(structural, '_native_records', None) is None:
+if all(getattr(structural, name, None) is None for name in ('_native_record_graph', '_native_walk_graph')):
     sys.exit(77)
 
 @dataclasses.dataclass
@@ -464,8 +478,10 @@ def test_class_changes_at_native_allocation_finish_the_selected_twin(
 )
 def test_native_record_stack_pressure_preserves_shared_reference_identity() -> None:
     native = pytest.importorskip("unstd.clone._clone_native")
-    if not hasattr(native, "clone_records"):
-        pytest.skip("native record batching is unavailable")
+    if not hasattr(native, "clone_record_graph") and not hasattr(
+        native, "clone_walk_graph"
+    ):
+        pytest.skip("native graph record batching is unavailable")
     code = """
 import ctypes
 import dataclasses
@@ -498,19 +514,26 @@ assert pressure > 0
 class Row:
     values: object
 
+calls = 0
+class Foreign:
+    def __deepcopy__(self, memo):
+        global calls
+        calls += 1
+        return [7]
+
 values = [1]
 for _ in range(100):
     values = [values]
-shared = Row(values)
+shared = Row({'early': Foreign(), 'deep': values})
 source = [shared, shared]
 # Warm admission under the real native backend before testing both routes.
 structural.deep(source)
-assert structural._record_class(source) is Row
-native_tree = structural._native_clone
-native_records = structural._native_records
+native_functions = {name: value for name, value in vars(structural).items()
+                    if name.startswith('_native_')}
 for accelerated in (False, True):
-    structural._native_clone = native_tree if accelerated else None
-    structural._native_records = native_records if accelerated else None
+    calls = 0
+    for name, value in native_functions.items():
+        setattr(structural, name, value if accelerated else None)
     entered = 0
     try:
         for _ in range(pressure):
@@ -522,7 +545,11 @@ for accelerated in (False, True):
             leave()
     assert actual[0] is actual[1], 'C stack pressure split a shared reference'
     assert actual[0] is not shared
-    left, right, original = actual[0].values, actual[1].values, values
+    assert calls == 1, ('stack pressure replayed a foreign copy hook', calls)
+    assert actual[0].values['early'] == [7]
+    left = actual[0].values['deep']
+    right = actual[1].values['deep']
+    original = values
     for _ in range(101):
         assert type(left) is list and type(right) is list
         assert left is right and left is not original
@@ -546,7 +573,7 @@ import sys
 from unstd.clone import structural
 
 limit = int(sys.argv[1])
-if getattr(structural, '_native_records', None) is None:
+if all(getattr(structural, name, None) is None for name in ('_native_record_graph', '_native_walk_graph')):
     sys.exit(77)
 
 @dataclasses.dataclass
@@ -560,6 +587,10 @@ shared = Row(values)
 source = [shared, shared]
 active = False
 mutated = False
+finalized = []
+
+def finalize(self):
+    finalized.append(id(self))
 
 def mutate(phase, info):
     global mutated
@@ -569,6 +600,8 @@ def mutate(phase, info):
         return
     mutated = True
     sys.setrecursionlimit(limit)
+    if limit == 200:
+        Row.__del__ = finalize
 
 gc.collect()
 gc.callbacks.append(mutate)
@@ -589,7 +622,9 @@ if limit == 40:
     assert error is not None, 'record C walk bypassed the new Python recursion budget'
 else:
     assert error is None, error
-    assert actual[0] is actual[1], 'safe limit change split a shared record'
+    assert finalized == [], ('safe limit change abandoned a twin', finalized)
+    del Row.__del__
+    assert actual[0] is actual[1], 'safe limit change lost shared identity'
     assert actual[0] is not shared
     left, right, original = actual[0].values, actual[1].values, values
     for _ in range(61):
@@ -614,4 +649,59 @@ def test_gc_lowered_recursion_limit_retains_record_depth_and_alias_contracts(
     )
     if completed.returncode == 77:
         pytest.skip("validation-only forced-GC allocator is not enabled")
+    assert completed.returncode == 0, completed.stdout + completed.stderr
+
+
+def test_gc_observer_cannot_retrieve_a_partial_destination_dictionary() -> None:
+    pytest.importorskip("unstd.clone._clone_native")
+    code = """
+import gc
+from unstd import clone
+
+marker = complex(345.0, 678.0)
+source = {'sentinel': marker}
+source.update({str(index): [index] for index in range(80)})
+expected_keys = list(source)
+partial = []
+observations = 0
+active = False
+
+def inspect(phase, info):
+    global observations
+    if not active or phase != 'start':
+        return
+    observations += 1
+    for value in gc.get_referrers(marker):
+        if type(value) is dict and value is not source and value.get('sentinel') is marker:
+            if list(value) != expected_keys:
+                partial.append(list(value))
+            # Traversing all published values must always be safe as well.
+            repr(value)
+
+gc.collect()
+gc.callbacks.append(inspect)
+gc.set_threshold(1, 1, 1)
+gc.enable()
+active = True
+try:
+    actual = clone.deep(source)
+finally:
+    active = False
+    gc.callbacks.remove(inspect)
+assert observations, 'GC observer never ran'
+assert partial == [], ('private destination escaped through GC', partial)
+assert list(actual) == expected_keys
+assert actual['sentinel'] is marker
+assert actual is not source
+for key, value in actual.items():
+    if key != 'sentinel':
+        assert type(value) is list and value == source[key] and value is not source[key]
+"""
+    completed = subprocess.run(  # noqa: S603 — fixed interpreter and literal test source
+        [sys.executable, "-X", "faulthandler", "-c", code],
+        check=False,
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
     assert completed.returncode == 0, completed.stdout + completed.stderr

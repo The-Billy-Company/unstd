@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import copy
 import dataclasses
+import datetime as dt
 import gc
 import hashlib
 import json
@@ -132,6 +133,20 @@ def _workloads() -> list[base.Workload]:
                 [ScalarRecord(i, "row", 1.5) for i in range(500)],
             ),
             _case(
+                "dataclasses-datetime-200",
+                [
+                    base.Record(
+                        "row",
+                        [
+                            dt.datetime(2026, 1, 1, tzinfo=dt.UTC)
+                            + dt.timedelta(days=i),
+                            i,
+                        ],
+                    )
+                    for i in range(200)
+                ],
+            ),
+            _case(
                 "dataclass-tree-200",
                 base.Record(
                     "root", [base.Record("row", [i, i + 1]) for i in range(200)]
@@ -150,7 +165,7 @@ def _workloads() -> list[base.Workload]:
 
 
 def _atomic_identity(actual: Any, source: Any) -> bool:
-    """The structural copier must retain exact builtin atom identities."""
+    """Public cloning must retain exact builtin atom identities."""
     kind = type(source)
     if kind is dict:
         return all(
@@ -179,9 +194,15 @@ def _atomic_identity(actual: Any, source: Any) -> bool:
     return True
 
 
-def _check(case: base.Workload, label: str, result: Any) -> bool:
+def _check(
+    case: base.Workload,
+    label: str,
+    result: Any,
+    *,
+    shared_aliases: bool | None = None,
+) -> bool:
     """Validate public results outside the timed batches."""
-    return base._check_result(case, label, result) and (
+    return base._check_result(case, label, result, shared_aliases=shared_aliases) and (
         label == "stdlib" or _atomic_identity(result, case.source)
     )
 
@@ -240,6 +261,12 @@ def main() -> None:
         modules["original"] = base._snapshot(
             args.original_dir.resolve(), "common_original"
         )
+    contracts = {
+        label: base._copy_contract(module) for label, module in modules.items()
+    }
+    if contracts["current"] != "shared":
+        message = "current public deep must preserve shared references"
+        raise AssertionError(message)
     output: dict[str, Any] = {
         "python": sys.version,
         "platform": platform.platform(),
@@ -252,7 +279,9 @@ def main() -> None:
         "gc_threshold": gc.get_threshold(),
         "rounds": args.rounds,
         "timed_surface": "public Python clone.deep/clone.asdict",
+        "copy_contracts": contracts,
         "includes_output_destruction": True,
+        "cache_state": "admission and field caches warmed by untimed validation and calibration",
         "node_count_scope": "known structural output nodes; foreign protocol results excluded",
         "implementations": {
             label: base._metadata(module) for label, module in modules.items()
@@ -262,7 +291,12 @@ def main() -> None:
     for case in _workloads():
         calls = base._callables(case, modules)
         for label, call in calls.items():
-            if not _check(case, label, call()):
+            if not _check(
+                case,
+                label,
+                call(),
+                shared_aliases=contracts.get(label, "shared") == "shared",
+            ):
                 message = f"incorrect public output: {case.name}/{label}"
                 raise AssertionError(message)
         timings = base._timings(calls, args.rounds, args.gc_enabled)
@@ -281,7 +315,7 @@ def main() -> None:
                 label: _node_counts(
                     case.source,
                     plain=case.operation == "asdict",
-                    preserve_aliases=label in ("current", "python", "stdlib"),
+                    preserve_aliases=contracts.get(label, "shared") == "shared",
                 )
                 for label in calls
             },

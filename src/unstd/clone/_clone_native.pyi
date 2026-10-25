@@ -6,5 +6,25 @@ from typing import Any
 def clone(source: Any, /) -> Any: ...
 def clone_checked(source: Any, /) -> Any: ...
 def clone_graph(source: Any, memo: dict[int, Any] = ..., /) -> Any: ...
-def clone_dataclass(source: Any, memo: dict[int, Any], walk: Callable[[Any, dict[int, Any]], Any], /) -> Any: ...
+def clone_dataclass(
+    source: Any,
+    memo: dict[int, Any],
+    walk: Callable[[Any, dict[int, Any]], Any],
+    reuse_memo: bool = ...,
+    /,
+) -> Any: ...
 def clone_records(source: Any, cls: type, walk: Callable[[Any], Any], /) -> Any: ...
+def clone_record_graph(
+    source: Any,
+    cls: type,
+    walk: Callable[[Any, dict[int, Any]], Any],
+    memo: dict[int, Any],
+    /,
+) -> Any: ...
+def clone_walk_graph(
+    source: Any,
+    walk: Callable[[Any, dict[int, Any]], Any],
+    admit: Callable[[type], tuple[bool, Callable[[Any, dict[int, Any]], Any]]],
+    memo: dict[int, Any],
+    /,
+) -> Any: ...

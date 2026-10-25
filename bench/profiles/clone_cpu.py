@@ -211,13 +211,28 @@ def _callables(case: Workload, modules: dict[str, Any]) -> dict[str, Callable[[]
     return calls
 
 
-def _check_result(case: Workload, label: str, result: Any) -> bool:
+def _check_result(
+    case: Workload,
+    label: str,
+    result: Any,
+    *,
+    shared_aliases: bool | None = None,
+) -> bool:
     """Retain each API's alias and immutable-tuple semantics during checking."""
     if not case.check(result, label == "stdlib"):
         return False
     if case.name == "repeated-aliases-500":
-        return (result[0] is result[1]) == (label in ("current", "python", "stdlib"))
+        if shared_aliases is None:
+            shared_aliases = label in ("current", "python", "stdlib")
+        return (result[0] is result[1]) == shared_aliases
     return True
+
+
+def _copy_contract(module: Any) -> str:
+    """Observe each public copier's shared-reference behavior outside timing."""
+    shared = [1]
+    copied = module.deep([shared, shared])
+    return "shared" if copied[0] is copied[1] else "structural"
 
 
 def _load(path: Path, name: str) -> Any:
@@ -264,6 +279,12 @@ def _snapshot(directory: Path, label: str) -> Any:
         else None
     )
     module._native_clone = getattr(backend, entrypoint) if backend else None
+    dataclass_entrypoint = manifest.get("native_dataclass_entrypoint")
+    module._native_dataclass = (
+        getattr(backend, dataclass_entrypoint)
+        if backend is not None and dataclass_entrypoint is not None
+        else None
+    )
     records_entrypoint = manifest.get("native_records_entrypoint")
     if records_entrypoint is not None and not isinstance(records_entrypoint, str):
         message = "snapshot native_records_entrypoint must name a native function"
@@ -284,15 +305,41 @@ def _snapshot(directory: Path, label: str) -> Any:
         if backend is not None and graph_entrypoint is not None
         else None
     )
-    dataclass_entrypoint = manifest.get("native_dataclass_entrypoint")
-    if dataclass_entrypoint is not None and not isinstance(dataclass_entrypoint, str):
-        message = "snapshot native_dataclass_entrypoint must name a native function"
+    record_graph_entrypoint = manifest.get("native_record_graph_entrypoint")
+    if record_graph_entrypoint is not None and not isinstance(
+        record_graph_entrypoint, str
+    ):
+        message = "snapshot native_record_graph_entrypoint must name a function"
         raise TypeError(message)
-    module._native_dataclass = (
-        getattr(backend, dataclass_entrypoint)
-        if backend is not None and dataclass_entrypoint is not None
+    module._native_record_graph = (
+        getattr(backend, record_graph_entrypoint)
+        if backend is not None and record_graph_entrypoint is not None
         else None
     )
+    root_graph_entrypoint = manifest.get("native_root_graph_entrypoint")
+    if root_graph_entrypoint is not None and not isinstance(root_graph_entrypoint, str):
+        message = "snapshot native_root_graph_entrypoint must name a function"
+        raise TypeError(message)
+    module._native_root_graph = (
+        getattr(backend, root_graph_entrypoint)
+        if backend is not None and root_graph_entrypoint is not None
+        else None
+    )
+    walk_graph_entrypoint = manifest.get("native_walk_graph_entrypoint")
+    if walk_graph_entrypoint is not None and not isinstance(walk_graph_entrypoint, str):
+        message = "snapshot native_walk_graph_entrypoint must name a function"
+        raise TypeError(message)
+    module._native_walk_graph = (
+        getattr(backend, walk_graph_entrypoint)
+        if backend is not None and walk_graph_entrypoint is not None
+        else None
+    )
+    declared_contract = manifest.get("copy_contract")
+    if declared_contract is not None and hasattr(module, "deep"):
+        observed_contract = _copy_contract(module)
+        if observed_contract != declared_contract:
+            message = "snapshot copy contract does not match its manifest"
+            raise AssertionError(message)
     return module
 
 
@@ -379,10 +426,14 @@ def _native_route(module: Any, source: Any) -> str:
     if module._native_clone is None:
         return "unavailable"
     graph = getattr(module, "_native_graph", None)
+    root_graph = getattr(module, "_native_root_graph", None)
     try:
-        result = (
-            graph(source, {}) if graph is not None else module._native_clone(source)
-        )
+        if root_graph is not None:
+            result = root_graph(source)
+        else:
+            result = (
+                graph(source, {}) if graph is not None else module._native_clone(source)
+            )
     except RecursionError:
         return "cycle-deepcopy"
     return "accepted" if result is not NotImplemented else "unsupported"
@@ -402,14 +453,36 @@ def _metadata(module: Any) -> dict[str, Any]:
     )
     native_path = sys.modules[native.__module__].__file__ if native else None
     extension = Path(native_path) if native_path else None
-    graph = getattr(module, "_native_graph", None)
     native_dataclass = getattr(module, "_native_dataclass", None)
+    dataclass_path = (
+        sys.modules[native_dataclass.__module__].__file__ if native_dataclass else None
+    )
+    dataclass_extension = Path(dataclass_path) if dataclass_path else None
+    graph = getattr(module, "_native_graph", None)
     records = getattr(module, "_native_records", None)
     records_path = sys.modules[records.__module__].__file__ if records else None
     records_extension = Path(records_path) if records_path else None
+    record_graph = getattr(module, "_native_record_graph", None)
+    record_graph_path = (
+        sys.modules[record_graph.__module__].__file__ if record_graph else None
+    )
+    record_graph_extension = Path(record_graph_path) if record_graph_path else None
+    root_graph = getattr(module, "_native_root_graph", None)
+    root_graph_path = (
+        sys.modules[root_graph.__module__].__file__ if root_graph else None
+    )
+    root_graph_extension = Path(root_graph_path) if root_graph_path else None
+    graph_path = sys.modules[graph.__module__].__file__ if graph else None
+    graph_extension = Path(graph_path) if graph_path else None
+    walk_graph = getattr(module, "_native_walk_graph", None)
+    walk_graph_path = (
+        sys.modules[walk_graph.__module__].__file__ if walk_graph else None
+    )
+    walk_graph_extension = Path(walk_graph_path) if walk_graph_path else None
     snapshot_manifest = source.parent / "manifest.json"
     return {
         "source": str(source),
+        "copy_contract": _copy_contract(module) if hasattr(module, "deep") else None,
         "source_sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
         "snapshot_manifest_sha256": hashlib.sha256(
             snapshot_manifest.read_bytes()
@@ -423,6 +496,17 @@ def _metadata(module: Any) -> dict[str, Any]:
         "native_entrypoint": getattr(native, "__name__", None),
         "native_graph_entrypoint": getattr(graph, "__name__", None),
         "native_dataclass_entrypoint": getattr(native_dataclass, "__name__", None),
+        "native_dataclass": {
+            "entrypoint": native_dataclass.__name__,
+            "module": native_dataclass.__module__,
+            "path": str(dataclass_extension),
+            "source_sha256": hashlib.sha256(native_source.read_bytes()).hexdigest()
+            if native_source.is_file()
+            else None,
+            "sha256": hashlib.sha256(dataclass_extension.read_bytes()).hexdigest(),
+        }
+        if native_dataclass is not None and dataclass_extension is not None
+        else None,
         "native_sha256": hashlib.sha256(extension.read_bytes()).hexdigest()
         if extension
         else None,
@@ -436,6 +520,50 @@ def _metadata(module: Any) -> dict[str, Any]:
             "sha256": hashlib.sha256(records_extension.read_bytes()).hexdigest(),
         }
         if records is not None and records_extension is not None
+        else None,
+        "native_graph": {
+            "entrypoint": graph.__name__,
+            "module": graph.__module__,
+            "path": str(graph_extension),
+            "source_sha256": hashlib.sha256(native_source.read_bytes()).hexdigest()
+            if native_source.is_file()
+            else None,
+            "sha256": hashlib.sha256(graph_extension.read_bytes()).hexdigest(),
+        }
+        if graph is not None and graph_extension is not None
+        else None,
+        "native_record_graph": {
+            "entrypoint": record_graph.__name__,
+            "module": record_graph.__module__,
+            "path": str(record_graph_extension),
+            "source_sha256": hashlib.sha256(native_source.read_bytes()).hexdigest()
+            if native_source.is_file()
+            else None,
+            "sha256": hashlib.sha256(record_graph_extension.read_bytes()).hexdigest(),
+        }
+        if record_graph is not None and record_graph_extension is not None
+        else None,
+        "native_root_graph": {
+            "entrypoint": root_graph.__name__,
+            "module": root_graph.__module__,
+            "path": str(root_graph_extension),
+            "source_sha256": hashlib.sha256(native_source.read_bytes()).hexdigest()
+            if native_source.is_file()
+            else None,
+            "sha256": hashlib.sha256(root_graph_extension.read_bytes()).hexdigest(),
+        }
+        if root_graph is not None and root_graph_extension is not None
+        else None,
+        "native_walk_graph": {
+            "entrypoint": walk_graph.__name__,
+            "module": walk_graph.__module__,
+            "path": str(walk_graph_extension),
+            "source_sha256": hashlib.sha256(native_source.read_bytes()).hexdigest()
+            if native_source.is_file()
+            else None,
+            "sha256": hashlib.sha256(walk_graph_extension.read_bytes()).hexdigest(),
+        }
+        if walk_graph is not None and walk_graph_extension is not None
         else None,
     }
 
@@ -455,12 +583,16 @@ def main() -> None:
     python_only = _load(Path(current.__file__), "_clone_cpu_python_structural")
     python_only._native_clone = None
     python_only._native_graph = None
-    python_only._native_records = None
     python_only._native_dataclass = None
+    python_only._native_records = None
+    python_only._native_record_graph = None
+    python_only._native_root_graph = None
+    python_only._native_walk_graph = None
     modules = {"current": current, "python": python_only}
     if args.compare_dir:
         modules["before"] = _snapshot(args.compare_dir.resolve(), "before")
     cases = _workloads()
+    contracts = {label: _copy_contract(module) for label, module in modules.items()}
     output: dict[str, Any] = {
         "python": sys.version,
         "platform": platform.platform(),
@@ -478,7 +610,12 @@ def main() -> None:
     for case in cases:
         calls = _callables(case, modules)
         for label, call in calls.items():
-            if not _check_result(case, label, call()):
+            if not _check_result(
+                case,
+                label,
+                call(),
+                shared_aliases=contracts.get(label, "shared") == "shared",
+            ):
                 message = f"incorrect output: {case.name}/{label}"
                 raise AssertionError(message)
         timings = _timings(calls, args.rounds, args.gc_enabled)

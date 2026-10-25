@@ -1,0 +1,535 @@
+--- a/native/clone/src/_clone_native.c
++++ b/native/clone/src/_clone_native.c
+@@ -5,39 +5,46 @@
+  * never explicitly invokes copy, reducer, hash or equality hooks.
+  *
+  * Container allocation can run cyclic GC and arbitrary Python finalizers even
+- * while the GIL is held. Real iterators and owned item references are deliberate:
+- * no cached list size, borrowed dict value or raw container span survives an
+- * allocation. Dict item iterators also retain Python's mutation checks.
++ * while the GIL is held. Every item is owned across recursive allocations;
++ * dictionary item iterators retain Python's mutation checks. Presized sequence
++ * outputs stay untracked until their NULL slots have all been filled.
+  */
+ #define PY_SSIZE_T_CLEAN
+ #include <Python.h>
+ 
+ #define MAX_DEPTH 128
+-#define MAX_VALUES 65536
+-
+-static int clone_value(PyObject *, PyObject **, unsigned int, Py_ssize_t *);
++#define MAX_CONTAINERS 65536
++
++typedef struct {
++    Py_ssize_t remaining;
++    unsigned int count;
++    PyObject *ancestors[MAX_DEPTH];
++} Proof;
++
++typedef struct {
++    Py_ssize_t remaining;
++    PyObject *items;
++} CopyContext;
++
++static int clone_value(PyObject *, PyObject **, unsigned int, CopyContext *);
+ static int atom(PyObject *);
+-static int eligible(PyObject *, unsigned int, Py_ssize_t *);
++static int eligible(PyObject *, unsigned int, Proof *);
+ 
+ static int
+ shallow_atoms(PyObject *source)
+ {
+-    if (PyList_CheckExact(source)) {
+-        Py_ssize_t size = PyList_GET_SIZE(source);
+-        if (size >= MAX_VALUES) {
+-            return 0;
+-        }
++    if (PyList_CheckExact(source) || PyTuple_CheckExact(source)) {
++        Py_ssize_t size = Py_SIZE(source);
+         for (Py_ssize_t i = 0; i < size; i++) {
+-            if (!atom(PyList_GET_ITEM(source, i))) {
++            PyObject *item = PyList_CheckExact(source)
++                ? PyList_GET_ITEM(source, i) : PyTuple_GET_ITEM(source, i);
++            if (!atom(item)) {
+                 return 0;
+             }
+         }
+         return 1;
+     }
+     if (PyDict_CheckExact(source)) {
+-        if (PyDict_Size(source) >= MAX_VALUES) {
+-            return 0;
+-        }
+         Py_ssize_t position = 0;
+         PyObject *key, *value;
+         while (PyDict_Next(source, &position, &key, &value)) {
+@@ -55,17 +62,14 @@
+  * borrowed references safe in this pass only. The copying pass revalidates
+  * everything because its allocations can trigger source-mutating finalizers. */
+ static int
+-eligible_contents(PyObject *source, unsigned int depth, Py_ssize_t *remaining)
++eligible_contents(PyObject *source, unsigned int depth, Proof *proof)
+ {
+     if (PyList_CheckExact(source) || PyTuple_CheckExact(source)) {
+         Py_ssize_t size = Py_SIZE(source);
+-        if (size > *remaining) {
+-            return 0;
+-        }
+         for (Py_ssize_t i = 0; i < size; i++) {
+             PyObject *item = PyList_CheckExact(source)
+                 ? PyList_GET_ITEM(source, i) : PyTuple_GET_ITEM(source, i);
+-            int status = eligible(item, depth - 1, remaining);
++            int status = eligible(item, depth - 1, proof);
+             if (status != 1) {
+                 return status;
+             }
+@@ -73,16 +77,13 @@
+         return 1;
+     }
+     if (PyDict_CheckExact(source)) {
+-        if (PyDict_Size(source) > *remaining) {
+-            return 0;
+-        }
+         Py_ssize_t position = 0;
+         PyObject *key, *value;
+         while (PyDict_Next(source, &position, &key, &value)) {
+             if (!PyUnicode_CheckExact(key)) {
+                 return 0;
+             }
+-            int status = eligible(value, depth - 1, remaining);
++            int status = eligible(value, depth - 1, proof);
+             if (status != 1) {
+                 return status;
+             }
+@@ -93,17 +94,22 @@
+ }
+ 
+ static int
+-eligible(PyObject *source, unsigned int depth, Py_ssize_t *remaining)
+-{
+-    if (--*remaining < 0) {
+-        return 0;
+-    }
++eligible(PyObject *source, unsigned int depth, Proof *proof)
++{
+     if (atom(source)) {
+         return 1;
+     }
+     if (depth == 0 || (!PyList_CheckExact(source) && !PyTuple_CheckExact(source)
+                        && !PyDict_CheckExact(source))) {
+         return 0;
++    }
++    if (--proof->remaining < 0) {
++        return 0;
++    }
++    for (unsigned int i = 0; i < proof->count; i++) {
++        if (proof->ancestors[i] == source) {
++            return 2;
++        }
+     }
+     /* Also guard the proof itself against a nearly exhausted native C stack.
+      * No allocation/callback occurs unless entering fails; errors unwind the
+@@ -118,7 +124,9 @@
+         }
+         return -1;
+     }
+-    int status = eligible_contents(source, depth, remaining);
++    proof->ancestors[proof->count++] = source;
++    int status = eligible_contents(source, depth, proof);
++    --proof->count;
+     Py_LeaveRecursiveCall();
+     return status;
+ }
+@@ -126,70 +134,102 @@
+ static int
+ atom(PyObject *value)
+ {
+-    return value == Py_None || value == Py_Ellipsis
+-        || value == Py_NotImplemented || PyBool_Check(value)
+-        || PyLong_CheckExact(value) || PyFloat_CheckExact(value)
+-        || PyComplex_CheckExact(value) || PyBytes_CheckExact(value)
+-        || PyUnicode_CheckExact(value);
++    PyTypeObject *kind = Py_TYPE(value);
++    return kind == &PyLong_Type || kind == &PyUnicode_Type
++        || kind == &PyFloat_Type || kind == &PyBool_Type || value == Py_None
++        || kind == &PyBytes_Type || kind == &PyComplex_Type
++        || value == Py_Ellipsis || value == Py_NotImplemented;
+ }
+ 
+ /* 1: owned result; 0: unsupported (no exception); -1: real failure. */
+ static int
+ clone_sequence(PyObject *source, PyObject **result, unsigned int depth,
+-               Py_ssize_t *remaining)
+-{
+-    PyObject *iterator = PyObject_GetIter(source);
+-    if (iterator == NULL) {
+-        return -1;
+-    }
+-    PyObject *output = PyList_New(0);
++               CopyContext *context)
++{
++    int tuple = PyTuple_CheckExact(source);
++    Py_ssize_t size = Py_SIZE(source);
++    PyObject *output = tuple ? PyTuple_New(size) : PyList_New(size);
+     if (output == NULL) {
+-        Py_DECREF(iterator);
+-        return -1;
+-    }
+-    PyObject *item;
++        return -1;
++    }
++    /* No partially initialized list/tuple may appear in gc.get_objects() or
++     * gc.get_referrers() during allocations further down the tree. A completed
++     * result is tracked again before it can be published to its parent. */
++    if (PyObject_GC_IsTracked(output)) {
++        PyObject_GC_UnTrack(output);
++    }
++    Py_ssize_t written = 0;
+     int status = 1;
+-    while ((item = PyIter_Next(iterator)) != NULL) {
++    while (written < Py_SIZE(source)) {
++        /* Re-read the live list's size and item after every recursive copy.
++         * A finalizer may clear, replace or append source items. Tuples are
++         * immutable, but use the same owned-item discipline. */
++        PyObject *item = Py_NewRef(tuple
++            ? PyTuple_GET_ITEM(source, written)
++            : PyList_GET_ITEM(source, written));
+         PyObject *copied = NULL;
+-        status = clone_value(item, &copied, depth - 1, remaining);
+-        Py_DECREF(item);
++        if (atom(item)) {
++            copied = item;
++        } else {
++            status = clone_value(item, &copied, depth - 1, context);
++            Py_DECREF(item);
++        }
+         if (status != 1) {
+             break;
+         }
+-        int appended = PyList_Append(output, copied);
+-        Py_DECREF(copied);
+-        if (appended < 0) {
+-            status = -1;
+-            break;
+-        }
+-    }
+-    if (status == 1 && PyErr_Occurred()) {
+-        status = -1;
+-    }
+-    Py_DECREF(iterator);
++        if (tuple) {
++            PyTuple_SET_ITEM(output, written, copied);
++        } else if (written < size) {
++            PyList_SET_ITEM(output, written, copied);
++        } else {
++            int appended = PyList_Append(output, copied);
++            Py_DECREF(copied);
++            if (appended < 0) {
++                status = -1;
++                break;
++            }
++        }
++        ++written;
++    }
+     if (status != 1) {
+         Py_DECREF(output);
+         return status;
+     }
+-    if (PyTuple_CheckExact(source)) {
+-        *result = PyList_AsTuple(output);
++    if (!tuple && written < size) {
++        /* A source-shrinking finalizer can leave unused NULL slots. Slice only
++         * the initialized prefix; never expose those slots to Python or GC. */
++        *result = PyList_GetSlice(output, 0, written);
+         Py_DECREF(output);
+         return *result == NULL ? -1 : 1;
+     }
++    if (Py_SIZE(output) != 0 || !tuple) {
++        PyObject_GC_Track(output);
++    }
+     *result = output;
+     return 1;
+ }
+ 
+ static int
+ clone_dict(PyObject *source, PyObject **result, unsigned int depth,
+-           Py_ssize_t *remaining)
+-{
+-    PyObject *output = PyDict_New();
++           CopyContext *context)
++{
++    if (context->items == NULL) {
++        /* Bind the exact builtin descriptor once per tree. Calling it directly
++         * retains owned item iteration without repeated method-name allocation
++         * and attribute lookup in every nested dictionary. */
++        context->items = PyObject_GetAttrString((PyObject *)&PyDict_Type, "items");
++        if (context->items == NULL) {
++            return -1;
++        }
++    }
++    PyObject *output = _PyDict_NewPresized(PyDict_Size(source));
+     if (output == NULL) {
+         return -1;
+     }
+-    /* Do not snapshot: the Python comprehension iterates the live item view. */
+-    PyObject *view = PyObject_CallMethod(source, "items", NULL);
++    /* Keep the owned item tuple: even an exact string lookup could invoke a
++     * foreign key's equality hook if a finalizer inserted a colliding key
++     * after the proof. The iterator also retains live mutation checks. */
++    PyObject *view = PyObject_CallOneArg(context->items, source);
+     if (view == NULL) {
+         Py_DECREF(output);
+         return -1;
+@@ -203,17 +243,19 @@
+     PyObject *item;
+     int status = 1;
+     while ((item = PyIter_Next(iterator)) != NULL) {
+-        /* The owned item tuple pins both key and value through recursive
+-         * allocations, even if a finalizer clears the source dictionary. */
+         PyObject *key = PyTuple_GET_ITEM(item, 0);
+         if (!PyUnicode_CheckExact(key)) {
+             Py_DECREF(item);
+             status = 0;
+             break;
+         }
++        PyObject *value = PyTuple_GET_ITEM(item, 1);
+         PyObject *copied = NULL;
+-        status = clone_value(PyTuple_GET_ITEM(item, 1), &copied, depth - 1,
+-                             remaining);
++        if (atom(value)) {
++            copied = Py_NewRef(value);
++        } else {
++            status = clone_value(value, &copied, depth - 1, context);
++        }
+         if (status != 1) {
+             Py_DECREF(item);
+             break;
+@@ -240,11 +282,8 @@
+ 
+ static int
+ clone_value(PyObject *source, PyObject **result, unsigned int depth,
+-            Py_ssize_t *remaining)
+-{
+-    if (--*remaining < 0) {
+-        return 0;
+-    }
++            CopyContext *context)
++{
+     if (atom(source)) {
+         *result = Py_NewRef(source);
+         return 1;
+@@ -254,6 +293,9 @@
+     }
+     if (!PyList_CheckExact(source) && !PyTuple_CheckExact(source)
+         && !PyDict_CheckExact(source)) {
++        return 0;
++    }
++    if (--context->remaining < 0) {
+         return 0;
+     }
+     if (Py_EnterRecursiveCall(" while cloning a builtin tree")) {
+@@ -264,16 +306,12 @@
+         return -1;
+     }
+     int status;
+-    if (shallow_atoms(source)) {
+-        PyObject *copied = PyDict_CheckExact(source)
+-            ? PyDict_Copy(source) : PyList_GetSlice(source, 0, PY_SSIZE_T_MAX);
++    if (PyDict_CheckExact(source) && shallow_atoms(source)) {
++        PyObject *copied = PyDict_Copy(source);
+         if (copied == NULL) {
+             status = -1;
+         } else {
+-            Py_ssize_t size = PyDict_CheckExact(copied)
+-                ? PyDict_Size(copied) : PyList_GET_SIZE(copied);
+-            if (size <= *remaining && shallow_atoms(copied)) {
+-                *remaining -= size;
++            if (shallow_atoms(copied)) {
+                 *result = copied;
+                 status = 1;
+             } else {
+@@ -283,17 +321,16 @@
+         }
+     } else {
+         status = PyDict_CheckExact(source)
+-            ? clone_dict(source, result, depth, remaining)
+-            : clone_sequence(source, result, depth, remaining);
++            ? clone_dict(source, result, depth, context)
++            : clone_sequence(source, result, depth, context);
+     }
+     Py_LeaveRecursiveCall();
+     return status;
+ }
+ 
+ static PyObject *
+-clone_builtin(PyObject *module, PyObject *source)
+-{
+-    (void)module;
++clone_builtin_impl(PyObject *source, int cycle_error)
++{
+     /* The C stack guard alone cannot model Python's frame budget on 3.12+.
+      * These versioned CPython wheels use the same Python-frame budget field
+      * as the JSON guard on our tested interpreter range. Future interpreters
+@@ -323,8 +360,20 @@
+         /* Bulk copies remove per-item iterator/append overhead on flat data.
+          * Revalidate the owned snapshot: allocation may have run a finalizer
+          * which inserted a foreign value into the source after the proof. */
+-        PyObject *copied = PyDict_CheckExact(source)
+-            ? PyDict_Copy(source) : PyList_GetSlice(source, 0, PY_SSIZE_T_MAX);
++        PyObject *copied;
++        if (PyTuple_CheckExact(source)) {
++            Py_ssize_t size = PyTuple_GET_SIZE(source);
++            copied = PyTuple_New(size);
++            if (copied != NULL) {
++                for (Py_ssize_t i = 0; i < size; i++) {
++                    PyTuple_SET_ITEM(copied, i,
++                                    Py_NewRef(PyTuple_GET_ITEM(source, i)));
++                }
++            }
++        } else {
++            copied = PyDict_CheckExact(source)
++                ? PyDict_Copy(source) : PyList_GetSlice(source, 0, PY_SSIZE_T_MAX);
++        }
+         if (copied == NULL) {
+             return NULL;
+         }
+@@ -334,17 +383,22 @@
+         Py_DECREF(copied);
+         Py_RETURN_NOTIMPLEMENTED;
+     }
+-    Py_ssize_t values = MAX_VALUES;
+-    int accepted = eligible(source, budget, &values);
++    Proof proof = {MAX_CONTAINERS, 0, {NULL}};
++    int accepted = eligible(source, budget, &proof);
+     if (accepted < 0) {
+         return NULL;
+     }
+-    if (accepted == 0) {
++    if (accepted != 1) {
++        if (accepted == 2 && cycle_error) {
++            PyErr_SetString(PyExc_RecursionError, "cyclic builtin clone tree");
++            return NULL;
++        }
+         Py_RETURN_NOTIMPLEMENTED;
+     }
+-    values = MAX_VALUES;
++    CopyContext context = {MAX_CONTAINERS, NULL};
+     PyObject *result = NULL;
+-    int status = clone_value(source, &result, budget, &values);
++    int status = clone_value(source, &result, budget, &context);
++    Py_XDECREF(context.items);
+     if (status < 0) {
+         return NULL;
+     }
+@@ -358,9 +412,25 @@
+     return result;
+ }
+ 
++static PyObject *
++clone_builtin(PyObject *module, PyObject *source)
++{
++    (void)module;
++    return clone_builtin_impl(source, 0);
++}
++
++static PyObject *
++clone_checked(PyObject *module, PyObject *source)
++{
++    (void)module;
++    return clone_builtin_impl(source, 1);
++}
++
+ static PyMethodDef methods[] = {
+     {"clone", clone_builtin, METH_O,
+      "Clone exact builtin data or return NotImplemented without copy hooks."},
++    {"clone_checked", clone_checked, METH_O,
++     "Clone builtin data, raising RecursionError for a proved builtin cycle."},
+     {NULL, NULL, 0, NULL}
+ };
+ 
+--- a/src/unstd/clone/structural.py
++++ b/src/unstd/clone/structural.py
+@@ -25,9 +25,10 @@
+ Two semantic differences from ``deepcopy``, both deliberate and both what the
+ serialization round-trip this replaced already had: **shared references are not
+ preserved** (an object reached twice is cloned twice), and a **cycle** among
+-walked containers is detected by the recursion limit and handed to ``deepcopy``
+-whole. Use :func:`deepcopy` directly for live object graphs where aliasing is
+-meaning.
++walked containers is handed to ``deepcopy`` whole. The native eligibility pass
++detects builtin cycles immediately; other cycles retain the recursion-error
++fallback. Use :func:`deepcopy` directly for live object graphs where aliasing
++is meaning.
+ 
+ :func:`asdict` is the same walker in ``dataclasses.asdict``'s shape — dataclasses
+ become ``dict``, ``dict``/``list``/``tuple`` are rebuilt, and every other leaf is
+@@ -59,7 +60,7 @@
+ 
+ _native_clone: Callable[[Any], Any] | None
+ try:
+-    from unstd.clone._clone_native import clone as _native_clone
++    from unstd.clone._clone_native import clone_checked as _native_clone
+ except ImportError:
+     _native_clone = None
+ 
+@@ -183,11 +184,20 @@
+     return o
+ 
+ 
++def _walk_data(o: Any) -> Any:
++    """Try native cloning at an admitted object's state boundary."""
++    if _native_clone is not None:
++        result = _native_clone(o)
++        if result is not NotImplemented:
++            return result
++    return _walk(o)
++
++
+ def _dataclass(o: Any) -> Any:
+     cls: Any = type(o)
+     twin = cls.__new__(cls)
+     if state := o.__dict__:
+-        twin.__dict__.update(_walk(state))
++        twin.__dict__.update(_walk_data(state))
+     return twin
+ 
+ 
+@@ -214,9 +224,9 @@
+     cls: Any = type(o)
+     setattr_ = object.__setattr__
+     twin = cls.__new__(cls)
+-    setattr_(twin, "__dict__", _walk(o.__dict__))
++    setattr_(twin, "__dict__", _walk_data(o.__dict__))
+     extra = o.__pydantic_extra__
+-    setattr_(twin, "__pydantic_extra__", None if extra is None else _walk(extra))
++    setattr_(twin, "__pydantic_extra__", None if extra is None else _walk_data(extra))
+     setattr_(twin, "__pydantic_fields_set__", set(o.__pydantic_fields_set__))
+     private = getattr(o, "__pydantic_private__", None)
+     if private is not None:
+@@ -277,6 +287,16 @@
+ 
+ class _DeferError(Exception):
+     """A container ``dataclasses.asdict`` treats specially and this walker does not."""
++
++
++def _plain_field(o: Any) -> Any:
++    """Try native data conversion once at a dataclass field boundary."""
++    t = type(o)
++    if _native_clone is not None and (t is dict or t is list or t is tuple):
++        result = _native_clone(o)
++        if result is not NotImplemented:
++            return result
++    return _plain(o)
+ 
+ 
+ def _plain(o: Any) -> Any:
+@@ -302,7 +322,8 @@
+         except KeyError:
+             names = _FIELDS[t] = tuple(f.name for f in dataclasses.fields(t))
+         return {
+-            n: (v if type(v := getattr(o, n)) in _ATOMS else _plain(v)) for n in names
++            n: (v if type(v := getattr(o, n)) in _ATOMS else _plain_field(v))
++            for n in names
+         }
+     if isinstance(o, (dict, list, tuple)):
+         raise _DeferError
