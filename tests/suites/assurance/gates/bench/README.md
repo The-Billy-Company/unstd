@@ -25,6 +25,14 @@ rows, checks real workload oracles and proves fixture cleanup/state restoration.
 `test_speeds_workflow.py` checks isolated revision builds and shared-worker
 comparison policy. These checks have no machine-speed assertions.
 
+The common clone guard requires successful native graph, dataclass and `asdict`
+calls in the candidate. A historical baseline with structural copying must prove
+its native builtin-tree route and independent alias copies; newer shared-graph
+baselines retain all three native proofs. Every revision still checks and times
+all 25 workloads with GC enabled and the same wall/CPU limits.
+Its unit tests reject declined native calls and separate wall/CPU regressions,
+check baseline entrypoint isolation, and require evidence to survive failure.
+
 `test_timing_noise.py` uses virtual clocks to reject preempted calibration
 batches and retain separate wall/CPU evidence. `test_rand_diagnose.py` exercises
 alternating direct controls, source identities, cleanup and baseline overwrite

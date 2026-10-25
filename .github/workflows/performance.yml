@@ -118,6 +118,16 @@ jobs:
           --revision-baseline
           --baseline .local/performance/evidence/baseline.json
           --output .local/performance/evidence/current.json
+      - name: Guard native clone graphs and dataclass latency
+        if: ${{ !inputs.gzip_diagnostic }}
+        env:
+          PYTHONPATH: ${{ github.workspace }}/.local/performance/installed-current:${{ github.workspace }}
+        run: >-
+          .venv/bin/python -m bench.profiles.clone_common_cpu
+          --compare-dir .local/performance/installed-before/unstd/clone
+          --infer-native-bindings --require-native --gc-enabled
+          --rounds 9 --max-slowdown 1.30
+          --output .local/performance/evidence/clone-common.json
       - name: Retain both native gzip builds for diagnosis
         if: ${{ inputs.gzip_diagnostic }}
         run: |

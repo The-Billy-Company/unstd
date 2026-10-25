@@ -30,3 +30,10 @@ read; caches written by other tags are inaccessible. A new dependency closure
 still requires a cold build. Wheel contracts run in up to four separate pytest
 processes using the existing complete, disjoint partitions and unchanged test
 budgets. Each release always rebuilds and tests its own wheel from its sdist.
+
+The clone comparison also checks 25 common graph and dataclass workloads with
+GC enabled. It proves successful native graph, dataclass and `asdict` routes in
+both installations, then fails if either median wall or CPU latency exceeds
+130% of the comparison revision. Baseline imports select that revision's own
+native entrypoints. Raw timings and route evidence remain in `clone-common.json`
+even when the guard fails.

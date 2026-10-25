@@ -125,6 +125,38 @@ def test_one_worker_baseline_and_harness_judge_both_revisions(
         assert step["env"]["PYTHONPATH"].endswith(":${{ github.workspace }}")
 
 
+def test_common_clone_guard_checks_native_routes_and_both_latency_clocks(
+    workflow: dict[str, Any],
+) -> None:
+    (step,) = [
+        step
+        for step in workflow["jobs"]["compare"]["steps"]
+        if "-m bench.profiles.clone_common_cpu" in step.get("run", "")
+    ]
+    tokens = shlex.split(step["run"])
+    assert step["if"] == "${{ !inputs.gzip_diagnostic }}"
+    assert tokens[:3] == [
+        ".venv/bin/python",
+        "-m",
+        "bench.profiles.clone_common_cpu",
+    ]
+    assert {"--infer-native-bindings", "--require-native", "--gc-enabled"} <= set(
+        tokens
+    )
+    assert tokens[tokens.index("--compare-dir") + 1] == (
+        ".local/performance/installed-before/unstd/clone"
+    )
+    assert float(tokens[tokens.index("--max-slowdown") + 1]) == 1.30
+    assert int(tokens[tokens.index("--rounds") + 1]) >= 9
+    assert tokens[tokens.index("--output") + 1] == (
+        ".local/performance/evidence/clone-common.json"
+    )
+    assert step["env"]["PYTHONPATH"] == (
+        "${{ github.workspace }}/.local/performance/installed-current:"
+        "${{ github.workspace }}"
+    )
+
+
 def test_comparison_retains_evidence_on_regression(workflow: dict[str, Any]) -> None:
     upload = next(
         step

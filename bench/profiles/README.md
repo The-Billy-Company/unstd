@@ -13,6 +13,12 @@ These drivers compare saved and current implementations, check outputs and impor
 - [`gzip_reads.py`](gzip_reads.py)
 - [`text_native_compare.py`](text_native_compare.py)
 
+For installed clone baselines, add `--infer-native-bindings` to load only the
+entrypoints imported by that baseline's own Python wrapper. Use
+`--require-native --gc-enabled --max-slowdown 1.30` to prove successful native
+routes and gate both median wall and process CPU latency across all 25 common
+workloads. The output report is saved before a failed guard exits.
+
 See the [benchmark guide](../README.md).
 
 Current `deep` workloads require shared-reference preservation; saved historical
