@@ -41,8 +41,11 @@ failing loud where no faithful substitute exists:
 - ``audio`` (``wave``) — soundfile read/write plus a streaming writer.
 - ``toml`` (``tomllib``) — reading is stdlib; writing needs tomlkit.
 - ``yaml`` — safe YAML 1.2 and comment-preserving edits; requires the ``yaml`` extra.
-- ``compress`` (``gzip``) — native compression, bounded inflation and CRC behind
-  ``gzipx``; the ``compress`` extra retains stdlib framing and a base fallback.
+- ``compress`` (``gzip`` / ``zlib`` / archive modules) — native compression,
+  bounded inflation and CRC behind ``gzipx``; the ``compress`` extra retains
+  stdlib framing and a base fallback. ``zstd`` adds the original ``zstandard``
+  provider; ``archives`` adds the original ``libarchive`` binding and requires
+  a separately installed native libarchive library.
 - ``proc`` (``subprocess``) · ``fs`` (``os``) · ``iters`` (``itertools``) —
   pure stdlib, no extra, always present in the base install.
 

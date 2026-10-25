@@ -253,6 +253,48 @@ def test_yaml_raw_merge_policy_distinguishes_duplicates_from_overrides(raw):
     _yaml().fuzz(b"\0" + raw)
 
 
+def test_yaml_recursive_merge_retains_safe_parity_when_roundtrip_oracle_crashes():
+    target = _yaml()
+    raw = b"defaults: &d  {<<: *d, role: writer}\n"
+    expected = {"defaults": {"role": "writer"}}
+    assert target.YAML(typ="safe", pure=True).load(raw) == expected
+    assert target.yaml.loads(raw) == expected
+    assert target.yaml.load(io.BytesIO(raw)) == expected
+    target.fuzz(b"\0" + raw)
+
+
+@pytest.mark.parametrize("operation", ["loads", "load"])
+def test_yaml_recursive_merge_does_not_hide_product_attribute_errors(
+    monkeypatch, operation
+):
+    target = _yaml()
+
+    def broken_parser(_source):
+        return (None).add_referent
+
+    monkeypatch.setattr(target.yaml, operation, broken_parser)
+    with pytest.raises(AttributeError, match="add_referent"):
+        target.fuzz(b"\0defaults: &d  {<<: *d, role: writer}\n")
+
+
+def test_yaml_roundtrip_oracle_does_not_hide_unrelated_attribute_errors(monkeypatch):
+    target = _yaml()
+    original = target.YAML
+
+    class BrokenRoundtrip:
+        allow_duplicate_keys = False
+
+        def load(self, _source):
+            return (None).unrelated_parser_attribute
+
+    def parser(*, typ, pure):
+        return BrokenRoundtrip() if typ == "rt" else original(typ=typ, pure=pure)
+
+    monkeypatch.setattr(target, "YAML", parser)
+    with pytest.raises(AttributeError, match="unrelated_parser_attribute"):
+        target.fuzz(b"\0safe: true\n")
+
+
 def test_yaml_raw_merge_policy_cannot_accept_a_duplicate_key(monkeypatch):
     target = _yaml()
     monkeypatch.setattr(target.yaml, "loads", lambda *_: {"user": {"role": "admin"}})

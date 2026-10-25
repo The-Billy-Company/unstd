@@ -10,6 +10,8 @@ Private build inputs for `unstd.compress._gzip_native`. Start with
 | [`src/stream.c`](src/stream.c) | Python `Inflater` object, retained input, bounded output, and EOF state |
 | [`src/inflate.c`](src/inflate.c) | zlib ABI calls and checked Python RAW allocation callbacks |
 | [`src/stream.h`](src/stream.h) | Shared inflater declarations and module-registration entry point |
+| [`src/module.h`](src/module.h) | Per-module codec ownership shared by the C adapters |
+| [`src/shape.h`](src/shape.h) | Bounded structural probe for Mac ARM streaming selection |
 
 Buffer decoding accepts exact `bytes` and returns `None` for stdlib replay when
 framing, checksums, size, or input consumption cannot be accepted; allocation
@@ -23,6 +25,9 @@ buffer decoding and CRC32. The private adapter links platform `libz` on macOS
 and vendored zlib 1.3.2 with `Z_PREFIX` elsewhere. The public reader selects
 zlib-ng's native raw inflater on Linux while retaining the adapter on macOS and
 other platforms. Both keep the interpreter's gzip framing and native CRC.
+On Mac ARM, a bounded complete-block probe can select the already loaded
+zlib-ng provider for short-distance repetitive streams before decoding begins.
+Ordinary dataset streams retain Apple libz; Linux retains its native SIMD path.
 [`vendor/README.md`](vendor/README.md)
 maps those source closures and licenses. Default builds need no Cargo,
 source downloads, or system libdeflate.

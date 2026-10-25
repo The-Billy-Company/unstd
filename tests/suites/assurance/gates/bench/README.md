@@ -6,6 +6,12 @@ audits, baseline floors, source isolation, workload coverage, paired timing, and
 observed native dispatch. Deliberately wrong outputs and declined native calls
 must fail before they can support an acceleration claim.
 
+`test_jsonx_throughput.py` rejects missing/wrong installed native extensions,
+inactive bindings, incorrect native results, source changes and empty workload
+filters. It verifies alternating installed-root comparisons, finite slowdown
+limits, and evidence retention when a wall-time limit fails, without measuring
+machine speed in the correctness suite.
+
 `test_gzip_reads.py` rejects changed decoded bytes and incorrectly imported
 comparison sources, and checks bounded output, concatenated lines and rewinds.
 `test_billy_gzip.py` checks Billy's exact HTTP sentinel budget, upload chunk sizes

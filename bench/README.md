@@ -116,6 +116,9 @@ Native source changes also trigger both comparisons. The freeze pass uses
 source inventory; `--revision-baseline` checks every shared workload against its
 unchanged ceiling. New APIs still receive correctness checks and measurements;
 the report identifies them as additions with no fabricated comparison ceiling.
+Shared workloads and their bounded rechecks complete before added APIs run,
+keeping the comparison's preceding workload history the same on both revisions.
+The additions are then checked and timed with the same round budget.
 Removed workloads, changed notes, coverage gaps and runtime errors still fail.
 The runtime and dependency environment must match; revision-owned native routes
 may change and both route inventories remain in the reports. Ordinary committed

@@ -178,12 +178,31 @@ def _source_dependencies(
             _require(
                 isinstance(requirement, str)
                 and bool(requirement)
-                and not any(
-                    token in requirement for token in (";", "@", "://", "\n", "\r")
-                ),
+                and not any(token in requirement for token in ("@", "://", "\n", "\r")),
                 f"source extra {extra!r} must use simple registry requirements",
             )
-            expected_requirements.append(f"{requirement}; extra == '{name}'")
+            dependency, separator, marker = requirement.partition(";")
+            if separator:
+                # These are the source manifest's reviewed platform/runtime
+                # selectors. Keep the publication verifier stdlib-only and
+                # fail closed on other expressions instead of evaluating them.
+                selector = re.fullmatch(
+                    r"\s*(sys_platform|python_version)\s*"
+                    r"(==|!=|<=|>=|<|>)\s*(['\"])([A-Za-z0-9._-]+)\3\s*",
+                    marker,
+                )
+                _require(
+                    selector is not None,
+                    f"source extra {extra!r} has an unsupported environment selector",
+                )
+                assert selector is not None
+                variable, operator, _, value = selector.groups()
+                expected_requirements.append(
+                    f"{dependency.strip()}; ({variable} {operator} '{value}') "
+                    f"and extra == '{name}'"
+                )
+            else:
+                expected_requirements.append(f"{requirement}; extra == '{name}'")
     _require(
         metadata["Provides-Extra"] == tuple(sorted(expected_extras)),
         "sdist metadata extras differ from source project",

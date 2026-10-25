@@ -30,10 +30,12 @@ small dedicated CI job. Release builds authenticate their build/test closures,
 then validate the exact archives and checksums handed to the PyPI publisher.
 
 From the repository root, prepare a full environment with
-`uv sync --locked --all-extras --group dev --group release --group build`; omit `--all-extras` for the fallback
+`uv sync --locked --all-extras --group dev --group release --group build --reinstall-package unstd`; omit `--all-extras` for the fallback
 configuration. The development interpreter is pinned to Python 3.14 in
 `.python-version`, matching the consuming application's runtime.
-`--no-sync` preserves the backend combination already installed.
+Reinstall after native source changes so local checks exercise the rebuilt C
+extensions, as CI does. `--no-sync` preserves the backend combination and compiled
+extensions already installed.
 The tooling owner installs the release and build groups in all five CI environments;
 its builder and compiler checks require those tools.
 `--require-extras` makes every declared extra mandatory, including isolated

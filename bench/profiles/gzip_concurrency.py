@@ -259,7 +259,7 @@ def _worker(args: argparse.Namespace) -> dict[str, Any]:
             "cpu_affinity": sorted(os.sched_getaffinity(0))
             if hasattr(os, "sched_getaffinity")
             else None,
-            "loadavg": os.getloadavg(),
+            "loadavg": os.getloadavg() if hasattr(os, "getloadavg") else None,
         },
         "product_sources": product_sources,
         "source_contracts": manifest["source_contracts"],

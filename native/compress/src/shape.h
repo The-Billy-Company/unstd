@@ -73,6 +73,45 @@ unstd_cl_table7(uint16_t *table, const unsigned char *lengths, unsigned int size
     }
 }
 
+/* Nonzero input only: GCC/Clang emit a bounded bit-scan instruction. */
+static unsigned int
+unstd_cl_trailing(uint32_t value)
+{
+#if defined(__GNUC__) || defined(__clang__)
+    return (unsigned int)__builtin_ctz(value);
+#else
+    unsigned int count = 0;
+    while ((value & 1U) == 0) {
+        value >>= 1;
+        ++count;
+    }
+    return count;
+#endif
+}
+
+/* bits is 0..31 and pair_bits is 2..11, from the bounded reader and trees. */
+static unsigned int
+unstd_cl_groups(uint32_t hold, unsigned int bits,
+                 unsigned int pair, unsigned int pair_bits)
+{
+    static const uint32_t spread[12] = {
+        UINT32_C(0x00000000), UINT32_C(0xffffffff), UINT32_C(0x55555555), UINT32_C(0x49249249),
+        UINT32_C(0x11111111), UINT32_C(0x42108421), UINT32_C(0x41041041), UINT32_C(0x10204081),
+        UINT32_C(0x01010101), UINT32_C(0x08040201), UINT32_C(0x40100401), UINT32_C(0x00400801)
+    };
+    uint32_t valid = (UINT32_C(1) << bits) - 1U;
+    /* Unsigned multiplication tiles the pair; excess high bits wrap away. */
+    uint32_t difference = (hold ^ (pair * spread[pair_bits])) & valid;
+    unsigned int available = bits / pair_bits;
+    if (difference != 0) {
+        unsigned int equal = unstd_cl_trailing(difference) / pair_bits;
+        if (equal < available) {
+            return equal;
+        }
+    }
+    return available;
+}
+
 static int
 unstd_cl_body(unstd_cl_reader *reader, const unsigned char *lengths,
               unsigned int distances, uint16_t *table)
@@ -215,20 +254,21 @@ unstd_cl_body(unstd_cl_reader *reader, const unsigned char *lengths,
         unsigned int pair_bits = long_bits + distance_bits + extra_bits;
         unsigned int pair = long_wire | (distance_wire << long_bits)
             | (extra << (long_bits + distance_bits));
-        uint32_t pair_mask = (1U << pair_bits) - 1U;
         while (reader->bits < 24 && reader->position < reader->size) {
             reader->hold |= (uint32_t)reader->data[reader->position++] << reader->bits;
             reader->bits += 8;
         }
-        while (reader->bits >= pair_bits && (reader->hold & pair_mask) == pair) {
-            if (++tokens > 4096) {
-                return 0;
-            }
-            reader->hold >>= pair_bits;
-            reader->bits -= pair_bits;
-            ++long_matches;
-            produced += 258;
+        unsigned int groups = unstd_cl_groups(reader->hold, reader->bits,
+                                               pair, pair_bits);
+        if (groups > 4096U - tokens) {
+            return 0;
         }
+        unsigned int advance = groups * pair_bits;  /* At most 31, never 32. */
+        reader->hold >>= advance;
+        reader->bits -= advance;
+        tokens += groups;
+        long_matches += groups;
+        produced += groups * 258U;
     }
 }
 

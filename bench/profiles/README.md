@@ -12,7 +12,7 @@ These drivers compare saved and current implementations, check outputs and impor
 - [`crypto_hash.py`](crypto_hash.py)
 - [`billy_serde.py`](billy_serde.py)
 - [`billy_audio.py`](billy_audio.py) — exact PCM wrapping and raw normalization ports, paired timings, allocation peaks and captured Billy consumer source
-- [`gzip_reads.py`](gzip_reads.py)
+- [`gzip_reads.py`](gzip_reads.py) — paired CPU/wall read timings, including bounded-memory repetitive streams at 8, 64 and 256 KiB read sizes; records the selected native backend outside timing
 - [`billy_gzip.py`](billy_gzip.py) — frozen Billy consumer receipts, real ijson batches, bounded HTTP reads, two-pass uploads, and journal writes/flushes/replay
 - [`gzip_concurrency.py`](gzip_concurrency.py) — independent Billy streams on 1, 2 and 4 warmed executor workers, with isolated installations and aggregate wall throughput
 - [`text_native_compare.py`](text_native_compare.py)
@@ -45,6 +45,22 @@ diagnostics are retained. This profile has no CI speed gate; aggregate stream
 throughput does not establish scaling for every JSON consumer.
 
 See the [benchmark guide](../README.md).
+
+To check JSON packaging or a server build, compare two installed roots using
+the same interpreter and dependencies:
+
+```console
+python -m bench.profiles.jsonx_throughput --compare-source /tmp/installed-before --source /tmp/installed-current --require-native --include records-1k --rounds 7 --repetitions 3 --max-slowdown 1.15 --output /tmp/json-records.json
+```
+
+`--require-native` rejects a missing/wrong native binary, detached bindings or
+inactive CPython 3.14 dispatch, and exercises native integer encoding and NDJSON
+decoding before timing. The full current implementation also has a separate
+[`json_acceleration.py`](../../tests/tooling/runtime/json_acceleration.py)
+qualification for its newer float, ASCII and strict-identity paths. Remove
+`--include` to measure the complete workload set. `--max-slowdown` requires a
+comparison and retains the report before failing; measurements compare wall
+latency on one host, rather than assuming different machines have equal speed.
 
 Current `deep` workloads require shared-reference preservation; saved historical
 baselines retain their earlier alias-duplication checks. `asdict` keeps its

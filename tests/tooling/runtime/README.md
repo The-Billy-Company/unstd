@@ -51,3 +51,17 @@ checks output privacy, live-source mutation, reference cleanup and exception
 preservation through the parity tests, and leaves the production extension
 untouched. Ordinary parity tests also cover
 the bounded native float writer and its per-operation cache cleanup.
+
+`json_acceleration.py` checks the installed JSON extension with the actual
+deployment interpreter, including public bindings, CPython 3.14 dispatch,
+repeated floats, ASCII escapes, exact decoding, strict identity and NDJSON:
+
+```console
+python /path/to/unstd/tests/tooling/runtime/json_acceleration.py --json
+```
+
+Run outside the source checkout with the `serde` extra installed. Missing native
+code or a declined native fixture fails even when a portable fallback produces
+correct output. The report retains interpreter/backend versions and the loaded
+binary hash. Every release wheel runs this check before its full contracts;
+the performance workflow retains it alongside paired installed-wheel timings.

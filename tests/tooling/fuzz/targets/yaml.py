@@ -92,6 +92,13 @@ def fuzz(data: bytes) -> None:
                 policy.load(payload)
             except DuplicateKeyError:
                 duplicate_merge = True
+            except AttributeError as error:
+                # ruamel's editable constructor leaves a recursive merge
+                # referent as None. This auxiliary duplicate-key probe cannot
+                # handle that graph; the safe reference and both product
+                # readers below still have to agree exactly.
+                if error.name != "add_referent" or error.obj is not None:
+                    raise
             except (YAMLError, ValueError, RecursionError):
                 # Only explicit duplicate errors amend the safe value oracle.
                 # Other round-trip limitations do not alter safe parser parity.

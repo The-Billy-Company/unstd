@@ -1,5 +1,10 @@
 # Release verifier gates
 
+`test_json_acceleration.py` verifies the standalone installed-JSON check and its
+release-wheel wiring. Missing backends, native refusals, detached bindings,
+inactive dispatch and shared strict snapshots fail despite correct public
+fallback output. It uses no timing thresholds.
+
 `test_verifier.py` constructs small wheel/sdist fixtures and corrupts them to
 check the stdlib-only [release verifier](../../../../tooling/release/verify.py). It
 requires safe archive members, consistent package/version/tag metadata, valid
@@ -37,6 +42,10 @@ and patched releases in every reviewed OpenSSL branch, prereleases, unknown
 engines, inconsistent version metadata and missing TLS 1.3. Its isolated CLI
 test runs with site packages disabled. Run the preflight with each actual build,
 test and deployment interpreter; a dependency's private OpenSSL is unrelated.
+
+`test_wheel_runtimes.py` checks that cached managed interpreters are refreshed
+before TLS and ABI admission. Its offline catalog check requires the pinned uv
+release to provide `.python-version` on every supported release host.
 
 `test_audio_workflow.py` checks the required read-only Linux audio qualification
 job, authenticated build/test dependencies, pinned source/fix downloads,

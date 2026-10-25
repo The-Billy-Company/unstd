@@ -358,6 +358,30 @@ assert len(head) == 7
 assert head + decoder.decompress(decoder.unconsumed_tail) == payload
 assert decoder.eof
 assert zlibx.error is zlib.error
+from unstd.compress import _gzip_native, _reader
+assert Path(_gzip_native.__file__).resolve().is_relative_to(Path(sys.prefix).resolve())
+expanded = b'A' * 1_000_000
+raw_wire = zlib.compress(expanded, wbits=-15)
+inflater = _gzip_native.Inflater()
+storage = bytearray(8192)
+view = inflater.decompress_into(raw_wire + b'following member', storage)
+assert view.obj is storage
+first = bytes(view)
+view.release()
+assert first == expanded[:8192]
+assert inflater._selected_backend in {'apple', 'ng', 'zlib'}
+assert not inflater.needs_input
+assert first + inflater.decompress(b'', max_length=len(expanded)) == expanded
+assert inflater.eof and inflater.unused_data == b'following member'
+with gzipx.GzipFile(fileobj=io.BytesIO(gzip.compress(expanded, mtime=0)), mode='rb') as reader:
+    assert reader.read(17) == expanded[:17]
+    state = reader._buffer.raw._decompressor
+    if _reader._bundled_inflater:
+        assert type(state) is _gzip_native.Inflater
+        assert state._selected_backend in {'apple', 'ng', 'zlib'}
+    else:
+        assert type(state).__module__.startswith('zlib_ng')
+    assert reader.read() == expanded[17:]
 """,
     "zstd": """
 import importlib, io, zstandard

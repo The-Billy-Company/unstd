@@ -80,6 +80,10 @@ cache, backend, resolver, import or native library failure is skipped there.
   load one.
   Qualified ZIP and Zstandard child imports must preserve their canonical
   modules, classes, error catchability and import metadata in installed wheels.
+  Gzip consumers also execute the installed C inflater's bounded direct-output
+  path and public stream reader against a highly compressed payload, preserving
+  its following-member bytes and native backend identity. The source archive
+  explicitly retains the inflater's module-state and shape-probe headers.
 - A separate unseeded virtualenv for each wheel installs that wheel offline with
   `--no-deps`. Every product probe runs from an external consumer directory in a
   new `python -I` process. The probe verifies the installed distribution set is

@@ -23,6 +23,8 @@ contracts in bounded parallel workers.
 [`wheels.py`](wheels.py) keeps cibuildwheel's build, repair and test pipeline.
 Standard native CPython builds on macOS and CPython 3.12 builds on Windows use
 uv's managed provider and pass the existing TLS policy before compilation.
+The provider upgrades any cached minor installation to its latest available
+patch before independently checking TLS and the native ABI.
 Other Windows versions keep their normal provider; a changed builder version or
 installer contract requires review.
 The Intel 3.12 and 3.13 override preserves the existing 10.13 deployment floor

@@ -10,6 +10,11 @@ then run this unchanged driver against both trees with the same interpreter::
 Each repetition launches isolated workers in alternating before/after order.
 Payload construction and output validation remain outside the timed calls.
 Every operation allocates its result; no encoded-result cache is used.
+
+Installed wheel roots are also accepted. For a deployment comparison, add
+``--require-native --max-slowdown 1.15 --include records-1k``. Native mode
+rejects missing accelerators and inactive CPython 3.14 dispatch. The optional
+slowdown limit compares wall-clock latency and saves the report before failing.
 """
 
 from __future__ import annotations
@@ -21,19 +26,21 @@ from hashlib import sha256
 from importlib.metadata import version
 import io
 import json
+import math
 import os
 from pathlib import Path
 import platform
 from statistics import median
 import subprocess
 import sys
+import sysconfig
 from typing import TYPE_CHECKING, Any
 
 from bench.core.timing import measure
 
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import Callable, Sequence
 
 
 @dataclass(frozen=True)
@@ -183,7 +190,65 @@ def _dump(function: Callable[..., Any], value: object) -> str:
     return stream.getvalue()
 
 
-def _provenance(source: Path, jsonx: Any) -> dict[str, Any]:
+def _native_checks(jsonx: Any) -> dict[str, Any]:
+    """Prove the installed kernels and their public bindings before timing."""
+    native = getattr(jsonx, "_native", None)
+    if native is None or not jsonx._HAVE_ORJSON or not jsonx._HAVE_MSGSPEC:
+        message = "native qualification requires _json_native, orjson and msgspec"
+        raise RuntimeError(message)
+    for owner, attribute, method in (
+        (jsonx, "_native_dumpb", "dumpb"),
+        (jsonx, "_native_line", "line"),
+    ):
+        if not hasattr(native, method) or getattr(
+            owner, attribute, None
+        ) is not getattr(native, method):
+            message = f"inactive public native binding: {attribute}"
+            raise RuntimeError(message)
+    # Warm public entry points before checking instrumentation-sensitive guards.
+    jsonx.loads("null")
+    jsonx.dumpb(None)
+    dispatch = {
+        name: {
+            "bound": bool(native.is_bound(getattr(jsonx, name))),
+            "ready": bool(native.dispatch_ready(getattr(jsonx, name))),
+        }
+        for name in ("loads", "dumpb")
+    }
+    if sys.version_info[:2] == (3, 14) and any(
+        not state["bound"] or not state["ready"] for state in dispatch.values()
+    ):
+        message = f"CPython 3.14 native dispatch is inactive: {dispatch}"
+        raise RuntimeError(message)
+    records = [
+        {"id": index, "text": "café 汉字 🙂", "active": True} for index in range(40)
+    ]
+    integers = {"items": list(range(40))}
+    document = json.dumps(records)
+    compact = _compact(records)
+    lines = b"\n".join(_compact(row) for row in records) + b"\n"
+    probes = {
+        "native_integer_encoding": (native.encode(integers), _compact(integers)),
+        "native_compact_bytes": (native.dumpb(records, False, None, False), compact),
+        "native_ndjson_encoding": (
+            native.line(records[0]),
+            _compact(records[0]) + b"\n",
+        ),
+        "native_ndjson_decode": (native.loads_lines(lines), records),
+        "public_text": (jsonx.dumps(records), document),
+        "public_compact_bytes": (jsonx.dumpb(records), compact),
+        "public_decode": (jsonx.loads(document), records),
+    }
+    for name, (actual, expected) in probes.items():
+        if actual is NotImplemented or not _same(actual, expected):
+            message = f"native qualification probe failed: {name}"
+            raise RuntimeError(message)
+    return {"dispatch": dispatch, "probes": dict.fromkeys(probes, True)}
+
+
+def _provenance(
+    source: Path, jsonx: Any, *, require_native: bool = False
+) -> dict[str, Any]:
     imported = Path(jsonx.__file__).resolve()
     if imported != source / "unstd/serde/jsonx.py":
         message = f"requested {source}, imported {imported}"
@@ -202,6 +267,14 @@ def _provenance(source: Path, jsonx: Any) -> dict[str, Any]:
         if path.is_file() and path.suffix in {".c", ".h"}
     }
     native = getattr(jsonx, "_native", None)
+    binary = Path(native.__file__).resolve() if native is not None else None
+    if require_native and (
+        binary is None
+        or binary.parent != imported.parent
+        or binary.name != f"_json_native{sysconfig.get_config_var('EXT_SUFFIX')}"
+    ):
+        message = f"requested native extension in {imported.parent}, imported {binary}"
+        raise RuntimeError(message)
     dispatch = {}
     for name in ("loads", "dumpb"):
         function = getattr(jsonx, name)
@@ -217,14 +290,17 @@ def _provenance(source: Path, jsonx: Any) -> dict[str, Any]:
         "dispatch": dispatch,
         "sha256": files,
         "native_source_sha256": native_files,
+        "native_qualification": _native_checks(jsonx) if require_native else None,
     }
 
 
-def _worker(source: Path, rounds: int, include: str) -> dict[str, Any]:
+def _worker(
+    source: Path, rounds: int, include: str, *, require_native: bool = False
+) -> dict[str, Any]:
     sys.path.insert(0, str(source))
     from unstd.serde import jsonx
 
-    provenance = _provenance(source, jsonx)
+    provenance = _provenance(source, jsonx, require_native=require_native)
     results = {}
     for case in _workloads():
         if include and include not in case.name:
@@ -246,18 +322,31 @@ def _worker(source: Path, rounds: int, include: str) -> dict[str, Any]:
             "candidate_mib_s": case.input_bytes / candidate.per_op_ns * 1e9 / 2**20,
             "stdlib_over_candidate": control.per_op_ns / candidate.per_op_ns,
         }
+    if not results:
+        message = f"no workloads match --include {include!r}"
+        raise ValueError(message)
+    if _provenance(source, jsonx, require_native=require_native) != provenance:
+        message = "product source, native binary or dispatch changed during timing"
+        raise RuntimeError(message)
     return {
         "environment": {
             "python": sys.version,
             "platform": platform.platform(),
             "backends": {name: version(name) for name in ("orjson", "msgspec")},
+            "compiler_configuration": {
+                name: sysconfig.get_config_var(name)
+                for name in ("CC", "CFLAGS", "PY_CFLAGS", "CONFIG_ARGS", "SOABI")
+            },
+            "cpu_affinity": sorted(os.sched_getaffinity(0))
+            if hasattr(os, "sched_getaffinity")
+            else None,
         },
         "provenance": provenance,
         "timings": results,
     }
 
 
-def main() -> None:
+def main(argv: Sequence[str] | None = None) -> None:
     """Measure unchanged fixtures against isolated source trees."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--source", type=Path, default=Path("src"))
@@ -266,12 +355,31 @@ def main() -> None:
     parser.add_argument("--repetitions", type=int, default=3)
     parser.add_argument("--include", default="")
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--require-native", action="store_true")
+    parser.add_argument("--max-slowdown", type=float)
     parser.add_argument("--worker", action="store_true", help=argparse.SUPPRESS)
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     if args.rounds < 1 or args.repetitions < 1:
         parser.error("rounds and repetitions must be positive")
+    if args.max_slowdown is not None and (
+        not math.isfinite(args.max_slowdown) or args.max_slowdown < 1
+    ):
+        parser.error("--max-slowdown must be finite and at least one")
+    if args.max_slowdown is not None and args.compare_source is None:
+        parser.error("--max-slowdown requires --compare-source")
+    if args.max_slowdown is not None and args.output is None:
+        parser.error("--max-slowdown requires --output to retain evidence")
     if args.worker:
-        print(json.dumps(_worker(args.source.resolve(), args.rounds, args.include)))
+        print(
+            json.dumps(
+                _worker(
+                    args.source.resolve(),
+                    args.rounds,
+                    args.include,
+                    require_native=args.require_native,
+                )
+            )
+        )
         return
     sources = [("after", args.source.resolve())]
     if args.compare_source is not None:
@@ -291,6 +399,8 @@ def main() -> None:
                 "--include",
                 args.include,
             ]
+            if args.require_native:
+                command.append("--require-native")
             result = json.loads(
                 subprocess.check_output(  # noqa: S603
                     command,
@@ -308,6 +418,11 @@ def main() -> None:
     if any(run["environment"] != runs[0]["environment"] for run in runs):
         message = "comparison workers used different environments"
         raise RuntimeError(message)
+    for run in runs:
+        prior = next(row for row in runs if row["label"] == run["label"])
+        if run["provenance"] != prior["provenance"]:
+            message = f"{run['label']} product changed between repetitions"
+            raise RuntimeError(message)
     comparisons = {}
     if args.compare_source is not None:
         names = set(runs[0]["timings"])
@@ -342,12 +457,23 @@ def main() -> None:
         "estimator": "median across repetitions of minimum wall-clock batch means",
         "comparisons": comparisons,
         "runs": runs,
+        "require_native": args.require_native,
+        "max_slowdown": args.max_slowdown,
+        "regressions": [
+            name
+            for name, result in comparisons.items()
+            if args.max_slowdown is not None
+            and result["after_ns"] / result["before_ns"] > args.max_slowdown
+        ],
     }
     rendered = json.dumps(report, indent=2) + "\n"
     if args.output:
         args.output.write_text(rendered)
     else:
         print(rendered)
+    if report["regressions"]:
+        message = f"JSONX wall-clock slowdown exceeds {args.max_slowdown}: {report['regressions']}"
+        raise RuntimeError(message)
 
 
 if __name__ == "__main__":

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import gc
+import io
 import json
 import platform
 import subprocess
@@ -138,7 +139,7 @@ def _dynamic(
     return bits.finish(), b"a" * produced, header_bits
 
 
-def _drain(decoder, incoming, *, limit=4096, legacy=False):
+def _drain(decoder, incoming, *, limit=16384, legacy=False):
     pieces = []
     for _ in range(1000):
         piece = decoder.decompress(incoming, limit)
@@ -163,7 +164,7 @@ def test_short_distance_periods_select_native_ng_and_decode_every_byte(
     assert decoder._selected_backend == "ng"
 
 
-@pytest.mark.parametrize(("budget", "expected"), [(4095, "apple"), (4096, "ng")])
+@pytest.mark.parametrize(("budget", "expected"), [(16383, "apple"), (16384, "ng")])
 def test_first_actual_output_budget_selects_once(adaptive_native, budget, expected):
     packed, payload, _ = _dynamic()
     assert zlib.decompress(packed, -15) == payload
@@ -173,6 +174,35 @@ def test_first_actual_output_budget_selects_once(adaptive_native, budget, expect
     assert decoder._selected_backend == expected
     assert first + _drain(decoder, b"", limit=131072) == payload
     assert decoder._selected_backend == expected
+
+
+@pytest.mark.parametrize("budget", [4096, 8192, 16383])
+def test_small_prefix_budgets_skip_whole_block_selection(adaptive_native, budget):
+    payload = b" " * 1_000_000
+    packed = zlib.compress(payload, wbits=-15)
+    decoder = adaptive_native.Inflater()
+    assert decoder.decompress(packed, budget) == payload[:budget]
+    assert decoder._selected_backend == "apple"
+    assert not decoder.eof
+    assert payload[:budget] + _drain(decoder, b"", limit=131072) == payload
+    assert decoder._selected_backend == "apple"
+
+
+def test_bounded_gzip_expansion_refusal_avoids_whole_block_selection(adaptive_native):
+    from unstd.compress import gzipx
+
+    payload = b" " * 1_000_000
+    packed = zlib.compress(payload, wbits=31)
+    budget = len(packed) * 2
+    with gzipx.GzipFile(fileobj=io.BytesIO(packed)) as stream:
+        # Replay Python 3.13's 8 KiB buffering even when the test interpreter
+        # defaults to the larger 128 KiB buffer introduced in Python 3.14.
+        stream._buffer = io.BufferedReader(stream._buffer.detach(), buffer_size=8192)
+        assert stream.read(budget + 1) == payload[: budget + 1]
+        decoder = stream._buffer.raw._decompressor
+        assert isinstance(decoder, adaptive_native.Inflater)
+        assert decoder._selected_backend == "apple"
+        assert not decoder.eof
 
 
 def test_default_unlimited_budget_can_select_ng(adaptive_native):
@@ -189,7 +219,7 @@ def test_empty_work_defers_selection_until_first_actual_decode(
     packed, payload, _ = _dynamic()
     decoder = adaptive_native.Inflater()
     if empty_call == "input":
-        assert decoder.decompress(b"", 4096) == b""
+        assert decoder.decompress(b"", 16384) == b""
         incoming = packed
     else:
         assert decoder.decompress(packed, 0) == b""
@@ -230,7 +260,7 @@ def test_every_truncated_header_stays_on_apple_for_the_rest_of_the_stream(
     assert zlib.decompress(packed, -15) == payload
     for length in range(1, (header_bits + 7) // 8):
         decoder = adaptive_native.Inflater()
-        assert decoder.decompress(packed[:length], 4096) == b""
+        assert decoder.decompress(packed[:length], 16384) == b""
         assert decoder._selected_backend == "apple"
         assert _drain(decoder, packed[length:]) == payload
         assert decoder._selected_backend == "apple"
@@ -255,15 +285,15 @@ def test_malformed_headers_fail_closed_with_the_original_codec_error(
     reference = zlib.decompressobj(-15)
     decoder = adaptive_native.Inflater()
     try:
-        expected = reference.decompress(packed, 4096)
+        expected = reference.decompress(packed, 16384)
     except zlib.error:
         with pytest.raises(zlib.error) as caught:
-            decoder.decompress(packed, 4096)
+            decoder.decompress(packed, 16384)
         assert type(caught.value) is zlib.error
     else:
         # Some Apple zlib versions wait for further bits for an empty precode.
         # Fail-closed routing must preserve that incomplete-state behavior too.
-        assert decoder.decompress(packed, 4096) == expected
+        assert decoder.decompress(packed, 16384) == expected
         assert decoder.eof == reference.eof
         assert decoder.unused_data == reference.unused_data
     assert decoder._selected_backend == "apple"
@@ -276,8 +306,8 @@ def test_adaptive_bounded_eof_and_tail_handoff_match_existing_contract(
     packed, payload, _ = _dynamic()
     trailer = b"following member"
     decoder = adaptive_native.Inflater(legacy=legacy)
-    first = decoder.decompress(packed + trailer, 4096)
-    assert first == payload[:4096]
+    first = decoder.decompress(packed + trailer, 16384)
+    assert first == payload[:16384]
     assert not decoder.eof
     assert not decoder.needs_input
     assert decoder._selected_backend == "ng"
@@ -291,14 +321,14 @@ def test_adaptive_bounded_eof_and_tail_handoff_match_existing_contract(
     assert decoder.unused_data == trailer
     assert decoder._selected_backend == "ng"
     with pytest.raises(EOFError):
-        decoder.decompress(b"", 4096)
+        decoder.decompress(b"", 16384)
     assert decoder.unused_data == trailer
     decoder.__init__(legacy=legacy)
     assert decoder._selected_backend == "pending"
     assert not decoder.eof
     assert decoder.needs_input
     assert decoder.unused_data == b""
-    assert decoder.decompress(packed, 4095) == payload[:4095]
+    assert decoder.decompress(packed, 16383) == payload[:16383]
     assert decoder._selected_backend == "apple"
 
 
@@ -306,7 +336,7 @@ def test_adaptive_input_snapshots_mutable_bytes_before_retaining_them(adaptive_n
     packed, payload, _ = _dynamic()
     source = bytearray(packed)
     decoder = adaptive_native.Inflater()
-    first = decoder.decompress(source, 4096)
+    first = decoder.decompress(source, 16384)
     assert decoder._selected_backend == "ng"
     source[:] = b"\xff" * len(source)
     assert first + _drain(decoder, b"") == payload
@@ -316,18 +346,18 @@ def test_direct_output_selection_keeps_budget_and_aliased_input_snapshot(
     adaptive_native,
 ):
     packed, payload, _ = _dynamic()
-    storage = bytearray(packed + bytes(4096 - len(packed)) + b"!" * 64)
+    storage = bytearray(packed + bytes(16384 - len(packed)) + b"!" * 64)
     source = memoryview(storage)[: len(packed)]
-    target = memoryview(storage)[:4096]
+    target = memoryview(storage)[:16384]
     decoder = adaptive_native.Inflater()
     result = decoder.decompress_into(source, target)
     assert decoder._selected_backend == "ng"
-    assert bytes(result) == payload[:4096]
-    assert storage[4096:] == b"!" * 64
+    assert bytes(result) == payload[:16384]
+    assert storage[16384:] == b"!" * 64
     result.release()
     source.release()
     target.release()
-    assert payload[:4096] + _drain(decoder, b"") == payload
+    assert payload[:16384] + _drain(decoder, b"") == payload
 
 
 @pytest.mark.parametrize("callback", ["index", "acquire", "release", "target"])
@@ -344,7 +374,7 @@ def test_exporter_callbacks_can_reset_a_selected_ng_decoder_safely(
         assert native._configure_ng(zlib_ng.__file__)
         decoder = native.Inflater()
         old = zlib.compress(b'a' * 65536, wbits=-15)
-        assert decoder.decompress(old, 4096) == b'a' * 4096
+        assert decoder.decompress(old, 16384) == b'a' * 16384
         assert decoder._selected_backend == 'ng'
         payload = b'b' * 65536
         packed = zlib.compress(payload, wbits=-15)
@@ -362,8 +392,8 @@ def test_exporter_callbacks_can_reset_a_selected_ng_decoder_safely(
         class Limit:
             def __index__(self):
                 reset()
-                return 4096
-        storage = bytearray(4096)
+                return 16384
+        storage = bytearray(16384)
         class Target:
             def __buffer__(self, flags):
                 reset()
@@ -375,15 +405,15 @@ def test_exporter_callbacks_can_reset_a_selected_ng_decoder_safely(
         else:
             first = decoder.decompress(
                 Source() if HOOK in ('acquire', 'release') else packed,
-                Limit() if HOOK == 'index' else 4096,
+                Limit() if HOOK == 'index' else 16384,
             )
         assert calls == [HOOK]
-        assert first == payload[:4096]
+        assert first == payload[:16384]
         assert decoder._selected_backend == 'ng'
         parts = [first]
         while not decoder.eof:
-            piece = decoder.decompress(b'', 4096)
-            assert len(piece) <= 4096
+            piece = decoder.decompress(b'', 16384)
+            assert len(piece) <= 16384
             parts.append(piece)
         assert b''.join(parts) == payload
         """
@@ -412,11 +442,11 @@ def test_unconfigured_decoder_stays_on_apple_until_explicit_reset(adaptive_nativ
         assert native._configure_ng(zlib_ng.__file__)
         payload = b'a' * 65536
         packed = zlib.compress(payload, wbits=-15)
-        assert decoder.decompress(packed, 4096) == payload[:4096]
+        assert decoder.decompress(packed, 16384) == payload[:16384]
         assert decoder._selected_backend == 'apple'
         decoder.__init__()
         assert decoder._selected_backend == 'pending'
-        assert decoder.decompress(packed, 4096) == payload[:4096]
+        assert decoder.decompress(packed, 16384) == payload[:16384]
         assert decoder._selected_backend == 'ng'
         try:
             decoder._selected_backend = 'apple'
@@ -470,7 +500,7 @@ def test_partial_body_cannot_select_ng_after_later_input_arrives(adaptive_native
     start = (header_bits + 7) // 8
     for length in (start, start + (len(packed) - start) // 2, len(packed) - 1):
         decoder = adaptive_native.Inflater()
-        first = decoder.decompress(packed[:length], 4096)
+        first = decoder.decompress(packed[:length], 16384)
         assert decoder._selected_backend == "apple"
         assert first + _drain(decoder, packed[length:]) == payload
         assert decoder._selected_backend == "apple"
@@ -491,8 +521,8 @@ def test_whole_probe_input_cap_preserves_unconsumed_suffix(
 def test_invalid_distance_before_any_literal_fails_closed(adaptive_native):
     packed, _, _ = _dynamic(literals=0)
     with pytest.raises(zlib.error):
-        zlib.decompressobj(-15).decompress(packed, 4096)
+        zlib.decompressobj(-15).decompress(packed, 16384)
     decoder = adaptive_native.Inflater()
     with pytest.raises(zlib.error):
-        decoder.decompress(packed, 4096)
+        decoder.decompress(packed, 16384)
     assert decoder._selected_backend == "apple"

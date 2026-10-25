@@ -722,6 +722,82 @@ def test_source_extra_cannot_introduce_a_direct_url_dependency(dist: Path) -> No
 
 
 @pytest.mark.parametrize(
+    ("source_marker", "metadata_marker"),
+    [
+        (b"sys_platform != 'win32'", b"sys_platform != 'win32'"),
+        (b'python_version >= "3.14"', b"python_version >= '3.14'"),
+        (b"python_version < '3.14'", b"python_version < '3.14'"),
+    ],
+)
+def test_source_extra_selectors_remain_bound_to_their_extra(
+    dist: Path, source_marker: bytes, metadata_marker: bytes
+) -> None:
+    _matching_dependency_metadata(
+        dist,
+        _extra_metadata(
+            [
+                header.replace(
+                    b"backend>=1; extra",
+                    b"backend>=1; (" + metadata_marker + b") and extra",
+                )
+                for header in _EXTRA_HEADERS
+            ]
+        ),
+        project=_EXTRA_PROJECT.replace(
+            b'"backend>=1"', b"'''backend>=1 ; " + source_marker + b"'''"
+        ),
+    )
+    assert release.verify(dist)["name"] == "unstd"
+
+
+@pytest.mark.parametrize(
+    "requirement",
+    [
+        b"backend>=1; extra == 'fast'",
+        b"backend>=1; (sys_platform != 'win32') or extra == 'fast'",
+        b"backend>=1; sys_platform != 'win32'; extra == 'fast'",
+    ],
+)
+def test_source_extra_rejects_unreviewed_marker_expressions(
+    dist: Path, requirement: bytes
+) -> None:
+    _matching_dependency_metadata(
+        dist,
+        _extra_metadata(_EXTRA_HEADERS),
+        project=_EXTRA_PROJECT.replace(b'"backend>=1"', b"'''" + requirement + b"'''"),
+    )
+    with pytest.raises(release.ReleaseError, match="unsupported environment selector"):
+        release.verify(dist)
+
+
+@pytest.mark.parametrize(
+    "dependency",
+    [
+        b"backend>=1; extra == 'fast'",
+        b"backend>=1; (sys_platform != 'win32') or extra == 'fast'",
+        b"backend>=1; (sys_platform == 'win32') and extra == 'fast'",
+    ],
+)
+def test_matching_archives_cannot_remove_or_change_source_selectors(
+    dist: Path, dependency: bytes
+) -> None:
+    _matching_dependency_metadata(
+        dist,
+        _extra_metadata(
+            [
+                header.replace(b"backend>=1; extra == 'fast'", dependency)
+                for header in _EXTRA_HEADERS
+            ]
+        ),
+        project=_EXTRA_PROJECT.replace(
+            b'"backend>=1"', b"\"backend>=1; sys_platform != 'win32'\""
+        ),
+    )
+    with pytest.raises(release.ReleaseError, match="dependencies differ from source"):
+        release.verify(dist)
+
+
+@pytest.mark.parametrize(
     "name",
     [
         "../escape",

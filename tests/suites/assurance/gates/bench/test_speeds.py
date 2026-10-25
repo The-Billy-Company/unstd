@@ -334,6 +334,61 @@ def test_revision_cli_audits_additions_and_keeps_shared_slowdowns(
     assert speeds.main(["verify", "--revision-baseline", "--baseline", str(store)]) == 2
 
 
+@pytest.mark.parametrize("slow", [False, True])
+def test_added_workloads_cannot_precondition_shared_measurements_or_rechecks(
+    store: Path, monkeypatch: pytest.MonkeyPatch, tmp_path: Path, slow: bool
+) -> None:
+    _freeze(store)
+    state = {"added": False}
+    measured = []
+
+    def shared_run() -> list[object]:
+        assert not state["added"], "added API changed the shared workload history"
+        return [1, True]
+
+    def added_run() -> list[object]:
+        state["added"] = True
+        return [1, True]
+
+    shared = replace(_case(), run=shared_run)
+    added = replace(_case("unstd.demo.added"), run=added_run)
+
+    @contextmanager
+    def toy_registry() -> Iterator[list[speeds.Case]]:
+        # The addition sorts before the shared case in a complete registry.
+        yield [added, shared]
+
+    def measure(run: Any, *, rounds: int) -> Measurement:
+        assert rounds == 9
+        assert run() == [1, True]
+        measured.append("shared" if run is shared_run else "added")
+        return _measurement(1_000 if slow and run is shared_run else 100)
+
+    monkeypatch.setattr(speeds, "registry", toy_registry)
+    monkeypatch.setattr(speeds, "check_coverage", lambda cases: {})
+    monkeypatch.setattr(speeds, "measure", measure)
+    output = tmp_path / "revision.json"
+    assert speeds.main(
+        [
+            "verify",
+            "--revision-baseline",
+            "--rounds",
+            "9",
+            "--baseline",
+            str(store),
+            "--output",
+            str(output),
+        ]
+    ) == int(slow)
+    assert measured == ["shared"] * (3 if slow else 1) + ["added"]
+    report = json.loads(output.read_text())
+    assert report["added"] == [added.name]
+    assert report["cases"][added.name]["ns"] == 100
+    assert report["cases"][added.name]["ceiling_ns"] is None
+    assert report["cases"][shared.name]["ceiling_ns"] == 130
+    assert report["failed"] == ([shared.name] if slow else [])
+
+
 def test_changing_a_workload_cannot_reuse_its_old_speed(store: Path) -> None:
     raw = _freeze(store)
     changed = replace(_case(), note="different payload")

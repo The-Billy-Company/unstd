@@ -303,6 +303,8 @@ def test_sdist_contains_all_sources_and_rebuild_inputs_without_local_caches(
         "native/serde/src/lines.h",
         "native/serde/src/escape.h",
         "native/compress/src/adapter.c",
+        "native/compress/src/module.h",
+        "native/compress/src/shape.h",
         "native/compress/vendor/libdeflate/UPSTREAM.json",
         "native/compress/vendor/libdeflate/COPYING",
         "native/compress/vendor/zlib/LICENSE",

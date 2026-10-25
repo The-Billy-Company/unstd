@@ -39,13 +39,19 @@ links macOS `libz`, the prefixed [vendored zlib](../vendor/README.md) elsewhere,
 or an explicitly selected [local zlib-rs archive](../experiments/README.md).
 Allocation errors propagate; decode failures become `zlib.error` in `stream.c`.
 
-On macOS arm64, a configured zlib-ng 2.x provider can handle a narrow first-block
-shape with short distances and a dominant long-match code. Configuration uses
+On macOS arm64, a configured zlib-ng 2.x provider can handle a complete small
+final dynamic block dominated by length-258 matches at a constant distance of
+at most 16 bytes. The read-only structural probe is capped at 8 KiB of held
+compressed input and 4096 tokens. It requires a real end-of-block, valid trees
+and distances, at most 32 literals and eight other matches, and at least 90%
+of decoded bytes from the long matches. It produces no output and changes no
+decoder, source position or read budget. Configuration uses
 `RTLD_NOLOAD` on the already imported provider, verifies the native ABI, and
-retains its handle in module state. The immutable heap `Inflater` type retains
-that module for every live decoder. A decoder selects only before its first
-nonempty native call, with at least 4 KiB output space; missing symbols, ABI or
-an inconclusive header retain libz. Initialization OOM propagates before either
+retains its handle in module state and independently in every live native
+decoder. The immutable heap `Inflater` type participates in cycle collection.
+A decoder selects only before its first
+nonempty native call, with at least 16 KiB output space; missing symbols, ABI or
+an inconclusive or incomplete probe retain libz. Initialization OOM propagates before either
 engine decodes input and preserves retry state. A selected engine never falls
 back after decoding. This is a performance hint, not an acceptance or allocation
 rule. Other platforms and the explicit Rust archive retain their original ABI.

@@ -17,7 +17,12 @@ import unstd.compress as codecs
     ("provider", "alias", "child", "symbol"),
     [
         ("zipfile", "zipfile", "_path", "Path"),
-        ("zipfile", "zipfile", "_path.glob", "Translator"),
+        (
+            "zipfile",
+            "zipfile",
+            "_path.glob",
+            "translate" if sys.version_info < (3, 13) else "Translator",
+        ),
         ("zstandard", "zstandard", "backend_c", "ZstdError"),
         ("compression.zstd", "zstd", "_zstdfile", "ZstdFile"),
     ],

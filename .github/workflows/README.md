@@ -21,6 +21,11 @@ permissions, matrices, and schedule times are defined in the YAML files.
 Development and default workflow jobs use Python 3.14, matching the consuming
 application. Compatibility matrices continue to test Python 3.12 and 3.13;
 the dependency-floor and base-install environments run on Python 3.14.
+The audited uv frontend includes the pinned development Python in its bundled
+download catalog; an offline gate checks every supported host platform. Cached
+wheel providers upgrade their patch release before TLS and ABI admission.
+The text extra retains its older floor on Python 3.12/3.13 and uses RapidFuzz
+3.14 or newer on Python 3.14, where that series supplies compatible wheels.
 
 Each normal performance comparison also gates all 14 frozen Billy gzip consumer
 shapes before the full function verification. Both installations use the same
@@ -29,6 +34,13 @@ worker, interpreter, dependencies and committed synthetic fixtures; a case above
 The Linux/macOS and Python 3.13/3.14 jobs retain that evidence independently.
 No Billy checkout is required. Manual `gzip_diagnostic` runs keep their separate
 check name and do not satisfy the normal performance checks.
+
+Normal comparisons also require the installed current JSON kernels to pass
+`tests/tooling/runtime/json_acceleration.py`, then compare JSON record workloads
+between the two installed revisions with `--require-native`. A wall-time
+slowdown above 15% fails after retaining the paired raw samples, stdlib controls,
+binary/source hashes and dispatch evidence. Every release wheel runs the same
+native qualification before its full installed-wheel tests.
 
 The Linux full-extra test environments and the isolated `archives` lane
 explicitly install native libarchive for runtime qualification. The Python

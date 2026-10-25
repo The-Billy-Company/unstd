@@ -737,7 +737,9 @@ def main(argv: list[str] | None = None) -> int:
                     msg = "baseline environment differs; freeze a separate --baseline file on this worker before comparing revisions"
                     _invalid(msg)
             current_provenance = provenance()
-            measured = timings(selected, rounds=args.rounds)
+            # Compare the same workload history as the older revision. Added
+            # APIs must not precondition shared allocation/caches in this pass.
+            measured = timings(comparable, rounds=args.rounds)
             attempts = {name: [result] for name, result in measured.items()}
             if args.verb == "verify":
                 assert baseline is not None
@@ -749,6 +751,11 @@ def main(argv: list[str] | None = None) -> int:
                 )
                 measured.update(checked)
                 attempts.update(history)
+            if added:
+                additions = [case for case in selected if case.name in added]
+                fresh = timings(additions, rounds=args.rounds)
+                measured.update(fresh)
+                attempts.update({name: [result] for name, result in fresh.items()})
             if args.verb == "freeze":
                 baseline = freeze(
                     selected, measured, args.baseline, tolerance=args.tolerance

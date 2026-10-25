@@ -9,6 +9,7 @@ on:
       - "hatch_build.py"
       - "pyproject.toml"
       - "uv.lock"
+      - "tests/tooling/runtime/json_acceleration.py"
       - ".github/workflows/performance.yml"
   workflow_dispatch:
     inputs:
@@ -78,7 +79,7 @@ jobs:
           cache-dependency-glob: |
             uv.lock
             pyproject.toml
-          version: "0.13.4"
+          version: "0.13.5"
           python-version: ${{ matrix.python }}
       - name: Install one shared dependency environment
         run: >-
@@ -117,6 +118,22 @@ jobs:
                   raise RuntimeError(f"wrong native module import: {spec.origin}")
           PY
           done
+      - name: Verify installed JSON accelerations
+        if: ${{ !inputs.gzip_diagnostic }}
+        env:
+          PYTHONPATH: ${{ github.workspace }}/.local/performance/installed-current:${{ github.workspace }}
+        run: >-
+          .venv/bin/python tests/tooling/runtime/json_acceleration.py --json
+          > .local/performance/evidence/json-native.json
+      - name: Guard installed JSON record latency
+        if: ${{ !inputs.gzip_diagnostic }}
+        run: >-
+          .venv/bin/python -m bench.profiles.jsonx_throughput
+          --compare-source .local/performance/installed-before
+          --source .local/performance/installed-current
+          --require-native --include records-1k
+          --rounds 7 --repetitions 3 --max-slowdown 1.15
+          --output .local/performance/evidence/json-records.json
       # The committed laptop snapshot has a different environment. Record the
       # old revision on THIS worker, then compare current against that file.
       # Both passes use exactly the current workload definitions and backends.
@@ -149,6 +166,16 @@ jobs:
           --revision-baseline
           --baseline .local/performance/evidence/baseline.json
           --output .local/performance/evidence/current.json
+      - name: Guard native clone graphs and dataclass latency
+        if: ${{ !inputs.gzip_diagnostic }}
+        env:
+          PYTHONPATH: ${{ github.workspace }}/.local/performance/installed-current:${{ github.workspace }}
+        run: >-
+          .venv/bin/python -m bench.profiles.clone_common_cpu
+          --compare-dir .local/performance/installed-before/unstd/clone
+          --infer-native-bindings --require-native --gc-enabled
+          --rounds 9 --max-slowdown 1.30
+          --output .local/performance/evidence/clone-common.json
       - name: Retain both native gzip builds for diagnosis
         if: ${{ inputs.gzip_diagnostic }}
         run: |

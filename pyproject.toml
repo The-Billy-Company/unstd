@@ -13,6 +13,7 @@ test-requires = ["pytest>=8.2", "hypothesis>=6.100", "packaging>=24.2"]
 test-command = [
   "python {project}/tests/tooling/runtime/tls.py --json",
   "python -c \"import unstd.serde._json_native, unstd.clone._clone_native, unstd.crypto._stream_native, unstd.text._text_native, unstd.compress._gzip_native\"",
+  "python {project}/tests/tooling/runtime/json_acceleration.py --json",
   "python {project}/tests/tooling/release/wheel_tests.py --workers 4",
 ]
 
@@ -116,7 +117,10 @@ pack = [
 # warning.
 clone = []
 text = [
-  "rapidfuzz>=3.12.0",
+  "rapidfuzz>=3.12.0 ; python_version < '3.14'",
+  # 3.14 adds CPython 3.14 wheels; older releases cannot build on that runtime.
+  # https://github.com/rapidfuzz/RapidFuzz/releases/tag/v3.14.0
+  "rapidfuzz>=3.14 ; python_version >= '3.14'",
 ]
 audio = [
   "soundfile>=0.14",
@@ -170,7 +174,7 @@ backend-build = [
   "maturin>=1.15,<2 ; sys_platform == 'win32' and platform_machine == 'ARM64'",
 ]
 # Linux build containers carry their own frontend independently of the host.
-release-uv = ["uv==0.13.4"]
+release-uv = ["uv==0.13.5"]
 release = [
   "cibuildwheel==4.3.1",
   "delocate==0.13.0 ; sys_platform == 'darwin'",

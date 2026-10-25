@@ -60,6 +60,11 @@ Independent streams can inflate concurrently. The bundled adapter releases the
 GIL when a native call has at least 32 KiB of output space and serializes each
 decoder's state with its own lock. Public `readinto` retains its existing staged
 copy and error behavior; no expanded-output cache is retained across rewinds.
+On Mac ARM, the C adapter can select the already loaded zlib-ng inflater for a
+complete small DEFLATE block dominated by repeated short-distance matches.
+The bounded probe selects before decoding and preserves source consumption,
+output limits and the interpreter's framing. Incomplete probes keep Apple libz;
+Linux keeps its zlib-ng SIMD reader. Selection adds no package dependency.
 
 Eligible complete single-member exact `bytes` inputs use libdeflate for one-shot
 `decompress`. The native kernel validates framing, CRC32, original size and

@@ -20,6 +20,12 @@ safe constructor's earlier unhashable-key error even when the round-trip loader
 reaches a later duplicate-key error. Neither acceptance nor an unrelated parser
 error satisfies the oracle.
 
+`raw-recursive-merge-finding.bin` retains Atheris case 12353 from GitHub Actions
+run 40071352702. The safe parser accepts this self-merge, while ruamel's editable
+constructor crashes on its unresolved merge referent. That specific auxiliary
+probe limitation leaves both production readers subject to exact safe-parser
+parity; it never excuses product exceptions or changed values.
+
 The target is installed-only and requires `ruamel.yaml`. After
 [dependency preparation](../../README.md), run from the repository root:
 

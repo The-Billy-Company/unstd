@@ -3,7 +3,12 @@
 from __future__ import annotations
 
 import copy
+import dataclasses
+import json
+import sys
 from types import SimpleNamespace
+
+import pytest
 
 from bench.diagnostics.clone_cold import _clear_caches
 from bench.profiles import clone_common_cpu as profile
@@ -100,3 +105,157 @@ def test_common_workloads_cover_distinct_shapes_and_protocol_controls():
     for case in cases:
         calls = base._callables(case, {"current": structural})
         assert all(profile._check(case, label, call()) for label, call in calls.items())
+
+
+def test_installed_snapshot_inference_uses_only_its_wrappers_own_native_imports(
+    tmp_path, monkeypatch
+):
+    (tmp_path / "structural.py").write_text(
+        "from unstd.clone._clone_native import clone_checked as _native_clone\n"
+        "from unstd.clone._clone_native import clone_graph as _native_graph\n"
+    )
+
+    def saved_clone(value):
+        return value
+
+    def saved_graph(value):
+        return value
+
+    saved_clone.__module__ = "_clone_common_saved_backend"
+    backend = SimpleNamespace(clone_checked=saved_clone, clone_graph=saved_graph)
+    monkeypatch.setitem(sys.modules, saved_clone.__module__, backend)
+    wrapper = SimpleNamespace(
+        _native_clone=saved_clone,
+        _native_graph=None,
+        _native_walk_graph=None,
+        _NATIVE_SELECTED_MEMO=True,
+    )
+    monkeypatch.setattr(base, "_snapshot", lambda directory, label: wrapper)
+    actual = profile._snapshot(tmp_path, "before", infer_native_bindings=True)
+    assert actual._native_graph is saved_graph
+    assert actual._native_walk_graph is None
+    assert actual._NATIVE_SELECTED_MEMO is False
+
+
+def test_snapshot_inference_preserves_an_explicit_manifest_override(
+    tmp_path, monkeypatch
+):
+    (tmp_path / "structural.py").write_text(
+        "from unstd.clone._clone_native import clone_graph as _native_graph\n"
+    )
+    (tmp_path / "manifest.json").write_text(
+        json.dumps({"native_graph_entrypoint": "reviewed_graph"})
+    )
+
+    def saved_clone(value):
+        return value
+
+    saved_clone.__module__ = "_clone_common_manifest_backend"
+    monkeypatch.setitem(sys.modules, saved_clone.__module__, SimpleNamespace())
+    selected = object()
+    wrapper = SimpleNamespace(_native_clone=saved_clone, _native_graph=selected)
+    monkeypatch.setattr(base, "_snapshot", lambda directory, label: wrapper)
+    assert (
+        profile._snapshot(tmp_path, "before", infer_native_bindings=True)._native_graph
+        is selected
+    )
+
+
+def test_native_route_proofs_exercise_and_restore_public_bindings():
+    pytest.importorskip("unstd.clone._clone_native")
+    bindings = {
+        name: getattr(structural, name, None) for name in profile._NATIVE_BINDINGS
+    }
+    routes = profile._native_routes(structural, "current")
+    assert set(routes) == {"builtin-graph", "mixed-dataclass", "asdict-tree"}
+    assert all(routes.values())
+    assert bindings == {
+        name: getattr(structural, name, None) for name in profile._NATIVE_BINDINGS
+    }
+
+
+@pytest.mark.parametrize("route", ["mixed-dataclass", "asdict-tree"])
+def test_native_requirement_rejects_public_python_fallback(route, monkeypatch):
+    pytest.importorskip("unstd.clone._clone_native")
+    if route == "mixed-dataclass":
+        for binding in (
+            "_native_walk_graph",
+            "_native_record_graph",
+            "_native_dataclass",
+        ):
+            monkeypatch.setattr(structural, binding, None)
+    else:
+        monkeypatch.setattr(structural, "asdict", dataclasses.asdict)
+    with pytest.raises(RuntimeError, match=f"before/{route}"):
+        profile._native_routes(structural, "before")
+
+
+def test_native_requirement_rejects_missing_graph_binding(monkeypatch):
+    for binding in profile._NATIVE_BINDINGS:
+        monkeypatch.setattr(structural, binding, None, raising=False)
+    with pytest.raises(RuntimeError, match="before/builtin-graph"):
+        profile._native_routes(structural, "before")
+
+
+@pytest.mark.parametrize("slowdown", ["0.99", "nan", "inf", "-inf"])
+def test_slowdown_option_rejects_invalid_thresholds(tmp_path, slowdown):
+    with pytest.raises(SystemExit) as error:
+        profile.main(["--compare-dir", str(tmp_path), f"--max-slowdown={slowdown}"])
+    assert error.value.code == 2
+
+
+@pytest.mark.parametrize("metric", ["median_wall_ns", "median_cpu_ns"])
+def test_regression_gate_checks_each_metric_and_retains_evidence(
+    tmp_path, monkeypatch, metric
+):
+    case = profile._case("checked-tree", {"values": [1, 2]})
+    monkeypatch.setattr(profile, "_workloads", lambda: [case])
+    monkeypatch.setattr(base, "_snapshot", lambda directory, label: structural)
+    monkeypatch.setattr(base, "_metadata", lambda module: {"source": module.__file__})
+    monkeypatch.setattr(base, "_profile", lambda call: [])
+    timings = {
+        label: {"median_wall_ns": 100.0, "median_cpu_ns": 100.0}
+        for label in ("before", "current", "stdlib")
+    }
+    timings["current"][metric] = 131.0
+    monkeypatch.setattr(base, "_timings", lambda calls, rounds, gc_enabled: timings)
+    output = tmp_path / "evidence.json"
+    with pytest.raises(SystemExit) as error:
+        profile.main(
+            [
+                "--compare-dir",
+                str(tmp_path),
+                "--max-slowdown",
+                "1.30",
+                "--output",
+                str(output),
+            ]
+        )
+    assert error.value.code == 1
+    saved = json.loads(output.read_text())
+    assert saved["performance_gate"] == {
+        "max_slowdown": 1.3,
+        "passed": False,
+        "regressions": [
+            {
+                "workload": "checked-tree",
+                "metric": metric,
+                "before_ns": 100.0,
+                "current_ns": 131.0,
+                "slowdown": 1.31,
+            }
+        ],
+    }
+    assert saved["workloads"][case.name]["timings"]["before"][metric] == 100.0
+
+
+def test_gate_accepts_an_exact_slowdown_limit():
+    workloads = {
+        "boundary": {
+            "timings": {
+                "before": {"median_wall_ns": 100.0, "median_cpu_ns": 100.0},
+                "current": {"median_wall_ns": 130.0, "median_cpu_ns": 90.0},
+            }
+        }
+    }
+    assert profile._regressions(workloads, 1.3) == []

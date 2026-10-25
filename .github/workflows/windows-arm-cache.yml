@@ -48,7 +48,7 @@ jobs:
           cache-suffix: release-windows-11-arm-${{ matrix.python }}-${{ steps.dependencies.outputs.key }}
           cache-dependency-glob: ""
           prune-cache: false
-          version: "0.13.4"
+          version: "0.13.5"
           python-version: "3.14"
       - name: Install audited release tools from the lock
         run: uv sync --locked --only-group release --no-install-project

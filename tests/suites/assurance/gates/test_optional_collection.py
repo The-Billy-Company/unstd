@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import sys
+
 import pytest
 
 from tests.support.environment.anchors import REPO_ROOT
@@ -21,6 +23,8 @@ available = {{}}
 for requirements in extras.values():
     for text in requirements:
         requirement = Requirement(text)
+        if requirement.marker and not requirement.marker.evaluate():
+            continue
         available[requirement.name] = next(
             bound.version for bound in requirement.specifier if bound.operator == '>='
         )
@@ -56,7 +60,12 @@ raise SystemExit(pytest.main([
             4,
             "unknown extras requested: nonexistent",
         ),
-        ({"rapidfuzz"}, ["--require-extras"], 4, "rapidfuzz>=3.12.0"),
+        (
+            {"rapidfuzz"},
+            ["--require-extras"],
+            4,
+            f"rapidfuzz>={'3.14' if sys.version_info >= (3, 14) else '3.12.0'}",
+        ),
     ],
 )
 def test_partial_extra_admission_fails_only_for_the_named_extras(

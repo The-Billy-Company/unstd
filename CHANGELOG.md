@@ -8,7 +8,7 @@ doc_radar:
   - file: pyproject.toml
     contains: ['"msgspec>=0.22"', exclude-newer = "P2D", '"blake3>=1.0.10"', '"pyyaml>=6.0.3"', 'select = "cp3{12,13}-macosx_x86_64"', sysconfig.get_config_var("CFLAGS")]
   - file: .github/workflows/ci.yml
-    contains: [github.sha || github.ref, 'version: "0.13.4"', uv sync --locked]
+    contains: [github.sha || github.ref, 'version: "0.13.5"', uv sync --locked]
   - file: .github/workflows/release.yml
     contains: ['TAG: ${{ github.ref_name }}', Build and test CPython wheels, 'UV_MANAGED_PYTHON: "1"', python -m tests.tooling.release.wheels]
   - file: src/unstd/serde/structs.py

@@ -264,7 +264,10 @@ unstd_inflate_decode(void *value,
         if (input_size == 0) {
             return Z_BUF_ERROR;
         }
-        if (output_size >= 4096 && unstd_prefer_ng(input, input_size)) {
+        /* A buffered prefix read can ask for only 8 KiB and then close.
+         * Inspecting an entire highly expanding block costs more than decoding
+         * that prefix. Reserve the whole-block probe for larger output calls. */
+        if (output_size >= 16384 && unstd_prefer_ng(input, input_size)) {
             decoder->ng.zalloc = allocate;
             decoder->ng.zfree = release;
             int status = decoder->api->init(
