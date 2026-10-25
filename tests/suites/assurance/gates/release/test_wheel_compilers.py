@@ -6,6 +6,7 @@ from importlib.util import module_from_spec, spec_from_file_location
 import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import sysconfig
@@ -167,6 +168,98 @@ def test_original_python_sdk_flags_are_rejected(monkeypatch, compiler_profile):
     monkeypatch.setenv("CPPFLAGS", "-I" + profile["prefix"] + "/include/python")
     with pytest.raises(ValueError, match="commands disagree"):
         build_hook._compiler_commands()
+
+
+@pytest.mark.skipif(os.name == "nt", reason="Unix container interpreter prefixes")
+@pytest.mark.parametrize("field", ["prefix", "compiler"])
+def test_compiler_identity_mismatches_report_only_bounded_field_names(
+    compiler_profile, tmp_path, capsys, field
+):
+    path, profile = compiler_profile
+    if field == "prefix":
+        profile[field] = str(tmp_path / "different-original-prefix")
+    else:
+        profile[field]["CFLAGS"] = "different-original-flags"
+    _write_profile(path, profile)
+    with pytest.raises(ValueError, match="commands disagree"):
+        build_hook._compiler_commands()
+    assert json.loads(capsys.readouterr().out) == {"wheel_compiler_mismatch": [field]}
+
+
+@pytest.mark.skipif(os.name == "nt", reason="Unix container interpreter prefixes")
+def test_whole_prefix_link_is_canonical_before_capture_and_can_be_retargeted(
+    monkeypatch, compiler_profile, tmp_path
+):
+    path, _ = compiler_profile
+    directory = tmp_path / "python"
+    directory.mkdir()
+    identifier = f"cp{sys.version_info.major}{sys.version_info.minor}"
+    link = directory / f"{identifier}-{identifier}"
+    link.symlink_to(sys.base_prefix, target_is_directory=True)
+    canonical = (link / "bin/python").resolve(strict=True)
+    expected = json.loads(
+        subprocess.check_output(  # noqa: S603 - actual original interpreter, fixed stdlib probe
+            [
+                canonical,
+                "-I",
+                "-S",
+                "-c",
+                wheels._COMPILER_PROBE,
+                *wheels._COMPILER_KEYS,
+            ],
+            text=True,
+        )
+    )
+    managed = tmp_path / "managed"
+    shutil.copytree(sys.base_prefix, managed, symlinks=True)
+    sdk_probe = """
+import json, pathlib, sys, sysconfig
+print(json.dumps(dict(prefix=sys.prefix, stdlib=str(pathlib.Path(sysconfig.__file__).resolve()),
+                     include=str(pathlib.Path(sysconfig.get_path("include")).resolve()),
+                     config=str(pathlib.Path(sysconfig.get_config_h_filename()).resolve()))))
+"""
+    original_sdk = subprocess.check_output(  # noqa: S603 - fixed stdlib SDK probe
+        [canonical, "-I", "-S", "-c", sdk_probe], text=True
+    )
+    managed_sdk = subprocess.check_output(  # noqa: S603 - independent copied interpreter/SDK
+        [managed / "bin/python", "-I", "-S", "-c", sdk_probe], text=True
+    )
+    assert json.loads(original_sdk)["stdlib"] != json.loads(managed_sdk)["stdlib"]
+    observed = []
+    check_output = subprocess.check_output
+
+    def capture(arguments, **kwargs):
+        observed.append(arguments)
+        return check_output(arguments, **kwargs)
+
+    with monkeypatch.context() as container:
+        container.setattr(sys, "platform", "linux")
+        container.setattr(
+            wheels, "_managed_python", lambda *args: managed / "bin/python"
+        )
+        container.setattr(subprocess, "check_output", capture)
+        wheels._linux_runtime(identifier, directory)
+    assert observed[0][0] == canonical
+    assert json.loads(path.read_bytes()) == expected
+    assert link.resolve() == managed.resolve()
+    assert canonical.is_file()
+    assert (
+        subprocess.check_output(  # noqa: S603 - retained original physical interpreter
+            [canonical, "-I", "-S", "-c", sdk_probe], text=True
+        )
+        == original_sdk
+    )
+    assert (
+        subprocess.check_output(  # noqa: S603 - retargeted interpreter prefix
+            [link / "bin/python", "-I", "-S", "-c", sdk_probe], text=True
+        )
+        == managed_sdk
+    )
+    compiler = build_hook.new_compiler(compiler="unix")
+    customize_compiler(compiler)
+    assert build_hook._compiler_commands() == {
+        name: getattr(compiler, name) for name in compiler.executables
+    }
 
 
 @pytest.mark.skipif(os.name == "nt", reason="Unix container compiler commands")

@@ -114,13 +114,15 @@ def _compiler_commands() -> dict[str, list[str] | None] | None:
         )
     )
     commands = report["commands"]
+    mismatched = [
+        name
+        for name in ("version", "soabi", "prefix", "compiler")
+        if report[name] != profile[name]
+    ]
+    if report["setuptools"] != installed_version("setuptools"):
+        mismatched.append("setuptools")
     if (
-        report["version"] != profile["version"]
-        or report["soabi"] != profile["soabi"]
-        or report["prefix"] != profile["prefix"]
-        or report["compiler"] != profile["compiler"]
-        or report["setuptools"] != installed_version("setuptools")
-        or not isinstance(commands, dict)
+        not isinstance(commands, dict)
         or set(commands) != set(new_compiler(compiler="unix").executables)
         or any(
             value is not None
@@ -136,6 +138,9 @@ def _compiler_commands() -> dict[str, list[str] | None] | None:
             for value in commands.values()
         )
     ):
+        mismatched.append("commands")
+    if mismatched:
+        print(json.dumps({"wheel_compiler_mismatch": mismatched}), flush=True)
         message = "original wheel compiler commands disagree with the admitted build"
         raise ValueError(message)
     print(

@@ -172,7 +172,14 @@ def _linux_runtime(identifier: str, directory: Path = Path("/opt/python")) -> No
         raise RuntimeError(msg)
     profile = json.loads(
         subprocess.check_output(  # noqa: S603 - existing builder interpreter
-            [link / "bin/python", "-I", "-S", "-c", _COMPILER_PROBE, *_COMPILER_KEYS],
+            [
+                (link / "bin/python").resolve(strict=True),
+                "-I",
+                "-S",
+                "-c",
+                _COMPILER_PROBE,
+                *_COMPILER_KEYS,
+            ],
             text=True,
             timeout=30,
         )
