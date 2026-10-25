@@ -1,14 +1,15 @@
 # `unstd.audio`
 
-Part of [`unstd`](../README.md). WAV readers and writers that expose decoded
-samples instead of `wave`'s packed frame bytes. Whole-file and streaming APIs
-use NumPy arrays when available and Python lists on the dependency-free fallback.
+Part of [`unstd`](../README.md). PCM buffer conversion and WAV readers/writers
+that expose decoded samples instead of `wave`'s packed frame bytes. Whole-file,
+streaming and raw decoding APIs use NumPy arrays when available and Python
+lists on the dependency-free fallback.
 
 ## Modules
 
 | File      | Role                                                                                                            |
 | --------- | ----------------------------------------------------------------------------------------------------------------- |
-| `wavx.py` | `read`/`write` (whole-file) · `blocks`/`Writer` (streaming) · `wrap_pcm` — numpy-native WAV samples ↔ file. |
+| `wavx.py` | `wrap_pcm`/`decode_pcm` (raw buffers) · `read`/`write` (whole-file) · `blocks`/`Writer` (streaming). |
 
 ```python
 from unstd.audio import wavx
@@ -25,6 +26,7 @@ for block in wavx.blocks("in.wav", blocksize=4096):
     play(block)
 
 wavx.wrap_pcm(raw_pcm_bytes, sr, channels=1, width=2)  # header only, no decode
+samples = wavx.decode_pcm(raw_pcm_bytes)  # PCM16 → owned, writable float32
 ```
 
 Mono is 1-D `(frames,)`; multichannel is 2-D `(frames, channels)` — the shape
@@ -80,6 +82,35 @@ them. `wrap_pcm(raw, samplerate, channels=1, width=2)` does exactly that — no
 scale, no clamp, no requantize — where routing the same bytes through
 `write` would decode to an array and re-quantize back, paying two
 conversions and a quantization step to reproduce its own input.
+
+Pass accumulated `bytearray` buffers directly: `wrap_pcm(pcm, sr)` avoids the
+intermediate full copy in `wrap_pcm(bytes(pcm), sr)`. C-contiguous buffers and
+typed memoryviews are accepted; header sizes count bytes rather than elements.
+The returned immutable bytes own their storage. Noncontiguous views raise
+`BufferError`. This remains a header-only operation; frame alignment is the
+caller's responsibility.
+
+## `decode_pcm` — raw voice frames to samples
+
+`decode_pcm(raw, *, channels=1, width=2, dtype="float32")` decodes interleaved
+little-endian PCM directly. The sample rate stays with the caller. Defaults
+match Billy's mono PCM16 voice taps; widths 1/2/4 represent unsigned PCM8 and
+signed PCM16/32. Output dtypes and channel shapes match `read`. PCM16 is
+available as Python lists without dependencies; NumPy adds PCM8/32 and arrays,
+without requiring soundfile. Arrays own writable storage and never alias the
+source or another decoded chunk. Positive integer channels and complete frames
+are required; noncontiguous buffers raise `BufferError`.
+
+Floating output casts directly to the requested dtype and scales in place,
+with one output array instead of full intermediate arrays. PCM32-to-int16 conversion retains
+float64 precision before rounding. This conversion does not resample, downmix,
+retain a rolling buffer, or apply voice activity policy.
+
+Billy currently uses `wrap_pcm` for sound observations, batch STT uploads and
+narration. Its live voice consumers separately normalize raw PCM16 for feature
+extraction, rolling retention, diarized STT and turn inference. The
+[consumer audit and measurements](../../../bench/reports/audio/billy-audio.md)
+record exact source locations, adoption examples, timings and allocation bounds.
 
 ## Prior art
 

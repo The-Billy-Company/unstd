@@ -8,6 +8,9 @@ Array, NumPy, and soundfile cases run where supported. Partial-frame checks forc
 whole-file and streaming reads. It pins independent writable array storage,
 little-endian dtype, empty/channel shapes and unchanged PCM8/PCM32 quantization.
 
+`test_pcm_buffers.py` checks bytearray and typed-view wrapping against stdlib
+WAV headers, byte counts, independent immutable output and noncontiguous refusals.
+
 Run from the repository root:
 
 ```console

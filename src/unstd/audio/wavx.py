@@ -5,10 +5,9 @@ speak in sample arrays: float32 in ``[-1, 1]`` (or int16) on the way in, the sam
 on the way out. Mono is 1-D ``(frames,)``; multichannel is 2-D ``(frames,
 channels)`` — the shape libsndfile / ``soundfile`` use.
 
-``wrap_pcm`` is the third operation, and the only one that stays in bytes: a
-header around PCM that arrived already packed (off a socket, out of a codec), for
-callers whose samples were never samples and would only be decoded to be
-re-encoded.
+``wrap_pcm`` stays in bytes: a header around PCM that arrived already packed
+(off a socket, out of a codec). ``decode_pcm`` converts raw PCM directly to
+independent samples for live voice consumers, without a WAV round trip.
 
 Backend & fallback:
 
@@ -35,8 +34,9 @@ Prior art: ``soundfile`` (github.com/bastibe/python-soundfile) over libsndfile
 
 from __future__ import annotations
 
-from collections.abc import Iterator, Sequence
+from collections.abc import Buffer, Iterator, Sequence
 import contextlib
+from operator import index
 import struct
 from typing import IO, TYPE_CHECKING, Protocol, Self, cast
 import wave
@@ -47,6 +47,7 @@ from unstd.audio._internal.pcm import _check_channels as _check_channels
 from unstd.audio._internal.pcm import _check_dtype as _check_dtype
 from unstd.audio._internal.pcm import _check_pcm_frames as _check_pcm_frames
 from unstd.audio._internal.pcm import _pcm16 as _pcm16
+from unstd.audio._internal.pcm import _pcm_buffer as _pcm_buffer
 from unstd.audio._internal.pcm import _python_integers as _python_integers
 from unstd.audio._internal.pcm import _read_array as _read_array
 
@@ -121,7 +122,7 @@ else:
         _HAVE_NUMPY = False
 
 
-__all__ = ["Writer", "blocks", "read", "wrap_pcm", "write"]
+__all__ = ["Writer", "blocks", "decode_pcm", "read", "wrap_pcm", "write"]
 
 # A filesystem path or a binary file object (rb / wb).
 type PathOrFile = str | IO[bytes]
@@ -193,7 +194,7 @@ def blocks(
 
 
 def wrap_pcm(
-    raw: bytes,
+    raw: Buffer,
     samplerate: int,
     *,
     channels: int = 1,
@@ -207,7 +208,11 @@ def wrap_pcm(
     already has, and routing that through ``write`` would decode to an array
     and re-quantize back, spending two conversions and a quantization step to
     reproduce its own input. Nothing is scaled, clamped or reinterpreted here:
-    ``raw`` lands in the data chunk verbatim.
+    ``raw`` lands in the data chunk verbatim. Accepts bytes, bytearray and other
+    C-contiguous buffers, including typed memoryviews; sizes count bytes, not
+    elements. The returned bytes own their storage, so a mutable source can be
+    reused after the call. Pass an accumulated bytearray directly to avoid an
+    intermediate ``bytes(raw)`` copy. Noncontiguous buffers raise ``BufferError``.
 
     ``width`` is bytes per sample (2 = PCM16), ``channels`` is the interleave
     factor, and both belong to the bytes rather than to a preference — get them
@@ -224,7 +229,12 @@ def wrap_pcm(
     if rate <= 0:
         msg = "sampling rate not specified"
         raise wave.Error(msg)
-    n = len(raw)
+    if isinstance(raw, bytes):
+        buffer: bytes | bytearray | memoryview = raw
+        n = len(raw)
+    else:
+        buffer = _pcm_buffer(raw)
+        n = buffer.nbytes if isinstance(buffer, memoryview) else len(buffer)
     block = channels * width
     return (
         _RIFF_PCM.pack(
@@ -242,8 +252,35 @@ def wrap_pcm(
             b"data",
             n,
         )
-        + raw
+        + buffer
     )
+
+
+def decode_pcm(
+    raw: Buffer, *, channels: int = 1, width: int = 2, dtype: str = "float32"
+) -> Samples:
+    """Decode interleaved little-endian PCM without constructing a WAV file.
+
+    ``width`` is bytes per sample: 1 is unsigned PCM8, 2/4 are signed PCM16/32.
+    ``dtype`` is ``"float32"`` (default), ``"float64"`` or ``"int16"``, with the
+    same scaling and mono/multichannel shape as :func:`read`. The sample rate
+    belongs to the caller and is not needed for conversion.
+
+    NumPy returns independent writable arrays, with one output allocation for
+    floating samples. Without NumPy, only PCM16 is supported and the result is
+    a Python list. No soundfile dependency or codec is used. ``channels`` must
+    be a positive integer and the input must contain complete frames.
+    C-contiguous buffers, including bytearrays and typed memoryviews, are
+    accepted; noncontiguous buffers raise ``BufferError``. The source is never
+    modified or retained by the result.
+    """
+    _check_dtype(dtype)
+    channels, width = index(channels), index(width)
+    if channels <= 0:
+        msg = "channels must be positive"
+        raise ValueError(msg)
+    reader = _read_numpy if _HAVE_NUMPY else _read_array
+    return reader(_pcm_buffer(raw), channels, width, dtype)
 
 
 def write(
@@ -422,21 +459,28 @@ def _sf_samples(samples: Samples, subtype: str) -> NDArray[_np.generic]:
 # ── stdlib + numpy path ────────────────────────────────────────────────────────
 
 
-def _read_numpy(raw: bytes, nchannels: int, sampwidth: int, dtype: str) -> Samples:
+def _read_numpy(
+    raw: bytes | bytearray | memoryview, nchannels: int, sampwidth: int, dtype: str
+) -> Samples:
     code = _PCM_CODE.get(sampwidth)
     if code is None:
         raise ValueError(_bad_width(sampwidth, "8/16/32"))
     _check_pcm_frames(raw, nchannels, sampwidth)
-    arr = _np.frombuffer(raw, dtype=code)
+    arr: NDArray[_np.generic] = _np.frombuffer(raw, dtype=code)
     if dtype == "int16":
         return _read_int16_numpy(arr, nchannels, sampwidth)
-    if sampwidth == 1:  # 8-bit WAV is unsigned, centered on 128
-        flt = (arr.astype(_np.float64) - 128.0) / 128.0
-    else:
-        flt = arr.astype(_np.float64) / float(1 << (8 * sampwidth - 1))
     if nchannels > 1:
-        flt = flt.reshape(-1, nchannels)
-    return flt.astype(_np.float32 if dtype == "float32" else _np.float64)
+        arr = arr.reshape(-1, nchannels)
+    # PCM scaling is a power of two, so converting directly to the requested
+    # float dtype has the same rounding as float64 normalization then casting.
+    # Shape first so the single writable allocation owns its channel layout.
+    flt: NDArray[_np.floating] = arr.astype(
+        _np.float32 if dtype == "float32" else _np.float64
+    )
+    flt *= 1.0 / (1 << (8 * sampwidth - 1))
+    if sampwidth == 1:  # 8-bit WAV is unsigned, centered on 128
+        flt -= 1.0
+    return flt
 
 
 def _read_int16_numpy(

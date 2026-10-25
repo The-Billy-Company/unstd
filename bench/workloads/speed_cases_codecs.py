@@ -395,7 +395,7 @@ def _compress_cases() -> list[Case]:
     ]
 
 
-def _audio_cases() -> list[Case]:
+def _audio_cases(*, comparison: bool = False) -> list[Case]:
     import numpy as np
 
     from unstd.audio import wavx
@@ -420,6 +420,13 @@ def _audio_cases() -> list[Case]:
         assert isinstance(value, list)
         assert len(value) == 4
         np.testing.assert_array_equal(np.concatenate(value), samples)
+
+    def pcm_check(value: object) -> None:
+        assert isinstance(value, np.ndarray)
+        assert value.dtype == np.float32
+        assert value.flags.owndata
+        assert value.flags.writeable
+        np.testing.assert_array_equal(value, samples.astype(np.float32) / 32768.0)
 
     def wav_check(value: object) -> None:
         assert isinstance(value, bytes)
@@ -475,6 +482,15 @@ def _audio_cases() -> list[Case]:
             "256 mono PCM16 frames; new BytesIO and completed file included",
         ),
     ]
+    if not comparison or hasattr(wavx, "decode_pcm"):
+        out.append(
+            Case(
+                "unstd.audio.wavx.decode_pcm",
+                partial(wavx.decode_pcm, raw),
+                pcm_check,
+                "256 mono raw PCM16 frames; owned writable float32 samples",
+            )
+        )
     for name, run in (
         ("Writer", stream),
         ("Writer.write", stream),
@@ -673,7 +689,7 @@ def cases(stack: ExitStack, *, comparison: bool = False) -> list[Case]:
         *_serde_cases(comparison=comparison),
         *_pack_cases(comparison=comparison),
         *_compress_cases(),
-        *_audio_cases(),
+        *_audio_cases(comparison=comparison),
         *_toml_cases(),
         *_yaml_cases(),
     ]

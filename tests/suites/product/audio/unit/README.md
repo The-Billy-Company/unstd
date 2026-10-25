@@ -6,6 +6,10 @@
 
 `test_layouts.py` checks 3- and 6-channel interleave order through stdlib `wave` bytes and zero-frame files across `write`, `Writer`, `read`, and `blocks`.
 
+`test_pcm_decode.py` checks raw decoding against scalar PCM expectations,
+including every PCM16 value, PCM8/32 rails and rounding, channel shapes,
+independent writable storage, typed buffers, and invalid/incomplete frames.
+
 The fixture always forces the pure-stdlib array implementation, adds the NumPy fallback when available, and exercises soundfile when installed.
 
 Run from the repository root:

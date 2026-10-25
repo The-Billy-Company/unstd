@@ -9,6 +9,7 @@ These drivers compare saved and current implementations, check outputs and impor
 - [`native_profile.py`](native_profile.py)
 - [`crypto_hash.py`](crypto_hash.py)
 - [`billy_serde.py`](billy_serde.py)
+- [`billy_audio.py`](billy_audio.py) — exact PCM wrapping and raw normalization ports, paired timings, allocation peaks and captured Billy consumer source
 - [`gzip_reads.py`](gzip_reads.py)
 - [`text_native_compare.py`](text_native_compare.py)
 

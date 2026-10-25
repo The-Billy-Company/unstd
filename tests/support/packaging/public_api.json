@@ -11,6 +11,7 @@
     "exports": [
       "Writer",
       "blocks",
+      "decode_pcm",
       "read",
       "wrap_pcm",
       "write"
@@ -24,12 +25,16 @@
         "signature": "(path_or_file: 'PathOrFile', blocksize: 'int', *, dtype: 'str' = 'float32') -> 'Iterator[Samples]'",
         "module": "unstd.audio.wavx"
       },
+      "decode_pcm": {
+        "signature": "(raw: 'Buffer', *, channels: 'int' = 1, width: 'int' = 2, dtype: 'str' = 'float32') -> 'Samples'",
+        "module": "unstd.audio.wavx"
+      },
       "read": {
         "signature": "(path_or_file: 'PathOrFile', *, dtype: 'str' = 'float32') -> 'tuple[Samples, int]'",
         "module": "unstd.audio.wavx"
       },
       "wrap_pcm": {
-        "signature": "(raw: 'bytes', samplerate: 'int', *, channels: 'int' = 1, width: 'int' = 2) -> 'bytes'",
+        "signature": "(raw: 'Buffer', samplerate: 'int', *, channels: 'int' = 1, width: 'int' = 2) -> 'bytes'",
         "module": "unstd.audio.wavx"
       },
       "write": {

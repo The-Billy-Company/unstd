@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Sequence
+    from collections.abc import Buffer, Callable, Sequence
     import wave
 
     from unstd.audio.wavx import Samples
@@ -25,7 +25,22 @@ def _python_integers(samples: object) -> bool:
     return isinstance(samples, list | tuple) and all(map(_python_integers, samples))
 
 
-def _read_array(raw: bytes, nchannels: int, sampwidth: int, dtype: str) -> Samples:
+def _pcm_buffer(raw: Buffer) -> bytes | bytearray | memoryview:
+    """A contiguous byte buffer, retaining its owner until conversion finishes."""
+    if isinstance(raw, bytes | bytearray):
+        return raw
+    view = memoryview(raw)
+    if not view.c_contiguous:
+        msg = "PCM buffer must be C-contiguous"
+        raise BufferError(msg)
+    # array.frombytes accepts byte views, including for a typed/multidimensional
+    # source. Empty shaped views cannot be cast, and have no bytes to retain.
+    return view.cast("B") if view.nbytes else memoryview(b"")
+
+
+def _read_array(
+    raw: bytes | bytearray | memoryview, nchannels: int, sampwidth: int, dtype: str
+) -> Samples:
     if sampwidth != 2:
         raise ValueError(_bad_width(sampwidth, "16"))
     _check_pcm_frames(raw, nchannels, sampwidth)
@@ -87,9 +102,12 @@ def _to_int16(v: float) -> int:
     return max(-32768, min(32767, scaled))
 
 
-def _check_pcm_frames(raw: bytes, nchannels: int, sampwidth: int) -> None:
+def _check_pcm_frames(
+    raw: bytes | bytearray | memoryview, nchannels: int, sampwidth: int
+) -> None:
     """Reject truncated interleaved frames before decoding or channel indexing."""
-    if len(raw) % (nchannels * sampwidth):
+    size = raw.nbytes if isinstance(raw, memoryview) else len(raw)
+    if size % (nchannels * sampwidth):
         msg = "PCM data is not a whole number of frames"
         raise ValueError(msg)
 

@@ -1,10 +1,9 @@
-"""Audio I/O — numpy-native WAV read/write for voice paths.
+"""PCM buffers and sample-oriented WAV I/O for voice paths.
 
-A stdlib-``wave``-faithful *replacement* that hands back sample **arrays** instead
-of raw frame bytes. The stdlib ``wave`` module only exposes packed PCM byte
-strings; every TTS/STT call site then re-rolls the same ``struct``/``array``
-unpacking. ``unstd.audio`` folds that decode into the reader and the encode into
-the writer, so the surface is samples-in / samples-out.
+``wavx.wrap_pcm`` adds a WAV container to wire PCM without decoding it;
+``wavx.decode_pcm`` normalizes raw frames without constructing a WAV file.
+``read``/``write`` and ``blocks``/``Writer`` handle complete or streamed WAVs
+with decoded sample arrays instead of stdlib ``wave``'s packed frame bytes.
 
 Backend & fallback: the ``audio`` extra provides ``soundfile``
 (libsndfile bindings) + ``numpy``. When present, reads/writes ride libsndfile and

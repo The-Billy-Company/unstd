@@ -13,6 +13,11 @@ comparison sources, and checks bounded output, concatenated lines and rewinds.
 failures, source hashes despite stale bytecode, crossover workload coverage,
 output/type checks, and retained alternating samples.
 
+`test_billy_audio.py` rejects changed PCM/WAV bytes, post-measurement drift,
+borrowed/read-only sample storage, missing/ambiguous consumer receipts and
+source changes during timing. It checks compact CLI evidence without speed
+thresholds.
+
 `test_speeds.py` pins slowdown verdicts, frozen ceilings, malformed evidence
 rejection and correctness audits before/after timing. `test_speed_coverage.py`
 discovers every public operation, requires all-package workloads and frozen

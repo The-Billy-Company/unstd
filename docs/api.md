@@ -51,10 +51,14 @@ Import `from unstd.audio import wavx`.
 
 | Module | Exported API |
 | --- | --- |
-| [`unstd.audio.wavx`](../src/unstd/audio/wavx.py) | `Writer`, `blocks`, `read`, `wrap_pcm`, `write` |
+| [`unstd.audio.wavx`](../src/unstd/audio/wavx.py) | `Writer`, `blocks`, `decode_pcm`, `read`, `wrap_pcm`, `write` |
 
 `read` returns `(samples, samplerate)`; `blocks` yields sample chunks. `write`
-writes samples, and `wrap_pcm` adds a WAV header to packed PCM. The `audio`
+writes samples, `wrap_pcm` adds a WAV header to a contiguous PCM buffer, and
+`decode_pcm(raw, *, channels=1, width=2, dtype="float32")` converts raw frames
+directly to independent samples. Mutable and typed buffers are accepted; sizes
+count bytes. `decode_pcm` rejects incomplete frames and nonpositive channels.
+The `audio`
 extra provides soundfile and NumPy. The stdlib fallback supports PCM16 with
 Python sample lists; NumPy without soundfile also supports the documented
 8/16/32-bit read and PCM16/PCM32 write paths.

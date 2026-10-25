@@ -133,6 +133,7 @@ def test_tls_workload_accepts_lazy_default_roots_and_rejects_insecure_policy(
     ("module_name", "name"),
     [
         ("unstd.serde.jsonx", "canonical_strict"),
+        ("unstd.audio.wavx", "decode_pcm"),
         ("unstd.crypto.token", "prepare_verifier"),
         *(
             ("unstd.time.timeutil", name)
