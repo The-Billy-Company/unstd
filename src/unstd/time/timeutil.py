@@ -18,8 +18,9 @@ the stdlib functions, bound directly: no wrapper frame on the hottest calls in a
 program, and patching the module attribute in a test still redirects every
 caller that reads it through the module.
 
-Everything here is absolute-instant work. Durations account for each endpoint's
-UTC offset so a shared IANA zone cannot select wall-clock arithmetic.
+Native bindings retain the stdlib's local-calendar and formatting semantics.
+Instant durations account for each endpoint's UTC offset so a shared IANA zone
+cannot select wall-clock arithmetic.
 DST-correct *wall-clock* work — "9am in New York next Tuesday" — is
 :mod:`unstd.time.zoned`, behind the ``time`` extra.
 
@@ -45,6 +46,7 @@ if TYPE_CHECKING:
 
 __all__ = [
     "Unit",
+    "combine",
     "date_from_iso",
     "date_today",
     "datetime_today",
@@ -55,8 +57,10 @@ __all__ = [
     "from_epoch_s",
     "from_iso",
     "from_timestamp",
+    "gmtime",
     "human",
     "iso",
+    "localtime",
     "mono",
     "mono_ns",
     "now",
@@ -72,6 +76,8 @@ __all__ = [
     "proto_timestamp_ms",
     "sleep",
     "span",
+    "strftime",
+    "strptime",
     "thread_time",
     "thread_time_ns",
     "time_from_iso",
@@ -183,6 +189,15 @@ def today(*, utc: bool = False) -> date:
 
 # ── formatting ─────────────────────────────────────────────────────────────────
 
+strftime = _time.strftime
+"""Format a native time tuple, retaining platform directives and the local-time default."""
+
+gmtime = _time.gmtime
+"""Convert epoch seconds to the native UTC time tuple without an intermediate datetime."""
+
+localtime = _time.localtime
+"""Convert epoch seconds to the native local time tuple, retaining the host's DST rules."""
+
 
 def iso(dt: datetime | None = None, *, ms: bool = False) -> str:
     """*dt* (default: now) as an RFC-3339 UTC stamp — ``…T14:30:00Z``, or ``…T14:30:00.123Z`` with *ms*.
@@ -215,6 +230,12 @@ def _human(dt: datetime) -> str:
 
 
 # ── parsing ────────────────────────────────────────────────────────────────────
+
+strptime = datetime.strptime
+"""Parse an explicit datetime format, retaining native directives, defaults and errors."""
+
+combine = datetime.combine
+"""Assemble a date and time, retaining the native timezone override and fold semantics."""
 
 from_iso = datetime.fromisoformat
 """Decode an ISO datetime unchanged; invalid input raises the stdlib exception."""

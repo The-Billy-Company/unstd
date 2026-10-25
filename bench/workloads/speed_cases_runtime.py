@@ -562,6 +562,36 @@ def _time(*, comparison: bool = False) -> list[Case]:
         )
 
     native_specs: list[tuple[str, tuple[object, ...], Callable[[Any], None], str]] = [
+        (
+            "strftime",
+            ("%Y-%m-%dT%H:%M:%SZ", time.gmtime(epoch)),
+            expect(raw),
+            "format one prepared UTC time tuple with explicit directives",
+        ),
+        (
+            "gmtime",
+            (epoch,),
+            expect(time.struct_time((2026, 1, 1, 0, 0, 0, 3, 1, 0))),
+            "decode fixed epoch seconds to a native UTC time tuple",
+        ),
+        (
+            "localtime",
+            (epoch,),
+            expect(time.localtime(epoch)),
+            "decode fixed epoch seconds to the native local time tuple",
+        ),
+        (
+            "strptime",
+            (raw, "%Y-%m-%dT%H:%M:%SZ"),
+            expect(stamp.replace(tzinfo=None)),
+            "parse one datetime using explicit strptime directives",
+        ),
+        (
+            "combine",
+            (stamp.date(), stamp.timetz()),
+            expect(stamp),
+            "combine a prepared calendar date and aware UTC clock",
+        ),
         ("wall_ns", (), int_clock, "one integer wall-clock read"),
         ("perf_ns", (), int_clock, "one integer performance-counter read"),
         ("process_time", (), float_clock, "one process CPU-clock read"),

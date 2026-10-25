@@ -1,4 +1,171 @@
 {
+  "calendar_addition_provenance": {
+    "cases": [
+      "unstd.time.timeutil.combine",
+      "unstd.time.timeutil.gmtime",
+      "unstd.time.timeutil.localtime",
+      "unstd.time.timeutil.strftime",
+      "unstd.time.timeutil.strptime"
+    ],
+    "measurement_baseline": {
+      "cases": {
+        "unstd.time.timeutil.combine": {
+          "ceiling_ns": 41.590367002744934,
+          "iterations": 151552,
+          "measured_ns": 31.992590002111488,
+          "note": "combine a prepared calendar date and aware UTC clock",
+          "rounds": 9,
+          "spread": 0.19913227504933959
+        },
+        "unstd.time.timeutil.gmtime": {
+          "ceiling_ns": 152.18213161892362,
+          "iterations": 36864,
+          "measured_ns": 117.06317816840277,
+          "note": "decode fixed epoch seconds to a native UTC time tuple",
+          "rounds": 9,
+          "spread": 0.26723952748946395
+        },
+        "unstd.time.timeutil.localtime": {
+          "ceiling_ns": 252.71937052408853,
+          "iterations": 49152,
+          "measured_ns": 194.3995157877604,
+          "note": "decode fixed epoch seconds to the native local time tuple",
+          "rounds": 9,
+          "spread": 0.07573160999986918
+        },
+        "unstd.time.timeutil.strftime": {
+          "ceiling_ns": 589.2112731933594,
+          "iterations": 16384,
+          "measured_ns": 453.23944091796875,
+          "note": "format one prepared UTC time tuple with explicit directives",
+          "rounds": 9,
+          "spread": 0.12494608379483899
+        },
+        "unstd.time.timeutil.strptime": {
+          "ceiling_ns": 2269.6741615853657,
+          "iterations": 5248,
+          "measured_ns": 1745.903201219512,
+          "note": "parse one datetime using explicit strptime directives",
+          "rounds": 9,
+          "spread": 0.18449757162346522
+        }
+      },
+      "environment": {
+        "backends": {
+          "PyYAML": "6.0.3",
+          "blake3": "1.0.10",
+          "immutables": "0.21",
+          "irregex": "2.6.0",
+          "msgspec": "0.22.0",
+          "numpy": "2.5.3",
+          "orjson": "3.12.0",
+          "protobuf": "7.36.2",
+          "pybase64": "1.5.0",
+          "pydantic": "2.13.5",
+          "pydantic-settings": "2.15.0",
+          "rapidfuzz": "3.14.6",
+          "ruamel-yaml": "0.19.1",
+          "sortedcontainers": "2.4.0",
+          "soundfile": "0.14.0",
+          "tomlkit": "0.15.1",
+          "uuid-utils": "1.0.0",
+          "whenever": "0.10.5",
+          "zlib-ng": "1.0.0"
+        },
+        "cpu": "Apple M5 Max",
+        "cpu_count": 18,
+        "implementation": "CPython",
+        "machine": "arm64",
+        "native": {
+          "clone._clone_native": true,
+          "compress._gzip_native": false,
+          "crypto._stream_native": true,
+          "serde._json_native": true,
+          "text._text_native": true
+        },
+        "native_implementations": {
+          "clone._clone_native": "c",
+          "crypto._stream_native": "c",
+          "serde._json_native": "c",
+          "text._text_native": "c"
+        },
+        "python": "3.13.14",
+        "python_debug": 0,
+        "python_free_threaded": 0,
+        "system": "Darwin",
+        "system_release": "25.6.0",
+        "thread_settings": {
+          "MKL_NUM_THREADS": null,
+          "OMP_NUM_THREADS": null,
+          "OPENBLAS_NUM_THREADS": null
+        }
+      },
+      "recorded": "2026-10-25T05:11:06.868173+00:00",
+      "schema": 1,
+      "tolerance": 0.3,
+      "workload_sources": {
+        "speed_cases_codecs.py": "8dda94b94688b43d9aecce530132dc6e278ab3a42aee0790c2e0f40b7fae5092",
+        "speed_cases_operations.py": "54572576bc9cea79179d60a84d428a7f2f232e1d6de46233c3ee00ab196cf497",
+        "speed_cases_runtime.py": "9a071379371c171c3e8b307453c27b798d41ba3926fd05bbb31e2bdeabcca8e3"
+      }
+    },
+    "measurement_environment": {
+      "backends": {
+        "PyYAML": "6.0.3",
+        "blake3": "1.0.10",
+        "immutables": "0.21",
+        "irregex": "2.6.0",
+        "msgspec": "0.22.0",
+        "numpy": "2.5.3",
+        "orjson": "3.12.0",
+        "protobuf": "7.36.2",
+        "pybase64": "1.5.0",
+        "pydantic": "2.13.5",
+        "pydantic-settings": "2.15.0",
+        "rapidfuzz": "3.14.6",
+        "ruamel-yaml": "0.19.1",
+        "sortedcontainers": "2.4.0",
+        "soundfile": "0.14.0",
+        "tomlkit": "0.15.1",
+        "uuid-utils": "1.0.0",
+        "whenever": "0.10.5",
+        "zlib-ng": "1.0.0"
+      },
+      "cpu": "Apple M5 Max",
+      "cpu_count": 18,
+      "implementation": "CPython",
+      "machine": "arm64",
+      "native": {
+        "clone._clone_native": true,
+        "compress._gzip_native": false,
+        "crypto._stream_native": true,
+        "serde._json_native": true,
+        "text._text_native": true
+      },
+      "native_implementations": {
+        "clone._clone_native": "c",
+        "crypto._stream_native": "c",
+        "serde._json_native": "c",
+        "text._text_native": "c"
+      },
+      "python": "3.13.14",
+      "python_debug": 0,
+      "python_free_threaded": 0,
+      "system": "Darwin",
+      "system_release": "25.6.0",
+      "thread_settings": {
+        "MKL_NUM_THREADS": null,
+        "OMP_NUM_THREADS": null,
+        "OPENBLAS_NUM_THREADS": null
+      }
+    },
+    "note": "Five direct stdlib calendar/format bindings measured on the historical frozen CPython3.13.14 interpreter and backend versions. Newly enumerated unavailable compress._gzip_native=False and ambient PyYAML=6.0.3 are explicitly recorded here, not represented as old evidence. These calls use neither backend. All240existing case rows, ceilings, recording metadata and original global environment are unchanged; only the additive runtime workload fingerprint advances. Absoluteverification still rejects incomparable environments.",
+    "prior_baseline_sha256": "a66e3d4439a4a681e89f8bf3a83af5a374ebbca23a9a681ee1460f54c1f71591",
+    "product_source_sha256": {
+      "src/unstd/time/timeutil.py": "b3db8abe7d844c1d09f613832bdbe7fd06fb46d48f0ff31ceeafd5356d1f2d59"
+    },
+    "recorded": "2026-10-25T05:11:06.869243+00:00"
+  },
   "cases": {
     "unstd.audio.wavx.Writer": {
       "ceiling_ns": 27314.70625,
@@ -1448,6 +1615,14 @@
       "rounds": 11,
       "spread": 0.13719478420422357
     },
+    "unstd.time.timeutil.combine": {
+      "ceiling_ns": 41.590367002744934,
+      "iterations": 151552,
+      "measured_ns": 31.992590002111488,
+      "note": "combine a prepared calendar date and aware UTC clock",
+      "rounds": 9,
+      "spread": 0.19913227504933959
+    },
     "unstd.time.timeutil.date_from_iso": {
       "ceiling_ns": 32.2597158203125,
       "iterations": 409600,
@@ -1528,6 +1703,14 @@
       "rounds": 9,
       "spread": 0.06810126650717056
     },
+    "unstd.time.timeutil.gmtime": {
+      "ceiling_ns": 152.18213161892362,
+      "iterations": 36864,
+      "measured_ns": 117.06317816840277,
+      "note": "decode fixed epoch seconds to a native UTC time tuple",
+      "rounds": 9,
+      "spread": 0.26723952748946395
+    },
     "unstd.time.timeutil.human": {
       "ceiling_ns": 2431.3783793604653,
       "iterations": 2752,
@@ -1543,6 +1726,14 @@
       "note": "format a fixed aware UTC datetime at seconds precision",
       "rounds": 11,
       "spread": 0.18510737386804657
+    },
+    "unstd.time.timeutil.localtime": {
+      "ceiling_ns": 252.71937052408853,
+      "iterations": 49152,
+      "measured_ns": 194.3995157877604,
+      "note": "decode fixed epoch seconds to the native local time tuple",
+      "rounds": 9,
+      "spread": 0.07573160999986918
     },
     "unstd.time.timeutil.mono": {
       "ceiling_ns": 34.70535769578887,
@@ -1663,6 +1854,22 @@
       "note": "duration between two RFC-3339 timestamps in minutes",
       "rounds": 11,
       "spread": 1.1458444682182622
+    },
+    "unstd.time.timeutil.strftime": {
+      "ceiling_ns": 589.2112731933594,
+      "iterations": 16384,
+      "measured_ns": 453.23944091796875,
+      "note": "format one prepared UTC time tuple with explicit directives",
+      "rounds": 9,
+      "spread": 0.12494608379483899
+    },
+    "unstd.time.timeutil.strptime": {
+      "ceiling_ns": 2269.6741615853657,
+      "iterations": 5248,
+      "measured_ns": 1745.903201219512,
+      "note": "parse one datetime using explicit strptime directives",
+      "rounds": 9,
+      "spread": 0.18449757162346522
     },
     "unstd.time.timeutil.thread_time": {
       "ceiling_ns": 174.06832139756946,
@@ -2275,6 +2482,6 @@
   "workload_sources": {
     "speed_cases_codecs.py": "8dda94b94688b43d9aecce530132dc6e278ab3a42aee0790c2e0f40b7fae5092",
     "speed_cases_operations.py": "54572576bc9cea79179d60a84d428a7f2f232e1d6de46233c3ee00ab196cf497",
-    "speed_cases_runtime.py": "5c3b7f6ad9bf0a4bf8680fa1bc83d4c5761663ef27e55308deecfa1c8c560673"
+    "speed_cases_runtime.py": "9a071379371c171c3e8b307453c27b798d41ba3926fd05bbb31e2bdeabcca8e3"
   }
 }

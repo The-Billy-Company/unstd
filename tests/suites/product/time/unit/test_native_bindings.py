@@ -22,6 +22,9 @@ from unstd.time import timeutil
         ("thread_time", "thread_time"),
         ("thread_time_ns", "thread_time_ns"),
         ("sleep", "sleep"),
+        ("strftime", "strftime"),
+        ("gmtime", "gmtime"),
+        ("localtime", "localtime"),
     ],
 )
 def test_clocks_and_sleep_are_the_native_callables(name: str, native: str) -> None:
@@ -45,6 +48,8 @@ def test_clocks_and_sleep_are_the_native_callables(name: str, native: str) -> No
         ("date_from_iso", date, "fromisoformat"),
         ("time_from_iso", civil_time, "fromisoformat"),
         ("from_timestamp", datetime, "fromtimestamp"),
+        ("strptime", datetime, "strptime"),
+        ("combine", datetime, "combine"),
     ],
 )
 def test_datetime_helpers_are_prebound_native_methods(name, owner, method) -> None:
@@ -122,11 +127,22 @@ def test_nanosecond_clocks_keep_integer_precision() -> None:
 
 
 @pytest.mark.parametrize(
-    "seconds", [-1_793_515_500.125, -1.5, 0, 1.5, 1_793_515_500.125]
+    "seconds",
+    [-1_793_515_500.125, -1.5, 0, 1.5, 1_793_515_500.125, float("inf"), float("nan")],
 )
 @pytest.mark.parametrize("zone", [None, UTC])
 def test_native_epoch_decoding_retains_naive_and_explicit_zones(seconds, zone) -> None:
-    expected = datetime.fromtimestamp(seconds, zone)
+    try:
+        expected = datetime.fromtimestamp(seconds, zone)
+    except (OSError, OverflowError, ValueError) as error:
+        expected_error = error
+    else:
+        expected_error = None
+    if expected_error is not None:
+        with pytest.raises(type(expected_error)) as actual_error:
+            timeutil.from_timestamp(seconds, zone)
+        assert actual_error.value.args == expected_error.args
+        return
     actual = timeutil.from_timestamp(seconds, zone)
     assert actual == expected
     assert actual.tzinfo is expected.tzinfo
@@ -151,3 +167,89 @@ def test_strict_and_permissive_parsing_remain_distinct() -> None:
     with pytest.raises(ValueError, match="isoformat"):
         timeutil.date_from_iso(raw)
     assert timeutil.now(UTC).utcoffset() == timedelta(0)
+
+
+@pytest.mark.parametrize(
+    "seconds", [-1.5, 0, 1.5, 1_793_515_500.125, float("inf"), float("nan")]
+)
+@pytest.mark.parametrize("name", ["gmtime", "localtime"])
+def test_time_tuples_preserve_native_calendar_and_dst_fields(name, seconds) -> None:
+    try:
+        native = getattr(time, name)(seconds)
+    except (OSError, OverflowError, ValueError) as error:
+        expected_error = error
+    else:
+        expected_error = None
+    if expected_error is not None:
+        with pytest.raises(type(expected_error)) as actual_error:
+            getattr(timeutil, name)(seconds)
+        assert actual_error.value.args == expected_error.args
+        return
+    actual = getattr(timeutil, name)(seconds)
+    assert type(actual) is type(native)
+    assert actual == native
+    assert actual.tm_zone == native.tm_zone
+    assert actual.tm_gmtoff == native.tm_gmtoff
+
+
+@pytest.mark.parametrize(
+    "format", ["%Y-%m-%dT%H:%M:%SZ", "%A %B %d %H:%M:%S", "%j %w %U %W", "東京 %Y café"]
+)
+def test_tuple_formatting_retains_native_directives_and_unicode(format) -> None:
+    prepared = time.gmtime(1_767_225_600)
+    assert timeutil.strftime(format, prepared) == time.strftime(format, prepared)
+
+
+@pytest.mark.parametrize(
+    ("raw", "format"),
+    [
+        ("2026-01-01T03:04:05Z", "%Y-%m-%dT%H:%M:%SZ"),
+        ("20260101030405", "%Y%m%d%H%M%S"),
+        ("2026-01-01 03:04:05.123456 +0545", "%Y-%m-%d %H:%M:%S.%f %z"),
+        ("2024 060", "%Y %j"),
+    ],
+)
+def test_explicit_format_parsing_preserves_native_results(raw, format) -> None:
+    expected = datetime.strptime(raw, format)  # noqa: DTZ007 - native naive and offset contracts are under test.
+    actual = timeutil.strptime(raw, format)
+    assert actual == expected
+    assert actual.tzinfo == expected.tzinfo
+    assert actual.fold == expected.fold
+
+
+@pytest.mark.parametrize(
+    ("name", "args"),
+    [
+        ("strptime", ("2026-02-30", "%Y-%m-%d")),
+        ("strptime", ("not a date", "%Y-%m-%d")),
+        ("strptime", (None, "%Y-%m-%d")),
+        ("strftime", ("%Y", ())),
+        ("gmtime", (float("nan"),)),
+        ("localtime", (float("nan"),)),
+        ("combine", ("not a date", civil_time())),
+    ],
+)
+def test_calendar_bindings_preserve_native_exception_type_and_message(
+    name, args
+) -> None:
+    owner = datetime if name in {"strptime", "combine"} else time
+    with pytest.raises((TypeError, ValueError, OverflowError)) as expected:
+        getattr(owner, name)(*args)
+    with pytest.raises(type(expected.value)) as actual:
+        getattr(timeutil, name)(*args)
+    assert actual.value.args == expected.value.args
+
+
+@pytest.mark.parametrize("fold", [0, 1])
+def test_combine_retains_time_zone_fold_and_explicit_override(fold) -> None:
+    day = date(2026, 11, 1)
+    clock = civil_time(1, 30, 4, 123456, tzinfo=UTC, fold=fold)
+    actual = timeutil.combine(day, clock)
+    assert actual == datetime.combine(day, clock)
+    assert actual.tzinfo is UTC
+    assert actual.fold == fold
+    zone = UTC if fold else None
+    overridden = timeutil.combine(day, clock, tzinfo=zone)
+    assert overridden == datetime.combine(day, clock, tzinfo=zone)
+    assert overridden.tzinfo is zone
+    assert overridden.fold == fold

@@ -137,6 +137,11 @@ def test_tls_workload_accepts_lazy_default_roots_and_rejects_insecure_policy(
         *(
             ("unstd.time.timeutil", name)
             for name in (
+                "strftime",
+                "gmtime",
+                "localtime",
+                "strptime",
+                "combine",
                 "wall_ns",
                 "perf_ns",
                 "process_time",
