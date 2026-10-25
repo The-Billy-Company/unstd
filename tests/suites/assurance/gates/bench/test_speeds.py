@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 from dataclasses import replace
+import hashlib
 import json
+from types import ModuleType
 from typing import TYPE_CHECKING, Any
 
 import pytest
@@ -383,6 +385,67 @@ def test_cli_reports_pass_fail_missing_and_environment_mismatch(
     assert speeds.main(["verify", "--baseline", str(store)]) == 2
     assert "environment differs" in capsys.readouterr().err
     assert speeds.main(["list", "--group", "missing"]) == 2
+
+
+def test_freeze_and_verify_initialize_environment_and_provenance_before_timing(
+    store: Path, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    events: list[str] = []
+
+    @contextmanager
+    def toy_registry() -> Iterator[list[speeds.Case]]:
+        yield [_case()]
+
+    def environment() -> dict[str, str]:
+        events.append("environment")
+        return {"python": "fixture"}
+
+    def provenance() -> dict[str, str]:
+        events.append("provenance")
+        return {"binary": "different revisions may have different binaries"}
+
+    def timings(cases: object, **kwargs: object) -> dict[str, Measurement]:
+        assert events == ["environment", "provenance"]
+        events.append("timings")
+        return {_case().name: _measurement()}
+
+    monkeypatch.setattr(speeds, "registry", toy_registry)
+    monkeypatch.setattr(speeds, "check_coverage", lambda cases: {})
+    monkeypatch.setattr(speeds, "environment", environment)
+    monkeypatch.setattr(speeds, "provenance", provenance)
+    monkeypatch.setattr(speeds, "timings", timings)
+    for verb in ("freeze", "verify"):
+        events.clear()
+        output = tmp_path / f"{verb}.json"
+        assert (
+            speeds.main([verb, "--baseline", str(store), "--output", str(output)]) == 0
+        )
+        report = json.loads(output.read_text())
+        assert report["environment"] == {"python": "fixture"}
+        assert report["provenance"]["binary"].startswith("different revisions")
+    assert speeds.load_baseline(store)["cases"][_case().name]["ceiling_ns"] == 130
+
+
+def test_provenance_detects_replaced_module_files_and_refuses_missing_bytes(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    path = tmp_path / "extension.so"
+    module = ModuleType("unstd.provenance_probe")
+    module.__file__ = str(path)
+    monkeypatch.setitem(speeds.sys.modules, module.__name__, module)
+    path.write_bytes(b"original loaded file")
+    original = speeds.provenance()
+    path.write_bytes(b"replaced file")
+    changed = speeds.provenance()
+    before = original["loaded_files"][module.__name__]
+    after = changed["loaded_files"][module.__name__]
+    assert before["path"] == after["path"] == str(path)
+    assert before["sha256"] != after["sha256"]
+    assert after["sha256"] == hashlib.sha256(path.read_bytes()).hexdigest()
+    assert original["workload_sources"] == speeds.workload_sources()
+    path.unlink()
+    with pytest.raises(FileNotFoundError):
+        speeds.provenance()
 
 
 def test_inventory_finds_new_exports_own_methods_and_bound_codec_slots(

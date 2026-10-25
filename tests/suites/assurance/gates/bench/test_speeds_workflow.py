@@ -133,3 +133,40 @@ def test_comparison_retains_evidence_on_regression(workflow: dict[str, Any]) -> 
         tokens = shlex.split(step["run"])
         assert tokens[tokens.index("--output") + 1].startswith(path + "/")
         assert tokens[tokens.index("--baseline") + 1].startswith(path + "/")
+
+
+def test_manual_gzip_diagnosis_skips_full_timing_and_retains_focused_evidence(
+    workflow: dict[str, Any],
+) -> None:
+    option = workflow["on"]["workflow_dispatch"]["inputs"]["gzip_diagnostic"]
+    assert option["type"] == "boolean"
+    assert option["default"] is False
+    for step in _measurement_steps(workflow).values():
+        assert step["if"] == "${{ !inputs.gzip_diagnostic }}"
+    focused = next(
+        step
+        for step in workflow["jobs"]["compare"]["steps"]
+        if "-m bench.diagnostics.gzip_reads" in step.get("run", "")
+    )
+    assert focused["if"] == "${{ inputs.gzip_diagnostic }}"
+    tokens = shlex.split(focused["run"])
+    assert tokens[tokens.index("--before-install") + 1].endswith("installed-before")
+    assert tokens[tokens.index("--current-install") + 1].endswith("installed-current")
+    assert tokens[tokens.index("--output") + 1].startswith(
+        ".local/performance/evidence/"
+    )
+    assert "--baseline" not in tokens
+
+
+def test_diagnostic_cannot_satisfy_the_full_function_latency_check(
+    workflow: dict[str, Any],
+) -> None:
+    name = workflow["jobs"]["compare"]["name"]
+    selection = re.fullmatch(
+        r"\$\{\{ inputs\.gzip_diagnostic && '([^']+)' \|\| '([^']+)' \}\}", name
+    )
+    assert selection is not None, "the check context must follow diagnostic selection"
+    diagnostic_context, full_context = selection.groups()
+    assert full_context == "Function latency / Python 3.13"
+    assert diagnostic_context != full_context
+    assert diagnostic_context == "Gzip read diagnosis / Python 3.13"

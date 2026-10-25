@@ -1,3 +1,12 @@
+---
+doc_radar:
+  sentinels:
+    - file: bench/speeds.py
+      contains: ['current_environment = environment()', '"compiler_configuration":', '"provenance": current_provenance']
+    - file: .github/workflows/performance.yml
+      contains: ['gzip_diagnostic:', '-m bench.diagnostics.gzip_reads run --rounds 9']
+---
+
 # `bench` — the harness behind the speedup claims
 
 Benchmark drivers and recorded measurements for `unstd` APIs, optional backends,
@@ -109,6 +118,19 @@ The runtime and dependency environment must match; revision-owned native routes
 may change and both route inventories remain in the reports. Ordinary committed
 baseline verification retains strict API and native-environment equality. The
 local committed snapshot remains separate from ephemeral CI worker baselines.
+
+We initialize backend metadata and native routes before both timing phases.
+Reports retain hashes of installed product modules, native libraries, workloads
+and the harness, alongside the interpreter's compiler defaults and caller build
+overrides. Those configuration values are not a captured compiler invocation.
+Provenance stays diagnostic; it does not change the frozen ceilings.
+
+The performance workflow's manual `gzip_diagnostic` option runs only the two
+original gzip read lifecycles and a fresh native inflater over the same deflate
+member. Four fresh processes run in before/current/current/before order, retaining
+all wall/CPU samples and exact payload hashes, including completed attempts when
+a later attempt fails. This focused comparison never rewrites a baseline or
+substitutes a control ratio for an absolute speed gate.
 
 On Linux, the CLI pins each run to the lowest logical CPU in its inherited
 allowed set and records that affinity; a comparison with different affinity
