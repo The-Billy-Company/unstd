@@ -1,3 +1,12 @@
+---
+doc_radar:
+  sentinels:
+    - file: ../.github/workflows/ci.yml
+      contains: ['dependencies: "--group release --group build"']
+    - file: suites/assurance/gates/release/test_wheel_runtimes.py
+      contains: ['from cibuildwheel.options import CommandLineArguments, compute_options', 'from setuptools._distutils.ccompiler import new_compiler']
+---
+
 # unstd test suite
 
 Tests are organized by owner, then evidence kind. [Product suites](suites/product/README.md)
@@ -21,11 +30,13 @@ small dedicated CI job. Release builds authenticate their build/test closures,
 then validate the exact archives and checksums handed to the PyPI publisher.
 
 From the repository root, prepare a full environment with
-`uv sync --locked --all-extras --group dev`; omit `--all-extras` for the fallback
+`uv sync --locked --all-extras --group dev --group release --group build`; omit `--all-extras` for the fallback
 configuration. `--no-sync` preserves the backend combination already installed.
+The tooling owner installs the release and build groups in all five CI environments;
+its builder and compiler checks require those tools.
 `--require-extras` makes every declared extra mandatory, including isolated
 per-extra consumers in the packaging lane. A partial install (for example
-`uv sync --locked --extra text --group dev`) instead passes
+`uv sync --locked --extra text --group dev --group release --group build`) instead passes
 `--require-extra text`, repeatable, so only its own extras are mandatory while
 every other backend stays genuinely absent. Optional local/base runs retain
 explicit capability skips.

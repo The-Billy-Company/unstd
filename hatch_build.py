@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+from importlib.metadata import version as installed_version
 import json
 import os
 from pathlib import Path
@@ -17,6 +18,7 @@ from typing import Any
 
 from hatchling.builders.hooks.plugin.interface import BuildHookInterface
 from setuptools import Distribution, Extension
+from setuptools._distutils.ccompiler import new_compiler
 from setuptools.command.bdist_wheel import bdist_wheel
 from setuptools.command.build_ext import build_ext
 from setuptools.errors import BaseError, CCompilerError
@@ -30,9 +32,147 @@ _NATIVE_MODULES = (
     "unstd.compress._gzip_native",
 )
 
+_COMPILER_KEYS = {
+    "CC",
+    "CXX",
+    "CFLAGS",
+    "CCSHARED",
+    "LDSHARED",
+    "LDCXXSHARED",
+    "AR",
+    "ARFLAGS",
+    "LDFLAGS",
+    "CPPFLAGS",
+}
+_COMPILER_COMMANDS = """
+import json, sys, sysconfig
+sys.path.insert(0, sys.argv[1])
+from importlib.metadata import version
+from setuptools._distutils.ccompiler import new_compiler
+from setuptools._distutils.sysconfig import customize_compiler
+compiler = new_compiler(compiler="unix")
+customize_compiler(compiler)
+print(json.dumps(dict(version=list(sys.version_info[:2]), soabi=sysconfig.get_config_var("SOABI"),
+                     prefix=sys.prefix,
+                     compiler={name: sysconfig.get_config_var(name) for name in sys.argv[2:]},
+                     setuptools=version("setuptools"),
+                     commands={name: getattr(compiler, name) for name in compiler.executables})))
+"""
+
+
+def _compiler_commands() -> dict[str, list[str] | None] | None:
+    """Keep the container compiler while the admitted runtime owns Python's SDK."""
+    path = os.environ.get("UNSTD_WHEEL_COMPILER_CONFIG")
+    if os.environ.get("CIBUILDWHEEL") != "1" or path is None:
+        return None
+    with Path(path).open("rb") as stream:
+        payload = stream.read((1 << 16) + 1)
+    profile = json.loads(payload)
+    if (
+        len(payload) > 1 << 16
+        or not isinstance(profile, dict)
+        or payload
+        != json.dumps(profile, sort_keys=True, separators=(",", ":")).encode()
+        or set(profile)
+        != {"schema", "executable", "prefix", "version", "soabi", "compiler"}
+        or type(profile["schema"]) is not int
+        or profile["schema"] != 1
+        or profile["version"] != list(sys.version_info[:2])
+        or profile["soabi"] != sysconfig.get_config_var("SOABI")
+        or not all(
+            isinstance(profile[name], str) and Path(profile[name]).is_absolute()
+            for name in ("executable", "prefix")
+        )
+        or not isinstance(profile["compiler"], dict)
+        or set(profile["compiler"]) != _COMPILER_KEYS
+        or any(
+            value is not None and (not isinstance(value, str) or "\0" in value)
+            for value in profile["compiler"].values()
+        )
+    ):
+        message = (
+            "invalid original wheel compiler profile; review the container provider"
+        )
+        raise ValueError(message)
+    package_file = sys.modules["setuptools"].__file__
+    if package_file is None:
+        message = "the locked build dependency lacks a source location"
+        raise RuntimeError(message)
+    report = json.loads(
+        subprocess.check_output(  # noqa: S603 # nosec B603 # retained local interpreter, locked build dependencies
+            [
+                profile["executable"],
+                "-I",
+                "-S",
+                "-c",
+                _COMPILER_COMMANDS,
+                str(Path(package_file).parent.parent),
+                *sorted(_COMPILER_KEYS),
+            ],
+            text=True,
+            timeout=30,
+        )
+    )
+    commands = report["commands"]
+    mismatched = [
+        name
+        for name in ("version", "soabi", "prefix", "compiler")
+        if report[name] != profile[name]
+    ]
+    if report["setuptools"] != installed_version("setuptools"):
+        mismatched.append("setuptools")
+    if (
+        not isinstance(commands, dict)
+        or set(commands) != set(new_compiler(compiler="unix").executables)
+        or any(
+            value is not None
+            and (
+                not isinstance(value, list)
+                or any(
+                    not isinstance(part, str)
+                    or "\0" in part
+                    or profile["prefix"] in part
+                    for part in value
+                )
+            )
+            for value in commands.values()
+        )
+    ):
+        mismatched.append("commands")
+    if mismatched:
+        print(json.dumps({"wheel_compiler_mismatch": mismatched}), flush=True)
+        message = "original wheel compiler commands disagree with the admitted build"
+        raise ValueError(message)
+    print(
+        json.dumps(
+            {
+                "wheel_compiler": report,
+                "profile_sha256": hashlib.sha256(payload).hexdigest(),
+            },
+            indent=2,
+        ),
+        flush=True,
+    )
+    return commands
+
+
+class _ContainerBuildExt(build_ext):
+    compiler_commands: dict[str, list[str] | None]
+
+    def build_extensions(self) -> None:
+        self.compiler.set_executables(
+            **{
+                name: None if value is None else value.copy()
+                for name, value in self.compiler_commands.items()
+            }
+        )
+        super().build_extensions()
+
 
 class CustomBuildHook(BuildHookInterface):
     """Build optional acceleration for the selected CPython interpreter."""
+
+    _compiler_commands: dict[str, list[str] | None] | None = None
 
     def initialize(self, version: str, build_data: dict[str, Any]) -> None:
         """Add only a successfully built extension, or keep a portable wheel."""
@@ -40,6 +180,7 @@ class CustomBuildHook(BuildHookInterface):
             "Py_GIL_DISABLED"
         ):
             return
+        self._compiler_commands = _compiler_commands()
         self._temporary = TemporaryDirectory(prefix="unstd-native-")
         temporary = Path(self._temporary.name)
         for index, module in enumerate(_NATIVE_MODULES):
@@ -143,7 +284,11 @@ class CustomBuildHook(BuildHookInterface):
         distribution = Distribution(
             {"name": "unstd-native", "ext_modules": [extension]}
         )
-        command = build_ext(distribution)
+        command = (
+            _ContainerBuildExt if self._compiler_commands is not None else build_ext
+        )(distribution)
+        if self._compiler_commands is not None:
+            command.compiler_commands = self._compiler_commands
         command.build_lib = str(temporary / "lib")
         command.build_temp = str(temporary / "temp")
         command.ensure_finalized()

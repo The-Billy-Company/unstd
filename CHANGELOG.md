@@ -1,41 +1,78 @@
 ---
 doc_radar:
   sentinels:
-    - file: src/unstd/rex/_internal/profile.py
-      contains: ['_parser.parse(pattern, flags)']
-    - file: src/unstd/rex/_internal/patterns.py
-      contains: ['if started:']
-    - file: pyproject.toml
-      contains: ['"msgspec>=0.22"', 'exclude-newer = "P2D"', '"blake3>=1.0.10"', '"pyyaml>=6.0.3"']
-    - file: .github/workflows/ci.yml
-      contains: ['github.sha || github.ref', 'version: "0.13.4"', 'uv sync --locked']
-    - file: .github/workflows/release.yml
-      contains: ['TAG: ${{ github.ref_name }}', 'Build and test CPython wheels']
-    - file: src/unstd/serde/structs.py
-      contains: ['Callable[[Decimal], object]', 'decimal_format: _DecimalFormat']
-    - file: src/unstd/compress/_reader.py
-      contains: ['_factory = _accelerated.Inflater', '_zlib_globals["crc32"] = _crc32']
-    - file: native/compress/src/adapter.c
-      contains: ['libdeflate_gzip_decompress_ex(', 'MAX_OUTPUT_BYTES']
-    - file: src/unstd/time/timeutil.py
-      contains: ['strftime = _time.strftime', 'gmtime = _time.gmtime', 'localtime = _time.localtime', 'strptime = datetime.strptime', 'combine = datetime.combine']
-    - file: src/unstd/yaml/__init__.py
-      contains: ['if name in ("pyyaml", "ruamel"):', 'globals()[name] = backend', 'globals().update((key, getattr(codec, key)) for key in __all__)']
-    - file: src/unstd/crypto/token.py
-      contains: ['_DEFAULT_MAX_TOKEN_CHARS = 8192', 'def prepare_verifier(']
-    - file: src/unstd/rand/draw.py
-      contains: ['"PCG64", "PCG64DXSM", "SFC64", "Philox"', '_py = _random.Random(seed)']
-    - file: src/unstd/audio/wavx.py
-      contains: ['def _read_int16_numpy(', 'return cast("NDArray[_np.int16]", arr.copy())']
-    - file: src/unstd/toml/__init__.py
-      contains: ['return _dumps(_common_mapping(data), sort_keys=sort_keys)']
-    - file: hatch_build.py
-      contains: ['UNSTD_GZIP_ZLIB_RS is a local qualification experiment;', 'release wheels require a reviewed source/license/SBOM closure']
+  - file: src/unstd/rex/_internal/profile.py
+    contains: ['_parser.parse(pattern, flags)']
+  - file: src/unstd/rex/_internal/patterns.py
+    contains: ['if started:']
+  - file: pyproject.toml
+    contains: ['"msgspec>=0.22"', exclude-newer = "P2D", '"blake3>=1.0.10"', '"pyyaml>=6.0.3"', 'select = "cp3{12,13}-macosx_x86_64"', sysconfig.get_config_var("CFLAGS")]
+  - file: .github/workflows/ci.yml
+    contains: [github.sha || github.ref, 'version: "0.13.4"', uv sync --locked]
+  - file: .github/workflows/release.yml
+    contains: ['TAG: ${{ github.ref_name }}', Build and test CPython wheels, 'UV_MANAGED_PYTHON: "1"', python -m tests.tooling.release.wheels]
+  - file: src/unstd/serde/structs.py
+    contains: ['Callable[[Decimal], object]', 'decimal_format: _DecimalFormat']
+  - file: src/unstd/compress/_reader.py
+    contains: [_factory = _accelerated.Inflater, '_zlib_globals["crc32"] = _crc32']
+  - file: native/compress/src/adapter.c
+    contains: [libdeflate_gzip_decompress_ex(, MAX_OUTPUT_BYTES]
+  - file: src/unstd/time/timeutil.py
+    contains: [strftime = _time.strftime, gmtime = _time.gmtime, localtime = _time.localtime, strptime = datetime.strptime, combine = datetime.combine]
+  - file: src/unstd/yaml/__init__.py
+    contains: ['if name in ("pyyaml", "ruamel"):', 'globals()[name] = backend', 'globals().update((key, getattr(codec, key)) for key in __all__)']
+  - file: src/unstd/crypto/token.py
+    contains: [_DEFAULT_MAX_TOKEN_CHARS = 8192, def prepare_verifier(]
+  - file: src/unstd/rand/draw.py
+    contains: ['"PCG64", "PCG64DXSM", "SFC64", "Philox"', _py = _random.Random(seed)]
+  - file: src/unstd/audio/wavx.py
+    contains: [def _read_int16_numpy(, 'return cast("NDArray[_np.int16]", arr.copy())']
+  - file: src/unstd/toml/__init__.py
+    contains: ['return _dumps(_common_mapping(data), sort_keys=sort_keys)']
+  - file: hatch_build.py
+    contains: [UNSTD_GZIP_ZLIB_RS is a local qualification experiment;, release wheels require a reviewed source/license/SBOM closure]
+  - file: tests/tooling/release/wheels.py
+    contains: [def _validate_runtime(, 'if version("cibuildwheel") != "4.3.1":']
+  - file: bench/speeds.py
+    contains: ['current_environment = environment()', '"provenance": current_provenance']
+  - file: tests/tooling/release/verify.py
+    contains: [def _macos_floors(, def _macos_payload(, Mach-O deployment version]
 ---
 
 # Changelog
 
 <!-- towncrier release notes start -->
+
+## [3.1.6] - 2026-10-25
+
+### Fixed
+
+- We use admitted managed interpreters for release hosts, Linux and macOS wheels,
+  and CPython 3.12 Windows wheels. The pinned builder still owns compilation, repair
+  and tests; runtime ABI and TLS checks run before compilation. Linux keeps its
+  original compiler settings. Intel 3.12 and 3.13 keep the macOS 10.13 floor and
+  optimization flags; 3.14 keeps its 10.15 floor. Tooling and supply checks install
+  their declared build dependencies. Packaging 24.2 is the minimum required by
+  the supported Setuptools floor.
+
+- We verify the architecture and deployment floor inside each macOS wheel's Mach-O
+  payloads, including embedded binaries. A newer minimum OS, malformed load-command
+  table or missing deployment command fails release admission even when the archive's
+  hashes and metadata are valid. The standalone verifier keeps its standard-library-only
+  trust boundary.
+
+- We initialize both speed-comparison phases before timing and retain loaded-module
+  hashes and compiler settings with the measurements. A focused gzip diagnostic
+  preserves the original read fixtures and native-inflater samples; it has a separate
+  check name and cannot replace the full performance gate. Existing speed ceilings
+  remain unchanged.
+
+- We check native token-scan interruption at the C call boundary. A signal delivered
+  after the verifier returns cannot satisfy the native interruption check.
+
+The 3.1.5 tag failed release qualification and was not published to PyPI. This
+release includes its additions; the tag and its qualification evidence remain
+unchanged.
 
 ## [3.1.5] - 2026-10-25
 

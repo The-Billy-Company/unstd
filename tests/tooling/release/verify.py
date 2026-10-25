@@ -21,6 +21,7 @@ import json
 from pathlib import Path, PurePosixPath
 import re
 import stat
+import struct
 import sys
 import tarfile
 import tomllib
@@ -31,7 +32,7 @@ import zlib
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
-    from typing import BinaryIO
+    from typing import IO, BinaryIO
 
 
 # Bound decompression and metadata work even when a compromised build uploads a
@@ -87,6 +88,16 @@ _NATIVE_MODULES = (
     "unstd/text/_text_native",
     "unstd/compress/_gzip_native",
 )
+_MACHO_ORDERS = {
+    b"\xcf\xfa\xed\xfe": "<",  # 64-bit little endian
+    b"\xfe\xed\xfa\xcf": ">",  # 64-bit big endian
+    b"\xce\xfa\xed\xfe": None,  # 32-bit Mach-O
+    b"\xfe\xed\xfa\xce": None,
+    b"\xca\xfe\xba\xbe": None,  # Fat Mach-O
+    b"\xbe\xba\xfe\xca": None,
+    b"\xca\xfe\xba\xbf": None,  # 64-bit fat Mach-O
+    b"\xbf\xba\xfe\xca": None,
+}
 
 
 class ReleaseError(ValueError):
@@ -221,14 +232,97 @@ def _read_metadata(stream: BinaryIO, size: int) -> bytes:
     return data
 
 
-def _digest(stream: BinaryIO) -> tuple[str, int]:
-    digest = hashlib.sha256()
-    size = 0
+def _digest(stream: BinaryIO, prefix: bytes = b"") -> tuple[str, int]:
+    digest = hashlib.sha256(prefix)
+    size = len(prefix)
     while chunk := stream.read(CHUNK_BYTES):
         size += len(chunk)
         _require(size <= MAX_UNPACKED_BYTES, "archive member exceeds size limit")
         digest.update(chunk)
     return base64.urlsafe_b64encode(digest.digest()).rstrip(b"=").decode("ascii"), size
+
+
+def _macos_floors(platforms: str) -> dict[int, tuple[int, int, int]]:
+    floors: dict[int, tuple[int, int, int]] = {}
+    for platform in platforms.split("."):
+        platform = platform.lower()
+        if not platform.startswith("macosx_"):
+            continue
+        match = re.fullmatch(r"macosx_(\d+)_(\d+)_(x86_64|arm64)", platform)
+        _require(match is not None, f"unsupported macOS wheel platform: {platform}")
+        assert match is not None
+        major, minor = int(match[1]), int(match[2])
+        _require(0 < major < 65536 and minor < 256, "invalid macOS deployment tag")
+        machine = 0x01000007 if match[3] == "x86_64" else 0x0100000C
+        floor = major, minor, 0
+        floors[machine] = min(floor, floors.get(machine, floor))
+    return floors
+
+
+def _macos_payload(
+    stream: IO[bytes],
+    size: int,
+    name: str,
+    floors: dict[int, tuple[int, int, int]],
+) -> bytes:
+    # Inspect only the bounded header/load-command prefix; hash the body once.
+    prefix = stream.read(4)
+    if prefix not in _MACHO_ORDERS and not name.lower().endswith(
+        (".so", ".dylib", ".bundle", ".pyd")
+    ):
+        return prefix
+    order = _MACHO_ORDERS.get(prefix)
+    _require(order is not None, f"unsupported or malformed Mach-O payload: {name}")
+    assert order is not None
+    header = stream.read(28)
+    _require(len(header) == 28, f"truncated Mach-O header: {name}")
+    machine, _, _, count, command_bytes, _, _ = struct.unpack(order + "7I", header)
+    _require(machine in floors, f"Mach-O architecture differs from wheel tags: {name}")
+    _require(
+        command_bytes <= MAX_METADATA_BYTES
+        and 32 + command_bytes <= size
+        and count <= command_bytes // 8,
+        f"invalid or oversized Mach-O load-command table: {name}",
+    )
+    commands = stream.read(command_bytes)
+    _require(len(commands) == command_bytes, f"truncated Mach-O load commands: {name}")
+    offset = 0
+    minimum: tuple[int, int, int] | None = None
+    for _ in range(count):
+        _require(offset + 8 <= command_bytes, f"truncated Mach-O load command: {name}")
+        command, length = struct.unpack_from(order + "2I", commands, offset)
+        _require(
+            length >= 8 and length % 8 == 0 and offset + length <= command_bytes,
+            f"invalid Mach-O load-command size: {name}",
+        )
+        value = None
+        if command == 0x24:  # LC_VERSION_MIN_MACOSX
+            _require(length == 16, f"invalid Mach-O deployment command: {name}")
+            value = struct.unpack_from(order + "I", commands, offset + 8)[0]
+        elif command == 0x32:  # LC_BUILD_VERSION
+            _require(length >= 24, f"invalid Mach-O build-version command: {name}")
+            platform, value, _, tools = struct.unpack_from(
+                order + "4I", commands, offset + 8
+            )
+            _require(
+                platform == 1 and length == 24 + tools * 8,
+                f"invalid Mach-O macOS build-version command: {name}",
+            )
+        if value is not None:
+            _require(
+                minimum is None and value >> 16 > 0,
+                f"ambiguous Mach-O deployment version: {name}",
+            )
+            minimum = value >> 16, value >> 8 & 255, value & 255
+        offset += length
+    _require(offset == command_bytes, f"inconsistent Mach-O load-command table: {name}")
+    _require(minimum is not None, f"Mach-O has no macOS deployment command: {name}")
+    assert minimum is not None
+    _require(
+        minimum <= floors[machine],
+        f"Mach-O deployment version {minimum} exceeds wheel platform {floors[machine]}: {name}",
+    )
+    return prefix + header + commands
 
 
 def _vendor_license(
@@ -403,6 +497,7 @@ def _wheel(
         "-".join(values)
         for values in product(*(part.split(".") for part in parts[-3:]))
     }
+    macos_floors = _macos_floors(parts[-1])
     root = f"{parts[0]}-{parts[1]}.dist-info"
     record = f"{root}/RECORD"
     names: dict[str, bool] = {}
@@ -437,7 +532,12 @@ def _wheel(
                     metadata[name] = data
                     hashes[name] = _digest(io.BytesIO(data))
                 else:
-                    hashes[name] = _digest(stream)
+                    prefix = (
+                        _macos_payload(stream, member.file_size, name, macos_floors)
+                        if macos_floors
+                        else b""
+                    )
+                    hashes[name] = _digest(stream, prefix)
             _require(
                 hashes[name][1] == member.file_size,
                 f"invalid wheel member size: {name!r}",

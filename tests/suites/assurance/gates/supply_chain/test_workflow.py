@@ -56,7 +56,7 @@ def _wheel_setup_commands(workflows):
     build = next(
         step
         for step in workflows["release"]["jobs"]["wheels"]["steps"]
-        if "cibuildwheel " in step.get("run", "")
+        if "CIBW_BUILD" in step.get("env", {})
     )
     settings = build["env"]
     # cibuildwheel's automatic installers would otherwise resolve the declared
@@ -75,13 +75,14 @@ def _wheel_setup_commands(workflows):
 
 
 def _linux_frontend_commands(workflows):
+    python = workflows["release"]["jobs"]["wheels"]["strategy"]["matrix"]["python"][0]
     build = next(
         step
         for step in workflows["release"]["jobs"]["wheels"]["steps"]
-        if "cibuildwheel " in step.get("run", "")
+        if "CIBW_BUILD" in step.get("env", {})
     )
     return [
-        shlex.split(command)
+        shlex.split(command.replace("${{ matrix.python }}", python))
         for command in build["env"]["CIBW_BEFORE_ALL_LINUX"].split(" && ")
     ]
 
@@ -93,7 +94,7 @@ def _wheel_test_commands(workflows):
 
 def _repair_tool_export(workflows):
     steps = workflows["release"]["jobs"]["wheels"]["steps"]
-    build = next(step for step in steps if "cibuildwheel " in step.get("run", ""))
+    build = next(step for step in steps if "CIBW_BUILD" in step.get("env", {}))
     constraints = build["env"]["CIBW_DEPENDENCY_VERSIONS"]
     (export,) = [step for step in steps if step.get("run", "").startswith("uv export ")]
     tokens = shlex.split(export["run"])
@@ -284,7 +285,7 @@ def test_dedicated_gate_requires_parser_and_builder_before_any_optional_skip(
         tokens[index + 1]
         for index, value in enumerate(tokens)
         if value == "--only-group"
-    } == {"supply-chain", "release"}
+    } == {"supply-chain", "release", "build"}
     manifest = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text())
     assert {
         re.split(r"[<>=!~;\[]", requirement, maxsplit=1)[0]
@@ -383,7 +384,7 @@ def test_release_wheel_shards_keep_every_platform_and_supported_interpreter(work
     }
     assert matrix["python"] == ["312", "313", "314"]
     assert wheels["strategy"]["fail-fast"] is False
-    build = next(s for s in wheels["steps"] if "cibuildwheel " in s.get("run", ""))
+    build = next(s for s in wheels["steps"] if "CIBW_BUILD" in s.get("env", {}))
     assert build["env"]["CIBW_BUILD"] == "cp${{ matrix.python }}-*"
     (upload,) = _uses(wheels["steps"], "actions/upload-artifact")
     assert upload["with"]["name"] == (
@@ -409,13 +410,15 @@ def test_wheels_use_the_published_sdist_and_authenticated_locked_build_tools(wor
     assert {"--locked", "--no-install-project"} <= set(shlex.split(sync["run"]))
     assert "--only-group release" in sync["run"]
     build = next(
-        step for step in wheels["steps"] if "cibuildwheel " in step.get("run", "")
+        step for step in wheels["steps"] if "CIBW_BUILD" in step.get("env", {})
     )
     assert shlex.split(build["run"]) == [
         "uv",
         "run",
         "--no-sync",
-        "cibuildwheel",
+        "python",
+        "-m",
+        "tests.tooling.release.wheels",
         "source/*.tar.gz",
         "--output-dir",
         "dist",
@@ -491,7 +494,7 @@ def test_wheel_test_dependencies_use_only_the_authenticated_locked_closure(workf
 
 
 def test_linux_container_frontend_uses_the_authenticated_locked_tool(workflows):
-    export, install = _linux_frontend_commands(workflows)
+    export, install, runtime = _linux_frontend_commands(workflows)
     assert export[:2] == ["uv", "export"]
     assert {"--locked", "--no-emit-project"} <= set(export)
     assert "--no-hashes" not in export
@@ -501,6 +504,13 @@ def test_linux_container_frontend_uses_the_authenticated_locked_tool(workflows):
     assert {"--no-deps", "--require-hashes"} <= set(install)
     assert install[install.index("--only-binary") + 1] == ":all:"
     assert install[install.index("--prefix") + 1] == "/usr/local"
+    assert runtime == [
+        "python",
+        "{package}/tests/tooling/release/wheels.py",
+        "--linux-runtime",
+        "cp"
+        + workflows["release"]["jobs"]["wheels"]["strategy"]["matrix"]["python"][0],
+    ]
     assert (
         install[install.index("--requirement") + 1]
         == export[export.index("--output-file") + 1]
@@ -593,7 +603,7 @@ def test_real_offline_wheel_export_keeps_every_transitive_locked_hash(
     elif purpose == "repair":
         export = _repair_tool_export(workflows)
     elif purpose == "frontend":
-        export, _ = _linux_frontend_commands(workflows)
+        export, _, _ = _linux_frontend_commands(workflows)
     else:
         _, (export, _, _, _) = _wheel_setup_commands(workflows)
     # Freeze both inputs so concurrent development cannot change our closure

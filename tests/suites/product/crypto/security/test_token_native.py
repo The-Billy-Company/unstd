@@ -376,13 +376,16 @@ def test_native_unbounded_alphabet_scan_remains_interruptible(native_module):
     script = """
 import signal
 import sys
+from time import monotonic
 from types import SimpleNamespace
 from unstd.crypto import token
+from unstd.crypto._stream_native import bind_token_verifier
 
 class Interrupted(Exception):
     pass
 
-verify = token.prepare_verifier(max_token_chars=None)
+# A Python wrapper keeps its argument after C returns and obscures this boundary.
+verify = bind_token_verifier(token._verify_python)
 key = bytes(32)
 candidate = token.mint(key, b'signal calibration')
 active_references = []
@@ -393,19 +396,25 @@ def count_active_references(value, *, url):
     return original_b64.decode(value, url=url)
 
 token.b64 = SimpleNamespace(decode=count_active_references)
-assert verify(key, candidate) == b'signal calibration'
+assert verify(key, candidate, None) == b'signal calibration'
 token.b64 = original_b64
 candidate = 'A' * (128 * 1024 * 1024 - 2) + '!A.' + 'A' * 43
 observed = []
 
 def interrupt(signum, frame):
-    observed.append(sys.getrefcount(candidate))
+    references = sys.getrefcount(candidate)
+    if references < active_references[0]:
+        return
+    observed.append(references)
     raise Interrupted('interrupt canonicality scan')
 
 signal.signal(signal.SIGALRM, interrupt)
-signal.setitimer(signal.ITIMER_REAL, 0.005)
+# Alarm delivery may occur between scans; require an interrupt inside the C call.
+deadline = monotonic() + 1.0
+signal.setitimer(signal.ITIMER_REAL, 0.005, 0.005)
 try:
-    verify(key, candidate)
+    while monotonic() < deadline:
+        verify(key, candidate, None)
 except Interrupted:
     print('INTERRUPTED_UNBOUNDED_SCAN')
 else:

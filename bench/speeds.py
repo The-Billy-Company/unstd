@@ -355,6 +355,53 @@ def workload_sources() -> dict[str, str]:
     }
 
 
+def provenance() -> dict[str, object]:
+    """Retain loaded module files and build inputs outside comparison ceilings."""
+    files = {}
+    for name, module in sorted(sys.modules.copy().items()):
+        if not (
+            name == "unstd"
+            or name.startswith(("unstd.", "zlib_ng."))
+            or name in {"gzip", "zlib", "_compression"}
+        ):
+            continue
+        filename = getattr(module, "__file__", None)
+        if filename is not None:
+            path = Path(filename).resolve()
+            files[name] = {
+                "path": str(path),
+                "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+            }
+    return {
+        "loaded_files": files,
+        "workload_sources": workload_sources(),
+        "harness_sources": {
+            name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest()
+            for name in ("bench/speeds.py", "bench/core/timing.py")
+        },
+        "python_executable": sys.executable,
+        "python_build": sys.version,
+        "compiler_configuration": {
+            key: sysconfig.get_config_var(key)
+            for key in ("CC", "CXX", "CFLAGS", "CPPFLAGS", "LDFLAGS", "CONFIG_ARGS")
+        },
+        "build_environment": {
+            key: os.environ.get(key)
+            for key in (
+                "CC",
+                "CXX",
+                "CFLAGS",
+                "CPPFLAGS",
+                "LDFLAGS",
+                "CIBUILDWHEEL",
+                "UNSTD_TEXT_RUST",
+                "UNSTD_GZIP_ZLIB_RS",
+                "PYTHONMALLOC",
+            )
+        },
+    }
+
+
 def _validate_document(raw: Any) -> None:
     """Check all fields needed to verify or extend persisted evidence."""
     if (
@@ -663,6 +710,9 @@ def main(argv: list[str] | None = None) -> int:
             baseline = None
             added: list[str] = []
             comparable = selected
+            # Both phases load metadata/native routes before the first timing.
+            # Freeze used to defer this work until after its measurements.
+            current_environment = environment()
             if args.verb == "verify":
                 baseline = load_baseline(args.baseline)
                 if args.revision_baseline:
@@ -675,11 +725,12 @@ def main(argv: list[str] | None = None) -> int:
                     validate_baseline(all_cases, baseline)
                 if not comparable_environment(
                     baseline["environment"],
-                    environment(),
+                    current_environment,
                     revision=args.revision_baseline,
                 ):
                     msg = "baseline environment differs; freeze a separate --baseline file on this worker before comparing revisions"
                     _invalid(msg)
+            current_provenance = provenance()
             measured = timings(selected, rounds=args.rounds)
             attempts = {name: [result] for name, result in measured.items()}
             if args.verb == "verify":
@@ -745,7 +796,8 @@ def main(argv: list[str] | None = None) -> int:
                 }
             if args.output:
                 report = {
-                    "environment": environment(),
+                    "environment": current_environment,
+                    "provenance": current_provenance,
                     "baseline_sha256": hashlib.sha256(
                         args.baseline.read_bytes()
                     ).hexdigest()

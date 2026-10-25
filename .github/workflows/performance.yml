@@ -16,6 +16,11 @@ on:
         required: true
         default: main
         type: string
+      gzip_diagnostic:
+        description: "Run only the bounded gzip read/inflater comparison"
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -26,7 +31,7 @@ concurrency:
 
 jobs:
   compare:
-    name: Function latency / Python 3.13
+    name: ${{ inputs.gzip_diagnostic && 'Gzip read diagnosis / Python 3.13' || 'Function latency / Python 3.13' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
@@ -96,6 +101,7 @@ jobs:
       # An older revision cannot implement newly added APIs. Inventory its own
       # exports, compare every shared workload, and report additions separately.
       - name: Freeze comparison revision on this worker
+        if: ${{ !inputs.gzip_diagnostic }}
         env:
           PYTHONPATH: ${{ github.workspace }}/.local/performance/installed-before:${{ github.workspace }}
         run: >-
@@ -104,6 +110,7 @@ jobs:
           --baseline .local/performance/evidence/baseline.json
           --output .local/performance/evidence/before.json
       - name: Verify current revision against the frozen worker baseline
+        if: ${{ !inputs.gzip_diagnostic }}
         env:
           PYTHONPATH: ${{ github.workspace }}/.local/performance/installed-current:${{ github.workspace }}
         run: >-
@@ -111,6 +118,32 @@ jobs:
           --revision-baseline
           --baseline .local/performance/evidence/baseline.json
           --output .local/performance/evidence/current.json
+      - name: Retain both native gzip builds for diagnosis
+        if: ${{ inputs.gzip_diagnostic }}
+        run: |
+          .venv/bin/python - <<'PYTHON'
+          from pathlib import Path
+          import shutil
+          import sysconfig
+          root = Path(".local/performance")
+          for revision in ("before", "current"):
+              (binary,) = (root / f"installed-{revision}/unstd/compress").glob("_gzip_native*.so")
+              if (not binary.is_file() or binary.is_symlink()
+                      or binary.name != f"_gzip_native{sysconfig.get_config_var('EXT_SUFFIX')}"):
+                  raise RuntimeError(f"not the built native gzip module: {binary}")
+              destination = root / f"evidence/native-{revision}"
+              destination.mkdir()
+              shutil.copyfile(binary, destination / binary.name)
+          PYTHON
+      - name: Diagnose gzip reads with isolated native controls
+        if: ${{ inputs.gzip_diagnostic }}
+        env:
+          PYTHONPATH: ${{ github.workspace }}/.local/performance/installed-current:${{ github.workspace }}
+        run: >-
+          .venv/bin/python -m bench.diagnostics.gzip_reads run --rounds 9
+          --before-install .local/performance/installed-before
+          --current-install .local/performance/installed-current
+          --output .local/performance/evidence/gzip-control.json
       - name: Retain baseline, measurements and revision identities
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
