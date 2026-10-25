@@ -1,0 +1,1 @@
+We compare every time operation available in the previous release and report new native bindings separately. The current revision still requires the full API; existing workload definitions, measurements and regression ceilings stay unchanged.

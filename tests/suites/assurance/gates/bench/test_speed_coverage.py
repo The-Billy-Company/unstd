@@ -134,6 +134,25 @@ def test_tls_workload_accepts_lazy_default_roots_and_rejects_insecure_policy(
     [
         ("unstd.serde.jsonx", "canonical_strict"),
         ("unstd.crypto.token", "prepare_verifier"),
+        *(
+            ("unstd.time.timeutil", name)
+            for name in (
+                "wall_ns",
+                "perf_ns",
+                "process_time",
+                "process_time_ns",
+                "thread_time",
+                "thread_time_ns",
+                "sleep",
+                "now",
+                "date_today",
+                "datetime_today",
+                "from_iso",
+                "date_from_iso",
+                "time_from_iso",
+                "from_timestamp",
+            )
+        ),
     ],
 )
 def test_only_comparison_registry_accepts_apis_missing_from_an_older_revision(
