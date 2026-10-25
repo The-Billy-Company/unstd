@@ -2,8 +2,14 @@
 
 from __future__ import annotations
 
+import os
+from pathlib import Path
 import re
 import shlex
+import shutil
+import subprocess
+import sys
+import sysconfig
 from typing import Any
 
 import pytest
@@ -149,6 +155,10 @@ def test_manual_gzip_diagnosis_skips_full_timing_and_retains_focused_evidence(
         if "-m bench.diagnostics.gzip_reads" in step.get("run", "")
     )
     assert focused["if"] == "${{ inputs.gzip_diagnostic }}"
+    assert (
+        focused["env"]["PYTHONPATH"]
+        == (_measurement_steps(workflow)["verify"]["env"]["PYTHONPATH"])
+    )
     tokens = shlex.split(focused["run"])
     assert tokens[tokens.index("--before-install") + 1].endswith("installed-before")
     assert tokens[tokens.index("--current-install") + 1].endswith("installed-current")
@@ -170,3 +180,58 @@ def test_diagnostic_cannot_satisfy_the_full_function_latency_check(
     assert full_context == "Function latency / Python 3.13"
     assert diagnostic_context != full_context
     assert diagnostic_context == "Gzip read diagnosis / Python 3.13"
+
+
+def test_diagnostic_parent_entrypoint_needs_only_its_explicit_installation(
+    workflow: dict[str, Any], tmp_path: Path
+) -> None:
+    focused = next(
+        step
+        for step in workflow["jobs"]["compare"]["steps"]
+        if "-m bench.diagnostics.gzip_reads" in step.get("run", "")
+    )
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    (workspace / "bench").symlink_to(REPO_ROOT / "bench", target_is_directory=True)
+    dependencies = tmp_path / "dependencies"
+    dependencies.mkdir()
+    # -S skips editable .pth hooks. Share real dependency files, excluding the
+    # product itself, so neither the checkout nor a global install can rescue it.
+    for directory in {sysconfig.get_path("purelib"), sysconfig.get_path("platlib")}:
+        for path in Path(directory).iterdir():
+            destination = dependencies / path.name
+            if path.name != "unstd" and not destination.exists():
+                destination.symlink_to(path, target_is_directory=path.is_dir())
+    command = [
+        sys.executable,
+        "-S",
+        "-m",
+        "bench.diagnostics.gzip_reads",
+        "run",
+        "--help",
+    ]
+    env = {
+        **os.environ,
+        "PYTHONPATH": os.pathsep.join((str(workspace), str(dependencies))),
+    }
+    absent = subprocess.run(  # noqa: S603 — fixed interpreter/module and argv; no shell
+        command, cwd=tmp_path, env=env, capture_output=True, text=True, timeout=15
+    )
+    assert absent.returncode != 0
+    assert "No module named 'unstd'" in absent.stderr
+    installation = workspace / ".local/performance/installed-current"
+    shutil.copytree(
+        REPO_ROOT / "src/unstd",
+        installation / "unstd",
+        ignore=shutil.ignore_patterns("__pycache__", "*.so", "*.pyd"),
+    )
+    declared_path = focused["env"]["PYTHONPATH"].replace(
+        "${{ github.workspace }}", str(workspace)
+    )
+    env["PYTHONPATH"] = os.pathsep.join((declared_path, str(dependencies)))
+    present = subprocess.run(  # noqa: S603 — same clean entrypoint with its declared import path
+        command, cwd=tmp_path, env=env, capture_output=True, text=True, timeout=15
+    )
+    assert present.returncode == 0, present.stderr
+    assert "--before-install" in present.stdout
+    assert "--current-install" in present.stdout

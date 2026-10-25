@@ -120,6 +120,8 @@ jobs:
           --output .local/performance/evidence/current.json
       - name: Diagnose gzip reads with isolated native controls
         if: ${{ inputs.gzip_diagnostic }}
+        env:
+          PYTHONPATH: ${{ github.workspace }}/.local/performance/installed-current:${{ github.workspace }}
         run: >-
           .venv/bin/python -m bench.diagnostics.gzip_reads run --rounds 9
           --before-install .local/performance/installed-before
