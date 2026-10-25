@@ -1,1 +1,0 @@
-We expose nanosecond clocks, process and thread CPU clocks, sleep, native datetime reads and strict ISO decoders through direct stdlib bindings. They retain native precision, exceptions and platform availability without an extra call frame.

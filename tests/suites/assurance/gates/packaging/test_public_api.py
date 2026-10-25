@@ -101,6 +101,15 @@ def test_public_module_contract(name: str) -> None:
     _assert_contract(name, module)
 
 
+@pytest.mark.parametrize("name", ["unstd.time.timeutil", "unstd.yaml"])
+def test_public_inventory_retains_all_exports(name: str) -> None:
+    text = (REPO_ROOT / "docs/api.md").read_text(encoding="utf-8")
+    rows = [line for line in text.splitlines() if line.startswith(f"| [`{name}`](")]
+    assert len(rows) == 1, (name, rows)
+    documented = re.findall(r"`([^`]+)`", rows[0].split("|")[2])
+    assert documented == _CONTRACT[name]["exports"]
+
+
 def test_contract_with_optional_backends_unavailable(tmp_path) -> None:
     code = """
 import importlib

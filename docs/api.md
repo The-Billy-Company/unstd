@@ -1,3 +1,14 @@
+---
+doc_radar:
+  sentinels:
+    - file: ../src/unstd/time/timeutil.py
+      contains: ['wall_ns = _time.time_ns', 'perf_ns = _time.perf_counter_ns', 'strptime = datetime.strptime', 'combine = datetime.combine', 'from_iso = datetime.fromisoformat', 'def parse_iso(']
+    - file: ../src/unstd/yaml/__init__.py
+      contains: ['if name in ("pyyaml", "ruamel"):', 'globals()[name] = backend']
+    - file: ../tests/suites/assurance/gates/packaging/test_public_api.py
+      contains: ['def test_public_inventory_retains_all_exports(']
+---
+
 # Public API inventory
 
 This is the supported import surface of `unstd`. Source links provide the full
@@ -400,13 +411,22 @@ Import `from unstd.time import timeutil, zoned` as needed.
 
 | Module | Exported API |
 | --- | --- |
-| [`unstd.time.timeutil`](../src/unstd/time/timeutil.py) | `Unit`, `elapsed_ms`, `epoch_ms`, `epoch_s`, `from_epoch_ms`, `from_epoch_s`, `human`, `iso`, `mono`, `mono_ns`, `now_tz`, `parse_date`, `parse_iso`, `parse_utc`, `perf`, `proto_timestamp`, `proto_timestamp_ms`, `span`, `today`, `utcnow`, `wall` |
+| [`unstd.time.timeutil`](../src/unstd/time/timeutil.py) | `Unit`, `combine`, `date_from_iso`, `date_today`, `datetime_today`, `elapsed_ms`, `epoch_ms`, `epoch_s`, `from_epoch_ms`, `from_epoch_s`, `from_iso`, `from_timestamp`, `gmtime`, `human`, `iso`, `localtime`, `mono`, `mono_ns`, `now`, `now_tz`, `parse_date`, `parse_iso`, `parse_utc`, `perf`, `perf_ns`, `process_time`, `process_time_ns`, `proto_timestamp`, `proto_timestamp_ms`, `sleep`, `span`, `strftime`, `strptime`, `thread_time`, `thread_time_ns`, `time_from_iso`, `today`, `utcnow`, `wall`, `wall_ns` |
 | [`unstd.time.zoned`](../src/unstd/time/zoned.py) | `Disambiguate`, `Instant`, `PlainDateTime`, `RepeatedTime`, `SkippedTime`, `ZonedDateTime`, `instant`, `now`, `parse`, `to_utc`, `wall` |
 
-`timeutil` uses stdlib time/datetime values. `wall`, `mono`, `mono_ns`, and `perf`
-remain direct stdlib clock aliases; `utcnow` remains its pre-bound UTC datetime
-call. `Unit` is `"seconds" | "minutes" | "hours" | "days"`. Only the protobuf
-bridge requires the `proto` extra, loaded on demand.
+`timeutil` uses stdlib time/datetime values. Clocks, `sleep`, native calendar
+reads, conversion, formatting and assembly are direct native bindings. Thread
+CPU clocks retain platform availability. `now()` and `from_timestamp(seconds)`
+are local and naive by default; pass a zone for an aware result. `utcnow` is the
+pre-bound UTC datetime call.
+
+`from_iso`, `date_from_iso`, `time_from_iso`, and `strptime` retain native accepted
+forms and exceptions. `parse_iso`, `parse_date`, and `parse_utc` return `None` for
+invalid input; `parse_utc` also normalizes aware values to UTC and reads naive
+values as UTC.
+
+`Unit` is `"seconds" | "minutes" | "hours" | "days"`. Only the protobuf bridge
+requires the `proto` extra, loaded on demand.
 
 `zoned` requires the `time` extra. Its `Instant`, `PlainDateTime`, `ZonedDateTime`,
 `RepeatedTime`, and `SkippedTime` names are the actual `whenever` classes and
@@ -438,7 +458,18 @@ Import `from unstd import yaml`.
 | --- | --- |
 | [`unstd.yaml`](../src/unstd/yaml/__init__.py) | `YAMLError`, `YamlScalar`, `YamlValue`, `dump`, `dump_all`, `dumps`, `load`, `load_all`, `loads`, `parse` |
 
-The `yaml` extra is required for operations. `loads` and `load` read one safe
+The `yaml` extra provides both backend contracts. `yaml.pyyaml` and
+`yaml.ruamel` are lazy public module bindings outside the wildcard exports.
+Each is the original backend, retaining its loaders, dumpers, exceptions,
+nodes and events. Accessing one does not import the other or the YAML 1.2 codec.
+
+```python
+from unstd.yaml import pyyaml as yaml
+
+yaml.safe_load(raw)
+```
+
+Our document helpers use YAML 1.2 policy. `loads` and `load` read one safe
 document; `load_all` reads lazily. `parse` preserves editable metadata; `dumps`,
 `dump`, and `dump_all` retain it when writing. Duplicate-key and unknown-tag
 rejection remain part of the parser policy. `YAMLError` is the backend exception

@@ -1,3 +1,14 @@
+---
+doc_radar:
+  sentinels:
+    - file: ../src/unstd/yaml/__init__.py
+      contains: ['from unstd.yaml import _codec as codec', 'globals()[name] = backend']
+    - file: ../src/unstd/yaml/_codec.py
+      contains: ['def loads(', 'def dumps(']
+    - file: ../src/unstd/time/timeutil.py
+      contains: ['strftime = _time.strftime', 'combine = datetime.combine']
+---
+
 # Repository and package architecture
 
 `unstd` keeps its existing public imports and optional-extra contracts. Directory
@@ -60,9 +71,9 @@ existing paths. `_internal` packages are implementation details.
 | `rex` | Package functions, flags and types | `_internal/profile.py` proves semantic eligibility; `patterns.py` owns adapters; caches remain public-module state |
 | `serde` | `jsonx.py`, `b64.py`, `ndjson.py`, `structs.py` | `_internal/json_encode.py` and `json_common.py`; private native JSON extension |
 | `text` | `fuzz.py` | Private native text extension; scorer dispatch remains with public calls |
-| `time` | `timeutil.py`, `zoned.py` | Clock aliases, instant arithmetic and optional zoned-time backend stay separate |
+| `time` | `timeutil.py`, `zoned.py` | Native clock/calendar bindings, instant arithmetic and optional zoned-time backend stay separate |
 | `toml` | Package format functions and builders | `_internal/common.py` normalizes plain data to the shared TOML dialect |
-| `yaml` | Package format functions and types | `_internal/engine.py` owns safe parser policy; `values.py` validates results without expanding aliases |
+| `yaml` | Lazy backend modules and YAML 1.2 helpers | `_codec.py` owns document functions; `_internal/engine.py` owns safe parser policy; `values.py` validates results without expanding aliases |
 
 Small modules stay focused rather than gaining empty wrapper layers. Public
 entrypoints retain their original definitions when they own backend switches,
