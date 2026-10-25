@@ -11,6 +11,7 @@ on:
       - ".github/workflows/release.yml"
       - ".github/workflows/windows-arm-cache.yml"
       - "tests/tooling/release/cache_key.py"
+      - "tests/tooling/release/wheels.py"
   # GitHub evicts unused caches after a week, even without dependency changes.
   schedule:
     - cron: "23 13 * * 1,4"
@@ -18,6 +19,9 @@ on:
 
 permissions:
   contents: read
+
+env:
+  UV_MANAGED_PYTHON: "1"
 
 concurrency:
   group: windows-arm-cache-${{ github.ref }}
@@ -77,4 +81,4 @@ jobs:
             --build-constraints test-build-constraints.txt --requirements test-requirements.txt
           # The release itself still executes every wheel contract.
           CIBW_TEST_COMMAND: python -c "import blake3, zlib_ng.zlib_ng"
-        run: uv run --no-sync cibuildwheel . --output-dir "${{ runner.temp }}/warmup-wheels"
+        run: uv run --no-sync python -m tests.tooling.release.wheels . --output-dir "${{ runner.temp }}/warmup-wheels"

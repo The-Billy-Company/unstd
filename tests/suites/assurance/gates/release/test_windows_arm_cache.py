@@ -29,7 +29,7 @@ def _setup(job):
 
 
 def _build(job):
-    return next(step for step in job["steps"] if "cibuildwheel " in step.get("run", ""))
+    return next(step for step in job["steps"] if "CIBW_BUILD" in step.get("env", {}))
 
 
 def test_arm_warmup_runs_on_main_before_tags_need_its_cache(workflows):
@@ -37,9 +37,12 @@ def test_arm_warmup_runs_on_main_before_tags_need_its_cache(workflows):
     assert warmup["on"]["push"]["branches"] == ["main"]
     assert "workflow_dispatch" in warmup["on"]
     assert warmup["on"]["schedule"] == [{"cron": "23 13 * * 1,4"}]
-    assert {"pyproject.toml", "uv.lock", "tests/tooling/release/cache_key.py"} <= set(
-        warmup["on"]["push"]["paths"]
-    )
+    assert {
+        "pyproject.toml",
+        "uv.lock",
+        "tests/tooling/release/cache_key.py",
+        "tests/tooling/release/wheels.py",
+    } <= set(warmup["on"]["push"]["paths"])
     assert warmup["permissions"] == {"contents": "read"}
     assert not {"pull_request_target", "workflow_run"} & warmup["on"].keys()
     job = warmup["jobs"]["dependencies"]
@@ -50,6 +53,13 @@ def test_arm_warmup_runs_on_main_before_tags_need_its_cache(workflows):
     for step in job["steps"]:
         if "uses" in step:
             assert re.search(r"@[0-9a-f]{40}$", step["uses"])
+
+
+def test_release_and_warmup_cannot_select_stock_runner_interpreters(workflows):
+    for workflow in workflows.values():
+        assert workflow["env"]["UV_MANAGED_PYTHON"] == "1"
+        for job in workflow["jobs"].values():
+            assert job.get("env", {}).get("UV_MANAGED_PYTHON", "1") == "1"
 
 
 def test_warmup_and_release_share_cache_keys_and_tool_downloads(workflows):

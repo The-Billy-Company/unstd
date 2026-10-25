@@ -14,6 +14,9 @@ on:
 permissions:
   contents: read
 
+env:
+  UV_MANAGED_PYTHON: "1"
+
 jobs:
   ci-status:
     name: Reuse recent exact-commit CI
@@ -117,7 +120,7 @@ jobs:
             --no-emit-project --no-header --output-file test-requirements.txt &&
             uv pip install --no-deps --require-hashes --require-build-hashes
             --build-constraints test-build-constraints.txt --requirements test-requirements.txt
-        run: uv run --no-sync cibuildwheel source/*.tar.gz --output-dir dist
+        run: uv run --no-sync python -m tests.tooling.release.wheels source/*.tar.gz --output-dir dist
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: release-raw-wheels-${{ matrix.os }}-${{ matrix.python }}

@@ -106,6 +106,33 @@ def test_every_owned_group_runs_in_every_supported_dependency_environment(workfl
     }
 
 
+def test_tooling_owner_installs_required_builder_and_compiler_tools_in_every_environment(
+    workflow,
+):
+    owner = next(group.id for group in ci.GROUPS if "gates" in group.suites)
+    job = workflow["jobs"]["test"]
+    for group in job["strategy"]["matrix"]["group"]:
+        tools = (
+            ["--group", "release", "--group", "build"] if group["id"] == owner else []
+        )
+        assert shlex.split(group["dependencies"]) == tools
+        for environment in job["strategy"]["matrix"]["environment"]:
+            assert shlex.split(
+                _render(_sync(job), group=group, environment=environment)
+            ) == [
+                "uv",
+                "sync",
+                *shlex.split(environment["sync"]),
+                "--group",
+                "dev",
+                *tools,
+                "--reinstall-package",
+                "unstd",
+                "--python",
+                environment["python"],
+            ]
+
+
 def test_matrix_python_uses_the_managed_runtime_instead_of_the_runner(workflow):
     assert workflow["env"]["UV_MANAGED_PYTHON"] == "1"
     for job in workflow["jobs"].values():

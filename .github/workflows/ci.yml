@@ -164,12 +164,12 @@ jobs:
       matrix:
         # Groups select owned suite paths. Every environment retains full coverage.
         group:
-          - {id: api, name: API & regressions, shard: "", report: api}
-          - {id: contracts, name: Compatibility & boundaries (1/3), shard: "--shard 1/3", report: contracts-1-of-3}
-          - {id: contracts, name: Compatibility & boundaries (2/3), shard: "--shard 2/3", report: contracts-2-of-3}
-          - {id: contracts, name: Compatibility & boundaries (3/3), shard: "--shard 3/3", report: contracts-3-of-3}
-          - {id: tooling, name: Test tooling & corpus, shard: "", report: tooling}
-          - {id: packaging, name: Packaging & consumers, shard: "", report: packaging}
+          - {id: api, name: API & regressions, shard: "", report: api, dependencies: ""}
+          - {id: contracts, name: Compatibility & boundaries (1/3), shard: "--shard 1/3", report: contracts-1-of-3, dependencies: ""}
+          - {id: contracts, name: Compatibility & boundaries (2/3), shard: "--shard 2/3", report: contracts-2-of-3, dependencies: ""}
+          - {id: contracts, name: Compatibility & boundaries (3/3), shard: "--shard 3/3", report: contracts-3-of-3, dependencies: ""}
+          - {id: tooling, name: Test tooling & corpus, shard: "", report: tooling, dependencies: "--group release --group build"}
+          - {id: packaging, name: Packaging & consumers, shard: "", report: packaging, dependencies: ""}
         environment:
           - {id: py312, name: Python 3.12, python: "3.12", sync: "--locked --all-extras", pytest: "--require-extras"}
           - {id: py313, name: Python 3.13, python: "3.13", sync: "--locked --all-extras", pytest: "--require-extras"}
@@ -193,7 +193,7 @@ jobs:
           version: "0.13.4"
           python-version: ${{ matrix.environment.python }}
       - name: Install test environment & rebuild local extensions
-        run: uv sync ${{ matrix.environment.sync }} --group dev --reinstall-package unstd --python ${{ matrix.environment.python }}
+        run: uv sync ${{ matrix.environment.sync }} --group dev ${{ matrix.group.dependencies }} --reinstall-package unstd --python ${{ matrix.environment.python }}
       - name: Check the test interpreter's TLS security fixes
         run: uv run --no-sync python -m tests.tooling.runtime --json
       - name: Restore audited lock after installing dependency floors

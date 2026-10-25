@@ -16,9 +16,18 @@ test-command = [
   "python {project}/tests/tooling/release/wheel_tests.py --workers 4",
 ]
 
+# Keep the existing Intel wheel floor without losing the provider's optimization flags.
+[[tool.cibuildwheel.overrides]]
+select = "cp312-macosx_x86_64"
+inherit.environment = "append"
+[tool.cibuildwheel.overrides.environment]
+MACOSX_DEPLOYMENT_TARGET = "10.13"
+CFLAGS = '''$(python -c 'import os, sysconfig; print(os.environ.get("CFLAGS", sysconfig.get_config_var("CFLAGS") or ""))') -mmacosx-version-min=$MACOSX_DEPLOYMENT_TARGET'''
+LDFLAGS = "$LDFLAGS -mmacosx-version-min=$MACOSX_DEPLOYMENT_TARGET"
+
 [project]
 name = "unstd"
-version = "3.1.5"
+version = "3.1.6"
 description = "stdlib-faithful accelerated replacements behind optional extras"
 readme = "README.md"
 requires-python = ">=3.12"

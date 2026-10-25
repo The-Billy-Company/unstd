@@ -56,7 +56,7 @@ def _wheel_setup_commands(workflows):
     build = next(
         step
         for step in workflows["release"]["jobs"]["wheels"]["steps"]
-        if "cibuildwheel " in step.get("run", "")
+        if "CIBW_BUILD" in step.get("env", {})
     )
     settings = build["env"]
     # cibuildwheel's automatic installers would otherwise resolve the declared
@@ -78,7 +78,7 @@ def _linux_frontend_commands(workflows):
     build = next(
         step
         for step in workflows["release"]["jobs"]["wheels"]["steps"]
-        if "cibuildwheel " in step.get("run", "")
+        if "CIBW_BUILD" in step.get("env", {})
     )
     return [
         shlex.split(command)
@@ -93,7 +93,7 @@ def _wheel_test_commands(workflows):
 
 def _repair_tool_export(workflows):
     steps = workflows["release"]["jobs"]["wheels"]["steps"]
-    build = next(step for step in steps if "cibuildwheel " in step.get("run", ""))
+    build = next(step for step in steps if "CIBW_BUILD" in step.get("env", {}))
     constraints = build["env"]["CIBW_DEPENDENCY_VERSIONS"]
     (export,) = [step for step in steps if step.get("run", "").startswith("uv export ")]
     tokens = shlex.split(export["run"])
@@ -383,7 +383,7 @@ def test_release_wheel_shards_keep_every_platform_and_supported_interpreter(work
     }
     assert matrix["python"] == ["312", "313", "314"]
     assert wheels["strategy"]["fail-fast"] is False
-    build = next(s for s in wheels["steps"] if "cibuildwheel " in s.get("run", ""))
+    build = next(s for s in wheels["steps"] if "CIBW_BUILD" in s.get("env", {}))
     assert build["env"]["CIBW_BUILD"] == "cp${{ matrix.python }}-*"
     (upload,) = _uses(wheels["steps"], "actions/upload-artifact")
     assert upload["with"]["name"] == (
@@ -409,13 +409,15 @@ def test_wheels_use_the_published_sdist_and_authenticated_locked_build_tools(wor
     assert {"--locked", "--no-install-project"} <= set(shlex.split(sync["run"]))
     assert "--only-group release" in sync["run"]
     build = next(
-        step for step in wheels["steps"] if "cibuildwheel " in step.get("run", "")
+        step for step in wheels["steps"] if "CIBW_BUILD" in step.get("env", {})
     )
     assert shlex.split(build["run"]) == [
         "uv",
         "run",
         "--no-sync",
-        "cibuildwheel",
+        "python",
+        "-m",
+        "tests.tooling.release.wheels",
         "source/*.tar.gz",
         "--output-dir",
         "dist",

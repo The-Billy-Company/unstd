@@ -40,7 +40,7 @@ def test_sdist_constraints_survive_real_builder_directory_changes(
     build = next(
         step
         for step in workflow["jobs"]["wheels"]["steps"]
-        if "cibuildwheel " in step.get("run", "")
+        if "CIBW_BUILD" in step.get("env", {})
     )
     checkout = tmp_path / "checkout"
     checkout.mkdir()
