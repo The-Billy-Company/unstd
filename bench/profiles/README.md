@@ -7,6 +7,10 @@ These drivers compare saved and current implementations, check outputs and impor
 - [`clone_cpu.py`](clone_cpu.py) — paired wall and process CPU measurements, including large trees, preserved aliases and cyclic fallback
 - [`clone_common_cpu.py`](clone_common_cpu.py) — public Python clone entrypoints on common nested data and dataclasses, against saved native baselines
 - [`native_profile.py`](native_profile.py)
+- [`rand_backend.py`](rand_backend.py) — saved/current bulk, scalar and construction timings with exact values and full engine-state checks
+- [`billy_rand.py`](billy_rand.py) — captured consumer slices with unchanged streams, separate profiles and explicit speedup gates
+- [`rand_keyed.py`](rand_keyed.py) — opt-in per-key integer count batches and complete captured consumer costs, with separate target results
+- [`rand_strategies.py`](rand_strategies.py) — prospective sparse sampling through the existing public API, labelled independently from backend acceleration
 - [`crypto_hash.py`](crypto_hash.py)
 - [`billy_serde.py`](billy_serde.py)
 - [`billy_audio.py`](billy_audio.py) — exact PCM wrapping and raw normalization ports, paired timings, allocation peaks and captured Billy consumer source

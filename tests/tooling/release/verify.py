@@ -87,6 +87,7 @@ _NATIVE_MODULES = (
     "unstd/crypto/_stream_native",
     "unstd/text/_text_native",
     "unstd/compress/_gzip_native",
+    "unstd/rand/_rand_native",
 )
 _MACHO_ORDERS = {
     b"\xcf\xfa\xed\xfe": "<",  # 64-bit little endian

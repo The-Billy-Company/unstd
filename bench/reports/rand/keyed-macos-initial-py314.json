@@ -1,0 +1,1964 @@
+{
+  "environment": {
+    "python": "3.14.9 (main, Oct 21 2026, 17:47:42) [Clang 23.1.3 ]",
+    "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+    "machine": "arm64",
+    "numpy": "2.5.3"
+  },
+  "sources": {
+    "keyed": {
+      "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/rand/draw.py",
+      "sha256": "4788eed973c92eb26bea4b34844e2257b65b3252aa0f3ebf53bfa5e7c787e6eb",
+      "public_signatures": {
+        "Generator": "(seed: int | None = None, *, backend: Literal['stdlib', 'numpy'] = 'stdlib', bit_generator: Literal['PCG64', 'PCG64DXSM', 'SFC64', 'Philox'] | None = None) -> None",
+        "choice": "(seq)",
+        "choices": "(seq: collections.abc.Sequence[T], n: int, *, weights: collections.abc.Sequence[float] | None = None) -> list[T]",
+        "floats": "(n: int, *, low: float = 0.0, high: float = 1.0) -> numpy.ndarray | list[float]",
+        "ints": "(n: int, low: int, high: int, *, endpoint: bool = False, seeds: collections.abc.Sequence[int] | None = None) -> numpy.ndarray | list[int]",
+        "randint": "(a, b)",
+        "random": "()",
+        "sample": "(population, k, *, counts=None)",
+        "seed": "(n: int | None = None) -> None",
+        "shuffle": "(x)",
+        "uniform": "(a, b)",
+        "Generator.seed": "(self, n: int | None = None) -> None",
+        "Generator.random": "(self) -> float",
+        "Generator.randint": "(self, a: int, b: int) -> int",
+        "Generator.uniform": "(self, a: float, b: float) -> float",
+        "Generator.choice": "(self, seq: collections.abc.Sequence[T]) -> T",
+        "Generator.shuffle": "(self, x: collections.abc.MutableSequence[T]) -> None",
+        "Generator.sample": "(self, population: collections.abc.Sequence[T], k: int, *, counts: collections.abc.Sequence[int] | None = None) -> list[T]",
+        "Generator.floats": "(self, n: int, *, low: float = 0.0, high: float = 1.0) -> numpy.ndarray | list[float]",
+        "Generator.ints": "(self, n: int, low: int, high: int, *, endpoint: bool = False, seeds: collections.abc.Sequence[int] | None = None) -> numpy.ndarray | list[int]",
+        "Generator.choices": "(self, seq: collections.abc.Sequence[T], n: int, *, weights: collections.abc.Sequence[float] | None = None) -> list[T]"
+      },
+      "compatible_public_signatures": {
+        "Generator": "(seed: int | None = None, *, backend: Literal['stdlib', 'numpy'] = 'stdlib', bit_generator: Literal['PCG64', 'PCG64DXSM', 'SFC64', 'Philox'] | None = None) -> None",
+        "choice": "(seq)",
+        "choices": "(seq: collections.abc.Sequence[T], n: int, *, weights: collections.abc.Sequence[float] | None = None) -> list[T]",
+        "floats": "(n: int, *, low: float = 0.0, high: float = 1.0) -> numpy.ndarray | list[float]",
+        "ints": "(n: int, low: int, high: int, *, endpoint: bool = False) -> numpy.ndarray | list[int]",
+        "randint": "(a, b)",
+        "random": "()",
+        "sample": "(population, k, *, counts=None)",
+        "seed": "(n: int | None = None) -> None",
+        "shuffle": "(x)",
+        "uniform": "(a, b)",
+        "Generator.seed": "(self, n: int | None = None) -> None",
+        "Generator.random": "(self) -> float",
+        "Generator.randint": "(self, a: int, b: int) -> int",
+        "Generator.uniform": "(self, a: float, b: float) -> float",
+        "Generator.choice": "(self, seq: collections.abc.Sequence[T]) -> T",
+        "Generator.shuffle": "(self, x: collections.abc.MutableSequence[T]) -> None",
+        "Generator.sample": "(self, population: collections.abc.Sequence[T], k: int, *, counts: collections.abc.Sequence[int] | None = None) -> list[T]",
+        "Generator.floats": "(self, n: int, *, low: float = 0.0, high: float = 1.0) -> numpy.ndarray | list[float]",
+        "Generator.ints": "(self, n: int, low: int, high: int, *, endpoint: bool = False) -> numpy.ndarray | list[int]",
+        "Generator.choices": "(self, seq: collections.abc.Sequence[T], n: int, *, weights: collections.abc.Sequence[float] | None = None) -> list[T]"
+      },
+      "optional_public_additions": {
+        "ints": "seeds: collections.abc.Sequence[int] | None = None",
+        "Generator.ints": "seeds: collections.abc.Sequence[int] | None = None"
+      },
+      "helpers": {
+        "_keyed_ints": {
+          "native_binding": {
+            "module": "unstd.rand._rand_native",
+            "name": "seeded_ints"
+          },
+          "module": "unstd.rand._keyed",
+          "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/rand/_keyed.py",
+          "sha256": "51b70ae8ab7171493dc3c08b463c10bd1fad2162b256b3a23a7f60fa3c6983f6"
+        }
+      },
+      "have_numpy": true,
+      "native": {
+        "_native": {
+          "module": "unstd.rand._rand_native",
+          "name": "unstd.rand._rand_native",
+          "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/rand/_rand_native.cpython-314-darwin.so",
+          "sha256": "e181acfe3c7c5309ace6ba375292a7ba2df17e1e70158d31f841f08e28155bc5"
+        }
+      }
+    },
+    "original": {
+      "path": "/Users/griffinstrier/Billy-Company/unstd/bench/reports/rand/before-draw.py.txt",
+      "sha256": "dc178890d7c64ea2351dc2b8aa3858b6d1a5db8c1b6333a4294510a73e4a2aad",
+      "public_signatures": {
+        "Generator": "(seed: int | None = None, *, backend: Literal['stdlib', 'numpy'] = 'stdlib', bit_generator: Literal['PCG64', 'PCG64DXSM', 'SFC64', 'Philox'] | None = None) -> None",
+        "choice": "(seq)",
+        "choices": "(seq: collections.abc.Sequence[T], n: int, *, weights: collections.abc.Sequence[float] | None = None) -> list[T]",
+        "floats": "(n: int, *, low: float = 0.0, high: float = 1.0) -> numpy.ndarray | list[float]",
+        "ints": "(n: int, low: int, high: int, *, endpoint: bool = False) -> numpy.ndarray | list[int]",
+        "randint": "(a, b)",
+        "random": "()",
+        "sample": "(population, k, *, counts=None)",
+        "seed": "(n: int | None = None) -> None",
+        "shuffle": "(x)",
+        "uniform": "(a, b)",
+        "Generator.seed": "(self, n: int | None = None) -> None",
+        "Generator.random": "(self) -> float",
+        "Generator.randint": "(self, a: int, b: int) -> int",
+        "Generator.uniform": "(self, a: float, b: float) -> float",
+        "Generator.choice": "(self, seq: collections.abc.Sequence[T]) -> T",
+        "Generator.shuffle": "(self, x: collections.abc.MutableSequence[T]) -> None",
+        "Generator.sample": "(self, population: collections.abc.Sequence[T], k: int, *, counts: collections.abc.Sequence[int] | None = None) -> list[T]",
+        "Generator.floats": "(self, n: int, *, low: float = 0.0, high: float = 1.0) -> numpy.ndarray | list[float]",
+        "Generator.ints": "(self, n: int, low: int, high: int, *, endpoint: bool = False) -> numpy.ndarray | list[int]",
+        "Generator.choices": "(self, seq: collections.abc.Sequence[T], n: int, *, weights: collections.abc.Sequence[float] | None = None) -> list[T]"
+      },
+      "compatible_public_signatures": {
+        "Generator": "(seed: int | None = None, *, backend: Literal['stdlib', 'numpy'] = 'stdlib', bit_generator: Literal['PCG64', 'PCG64DXSM', 'SFC64', 'Philox'] | None = None) -> None",
+        "choice": "(seq)",
+        "choices": "(seq: collections.abc.Sequence[T], n: int, *, weights: collections.abc.Sequence[float] | None = None) -> list[T]",
+        "floats": "(n: int, *, low: float = 0.0, high: float = 1.0) -> numpy.ndarray | list[float]",
+        "ints": "(n: int, low: int, high: int, *, endpoint: bool = False) -> numpy.ndarray | list[int]",
+        "randint": "(a, b)",
+        "random": "()",
+        "sample": "(population, k, *, counts=None)",
+        "seed": "(n: int | None = None) -> None",
+        "shuffle": "(x)",
+        "uniform": "(a, b)",
+        "Generator.seed": "(self, n: int | None = None) -> None",
+        "Generator.random": "(self) -> float",
+        "Generator.randint": "(self, a: int, b: int) -> int",
+        "Generator.uniform": "(self, a: float, b: float) -> float",
+        "Generator.choice": "(self, seq: collections.abc.Sequence[T]) -> T",
+        "Generator.shuffle": "(self, x: collections.abc.MutableSequence[T]) -> None",
+        "Generator.sample": "(self, population: collections.abc.Sequence[T], k: int, *, counts: collections.abc.Sequence[int] | None = None) -> list[T]",
+        "Generator.floats": "(self, n: int, *, low: float = 0.0, high: float = 1.0) -> numpy.ndarray | list[float]",
+        "Generator.ints": "(self, n: int, low: int, high: int, *, endpoint: bool = False) -> numpy.ndarray | list[int]",
+        "Generator.choices": "(self, seq: collections.abc.Sequence[T], n: int, *, weights: collections.abc.Sequence[float] | None = None) -> list[T]"
+      },
+      "optional_public_additions": {},
+      "helpers": {},
+      "have_numpy": true,
+      "native": {}
+    }
+  },
+  "consumer_receipts": {
+    "version": 1,
+    "repository": "The-Billy-Company/billy",
+    "commit": "2f66095c1fd0d84922c0b0fbcac6b4e61aae06de",
+    "consumers": {
+      "engine": {
+        "source_path": "services/anvil/anvil/datagen/engine.py",
+        "source_file_sha256": "3b867c3e5ac09c2975558478a824c5834935eeb150cde137f886106523124327",
+        "source": "def _trigger_text(ex: TrainExample) -> str:\n    \"\"\"The triggering (last) user turn \u2014 the stable per-example dedup/seed key.\"\"\"\n    return next(\n        (str(m.get(\"content\", \"\")) for m in reversed(ex.messages) if m.get(\"role\") == \"user\"), \"\"\n    )\n\ndef _distractor_specs(\n    target: ToolSchema, ex: TrainExample, spec_by_name: dict[str, ToolSchema]\n) -> list[FunctionSpec]:\n    \"\"\"Function specs for sibling tools shown beside ``target`` (target excluded).\n\n    Prefers same-capability siblings (the hard distractors \u2014 a model that can\n    pick ``make_payment`` over ``list_charges`` has learned selection, not just\n    arg-shaping), then any other live tool. The count + ordering are derived\n    deterministically from the example's trigger turn so a rebuild is byte-stable.\n    \"\"\"\n    siblings = sorted(\n        (t for n, t in spec_by_name.items() if n != target.name),\n        key=lambda t: (t.capability_key != target.capability_key, t.name),\n    )\n    if not siblings:\n        return []\n    seed = int.from_bytes(\n        hashlib.blake2b(f\"{target.name}|{_trigger_text(ex)}\".encode(), digest_size=8).digest(),\n        \"big\",\n    )\n    k = min(len(siblings), rand.Generator(seed, backend=\"stdlib\").randint(1, _MAX_DISTRACTORS))\n    return [tool_spec(t) for t in siblings[:k]]\n",
+        "symbols": {
+          "_trigger_text": {
+            "line": 282,
+            "ast_sha256": "dc6cf5fd4f63d06e8db44d1b0766a536e47c2cd97e5b2a300785299f96cbca2d"
+          },
+          "_distractor_specs": {
+            "line": 289,
+            "ast_sha256": "03ac75da138b90be47af823e9ff99e9552dc6d149ffe999e6fc99762377f3b89"
+          }
+        }
+      },
+      "emit": {
+        "source_path": "services/anvil/anvil/datagen/emit.py",
+        "source_file_sha256": "376fb37b09186e0fedfe5fc8609f24a4b65b624fa003e295b21fa1f3a8472af5",
+        "source": "def _misleading_distractors(\n    ex: TrainExample, spec_by_name: dict[str, ToolSchema]\n) -> list[FunctionSpec]:\n    \"\"\"Sibling specs offered beside the discovery verbs \u2014 the real target absent.\n\n    The adversarial half of the discovery weave: prefer same-capability siblings of\n    the *hidden* tool (the tempting near-misses) so the model can't shortcut to a\n    direct call and must reach for ``find_tool``/``forge_tool``. The discovery verbs\n    and the hidden target are excluded; count + ordering are derived deterministically\n    from the trigger turn so a rebuild is byte-stable.\n    \"\"\"\n    hidden = spec_by_name.get(ex.hidden_tool)\n    cap = hidden.capability_key if hidden else ex.capability_key\n    exclude = {ex.hidden_tool, *DISCOVERY_VERBS}\n    sibs = sorted(\n        (t for n, t in spec_by_name.items() if n not in exclude),\n        key=lambda t: (t.capability_key != cap, t.name),\n    )\n    if not sibs:\n        return []\n    seed = int.from_bytes(\n        hashlib.blake2b(f\"{ex.hidden_tool}|{_trigger_text(ex)}\".encode(), digest_size=8).digest(),\n        \"big\",\n    )\n    k = min(len(sibs), rand.Generator(seed, backend=\"stdlib\").randint(1, _MAX_DISTRACTORS))\n    return [tool_spec(t) for t in sibs[:k]]\n",
+        "symbols": {
+          "_misleading_distractors": {
+            "line": 106,
+            "ast_sha256": "82a4a904f0d49828d9158403f9943793bdb200249a2d85ab732c7874f95188b8"
+          }
+        }
+      },
+      "spec": {
+        "source_path": "services/anvil/anvil/datagen/synth.py",
+        "source_file_sha256": "c19a5bb59d39f5f9bfc950a5653ffb05e7f047512d13c66b9248e1063eb5a762",
+        "source": "def tool_spec(tool: ToolSchema) -> FunctionSpec:\n    \"\"\"OpenAI function spec for a tool \u2014 the ``tools`` entry beside ``messages``.\"\"\"\n    return {\n        \"type\": \"function\",\n        \"function\": {\n            \"name\": tool.name,\n            \"description\": tool.description,\n            \"parameters\": tool.args_schema or {\"type\": \"object\", \"properties\": {}},\n        },\n    }\n",
+        "symbols": {
+          "tool_spec": {
+            "line": 77,
+            "ast_sha256": "444cc5538b0b2f14bbc7df4e5f2aa012ca18c8479fafdbd7a9b6ba9c22c34fe6"
+          }
+        }
+      }
+    },
+    "size_provenance": {
+      "24": "small public catalog scenario; diagnostic batch size, not an observed production count",
+      "371": "live tool count documented in anvil_dataset.research.toml recipe-fanout rationale",
+      "8000": "corpus.total_examples configured budget in anvil_dataset.research.toml"
+    },
+    "input_provenance": "Synthetic tool names, trigger messages and schemas following exact captured BLAKE2b64 seed expressions; no customer payloads.",
+    "config_receipt": {
+      "source_path": "services/anvil/anvil/datagen/anvil_dataset.research.toml",
+      "sha256": "28e0e638972f0251d42f9ac22de58876160955e99884b9f1ae07dc52bdbf28ce",
+      "total_examples": 8000,
+      "documented_live_tools": 371
+    },
+    "fixture_sha256": "f61bf427460586f32135e58fc6a382e39bff5f1d32b1d556b2e0c0754069134e"
+  },
+  "harness_sha256": "3a5351963cce8c866fde4ab805134e7af0358f59655c694694199cf8e1adbe0b",
+  "scope": "Opt-in count strategy migration; count-phase gains are reported separately from complete captured consumer costs. No application files changed. Input payloads are synthetic.",
+  "semantic_change": "SplitMix64-v1 keyed integers change same-seed distractor counts relative to one newly constructed MT19937 generator per key. Output bounds, deterministic per-key values and count distributions are checked; exact historical values are not promised.",
+  "instance_state_unchanged": true,
+  "keyed_repetition_and_reordering_checks": true,
+  "timing_harness_sha256": "55259e9ae20300a9a84e5642bf679771da4d240face824d2679f2c7a5ddd9903",
+  "rounds": 9,
+  "workloads": [
+    {
+      "samples": {
+        "original": [
+          {
+            "operations": 1162,
+            "wall_ns": 172020041,
+            "thread_cpu_ns": 156363833
+          },
+          {
+            "operations": 1162,
+            "wall_ns": 158906834,
+            "thread_cpu_ns": 154891000
+          },
+          {
+            "operations": 1162,
+            "wall_ns": 157585708,
+            "thread_cpu_ns": 154558625
+          },
+          {
+            "operations": 1162,
+            "wall_ns": 156741958,
+            "thread_cpu_ns": 153819542
+          },
+          {
+            "operations": 1162,
+            "wall_ns": 156524375,
+            "thread_cpu_ns": 153964125
+          },
+          {
+            "operations": 1162,
+            "wall_ns": 171045375,
+            "thread_cpu_ns": 157894375
+          },
+          {
+            "operations": 1162,
+            "wall_ns": 158635000,
+            "thread_cpu_ns": 155060958
+          },
+          {
+            "operations": 1162,
+            "wall_ns": 156746958,
+            "thread_cpu_ns": 154084041
+          },
+          {
+            "operations": 1162,
+            "wall_ns": 170123916,
+            "thread_cpu_ns": 154580500
+          }
+        ],
+        "keyed": [
+          {
+            "operations": 1162,
+            "wall_ns": 687667,
+            "thread_cpu_ns": 678084
+          },
+          {
+            "operations": 1162,
+            "wall_ns": 611375,
+            "thread_cpu_ns": 611708
+          },
+          {
+            "operations": 1162,
+            "wall_ns": 639667,
+            "thread_cpu_ns": 639958
+          },
+          {
+            "operations": 1162,
+            "wall_ns": 793166,
+            "thread_cpu_ns": 762667
+          },
+          {
+            "operations": 1162,
+            "wall_ns": 667084,
+            "thread_cpu_ns": 662208
+          },
+          {
+            "operations": 1162,
+            "wall_ns": 648666,
+            "thread_cpu_ns": 643250
+          },
+          {
+            "operations": 1162,
+            "wall_ns": 627084,
+            "thread_cpu_ns": 627375
+          },
+          {
+            "operations": 1162,
+            "wall_ns": 631750,
+            "thread_cpu_ns": 632292
+          },
+          {
+            "operations": 1162,
+            "wall_ns": 676084,
+            "thread_cpu_ns": 658291
+          }
+        ]
+      },
+      "orders": [
+        [
+          "original",
+          "keyed"
+        ],
+        [
+          "keyed",
+          "original"
+        ],
+        [
+          "original",
+          "keyed"
+        ],
+        [
+          "keyed",
+          "original"
+        ],
+        [
+          "original",
+          "keyed"
+        ],
+        [
+          "keyed",
+          "original"
+        ],
+        [
+          "original",
+          "keyed"
+        ],
+        [
+          "keyed",
+          "original"
+        ],
+        [
+          "original",
+          "keyed"
+        ]
+      ],
+      "calibration": {
+        "original": {
+          "operations": 1,
+          "wall_ns": 148708,
+          "thread_cpu_ns": 144750
+        },
+        "keyed": {
+          "operations": 1,
+          "wall_ns": 2583,
+          "thread_cpu_ns": 3167
+        }
+      },
+      "median_per_call_ns": {
+        "original": {
+          "wall_ns": 136518.93287435456,
+          "thread_cpu_ns": 133029.69018932874
+        },
+        "keyed": {
+          "wall_ns": 558.2323580034423,
+          "thread_cpu_ns": 553.5714285714286
+        }
+      },
+      "median_matched_original_over_keyed": {
+        "wall_ns": 250.15020496839313,
+        "thread_cpu_ns": 241.51370089912152
+      },
+      "name": "count-phase-24-reused-batch-generator",
+      "scope": "per-seed distractor count phase; input seed hashes prepared outside timing, all original per-key construction and output allocation included",
+      "size": 24,
+      "batch_generator_construction_included": false,
+      "original_histogram": {
+        "2": 9,
+        "4": 3,
+        "3": 5,
+        "1": 7
+      },
+      "keyed_histogram": {
+        "4": 8,
+        "1": 9,
+        "3": 6,
+        "2": 1
+      },
+      "required_speedup": 100.0,
+      "target_passed": true,
+      "same_seed_output_equality_required": false
+    },
+    {
+      "samples": {
+        "original": [
+          {
+            "operations": 468,
+            "wall_ns": 63500083,
+            "thread_cpu_ns": 62185666
+          },
+          {
+            "operations": 468,
+            "wall_ns": 63571375,
+            "thread_cpu_ns": 62350375
+          },
+          {
+            "operations": 468,
+            "wall_ns": 64219541,
+            "thread_cpu_ns": 62908917
+          },
+          {
+            "operations": 468,
+            "wall_ns": 67772167,
+            "thread_cpu_ns": 63875042
+          },
+          {
+            "operations": 468,
+            "wall_ns": 66857125,
+            "thread_cpu_ns": 63743209
+          },
+          {
+            "operations": 468,
+            "wall_ns": 63760708,
+            "thread_cpu_ns": 62668916
+          },
+          {
+            "operations": 468,
+            "wall_ns": 64264000,
+            "thread_cpu_ns": 62885167
+          },
+          {
+            "operations": 468,
+            "wall_ns": 63379791,
+            "thread_cpu_ns": 62178959
+          },
+          {
+            "operations": 468,
+            "wall_ns": 64764250,
+            "thread_cpu_ns": 63183041
+          }
+        ],
+        "keyed": [
+          {
+            "operations": 468,
+            "wall_ns": 2740667,
+            "thread_cpu_ns": 2708042
+          },
+          {
+            "operations": 468,
+            "wall_ns": 2895083,
+            "thread_cpu_ns": 2825375
+          },
+          {
+            "operations": 468,
+            "wall_ns": 2695500,
+            "thread_cpu_ns": 2678500
+          },
+          {
+            "operations": 468,
+            "wall_ns": 2978875,
+            "thread_cpu_ns": 2826291
+          },
+          {
+            "operations": 468,
+            "wall_ns": 2839708,
+            "thread_cpu_ns": 2803708
+          },
+          {
+            "operations": 468,
+            "wall_ns": 2715250,
+            "thread_cpu_ns": 2698833
+          },
+          {
+            "operations": 468,
+            "wall_ns": 2735208,
+            "thread_cpu_ns": 2715958
+          },
+          {
+            "operations": 468,
+            "wall_ns": 2690167,
+            "thread_cpu_ns": 2661167
+          },
+          {
+            "operations": 468,
+            "wall_ns": 2693750,
+            "thread_cpu_ns": 2660958
+          }
+        ]
+      },
+      "orders": [
+        [
+          "original",
+          "keyed"
+        ],
+        [
+          "keyed",
+          "original"
+        ],
+        [
+          "original",
+          "keyed"
+        ],
+        [
+          "keyed",
+          "original"
+        ],
+        [
+          "original",
+          "keyed"
+        ],
+        [
+          "keyed",
+          "original"
+        ],
+        [
+          "original",
+          "keyed"
+        ],
+        [
+          "keyed",
+          "original"
+        ],
+        [
+          "original",
+          "keyed"
+        ]
+      ],
+      "calibration": {
+        "original": {
+          "operations": 1,
+          "wall_ns": 129541,
+          "thread_cpu_ns": 129833
+        },
+        "keyed": {
+          "operations": 1,
+          "wall_ns": 6417,
+          "thread_cpu_ns": 6625
+        }
+      },
+      "median_per_call_ns": {
+        "original": {
+          "wall_ns": 137221.24145299144,
+          "thread_cpu_ns": 134370.01495726497
+        },
+        "keyed": {
+          "wall_ns": 5844.461538461538,
+          "thread_cpu_ns": 5786.41452991453
+        }
+      },
+      "median_matched_original_over_keyed": {
+        "wall_ns": 23.49510530826175,
+        "thread_cpu_ns": 23.15395414803911
+      },
+      "name": "count-phase-24-fresh-batch-generator",
+      "scope": "per-seed distractor count phase; input seed hashes prepared outside timing, all original per-key construction and output allocation included",
+      "size": 24,
+      "batch_generator_construction_included": true,
+      "original_histogram": {
+        "2": 9,
+        "4": 3,
+        "3": 5,
+        "1": 7
+      },
+      "keyed_histogram": {
+        "4": 8,
+        "1": 9,
+        "3": 6,
+        "2": 1
+      },
+      "required_speedup": 100.0,
+      "target_passed": false,
+      "same_seed_output_equality_required": false
+    },
+    {
+      "samples": {
+        "keyed": [
+          {
+            "operations": 3,
+            "wall_ns": 4118084,
+            "thread_cpu_ns": 4082791
+          },
+          {
+            "operations": 3,
+            "wall_ns": 4035000,
+            "thread_cpu_ns": 4024291
+          },
+          {
+            "operations": 3,
+            "wall_ns": 4134541,
+            "thread_cpu_ns": 4084667
+          },
+          {
+            "operations": 3,
+            "wall_ns": 4285875,
+            "thread_cpu_ns": 4171084
+          },
+          {
+            "operations": 3,
+            "wall_ns": 5201875,
+            "thread_cpu_ns": 4811000
+          },
+          {
+            "operations": 3,
+            "wall_ns": 4358084,
+            "thread_cpu_ns": 4255250
+          },
+          {
+            "operations": 3,
+            "wall_ns": 4960000,
+            "thread_cpu_ns": 4734875
+          },
+          {
+            "operations": 3,
+            "wall_ns": 4354708,
+            "thread_cpu_ns": 4234084
+          },
+          {
+            "operations": 3,
+            "wall_ns": 4192375,
+            "thread_cpu_ns": 4094958
+          }
+        ],
+        "original": [
+          {
+            "operations": 3,
+            "wall_ns": 5263041,
+            "thread_cpu_ns": 5031167
+          },
+          {
+            "operations": 3,
+            "wall_ns": 5027125,
+            "thread_cpu_ns": 4808625
+          },
+          {
+            "operations": 3,
+            "wall_ns": 4992458,
+            "thread_cpu_ns": 4881459
+          },
+          {
+            "operations": 3,
+            "wall_ns": 4616500,
+            "thread_cpu_ns": 4492917
+          },
+          {
+            "operations": 3,
+            "wall_ns": 4522875,
+            "thread_cpu_ns": 4479916
+          },
+          {
+            "operations": 3,
+            "wall_ns": 4446875,
+            "thread_cpu_ns": 4421208
+          },
+          {
+            "operations": 3,
+            "wall_ns": 5039208,
+            "thread_cpu_ns": 4948958
+          },
+          {
+            "operations": 3,
+            "wall_ns": 4308125,
+            "thread_cpu_ns": 4301000
+          },
+          {
+            "operations": 3,
+            "wall_ns": 5647834,
+            "thread_cpu_ns": 5312667
+          }
+        ]
+      },
+      "orders": [
+        [
+          "keyed",
+          "original"
+        ],
+        [
+          "original",
+          "keyed"
+        ],
+        [
+          "keyed",
+          "original"
+        ],
+        [
+          "original",
+          "keyed"
+        ],
+        [
+          "keyed",
+          "original"
+        ],
+        [
+          "original",
+          "keyed"
+        ],
+        [
+          "keyed",
+          "original"
+        ],
+        [
+          "original",
+          "keyed"
+        ],
+        [
+          "keyed",
+          "original"
+        ]
+      ],
+      "calibration": {
+        "keyed": {
+          "operations": 1,
+          "wall_ns": 1331250,
+          "thread_cpu_ns": 1329208
+        },
+        "original": {
+          "operations": 1,
+          "wall_ns": 1530250,
+          "thread_cpu_ns": 1521417
+        }
+      },
+      "median_per_call_ns": {
+        "keyed": {
+          "wall_ns": 1428625.0,
+          "thread_cpu_ns": 1390361.3333333333
+        },
+        "original": {
+          "wall_ns": 1664152.6666666667,
+          "thread_cpu_ns": 1602875.0
+        }
+      },
+      "median_matched_original_over_keyed": {
+        "wall_ns": 1.0771429404730657,
+        "thread_cpu_ns": 1.0771581200474505
+      },
+      "name": "full-engine-consumer-24",
+      "scope": "full captured synchronous consumer functions with explicit prospective batched count-expression rewrite; sorting, seed hashing, mapping and tool-spec allocations included",
+      "size": 24,
+      "required_speedup": 100.0,
+      "target_passed": false,
+      "same_seed_output_equality_required": false
+    },
+    {
+      "samples": {
+        "keyed": [
+          {
+            "operations": 3,
+            "wall_ns": 4394917,
+            "thread_cpu_ns": 4267334
+          },
+          {
+            "operations": 3,
+            "wall_ns": 4594917,
+            "thread_cpu_ns": 4379708
+          },
+          {
+            "operations": 3,
+            "wall_ns": 3809917,
+            "thread_cpu_ns": 3802541
+          },
+          {
+            "operations": 3,
+            "wall_ns": 3817625,
+            "thread_cpu_ns": 3789667
+          },
+          {
+            "operations": 3,
+            "wall_ns": 3722500,
+            "thread_cpu_ns": 3719250
+          },
+          {
+            "operations": 3,
+            "wall_ns": 3760666,
+            "thread_cpu_ns": 3754333
+          },
+          {
+            "operations": 3,
+            "wall_ns": 3794750,
+            "thread_cpu_ns": 3759167
+          },
+          {
+            "operations": 3,
+            "wall_ns": 4331042,
+            "thread_cpu_ns": 4144834
+          },
+          {
+            "operations": 3,
+            "wall_ns": 3791125,
+            "thread_cpu_ns": 3787542
+          }
+        ],
+        "original": [
+          {
+            "operations": 3,
+            "wall_ns": 4816292,
+            "thread_cpu_ns": 4616416
+          },
+          {
+            "operations": 3,
+            "wall_ns": 4322125,
+            "thread_cpu_ns": 4241250
+          },
+          {
+            "operations": 3,
+            "wall_ns": 4197125,
+            "thread_cpu_ns": 4157042
+          },
+          {
+            "operations": 3,
+            "wall_ns": 4451417,
+            "thread_cpu_ns": 4383292
+          },
+          {
+            "operations": 3,
+            "wall_ns": 4610875,
+            "thread_cpu_ns": 4481041
+          },
+          {
+            "operations": 3,
+            "wall_ns": 4322166,
+            "thread_cpu_ns": 4237750
+          },
+          {
+            "operations": 3,
+            "wall_ns": 4558792,
+            "thread_cpu_ns": 4426834
+          },
+          {
+            "operations": 3,
+            "wall_ns": 4107917,
+            "thread_cpu_ns": 4104166
+          },
+          {
+            "operations": 3,
+            "wall_ns": 4243084,
+            "thread_cpu_ns": 4213125
+          }
+        ]
+      },
+      "orders": [
+        [
+          "keyed",
+          "original"
+        ],
+        [
+          "original",
+          "keyed"
+        ],
+        [
+          "keyed",
+          "original"
+        ],
+        [
+          "original",
+          "keyed"
+        ],
+        [
+          "keyed",
+          "original"
+        ],
+        [
+          "original",
+          "keyed"
+        ],
+        [
+          "keyed",
+          "original"
+        ],
+        [
+          "original",
+          "keyed"
+        ],
+        [
+          "keyed",
+          "original"
+        ]
+      ],
+      "calibration": {
+        "keyed": {
+          "operations": 1,
+          "wall_ns": 1863417,
+          "thread_cpu_ns": 1685541
+        },
+        "original": {
+          "operations": 1,
+          "wall_ns": 1373208,
+          "thread_cpu_ns": 1363542
+        }
+      },
+      "median_per_call_ns": {
+        "keyed": {
+          "wall_ns": 1269972.3333333333,
+          "thread_cpu_ns": 1263222.3333333333
+        },
+        "original": {
+          "wall_ns": 1440722.0,
+          "thread_cpu_ns": 1413750.0
+        }
+      },
+      "median_matched_original_over_keyed": {
+        "wall_ns": 1.119215008737512,
+        "thread_cpu_ns": 1.112363902499299
+      },
+      "name": "full-misleading-consumer-24",
+      "scope": "full captured synchronous consumer functions with explicit prospective batched count-expression rewrite; sorting, seed hashing, mapping and tool-spec allocations included",
+      "size": 24,
+      "required_speedup": 100.0,
+      "target_passed": false,
+      "same_seed_output_equality_required": false
+    },
+    {
+      "samples": {
+        "original": [
+          {
+            "operations": 465,
+            "wall_ns": 987780916,
+            "thread_cpu_ns": 964364458
+          },
+          {
+            "operations": 465,
+            "wall_ns": 1014717667,
+            "thread_cpu_ns": 968534125
+          },
+          {
+            "operations": 465,
+            "wall_ns": 1021793583,
+            "thread_cpu_ns": 995622375
+          },
+          {
+            "operations": 465,
+            "wall_ns": 1040343875,
+            "thread_cpu_ns": 994338625
+          },
+          {
+            "operations": 465,
+            "wall_ns": 1062960916,
+            "thread_cpu_ns": 991121750
+          },
+          {
+            "operations": 465,
+            "wall_ns": 1019622625,
+            "thread_cpu_ns": 978531791
+          },
+          {
+            "operations": 465,
+            "wall_ns": 1127579000,
+            "thread_cpu_ns": 1010141750
+          },
+          {
+            "operations": 465,
+            "wall_ns": 1128540250,
+            "thread_cpu_ns": 1015575709
+          },
+          {
+            "operations": 465,
+            "wall_ns": 1062594500,
+            "thread_cpu_ns": 985432250
+          }
+        ],
+        "keyed": [
+          {
+            "operations": 465,
+            "wall_ns": 2353541,
+            "thread_cpu_ns": 2348750
+          },
+          {
+            "operations": 465,
+            "wall_ns": 2353875,
+            "thread_cpu_ns": 2344916
+          },
+          {
+            "operations": 465,
+            "wall_ns": 2615584,
+            "thread_cpu_ns": 2560958
+          },
+          {
+            "operations": 465,
+            "wall_ns": 2805792,
+            "thread_cpu_ns": 2672000
+          },
+          {
+            "operations": 465,
+            "wall_ns": 3160333,
+            "thread_cpu_ns": 2906292
+          },
+          {
+            "operations": 465,
+            "wall_ns": 2472125,
+            "thread_cpu_ns": 2415875
+          },
+          {
+            "operations": 465,
+            "wall_ns": 3339375,
+            "thread_cpu_ns": 2790459
+          },
+          {
+            "operations": 465,
+            "wall_ns": 3072333,
+            "thread_cpu_ns": 2760625
+          },
+          {
+            "operations": 465,
+            "wall_ns": 3196625,
+            "thread_cpu_ns": 2919166
+          }
+        ]
+      },
+      "orders": [
+        [
+          "original",
+          "keyed"
+        ],
+        [
+          "keyed",
+          "original"
+        ],
+        [
+          "original",
+          "keyed"
+        ],
+        [
+          "keyed",
+          "original"
+        ],
+        [
+          "original",
+          "keyed"
+        ],
+        [
+          "keyed",
+          "original"
+        ],
+        [
+          "original",
+          "keyed"
+        ],
+        [
+          "keyed",
+          "original"
+        ],
+        [
+          "original",
+          "keyed"
+        ]
+      ],
+      "calibration": {
+        "original": {
+          "operations": 1,
+          "wall_ns": 2016875,
+          "thread_cpu_ns": 2017667
+        },
+        "keyed": {
+          "operations": 1,
+          "wall_ns": 6459,
+          "thread_cpu_ns": 6750
+        }
+      },
+      "median_per_call_ns": {
+        "original": {
+          "wall_ns": 2237298.6559139783,
+          "thread_cpu_ns": 2131444.623655914
+        },
+        "keyed": {
+          "wall_ns": 6033.961290322581,
+          "thread_cpu_ns": 5746.236559139785
+        }
+      },
+      "median_matched_original_over_keyed": {
+        "wall_ns": 370.78438993339495,
+        "thread_cpu_ns": 372.13271893712573
+      },
+      "name": "count-phase-371-reused-batch-generator",
+      "scope": "per-seed distractor count phase; input seed hashes prepared outside timing, all original per-key construction and output allocation included",
+      "size": 371,
+      "batch_generator_construction_included": false,
+      "original_histogram": {
+        "2": 95,
+        "4": 90,
+        "3": 86,
+        "1": 100
+      },
+      "keyed_histogram": {
+        "4": 103,
+        "1": 92,
+        "3": 77,
+        "2": 99
+      },
+      "required_speedup": 100.0,
+      "target_passed": true,
+      "same_seed_output_equality_required": false
+    },
+    {
+      "samples": {
+        "original": [
+          {
+            "operations": 163,
+            "wall_ns": 399750792,
+            "thread_cpu_ns": 349070375
+          },
+          {
+            "operations": 163,
+            "wall_ns": 363146041,
+            "thread_cpu_ns": 344870750
+          },
+          {
+            "operations": 163,
+            "wall_ns": 407123709,
+            "thread_cpu_ns": 358089417
+          },
+          {
+            "operations": 163,
+            "wall_ns": 347305208,
+            "thread_cpu_ns": 336320709
+          },
+          {
+            "operations": 163,
+            "wall_ns": 355710792,
+            "thread_cpu_ns": 340829292
+          },
+          {
+            "operations": 163,
+            "wall_ns": 348507167,
+            "thread_cpu_ns": 337501292
+          },
+          {
+            "operations": 163,
+            "wall_ns": 368010083,
+            "thread_cpu_ns": 344566792
+          },
+          {
+            "operations": 163,
+            "wall_ns": 380770875,
+            "thread_cpu_ns": 348132416
+          },
+          {
+            "operations": 163,
+            "wall_ns": 398049208,
+            "thread_cpu_ns": 349110292
+          }
+        ],
+        "keyed": [
+          {
+            "operations": 163,
+            "wall_ns": 1690875,
+            "thread_cpu_ns": 1691917
+          },
+          {
+            "operations": 163,
+            "wall_ns": 1931250,
+            "thread_cpu_ns": 1768875
+          },
+          {
+            "operations": 163,
+            "wall_ns": 1998250,
+            "thread_cpu_ns": 1823166
+          },
+          {
+            "operations": 163,
+            "wall_ns": 2162708,
+            "thread_cpu_ns": 1976667
+          },
+          {
+            "operations": 163,
+            "wall_ns": 2070750,
+            "thread_cpu_ns": 1908167
+          },
+          {
+            "operations": 163,
+            "wall_ns": 1646500,
+            "thread_cpu_ns": 1646958
+          },
+          {
+            "operations": 163,
+            "wall_ns": 1749250,
+            "thread_cpu_ns": 1725833
+          },
+          {
+            "operations": 163,
+            "wall_ns": 1646667,
+            "thread_cpu_ns": 1641916
+          },
+          {
+            "operations": 163,
+            "wall_ns": 2007250,
+            "thread_cpu_ns": 1828666
+          }
+        ]
+      },
+      "orders": [
+        [
+          "original",
+          "keyed"
+        ],
+        [
+          "keyed",
+          "original"
+        ],
+        [
+          "original",
+          "keyed"
+        ],
+        [
+          "keyed",
+          "original"
+        ],
+        [
+          "original",
+          "keyed"
+        ],
+        [
+          "keyed",
+          "original"
+        ],
+        [
+          "original",
+          "keyed"
+        ],
+        [
+          "keyed",
+          "original"
+        ],
+        [
+          "original",
+          "keyed"
+        ]
+      ],
+      "calibration": {
+        "original": {
+          "operations": 1,
+          "wall_ns": 2144125,
+          "thread_cpu_ns": 2095416
+        },
+        "keyed": {
+          "operations": 1,
+          "wall_ns": 18459,
+          "thread_cpu_ns": 18750
+        }
+      },
+      "median_per_call_ns": {
+        "original": {
+          "wall_ns": 2257730.5705521475,
+          "thread_cpu_ns": 2115771.472392638
+        },
+        "keyed": {
+          "wall_ns": 11848.159509202455,
+          "thread_cpu_ns": 10851.993865030674
+        }
+      },
+      "median_matched_original_over_keyed": {
+        "wall_ns": 203.7401271112223,
+        "thread_cpu_ns": 196.4107585376208
+      },
+      "name": "count-phase-371-fresh-batch-generator",
+      "scope": "per-seed distractor count phase; input seed hashes prepared outside timing, all original per-key construction and output allocation included",
+      "size": 371,
+      "batch_generator_construction_included": true,
+      "original_histogram": {
+        "2": 95,
+        "4": 90,
+        "3": 86,
+        "1": 100
+      },
+      "keyed_histogram": {
+        "4": 103,
+        "1": 92,
+        "3": 77,
+        "2": 99
+      },
+      "required_speedup": 100.0,
+      "target_passed": true,
+      "same_seed_output_equality_required": false
+    },
+    {
+      "samples": {
+        "keyed": [
+          {
+            "operations": 1,
+            "wall_ns": 49805083,
+            "thread_cpu_ns": 27182791
+          },
+          {
+            "operations": 1,
+            "wall_ns": 48438208,
+            "thread_cpu_ns": 26119959
+          },
+          {
+            "operations": 1,
+            "wall_ns": 50324667,
+            "thread_cpu_ns": 26543042
+          },
+          {
+            "operations": 1,
+            "wall_ns": 34354250,
+            "thread_cpu_ns": 25688458
+          },
+          {
+            "operations": 1,
+            "wall_ns": 34189083,
+            "thread_cpu_ns": 26572416
+          },
+          {
+            "operations": 1,
+            "wall_ns": 50293208,
+            "thread_cpu_ns": 26034667
+          },
+          {
+            "operations": 1,
+            "wall_ns": 29765333,
+            "thread_cpu_ns": 26230667
+          },
+          {
+            "operations": 1,
+            "wall_ns": 40293166,
+            "thread_cpu_ns": 26311666
+          },
+          {
+            "operations": 1,
+            "wall_ns": 31715667,
+            "thread_cpu_ns": 25865291
+          }
+        ],
+        "original": [
+          {
+            "operations": 1,
+            "wall_ns": 36586333,
+            "thread_cpu_ns": 28341000
+          },
+          {
+            "operations": 1,
+            "wall_ns": 35086375,
+            "thread_cpu_ns": 27919250
+          },
+          {
+            "operations": 1,
+            "wall_ns": 49720000,
+            "thread_cpu_ns": 29243291
+          },
+          {
+            "operations": 1,
+            "wall_ns": 46241000,
+            "thread_cpu_ns": 28451583
+          },
+          {
+            "operations": 1,
+            "wall_ns": 49585959,
+            "thread_cpu_ns": 29170416
+          },
+          {
+            "operations": 1,
+            "wall_ns": 38948042,
+            "thread_cpu_ns": 28921875
+          },
+          {
+            "operations": 1,
+            "wall_ns": 41541542,
+            "thread_cpu_ns": 29065333
+          },
+          {
+            "operations": 1,
+            "wall_ns": 39538750,
+            "thread_cpu_ns": 27449792
+          },
+          {
+            "operations": 1,
+            "wall_ns": 44935375,
+            "thread_cpu_ns": 27212875
+          }
+        ]
+      },
+      "orders": [
+        [
+          "keyed",
+          "original"
+        ],
+        [
+          "original",
+          "keyed"
+        ],
+        [
+          "keyed",
+          "original"
+        ],
+        [
+          "original",
+          "keyed"
+        ],
+        [
+          "keyed",
+          "original"
+        ],
+        [
+          "original",
+          "keyed"
+        ],
+        [
+          "keyed",
+          "original"
+        ],
+        [
+          "original",
+          "keyed"
+        ],
+        [
+          "keyed",
+          "original"
+        ]
+      ],
+      "calibration": {
+        "keyed": {
+          "operations": 1,
+          "wall_ns": 24139000,
+          "thread_cpu_ns": 23089750
+        },
+        "original": {
+          "operations": 1,
+          "wall_ns": 25423500,
+          "thread_cpu_ns": 24600625
+        }
+      },
+      "median_per_call_ns": {
+        "keyed": {
+          "wall_ns": 40293166.0,
+          "thread_cpu_ns": 26230667.0
+        },
+        "original": {
+          "wall_ns": 41541542.0,
+          "thread_cpu_ns": 28451583.0
+        }
+      },
+      "median_matched_original_over_keyed": {
+        "wall_ns": 0.9879846795608206,
+        "thread_cpu_ns": 1.097770560268212
+      },
+      "name": "full-engine-consumer-371",
+      "scope": "full captured synchronous consumer functions with explicit prospective batched count-expression rewrite; sorting, seed hashing, mapping and tool-spec allocations included",
+      "size": 371,
+      "required_speedup": 100.0,
+      "target_passed": false,
+      "same_seed_output_equality_required": false
+    },
+    {
+      "samples": {
+        "keyed": [
+          {
+            "operations": 1,
+            "wall_ns": 44142875,
+            "thread_cpu_ns": 24256583
+          },
+          {
+            "operations": 1,
+            "wall_ns": 35848417,
+            "thread_cpu_ns": 24237167
+          },
+          {
+            "operations": 1,
+            "wall_ns": 25077417,
+            "thread_cpu_ns": 24571291
+          },
+          {
+            "operations": 1,
+            "wall_ns": 58708167,
+            "thread_cpu_ns": 25161750
+          },
+          {
+            "operations": 1,
+            "wall_ns": 35826083,
+            "thread_cpu_ns": 24622166
+          },
+          {
+            "operations": 1,
+            "wall_ns": 37380334,
+            "thread_cpu_ns": 23622333
+          },
+          {
+            "operations": 1,
+            "wall_ns": 43967625,
+            "thread_cpu_ns": 25101250
+          },
+          {
+            "operations": 1,
+            "wall_ns": 35449125,
+            "thread_cpu_ns": 25664958
+          },
+          {
+            "operations": 1,
+            "wall_ns": 54920333,
+            "thread_cpu_ns": 25432333
+          }
+        ],
+        "original": [
+          {
+            "operations": 1,
+            "wall_ns": 42441667,
+            "thread_cpu_ns": 25667458
+          },
+          {
+            "operations": 1,
+            "wall_ns": 54523333,
+            "thread_cpu_ns": 27073875
+          },
+          {
+            "operations": 1,
+            "wall_ns": 42346500,
+            "thread_cpu_ns": 26493208
+          },
+          {
+            "operations": 1,
+            "wall_ns": 50889500,
+            "thread_cpu_ns": 26329958
+          },
+          {
+            "operations": 1,
+            "wall_ns": 88993792,
+            "thread_cpu_ns": 28051917
+          },
+          {
+            "operations": 1,
+            "wall_ns": 41899542,
+            "thread_cpu_ns": 27553583
+          },
+          {
+            "operations": 1,
+            "wall_ns": 49199917,
+            "thread_cpu_ns": 26091542
+          },
+          {
+            "operations": 1,
+            "wall_ns": 36024916,
+            "thread_cpu_ns": 27040916
+          },
+          {
+            "operations": 1,
+            "wall_ns": 60978542,
+            "thread_cpu_ns": 27518625
+          }
+        ]
+      },
+      "orders": [
+        [
+          "keyed",
+          "original"
+        ],
+        [
+          "original",
+          "keyed"
+        ],
+        [
+          "keyed",
+          "original"
+        ],
+        [
+          "original",
+          "keyed"
+        ],
+        [
+          "keyed",
+          "original"
+        ],
+        [
+          "original",
+          "keyed"
+        ],
+        [
+          "keyed",
+          "original"
+        ],
+        [
+          "original",
+          "keyed"
+        ],
+        [
+          "keyed",
+          "original"
+        ]
+      ],
+      "calibration": {
+        "keyed": {
+          "operations": 1,
+          "wall_ns": 40951250,
+          "thread_cpu_ns": 24098375
+        },
+        "original": {
+          "operations": 1,
+          "wall_ns": 40429292,
+          "thread_cpu_ns": 26325000
+        }
+      },
+      "median_per_call_ns": {
+        "keyed": {
+          "wall_ns": 37380334.0,
+          "thread_cpu_ns": 24622166.0
+        },
+        "original": {
+          "wall_ns": 49199917.0,
+          "thread_cpu_ns": 27040916.0
+        }
+      },
+      "median_matched_original_over_keyed": {
+        "wall_ns": 1.1190032893521085,
+        "thread_cpu_ns": 1.0782179902553757
+      },
+      "name": "full-misleading-consumer-371",
+      "scope": "full captured synchronous consumer functions with explicit prospective batched count-expression rewrite; sorting, seed hashing, mapping and tool-spec allocations included",
+      "size": 371,
+      "required_speedup": 100.0,
+      "target_passed": false,
+      "same_seed_output_equality_required": false
+    },
+    {
+      "samples": {
+        "original": [
+          {
+            "operations": 17,
+            "wall_ns": 1489780000,
+            "thread_cpu_ns": 797805250
+          },
+          {
+            "operations": 17,
+            "wall_ns": 2503521375,
+            "thread_cpu_ns": 802398750
+          },
+          {
+            "operations": 17,
+            "wall_ns": 1479863208,
+            "thread_cpu_ns": 800100500
+          },
+          {
+            "operations": 17,
+            "wall_ns": 1228647375,
+            "thread_cpu_ns": 801367875
+          },
+          {
+            "operations": 17,
+            "wall_ns": 1474252750,
+            "thread_cpu_ns": 803512875
+          },
+          {
+            "operations": 17,
+            "wall_ns": 1351056000,
+            "thread_cpu_ns": 796944708
+          },
+          {
+            "operations": 17,
+            "wall_ns": 1295539625,
+            "thread_cpu_ns": 818954375
+          },
+          {
+            "operations": 17,
+            "wall_ns": 1533513709,
+            "thread_cpu_ns": 866502875
+          },
+          {
+            "operations": 17,
+            "wall_ns": 1585007833,
+            "thread_cpu_ns": 910637292
+          }
+        ],
+        "keyed": [
+          {
+            "operations": 17,
+            "wall_ns": 2632250,
+            "thread_cpu_ns": 2632792
+          },
+          {
+            "operations": 17,
+            "wall_ns": 2788916,
+            "thread_cpu_ns": 2663167
+          },
+          {
+            "operations": 17,
+            "wall_ns": 2584084,
+            "thread_cpu_ns": 2585292
+          },
+          {
+            "operations": 17,
+            "wall_ns": 2740458,
+            "thread_cpu_ns": 2679500
+          },
+          {
+            "operations": 17,
+            "wall_ns": 6036250,
+            "thread_cpu_ns": 2775375
+          },
+          {
+            "operations": 17,
+            "wall_ns": 2545916,
+            "thread_cpu_ns": 2546291
+          },
+          {
+            "operations": 17,
+            "wall_ns": 3179750,
+            "thread_cpu_ns": 2625917
+          },
+          {
+            "operations": 17,
+            "wall_ns": 2689667,
+            "thread_cpu_ns": 2643041
+          },
+          {
+            "operations": 17,
+            "wall_ns": 4165083,
+            "thread_cpu_ns": 3034791
+          }
+        ]
+      },
+      "orders": [
+        [
+          "original",
+          "keyed"
+        ],
+        [
+          "keyed",
+          "original"
+        ],
+        [
+          "original",
+          "keyed"
+        ],
+        [
+          "keyed",
+          "original"
+        ],
+        [
+          "original",
+          "keyed"
+        ],
+        [
+          "keyed",
+          "original"
+        ],
+        [
+          "original",
+          "keyed"
+        ],
+        [
+          "keyed",
+          "original"
+        ],
+        [
+          "original",
+          "keyed"
+        ]
+      ],
+      "calibration": {
+        "original": {
+          "operations": 1,
+          "wall_ns": 92070333,
+          "thread_cpu_ns": 47111000
+        },
+        "keyed": {
+          "operations": 1,
+          "wall_ns": 186125,
+          "thread_cpu_ns": 186625
+        }
+      },
+      "median_per_call_ns": {
+        "original": {
+          "wall_ns": 87050776.94117647,
+          "thread_cpu_ns": 47199926.47058824
+        },
+        "keyed": {
+          "wall_ns": 161203.41176470587,
+          "thread_cpu_ns": 155473.0
+        }
+      },
+      "median_matched_original_over_keyed": {
+        "wall_ns": 530.6757960592572,
+        "thread_cpu_ns": 303.02631199122453
+      },
+      "name": "count-phase-8000-reused-batch-generator",
+      "scope": "per-seed distractor count phase; input seed hashes prepared outside timing, all original per-key construction and output allocation included",
+      "size": 8000,
+      "batch_generator_construction_included": false,
+      "original_histogram": {
+        "2": 1953,
+        "4": 2001,
+        "3": 2044,
+        "1": 2002
+      },
+      "keyed_histogram": {
+        "4": 2000,
+        "1": 2009,
+        "3": 1964,
+        "2": 2027
+      },
+      "required_speedup": 100.0,
+      "target_passed": true,
+      "same_seed_output_equality_required": false
+    },
+    {
+      "samples": {
+        "original": [
+          {
+            "operations": 14,
+            "wall_ns": 1256259208,
+            "thread_cpu_ns": 737238708
+          },
+          {
+            "operations": 14,
+            "wall_ns": 1271568084,
+            "thread_cpu_ns": 734777834
+          },
+          {
+            "operations": 14,
+            "wall_ns": 1264784625,
+            "thread_cpu_ns": 766561833
+          },
+          {
+            "operations": 14,
+            "wall_ns": 1535267417,
+            "thread_cpu_ns": 714527417
+          },
+          {
+            "operations": 14,
+            "wall_ns": 1199796875,
+            "thread_cpu_ns": 766957167
+          },
+          {
+            "operations": 14,
+            "wall_ns": 1720474541,
+            "thread_cpu_ns": 731572208
+          },
+          {
+            "operations": 14,
+            "wall_ns": 1476179792,
+            "thread_cpu_ns": 731599167
+          },
+          {
+            "operations": 14,
+            "wall_ns": 1839553792,
+            "thread_cpu_ns": 752098291
+          },
+          {
+            "operations": 14,
+            "wall_ns": 1986671583,
+            "thread_cpu_ns": 730791458
+          }
+        ],
+        "keyed": [
+          {
+            "operations": 14,
+            "wall_ns": 2534708,
+            "thread_cpu_ns": 2462333
+          },
+          {
+            "operations": 14,
+            "wall_ns": 2462916,
+            "thread_cpu_ns": 2421458
+          },
+          {
+            "operations": 14,
+            "wall_ns": 2337000,
+            "thread_cpu_ns": 2337875
+          },
+          {
+            "operations": 14,
+            "wall_ns": 2395333,
+            "thread_cpu_ns": 2389209
+          },
+          {
+            "operations": 14,
+            "wall_ns": 8536000,
+            "thread_cpu_ns": 2893500
+          },
+          {
+            "operations": 14,
+            "wall_ns": 3021042,
+            "thread_cpu_ns": 2624750
+          },
+          {
+            "operations": 14,
+            "wall_ns": 3360208,
+            "thread_cpu_ns": 2604167
+          },
+          {
+            "operations": 14,
+            "wall_ns": 2477875,
+            "thread_cpu_ns": 2423125
+          },
+          {
+            "operations": 14,
+            "wall_ns": 4185291,
+            "thread_cpu_ns": 2441875
+          }
+        ]
+      },
+      "orders": [
+        [
+          "original",
+          "keyed"
+        ],
+        [
+          "keyed",
+          "original"
+        ],
+        [
+          "original",
+          "keyed"
+        ],
+        [
+          "keyed",
+          "original"
+        ],
+        [
+          "original",
+          "keyed"
+        ],
+        [
+          "keyed",
+          "original"
+        ],
+        [
+          "original",
+          "keyed"
+        ],
+        [
+          "keyed",
+          "original"
+        ],
+        [
+          "original",
+          "keyed"
+        ]
+      ],
+      "calibration": {
+        "original": {
+          "operations": 1,
+          "wall_ns": 86348041,
+          "thread_cpu_ns": 53000541
+        },
+        "keyed": {
+          "operations": 1,
+          "wall_ns": 216500,
+          "thread_cpu_ns": 208208
+        }
+      },
+      "median_per_call_ns": {
+        "original": {
+          "wall_ns": 105441413.71428572,
+          "thread_cpu_ns": 52484131.0
+        },
+        "keyed": {
+          "wall_ns": 181050.57142857142,
+          "thread_cpu_ns": 174419.64285714287
+        }
+      },
+      "median_matched_original_over_keyed": {
+        "wall_ns": 516.2856077917395,
+        "thread_cpu_ns": 299.2747204504735
+      },
+      "name": "count-phase-8000-fresh-batch-generator",
+      "scope": "per-seed distractor count phase; input seed hashes prepared outside timing, all original per-key construction and output allocation included",
+      "size": 8000,
+      "batch_generator_construction_included": true,
+      "original_histogram": {
+        "2": 1953,
+        "4": 2001,
+        "3": 2044,
+        "1": 2002
+      },
+      "keyed_histogram": {
+        "4": 2000,
+        "1": 2009,
+        "3": 1964,
+        "2": 2027
+      },
+      "required_speedup": 100.0,
+      "target_passed": true,
+      "same_seed_output_equality_required": false
+    }
+  ],
+  "all_count_phase_targets_passed": false,
+  "all_full_consumer_targets_passed": false
+}

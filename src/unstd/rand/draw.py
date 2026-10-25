@@ -38,10 +38,22 @@ from operator import index
 import random as _random
 from typing import TYPE_CHECKING, Literal
 
+from unstd.rand.keyed import seeded_ints as _keyed_ints
+
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+    from typing import Protocol
+
     import numpy as _np
     from numpy.typing import NDArray
+
+    class _NativeShuffle(Protocol):
+        def shuffle[T](
+            self, getrandbits: Callable[[int], int], items: list[T]
+        ) -> None: ...
+
+    _native: _NativeShuffle | None
 
     HAVE_NUMPY = True
 
@@ -61,6 +73,12 @@ else:
     # Runtime introspection must work without requiring the optional NumPy types.
     FloatArray = _np.ndarray | list[float] if HAVE_NUMPY else list[float]
     IntArray = _np.ndarray | list[int] if HAVE_NUMPY else list[int]
+
+
+try:
+    from unstd.rand import _rand_native as _native
+except ImportError:
+    _native = None
 
 
 __all__ = [
@@ -86,6 +104,16 @@ _py = _random.Random()  # noqa: S311  # nosec B311 # non-crypto PRNG; security d
 # Invariant: ``_gen is None`` exactly when numpy is absent — the bulk draws below
 # branch on that (it narrows for the type checker where the bool can't).
 _gen = _np.random.Generator(_np.random.PCG64()) if HAVE_NUMPY else None
+
+# Native shuffling keeps Random's live getrandbits rejection stream. A changed
+# method or per-instance hook must continue through the stdlib implementation.
+_stdlib_shuffle = _random.Random.shuffle
+_stdlib_randbelow = _random.Random._randbelow  # type: ignore[attr-defined]
+_stdlib_getrandbits = _random.Random.getrandbits
+_stdlib_uniform = _random.Random.uniform
+_stdlib_random = _random.Random.random
+_stdlib_randint = _random.Random.randint
+_stdlib_randrange = _random.Random.randrange
 
 
 def seed(n: int | None = None) -> None:
@@ -152,7 +180,26 @@ def _floats(
         msg = "high must be greater than or equal to low"
         raise ValueError(msg)
     if gen is not None:
+        # Unit uniform uses the same doubles and state as random(), without
+        # NumPy's general interval dispatch. Keep numeric hooks on uniform().
+        if type(low) is float and low == 0.0 and type(high) is float and high == 1.0:
+            return gen.random(n)
         return gen.uniform(low, high, size=n)
+    if (
+        n > 1
+        and type(py) is _random.Random
+        and type(low) in (int, float)
+        and type(high) in (int, float)
+        and _random.Random.uniform is _stdlib_uniform
+        and _random.Random.random is _stdlib_random
+        and "uniform" not in py.__dict__
+        and "random" not in py.__dict__
+    ):
+        # Match Random.uniform's arithmetic order and draw consumption, while
+        # calculating the immutable interval only once for the whole batch.
+        span = high - low
+        draw = py.random
+        return [low + span * draw() for _ in range(n)]
     return [py.uniform(low, high) for _ in range(n)]
 
 
@@ -173,26 +220,56 @@ def _ints(
     low: int,
     high: int,
     endpoint: bool,
+    seeds: Sequence[int] | None = None,
 ) -> IntArray:
     n = _size(n)
     low, high = index(low), index(high)
     if high < low or (high == low and not endpoint):
         msg = "integer interval must contain at least one value"
         raise ValueError(msg)
+    if seeds is not None:
+        values = _keyed_ints(n, low, high, endpoint, seeds)
+        return _np.asarray(values, dtype=_np.int64) if gen is not None else values
     if gen is not None:
         return gen.integers(low, high, size=n, endpoint=endpoint)
     hi = high if endpoint else high - 1
+    if (
+        n > 1
+        and type(py) is _random.Random
+        and _random.Random.randint is _stdlib_randint
+        and _random.Random.randrange is _stdlib_randrange
+        and "randint" not in py.__dict__
+        and "randrange" not in py.__dict__
+    ):
+        # Random.randint uses this same rejection sampler. Hoist validation and
+        # width arithmetic; subclasses retain their virtual randint method.
+        width = hi - low + 1
+        below = py._randbelow  # type: ignore[attr-defined]  # stdlib's shared rejection sampler
+        return [low + below(width) for _ in range(n)]
     return [py.randint(low, hi) for _ in range(n)]
 
 
-def ints(n: int, low: int, high: int, *, endpoint: bool = False) -> IntArray:
+def ints(
+    n: int,
+    low: int,
+    high: int,
+    *,
+    endpoint: bool = False,
+    seeds: Sequence[int] | None = None,
+) -> IntArray:
     """*n* ints in ``[low, high)`` (or ``[low, high]`` when *endpoint*).
 
     An ndarray on the NumPy backend, a ``list`` on the stdlib fallback. *n* must
     be a non-negative integer and the interval must contain at least one value,
     including when *n* is zero. NumPy bounds must fit its default int64 dtype.
+
+    Explicit *seeds* selects stateless SplitMix64-v1 draws, one unsigned 64-bit
+    seed per result, within an int64 interval. These values differ from stdlib
+    and NumPy streams and never advance either engine. Repeated keys repeat
+    values; ordering and chunking do not change each key's result. Simulation
+    use only; cryptographic draws belong to :mod:`unstd.rand.crypto`.
     """
-    return _ints(_py, _gen, n, low, high, endpoint)
+    return _ints(_py, _gen, n, low, high, endpoint, seeds)
 
 
 def _choices[T](
@@ -328,6 +405,20 @@ class Generator:
 
     def shuffle[T](self, x: MutableSequence[T]) -> None:
         """Shuffle a mutable sequence in place."""
+        py = self._py
+        if (
+            _native is not None
+            and type(x) is list
+            and type(py) is _random.Random
+            and _random.Random.shuffle is _stdlib_shuffle
+            and _random.Random._randbelow is _stdlib_randbelow  # type: ignore[attr-defined]
+            and _random.Random.getrandbits is _stdlib_getrandbits
+            and "shuffle" not in py.__dict__
+            and "_randbelow" not in py.__dict__
+            and "getrandbits" not in py.__dict__
+        ):
+            _native.shuffle(py.getrandbits, x)
+            return
         self._py.shuffle(x)
 
     def sample[T](
@@ -340,9 +431,22 @@ class Generator:
         """*n* floats within finite bounds and span, using this instance's engine."""
         return _floats(self._py, self._gen, n, low, high)
 
-    def ints(self, n: int, low: int, high: int, *, endpoint: bool = False) -> IntArray:
-        """*n* integers in ``[low, high)`` (or ``[low, high]`` when *endpoint*)."""
-        return _ints(self._py, self._gen, n, low, high, endpoint)
+    def ints(
+        self,
+        n: int,
+        low: int,
+        high: int,
+        *,
+        endpoint: bool = False,
+        seeds: Sequence[int] | None = None,
+    ) -> IntArray:
+        """*n* integers, optionally stateless SplitMix64-v1 values from *seeds*.
+
+        Without *seeds*, draw from this instance's selected engine. Explicit
+        unsigned 64-bit *seeds* require an int64 interval and leave both engines
+        untouched; these values use a different, chunk-independent stream.
+        """
+        return _ints(self._py, self._gen, n, low, high, endpoint, seeds)
 
     def choices[T](
         self, seq: Sequence[T], n: int, *, weights: Sequence[float] | None = None

@@ -43,6 +43,13 @@ doc_radar:
 
 <!-- towncrier release notes start -->
 
+## Unreleased
+
+The [October 25 change index](docs/updates-2026-10-25.md) covers today's native
+backends, API additions, source organization, qualification and runtime updates.
+Caller-facing details remain in [per-change fragments](changelog.d/README.md)
+until release; published version notes below remain historical records.
+
 ## [3.1.6] - 2026-10-25
 
 ### Fixed

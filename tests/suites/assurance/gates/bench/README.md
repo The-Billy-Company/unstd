@@ -56,3 +56,10 @@ The measurement divisor is checked against an independent virtual nanosecond
 clock at four known costs, so scheduler delays cannot masquerade as arithmetic
 errors. The explicit `perf` tests still exercise real-clock calibration and
 human-readable timing units.
+
+The rand backend and consumer gates compare source bytes, public signatures,
+native bindings, exact outputs and complete RNG states outside timing. Keyed
+and sparse-sampling gates separately validate explicit stream/strategy changes,
+source receipts, input laws and report retention when a requested speedup fails.
+The measured 100× scope is an 8,000-key count phase, not a complete application
+workflow. See the [rand evidence](../../../../../bench/reports/rand/README.md).

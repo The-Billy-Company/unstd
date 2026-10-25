@@ -93,6 +93,7 @@ native/
   audio/                         reviewed external libsndfile build policy
   clone/src/                     structural cloning kernel
   crypto/src/                    streaming digest/token kernel
+  rand/src/                      stdlib-faithful shuffle and explicit keyed integers
   serde/src/                     JSON kernel and private headers
   text/
     src/                         default C kernel
@@ -106,7 +107,8 @@ native/
 Builds read native sources from this tree and emit the same underscored binary
 modules as before: `unstd.serde._json_native`, `unstd.clone._clone_native`,
 `unstd.crypto._stream_native`, `unstd.text._text_native` and
-`unstd.compress._gzip_native`. Their typing stubs retain the same paths.
+`unstd.compress._gzip_native`. Rand also builds `unstd.rand._rand_native` for
+compatible shuffling and explicit keyed batches. Their typing stubs retain the same paths.
 Wheels contain Python interfaces and optional binaries; native source belongs
 in the source distribution. Vendored source contents, licenses and authenticated
 manifests retain their meaning after relocation.
@@ -114,6 +116,12 @@ manifests retain their meaning after relocation.
 These modules are private. Users call the documented Python APIs; builds and
 internal qualification tools may inspect the binary bindings. Python privacy is
 a naming and support boundary, not an access-control mechanism.
+
+Rand's default streams retain exact engine output/state. The explicit
+`ints(..., seeds=...)` path instead uses versioned, stateless SplitMix64 values;
+its native and Python implementations agree. Its qualified 100× gains apply
+to batched per-key counts, while complete consumer timings remain separately
+reported. See the [rand evidence](../bench/reports/rand/README.md).
 
 ## Compatibility and verification
 

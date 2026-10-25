@@ -167,6 +167,9 @@ stream = rand.Generator(173)
 reference = random.Random(173)
 assert stream.backend == 'stdlib'
 assert stream.floats(3) == [reference.uniform(0.0, 1.0) for _ in range(3)]
+state = stream._py.getstate()
+assert stream.ints(3, 1, 5, seeds=[0, 1, 2]) == [4, 2, 3]
+assert stream._py.getstate() == state
 """,
     "rex": """
 import re
@@ -292,7 +295,7 @@ _PROBE_MODULES = {
         "unstd.iters.select",
     ),
     "pack.binpack": ("unstd.pack", "unstd.pack.binpack"),
-    "rand": ("unstd.rand", "unstd.rand.crypto", "unstd.rand.draw"),
+    "rand": ("unstd.rand", "unstd.rand.crypto", "unstd.rand.draw", "unstd.rand.keyed"),
     "rex": ("unstd.rex",),
     "text.fuzz": ("unstd.text", "unstd.text.fuzz"),
     "time.timeutil": ("unstd.time", "unstd.time.timeutil"),
@@ -413,6 +416,7 @@ for module in {_PROBE_MODULES[surface]!r}:
         "unstd.crypto._stream_native",
         "unstd.text._text_native",
         "unstd.compress._gzip_native",
+        "unstd.rand._rand_native",
     ],
 )
 def test_base_install_runs_packaged_accelerators_without_backend_extras(
@@ -464,6 +468,28 @@ import gzip
 payload = b'installed native gzip payload' * 128
 assert native.decompress(gzip.compress(payload, mtime=0)) == payload
 assert native.decompress(b'not a gzip frame') is None
+""",
+        "unstd.rand._rand_native": """
+import random
+from unstd import rand
+from unstd.rand import draw
+assert not rand.HAVE_NUMPY
+assert draw._native is native
+calls = []
+shuffle = native.shuffle
+def observe(getrandbits, items):
+    calls.append(getrandbits.__self__)
+    return shuffle(getrandbits, items)
+native.shuffle = observe
+subject = rand.Generator(173)
+reference = random.Random(173)
+actual, expected = list(range(256)), list(range(256))
+subject.shuffle(actual)
+reference.shuffle(expected)
+assert calls == [subject._py]
+assert actual == expected
+assert subject._py.getstate() == reference.getstate()
+assert rand.shuffle.__func__ is random.Random.shuffle
 """,
     }[module]
     consumer.run(

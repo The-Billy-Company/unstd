@@ -11,4 +11,6 @@ Historical JSON and Markdown reports are grouped by measured domain. JSON measur
 - [`serde/`](serde/README.md)
 - [`text/`](text/README.md)
 
+- [`rand/`](rand/README.md)
+
 See the [benchmark guide](../README.md).

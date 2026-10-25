@@ -305,7 +305,7 @@ generator.choice(seq: Sequence[T]) -> T
 generator.shuffle(x: MutableSequence[T]) -> None
 generator.sample(population: Sequence[T], k: int, *, counts=None) -> list[T]
 generator.floats(n: int, *, low=0.0, high=1.0) -> FloatArray
-generator.ints(n: int, low: int, high: int, *, endpoint=False) -> IntArray
+generator.ints(n: int, low: int, high: int, *, endpoint=False, seeds=None) -> IntArray
 generator.choices(seq: Sequence[T], n: int, *, weights=None) -> list[T]
 ```
 
@@ -313,6 +313,23 @@ generator.choices(seq: Sequence[T], n: int, *, weights=None) -> list[T]
 extra. `bit_generator` accepts `PCG64`, `PCG64DXSM`, `SFC64`, or `Philox` when
 using NumPy. Instance streams do not reseed module-level draws. `FloatArray`
 and `IntArray` remain the existing return annotation aliases in `rand.draw`.
+
+Module-level `ints` accepts the same `seeds=None` keyword. Supplying one unsigned
+64-bit integer key per result selects the explicit **SplitMix64-v1** stream,
+with effective inclusive output bounds in signed int64. This opt-in changes
+values relative to constructing an MT19937 generator per key. It preserves each
+key's value across reordered/chunked batches and leaves both ordinary engines
+untouched; duplicate keys repeat results. Counts, keys and bounds are validated
+even for empty batches. Return containers retain the selected backend's list or
+int64 ndarray contract. Secure draws continue to use `rand.crypto`.
+
+`Generator.shuffle` can use an optional CPython kernel for ordinary lists while
+preserving exact stdlib permutations and subsequent RNG state. Custom methods,
+engine hooks, sequence types and missing native support retain stdlib execution.
+Module-level scalar aliases keep their direct stdlib bindings. The
+[rand guide](../src/unstd/rand/README.md) covers these choices; the
+[qualification](../bench/reports/rand/README.md) separates keyed count-phase
+speedups from complete consumer costs.
 
 ## Regular expressions
 

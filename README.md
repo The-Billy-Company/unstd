@@ -2,10 +2,8 @@
 
 **An accelerated Python standard library for hot-path operations.**
 
-unstd speeds up serialization, compression, deep copying, hashing, and other
-operations that dominate busy Python services. It combines bundled native code
-and optional accelerated backends with familiar Python APIs and focused utility
-helpers.
+unstd accelerates serialization, compression, deep copying, hashing, and other
+hot paths with bundled native code, optional backends, and familiar Python APIs.
 
 Requires **Python 3.12+**. The base install has **no third-party runtime
 dependencies**.
@@ -78,4 +76,7 @@ both gains and regressions.
 See the [test guide](tests/README.md), [architecture](docs/architecture.md),
 [API inventory](docs/api.md), and [security policy](SECURITY.md).
 
-Apache-2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE) for licensing details.
+[October 25 updates](docs/updates-2026-10-25.md) distinguish published releases
+from unreleased work.
+
+First-party code is Apache-2.0; bundled licenses are listed in [NOTICE](NOTICE).

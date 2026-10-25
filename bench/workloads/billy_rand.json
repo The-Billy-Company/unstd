@@ -1,0 +1,116 @@
+{
+  "version": 1,
+  "repository": "The-Billy-Company/billy",
+  "commit": "b4ce9e820bba6d5049158a3d170a2eb7bc101951",
+  "input_provenance": "Synthetic public schema/example shapes; no customer data or captured private application payloads. Consumer functions are exact source snapshots; imports are supplied by the benchmark.",
+  "consumers": {
+    "schema": {
+      "source_path": "services/anvil/anvil/datagen/schema_sampler.py",
+      "source_file_sha256": "e97b8a1d1842e78b5f49905a1fc07bcd094160d56986afe072304ee92556110f",
+      "source": "\"\"\"JSON-Schema \u2192 a schema-valid argument instance, spread across a coverage surface.\n\nThe value engine behind the mock teacher (:func:`anvil.datagen.synth.mock_llm`),\nT2 chain-arg sampling (:mod:`chains`), and T6 world-task instantiation\n(:mod:`world.task`). Given a tool's ``args_schema`` it produces a concrete instance\nthat honors ``$ref`` / ``const`` / ``enum`` / ``default`` / bounds / formats /\n``minLength``\u00b7``maxLength`` / nested objects + arrays, and a per-call coverage mode\nspreads the batch across minimal (required only), typical (required + ~half the\noptionals), and maximal (every optional) calls \u2014 so the trained model sees the full\ncombinatorial surface, not one shape. Pure schema\u2192value: no LLM, no I/O, seeded by\nthe caller's ``rand.Generator`` so every draw is reproducible.\n\"\"\"\n\nfrom typing import TYPE_CHECKING\n\nfrom unstd import rand\n\n\nif TYPE_CHECKING:\n    from collections.abc import Callable\n\n\ndef _resolve_ref(ref: str, root: dict[str, object]) -> dict[str, object]:\n    \"\"\"Resolve a local ``#/$defs/Name`` ref against the schema root.\"\"\"\n    node: object = root\n    for part in ref.lstrip(\"#/\").split(\"/\"):\n        if isinstance(node, dict):\n            node = node.get(part, {})\n    return node if isinstance(node, dict) else {}\n\n\n_FORMAT_SAMPLES: dict[str, Callable[[rand.Generator], str]] = {\n    \"email\": lambda rng: f\"user{rng.randint(1, 99)}@example.com\",\n    \"date-time\": lambda rng: \"2026-06-19T14:30:00Z\",\n    \"date\": lambda rng: \"2026-06-19\",\n    \"time\": lambda rng: \"14:30:00\",\n    \"uri\": lambda rng: f\"https://example.com/{rng.randint(1, 999)}\",\n    \"uuid\": lambda rng: \"00000000-0000-4000-8000-000000000000\",\n}\n\n\ndef _bounds(\n    spec: dict[str, object], lo_d: float, hi_d: float, *, integer: bool\n) -> tuple[float, float]:\n    \"\"\"Inclusive (lo, hi) honoring minimum/maximum + their exclusive variants.\"\"\"\n    step = 1 if integer else 1e-3\n    lo = spec.get(\"minimum\")\n    if not (lo is None or isinstance(lo, (int, float))):\n        message = \"invalid lo data\"\n        raise TypeError(message)\n    if lo is None and (ex := spec.get(\"exclusiveMinimum\")) is not None:\n        if not (isinstance(ex, (int, float))):\n            message = \"invalid ex data\"\n            raise TypeError(message)\n        lo = ex + step\n    hi = spec.get(\"maximum\")\n    if not (hi is None or isinstance(hi, (int, float))):\n        message = \"invalid hi data\"\n        raise TypeError(message)\n    if hi is None and (ex := spec.get(\"exclusiveMaximum\")) is not None:\n        if not (isinstance(ex, (int, float))):\n            message = \"invalid ex data\"\n            raise TypeError(message)\n        hi = ex - step\n    lo = lo_d if lo is None else lo\n    hi = hi_d if hi is None else hi\n    return (lo, max(lo, hi))\n\n\ndef _sample_string(name: str, spec: dict[str, object], rng: rand.Generator) -> str:\n    if isinstance(fmt := spec.get(\"format\"), str) and fmt in _FORMAT_SAMPLES:\n        return _FORMAT_SAMPLES[fmt](rng)\n    if (pat_const := spec.get(\"const\")) is not None:\n        return str(pat_const)\n    s = f\"{name}_{rng.randint(1, 999)}\"\n    mn = spec.get(\"minLength\")\n    if not (mn is None or isinstance(mn, int)):\n        message = \"invalid mn data\"\n        raise TypeError(message)\n    if mn and len(s) < mn:\n        s += \"x\" * (mn - len(s))\n    mx = spec.get(\"maxLength\")\n    if not (mx is None or isinstance(mx, int)):\n        message = \"invalid mx data\"\n        raise TypeError(message)\n    if mx is not None and len(s) > mx:\n        s = s[:mx]\n    return s\n\n\ndef _sample_value(\n    name: str, spec: dict[str, object], root: dict[str, object], rng: rand.Generator\n) -> object:\n    if \"$ref\" in spec:\n        ref = spec[\"$ref\"]\n        if not (isinstance(ref, str)):\n            message = \"invalid ref data\"\n            raise TypeError(message)\n        spec = _resolve_ref(ref, root)\n    if \"const\" in spec:\n        return spec[\"const\"]\n    if choices := spec.get(\"enum\"):\n        if not (isinstance(choices, list)):\n            message = \"invalid choices data\"\n            raise TypeError(message)\n        return rng.choice(choices)\n    if \"default\" in spec and rng.random() < 0.4:  # sometimes the default, sometimes an edge\n        return spec[\"default\"]\n    t = spec.get(\"type\")\n    if isinstance(t, list):\n        t = next((x for x in t if x != \"null\"), \"string\")\n    if t == \"integer\":\n        lo, hi = _bounds(spec, 1, 100, integer=True)\n        return rng.choice([int(lo), int(hi), rng.randint(int(lo), int(hi))])\n    if t == \"number\":\n        lo, hi = _bounds(spec, 1.0, 100.0, integer=False)\n        return round(rng.uniform(lo, hi), 2)\n    if t == \"boolean\":\n        return rng.choice([True, False])\n    if t == \"array\":\n        items = spec.get(\"items\")\n        if not isinstance(items, dict):\n            items = {}\n        mn = spec.get(\"minItems\", 1) or 1\n        if not (isinstance(mn, (str, int, float))):\n            message = \"invalid mn data\"\n            raise TypeError(message)\n        n = max(int(mn), rng.randint(1, 3))\n        if (mx := spec.get(\"maxItems\")) is not None:\n            if not (isinstance(mx, (str, int, float))):\n                message = \"invalid mx data\"\n                raise TypeError(message)\n            n = min(n, int(mx))\n        return [_sample_value(name, items, root, rng) for _ in range(max(n, 0))]\n    if t == \"object\":\n        return sample_valid_args(spec, rng, root=spec)\n    return _sample_string(name, spec, rng)\n\n\ndef sample_valid_args(\n    schema: dict[str, object],\n    rng: rand.Generator | None = None,\n    *,\n    root: dict[str, object] | None = None,\n) -> dict[str, object]:\n    \"\"\"A schema-valid argument instance with a varied required+optional mix.\n\n    A per-call coverage mode spreads the batch across minimal (required only),\n    typical (required + ~half the optionals), and maximal (every optional) calls\n    so the trained model sees the full combinatorial surface, not just one shape.\n    \"\"\"\n    rng = rng or rand.Generator(0, backend=\"stdlib\")\n    root = root or schema\n    props = schema.get(\"properties\") or {}\n    if not (isinstance(props, dict)):\n        message = \"invalid props data\"\n        raise TypeError(message)\n    raw_required = schema.get(\"required\") or []\n    if not (isinstance(raw_required, list)):\n        message = \"invalid raw_required data\"\n        raise TypeError(message)\n    required = set(raw_required)\n    mode = rng.random()  # <.34 minimal \u00b7 <.8 typical \u00b7 else maximal\n    out: dict[str, object] = {}\n    for name, spec in props.items():\n        spec = spec if isinstance(spec, dict) else {}\n        if name not in required:\n            if mode < 0.34:\n                continue\n            if mode < 0.8 and rng.random() < 0.5:\n                continue\n        out[name] = _sample_value(name, spec, root, rng)\n    return out\n",
+      "symbols": {
+        "_resolve_ref": {
+          "line": 23,
+          "ast_sha256": "d01ab2c1776e0a99384236c6be3329a9c0910b76e52fb71ffe31d50e02d1ea41"
+        },
+        "_bounds": {
+          "line": 42,
+          "ast_sha256": "c6b6792a15241474ae19bdc28c6cf4d117d0fe1bcea543bff272024a572ca3f0"
+        },
+        "_sample_string": {
+          "line": 70,
+          "ast_sha256": "ddf39874c5943cfb2bac59d3a88a952c9e5ce4037e76a86bfc2997cc30a52b3d"
+        },
+        "_sample_value": {
+          "line": 91,
+          "ast_sha256": "56fb8bebb438c5dc8c8bd224c05d240999503c3dc4f1d032c9eb2897e7d00b18"
+        },
+        "sample_valid_args": {
+          "line": 140,
+          "ast_sha256": "358ee5bef9d7cd08f0ba5999f3ab30dd00c4cb2aab731eeb41c7579ce9d41741"
+        }
+      },
+      "test_references": [
+        {
+          "path": "services/anvil/tests/test_datagen.py",
+          "sha256": "fe721ed3cb1c4962089e1fc6c85f2d38bb146b6f1da46f9994ac5fefb66471d5"
+        }
+      ]
+    },
+    "corpus_trim": {
+      "source_path": "services/anvil/anvil/datagen/corpus.py",
+      "source_file_sha256": "3d5bf5d3ed7610599cb1e19255bc827084541855e2bebc8cd4189c2dde1a07de",
+      "source": "def _trim(examples: list[TrainExample], cap: int, rng: rand.Generator) -> list[TrainExample]:\n    \"\"\"Deterministically trim a track to its budget (shuffle then cut).\"\"\"\n    if cap <= 0:\n        return []\n    if len(examples) <= cap:\n        return examples\n    shuffled = examples[:]\n    rng.shuffle(shuffled)\n    return shuffled[:cap]\n",
+      "symbols": {
+        "_trim": {
+          "line": 125,
+          "ast_sha256": "86d6efff597fb2c07853da4227319573769fff1d121b51b6e065161445f79321"
+        }
+      },
+      "test_references": [
+        {
+          "path": "services/anvil/tests/test_corpus.py",
+          "sha256": "ce2dfa8349db5dd7d158e7d07bee50187fd476cc890d7cd93c1a4096b38ed53b"
+        }
+      ]
+    },
+    "stratified_split": {
+      "source_path": "services/anvil/anvil/datagen/engine.py",
+      "source_file_sha256": "3b867c3e5ac09c2975558478a824c5834935eeb150cde137f886106523124327",
+      "source": "def _split(\n    by_tool: dict[str, list[TrainExample]], frac: float, rng: rand.Generator\n) -> tuple[list[TrainExample], list[TrainExample]]:\n    \"\"\"Per-tool stratified split so every trained tool keeps eval coverage.\n\n    A tool with \u22652 examples always contributes \u22651 eval (and keeps \u22651 train);\n    a singleton goes entirely to train (nothing to hold out).\n    \"\"\"\n    train: list[TrainExample] = []\n    ev: list[TrainExample] = []\n    for exs in by_tool.values():\n        shuffled = exs[:]\n        rng.shuffle(shuffled)\n        n = len(shuffled)\n        n_eval = 0 if n < 2 else min(n - 1, max(1, round(n * frac)))\n        ev.extend(shuffled[:n_eval])\n        train.extend(shuffled[n_eval:])\n    return train, ev\n",
+      "symbols": {
+        "_split": {
+          "line": 198,
+          "ast_sha256": "f7ad64acffe5a6ab8d79775c337dc00b5975206eea95861f6ca699785e890258"
+        }
+      },
+      "test_references": [
+        {
+          "path": "services/anvil/tests/test_datagen.py",
+          "sha256": "fe721ed3cb1c4962089e1fc6c85f2d38bb146b6f1da46f9994ac5fefb66471d5"
+        }
+      ]
+    },
+    "function_masking": {
+      "source_path": "services/anvil/anvil/datagen/funcmask.py",
+      "source_file_sha256": "8eea2c9c01010df2fcc2f723cf3b37f02eb2e974c9e0d68813b6ef2cf88d55e1",
+      "source": "def _has_tool_call(ex: TrainExample) -> bool:\n    return any(m.get(\"role\") == \"assistant\" and m.get(\"tool_calls\") for m in ex.messages)\n\ndef _trigger(ex: TrainExample) -> str:\n    return next(\n        (str(m.get(\"content\", \"\")) for m in reversed(ex.messages) if m.get(\"role\") == \"user\"),\n        \"\",\n    )\n\ndef _mask_seed(seed: int, ex: TrainExample) -> int:\n    \"\"\"A stable, nonzero per-example alias seed (so a rebuild aliases identically).\"\"\"\n    digest = hashlib.blake2b(f\"{seed}|{ex.tool_name}|{_trigger(ex)}\".encode(), digest_size=6)\n    return int.from_bytes(digest.digest(), \"big\") or 1\n\ndef apply_function_masking(train: Iterable[TrainExample], *, fraction: float, seed: int) -> int:\n    \"\"\"Mark a ``fraction`` of tool-bearing TRAIN examples for name masking.\n\n    Sets ``mask_seed`` on the selected examples (the emitter does the aliasing).\n    Selection is reproducible (seeded RNG over the deterministic train order); the\n    per-example seed is hashed from the trigger so the same line always aliases the\n    same way. Returns the count marked. ``fraction<=0`` is a no-op.\n    \"\"\"\n    if fraction <= 0:\n        return 0\n    rng = rand.Generator(seed, backend=\"stdlib\")\n    marked = 0\n    for ex in train:\n        if ex.kind not in _MASKABLE or not _has_tool_call(ex):\n            continue\n        if rng.random() < fraction:\n            ex.mask_seed = _mask_seed(seed, ex)\n            marked += 1\n    return marked\n",
+      "symbols": {
+        "_has_tool_call": {
+          "line": 34,
+          "ast_sha256": "28a4f18532c22bfd46d2ab115b78c7b3ead0e25a1498d319cd672e618167cce2"
+        },
+        "_trigger": {
+          "line": 38,
+          "ast_sha256": "245b5cc8444f232d60d4d0caa375517958a1a003aba15e035207084f5d8e0d23"
+        },
+        "_mask_seed": {
+          "line": 45,
+          "ast_sha256": "1af1e015baad54abe2117aa979fdd33d13f55ae775c20274511810bbda813c2d"
+        },
+        "apply_function_masking": {
+          "line": 51,
+          "ast_sha256": "c9460b2a3995184e6b58fe53c44e3e969c6144badf3a6b17203718c3e80ade6b"
+        }
+      },
+      "test_references": [
+        {
+          "path": "services/anvil/tests/test_funcmask.py",
+          "sha256": "e83cdd9d32505b142ad14f1392f13b0d249a313f5365345675e3fca555dd62c8"
+        }
+      ]
+    },
+    "curiosity": {
+      "source_path": "services/ai/core/bridges/agent/context/user_curiosity.py",
+      "source_file_sha256": "88cf27b8a2c21c6f5aa36d98805ac526658643a8ade73c59f464ad14bc81331e",
+      "source": "class _Rng:\n    def __init__(self) -> None:\n        self._stream = rand.Generator(backend=\"stdlib\")\n\n    def seed(self, n: int | None = None) -> None:\n        self._stream.seed(n)\n\n    def choice[T](self, seq: list[T] | tuple[T, ...]) -> T:\n        if not seq:\n            msg = \"Cannot choose from an empty sequence\"\n            raise IndexError(msg)\n        return self._stream.choice(seq)\n\n    def choices[T](\n        self,\n        population: list[T],\n        weights: list[float] | None = None,\n        *,\n        k: int = 1,\n    ) -> list[T]:\n        if not population:\n            return []\n        if weights is None:\n            return [self.choice(population) for _ in range(k)]\n        total = float(sum(weights))\n        if total <= 0:\n            return [self.choice(population) for _ in range(k)]\n        out: list[T] = []\n        for _ in range(k):\n            r = self._stream.random() * total\n            acc = 0.0\n            pick = population[-1]\n            for item, w in zip(population, weights, strict=True):\n                acc += float(w)\n                if r <= acc:\n                    pick = item\n                    break\n            out.append(pick)\n        return out\n",
+      "symbols": {
+        "_Rng": {
+          "line": 181,
+          "ast_sha256": "3e1600cbe108912fb9499b6225ae6e9590eb90a19be2ec2388faf7546332cf55"
+        }
+      },
+      "test_references": []
+    }
+  }
+}

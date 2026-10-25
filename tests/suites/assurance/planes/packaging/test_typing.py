@@ -7,7 +7,8 @@ import sys
 from tests.support.packaging.artifacts import Consumer, checked_command
 
 
-_POSITIVE = """from datetime import datetime
+_POSITIVE = """from collections.abc import Sequence
+from datetime import datetime
 from pathlib import Path
 from typing import Literal, assert_type
 from unstd import clone, fs, proc, rand, rex
@@ -25,6 +26,9 @@ assert_type(binpack.pack_array_portable('i4', [1, 2]), bytes)
 assert_type(binpack.unpack_array_portable('i4', b''), list[float])
 assert_type(rand.Generator(173).random(), float)
 assert_type(rand.Generator(173).backend, Literal['stdlib', 'numpy'])
+seeds: Sequence[int] = [173, 179]
+rand.ints(2, 0, 10, seeds=seeds)
+rand.Generator(173).ints(2, 0, 10, endpoint=True, seeds=seeds)
 assert_type(rex.compile_linear('[a-z]+').requires_ascii, bool)
 assert_type(uid.new(), str)
 assert_type(uid.new_hex(), str)

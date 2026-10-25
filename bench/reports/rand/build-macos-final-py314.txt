@@ -1,0 +1,34 @@
+Building wheel...
+Traceback (most recent call last):
+  File "<string>", line 11, in <module>
+    wheel_filename = backend.build_wheel(__import__("os").fsdecode(b"/tmp/unstd-rand-release-final"), {}, None)
+  File "/Users/griffinstrier/Billy-Company/unstd/.venv/lib/python3.14/site-packages/hatchling/build.py", line 58, in build_wheel
+    return os.path.basename(next(builder.build(directory=wheel_directory, versions=["standard"])))
+                            ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/griffinstrier/Billy-Company/unstd/.venv/lib/python3.14/site-packages/hatchling/builders/plugin/interface.py", line 127, in build
+    configured_build_hooks = self.get_build_hooks(directory)
+  File "/Users/griffinstrier/Billy-Company/unstd/.venv/lib/python3.14/site-packages/hatchling/builders/plugin/interface.py", line 399, in get_build_hooks
+    configured_build_hooks[hook_name] = build_hook(
+                                        ~~~~~~~~~~^
+        self.root, config, self.config, self.metadata, directory, self.PLUGIN_NAME, self.app
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/griffinstrier/Billy-Company/unstd/.venv/lib/python3.14/site-packages/hatchling/builders/hooks/custom.py", line 35, in __new__
+    hook_class = load_plugin_from_script(path, build_script, BuildHookInterface, "build_hook")
+  File "/Users/griffinstrier/Billy-Company/unstd/.venv/lib/python3.14/site-packages/hatchling/plugin/utils.py", line 18, in load_plugin_from_script
+    spec.loader.exec_module(module)  # type: ignore[union-attr]
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "<frozen importlib._bootstrap_external>", line 759, in exec_module
+  File "<frozen importlib._bootstrap_external>", line 897, in get_code
+  File "<frozen importlib._bootstrap_external>", line 827, in source_to_code
+  File "<frozen importlib._bootstrap>", line 491, in _call_with_frames_removed
+  File "/Users/griffinstrier/Billy-Company/unstd/hatch_build.py", line 164
+    _ISAL_HELPER_SHA256 = "5ef06292f0a03eacf7dc62d7693e1228b5e6d75669685f2908925aa6a6cd1e57"
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+SyntaxError: invalid syntax. Maybe you meant '==' or ':=' instead of '='?
+error: Failed to build `/Users/griffinstrier/Billy-Company/unstd`
+  cause: The build backend returned an error
+  cause: Call to `hatchling.build.build_wheel` failed (exit status: 1)
+
+hint: Build failures usually indicate a problem with the package or the build environment
