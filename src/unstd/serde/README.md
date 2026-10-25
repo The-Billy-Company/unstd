@@ -159,6 +159,15 @@ wheel for the full JSON and NDJSON speedups. On CPython 3.14, native dispatch
 preserves the public Python function objects, signatures and annotations, and
 resumes ordinary Python execution for tracing, profiling or monitoring.
 
+Release wheels verify active native bindings and representative float, ASCII,
+decode, identity and NDJSON paths with
+[`json_acceleration.py`](../../../tests/tooling/runtime/json_acceleration.py).
+The performance workflow compares installed JSON record workloads on each
+Linux/macOS worker with native dispatch required, retaining raw measurements
+before failing a slowdown above 15%. Run the same qualification with the
+deployment interpreter and the `serde` extra to detect an installation that has
+lost its native paths.
+
 **Numpy extension:** with the default encoder, `numpy=True` on
 `dumps`/`dump`/`dumpb` converts arrays with `.tolist()` and scalars with `.item()`
 before calling a user-supplied `default` for other objects. Conversion and float

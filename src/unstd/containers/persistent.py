@@ -4,9 +4,9 @@ Where stdlib's ``types.MappingProxyType`` gives a *read-only view* of a mutable
 dict (mutate the original and the "frozen" view changes underneath you), a
 persistent :class:`Map` is genuinely immutable: :meth:`Map.set` / :meth:`Map.delete`
 return a **new** map and leave the original untouched, sharing all unchanged
-structure between the two versions rather than deep-copying. That makes "snapshot
-this state and hand it to a concurrent reader" an ``O(log n)`` operation with no
-copy and no lock — the property stdlib has no container for.
+structure between the two versions rather than deep-copying. Retaining an
+existing map as a snapshot is ``O(1)``; deriving a version copies only the
+affected trie path rather than the whole mapping. Values remain shared references.
 
 Backend: `immutables <https://github.com/MagicStack/immutables>`_ — a
 C (with a pure-Python fallback) Hash Array Mapped Trie. The HAMT is Phil

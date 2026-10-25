@@ -6,6 +6,11 @@ Operations run when sortedcontainers or immutables is installed. Missing-backend
 
 `test_missing_backends.py` blocks one backend at a time in a fresh interpreter, so the real import guards take their placeholder branch even where the extra is installed. Only the blocked family's flag and constructors degrade, with the exact actionable message; the other family still builds. With both backends present, the public names are the upstream classes themselves.
 
+`test_lazy_exports.py` checks fresh-process package discovery, imports of each
+family, cached class identity, star imports and reloads. Loading one family must
+leave the other backend unloaded, and `dir()` must discover all public names
+without loading either backend.
+
 Run from the repository root:
 
 ```console

@@ -7,9 +7,19 @@ is a **curated safe surface**, not a drop-in of every `subprocess` API.
 
 ## Backend
 
-**Pure stdlib — no extra, no third-party backend.** Unlike `serde`/`ids`/`time`,
-`proc`'s value is _safety_, not speed, so there is nothing to accelerate. It
-imports and works in a base `unstd` install and adds zero dependency closure.
+**Pure stdlib — no extra, no third-party backend.** It imports and works in a
+base `unstd` install and adds zero dependency closure.
+
+Bounded child waits use Linux pidfds or macOS kqueue exit notifications when
+available. This removes stdlib's exponential polling sleeps after captured
+pipes close, including when a child closes stdout/stderr before it exits.
+Already completed children are checked before allocating a notification handle.
+Unavailable or restricted kernel facilities fall back to the stdlib wait with
+the remaining deadline; Windows retains stdlib waits. Pipe communication,
+decoding, process creation and direct-child reaping remain with `subprocess`.
+
+The optimization targets exit latency; process startup and the child's own work
+can dominate other commands. See the [paired Linux/macOS measurements](../../../bench/reports/proc/README.md).
 
 ## What it hardens
 
@@ -59,4 +69,6 @@ exception couldn't keep.
 
 ## Implementation layout
 
-Result and error implementations live in [`_internal/`](_internal/README.md), retaining `unstd.proc` as their public identity. Process execution remains in the package interface.
+Result and error implementations and the private bounded-wait backend live in
+[`_internal/`](_internal/README.md). Result classes retain `unstd.proc` as their
+public identity. Execution orchestration remains in the package interface.

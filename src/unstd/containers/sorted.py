@@ -11,10 +11,9 @@ three that fill that gap:
 
 Backend: these come from `sortedcontainers
 <https://grantjenks.com/docs/sortedcontainers/>`_ (Grant Jenks) — a pure-Python
-implementation whose *list-of-lists* design keeps each inner run short enough
-that ``memmove``/``bisect`` on native C lists beats a tree's pointer-chasing in
-practice, so it is competitive with, and often faster than, C-extension balanced
-trees while staying pure Python. There is **no faithful stdlib substitute** (a
+implementation whose *list-of-lists* design uses native list insertion and
+binary search within short runs. Performance depends on the workload, collection
+size and load factor. There is **no faithful stdlib substitute** (a
 plain ``list`` + ``bisect.insort`` is ``O(n)`` per insert and easy to desync), so
 this module is guarded: with the ``containers`` extra it re-exports the real
 classes verbatim (a thin, faithful wrapper — ``unstd.containers.SortedDict`` *is*

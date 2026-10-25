@@ -176,6 +176,13 @@ nonzero when the original candidate exceeds it.
 
 ## Stdlib speedup comparisons
 
+The [process backend report](reports/proc/README.md) records paired Linux/macOS
+exit-latency measurements against the previous `proc` source. Its direct
+`profiles/proc_backend.py` driver checks exact output and public signatures,
+retains all wall and parent CPU samples, and separately profiles kernel wait
+routes. Kernel exit notifications target the polling tail after pipe EOF;
+ordinary command and large-output cases remain part of the comparison.
+
 The [parallel hashing report](reports/crypto/crypto-hash-results.md) compares saved and current
 BLAKE3 wrappers with `crypto_hash.py`, including all modes, tiny-call overhead,
 serial streams, raw paired samples, and the measured host's scheduling noise.

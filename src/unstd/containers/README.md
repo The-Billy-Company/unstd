@@ -24,6 +24,11 @@ slower-but-correct stdlib path**:
 - **Importing the package is always safe.** The guarded imports bind a
   placeholder to each public name when a backend is absent, so `from
 unstd.containers import ...` never crashes.
+- **Backends load on first access to their types.** `import unstd.containers`
+  loads neither backend; importing `Map` loads only `immutables`, and importing
+  a sorted type loads only `sortedcontainers`. Resolved names are cached and
+  remain the original upstream classes. `dir()` lists the public types without
+  loading them; importing all four types loads both backends.
 - **Constructing a backed type without its backend raises.** The placeholder
   raises a clear, actionable `ImportError` naming the extra (the deferred-raise
   variant of `serde.structs`'s posture). A consumer that never touches these
@@ -42,15 +47,16 @@ trivially desynced).
 ```python
 sl = SortedList([3, 1, 2])
 sl.add(0)  # -> [0, 1, 2, 3], always sorted
-sl.bisect_left(2)  # O(log n) rank / range queries
+sl.bisect_left(2)  # rank of the first 2
 sd = SortedDict({"b": 2, "a": 1})  # keys iterate in sorted order
 ss = SortedSet([3, 1, 2, 1])  # set semantics + sorted, indexable
 ```
 
-Backed by `sortedcontainers` (Grant Jenks). Its **list-of-lists** design keeps
-each inner run short enough that `memmove`/`bisect` on native C lists beats a
-tree's pointer-chasing in practice — competitive with (often faster than)
-C-extension balanced trees while staying pure Python. `unstd.containers.SortedDict`
+Backed by `sortedcontainers` (Grant Jenks). Its **list-of-lists** design uses
+native list insertion and binary search within short runs. Performance depends
+on workload, collection size and load factor; the first positional query can
+also build an index. Range iteration costs time proportional to the number of
+returned values. `unstd.containers.SortedDict`
 **is** `sortedcontainers.SortedDict` (a thin, faithful re-export — full upstream
 API and docs apply).
 
@@ -77,3 +83,23 @@ Backed by `immutables`, a Hash Array Mapped Trie — Phil Bagwell's structure
 [`contextvars`](https://peps.python.org/pep-0567/), so its persistence and
 structural-sharing semantics are proven in the interpreter itself.
 `unstd.containers.Map` **is** `immutables.Map` (thin, faithful re-export).
+
+When only the final version of a batch is needed, use the backend's bulk APIs
+instead of creating an intermediate map after every edit:
+
+```python
+m2 = m1.update({"c": 3, "d": 4})
+with m1.mutate() as edits:
+    edits["c"] = 3
+    del edits["a"]
+    m3 = edits.finish()
+```
+
+Both preserve `m1`; retain repeated `set`/`delete` calls when callers need every
+intermediate version. For sorted collections, use `update(iterable)` when the
+entire batch is available so the backend can choose a merge/rebuild strategy.
+
+The [performance evaluation](../../../bench/reports/containers/README.md) records
+paired Linux and macOS startup and operation measurements. Lazy exports reduce
+startup work for consumers of one family; individual operations still execute
+the same upstream implementations.

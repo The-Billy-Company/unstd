@@ -278,6 +278,11 @@ are the original stdlib exception classes. `run` returns `CompletedProcess`,
 continues to use explicit argument sequences, captured output, and finite
 positive timeouts.
 
+On Linux and macOS, bounded waits use kernel exit notifications where supported,
+with stdlib fallback when unavailable. The public signatures, captured output,
+timeout exceptions, and direct-child cleanup contracts are unchanged. See the
+[backend details and measurements](../src/unstd/proc/README.md#backend).
+
 `CompletedProcess(argv, returncode, stdout, stderr, duration)` is a frozen,
 slotted dataclass with these public instance members:
 

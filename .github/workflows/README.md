@@ -35,6 +35,13 @@ The Linux/macOS and Python 3.13/3.14 jobs retain that evidence independently.
 No Billy checkout is required. Manual `gzip_diagnostic` runs keep their separate
 check name and do not satisfy the normal performance checks.
 
+The clone comparison also checks 25 common graph and dataclass workloads with
+GC enabled. It proves successful native graph, dataclass and `asdict` routes in
+both installations, then fails if either median wall or CPU latency exceeds
+130% of the comparison revision. Baseline imports select that revision's own
+native entrypoints. Raw timings and route evidence remain in `clone-common.json`
+even when the guard fails.
+
 Normal comparisons also require the installed current JSON kernels to pass
 `tests/tooling/runtime/json_acceleration.py`, then compare JSON record workloads
 between the two installed revisions with `--require-native`. A wall-time

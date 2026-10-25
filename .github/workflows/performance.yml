@@ -127,6 +127,8 @@ jobs:
           > .local/performance/evidence/json-native.json
       - name: Guard installed JSON record latency
         if: ${{ !inputs.gzip_diagnostic }}
+        env:
+          PYTHONPATH: ${{ github.workspace }}/.local/performance/installed-current:${{ github.workspace }}
         run: >-
           .venv/bin/python -m bench.profiles.jsonx_throughput
           --compare-source .local/performance/installed-before

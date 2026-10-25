@@ -363,12 +363,12 @@ assert Path(_gzip_native.__file__).resolve().is_relative_to(Path(sys.prefix).res
 expanded = b'A' * 1_000_000
 raw_wire = zlib.compress(expanded, wbits=-15)
 inflater = _gzip_native.Inflater()
-storage = bytearray(8192)
+storage = bytearray(32768)
 view = inflater.decompress_into(raw_wire + b'following member', storage)
 assert view.obj is storage
 first = bytes(view)
 view.release()
-assert first == expanded[:8192]
+assert first == expanded[:len(storage)]
 assert inflater._selected_backend in {'apple', 'ng', 'zlib'}
 assert not inflater.needs_input
 assert first + inflater.decompress(b'', max_length=len(expanded)) == expanded

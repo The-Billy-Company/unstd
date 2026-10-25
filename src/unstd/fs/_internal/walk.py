@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
+    from os import _ScandirIterator
     from types import ModuleType
 
 _Pathish = str | os.PathLike[str]
@@ -18,16 +19,25 @@ _Pathish = str | os.PathLike[str]
 
 def _open_walk_dir(
     path: _Pathish, *, os_api: ModuleType, flags: int, parent_fd: int | None = None
-) -> tuple[int, Iterator[os.DirEntry[str]], ExitStack] | None:
+) -> tuple[int, _ScandirIterator[str]] | None:
     """Acquire one no-follow directory and its scan, transferring both owners."""
     try:
-        with ExitStack() as owned:
-            fd = os_api.open(path, flags, dir_fd=parent_fd)
-            owned.callback(os_api.close, fd)
-            scan = owned.enter_context(os_api.scandir(fd))
-            return fd, scan, owned.pop_all()
+        fd = os_api.open(path, flags, dir_fd=parent_fd)
+        try:
+            return fd, os_api.scandir(fd)
+        except BaseException:
+            os_api.close(fd)
+            raise
     except OSError:
         return None  # vanished, unreadable, or replaced by a symlink
+
+
+def _close_walk_dir(fd: int, scan: _ScandirIterator[str], os_api: ModuleType) -> None:
+    """Release both owners even when closing the scanner fails."""
+    try:
+        scan.close()
+    finally:
+        os_api.close(fd)
 
 
 def _walk_descriptors(root: Path, os_api: ModuleType, flags: int) -> Iterator[Path]:
@@ -35,35 +45,39 @@ def _walk_descriptors(root: Path, os_api: ModuleType, flags: int) -> Iterator[Pa
     opened = _open_walk_dir(root, os_api=os_api, flags=flags)
     if opened is None:
         return
-    stack = [(root, *opened)]
+    # Keep a directory prefix instead of repeatedly joining Path objects. Each
+    # accepted file still gets its own public Path; ignored entries need none.
+    prefix = str(root)
+    if not prefix.endswith(os.sep):
+        prefix += os.sep
+    stack = [(prefix, *opened)]
     try:
         while stack:
-            path, fd, scan, owned = stack[-1]
+            prefix, fd, scan = stack[-1]
             for entry in scan:
-                child = path / entry.name
                 try:
-                    directory = entry.is_dir(follow_symlinks=False)
-                    regular = not directory and entry.is_file(follow_symlinks=False)
+                    regular = entry.is_file(follow_symlinks=False)
+                    directory = not regular and entry.is_dir(follow_symlinks=False)
                 except OSError:
                     continue  # an entry vanished or became unreadable during its check
-                if directory:
+                if regular:
+                    yield Path(prefix + entry.name)
+                elif directory:
                     opened = _open_walk_dir(
                         entry.name, os_api=os_api, flags=flags, parent_fd=fd
                     )
                     if opened is not None:
-                        stack.append((child, *opened))
+                        stack.append((prefix + entry.name + os.sep, *opened))
                         break  # resume this anchored scan after its child closes
-                elif regular:
-                    yield child
             else:
                 stack.pop()
-                owned.close()
+                _close_walk_dir(fd, scan, os_api)
     finally:
         # Close every live frame on exhaustion, generator.close(), or an error.
         # ExitStack still closes the remaining frames if one cleanup raises.
         with ExitStack() as cleanup:
-            for _, _, _, owned in stack:
-                cleanup.callback(owned.close)
+            for _, fd, scan in stack:
+                cleanup.callback(_close_walk_dir, fd, scan, os_api)
 
 
 def _directory_identity(path: Path, os_api: ModuleType) -> tuple[int, int] | None:

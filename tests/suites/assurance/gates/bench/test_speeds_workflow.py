@@ -306,10 +306,11 @@ def test_installed_json_checks_require_native_paths_and_retain_latency_evidence(
         for step in steps
         if "-m bench.profiles.jsonx_throughput" in step.get("run", "")
     )
-    assert (
-        smoke["env"]["PYTHONPATH"]
-        == (_measurement_steps(workflow)["verify"]["env"]["PYTHONPATH"])
-    )
+    for step in (smoke, paired):
+        assert (
+            step["env"]["PYTHONPATH"]
+            == (_measurement_steps(workflow)["verify"]["env"]["PYTHONPATH"])
+        )
     assert (
         "tests/tooling/runtime/json_acceleration.py"
         in (workflow["on"]["pull_request"]["paths"])

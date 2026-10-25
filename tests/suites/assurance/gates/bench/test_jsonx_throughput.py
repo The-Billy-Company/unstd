@@ -10,6 +10,7 @@ from types import SimpleNamespace
 import pytest
 
 from bench.profiles import jsonx_throughput as profile
+from tests.support.environment.process import run_python
 
 
 def test_native_provenance_accepts_installed_wheel_without_c_sources(
@@ -100,14 +101,25 @@ def test_native_probes_require_native_module_and_optional_backends():
         profile._native_checks(SimpleNamespace(_native=None))
 
 
-def test_real_installed_native_probes():
+def test_real_installed_native_probes(tmp_path):
     pytest.importorskip("orjson")
     pytest.importorskip("msgspec")
     pytest.importorskip("unstd.serde._json_native")
-    from unstd.serde import jsonx
-
-    result = profile._native_checks(jsonx)
-    assert all(result["probes"].values())
+    # Earlier harness tests profile or replace codecs. CPython 3.12/3.13 retain
+    # monitoring state that correctly disables native guards after profiling.
+    # Qualify the installed product in the same fresh-process context as timing.
+    result = run_python(
+        """
+import json
+from bench.profiles.jsonx_throughput import _native_checks
+from unstd.serde import jsonx
+print(json.dumps(_native_checks(jsonx)))
+""",
+        cwd=tmp_path,
+        timeout=30,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert all(json.loads(result.stdout)["probes"].values())
 
 
 @dataclass

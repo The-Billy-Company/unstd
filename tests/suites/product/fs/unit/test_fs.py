@@ -167,6 +167,36 @@ def test_ensure_dir_is_idempotent_and_makes_parents(tmp_path: Path) -> None:
     assert target.is_dir()
 
 
+def test_ensure_dir_rejects_existing_file_without_changing_it(tmp_path: Path) -> None:
+    target = tmp_path / "file"
+    target.write_bytes(b"preserved")
+    with pytest.raises(FileExistsError):
+        fs.ensure_dir(target)
+    assert target.read_bytes() == b"preserved"
+
+
+@pytest.mark.skipif(os.name == "nt", reason="POSIX symlink fixture")
+@pytest.mark.parametrize("kind", ["directory", "file", "missing"])
+def test_ensure_dir_preserves_symlink_behavior(tmp_path: Path, kind: str) -> None:
+    target = tmp_path / "target"
+    if kind == "directory":
+        target.mkdir()
+    elif kind == "file":
+        target.write_bytes(b"preserved")
+    link = tmp_path / "link"
+    link.symlink_to(target, target_is_directory=kind == "directory")
+    if kind == "directory":
+        assert fs.ensure_dir(link) == link
+    else:
+        with pytest.raises(FileExistsError):
+            fs.ensure_dir(link)
+    assert link.is_symlink()
+    if kind == "file":
+        assert target.read_bytes() == b"preserved"
+    elif kind == "missing":
+        assert not target.exists()
+
+
 # ── walk_files: scandir walking, symlink safety ─────────────────────
 
 

@@ -47,6 +47,11 @@ direct entry point, isolated installations, shared benchmark dependencies,
 committed fixtures, 30% wall-time limit and retained report. These tests have no
 machine-speed assertions.
 
+The common clone guard requires successful native graph, dataclass and `asdict`
+calls in each isolated revision and checks all 25 workloads with GC enabled.
+Its unit tests reject declined native calls and separate wall/CPU regressions,
+check baseline entrypoint isolation, and require evidence to survive failure.
+
 `test_timing_noise.py` uses virtual clocks to reject preempted calibration
 batches and retain separate wall/CPU evidence. `test_rand_diagnose.py` exercises
 alternating direct controls, source identities, cleanup and baseline overwrite

@@ -6,3 +6,6 @@ Document the new optional extras, guard Unix-only benchmark metadata, and qualif
 zipfile's version-specific internal child module against its actual stdlib API.
 Retain a recursive YAML merge finding as a fuzz regression while preserving safe
 parser and product parity checks.
+Avoid whole-block gzip engine selection for small buffered reads, compare shared
+performance workloads before timing added APIs, and bound sanitizer-only stack
+boundary differences without dropping discarded-source recursion checks.

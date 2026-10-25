@@ -66,7 +66,7 @@ existing paths. `_internal` packages are implementation details.
 | `iters` | Package functions and `consecutive.py`, `distinct.py`, `reshape.py`, `select.py` | Small focused combinator modules |
 | `model` | Package classes, `base.py`, `settings.py` | Strict Pydantic model and settings configuration |
 | `pack` | `binpack.py` | `_internal/dtype.py` owns portable dtype grammar and bounded struct caches |
-| `proc` | Package functions and classes | `_internal/results.py` implements result/error classes; execution stays at the public module |
+| `proc` | Package functions and classes | `_internal/results.py` implements result/error classes; `backend.py` adds kernel exit notifications to bounded stdlib waits; execution orchestration stays at the public module |
 | `rand` | Package functions, `draw.py`, `crypto.py` | Seeded engines remain separate from unseedable security draws |
 | `rex` | Package functions, flags and types | `_internal/profile.py` proves semantic eligibility; `patterns.py` owns adapters; caches remain public-module state |
 | `serde` | `jsonx.py`, `b64.py`, `ndjson.py`, `structs.py` | `_internal/json_encode.py` and `json_common.py`; private native JSON extension |
@@ -143,6 +143,9 @@ revisions independently on Linux and macOS with Python 3.13 and 3.14, then
 compares them against a baseline measured on the same worker with identical
 dependencies and workloads. This includes the distinct Python 3.14 C fast paths.
 It retains separate platform evidence and also runs when native sources change.
+JSON qualification additionally exercises actual installed native kernels and
+their public bindings, then gates paired record timings at a 15% maximum
+slowdown. Release wheels run the same native check before their full contracts.
 These checks detect regressions on each platform; they cannot guarantee equal
 elapsed times across machines. CPU architecture, memory bandwidth, scheduling,
 storage and OS services still affect throughput and latency. Use the

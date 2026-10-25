@@ -81,7 +81,8 @@ type _Durability = bool | Literal["strict"]
 def ensure_dir(path: _Pathish) -> Path:
     """``mkdir(parents=True, exist_ok=True)`` folded into one call — create *path* and any missing parents, returning it. Idempotent: a no-op (never an error) when the directory already exists."""
     p = Path(path)
-    p.mkdir(parents=True, exist_ok=True)
+    if not p.is_dir():
+        p.mkdir(parents=True, exist_ok=True)
     return p
 
 
@@ -115,7 +116,8 @@ def _prepare_parent(parent: Path, *, strict: bool) -> None:
                     errno.ENOTDIR, os.strerror(errno.ENOTDIR), current
                 )
             break
-    ensure_dir(parent)
+    if missing:
+        ensure_dir(parent)
     for created in reversed(missing):
         sync_dir(created.parent, strict=True)
     # Refuse unsupported directory syncing before replacing the destination.

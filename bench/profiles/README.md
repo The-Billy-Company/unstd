@@ -9,6 +9,7 @@ These drivers compare saved and current implementations, check outputs and impor
 - [`clone_cpu.py`](clone_cpu.py) — paired wall and process CPU measurements, including large trees, preserved aliases and cyclic fallback
 - [`clone_common_cpu.py`](clone_common_cpu.py) — public Python clone entrypoints on common nested data and dataclasses, against saved native baselines
 - [`native_profile.py`](native_profile.py)
+- [`proc_backend.py`](proc_backend.py) — paired Linux/macOS process latency, exact captured I/O, source/signature checks, and separate wait-route profiles; run this file directly
 - [`crypto_hash.py`](crypto_hash.py)
 - [`billy_serde.py`](billy_serde.py)
 - [`billy_audio.py`](billy_audio.py) — exact PCM wrapping and raw normalization ports, paired timings, allocation peaks and captured Billy consumer source
@@ -16,6 +17,12 @@ These drivers compare saved and current implementations, check outputs and impor
 - [`billy_gzip.py`](billy_gzip.py) — frozen Billy consumer receipts, real ijson batches, bounded HTTP reads, two-pass uploads, and journal writes/flushes/replay
 - [`gzip_concurrency.py`](gzip_concurrency.py) — independent Billy streams on 1, 2 and 4 warmed executor workers, with isolated installations and aggregate wall throughput
 - [`text_native_compare.py`](text_native_compare.py)
+
+For installed clone baselines, add `--infer-native-bindings` to load only the
+entrypoints imported by that baseline's own Python wrapper. Use
+`--require-native --gc-enabled --max-slowdown 1.30` to prove successful native
+routes and gate both median wall and process CPU latency across all 25 common
+workloads. The output report is saved before a failed guard exits.
 
 Run the Billy gzip comparison through its direct file entry point so neither
 product installation loads before a worker selects its source:
