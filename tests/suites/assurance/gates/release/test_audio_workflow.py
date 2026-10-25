@@ -8,6 +8,7 @@ import io
 import json
 import re
 import shlex
+import subprocess
 from typing import TYPE_CHECKING, Any, cast
 from urllib import request
 
@@ -58,7 +59,7 @@ def test_audio_qualification_is_a_required_read_only_bounded_reusable_job(
     job = workflow["jobs"]["qualify"]
     assert job["runs-on"] == "ubuntu-latest"
     assert 1 <= job["timeout-minutes"] <= 20
-    assert job["env"]["UV_PROJECT_ENVIRONMENT"].startswith("${{ runner.temp }}/")
+    assert job["env"] == {"UV_MANAGED_PYTHON": "1"}
     assert job["defaults"]["run"]["shell"] == "bash"
     for step in _steps(workflow):
         assert not step.get("continue-on-error", False)
@@ -70,6 +71,24 @@ def test_audio_qualification_is_a_required_read_only_bounded_reusable_job(
     assert gate["uses"] == "./.github/workflows/audio-security.yml"
     assert gate["permissions"] == {"contents": "read"}
     assert "audio-security" in ci["jobs"]["result"]["needs"]
+
+
+def test_isolated_environment_is_selected_only_after_the_runner_starts(
+    workflow: dict[str, Any], tmp_path: Path
+) -> None:
+    environment = _step(workflow, "environment")
+    assert _steps(workflow)[0] is environment
+    exported = tmp_path / "github-env"
+    runner_temp = tmp_path / "runner temp"
+    result = subprocess.run(  # noqa: S603 — repository-owned environment export
+        ["bash", "-e", "-c", environment["run"]],  # noqa: S607
+        env={"RUNNER_TEMP": str(runner_temp), "GITHUB_ENV": str(exported)},
+        check=False,
+    )
+    assert result.returncode == 0
+    assert exported.read_text() == (
+        f"UV_PROJECT_ENVIRONMENT={runner_temp}/unstd-audio-security\n"
+    )
 
 
 def test_action_pins_match_ci_and_no_publishing_capabilities_are_requested(
