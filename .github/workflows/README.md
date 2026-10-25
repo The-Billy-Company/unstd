@@ -77,6 +77,12 @@ and pristine installed-consumer checks cover native dispatch and the Python
 fallback. The [filesystem qualification](../../bench/reports/fs/production/README.md)
 records the separate installed workload and sanitizer evidence.
 
+Pack's `_pack_native` validator is included in native imports, sanitizer product
+tests, installed-wheel tests and release verification. It scans immutable
+numeric frames without a NumPy C ABI; base consumers exercise tuple results
+and NumPy consumers exercise read-only views. Python fallback and native tests
+share independent geometry, boundary, nonfinite-value and ownership contracts.
+
 The dependency-floor job restores the committed `uv.lock` immediately after
 installing its lowest-direct environment. Tests retain those installed versions
 with `--no-sync`, while release/export checks inspect the audited canonical lock

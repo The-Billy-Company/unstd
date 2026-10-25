@@ -31,6 +31,11 @@ allocation/commit failpoints and deterministic staging reentry. Set
 `UNSTD_CONTAINERS_REQUIRE_TEST_HOOKS=1` to require their presence; production
 builds omit those hooks.
 
+`test_native_metadata_keys.py` retains exact callback counts and replaced-dictionary
+finalizer traces by resetting upstream bytecode caches before each side and
+checking the oracle against itself. Foreign class/base keys must keep descriptor
+errors and upstream partial-update state while declining the native layout path.
+
 `test_lazy_exports.py` checks fresh-process package discovery, imports of each
 family, cached class identity, star imports and reloads. Loading one family must
 leave the other backend unloaded, and `dir()` must discover all public names

@@ -54,7 +54,7 @@ To migrate existing JSON calls, use `from unstd.serde import jsonx as json`.
 | Validated models and settings | [`model`](src/unstd/model/README.md) | `model` |
 | Sorted collections and persistent mappings | [`containers`](src/unstd/containers/README.md) | `containers` |
 | Regex and fuzzy matching | [`rex`](src/unstd/rex/README.md), [`text`](src/unstd/text/README.md) | `rex`, `text` |
-| Bulk packing and random draws | [`pack`](src/unstd/pack/README.md), [`rand`](src/unstd/rand/README.md) | `pack`, `rand` |
+| Numeric frames, bulk packing and random draws | [`pack`](src/unstd/pack/README.md), [`rand`](src/unstd/rand/README.md) | `pack`, `rand` |
 | TOML writing and YAML parsing/editing | [`toml`](src/unstd/toml/README.md), [`yaml`](src/unstd/yaml/README.md) | `toml`, `yaml` |
 | Audio decoding, encoding, and streaming | [`audio`](src/unstd/audio/README.md) | `audio` |
 | Atomic files, subprocesses, iteration | [`fs`](src/unstd/fs/README.md), [`proc`](src/unstd/proc/README.md), [`iters`](src/unstd/iters/README.md) | None |

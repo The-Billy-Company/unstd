@@ -8,7 +8,11 @@ doc_radar:
     - file: ../../../pyproject.toml
       contains: ['select = "cp3{12,13}-macosx_x86_64"', 'sysconfig.get_config_var("CFLAGS")']
     - file: ../../../hatch_build.py
-      contains: ['def _compiler_commands(', 'self.compiler.set_executables(', '"profile_sha256"']
+      contains: ['def _compiler_commands(', 'self.compiler.set_executables(', '"profile_sha256"', '"unstd.pack._pack_native"']
+    - file: wheel_tests.py
+      contains: ['"pack",']
+    - file: verify.py
+      contains: ['"unstd/pack/_pack_native",']
 ---
 
 # Release verification tooling
@@ -31,6 +35,23 @@ integration cases. Their syscall-boundary checks compile a test-only ELF
 observer from the source tree when a compiler is available; it is not a
 production backend or a profiling dependency. Installed Billy performance
 qualification has a separate [driver and retained receipts](../../../bench/reports/fs/production/README.md).
+
+The native-wheel verifier also requires exactly one `unstd.pack._pack_native`
+binary. Cibuildwheel imports it before the installed-wheel runner executes the
+complete [pack contracts](../../suites/product/pack/README.md), including public
+ragged-frame admission and direct native metadata checks. The extension is
+built independently of the NumPy extra and needs no NumPy C ABI; base installs
+can use it with immutable tuple output. Its typing stub ships with the Python
+package, and `native/pack/src/adapter.c` belongs in the sdist.
+
+Local optional compiler failures leave the stdlib ragged validator available;
+strict release builds fail on a missing registered kernel. Free-threaded and
+non-CPython local builds keep the Python implementation. The
+[kernel guide](../../../native/pack/README.md) documents immutable input,
+complete boundary/finite validation, and cancellation. The separate
+[complete-decoder qualification](../../../bench/reports/pack/ragged/README.md)
+records native routing and the explicit performance target; wheel correctness
+checks alone do not establish a speedup.
 
 [`wheels.py`](wheels.py) keeps cibuildwheel's build, repair and test pipeline.
 Standard native CPython builds on macOS and CPython 3.12 builds on Windows use

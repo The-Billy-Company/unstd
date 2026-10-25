@@ -1,12 +1,22 @@
 # Pack backend qualification
 
-The existing `pack_array_portable` API and the no-NumPy `pack_array` fallback
-now copy matching primitive array storage without first creating Python scalar
-objects. No public API, dependency, wire format, or application code changed.
+This page retains the initial typed-buffer packing qualification. Later work is
+recorded separately:
+
+- [Buffer-window APIs and captured consumer qualification](consumer-api/README.md)
+  add byte offsets and element counts to the existing decoders.
+- [Complete validated numeric-frame decoding](ragged/README.md) adds the generic
+  ragged decoder and records the explicit 100× complete-decoder target.
+
+The initial phase made `pack_array_portable` and the no-NumPy `pack_array`
+fallback copy matching primitive array storage without first creating Python
+scalar objects. That phase changed no public API, dependency, wire format, or
+application code; the later API additions are covered by the reports above.
 
 The 100× target is demonstrated for large matching typed-array encoding on both
-measured operating systems. It is **not achieved for Billy's current packing
-calls**: its compiled `Struct` operations and float32-to-owned-list conversion
+measured operating systems. It was **not achieved for the captured Billy
+packing operations**: their compiled `Struct` operations and
+float32-to-owned-list conversion
 remain approximately unchanged. These two results must not be combined into an
 application-wide speedup claim.
 
@@ -68,7 +78,7 @@ case measured 5.922 → 6.497 µs (0.91×); no speedup or regression-free claim 
 made for ordinary generators. Matching native stdlib double arrays also remain
 below 100× on Linux, as the table shows.
 
-| Current Billy operation | macOS speedup | Linux speedup |
+| Captured operation | macOS speedup | Linux speedup |
 | --- | --- | --- |
 | `Struct('!256d').pack(*list)` | 1.03× | 1.05× |
 | Decode `!256d` to an owned list | 1.03× | 1.00× |
@@ -135,13 +145,15 @@ snapshots, and released exports. Nine harness tests reject incorrect outputs,
 wrong ownership, wrong sources, and missing evidence inputs. Ruff check/format,
 strict mypy for the changed library/harness, and the public signature gate pass.
 
-Extract the retained original implementation and run the same harness on each
-platform with NumPy installed:
+Extract both source snapshots to replay this initial comparison on a platform
+with NumPy installed. Use the retained candidate rather than the current
+package, whose later API additions intentionally change its signatures:
 
 ```console
-mkdir -p /tmp/pack-before
+mkdir -p /tmp/pack-before /tmp/pack-after
 tar -xzf bench/reports/pack/before-source.tar.gz -C /tmp/pack-before
-python bench/profiles/pack_backend.py --compare-source /tmp/pack-before/src --source src --rounds 9 --batch-ms 30 --output /tmp/pack-results.json
+tar -xzf bench/reports/pack/candidate-source.tar.gz -C /tmp/pack-after
+python bench/profiles/pack_backend.py --compare-source /tmp/pack-before/src --source /tmp/pack-after/src --rounds 9 --batch-ms 30 --output /tmp/pack-results.json
 python -m pytest tests/suites/product/pack tests/suites/assurance/gates/bench/test_pack_backend.py -q
 ```
 

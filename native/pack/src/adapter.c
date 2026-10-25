@@ -97,6 +97,7 @@ finite_scalar(const unsigned char *data, Py_ssize_t count,
 static int
 finite_f32(const unsigned char *data, Py_ssize_t count, int little)
 {
+    /* Independent reductions avoid a dependency-bound one-vector scan. */
 #if defined(PACK_NEON)
     if (native_little()) {
         uint32x4_t mask = vdupq_n_u32(UINT32_C(0x7f800000));

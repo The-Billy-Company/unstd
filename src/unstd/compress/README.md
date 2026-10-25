@@ -69,8 +69,7 @@ With the compression extra, Linux normally uses zlib-ng's native SIMD inflater.
 Linux x86_64 builds with the reviewed ISA-L codec and supported CPU can use the
 bundled bridge, selecting ISA-L before decoding for admitted stream shapes and
 retaining zlib-ng for other inputs. macOS keeps its faster platform `libz`
-through the bundled C adapter. Other
-platforms retain the bundled inflater. The compiled extension supplies
+through the bundled C adapter. Other platforms retain the bundled inflater. The compiled extension supplies
 libdeflate CRC32 on native paths. The running interpreter still supplies gzip
 framing, buffering, header/trailer checks, concatenated members and seeking.
 Small reads keep a bounded output budget rather than expanding the whole member.
@@ -87,6 +86,10 @@ Linux keeps its zlib-ng SIMD reader unless its optional ISA-L route admits the
 stream. Selection adds no package dependency.
 The [single-stream qualification](../../../bench/reports/compress/single-stream/README.md)
 records repetitive-stream gains, server parity, edge costs and streaming checks.
+The [Linux and Mac C qualification](../../../bench/reports/compress/linux-throughput/README.md)
+records server streaming gains and faster request and dataset encoding on both
+machines. Linux release wheels include the private SIMD decoder; source builds
+need local NASM or Yasm to enable it. No ISA-L Python package is needed at runtime.
 
 Eligible complete single-member exact `bytes` inputs use libdeflate for one-shot
 `decompress`. The native kernel validates framing, CRC32, original size and

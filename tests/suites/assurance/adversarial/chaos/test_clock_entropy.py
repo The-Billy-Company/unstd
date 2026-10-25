@@ -5,7 +5,9 @@ Rust UUID backend owns its clock and cannot be redirected by Python patches.
 Secure random tests inject the real stdlib entropy boundary, never a seeded
 replacement for the implementation under test. A short-read experiment records
 stdlib alias behavior; it does not claim validation beyond os.urandom's own
-exact-length contract. Every global fault lives in a bounded fresh interpreter.
+exact-length contract. Scratch-file faults expose the Python token consumer;
+Linux getrandom failures are covered at the native filesystem syscall boundary.
+Every global fault lives in a bounded fresh interpreter.
 """
 
 from __future__ import annotations
@@ -343,6 +345,7 @@ def test_scratch_entropy_outage_leaves_existing_file_and_recovers(
         )
         assert observed["error"] == {"same_instance": True, "errno": code}
         assert observed["requests"] == [4]
+        assert observed["consumer_requests"] == [4]
         assert observed["failed_contents"] == "previous complete document"
         assert observed["failed_entries"] == ["document"]
         assert observed["recovered_contents"] == "new complete document"

@@ -43,6 +43,9 @@ helpers, fields, aliases and payload identity. Existing exact dictionary keys
 are replaced while old state remains pinned; a failed replacement restores the
 original metadata. No list-storage pointer crosses a callback or allocation.
 The private `mutation_stats` counters prove actual fast-path use outside timing.
+Successful batches invalidate the positional index. A subsequent query that
+needs it rebuilds the index upstream; mutation-only timings exclude that later
+query. Retaining the old index array forces the alias-preserving fallback.
 
 Test builds define `UNSTD_CONTAINERS_TESTING=1`, exposing `_set_test_hook` only
 there. Deterministic failpoints cover staging allocations and all four commit

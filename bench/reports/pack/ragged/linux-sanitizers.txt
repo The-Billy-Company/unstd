@@ -1,0 +1,10 @@
+BUILD
+{"source": "/tmp/pack-ragged-source", "sanitizer_source": "/tmp/pack-ragged-asan", "compiler": ["gcc", "-shared", "-fPIC", "-O1", "-g", "-fno-omit-frame-pointer", "-fsanitize=address,undefined", "-I/usr/local/include/python3.14", "/workspace/native/pack/src/adapter.c", "-o", "/tmp/pack-ragged-asan/unstd/pack/_pack_native.cpython-314-aarch64-linux-gnu.so"], "adapter_sha256": "627bb499f3614c5c5c53d05e2514e6bac268c991792f491eee6322a4bda1778e", "extension": "/tmp/pack-ragged-asan/unstd/pack/_pack_native.cpython-314-aarch64-linux-gnu.so", "extension_sha256": "85a8dc7d32b960c01fb811eb36c4b1f48723737972bde2fde3565496fab8498e", "libasan": "/usr/lib/gcc/aarch64-linux-gnu/14/libasan.so", "compiler_output": ""}
+RUN
+["docker", "exec", "-i", "-w", "/workspace", "-e", "LD_PRELOAD=/usr/lib/gcc/aarch64-linux-gnu/14/libasan.so", "-e", "ASAN_OPTIONS=detect_leaks=0:abort_on_error=1", "-e", "UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1", "-e", "PYTHONMALLOC=malloc", "-e", "PYTHONPATH=/tmp/pack-ragged-asan:/workspace", "-e", "HYPOTHESIS_STORAGE_DIRECTORY=/tmp/pack-ragged-asan-hypothesis", "unstd-pack-ragged-qualification", "python", "-"]
+{"python": "3.14.8 (main, Oct  6 2026, 02:02:59) [GCC 14.2.0]", "native": "/tmp/pack-ragged-asan/unstd/pack/_pack_native.cpython-314-aarch64-linux-gnu.so", "ragged": "/tmp/pack-ragged-asan/unstd/pack/ragged.py", "kernel_version": 1}
+........................................................................ [ 59%]
+.................................................                        [100%]
+121 passed in 0.47s
+
+EXIT_CODE 0

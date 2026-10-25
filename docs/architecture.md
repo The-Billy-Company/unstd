@@ -121,7 +121,8 @@ Builds read native sources from this tree and emit private binary modules,
 including `unstd.serde._json_native`, `unstd.clone._clone_native`,
 `unstd.crypto._stream_native`, `unstd.text._text_native`,
 `unstd.compress._gzip_native`, `unstd.containers._sorted_native`,
-`unstd.proc._proc_native` and `unstd.rand._rand_native`.
+`unstd.proc._proc_native`, `unstd.rand._rand_native`, and
+`unstd.pack._pack_native`.
 Linux additionally builds `unstd.fs._fs_native`.
 The [build registry](../hatch_build.py) lists all bundled extensions; their typing
 stubs live beside the Python interfaces.

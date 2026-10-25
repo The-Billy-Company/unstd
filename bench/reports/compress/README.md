@@ -2,6 +2,7 @@
 
 - [Paired gzip consumer throughput](billy-throughput.md) — dataset, upload, HTTP and journal workloads on macOS and Linux
 - [Single-stream gzip C qualification](single-stream/README.md) — Mac repetitive-stream gains and actual Linux server parity
+- [Linux and Mac C gzip throughput](linux-throughput/README.md) — server streaming gains, request encoding and dataset materialization, with strict incremental histories and packaged-build evidence
 - [port-contracts](port-contracts.md) — consumer call inventory, import routes and behavior boundaries
 - [gzip-native-reads](gzip-native-reads.md)
 - [gzip-read-results](gzip-read-results.md)

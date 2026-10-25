@@ -178,6 +178,10 @@ def unpack_array(
     Bounds, conversion, and errors follow the selected backend.
     """
     if _HAVE_NUMPY:
+        # Keep the original whole-buffer call cheap. Other range objects go
+        # untouched to NumPy so its index hooks and validation order still run.
+        if type(count) is int and count == -1 and type(offset) is int and offset == 0:
+            return np.frombuffer(buf, dtype=dtype)
         return np.frombuffer(buf, dtype=dtype, count=count, offset=offset)
     return _unpack_array_struct(dtype, buf, count=count, offset=offset)
 

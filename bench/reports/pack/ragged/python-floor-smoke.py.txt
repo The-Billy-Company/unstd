@@ -1,0 +1,180 @@
+"""Functional floor-runtime checks for native and stdlib ragged decoding.
+
+Run with ``python -I -S THIS_FILE /isolated/src``. This is qualification evidence,
+not a performance benchmark. No optional NumPy installation is available.
+"""
+
+from __future__ import annotations
+
+from dataclasses import FrozenInstanceError
+import importlib
+import json
+import math
+from pathlib import Path
+import struct
+import sys
+import sysconfig
+from typing import get_type_hints
+
+
+source = Path(sys.argv[1]).resolve()
+assert sys.flags.isolated and sys.flags.no_site
+sys.path.insert(0, str(source))
+from unstd.pack import binpack, ragged
+
+
+native = importlib.import_module("unstd.pack._pack_native")
+assert Path(binpack.__file__).resolve() == source / "unstd/pack/binpack.py"
+assert Path(ragged.__file__).resolve() == source / "unstd/pack/ragged.py"
+assert Path(native.__file__).resolve().parent == source / "unstd/pack"
+assert ragged._native is native
+assert native.KERNEL_VERSION == 1
+assert not binpack._HAVE_NUMPY and "numpy" not in sys.modules
+checks = 0
+
+
+def equal(actual, expected):
+    global checks
+    assert actual == expected, (actual, expected)
+    checks += 1
+
+
+def refused(exception, call):
+    global checks
+    try:
+        call()
+    except exception:
+        checks += 1
+    else:
+        raise AssertionError(f"{exception.__name__} was not raised")
+
+
+value_formats = {
+    "i1": "b", "u1": "B", "i2": "h", "u2": "H", "i4": "i",
+    "u4": "I", "i8": "q", "u8": "Q", "f2": "e", "f4": "f", "f8": "d",
+}
+index_formats = {kind: char for kind, char in value_formats.items() if kind[0] != "f"}
+modes = {}
+for mode in ("native", "stdlib"):
+    start = checks
+    ragged._native = native if mode == "native" else None
+    for kind, char in value_formats.items():
+        if kind == "f2":
+            values = [-0.0, 2**-24, -1.5, 65504.0, 1.0, -2.0]
+        elif kind == "f4":
+            values = [-0.0, 2**-149, -1.5, 1e30, 1.0, -2.0]
+        elif kind == "f8":
+            values = [-0.0, 5e-324, -1.5, 1e300, 1.0, -2.0]
+        else:
+            values = list(range(6)) if char.isupper() else [-3, -2, -1, 0, 1, 2]
+        for order in "<>=|":
+            wire_order = "=" if order == "|" else order
+            payload = struct.pack(f"{wire_order}6{char}", *values)
+            expected = struct.unpack(f"{wire_order}6{char}", payload)
+            rows = tuple(tuple(expected[i:i + 2]) for i in range(0, 6, 2))
+            for index_kind, index_char in index_formats.items():
+                for index_order in "<>=|":
+                    wire_index = "=" if index_order == "|" else index_order
+                    prefix = struct.pack(f"{wire_index}3{index_char}", 0, 1, 3)
+                    decoder = ragged.RaggedDecoder(
+                        order + kind, columns=2, index_dtype=index_order + index_kind,
+                        finite=True, allow_empty=False,
+                    )
+                    actual, indices = decoder.unpack(prefix + payload, index_count=3)
+                    equal((actual, indices), (rows, (0, 1, 3)))
+                    equal(type(actual), tuple)
+                    equal(type(indices), tuple)
+                    equal(struct.pack(f"{wire_order}6{char}", *(v for row in actual for v in row)), payload)
+    for order in "<>=":
+        wire_order = order
+        byteorder = sys.byteorder if order == "=" else "little" if order == "<" else "big"
+        for kind, char, size, nan in (
+            ("f4", "f", 4, 0x7F800001),
+            ("f8", "d", 8, 0x7FF0000000000001),
+        ):
+            decoder = ragged.RaggedDecoder(order + kind, columns=1, index_dtype="u1", finite=True, allow_empty=False)
+            prefix = struct.pack("=3B", 0, 1, 65)
+            payload = struct.pack(f"{wire_order}65{char}", *map(float, range(65)))
+            actual, indices = decoder.unpack(prefix + payload, index_count=3)
+            equal(actual, tuple((float(i),) for i in range(65)))
+            equal(indices, (0, 1, 65))
+            for position in (0, 15, 16, 31, 32, 63, 64):
+                changed = bytearray(payload)
+                changed[position * size:(position + 1) * size] = nan.to_bytes(size, byteorder)
+                frame = prefix + changed
+                refused(ValueError, lambda frame=frame: decoder.unpack(frame, index_count=3))
+    decoder = ragged.RaggedDecoder("<f4", columns=2, index_dtype="<i8", finite=True, allow_empty=False)
+    prefix = struct.pack("<3q", 0, 1, 3)
+    payload = struct.pack("<6f", 0.0, 1.0, -2.0, 3.0, 4.0, 5.0)
+    frame = prefix + payload
+    original = decoder.unpack(frame, index_count=3)
+    mutable = bytearray(frame)
+    equal(decoder.unpack(mutable, index_count=3), original)
+    mutable[:] = bytes(len(mutable))
+    mutable.extend(b"x")
+    equal(original, (((0.0, 1.0), (-2.0, 3.0), (4.0, 5.0)), (0, 1, 3)))
+    owner = bytearray(frame)
+    readonly = memoryview(owner).toreadonly()
+    equal(decoder.unpack(readonly, index_count=3), original)
+    readonly.release()
+    owner.extend(b"x")
+    for indices in ((1, 2, 3), (0, 1, 2), (0, 3, 2), (0, 0, 3), (0, -1, 3)):
+        bad = struct.pack("<3q", *indices) + payload
+        refused(ValueError, lambda bad=bad: decoder.unpack(bad, index_count=3))
+    refused(ValueError, lambda: decoder.unpack(frame + b"x", index_count=3))
+    refused(ValueError, lambda: decoder.unpack(frame, index_count=10**5000))
+    refused(ValueError, lambda: decoder.unpack(frame, index_count=0))
+    refused(TypeError, lambda: decoder.unpack(frame, index_count=1.5))
+    refused(FrozenInstanceError, lambda: setattr(decoder, "columns", 3))
+    decoder = ragged.RaggedDecoder("<f4", columns=1, index_dtype="<u8", finite=True, allow_empty=False)
+    count = (1 << 20) // 4 + 1
+    late_nan = struct.pack("<2Q", 0, count) + bytes((count - 1) * 4) + struct.pack("<I", 0x7F800001)
+    refused(ValueError, lambda: decoder.unpack(late_nan, index_count=2))
+    for kind, char in (("f2", "e"), ("f4", "f"), ("f8", "d")):
+        decoder = ragged.RaggedDecoder("<" + kind, columns=1, index_dtype="<i8", finite=False, allow_empty=False)
+        frame = struct.pack("<2q", 0, 2) + struct.pack("<2" + char, math.inf, math.nan)
+        actual, indices = decoder.unpack(frame, index_count=2)
+        equal(actual[0], (math.inf,))
+        equal(math.isnan(actual[1][0]), True)
+        equal(indices, (0, 2))
+    hints = get_type_hints(ragged.RaggedDecoder)
+    equal(hints["columns"], int)
+    equal(hints["finite"], bool)
+    equal(get_type_hints(ragged.RaggedDecoder.unpack)["index_count"], int)
+    modes[mode] = {"checks": checks - start, "result": "passed"}
+
+ragged._native = native
+frame = struct.pack("<2q", 0, 2) + struct.pack("<2f", 1.0, 2.0)
+start = checks
+for position, value, exception in (
+    (0, bytearray(frame), TypeError),
+    (1, 10**5000, ValueError),
+    (2, 10**5000, ValueError),
+    (3, "?", ValueError),
+    (3, b"f", TypeError),
+    (3, "\ud800", ValueError),
+    (4, "!", ValueError),
+    (5, "f", ValueError),
+    (7, 1, TypeError),
+    (8, 0, TypeError),
+):
+    args = [frame, 2, 1, "f", "<", "q", "<", True, False]
+    args[position] = value
+    refused(exception, lambda args=args: native.validate(*args))
+equal(native.validate(frame, 2, 1, "f", "<", "q", "<", True, False), 2)
+modes["native_direct_guards"] = {"checks": checks - start, "result": "passed"}
+
+print(json.dumps({
+    "python": sys.version,
+    "executable": sys.executable,
+    "implementation": sys.implementation.name,
+    "soabi": sysconfig.get_config_var("SOABI"),
+    "numpy_loaded": "numpy" in sys.modules,
+    "native_module": native.__file__,
+    "native_kernel_version": native.KERNEL_VERSION,
+    "isolated": bool(sys.flags.isolated),
+    "site_disabled": bool(sys.flags.no_site),
+    "modes": modes,
+    "checks": checks,
+    "result": "passed",
+}))

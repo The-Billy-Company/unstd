@@ -35,7 +35,8 @@ failing loud where no faithful substitute exists:
   lie), so the placeholders raise on construction.
 - ``rand`` (``random``) — numpy PCG64 bulk draws; security-sensitive draws stay
   on ``secrets`` regardless of the extra.
-- ``pack`` (``struct``) — numpy bulk pack/unpack.
+- ``pack`` (``struct``) — NumPy bulk pack/unpack and validated immutable numeric
+  frames, with optional native geometry, boundary and finite-value scans.
 - ``clone`` (``copy``) — an exact-type structural deep clone with optional
   bundled C acceleration and no third-party runtime dependency.
 - ``text`` (``difflib``) — rapidfuzz similarity and fuzzy matching.

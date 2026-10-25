@@ -12,7 +12,7 @@ These drivers compare saved and current implementations, check outputs and impor
 - [`clone_common_cpu.py`](clone_common_cpu.py) — public Python clone entrypoints on common nested data and dataclasses, against saved native baselines
 - [`native_profile.py`](native_profile.py)
 - [`ragged.py`](ragged.py) — complete captured numeric-frame decoding with fused validation, immutable output, exact result-class construction, native-route proof and an explicit speedup gate
-- [`pack_backend.py`](pack_backend.py) — typed buffer packing and selected-region decoding, with saved-source comparisons and exact wire checks
+- [`pack_backend.py`](pack_backend.py) — scalar/typed-array packing, owned-list and zero-copy decoding, with saved-source comparisons and exact wire checks
 - [`pack_consumers.py`](pack_consumers.py) — complete captured buffer decode/publication operations and explicit prospective API choices
 - [`rand_backend.py`](rand_backend.py) — saved/current bulk, scalar and construction timings with exact values and full engine-state checks
 - [`billy_rand.py`](billy_rand.py) — captured consumer slices with unchanged streams, separate profiles and explicit speedup gates
@@ -28,9 +28,17 @@ These drivers compare saved and current implementations, check outputs and impor
 - Audio consumer profile — exact PCM wrapping and raw normalization ports, paired timings, allocation peaks and captured consumer source
 - [`gzip_reads.py`](gzip_reads.py) — paired CPU/wall read timings, including bounded-memory repetitive streams at 8, 64 and 256 KiB read sizes; records the selected native backend outside timing
 - Gzip consumer profile — frozen consumer receipts, real ijson batches, bounded HTTP reads, two-pass uploads, and journal writes/flushes/replay
-- Gzip request profile — direct request compression and fresh/warm 64 KiB compressor checkpoints, with strict compressed-byte equality and retained contract failures
+- [`billy_gzip_requests.py`](billy_gzip_requests.py) — 11 frozen request and dataset encode cases; direct gzip/JSON/base64 operations and fresh/warm 64 KiB compressor checkpoints, with strict checkpoint equality and retained contract failures
 - [`gzip_concurrency.py`](gzip_concurrency.py) — independent consumer streams on 1, 2 and 4 warmed executor workers, with isolated installations and aggregate wall throughput
 - [`text_native_compare.py`](text_native_compare.py)
+
+Run `pack_backend.py`, `pack_consumers.py`, and `ragged.py` directly so product
+source selection happens before imports. The ragged driver includes complete
+numeric validation, array creation, and captured result-class allocation;
+`--require-native` checks the fused route. `--enforce-target --target-speedup 100`
+writes the evidence and then exits nonzero when the complete-decoder target is
+not met. Read its [report](../reports/pack/ragged/README.md) before interpreting
+the array-selection-only results from the earlier consumer profile.
 
 For filesystem backend work, use the direct file entry point of
 [`billy_fs_installed.py`](billy_fs_installed.py) inside Linux. Select one built,

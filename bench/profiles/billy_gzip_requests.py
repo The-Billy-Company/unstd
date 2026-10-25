@@ -437,6 +437,8 @@ def _worker(args: argparse.Namespace) -> None:
         except AssertionError as error:
             failures[case.name] = str(error)
     # Import after source selection: bench's package initializer imports unstd.
+    # File-based invocation puts only this profile directory on sys.path.
+    sys.path.append(str(_ROOT))
     from bench.profiles import gzip_reads
 
     native = [gzip_reads._native_calls(function) for function in functions]
@@ -685,7 +687,7 @@ def main() -> None:
             "--codec",
             choices=("zlibx", "gzipx"),
             default="zlibx",
-            help="gzipx measures direct request encodes; checkpoints use zlibx",
+            help="gzipx measures whole-buffer encodes; checkpoints use zlibx",
         )
         if name == "worker":
             command.add_argument("--stdlib", action="store_true")

@@ -89,7 +89,7 @@ expiration:
 
 ```python
 ids.update(next_ids)  # increasing list/tuple at or beyond the current maximum
-del ids[:ids.bisect_left(cutoff)]  # expire the oldest IDs or timestamps
+del ids[: ids.bisect_left(cutoff)]  # expire the oldest IDs or timestamps
 ```
 
 The native mutation paths target substantial batches below the backend's

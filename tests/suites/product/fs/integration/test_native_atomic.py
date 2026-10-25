@@ -317,6 +317,47 @@ def test_unavailable_native_entropy_declines_before_scratch_creation(
     )
 
 
+@pytest.mark.parametrize("number", [errno.EIO, errno.EAGAIN], ids=["eio", "eagain"])
+def test_native_entropy_failure_preserves_previous_file_before_scratch_creation(
+    tmp_path, observer, number
+):
+    evidence = _invoke(
+        tmp_path / "native",
+        "native",
+        observer=observer,
+        FS_NATIVE_ENTROPY_FAILURE=str(number),
+    )
+    _selected(evidence, "native")
+    assert not evidence["ok"]
+    assert evidence["error"] == type(OSError(number, "fault")).__name__
+    assert evidence["errno"] == number
+    assert evidence["sha256"] == hashlib.sha256(_PRIOR).hexdigest()
+    assert evidence["scratch"] == []
+    assert evidence["events"].count("getrandom:unavailable") == 1
+    assert "scratch-open" not in evidence["events"]
+    assert "rename" not in evidence["events"]
+
+
+def test_interrupted_native_entropy_retries_and_publishes_complete_bytes(
+    tmp_path, observer
+):
+    evidence = _invoke(
+        tmp_path / "native",
+        "native",
+        observer=observer,
+        FS_NATIVE_ENTROPY_FAILURE=str(errno.EINTR),
+    )
+    _selected(evidence, "native")
+    assert evidence["ok"]
+    assert evidence["sha256"] == hashlib.sha256(_PAYLOAD).hexdigest()
+    assert evidence["scratch"] == []
+    assert evidence["events"].count("getrandom:unavailable") == 1
+    assert evidence["events"].count("scratch-open") == 1
+    assert evidence["events"].index("getrandom:unavailable") < evidence["events"].index(
+        "scratch-open"
+    )
+
+
 @pytest.mark.parametrize("route", ["native", "python"])
 @pytest.mark.parametrize("stage", ["write", "file-sync", "scratch-close"])
 @pytest.mark.parametrize("signal_number", ["10", "2"], ids=["custom", "keyboard"])

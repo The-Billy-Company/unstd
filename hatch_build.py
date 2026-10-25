@@ -166,7 +166,7 @@ _ISAL_MANIFEST_SHA256 = (
     "179611c79b1589d8f5e601610e1e07249d15ff992660fc3b25cbe1b609decaa7"
 )
 _ISAL_HELPER_SHA256 = "5ef06292f0a03eacf7dc62d7693e1228b5e6d75669685f2908925aa6a6cd1e57"
-_ISAL_PATCH_SHA256 = "9101816bc8756622f6eef8e56f0d870efdba2e1893dff6e2c6566d4dc36c4f4c"
+_ISAL_PATCH_SHA256 = "9b537e1df67e96f78bd683db3d2d2c6de9709398687b7e4c3f6a043686baf905"
 _ISAL_C_SOURCES = ("igzip/igzip_inflate.c", "igzip/hufftables_c.c")
 _ISAL_ASM_SOURCES = (
     "igzip/igzip_decode_block_stateless_01.asm",

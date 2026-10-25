@@ -41,8 +41,9 @@ else:
     )
 
 
+_native: ModuleType | None
 try:
-    _native: ModuleType | None = import_module("unstd.pack._pack_native")
+    _native = import_module("unstd.pack._pack_native")
 except ImportError:
     _native = None
 

@@ -5,6 +5,8 @@ doc_radar:
       contains: ['from unstd.pack.buffers import']
     - file: dtypes.py
       contains: ['def _struct_spec(']
+    - file: ragged.py
+      contains: ['class RaggedDecoder:', 'def unpack(']
 ---
 
 # `pack` — binary packing
@@ -68,7 +70,7 @@ numbers, which the fallback does not implement.
 
 - **With the `pack` extra (NumPy present):** `pack_array` encodes via
   `numpy.asarray(seq, dtype).tobytes()`; `unpack_array` returns a **zero-copy**
-  `numpy.frombuffer` view over the buffer (no allocation, no copy). Its writability
+  `numpy.frombuffer` view over the buffer without a payload copy. Its writability
   follows the buffer: immutable bytes produce a read-only array, while a mutable
   buffer produces a writable view. Copy it (`arr.copy()`) for independent data.
 - **Without the extra (base install):** both fall back to stdlib `struct` — the
@@ -81,14 +83,16 @@ format. Existing helpers retain these conversion and return-type differences
 for compatibility. Choose the explicit portable helpers below when validation
 and output types must be independent of installed dependencies.
 
-With the default `count=-1`, both paths require the remaining buffer's byte size to be a whole multiple of the dtype's itemsize; a
+With the default `count=-1`, both paths require the remaining buffer's byte size
+to be a whole multiple of the dtype's itemsize; a
 partial trailing element raises `binpack.error` (fallback) / `ValueError`
 (NumPy `frombuffer`). Contiguous typed and multidimensional memoryviews are
 interpreted as raw bytes, using all their storage regardless of their shape.
 
 ### `pack_array_portable` / `unpack_array_portable` — stable struct semantics
 
-These helpers preserve stdlib `struct` conversion rules, even when NumPy is installed. They
+These helpers preserve stdlib `struct` conversion rules, even when NumPy is
+installed. They
 accept the portable numeric dtype subset and aliases above, apply the same
 byte-order rules, and produce `bytes` / a fresh `list` of Python scalars.
 Integer dtypes require integer values (or `__index__`), reject floats instead of
@@ -106,7 +110,8 @@ binpack.unpack_array_portable("<i2", b"\x01\x00\xfe\xff")  # [1, -2]
 
 Packing snapshots the iterable once before numeric conversion. Unpacking
 requires contiguous buffers and, with the default `count=-1`, a whole number of
-remaining elements; trailing partial elements raise `binpack.error`. Typed, scalar, and multidimensional
+remaining elements; trailing partial elements raise `binpack.error`. Typed,
+scalar, and multidimensional
 memoryviews, `array.array` and ndarrays use their full byte storage. Dtype
 strings must be an exact typestr or alias: `"i 4"`, `"i04"` or other numeric
 spellings of a size raise `binpack.error`. Decoded lists do not alias the input

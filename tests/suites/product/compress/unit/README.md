@@ -62,9 +62,15 @@ propagation without replay, independent concurrent encoders and Python-thread
 progress during large native calls. Stateful writers and compressor copies
 retain their existing provider and tests.
 
-`test_stream_histories.py` compares 73 bounded native read and source-error
+`test_stream_histories.py` compares 91 bounded native read and source-error
 histories with the running stdlib. It covers short sources, complete and later
 members, truncated dynamic bodies, malformed blocks, `read`, `read1` and
 `readinto` budgets, and repeated body errors across reset. Delivered bytes,
 exception details and identity, source calls/position/ownership, and destination
 buffer mutation must retain their order.
+
+
+`test_native_isal.py` compares 33 raw Linux decoder histories with the native
+reference, using bodies produced independently by zlib and zlib-ng. Exact
+output budgets, partial headers and symbols, trailing bytes, and persistent
+errors retain their observable input and output state.

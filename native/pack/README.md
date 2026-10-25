@@ -10,12 +10,26 @@ Index decoding uses unsigned byte loads, including unaligned and foreign-order
 fields. Float16/32/64 finiteness uses exponent bits, preserving signaling-NaN
 rejection without floating-point arithmetic. AArch64 NEON and native-order SSE2
 accelerate float32/64 scans; other cases retain the scalar classifier.
+SIMD loops classify 64-byte groups with four independent reductions; the hot
+NEON loop selects byte order before scanning the group.
 
 Only exact immutable `bytes` are accepted. The caller must snapshot mutable
 storage before validation, so another thread cannot change admitted values.
-Every valid floating payload is scanned on each call; there is no validity
-cache. Large scans release the GIL in bounded chunks and check signals after
+With finite validation enabled, every floating payload is scanned on each
+call; there is no validity cache. Large scans release the GIL in bounded chunks
+and check signals after
 reacquiring it. No buffer export or input reference is retained after return.
 
 Public array construction and the fallback implementation belong to the Python
 pack package. The native kernel returns only the admitted row count.
+
+Rebuild the editable package before exercising changed C sources:
+
+```console
+uv sync --locked --extra pack --group dev --reinstall-package unstd
+uv run --no-sync python -m pytest tests/suites/product/pack -q
+```
+
+The [release guide](../../tests/tooling/release/README.md) covers required native
+wheel imports, installed contracts, and sdist inputs. Performance evidence is
+kept separately in the [complete-decoder report](../../bench/reports/pack/ragged/README.md).

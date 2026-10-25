@@ -83,3 +83,10 @@ its symbols at link time; C units use hidden visibility while CPython retains
 the explicit module initializer export. Decoder selection uses conservative CPU
 and stream-shape admission before decoding. Other architectures need no
 assembler and retain their existing routes.
+
+
+The Linux bridge retains saved header bits until more input arrives. Its cold
+zero-output symbol check uses retained history and processes at most the first
+literal in a packed lookup, so distance validation and error delivery respect
+the caller's budget. Exhausted-input flags follow the reference provider even
+when a symbol is internally pending.

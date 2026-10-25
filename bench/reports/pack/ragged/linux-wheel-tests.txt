@@ -1,0 +1,262 @@
+
+STAGE copy-sdist
+COMMAND ["docker", "cp", "/tmp/unstd-pack-ragged-artifacts/packaging-artifacts0/source/unstd-3.1.6.tar.gz", "unstd-pack-ragged-qualification:/tmp/pack-ragged-linux-sdist.tar.gz"]
+
+RESULT {"exit_code": 0, "seconds": 0.1771641670493409}
+
+STAGE extract-and-match-final-sources
+COMMAND ["docker", "exec", "-i", "unstd-pack-ragged-qualification", "python", "-"]
+RECEIPT {"source": "/tmp/pack-ragged-linux-wheel/source/unstd-3.1.6", "source_sha256": {"native/pack/src/adapter.c": "627bb499f3614c5c5c53d05e2514e6bac268c991792f491eee6322a4bda1778e", "src/unstd/pack/ragged.py": "4bfbd36b3891cba10e00b9694a438f741371df89a22c811c73c10c7998d486f1", "src/unstd/pack/binpack.py": "0c6d1efab26b1b0fe22ef811077435f3a1f025b25e2cb15972eb73fa7ea1094b", "src/unstd/pack/buffers.py": "25f72e707c06616aeb6e867ba8f1e12680e52a9e9ae88992994f8553a69342ed", "src/unstd/pack/dtypes.py": "284df185b9aea56a436d6052ddb749849a9cf956a70258fe7aef32b35120b763", "src/unstd/pack/_pack_native.pyi": "4fce662154903203681b1199f098ab0c651a7e07146c32defe546bcd0177cd1c"}}
+
+RESULT {"exit_code": 0, "seconds": 0.47497458406724036}
+
+STAGE install-exact-build-backends
+COMMAND ["docker", "exec", "unstd-pack-ragged-qualification", "python", "-m", "pip", "install", "--disable-pip-version-check", "hatchling==1.32.4", "setuptools==84.2.0"]
+Collecting hatchling==1.32.4
+  Downloading hatchling-1.32.4-py3-none-any.whl.metadata (3.9 kB)
+Requirement already satisfied: setuptools==84.2.0 in ./usr/local/lib/python3.14/site-packages (84.2.0)
+Requirement already satisfied: packaging>=24.2 in ./usr/local/lib/python3.14/site-packages (from hatchling==1.32.4) (26.3)
+Collecting pathspec>=0.10.1 (from hatchling==1.32.4)
+  Downloading pathspec-1.1.1-py3-none-any.whl.metadata (14 kB)
+Requirement already satisfied: pluggy>=1.0.0 in ./usr/local/lib/python3.14/site-packages (from hatchling==1.32.4) (1.7.0)
+Collecting tomlkit>=0.11.1 (from hatchling==1.32.4)
+  Downloading tomlkit-0.15.2-py3-none-any.whl.metadata (3.4 kB)
+Collecting trove-classifiers (from hatchling==1.32.4)
+  Downloading trove_classifiers-2026.9.21.13-py3-none-any.whl.metadata (2.4 kB)
+Downloading hatchling-1.32.4-py3-none-any.whl (78 kB)
+Downloading pathspec-1.1.1-py3-none-any.whl (57 kB)
+Downloading tomlkit-0.15.2-py3-none-any.whl (52 kB)
+Downloading trove_classifiers-2026.9.21.13-py3-none-any.whl (14 kB)
+Installing collected packages: trove-classifiers, tomlkit, pathspec, hatchling
+
+Successfully installed hatchling-1.32.4 pathspec-1.1.1 tomlkit-0.15.2 trove-classifiers-2026.9.21.13
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+
+RESULT {"exit_code": 0, "seconds": 1.2269854999613017}
+
+STAGE build-linux-wheel-from-sdist
+COMMAND ["docker", "exec", "unstd-pack-ragged-qualification", "python", "-m", "pip", "wheel", "--disable-pip-version-check", "--no-build-isolation", "--no-deps", "--wheel-dir", "/tmp/pack-ragged-linux-wheel/wheels", "-v", "/tmp/pack-ragged-linux-wheel/source/unstd-3.1.6"]
+Processing ./tmp/pack-ragged-linux-wheel/source/unstd-3.1.6
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Building wheels for collected packages: unstd
+  Building wheel for unstd (pyproject.toml): started
+  Building wheel for unstd (pyproject.toml): finished with status 'done'
+  Created wheel for unstd: filename=unstd-3.1.6-cp314-cp314-linux_aarch64.whl size=1047793 sha256=62a38e86def79cdb9be10d41667d64cc5900b161b6b401e6e8a95986014fdc6b
+  Stored in directory: /tmp/pip-ephem-wheel-cache-cxty_isp/wheels/d4/d2/ad/a85e4f1e7d47faab7f1df03a6cdaba91952d78a11ef9510358
+Successfully built unstd
+  Running command Preparing metadata (pyproject.toml)
+  In file included from /tmp/pack-ragged-linux-wheel/source/unstd-3.1.6/native/serde/src/adapter.c:462:
+  /tmp/pack-ragged-linux-wheel/source/unstd-3.1.6/native/serde/src/repeat.h:294:1: warning: ‘always_inline’ function might not be inlinable unless also declared ‘inline’ [-Wattributes]
+    294 | repeat_write_result_inner(PyObject *value, int ascii, int spaced,
+        | ^~~~~~~~~~~~~~~~~~~~~~~~~
+  In file included from /tmp/pack-ragged-linux-wheel/source/unstd-3.1.6/native/clone/src/adapter.c:16:
+  /usr/local/include/python3.14/datetime.h:197:25: warning: ‘PyDateTimeAPI’ defined but not used [-Wunused-variable]
+    197 | static PyDateTime_CAPI *PyDateTimeAPI = NULL;
+        |                         ^~~~~~~~~~~~~
+  In file included from /tmp/pack-ragged-linux-wheel/source/unstd-3.1.6/native/compress/src/../vendor/libdeflate/lib/matchfinder_common.h:8,
+                   from /tmp/pack-ragged-linux-wheel/source/unstd-3.1.6/native/compress/src/fast.h:52,
+                   from /tmp/pack-ragged-linux-wheel/source/unstd-3.1.6/native/compress/src/fast.c:5:
+  /tmp/pack-ragged-linux-wheel/source/unstd-3.1.6/native/compress/src/../vendor/libdeflate/lib/deflate_compress.c: In function ‘deflate_flush_block’:
+  /tmp/pack-ragged-linux-wheel/source/unstd-3.1.6/native/compress/src/../vendor/libdeflate/lib/deflate_compress.c:1836:51: warning: comparison of integer expressions of different signedness: ‘long int’ and ‘size_t’ {aka ‘long unsigned int’} [-Wsign-compare]
+   1836 |                         ASSERT(os->end - out_next >=
+        |                                                   ^~
+  /tmp/pack-ragged-linux-wheel/source/unstd-3.1.6/native/compress/src/../vendor/libdeflate/lib/lib_common.h:99:29: note: in definition of macro ‘ASSERT’
+     99 | #define ASSERT(expr) (void)(expr)
+        |                             ^~~~
+  In file included from /tmp/pack-ragged-linux-wheel/source/unstd-3.1.6/native/compress/src/fast.c:6:
+  /tmp/pack-ragged-linux-wheel/source/unstd-3.1.6/native/compress/src/../vendor/libdeflate/lib/deflate_compress.c: In function ‘choose_max_block_end’:
+  /tmp/pack-ragged-linux-wheel/source/unstd-3.1.6/native/compress/src/../vendor/libdeflate/lib/deflate_compress.c:2384:37: warning: comparison of integer expressions of different signedness: ‘long int’ and ‘size_t’ {aka ‘long unsigned int’} [-Wsign-compare]
+   2384 |         if (in_end - in_block_begin < soft_max_len + MIN_BLOCK_LENGTH)
+        |                                     ^
+  /tmp/pack-ragged-linux-wheel/source/unstd-3.1.6/native/compress/src/../vendor/libdeflate/lib/deflate_compress.c: In function ‘deflate_compress_none’:
+  /tmp/pack-ragged-linux-wheel/source/unstd-3.1.6/native/compress/src/../vendor/libdeflate/lib/deflate_compress.c:2424:40: warning: comparison of integer expressions of different signedness: ‘long int’ and ‘size_t’ {aka ‘long unsigned int’} [-Wsign-compare]
+   2424 |                 if (out_end - out_next < 5 + len)
+        |                                        ^
+  In file included from /tmp/pack-ragged-linux-wheel/source/unstd-3.1.6/native/compress/src/../vendor/libdeflate/lib/lib_common.h:40:
+  /tmp/pack-ragged-linux-wheel/source/unstd-3.1.6/native/compress/src/../vendor/libdeflate/lib/deflate_compress.c: In function ‘deflate_compress_near_optimal’:
+  /tmp/pack-ragged-linux-wheel/source/unstd-3.1.6/native/compress/src/../vendor/libdeflate/lib/../common_defs.h:308:38: warning: comparison of integer expressions of different signedness: ‘long int’ and ‘long unsigned int’ [-Wsign-compare]
+    308 | #define MIN(a, b)               ((a) <= (b) ? (a) : (b))
+        |                                      ^~
+  /tmp/pack-ragged-linux-wheel/source/unstd-3.1.6/native/compress/src/../vendor/libdeflate/lib/deflate_compress.c:3602:27: note: in expansion of macro ‘MIN’
+   3602 |                 in_next + MIN(in_end - in_next, MATCHFINDER_WINDOW_SIZE);
+        |                           ^~~
+  /tmp/pack-ragged-linux-wheel/source/unstd-3.1.6/native/compress/src/../vendor/libdeflate/lib/../common_defs.h:308:47: warning: operand of ‘?:’ changes signedness from ‘long int’ to ‘long unsigned int’ due to unsignedness of other operand [-Wsign-compare]
+    308 | #define MIN(a, b)               ((a) <= (b) ? (a) : (b))
+        |                                               ^~~
+  /tmp/pack-ragged-linux-wheel/source/unstd-3.1.6/native/compress/src/../vendor/libdeflate/lib/deflate_compress.c:3602:27: note: in expansion of macro ‘MIN’
+   3602 |                 in_next + MIN(in_end - in_next, MATCHFINDER_WINDOW_SIZE);
+        |                           ^~~
+  /tmp/pack-ragged-linux-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/arm/cpu_features.c: In function ‘scan_auxv’:
+  /tmp/pack-ragged-linux-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/arm/cpu_features.c:84:33: warning: comparison of integer expressions of different signedness: ‘int’ and ‘long unsigned int’ [-Wsign-compare]
+     84 |                 } while (filled < 2 * sizeof(long));
+        |                                 ^
+  /tmp/pack-ragged-linux-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/arm/cpu_features.c:97:33: warning: comparison of integer expressions of different signedness: ‘int’ and ‘long unsigned int’ [-Wsign-compare]
+     97 |                 } while (filled >= 2 * sizeof(long));
+        |                                 ^~
+  In file included from /tmp/pack-ragged-linux-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/lib_common.h:40,
+                   from /tmp/pack-ragged-linux-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/deflate_decompress.c:45:
+  /tmp/pack-ragged-linux-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/decompress_template.h: In function ‘deflate_decompress_default’:
+  /tmp/pack-ragged-linux-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/deflate_decompress.c:239:37: warning: comparison of integer expressions of different signedness: ‘long int’ and ‘long unsigned int’ [-Wsign-compare]
+    239 |             likely(in_end - in_next >= sizeof(bitbuf_t))) {             \
+        |                                     ^~
+  /tmp/pack-ragged-linux-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/../common_defs.h:231:53: note: in definition of macro ‘likely’
+    231 | #  define likely(expr)          __builtin_expect(!!(expr), 1)
+        |                                                     ^~~~
+  /tmp/pack-ragged-linux-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/decompress_template.h:77:9: note: in expansion of macro ‘REFILL_BITS’
+     77 |         REFILL_BITS();
+        |         ^~~~~~~~~~~
+  /tmp/pack-ragged-linux-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/deflate_decompress.c:239:37: warning: comparison of integer expressions of different signedness: ‘long int’ and ‘long unsigned int’ [-Wsign-compare]
+    239 |             likely(in_end - in_next >= sizeof(bitbuf_t))) {             \
+        |                                     ^~
+  /tmp/pack-ragged-linux-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/../common_defs.h:231:53: note: in definition of macro ‘likely’
+    231 | #  define likely(expr)          __builtin_expect(!!(expr), 1)
+        |                                                     ^~~~
+  /tmp/pack-ragged-linux-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/decompress_template.h:123:25: note: in expansion of macro ‘REFILL_BITS’
+    123 |                         REFILL_BITS();
+        |                         ^~~~~~~~~~~
+  /tmp/pack-ragged-linux-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/deflate_decompress.c:239:37: warning: comparison of integer expressions of different signedness: ‘long int’ and ‘long unsigned int’ [-Wsign-compare]
+    239 |             likely(in_end - in_next >= sizeof(bitbuf_t))) {             \
+        |                                     ^~
+  /tmp/pack-ragged-linux-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/../common_defs.h:231:53: note: in definition of macro ‘likely’
+    231 | #  define likely(expr)          __builtin_expect(!!(expr), 1)
+        |                                                     ^~~~
+  /tmp/pack-ragged-linux-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/decompress_template.h:137:41: note: in expansion of macro ‘REFILL_BITS’
+    137 |                                         REFILL_BITS();
+        |                                         ^~~~~~~~~~~
+  /tmp/pack-ragged-linux-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/deflate_decompress.c:239:37: warning: comparison of integer expressions of different signedness: ‘long int’ and ‘long unsigned int’ [-Wsign-compare]
+    239 |             likely(in_end - in_next >= sizeof(bitbuf_t))) {             \
+        |                                     ^~
+  /tmp/pack-ragged-linux-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/../common_defs.h:231:53: note: in definition of macro ‘likely’
+    231 | #  define likely(expr)          __builtin_expect(!!(expr), 1)
+        |                                                     ^~~~
+  /tmp/pack-ragged-linux-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/decompress_template.h:158:33: note: in expansion of macro ‘REFILL_BITS’
+    158 |                                 REFILL_BITS();
+        |                                 ^~~~~~~~~~~
+  /tmp/pack-ragged-linux-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/deflate_decompress.c:239:37: warning: comparison of integer expressions of different signedness: ‘long int’ and ‘long unsigned int’ [-Wsign-compare]
+    239 |             likely(in_end - in_next >= sizeof(bitbuf_t))) {             \
+        |                                     ^~
+  /tmp/pack-ragged-linux-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/../common_defs.h:231:53: note: in definition of macro ‘likely’
+    231 | #  define likely(expr)          __builtin_expect(!!(expr), 1)
+        |                                                     ^~~~
+  /tmp/pack-ragged-linux-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/decompress_template.h:686:17: note: in expansion of macro ‘REFILL_BITS’
+    686 |                 REFILL_BITS();
+        |                 ^~~~~~~~~~~
+  /tmp/pack-ragged-linux-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/deflate_decompress.c:239:37: warning: comparison of integer expressions of different signedness: ‘long int’ and ‘long unsigned int’ [-Wsign-compare]
+    239 |             likely(in_end - in_next >= sizeof(bitbuf_t))) {             \
+        |                                     ^~
+  /tmp/pack-ragged-linux-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/../common_defs.h:231:53: note: in definition of macro ‘likely’
+    231 | #  define likely(expr)          __builtin_expect(!!(expr), 1)
+        |                                                     ^~~~
+  /tmp/pack-ragged-linux-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/decompress_template.h:712:25: note: in expansion of macro ‘REFILL_BITS’
+    712 |                         REFILL_BITS();
+        |                         ^~~~~~~~~~~
+  /tmp/pack-ragged-linux-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/deflate_decompress.c:239:37: warning: comparison of integer expressions of different signedness: ‘long int’ and ‘long unsigned int’ [-Wsign-compare]
+    239 |             likely(in_end - in_next >= sizeof(bitbuf_t))) {             \
+        |                                     ^~
+  /tmp/pack-ragged-linux-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/../common_defs.h:231:53: note: in definition of macro ‘likely’
+    231 | #  define likely(expr)          __builtin_expect(!!(expr), 1)
+        |                                                     ^~~~
+  /tmp/pack-ragged-linux-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/decompress_template.h:720:33: note: in expansion of macro ‘REFILL_BITS’
+    720 |                                 REFILL_BITS();
+        |                                 ^~~~~~~~~~~
+  Running command Building wheel for unstd (pyproject.toml)
+
+RESULT {"exit_code": 0, "seconds": 7.039867415907793}
+
+STAGE verify-linux-wheel-members
+COMMAND ["docker", "exec", "-i", "unstd-pack-ragged-qualification", "python", "-"]
+RECEIPT {"wheel": "/tmp/pack-ragged-linux-wheel/wheels/unstd-3.1.6-cp314-cp314-linux_aarch64.whl", "wheel_sha256": "62a38e86def79cdb9be10d41667d64cc5900b161b6b401e6e8a95986014fdc6b", "native_member": "unstd/pack/_pack_native.cpython-314-aarch64-linux-gnu.so", "native_sha256": "1b16f16d21e9f22ee8d808731be65ab8ab67d84bc9a3cf8f8ecee022b855e06c", "sources": {"unstd/pack/ragged.py": "4bfbd36b3891cba10e00b9694a438f741371df89a22c811c73c10c7998d486f1", "unstd/pack/binpack.py": "0c6d1efab26b1b0fe22ef811077435f3a1f025b25e2cb15972eb73fa7ea1094b", "unstd/pack/buffers.py": "25f72e707c06616aeb6e867ba8f1e12680e52a9e9ae88992994f8553a69342ed", "unstd/pack/dtypes.py": "284df185b9aea56a436d6052ddb749849a9cf956a70258fe7aef32b35120b763", "unstd/pack/_pack_native.pyi": "4fce662154903203681b1199f098ab0c651a7e07146c32defe546bcd0177cd1c"}}
+
+RESULT {"exit_code": 0, "seconds": 0.057636499986983836}
+
+STAGE create-pristine-consumer
+COMMAND ["docker", "exec", "unstd-pack-ragged-qualification", "python", "-m", "venv", "--without-pip", "/tmp/pack-ragged-linux-wheel/consumer"]
+
+RESULT {"exit_code": 0, "seconds": 0.06530779204331338}
+
+STAGE install-wheel-without-dependencies
+COMMAND ["docker", "exec", "unstd-pack-ragged-qualification", "python", "-m", "pip", "--python", "/tmp/pack-ragged-linux-wheel/consumer/bin/python", "install", "--disable-pip-version-check", "--no-index", "--no-deps", "/tmp/pack-ragged-linux-wheel/wheels/unstd-3.1.6-cp314-cp314-linux_aarch64.whl"]
+Processing ./tmp/pack-ragged-linux-wheel/wheels/unstd-3.1.6-cp314-cp314-linux_aarch64.whl
+Installing collected packages: unstd
+Successfully installed unstd-3.1.6
+
+RESULT {"exit_code": 0, "seconds": 0.41442145803011954}
+
+STAGE pristine-base-tuple-and-native-smoke
+COMMAND ["docker", "exec", "-i", "-w", "/tmp/pack-ragged-linux-wheel/run", "unstd-pack-ragged-qualification", "/tmp/pack-ragged-linux-wheel/consumer/bin/python", "-I", "-"]
+RECEIPT {"mode": "pristine-base", "python": "3.14.8 (main, Oct  6 2026, 02:02:59) [GCC 14.2.0]", "prefix": "/tmp/pack-ragged-linux-wheel/consumer", "ragged": "/tmp/pack-ragged-linux-wheel/consumer/lib/python3.14/site-packages/unstd/pack/ragged.py", "native": "/tmp/pack-ragged-linux-wheel/consumer/lib/python3.14/site-packages/unstd/pack/_pack_native.cpython-314-aarch64-linux-gnu.so", "kernel_version": 1, "tuple_and_snapshot_checks": "passed"}
+
+RESULT {"exit_code": 0, "seconds": 0.06173837499227375}
+
+STAGE install-only-numpy-runtime-extra
+COMMAND ["docker", "exec", "unstd-pack-ragged-qualification", "python", "-m", "pip", "--python", "/tmp/pack-ragged-linux-wheel/consumer/bin/python", "install", "--disable-pip-version-check", "numpy==2.5.3"]
+Collecting numpy==2.5.3
+  Using cached numpy-2.5.3-cp314-cp314-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl.metadata (6.6 kB)
+Using cached numpy-2.5.3-cp314-cp314-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl (15.7 MB)
+Installing collected packages: numpy
+Successfully installed numpy-2.5.3
+
+RESULT {"exit_code": 0, "seconds": 1.5236367919715121}
+
+STAGE numpy-view-immutability-and-adverse-smoke
+COMMAND ["docker", "exec", "-i", "-w", "/tmp/pack-ragged-linux-wheel/run", "unstd-pack-ragged-qualification", "/tmp/pack-ragged-linux-wheel/consumer/bin/python", "-I", "-"]
+RECEIPT {"mode": "numpy-only", "numpy": "2.5.3", "prefix": "/tmp/pack-ragged-linux-wheel/consumer", "view_ownership_late_nan_snapshot_checks": "passed"}
+
+RESULT {"exit_code": 0, "seconds": 0.0948734589619562}
+
+STAGE install-exact-test-tools
+COMMAND ["docker", "exec", "unstd-pack-ragged-qualification", "python", "-m", "pip", "--python", "/tmp/pack-ragged-linux-wheel/consumer/bin/python", "install", "--disable-pip-version-check", "pytest==9.1.1", "hypothesis==6.168.3", "packaging==26.3"]
+Collecting pytest==9.1.1
+  Using cached pytest-9.1.1-py3-none-any.whl.metadata (7.6 kB)
+Collecting hypothesis==6.168.3
+  Using cached hypothesis-6.168.3-cp314-cp314-manylinux_2_17_aarch64.manylinux2014_aarch64.whl.metadata (5.7 kB)
+Collecting packaging==26.3
+  Using cached packaging-26.3-py3-none-any.whl.metadata (3.5 kB)
+Collecting iniconfig>=1.0.1 (from pytest==9.1.1)
+  Using cached iniconfig-2.3.1-py3-none-any.whl.metadata (2.8 kB)
+Collecting pluggy<2,>=1.5 (from pytest==9.1.1)
+  Using cached pluggy-1.7.0-py3-none-any.whl.metadata (5.0 kB)
+Collecting pygments>=2.7.2 (from pytest==9.1.1)
+  Using cached pygments-2.21.0-py3-none-any.whl.metadata (2.5 kB)
+Collecting sortedcontainers<3.0.0,>=2.1.0 (from hypothesis==6.168.3)
+  Using cached sortedcontainers-2.4.0-py2.py3-none-any.whl.metadata (10 kB)
+Using cached pytest-9.1.1-py3-none-any.whl (386 kB)
+Using cached hypothesis-6.168.3-cp314-cp314-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (1.1 MB)
+Using cached packaging-26.3-py3-none-any.whl (129 kB)
+Using cached pluggy-1.7.0-py3-none-any.whl (27 kB)
+Using cached sortedcontainers-2.4.0-py2.py3-none-any.whl (29 kB)
+Using cached iniconfig-2.3.1-py3-none-any.whl (7.6 kB)
+Using cached pygments-2.21.0-py3-none-any.whl (1.3 MB)
+Installing collected packages: sortedcontainers, pygments, pluggy, packaging, iniconfig, hypothesis, pytest
+
+Successfully installed hypothesis-6.168.3 iniconfig-2.3.1 packaging-26.3 pluggy-1.7.0 pygments-2.21.0 pytest-9.1.1 sortedcontainers-2.4.0
+
+RESULT {"exit_code": 0, "seconds": 1.5542596669401973}
+
+STAGE installed-wheel-full-pack-product-suite
+COMMAND ["docker", "exec", "-i", "-w", "/tmp/pack-ragged-linux-wheel/run", "-e", "HYPOTHESIS_STORAGE_DIRECTORY=/tmp/pack-ragged-linux-wheel/hypothesis", "unstd-pack-ragged-qualification", "/tmp/pack-ragged-linux-wheel/consumer/bin/python", "-I", "-"]
+........................................................................ [  5%]
+........................................................................ [ 11%]
+........................................................................ [ 17%]
+........................................................................ [ 23%]
+........................................................................ [ 28%]
+........................................................................ [ 34%]
+........................................................................ [ 40%]
+........................................................................ [ 46%]
+........................................................................ [ 51%]
+........................................................................ [ 57%]
+........................................................................ [ 63%]
+........................................................................ [ 69%]
+........................................................................ [ 75%]
+........................................................................ [ 80%]
+........................................................................ [ 86%]
+........................................................................ [ 92%]
+........................................................................ [ 98%]
+.......................                                                  [100%]
+1247 passed in 1.36s
+RECEIPT {"pytest_exit_code": 0, "installed_product_origins": {"unstd": "/tmp/pack-ragged-linux-wheel/consumer/lib/python3.14/site-packages/unstd/__init__.py", "unstd.pack": "/tmp/pack-ragged-linux-wheel/consumer/lib/python3.14/site-packages/unstd/pack/__init__.py", "unstd.pack.binpack": "/tmp/pack-ragged-linux-wheel/consumer/lib/python3.14/site-packages/unstd/pack/binpack.py", "unstd.pack.ragged": "/tmp/pack-ragged-linux-wheel/consumer/lib/python3.14/site-packages/unstd/pack/ragged.py", "unstd.pack.dtypes": "/tmp/pack-ragged-linux-wheel/consumer/lib/python3.14/site-packages/unstd/pack/dtypes.py", "unstd.pack.buffers": "/tmp/pack-ragged-linux-wheel/consumer/lib/python3.14/site-packages/unstd/pack/buffers.py", "unstd.pack._pack_native": "/tmp/pack-ragged-linux-wheel/consumer/lib/python3.14/site-packages/unstd/pack/_pack_native.cpython-314-aarch64-linux-gnu.so"}, "test_source": "/workspace/tests/suites/product/pack", "workspace_source_imported": false}
+
+RESULT {"exit_code": 0, "seconds": 1.9142446670448408}
+
+QUALIFICATION_SUMMARY {"status": "passed", "wheel": "/tmp/pack-ragged-linux-wheel/wheels/unstd-3.1.6-cp314-cp314-linux_aarch64.whl", "wheel_sha256": "62a38e86def79cdb9be10d41667d64cc5900b161b6b401e6e8a95986014fdc6b", "native_member": "unstd/pack/_pack_native.cpython-314-aarch64-linux-gnu.so", "limits": ["Linux aarch64/glibc container on Docker Desktop; not bare-metal or x86-64", "Pack product suite only; other optional native modules are not required by this qualification", "The built wheel has a local linux_aarch64 tag; auditwheel/manylinux portability qualification was not performed"]}

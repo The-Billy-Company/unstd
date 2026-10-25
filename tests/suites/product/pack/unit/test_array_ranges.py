@@ -186,7 +186,19 @@ def test_numpy_readonly_selected_view_retains_broader_dtype_support():
 
 @pytest.mark.parametrize(
     ("count", "offset"),
-    [(2, 1), (-1, 1), (0, 13), (-2, 1), (1, -1), (1, 14), (2**70, 0)],
+    [
+        (2, 1),
+        (-1, 1),
+        (0, 13),
+        (-2, 1),
+        (1, -1),
+        (1, 14),
+        (2**70, 0),
+        (-1.0, 0),
+        (-1, 0.0),
+        (True, False),
+        (-1, False),
+    ],
 )
 def test_numpy_range_validation_follows_the_selected_backend(count, offset):
     np = require_backend("numpy")
@@ -201,3 +213,38 @@ def test_numpy_range_validation_follows_the_selected_backend(count, offset):
         assert actual.dtype == expected.dtype
         assert actual.shape == expected.shape
         assert actual.tobytes() == expected.tobytes()
+
+
+@pytest.mark.parametrize("target", ["count", "offset", "both"])
+@pytest.mark.parametrize("dtype", ["<i4", "invalid"])
+def test_numpy_default_valued_range_objects_keep_index_and_error_order(target, dtype):
+    np = require_backend("numpy")
+    source = struct.pack("<3i", 1, 2, 3)
+
+    def observe(decode):
+        trace = []
+
+        class Indexed:
+            def __init__(self, name, value):
+                self.name, self.value = name, value
+
+            def __index__(self):
+                trace.append(self.name)
+                return self.value
+
+            def __eq__(self, other):
+                pytest.fail("range optimization compared a callback-bearing object")
+
+        count = Indexed("count", -1) if target in {"count", "both"} else -1
+        offset = Indexed("offset", 0) if target in {"offset", "both"} else 0
+        try:
+            result = decode(dtype, source, count=count, offset=offset)
+        except (ValueError, TypeError, OverflowError) as error:
+            return type(error), str(error), trace
+        assert result.base is source
+        return result.dtype.str, result.shape, result.tobytes(), trace
+
+    def reference(dtype, source, **ranges):
+        return np.frombuffer(source, dtype=dtype, **ranges)
+
+    assert observe(binpack.unpack_array) == observe(reference)

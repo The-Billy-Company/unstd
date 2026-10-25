@@ -33,7 +33,7 @@ exact new bytes after every commit across 64 generations. Per-reader counters
 must prove all 64 pre-commit and post-commit reads occurred. Worker and readiness
 deadlines bound hangs, and fixture teardown kills and reaps owned workers.
 
-[`test_native_atomic.py`](test_native_atomic.py) adds 62 Linux contracts against
+[`test_native_atomic.py`](test_native_atomic.py) adds Linux contracts against
 the real compiled native entrypoint and the public `fs.atomic_write` API. Profile
 events prove that an admitted call enters the compiled builtin without Python
 fallback; comparison children explicitly set `fs._native=None`. Ordinary cases
@@ -52,7 +52,9 @@ Strict directory-sync checks distinguish preflight from post-commit failure.
 Other controls cover short writes, EINTR, Linux close without retry, precise
 error/filename fields, cleanup failures that retain the primary exception, and
 ENOSYS/EPERM entropy refusal before scratch creation with successful Python
-fallback. Each child has a fixed timeout and checks its descriptor delta.
+fallback. EIO/EAGAIN entropy failures preserve the destination before creating
+scratch storage; interrupted getrandom retries and publishes complete bytes.
+Each child has a fixed timeout and checks its descriptor delta.
 
 Native cases carry Linux/backend guards. A missing C compiler skips only cases
 that need the observer, which is built in a private temporary directory. Child

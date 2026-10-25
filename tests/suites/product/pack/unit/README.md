@@ -15,6 +15,8 @@ See [the module test overview](../README.md) for related evidence.
 `test_array_ranges.py` checks byte offsets and element counts against struct,
 including unaligned windows, unrelated trailing bytes, typed exporters,
 ownership, bounds, and byte-buffer subclasses that refuse slicing.
+Default-valued range objects retain NumPy's index hooks and validation order;
+float and bool range arguments keep the selected backend's behavior.
 
 `test_ragged.py` checks numeric-frame geometry, monotonic boundaries, optional
 finite constraints, immutable snapshots and views, tuple fallback, and runtime

@@ -12,4 +12,5 @@ def validate(
     index_order: str,
     finite: bool,
     allow_empty: bool,
+    /,
 ) -> int: ...

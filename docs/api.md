@@ -264,7 +264,7 @@ required. The same class objects remain available at the existing submodule path
 
 ## Binary packing
 
-Import `from unstd.pack import binpack`.
+Import `from unstd.pack import binpack, ragged`.
 
 | Module | Exported API |
 | --- | --- |
@@ -289,7 +289,8 @@ are tuple rows and integer boundaries. The optional native validator and stdlib
 fallback enforce the same contract. Identity, publication limits, and
 normalization remain with the caller.
 
-Both decoders accept keyword-only `offset=0` in bytes and `count=-1` in elements.
+`unpack_array` and `unpack_array_portable` accept keyword-only `offset=0` in
+bytes and `count=-1` in elements.
 The default count consumes the whole remainder; an explicit nonnegative count
 selects a region without slicing and permits unrelated trailing bytes. Portable
 decoding validates bounds and always returns independent Python scalars; NumPy
@@ -592,8 +593,9 @@ Supporting modules have descriptive concern names; their location does not
 add them to the supported API. The bundled extension
 modules `unstd.serde._json_native`, `unstd.clone._clone_native`,
 `unstd.crypto._stream_native`, `unstd.text._text_native`,
-`unstd.compress._gzip_native`, `unstd.containers._sorted_native`, and
-`unstd.proc._proc_native` retain their private import names for build/runtime
+`unstd.compress._gzip_native`, `unstd.containers._sorted_native`,
+`unstd.proc._proc_native`, and `unstd.pack._pack_native` retain their private
+import names for build/runtime
 compatibility. They are not user APIs, and users do not need to import them to
 enable acceleration. Their presence may differ between builds.
 

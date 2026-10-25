@@ -269,12 +269,23 @@ def _file_entropy(config: dict[str, object]) -> dict[str, object]:
     destination.write_bytes(b"previous complete document")
     error = _fault(config["errno"])
     requests = []
+    consumer_requests = []
+    token_hex = fs.secrets.token_hex
 
     def entropy(size: int) -> bytes:
         requests.append(size)
         raise error
 
-    with patch.object(random, "_urandom", entropy):
+    def scratch_token(size: int) -> str:
+        consumer_requests.append(size)
+        return token_hex(size)
+
+    # This scenario injects Python's provider, so expose that consumer binding.
+    # Linux's default native getrandom path is faulted separately at its syscall.
+    with (
+        patch.object(random, "_urandom", entropy),
+        patch.object(fs.secrets, "token_hex", scratch_token),
+    ):
         try:
             fs.atomic_write(destination, b"new complete document")
         except OSError as caught:
@@ -290,6 +301,7 @@ def _file_entropy(config: dict[str, object]) -> dict[str, object]:
     return {
         "error": error_observed,
         "requests": requests,
+        "consumer_requests": consumer_requests,
         "failed_contents": failed_contents.decode("ascii"),
         "failed_entries": failed_entries,
         "recovered_contents": destination.read_text(),
