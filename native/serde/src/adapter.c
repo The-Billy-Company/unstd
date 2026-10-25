@@ -1,9 +1,9 @@
-/* Exact builtin JSON proofs and serialization in one uninterrupted GIL span.
+/* Exact builtin JSON encoding in one uninterrupted GIL span.
  *
- * No allocation or Python callback occurs while validating an eligible tree.
- * The cached orjson builtin retains the GIL, so another thread, trace hook or
- * signal callback cannot insert an unvalidated value before serialization.
- * Other values return NotImplemented for the stdlib-compatible Python path.
+ * The ordinary proof does not allocate; the finite-float writer uses private
+ * untracked buffers and exact scalar spellings. Neither encoding path calls
+ * Python or releases the GIL while traversing the tree. Unsupported values
+ * return NotImplemented for the stdlib-compatible Python path.
  */
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
@@ -17,6 +17,7 @@
 
 #define MAX_DEPTH 16
 #define MAX_VALUES 65536
+#define MAX_WIDE_VALUES 262144
 
 typedef PyObject *(*NativeEncoder)(PyObject *, PyObject *const *, Py_ssize_t,
                                    PyObject *);
@@ -46,6 +47,10 @@ typedef struct {
     PyObject *dumpb_helper, *key_dumpb_helper;
     int encoder_dispatch_ready;
     PyObject *key_decode, *key_have_msgspec, *key_headroom;
+    int identity_configured;
+    PyObject *identity_walker, *identity_walker_code, *identity_walker_key;
+    PyObject *identity_builtins, *identity_builtins_snapshot;
+    PyObject *identity_isfinite, *identity_isfinite_key;
 } NativeState;
 
 static inline int
@@ -97,9 +102,14 @@ unchanged_function(PyObject *function, PyObject *expected, PyObject *code)
         && monitoring_clear(code);
 }
 
-/* Container sizes are bounded by MAX_VALUES before counting punctuation. */
+/* Every proof has a visit budget, including repeated aliases in a tiny DAG. */
 typedef struct {
     Py_ssize_t remaining, separators;
+    int max_container_depth;
+#if PY_VERSION_HEX < 0x030D0000
+    int allow_floats;
+    Py_ssize_t floats;
+#endif
 } EncodeProof;
 
 static int eligible_container(PyObject *, EncodeProof *, int, int);
@@ -118,6 +128,13 @@ eligible(PyObject *value, EncodeProof *proof, int spaced, int depth)
          * its error sends the original tree through the stdlib fallback. */
         return 1;
     }
+#if PY_VERSION_HEX < 0x030D0000
+    if (proof->allow_floats && PyFloat_CheckExact(value)
+        && Py_IS_FINITE(PyFloat_AS_DOUBLE(value))) {
+        proof->floats++;
+        return 1;
+    }
+#endif
     if (depth >= MAX_DEPTH) {
         return 0;
     }
@@ -132,11 +149,17 @@ eligible_container(PyObject *value, EncodeProof *proof, int spaced, int depth)
     }
 
     int result = 0;
+    if (depth + 1 > proof->max_container_depth) {
+        proof->max_container_depth = depth + 1;
+    }
     if (PyList_CheckExact(value) || PyTuple_CheckExact(value)) {
         int list = PyList_CheckExact(value);
         Py_ssize_t size = list ? PyList_GET_SIZE(value) : PyTuple_GET_SIZE(value);
         if (size <= proof->remaining) {
             if (spaced && size > 0) {
+                if (size - 1 > PY_SSIZE_T_MAX - proof->separators) {
+                    goto done;
+                }
                 proof->separators += size - 1;
             }
             result = 1;
@@ -151,8 +174,16 @@ eligible_container(PyObject *value, EncodeProof *proof, int spaced, int depth)
         }
     } else if (PyDict_CheckExact(value)) {
         if (PyDict_GET_SIZE(value) <= proof->remaining) {
-            if (spaced && PyDict_GET_SIZE(value) > 0) {
-                proof->separators += PyDict_GET_SIZE(value) * 2 - 1;
+            Py_ssize_t size = PyDict_GET_SIZE(value);
+            if (spaced && size > 0) {
+                if (size - 1 > PY_SSIZE_T_MAX - size) {
+                    goto done;
+                }
+                Py_ssize_t separators = size + (size - 1);
+                if (separators > PY_SSIZE_T_MAX - proof->separators) {
+                    goto done;
+                }
+                proof->separators += separators;
             }
             Py_ssize_t position = 0;
             PyObject *key, *item;
@@ -168,7 +199,11 @@ eligible_container(PyObject *value, EncodeProof *proof, int spaced, int depth)
                 }
             }
         }
+    } else if (PyFloat_CheckExact(value)) {
+        /* Only this private rejection status may enter the finite-float path. */
+        result = 2;
     }
+done:
     Py_LeaveRecursiveCall();
     return result;
 }
@@ -243,13 +278,145 @@ invalid:
     return NULL;
 }
 
+#if PY_VERSION_HEX < 0x030D0000
+/* orjson's finite floats roundtrip exactly, but use different exponent
+ * spacing and decimal cutoffs. Parse only its marked float tokens, then use
+ * the same CPython conversion as the stdlib encoder for their final spelling.
+ * Strings and integers retain the backend's exact bytes. */
 static PyObject *
-guarded_encode(NativeState *state, PyObject *value, PyObject *option, int spaced)
+normalize_float_numbers(PyObject *encoded, Py_ssize_t floats)
+{
+    Py_ssize_t length = PyBytes_GET_SIZE(encoded);
+    if (floats > (PY_SSIZE_T_MAX - length) / 4) {
+        return PyErr_NoMemory();
+    }
+    Py_ssize_t capacity = length + floats * 4;
+    PyObject *result = PyBytes_FromStringAndSize(NULL, capacity);
+    if (result == NULL) {
+        return NULL;
+    }
+    /* A per-operation cache avoids repeated decimal conversions for common
+     * measurements such as zero and shared prices. No object or result is
+     * retained after this encoding call. */
+    struct {
+        uint64_t hash;
+        Py_ssize_t token_size, representation_size;
+        char token[64], representation[64];
+    } cache[16] = {{0}};
+    const char *cursor = PyBytes_AS_STRING(encoded);
+    const char *end = cursor + length;
+    const char *segment = cursor;
+    char *output = PyBytes_AS_STRING(result);
+    while (cursor < end) {
+        char current = *cursor++;
+        if (current == '\"') {
+            cursor = skip_json_string(cursor, end);
+            if (cursor == NULL) {
+                goto invalid;
+            }
+        } else if (current == '-' || (current >= '0' && current <= '9')) {
+            const char *start = cursor - 1;
+            int floating = 0;
+            while (cursor < end) {
+                char next = *cursor;
+                if (next == '.' || next == 'e' || next == 'E') {
+                    floating = 1;
+                } else if (!((next >= '0' && next <= '9')
+                             || next == '-' || next == '+')) {
+                    break;
+                }
+                cursor++;
+            }
+            if (!floating) {
+                continue;
+            }
+            char token[64];
+            Py_ssize_t size = cursor - start;
+            if (size >= (Py_ssize_t)sizeof(token)) {
+                goto invalid;
+            }
+            uint64_t hash = UINT64_C(14695981039346656037);
+            for (Py_ssize_t index = 0; index < size; index++) {
+                token[index] = start[index];
+                hash = (hash ^ (unsigned char)token[index])
+                    * UINT64_C(1099511628211);
+            }
+            token[size] = 0;
+            unsigned int slot = (unsigned int)(hash & 15);
+            if (cache[slot].hash != hash || cache[slot].token_size != size
+                || memcmp(cache[slot].token, token, size) != 0) {
+                double value = PyOS_string_to_double(token, NULL, NULL);
+                if (value == -1.0 && PyErr_Occurred()) {
+                    Py_DECREF(result);
+                    return NULL;
+                }
+                char *representation = PyOS_double_to_string(
+                    value, 'r', 0, Py_DTSF_ADD_DOT_0, NULL);
+                if (representation == NULL) {
+                    Py_DECREF(result);
+                    return NULL;
+                }
+                Py_ssize_t numeric = (Py_ssize_t)strlen(representation);
+                if (numeric >= (Py_ssize_t)sizeof(cache[slot].representation)) {
+                    PyMem_Free(representation);
+                    goto invalid;
+                }
+                memcpy(cache[slot].representation, representation, numeric);
+                PyMem_Free(representation);
+                memcpy(cache[slot].token, token, size);
+                cache[slot].hash = hash;
+                cache[slot].token_size = size;
+                cache[slot].representation_size = numeric;
+            }
+            Py_ssize_t prefix = start - segment;
+            Py_ssize_t numeric = cache[slot].representation_size;
+            Py_ssize_t used = output - PyBytes_AS_STRING(result);
+            /* CPython's exponent spelling adds at most a sign and a zero.
+             * Validate the allocation bound before copying regardless. */
+            if (prefix > capacity - used
+                || numeric > capacity - used - prefix) {
+                goto invalid;
+            }
+            memcpy(output, segment, prefix);
+            output += prefix;
+            memcpy(output, cache[slot].representation, numeric);
+            output += numeric;
+            segment = cursor;
+        }
+    }
+    Py_ssize_t suffix = end - segment;
+    Py_ssize_t used = output - PyBytes_AS_STRING(result);
+    if (suffix > capacity - used) {
+        goto invalid;
+    }
+    memcpy(output, segment, suffix);
+    if (_PyBytes_Resize(&result, used + suffix) < 0) {
+        return NULL;
+    }
+    return result;
+invalid:
+    Py_DECREF(result);
+    PyErr_SetString(PyExc_TypeError, "inconsistent native JSON float token");
+    return NULL;
+}
+
+#endif
+
+static PyObject *
+guarded_encode_limits(NativeState *state, PyObject *value, PyObject *option,
+                      int spaced, Py_ssize_t max_values, int indented)
 {
     if (Py_EnterRecursiveCall(" while proving JSON encoding")) {
         return NULL;
     }
-    EncodeProof proof = {MAX_VALUES, 0};
+    /* Python 3.13 gained a native indented stdlib encoder. Reformatting every
+     * distinct float would add a second conversion there; retain that encoder
+     * for float trees, while accelerating 3.12's Python generator traversal. */
+    EncodeProof proof = {max_values, 0, 0
+#if PY_VERSION_HEX < 0x030D0000
+                         , indented, 0
+#endif
+    };
     int result = eligible(value, &proof, spaced, 0);
     if (result != 1) {
         Py_LeaveRecursiveCall();
@@ -258,18 +425,72 @@ guarded_encode(NativeState *state, PyObject *value, PyObject *option, int spaced
         }
         Py_RETURN_NOTIMPLEMENTED;
     }
+    /* The stdlib indented encoder keeps generator frames alive along the
+     * current branch. Reserve both its container and item frames, plus the
+     * public encoder entry frames, before bypassing that Python traversal. */
+    if (indented && !has_headroom(2 * proof.max_container_depth + 8)) {
+        Py_LeaveRecursiveCall();
+        Py_RETURN_NOTIMPLEMENTED;
+    }
     PyObject *backend_args[] = {value, Py_None, option};
     Py_ssize_t count = option == NULL ? 1 : 3;
     PyObject *encoded = state->encoder_fast != NULL
         ? state->encoder_fast(state->encoder_self, backend_args, count, NULL)
         : PyObject_Vectorcall(state->encoder, backend_args, count, NULL);
     Py_LeaveRecursiveCall();
+#if PY_VERSION_HEX < 0x030D0000
+    if (encoded != NULL && proof.floats != 0) {
+        PyObject *normalized = normalize_float_numbers(encoded, proof.floats);
+        Py_DECREF(encoded);
+        encoded = normalized;
+    }
+#endif
     if (encoded != NULL && spaced && proof.separators != 0) {
         PyObject *result = space_encoded(encoded, proof.separators);
         Py_DECREF(encoded);
         return result;
     }
     return encoded;
+}
+
+static PyObject *
+guarded_encode(NativeState *state, PyObject *value, PyObject *option, int spaced)
+{
+    return guarded_encode_limits(state, value, option, spaced, MAX_VALUES, 0);
+}
+
+#include "repeat.h"
+
+static PyObject *
+encode_wide(PyObject *module, PyObject *const *args, Py_ssize_t count)
+{
+    if (count != 2 && count != 3) {
+        PyErr_SetString(PyExc_TypeError, "encode_wide() requires two or three arguments");
+        return NULL;
+    }
+    if (!PyLong_CheckExact(args[1])
+        || (count == 3 && !PyBool_Check(args[2])) || !has_headroom(2)) {
+        Py_RETURN_NOTIMPLEMENTED;
+    }
+    return guarded_encode_limits(PyModule_GetState(module), args[0], args[1],
+                                 count == 3 && args[2] == Py_True,
+                                 MAX_WIDE_VALUES, 0);
+}
+
+static PyObject *
+encode_indent(PyObject *module, PyObject *const *args, Py_ssize_t count)
+{
+    if (count != 2) {
+        PyErr_SetString(PyExc_TypeError, "encode_indent() requires two arguments");
+        return NULL;
+    }
+    if (!PyLong_CheckExact(args[1]) || !has_headroom(2)) {
+        Py_RETURN_NOTIMPLEMENTED;
+    }
+    /* Atomic validation avoids snapshots, but retains a finite visit budget
+     * so a small alias-heavy graph cannot cause unbounded validation work. */
+    return guarded_encode_limits(PyModule_GetState(module), args[0], args[1],
+                                 0, MAX_WIDE_VALUES, 1);
 }
 
 static PyObject *
@@ -373,6 +594,7 @@ static PyObject *dumpb_vectorcall(PyObject *, PyObject *const *, size_t,
 static int unchanged_encoder(NativeState *, PyObject *);
 static int configure_encoder(NativeState *, PyObject *);
 static void detach_watcher(NativeState *);
+static int configure_identity_snapshot(NativeState *, PyObject *);
 
 #include "decode.h"
 #include "lines.h"
@@ -408,6 +630,9 @@ configure(PyObject *module, PyObject *globals)
     Py_XSETREF(state->globals, Py_NewRef(globals));
     state->config_dirty = 1;
     if (configure_decoder(state, globals) < 0) {
+        return NULL;
+    }
+    if (configure_identity_snapshot(state, globals) < 0) {
         return NULL;
     }
     if (configure_encoder(state, globals) < 0) {
@@ -451,7 +676,7 @@ transport_encode(NativeState *state, PyObject *value, PyObject *option)
     if (!encoding_available(state) || !has_headroom(3)) {
         Py_RETURN_NOTIMPLEMENTED;
     }
-    PyObject *encoded = guarded_encode(state, value, option, 0);
+    PyObject *encoded = guarded_repeated_encode(state, value, option, 0, 0);
     if (encoded == NULL
         && (PyErr_ExceptionMatches(PyExc_TypeError)
             || PyErr_ExceptionMatches(PyExc_RecursionError)
@@ -486,12 +711,23 @@ line(PyObject *module, PyObject *value)
 }
 
 #include "encode.h"
+#include "escape.h"
+#include "identity.h"
 
 static PyMethodDef methods[] = {
+    {"identity_snapshot", guarded_identity_snapshot, METH_O,
+     "Own a bounded strict identity tree or return NotImplemented."},
     {"encode", (PyCFunction)(void (*)(void))encode,
      METH_FASTCALL | METH_KEYWORDS,
      "encode(obj, option=0, spaced=False)\n--\n\n"
      "Serialize exact builtins, adding default spaces when requested."},
+    {"encode_indent", (PyCFunction)(void (*)(void))encode_indent, METH_FASTCALL,
+     "Indented exact builtin JSON or NotImplemented."},
+    {"encode_wide", (PyCFunction)(void (*)(void))encode_wide, METH_FASTCALL,
+     "Exact builtin JSON with a bounded wide proof."},
+    {"encode_text", (PyCFunction)(void (*)(void))encode_text, METH_FASTCALL,
+     "Exact default or compact JSON text with operation-local scalar spellings."},
+    {"ascii_text", ascii_text, METH_O, "ASCII-escape UTF-8 JSON output."},
     {"configure", configure, METH_O, "Bind the Python codec's module globals."},
     {"dumpb", (PyCFunction)(void (*)(void))dumpb, METH_FASTCALL,
      "Compact transport bytes for the existing Python facade."},
@@ -524,6 +760,13 @@ traverse(PyObject *module, visitproc visit, void *arg)
     Py_VISIT(state->key_decode);
     Py_VISIT(state->key_have_msgspec);
     Py_VISIT(state->key_headroom);
+    Py_VISIT(state->identity_walker);
+    Py_VISIT(state->identity_walker_code);
+    Py_VISIT(state->identity_walker_key);
+    Py_VISIT(state->identity_builtins);
+    Py_VISIT(state->identity_builtins_snapshot);
+    Py_VISIT(state->identity_isfinite);
+    Py_VISIT(state->identity_isfinite_key);
     return 0;
 }
 
@@ -576,6 +819,13 @@ clear(PyObject *module)
     Py_CLEAR(state->key_decode);
     Py_CLEAR(state->key_have_msgspec);
     Py_CLEAR(state->key_headroom);
+    Py_CLEAR(state->identity_walker);
+    Py_CLEAR(state->identity_walker_code);
+    Py_CLEAR(state->identity_walker_key);
+    Py_CLEAR(state->identity_builtins);
+    Py_CLEAR(state->identity_builtins_snapshot);
+    Py_CLEAR(state->identity_isfinite);
+    Py_CLEAR(state->identity_isfinite_key);
     return 0;
 }
 

@@ -6,11 +6,13 @@ import base64
 from decimal import Decimal
 from functools import partial
 import gzip
+from importlib import import_module
 import io
 import json
 import struct
 from typing import TYPE_CHECKING, Any
 import wave
+import zlib
 
 from bench.speeds import Case, expect
 
@@ -395,6 +397,235 @@ def _compress_cases() -> list[Case]:
     ]
 
 
+def _zlib_cases(*, comparison: bool = False) -> list[Case]:
+    """Audit complete codec lifecycles against independent stdlib zlib decoding."""
+    if TYPE_CHECKING:
+        from unstd.compress import zlibx
+    else:
+        try:
+            zlibx = import_module("unstd.compress.zlibx")
+        except ModuleNotFoundError as exc:
+            if comparison and exc.name == "unstd.compress.zlibx":
+                return []
+            raise
+
+    raw = b"benchmark zlib record; alpha beta gamma\x00\xff\n" * 512
+    dictionary = b"benchmark zlib record; alpha beta gamma\x00\xff\n"
+    packed = zlib.compress(raw, level=6)
+    midpoint = len(raw) // 2
+
+    def compressed(wbits: int) -> Callable[[object], None]:
+        def check(value: object) -> None:
+            assert type(value) is bytes
+            expect(raw)(zlib.decompress(value, wbits))
+
+        return check
+
+    def compress_buffer(wbits: int) -> bytes:
+        return zlibx.compress(raw, level=6, wbits=wbits)
+
+    def decompress_buffer(encoded: bytes, wbits: int) -> bytes:
+        return zlibx.decompress(encoded, wbits=wbits)
+
+    def compress_stream() -> bytes:
+        encoder = zlibx.compressobj(level=6)
+        return (
+            encoder.compress(raw[:midpoint])
+            + encoder.compress(raw[midpoint:])
+            + encoder.flush()
+        )
+
+    def sync_flush() -> bytes:
+        encoder = zlibx.compressobj(level=6)
+        parts = []
+        for offset in range(0, len(raw), 4096):
+            parts.append(encoder.compress(raw[offset : offset + 4096]))
+            parts.append(encoder.flush(zlib.Z_SYNC_FLUSH))
+        parts.append(encoder.flush())
+        return b"".join(parts)
+
+    def compress_copy() -> tuple[bytes, bytes]:
+        encoder = zlibx.compressobj(level=6)
+        prefix = encoder.compress(raw) + encoder.flush(zlib.Z_SYNC_FLUSH)
+        twin = encoder.copy()
+        return (
+            prefix + encoder.compress(b"left") + encoder.flush(),
+            prefix + twin.compress(b"right") + twin.flush(),
+        )
+
+    def copied_compression(value: object) -> None:
+        assert type(value) is tuple
+        assert len(value) == 2
+        for encoded, suffix in zip(value, (b"left", b"right"), strict=True):
+            assert type(encoded) is bytes
+            expect(raw + suffix)(zlib.decompress(encoded))
+
+    def compress_dictionary() -> bytes:
+        encoder = zlibx.compressobj(level=6, zdict=dictionary)
+        return encoder.compress(raw) + encoder.flush()
+
+    def dictionary_compression(value: object) -> None:
+        assert type(value) is bytes
+        assert len(value) >= 6
+        assert value[1] & 0x20, "missing zlib dictionary flag"
+        decoder = zlib.decompressobj(zdict=dictionary)
+        expect(raw)(decoder.decompress(value) + decoder.flush())
+        assert decoder.eof
+        assert decoder.unused_data == b""
+
+    def decompress_stream() -> bytes:
+        decoder = zlibx.decompressobj()
+        split = len(packed) // 2
+        return (
+            decoder.decompress(packed[:split])
+            + decoder.decompress(packed[split:])
+            + decoder.flush()
+        )
+
+    def drain(decoder: zlib._Decompress) -> tuple[bytes, bool, bytes, int]:
+        parts = []
+        largest = 0
+        # Bound the harness even if a changed backend stops making progress.
+        for _ in range(len(raw) + 1):
+            if decoder.eof:
+                break
+            part = decoder.decompress(decoder.unconsumed_tail, max_length=257)
+            largest = max(largest, len(part))
+            parts.append(part)
+            if not part and not decoder.unconsumed_tail:
+                break
+        return b"".join(parts), decoder.eof, decoder.unused_data, largest
+
+    def bounded_decompression() -> tuple[bytes, bool, bytes, int]:
+        decoder = zlibx.decompressobj()
+        first = decoder.decompress(packed + b"following frame", max_length=17)
+        rest, eof, unused, largest = drain(decoder)
+        return first + rest, eof, unused, max(len(first), largest)
+
+    def decompress_copy() -> tuple[bytes, bytes, bool, bytes, bytes]:
+        decoder = zlibx.decompressobj()
+        first = decoder.decompress(packed + b"following frame", max_length=17)
+        twin = decoder.copy()
+        left, left_eof, left_unused, _ = drain(decoder)
+        independent = not twin.eof
+        right, right_eof, right_unused, _ = drain(twin)
+        return (
+            first + left,
+            first + right,
+            left_eof and right_eof and independent,
+            left_unused,
+            right_unused,
+        )
+
+    prepared = zlib.compressobj(level=6, zdict=dictionary)
+    packed_dictionary = prepared.compress(raw) + prepared.flush()
+
+    def decompress_dictionary() -> bytes:
+        decoder = zlibx.decompressobj(zdict=dictionary)
+        return decoder.decompress(packed_dictionary) + decoder.flush()
+
+    specs: list[tuple[str, Callable[[], object], Callable[[object], None], str]] = []
+    for suffix, wbits in (("", 15), ("#raw", -15), ("#gzip", 31)):
+        encoded = zlib.compress(raw, level=6, wbits=wbits)
+        specs.extend(
+            (
+                (
+                    "compress" + suffix,
+                    partial(compress_buffer, wbits),
+                    compressed(wbits),
+                    f"{len(raw)} binary bytes; level 6, wbits {wbits}",
+                ),
+                (
+                    "decompress" + suffix,
+                    partial(decompress_buffer, encoded, wbits),
+                    expect(raw),
+                    f"{len(raw)} decoded bytes; stdlib-produced stream, wbits {wbits}",
+                ),
+            )
+        )
+    specs.extend(
+        (
+            (
+                "compressobj",
+                compress_stream,
+                compressed(15),
+                f"{len(raw)} bytes; new level-6 compressor, two inputs and finish",
+            ),
+            (
+                "compressobj#sync-flush",
+                sync_flush,
+                compressed(15),
+                f"{len(raw)} bytes; new compressor, 4096-byte inputs with sync flushes and finish",
+            ),
+            (
+                "compressobj#copy",
+                compress_copy,
+                copied_compression,
+                f"{len(raw)} shared prefix; native state copy and independent suffixes, both finished",
+            ),
+            (
+                "compressobj#dictionary",
+                compress_dictionary,
+                dictionary_compression,
+                f"{len(raw)} bytes; new compressor with preset dictionary and finish",
+            ),
+            (
+                "decompressobj",
+                decompress_stream,
+                expect(raw),
+                f"{len(raw)} bytes; new inflater, two compressed inputs and flush",
+            ),
+            (
+                "decompressobj#bounded-tail",
+                bounded_decompression,
+                expect((raw, True, b"following frame", 257)),
+                f"{len(raw)} bytes; new inflater, 17-byte first budget then 257-byte tail drains",
+            ),
+            (
+                "decompressobj#copy",
+                decompress_copy,
+                expect((raw, raw, True, b"following frame", b"following frame")),
+                f"{len(raw)} bytes; bounded prefix, copied inflater and independent 257-byte drains",
+            ),
+            (
+                "decompressobj#dictionary",
+                decompress_dictionary,
+                expect(raw),
+                f"{len(raw)} bytes; new dictionary inflater over stdlib-produced bytes and flush",
+            ),
+            (
+                "crc32",
+                lambda: zlibx.crc32(raw),
+                expect(zlib.crc32(raw)),
+                f"{len(raw)} binary bytes; default zero CRC state",
+            ),
+            (
+                "crc32#signed-seed",
+                lambda: zlibx.crc32(raw, -1),
+                expect(zlib.crc32(raw, -1)),
+                f"{len(raw)} binary bytes; signed seed masked to uint32",
+            ),
+            (
+                "adler32",
+                lambda: zlibx.adler32(raw),
+                expect(zlib.adler32(raw)),
+                f"{len(raw)} binary bytes; default Adler state one",
+            ),
+            (
+                "adler32#signed-seed",
+                lambda: zlibx.adler32(raw, -1),
+                expect(zlib.adler32(raw, -1)),
+                f"{len(raw)} binary bytes; signed seed masked to uint32",
+            ),
+        )
+    )
+    return [
+        Case(f"unstd.compress.zlibx.{name}", run, check, note)
+        for name, run, check, note in specs
+        if not comparison or hasattr(zlibx, name.split("#", 1)[0])
+    ]
+
+
 def _audio_cases(*, comparison: bool = False) -> list[Case]:
     import numpy as np
 
@@ -689,6 +920,7 @@ def cases(stack: ExitStack, *, comparison: bool = False) -> list[Case]:
         *_serde_cases(comparison=comparison),
         *_pack_cases(comparison=comparison),
         *_compress_cases(),
+        *_zlib_cases(comparison=comparison),
         *_audio_cases(comparison=comparison),
         *_toml_cases(),
         *_yaml_cases(),

@@ -20,6 +20,87 @@ if TYPE_CHECKING:
 
 
 _STDLIB_CASES = {
+    "compress.stdlib_ports": """
+import bz2, importlib, io, lzma, tarfile, zipfile, zlib
+from unstd import compress
+providers = {'bz2': bz2, 'lzma': lzma, 'tarfile': tarfile, 'zipfile': zipfile, 'zlib': zlib}
+for name, provider in providers.items():
+    assert getattr(compress, name) is provider
+    assert importlib.import_module('unstd.compress.' + name) is provider
+payload = b'installed original codec payload' * 64
+assert compress.bz2.decompress(bz2.compress(payload)) == payload
+assert compress.lzma.decompress(lzma.compress(payload)) == payload
+assert compress.zlib.compress(payload, level=9) == zlib.compress(payload, level=9)
+assert compress.zipfile.ZipFile is zipfile.ZipFile
+assert compress.tarfile.TarFile is tarfile.TarFile
+assert compress.zipfile.BadZipFile is zipfile.BadZipFile
+assert compress.tarfile.TarError is tarfile.TarError
+canonical_path = importlib.import_module('zipfile._path')
+canonical_metadata = (canonical_path.__spec__, canonical_path.__loader__, canonical_path.__package__, canonical_path.__name__)
+ported_path = importlib.import_module('unstd.compress.zipfile._path')
+from unstd.compress.zipfile._path import Path as PortedPath
+assert ported_path is canonical_path
+assert PortedPath is canonical_path.Path is zipfile.Path
+assert (canonical_path.__spec__, canonical_path.__loader__, canonical_path.__package__, canonical_path.__name__) == canonical_metadata
+try:
+    PortedPath(io.BytesIO(b'not a ZIP archive'))
+except zipfile.BadZipFile:
+    pass
+else:
+    raise AssertionError('nested ZIP path lost the canonical error contract')
+""",
+    "compress.zstd": """
+import importlib, io, sys
+if sys.version_info >= (3, 14):
+    from compression import zstd
+    from unstd.compress import zstd as port
+    assert port is zstd
+    assert importlib.import_module('unstd.compress.zstd') is zstd
+    canonical_file = importlib.import_module('compression.zstd._zstdfile')
+    canonical_metadata = (canonical_file.__spec__, canonical_file.__loader__, canonical_file.__package__, canonical_file.__name__)
+    ported_file = importlib.import_module('unstd.compress.zstd._zstdfile')
+    from unstd.compress.zstd._zstdfile import ZstdFile as PortedFile
+    assert ported_file is canonical_file
+    assert PortedFile is canonical_file.ZstdFile is zstd.ZstdFile
+    assert (canonical_file.__spec__, canonical_file.__loader__, canonical_file.__package__, canonical_file.__name__) == canonical_metadata
+    try:
+        with PortedFile(io.BytesIO(b'not a Zstandard frame'), 'rb') as reader:
+            reader.read()
+    except zstd.ZstdError:
+        pass
+    else:
+        raise AssertionError('nested stdlib Zstandard file lost the canonical error contract')
+    payload = 'installed streaming text café\\n'
+    stream = io.BytesIO()
+    with port.open(stream, 'wt', encoding='utf-8', newline='') as writer:
+        writer.write(payload)
+    with port.open(io.BytesIO(stream.getvalue()), 'rt', encoding='utf-8', newline='') as reader:
+        assert reader.read() == payload
+else:
+    try:
+        importlib.import_module('unstd.compress.zstd')
+    except ImportError as error:
+        assert 'requires Python 3.14 or later' in str(error)
+    else:
+        raise AssertionError('stdlib zstd imported on an older interpreter')
+""",
+    "compress.zlibx": """
+import gzip, zlib
+from unstd.compress import zlibx
+for name in ('compress', 'decompress', 'compressobj', 'decompressobj', 'crc32', 'adler32', 'error'):
+    assert getattr(zlibx, name) is getattr(zlib, name), name
+payload = b'installed original incremental state' * 128
+encoder = zlibx.compressobj(level=9, wbits=31)
+prefix = encoder.compress(payload[:20])
+branch = encoder.copy()
+wire = prefix + branch.compress(memoryview(payload)[20:]) + branch.flush()
+assert gzip.decompress(wire) == payload
+decoder = zlibx.decompressobj(31)
+head = decoder.decompress(wire, 7)
+assert len(head) == 7
+assert head + decoder.decompress(decoder.unconsumed_tail) == payload
+assert decoder.eof
+""",
     "compress.gzipx": """
 import gzip, io, sys
 from unstd.compress import gzipx
@@ -228,6 +309,14 @@ with wave.open(io.BytesIO(output.getvalue()), 'rb') as reference:
 
 
 _MISSING_EXTRA_CASES = {
+    "compress.zstandard": (
+        "zstd",
+        "importlib.import_module('unstd.compress.zstandard')",
+    ),
+    "compress.libarchive": (
+        "archives",
+        "importlib.import_module('unstd.compress.libarchive')",
+    ),
     "crypto.digest": ("crypto", "importlib.import_module('unstd.crypto.digest')"),
     "crypto.token": ("crypto", "importlib.import_module('unstd.crypto.token')"),
     "serde.structs": ("serde", "importlib.import_module('unstd.serde.structs')"),
@@ -272,6 +361,17 @@ _MISSING_EXTRA_CASES = {
 # is intentionally not generated from the package: a new module must make an
 # author choose and implement its installed/fallback/missing-extra contract.
 _PROBE_MODULES = {
+    "compress.stdlib_ports": (
+        "unstd.compress.bz2",
+        "unstd.compress.lzma",
+        "unstd.compress.tarfile",
+        "unstd.compress.zipfile",
+        "unstd.compress.zlib",
+    ),
+    "compress.zstd": ("unstd.compress.zstd",),
+    "compress.zlibx": ("unstd.compress.zlibx",),
+    "compress.zstandard": ("unstd.compress.zstandard",),
+    "compress.libarchive": ("unstd.compress.libarchive",),
     "compress.gzipx": ("unstd.compress", "unstd.compress.gzipx"),
     "serde.jsonx": ("unstd.serde", "unstd.serde.jsonx"),
     "serde.b64": ("unstd.serde.b64",),
@@ -303,6 +403,18 @@ _PROBE_MODULES = {
     "containers.Map": ("unstd.containers.persistent",),
     "model": ("unstd.model", "unstd.model.base", "unstd.model.settings"),
     "yaml.loads": ("unstd.yaml",),
+}
+
+
+# These public modules intentionally are the original stdlib module objects.
+# Only an exact declared provider identity can use the base interpreter's origin.
+_STDLIB_ALIASES = {
+    "unstd.compress.bz2": "bz2",
+    "unstd.compress.lzma": "lzma",
+    "unstd.compress.tarfile": "tarfile",
+    "unstd.compress.zipfile": "zipfile",
+    "unstd.compress.zlib": "zlib",
+    "unstd.compress.zstd": "compression.zstd",
 }
 
 
@@ -400,8 +512,22 @@ def test_base_install_executes_each_stdlib_surface(
         + _STDLIB_CASES[surface]
         + f"""
 for module in {_PROBE_MODULES[surface]!r}:
+    if module == 'unstd.compress.zstd' and sys.version_info < (3, 14):
+        assert module not in sys.modules
+        continue
     assert module in sys.modules, module
-    assert Path(sys.modules[module].__file__).resolve().is_relative_to(Path(sys.prefix).resolve()), module
+    loaded = sys.modules[module]
+    if module in {_STDLIB_ALIASES!r}:
+        provider = importlib.import_module({_STDLIB_ALIASES!r}[module])
+        assert loaded is provider, module
+        origin = getattr(loaded, '__file__', None)
+        if origin is None:
+            assert provider.__name__ in sys.builtin_module_names, module
+            assert provider.__spec__.origin == 'built-in', module
+        else:
+            assert Path(origin).resolve().is_relative_to(Path(sys.base_prefix).resolve()), module
+    else:
+        assert Path(loaded.__file__).resolve().is_relative_to(Path(sys.prefix).resolve()), module
 """
     )
 

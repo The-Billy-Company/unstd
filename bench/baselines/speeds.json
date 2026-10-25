@@ -409,6 +409,150 @@
       "rounds": 11,
       "spread": 0.49449809824307933
     },
+    "unstd.compress.zlibx.adler32": {
+      "ceiling_ns": 812.3678100585938,
+      "iterations": 8192,
+      "measured_ns": 624.8983154296875,
+      "note": "21504 binary bytes; default Adler state one",
+      "rounds": 9,
+      "spread": 0.14391989946801892
+    },
+    "unstd.compress.zlibx.adler32#signed-seed": {
+      "ceiling_ns": 783.9752197265625,
+      "iterations": 8192,
+      "measured_ns": 603.057861328125,
+      "note": "21504 binary bytes; signed seed masked to uint32",
+      "rounds": 9,
+      "spread": 0.09694165275036688
+    },
+    "unstd.compress.zlibx.compress": {
+      "ceiling_ns": 6093.194580078125,
+      "iterations": 2048,
+      "measured_ns": 4687.07275390625,
+      "note": "21504 binary bytes; level 6, wbits 15",
+      "rounds": 9,
+      "spread": 0.16454624770486892
+    },
+    "unstd.compress.zlibx.compress#gzip": {
+      "ceiling_ns": 8687.5953125,
+      "iterations": 704,
+      "measured_ns": 6682.765625,
+      "note": "21504 binary bytes; level 6, wbits 31",
+      "rounds": 9,
+      "spread": 0.28781696983017074
+    },
+    "unstd.compress.zlibx.compress#raw": {
+      "ceiling_ns": 5859.168554687501,
+      "iterations": 1536,
+      "measured_ns": 4507.052734375,
+      "note": "21504 binary bytes; level 6, wbits -15",
+      "rounds": 9,
+      "spread": 0.21711963873749374
+    },
+    "unstd.compress.zlibx.compressobj": {
+      "ceiling_ns": 7659.3994140625,
+      "iterations": 1536,
+      "measured_ns": 5891.845703125,
+      "note": "21504 bytes; new level-6 compressor, two inputs and finish",
+      "rounds": 9,
+      "spread": 0.0730580256633379
+    },
+    "unstd.compress.zlibx.compressobj#copy": {
+      "ceiling_ns": 19499.5734375,
+      "iterations": 256,
+      "measured_ns": 14999.671875,
+      "note": "21504 shared prefix; native state copy and independent suffixes, both finished",
+      "rounds": 9,
+      "spread": 0.5926129634085746
+    },
+    "unstd.compress.zlibx.compressobj#dictionary": {
+      "ceiling_ns": 6197.72109375,
+      "iterations": 1664,
+      "measured_ns": 4767.477764423077,
+      "note": "21504 bytes; new compressor with preset dictionary and finish",
+      "rounds": 9,
+      "spread": 0.28398480136915244
+    },
+    "unstd.compress.zlibx.compressobj#sync-flush": {
+      "ceiling_ns": 13890.787760416666,
+      "iterations": 768,
+      "measured_ns": 10685.221354166666,
+      "note": "21504 bytes; new compressor, 4096-byte inputs with sync flushes and finish",
+      "rounds": 9,
+      "spread": 0.2849504950495049
+    },
+    "unstd.compress.zlibx.crc32": {
+      "ceiling_ns": 2536.650390625,
+      "iterations": 2560,
+      "measured_ns": 1951.26953125,
+      "note": "21504 binary bytes; default zero CRC state",
+      "rounds": 9,
+      "spread": 0.22561433361693609
+    },
+    "unstd.compress.zlibx.crc32#signed-seed": {
+      "ceiling_ns": 2581.9661458333335,
+      "iterations": 4992,
+      "measured_ns": 1986.1278044871794,
+      "note": "21504 binary bytes; signed seed masked to uint32",
+      "rounds": 9,
+      "spread": 0.16184220479588493
+    },
+    "unstd.compress.zlibx.decompress": {
+      "ceiling_ns": 5200.846710526316,
+      "iterations": 1216,
+      "measured_ns": 4000.6513157894738,
+      "note": "21504 decoded bytes; stdlib-produced stream, wbits 15",
+      "rounds": 9,
+      "spread": 0.10174289054907178
+    },
+    "unstd.compress.zlibx.decompress#gzip": {
+      "ceiling_ns": 7476.7578125,
+      "iterations": 832,
+      "measured_ns": 5751.352163461538,
+      "note": "21504 decoded bytes; stdlib-produced stream, wbits 31",
+      "rounds": 9,
+      "spread": 0.12625062041221494
+    },
+    "unstd.compress.zlibx.decompress#raw": {
+      "ceiling_ns": 5431.218880208333,
+      "iterations": 2304,
+      "measured_ns": 4177.860677083333,
+      "note": "21504 decoded bytes; stdlib-produced stream, wbits -15",
+      "rounds": 9,
+      "spread": 0.15384024024623016
+    },
+    "unstd.compress.zlibx.decompressobj": {
+      "ceiling_ns": 8118.569062500001,
+      "iterations": 320,
+      "measured_ns": 6245.053125,
+      "note": "21504 bytes; new inflater, two compressed inputs and flush",
+      "rounds": 9,
+      "spread": 3.3712098125666463
+    },
+    "unstd.compress.zlibx.decompressobj#bounded-tail": {
+      "ceiling_ns": 26022.005208333332,
+      "iterations": 384,
+      "measured_ns": 20016.927083333332,
+      "note": "21504 bytes; new inflater, 17-byte first budget then 257-byte tail drains",
+      "rounds": 9,
+      "spread": 0.23516333832043193
+    },
+    "unstd.compress.zlibx.decompressobj#copy": {
+      "ceiling_ns": 52132.87421875,
+      "iterations": 128,
+      "measured_ns": 40102.2109375,
+      "note": "21504 bytes; bounded prefix, copied inflater and independent 257-byte drains",
+      "rounds": 9,
+      "spread": 0.2818725120945833
+    },
+    "unstd.compress.zlibx.decompressobj#dictionary": {
+      "ceiling_ns": 7177.647005208333,
+      "iterations": 1536,
+      "measured_ns": 5521.266927083333,
+      "note": "21504 bytes; new dictionary inflater over stdlib-produced bytes and flush",
+      "rounds": 9,
+      "spread": 0.19548889202805533
+    },
     "unstd.containers.Map": {
       "ceiling_ns": 7912.4359375,
       "iterations": 832,
@@ -2210,6 +2354,1015 @@
       "spread": 0.5597347537775845
     }
   },
+  "compression_addition_provenance": {
+    "cases": [
+      "unstd.compress.zlibx.adler32",
+      "unstd.compress.zlibx.adler32#signed-seed",
+      "unstd.compress.zlibx.compress",
+      "unstd.compress.zlibx.compress#gzip",
+      "unstd.compress.zlibx.compress#raw",
+      "unstd.compress.zlibx.compressobj",
+      "unstd.compress.zlibx.compressobj#copy",
+      "unstd.compress.zlibx.compressobj#dictionary",
+      "unstd.compress.zlibx.compressobj#sync-flush",
+      "unstd.compress.zlibx.crc32",
+      "unstd.compress.zlibx.crc32#signed-seed",
+      "unstd.compress.zlibx.decompress",
+      "unstd.compress.zlibx.decompress#gzip",
+      "unstd.compress.zlibx.decompress#raw",
+      "unstd.compress.zlibx.decompressobj",
+      "unstd.compress.zlibx.decompressobj#bounded-tail",
+      "unstd.compress.zlibx.decompressobj#copy",
+      "unstd.compress.zlibx.decompressobj#dictionary"
+    ],
+    "measurement_baseline": {
+      "cases": {
+        "unstd.compress.zlibx.adler32": {
+          "ceiling_ns": 812.3678100585938,
+          "iterations": 8192,
+          "measured_ns": 624.8983154296875,
+          "note": "21504 binary bytes; default Adler state one",
+          "rounds": 9,
+          "spread": 0.14391989946801892
+        },
+        "unstd.compress.zlibx.adler32#signed-seed": {
+          "ceiling_ns": 783.9752197265625,
+          "iterations": 8192,
+          "measured_ns": 603.057861328125,
+          "note": "21504 binary bytes; signed seed masked to uint32",
+          "rounds": 9,
+          "spread": 0.09694165275036688
+        },
+        "unstd.compress.zlibx.compress": {
+          "ceiling_ns": 6093.194580078125,
+          "iterations": 2048,
+          "measured_ns": 4687.07275390625,
+          "note": "21504 binary bytes; level 6, wbits 15",
+          "rounds": 9,
+          "spread": 0.16454624770486892
+        },
+        "unstd.compress.zlibx.compress#gzip": {
+          "ceiling_ns": 8687.5953125,
+          "iterations": 704,
+          "measured_ns": 6682.765625,
+          "note": "21504 binary bytes; level 6, wbits 31",
+          "rounds": 9,
+          "spread": 0.28781696983017074
+        },
+        "unstd.compress.zlibx.compress#raw": {
+          "ceiling_ns": 5859.168554687501,
+          "iterations": 1536,
+          "measured_ns": 4507.052734375,
+          "note": "21504 binary bytes; level 6, wbits -15",
+          "rounds": 9,
+          "spread": 0.21711963873749374
+        },
+        "unstd.compress.zlibx.compressobj": {
+          "ceiling_ns": 7659.3994140625,
+          "iterations": 1536,
+          "measured_ns": 5891.845703125,
+          "note": "21504 bytes; new level-6 compressor, two inputs and finish",
+          "rounds": 9,
+          "spread": 0.0730580256633379
+        },
+        "unstd.compress.zlibx.compressobj#copy": {
+          "ceiling_ns": 19499.5734375,
+          "iterations": 256,
+          "measured_ns": 14999.671875,
+          "note": "21504 shared prefix; native state copy and independent suffixes, both finished",
+          "rounds": 9,
+          "spread": 0.5926129634085746
+        },
+        "unstd.compress.zlibx.compressobj#dictionary": {
+          "ceiling_ns": 6197.72109375,
+          "iterations": 1664,
+          "measured_ns": 4767.477764423077,
+          "note": "21504 bytes; new compressor with preset dictionary and finish",
+          "rounds": 9,
+          "spread": 0.28398480136915244
+        },
+        "unstd.compress.zlibx.compressobj#sync-flush": {
+          "ceiling_ns": 13890.787760416666,
+          "iterations": 768,
+          "measured_ns": 10685.221354166666,
+          "note": "21504 bytes; new compressor, 4096-byte inputs with sync flushes and finish",
+          "rounds": 9,
+          "spread": 0.2849504950495049
+        },
+        "unstd.compress.zlibx.crc32": {
+          "ceiling_ns": 2536.650390625,
+          "iterations": 2560,
+          "measured_ns": 1951.26953125,
+          "note": "21504 binary bytes; default zero CRC state",
+          "rounds": 9,
+          "spread": 0.22561433361693609
+        },
+        "unstd.compress.zlibx.crc32#signed-seed": {
+          "ceiling_ns": 2581.9661458333335,
+          "iterations": 4992,
+          "measured_ns": 1986.1278044871794,
+          "note": "21504 binary bytes; signed seed masked to uint32",
+          "rounds": 9,
+          "spread": 0.16184220479588493
+        },
+        "unstd.compress.zlibx.decompress": {
+          "ceiling_ns": 5200.846710526316,
+          "iterations": 1216,
+          "measured_ns": 4000.6513157894738,
+          "note": "21504 decoded bytes; stdlib-produced stream, wbits 15",
+          "rounds": 9,
+          "spread": 0.10174289054907178
+        },
+        "unstd.compress.zlibx.decompress#gzip": {
+          "ceiling_ns": 7476.7578125,
+          "iterations": 832,
+          "measured_ns": 5751.352163461538,
+          "note": "21504 decoded bytes; stdlib-produced stream, wbits 31",
+          "rounds": 9,
+          "spread": 0.12625062041221494
+        },
+        "unstd.compress.zlibx.decompress#raw": {
+          "ceiling_ns": 5431.218880208333,
+          "iterations": 2304,
+          "measured_ns": 4177.860677083333,
+          "note": "21504 decoded bytes; stdlib-produced stream, wbits -15",
+          "rounds": 9,
+          "spread": 0.15384024024623016
+        },
+        "unstd.compress.zlibx.decompressobj": {
+          "ceiling_ns": 8118.569062500001,
+          "iterations": 320,
+          "measured_ns": 6245.053125,
+          "note": "21504 bytes; new inflater, two compressed inputs and flush",
+          "rounds": 9,
+          "spread": 3.3712098125666463
+        },
+        "unstd.compress.zlibx.decompressobj#bounded-tail": {
+          "ceiling_ns": 26022.005208333332,
+          "iterations": 384,
+          "measured_ns": 20016.927083333332,
+          "note": "21504 bytes; new inflater, 17-byte first budget then 257-byte tail drains",
+          "rounds": 9,
+          "spread": 0.23516333832043193
+        },
+        "unstd.compress.zlibx.decompressobj#copy": {
+          "ceiling_ns": 52132.87421875,
+          "iterations": 128,
+          "measured_ns": 40102.2109375,
+          "note": "21504 bytes; bounded prefix, copied inflater and independent 257-byte drains",
+          "rounds": 9,
+          "spread": 0.2818725120945833
+        },
+        "unstd.compress.zlibx.decompressobj#dictionary": {
+          "ceiling_ns": 7177.647005208333,
+          "iterations": 1536,
+          "measured_ns": 5521.266927083333,
+          "note": "21504 bytes; new dictionary inflater over stdlib-produced bytes and flush",
+          "rounds": 9,
+          "spread": 0.19548889202805533
+        }
+      },
+      "environment": {
+        "backends": {
+          "blake3": "1.0.10",
+          "immutables": "0.21",
+          "irregex": "2.6.0",
+          "libarchive-c": null,
+          "msgspec": "0.22.0",
+          "numpy": "2.5.3",
+          "orjson": "3.12.0",
+          "protobuf": "7.36.2",
+          "pybase64": "1.5.0",
+          "pydantic": "2.13.5",
+          "pydantic-settings": "2.15.0",
+          "pyyaml": "6.0.3",
+          "rapidfuzz": "3.14.6",
+          "ruamel-yaml": "0.19.1",
+          "sortedcontainers": "2.4.0",
+          "soundfile": "0.14.0",
+          "tomlkit": "0.15.1",
+          "uuid-utils": "1.0.0",
+          "whenever": "0.10.5",
+          "zlib-ng": "1.0.0",
+          "zstandard": null
+        },
+        "cpu": "Apple M5 Max",
+        "cpu_count": 18,
+        "implementation": "CPython",
+        "machine": "arm64",
+        "native": {
+          "clone._clone_native": true,
+          "compress._gzip_native": true,
+          "crypto._stream_native": true,
+          "serde._json_native": true,
+          "text._text_native": true
+        },
+        "native_implementations": {
+          "clone._clone_native": "c",
+          "compress._gzip_native": "c",
+          "crypto._stream_native": "c",
+          "serde._json_native": "c",
+          "text._text_native": "c"
+        },
+        "python": "3.14.9",
+        "python_debug": 0,
+        "python_free_threaded": 0,
+        "system": "Darwin",
+        "system_release": "25.6.0",
+        "thread_settings": {
+          "MKL_NUM_THREADS": null,
+          "OMP_NUM_THREADS": null,
+          "OPENBLAS_NUM_THREADS": null
+        }
+      },
+      "recorded": "2026-10-25T10:32:47.559765+00:00",
+      "schema": 1,
+      "tolerance": 0.3,
+      "workload_sources": {
+        "speed_cases_codecs.py": "e7754b63f38d3b9ef1ad0c46594c530990bd0933b3e6a8fad39f48583e0041c4",
+        "speed_cases_operations.py": "54572576bc9cea79179d60a84d428a7f2f232e1d6de46233c3ee00ab196cf497",
+        "speed_cases_runtime.py": "9a071379371c171c3e8b307453c27b798d41ba3926fd05bbb31e2bdeabcca8e3"
+      }
+    },
+    "measurement_environment": {
+      "backends": {
+        "blake3": "1.0.10",
+        "immutables": "0.21",
+        "irregex": "2.6.0",
+        "libarchive-c": null,
+        "msgspec": "0.22.0",
+        "numpy": "2.5.3",
+        "orjson": "3.12.0",
+        "protobuf": "7.36.2",
+        "pybase64": "1.5.0",
+        "pydantic": "2.13.5",
+        "pydantic-settings": "2.15.0",
+        "pyyaml": "6.0.3",
+        "rapidfuzz": "3.14.6",
+        "ruamel-yaml": "0.19.1",
+        "sortedcontainers": "2.4.0",
+        "soundfile": "0.14.0",
+        "tomlkit": "0.15.1",
+        "uuid-utils": "1.0.0",
+        "whenever": "0.10.5",
+        "zlib-ng": "1.0.0",
+        "zstandard": null
+      },
+      "cpu": "Apple M5 Max",
+      "cpu_count": 18,
+      "implementation": "CPython",
+      "machine": "arm64",
+      "native": {
+        "clone._clone_native": true,
+        "compress._gzip_native": true,
+        "crypto._stream_native": true,
+        "serde._json_native": true,
+        "text._text_native": true
+      },
+      "native_implementations": {
+        "clone._clone_native": "c",
+        "compress._gzip_native": "c",
+        "crypto._stream_native": "c",
+        "serde._json_native": "c",
+        "text._text_native": "c"
+      },
+      "python": "3.14.9",
+      "python_debug": 0,
+      "python_free_threaded": 0,
+      "system": "Darwin",
+      "system_release": "25.6.0",
+      "thread_settings": {
+        "MKL_NUM_THREADS": null,
+        "OMP_NUM_THREADS": null,
+        "OPENBLAS_NUM_THREADS": null
+      }
+    },
+    "measurement_provenance": {
+      "build_environment": {
+        "CC": null,
+        "CFLAGS": null,
+        "CIBUILDWHEEL": null,
+        "CPPFLAGS": null,
+        "CXX": null,
+        "LDFLAGS": null,
+        "PYTHONMALLOC": null,
+        "UNSTD_GZIP_ZLIB_RS": null,
+        "UNSTD_TEXT_RUST": null
+      },
+      "compiler_configuration": {
+        "CC": "cc",
+        "CFLAGS": "-fno-strict-overflow -Wsign-compare -Wunreachable-code -DNDEBUG -g -O3 -Wall -O3 -arch arm64 -mmacosx-version-min=11.0 -Wno-nullability-completeness -Wno-expansion-to-defined -Wno-undef-prefix -fPIC",
+        "CONFIG_ARGS": "'--build=aarch64-apple-darwin' '--host=aarch64-apple-darwin' '--prefix=/install' '--with-openssl=/tmp/tmpbu7gfntw/tools/deps' '--with-system-expat' '--without-ensurepip' '--with-tail-call-interp' '--with-system-libmpdec' 'MODULE_BUILDTYPE=static' '--enable-loadable-sqlite-extensions' '--enable-static-libpython-for-interpreter' '--enable-shared' '--with-mimalloc' '--enable-optimizations' '--enable-experimental-jit=yes-off' '--with-lto=full' '--with-build-python=/tmp/tmpbu7gfntw/tools/host/bin/python3.14' 'ac_cv_lib_intl_textdomain=no' 'ac_cv_func_ptsname_r=no' 'ac_cv_func_explicit_bzero=no' '--with-dbmliborder=ndbm' 'build_alias=aarch64-apple-darwin' 'host_alias=aarch64-apple-darwin' 'PKG_CONFIG=pkg-config --static --define-prefix' 'PKG_CONFIG_PATH=/tmp/tmpbu7gfntw/tools/deps/share/pkgconfig:/tmp/tmpbu7gfntw/tools/deps/lib/pkgconfig' 'CC=clang' 'CFLAGS=-O3 -arch arm64 -mmacosx-version-min=11.0 -Wno-nullability-completeness -Wno-expansion-to-defined -Wno-undef-prefix -fPIC -Werror=unguarded-availability-new' 'LDFLAGS=-arch arm64 -mmacosx-version-min=11.0 -Wl,-headerpad,40' 'CPPFLAGS=-O3 -arch arm64 -mmacosx-version-min=11.0 -Wno-nullability-completeness -Wno-expansion-to-defined -Wno-undef-prefix -fPIC -Werror=unguarded-availability-new' 'PROFILE_TASK=-m test --pgo -j 12' 'BOLT_COMMON_FLAGS=' 'BOLT_APPLY_FLAGS='",
+        "CPPFLAGS": "-I. -I./Include -O3 -arch arm64 -mmacosx-version-min=11.0 -Wno-nullability-completeness -Wno-expansion-to-defined -Wno-undef-prefix -fPIC",
+        "CXX": "c++",
+        "LDFLAGS": "-arch arm64 -mmacosx-version-min=11.0 -Wl,-headerpad,40"
+      },
+      "harness_sources": {
+        "bench/core/timing.py": "d585627571b5daeca0a078b75484c84e769dce70a5b4448825fd811a8e3b61bc",
+        "bench/speeds.py": "f55501d87f6c57c13fae24a883d684bbf43d5cde204263499e378fa59740ae8f"
+      },
+      "loaded_files": {
+        "gzip": {
+          "path": "/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib/python3.14/gzip.py",
+          "sha256": "a5c6e7714160c6972427eb6612bb6ee0d4d6e70727c77f7ad4b6ab7a56b8cc50"
+        },
+        "unstd": {
+          "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/__init__.py",
+          "sha256": "35bf25962f426429a3c3ab55c69f1644d46838ee925cf0365db07ff809c442fb"
+        },
+        "unstd._extra": {
+          "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/_extra.py",
+          "sha256": "8125908815b82490d343dbbad243a0c89bfa197250f75cf42cf812aaba4a0135"
+        },
+        "unstd.clone": {
+          "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/clone/__init__.py",
+          "sha256": "ceea4742f2f34a4f7c6a5b86a969ce50be0702adb3f097f75000bada3e6ccf06"
+        },
+        "unstd.clone._clone_native": {
+          "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/clone/_clone_native.cpython-314-darwin.so",
+          "sha256": "dc7cd29df4c9296f12758310c404f77eaa779bb9f40239f88e975cd5455f650b"
+        },
+        "unstd.clone.structural": {
+          "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/clone/structural.py",
+          "sha256": "958c02654a63434fd3bdd2cea6a49ae79c64abee05f4f2761f2902257f210942"
+        },
+        "unstd.compress": {
+          "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/compress/__init__.py",
+          "sha256": "cb251e3f867d6a74a7edc31b129932c1a64146de63780f99140dbcf6b18b8067"
+        },
+        "unstd.compress._backend": {
+          "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/compress/_backend.py",
+          "sha256": "4e14ee01a8edef3fea2e98bc84830fbeb79bda124cbeca653e97a7639397fe32"
+        },
+        "unstd.compress._gzip_native": {
+          "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/compress/_gzip_native.cpython-314-darwin.so",
+          "sha256": "af20cceef49f195be5013a698e38f4aae6a5212eb7de77bc5cb65dbe0c810422"
+        },
+        "unstd.compress._reader": {
+          "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/compress/_reader.py",
+          "sha256": "be0dd7f18e403df9a5663efe935618fd9037639d99d91e919772f6f7b0b26f4a"
+        },
+        "unstd.compress._validation": {
+          "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/compress/_validation.py",
+          "sha256": "bc8a0ea27e8e59c679faa5cef0599624884b1147912066bfa391763b935a7ad1"
+        },
+        "unstd.compress.gzipx": {
+          "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/compress/gzipx.py",
+          "sha256": "def93facf3eed14dae3a9c81eb2ea9cd323c3fbd47484fb170170b2100d7e468"
+        },
+        "unstd.compress.zlibx": {
+          "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/compress/zlibx.py",
+          "sha256": "d2678ca13f856bc1d207c68ed57ccd448e3b06915445c7636be0fcc5e7fd6887"
+        },
+        "unstd.crypto": {
+          "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/crypto/__init__.py",
+          "sha256": "6908e373f1ef84c7e673c59fc9f52a25871ba93eaa2f5a327940579d170e9270"
+        },
+        "unstd.crypto._blake3": {
+          "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/crypto/_blake3.py",
+          "sha256": "50a241ab28de4b063344c0ad05b9cf2d1c22c87f29ab04159a3e211daa62e3d9"
+        },
+        "unstd.crypto._stream_native": {
+          "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/crypto/_stream_native.cpython-314-darwin.so",
+          "sha256": "8c91b080e0c80a49f7bbc4254f0b38dff5d303dfc07b7dd47e542e6decdfc18d"
+        },
+        "unstd.crypto.digest": {
+          "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/crypto/digest.py",
+          "sha256": "eb665ff57f241d2dcb5a7151e82e7c7ac32c490928b85fe20ab44e97bf0104fb"
+        },
+        "unstd.pack": {
+          "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/pack/__init__.py",
+          "sha256": "3399b170cfd1dd1bce7aedf15e65fb029c0e4ce61baebc80d5ec7cd712b704fa"
+        },
+        "unstd.pack._internal": {
+          "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/pack/_internal/__init__.py",
+          "sha256": "a08e459abdda80cce16be41398da88cc7ef99825c588fc8e8b6bfa40e88136a7"
+        },
+        "unstd.pack._internal.dtype": {
+          "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/pack/_internal/dtype.py",
+          "sha256": "9adac429d0055a2f213e648fffb2657674fb2efd589b3476ca48d4cad1437e17"
+        },
+        "unstd.pack.binpack": {
+          "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/pack/binpack.py",
+          "sha256": "2770b38dbc874406b511947b2415e161f02870a766beb7730407a87542ae1f14"
+        },
+        "unstd.rand": {
+          "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/rand/__init__.py",
+          "sha256": "7fc8051be03f8826451a0130fe7872ed59404aeb7e94502847339d9d5f5e54bb"
+        },
+        "unstd.rand.crypto": {
+          "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/rand/crypto.py",
+          "sha256": "dde63b51dec92e542aba3e386fd27819d49a3db20e803f28250129f56b88edad"
+        },
+        "unstd.rand.draw": {
+          "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/rand/draw.py",
+          "sha256": "dc178890d7c64ea2351dc2b8aa3858b6d1a5db8c1b6333a4294510a73e4a2aad"
+        },
+        "unstd.rex": {
+          "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/rex/__init__.py",
+          "sha256": "6bf61c5d2705e3cd63d572b808448e74a5194ee3db1ae1351d6302d4059d834d"
+        },
+        "unstd.rex._internal": {
+          "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/rex/_internal/__init__.py",
+          "sha256": "46c8269d3d3b5325ec50b913bf28f4a07cc8cbe845677be0062aaf4651f0d55f"
+        },
+        "unstd.rex._internal.patterns": {
+          "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/rex/_internal/patterns.py",
+          "sha256": "65c1e54386221c2013c28f20bac0367378834bc285c5c428d115991ecf69e213"
+        },
+        "unstd.rex._internal.profile": {
+          "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/rex/_internal/profile.py",
+          "sha256": "d9fd2a9030db9cbd3aae1cb77b1d7f57a6105f5071159ff82c5428e4c893cd9e"
+        },
+        "unstd.serde": {
+          "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/serde/__init__.py",
+          "sha256": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d"
+        },
+        "unstd.serde._internal": {
+          "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/serde/_internal/__init__.py",
+          "sha256": "6aed7cdb4acd19aa8dfa7668c884fd937f2add4574c73531bd6cdde569f53f05"
+        },
+        "unstd.serde._internal.json_common": {
+          "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/serde/_internal/json_common.py",
+          "sha256": "cb4ee6fce1510e202b4126e67b53ac73b9e7b73a9d67d010b451b7fa45ea0b8f"
+        },
+        "unstd.serde._internal.json_encode": {
+          "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/serde/_internal/json_encode.py",
+          "sha256": "dcd71b471c9f88767119e4ecb90cd7b400c8aa9b5e0a027594005b14acb1911f"
+        },
+        "unstd.serde._json_native": {
+          "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/serde/_json_native.cpython-314-darwin.so",
+          "sha256": "2708a908f234dd54bc5d0f4479a7af34f2562c905cd5d633ac60305b4f0362b0"
+        },
+        "unstd.serde.b64": {
+          "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/serde/b64.py",
+          "sha256": "c9fa198b3a6a4dffab239697c2d35c717ab2adea1977e7c1bd2226c30c4dbe32"
+        },
+        "unstd.serde.jsonx": {
+          "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/serde/jsonx.py",
+          "sha256": "3d2d37898352b90ae73a13ccea59e9e6351b2d33a67cebf117e0a3ca8ab540f5"
+        },
+        "unstd.serde.ndjson": {
+          "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/serde/ndjson.py",
+          "sha256": "98c1f5bb1b78d2548390683b9b4bc062c4dc900b1fc27837e7941c7ee4553550"
+        },
+        "unstd.text": {
+          "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/text/__init__.py",
+          "sha256": "97ff7f7743ca9b2a4f123ca08a7423b41201c07ead775971e424c283a79f2392"
+        },
+        "unstd.text._text_native": {
+          "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/text/_text_native.cpython-314-darwin.so",
+          "sha256": "36860b93f44fd659007e965c714e1eedc13e12cb31a9dc7f2f0665f7b810c28f"
+        },
+        "unstd.text.fuzz": {
+          "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/text/fuzz.py",
+          "sha256": "96bb910dda4e55925adfe133a2128bc13f914c7e01cd2fad614795cd5e2cf534"
+        },
+        "zlib_ng._version": {
+          "path": "/Users/griffinstrier/Billy-Company/unstd/.venv/lib/python3.14/site-packages/zlib_ng/_version.py",
+          "sha256": "02cf7794b29318a0f0e4080d536184bd1f0e6f5c613b700f837cb6040f447d73"
+        },
+        "zlib_ng.gzip_ng": {
+          "path": "/Users/griffinstrier/Billy-Company/unstd/.venv/lib/python3.14/site-packages/zlib_ng/gzip_ng.py",
+          "sha256": "a4b59414593a47ff1c4ad64eb0209a607c6efd154da632617909b4cde62be414"
+        },
+        "zlib_ng.zlib_ng": {
+          "path": "/Users/griffinstrier/Billy-Company/unstd/.venv/lib/python3.14/site-packages/zlib_ng/zlib_ng.cpython-314-darwin.so",
+          "sha256": "790d02eaacad48e8f76544eaf166bad933051ef21f0ff1c39898b42e8f0d6cb9"
+        }
+      },
+      "python_build": "3.14.9 (main, Oct 21 2026, 17:47:42) [Clang 23.1.3 ]",
+      "python_executable": "/Users/griffinstrier/Billy-Company/unstd/.venv/bin/python",
+      "workload_sources": {
+        "speed_cases_codecs.py": "e7754b63f38d3b9ef1ad0c46594c530990bd0933b3e6a8fad39f48583e0041c4",
+        "speed_cases_operations.py": "54572576bc9cea79179d60a84d428a7f2f232e1d6de46233c3ee00ab196cf497",
+        "speed_cases_runtime.py": "9a071379371c171c3e8b307453c27b798d41ba3926fd05bbb31e2bdeabcca8e3"
+      }
+    },
+    "measurements": {
+      "unstd.compress.zlibx.adler32": {
+        "cpu_samples_ns": [
+          null,
+          611.7908935546875,
+          618.458984375,
+          616.399169921875,
+          616.9942626953125,
+          616.1702880859375,
+          628.8299560546875,
+          626.4190673828125,
+          609.38525390625
+        ],
+        "iters": 8192,
+        "per_op_ns": 624.8983154296875,
+        "rounds": 9,
+        "samples_ns": [
+          624.8983154296875,
+          643.2545166015625,
+          678.1361083984375,
+          698.7203369140625,
+          714.8336181640625,
+          675.287841796875,
+          705.89697265625,
+          700.3682861328125,
+          663.0045166015625
+        ],
+        "spread": 0.14391989946801892
+      },
+      "unstd.compress.zlibx.adler32#signed-seed": {
+        "cpu_samples_ns": [
+          null,
+          610.7177734375,
+          608.9580078125,
+          610.0311279296875,
+          612.7725830078125,
+          611.5316162109375,
+          606.719970703125,
+          597.198486328125,
+          597.2545166015625
+        ],
+        "iters": 8192,
+        "per_op_ns": 603.057861328125,
+        "rounds": 9,
+        "samples_ns": [
+          631.6884765625,
+          642.6798095703125,
+          645.050048828125,
+          656.3160400390625,
+          659.769775390625,
+          661.519287109375,
+          633.9111328125,
+          603.057861328125,
+          606.3436279296875
+        ],
+        "spread": 0.09694165275036688
+      },
+      "unstd.compress.zlibx.compress": {
+        "cpu_samples_ns": [
+          null,
+          5233.56103515625,
+          5044.25048828125,
+          4844.80810546875,
+          5101.419921875,
+          5172.8310546875,
+          4686.8896484375,
+          4726.64404296875,
+          4938.4560546875
+        ],
+        "iters": 2048,
+        "per_op_ns": 4687.07275390625,
+        "rounds": 9,
+        "samples_ns": [
+          5022.88818359375,
+          5458.31298828125,
+          5140.095703125,
+          4846.3544921875,
+          5291.015625,
+          5342.9970703125,
+          4687.07275390625,
+          4726.359375,
+          5004.92333984375
+        ],
+        "spread": 0.16454624770486892
+      },
+      "unstd.compress.zlibx.compress#gzip": {
+        "cpu_samples_ns": [
+          null,
+          7286.221590909091,
+          7144.53125,
+          7439.690340909091,
+          6657.728693181818,
+          7539.653409090909,
+          7387.428977272727,
+          7160.511363636364,
+          6740.826704545455
+        ],
+        "iters": 704,
+        "per_op_ns": 6682.765625,
+        "rounds": 9,
+        "samples_ns": [
+          8159.268465909091,
+          7802.142045454545,
+          7539.595170454545,
+          8606.178977272728,
+          6682.765625,
+          7716.796875,
+          8074.396306818182,
+          7581.203125,
+          6981.534090909091
+        ],
+        "spread": 0.28781696983017074
+      },
+      "unstd.compress.zlibx.compress#raw": {
+        "cpu_samples_ns": [
+          null,
+          4654.134114583333,
+          4513.834635416667,
+          4466.634114583333,
+          4599.826171875,
+          4972.927734375,
+          4588.893880208333,
+          4618.977864583333,
+          4882.595052083333
+        ],
+        "iters": 1536,
+        "per_op_ns": 4507.052734375,
+        "rounds": 9,
+        "samples_ns": [
+          4941.162109375,
+          4804.334635416667,
+          4565.647135416667,
+          4507.052734375,
+          4758.490885416667,
+          5485.622395833333,
+          4915.934244791667,
+          4801.486328125,
+          5410.291666666667
+        ],
+        "spread": 0.21711963873749374
+      },
+      "unstd.compress.zlibx.compressobj": {
+        "cpu_samples_ns": [
+          null,
+          5981.554036458333,
+          5827.6640625,
+          5911.1328125,
+          5922.145833333333,
+          5941.514973958333,
+          5878.580729166667,
+          5826.6875,
+          6092.393229166667
+        ],
+        "iters": 1536,
+        "per_op_ns": 5891.845703125,
+        "rounds": 9,
+        "samples_ns": [
+          5947.23828125,
+          6091.444661458333,
+          5891.845703125,
+          6036.892578125,
+          6140.408203125,
+          6234.972005208333,
+          5999.159505208333,
+          5989.420572916667,
+          6322.292317708333
+        ],
+        "spread": 0.0730580256633379
+      },
+      "unstd.compress.zlibx.compressobj#copy": {
+        "cpu_samples_ns": [
+          null,
+          21186.36328125,
+          21301.59375,
+          20420.0859375,
+          17767.4140625,
+          15008.62890625,
+          18435.21875,
+          20041.33984375,
+          19899.7421875
+        ],
+        "iters": 256,
+        "per_op_ns": 14999.671875,
+        "rounds": 9,
+        "samples_ns": [
+          20568.84765625,
+          23888.671875,
+          23839.1953125,
+          22840.984375,
+          19349.28515625,
+          14999.671875,
+          19888.01953125,
+          21300.78125,
+          21365.72265625
+        ],
+        "spread": 0.5926129634085746
+      },
+      "unstd.compress.zlibx.compressobj#dictionary": {
+        "cpu_samples_ns": [
+          null,
+          4845.678485576923,
+          4767.803485576923,
+          4790.063701923077,
+          4974.233774038462,
+          5190.479567307692,
+          5142.8786057692305,
+          5361.352764423077,
+          5293.795072115385
+        ],
+        "iters": 1664,
+        "per_op_ns": 4767.477764423077,
+        "rounds": 9,
+        "samples_ns": [
+          5646.534254807692,
+          4883.939302884615,
+          4767.477764423077,
+          4792.142427884615,
+          5043.043870192308,
+          5343.099158653846,
+          5301.382211538462,
+          5642.953725961538,
+          6121.368990384615
+        ],
+        "spread": 0.28398480136915244
+      },
+      "unstd.compress.zlibx.compressobj#sync-flush": {
+        "cpu_samples_ns": [
+          null,
+          11418.078125,
+          10581.813802083334,
+          12101.997395833334,
+          11689.94140625,
+          11880.263020833334,
+          12562.283854166666,
+          12078.66796875,
+          10982.692708333334
+        ],
+        "iters": 768,
+        "per_op_ns": 10685.221354166666,
+        "rounds": 9,
+        "samples_ns": [
+          10784.559895833334,
+          11916.44921875,
+          10685.221354166666,
+          12474.446614583334,
+          12434.244791666666,
+          12276.3671875,
+          13729.98046875,
+          13034.505208333334,
+          11271.592447916666
+        ],
+        "spread": 0.2849504950495049
+      },
+      "unstd.compress.zlibx.crc32": {
+        "cpu_samples_ns": [
+          null,
+          2091.4390625,
+          1971.923828125,
+          1971.419140625,
+          2039.97421875,
+          2010.3515625,
+          1946.923828125,
+          2049.4140625,
+          1956.2828125
+        ],
+        "iters": 2560,
+        "per_op_ns": 1951.26953125,
+        "rounds": 9,
+        "samples_ns": [
+          2242.350390625,
+          2391.50390625,
+          1971.712109375,
+          1972.7703125,
+          2092.252734375,
+          2083.0078125,
+          1951.26953125,
+          2168.57109375,
+          1971.842578125
+        ],
+        "spread": 0.22561433361693609
+      },
+      "unstd.compress.zlibx.crc32#signed-seed": {
+        "cpu_samples_ns": [
+          null,
+          1985.927483974359,
+          1951.0216346153845,
+          2016.284455128205,
+          1964.284655448718,
+          2024.3808092948718,
+          2057.0162259615386,
+          2032.644030448718,
+          2029.856169871795
+        ],
+        "iters": 4992,
+        "per_op_ns": 1986.1278044871794,
+        "rounds": 9,
+        "samples_ns": [
+          2007.236578525641,
+          2161.5751201923076,
+          1986.1278044871794,
+          2130.3836137820513,
+          2003.5556891025642,
+          2133.8475560897436,
+          2272.36077724359,
+          2198.5260416666665,
+          2307.567107371795
+        ],
+        "spread": 0.16184220479588493
+      },
+      "unstd.compress.zlibx.decompress": {
+        "cpu_samples_ns": [
+          null,
+          4313.219572368421,
+          4136.238486842105,
+          4041.6324013157896,
+          4187.979440789473,
+          4082.6134868421054,
+          4068.0855263157896,
+          4040.0213815789475,
+          4000.4802631578946
+        ],
+        "iters": 1216,
+        "per_op_ns": 4000.6513157894738,
+        "rounds": 9,
+        "samples_ns": [
+          4158.614309210527,
+          4407.6891447368425,
+          4189.144736842105,
+          4054.001644736842,
+          4354.0641447368425,
+          4146.723684210527,
+          4092.7565789473683,
+          4060.0666118421054,
+          4000.6513157894738
+        ],
+        "spread": 0.10174289054907178
+      },
+      "unstd.compress.zlibx.decompress#gzip": {
+        "cpu_samples_ns": [
+          null,
+          5908.1526442307695,
+          5861.328125,
+          5926.032451923077,
+          5759.265625,
+          5956.930288461538,
+          6245.943509615385,
+          5665.7151442307695,
+          5849.259615384615
+        ],
+        "iters": 832,
+        "per_op_ns": 5751.352163461538,
+        "rounds": 9,
+        "samples_ns": [
+          6276.242788461538,
+          6069.861778846154,
+          6108.524038461538,
+          6048.828125,
+          5808.6442307692305,
+          6120.992788461538,
+          6477.463942307692,
+          5751.352163461538,
+          6172.626201923077
+        ],
+        "spread": 0.12625062041221494
+      },
+      "unstd.compress.zlibx.decompress#raw": {
+        "cpu_samples_ns": [
+          null,
+          4107.946180555556,
+          4106.427083333333,
+          3851.36328125,
+          3958.1345486111113,
+          4000.9040798611113,
+          4085.5577256944443,
+          4027.3615451388887,
+          4356.282552083333
+        ],
+        "iters": 2304,
+        "per_op_ns": 4177.860677083333,
+        "rounds": 9,
+        "samples_ns": [
+          4212.474392361111,
+          4177.860677083333,
+          4483.959201388889,
+          4298.737847222223,
+          4409.469184027777,
+          4382.758246527777,
+          4493.760850694444,
+          4249.348958333333,
+          4820.583767361111
+        ],
+        "spread": 0.15384024024623016
+      },
+      "unstd.compress.zlibx.decompressobj": {
+        "cpu_samples_ns": [
+          null,
+          7810.284375,
+          7359.375,
+          7325.653125,
+          6312.240625,
+          7422.528125,
+          6298.56875,
+          6255.078125,
+          6246.74375
+        ],
+        "iters": 320,
+        "per_op_ns": 6245.053125,
+        "rounds": 9,
+        "samples_ns": [
+          27298.4375,
+          11272.7875,
+          8179.81875,
+          8602.996875,
+          6325.0,
+          7983.85625,
+          6393.490625,
+          6254.034375,
+          6245.053125
+        ],
+        "spread": 3.3712098125666463
+      },
+      "unstd.compress.zlibx.decompressobj#bounded-tail": {
+        "cpu_samples_ns": [
+          null,
+          20018.447916666668,
+          20517.684895833332,
+          20870.442708333332,
+          20376.736979166668,
+          21183.486979166668,
+          23174.153645833332,
+          20817.276041666668,
+          21588.322916666668
+        ],
+        "iters": 384,
+        "per_op_ns": 20016.927083333332,
+        "rounds": 9,
+        "samples_ns": [
+          20464.083333333332,
+          20016.927083333332,
+          20691.080729166668,
+          21047.309895833332,
+          20378.796875,
+          21185.981770833332,
+          24724.174479166668,
+          21454.971354166668,
+          21809.244791666668
+        ],
+        "spread": 0.23516333832043193
+      },
+      "unstd.compress.zlibx.decompressobj#copy": {
+        "cpu_samples_ns": [
+          null,
+          44862.3046875,
+          45558.59375,
+          42593.421875,
+          42350.2578125,
+          43237.3046875,
+          44116.2109375,
+          42625.0,
+          43381.1875
+        ],
+        "iters": 128,
+        "per_op_ns": 40102.2109375,
+        "rounds": 9,
+        "samples_ns": [
+          40102.2109375,
+          44856.765625,
+          47019.859375,
+          42654.953125,
+          42346.0234375,
+          43454.4296875,
+          51405.921875,
+          42634.4375,
+          43958.328125
+        ],
+        "spread": 0.2818725120945833
+      },
+      "unstd.compress.zlibx.decompressobj#dictionary": {
+        "cpu_samples_ns": [
+          null,
+          5627.278645833333,
+          5631.998697916667,
+          5582.112630208333,
+          5530.2734375,
+          5723.443359375,
+          5523.763020833333,
+          5808.349609375,
+          6093.994140625
+        ],
+        "iters": 1536,
+        "per_op_ns": 5521.266927083333,
+        "rounds": 9,
+        "samples_ns": [
+          5521.266927083333,
+          5694.796875,
+          5688.639322916667,
+          5612.141927083333,
+          5531.901041666667,
+          5799.235026041667,
+          5524.95703125,
+          5955.430989583333,
+          6600.61328125
+        ],
+        "spread": 0.19548889202805533
+      }
+    },
+    "noisy_cases": [
+      "unstd.compress.zlibx.compress#gzip",
+      "unstd.compress.zlibx.compressobj#copy",
+      "unstd.compress.zlibx.compressobj#dictionary",
+      "unstd.compress.zlibx.compressobj#sync-flush",
+      "unstd.compress.zlibx.decompressobj",
+      "unstd.compress.zlibx.decompressobj#copy"
+    ],
+    "prior_baseline_sha256": "8f0dd8fbc785df5e1b9ac6fa8f6029d0cad13a2c9ec30be33d3438435ce064d4",
+    "product_source_sha256": {
+      "bench/core/timing.py": "d585627571b5daeca0a078b75484c84e769dce70a5b4448825fd811a8e3b61bc",
+      "bench/speeds.py": "f55501d87f6c57c13fae24a883d684bbf43d5cde204263499e378fa59740ae8f",
+      "bench/workloads/speed_cases_codecs.py": "e7754b63f38d3b9ef1ad0c46594c530990bd0933b3e6a8fad39f48583e0041c4",
+      "src/unstd/compress/zlibx.py": "d2678ca13f856bc1d207c68ed57ccd448e3b06915445c7636be0fcc5e7fd6887"
+    },
+    "recorded": "2026-10-25T10:34:23.307244+00:00",
+    "scope": "18 new zlibx workloads measured on CPython 3.14.9 with the recorded native provider, interpreter, host and build inputs. Every existing case row, ceiling, provenance record and original global environment remains unchanged. The shared-host raw wall/CPU samples are retained; this does not claim a portable latency guarantee or reinterpret historical measurements as this worker's evidence. Only the additive codec workload fingerprint advances; absolute verification retains its environment guard."
+  },
   "crypto_addition_provenance": {
     "measurement_environment": {
       "backends": {
@@ -2562,7 +3715,7 @@
   },
   "tolerance": 0.3,
   "workload_sources": {
-    "speed_cases_codecs.py": "4474d339a2af7bea092dae236bccc43e6fb981b81705a66d33de137f6fcf5601",
+    "speed_cases_codecs.py": "e7754b63f38d3b9ef1ad0c46594c530990bd0933b3e6a8fad39f48583e0041c4",
     "speed_cases_operations.py": "54572576bc9cea79179d60a84d428a7f2f232e1d6de46233c3ee00ab196cf497",
     "speed_cases_runtime.py": "9a071379371c171c3e8b307453c27b798d41ba3926fd05bbb31e2bdeabcca8e3"
   }

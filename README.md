@@ -52,7 +52,7 @@ measurements and compatibility boundaries.
 | [`audio`](src/unstd/audio/README.md) | `unstd[audio]` | soundfile + numpy → stdlib `wave` |
 | [`toml`](src/unstd/toml/README.md) | `unstd[toml]` | read is `tomllib`; write requires tomlkit |
 | [`yaml`](src/unstd/yaml/README.md) | `unstd[yaml]` | ruamel.yaml: safe YAML 1.2 and comment-preserving edits (required) |
-| [`compress`](src/unstd/compress/README.md) | `unstd[compress]` | native writes, bounded inflation and CRC; interpreter gzip framing; stdlib base fallback |
+| [`compress`](src/unstd/compress/README.md) | `unstd[compress]`, `unstd[zstd]`, `unstd[archives]` | native gzip/zlib codecs; original bz2/lzma/zlib/archive modules; optional Zstandard and libarchive ports |
 | [`proc`](src/unstd/proc/README.md) | — | stdlib `subprocess` |
 | [`fs`](src/unstd/fs/README.md) | — | stdlib `os` |
 | [`iters`](src/unstd/iters/README.md) | — | stdlib `itertools` |

@@ -18,7 +18,9 @@ import tomllib
 from typing import TYPE_CHECKING
 import zipfile
 
-from packaging.utils import parse_wheel_filename
+from packaging.markers import Marker
+from packaging.requirements import Requirement
+from packaging.utils import canonicalize_name, parse_wheel_filename
 import pytest
 
 from tests.support.environment.anchors import REPO_ROOT
@@ -88,10 +90,16 @@ def _native_modules(files: dict[str, bytes]) -> set[str]:
 def _requirement(requirement: str) -> str:
     # Distribution names are PEP 503 normalized; metadata may normalize them
     # independently from the manifest. Version specifiers must remain exact.
-    match = re.fullmatch(r"([A-Za-z0-9][A-Za-z0-9._-]*)(.*)", requirement)
-    assert match is not None, requirement
-    name, specifier = match.groups()
-    return re.sub(r"[-_.]+", "-", name).lower() + specifier.replace(" ", "")
+    parsed = Requirement(requirement)
+    parsed.name = canonicalize_name(parsed.name)
+    return str(parsed)
+
+
+def _published_requirement(requirement: str, extra: str) -> str:
+    parsed = Requirement(requirement)
+    guard = f"extra == '{extra}'"
+    parsed.marker = Marker(f"({parsed.marker}) and {guard}" if parsed.marker else guard)
+    return _requirement(str(parsed))
 
 
 def test_wheel_contains_every_source_module_and_data_file(
@@ -209,10 +217,22 @@ def test_wheel_declares_only_the_intended_extras_and_no_base_dependencies(
     extras = artifacts.project["optional-dependencies"]
     assert isinstance(extras, dict)
     assert set(metadata.get_all("Provides-Extra", [])) == set(extras) == set(_EXTRAS)
+    expected = {
+        _published_requirement(requirement, extra)
+        for extra, requirements in extras.items()
+        for requirement in requirements
+    }
+    actual = set()
     for requirement in metadata.get_all("Requires-Dist", []):
-        _, separator, marker = requirement.partition(";")
-        assert separator, f"unexpected unconditional runtime dependency: {requirement}"
-        assert re.fullmatch(r"\s*extra == ['\"][a-z]+['\"]\s*", marker), requirement
+        parsed = Requirement(requirement)
+        assert parsed.marker, (
+            f"unexpected unconditional runtime dependency: {requirement}"
+        )
+        guards = re.findall(r"\bextra == ['\"]([a-z]+)['\"]", str(parsed.marker))
+        assert len(guards) == 1, requirement
+        assert guards[0] in extras, requirement
+        actual.add(_requirement(requirement))
+    assert actual == expected
 
 
 @pytest.mark.parametrize("extra", _EXTRAS)
@@ -221,12 +241,12 @@ def test_each_extra_has_its_independent_published_dependency_closure(
 ) -> None:
     extras = artifacts.project["optional-dependencies"]
     assert isinstance(extras, dict)
-    expected = {_requirement(value) for value in extras[extra]}
+    expected = {_published_requirement(value, extra) for value in extras[extra]}
     actual = set()
     for requirement in _metadata(wheel).get_all("Requires-Dist", []):
-        dependency, _, marker = requirement.partition(";")
-        if re.fullmatch(rf"\s*extra == ['\"]{extra}['\"]\s*", marker):
-            actual.add(_requirement(dependency.strip()))
+        parsed = Requirement(requirement)
+        if re.search(rf"\bextra == ['\"]{extra}['\"]", str(parsed.marker)):
+            actual.add(_requirement(requirement))
     assert actual == expected
 
 
@@ -281,6 +301,7 @@ def test_sdist_contains_all_sources_and_rebuild_inputs_without_local_caches(
         "native/serde/src/encode.h",
         "native/serde/src/decode.h",
         "native/serde/src/lines.h",
+        "native/serde/src/escape.h",
         "native/compress/src/adapter.c",
         "native/compress/vendor/libdeflate/UPSTREAM.json",
         "native/compress/vendor/libdeflate/COPYING",

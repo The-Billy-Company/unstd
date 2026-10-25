@@ -109,6 +109,46 @@ These modules are private. Users call the documented Python APIs; builds and
 internal qualification tools may inspect the binary bindings. Python privacy is
 a naming and support boundary, not an access-control mechanism.
 
+## Cross-platform performance
+
+Linux and macOS share the first-party JSON, clone, text and crypto kernels.
+Acceleration still depends on the installed extras, successful native builds,
+CPython version and build configuration. Compare matching dependency versions
+and ordinary GIL-enabled release interpreters; compiler-free source installs
+and free-threaded interpreters can select portable fallbacks. Native builds
+retain the selected Python toolchain's compiler and optimization settings.
+
+Gzip streaming is an intentional exception: macOS uses platform libz through
+the bundled adapter, while Linux selects zlib-ng's SIMD inflater. The private
+Linux adapter still compiles the authenticated zlib closure. Both public paths
+reuse the running interpreter's gzip framing and bounded read implementation;
+libdeflate supplies native CRC32. The bundled inflater has a per-object lock
+and releases the GIL for native calls with at least 32 KiB of output space.
+The retained [qualification](../bench/reports/compress/billy-throughput.md)
+records the active decoder, independent-stream throughput and paired Billy
+consumer timings on both machines.
+Eligible complete buffers use libdeflate on both platforms, with its supported
+CPU-specific instruction dispatch. BLAKE3 worker counts respect process CPU
+availability, including Linux affinity on Python 3.12, and are sampled at import.
+
+Compression module ports expose the actual stdlib or optional provider module,
+preserving its classes, native contexts and qualified imports. `zlibx` retains
+the running interpreter's incremental decompressor because optional backends
+can differ in EOF and flush state. `unstd.compress.zlib` retains stock compressed
+bytes for persisted-hash contracts. The [port matrix](../bench/reports/compress/port-contracts.md)
+documents the boundary between codec behavior and application-owned policy.
+
+The [performance workflow](../.github/workflows/performance.yml) builds both
+revisions independently on Linux and macOS with Python 3.13 and 3.14, then
+compares them against a baseline measured on the same worker with identical
+dependencies and workloads. This includes the distinct Python 3.14 C fast paths.
+It retains separate platform evidence and also runs when native sources change.
+These checks detect regressions on each platform; they cannot guarantee equal
+elapsed times across machines. CPU architecture, memory bandwidth, scheduling,
+storage and OS services still affect throughput and latency. Use the
+[benchmark harness](../bench/README.md) on the actual deployment host to measure
+those differences before making an absolute speed claim.
+
 ## Compatibility and verification
 
 The [API inventory](api.md) records supported names and retained compatibility

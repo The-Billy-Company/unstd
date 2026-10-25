@@ -31,7 +31,9 @@ then validate the exact archives and checksums handed to the PyPI publisher.
 
 From the repository root, prepare a full environment with
 `uv sync --locked --all-extras --group dev --group release --group build`; omit `--all-extras` for the fallback
-configuration. `--no-sync` preserves the backend combination already installed.
+configuration. The development interpreter is pinned to Python 3.14 in
+`.python-version`, matching the consuming application's runtime.
+`--no-sync` preserves the backend combination already installed.
 The tooling owner installs the release and build groups in all five CI environments;
 its builder and compiler checks require those tools.
 `--require-extras` makes every declared extra mandatory, including isolated
@@ -96,9 +98,14 @@ this gate and the existing benchmark timer calibration checks. The
 
 The main CI workflow runs four disjoint groups: API & regressions, Compatibility
 & boundaries, Test tooling & corpus, and Packaging & consumers. Each runs on
-Python 3.12, 3.13, and 3.14 with all extras, plus Python 3.13 dependency-floor and
+Python 3.12, 3.13, and 3.14 with all extras, plus Python 3.14 dependency-floor and
 base-install environments. Groups derive paths from the inventory; new active
 default suites must join exactly one group.
+
+Python 3.14 also runs the macOS/Windows public contracts, partial-extra installs,
+resource bounds, sanitizer checks, Rust experiment, and quality/release tooling.
+Fuzz replay and deterministic mutation cover 3.14 alongside the Python 3.12
+Atheris environment; chaos and concurrency campaigns run on 3.14.
 
 ```console
 uv run --no-sync python -m tests.tooling.ci list

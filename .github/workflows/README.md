@@ -7,16 +7,33 @@
 | [`windows-arm-cache.yml`](windows-arm-cache.yml) | Warms all three Windows ARM interpreter caches on dependency/build configuration changes to `main`, twice weekly to prevent cache expiry, or manually. Shares authenticated source-built test dependencies and Python downloads with releases. |
 | [`static-analysis.yml`](static-analysis.yml) | Reusable, manual, and weekly full-source SAST. Runs Bandit, CodeQL for Python/C/C++/Rust/Actions, Rust Clippy, and Python duplicate-code enforcement. Findings and incomplete evidence block CI and releases. |
 | [`supply-chain.yml`](supply-chain.yml) | Reusable, manual, and daily audit runs. Checks dependency trust and lock freshness, writes a CycloneDX SBOM, audits the lock, and tests tamper rejection. |
-| [`fuzz.yml`](fuzz.yml) | Pull requests, pushes to `main`, daily schedules, and manual runs. Runs deterministic and Atheris campaigns for installed and stdlib backends on Linux/Python 3.12. |
+| [`fuzz.yml`](fuzz.yml) | Pull requests, pushes to `main`, daily schedules, and manual runs. Runs deterministic campaigns for installed and stdlib backends on Linux/Python 3.12 and 3.14, plus Atheris campaigns on Python 3.12. |
 | [`chaos.yml`](chaos.yml) | Pull requests, pushes to `main`, daily schedules, and manual runs. Exercises fault/recovery campaigns for installed and stdlib backends on Linux and macOS. |
 | [`concurrency.yml`](concurrency.yml) | Pull requests, pushes to `main`, daily schedules, and manual runs. Exercises bounded thread/process histories for both backends on Linux and macOS. |
-| [`performance.yml`](performance.yml) | Product, benchmark and dependency pull requests, plus manual reference comparisons. Builds each revision's own native modules, freezes the comparison revision and verifies every public operation on the same worker with identical workloads and dependencies. Retains baselines and reports on failure. |
+| [`performance.yml`](performance.yml) | Product, native source, benchmark and dependency pull requests, plus manual reference comparisons. Independently builds and compares revisions on Linux and macOS with Python 3.13 and 3.14, including the distinct 3.14 C fast paths. Each platform/interpreter pair uses its own frozen worker baseline with identical workloads and dependencies and retains separate evidence; a regression in one job does not cancel the others. |
 
 Keep suite ownership in [`inventory.toml`](../../tests/tooling/suites/inventory.toml)
 and CI grouping in [`ci/groups.py`](../../tests/tooling/ci/groups.py). The
 [test guide](../../tests/README.md) documents local commands and retained reports;
 the campaign READMEs cover budgets, replay, and failure artifacts. Action pins,
 permissions, matrices, and schedule times are defined in the YAML files.
+
+Development and default workflow jobs use Python 3.14, matching the consuming
+application. Compatibility matrices continue to test Python 3.12 and 3.13;
+the dependency-floor and base-install environments run on Python 3.14.
+
+Each normal performance comparison also gates all 14 frozen Billy gzip consumer
+shapes before the full function verification. Both installations use the same
+worker, interpreter, dependencies and committed synthetic fixtures; a case above
+130% of the comparison revision's wall time fails after saving its raw evidence.
+The Linux/macOS and Python 3.13/3.14 jobs retain that evidence independently.
+No Billy checkout is required. Manual `gzip_diagnostic` runs keep their separate
+check name and do not satisfy the normal performance checks.
+
+The Linux full-extra test environments and the isolated `archives` lane
+explicitly install native libarchive for runtime qualification. The Python
+`archives` extra supplies its binding; it does not bundle that native library.
+Base-install jobs retain their dependency-free import and missing-extra checks.
 
 The dependency-floor job restores the committed `uv.lock` immediately after
 installing its lowest-direct environment. Tests retain those installed versions

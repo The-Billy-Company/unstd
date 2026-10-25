@@ -8,6 +8,17 @@ must fail before they can support an acceleration claim.
 
 `test_gzip_reads.py` rejects changed decoded bytes and incorrectly imported
 comparison sources, and checks bounded output, concatenated lines and rewinds.
+`test_billy_gzip.py` checks Billy's exact HTTP sentinel budget, upload chunk sizes
+and position restoration, full-query EOF, per-entry journal writes and batch
+flushes, appended members, and fixture/output corruption rejection.
+It validates all 14 committed synthetic consumer shapes, rejects nonfinite or
+unpaired slowdown limits, and ensures faster CPU samples cannot hide a wall-time
+regression.
+`test_gzip_concurrency.py` checks isolated direct workers, bounded concurrency,
+alternating samples, native codec proof, validation failures and collector
+restoration, and the complete-worker byte denominator including both upload
+passes. It rejects comparisons with different frozen inputs and uses no
+wall-time thresholds.
 
 `test_crypto_hash.py` verifies saved crypto helper isolation, missing-helper
 failures, source hashes despite stale bytecode, crossover workload coverage,
@@ -22,8 +33,13 @@ thresholds.
 rejection and correctness audits before/after timing. `test_speed_coverage.py`
 discovers every public operation, requires all-package workloads and frozen
 rows, checks real workload oracles and proves fixture cleanup/state restoration.
-`test_speeds_workflow.py` checks isolated revision builds and shared-worker
-comparison policy. These checks have no machine-speed assertions.
+`test_speeds_workflow.py` checks isolated revision builds, native-source triggers,
+independent Linux/macOS jobs and evidence on Python 3.13 and 3.14, and each
+platform/interpreter pair's shared-worker comparison policy. Python 3.14 covers
+the version-specific C fast paths. The Billy gzip workflow gate also pins the
+direct entry point, isolated installations, shared benchmark dependencies,
+committed fixtures, 30% wall-time limit and retained report. These tests have no
+machine-speed assertions.
 
 `test_timing_noise.py` uses virtual clocks to reject preempted calibration
 batches and retain separate wall/CPU evidence. `test_rand_diagnose.py` exercises

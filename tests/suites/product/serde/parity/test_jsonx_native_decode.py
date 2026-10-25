@@ -329,3 +329,21 @@ def test_large_dense_objects_reparse_inexact_native_numbers(number: str) -> None
     actual = jsonx.loads(document)
     assert type(actual["number"]) is type(expected["number"])
     assert actual == expected
+
+
+@pytest.mark.parametrize("binary", [False, True])
+@pytest.mark.parametrize(
+    "prefix",
+    [
+        '"value":0.84551240822557006',
+        '"nested":{"value":1.00000000000000011102230246251565404236316680908203126}',
+        '"escaped\\"1.5":"1.5\\"", "value":-0.0',
+    ],
+)
+def test_large_object_numeric_prefix_preserves_exact_values(
+    binary: bool, prefix: str
+) -> None:
+    _ready()
+    document = "{" + prefix + ',"padding":"' + "x" * 3000 + '"}'
+    source = document.encode() if binary else document
+    assert json.dumps(jsonx.loads(source)) == json.dumps(json.loads(source))

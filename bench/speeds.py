@@ -194,8 +194,14 @@ def public_apis(root: Path = ROOT / "src/unstd") -> set[str]:
                 continue
             relative = path.relative_to(root.parent).with_suffix("")
             module_name = ".".join(relative.parts).removesuffix(".__init__")
+            exports = _exports(path)
+            if not exports:
+                # Provider module aliases own no callables here. In particular,
+                # do not load an API absent from the running interpreter merely
+                # to discover that its namespace has no package-owned exports.
+                continue
             module = importlib.import_module(module_name)
-            for name in sorted(_exports(path)):
+            for name in sorted(exports):
                 value = getattr(module, name, None)
                 if not callable(value) or (
                     inspect.isclass(value) and issubclass(value, BaseException)

@@ -5,6 +5,7 @@ from __future__ import annotations
 import gzip
 import hashlib
 import io
+import runpy
 import struct
 import subprocess
 import sys
@@ -57,8 +58,10 @@ def test_reader_executes_the_real_native_decompress_method(reader_module) -> Non
     calls = []
     with reader_module._Reader(io.BytesIO(gzip.compress(payload))) as reader:
         inflater = vars(reader)["_decompressor"]
-        if reader_module._accelerated is not None:
+        if reader_module._bundled_inflater:
             assert type(inflater) is reader_module._accelerated.Inflater
+        else:
+            assert type(inflater).__module__.startswith("zlib_ng")
 
         def record(_frame: FrameType, event: str, method: object) -> None:
             if (
@@ -96,8 +99,33 @@ def test_reader_executes_native_crc_without_modifying_stdlib(reader_module) -> N
     assert reader_module._crc32 in calls
     assert zlib.crc32 not in calls
     assert gzip._GzipReader.read.__globals__["zlib"] is zlib
-    if reader_module._accelerated is not None:
+    if reader_module._bundled_inflater:
         assert reader_module._Reader.read.__code__ is gzip._GzipReader.read.__code__
+
+
+@pytest.mark.parametrize("platform", ["linux", "darwin", "win32"])
+def test_platform_inflater_policy_retains_native_crc_and_error_family(
+    reader_module, monkeypatch, platform
+):
+    monkeypatch.setattr(sys, "platform", platform)
+    loaded = runpy.run_path(reader_module.__file__)
+    bundled = loaded["_accelerated"]
+    assert loaded["_bundled_inflater"] == (bundled is not None and platform != "linux")
+    if bundled is not None:
+        assert loaded["_crc32"] is bundled.crc32
+    if not loaded["_bundled_inflater"]:
+        native = loaded["_native"]
+        expected = (
+            native._ZlibDecompressor if loaded["_modern"] else native.decompressobj
+        )
+        assert loaded["_factory"] is expected
+    invalid = b"\x1f\x8b\x08\x00" + bytes(6) + b"\x07" * 30
+    with (
+        loaded["_Reader"](io.BytesIO(invalid)) as reader,
+        pytest.raises(zlib.error) as caught,
+    ):
+        reader.read()
+    assert type(caught.value) is zlib.error
 
 
 def test_missing_bundled_extension_keeps_the_portable_native_reader() -> None:

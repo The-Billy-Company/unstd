@@ -62,12 +62,17 @@ def test_required_and_scheduled_fuzz_jobs_use_pinned_actions_and_read_only_permi
                 assert re.fullmatch(r"[\w/-]+@[0-9a-f]{40}", step["uses"])
 
 
-def test_targets_share_two_backend_jobs_and_cached_setup(workflow):
+def test_targets_cover_deployed_python_and_both_backends_with_cached_setup(workflow):
     assert set(workflow["jobs"]) == {"campaign"}
     campaign = workflow["jobs"]["campaign"]
     assert "needs" not in campaign
-    assert campaign["name"] == "Parser fuzzing / ${{ matrix.backend }}"
-    assert campaign["strategy"]["matrix"] == {"backend": ["installed", "stdlib"]}
+    assert campaign["name"] == (
+        "Parser fuzzing / Python ${{ matrix.python }} / ${{ matrix.backend }}"
+    )
+    assert campaign["strategy"]["matrix"] == {
+        "python": ["3.12", "3.14"],
+        "backend": ["installed", "stdlib"],
+    }
     assert campaign["strategy"]["fail-fast"] is False
     assert campaign["env"]["UNSTD_CAMPAIGN_REPORTING"] == "1"
     setup = next(
@@ -76,6 +81,7 @@ def test_targets_share_two_backend_jobs_and_cached_setup(workflow):
         if step.get("uses", "").startswith("astral-sh/setup-uv@")
     )
     assert setup["with"]["enable-cache"] is True
+    assert setup["with"]["python-version"] == "${{ matrix.python }}"
     assert set(setup["with"]["cache-dependency-glob"].splitlines()) == {
         "uv.lock",
         "pyproject.toml",
@@ -88,7 +94,7 @@ def test_targets_share_two_backend_jobs_and_cached_setup(workflow):
     assert "--locked" in sync
     assert "--all-extras" in sync
     assert "--group fuzz" in sync
-    assert "--python 3.12" in sync
+    assert "--python ${{ matrix.python }}" in sync
     assert "--reinstall-package unstd" in sync
 
 
@@ -139,8 +145,14 @@ def test_both_mutation_engines_execute_with_explicit_small_and_nightly_budgets(
     )
     assert (
         instrumented["if"]
-        == "${{ !cancelled() && steps.dependencies.outcome == 'success' }}"
+        == "${{ !cancelled() && steps.dependencies.outcome == 'success' && matrix.python == '3.12' }}"
     )
+    deterministic_step = next(
+        step
+        for step in campaign["steps"]
+        if "--engine deterministic" in step.get("run", "")
+    )
+    assert "if" not in deterministic_step
     dependencies = next(
         step for step in campaign["steps"] if step.get("id") == "dependencies"
     )
@@ -160,4 +172,5 @@ def test_ci_retains_hidden_evidence_even_when_a_campaign_fails(workflow):
     assert settings["include-hidden-files"] is True
     assert settings["if-no-files-found"] == "error"
     assert settings["retention-days"] == 14
+    assert "${{ matrix.python }}" in settings["name"]
     assert "${{ matrix.backend }}" in settings["name"]

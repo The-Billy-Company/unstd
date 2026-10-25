@@ -17,6 +17,8 @@ from os import PathLike, fspath
 from typing import TYPE_CHECKING, Literal, cast, overload, override
 import zlib
 
+from unstd.compress._validation import deferred_flush_mode as _deferred_flush_mode
+
 
 if TYPE_CHECKING:
     from collections.abc import Buffer, Callable
@@ -172,7 +174,10 @@ if TYPE_CHECKING or _backend is not None:
         def flush(self, zlib_mode: int = zlib.Z_SYNC_FLUSH) -> None:
             """Flush buffered input and the native compressor."""
             try:
-                super().flush(zlib_mode)
+                # Gzip flushes its buffered writes before coercing this mode.
+                # Keep that ordering, including closed/read handles and index
+                # callbacks, while refusing native C-integer truncation.
+                super().flush(_deferred_flush_mode(zlib_mode))
             except _native.error as exc:
                 raise zlib.error(str(exc)) from exc
 

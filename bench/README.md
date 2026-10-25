@@ -36,7 +36,7 @@ runtime backends from available source and unqualified replacement candidates.
 ## Frozen function speeds
 
 [`speeds.json`](baselines/speeds.json) freezes representative latency for every public
-operation across all 18 packages. The shared registry currently has 224
+operation across all 18 packages. The shared registry currently has 264
 workloads, including constructors, locally declared public methods/properties,
 stdlib aliases, generator consumption and complete stream lifecycles. Nine
 imported typing/enum/result vocabulary names have explicit exclusions. Private
@@ -108,8 +108,11 @@ uv run --no-sync python -m bench.speeds verify --baseline /tmp/worker-speeds.jso
 The [performance workflow](../.github/workflows/performance.yml) automates this
 for pull requests and manual reference comparisons: it builds each revision's
 own wheel/native kernels, runs the current harness against both installations
-on one worker, and retains baseline, measurements and Git identities even on
-regression. The freeze pass uses `--comparison-source` with the older revision's
+on the same worker independently on Linux and macOS with Python 3.13 and 3.14,
+and retains separate platform/interpreter baselines, measurements and Git
+identities even on regression.
+Native source changes also trigger both comparisons. The freeze pass uses
+`--comparison-source` with the older revision's
 source inventory; `--revision-baseline` checks every shared workload against its
 unchanged ceiling. New APIs still receive correctness checks and measurements;
 the report identifies them as additions with no fabricated comparison ceiling.
@@ -118,6 +121,20 @@ The runtime and dependency environment must match; revision-owned native routes
 may change and both route inventories remain in the reports. Ordinary committed
 baseline verification retains strict API and native-environment equality. The
 local committed snapshot remains separate from ephemeral CI worker baselines.
+
+Before the full function verification, each normal performance job also runs
+[`profiles/billy_gzip.py`](profiles/billy_gzip.py) against the separately installed
+revisions with the same interpreter and dependencies. Its
+[`14 committed synthetic fixtures`](workloads/billy_gzip.json.gz) freeze Billy's
+ijson query, upload, bounded HTTP, and journal consumption patterns without
+requiring a Billy checkout. Seven rounds in each of three alternating
+repetitions must keep every case within **30% of the comparison revision's wall
+time**. Independent output checks run around timing; raw wall/CPU samples,
+fixture hashes and import provenance are saved to `billy-gzip.json` before a
+slowdown can fail the job. Existing artifact retention keeps this evidence even
+when later function verification fails. This comparison does not rewrite the
+committed function ceilings, and the focused `gzip_diagnostic` option remains a
+separate measurement mode.
 
 We initialize backend metadata and native routes before both timing phases.
 Reports retain hashes of installed product modules, native libraries, workloads

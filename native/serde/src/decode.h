@@ -165,28 +165,35 @@ exact_decoded_tree(PyObject *value)
 }
 
 static int
-array_float_prefix(PyObject *document)
+document_float_prefix(PyObject *document)
 {
-    /* Object documents dominate larger string payloads. Avoid even the
-     * cached UTF-8 conversion when the first character rules out an array. */
-    if (PyBytes_CheckExact(document)) {
-        if (PyBytes_GET_SIZE(document) != 0
-            && PyBytes_AS_STRING(document)[0] == '{') {
-            return 0;
-        }
-    } else if (PyUnicode_GET_LENGTH(document) != 0
-               && PyUnicode_READ_CHAR(document, 0) == '{') {
-        return 0;
-    }
+    /* A float near the start predicts that orjson's result will fail the
+     * exact-value proof. Choose the precise parser before allocating a second
+     * copy of the tree, for object documents as well as arrays. This bounded
+     * hint never decides correctness; both parsers still validate the source. */
+    char prefix[128];
     Py_ssize_t size;
     const char *source;
     if (PyBytes_CheckExact(document)) {
         source = PyBytes_AS_STRING(document);
         size = PyBytes_GET_SIZE(document);
     } else {
-        source = PyUnicode_AsUTF8AndSize(document, &size);
-        if (source == NULL) {
-            return -1;
+        size = PyUnicode_GET_LENGTH(document);
+        if (size > 128) {
+            size = 128;
+        }
+        int kind = PyUnicode_KIND(document);
+        const void *data = PyUnicode_DATA(document);
+        if (kind == PyUnicode_1BYTE_KIND) {
+            source = data;
+        } else {
+            /* The hint recognizes only ASCII JSON syntax. A non-ASCII marker
+             * preserves string boundaries without encoding the whole input. */
+            for (Py_ssize_t index = 0; index < size; index++) {
+                Py_UCS4 character = PyUnicode_READ(kind, data, index);
+                prefix[index] = character < 128 ? (char)character : (char)128;
+            }
+            source = prefix;
         }
     }
     const char *end = source + (size < 128 ? size : 128);
@@ -194,9 +201,10 @@ array_float_prefix(PyObject *document)
                             || *source == '\r' || *source == '\t')) {
         source++;
     }
-    if (source == end || *source++ != '[') {
+    if (source == end || (*source != '[' && *source != '{')) {
         return 0;
     }
+    source++;
     while (source < end) {
         char current = *source++;
         if (current == '\"') {
@@ -254,12 +262,12 @@ decode_document(NativeState *state, PyObject *document)
     if (!precise) {
         precise = !orjson_stack_room();
         if (!precise) {
-            precise = array_float_prefix(document);
+            precise = document_float_prefix(document);
         }
     }
     PyObject *value;
-    if (precise != 0) {
-        value = precise < 0 ? NULL : precise_document(state, document);
+    if (precise) {
+        value = precise_document(state, document);
     } else {
         value = state->decoder_fast(state->decoder_self, document);
         if (value != NULL && !exact_decoded_tree(value)) {

@@ -55,7 +55,14 @@ def main() -> None:
     native = source_root / "native/compress"
     manifest = stage_source(args.source.resolve(), native / "vendor/libdeflate")
     (native / "src").mkdir()
-    for name in ("adapter.c", "stream.c", "stream.h", "inflate.c"):
+    for name in (
+        "adapter.c",
+        "stream.c",
+        "stream.h",
+        "inflate.c",
+        "module.h",
+        "shape.h",
+    ):
         shutil.copyfile(ROOT / "native/compress/src" / name, native / "src" / name)
     shutil.copytree(ROOT / "native/compress/vendor/zlib", native / "vendor/zlib")
     shutil.copyfile(ROOT / "hatch_build.py", source_root / "hatch_build.py")

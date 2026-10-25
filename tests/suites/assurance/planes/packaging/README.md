@@ -71,6 +71,15 @@ cache, backend, resolver, import or native library failure is skipped there.
   settings, regex, sorted/persistent containers, NumPy random/packing, rapidfuzz,
   soundfile/WAV, TOML, YAML and gzip/zlib-ng. Base consumers remain in their own
   pristine environments throughout.
+  Compression extras also verify native Zstandard dictionaries, frame bounds and
+  reader ownership, plus real libarchive gzip decoding with the original reader,
+  FFI and error module identities. The `archives` extra installs the Python
+  binding on Linux/macOS; a separately supplied native libarchive library is
+  required for its runtime consumers. CI provisions it on Linux. Missing native
+  libraries have separate explicit-import failure tests; base installs never
+  load one.
+  Qualified ZIP and Zstandard child imports must preserve their canonical
+  modules, classes, error catchability and import metadata in installed wheels.
 - A separate unseeded virtualenv for each wheel installs that wheel offline with
   `--no-deps`. Every product probe runs from an external consumer directory in a
   new `python -I` process. The probe verifies the installed distribution set is
@@ -84,16 +93,21 @@ cache, backend, resolver, import or native library failure is skipped there.
   an explicit behavior probe for each; adding a new module without installed
   consumer evidence fails with the missing probe named. Successful probes also
   verify each assigned module actually loaded from the consumer environment.
+  The exact stdlib compression/archive aliases instead require their declared
+  provider module identity and an origin in the base interpreter. This narrow
+  exception preserves the ordinary installed-product origin checks.
 - Missing crypto, msgspec, Pydantic, zoned time, sorted/persistent containers,
   TOML writing, YAML and protobuf capabilities must raise an actionable
   `pip install 'unstd[extra]'` error. Lazy iterator and bridge entry points are
   called, not merely imported.
 - The host's mypy checks an external strict consumer against the fresh
   interpreter's installed package. A successful fixture uses `assert_type`; a
-  negative control requires seven real type errors, including invalid explicit
-  durability/backend policies, so a missing typing marker or
+  negative control requires ten real type errors, including invalid explicit
+  durability/backend policies and compression return types, so a missing typing marker or
   `Any` leakage cannot masquerade as success. No type checker is installed into
-  the consumer environment.
+  the consumer environment. Required-extra runs also check installed native
+  Zstandard and libarchive typing with independent negative controls for both
+  wheel routes.
 
 `clean_environment()` retains only platform/launch variables and an explicitly
 selected cache directory. Inherited Python import paths, virtualenv selection,

@@ -102,12 +102,32 @@ Import `from unstd.compress import gzipx`.
 | Module | Exported API |
 | --- | --- |
 | [`unstd.compress.gzipx`](../src/unstd/compress/gzipx.py) | `BadGzipFile`, `GzipFile`, `compress`, `decompress`, `open` |
+| [`unstd.compress.zlibx`](../src/unstd/compress/zlibx.py) | zlib constants, complete-buffer codecs, compressor objects, checksums; original stdlib incremental decompressor |
+| `unstd.compress.bz2`, `.lzma`, `.zlib`, `.zipfile`, `.tarfile` | Complete original stdlib modules, including qualified imports |
+| `unstd.compress.zstandard` | Complete original `zstandard` module with `unstd[zstd]` |
+| `unstd.compress.zstd` | Complete original `compression.zstd` module on Python 3.14+ |
+| `unstd.compress.libarchive` | Original `libarchive-c` package and qualified child modules with `unstd[archives]` and a native libarchive library |
 
 These preserve the running interpreter's gzip API and defaults. `BadGzipFile`
 is the stdlib exception. `GzipFile` exposes the stdlib binary file interface,
 including reading, iteration, seeking, writing, flushing, closing, and context
 management. `open` also supports the stdlib text modes. The `compress` extra
 enables native codecs; a base install uses stdlib gzip.
+
+Linux streaming selects zlib-ng; macOS retains platform libz. The interpreter
+still supplies framing, member checks, output budgets and error-delivery order.
+`zlibx` accelerates compression, complete-buffer decoding and checksums while
+retaining the interpreter's exact incremental decompressor state. Both accelerated
+interfaces preserve recovered bytes; compressed output can differ by engine.
+Use `from unstd.compress import zlib` where persisted compressed bytes must match
+the running interpreter's stock codec.
+
+Original-module ports preserve module, class, exception and native callback
+identity and add no per-operation adapter. Their upstream version-specific
+contracts remain in force. Archive policies, cumulative expansion limits and
+Zstandard frame/window checks remain caller responsibilities. See the
+[port contract matrix](../bench/reports/compress/port-contracts.md) for Billy's
+operation mapping and verification.
 
 ## Containers
 

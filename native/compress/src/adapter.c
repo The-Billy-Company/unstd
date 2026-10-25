@@ -4,6 +4,7 @@
 
 #include "libdeflate.h"
 #include "stream.h"
+#include "module.h"
 
 /* ISIZE is an untrusted hint and wraps at 4 GiB. Larger members, unusual
  * buffers, concatenations and unsupported framing use the streaming reader.
@@ -13,10 +14,6 @@
 #define MAX_EXPANSION ((size_t)1032)
 #define RELEASE_GIL_BYTES ((uint32_t)64 * 1024)
 
-typedef struct {
-    struct libdeflate_decompressor *small_decoder;
-} ModuleState;
-
 static void
 module_free(void *module)
 {
@@ -24,6 +21,8 @@ module_free(void *module)
     if (state != NULL) {
         libdeflate_free_decompressor(state->small_decoder);
         state->small_decoder = NULL;
+        unstd_ng_api_free(state->ng_api);
+        state->ng_api = NULL;
     }
 }
 
@@ -156,6 +155,10 @@ checksum(PyObject *module, PyObject *const *args, Py_ssize_t nargs)
 }
 
 static PyMethodDef methods[] = {
+    {"_ng_runtime_version", unstd_ng_runtime_version, METH_NOARGS,
+     "Return the bound native ng ABI version, if available."},
+    {"_configure_ng", unstd_configure_ng, METH_O,
+     "Bind an already loaded native ng provider once."},
     {"decompress", decompress, METH_O,
      "Decode one validated gzip member, or return None for a streaming replay."},
     {"crc32", (PyCFunction)(void (*)(void))checksum, METH_FASTCALL,

@@ -355,7 +355,8 @@ CONSUMER_AUDIT = (
 assert {dist.metadata['Name'].lower() for dist in importlib.metadata.distributions()} == {'unstd'}
 for module in ('orjson', 'msgspec', 'pybase64', 'uuid_utils', 'blake3', 'whenever',
                'google', 'pydantic', 'pydantic_settings', 'irgx', 'sortedcontainers',
-               'immutables', 'numpy', 'rapidfuzz', 'soundfile', 'tomlkit', 'ruamel', 'zlib_ng'):
+               'immutables', 'numpy', 'rapidfuzz', 'soundfile', 'tomlkit', 'ruamel', 'zlib_ng',
+               'zstandard', 'libarchive'):
     assert importlib.util.find_spec(module) is None, module
 """
 )

@@ -50,6 +50,8 @@ _BACKEND_MODULES = {
     "ruamel-yaml": "ruamel.yaml",
     "pyyaml": "yaml",
     "zlib-ng": "zlib_ng",
+    "zstandard": "zstandard",
+    "libarchive-c": "libarchive",
 }
 
 
@@ -342,6 +344,87 @@ stream = io.BytesIO()
 with gzipx.GzipFile(fileobj=stream, mode='wb', mtime=0) as writer:
     writer.write(payload)
 assert gzip.decompress(stream.getvalue()) == payload
+from unstd.compress import zlibx
+import zlib
+assert zlibx.crc32 is zlib_ng.crc32
+encoder = zlibx.compressobj(level=6, wbits=31)
+prefix = encoder.compress(payload[:20])
+copied = encoder.copy()
+wire = prefix + copied.compress(memoryview(payload)[20:]) + copied.flush()
+assert gzip.decompress(wire) == payload
+decoder = zlibx.decompressobj(31)
+head = decoder.decompress(wire, 7)
+assert len(head) == 7
+assert head + decoder.decompress(decoder.unconsumed_tail) == payload
+assert decoder.eof
+assert zlibx.error is zlib.error
+""",
+    "zstd": """
+import importlib, io, zstandard
+from unstd.compress import zstandard as native
+from unstd.compress.zstandard import ZstdCompressor, ZstdError
+assert native is zstandard
+assert ZstdCompressor is zstandard.ZstdCompressor
+assert ZstdError is zstandard.ZstdError
+canonical_backend = importlib.import_module('zstandard.backend_c')
+canonical_metadata = (canonical_backend.__spec__, canonical_backend.__loader__, canonical_backend.__package__, canonical_backend.__name__)
+ported_backend = importlib.import_module('unstd.compress.zstandard.backend_c')
+from unstd.compress.zstandard.backend_c import ZstdError as PortedError
+assert ported_backend is canonical_backend
+assert PortedError is canonical_backend.ZstdError is zstandard.ZstdError
+assert (canonical_backend.__spec__, canonical_backend.__loader__, canonical_backend.__package__, canonical_backend.__name__) == canonical_metadata
+try:
+    native.ZstdDecompressor().decompress(b'not a Zstandard frame')
+except PortedError:
+    pass
+else:
+    raise AssertionError('nested native Zstandard backend lost the canonical error contract')
+payload = b'installed dictionary source' * 256
+dictionary = native.ZstdCompressionDict(b'installed dictionary source', dict_type=native.DICT_TYPE_RAWCONTENT)
+wire = native.ZstdCompressor(dict_data=dictionary).compress(payload)
+frame = native.get_frame_parameters(wire)
+assert frame.content_size == len(payload)
+decoder = native.ZstdDecompressor(dict_data=dictionary)
+assert decoder.decompress(wire, max_output_size=len(payload), allow_extra_data=False) == payload
+source = io.BytesIO(wire)
+with decoder.stream_reader(source, closefd=False) as reader:
+    assert reader.read(7) + reader.read() == payload
+assert not source.closed
+""",
+    "archives": """
+import sys
+if sys.platform == 'win32':
+    try:
+        from unstd.compress import libarchive
+    except ImportError:
+        pass
+    else:
+        raise AssertionError('Unix archive extra installed a Windows native provider')
+else:
+    import gzip, libarchive
+    from libarchive import ffi
+    from libarchive.exception import ArchiveError
+    from libarchive.read import ArchiveRead, new_archive_read
+    from unstd.compress import libarchive as native
+    from unstd.compress.libarchive import ffi as ported_ffi
+    from unstd.compress.libarchive.exception import ArchiveError as PortedError
+    from unstd.compress.libarchive.read import ArchiveRead as PortedRead
+    from unstd.compress.libarchive.read import new_archive_read as ported_new_archive_read
+    assert native is libarchive
+    assert ported_ffi is ffi
+    assert PortedRead is ArchiveRead
+    assert PortedError is ArchiveError
+    assert ported_new_archive_read is new_archive_read
+    assert ported_ffi.libarchive is ffi.libarchive
+    payload = b'installed native archive payload' * 128
+    packed = gzip.compress(payload, mtime=0)
+    with ported_new_archive_read() as pointer:
+        ported_ffi.get_read_format_function('raw')(pointer)
+        ported_ffi.read_open_memory(pointer, packed, len(packed))
+        archive = PortedRead(pointer)
+        assert [b''.join(entry.get_blocks(8192)) for entry in archive] == [payload]
+        assert b'gzip' in archive.filter_names
+        assert ported_ffi.error_string(archive._pointer) is None
 """,
 }
 

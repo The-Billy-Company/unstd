@@ -15,6 +15,7 @@ import json
 import pickle
 import re
 from types import FunctionType
+import zlib
 
 import pytest
 
@@ -78,6 +79,9 @@ def _assert_contract(name, module) -> None:
         value = getattr(module, attribute)
         if name == "unstd.compress.gzipx" and module._backend is None:
             assert value is getattr(gzip, attribute)
+            continue
+        if name == "unstd.compress.zlibx" and module._backend is None:
+            assert value is getattr(zlib, attribute)
             continue
         if (
             name == "unstd.toml"

@@ -107,8 +107,10 @@ imports on a base install.
 
 One-shot hashes, MACs, and key derivation use four workers for exact `bytes`
 inputs from 1 MiB, and eight workers from 4 MiB, capped by process CPU
-availability on Python 3.13+ (host CPU count on Python 3.12). The cap is sampled
-once at import. Smaller inputs and other accepted buffer types retain the serial
+availability on Python 3.13+. The cap is sampled once at import. Python 3.12 uses
+process affinity where available, including on Linux, and otherwise uses the
+host CPU count; a failed affinity query also falls back to the host count.
+Smaller inputs and other accepted buffer types retain the serial
 backend. The public signatures, algorithms, digest values, truncation rules,
 and validation behavior stay the same.
 

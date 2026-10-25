@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "src/unstd/**"
+      - "native/**"
       - "bench/**"
       - "hatch_build.py"
       - "pyproject.toml"
@@ -31,8 +32,29 @@ concurrency:
 
 jobs:
   compare:
-    name: ${{ inputs.gzip_diagnostic && 'Gzip read diagnosis / Python 3.13' || 'Function latency / Python 3.13' }}
-    runs-on: ubuntu-latest
+    # Keep the existing Linux 3.13 context; exercise 3.14's distinct C fast paths.
+    name: ${{ inputs.gzip_diagnostic && 'Gzip read diagnosis' || 'Function latency' }} / Python ${{ matrix.python }}${{ matrix.check_suffix }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+            python: "3.13"
+            check_suffix: ""
+          - os: macos-latest
+            platform: macos
+            python: "3.13"
+            check_suffix: " / macOS"
+          - os: ubuntu-latest
+            platform: linux
+            python: "3.14"
+            check_suffix: ""
+          - os: macos-latest
+            platform: macos
+            python: "3.14"
+            check_suffix: " / macOS"
     timeout-minutes: 20
     env:
       PYTHONHASHSEED: "0"
@@ -57,11 +79,11 @@ jobs:
             uv.lock
             pyproject.toml
           version: "0.13.4"
-          python-version: "3.13"
+          python-version: ${{ matrix.python }}
       - name: Install one shared dependency environment
         run: >-
-          uv sync --locked --all-extras --group dev --group build
-          --no-install-project --python 3.13
+          uv sync --locked --all-extras --group dev --group build --group bench
+          --no-install-project --python "${{ matrix.python }}"
       - name: Record revision identities
         run: |
           mkdir -p .local/performance/evidence
@@ -109,6 +131,15 @@ jobs:
           --comparison-source .local/performance/source-before/src/unstd
           --baseline .local/performance/evidence/baseline.json
           --output .local/performance/evidence/before.json
+      - name: Guard Billy gzip consumer latency with frozen transport fixtures
+        if: ${{ !inputs.gzip_diagnostic }}
+        run: >-
+          .venv/bin/python bench/profiles/billy_gzip.py run
+          --fixtures bench/workloads/billy_gzip.json.gz
+          --baseline-source .local/performance/installed-before
+          --source .local/performance/installed-current
+          --rounds 7 --repetitions 3 --max-slowdown 1.30
+          --output .local/performance/evidence/billy-gzip.json
       - name: Verify current revision against the frozen worker baseline
         if: ${{ !inputs.gzip_diagnostic }}
         env:
@@ -148,7 +179,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: function-speeds-${{ github.run_id }}-${{ github.run_attempt }}
+          name: function-speeds-${{ matrix.platform }}-${{ matrix.python }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: .local/performance/evidence/
           include-hidden-files: true
           if-no-files-found: error

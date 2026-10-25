@@ -7,6 +7,7 @@ import importlib
 import math
 from pathlib import Path
 import ssl
+import sys
 from tempfile import TemporaryDirectory
 from typing import TYPE_CHECKING
 
@@ -17,6 +18,34 @@ from bench import speeds
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
+
+
+def test_provider_alias_without_owned_exports_does_not_load_unsupported_backend(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = tmp_path / "alias_probe"
+    package = root / "codec"
+    package.mkdir(parents=True)
+    (package / "__init__.py").write_text(
+        'raise ImportError("API unsupported on this interpreter")\n'
+    )
+    monkeypatch.syspath_prepend(str(tmp_path))
+    assert speeds.public_apis(root) == set()
+    assert "alias_probe.codec" not in sys.modules
+
+
+def test_missing_backend_for_owned_exports_still_fails_discovery(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = tmp_path / "owned_probe"
+    package = root / "codec"
+    package.mkdir(parents=True)
+    (package / "__init__.py").write_text(
+        '__all__ = ["compress"]\nraise ImportError("missing required codec")\n'
+    )
+    monkeypatch.syspath_prepend(str(tmp_path))
+    with pytest.raises(ImportError, match="missing required codec"):
+        speeds.public_apis(root)
 
 
 @pytest.fixture(scope="module")

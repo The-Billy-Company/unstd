@@ -31,6 +31,7 @@ def test_process_cpu_cap_is_resolved_only_once_at_import(monkeypatch, process_cp
 
     monkeypatch.setattr(os, "process_cpu_count", process_cpu_count, raising=False)
     monkeypatch.setattr(os, "cpu_count", machine_cpu_count)
+    monkeypatch.setattr(os, "sched_getaffinity", machine_cpu_count, raising=False)
     loaded = runpy.run_path(backend.__file__)
     assert loaded["_PARALLEL_THREADS"] == min(8, process_cpus or 1)
     data = bytes(1024 * 1024)
@@ -51,6 +52,7 @@ def test_python_312_cpu_fallback_is_resolved_only_once_at_import(
         return machine_cpus
 
     monkeypatch.delattr(os, "process_cpu_count", raising=False)
+    monkeypatch.delattr(os, "sched_getaffinity", raising=False)
     monkeypatch.setattr(os, "cpu_count", machine_cpu_count)
     loaded = runpy.run_path(backend.__file__)
     assert loaded["_PARALLEL_THREADS"] == min(8, machine_cpus or 1)
@@ -59,6 +61,56 @@ def test_python_312_cpu_fallback_is_resolved_only_once_at_import(
     for _ in range(2):
         assert loaded["_parallel_hasher"](data).digest() == expected
     assert calls == ["machine"]
+
+
+@pytest.mark.parametrize("available", [0, 1, 2, 8, 64])
+def test_python_312_affinity_cap_is_resolved_only_once_at_import(
+    monkeypatch, available
+):
+    calls = []
+
+    def affinity(pid):
+        calls.append(pid)
+        return set(range(available))
+
+    def machine_cpu_count():
+        msg = "process affinity must take precedence over the host CPU count"
+        raise AssertionError(msg)
+
+    monkeypatch.delattr(os, "process_cpu_count", raising=False)
+    monkeypatch.setattr(os, "sched_getaffinity", affinity, raising=False)
+    monkeypatch.setattr(os, "cpu_count", machine_cpu_count)
+    loaded = runpy.run_path(backend.__file__)
+    assert loaded["_PARALLEL_THREADS"] == min(8, available or 1)
+    data = bytes(1024 * 1024)
+    expected = blake3(data).digest()
+    for _ in range(2):
+        assert loaded["_parallel_hasher"](data).digest() == expected
+    assert calls == [0]
+
+
+def test_python_312_affinity_failure_falls_back_to_the_host_count(monkeypatch):
+    calls = []
+
+    def affinity(pid):
+        calls.append(("affinity", pid))
+        msg = "affinity is unavailable"
+        raise OSError(msg)
+
+    def machine_cpu_count():
+        calls.append("machine")
+        return 2
+
+    monkeypatch.delattr(os, "process_cpu_count", raising=False)
+    monkeypatch.setattr(os, "sched_getaffinity", affinity, raising=False)
+    monkeypatch.setattr(os, "cpu_count", machine_cpu_count)
+    loaded = runpy.run_path(backend.__file__)
+    assert loaded["_PARALLEL_THREADS"] == 2
+    data = bytes(1024 * 1024)
+    expected = blake3(data).digest()
+    for _ in range(2):
+        assert loaded["_parallel_hasher"](data).digest() == expected
+    assert calls == [("affinity", 0), "machine"]
 
 
 @pytest.mark.parametrize(

@@ -19,8 +19,11 @@ and error-delivery order. See [`src/README.md`](src/README.md) before changing
 buffer ownership or read budgets.
 
 [`hatch_build.py`](../../hatch_build.py) compiles vendored libdeflate 1.25 for
-buffer decoding and CRC32. Streaming uses platform `libz` on macOS and vendored
-zlib 1.3.2 with `Z_PREFIX` elsewhere. [`vendor/README.md`](vendor/README.md)
+buffer decoding and CRC32. The private adapter links platform `libz` on macOS
+and vendored zlib 1.3.2 with `Z_PREFIX` elsewhere. The public reader selects
+zlib-ng's native raw inflater on Linux while retaining the adapter on macOS and
+other platforms. Both keep the interpreter's gzip framing and native CRC.
+[`vendor/README.md`](vendor/README.md)
 maps those source closures and licenses. Default builds need no Cargo,
 source downloads, or system libdeflate.
 

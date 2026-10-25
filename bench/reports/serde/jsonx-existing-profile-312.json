@@ -1,0 +1,6298 @@
+{
+  "runs": [
+    {
+      "source": "/private/tmp/jsonx-throughput-baseline/src",
+      "fallback": false,
+      "python": "3.12.15 (main, Oct  9 2026, 15:10:57) [Clang 22.1.3 ]",
+      "platform": "macOS-26.6-arm64-arm-64bit",
+      "backends": {
+        "orjson": "3.12.0",
+        "msgspec": "0.22.0",
+        "pybase64": "1.5.0"
+      },
+      "timings": {
+        "jsonx.dumps/small": {
+          "ns": 391.2540283203125,
+          "spread": 0.03087465715365226,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "jsonx.dumpb/small": {
+          "ns": 108.87007279829545,
+          "spread": 0.03626216808521482,
+          "iters": 90112,
+          "rounds": 3
+        },
+        "jsonx.dumps/integers8": {
+          "ns": 340.8050537109375,
+          "spread": 0.011093739273188567,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "jsonx.dumpb/integers8": {
+          "ns": 85.70425851004464,
+          "spread": 0.010067706081338862,
+          "iters": 114688,
+          "rounds": 3
+        },
+        "jsonx.dumps/integers15": {
+          "ns": 371.3514404296875,
+          "spread": 0.005597319317627354,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "jsonx.dumpb/integers15": {
+          "ns": 115.79340154474431,
+          "spread": 0.03928524707996406,
+          "iters": 90112,
+          "rounds": 3
+        },
+        "jsonx.dumps/wide": {
+          "ns": 798.4058837890625,
+          "spread": 45.530407958607704,
+          "iters": 8192,
+          "rounds": 3
+        },
+        "jsonx.dumpb/wide": {
+          "ns": 473.408935546875,
+          "spread": 2.2470997889208455,
+          "iters": 8192,
+          "rounds": 3
+        },
+        "jsonx.dumps/records": {
+          "ns": 175481.25,
+          "spread": 16.407979200056985,
+          "iters": 40,
+          "rounds": 3
+        },
+        "jsonx.dumpb/records": {
+          "ns": 157281.54054054053,
+          "spread": 0.6659459186375543,
+          "iters": 37,
+          "rounds": 3
+        },
+        "jsonx.dumps/text": {
+          "ns": 16339.68359375,
+          "spread": 0.3236342981128909,
+          "iters": 256,
+          "rounds": 3
+        },
+        "jsonx.dumpb/text": {
+          "ns": 2970.7782451923076,
+          "spread": 0.20463428325789568,
+          "iters": 1664,
+          "rounds": 3
+        },
+        "jsonx.dumps/string": {
+          "ns": 182.63330078125,
+          "spread": 0.5759342535729913,
+          "iters": 49152,
+          "rounds": 3
+        },
+        "jsonx.dumpb/string": {
+          "ns": 135.6989542643229,
+          "spread": 5.229258419385671,
+          "iters": 49152,
+          "rounds": 3
+        },
+        "jsonx.dumps/int": {
+          "ns": 495.75042724609375,
+          "spread": 5.437120669754844,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "jsonx.dumpb/int": {
+          "ns": 88.927490234375,
+          "spread": 0.11227506923284788,
+          "iters": 57344,
+          "rounds": 3
+        },
+        "jsonx.dumps/float": {
+          "ns": 784.8306884765625,
+          "spread": 0.9258478290049683,
+          "iters": 8192,
+          "rounds": 3
+        },
+        "jsonx.dumpb/float": {
+          "ns": 867.9242050438596,
+          "spread": 5.119623364061667,
+          "iters": 7296,
+          "rounds": 3
+        },
+        "jsonx.dumps/null": {
+          "ns": 394.12945556640625,
+          "spread": 0.16242934287811983,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "jsonx.dumpb/null": {
+          "ns": 91.63556780133929,
+          "spread": 0.02465236214853228,
+          "iters": 57344,
+          "rounds": 3
+        },
+        "jsonx.dumps/compact": {
+          "ns": 636.016845703125,
+          "spread": 0.04280024950818099,
+          "iters": 8192,
+          "rounds": 3
+        },
+        "jsonx.dumps/indent": {
+          "ns": 1449.6145833333333,
+          "spread": 0.06999113608206373,
+          "iters": 3264,
+          "rounds": 3
+        },
+        "jsonx.dumps/indent4": {
+          "ns": 2944.2741815476193,
+          "spread": 0.10405335517421893,
+          "iters": 2688,
+          "rounds": 3
+        },
+        "jsonx.dumps/sorted": {
+          "ns": 646.3419189453125,
+          "spread": 0.07309012390003614,
+          "iters": 8192,
+          "rounds": 3
+        },
+        "jsonx.dumps/custom": {
+          "ns": 1362.4829009433963,
+          "spread": 0.02685781066146321,
+          "iters": 6784,
+          "rounds": 3
+        },
+        "jsonx.dumps/class": {
+          "ns": 1254.8115234375,
+          "spread": 0.10888264469499045,
+          "iters": 4096,
+          "rounds": 3
+        },
+        "jsonx.canonical/default": {
+          "ns": 966.4766905737705,
+          "spread": 0.16750584727513665,
+          "iters": 7808,
+          "rounds": 3
+        },
+        "jsonx.canonical/custom": {
+          "ns": 2178.9811970338983,
+          "spread": 0.32464501892539627,
+          "iters": 3776,
+          "rounds": 3
+        },
+        "jsonx.dump/stream": {
+          "ns": 4347.005,
+          "spread": 0.10655080336921628,
+          "iters": 1600,
+          "rounds": 3
+        },
+        "jsonx.loads/small": {
+          "ns": 185.85205078125,
+          "spread": 0.06462515599343185,
+          "iters": 40960,
+          "rounds": 3
+        },
+        "jsonx.loads/small/bytes": {
+          "ns": 183.43097795758928,
+          "spread": 0.15843263775083266,
+          "iters": 28672,
+          "rounds": 3
+        },
+        "jsonx.loads/integers": {
+          "ns": 13843.034375,
+          "spread": 0.02886244006744367,
+          "iters": 640,
+          "rounds": 3
+        },
+        "jsonx.loads/integers/bytes": {
+          "ns": 12305.7296875,
+          "spread": 0.07625804900080209,
+          "iters": 640,
+          "rounds": 3
+        },
+        "jsonx.loads/records": {
+          "ns": 62894.8515625,
+          "spread": 0.1050033780338489,
+          "iters": 128,
+          "rounds": 3
+        },
+        "jsonx.loads/records/bytes": {
+          "ns": 67164.0625,
+          "spread": 0.05420006979178783,
+          "iters": 128,
+          "rounds": 3
+        },
+        "jsonx.loads/float": {
+          "ns": 89.03952205882354,
+          "spread": 0.01577290322580645,
+          "iters": 69632,
+          "rounds": 3
+        },
+        "jsonx.loads/float/bytes": {
+          "ns": 84.92533365885417,
+          "spread": 0.16176558663232915,
+          "iters": 98304,
+          "rounds": 3
+        },
+        "jsonx.loads/string": {
+          "ns": 85.9442850748698,
+          "spread": 0.11352382571120391,
+          "iters": 98304,
+          "rounds": 3
+        },
+        "jsonx.loads/string/bytes": {
+          "ns": 86.5885342684659,
+          "spread": 0.18338283350844442,
+          "iters": 90112,
+          "rounds": 3
+        },
+        "jsonx.loads/hook": {
+          "ns": 1022.1571180555555,
+          "spread": 0.1754243858941424,
+          "iters": 5760,
+          "rounds": 3
+        },
+        "jsonx.loads/error": {
+          "ns": 1671.5421875,
+          "spread": 0.19306802818380356,
+          "iters": 5760,
+          "rounds": 3
+        },
+        "jsonx.load/stream": {
+          "ns": 360.107421875,
+          "spread": 0.19007050847457627,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "b64.b64encode/0": {
+          "ns": 124.61427815755208,
+          "spread": 0.18455664215145662,
+          "iters": 49152,
+          "rounds": 3
+        },
+        "b64.b64decode/0": {
+          "ns": 126.879150390625,
+          "spread": 0.17430016476383878,
+          "iters": 45056,
+          "rounds": 3
+        },
+        "b64.b64decode/text/0": {
+          "ns": 130.0506591796875,
+          "spread": 0.20486401501818607,
+          "iters": 49152,
+          "rounds": 3
+        },
+        "b64.encode/0": {
+          "ns": 134.325146484375,
+          "spread": 0.14387314479681598,
+          "iters": 81920,
+          "rounds": 3
+        },
+        "b64.decode/url/0": {
+          "ns": 272.953271484375,
+          "spread": 0.4272895411391924,
+          "iters": 20480,
+          "rounds": 3
+        },
+        "b64.decode/url-text/0": {
+          "ns": 323.0298156738281,
+          "spread": 0.1999560511858197,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "b64.decode/url-unpadded-text/0": {
+          "ns": 287.696044921875,
+          "spread": 0.5154337409754275,
+          "iters": 12288,
+          "rounds": 3
+        },
+        "b64.b64encode/16": {
+          "ns": 110.537841796875,
+          "spread": 0.22744046001992213,
+          "iters": 65536,
+          "rounds": 3
+        },
+        "b64.b64decode/16": {
+          "ns": 122.58572048611111,
+          "spread": 0.07508574905952645,
+          "iters": 73728,
+          "rounds": 3
+        },
+        "b64.b64decode/text/16": {
+          "ns": 139.3292694091797,
+          "spread": 0.09965510115284244,
+          "iters": 65536,
+          "rounds": 3
+        },
+        "b64.encode/16": {
+          "ns": 124.71234809027777,
+          "spread": 0.020405573067884517,
+          "iters": 73728,
+          "rounds": 3
+        },
+        "b64.decode/url/16": {
+          "ns": 254.41360473632812,
+          "spread": 0.11489961465221238,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "b64.decode/url-text/16": {
+          "ns": 305.6488037109375,
+          "spread": 0.06707922719784334,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "b64.decode/url-unpadded-text/16": {
+          "ns": 345.7963460286458,
+          "spread": 0.02094550539632027,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "b64.b64encode/128": {
+          "ns": 123.978173828125,
+          "spread": 0.03140496551300415,
+          "iters": 81920,
+          "rounds": 3
+        },
+        "b64.b64decode/128": {
+          "ns": 281.72607421875,
+          "spread": 1.0304533125352051,
+          "iters": 20480,
+          "rounds": 3
+        },
+        "b64.b64decode/text/128": {
+          "ns": 266.4591369628906,
+          "spread": 0.08418920684848465,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "b64.encode/128": {
+          "ns": 125.8392333984375,
+          "spread": 1.2786962531829755,
+          "iters": 73728,
+          "rounds": 3
+        },
+        "b64.decode/url/128": {
+          "ns": 740.069091796875,
+          "spread": 0.08875728518537945,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "b64.decode/url-text/128": {
+          "ns": 327.6536865234375,
+          "spread": 0.3970702212764192,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "b64.decode/url-unpadded-text/128": {
+          "ns": 399.017333984375,
+          "spread": 0.04884211599745061,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "b64.b64encode/1024": {
+          "ns": 177.7979532877604,
+          "spread": 0.03207792542159541,
+          "iters": 49152,
+          "rounds": 3
+        },
+        "b64.b64decode/1024": {
+          "ns": 316.5537516276042,
+          "spread": 1.810327104455549,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "b64.b64decode/text/1024": {
+          "ns": 298.5432942708333,
+          "spread": 0.38246776611694155,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "b64.encode/1024": {
+          "ns": 259.5977783203125,
+          "spread": 0.706760242167754,
+          "iters": 49152,
+          "rounds": 3
+        },
+        "b64.decode/url/1024": {
+          "ns": 1244.059326171875,
+          "spread": 0.6375514726531385,
+          "iters": 4096,
+          "rounds": 3
+        },
+        "b64.decode/url-text/1024": {
+          "ns": 569.6665649414062,
+          "spread": 0.006165051877570669,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "b64.decode/url-unpadded-text/1024": {
+          "ns": 904.7596435546875,
+          "spread": 0.4050247774120992,
+          "iters": 8192,
+          "rounds": 3
+        },
+        "b64.b64encode/131072": {
+          "ns": 6486.62109375,
+          "spread": 0.564533369465396,
+          "iters": 1280,
+          "rounds": 3
+        },
+        "b64.b64decode/131072": {
+          "ns": 13867.8390625,
+          "spread": 0.05391757930923133,
+          "iters": 640,
+          "rounds": 3
+        },
+        "b64.b64decode/text/131072": {
+          "ns": 13543.1,
+          "spread": 0.1448787805229231,
+          "iters": 640,
+          "rounds": 3
+        },
+        "b64.encode/131072": {
+          "ns": 10643.88125,
+          "spread": 0.13061333359952695,
+          "iters": 640,
+          "rounds": 3
+        },
+        "b64.decode/url/131072": {
+          "ns": 24201.8203125,
+          "spread": 0.16313161490629094,
+          "iters": 256,
+          "rounds": 3
+        },
+        "b64.decode/url-text/131072": {
+          "ns": 25651.04296875,
+          "spread": 0.11421943582642458,
+          "iters": 256,
+          "rounds": 3
+        },
+        "b64.decode/url-unpadded-text/131072": {
+          "ns": 59421.875,
+          "spread": 0.03858243491980016,
+          "iters": 128,
+          "rounds": 3
+        },
+        "b64.standard_b64encode": {
+          "ns": 96.06279645647321,
+          "spread": 0.06017835666795253,
+          "iters": 57344,
+          "rounds": 3
+        },
+        "b64.urlsafe_b64encode": {
+          "ns": 103.20994873046875,
+          "spread": 0.0682488229688636,
+          "iters": 81920,
+          "rounds": 3
+        },
+        "b64.encodebytes": {
+          "ns": 245.59912109375,
+          "spread": 0.06824853326229108,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "b64.standard_b64decode": {
+          "ns": 50.92259457236842,
+          "spread": 0.1825584153419127,
+          "iters": 155648,
+          "rounds": 3
+        },
+        "b64.urlsafe_b64decode": {
+          "ns": 153.52547200520834,
+          "spread": 0.10205067953126416,
+          "iters": 49152,
+          "rounds": 3
+        },
+        "b64.decodebytes": {
+          "ns": 139.26441955566406,
+          "spread": 0.11638308710151703,
+          "iters": 65536,
+          "rounds": 3
+        },
+        "b64.decode": {
+          "ns": 91.13196910511364,
+          "spread": 0.046745016246789485,
+          "iters": 90112,
+          "rounds": 3
+        },
+        "b64.decode_text": {
+          "ns": 149.115234375,
+          "spread": 0.07381327196877414,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "b64.encode_json": {
+          "ns": 244.47756958007812,
+          "spread": 0.03562271120569724,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "b64.decode_json": {
+          "ns": 384.5638834635417,
+          "spread": 0.056810243780527056,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "b64.decode/error": {
+          "ns": 392.3746744791667,
+          "spread": 0.11403774758892461,
+          "iters": 12288,
+          "rounds": 3
+        },
+        "b64.decode/url-dirty": {
+          "ns": 240.91085815429688,
+          "spread": 0.03560122302961161,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "b64.decode/url-buffer": {
+          "ns": 378.66552734375,
+          "spread": 0.14654391686127055,
+          "iters": 12288,
+          "rounds": 3
+        },
+        "b64.encode_file": {
+          "ns": 175.36417643229166,
+          "spread": 0.08895527582806427,
+          "iters": 49152,
+          "rounds": 3
+        },
+        "b64.decode_file": {
+          "ns": 157.6563517252604,
+          "spread": 0.043214556482183475,
+          "iters": 49152,
+          "rounds": 3
+        },
+        "structs.Codec/construct": {
+          "ns": 865.397216796875,
+          "spread": 0.05729254680340918,
+          "iters": 8192,
+          "rounds": 3
+        },
+        "structs.Codec.encode": {
+          "ns": 45.69989224137931,
+          "spread": 0.11640154328629199,
+          "iters": 118784,
+          "rounds": 3
+        },
+        "structs.Codec.decode": {
+          "ns": 71.2166748046875,
+          "spread": 0.06107479262069454,
+          "iters": 106496,
+          "rounds": 3
+        },
+        "structs.Codec.decode_or/valid": {
+          "ns": 93.13019670758929,
+          "spread": 0.08800743307034715,
+          "iters": 57344,
+          "rounds": 3
+        },
+        "structs.Codec.decode_or/invalid": {
+          "ns": 283.08868408203125,
+          "spread": 0.15982579167228136,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "structs.float_enc_hook": {
+          "ns": 233.54931640625,
+          "spread": 0.2976052091848575,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "structs.float_enc_hook/error": {
+          "ns": 1407.0593327702702,
+          "spread": 0.17154796646314516,
+          "iters": 4736,
+          "rounds": 3
+        },
+        "ndjson.dumpb/typed-single": {
+          "ns": 286.1785888671875,
+          "spread": 0.06398890962410024,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "ndjson.dumpb/custom-codec": {
+          "ns": 1003.015112704918,
+          "spread": 0.09753289965117981,
+          "iters": 7808,
+          "rounds": 3
+        },
+        "ndjson.dumpb/untyped": {
+          "ns": 10537.272135416666,
+          "spread": 0.06699000633292658,
+          "iters": 768,
+          "rounds": 3
+        },
+        "ndjson.dumps/untyped": {
+          "ns": 10874.8046875,
+          "spread": 0.00669322365703407,
+          "iters": 640,
+          "rounds": 3
+        },
+        "ndjson.loads/untyped": {
+          "ns": 7850.715625,
+          "spread": 0.04204433592638251,
+          "iters": 640,
+          "rounds": 3
+        },
+        "ndjson.iter_loads/untyped": {
+          "ns": 15327.278125,
+          "spread": 0.25313580016347487,
+          "iters": 640,
+          "rounds": 3
+        },
+        "ndjson.load/untyped": {
+          "ns": 16470.376953125,
+          "spread": 0.09938332705035188,
+          "iters": 512,
+          "rounds": 3
+        },
+        "ndjson.dump/untyped/binary": {
+          "ns": 11501.040625,
+          "spread": 0.05989050447337238,
+          "iters": 640,
+          "rounds": 3
+        },
+        "ndjson.dump/untyped/text": {
+          "ns": 13073.56875,
+          "spread": 0.04380247646611412,
+          "iters": 640,
+          "rounds": 3
+        },
+        "ndjson.dumpb/typed": {
+          "ns": 7231.880208333333,
+          "spread": 0.009729957271081965,
+          "iters": 768,
+          "rounds": 3
+        },
+        "ndjson.dumps/typed": {
+          "ns": 7485.440340909091,
+          "spread": 0.1693865932919019,
+          "iters": 704,
+          "rounds": 3
+        },
+        "ndjson.loads/typed": {
+          "ns": 12736.39375,
+          "spread": 0.03249472598945051,
+          "iters": 640,
+          "rounds": 3
+        },
+        "ndjson.iter_loads/typed": {
+          "ns": 11594.889322916666,
+          "spread": 0.1572406125858027,
+          "iters": 768,
+          "rounds": 3
+        },
+        "ndjson.load/typed": {
+          "ns": 13152.9296875,
+          "spread": 0.05674935776546931,
+          "iters": 640,
+          "rounds": 3
+        },
+        "ndjson.dump/typed/binary": {
+          "ns": 11017.578125,
+          "spread": 0.02948646389951123,
+          "iters": 896,
+          "rounds": 3
+        },
+        "ndjson.dump/typed/text": {
+          "ns": 12589.778125,
+          "spread": 0.02883974077184144,
+          "iters": 640,
+          "rounds": 3
+        },
+        "ndjson.loads/error": {
+          "ns": 5106.2822265625,
+          "spread": 0.11890808140172004,
+          "iters": 2048,
+          "rounds": 3
+        },
+        "ndjson.loads/skip": {
+          "ns": 2893.520148026316,
+          "spread": 0.20494537405707883,
+          "iters": 2432,
+          "rounds": 3
+        },
+        "ndjson.loads/strip": {
+          "ns": 124.55467393663194,
+          "spread": 0.03481456887367942,
+          "iters": 73728,
+          "rounds": 3
+        }
+      },
+      "functions": [
+        {
+          "function": "_internal.json_common._check_headroom",
+          "line": 11,
+          "calls": 3140,
+          "self_ns": 297525.00000000006,
+          "cumulative_ns": 398048.0
+        },
+        {
+          "function": "_internal.json_common._recursion_result",
+          "line": 15,
+          "calls": 3140,
+          "self_ns": 100523.0,
+          "cumulative_ns": 100523.0
+        },
+        {
+          "function": "_internal.json_encode._format",
+          "line": 43,
+          "calls": 40,
+          "self_ns": 17249.0,
+          "cumulative_ns": 18250.0
+        },
+        {
+          "function": "_internal.json_encode._snapshot",
+          "line": 69,
+          "calls": 70,
+          "self_ns": 50004.00000000001,
+          "cumulative_ns": 57044.00000000001
+        },
+        {
+          "function": "_internal.json_encode._exact_encode",
+          "line": 128,
+          "calls": 120,
+          "self_ns": 114622.0,
+          "cumulative_ns": 371086.0
+        },
+        {
+          "function": "_internal.json_encode._exact_bytes",
+          "line": 160,
+          "calls": 20,
+          "self_ns": 4499.000000000001,
+          "cumulative_ns": 6292.0
+        },
+        {
+          "function": "_internal.json_encode._encoder",
+          "line": 171,
+          "calls": 2,
+          "self_ns": 3083.0000000000005,
+          "cumulative_ns": 3750.0
+        },
+        {
+          "function": "_internal.json_encode._compact_bytes",
+          "line": 193,
+          "calls": 20,
+          "self_ns": 22588.0,
+          "cumulative_ns": 1287791.0000000002
+        },
+        {
+          "function": "b64.b64encode",
+          "line": 93,
+          "calls": 50,
+          "self_ns": 15043.000000000002,
+          "cumulative_ns": 106795.00000000001
+        },
+        {
+          "function": "b64.b64decode",
+          "line": 103,
+          "calls": 140,
+          "self_ns": 57211.00000000001,
+          "cumulative_ns": 314212.0
+        },
+        {
+          "function": "b64.standard_b64encode",
+          "line": 121,
+          "calls": 10,
+          "self_ns": 2709.0000000000005,
+          "cumulative_ns": 5332.0
+        },
+        {
+          "function": "b64.standard_b64decode",
+          "line": 128,
+          "calls": 10,
+          "self_ns": 1959.0000000000002,
+          "cumulative_ns": 3501.0
+        },
+        {
+          "function": "b64.urlsafe_b64encode",
+          "line": 135,
+          "calls": 10,
+          "self_ns": 2372.0000000000005,
+          "cumulative_ns": 4665.0
+        },
+        {
+          "function": "b64.encode",
+          "line": 142,
+          "calls": 60,
+          "self_ns": 20789.0,
+          "cumulative_ns": 88084.0
+        },
+        {
+          "function": "b64._decode_input",
+          "line": 157,
+          "calls": 10,
+          "self_ns": 6585.000000000001,
+          "cumulative_ns": 11125.000000000002
+        },
+        {
+          "function": "b64.decode",
+          "line": 177,
+          "calls": 210,
+          "self_ns": 409461.0,
+          "cumulative_ns": 1327466.0
+        },
+        {
+          "function": "b64.decode_text",
+          "line": 238,
+          "calls": 10,
+          "self_ns": 3791.0,
+          "cumulative_ns": 14876.000000000002
+        },
+        {
+          "function": "b64.encode_json",
+          "line": 243,
+          "calls": 10,
+          "self_ns": 5792.000000000001,
+          "cumulative_ns": 20583.000000000004
+        },
+        {
+          "function": "b64.decode_json",
+          "line": 248,
+          "calls": 10,
+          "self_ns": 4002.0,
+          "cumulative_ns": 31667.0
+        },
+        {
+          "function": "jsonx._numpy_default",
+          "line": 140,
+          "calls": 0,
+          "self_ns": 0,
+          "cumulative_ns": 0
+        },
+        {
+          "function": "jsonx._numpy_default._default",
+          "line": 153,
+          "calls": 0,
+          "self_ns": 0,
+          "cumulative_ns": 0
+        },
+        {
+          "function": "jsonx.dumps",
+          "line": 166,
+          "calls": 160,
+          "self_ns": 125452.00000000001,
+          "cumulative_ns": 2019287.0000000002
+        },
+        {
+          "function": "jsonx.dumpb",
+          "line": 249,
+          "calls": 110,
+          "self_ns": 34507.0,
+          "cumulative_ns": 1377206.0000000002
+        },
+        {
+          "function": "jsonx._line",
+          "line": 292,
+          "calls": 4000,
+          "self_ns": 288956.00000000006,
+          "cumulative_ns": 671044.0000000001
+        },
+        {
+          "function": "jsonx.canonical",
+          "line": 305,
+          "calls": 20,
+          "self_ns": 9791.0,
+          "cumulative_ns": 61669.00000000001
+        },
+        {
+          "function": "jsonx._identity_snapshot",
+          "line": 326,
+          "calls": 0,
+          "self_ns": 0,
+          "cumulative_ns": 0
+        },
+        {
+          "function": "jsonx.canonical_strict",
+          "line": 360,
+          "calls": 0,
+          "self_ns": 0,
+          "cumulative_ns": 0
+        },
+        {
+          "function": "jsonx.loads",
+          "line": 394,
+          "calls": 3210,
+          "self_ns": 861246.0000000001,
+          "cumulative_ns": 3379294.0
+        },
+        {
+          "function": "jsonx.dump",
+          "line": 405,
+          "calls": 10,
+          "self_ns": 10582.000000000002,
+          "cumulative_ns": 190666.0
+        },
+        {
+          "function": "jsonx.load",
+          "line": 439,
+          "calls": 10,
+          "self_ns": 4543.0,
+          "cumulative_ns": 13708.000000000002
+        },
+        {
+          "function": "ndjson.NDJSONDecodeError.__init__",
+          "line": 101,
+          "calls": 20,
+          "self_ns": 27584.000000000004,
+          "cumulative_ns": 27584.000000000004
+        },
+        {
+          "function": "ndjson._encoder",
+          "line": 107,
+          "calls": 100,
+          "self_ns": 16166.0,
+          "cumulative_ns": 16166.0
+        },
+        {
+          "function": "ndjson._write_remainder",
+          "line": 115,
+          "calls": 0,
+          "self_ns": 0,
+          "cumulative_ns": 0
+        },
+        {
+          "function": "ndjson.dumps",
+          "line": 135,
+          "calls": 20,
+          "self_ns": 7668.0,
+          "cumulative_ns": 448834.0
+        },
+        {
+          "function": "ndjson.dumpb",
+          "line": 140,
+          "calls": 60,
+          "self_ns": 33417.0,
+          "cumulative_ns": 1019085.0000000001
+        },
+        {
+          "function": "ndjson.iter_loads",
+          "line": 165,
+          "calls": 5100,
+          "self_ns": 1135439.0,
+          "cumulative_ns": 2779217.0
+        },
+        {
+          "function": "ndjson.loads",
+          "line": 237,
+          "calls": 50,
+          "self_ns": 267131.00000000006,
+          "cumulative_ns": 1899247.0000000002
+        },
+        {
+          "function": "ndjson.dump",
+          "line": 277,
+          "calls": 40,
+          "self_ns": 1134245.0,
+          "cumulative_ns": 2347625.0000000005
+        },
+        {
+          "function": "ndjson.load",
+          "line": 335,
+          "calls": 60,
+          "self_ns": 172515.0,
+          "cumulative_ns": 1935455.0000000002
+        },
+        {
+          "function": "structs.float_enc_hook",
+          "line": 75,
+          "calls": 20,
+          "self_ns": 24084.000000000004,
+          "cumulative_ns": 149418.0
+        },
+        {
+          "function": "structs.Codec.__init__",
+          "line": 105,
+          "calls": 10,
+          "self_ns": 51335.0,
+          "cumulative_ns": 51335.0
+        },
+        {
+          "function": "structs.Codec.decode_or",
+          "line": 143,
+          "calls": 20,
+          "self_ns": 5543.0,
+          "cumulative_ns": 15042.000000000002
+        }
+      ],
+      "signatures": {
+        "unstd.serde.b64.b64decode": "(s: 'str | Buffer', altchars: 'str | Buffer | None' = None, validate: 'bool' = False) -> 'bytes'",
+        "unstd.serde.b64.b64encode": "(s: 'Buffer', altchars: 'Buffer | None' = None) -> 'bytes'",
+        "unstd.serde.b64.decode": "(s: 'str | Buffer', *, url: 'bool' = False) -> 'bytes'",
+        "unstd.serde.b64.decode_file": "(input, output)",
+        "unstd.serde.b64.decode_json": "(s: 'str | Buffer') -> 'jsonx.Json'",
+        "unstd.serde.b64.decode_text": "(s: 'str | Buffer', *, url: 'bool' = False, errors: 'str' = 'replace') -> 'str'",
+        "unstd.serde.b64.decodebytes": "(s)",
+        "unstd.serde.b64.encode": "(data: 'Buffer', *, url: 'bool' = False, pad: 'bool' = True) -> 'str'",
+        "unstd.serde.b64.encode_file": "(input, output)",
+        "unstd.serde.b64.encode_json": "(obj: 'object') -> 'str'",
+        "unstd.serde.b64.encodebytes": "(s)",
+        "unstd.serde.b64.standard_b64decode": "(s: 'str | Buffer') -> 'bytes'",
+        "unstd.serde.b64.standard_b64encode": "(s: 'Buffer') -> 'bytes'",
+        "unstd.serde.b64.urlsafe_b64decode": "(s)",
+        "unstd.serde.b64.urlsafe_b64encode": "(s: 'Buffer') -> 'bytes'",
+        "unstd.serde.jsonx.canonical": "(obj: 'object', *, default: 'Callable[[object], object] | None' = <class 'str'>) -> 'bytes'",
+        "unstd.serde.jsonx.canonical_strict": "(obj: 'object') -> 'bytes'",
+        "unstd.serde.jsonx.dump": "(obj: 'object', fp: '_TextWriter', *, skipkeys: 'bool' = False, ensure_ascii: 'bool' = True, check_circular: 'bool' = True, allow_nan: 'bool' = True, cls: 'type[JSONEncoder] | None' = None, indent: 'int | str | None' = None, separators: 'tuple[str, str] | None' = None, default: 'Callable[[Any], Any] | None' = None, sort_keys: 'bool' = False, **kw: 'Any') -> 'None'",
+        "unstd.serde.jsonx.dumpb": "(obj: 'object', *, sort_keys: 'bool' = False, default: 'Callable[[object], object] | None' = None, numpy: 'bool' = False) -> 'bytes'",
+        "unstd.serde.jsonx.dumps": "(obj: 'object', *, skipkeys: 'bool' = False, ensure_ascii: 'bool' = True, check_circular: 'bool' = True, allow_nan: 'bool' = True, cls: 'type[JSONEncoder] | None' = None, indent: 'int | str | None' = None, separators: 'tuple[str, str] | None' = None, default: 'Callable[[Any], Any] | None' = None, sort_keys: 'bool' = False, **kw: 'Any') -> 'str'",
+        "unstd.serde.jsonx.load": "(fp, *, cls=None, object_hook=None, parse_float=None, parse_int=None, parse_constant=None, object_pairs_hook=None, **kw)",
+        "unstd.serde.jsonx.loads": "(s, *, cls=None, object_hook=None, parse_float=None, parse_int=None, parse_constant=None, object_pairs_hook=None, **kw)",
+        "unstd.serde.ndjson.dump": "(rows: 'Iterable[T]', fp: 'io.TextIOBase | _Writer', *, codec: '_Codec[T] | None' = None) -> 'int'",
+        "unstd.serde.ndjson.dumpb": "(rows: 'Iterable[T]', *, codec: '_Codec[T] | None' = None) -> 'bytes'",
+        "unstd.serde.ndjson.dumps": "(rows: 'Iterable[T]', *, codec: '_Codec[T] | None' = None) -> 'str'",
+        "unstd.serde.ndjson.iter_loads": "(lines: 'Iterable[str | bytes]', *, codec: '_Codec[T] | None' = None, skip_errors: 'bool' = False, on_error: 'Callable[[NDJSONDecodeError], None] | None' = None) -> 'Iterator[Json | T]'",
+        "unstd.serde.ndjson.load": "(fp: 'Iterable[str | bytes]', *, codec: '_Codec[T] | None' = None, skip_errors: 'bool' = False, on_error: 'Callable[[NDJSONDecodeError], None] | None' = None) -> 'list[Json] | list[T]'",
+        "unstd.serde.ndjson.loads": "(text: 'str | bytes', *, codec: '_Codec[T] | None' = None, skip_errors: 'bool' = False, on_error: 'Callable[[NDJSONDecodeError], None] | None' = None) -> 'list[Json] | list[T]'",
+        "unstd.serde.structs.Codec": "(spec: 'type[T]', *, enc_hook: 'EncHook | None' = None, dec_hook: 'DecHook | None' = None, order: 'Order' = None, decimal_format: '_DecimalFormat' = 'string', uuid_format: \"Literal['canonical', 'hex']\" = 'canonical', strict: 'bool' = True, float_hook: 'FloatHook | None' = None) -> 'None'",
+        "unstd.serde.structs.float_enc_hook": "(obj: 'object') -> 'float'"
+      }
+    },
+    {
+      "source": "/private/tmp/jsonx-throughput-final-bounded/src",
+      "fallback": false,
+      "python": "3.12.15 (main, Oct  9 2026, 15:10:57) [Clang 22.1.3 ]",
+      "platform": "macOS-26.6-arm64-arm-64bit",
+      "backends": {
+        "orjson": "3.12.0",
+        "msgspec": "0.22.0",
+        "pybase64": "1.5.0"
+      },
+      "timings": {
+        "jsonx.dumps/small": {
+          "ns": 344.1009521484375,
+          "spread": 0.08523896944703117,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "jsonx.dumpb/small": {
+          "ns": 117.73553466796875,
+          "spread": 0.3131083853167919,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "jsonx.dumps/integers8": {
+          "ns": 292.3227945963542,
+          "spread": 0.21345104657839334,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "jsonx.dumpb/integers8": {
+          "ns": 120.08892144097223,
+          "spread": 0.3584290838087915,
+          "iters": 73728,
+          "rounds": 3
+        },
+        "jsonx.dumps/integers15": {
+          "ns": 496.18023681640625,
+          "spread": 0.11468116348318705,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "jsonx.dumpb/integers15": {
+          "ns": 121.41609191894531,
+          "spread": 0.13890582339726973,
+          "iters": 65536,
+          "rounds": 3
+        },
+        "jsonx.dumps/wide": {
+          "ns": 671.5952758789062,
+          "spread": 0.06369230576283713,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "jsonx.dumpb/wide": {
+          "ns": 337.2141520182292,
+          "spread": 0.0609009487322584,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "jsonx.dumps/records": {
+          "ns": 113537.39743589744,
+          "spread": 0.03374862253112806,
+          "iters": 78,
+          "rounds": 3
+        },
+        "jsonx.dumpb/records": {
+          "ns": 122670.05405405405,
+          "spread": 0.11212135299436501,
+          "iters": 74,
+          "rounds": 3
+        },
+        "jsonx.dumps/text": {
+          "ns": 8606.910714285714,
+          "spread": 0.05216037984426966,
+          "iters": 896,
+          "rounds": 3
+        },
+        "jsonx.dumpb/text": {
+          "ns": 2284.131365740741,
+          "spread": 0.05679457630760133,
+          "iters": 3456,
+          "rounds": 3
+        },
+        "jsonx.dumps/string": {
+          "ns": 136.1096649169922,
+          "spread": 0.06683424358271106,
+          "iters": 65536,
+          "rounds": 3
+        },
+        "jsonx.dumpb/string": {
+          "ns": 83.70527648925781,
+          "spread": 0.19495346909579053,
+          "iters": 65536,
+          "rounds": 3
+        },
+        "jsonx.dumps/int": {
+          "ns": 232.8470703125,
+          "spread": 0.04325081342787187,
+          "iters": 40960,
+          "rounds": 3
+        },
+        "jsonx.dumpb/int": {
+          "ns": 79.12969611672794,
+          "spread": 0.1179680284372352,
+          "iters": 69632,
+          "rounds": 3
+        },
+        "jsonx.dumps/float": {
+          "ns": 585.1618041992188,
+          "spread": 0.0677113065619892,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "jsonx.dumpb/float": {
+          "ns": 577.20947265625,
+          "spread": 0.07657470656656445,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "jsonx.dumps/null": {
+          "ns": 228.23994140625,
+          "spread": 0.03880664579533343,
+          "iters": 40960,
+          "rounds": 3
+        },
+        "jsonx.dumpb/null": {
+          "ns": 70.14083862304688,
+          "spread": 0.12021167128949801,
+          "iters": 131072,
+          "rounds": 3
+        },
+        "jsonx.dumps/compact": {
+          "ns": 400.2227783203125,
+          "spread": 0.12998330092645544,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "jsonx.dumps/indent": {
+          "ns": 394.622802734375,
+          "spread": 0.03338241435310494,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "jsonx.dumps/indent4": {
+          "ns": 2574.457552083333,
+          "spread": 0.05355254348180346,
+          "iters": 3840,
+          "rounds": 3
+        },
+        "jsonx.dumps/sorted": {
+          "ns": 467.1351318359375,
+          "spread": 0.05584564636870092,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "jsonx.dumps/custom": {
+          "ns": 1165.1234085648148,
+          "spread": 0.09909462330689665,
+          "iters": 6912,
+          "rounds": 3
+        },
+        "jsonx.dumps/class": {
+          "ns": 1560.0247395833333,
+          "spread": 0.5893581206561395,
+          "iters": 6144,
+          "rounds": 3
+        },
+        "jsonx.canonical/default": {
+          "ns": 890.899658203125,
+          "spread": 0.05224416812249512,
+          "iters": 8192,
+          "rounds": 3
+        },
+        "jsonx.canonical/custom": {
+          "ns": 1073.2896306818182,
+          "spread": 0.31692972394371116,
+          "iters": 7040,
+          "rounds": 3
+        },
+        "jsonx.dump/stream": {
+          "ns": 2499.465401785714,
+          "spread": 0.15224137215056255,
+          "iters": 3584,
+          "rounds": 3
+        },
+        "jsonx.loads/small": {
+          "ns": 163.60618373325892,
+          "spread": 0.11119447553585744,
+          "iters": 57344,
+          "rounds": 3
+        },
+        "jsonx.loads/small/bytes": {
+          "ns": 165.7257080078125,
+          "spread": 0.03538648111854999,
+          "iters": 57344,
+          "rounds": 3
+        },
+        "jsonx.loads/integers": {
+          "ns": 10604.026785714286,
+          "spread": 0.0725917167585427,
+          "iters": 896,
+          "rounds": 3
+        },
+        "jsonx.loads/integers/bytes": {
+          "ns": 10235.536830357143,
+          "spread": 0.04803173380208419,
+          "iters": 896,
+          "rounds": 3
+        },
+        "jsonx.loads/records": {
+          "ns": 56062.5,
+          "spread": 0.06698829431438127,
+          "iters": 128,
+          "rounds": 3
+        },
+        "jsonx.loads/records/bytes": {
+          "ns": 53703.125,
+          "spread": 0.16718795461157987,
+          "iters": 128,
+          "rounds": 3
+        },
+        "jsonx.loads/float": {
+          "ns": 71.85205078125,
+          "spread": 0.011516287469504529,
+          "iters": 131072,
+          "rounds": 3
+        },
+        "jsonx.loads/float/bytes": {
+          "ns": 78.558349609375,
+          "spread": 0.011839743091704866,
+          "iters": 122880,
+          "rounds": 3
+        },
+        "jsonx.loads/string": {
+          "ns": 75.52693684895833,
+          "spread": 0.04474756889260027,
+          "iters": 122880,
+          "rounds": 3
+        },
+        "jsonx.loads/string/bytes": {
+          "ns": 83.26425170898438,
+          "spread": 0.26287758809823913,
+          "iters": 98304,
+          "rounds": 3
+        },
+        "jsonx.loads/hook": {
+          "ns": 1429.1353236607142,
+          "spread": 0.3077967661592953,
+          "iters": 7168,
+          "rounds": 3
+        },
+        "jsonx.loads/error": {
+          "ns": 1521.536044034091,
+          "spread": 0.05674821872661344,
+          "iters": 5632,
+          "rounds": 3
+        },
+        "jsonx.load/stream": {
+          "ns": 270.8447570800781,
+          "spread": 0.11267553580879232,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "b64.b64encode/0": {
+          "ns": 83.72681773792614,
+          "spread": 0.17849520284922404,
+          "iters": 90112,
+          "rounds": 3
+        },
+        "b64.b64decode/0": {
+          "ns": 92.734130859375,
+          "spread": 0.07396973693878435,
+          "iters": 90112,
+          "rounds": 3
+        },
+        "b64.b64decode/text/0": {
+          "ns": 99.28487548828124,
+          "spread": 0.059123244264987274,
+          "iters": 81920,
+          "rounds": 3
+        },
+        "b64.encode/0": {
+          "ns": 95.03326416015625,
+          "spread": 0.04692705640564538,
+          "iters": 81920,
+          "rounds": 3
+        },
+        "b64.decode/url/0": {
+          "ns": 204.3009521484375,
+          "spread": 0.07393590495983171,
+          "iters": 40960,
+          "rounds": 3
+        },
+        "b64.decode/url-text/0": {
+          "ns": 251.30081176757812,
+          "spread": 0.1029899965086449,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "b64.decode/url-unpadded-text/0": {
+          "ns": 238.2901611328125,
+          "spread": 0.19869364516593385,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "b64.b64encode/16": {
+          "ns": 89.2828702059659,
+          "spread": 0.11746279702162388,
+          "iters": 90112,
+          "rounds": 3
+        },
+        "b64.b64decode/16": {
+          "ns": 127.960205078125,
+          "spread": 0.9268401833744071,
+          "iters": 73728,
+          "rounds": 3
+        },
+        "b64.b64decode/text/16": {
+          "ns": 115.38187255859376,
+          "spread": 0.04376463896899763,
+          "iters": 81920,
+          "rounds": 3
+        },
+        "b64.encode/16": {
+          "ns": 97.8581787109375,
+          "spread": 0.12148317815836304,
+          "iters": 81920,
+          "rounds": 3
+        },
+        "b64.decode/url/16": {
+          "ns": 246.7864990234375,
+          "spread": 0.1457536943376161,
+          "iters": 40960,
+          "rounds": 3
+        },
+        "b64.decode/url-text/16": {
+          "ns": 289.3541259765625,
+          "spread": 0.1800160226865717,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "b64.decode/url-unpadded-text/16": {
+          "ns": 316.3994547526042,
+          "spread": 0.09272858612061241,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "b64.b64encode/128": {
+          "ns": 90.26699393136161,
+          "spread": 0.09394234710106436,
+          "iters": 114688,
+          "rounds": 3
+        },
+        "b64.b64decode/128": {
+          "ns": 228.5675048828125,
+          "spread": 0.03295640679867017,
+          "iters": 40960,
+          "rounds": 3
+        },
+        "b64.b64decode/text/128": {
+          "ns": 225.3507080078125,
+          "spread": 0.15057855241910803,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "b64.encode/128": {
+          "ns": 105.99433051215277,
+          "spread": 0.14230576793883362,
+          "iters": 73728,
+          "rounds": 3
+        },
+        "b64.decode/url/128": {
+          "ns": 454.39404296875,
+          "spread": 0.07292010307339682,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "b64.decode/url-text/128": {
+          "ns": 263.38702392578125,
+          "spread": 0.020165535313265513,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "b64.decode/url-unpadded-text/128": {
+          "ns": 305.4419759114583,
+          "spread": 0.029696230301515664,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "b64.b64encode/1024": {
+          "ns": 129.16339789496527,
+          "spread": 0.27671273183051615,
+          "iters": 73728,
+          "rounds": 3
+        },
+        "b64.b64decode/1024": {
+          "ns": 342.0308430989583,
+          "spread": 0.07546417630788449,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "b64.b64decode/text/1024": {
+          "ns": 264.5111083984375,
+          "spread": 0.03278530910489376,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "b64.encode/1024": {
+          "ns": 147.78814697265625,
+          "spread": 0.8392032414827859,
+          "iters": 49152,
+          "rounds": 3
+        },
+        "b64.decode/url/1024": {
+          "ns": 637.19677734375,
+          "spread": 0.5198041501050975,
+          "iters": 8192,
+          "rounds": 3
+        },
+        "b64.decode/url-text/1024": {
+          "ns": 442.52520751953125,
+          "spread": 0.17337714005687738,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "b64.decode/url-unpadded-text/1024": {
+          "ns": 792.536376953125,
+          "spread": 0.10677127214377051,
+          "iters": 8192,
+          "rounds": 3
+        },
+        "b64.b64encode/131072": {
+          "ns": 6306.857638888889,
+          "spread": 0.15214603261991605,
+          "iters": 1152,
+          "rounds": 3
+        },
+        "b64.b64decode/131072": {
+          "ns": 11860.4609375,
+          "spread": 0.12174071895480805,
+          "iters": 768,
+          "rounds": 3
+        },
+        "b64.b64decode/text/131072": {
+          "ns": 11566.5359375,
+          "spread": 0.2538078938122004,
+          "iters": 640,
+          "rounds": 3
+        },
+        "b64.encode/131072": {
+          "ns": 7793.9453125,
+          "spread": 0.14282134354806952,
+          "iters": 896,
+          "rounds": 3
+        },
+        "b64.decode/url/131072": {
+          "ns": 21505.046875,
+          "spread": 0.08141402853835909,
+          "iters": 256,
+          "rounds": 3
+        },
+        "b64.decode/url-text/131072": {
+          "ns": 21654.731770833332,
+          "spread": 0.013398726726512935,
+          "iters": 384,
+          "rounds": 3
+        },
+        "b64.decode/url-unpadded-text/131072": {
+          "ns": 42705.078125,
+          "spread": 0.055766567573748,
+          "iters": 128,
+          "rounds": 3
+        },
+        "b64.standard_b64encode": {
+          "ns": 82.207568359375,
+          "spread": 0.07692632086628087,
+          "iters": 61440,
+          "rounds": 3
+        },
+        "b64.urlsafe_b64encode": {
+          "ns": 95.71016751802884,
+          "spread": 0.047423413700914865,
+          "iters": 106496,
+          "rounds": 3
+        },
+        "b64.encodebytes": {
+          "ns": 196.74003092447916,
+          "spread": 0.038563764055343,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "b64.standard_b64decode": {
+          "ns": 48.78001403808594,
+          "spread": 0.16787812074417907,
+          "iters": 196608,
+          "rounds": 3
+        },
+        "b64.urlsafe_b64decode": {
+          "ns": 140.95851353236608,
+          "spread": 0.23567098121085595,
+          "iters": 57344,
+          "rounds": 3
+        },
+        "b64.decodebytes": {
+          "ns": 129.8230438232422,
+          "spread": 0.05155885291669111,
+          "iters": 65536,
+          "rounds": 3
+        },
+        "b64.decode": {
+          "ns": 86.98410268930289,
+          "spread": 0.039878840074749615,
+          "iters": 106496,
+          "rounds": 3
+        },
+        "b64.decode_text": {
+          "ns": 143.863037109375,
+          "spread": 0.028102795356233126,
+          "iters": 65536,
+          "rounds": 3
+        },
+        "b64.encode_json": {
+          "ns": 232.8094482421875,
+          "spread": 0.003032443273427976,
+          "iters": 40960,
+          "rounds": 3
+        },
+        "b64.decode_json": {
+          "ns": 331.5362141927083,
+          "spread": 0.008652483592571964,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "b64.decode/error": {
+          "ns": 342.7242838541667,
+          "spread": 0.12064479331794017,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "b64.decode/url-dirty": {
+          "ns": 214.19271850585938,
+          "spread": 0.13770406830812745,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "b64.decode/url-buffer": {
+          "ns": 378.1102294921875,
+          "spread": 0.05492369762636002,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "b64.encode_file": {
+          "ns": 171.9065185546875,
+          "spread": 0.20504066654822248,
+          "iters": 40960,
+          "rounds": 3
+        },
+        "b64.decode_file": {
+          "ns": 138.77613830566406,
+          "spread": 0.07240374837009102,
+          "iters": 65536,
+          "rounds": 3
+        },
+        "structs.Codec/construct": {
+          "ns": 754.1300048828125,
+          "spread": 0.021535383038032915,
+          "iters": 8192,
+          "rounds": 3
+        },
+        "structs.Codec.encode": {
+          "ns": 41.835743871228445,
+          "spread": 0.013826169146199645,
+          "iters": 118784,
+          "rounds": 3
+        },
+        "structs.Codec.decode": {
+          "ns": 74.51375325520833,
+          "spread": 0.045401556313993174,
+          "iters": 122880,
+          "rounds": 3
+        },
+        "structs.Codec.decode_or/valid": {
+          "ns": 83.33224051339286,
+          "spread": 0.07933373428725209,
+          "iters": 114688,
+          "rounds": 3
+        },
+        "structs.Codec.decode_or/invalid": {
+          "ns": 216.1539794921875,
+          "spread": 0.06115635476238264,
+          "iters": 40960,
+          "rounds": 3
+        },
+        "structs.float_enc_hook": {
+          "ns": 190.72298177083334,
+          "spread": 0.02970851730923825,
+          "iters": 49152,
+          "rounds": 3
+        },
+        "structs.float_enc_hook/error": {
+          "ns": 1224.876280737705,
+          "spread": 0.09693633327387322,
+          "iters": 7808,
+          "rounds": 3
+        },
+        "ndjson.dumpb/typed-single": {
+          "ns": 222.08404541015625,
+          "spread": 0.0825517881067711,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "ndjson.dumpb/custom-codec": {
+          "ns": 970.5150146484375,
+          "spread": 0.026780340606749876,
+          "iters": 8192,
+          "rounds": 3
+        },
+        "ndjson.dumpb/untyped": {
+          "ns": 10386.53236607143,
+          "spread": 0.07475651258127126,
+          "iters": 896,
+          "rounds": 3
+        },
+        "ndjson.dumps/untyped": {
+          "ns": 10927.270089285714,
+          "spread": 0.03031733558142238,
+          "iters": 448,
+          "rounds": 3
+        },
+        "ndjson.loads/untyped": {
+          "ns": 7715.748263888889,
+          "spread": 0.05818817079336521,
+          "iters": 1152,
+          "rounds": 3
+        },
+        "ndjson.iter_loads/untyped": {
+          "ns": 14636.328125,
+          "spread": 0.042804238170220714,
+          "iters": 640,
+          "rounds": 3
+        },
+        "ndjson.load/untyped": {
+          "ns": 15612.759375,
+          "spread": 0.022192385514812302,
+          "iters": 320,
+          "rounds": 3
+        },
+        "ndjson.dump/untyped/binary": {
+          "ns": 11111.71875,
+          "spread": 0.07868129086690571,
+          "iters": 640,
+          "rounds": 3
+        },
+        "ndjson.dump/untyped/text": {
+          "ns": 13027.734375,
+          "spread": 0.03824473029294474,
+          "iters": 640,
+          "rounds": 3
+        },
+        "ndjson.dumpb/typed": {
+          "ns": 6733.368607954545,
+          "spread": 0.007858166528366451,
+          "iters": 1408,
+          "rounds": 3
+        },
+        "ndjson.dumps/typed": {
+          "ns": 6762.4671875,
+          "spread": 0.03635264866118805,
+          "iters": 1280,
+          "rounds": 3
+        },
+        "ndjson.loads/typed": {
+          "ns": 10780.598958333334,
+          "spread": 0.9037481731988647,
+          "iters": 768,
+          "rounds": 3
+        },
+        "ndjson.iter_loads/typed": {
+          "ns": 9492.919921875,
+          "spread": 0.03042028650052722,
+          "iters": 1024,
+          "rounds": 3
+        },
+        "ndjson.load/typed": {
+          "ns": 11041.829427083334,
+          "spread": 0.021029524918559573,
+          "iters": 768,
+          "rounds": 3
+        },
+        "ndjson.dump/typed/binary": {
+          "ns": 8970.2958984375,
+          "spread": 0.10781841500969508,
+          "iters": 1024,
+          "rounds": 3
+        },
+        "ndjson.dump/typed/text": {
+          "ns": 10498.372767857143,
+          "spread": 0.029598124369189016,
+          "iters": 896,
+          "rounds": 3
+        },
+        "ndjson.loads/error": {
+          "ns": 4256.872395833333,
+          "spread": 0.05037636240580744,
+          "iters": 2304,
+          "rounds": 3
+        },
+        "ndjson.loads/skip": {
+          "ns": 2323.2873263888887,
+          "spread": 0.050109623763323265,
+          "iters": 4608,
+          "rounds": 3
+        },
+        "ndjson.loads/strip": {
+          "ns": 120.89822048611111,
+          "spread": 0.025494683171213735,
+          "iters": 73728,
+          "rounds": 3
+        }
+      },
+      "functions": [
+        {
+          "function": "_internal.json_common._check_headroom",
+          "line": 11,
+          "calls": 3140,
+          "self_ns": 245458.0,
+          "cumulative_ns": 335551.0
+        },
+        {
+          "function": "_internal.json_common._recursion_result",
+          "line": 15,
+          "calls": 3140,
+          "self_ns": 90093.0,
+          "cumulative_ns": 90093.0
+        },
+        {
+          "function": "_internal.json_encode._format",
+          "line": 49,
+          "calls": 40,
+          "self_ns": 11080.0,
+          "cumulative_ns": 11830.0
+        },
+        {
+          "function": "_internal.json_encode._snapshot",
+          "line": 75,
+          "calls": 0,
+          "self_ns": 0,
+          "cumulative_ns": 0
+        },
+        {
+          "function": "_internal.json_encode._exact_encode",
+          "line": 134,
+          "calls": 120,
+          "self_ns": 39201.0,
+          "cumulative_ns": 177623.00000000003
+        },
+        {
+          "function": "_internal.json_encode._exact_bytes",
+          "line": 174,
+          "calls": 20,
+          "self_ns": 3378.0,
+          "cumulative_ns": 5043.000000000001
+        },
+        {
+          "function": "_internal.json_encode._encoder",
+          "line": 185,
+          "calls": 2,
+          "self_ns": 2666.0,
+          "cumulative_ns": 3458.0
+        },
+        {
+          "function": "_internal.json_encode._compact_bytes",
+          "line": 207,
+          "calls": 20,
+          "self_ns": 11796.0,
+          "cumulative_ns": 1094336.0
+        },
+        {
+          "function": "b64.b64encode",
+          "line": 93,
+          "calls": 50,
+          "self_ns": 9963.000000000002,
+          "cumulative_ns": 75750.0
+        },
+        {
+          "function": "b64.b64decode",
+          "line": 103,
+          "calls": 140,
+          "self_ns": 46683.0,
+          "cumulative_ns": 285259.0
+        },
+        {
+          "function": "b64.standard_b64encode",
+          "line": 121,
+          "calls": 10,
+          "self_ns": 1836.0,
+          "cumulative_ns": 3043.0000000000005
+        },
+        {
+          "function": "b64.standard_b64decode",
+          "line": 128,
+          "calls": 10,
+          "self_ns": 1750.0000000000002,
+          "cumulative_ns": 2707.0
+        },
+        {
+          "function": "b64.urlsafe_b64encode",
+          "line": 135,
+          "calls": 10,
+          "self_ns": 1752.0000000000002,
+          "cumulative_ns": 3375.0000000000005
+        },
+        {
+          "function": "b64.encode",
+          "line": 142,
+          "calls": 60,
+          "self_ns": 11798.000000000002,
+          "cumulative_ns": 73667.0
+        },
+        {
+          "function": "b64._decode_input",
+          "line": 157,
+          "calls": 10,
+          "self_ns": 4837.0,
+          "cumulative_ns": 7792.000000000001
+        },
+        {
+          "function": "b64.decode",
+          "line": 177,
+          "calls": 210,
+          "self_ns": 309869.0,
+          "cumulative_ns": 1107495.0
+        },
+        {
+          "function": "b64.decode_text",
+          "line": 238,
+          "calls": 10,
+          "self_ns": 3337.0000000000005,
+          "cumulative_ns": 12334.0
+        },
+        {
+          "function": "b64.encode_json",
+          "line": 243,
+          "calls": 10,
+          "self_ns": 4166.0,
+          "cumulative_ns": 12667.0
+        },
+        {
+          "function": "b64.decode_json",
+          "line": 248,
+          "calls": 10,
+          "self_ns": 3042.0000000000005,
+          "cumulative_ns": 17792.0
+        },
+        {
+          "function": "jsonx._numpy_default",
+          "line": 143,
+          "calls": 0,
+          "self_ns": 0,
+          "cumulative_ns": 0
+        },
+        {
+          "function": "jsonx._numpy_default._default",
+          "line": 156,
+          "calls": 0,
+          "self_ns": 0,
+          "cumulative_ns": 0
+        },
+        {
+          "function": "jsonx.dumps",
+          "line": 169,
+          "calls": 160,
+          "self_ns": 82593.0,
+          "cumulative_ns": 1484588.0
+        },
+        {
+          "function": "jsonx.dumpb",
+          "line": 252,
+          "calls": 110,
+          "self_ns": 24845.0,
+          "cumulative_ns": 1161887.0000000002
+        },
+        {
+          "function": "jsonx._line",
+          "line": 295,
+          "calls": 4000,
+          "self_ns": 267126.0,
+          "cumulative_ns": 576971.0
+        },
+        {
+          "function": "jsonx.canonical",
+          "line": 308,
+          "calls": 20,
+          "self_ns": 7749.0,
+          "cumulative_ns": 47208.00000000001
+        },
+        {
+          "function": "jsonx._identity_snapshot",
+          "line": 329,
+          "calls": 0,
+          "self_ns": 0,
+          "cumulative_ns": 0
+        },
+        {
+          "function": "jsonx.canonical_strict",
+          "line": 363,
+          "calls": 0,
+          "self_ns": 0,
+          "cumulative_ns": 0
+        },
+        {
+          "function": "jsonx.loads",
+          "line": 397,
+          "calls": 3210,
+          "self_ns": 684694.0,
+          "cumulative_ns": 2690145.0
+        },
+        {
+          "function": "jsonx.dump",
+          "line": 408,
+          "calls": 10,
+          "self_ns": 5831.000000000001,
+          "cumulative_ns": 140790.0
+        },
+        {
+          "function": "jsonx.load",
+          "line": 442,
+          "calls": 10,
+          "self_ns": 3877.0000000000005,
+          "cumulative_ns": 10584.0
+        },
+        {
+          "function": "ndjson.NDJSONDecodeError.__init__",
+          "line": 101,
+          "calls": 20,
+          "self_ns": 10043.0,
+          "cumulative_ns": 10043.0
+        },
+        {
+          "function": "ndjson._encoder",
+          "line": 107,
+          "calls": 100,
+          "self_ns": 10038.000000000002,
+          "cumulative_ns": 10038.000000000002
+        },
+        {
+          "function": "ndjson._write_remainder",
+          "line": 115,
+          "calls": 0,
+          "self_ns": 0,
+          "cumulative_ns": 0
+        },
+        {
+          "function": "ndjson.dumps",
+          "line": 135,
+          "calls": 20,
+          "self_ns": 5755.0,
+          "cumulative_ns": 363627.00000000006
+        },
+        {
+          "function": "ndjson.dumpb",
+          "line": 140,
+          "calls": 60,
+          "self_ns": 22832.0,
+          "cumulative_ns": 826706.0000000001
+        },
+        {
+          "function": "ndjson.iter_loads",
+          "line": 165,
+          "calls": 5100,
+          "self_ns": 957726.0000000001,
+          "cumulative_ns": 2374933.0
+        },
+        {
+          "function": "ndjson.loads",
+          "line": 237,
+          "calls": 50,
+          "self_ns": 199767.0,
+          "cumulative_ns": 1391958.0
+        },
+        {
+          "function": "ndjson.dump",
+          "line": 277,
+          "calls": 40,
+          "self_ns": 1000339.0,
+          "cumulative_ns": 2042087.0000000002
+        },
+        {
+          "function": "ndjson.load",
+          "line": 335,
+          "calls": 60,
+          "self_ns": 133079.0,
+          "cumulative_ns": 1595956.0000000002
+        },
+        {
+          "function": "structs.float_enc_hook",
+          "line": 75,
+          "calls": 20,
+          "self_ns": 12205.0,
+          "cumulative_ns": 85498.0
+        },
+        {
+          "function": "structs.Codec.__init__",
+          "line": 105,
+          "calls": 10,
+          "self_ns": 22417.000000000004,
+          "cumulative_ns": 22417.000000000004
+        },
+        {
+          "function": "structs.Codec.decode_or",
+          "line": 143,
+          "calls": 20,
+          "self_ns": 4498.0,
+          "cumulative_ns": 10375.000000000002
+        }
+      ],
+      "signatures": {
+        "unstd.serde.b64.b64decode": "(s: 'str | Buffer', altchars: 'str | Buffer | None' = None, validate: 'bool' = False) -> 'bytes'",
+        "unstd.serde.b64.b64encode": "(s: 'Buffer', altchars: 'Buffer | None' = None) -> 'bytes'",
+        "unstd.serde.b64.decode": "(s: 'str | Buffer', *, url: 'bool' = False) -> 'bytes'",
+        "unstd.serde.b64.decode_file": "(input, output)",
+        "unstd.serde.b64.decode_json": "(s: 'str | Buffer') -> 'jsonx.Json'",
+        "unstd.serde.b64.decode_text": "(s: 'str | Buffer', *, url: 'bool' = False, errors: 'str' = 'replace') -> 'str'",
+        "unstd.serde.b64.decodebytes": "(s)",
+        "unstd.serde.b64.encode": "(data: 'Buffer', *, url: 'bool' = False, pad: 'bool' = True) -> 'str'",
+        "unstd.serde.b64.encode_file": "(input, output)",
+        "unstd.serde.b64.encode_json": "(obj: 'object') -> 'str'",
+        "unstd.serde.b64.encodebytes": "(s)",
+        "unstd.serde.b64.standard_b64decode": "(s: 'str | Buffer') -> 'bytes'",
+        "unstd.serde.b64.standard_b64encode": "(s: 'Buffer') -> 'bytes'",
+        "unstd.serde.b64.urlsafe_b64decode": "(s)",
+        "unstd.serde.b64.urlsafe_b64encode": "(s: 'Buffer') -> 'bytes'",
+        "unstd.serde.jsonx.canonical": "(obj: 'object', *, default: 'Callable[[object], object] | None' = <class 'str'>) -> 'bytes'",
+        "unstd.serde.jsonx.canonical_strict": "(obj: 'object') -> 'bytes'",
+        "unstd.serde.jsonx.dump": "(obj: 'object', fp: '_TextWriter', *, skipkeys: 'bool' = False, ensure_ascii: 'bool' = True, check_circular: 'bool' = True, allow_nan: 'bool' = True, cls: 'type[JSONEncoder] | None' = None, indent: 'int | str | None' = None, separators: 'tuple[str, str] | None' = None, default: 'Callable[[Any], Any] | None' = None, sort_keys: 'bool' = False, **kw: 'Any') -> 'None'",
+        "unstd.serde.jsonx.dumpb": "(obj: 'object', *, sort_keys: 'bool' = False, default: 'Callable[[object], object] | None' = None, numpy: 'bool' = False) -> 'bytes'",
+        "unstd.serde.jsonx.dumps": "(obj: 'object', *, skipkeys: 'bool' = False, ensure_ascii: 'bool' = True, check_circular: 'bool' = True, allow_nan: 'bool' = True, cls: 'type[JSONEncoder] | None' = None, indent: 'int | str | None' = None, separators: 'tuple[str, str] | None' = None, default: 'Callable[[Any], Any] | None' = None, sort_keys: 'bool' = False, **kw: 'Any') -> 'str'",
+        "unstd.serde.jsonx.load": "(fp, *, cls=None, object_hook=None, parse_float=None, parse_int=None, parse_constant=None, object_pairs_hook=None, **kw)",
+        "unstd.serde.jsonx.loads": "(s, *, cls=None, object_hook=None, parse_float=None, parse_int=None, parse_constant=None, object_pairs_hook=None, **kw)",
+        "unstd.serde.ndjson.dump": "(rows: 'Iterable[T]', fp: 'io.TextIOBase | _Writer', *, codec: '_Codec[T] | None' = None) -> 'int'",
+        "unstd.serde.ndjson.dumpb": "(rows: 'Iterable[T]', *, codec: '_Codec[T] | None' = None) -> 'bytes'",
+        "unstd.serde.ndjson.dumps": "(rows: 'Iterable[T]', *, codec: '_Codec[T] | None' = None) -> 'str'",
+        "unstd.serde.ndjson.iter_loads": "(lines: 'Iterable[str | bytes]', *, codec: '_Codec[T] | None' = None, skip_errors: 'bool' = False, on_error: 'Callable[[NDJSONDecodeError], None] | None' = None) -> 'Iterator[Json | T]'",
+        "unstd.serde.ndjson.load": "(fp: 'Iterable[str | bytes]', *, codec: '_Codec[T] | None' = None, skip_errors: 'bool' = False, on_error: 'Callable[[NDJSONDecodeError], None] | None' = None) -> 'list[Json] | list[T]'",
+        "unstd.serde.ndjson.loads": "(text: 'str | bytes', *, codec: '_Codec[T] | None' = None, skip_errors: 'bool' = False, on_error: 'Callable[[NDJSONDecodeError], None] | None' = None) -> 'list[Json] | list[T]'",
+        "unstd.serde.structs.Codec": "(spec: 'type[T]', *, enc_hook: 'EncHook | None' = None, dec_hook: 'DecHook | None' = None, order: 'Order' = None, decimal_format: '_DecimalFormat' = 'string', uuid_format: \"Literal['canonical', 'hex']\" = 'canonical', strict: 'bool' = True, float_hook: 'FloatHook | None' = None) -> 'None'",
+        "unstd.serde.structs.float_enc_hook": "(obj: 'object') -> 'float'"
+      }
+    },
+    {
+      "source": "/private/tmp/jsonx-throughput-final-bounded/src",
+      "fallback": false,
+      "python": "3.12.15 (main, Oct  9 2026, 15:10:57) [Clang 22.1.3 ]",
+      "platform": "macOS-26.6-arm64-arm-64bit",
+      "backends": {
+        "orjson": "3.12.0",
+        "msgspec": "0.22.0",
+        "pybase64": "1.5.0"
+      },
+      "timings": {
+        "jsonx.dumps/small": {
+          "ns": 311.3454182942708,
+          "spread": 0.03182879453710813,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "jsonx.dumpb/small": {
+          "ns": 114.70201280381944,
+          "spread": 0.014791024920921157,
+          "iters": 73728,
+          "rounds": 3
+        },
+        "jsonx.dumps/integers8": {
+          "ns": 267.4980163574219,
+          "spread": 0.05052082768849023,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "jsonx.dumpb/integers8": {
+          "ns": 101.88756214488636,
+          "spread": 0.66842890956959,
+          "iters": 90112,
+          "rounds": 3
+        },
+        "jsonx.dumps/integers15": {
+          "ns": 314.6514892578125,
+          "spread": 0.07991038261965958,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "jsonx.dumpb/integers15": {
+          "ns": 113.52386474609375,
+          "spread": 2.3026967566768373,
+          "iters": 81920,
+          "rounds": 3
+        },
+        "jsonx.dumps/wide": {
+          "ns": 584.1878051757812,
+          "spread": 0.03716399795096462,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "jsonx.dumpb/wide": {
+          "ns": 306.6236572265625,
+          "spread": 0.06627450059272123,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "jsonx.dumps/records": {
+          "ns": 102055.55208333333,
+          "spread": 0.05998234417468509,
+          "iters": 96,
+          "rounds": 3
+        },
+        "jsonx.dumpb/records": {
+          "ns": 114507.4,
+          "spread": 0.025940487494937253,
+          "iters": 45,
+          "rounds": 3
+        },
+        "jsonx.dumps/text": {
+          "ns": 7773.0140625,
+          "spread": 0.026588584021360762,
+          "iters": 1280,
+          "rounds": 3
+        },
+        "jsonx.dumpb/text": {
+          "ns": 2165.283203125,
+          "spread": 0.15417465328672905,
+          "iters": 4096,
+          "rounds": 3
+        },
+        "jsonx.dumps/string": {
+          "ns": 130.14729817708334,
+          "spread": 0.021672450627898493,
+          "iters": 73728,
+          "rounds": 3
+        },
+        "jsonx.dumpb/string": {
+          "ns": 73.73136632582721,
+          "spread": 0.043577381459614095,
+          "iters": 139264,
+          "rounds": 3
+        },
+        "jsonx.dumps/int": {
+          "ns": 221.0195068359375,
+          "spread": 0.13958596299839643,
+          "iters": 40960,
+          "rounds": 3
+        },
+        "jsonx.dumpb/int": {
+          "ns": 74.97084147135416,
+          "spread": 0.07783874742100798,
+          "iters": 122880,
+          "rounds": 3
+        },
+        "jsonx.dumps/float": {
+          "ns": 554.6976928710938,
+          "spread": 0.011035338589178654,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "jsonx.dumpb/float": {
+          "ns": 565.5848388671875,
+          "spread": 0.055203008846234115,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "jsonx.dumps/null": {
+          "ns": 229.46064453125,
+          "spread": 0.010360466566255703,
+          "iters": 40960,
+          "rounds": 3
+        },
+        "jsonx.dumpb/null": {
+          "ns": 73.6305290670956,
+          "spread": 0.04551046110222251,
+          "iters": 69632,
+          "rounds": 3
+        },
+        "jsonx.dumps/compact": {
+          "ns": 418.212890625,
+          "spread": 0.10864214827787508,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "jsonx.dumps/indent": {
+          "ns": 404.650390625,
+          "spread": 0.04986958866884512,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "jsonx.dumps/indent4": {
+          "ns": 2572.9166666666665,
+          "spread": 0.16114726720647773,
+          "iters": 3072,
+          "rounds": 3
+        },
+        "jsonx.dumps/sorted": {
+          "ns": 453.015625,
+          "spread": 0.05607603559479874,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "jsonx.dumps/custom": {
+          "ns": 1268.951416015625,
+          "spread": 0.4488426925759361,
+          "iters": 4096,
+          "rounds": 3
+        },
+        "jsonx.dumps/class": {
+          "ns": 1556.2721108490566,
+          "spread": 0.06834638062087092,
+          "iters": 3392,
+          "rounds": 3
+        },
+        "jsonx.canonical/default": {
+          "ns": 744.817138671875,
+          "spread": 0.0371489698833508,
+          "iters": 8192,
+          "rounds": 3
+        },
+        "jsonx.canonical/custom": {
+          "ns": 1054.1490056818182,
+          "spread": 0.08375198704146454,
+          "iters": 7040,
+          "rounds": 3
+        },
+        "jsonx.dump/stream": {
+          "ns": 2552.876708984375,
+          "spread": 0.11133742255954933,
+          "iters": 4096,
+          "rounds": 3
+        },
+        "jsonx.loads/small": {
+          "ns": 167.2490437825521,
+          "spread": 0.12872099140880408,
+          "iters": 49152,
+          "rounds": 3
+        },
+        "jsonx.loads/small/bytes": {
+          "ns": 184.28982979910714,
+          "spread": 0.10652526004180957,
+          "iters": 28672,
+          "rounds": 3
+        },
+        "jsonx.loads/integers": {
+          "ns": 11171.408482142857,
+          "spread": 0.11633872423443856,
+          "iters": 448,
+          "rounds": 3
+        },
+        "jsonx.loads/integers/bytes": {
+          "ns": 11712.238839285714,
+          "spread": 0.18424541788265975,
+          "iters": 448,
+          "rounds": 3
+        },
+        "jsonx.loads/records": {
+          "ns": 56220.0546875,
+          "spread": 0.056853183090386866,
+          "iters": 128,
+          "rounds": 3
+        },
+        "jsonx.loads/records/bytes": {
+          "ns": 53715.8203125,
+          "spread": 0.07536885737660212,
+          "iters": 128,
+          "rounds": 3
+        },
+        "jsonx.loads/float": {
+          "ns": 71.19781135110294,
+          "spread": 0.016972974673867394,
+          "iters": 139264,
+          "rounds": 3
+        },
+        "jsonx.loads/float/bytes": {
+          "ns": 76.65575358072917,
+          "spread": 0.11469161870124388,
+          "iters": 122880,
+          "rounds": 3
+        },
+        "jsonx.loads/string": {
+          "ns": 77.11973353794643,
+          "spread": 0.05807144792117501,
+          "iters": 114688,
+          "rounds": 3
+        },
+        "jsonx.loads/string/bytes": {
+          "ns": 85.84086390904018,
+          "spread": 0.05126584612140458,
+          "iters": 114688,
+          "rounds": 3
+        },
+        "jsonx.loads/hook": {
+          "ns": 946.42138671875,
+          "spread": 0.09555333077779113,
+          "iters": 8192,
+          "rounds": 3
+        },
+        "jsonx.loads/error": {
+          "ns": 1572.8850806451612,
+          "spread": 0.11309252952313077,
+          "iters": 3968,
+          "rounds": 3
+        },
+        "jsonx.load/stream": {
+          "ns": 318.6865641276042,
+          "spread": 0.458224618589203,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "b64.b64encode/0": {
+          "ns": 111.29082573784723,
+          "spread": 0.21488778525943755,
+          "iters": 73728,
+          "rounds": 3
+        },
+        "b64.b64decode/0": {
+          "ns": 131.82449340820312,
+          "spread": 2.3569030876522845,
+          "iters": 65536,
+          "rounds": 3
+        },
+        "b64.b64decode/text/0": {
+          "ns": 103.18332248263889,
+          "spread": 0.10152809727242852,
+          "iters": 73728,
+          "rounds": 3
+        },
+        "b64.encode/0": {
+          "ns": 99.2853759765625,
+          "spread": 0.10491134275236928,
+          "iters": 81920,
+          "rounds": 3
+        },
+        "b64.decode/url/0": {
+          "ns": 228.45077514648438,
+          "spread": 0.018562693071952175,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "b64.decode/url-text/0": {
+          "ns": 270.8409729003906,
+          "spread": 0.04193932179872781,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "b64.decode/url-unpadded-text/0": {
+          "ns": 263.9109191894531,
+          "spread": 0.06134010682213683,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "b64.b64encode/16": {
+          "ns": 96.00136496803977,
+          "spread": 0.0742795381970032,
+          "iters": 90112,
+          "rounds": 3
+        },
+        "b64.b64decode/16": {
+          "ns": 121.75496419270833,
+          "spread": 0.08691202272537388,
+          "iters": 49152,
+          "rounds": 3
+        },
+        "b64.b64decode/text/16": {
+          "ns": 135.5072021484375,
+          "spread": 0.047661824651487515,
+          "iters": 40960,
+          "rounds": 3
+        },
+        "b64.encode/16": {
+          "ns": 112.14474826388889,
+          "spread": 0.14768411728393868,
+          "iters": 73728,
+          "rounds": 3
+        },
+        "b64.decode/url/16": {
+          "ns": 289.72882080078125,
+          "spread": 0.0202060621662439,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "b64.decode/url-text/16": {
+          "ns": 338.9892578125,
+          "spread": 0.2142299843956308,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "b64.decode/url-unpadded-text/16": {
+          "ns": 454.1600341796875,
+          "spread": 0.22844854116902688,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "b64.b64encode/128": {
+          "ns": 105.61065673828125,
+          "spread": 0.06788701544507535,
+          "iters": 81920,
+          "rounds": 3
+        },
+        "b64.b64decode/128": {
+          "ns": 220.018505859375,
+          "spread": 0.14754473999989792,
+          "iters": 40960,
+          "rounds": 3
+        },
+        "b64.b64decode/text/128": {
+          "ns": 251.07574462890625,
+          "spread": 0.051627214439818894,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "b64.encode/128": {
+          "ns": 131.39964463975696,
+          "spread": 0.023379841498093537,
+          "iters": 73728,
+          "rounds": 3
+        },
+        "b64.decode/url/128": {
+          "ns": 455.62237548828125,
+          "spread": 0.09003221335213774,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "b64.decode/url-text/128": {
+          "ns": 258.3821614583333,
+          "spread": 0.1925656692913386,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "b64.decode/url-unpadded-text/128": {
+          "ns": 324.4959411621094,
+          "spread": 0.08034283189550952,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "b64.b64encode/1024": {
+          "ns": 131.17361111111111,
+          "spread": 0.11829822416485786,
+          "iters": 36864,
+          "rounds": 3
+        },
+        "b64.b64decode/1024": {
+          "ns": 233.27803548177084,
+          "spread": 0.07365933716504033,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "b64.b64decode/text/1024": {
+          "ns": 253.580712890625,
+          "spread": 0.338117929275862,
+          "iters": 20480,
+          "rounds": 3
+        },
+        "b64.encode/1024": {
+          "ns": 136.77555338541666,
+          "spread": 0.03418713534495787,
+          "iters": 49152,
+          "rounds": 3
+        },
+        "b64.decode/url/1024": {
+          "ns": 590.1285400390625,
+          "spread": 0.009360236458680029,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "b64.decode/url-text/1024": {
+          "ns": 429.48406982421875,
+          "spread": 0.0062114634670078885,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "b64.decode/url-unpadded-text/1024": {
+          "ns": 688.578369140625,
+          "spread": 0.05529607855859612,
+          "iters": 8192,
+          "rounds": 3
+        },
+        "b64.b64encode/131072": {
+          "ns": 5815.134232954545,
+          "spread": 0.04661450474119195,
+          "iters": 1408,
+          "rounds": 3
+        },
+        "b64.b64decode/131072": {
+          "ns": 10977.214285714286,
+          "spread": 0.026129409295879126,
+          "iters": 448,
+          "rounds": 3
+        },
+        "b64.b64decode/text/131072": {
+          "ns": 11189.833333333334,
+          "spread": 0.12514359202549935,
+          "iters": 768,
+          "rounds": 3
+        },
+        "b64.encode/131072": {
+          "ns": 5908.095052083333,
+          "spread": 0.031322776813327936,
+          "iters": 1536,
+          "rounds": 3
+        },
+        "b64.decode/url/131072": {
+          "ns": 23279.078125,
+          "spread": 0.18561597357068882,
+          "iters": 192,
+          "rounds": 3
+        },
+        "b64.decode/url-text/131072": {
+          "ns": 22912.434895833332,
+          "spread": 0.04428374557801867,
+          "iters": 384,
+          "rounds": 3
+        },
+        "b64.decode/url-unpadded-text/131072": {
+          "ns": 44444.65625,
+          "spread": 0.04551253701056581,
+          "iters": 128,
+          "rounds": 3
+        },
+        "b64.standard_b64encode": {
+          "ns": 91.78603515625,
+          "spread": 0.07574032678326909,
+          "iters": 61440,
+          "rounds": 3
+        },
+        "b64.urlsafe_b64encode": {
+          "ns": 96.03647085336539,
+          "spread": 0.1708057687606942,
+          "iters": 53248,
+          "rounds": 3
+        },
+        "b64.encodebytes": {
+          "ns": 194.68180338541666,
+          "spread": 0.11985745636952659,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "b64.standard_b64decode": {
+          "ns": 48.77247529871323,
+          "spread": 0.11456674886819537,
+          "iters": 139264,
+          "rounds": 3
+        },
+        "b64.urlsafe_b64decode": {
+          "ns": 144.48802185058594,
+          "spread": 0.1964842314007135,
+          "iters": 65536,
+          "rounds": 3
+        },
+        "b64.decodebytes": {
+          "ns": 121.50166015625,
+          "spread": 0.22126413685512591,
+          "iters": 40960,
+          "rounds": 3
+        },
+        "b64.decode": {
+          "ns": 106.33664772727273,
+          "spread": 0.7866358150438814,
+          "iters": 90112,
+          "rounds": 3
+        },
+        "b64.decode_text": {
+          "ns": 171.7512410481771,
+          "spread": 1.759345655731986,
+          "iters": 49152,
+          "rounds": 3
+        },
+        "b64.encode_json": {
+          "ns": 306.20574951171875,
+          "spread": 1.3876167933225365,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "b64.decode_json": {
+          "ns": 394.44219970703125,
+          "spread": 1.4595458659372529,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "b64.decode/error": {
+          "ns": 608.0677490234375,
+          "spread": 0.3931211808344463,
+          "iters": 8192,
+          "rounds": 3
+        },
+        "b64.decode/url-dirty": {
+          "ns": 248.88229370117188,
+          "spread": 0.08577680364177,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "b64.decode/url-buffer": {
+          "ns": 684.2371826171875,
+          "spread": 4.330287955747367,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "b64.encode_file": {
+          "ns": 208.50797526041666,
+          "spread": 1.5574914544292167,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "b64.decode_file": {
+          "ns": 203.31827799479166,
+          "spread": 0.49871596537749535,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "structs.Codec/construct": {
+          "ns": 929.1942138671875,
+          "spread": 0.060020685870746285,
+          "iters": 8192,
+          "rounds": 3
+        },
+        "structs.Codec.encode": {
+          "ns": 49.95126065340909,
+          "spread": 0.8340446608999185,
+          "iters": 180224,
+          "rounds": 3
+        },
+        "structs.Codec.decode": {
+          "ns": 78.32923302283653,
+          "spread": 1.2167010519375432,
+          "iters": 53248,
+          "rounds": 3
+        },
+        "structs.Codec.decode_or/valid": {
+          "ns": 103.17630440848214,
+          "spread": 0.018922877586265763,
+          "iters": 57344,
+          "rounds": 3
+        },
+        "structs.Codec.decode_or/invalid": {
+          "ns": 230.00970458984375,
+          "spread": 0.13538844186208812,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "structs.float_enc_hook": {
+          "ns": 177.25543212890625,
+          "spread": 0.13709286895926856,
+          "iters": 49152,
+          "rounds": 3
+        },
+        "structs.float_enc_hook/error": {
+          "ns": 1275.3651123046875,
+          "spread": 0.10271711981987389,
+          "iters": 8192,
+          "rounds": 3
+        },
+        "ndjson.dumpb/typed-single": {
+          "ns": 223.72817993164062,
+          "spread": 0.10998775767702774,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "ndjson.dumpb/custom-codec": {
+          "ns": 965.3829345703125,
+          "spread": 0.15507212126017128,
+          "iters": 8192,
+          "rounds": 3
+        },
+        "ndjson.dumpb/untyped": {
+          "ns": 10326.31138392857,
+          "spread": 0.16584476958618732,
+          "iters": 896,
+          "rounds": 3
+        },
+        "ndjson.dumps/untyped": {
+          "ns": 10672.293526785714,
+          "spread": 0.025237767813958353,
+          "iters": 896,
+          "rounds": 3
+        },
+        "ndjson.loads/untyped": {
+          "ns": 7992.404513888889,
+          "spread": 1.3016870401042657,
+          "iters": 1152,
+          "rounds": 3
+        },
+        "ndjson.iter_loads/untyped": {
+          "ns": 13675.347916666668,
+          "spread": 0.1480321874809096,
+          "iters": 480,
+          "rounds": 3
+        },
+        "ndjson.load/untyped": {
+          "ns": 14615.234375,
+          "spread": 0.07702343979687291,
+          "iters": 640,
+          "rounds": 3
+        },
+        "ndjson.dump/untyped/binary": {
+          "ns": 11346.167410714286,
+          "spread": 0.4449974552845193,
+          "iters": 448,
+          "rounds": 3
+        },
+        "ndjson.dump/untyped/text": {
+          "ns": 17193.603515625,
+          "spread": 0.04993488107916223,
+          "iters": 512,
+          "rounds": 3
+        },
+        "ndjson.dumpb/typed": {
+          "ns": 8289.103515625,
+          "spread": 0.08902217967347476,
+          "iters": 1024,
+          "rounds": 3
+        },
+        "ndjson.dumps/typed": {
+          "ns": 7270.182291666667,
+          "spread": 0.1900490134622847,
+          "iters": 1152,
+          "rounds": 3
+        },
+        "ndjson.loads/typed": {
+          "ns": 11959.1796875,
+          "spread": 0.11307997582923683,
+          "iters": 640,
+          "rounds": 3
+        },
+        "ndjson.iter_loads/typed": {
+          "ns": 9745.442708333334,
+          "spread": 0.058771461019440176,
+          "iters": 768,
+          "rounds": 3
+        },
+        "ndjson.load/typed": {
+          "ns": 12301.8234375,
+          "spread": 0.011563580449900275,
+          "iters": 640,
+          "rounds": 3
+        },
+        "ndjson.dump/typed/binary": {
+          "ns": 10479.654296875,
+          "spread": 0.11968261417258852,
+          "iters": 512,
+          "rounds": 3
+        },
+        "ndjson.dump/typed/text": {
+          "ns": 11839.191964285714,
+          "spread": 0.08396239185906072,
+          "iters": 448,
+          "rounds": 3
+        },
+        "ndjson.loads/error": {
+          "ns": 4322.974264705882,
+          "spread": 0.0690635022013881,
+          "iters": 2176,
+          "rounds": 3
+        },
+        "ndjson.loads/skip": {
+          "ns": 2487.8814732142855,
+          "spread": 0.055484671275734906,
+          "iters": 4480,
+          "rounds": 3
+        },
+        "ndjson.loads/strip": {
+          "ns": 125.89687771267361,
+          "spread": 0.023369325450799252,
+          "iters": 73728,
+          "rounds": 3
+        }
+      },
+      "functions": [
+        {
+          "function": "_internal.json_common._check_headroom",
+          "line": 11,
+          "calls": 3140,
+          "self_ns": 286244.0,
+          "cumulative_ns": 388553.00000000006
+        },
+        {
+          "function": "_internal.json_common._recursion_result",
+          "line": 15,
+          "calls": 3140,
+          "self_ns": 102309.00000000001,
+          "cumulative_ns": 102309.00000000001
+        },
+        {
+          "function": "_internal.json_encode._format",
+          "line": 49,
+          "calls": 40,
+          "self_ns": 16292.000000000002,
+          "cumulative_ns": 17375.000000000004
+        },
+        {
+          "function": "_internal.json_encode._snapshot",
+          "line": 75,
+          "calls": 0,
+          "self_ns": 0,
+          "cumulative_ns": 0
+        },
+        {
+          "function": "_internal.json_encode._exact_encode",
+          "line": 134,
+          "calls": 120,
+          "self_ns": 52622.00000000001,
+          "cumulative_ns": 268082.0
+        },
+        {
+          "function": "_internal.json_encode._exact_bytes",
+          "line": 174,
+          "calls": 20,
+          "self_ns": 5124.0,
+          "cumulative_ns": 17291.0
+        },
+        {
+          "function": "_internal.json_encode._encoder",
+          "line": 185,
+          "calls": 2,
+          "self_ns": 3833.0000000000005,
+          "cumulative_ns": 4750.0
+        },
+        {
+          "function": "_internal.json_encode._compact_bytes",
+          "line": 207,
+          "calls": 20,
+          "self_ns": 19082.0,
+          "cumulative_ns": 1405709.0
+        },
+        {
+          "function": "b64.b64encode",
+          "line": 93,
+          "calls": 50,
+          "self_ns": 13834.0,
+          "cumulative_ns": 115503.00000000001
+        },
+        {
+          "function": "b64.b64decode",
+          "line": 103,
+          "calls": 140,
+          "self_ns": 54327.0,
+          "cumulative_ns": 348912.0
+        },
+        {
+          "function": "b64.standard_b64encode",
+          "line": 121,
+          "calls": 10,
+          "self_ns": 2249.0,
+          "cumulative_ns": 3833.0000000000005
+        },
+        {
+          "function": "b64.standard_b64decode",
+          "line": 128,
+          "calls": 10,
+          "self_ns": 2166.0,
+          "cumulative_ns": 3541.0
+        },
+        {
+          "function": "b64.urlsafe_b64encode",
+          "line": 135,
+          "calls": 10,
+          "self_ns": 1918.0,
+          "cumulative_ns": 4333.0
+        },
+        {
+          "function": "b64.encode",
+          "line": 142,
+          "calls": 60,
+          "self_ns": 14881.0,
+          "cumulative_ns": 90211.00000000001
+        },
+        {
+          "function": "b64._decode_input",
+          "line": 157,
+          "calls": 10,
+          "self_ns": 5791.0,
+          "cumulative_ns": 9627.000000000002
+        },
+        {
+          "function": "b64.decode",
+          "line": 177,
+          "calls": 210,
+          "self_ns": 380150.0,
+          "cumulative_ns": 1373044.0000000002
+        },
+        {
+          "function": "b64.decode_text",
+          "line": 238,
+          "calls": 10,
+          "self_ns": 4623.000000000001,
+          "cumulative_ns": 15582.0
+        },
+        {
+          "function": "b64.encode_json",
+          "line": 243,
+          "calls": 10,
+          "self_ns": 5998.0,
+          "cumulative_ns": 18541.0
+        },
+        {
+          "function": "b64.decode_json",
+          "line": 248,
+          "calls": 10,
+          "self_ns": 3958.0,
+          "cumulative_ns": 22375.0
+        },
+        {
+          "function": "jsonx._numpy_default",
+          "line": 143,
+          "calls": 0,
+          "self_ns": 0,
+          "cumulative_ns": 0
+        },
+        {
+          "function": "jsonx._numpy_default._default",
+          "line": 156,
+          "calls": 0,
+          "self_ns": 0,
+          "cumulative_ns": 0
+        },
+        {
+          "function": "jsonx.dumps",
+          "line": 169,
+          "calls": 160,
+          "self_ns": 131043.00000000001,
+          "cumulative_ns": 2085792.0
+        },
+        {
+          "function": "jsonx.dumpb",
+          "line": 252,
+          "calls": 110,
+          "self_ns": 38718.00000000001,
+          "cumulative_ns": 1518216.0000000002
+        },
+        {
+          "function": "jsonx._line",
+          "line": 295,
+          "calls": 4000,
+          "self_ns": 301503.0,
+          "cumulative_ns": 687476.0
+        },
+        {
+          "function": "jsonx.canonical",
+          "line": 308,
+          "calls": 20,
+          "self_ns": 10078.0,
+          "cumulative_ns": 64041.00000000001
+        },
+        {
+          "function": "jsonx._identity_snapshot",
+          "line": 329,
+          "calls": 0,
+          "self_ns": 0,
+          "cumulative_ns": 0
+        },
+        {
+          "function": "jsonx.canonical_strict",
+          "line": 363,
+          "calls": 0,
+          "self_ns": 0,
+          "cumulative_ns": 0
+        },
+        {
+          "function": "jsonx.loads",
+          "line": 397,
+          "calls": 3210,
+          "self_ns": 852014.0,
+          "cumulative_ns": 3397011.0
+        },
+        {
+          "function": "jsonx.dump",
+          "line": 408,
+          "calls": 10,
+          "self_ns": 8915.0,
+          "cumulative_ns": 169457.0
+        },
+        {
+          "function": "jsonx.load",
+          "line": 442,
+          "calls": 10,
+          "self_ns": 4958.000000000001,
+          "cumulative_ns": 15208.0
+        },
+        {
+          "function": "ndjson.NDJSONDecodeError.__init__",
+          "line": 101,
+          "calls": 20,
+          "self_ns": 20292.0,
+          "cumulative_ns": 20292.0
+        },
+        {
+          "function": "ndjson._encoder",
+          "line": 107,
+          "calls": 100,
+          "self_ns": 13038.000000000002,
+          "cumulative_ns": 13038.000000000002
+        },
+        {
+          "function": "ndjson._write_remainder",
+          "line": 115,
+          "calls": 0,
+          "self_ns": 0,
+          "cumulative_ns": 0
+        },
+        {
+          "function": "ndjson.dumps",
+          "line": 135,
+          "calls": 20,
+          "self_ns": 7211.0,
+          "cumulative_ns": 439251.00000000006
+        },
+        {
+          "function": "ndjson.dumpb",
+          "line": 140,
+          "calls": 60,
+          "self_ns": 31331.000000000004,
+          "cumulative_ns": 1019411.0
+        },
+        {
+          "function": "ndjson.iter_loads",
+          "line": 165,
+          "calls": 5100,
+          "self_ns": 1111130.0,
+          "cumulative_ns": 2827462.0
+        },
+        {
+          "function": "ndjson.loads",
+          "line": 237,
+          "calls": 50,
+          "self_ns": 246575.00000000003,
+          "cumulative_ns": 1746336.0
+        },
+        {
+          "function": "ndjson.dump",
+          "line": 277,
+          "calls": 40,
+          "self_ns": 1140045.0000000002,
+          "cumulative_ns": 2416088.0000000005
+        },
+        {
+          "function": "ndjson.load",
+          "line": 335,
+          "calls": 60,
+          "self_ns": 158362.0,
+          "cumulative_ns": 1910790.0
+        },
+        {
+          "function": "structs.float_enc_hook",
+          "line": 75,
+          "calls": 20,
+          "self_ns": 21793.000000000004,
+          "cumulative_ns": 143207.0
+        },
+        {
+          "function": "structs.Codec.__init__",
+          "line": 105,
+          "calls": 10,
+          "self_ns": 45419.0,
+          "cumulative_ns": 45419.0
+        },
+        {
+          "function": "structs.Codec.decode_or",
+          "line": 143,
+          "calls": 20,
+          "self_ns": 5419.0,
+          "cumulative_ns": 16584.000000000004
+        }
+      ],
+      "signatures": {
+        "unstd.serde.b64.b64decode": "(s: 'str | Buffer', altchars: 'str | Buffer | None' = None, validate: 'bool' = False) -> 'bytes'",
+        "unstd.serde.b64.b64encode": "(s: 'Buffer', altchars: 'Buffer | None' = None) -> 'bytes'",
+        "unstd.serde.b64.decode": "(s: 'str | Buffer', *, url: 'bool' = False) -> 'bytes'",
+        "unstd.serde.b64.decode_file": "(input, output)",
+        "unstd.serde.b64.decode_json": "(s: 'str | Buffer') -> 'jsonx.Json'",
+        "unstd.serde.b64.decode_text": "(s: 'str | Buffer', *, url: 'bool' = False, errors: 'str' = 'replace') -> 'str'",
+        "unstd.serde.b64.decodebytes": "(s)",
+        "unstd.serde.b64.encode": "(data: 'Buffer', *, url: 'bool' = False, pad: 'bool' = True) -> 'str'",
+        "unstd.serde.b64.encode_file": "(input, output)",
+        "unstd.serde.b64.encode_json": "(obj: 'object') -> 'str'",
+        "unstd.serde.b64.encodebytes": "(s)",
+        "unstd.serde.b64.standard_b64decode": "(s: 'str | Buffer') -> 'bytes'",
+        "unstd.serde.b64.standard_b64encode": "(s: 'Buffer') -> 'bytes'",
+        "unstd.serde.b64.urlsafe_b64decode": "(s)",
+        "unstd.serde.b64.urlsafe_b64encode": "(s: 'Buffer') -> 'bytes'",
+        "unstd.serde.jsonx.canonical": "(obj: 'object', *, default: 'Callable[[object], object] | None' = <class 'str'>) -> 'bytes'",
+        "unstd.serde.jsonx.canonical_strict": "(obj: 'object') -> 'bytes'",
+        "unstd.serde.jsonx.dump": "(obj: 'object', fp: '_TextWriter', *, skipkeys: 'bool' = False, ensure_ascii: 'bool' = True, check_circular: 'bool' = True, allow_nan: 'bool' = True, cls: 'type[JSONEncoder] | None' = None, indent: 'int | str | None' = None, separators: 'tuple[str, str] | None' = None, default: 'Callable[[Any], Any] | None' = None, sort_keys: 'bool' = False, **kw: 'Any') -> 'None'",
+        "unstd.serde.jsonx.dumpb": "(obj: 'object', *, sort_keys: 'bool' = False, default: 'Callable[[object], object] | None' = None, numpy: 'bool' = False) -> 'bytes'",
+        "unstd.serde.jsonx.dumps": "(obj: 'object', *, skipkeys: 'bool' = False, ensure_ascii: 'bool' = True, check_circular: 'bool' = True, allow_nan: 'bool' = True, cls: 'type[JSONEncoder] | None' = None, indent: 'int | str | None' = None, separators: 'tuple[str, str] | None' = None, default: 'Callable[[Any], Any] | None' = None, sort_keys: 'bool' = False, **kw: 'Any') -> 'str'",
+        "unstd.serde.jsonx.load": "(fp, *, cls=None, object_hook=None, parse_float=None, parse_int=None, parse_constant=None, object_pairs_hook=None, **kw)",
+        "unstd.serde.jsonx.loads": "(s, *, cls=None, object_hook=None, parse_float=None, parse_int=None, parse_constant=None, object_pairs_hook=None, **kw)",
+        "unstd.serde.ndjson.dump": "(rows: 'Iterable[T]', fp: 'io.TextIOBase | _Writer', *, codec: '_Codec[T] | None' = None) -> 'int'",
+        "unstd.serde.ndjson.dumpb": "(rows: 'Iterable[T]', *, codec: '_Codec[T] | None' = None) -> 'bytes'",
+        "unstd.serde.ndjson.dumps": "(rows: 'Iterable[T]', *, codec: '_Codec[T] | None' = None) -> 'str'",
+        "unstd.serde.ndjson.iter_loads": "(lines: 'Iterable[str | bytes]', *, codec: '_Codec[T] | None' = None, skip_errors: 'bool' = False, on_error: 'Callable[[NDJSONDecodeError], None] | None' = None) -> 'Iterator[Json | T]'",
+        "unstd.serde.ndjson.load": "(fp: 'Iterable[str | bytes]', *, codec: '_Codec[T] | None' = None, skip_errors: 'bool' = False, on_error: 'Callable[[NDJSONDecodeError], None] | None' = None) -> 'list[Json] | list[T]'",
+        "unstd.serde.ndjson.loads": "(text: 'str | bytes', *, codec: '_Codec[T] | None' = None, skip_errors: 'bool' = False, on_error: 'Callable[[NDJSONDecodeError], None] | None' = None) -> 'list[Json] | list[T]'",
+        "unstd.serde.structs.Codec": "(spec: 'type[T]', *, enc_hook: 'EncHook | None' = None, dec_hook: 'DecHook | None' = None, order: 'Order' = None, decimal_format: '_DecimalFormat' = 'string', uuid_format: \"Literal['canonical', 'hex']\" = 'canonical', strict: 'bool' = True, float_hook: 'FloatHook | None' = None) -> 'None'",
+        "unstd.serde.structs.float_enc_hook": "(obj: 'object') -> 'float'"
+      }
+    },
+    {
+      "source": "/private/tmp/jsonx-throughput-baseline/src",
+      "fallback": false,
+      "python": "3.12.15 (main, Oct  9 2026, 15:10:57) [Clang 22.1.3 ]",
+      "platform": "macOS-26.6-arm64-arm-64bit",
+      "backends": {
+        "orjson": "3.12.0",
+        "msgspec": "0.22.0",
+        "pybase64": "1.5.0"
+      },
+      "timings": {
+        "jsonx.dumps/small": {
+          "ns": 406.42034912109375,
+          "spread": 1.6073863859069912,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "jsonx.dumpb/small": {
+          "ns": 167.35458374023438,
+          "spread": 0.22051013197784414,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "jsonx.dumps/integers8": {
+          "ns": 394.5515950520833,
+          "spread": 0.11435404527406796,
+          "iters": 12288,
+          "rounds": 3
+        },
+        "jsonx.dumpb/integers8": {
+          "ns": 103.06888834635417,
+          "spread": 0.17532582635517036,
+          "iters": 49152,
+          "rounds": 3
+        },
+        "jsonx.dumps/integers15": {
+          "ns": 410.59368896484375,
+          "spread": 0.02285494027426404,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "jsonx.dumpb/integers15": {
+          "ns": 113.73200988769531,
+          "spread": 0.11499581205765153,
+          "iters": 65536,
+          "rounds": 3
+        },
+        "jsonx.dumps/wide": {
+          "ns": 714.6097412109375,
+          "spread": 0.046100302985113126,
+          "iters": 8192,
+          "rounds": 3
+        },
+        "jsonx.dumpb/wide": {
+          "ns": 284.4272054036458,
+          "spread": 0.21619914956660743,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "jsonx.dumps/records": {
+          "ns": 109466.51785714286,
+          "spread": 0.016911074407128728,
+          "iters": 56,
+          "rounds": 3
+        },
+        "jsonx.dumpb/records": {
+          "ns": 109562.5,
+          "spread": 0.12602812569756194,
+          "iters": 46,
+          "rounds": 3
+        },
+        "jsonx.dumps/text": {
+          "ns": 10683.223214285714,
+          "spread": 0.05214764304178531,
+          "iters": 448,
+          "rounds": 3
+        },
+        "jsonx.dumpb/text": {
+          "ns": 2269.820746527778,
+          "spread": 0.19200534183151624,
+          "iters": 2304,
+          "rounds": 3
+        },
+        "jsonx.dumps/string": {
+          "ns": 129.01814778645834,
+          "spread": 0.1536265342058924,
+          "iters": 36864,
+          "rounds": 3
+        },
+        "jsonx.dumpb/string": {
+          "ns": 79.98358513327206,
+          "spread": 0.14030481107807155,
+          "iters": 69632,
+          "rounds": 3
+        },
+        "jsonx.dumps/int": {
+          "ns": 310.8689778645833,
+          "spread": 0.082663605201942,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "jsonx.dumpb/int": {
+          "ns": 73.0091781616211,
+          "spread": 0.014821423029243346,
+          "iters": 131072,
+          "rounds": 3
+        },
+        "jsonx.dumps/float": {
+          "ns": 565.1881103515625,
+          "spread": 0.003887671351814603,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "jsonx.dumpb/float": {
+          "ns": 573.626220703125,
+          "spread": 0.1878044436159251,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "jsonx.dumps/null": {
+          "ns": 323.3998616536458,
+          "spread": 0.11560209489958008,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "jsonx.dumpb/null": {
+          "ns": 67.79508463541667,
+          "spread": 0.1204344353668657,
+          "iters": 147456,
+          "rounds": 3
+        },
+        "jsonx.dumps/compact": {
+          "ns": 506.8511962890625,
+          "spread": 0.021966583375982177,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "jsonx.dumps/indent": {
+          "ns": 1165.6775841346155,
+          "spread": 0.11649750281939746,
+          "iters": 6656,
+          "rounds": 3
+        },
+        "jsonx.dumps/indent4": {
+          "ns": 2520.0700431034484,
+          "spread": 0.02868491100539847,
+          "iters": 3712,
+          "rounds": 3
+        },
+        "jsonx.dumps/sorted": {
+          "ns": 511.70855712890625,
+          "spread": 0.14857464360275305,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "jsonx.dumps/custom": {
+          "ns": 1057.856201171875,
+          "spread": 0.08219899057899888,
+          "iters": 8192,
+          "rounds": 3
+        },
+        "jsonx.dumps/class": {
+          "ns": 1051.5594482421875,
+          "spread": 0.05207377203801785,
+          "iters": 8192,
+          "rounds": 3
+        },
+        "jsonx.canonical/default": {
+          "ns": 687.2965087890625,
+          "spread": 0.08044959330114222,
+          "iters": 8192,
+          "rounds": 3
+        },
+        "jsonx.canonical/custom": {
+          "ns": 981.1137152777778,
+          "spread": 0.02139421935518881,
+          "iters": 6912,
+          "rounds": 3
+        },
+        "jsonx.dump/stream": {
+          "ns": 2357.0767045454545,
+          "spread": 0.09554681602347541,
+          "iters": 4224,
+          "rounds": 3
+        },
+        "jsonx.loads/small": {
+          "ns": 175.81854248046875,
+          "spread": 0.36462171856364267,
+          "iters": 49152,
+          "rounds": 3
+        },
+        "jsonx.loads/small/bytes": {
+          "ns": 206.42471313476562,
+          "spread": 0.3131472289468335,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "jsonx.loads/integers": {
+          "ns": 11459.075892857143,
+          "spread": 0.0330580524716645,
+          "iters": 448,
+          "rounds": 3
+        },
+        "jsonx.loads/integers/bytes": {
+          "ns": 11069.986979166666,
+          "spread": 0.04943099950010292,
+          "iters": 768,
+          "rounds": 3
+        },
+        "jsonx.loads/records": {
+          "ns": 57477.5390625,
+          "spread": 0.056068097252663235,
+          "iters": 128,
+          "rounds": 3
+        },
+        "jsonx.loads/records/bytes": {
+          "ns": 57601.5625,
+          "spread": 0.09898725077987251,
+          "iters": 128,
+          "rounds": 3
+        },
+        "jsonx.loads/float": {
+          "ns": 74.53229836856617,
+          "spread": 0.0680819594773088,
+          "iters": 69632,
+          "rounds": 3
+        },
+        "jsonx.loads/float/bytes": {
+          "ns": 74.53478190104167,
+          "spread": 0.10955270070404158,
+          "iters": 122880,
+          "rounds": 3
+        },
+        "jsonx.loads/string": {
+          "ns": 77.42500305175781,
+          "spread": 0.035424826940605524,
+          "iters": 131072,
+          "rounds": 3
+        },
+        "jsonx.loads/string/bytes": {
+          "ns": 84.83377511160714,
+          "spread": 0.010171114073033777,
+          "iters": 114688,
+          "rounds": 3
+        },
+        "jsonx.loads/hook": {
+          "ns": 885.3250732421875,
+          "spread": 0.06934315677600657,
+          "iters": 8192,
+          "rounds": 3
+        },
+        "jsonx.loads/error": {
+          "ns": 1260.022615131579,
+          "spread": 0.20293697736079952,
+          "iters": 4864,
+          "rounds": 3
+        },
+        "jsonx.load/stream": {
+          "ns": 238.57754516601562,
+          "spread": 0.01562145636272724,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "b64.b64encode/0": {
+          "ns": 75.39717102050781,
+          "spread": 0.7991222426647298,
+          "iters": 131072,
+          "rounds": 3
+        },
+        "b64.b64decode/0": {
+          "ns": 79.21651204427083,
+          "spread": 0.0030392048591938157,
+          "iters": 122880,
+          "rounds": 3
+        },
+        "b64.b64decode/text/0": {
+          "ns": 91.093017578125,
+          "spread": 0.07598410562494215,
+          "iters": 106496,
+          "rounds": 3
+        },
+        "b64.encode/0": {
+          "ns": 94.15029296875,
+          "spread": 0.015601743181976125,
+          "iters": 81920,
+          "rounds": 3
+        },
+        "b64.decode/url/0": {
+          "ns": 209.4625,
+          "spread": 0.06480489030703586,
+          "iters": 40960,
+          "rounds": 3
+        },
+        "b64.decode/url-text/0": {
+          "ns": 240.57412109375,
+          "spread": 0.028525106160840016,
+          "iters": 20480,
+          "rounds": 3
+        },
+        "b64.decode/url-unpadded-text/0": {
+          "ns": 242.9707763671875,
+          "spread": 0.029001566807672324,
+          "iters": 40960,
+          "rounds": 3
+        },
+        "b64.b64encode/16": {
+          "ns": 86.09635103665866,
+          "spread": 0.047492850027980406,
+          "iters": 106496,
+          "rounds": 3
+        },
+        "b64.b64decode/16": {
+          "ns": 100.71732584635417,
+          "spread": 0.08795489225441364,
+          "iters": 49152,
+          "rounds": 3
+        },
+        "b64.b64decode/text/16": {
+          "ns": 114.1292724609375,
+          "spread": 0.24399370426150555,
+          "iters": 90112,
+          "rounds": 3
+        },
+        "b64.encode/16": {
+          "ns": 124.82706705729167,
+          "spread": 0.012386928530682096,
+          "iters": 73728,
+          "rounds": 3
+        },
+        "b64.decode/url/16": {
+          "ns": 292.1943664550781,
+          "spread": 0.055141376294110735,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "b64.decode/url-text/16": {
+          "ns": 340.728759765625,
+          "spread": 0.1702841618151963,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "b64.decode/url-unpadded-text/16": {
+          "ns": 344.4620768229167,
+          "spread": 0.07093497135432048,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "b64.b64encode/128": {
+          "ns": 95.68939208984375,
+          "spread": 0.2724402417438727,
+          "iters": 81920,
+          "rounds": 3
+        },
+        "b64.b64decode/128": {
+          "ns": 214.6626708984375,
+          "spread": 0.1389429022165614,
+          "iters": 40960,
+          "rounds": 3
+        },
+        "b64.b64decode/text/128": {
+          "ns": 251.251220703125,
+          "spread": 0.031129843313494474,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "b64.encode/128": {
+          "ns": 102.29379611545139,
+          "spread": 0.2762338805903061,
+          "iters": 73728,
+          "rounds": 3
+        },
+        "b64.decode/url/128": {
+          "ns": 444.98443603515625,
+          "spread": 0.040491590227175314,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "b64.decode/url-text/128": {
+          "ns": 265.1329040527344,
+          "spread": 0.12096836107793908,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "b64.decode/url-unpadded-text/128": {
+          "ns": 294.036865234375,
+          "spread": 0.06755744680851064,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "b64.b64encode/1024": {
+          "ns": 134.66220431857639,
+          "spread": 0.021546023392549133,
+          "iters": 73728,
+          "rounds": 3
+        },
+        "b64.b64decode/1024": {
+          "ns": 244.7245361328125,
+          "spread": 0.21890145339391776,
+          "iters": 40960,
+          "rounds": 3
+        },
+        "b64.b64decode/text/1024": {
+          "ns": 247.4085693359375,
+          "spread": 0.06771842995582629,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "b64.encode/1024": {
+          "ns": 154.8589070638021,
+          "spread": 0.1938427077003925,
+          "iters": 49152,
+          "rounds": 3
+        },
+        "b64.decode/url/1024": {
+          "ns": 591.496826171875,
+          "spread": 0.15564120587542116,
+          "iters": 8192,
+          "rounds": 3
+        },
+        "b64.decode/url-text/1024": {
+          "ns": 469.6298828125,
+          "spread": 0.05080528528740843,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "b64.decode/url-unpadded-text/1024": {
+          "ns": 675.5218505859375,
+          "spread": 0.04539459239682862,
+          "iters": 8192,
+          "rounds": 3
+        },
+        "b64.b64encode/131072": {
+          "ns": 6046.689732142857,
+          "spread": 0.11126826698640084,
+          "iters": 896,
+          "rounds": 3
+        },
+        "b64.b64decode/131072": {
+          "ns": 11112.25892857143,
+          "spread": 0.0613579918574483,
+          "iters": 448,
+          "rounds": 3
+        },
+        "b64.b64decode/text/131072": {
+          "ns": 11239.20982142857,
+          "spread": 0.1954257317435016,
+          "iters": 448,
+          "rounds": 3
+        },
+        "b64.encode/131072": {
+          "ns": 5865.652901785715,
+          "spread": 0.17207753597336187,
+          "iters": 896,
+          "rounds": 3
+        },
+        "b64.decode/url/131072": {
+          "ns": 23028.864583333332,
+          "spread": 0.08995719140517042,
+          "iters": 384,
+          "rounds": 3
+        },
+        "b64.decode/url-text/131072": {
+          "ns": 24395.8359375,
+          "spread": 0.1046646984772952,
+          "iters": 256,
+          "rounds": 3
+        },
+        "b64.decode/url-unpadded-text/131072": {
+          "ns": 44355.796875,
+          "spread": 0.042242399968155236,
+          "iters": 128,
+          "rounds": 3
+        },
+        "b64.standard_b64encode": {
+          "ns": 88.47867525540866,
+          "spread": 0.2207054828139717,
+          "iters": 106496,
+          "rounds": 3
+        },
+        "b64.urlsafe_b64encode": {
+          "ns": 101.31366436298077,
+          "spread": 0.05794985865888132,
+          "iters": 53248,
+          "rounds": 3
+        },
+        "b64.encodebytes": {
+          "ns": 198.20235188802084,
+          "spread": 0.17894092429492708,
+          "iters": 49152,
+          "rounds": 3
+        },
+        "b64.standard_b64decode": {
+          "ns": 72.79510498046875,
+          "spread": 0.22087593015700002,
+          "iters": 81920,
+          "rounds": 3
+        },
+        "b64.urlsafe_b64decode": {
+          "ns": 151.2776611328125,
+          "spread": 0.21690264225631514,
+          "iters": 40960,
+          "rounds": 3
+        },
+        "b64.decodebytes": {
+          "ns": 186.20371791294642,
+          "spread": 0.48648281375349256,
+          "iters": 57344,
+          "rounds": 3
+        },
+        "b64.decode": {
+          "ns": 97.96533203125,
+          "spread": 0.07569005635624786,
+          "iters": 53248,
+          "rounds": 3
+        },
+        "b64.decode_text": {
+          "ns": 146.63582356770834,
+          "spread": 0.10600151732014845,
+          "iters": 36864,
+          "rounds": 3
+        },
+        "b64.encode_json": {
+          "ns": 274.8972473144531,
+          "spread": 0.953272224296343,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "b64.decode_json": {
+          "ns": 505.7220458984375,
+          "spread": 0.8535941827836949,
+          "iters": 8192,
+          "rounds": 3
+        },
+        "b64.decode/error": {
+          "ns": 819.6309814453125,
+          "spread": 0.2844376511020987,
+          "iters": 8192,
+          "rounds": 3
+        },
+        "b64.decode/url-dirty": {
+          "ns": 244.47122192382812,
+          "spread": 0.030765589546055946,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "b64.decode/url-buffer": {
+          "ns": 408.2742919921875,
+          "spread": 0.033929341864142704,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "b64.encode_file": {
+          "ns": 188.067626953125,
+          "spread": 0.1524464349462889,
+          "iters": 40960,
+          "rounds": 3
+        },
+        "b64.decode_file": {
+          "ns": 144.41595458984375,
+          "spread": 0.10277060825407881,
+          "iters": 49152,
+          "rounds": 3
+        },
+        "structs.Codec/construct": {
+          "ns": 781.7047371031746,
+          "spread": 0.10267166714231574,
+          "iters": 8064,
+          "rounds": 3
+        },
+        "structs.Codec.encode": {
+          "ns": 43.031557829483695,
+          "spread": 0.3387669259138754,
+          "iters": 188416,
+          "rounds": 3
+        },
+        "structs.Codec.decode": {
+          "ns": 97.6437237079327,
+          "spread": 3.1108678747831693,
+          "iters": 106496,
+          "rounds": 3
+        },
+        "structs.Codec.decode_or/valid": {
+          "ns": 110.95005289713542,
+          "spread": 0.21384904180259826,
+          "iters": 49152,
+          "rounds": 3
+        },
+        "structs.Codec.decode_or/invalid": {
+          "ns": 311.86676025390625,
+          "spread": 0.09257039410915674,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "structs.float_enc_hook": {
+          "ns": 236.62109375,
+          "spread": 0.0011736483697895172,
+          "iters": 40960,
+          "rounds": 3
+        },
+        "structs.float_enc_hook/error": {
+          "ns": 1461.8918678977273,
+          "spread": 0.0794327963927308,
+          "iters": 5632,
+          "rounds": 3
+        },
+        "ndjson.dumpb/typed-single": {
+          "ns": 299.0671793619792,
+          "spread": 0.025703430330447797,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "ndjson.dumpb/custom-codec": {
+          "ns": 1079.52880859375,
+          "spread": 0.17449720133431335,
+          "iters": 4096,
+          "rounds": 3
+        },
+        "ndjson.dumpb/untyped": {
+          "ns": 12714.626302083334,
+          "spread": 0.9769454326561448,
+          "iters": 768,
+          "rounds": 3
+        },
+        "ndjson.dumps/untyped": {
+          "ns": 11988.19921875,
+          "spread": 0.04405650869556292,
+          "iters": 512,
+          "rounds": 3
+        },
+        "ndjson.loads/untyped": {
+          "ns": 8659.09765625,
+          "spread": 0.047987372385167516,
+          "iters": 1024,
+          "rounds": 3
+        },
+        "ndjson.iter_loads/untyped": {
+          "ns": 15594.53125,
+          "spread": 0.08505335404037874,
+          "iters": 640,
+          "rounds": 3
+        },
+        "ndjson.load/untyped": {
+          "ns": 15669.790625,
+          "spread": 0.03710204328272574,
+          "iters": 320,
+          "rounds": 3
+        },
+        "ndjson.dump/untyped/binary": {
+          "ns": 11831.509375,
+          "spread": 0.10763115864073768,
+          "iters": 640,
+          "rounds": 3
+        },
+        "ndjson.dump/untyped/text": {
+          "ns": 14810.138671875,
+          "spread": 0.16065443449516148,
+          "iters": 512,
+          "rounds": 3
+        },
+        "ndjson.dumpb/typed": {
+          "ns": 7861.4501953125,
+          "spread": 0.06318746603313613,
+          "iters": 1024,
+          "rounds": 3
+        },
+        "ndjson.dumps/typed": {
+          "ns": 10549.107142857143,
+          "spread": 0.06736225137537029,
+          "iters": 896,
+          "rounds": 3
+        },
+        "ndjson.loads/typed": {
+          "ns": 13441.6015625,
+          "spread": 0.02593208468345418,
+          "iters": 640,
+          "rounds": 3
+        },
+        "ndjson.iter_loads/typed": {
+          "ns": 11308.919270833334,
+          "spread": 0.05944941135833741,
+          "iters": 768,
+          "rounds": 3
+        },
+        "ndjson.load/typed": {
+          "ns": 13213.7375,
+          "spread": 0.04061823916208416,
+          "iters": 640,
+          "rounds": 3
+        },
+        "ndjson.dump/typed/binary": {
+          "ns": 10343.696614583334,
+          "spread": 0.04142027923356603,
+          "iters": 768,
+          "rounds": 3
+        },
+        "ndjson.dump/typed/text": {
+          "ns": 10666.5375,
+          "spread": 0.1191724880262222,
+          "iters": 640,
+          "rounds": 3
+        },
+        "ndjson.loads/error": {
+          "ns": 4847.210526315789,
+          "spread": 0.016082228519930075,
+          "iters": 1216,
+          "rounds": 3
+        },
+        "ndjson.loads/skip": {
+          "ns": 2238.386824324324,
+          "spread": 0.1183535515517404,
+          "iters": 2368,
+          "rounds": 3
+        },
+        "ndjson.loads/strip": {
+          "ns": 119.26890733506944,
+          "spread": 0.13321460112733807,
+          "iters": 73728,
+          "rounds": 3
+        }
+      },
+      "functions": [
+        {
+          "function": "_internal.json_common._check_headroom",
+          "line": 11,
+          "calls": 3140,
+          "self_ns": 257282.0,
+          "cumulative_ns": 348556.0
+        },
+        {
+          "function": "_internal.json_common._recursion_result",
+          "line": 15,
+          "calls": 3140,
+          "self_ns": 91274.00000000001,
+          "cumulative_ns": 91274.00000000001
+        },
+        {
+          "function": "_internal.json_encode._format",
+          "line": 43,
+          "calls": 40,
+          "self_ns": 15917.0,
+          "cumulative_ns": 16958.000000000004
+        },
+        {
+          "function": "_internal.json_encode._snapshot",
+          "line": 69,
+          "calls": 70,
+          "self_ns": 43042.00000000001,
+          "cumulative_ns": 49209.0
+        },
+        {
+          "function": "_internal.json_encode._exact_encode",
+          "line": 128,
+          "calls": 120,
+          "self_ns": 100628.00000000001,
+          "cumulative_ns": 325083.00000000006
+        },
+        {
+          "function": "_internal.json_encode._exact_bytes",
+          "line": 160,
+          "calls": 20,
+          "self_ns": 3874.0000000000005,
+          "cumulative_ns": 5750.0
+        },
+        {
+          "function": "_internal.json_encode._encoder",
+          "line": 171,
+          "calls": 2,
+          "self_ns": 3499.0000000000005,
+          "cumulative_ns": 4416.000000000001
+        },
+        {
+          "function": "_internal.json_encode._compact_bytes",
+          "line": 193,
+          "calls": 20,
+          "self_ns": 14833.0,
+          "cumulative_ns": 1269624.0
+        },
+        {
+          "function": "b64.b64encode",
+          "line": 93,
+          "calls": 50,
+          "self_ns": 12583.000000000002,
+          "cumulative_ns": 89249.0
+        },
+        {
+          "function": "b64.b64decode",
+          "line": 103,
+          "calls": 140,
+          "self_ns": 52416.0,
+          "cumulative_ns": 309208.0
+        },
+        {
+          "function": "b64.standard_b64encode",
+          "line": 121,
+          "calls": 10,
+          "self_ns": 2000.0000000000002,
+          "cumulative_ns": 3459.0000000000005
+        },
+        {
+          "function": "b64.standard_b64decode",
+          "line": 128,
+          "calls": 10,
+          "self_ns": 1918.0,
+          "cumulative_ns": 3293.0
+        },
+        {
+          "function": "b64.urlsafe_b64encode",
+          "line": 135,
+          "calls": 10,
+          "self_ns": 2205.0,
+          "cumulative_ns": 4373.0
+        },
+        {
+          "function": "b64.encode",
+          "line": 142,
+          "calls": 60,
+          "self_ns": 12708.000000000002,
+          "cumulative_ns": 77002.0
+        },
+        {
+          "function": "b64._decode_input",
+          "line": 157,
+          "calls": 10,
+          "self_ns": 5792.000000000001,
+          "cumulative_ns": 8958.000000000002
+        },
+        {
+          "function": "b64.decode",
+          "line": 177,
+          "calls": 210,
+          "self_ns": 332671.00000000006,
+          "cumulative_ns": 1187093.0000000002
+        },
+        {
+          "function": "b64.decode_text",
+          "line": 238,
+          "calls": 10,
+          "self_ns": 3498.0,
+          "cumulative_ns": 13084.0
+        },
+        {
+          "function": "b64.encode_json",
+          "line": 243,
+          "calls": 10,
+          "self_ns": 4915.0,
+          "cumulative_ns": 18624.0
+        },
+        {
+          "function": "b64.decode_json",
+          "line": 248,
+          "calls": 10,
+          "self_ns": 2959.0000000000005,
+          "cumulative_ns": 20835.000000000004
+        },
+        {
+          "function": "jsonx._numpy_default",
+          "line": 140,
+          "calls": 0,
+          "self_ns": 0,
+          "cumulative_ns": 0
+        },
+        {
+          "function": "jsonx._numpy_default._default",
+          "line": 153,
+          "calls": 0,
+          "self_ns": 0,
+          "cumulative_ns": 0
+        },
+        {
+          "function": "jsonx.dumps",
+          "line": 166,
+          "calls": 160,
+          "self_ns": 103842.00000000001,
+          "cumulative_ns": 1856339.0
+        },
+        {
+          "function": "jsonx.dumpb",
+          "line": 249,
+          "calls": 110,
+          "self_ns": 55630.0,
+          "cumulative_ns": 1376589.0
+        },
+        {
+          "function": "jsonx._line",
+          "line": 292,
+          "calls": 4000,
+          "self_ns": 293186.0,
+          "cumulative_ns": 619466.0
+        },
+        {
+          "function": "jsonx.canonical",
+          "line": 305,
+          "calls": 20,
+          "self_ns": 19836.0,
+          "cumulative_ns": 79418.0
+        },
+        {
+          "function": "jsonx._identity_snapshot",
+          "line": 326,
+          "calls": 0,
+          "self_ns": 0,
+          "cumulative_ns": 0
+        },
+        {
+          "function": "jsonx.canonical_strict",
+          "line": 360,
+          "calls": 0,
+          "self_ns": 0,
+          "cumulative_ns": 0
+        },
+        {
+          "function": "jsonx.loads",
+          "line": 394,
+          "calls": 3210,
+          "self_ns": 744494.0000000001,
+          "cumulative_ns": 2999536.0
+        },
+        {
+          "function": "jsonx.dump",
+          "line": 405,
+          "calls": 10,
+          "self_ns": 9747.0,
+          "cumulative_ns": 158291.00000000003
+        },
+        {
+          "function": "jsonx.load",
+          "line": 439,
+          "calls": 10,
+          "self_ns": 5167.000000000001,
+          "cumulative_ns": 13459.000000000002
+        },
+        {
+          "function": "ndjson.NDJSONDecodeError.__init__",
+          "line": 101,
+          "calls": 20,
+          "self_ns": 17416.0,
+          "cumulative_ns": 17416.0
+        },
+        {
+          "function": "ndjson._encoder",
+          "line": 107,
+          "calls": 100,
+          "self_ns": 12329.0,
+          "cumulative_ns": 12329.0
+        },
+        {
+          "function": "ndjson._write_remainder",
+          "line": 115,
+          "calls": 0,
+          "self_ns": 0,
+          "cumulative_ns": 0
+        },
+        {
+          "function": "ndjson.dumps",
+          "line": 135,
+          "calls": 20,
+          "self_ns": 6499.000000000001,
+          "cumulative_ns": 392419.0
+        },
+        {
+          "function": "ndjson.dumpb",
+          "line": 140,
+          "calls": 60,
+          "self_ns": 26087.000000000004,
+          "cumulative_ns": 911462.0
+        },
+        {
+          "function": "ndjson.iter_loads",
+          "line": 165,
+          "calls": 5100,
+          "self_ns": 1039033.0,
+          "cumulative_ns": 2548834.0000000005
+        },
+        {
+          "function": "ndjson.loads",
+          "line": 237,
+          "calls": 50,
+          "self_ns": 214892.0,
+          "cumulative_ns": 1552544.0
+        },
+        {
+          "function": "ndjson.dump",
+          "line": 277,
+          "calls": 40,
+          "self_ns": 1661608.0000000002,
+          "cumulative_ns": 2773252.0000000005
+        },
+        {
+          "function": "ndjson.load",
+          "line": 335,
+          "calls": 60,
+          "self_ns": 141998.0,
+          "cumulative_ns": 1715540.0000000002
+        },
+        {
+          "function": "structs.float_enc_hook",
+          "line": 75,
+          "calls": 20,
+          "self_ns": 20044.0,
+          "cumulative_ns": 130583.0
+        },
+        {
+          "function": "structs.Codec.__init__",
+          "line": 105,
+          "calls": 10,
+          "self_ns": 40249.0,
+          "cumulative_ns": 40249.0
+        },
+        {
+          "function": "structs.Codec.decode_or",
+          "line": 143,
+          "calls": 20,
+          "self_ns": 5292.0,
+          "cumulative_ns": 17168.000000000004
+        }
+      ],
+      "signatures": {
+        "unstd.serde.b64.b64decode": "(s: 'str | Buffer', altchars: 'str | Buffer | None' = None, validate: 'bool' = False) -> 'bytes'",
+        "unstd.serde.b64.b64encode": "(s: 'Buffer', altchars: 'Buffer | None' = None) -> 'bytes'",
+        "unstd.serde.b64.decode": "(s: 'str | Buffer', *, url: 'bool' = False) -> 'bytes'",
+        "unstd.serde.b64.decode_file": "(input, output)",
+        "unstd.serde.b64.decode_json": "(s: 'str | Buffer') -> 'jsonx.Json'",
+        "unstd.serde.b64.decode_text": "(s: 'str | Buffer', *, url: 'bool' = False, errors: 'str' = 'replace') -> 'str'",
+        "unstd.serde.b64.decodebytes": "(s)",
+        "unstd.serde.b64.encode": "(data: 'Buffer', *, url: 'bool' = False, pad: 'bool' = True) -> 'str'",
+        "unstd.serde.b64.encode_file": "(input, output)",
+        "unstd.serde.b64.encode_json": "(obj: 'object') -> 'str'",
+        "unstd.serde.b64.encodebytes": "(s)",
+        "unstd.serde.b64.standard_b64decode": "(s: 'str | Buffer') -> 'bytes'",
+        "unstd.serde.b64.standard_b64encode": "(s: 'Buffer') -> 'bytes'",
+        "unstd.serde.b64.urlsafe_b64decode": "(s)",
+        "unstd.serde.b64.urlsafe_b64encode": "(s: 'Buffer') -> 'bytes'",
+        "unstd.serde.jsonx.canonical": "(obj: 'object', *, default: 'Callable[[object], object] | None' = <class 'str'>) -> 'bytes'",
+        "unstd.serde.jsonx.canonical_strict": "(obj: 'object') -> 'bytes'",
+        "unstd.serde.jsonx.dump": "(obj: 'object', fp: '_TextWriter', *, skipkeys: 'bool' = False, ensure_ascii: 'bool' = True, check_circular: 'bool' = True, allow_nan: 'bool' = True, cls: 'type[JSONEncoder] | None' = None, indent: 'int | str | None' = None, separators: 'tuple[str, str] | None' = None, default: 'Callable[[Any], Any] | None' = None, sort_keys: 'bool' = False, **kw: 'Any') -> 'None'",
+        "unstd.serde.jsonx.dumpb": "(obj: 'object', *, sort_keys: 'bool' = False, default: 'Callable[[object], object] | None' = None, numpy: 'bool' = False) -> 'bytes'",
+        "unstd.serde.jsonx.dumps": "(obj: 'object', *, skipkeys: 'bool' = False, ensure_ascii: 'bool' = True, check_circular: 'bool' = True, allow_nan: 'bool' = True, cls: 'type[JSONEncoder] | None' = None, indent: 'int | str | None' = None, separators: 'tuple[str, str] | None' = None, default: 'Callable[[Any], Any] | None' = None, sort_keys: 'bool' = False, **kw: 'Any') -> 'str'",
+        "unstd.serde.jsonx.load": "(fp, *, cls=None, object_hook=None, parse_float=None, parse_int=None, parse_constant=None, object_pairs_hook=None, **kw)",
+        "unstd.serde.jsonx.loads": "(s, *, cls=None, object_hook=None, parse_float=None, parse_int=None, parse_constant=None, object_pairs_hook=None, **kw)",
+        "unstd.serde.ndjson.dump": "(rows: 'Iterable[T]', fp: 'io.TextIOBase | _Writer', *, codec: '_Codec[T] | None' = None) -> 'int'",
+        "unstd.serde.ndjson.dumpb": "(rows: 'Iterable[T]', *, codec: '_Codec[T] | None' = None) -> 'bytes'",
+        "unstd.serde.ndjson.dumps": "(rows: 'Iterable[T]', *, codec: '_Codec[T] | None' = None) -> 'str'",
+        "unstd.serde.ndjson.iter_loads": "(lines: 'Iterable[str | bytes]', *, codec: '_Codec[T] | None' = None, skip_errors: 'bool' = False, on_error: 'Callable[[NDJSONDecodeError], None] | None' = None) -> 'Iterator[Json | T]'",
+        "unstd.serde.ndjson.load": "(fp: 'Iterable[str | bytes]', *, codec: '_Codec[T] | None' = None, skip_errors: 'bool' = False, on_error: 'Callable[[NDJSONDecodeError], None] | None' = None) -> 'list[Json] | list[T]'",
+        "unstd.serde.ndjson.loads": "(text: 'str | bytes', *, codec: '_Codec[T] | None' = None, skip_errors: 'bool' = False, on_error: 'Callable[[NDJSONDecodeError], None] | None' = None) -> 'list[Json] | list[T]'",
+        "unstd.serde.structs.Codec": "(spec: 'type[T]', *, enc_hook: 'EncHook | None' = None, dec_hook: 'DecHook | None' = None, order: 'Order' = None, decimal_format: '_DecimalFormat' = 'string', uuid_format: \"Literal['canonical', 'hex']\" = 'canonical', strict: 'bool' = True, float_hook: 'FloatHook | None' = None) -> 'None'",
+        "unstd.serde.structs.float_enc_hook": "(obj: 'object') -> 'float'"
+      }
+    },
+    {
+      "source": "/private/tmp/jsonx-throughput-baseline/src",
+      "fallback": false,
+      "python": "3.12.15 (main, Oct  9 2026, 15:10:57) [Clang 22.1.3 ]",
+      "platform": "macOS-26.6-arm64-arm-64bit",
+      "backends": {
+        "orjson": "3.12.0",
+        "msgspec": "0.22.0",
+        "pybase64": "1.5.0"
+      },
+      "timings": {
+        "jsonx.dumps/small": {
+          "ns": 421.9766845703125,
+          "spread": 0.02147934250801239,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "jsonx.dumpb/small": {
+          "ns": 119.25098876953125,
+          "spread": 0.2691838431223699,
+          "iters": 81920,
+          "rounds": 3
+        },
+        "jsonx.dumps/integers8": {
+          "ns": 397.3388671875,
+          "spread": 0.10073384536610343,
+          "iters": 12288,
+          "rounds": 3
+        },
+        "jsonx.dumpb/integers8": {
+          "ns": 98.07459513346355,
+          "spread": 0.15401905897911292,
+          "iters": 98304,
+          "rounds": 3
+        },
+        "jsonx.dumps/integers15": {
+          "ns": 396.9930013020833,
+          "spread": 0.047848408753138935,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "jsonx.dumpb/integers15": {
+          "ns": 111.2337979403409,
+          "spread": 0.005877986731181723,
+          "iters": 45056,
+          "rounds": 3
+        },
+        "jsonx.dumps/wide": {
+          "ns": 655.8887939453125,
+          "spread": 0.08489940798888376,
+          "iters": 8192,
+          "rounds": 3
+        },
+        "jsonx.dumpb/wide": {
+          "ns": 311.1233317057292,
+          "spread": 0.060460489549862044,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "jsonx.dumps/records": {
+          "ns": 103441.84375,
+          "spread": 0.053136439285480154,
+          "iters": 96,
+          "rounds": 3
+        },
+        "jsonx.dumpb/records": {
+          "ns": 112654.1625,
+          "spread": 0.12778322771695186,
+          "iters": 80,
+          "rounds": 3
+        },
+        "jsonx.dumps/text": {
+          "ns": 10092.541294642857,
+          "spread": 0.07958339106728504,
+          "iters": 896,
+          "rounds": 3
+        },
+        "jsonx.dumpb/text": {
+          "ns": 2213.1258680555557,
+          "spread": 0.06536365066222244,
+          "iters": 2304,
+          "rounds": 3
+        },
+        "jsonx.dumps/string": {
+          "ns": 123.33170572916667,
+          "spread": 0.0546849224678324,
+          "iters": 73728,
+          "rounds": 3
+        },
+        "jsonx.dumpb/string": {
+          "ns": 74.7103271484375,
+          "spread": 0.03883344631373914,
+          "iters": 139264,
+          "rounds": 3
+        },
+        "jsonx.dumps/int": {
+          "ns": 316.5995279947917,
+          "spread": 0.1001402178453234,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "jsonx.dumpb/int": {
+          "ns": 74.77046472886029,
+          "spread": 0.047529423786070155,
+          "iters": 69632,
+          "rounds": 3
+        },
+        "jsonx.dumps/float": {
+          "ns": 532.8114624023438,
+          "spread": 0.011273963487144803,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "jsonx.dumpb/float": {
+          "ns": 550.5905151367188,
+          "spread": 0.013676611193481786,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "jsonx.dumps/null": {
+          "ns": 320.4430338541667,
+          "spread": 0.05540602864076733,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "jsonx.dumpb/null": {
+          "ns": 84.07656860351562,
+          "spread": 0.13172168197628983,
+          "iters": 65536,
+          "rounds": 3
+        },
+        "jsonx.dumps/compact": {
+          "ns": 513.5243530273438,
+          "spread": 0.058759270574736115,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "jsonx.dumps/indent": {
+          "ns": 1203.1028053977273,
+          "spread": 0.03249882856457653,
+          "iters": 5632,
+          "rounds": 3
+        },
+        "jsonx.dumps/indent4": {
+          "ns": 2522.7444556451615,
+          "spread": 0.04760960015983617,
+          "iters": 1984,
+          "rounds": 3
+        },
+        "jsonx.dumps/sorted": {
+          "ns": 534.0550537109375,
+          "spread": 0.06500511202453772,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "jsonx.dumps/custom": {
+          "ns": 1048.8179931640625,
+          "spread": 0.10440533818005923,
+          "iters": 8192,
+          "rounds": 3
+        },
+        "jsonx.dumps/class": {
+          "ns": 1244.059344951923,
+          "spread": 0.07680214345605721,
+          "iters": 6656,
+          "rounds": 3
+        },
+        "jsonx.canonical/default": {
+          "ns": 704.9610595703125,
+          "spread": 0.2152583851785641,
+          "iters": 8192,
+          "rounds": 3
+        },
+        "jsonx.canonical/custom": {
+          "ns": 969.05517578125,
+          "spread": 0.060842728475152735,
+          "iters": 8192,
+          "rounds": 3
+        },
+        "jsonx.dump/stream": {
+          "ns": 2269.54150390625,
+          "spread": 0.10440368062020373,
+          "iters": 4096,
+          "rounds": 3
+        },
+        "jsonx.loads/small": {
+          "ns": 165.20254952566964,
+          "spread": 0.018613535302888357,
+          "iters": 57344,
+          "rounds": 3
+        },
+        "jsonx.loads/small/bytes": {
+          "ns": 172.07990373883928,
+          "spread": 0.020310303767322846,
+          "iters": 57344,
+          "rounds": 3
+        },
+        "jsonx.loads/integers": {
+          "ns": 10676.377604166666,
+          "spread": 0.08920821351850329,
+          "iters": 768,
+          "rounds": 3
+        },
+        "jsonx.loads/integers/bytes": {
+          "ns": 10827.521205357143,
+          "spread": 0.6169131880060514,
+          "iters": 896,
+          "rounds": 3
+        },
+        "jsonx.loads/records": {
+          "ns": 54675.453125,
+          "spread": 0.09580096072591991,
+          "iters": 128,
+          "rounds": 3
+        },
+        "jsonx.loads/records/bytes": {
+          "ns": 54991.2109375,
+          "spread": 0.1025732094972563,
+          "iters": 128,
+          "rounds": 3
+        },
+        "jsonx.loads/float": {
+          "ns": 72.06486241957721,
+          "spread": 0.03901777603339803,
+          "iters": 139264,
+          "rounds": 3
+        },
+        "jsonx.loads/float/bytes": {
+          "ns": 77.95376790364584,
+          "spread": 0.029604678337176307,
+          "iters": 122880,
+          "rounds": 3
+        },
+        "jsonx.loads/string": {
+          "ns": 81.39482116699219,
+          "spread": 0.3283785980179934,
+          "iters": 65536,
+          "rounds": 3
+        },
+        "jsonx.loads/string/bytes": {
+          "ns": 85.63796657986111,
+          "spread": 0.7139851084493364,
+          "iters": 73728,
+          "rounds": 3
+        },
+        "jsonx.loads/hook": {
+          "ns": 879.8624267578125,
+          "spread": 1.6495133835647968,
+          "iters": 8192,
+          "rounds": 3
+        },
+        "jsonx.loads/error": {
+          "ns": 1341.2095788043478,
+          "spread": 0.0457766338332758,
+          "iters": 5888,
+          "rounds": 3
+        },
+        "jsonx.load/stream": {
+          "ns": 263.5209554036458,
+          "spread": 0.10389835787181274,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "b64.b64encode/0": {
+          "ns": 83.05783081054688,
+          "spread": 0.06737153604868243,
+          "iters": 98304,
+          "rounds": 3
+        },
+        "b64.b64decode/0": {
+          "ns": 89.41141183035714,
+          "spread": 0.08596296463884438,
+          "iters": 57344,
+          "rounds": 3
+        },
+        "b64.b64decode/text/0": {
+          "ns": 92.1240946451823,
+          "spread": 0.10898650610131196,
+          "iters": 98304,
+          "rounds": 3
+        },
+        "b64.encode/0": {
+          "ns": 88.17982700892857,
+          "spread": 0.047157923214565405,
+          "iters": 57344,
+          "rounds": 3
+        },
+        "b64.decode/url/0": {
+          "ns": 209.4889404296875,
+          "spread": 0.008745357441327114,
+          "iters": 40960,
+          "rounds": 3
+        },
+        "b64.decode/url-text/0": {
+          "ns": 241.10919189453125,
+          "spread": 0.0045672099035701545,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "b64.decode/url-unpadded-text/0": {
+          "ns": 234.08380126953125,
+          "spread": 0.03282620151234776,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "b64.b64encode/16": {
+          "ns": 81.01941731770833,
+          "spread": 0.024349551300736686,
+          "iters": 61440,
+          "rounds": 3
+        },
+        "b64.b64decode/16": {
+          "ns": 98.76632690429688,
+          "spread": 0.028963372085538088,
+          "iters": 98304,
+          "rounds": 3
+        },
+        "b64.b64decode/text/16": {
+          "ns": 107.43621271306819,
+          "spread": 0.009769667106415136,
+          "iters": 90112,
+          "rounds": 3
+        },
+        "b64.encode/16": {
+          "ns": 92.94167856069711,
+          "spread": 0.04165442082409865,
+          "iters": 106496,
+          "rounds": 3
+        },
+        "b64.decode/url/16": {
+          "ns": 234.1989990234375,
+          "spread": 0.026187269169108345,
+          "iters": 40960,
+          "rounds": 3
+        },
+        "b64.decode/url-text/16": {
+          "ns": 279.919921875,
+          "spread": 0.02627900871482497,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "b64.decode/url-unpadded-text/16": {
+          "ns": 288.2486877441406,
+          "spread": 0.023199287944638904,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "b64.b64encode/128": {
+          "ns": 90.39306640625,
+          "spread": 0.2815022668081412,
+          "iters": 57344,
+          "rounds": 3
+        },
+        "b64.b64decode/128": {
+          "ns": 197.35971069335938,
+          "spread": 0.019605748062921105,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "b64.b64decode/text/128": {
+          "ns": 202.227783203125,
+          "spread": 0.0840199197175022,
+          "iters": 40960,
+          "rounds": 3
+        },
+        "b64.encode/128": {
+          "ns": 96.27151489257812,
+          "spread": 0.014458453857431549,
+          "iters": 98304,
+          "rounds": 3
+        },
+        "b64.decode/url/128": {
+          "ns": 422.66845703125,
+          "spread": 0.06979537906137184,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "b64.decode/url-text/128": {
+          "ns": 246.23870849609375,
+          "spread": 0.014144074360960495,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "b64.decode/url-unpadded-text/128": {
+          "ns": 294.9714660644531,
+          "spread": 0.009776915615906887,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "b64.b64encode/1024": {
+          "ns": 123.75556098090277,
+          "spread": 0.011420993506315587,
+          "iters": 73728,
+          "rounds": 3
+        },
+        "b64.b64decode/1024": {
+          "ns": 239.74356079101562,
+          "spread": 0.03231640558320563,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "b64.b64decode/text/1024": {
+          "ns": 246.337890625,
+          "spread": 0.034269697720515364,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "b64.encode/1024": {
+          "ns": 142.69891357421875,
+          "spread": 0.09481575754102153,
+          "iters": 65536,
+          "rounds": 3
+        },
+        "b64.decode/url/1024": {
+          "ns": 615.1148681640625,
+          "spread": 0.026249245637198177,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "b64.decode/url-text/1024": {
+          "ns": 450.042724609375,
+          "spread": 0.06709839289346986,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "b64.decode/url-unpadded-text/1024": {
+          "ns": 658.0098876953125,
+          "spread": 0.07005469150160368,
+          "iters": 8192,
+          "rounds": 3
+        },
+        "b64.b64encode/131072": {
+          "ns": 5659.551339285715,
+          "spread": 0.027961580435097274,
+          "iters": 896,
+          "rounds": 3
+        },
+        "b64.b64decode/131072": {
+          "ns": 10843.6953125,
+          "spread": 0.015019768351377373,
+          "iters": 768,
+          "rounds": 3
+        },
+        "b64.b64decode/text/131072": {
+          "ns": 10763.671875,
+          "spread": 0.051533297042279075,
+          "iters": 896,
+          "rounds": 3
+        },
+        "b64.encode/131072": {
+          "ns": 5677.827566964285,
+          "spread": 0.03452604394817049,
+          "iters": 1792,
+          "rounds": 3
+        },
+        "b64.decode/url/131072": {
+          "ns": 22091.255208333332,
+          "spread": 0.09634904554286068,
+          "iters": 384,
+          "rounds": 3
+        },
+        "b64.decode/url-text/131072": {
+          "ns": 22017.361979166668,
+          "spread": 0.031052908411413484,
+          "iters": 384,
+          "rounds": 3
+        },
+        "b64.decode/url-unpadded-text/131072": {
+          "ns": 42904.625,
+          "spread": 0.10523268179129873,
+          "iters": 128,
+          "rounds": 3
+        },
+        "b64.standard_b64encode": {
+          "ns": 85.11025565011161,
+          "spread": 0.0824613966115586,
+          "iters": 114688,
+          "rounds": 3
+        },
+        "b64.urlsafe_b64encode": {
+          "ns": 102.05799357096355,
+          "spread": 0.02884724355106881,
+          "iters": 98304,
+          "rounds": 3
+        },
+        "b64.encodebytes": {
+          "ns": 226.55996704101562,
+          "spread": 0.08265501890713488,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "b64.standard_b64decode": {
+          "ns": 52.61957077752976,
+          "spread": 0.08363025767074485,
+          "iters": 172032,
+          "rounds": 3
+        },
+        "b64.urlsafe_b64decode": {
+          "ns": 153.42349679129464,
+          "spread": 0.15301440102242383,
+          "iters": 57344,
+          "rounds": 3
+        },
+        "b64.decodebytes": {
+          "ns": 128.9207763671875,
+          "spread": 0.052466490180422036,
+          "iters": 57344,
+          "rounds": 3
+        },
+        "b64.decode": {
+          "ns": 93.62832406850961,
+          "spread": 0.03346771581144679,
+          "iters": 106496,
+          "rounds": 3
+        },
+        "b64.decode_text": {
+          "ns": 148.24295043945312,
+          "spread": 0.056963639638712336,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "b64.encode_json": {
+          "ns": 352.8404235839844,
+          "spread": 0.611409654575923,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "b64.decode_json": {
+          "ns": 339.98374495967744,
+          "spread": 0.02874962025901331,
+          "iters": 23808,
+          "rounds": 3
+        },
+        "b64.decode/error": {
+          "ns": 368.3963623046875,
+          "spread": 0.021087048412976383,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "b64.decode/url-dirty": {
+          "ns": 224.3947509765625,
+          "spread": 0.030500122453966612,
+          "iters": 40960,
+          "rounds": 3
+        },
+        "b64.decode/url-buffer": {
+          "ns": 371.2904052734375,
+          "spread": 0.03482266469972656,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "b64.encode_file": {
+          "ns": 172.801708984375,
+          "spread": 0.17034107859922312,
+          "iters": 40960,
+          "rounds": 3
+        },
+        "b64.decode_file": {
+          "ns": 147.66728864397322,
+          "spread": 0.053895134682037306,
+          "iters": 57344,
+          "rounds": 3
+        },
+        "structs.Codec/construct": {
+          "ns": 770.61962890625,
+          "spread": 0.088753279783859,
+          "iters": 8192,
+          "rounds": 3
+        },
+        "structs.Codec.encode": {
+          "ns": 43.91309407552083,
+          "spread": 0.06143392906021285,
+          "iters": 122880,
+          "rounds": 3
+        },
+        "structs.Codec.decode": {
+          "ns": 77.28004455566406,
+          "spread": 0.049057531406570085,
+          "iters": 65536,
+          "rounds": 3
+        },
+        "structs.Codec.decode_or/valid": {
+          "ns": 88.69043986002605,
+          "spread": 0.14047513225996072,
+          "iters": 98304,
+          "rounds": 3
+        },
+        "structs.Codec.decode_or/invalid": {
+          "ns": 214.2598388671875,
+          "spread": 0.19161464174848847,
+          "iters": 40960,
+          "rounds": 3
+        },
+        "structs.float_enc_hook": {
+          "ns": 200.916552734375,
+          "spread": 0.7191063609615214,
+          "iters": 40960,
+          "rounds": 3
+        },
+        "structs.float_enc_hook/error": {
+          "ns": 1794.4876302083333,
+          "spread": 0.7570672701738143,
+          "iters": 3072,
+          "rounds": 3
+        },
+        "ndjson.dumpb/typed-single": {
+          "ns": 267.06103515625,
+          "spread": 0.13613595128785982,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "ndjson.dumpb/custom-codec": {
+          "ns": 1139.8519287109375,
+          "spread": 0.07826719457868866,
+          "iters": 8192,
+          "rounds": 3
+        },
+        "ndjson.dumpb/untyped": {
+          "ns": 12908.747395833334,
+          "spread": 0.042902513415987505,
+          "iters": 384,
+          "rounds": 3
+        },
+        "ndjson.dumps/untyped": {
+          "ns": 12365.690625,
+          "spread": 0.0788260916482374,
+          "iters": 640,
+          "rounds": 3
+        },
+        "ndjson.loads/untyped": {
+          "ns": 9425.6181640625,
+          "spread": 0.027788400400214134,
+          "iters": 1024,
+          "rounds": 3
+        },
+        "ndjson.iter_loads/untyped": {
+          "ns": 17125.080078125,
+          "spread": 0.04114385414028059,
+          "iters": 512,
+          "rounds": 3
+        },
+        "ndjson.load/untyped": {
+          "ns": 17626.302734375,
+          "spread": 0.25554959534795024,
+          "iters": 512,
+          "rounds": 3
+        },
+        "ndjson.dump/untyped/binary": {
+          "ns": 14370.908482142857,
+          "spread": 0.017376840333591843,
+          "iters": 448,
+          "rounds": 3
+        },
+        "ndjson.dump/untyped/text": {
+          "ns": 17145.671875,
+          "spread": 0.07266251595929367,
+          "iters": 512,
+          "rounds": 3
+        },
+        "ndjson.dumpb/typed": {
+          "ns": 7919.668402777777,
+          "spread": 0.05632009266661829,
+          "iters": 1152,
+          "rounds": 3
+        },
+        "ndjson.dumps/typed": {
+          "ns": 8469.147569444445,
+          "spread": 0.00863100112766334,
+          "iters": 1152,
+          "rounds": 3
+        },
+        "ndjson.loads/typed": {
+          "ns": 13856.9,
+          "spread": 0.08644914717577525,
+          "iters": 640,
+          "rounds": 3
+        },
+        "ndjson.iter_loads/typed": {
+          "ns": 12308.268229166666,
+          "spread": 0.07305196900372907,
+          "iters": 768,
+          "rounds": 3
+        },
+        "ndjson.load/typed": {
+          "ns": 14038.021875,
+          "spread": 0.024807069728262552,
+          "iters": 640,
+          "rounds": 3
+        },
+        "ndjson.dump/typed/binary": {
+          "ns": 10638.18359375,
+          "spread": 0.08527507229081563,
+          "iters": 768,
+          "rounds": 3
+        },
+        "ndjson.dump/typed/text": {
+          "ns": 12802.951822916666,
+          "spread": 0.6273136271166307,
+          "iters": 768,
+          "rounds": 3
+        },
+        "ndjson.loads/error": {
+          "ns": 5868.8401442307695,
+          "spread": 0.05468929677700125,
+          "iters": 832,
+          "rounds": 3
+        },
+        "ndjson.loads/skip": {
+          "ns": 3253.225497159091,
+          "spread": 0.3329755881482571,
+          "iters": 2816,
+          "rounds": 3
+        },
+        "ndjson.loads/strip": {
+          "ns": 152.7847900390625,
+          "spread": 0.40521996130478943,
+          "iters": 57344,
+          "rounds": 3
+        }
+      },
+      "functions": [
+        {
+          "function": "_internal.json_common._check_headroom",
+          "line": 11,
+          "calls": 3140,
+          "self_ns": 2522528.0,
+          "cumulative_ns": 2646181.0
+        },
+        {
+          "function": "_internal.json_common._recursion_result",
+          "line": 15,
+          "calls": 3140,
+          "self_ns": 123653.00000000001,
+          "cumulative_ns": 123653.00000000001
+        },
+        {
+          "function": "_internal.json_encode._format",
+          "line": 43,
+          "calls": 40,
+          "self_ns": 17918.0,
+          "cumulative_ns": 19000.0
+        },
+        {
+          "function": "_internal.json_encode._snapshot",
+          "line": 69,
+          "calls": 70,
+          "self_ns": 1406751.0000000002,
+          "cumulative_ns": 1414834.0
+        },
+        {
+          "function": "_internal.json_encode._exact_encode",
+          "line": 128,
+          "calls": 120,
+          "self_ns": 124883.0,
+          "cumulative_ns": 1940759.0
+        },
+        {
+          "function": "_internal.json_encode._exact_bytes",
+          "line": 160,
+          "calls": 20,
+          "self_ns": 4709.0,
+          "cumulative_ns": 6836.0
+        },
+        {
+          "function": "_internal.json_encode._encoder",
+          "line": 171,
+          "calls": 2,
+          "self_ns": 3417.0,
+          "cumulative_ns": 4334.0
+        },
+        {
+          "function": "_internal.json_encode._compact_bytes",
+          "line": 193,
+          "calls": 20,
+          "self_ns": 22377.000000000004,
+          "cumulative_ns": 1341209.0
+        },
+        {
+          "function": "b64.b64encode",
+          "line": 93,
+          "calls": 50,
+          "self_ns": 17169.0,
+          "cumulative_ns": 207669.0
+        },
+        {
+          "function": "b64.b64decode",
+          "line": 103,
+          "calls": 140,
+          "self_ns": 64955.00000000001,
+          "cumulative_ns": 462664.00000000006
+        },
+        {
+          "function": "b64.standard_b64encode",
+          "line": 121,
+          "calls": 10,
+          "self_ns": 2790.0,
+          "cumulative_ns": 5874.0
+        },
+        {
+          "function": "b64.standard_b64decode",
+          "line": 128,
+          "calls": 10,
+          "self_ns": 2624.0,
+          "cumulative_ns": 4458.0
+        },
+        {
+          "function": "b64.urlsafe_b64encode",
+          "line": 135,
+          "calls": 10,
+          "self_ns": 2249.0,
+          "cumulative_ns": 4623.000000000001
+        },
+        {
+          "function": "b64.encode",
+          "line": 142,
+          "calls": 60,
+          "self_ns": 15499.000000000002,
+          "cumulative_ns": 108082.00000000001
+        },
+        {
+          "function": "b64._decode_input",
+          "line": 157,
+          "calls": 10,
+          "self_ns": 7417.0,
+          "cumulative_ns": 12790.000000000002
+        },
+        {
+          "function": "b64.decode",
+          "line": 177,
+          "calls": 210,
+          "self_ns": 582001.0000000001,
+          "cumulative_ns": 2213340.0000000005
+        },
+        {
+          "function": "b64.decode_text",
+          "line": 238,
+          "calls": 10,
+          "self_ns": 5044.0,
+          "cumulative_ns": 18960.0
+        },
+        {
+          "function": "b64.encode_json",
+          "line": 243,
+          "calls": 10,
+          "self_ns": 8707.0,
+          "cumulative_ns": 36624.0
+        },
+        {
+          "function": "b64.decode_json",
+          "line": 248,
+          "calls": 10,
+          "self_ns": 4501.000000000001,
+          "cumulative_ns": 34333.00000000001
+        },
+        {
+          "function": "jsonx._numpy_default",
+          "line": 140,
+          "calls": 0,
+          "self_ns": 0,
+          "cumulative_ns": 0
+        },
+        {
+          "function": "jsonx._numpy_default._default",
+          "line": 153,
+          "calls": 0,
+          "self_ns": 0,
+          "cumulative_ns": 0
+        },
+        {
+          "function": "jsonx.dumps",
+          "line": 166,
+          "calls": 160,
+          "self_ns": 525324.0000000001,
+          "cumulative_ns": 5436165.000000001
+        },
+        {
+          "function": "jsonx.dumpb",
+          "line": 249,
+          "calls": 110,
+          "self_ns": 43961.0,
+          "cumulative_ns": 1513048.0000000002
+        },
+        {
+          "function": "jsonx._line",
+          "line": 292,
+          "calls": 4000,
+          "self_ns": 305285.0,
+          "cumulative_ns": 721206.0000000001
+        },
+        {
+          "function": "jsonx.canonical",
+          "line": 305,
+          "calls": 20,
+          "self_ns": 11124.0,
+          "cumulative_ns": 69332.0
+        },
+        {
+          "function": "jsonx._identity_snapshot",
+          "line": 326,
+          "calls": 0,
+          "self_ns": 0,
+          "cumulative_ns": 0
+        },
+        {
+          "function": "jsonx.canonical_strict",
+          "line": 360,
+          "calls": 0,
+          "self_ns": 0,
+          "cumulative_ns": 0
+        },
+        {
+          "function": "jsonx.loads",
+          "line": 394,
+          "calls": 3210,
+          "self_ns": 897264.0,
+          "cumulative_ns": 6917928.0
+        },
+        {
+          "function": "jsonx.dump",
+          "line": 405,
+          "calls": 10,
+          "self_ns": 10585.000000000002,
+          "cumulative_ns": 243292.0
+        },
+        {
+          "function": "jsonx.load",
+          "line": 439,
+          "calls": 10,
+          "self_ns": 5290.0,
+          "cumulative_ns": 16040.000000000002
+        },
+        {
+          "function": "ndjson.NDJSONDecodeError.__init__",
+          "line": 101,
+          "calls": 20,
+          "self_ns": 27292.000000000004,
+          "cumulative_ns": 27292.000000000004
+        },
+        {
+          "function": "ndjson._encoder",
+          "line": 107,
+          "calls": 100,
+          "self_ns": 19001.0,
+          "cumulative_ns": 19001.0
+        },
+        {
+          "function": "ndjson._write_remainder",
+          "line": 115,
+          "calls": 0,
+          "self_ns": 0,
+          "cumulative_ns": 0
+        },
+        {
+          "function": "ndjson.dumps",
+          "line": 135,
+          "calls": 20,
+          "self_ns": 7957.0,
+          "cumulative_ns": 455709.00000000006
+        },
+        {
+          "function": "ndjson.dumpb",
+          "line": 140,
+          "calls": 60,
+          "self_ns": 39577.00000000001,
+          "cumulative_ns": 2035667.0000000002
+        },
+        {
+          "function": "ndjson.iter_loads",
+          "line": 165,
+          "calls": 5100,
+          "self_ns": 3945010.0000000005,
+          "cumulative_ns": 8411472.0
+        },
+        {
+          "function": "ndjson.loads",
+          "line": 237,
+          "calls": 50,
+          "self_ns": 610381.0,
+          "cumulative_ns": 3025497.0000000005
+        },
+        {
+          "function": "ndjson.dump",
+          "line": 277,
+          "calls": 40,
+          "self_ns": 1164387.0,
+          "cumulative_ns": 2446792.0
+        },
+        {
+          "function": "ndjson.load",
+          "line": 335,
+          "calls": 60,
+          "self_ns": 180452.0,
+          "cumulative_ns": 6612286.0
+        },
+        {
+          "function": "structs.float_enc_hook",
+          "line": 75,
+          "calls": 20,
+          "self_ns": 28622.0,
+          "cumulative_ns": 186249.0
+        },
+        {
+          "function": "structs.Codec.__init__",
+          "line": 105,
+          "calls": 10,
+          "self_ns": 72169.0,
+          "cumulative_ns": 72169.0
+        },
+        {
+          "function": "structs.Codec.decode_or",
+          "line": 143,
+          "calls": 20,
+          "self_ns": 7375.000000000001,
+          "cumulative_ns": 22958.000000000004
+        }
+      ],
+      "signatures": {
+        "unstd.serde.b64.b64decode": "(s: 'str | Buffer', altchars: 'str | Buffer | None' = None, validate: 'bool' = False) -> 'bytes'",
+        "unstd.serde.b64.b64encode": "(s: 'Buffer', altchars: 'Buffer | None' = None) -> 'bytes'",
+        "unstd.serde.b64.decode": "(s: 'str | Buffer', *, url: 'bool' = False) -> 'bytes'",
+        "unstd.serde.b64.decode_file": "(input, output)",
+        "unstd.serde.b64.decode_json": "(s: 'str | Buffer') -> 'jsonx.Json'",
+        "unstd.serde.b64.decode_text": "(s: 'str | Buffer', *, url: 'bool' = False, errors: 'str' = 'replace') -> 'str'",
+        "unstd.serde.b64.decodebytes": "(s)",
+        "unstd.serde.b64.encode": "(data: 'Buffer', *, url: 'bool' = False, pad: 'bool' = True) -> 'str'",
+        "unstd.serde.b64.encode_file": "(input, output)",
+        "unstd.serde.b64.encode_json": "(obj: 'object') -> 'str'",
+        "unstd.serde.b64.encodebytes": "(s)",
+        "unstd.serde.b64.standard_b64decode": "(s: 'str | Buffer') -> 'bytes'",
+        "unstd.serde.b64.standard_b64encode": "(s: 'Buffer') -> 'bytes'",
+        "unstd.serde.b64.urlsafe_b64decode": "(s)",
+        "unstd.serde.b64.urlsafe_b64encode": "(s: 'Buffer') -> 'bytes'",
+        "unstd.serde.jsonx.canonical": "(obj: 'object', *, default: 'Callable[[object], object] | None' = <class 'str'>) -> 'bytes'",
+        "unstd.serde.jsonx.canonical_strict": "(obj: 'object') -> 'bytes'",
+        "unstd.serde.jsonx.dump": "(obj: 'object', fp: '_TextWriter', *, skipkeys: 'bool' = False, ensure_ascii: 'bool' = True, check_circular: 'bool' = True, allow_nan: 'bool' = True, cls: 'type[JSONEncoder] | None' = None, indent: 'int | str | None' = None, separators: 'tuple[str, str] | None' = None, default: 'Callable[[Any], Any] | None' = None, sort_keys: 'bool' = False, **kw: 'Any') -> 'None'",
+        "unstd.serde.jsonx.dumpb": "(obj: 'object', *, sort_keys: 'bool' = False, default: 'Callable[[object], object] | None' = None, numpy: 'bool' = False) -> 'bytes'",
+        "unstd.serde.jsonx.dumps": "(obj: 'object', *, skipkeys: 'bool' = False, ensure_ascii: 'bool' = True, check_circular: 'bool' = True, allow_nan: 'bool' = True, cls: 'type[JSONEncoder] | None' = None, indent: 'int | str | None' = None, separators: 'tuple[str, str] | None' = None, default: 'Callable[[Any], Any] | None' = None, sort_keys: 'bool' = False, **kw: 'Any') -> 'str'",
+        "unstd.serde.jsonx.load": "(fp, *, cls=None, object_hook=None, parse_float=None, parse_int=None, parse_constant=None, object_pairs_hook=None, **kw)",
+        "unstd.serde.jsonx.loads": "(s, *, cls=None, object_hook=None, parse_float=None, parse_int=None, parse_constant=None, object_pairs_hook=None, **kw)",
+        "unstd.serde.ndjson.dump": "(rows: 'Iterable[T]', fp: 'io.TextIOBase | _Writer', *, codec: '_Codec[T] | None' = None) -> 'int'",
+        "unstd.serde.ndjson.dumpb": "(rows: 'Iterable[T]', *, codec: '_Codec[T] | None' = None) -> 'bytes'",
+        "unstd.serde.ndjson.dumps": "(rows: 'Iterable[T]', *, codec: '_Codec[T] | None' = None) -> 'str'",
+        "unstd.serde.ndjson.iter_loads": "(lines: 'Iterable[str | bytes]', *, codec: '_Codec[T] | None' = None, skip_errors: 'bool' = False, on_error: 'Callable[[NDJSONDecodeError], None] | None' = None) -> 'Iterator[Json | T]'",
+        "unstd.serde.ndjson.load": "(fp: 'Iterable[str | bytes]', *, codec: '_Codec[T] | None' = None, skip_errors: 'bool' = False, on_error: 'Callable[[NDJSONDecodeError], None] | None' = None) -> 'list[Json] | list[T]'",
+        "unstd.serde.ndjson.loads": "(text: 'str | bytes', *, codec: '_Codec[T] | None' = None, skip_errors: 'bool' = False, on_error: 'Callable[[NDJSONDecodeError], None] | None' = None) -> 'list[Json] | list[T]'",
+        "unstd.serde.structs.Codec": "(spec: 'type[T]', *, enc_hook: 'EncHook | None' = None, dec_hook: 'DecHook | None' = None, order: 'Order' = None, decimal_format: '_DecimalFormat' = 'string', uuid_format: \"Literal['canonical', 'hex']\" = 'canonical', strict: 'bool' = True, float_hook: 'FloatHook | None' = None) -> 'None'",
+        "unstd.serde.structs.float_enc_hook": "(obj: 'object') -> 'float'"
+      }
+    },
+    {
+      "source": "/private/tmp/jsonx-throughput-final-bounded/src",
+      "fallback": false,
+      "python": "3.12.15 (main, Oct  9 2026, 15:10:57) [Clang 22.1.3 ]",
+      "platform": "macOS-26.6-arm64-arm-64bit",
+      "backends": {
+        "orjson": "3.12.0",
+        "msgspec": "0.22.0",
+        "pybase64": "1.5.0"
+      },
+      "timings": {
+        "jsonx.dumps/small": {
+          "ns": 401.385009765625,
+          "spread": 0.44577415358077166,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "jsonx.dumpb/small": {
+          "ns": 142.35305786132812,
+          "spread": 0.12034729479861725,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "jsonx.dumps/integers8": {
+          "ns": 304.1042887369792,
+          "spread": 0.0661990961063692,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "jsonx.dumpb/integers8": {
+          "ns": 98.08292643229167,
+          "spread": 0.12330971154088152,
+          "iters": 73728,
+          "rounds": 3
+        },
+        "jsonx.dumps/integers15": {
+          "ns": 284.59930419921875,
+          "spread": 0.07793839637562662,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "jsonx.dumpb/integers15": {
+          "ns": 104.5023526278409,
+          "spread": 0.09714794100319044,
+          "iters": 45056,
+          "rounds": 3
+        },
+        "jsonx.dumps/wide": {
+          "ns": 575.3275756835938,
+          "spread": 0.03363859350253396,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "jsonx.dumpb/wide": {
+          "ns": 274.61749267578125,
+          "spread": 0.13444592787419823,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "jsonx.dumps/records": {
+          "ns": 97180.5625,
+          "spread": 0.00915124273608384,
+          "iters": 96,
+          "rounds": 3
+        },
+        "jsonx.dumpb/records": {
+          "ns": 102647.72727272728,
+          "spread": 0.025688254179121,
+          "iters": 88,
+          "rounds": 3
+        },
+        "jsonx.dumps/text": {
+          "ns": 7496.2890625,
+          "spread": 0.003404392798520101,
+          "iters": 1280,
+          "rounds": 3
+        },
+        "jsonx.dumpb/text": {
+          "ns": 2136.71875,
+          "spread": 0.022056368068251068,
+          "iters": 4608,
+          "rounds": 3
+        },
+        "jsonx.dumps/string": {
+          "ns": 131.494140625,
+          "spread": 0.06888999257333829,
+          "iters": 81920,
+          "rounds": 3
+        },
+        "jsonx.dumpb/string": {
+          "ns": 71.19686889648438,
+          "spread": 0.18078645371432833,
+          "iters": 65536,
+          "rounds": 3
+        },
+        "jsonx.dumps/int": {
+          "ns": 203.83199055989584,
+          "spread": 0.3001538116032439,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "jsonx.dumpb/int": {
+          "ns": 67.35920061383929,
+          "spread": 0.04206960720708033,
+          "iters": 114688,
+          "rounds": 3
+        },
+        "jsonx.dumps/float": {
+          "ns": 535.479248046875,
+          "spread": 0.03819820427725419,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "jsonx.dumpb/float": {
+          "ns": 523.2213134765625,
+          "spread": 0.02454570206118245,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "jsonx.dumps/null": {
+          "ns": 204.8390869140625,
+          "spread": 0.04841452698019799,
+          "iters": 40960,
+          "rounds": 3
+        },
+        "jsonx.dumpb/null": {
+          "ns": 68.39707318474265,
+          "spread": 0.013372352431694707,
+          "iters": 139264,
+          "rounds": 3
+        },
+        "jsonx.dumps/compact": {
+          "ns": 383.4296468098958,
+          "spread": 0.012725657944935072,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "jsonx.dumps/indent": {
+          "ns": 370.6681722005208,
+          "spread": 0.018391925564636022,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "jsonx.dumps/indent4": {
+          "ns": 2429.06689453125,
+          "spread": 0.017220335017244154,
+          "iters": 4096,
+          "rounds": 3
+        },
+        "jsonx.dumps/sorted": {
+          "ns": 406.280517578125,
+          "spread": 0.0573959287914069,
+          "iters": 12288,
+          "rounds": 3
+        },
+        "jsonx.dumps/custom": {
+          "ns": 1038.0859375,
+          "spread": 0.014458842897460019,
+          "iters": 8192,
+          "rounds": 3
+        },
+        "jsonx.dumps/class": {
+          "ns": 1023.3204345703125,
+          "spread": 0.08574859648187334,
+          "iters": 8192,
+          "rounds": 3
+        },
+        "jsonx.canonical/default": {
+          "ns": 681.1168212890625,
+          "spread": 0.13069660084423756,
+          "iters": 8192,
+          "rounds": 3
+        },
+        "jsonx.canonical/custom": {
+          "ns": 992.6502685546875,
+          "spread": 0.025998823629382505,
+          "iters": 8192,
+          "rounds": 3
+        },
+        "jsonx.dump/stream": {
+          "ns": 2352.5199908088234,
+          "spread": 0.04265490101890309,
+          "iters": 4352,
+          "rounds": 3
+        },
+        "jsonx.loads/small": {
+          "ns": 161.92771693638392,
+          "spread": 0.03003764007063423,
+          "iters": 57344,
+          "rounds": 3
+        },
+        "jsonx.loads/small/bytes": {
+          "ns": 175.26681082589286,
+          "spread": 0.03149097059847769,
+          "iters": 28672,
+          "rounds": 3
+        },
+        "jsonx.loads/integers": {
+          "ns": 10295.619419642857,
+          "spread": 0.020573828913670916,
+          "iters": 896,
+          "rounds": 3
+        },
+        "jsonx.loads/integers/bytes": {
+          "ns": 10782.691964285714,
+          "spread": 0.002419345155906684,
+          "iters": 896,
+          "rounds": 3
+        },
+        "jsonx.loads/records": {
+          "ns": 52913.40625,
+          "spread": 0.07550927842601325,
+          "iters": 128,
+          "rounds": 3
+        },
+        "jsonx.loads/records/bytes": {
+          "ns": 86464.1875,
+          "spread": 0.9012492166193085,
+          "iters": 64,
+          "rounds": 3
+        },
+        "jsonx.loads/float": {
+          "ns": 72.67402200137867,
+          "spread": 0.11022594390307162,
+          "iters": 139264,
+          "rounds": 3
+        },
+        "jsonx.loads/float/bytes": {
+          "ns": 77.22091674804688,
+          "spread": 0.061725040754828826,
+          "iters": 131072,
+          "rounds": 3
+        },
+        "jsonx.loads/string": {
+          "ns": 91.44380696614583,
+          "spread": 0.10710420798434404,
+          "iters": 98304,
+          "rounds": 3
+        },
+        "jsonx.loads/string/bytes": {
+          "ns": 83.13034889914773,
+          "spread": 0.07010026108517346,
+          "iters": 90112,
+          "rounds": 3
+        },
+        "jsonx.loads/hook": {
+          "ns": 985.5571546052631,
+          "spread": 0.07413013472403303,
+          "iters": 7296,
+          "rounds": 3
+        },
+        "jsonx.loads/error": {
+          "ns": 1224.20263671875,
+          "spread": 0.3666738194942738,
+          "iters": 4096,
+          "rounds": 3
+        },
+        "jsonx.load/stream": {
+          "ns": 296.2150573730469,
+          "spread": 0.7349508956742348,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "b64.b64encode/0": {
+          "ns": 78.84344482421875,
+          "spread": 0.21011193160397626,
+          "iters": 65536,
+          "rounds": 3
+        },
+        "b64.b64decode/0": {
+          "ns": 82.69788411458333,
+          "spread": 0.07353436103978817,
+          "iters": 61440,
+          "rounds": 3
+        },
+        "b64.b64decode/text/0": {
+          "ns": 93.28127817007211,
+          "spread": 0.0872879761524038,
+          "iters": 106496,
+          "rounds": 3
+        },
+        "b64.encode/0": {
+          "ns": 90.87195763221153,
+          "spread": 0.036441849651252904,
+          "iters": 53248,
+          "rounds": 3
+        },
+        "b64.decode/url/0": {
+          "ns": 199.18951416015625,
+          "spread": 0.06992064705574133,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "b64.decode/url-text/0": {
+          "ns": 241.58984375,
+          "spread": 0.06726010861480751,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "b64.decode/url-unpadded-text/0": {
+          "ns": 239.9312255859375,
+          "spread": 0.01978696084276266,
+          "iters": 40960,
+          "rounds": 3
+        },
+        "b64.b64encode/16": {
+          "ns": 82.18553873697917,
+          "spread": 0.02437944346541064,
+          "iters": 122880,
+          "rounds": 3
+        },
+        "b64.b64decode/16": {
+          "ns": 101.3340731534091,
+          "spread": 0.05179010571854354,
+          "iters": 90112,
+          "rounds": 3
+        },
+        "b64.b64decode/text/16": {
+          "ns": 107.1421231356534,
+          "spread": 0.011466742262986324,
+          "iters": 90112,
+          "rounds": 3
+        },
+        "b64.encode/16": {
+          "ns": 94.07875754616477,
+          "spread": 0.05182760501909438,
+          "iters": 90112,
+          "rounds": 3
+        },
+        "b64.decode/url/16": {
+          "ns": 241.4205078125,
+          "spread": 0.0771807166728826,
+          "iters": 40960,
+          "rounds": 3
+        },
+        "b64.decode/url-text/16": {
+          "ns": 278.2007751464844,
+          "spread": 0.03133659489497847,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "b64.decode/url-unpadded-text/16": {
+          "ns": 299.86700439453125,
+          "spread": 0.029513307596283428,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "b64.b64encode/128": {
+          "ns": 92.27029184194711,
+          "spread": 0.05611567268110034,
+          "iters": 106496,
+          "rounds": 3
+        },
+        "b64.b64decode/128": {
+          "ns": 212.8397705078125,
+          "spread": 0.12108201993664312,
+          "iters": 40960,
+          "rounds": 3
+        },
+        "b64.b64decode/text/128": {
+          "ns": 232.50732421875,
+          "spread": 0.054785530529742214,
+          "iters": 20480,
+          "rounds": 3
+        },
+        "b64.encode/128": {
+          "ns": 118.22509765625,
+          "spread": 0.10509841836016333,
+          "iters": 45056,
+          "rounds": 3
+        },
+        "b64.decode/url/128": {
+          "ns": 489.30615234375,
+          "spread": 0.11559062527754244,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "b64.decode/url-text/128": {
+          "ns": 276.3341369628906,
+          "spread": 0.08302571961730848,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "b64.decode/url-unpadded-text/128": {
+          "ns": 306.8135579427083,
+          "spread": 0.1421094791286761,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "b64.b64encode/1024": {
+          "ns": 128.76213921440973,
+          "spread": 0.18644581089443954,
+          "iters": 73728,
+          "rounds": 3
+        },
+        "b64.b64decode/1024": {
+          "ns": 241.41097005208334,
+          "spread": 0.06897266032419809,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "b64.b64decode/text/1024": {
+          "ns": 256.5638427734375,
+          "spread": 0.13355296557046414,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "b64.encode/1024": {
+          "ns": 145.58013237847223,
+          "spread": 0.10842411284771589,
+          "iters": 36864,
+          "rounds": 3
+        },
+        "b64.decode/url/1024": {
+          "ns": 624.654052734375,
+          "spread": 0.09665193585668318,
+          "iters": 8192,
+          "rounds": 3
+        },
+        "b64.decode/url-text/1024": {
+          "ns": 444.04351806640625,
+          "spread": 0.014329485242279637,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "b64.decode/url-unpadded-text/1024": {
+          "ns": 1076.238037109375,
+          "spread": 0.08990667769744647,
+          "iters": 8192,
+          "rounds": 3
+        },
+        "b64.b64encode/131072": {
+          "ns": 5672.78671875,
+          "spread": 0.027360064849080046,
+          "iters": 1280,
+          "rounds": 3
+        },
+        "b64.b64decode/131072": {
+          "ns": 10823.893229166666,
+          "spread": 0.22536164325884936,
+          "iters": 768,
+          "rounds": 3
+        },
+        "b64.b64decode/text/131072": {
+          "ns": 11471.41875,
+          "spread": 0.15882434986518124,
+          "iters": 640,
+          "rounds": 3
+        },
+        "b64.encode/131072": {
+          "ns": 5547.525669642857,
+          "spread": 0.19444399178124577,
+          "iters": 896,
+          "rounds": 3
+        },
+        "b64.decode/url/131072": {
+          "ns": 23291.125,
+          "spread": 0.11965931229169909,
+          "iters": 384,
+          "rounds": 3
+        },
+        "b64.decode/url-text/131072": {
+          "ns": 23053.9296875,
+          "spread": 0.012063087129600669,
+          "iters": 384,
+          "rounds": 3
+        },
+        "b64.decode/url-unpadded-text/131072": {
+          "ns": 43560.21875,
+          "spread": 0.04746787313826334,
+          "iters": 128,
+          "rounds": 3
+        },
+        "b64.standard_b64encode": {
+          "ns": 82.81919352213542,
+          "spread": 0.12520288135122726,
+          "iters": 98304,
+          "rounds": 3
+        },
+        "b64.urlsafe_b64encode": {
+          "ns": 98.03489854600694,
+          "spread": 0.0572489971868797,
+          "iters": 73728,
+          "rounds": 3
+        },
+        "b64.encodebytes": {
+          "ns": 198.92501831054688,
+          "spread": 0.23814079429305618,
+          "iters": 32768,
+          "rounds": 3
+        },
+        "b64.standard_b64decode": {
+          "ns": 48.49555851862981,
+          "spread": 0.053392500420653514,
+          "iters": 106496,
+          "rounds": 3
+        },
+        "b64.urlsafe_b64decode": {
+          "ns": 143.94269670758928,
+          "spread": 0.017819184056698065,
+          "iters": 57344,
+          "rounds": 3
+        },
+        "b64.decodebytes": {
+          "ns": 124.17432996961806,
+          "spread": 0.05193353449570596,
+          "iters": 73728,
+          "rounds": 3
+        },
+        "b64.decode": {
+          "ns": 86.57582600911458,
+          "spread": 0.018373821343594866,
+          "iters": 98304,
+          "rounds": 3
+        },
+        "b64.decode_text": {
+          "ns": 145.69309779575892,
+          "spread": 0.024477460089471402,
+          "iters": 57344,
+          "rounds": 3
+        },
+        "b64.encode_json": {
+          "ns": 235.4400634765625,
+          "spread": 0.1148210346213172,
+          "iters": 40960,
+          "rounds": 3
+        },
+        "b64.decode_json": {
+          "ns": 354.8482259114583,
+          "spread": 0.062107616890749076,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "b64.decode/error": {
+          "ns": 363.218505859375,
+          "spread": 0.14794972429153871,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "b64.decode/url-dirty": {
+          "ns": 224.244189453125,
+          "spread": 0.030747382537826173,
+          "iters": 40960,
+          "rounds": 3
+        },
+        "b64.decode/url-buffer": {
+          "ns": 361.5137939453125,
+          "spread": 0.06895375720786717,
+          "iters": 16384,
+          "rounds": 3
+        },
+        "b64.encode_file": {
+          "ns": 181.79903738839286,
+          "spread": 0.02605887875819514,
+          "iters": 28672,
+          "rounds": 3
+        },
+        "b64.decode_file": {
+          "ns": 156.06471470424108,
+          "spread": 0.02233396186884559,
+          "iters": 57344,
+          "rounds": 3
+        },
+        "structs.Codec/construct": {
+          "ns": 765.8487548828125,
+          "spread": 0.25723254029872966,
+          "iters": 8192,
+          "rounds": 3
+        },
+        "structs.Codec.encode": {
+          "ns": 49.44090053013393,
+          "spread": 0.29760927653517755,
+          "iters": 172032,
+          "rounds": 3
+        },
+        "structs.Codec.decode": {
+          "ns": 87.33583420973558,
+          "spread": 0.052230441364007445,
+          "iters": 106496,
+          "rounds": 3
+        },
+        "structs.Codec.decode_or/valid": {
+          "ns": 87.93059430803571,
+          "spread": 0.16246738586341292,
+          "iters": 57344,
+          "rounds": 3
+        },
+        "structs.Codec.decode_or/invalid": {
+          "ns": 215.9616943359375,
+          "spread": 3.0085684818915572,
+          "iters": 40960,
+          "rounds": 3
+        },
+        "structs.float_enc_hook": {
+          "ns": 195.3755615234375,
+          "spread": 0.08326998920223633,
+          "iters": 40960,
+          "rounds": 3
+        },
+        "structs.float_enc_hook/error": {
+          "ns": 1336.3692255434783,
+          "spread": 0.11233008605660362,
+          "iters": 5888,
+          "rounds": 3
+        },
+        "ndjson.dumpb/typed-single": {
+          "ns": 284.0932210286458,
+          "spread": 1.5811655178587414,
+          "iters": 24576,
+          "rounds": 3
+        },
+        "ndjson.dumpb/custom-codec": {
+          "ns": 1221.7447916666667,
+          "spread": 0.48450197165085795,
+          "iters": 3840,
+          "rounds": 3
+        },
+        "ndjson.dumpb/untyped": {
+          "ns": 12935.546875,
+          "spread": 0.5903167748754341,
+          "iters": 256,
+          "rounds": 3
+        },
+        "ndjson.dumps/untyped": {
+          "ns": 12769.04296875,
+          "spread": 0.13283117280409926,
+          "iters": 512,
+          "rounds": 3
+        },
+        "ndjson.loads/untyped": {
+          "ns": 8562.227864583334,
+          "spread": 0.11300921820660055,
+          "iters": 768,
+          "rounds": 3
+        },
+        "ndjson.iter_loads/untyped": {
+          "ns": 17585.61328125,
+          "spread": 0.16844668615614192,
+          "iters": 512,
+          "rounds": 3
+        },
+        "ndjson.load/untyped": {
+          "ns": 19633.682291666668,
+          "spread": 0.0330432369755737,
+          "iters": 384,
+          "rounds": 3
+        },
+        "ndjson.dump/untyped/binary": {
+          "ns": 14811.978125,
+          "spread": 0.24887480212910454,
+          "iters": 320,
+          "rounds": 3
+        },
+        "ndjson.dump/untyped/text": {
+          "ns": 18177.8984375,
+          "spread": 0.03681324891878058,
+          "iters": 512,
+          "rounds": 3
+        },
+        "ndjson.dumpb/typed": {
+          "ns": 7716.362847222223,
+          "spread": 0.12748544590376015,
+          "iters": 576,
+          "rounds": 3
+        },
+        "ndjson.dumps/typed": {
+          "ns": 7464.9248046875,
+          "spread": 0.06056985514155197,
+          "iters": 1024,
+          "rounds": 3
+        },
+        "ndjson.loads/typed": {
+          "ns": 12294.161458333334,
+          "spread": 0.12396848266813643,
+          "iters": 384,
+          "rounds": 3
+        },
+        "ndjson.iter_loads/typed": {
+          "ns": 10371.201822916666,
+          "spread": 0.07529739489218129,
+          "iters": 768,
+          "rounds": 3
+        },
+        "ndjson.load/typed": {
+          "ns": 11698.1875,
+          "spread": 0.14032500138019957,
+          "iters": 768,
+          "rounds": 3
+        },
+        "ndjson.dump/typed/binary": {
+          "ns": 9960.341145833334,
+          "spread": 0.03669056265067896,
+          "iters": 768,
+          "rounds": 3
+        },
+        "ndjson.dump/typed/text": {
+          "ns": 16060.872395833334,
+          "spread": 0.021051581912888383,
+          "iters": 384,
+          "rounds": 3
+        },
+        "ndjson.loads/error": {
+          "ns": 4088.8131510416665,
+          "spread": 0.111696404872479,
+          "iters": 1536,
+          "rounds": 3
+        },
+        "ndjson.loads/skip": {
+          "ns": 2466.814887152778,
+          "spread": 0.14140250405491012,
+          "iters": 4608,
+          "rounds": 3
+        },
+        "ndjson.loads/strip": {
+          "ns": 129.20343889508928,
+          "spread": 0.02959221988483801,
+          "iters": 57344,
+          "rounds": 3
+        }
+      },
+      "functions": [
+        {
+          "function": "_internal.json_common._check_headroom",
+          "line": 11,
+          "calls": 3140,
+          "self_ns": 296475.00000000006,
+          "cumulative_ns": 398131.0
+        },
+        {
+          "function": "_internal.json_common._recursion_result",
+          "line": 15,
+          "calls": 3140,
+          "self_ns": 101656.0,
+          "cumulative_ns": 101656.0
+        },
+        {
+          "function": "_internal.json_encode._format",
+          "line": 49,
+          "calls": 40,
+          "self_ns": 16506.0,
+          "cumulative_ns": 17339.0
+        },
+        {
+          "function": "_internal.json_encode._snapshot",
+          "line": 75,
+          "calls": 0,
+          "self_ns": 0,
+          "cumulative_ns": 0
+        },
+        {
+          "function": "_internal.json_encode._exact_encode",
+          "line": 134,
+          "calls": 120,
+          "self_ns": 50987.00000000001,
+          "cumulative_ns": 277367.00000000006
+        },
+        {
+          "function": "_internal.json_encode._exact_bytes",
+          "line": 174,
+          "calls": 20,
+          "self_ns": 3918.0000000000005,
+          "cumulative_ns": 5876.0
+        },
+        {
+          "function": "_internal.json_encode._encoder",
+          "line": 185,
+          "calls": 2,
+          "self_ns": 3582.0,
+          "cumulative_ns": 4333.0
+        },
+        {
+          "function": "_internal.json_encode._compact_bytes",
+          "line": 207,
+          "calls": 20,
+          "self_ns": 18460.000000000004,
+          "cumulative_ns": 1286501.0
+        },
+        {
+          "function": "b64.b64encode",
+          "line": 93,
+          "calls": 50,
+          "self_ns": 13832.0,
+          "cumulative_ns": 130083.00000000001
+        },
+        {
+          "function": "b64.b64decode",
+          "line": 103,
+          "calls": 140,
+          "self_ns": 62258.0,
+          "cumulative_ns": 375343.00000000006
+        },
+        {
+          "function": "b64.standard_b64encode",
+          "line": 121,
+          "calls": 10,
+          "self_ns": 4170.0,
+          "cumulative_ns": 8459.0
+        },
+        {
+          "function": "b64.standard_b64decode",
+          "line": 128,
+          "calls": 10,
+          "self_ns": 2293.0000000000005,
+          "cumulative_ns": 4250.0
+        },
+        {
+          "function": "b64.urlsafe_b64encode",
+          "line": 135,
+          "calls": 10,
+          "self_ns": 2418.0,
+          "cumulative_ns": 5127.0
+        },
+        {
+          "function": "b64.encode",
+          "line": 142,
+          "calls": 60,
+          "self_ns": 14620.0,
+          "cumulative_ns": 97752.00000000001
+        },
+        {
+          "function": "b64._decode_input",
+          "line": 157,
+          "calls": 10,
+          "self_ns": 6540.0,
+          "cumulative_ns": 11417.000000000002
+        },
+        {
+          "function": "b64.decode",
+          "line": 177,
+          "calls": 210,
+          "self_ns": 399476.0,
+          "cumulative_ns": 1473544.0
+        },
+        {
+          "function": "b64.decode_text",
+          "line": 238,
+          "calls": 10,
+          "self_ns": 17251.0,
+          "cumulative_ns": 34917.00000000001
+        },
+        {
+          "function": "b64.encode_json",
+          "line": 243,
+          "calls": 10,
+          "self_ns": 7664.0,
+          "cumulative_ns": 31166.0
+        },
+        {
+          "function": "b64.decode_json",
+          "line": 248,
+          "calls": 10,
+          "self_ns": 4458.0,
+          "cumulative_ns": 31126.0
+        },
+        {
+          "function": "jsonx._numpy_default",
+          "line": 143,
+          "calls": 0,
+          "self_ns": 0,
+          "cumulative_ns": 0
+        },
+        {
+          "function": "jsonx._numpy_default._default",
+          "line": 156,
+          "calls": 0,
+          "self_ns": 0,
+          "cumulative_ns": 0
+        },
+        {
+          "function": "jsonx.dumps",
+          "line": 169,
+          "calls": 160,
+          "self_ns": 117544.00000000001,
+          "cumulative_ns": 1894958.0000000002
+        },
+        {
+          "function": "jsonx.dumpb",
+          "line": 252,
+          "calls": 110,
+          "self_ns": 30748.000000000004,
+          "cumulative_ns": 1377754.0000000002
+        },
+        {
+          "function": "jsonx._line",
+          "line": 295,
+          "calls": 4000,
+          "self_ns": 298402.0,
+          "cumulative_ns": 679598.0
+        },
+        {
+          "function": "jsonx.canonical",
+          "line": 308,
+          "calls": 20,
+          "self_ns": 9707.0,
+          "cumulative_ns": 63541.00000000001
+        },
+        {
+          "function": "jsonx._identity_snapshot",
+          "line": 329,
+          "calls": 0,
+          "self_ns": 0,
+          "cumulative_ns": 0
+        },
+        {
+          "function": "jsonx.canonical_strict",
+          "line": 363,
+          "calls": 0,
+          "self_ns": 0,
+          "cumulative_ns": 0
+        },
+        {
+          "function": "jsonx.loads",
+          "line": 397,
+          "calls": 3210,
+          "self_ns": 893303.0,
+          "cumulative_ns": 3433849.0
+        },
+        {
+          "function": "jsonx.dump",
+          "line": 408,
+          "calls": 10,
+          "self_ns": 9170.0,
+          "cumulative_ns": 169209.0
+        },
+        {
+          "function": "jsonx.load",
+          "line": 442,
+          "calls": 10,
+          "self_ns": 4792.0,
+          "cumulative_ns": 14791.000000000002
+        },
+        {
+          "function": "ndjson.NDJSONDecodeError.__init__",
+          "line": 101,
+          "calls": 20,
+          "self_ns": 23000.0,
+          "cumulative_ns": 23000.0
+        },
+        {
+          "function": "ndjson._encoder",
+          "line": 107,
+          "calls": 100,
+          "self_ns": 15040.000000000002,
+          "cumulative_ns": 15040.000000000002
+        },
+        {
+          "function": "ndjson._write_remainder",
+          "line": 115,
+          "calls": 0,
+          "self_ns": 0,
+          "cumulative_ns": 0
+        },
+        {
+          "function": "ndjson.dumps",
+          "line": 135,
+          "calls": 20,
+          "self_ns": 7503.000000000001,
+          "cumulative_ns": 463127.0
+        },
+        {
+          "function": "ndjson.dumpb",
+          "line": 140,
+          "calls": 60,
+          "self_ns": 37172.0,
+          "cumulative_ns": 1079792.0
+        },
+        {
+          "function": "ndjson.iter_loads",
+          "line": 165,
+          "calls": 5100,
+          "self_ns": 1092023.0000000002,
+          "cumulative_ns": 2791701.0
+        },
+        {
+          "function": "ndjson.loads",
+          "line": 237,
+          "calls": 50,
+          "self_ns": 285971.00000000006,
+          "cumulative_ns": 1831335.0000000002
+        },
+        {
+          "function": "ndjson.dump",
+          "line": 277,
+          "calls": 40,
+          "self_ns": 1165114.0,
+          "cumulative_ns": 2412207.0
+        },
+        {
+          "function": "ndjson.load",
+          "line": 335,
+          "calls": 60,
+          "self_ns": 161596.00000000003,
+          "cumulative_ns": 1879085.0000000002
+        },
+        {
+          "function": "structs.float_enc_hook",
+          "line": 75,
+          "calls": 20,
+          "self_ns": 24704.000000000004,
+          "cumulative_ns": 166746.0
+        },
+        {
+          "function": "structs.Codec.__init__",
+          "line": 105,
+          "calls": 10,
+          "self_ns": 75583.00000000001,
+          "cumulative_ns": 75583.00000000001
+        },
+        {
+          "function": "structs.Codec.decode_or",
+          "line": 143,
+          "calls": 20,
+          "self_ns": 6419.000000000001,
+          "cumulative_ns": 20293.0
+        }
+      ],
+      "signatures": {
+        "unstd.serde.b64.b64decode": "(s: 'str | Buffer', altchars: 'str | Buffer | None' = None, validate: 'bool' = False) -> 'bytes'",
+        "unstd.serde.b64.b64encode": "(s: 'Buffer', altchars: 'Buffer | None' = None) -> 'bytes'",
+        "unstd.serde.b64.decode": "(s: 'str | Buffer', *, url: 'bool' = False) -> 'bytes'",
+        "unstd.serde.b64.decode_file": "(input, output)",
+        "unstd.serde.b64.decode_json": "(s: 'str | Buffer') -> 'jsonx.Json'",
+        "unstd.serde.b64.decode_text": "(s: 'str | Buffer', *, url: 'bool' = False, errors: 'str' = 'replace') -> 'str'",
+        "unstd.serde.b64.decodebytes": "(s)",
+        "unstd.serde.b64.encode": "(data: 'Buffer', *, url: 'bool' = False, pad: 'bool' = True) -> 'str'",
+        "unstd.serde.b64.encode_file": "(input, output)",
+        "unstd.serde.b64.encode_json": "(obj: 'object') -> 'str'",
+        "unstd.serde.b64.encodebytes": "(s)",
+        "unstd.serde.b64.standard_b64decode": "(s: 'str | Buffer') -> 'bytes'",
+        "unstd.serde.b64.standard_b64encode": "(s: 'Buffer') -> 'bytes'",
+        "unstd.serde.b64.urlsafe_b64decode": "(s)",
+        "unstd.serde.b64.urlsafe_b64encode": "(s: 'Buffer') -> 'bytes'",
+        "unstd.serde.jsonx.canonical": "(obj: 'object', *, default: 'Callable[[object], object] | None' = <class 'str'>) -> 'bytes'",
+        "unstd.serde.jsonx.canonical_strict": "(obj: 'object') -> 'bytes'",
+        "unstd.serde.jsonx.dump": "(obj: 'object', fp: '_TextWriter', *, skipkeys: 'bool' = False, ensure_ascii: 'bool' = True, check_circular: 'bool' = True, allow_nan: 'bool' = True, cls: 'type[JSONEncoder] | None' = None, indent: 'int | str | None' = None, separators: 'tuple[str, str] | None' = None, default: 'Callable[[Any], Any] | None' = None, sort_keys: 'bool' = False, **kw: 'Any') -> 'None'",
+        "unstd.serde.jsonx.dumpb": "(obj: 'object', *, sort_keys: 'bool' = False, default: 'Callable[[object], object] | None' = None, numpy: 'bool' = False) -> 'bytes'",
+        "unstd.serde.jsonx.dumps": "(obj: 'object', *, skipkeys: 'bool' = False, ensure_ascii: 'bool' = True, check_circular: 'bool' = True, allow_nan: 'bool' = True, cls: 'type[JSONEncoder] | None' = None, indent: 'int | str | None' = None, separators: 'tuple[str, str] | None' = None, default: 'Callable[[Any], Any] | None' = None, sort_keys: 'bool' = False, **kw: 'Any') -> 'str'",
+        "unstd.serde.jsonx.load": "(fp, *, cls=None, object_hook=None, parse_float=None, parse_int=None, parse_constant=None, object_pairs_hook=None, **kw)",
+        "unstd.serde.jsonx.loads": "(s, *, cls=None, object_hook=None, parse_float=None, parse_int=None, parse_constant=None, object_pairs_hook=None, **kw)",
+        "unstd.serde.ndjson.dump": "(rows: 'Iterable[T]', fp: 'io.TextIOBase | _Writer', *, codec: '_Codec[T] | None' = None) -> 'int'",
+        "unstd.serde.ndjson.dumpb": "(rows: 'Iterable[T]', *, codec: '_Codec[T] | None' = None) -> 'bytes'",
+        "unstd.serde.ndjson.dumps": "(rows: 'Iterable[T]', *, codec: '_Codec[T] | None' = None) -> 'str'",
+        "unstd.serde.ndjson.iter_loads": "(lines: 'Iterable[str | bytes]', *, codec: '_Codec[T] | None' = None, skip_errors: 'bool' = False, on_error: 'Callable[[NDJSONDecodeError], None] | None' = None) -> 'Iterator[Json | T]'",
+        "unstd.serde.ndjson.load": "(fp: 'Iterable[str | bytes]', *, codec: '_Codec[T] | None' = None, skip_errors: 'bool' = False, on_error: 'Callable[[NDJSONDecodeError], None] | None' = None) -> 'list[Json] | list[T]'",
+        "unstd.serde.ndjson.loads": "(text: 'str | bytes', *, codec: '_Codec[T] | None' = None, skip_errors: 'bool' = False, on_error: 'Callable[[NDJSONDecodeError], None] | None' = None) -> 'list[Json] | list[T]'",
+        "unstd.serde.structs.Codec": "(spec: 'type[T]', *, enc_hook: 'EncHook | None' = None, dec_hook: 'DecHook | None' = None, order: 'Order' = None, decimal_format: '_DecimalFormat' = 'string', uuid_format: \"Literal['canonical', 'hex']\" = 'canonical', strict: 'bool' = True, float_hook: 'FloatHook | None' = None) -> 'None'",
+        "unstd.serde.structs.float_enc_hook": "(obj: 'object') -> 'float'"
+      }
+    }
+  ]
+}

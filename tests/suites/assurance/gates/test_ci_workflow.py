@@ -101,8 +101,8 @@ def test_every_owned_group_runs_in_every_supported_dependency_environment(workfl
         ("3.12", True, True, None, True),
         ("3.13", True, True, None, True),
         ("3.14", True, True, None, True),
-        ("3.13", False, True, "lowest-direct", True),
-        ("3.13", True, False, None, False),
+        ("3.14", False, True, "lowest-direct", True),
+        ("3.14", True, False, None, False),
     }
 
 
@@ -137,6 +137,23 @@ def test_matrix_python_uses_the_managed_runtime_instead_of_the_runner(workflow):
     assert workflow["env"]["UV_MANAGED_PYTHON"] == "1"
     for job in workflow["jobs"].values():
         assert job.get("env", {}).get("UV_MANAGED_PYTHON", "1") == "1"
+
+
+def test_default_workflow_interpreters_match_the_deployed_python():
+    version = (REPO_ROOT / ".python-version").read_text().strip()
+    assert re.fullmatch(r"3\.14\.\d+", version)
+    runtime = ".".join(version.split(".")[:2])
+    yaml = require_backend("ruamel.yaml").YAML(typ="safe", pure=True)
+    for source in (REPO_ROOT / ".github/workflows").glob("*.yml"):
+        for job in yaml.load(source.read_text())["jobs"].values():
+            for step in job.get("steps", []):
+                selected = step.get("with", {}).get("python-version", "")
+                if re.fullmatch(r"3\.\d+", selected):
+                    assert selected == runtime, (source.name, step["name"])
+                for requested in re.findall(
+                    r"--python (3\.\d+)(?:\s|$)", step.get("run", "")
+                ):
+                    assert requested == runtime, (source.name, step["name"])
 
 
 def test_test_commands_use_the_selected_group_and_preserve_its_resolved_environment(
@@ -320,6 +337,28 @@ def test_every_declared_extra_runs_alone_and_requires_exactly_what_it_installs(
     ]
     second = next(s for s in job["steps"] if "run contracts" in s.get("run", ""))
     assert second["if"] == "${{ !cancelled() }}"
+
+
+def test_required_linux_archive_consumers_provision_the_native_runtime(workflow):
+    for identity, condition in (
+        ("test", "matrix.environment.id != 'fallback'"),
+        ("extras", "matrix.install.id == 'archives'"),
+    ):
+        steps = workflow["jobs"][identity]["steps"]
+        native = next(
+            step for step in steps if "apt-get install" in step.get("run", "")
+        )
+        assert native["if"] == condition
+        assert native["run"].splitlines() == [
+            "sudo apt-get update",
+            "sudo apt-get install --yes --no-install-recommends libarchive-dev",
+        ]
+        assert not native.get("continue-on-error", False)
+        assert steps.index(native) < next(
+            index
+            for index, step in enumerate(steps)
+            if step.get("run", "").startswith("uv sync ")
+        )
 
 
 def test_cached_dependency_setup_rebuilds_source_before_running_tests(workflow):

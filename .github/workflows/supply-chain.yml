@@ -28,7 +28,7 @@ jobs:
         uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           version: "0.13.4"
-          python-version: "3.13"
+          python-version: "3.14"
           enable-cache: true
           cache-suffix: supply-chain
           cache-dependency-glob: |
@@ -47,7 +47,7 @@ jobs:
       - name: Reject vulnerabilities, adverse statuses & malformed reports
         run: python -m tests.tooling.supply_chain audit-report .local/supply-chain/audit.json
       - name: Install audited harness and release tools
-        run: uv sync --locked --only-group supply-chain --only-group release --only-group build --no-install-project --python 3.13
+        run: uv sync --locked --only-group supply-chain --only-group release --only-group build --no-install-project --python 3.14
       - name: Check the audit interpreter's TLS security fixes
         run: uv run --no-sync python -m tests.tooling.runtime --json
       - name: Require the workflow parser and real wheel builder

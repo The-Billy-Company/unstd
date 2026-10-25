@@ -22,7 +22,7 @@ alone cannot establish that they are fixed. Do not add an unverified bypass.
 Refresh the policy when upgrading to a new OpenSSL branch or reviewing a new
 upstream advisory, and retain the preflight output with release evidence.
 
-For development on CPython 3.13, use the project's pinned patched interpreter.
+For development on CPython 3.14, use the project's pinned patched interpreter.
 The package still supports Python 3.12 and later. Validate every deployed
 interpreter separately, including container and wheel-test interpreters; a
 Python patch number alone does not identify the linked TLS library.
@@ -37,3 +37,17 @@ forced collection, allocation failures or ASan/UBSan. See the
 [clone memory audit instructions](../../suites/product/clone/support/README.md).
 It records compiler/source provenance and preserves instrumentation in child
 processes without overwriting production extensions.
+
+`json_identity_gc` builds an isolated JSONX native extension with ASan/UBSan,
+explicit collection at strict-snapshot allocation and ownership boundaries,
+and audit-only deterministic allocation/insertion failures:
+
+```console
+python -m tests.tooling.runtime.json_identity_gc --result /tmp/jsonx-identity-gc.json
+```
+
+Run it with each supported interpreter. It retains source and compiler hashes,
+checks output privacy, live-source mutation, reference cleanup and exception
+preservation through the parity tests, and leaves the production extension
+untouched. Ordinary parity tests also cover
+the bounded native float writer and its per-operation cache cleanup.

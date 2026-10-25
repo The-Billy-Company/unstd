@@ -9,6 +9,8 @@ from __future__ import annotations
 
 import gzip
 import io
+import platform
+import sys
 from types import FunctionType, SimpleNamespace
 from typing import TYPE_CHECKING, cast, override
 import zlib
@@ -76,12 +78,36 @@ with gzip._GzipReader(io.BytesIO()) as _probe:
     _modern = hasattr(cast("_RawReader", _probe)._decompressor, "needs_input")
 
 _factory: _InflaterFactory
-if _accelerated is not None:
+# Apple libz wins the qualified macOS dataset/upload workloads; Linux's
+# zlib-ng SIMD inflater wins over the bundled reference zlib on the same
+# streams. Both retain this interpreter's framing and output budgets.
+if _accelerated is not None and sys.platform != "linux":
     _factory = _accelerated.Inflater if _modern else _legacy_inflater
-    _crc32 = _accelerated.crc32
+    _bundled_inflater = True
 else:
     _factory = _native._ZlibDecompressor if _modern else _native.decompressobj
-    _crc32 = _native.crc32
+    _bundled_inflater = False
+_crc32 = _accelerated.crc32 if _accelerated is not None else _native.crc32
+
+# Bind the already imported provider once. The C bridge selects an engine only
+# before a member's first native decode; framing and per-read budgets stay here.
+_adaptive_ng_version: str | None = None
+if (
+    _bundled_inflater
+    and _modern
+    and sys.platform == "darwin"
+    and platform.machine() in {"arm64", "aarch64"}
+):
+    _configure_ng = getattr(_accelerated, "_configure_ng", None)
+    _ng_version = getattr(_accelerated, "_ng_runtime_version", None)
+    _ng_path = getattr(_native, "__file__", None)
+    if (
+        callable(_configure_ng)
+        and callable(_ng_version)
+        and isinstance(_ng_path, str)
+        and _configure_ng(_ng_path)
+    ):
+        _adaptive_ng_version = _ng_version()
 
 # Clone the running interpreter's read implementation with a private CRC binding.
 # Its framing, input budgets and error-delivery order stay version faithful;
@@ -104,7 +130,7 @@ _read = cast("Callable[[gzip._GzipReader, int], bytes]", _read_impl)
 
 def _native_crc_read[**P](fallback: Callable[P, bytes]) -> Callable[P, bytes]:
     """Bind the native implementation directly, retaining fallback translation."""
-    return cast("Callable[P, bytes]", _read) if _accelerated is not None else fallback
+    return cast("Callable[P, bytes]", _read) if _bundled_inflater else fallback
 
 
 class _Reader(gzip._GzipReader):

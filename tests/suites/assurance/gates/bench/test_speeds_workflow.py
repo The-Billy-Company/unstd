@@ -40,7 +40,7 @@ def test_performance_runs_on_product_changes_and_explicit_reference(
     workflow: dict[str, Any],
 ) -> None:
     assert {"pull_request", "workflow_dispatch"} <= workflow["on"].keys()
-    assert "src/unstd/**" in workflow["on"]["pull_request"]["paths"]
+    assert {"src/unstd/**", "native/**"} <= set(workflow["on"]["pull_request"]["paths"])
     base = workflow["on"]["workflow_dispatch"]["inputs"]["base_ref"]
     assert base["required"] is True
     assert base["type"] == "string"
@@ -52,6 +52,31 @@ def test_performance_runs_on_product_changes_and_explicit_reference(
     assert comparison["with"]["ref"] == (
         "${{ github.event.pull_request.base.sha || inputs.base_ref }}"
     )
+
+
+def test_each_platform_finishes_its_own_worker_comparison(
+    workflow: dict[str, Any],
+) -> None:
+    job = workflow["jobs"]["compare"]
+    assert job["runs-on"] == "${{ matrix.os }}"
+    assert job["strategy"]["fail-fast"] is False
+    matrix = job["strategy"]["matrix"]
+    assert set(matrix) == {"include"}
+    platforms = matrix["include"]
+    assert len(platforms) == 4
+    assert {entry["platform"]: entry["os"] for entry in platforms} == {
+        "linux": "ubuntu-latest",
+        "macos": "macos-latest",
+    }
+    assert {(entry["platform"], entry["python"]) for entry in platforms} == {
+        (platform, version)
+        for platform in ("linux", "macos")
+        for version in ("3.13", "3.14")
+    }
+    setup = next(
+        step for step in job["steps"] if "python-version" in step.get("with", {})
+    )
+    assert setup["with"]["python-version"] == "${{ matrix.python }}"
 
 
 def test_comparison_uses_read_only_permissions_pinned_tools_and_hard_failures(
@@ -80,6 +105,8 @@ def test_revisions_build_their_own_native_modules_into_separate_installations(
     assert {"--locked", "--all-extras", "--no-install-project"} <= set(
         shlex.split(sync)
     )
+    tokens = shlex.split(sync)
+    assert tokens[tokens.index("--python") + 1] == "${{ matrix.python }}"
     builds = next(
         step["run"] for step in steps if "uv pip install" in step.get("run", "")
     ).splitlines()
@@ -134,6 +161,20 @@ def test_comparison_retains_evidence_on_regression(workflow: dict[str, Any]) -> 
     assert upload["if"] == "always()"
     assert upload["with"]["include-hidden-files"] is True
     assert upload["with"]["if-no-files-found"] == "error"
+    name = upload["with"]["name"]
+    assert "${{ matrix.platform }}" in name
+    assert "${{ matrix.python }}" in name
+    assert "${{ github.run_id }}" in name
+    assert "${{ github.run_attempt }}" in name
+    platforms = workflow["jobs"]["compare"]["strategy"]["matrix"]["include"]
+    assert len(
+        {
+            name.replace("${{ matrix.platform }}", entry["platform"]).replace(
+                "${{ matrix.python }}", entry["python"]
+            )
+            for entry in platforms
+        }
+    ) == len(platforms)
     path = upload["with"]["path"].rstrip("/")
     for step in _measurement_steps(workflow).values():
         tokens = shlex.split(step["run"])
@@ -168,18 +209,108 @@ def test_manual_gzip_diagnosis_skips_full_timing_and_retains_focused_evidence(
     assert "--baseline" not in tokens
 
 
+def test_full_comparison_guards_frozen_billy_gzip_before_function_verification(
+    workflow: dict[str, Any],
+) -> None:
+    steps = workflow["jobs"]["compare"]["steps"]
+    paired = next(
+        step
+        for step in steps
+        if "bench/profiles/billy_gzip.py run" in step.get("run", "")
+    )
+    assert paired["if"] == "${{ !inputs.gzip_diagnostic }}"
+    assert not paired.get("continue-on-error", False)
+    tokens = shlex.split(paired["run"])
+    assert tokens[:3] == [".venv/bin/python", "bench/profiles/billy_gzip.py", "run"]
+    assert (
+        tokens[tokens.index("--fixtures") + 1] == "bench/workloads/billy_gzip.json.gz"
+    )
+    assert (
+        tokens[tokens.index("--baseline-source") + 1]
+        == ".local/performance/installed-before"
+    )
+    assert (
+        tokens[tokens.index("--source") + 1] == ".local/performance/installed-current"
+    )
+    assert int(tokens[tokens.index("--rounds") + 1]) >= 7
+    assert int(tokens[tokens.index("--repetitions") + 1]) >= 3
+    assert float(tokens[tokens.index("--max-slowdown") + 1]) == 1.3
+    assert "--case" not in tokens
+    assert "--stdlib" not in tokens
+    builds = next(step for step in steps if "uv pip install" in step.get("run", ""))
+    assert (
+        steps.index(builds)
+        < steps.index(paired)
+        < steps.index(_measurement_steps(workflow)["verify"])
+    )
+    sync = next(step["run"] for step in steps if "uv sync" in step.get("run", ""))
+    install = shlex.split(sync)
+    assert [
+        install[index + 1] for index, part in enumerate(install) if part == "--group"
+    ] == ["dev", "build", "bench"]
+    assert "--no-install-project" in install
+    upload = next(
+        step
+        for step in steps
+        if step.get("uses", "").startswith("actions/upload-artifact@")
+    )
+    assert upload["if"] == "always()"
+    assert tokens[tokens.index("--output") + 1].startswith(
+        upload["with"]["path"].rstrip("/") + "/"
+    )
+
+
+def test_billy_gzip_direct_parent_can_start_without_any_product_installation(
+    workflow: dict[str, Any], tmp_path: Path
+) -> None:
+    paired = next(
+        step
+        for step in workflow["jobs"]["compare"]["steps"]
+        if "bench/profiles/billy_gzip.py run" in step.get("run", "")
+    )
+    tokens = shlex.split(paired["run"])
+    command = [
+        sys.executable,
+        "-I",
+        "-S",
+        str(REPO_ROOT / tokens[1]),
+        tokens[2],
+        "--help",
+    ]
+    result = subprocess.run(  # noqa: S603 — declared direct harness entrypoint; isolated stdlib-only interpreter
+        command, cwd=tmp_path, capture_output=True, text=True, timeout=15
+    )
+    assert result.returncode == 0, result.stderr
+    assert "--baseline-source" in result.stdout
+    assert "--max-slowdown" in result.stdout
+
+
 def test_diagnostic_cannot_satisfy_the_full_function_latency_check(
     workflow: dict[str, Any],
 ) -> None:
     name = workflow["jobs"]["compare"]["name"]
     selection = re.fullmatch(
-        r"\$\{\{ inputs\.gzip_diagnostic && '([^']+)' \|\| '([^']+)' \}\}", name
+        r"\$\{\{ inputs\.gzip_diagnostic && '([^']+)' \|\| '([^']+)' \}\}"
+        r" / Python \$\{\{ matrix\.python \}\}"
+        r"\$\{\{ matrix\.check_suffix \}\}",
+        name,
     )
     assert selection is not None, "the check context must follow diagnostic selection"
     diagnostic_context, full_context = selection.groups()
-    assert full_context == "Function latency / Python 3.13"
+    assert full_context == "Function latency"
     assert diagnostic_context != full_context
-    assert diagnostic_context == "Gzip read diagnosis / Python 3.13"
+    assert diagnostic_context == "Gzip read diagnosis"
+    platforms = workflow["jobs"]["compare"]["strategy"]["matrix"]["include"]
+    suffixes = {entry["platform"]: entry["check_suffix"] for entry in platforms}
+    assert suffixes == {"linux": "", "macos": " / macOS"}
+    contexts = {
+        f"{context} / Python {entry['python']}{entry['check_suffix']}"
+        for context in (diagnostic_context, full_context)
+        for entry in platforms
+    }
+    assert len(contexts) == 8
+    assert "Function latency / Python 3.13" in contexts
+    assert "Gzip read diagnosis / Python 3.13" in contexts
 
 
 def test_diagnostic_parent_entrypoint_needs_only_its_explicit_installation(

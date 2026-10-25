@@ -60,20 +60,30 @@ Installing optional dependencies never changes these standard behaviors.
 The accelerated paths are deliberately narrower than the supported API:
 
 - **Encoding:** no custom encoder, `default`, unknown keywords or custom option
-  objects. The optional C guard validates bounded trees of exact builtin types,
+  objects. The optional C guard validates depth-bounded trees of exact builtin types,
   string keys and backend-range integers, then calls its trusted orjson encoder
   while retaining the GIL. No Python callback can mutate the tree between proof
   and encoding. Without the extension, a private snapshot validates at most 16
-  values and 16 container levels. Floats and unsupported values use stdlib.
+  values and 16 container levels. Native public proofs validate at most 262,144
+  values and 16 container levels, counting every repeated alias. Larger or
+  unsupported values use stdlib. Finite floats in two-space indented output on
+  Python 3.12 retain CPython's number spellings. Eligible finite-float trees use
+  a bounded native writer with CPython's formatter and operation-local spelling
+  caches; it shares the visit budget with the ordinary proof, requires compact
+  integers, limits strings to 256 code points and private output to 1 MiB, and
+  falls back outside that domain.
   Compact output and default spaces use native formatting. The extension adds
   spaces only outside quoted strings, preserving punctuation and escaped quotes
-  in text. Indentation keeps the recursive snapshot proof. Top-level text uses
-  stdlib's specialized encoder. ASCII output also excludes DEL, which stdlib
-  escapes differently.
+  in text. Two-space indentation uses a native proof that reserves stdlib's
+  recursive generator frames before encoding. Native ASCII conversion preserves
+  DEL, BMP and surrogate-pair escape spellings without encoding the tree again.
+  Top-level text uses stdlib's specialized encoder.
 - **Decoding:** exact `str`/`bytes` with no explicit options. A reusable msgspec
   decoder constructs arbitrary-precision integers and correctly rounded floats.
   The optional extension can use orjson for larger documents after a bounded
-  native proof excludes numeric coercions. Interpreter limits still apply to
+  native proof excludes numeric coercions. A bounded source prefix selects the
+  precise parser directly for float-bearing objects and arrays, avoiding a
+  second parse. Interpreter limits still apply to
   the entire source, including discarded duplicate values. Failures,
   including integer digit limits, Unicode extensions and malformed input, parse
   the original document with stdlib for authoritative behavior and diagnostics.
@@ -90,6 +100,17 @@ proofs and fallback paths are part of the implementation.
 
 Speed depends on the payload and Python version. The benchmark harness compares
 identical outputs and separately measures native paths and fallback records.
+The [JSONX throughput profile](../../../bench/profiles/jsonx_throughput.py)
+compares saved and current sources across encoding, decoding, formatting and
+stream operations, retaining raw timings, stdlib controls and loaded source
+hashes.
+The [existing-only comparison](../../../bench/profiles/jsonx_existing.py)
+rotates original, first-pass and candidate sources through the unchanged
+Python registry/core fixtures, with correctness oracles and separate profiles.
+The [second-pass results](../../../bench/reports/serde/jsonx-second-pass.md) and
+[memory-safety qualification](../../../bench/reports/serde/jsonx-second-safety.md)
+retain gains, measured losses, source hashes and sanitizer/failure-injection
+evidence. The 100× target has not been achieved.
 The [Billy fixture comparison](../../../bench/reports/serde/billy-serde-optimization-results.md)
 retains release regressions as well as gains. Compatibility checking has a cost relative
 to the permissive 2.1 codec; measured results are not a universal speed promise.
@@ -97,8 +118,9 @@ to the permissive 2.1 codec; measured results are not a universal speed promise.
 **Compact bytes:** `dumpb` equals
 `json.dumps(obj, ensure_ascii=False, separators=(",", ":"), ...).encode()` with
 its `sort_keys` and `default` options. It uses the same native guard or snapshot
-and falls back for all other values, including floats, so notation also matches
-stdlib across backends. Lone surrogates raise the same UTF-8 encoding error.
+and falls back for other values. Eligible finite floats use CPython's formatter,
+so notation also matches stdlib across backends. Lone surrogates raise the same
+UTF-8 encoding error.
 `canonical` retains its legacy sorted, compact, ASCII-escaped format, including
 the default conversion of unsupported values through `str`. That conversion
 can produce unstable values or collide with ordinary strings. Its bytes are
@@ -112,6 +134,10 @@ non-finite numbers, surrogate code points (including explicit surrogate pairs),
 and cycles raise instead of being coerced.
 No conversion hook runs. Shared acyclic branches are allowed, and every mutable
 branch is copied before encoding so validation and encoding use the same values.
+The optional native copy owns source items across allocation and keeps partial
+outputs private across collection. Changes to the Python walker, relevant
+builtins, finiteness check or observers select the original Python copy. Both
+paths still call the identity encoder in its original lookup order.
 
 ```python
 jsonx.canonical_strict({"b": 2, "a": [True, None]})
