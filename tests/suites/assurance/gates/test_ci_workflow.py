@@ -106,6 +106,12 @@ def test_every_owned_group_runs_in_every_supported_dependency_environment(workfl
     }
 
 
+def test_matrix_python_uses_the_managed_runtime_instead_of_the_runner(workflow):
+    assert workflow["env"]["UV_MANAGED_PYTHON"] == "1"
+    for job in workflow["jobs"].values():
+        assert job.get("env", {}).get("UV_MANAGED_PYTHON", "1") == "1"
+
+
 def test_test_commands_use_the_selected_group_and_preserve_its_resolved_environment(
     workflow,
 ):

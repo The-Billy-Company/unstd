@@ -13,6 +13,10 @@ on:
 permissions:
   contents: read
 
+env:
+  # Explicit matrix requests must use the interpreter setup-uv installed.
+  UV_MANAGED_PYTHON: "1"
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref == 'refs/heads/main' && github.sha || github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
