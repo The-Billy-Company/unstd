@@ -235,3 +235,64 @@ def test_diagnostic_parent_entrypoint_needs_only_its_explicit_installation(
     assert present.returncode == 0, present.stderr
     assert "--before-install" in present.stdout
     assert "--current-install" in present.stdout
+
+
+@pytest.mark.parametrize(
+    "adverse", [None, "missing", "duplicate", "symlink", "wrong-abi"]
+)
+def test_diagnostic_retains_exactly_one_native_build_per_revision(
+    workflow: dict[str, Any], tmp_path: Path, adverse: str | None
+) -> None:
+    steps = workflow["jobs"]["compare"]["steps"]
+    retain = next(step for step in steps if "evidence/native-" in step.get("run", ""))
+    focused = next(
+        step
+        for step in steps
+        if "-m bench.diagnostics.gzip_reads" in step.get("run", "")
+    )
+    builds = next(step for step in steps if "uv pip install" in step.get("run", ""))
+    assert steps.index(builds) < steps.index(retain) < steps.index(focused)
+    assert retain["if"] == focused["if"]
+    assert not retain.get("continue-on-error", False)
+    script = retain["run"].split("\n", 1)[1].rsplit("\nPYTHON", 1)[0]
+    suffix = sysconfig.get_config_var("EXT_SUFFIX")
+    name = f"_gzip_native{suffix}"
+    payloads = {
+        "before": b"before build bytes\x00",
+        "current": b"current build bytes\xff",
+    }
+    for revision, payload in payloads.items():
+        directory = tmp_path / f".local/performance/installed-{revision}/unstd/compress"
+        directory.mkdir(parents=True)
+        (directory / name).write_bytes(payload)
+    current = tmp_path / ".local/performance/installed-current/unstd/compress"
+    if adverse == "missing":
+        (current / name).unlink()
+    elif adverse == "duplicate":
+        (current / "_gzip_native.foreign.so").write_bytes(b"ambiguous build")
+    elif adverse == "symlink":
+        (current / name).rename(current / "original")
+        (current / name).symlink_to(current / "original")
+    elif adverse == "wrong-abi":
+        (current / name).rename(current / "_gzip_native.foreign.so")
+    evidence = tmp_path / ".local/performance/evidence"
+    evidence.mkdir()
+    result = subprocess.run(  # noqa: S603 - execute the declared retention script with fixture files
+        [sys.executable, "-I", "-c", script],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=10,
+    )
+    assert (evidence / "native-before" / name).read_bytes() == payloads["before"]
+    if adverse is not None:
+        assert result.returncode != 0
+        assert not (evidence / "native-current").exists()
+    else:
+        assert result.returncode == 0, result.stderr
+        for revision, payload in payloads.items():
+            assert list((evidence / f"native-{revision}").iterdir()) == [
+                evidence / f"native-{revision}" / name
+            ]
+            assert (evidence / f"native-{revision}" / name).read_bytes() == payload
