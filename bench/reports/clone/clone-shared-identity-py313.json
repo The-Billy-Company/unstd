@@ -1,0 +1,601 @@
+{
+  "python": "3.13.16 (main, Oct  9 2026, 15:11:24) [Clang 22.1.3 ]",
+  "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+  "rounds": 9,
+  "gc_enabled_during_batches": false,
+  "includes_output_destruction": true,
+  "baseline": "prior public builtin fast path, recreated with native.clone_checked and the prior atom/type/result checks; no saved full implementation used",
+  "current": {
+    "source": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/clone/structural.py",
+    "source_sha256": "fcd3d43bbdb5498ae7b492e30fec0871c7610cfb00c696f9f1f11aa02e6ab849",
+    "snapshot_manifest_sha256": null,
+    "native_source_sha256": "aa6d7085ca9803c1e3576cd819a4700fb5032b876b3fd9a635e81700382d2e1c",
+    "native": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/clone/_clone_native.cpython-313-darwin.so",
+    "native_entrypoint": "clone_checked",
+    "native_graph_entrypoint": "clone_graph",
+    "native_sha256": "21bd0d4a40b781a844e29822eaffe33266fe0d585f1d8303f336324d95983455",
+    "native_records": {
+      "entrypoint": "clone_records",
+      "module": "unstd.clone._clone_native",
+      "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/clone/_clone_native.cpython-313-darwin.so",
+      "source_sha256": "aa6d7085ca9803c1e3576cd819a4700fb5032b876b3fd9a635e81700382d2e1c",
+      "sha256": "21bd0d4a40b781a844e29822eaffe33266fe0d585f1d8303f336324d95983455"
+    }
+  },
+  "harness_sha256": "d4e7c48782a03c5943b7f6b2b5605e285a5a9489d4f67dfe89d0b5346ffaf08c",
+  "harness_source": "from __future__ import annotations\n\nimport copy\nfrom functools import partial\nimport gc\nimport hashlib\nimport json\nfrom pathlib import Path\nimport platform\nimport sys\n\nfrom bench.profiles import clone_cpu as timing\nfrom unstd.clone import _clone_native as native\nfrom unstd.clone import structural\n\n\ndef prior_builtin_deep(source):\n    kind = type(source)\n    if kind in structural._ATOMS:\n        return source\n    if kind is dict or kind is list or kind is tuple:\n        result = native.clone_checked(source)\n        if result is not NotImplemented:\n            return result\n    raise AssertionError('benchmark source must stay on prior native builtin path')\n\n\nshared = list(range(1000))\ncases = {\n    'small-dict': {'id': 7, 'name': 'row', 'active': True},\n    'scalar-list-10000': list(range(10000)),\n    'nested-unique-200': {'rows': [{'id': i, 'items': [i, i+1], 'meta': {'active': True}} for i in range(200)]},\n    'shared-list-1000-repeated-500': [shared] * 500,\n}\nresult = {\n    'python': sys.version,\n    'platform': platform.platform(),\n    'rounds': 9,\n    'gc_enabled_during_batches': False,\n    'includes_output_destruction': True,\n    'baseline': 'prior public builtin fast path, recreated with native.clone_checked and the prior atom/type/result checks; no saved full implementation used',\n    'current': timing._metadata(structural),\n    'harness_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),\n    'harness_source': Path(__file__).read_text(),\n    'workloads': {},\n}\nfor name, source in cases.items():\n    calls = {\n        'current': partial(structural.deep, source),\n        'prior-builtin': partial(prior_builtin_deep, source),\n        'stdlib': partial(copy.deepcopy, source),\n    }\n    for label, call in calls.items():\n        actual = call()\n        assert timing._same(actual, source)\n        assert timing._isolated(actual, source, reuse_tuples=label == 'stdlib')\n        if name.startswith('shared-'):\n            assert (actual[0] is actual[1]) == (label != 'prior-builtin')\n    samples = timing._timings(calls, 9, False)\n    for label, values in samples.items():\n        values['cpu_speedup_vs_prior_builtin'] = samples['prior-builtin']['median_cpu_ns'] / values['median_cpu_ns']\n        values['cpu_speedup_vs_stdlib'] = samples['stdlib']['median_cpu_ns'] / values['median_cpu_ns']\n    result['workloads'][name] = samples\npath = Path('bench/reports/clone/clone-shared-identity-py313.json')\npath.write_text(json.dumps(result, indent=2) + '\\n')\nfor name, samples in result['workloads'].items():\n    current = samples['current']\n    old = samples['prior-builtin']\n    print(f\"{name}: current={current['median_cpu_ns']/1000:.2f}us prior={old['median_cpu_ns']/1000:.2f}us ratio={current['cpu_speedup_vs_prior_builtin']:.2f}x stdlib={current['cpu_speedup_vs_stdlib']:.2f}x\")\n",
+  "workloads": {
+    "small-dict": {
+      "current": {
+        "iterations": 32768,
+        "samples": [
+          {
+            "wall_ns": 279.71014404296875,
+            "cpu_ns": 275.238037109375
+          },
+          {
+            "wall_ns": 275.903076171875,
+            "cpu_ns": 273.345947265625
+          },
+          {
+            "wall_ns": 278.82257080078125,
+            "cpu_ns": 275.909423828125
+          },
+          {
+            "wall_ns": 272.52325439453125,
+            "cpu_ns": 269.47021484375
+          },
+          {
+            "wall_ns": 280.2823486328125,
+            "cpu_ns": 276.91650390625
+          },
+          {
+            "wall_ns": 248.43087768554688,
+            "cpu_ns": 245.758056640625
+          },
+          {
+            "wall_ns": 246.86050415039062,
+            "cpu_ns": 243.95751953125
+          },
+          {
+            "wall_ns": 228.67837524414062,
+            "cpu_ns": 225.860595703125
+          },
+          {
+            "wall_ns": 223.425537109375,
+            "cpu_ns": 223.20556640625
+          }
+        ],
+        "min_wall_ns": 223.425537109375,
+        "median_wall_ns": 272.52325439453125,
+        "min_cpu_ns": 223.20556640625,
+        "median_cpu_ns": 269.47021484375,
+        "cpu_speedup_vs_prior_builtin": 0.4224990562476406,
+        "cpu_speedup_vs_stdlib": 4.561054723391526
+      },
+      "prior-builtin": {
+        "iterations": 73728,
+        "samples": [
+          {
+            "wall_ns": 121.77813042534723,
+            "cpu_ns": 119.91373697916667
+          },
+          {
+            "wall_ns": 127.65106879340277,
+            "cpu_ns": 125.81380208333333
+          },
+          {
+            "wall_ns": 128.56095377604166,
+            "cpu_ns": 126.0986328125
+          },
+          {
+            "wall_ns": 126.11275227864583,
+            "cpu_ns": 124.85080295138889
+          },
+          {
+            "wall_ns": 113.75088161892361,
+            "cpu_ns": 112.4267578125
+          },
+          {
+            "wall_ns": 114.55338541666667,
+            "cpu_ns": 113.85091145833333
+          },
+          {
+            "wall_ns": 110.45667860243056,
+            "cpu_ns": 109.51063368055556
+          },
+          {
+            "wall_ns": 107.58576117621527,
+            "cpu_ns": 106.13335503472223
+          },
+          {
+            "wall_ns": 103.39130316840277,
+            "cpu_ns": 102.9052734375
+          }
+        ],
+        "min_wall_ns": 103.39130316840277,
+        "median_wall_ns": 114.55338541666667,
+        "min_cpu_ns": 102.9052734375,
+        "median_cpu_ns": 113.85091145833333,
+        "cpu_speedup_vs_prior_builtin": 1.0,
+        "cpu_speedup_vs_stdlib": 10.795419909099493
+      },
+      "stdlib": {
+        "iterations": 6784,
+        "samples": [
+          {
+            "wall_ns": 1305.332399764151,
+            "cpu_ns": 1295.8431603773586
+          },
+          {
+            "wall_ns": 1297.7287735849056,
+            "cpu_ns": 1276.9752358490566
+          },
+          {
+            "wall_ns": 1312.143720518868,
+            "cpu_ns": 1305.2771226415093
+          },
+          {
+            "wall_ns": 1317.6591981132076,
+            "cpu_ns": 1313.8266509433963
+          },
+          {
+            "wall_ns": 1265.1889740566037,
+            "cpu_ns": 1229.0683962264152
+          },
+          {
+            "wall_ns": 1180.8298938679245,
+            "cpu_ns": 1171.2853773584907
+          },
+          {
+            "wall_ns": 1202.953125,
+            "cpu_ns": 1181.8985849056603
+          },
+          {
+            "wall_ns": 1177.0956662735848,
+            "cpu_ns": 1167.8950471698113
+          },
+          {
+            "wall_ns": 1078.4627063679245,
+            "cpu_ns": 1072.9658018867924
+          }
+        ],
+        "min_wall_ns": 1078.4627063679245,
+        "median_wall_ns": 1265.1889740566037,
+        "min_cpu_ns": 1072.9658018867924,
+        "median_cpu_ns": 1229.0683962264152,
+        "cpu_speedup_vs_prior_builtin": 0.09263187614935635,
+        "cpu_speedup_vs_stdlib": 1.0
+      }
+    },
+    "scalar-list-10000": {
+      "current": {
+        "iterations": 256,
+        "samples": [
+          {
+            "wall_ns": 29441.734375,
+            "cpu_ns": 29105.46875
+          },
+          {
+            "wall_ns": 31469.078125,
+            "cpu_ns": 30648.4375
+          },
+          {
+            "wall_ns": 31079.1015625,
+            "cpu_ns": 30300.78125
+          },
+          {
+            "wall_ns": 30129.23046875,
+            "cpu_ns": 29527.34375
+          },
+          {
+            "wall_ns": 30648.11328125,
+            "cpu_ns": 29910.15625
+          },
+          {
+            "wall_ns": 55038.57421875,
+            "cpu_ns": 33011.71875
+          },
+          {
+            "wall_ns": 32131.5078125,
+            "cpu_ns": 31136.71875
+          },
+          {
+            "wall_ns": 30744.79296875,
+            "cpu_ns": 29578.125
+          },
+          {
+            "wall_ns": 31962.890625,
+            "cpu_ns": 31015.625
+          }
+        ],
+        "min_wall_ns": 29441.734375,
+        "median_wall_ns": 31079.1015625,
+        "min_cpu_ns": 29105.46875,
+        "median_cpu_ns": 30300.78125,
+        "cpu_speedup_vs_prior_builtin": 1.2555111512182544,
+        "cpu_speedup_vs_stdlib": 34.14103390486012
+      },
+      "prior-builtin": {
+        "iterations": 256,
+        "samples": [
+          {
+            "wall_ns": 40733.234375,
+            "cpu_ns": 37863.28125
+          },
+          {
+            "wall_ns": 54491.05078125,
+            "cpu_ns": 41535.15625
+          },
+          {
+            "wall_ns": 38703.61328125,
+            "cpu_ns": 36960.9375
+          },
+          {
+            "wall_ns": 38343.91015625,
+            "cpu_ns": 37945.3125
+          },
+          {
+            "wall_ns": 35618.1640625,
+            "cpu_ns": 34777.34375
+          },
+          {
+            "wall_ns": 54679.6875,
+            "cpu_ns": 40804.6875
+          },
+          {
+            "wall_ns": 40971.19140625,
+            "cpu_ns": 38042.96875
+          },
+          {
+            "wall_ns": 123152.34375,
+            "cpu_ns": 42539.0625
+          },
+          {
+            "wall_ns": 39278.6484375,
+            "cpu_ns": 38339.84375
+          }
+        ],
+        "min_wall_ns": 35618.1640625,
+        "median_wall_ns": 40733.234375,
+        "min_cpu_ns": 34777.34375,
+        "median_cpu_ns": 38042.96875,
+        "cpu_speedup_vs_prior_builtin": 1.0,
+        "cpu_speedup_vs_stdlib": 27.192935619673477
+      },
+      "stdlib": {
+        "iterations": 8,
+        "samples": [
+          {
+            "wall_ns": 1769958.25,
+            "cpu_ns": 1066375.0
+          },
+          {
+            "wall_ns": 1600104.125,
+            "cpu_ns": 1060500.0
+          },
+          {
+            "wall_ns": 1027098.875,
+            "cpu_ns": 1012875.0
+          },
+          {
+            "wall_ns": 1067750.0,
+            "cpu_ns": 1034500.0
+          },
+          {
+            "wall_ns": 1204958.375,
+            "cpu_ns": 1030625.0
+          },
+          {
+            "wall_ns": 1521494.75,
+            "cpu_ns": 1033125.0
+          },
+          {
+            "wall_ns": 994265.625,
+            "cpu_ns": 994375.0
+          },
+          {
+            "wall_ns": 2750182.25,
+            "cpu_ns": 1057000.0
+          },
+          {
+            "wall_ns": 1094583.375,
+            "cpu_ns": 1046000.0
+          }
+        ],
+        "min_wall_ns": 994265.625,
+        "median_wall_ns": 1204958.375,
+        "min_cpu_ns": 994375.0,
+        "median_cpu_ns": 1034500.0,
+        "cpu_speedup_vs_prior_builtin": 0.03677425688738521,
+        "cpu_speedup_vs_stdlib": 1.0
+      }
+    },
+    "nested-unique-200": {
+      "current": {
+        "iterations": 51,
+        "samples": [
+          {
+            "wall_ns": 218354.568627451,
+            "cpu_ns": 83607.8431372549
+          },
+          {
+            "wall_ns": 81298.2156862745,
+            "cpu_ns": 78372.54901960785
+          },
+          {
+            "wall_ns": 75049.01960784313,
+            "cpu_ns": 73294.11764705883
+          },
+          {
+            "wall_ns": 72431.37254901961,
+            "cpu_ns": 72431.37254901961
+          },
+          {
+            "wall_ns": 81403.58823529411,
+            "cpu_ns": 78882.35294117648
+          },
+          {
+            "wall_ns": 78540.8431372549,
+            "cpu_ns": 77039.2156862745
+          },
+          {
+            "wall_ns": 88497.54901960785,
+            "cpu_ns": 83529.41176470589
+          },
+          {
+            "wall_ns": 84632.35294117648,
+            "cpu_ns": 77294.11764705883
+          },
+          {
+            "wall_ns": 77206.70588235294,
+            "cpu_ns": 75039.2156862745
+          }
+        ],
+        "min_wall_ns": 72431.37254901961,
+        "median_wall_ns": 81298.2156862745,
+        "min_cpu_ns": 72431.37254901961,
+        "median_cpu_ns": 77294.11764705883,
+        "cpu_speedup_vs_prior_builtin": 0.5249939918288873,
+        "cpu_speedup_vs_stdlib": 5.45025598450256
+      },
+      "prior-builtin": {
+        "iterations": 76,
+        "samples": [
+          {
+            "wall_ns": 54860.75,
+            "cpu_ns": 39723.68421052631
+          },
+          {
+            "wall_ns": 41265.89473684211,
+            "cpu_ns": 39986.84210526316
+          },
+          {
+            "wall_ns": 40437.5,
+            "cpu_ns": 40131.57894736842
+          },
+          {
+            "wall_ns": 42948.46052631579,
+            "cpu_ns": 40960.52631578947
+          },
+          {
+            "wall_ns": 46380.48684210526,
+            "cpu_ns": 43092.10526315789
+          },
+          {
+            "wall_ns": 42150.77631578947,
+            "cpu_ns": 40578.94736842105
+          },
+          {
+            "wall_ns": 45217.10526315789,
+            "cpu_ns": 41605.26315789474
+          },
+          {
+            "wall_ns": 40891.44736842105,
+            "cpu_ns": 40355.26315789474
+          },
+          {
+            "wall_ns": 44600.88157894737,
+            "cpu_ns": 42842.10526315789
+          }
+        ],
+        "min_wall_ns": 40437.5,
+        "median_wall_ns": 42948.46052631579,
+        "min_cpu_ns": 39723.68421052631,
+        "median_cpu_ns": 40578.94736842105,
+        "cpu_speedup_vs_prior_builtin": 1.0,
+        "cpu_speedup_vs_stdlib": 10.381558778445939
+      },
+      "stdlib": {
+        "iterations": 11,
+        "samples": [
+          {
+            "wall_ns": 686875.0,
+            "cpu_ns": 421272.7272727273
+          },
+          {
+            "wall_ns": 395484.8181818182,
+            "cpu_ns": 379818.1818181818
+          },
+          {
+            "wall_ns": 432253.8181818182,
+            "cpu_ns": 409090.9090909091
+          },
+          {
+            "wall_ns": 444734.8181818182,
+            "cpu_ns": 421545.45454545453
+          },
+          {
+            "wall_ns": 523310.63636363635,
+            "cpu_ns": 440636.36363636365
+          },
+          {
+            "wall_ns": 463848.45454545453,
+            "cpu_ns": 433545.45454545453
+          },
+          {
+            "wall_ns": 449803.0909090909,
+            "cpu_ns": 424181.8181818182
+          },
+          {
+            "wall_ns": 410973.54545454547,
+            "cpu_ns": 395181.8181818182
+          },
+          {
+            "wall_ns": 403416.63636363635,
+            "cpu_ns": 398636.36363636365
+          }
+        ],
+        "min_wall_ns": 395484.8181818182,
+        "median_wall_ns": 444734.8181818182,
+        "min_cpu_ns": 379818.1818181818,
+        "median_cpu_ns": 421272.7272727273,
+        "cpu_speedup_vs_prior_builtin": 0.09632464847920405,
+        "cpu_speedup_vs_stdlib": 1.0
+      }
+    },
+    "shared-list-1000-repeated-500": {
+      "current": {
+        "iterations": 512,
+        "samples": [
+          {
+            "wall_ns": 18063.556640625,
+            "cpu_ns": 17230.46875
+          },
+          {
+            "wall_ns": 16663.41015625,
+            "cpu_ns": 16404.296875
+          },
+          {
+            "wall_ns": 16433.91796875,
+            "cpu_ns": 16224.609375
+          },
+          {
+            "wall_ns": 17158.365234375,
+            "cpu_ns": 16654.296875
+          },
+          {
+            "wall_ns": 16855.55078125,
+            "cpu_ns": 16464.84375
+          },
+          {
+            "wall_ns": 16166.828125,
+            "cpu_ns": 15914.0625
+          },
+          {
+            "wall_ns": 16712.076171875,
+            "cpu_ns": 16511.71875
+          },
+          {
+            "wall_ns": 16126.626953125,
+            "cpu_ns": 15873.046875
+          },
+          {
+            "wall_ns": 15876.7890625,
+            "cpu_ns": 15589.84375
+          }
+        ],
+        "min_wall_ns": 15876.7890625,
+        "median_wall_ns": 16663.41015625,
+        "min_cpu_ns": 15589.84375,
+        "median_cpu_ns": 16404.296875,
+        "cpu_speedup_vs_prior_builtin": 153.34396952018096,
+        "cpu_speedup_vs_stdlib": 8.998903810387935
+      },
+      "prior-builtin": {
+        "iterations": 2,
+        "samples": [
+          {
+            "wall_ns": 2714896.0,
+            "cpu_ns": 2623500.0
+          },
+          {
+            "wall_ns": 2532375.0,
+            "cpu_ns": 2467500.0
+          },
+          {
+            "wall_ns": 2600521.0,
+            "cpu_ns": 2515500.0
+          },
+          {
+            "wall_ns": 2645250.0,
+            "cpu_ns": 2584500.0
+          },
+          {
+            "wall_ns": 2585729.0,
+            "cpu_ns": 2509500.0
+          },
+          {
+            "wall_ns": 2632521.0,
+            "cpu_ns": 2564500.0
+          },
+          {
+            "wall_ns": 2577062.5,
+            "cpu_ns": 2514500.0
+          },
+          {
+            "wall_ns": 2567729.0,
+            "cpu_ns": 2517000.0
+          },
+          {
+            "wall_ns": 2297625.0,
+            "cpu_ns": 2270500.0
+          }
+        ],
+        "min_wall_ns": 2297625.0,
+        "median_wall_ns": 2585729.0,
+        "min_cpu_ns": 2270500.0,
+        "median_cpu_ns": 2515500.0,
+        "cpu_speedup_vs_prior_builtin": 1.0,
+        "cpu_speedup_vs_stdlib": 0.05868443238130487
+      },
+      "stdlib": {
+        "iterations": 58,
+        "samples": [
+          {
+            "wall_ns": 171954.0172413793,
+            "cpu_ns": 160431.0344827586
+          },
+          {
+            "wall_ns": 164316.8103448276,
+            "cpu_ns": 155603.44827586206
+          },
+          {
+            "wall_ns": 152028.74137931035,
+            "cpu_ns": 147655.1724137931
+          },
+          {
+            "wall_ns": 150802.43103448275,
+            "cpu_ns": 145603.44827586206
+          },
+          {
+            "wall_ns": 150647.9827586207,
+            "cpu_ns": 147913.7931034483
+          },
+          {
+            "wall_ns": 147443.24137931035,
+            "cpu_ns": 144913.7931034483
+          },
+          {
+            "wall_ns": 150644.39655172414,
+            "cpu_ns": 147620.6896551724
+          },
+          {
+            "wall_ns": 146197.55172413794,
+            "cpu_ns": 143724.1379310345
+          },
+          {
+            "wall_ns": 138601.2931034483,
+            "cpu_ns": 137034.4827586207
+          }
+        ],
+        "min_wall_ns": 138601.2931034483,
+        "median_wall_ns": 150647.9827586207,
+        "min_cpu_ns": 137034.4827586207,
+        "median_cpu_ns": 147620.6896551724,
+        "cpu_speedup_vs_prior_builtin": 17.040294323756132,
+        "cpu_speedup_vs_stdlib": 1.0
+      }
+    }
+  }
+}

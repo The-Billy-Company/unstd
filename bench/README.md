@@ -355,8 +355,8 @@ interpreter, backend version, or machine.
 
 ## Complete clone and UUID profiles
 
-`clone_ids_profile` checks and profiles all 15 runtime Python functions in
-`unstd.clone` and `unstd.ids`, plus their four direct stdlib aliases. Its 54
+`clone_ids_profile` checks and profiles runtime Python functions in
+`unstd.clone` and `unstd.ids`, plus their four direct stdlib aliases. Its
 workloads cover atomic and mixed containers, dataclasses, models, reducers,
 cycles, custom factories, native UUID minting, and the handwritten fallback's
 clock/counter branches. Outputs are checked for type, key order, mutable
@@ -415,11 +415,13 @@ custom copy protocols, Unicode distance at lengths 12/64/65/256/1024, short and
 75-character Unicode name matching, and sequence/string-subclass fallbacks.
 
 Python and C cProfile entries are retained separately from timing. Per-workload
-profiles and untimed return-value tracking prove all three native kernels
+profiles and untimed return-value tracking prove all four native kernels
 accept their workloads and the declared Python fallback routes remain selected.
-A C call returning `NotImplemented` cannot prove acceleration. Missing native
-modules or unexpected routes fail the
-run. Paired measurements alternate original/current order by repetition. JSON
+A C call returning `NotImplemented` cannot prove acceleration.
+The cycle workload proves that `clone_graph` raises its cycle signal and
+immediately delegates to stdlib `deepcopy`, with no recursive Python walk.
+Missing native modules or unexpected routes fail the run. Paired measurements
+alternate original/current order by repetition. JSON
 includes all timing samples, harness/source/extension hashes, public signatures,
 interpreter/machine details, and native dispatch evidence. Unit tests verify the
 evidence checks without enforcing machine-specific speedup thresholds.

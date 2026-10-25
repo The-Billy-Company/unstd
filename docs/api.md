@@ -85,8 +85,11 @@ Import `from unstd import clone`.
 
 `copy` and `deepcopy` are the original stdlib functions. `deep` is the structural
 clone operation; `asdict` preserves the documented `dataclasses.asdict` behavior.
-Structural cloning has its documented shared-reference and cycle behavior;
-the organization of the implementation does not change it. No extra is needed.
+`deep` preserves shared-reference identity within each clone: repeated references
+to one source object reach one cloned object. Owned mutable data is independent
+of the source; immutable atoms may stay shared. Foreign copy hooks receive the
+same memo and control their own result. `asdict` retains the stdlib conversion's separate copies at structural positions.
+No extra is needed.
 
 ## Compression
 

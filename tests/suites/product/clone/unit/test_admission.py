@@ -15,6 +15,7 @@ import dataclasses
 import decimal
 import enum
 import gc
+import sys
 from typing import Any
 
 import pytest
@@ -32,7 +33,9 @@ def delegated(monkeypatch: pytest.MonkeyPatch) -> list[object]:
     seen: list[object] = []
 
     def record(obj: object, memo: Any = None) -> object:
-        if memo is None:  # the stdlib's own recursion always passes its memo
+        # The captured stdlib oracle also recursively calls this wrapper. Only
+        # direct calls from the structural module are per-node delegation.
+        if sys._getframe(1).f_globals.get("__name__") == structural.__name__:
             seen.append(obj)
         return _deepcopy(obj, memo)
 

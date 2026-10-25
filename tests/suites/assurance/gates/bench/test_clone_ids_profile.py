@@ -40,7 +40,12 @@ def test_value_check_observes_key_types_order_and_default_factory() -> None:
 def test_stdlib_profile_records_coverage_and_explicit_optional_skips() -> None:
     result = _bundle(REPO_ROOT / "src", "gate", stdlib_only=True)
     skipped = {row["function"] for row in result["functions"] if row["skipped"]}
-    assert skipped == {"structural._model", "structural._reduced"}
+    expected_skips = {
+        "structural._model",
+        "structural._reduced",
+        "structural._record_class",
+    }
+    assert skipped == expected_skips
     assert all(row["calls"] or row["skipped"] for row in result["functions"])
     locations = {
         (row["function"].split(".")[0], row["line"]) for row in result["functions"]
@@ -54,10 +59,34 @@ def test_stdlib_profile_records_coverage_and_explicit_optional_skips() -> None:
     }
     assert all(row["calls"] for row in result["aliases"])
     calls = {row["function"]: row["calls"] for row in result["functions"]}
+    assert calls["structural._walk_data"]
+    assert calls["structural._plain_field"]
     assert calls["uid.new"] == 6
     assert calls["uid.new_hex"] == 6
     assert calls["uid._next_ms_and_counter"] >= 21
     assert calls["uid._reset_after_fork"] == 3
+
+
+def test_python_only_profile_disables_secondary_native_kernel_and_metadata() -> None:
+    source = REPO_ROOT / "src"
+    clone = _load(source, "clone/structural.py", "_gate_python_clone")
+    uid = _load(source, "ids/uid.py", "_gate_python_uid")
+    fallback = _load(source, "ids/uid.py", "_gate_python_fallback")
+    clone._native_clone = None
+    clone._native_graph = None
+    clone._native_records = None
+    clone._native_dataclass = None
+    clone._RECORDS.add(Record)
+    cases = _workloads(clone, uid, fallback, stdlib_only=True)
+    result = _profile([clone, uid], cases, stdlib_only=True)
+    record_selector = next(
+        row
+        for row in result["functions"]
+        if row["function"] == "structural._record_class"
+    )
+    assert record_selector["calls"] == 0
+    assert record_selector["skipped"] == "native record kernel unavailable"
+    assert Record not in clone._RECORDS
 
 
 def test_reset_profile_control_observes_real_lock_state_and_rejects_noop(

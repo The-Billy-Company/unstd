@@ -10,6 +10,7 @@ import pytest
 from bench.core.timing import Measurement
 from bench.profiles import native_profile
 from bench.profiles.native_profile import (
+    Record,
     Workload,
     _assert_native_execution,
     _base_text,
@@ -28,7 +29,9 @@ from unstd.clone import structural
 from unstd.text import fuzz
 
 
-@pytest.mark.parametrize("value", [[1], {"nested": [1]}, [{"nested": [2]}]])
+@pytest.mark.parametrize(
+    "value", [[1], {"nested": [1]}, [{"nested": [2]}], Record("row", [1])]
+)
 def test_mutable_identity_and_shallow_clones_are_rejected(value: object) -> None:
     assert _same(value, value)
     assert not _isolated(value, value)
@@ -54,6 +57,8 @@ def test_workloads_cover_boundaries_fallbacks_and_compatibility() -> None:
         "clone.deep/records200",
         "clone.deep/records500",
         "clone.deep/mixed-custom-fallback",
+        "clone.deep/dataclass-records",
+        "clone.deep/dataclass-wrapped",
         "clone.deep/shared-branch-semantics",
         "clone.deep/cycle-fallback",
         "text.distance/sequence-fallback",
@@ -64,7 +69,7 @@ def test_workloads_cover_boundaries_fallbacks_and_compatibility() -> None:
     } <= names
     shared = next(case for case in cases if "shared-branch" in case.name)
     result = shared.call()
-    result[1] = result[0]
+    result[1] = copy.deepcopy(result[0])
     assert not shared.check(result)
 
 
@@ -79,18 +84,25 @@ def test_base_selection_preserves_python_wrappers_and_records_prior_selection() 
 
 def test_native_proof_requires_each_real_extension_profile_entry() -> None:
     names = [
-        "unstd.clone._clone_native.clone",
+        "unstd.clone._clone_native.clone_graph",
+        "unstd.clone._clone_native.clone_dataclass",
         "unstd.text._text_native.distance",
         "unstd.text._text_native.jaro",
     ]
     entries = [{"function": f"<built-in method {name}>", "calls": 3} for name in names]
-    assert len(_assert_native_execution({"c": entries})) == 3
+    assert len(_assert_native_execution({"c": entries})) == 4
     with pytest.raises(AssertionError, match="kernel did not execute"):
         _assert_native_execution({"c": entries[:-1]})
     with pytest.raises(AssertionError, match="kernel did not execute"):
         _assert_native_execution(
             {"c": [{"function": "<built-in method other.jaro>", "calls": 3}]}
         )
+    legacy = [
+        {**row, "function": row["function"].replace("clone_graph>", "clone>")}
+        for row in entries
+    ]
+    with pytest.raises(AssertionError, match=r"kernel did not execute: .+clone_graph"):
+        _assert_native_execution({"c": legacy})
 
 
 def test_native_module_absence_is_explicit_failure(monkeypatch) -> None:
@@ -135,6 +147,33 @@ def test_comparison_rejects_self_consistent_changed_output() -> None:
         _validate_comparison({"before": before, "after": after})
 
 
+def test_saved_alias_expansion_and_current_identity_are_checked_separately() -> None:
+    legacy = SimpleNamespace(**vars(structural))
+    legacy._walk = lambda source: source
+    legacy.deep = lambda source: [copy.deepcopy(item) for item in source]
+    text = SimpleNamespace(**vars(fuzz))
+    _base_text(text)
+    cases = [
+        next(
+            case
+            for case in _workloads(module, text)
+            if case.name == "clone.deep/shared-branch-semantics"
+        )
+        for module in (legacy, structural)
+    ]
+    old, new = cases
+    assert old.check(old.call())
+    assert new.check(new.call())
+    assert not old.check(new.call())
+    assert not new.check(old.call())
+    _validate_comparison(
+        {
+            "before": {"signatures": {}, "cases": [old]},
+            "after": {"signatures": {}, "cases": [new]},
+        }
+    )
+
+
 def test_timing_alternates_order_and_keeps_measurements_separate(monkeypatch) -> None:
     calls = []
 
@@ -160,7 +199,7 @@ def test_built_extensions_are_exercised_by_the_public_workloads() -> None:
     pytest.importorskip("unstd.text._text_native")
     result = _bundle(REPO_ROOT / "src", "gate_native", require_native=True)
     assert len(result["native_modules"]) == 2
-    assert len(result["native_execution"]) == 3
+    assert len(result["native_execution"]) == 4
     assert result["profile"]["python"]
     assert result["profile"]["c"]
     assert result["installed_signatures"] == native_profile._signatures(
@@ -168,17 +207,54 @@ def test_built_extensions_are_exercised_by_the_public_workloads() -> None:
     )
     assert len(result["routes"]) == len(result["cases"])
     assert result["routes"]["clone.deep/small"]["native_returns"] == {
-        "clone": [True, True, True]
+        "graph": [True, True, True]
     }
     assert result["routes"]["clone.deep/mixed-custom-fallback"]["native_returns"] == {
-        "clone": [False, False, False]
+        "graph": [False, False, False]
     }
+    cycle = result["routes"]["clone.deep/cycle-fallback"]
+    assert cycle["native_returns"] == {}
+    assert cycle["native_recursion_errors"] == {"graph": 3}
+    assert cycle["python_calls"]["deepcopy"]
+    assert "_walk" not in cycle["python_calls"]
+    records = result["routes"]["clone.deep/dataclass-records"]
+    assert records["native_returns"]["dataclass"] == [True] * 600
+    assert records["native_returns"]["graph"] == [False, False, False]
+    assert records["python_calls"]["_walk"]
+
+
+def test_cycle_route_rejects_python_walking_before_deepcopy(monkeypatch) -> None:
+    native = pytest.importorskip("unstd.clone._clone_native")
+    pytest.importorskip("unstd.text._text_native")
+    source = REPO_ROOT / "src"
+    clone = _load(source, "clone/structural.py", "_route_cycle_clone")
+    text = _load(source, "text/fuzz.py", "_route_cycle_text")
+    _base_text(text)
+    # The legacy entry point refuses cycles, forcing the recursive Python walk.
+    # Equal output cannot qualify that slower route as immediate cycle fallback.
+    monkeypatch.setattr(clone, "_native_graph", lambda source: native.clone(source))
+    cases = [
+        case
+        for case in _workloads(clone, text)
+        if case.name == "clone.deep/cycle-fallback"
+    ]
+    assert len(cases) == 1
+    assert cases[0].check(cases[0].call())
+    with pytest.raises(AssertionError, match="unexpected native/fallback route"):
+        _routes(cases, source, clone, text)
+    assert clone._native_clone is native.clone_checked
 
 
 @pytest.mark.parametrize(
     ("module_name", "attribute", "workload", "unsupported"),
     [
-        ("clone", "_native_clone", "clone.deep/small", (object(),)),
+        ("clone", "_native_graph", "clone.deep/small", (object(),)),
+        (
+            "clone",
+            "_native_dataclass",
+            "clone.deep/dataclass-records",
+            (object(), {}, structural._walk),
+        ),
         (
             "text",
             "_native_distance",
@@ -224,3 +300,30 @@ def test_current_native_calls_cannot_contaminate_python_comparison_baseline() ->
     pytest.importorskip("unstd.text._text_native")
     with pytest.raises(AssertionError, match="Python-only baseline"):
         _bundle(REPO_ROOT / "src", "contaminated_before", require_native=False)
+
+
+@pytest.mark.parametrize("kernel", ["graph", "dataclass"])
+def test_secondary_clone_kernel_cannot_hide_in_a_python_only_baseline(
+    monkeypatch,
+    kernel,
+) -> None:
+    native = pytest.importorskip("unstd.clone._clone_native")
+    load = native_profile._load
+
+    def without_other_kernels(source, relative, name):
+        module = load(source, relative, name)
+        if relative == "clone/structural.py":
+            module._native_clone = lambda source: NotImplemented
+            module._native_records = None
+            module._native_graph = native.clone_graph if kernel == "graph" else None
+            module._native_dataclass = (
+                native.clone_dataclass if kernel == "dataclass" else None
+            )
+        else:
+            module._native_distance = None
+            module._native_jaro = None
+        return module
+
+    monkeypatch.setattr(native_profile, "_load", without_other_kernels)
+    with pytest.raises(AssertionError, match="Python-only baseline"):
+        _bundle(REPO_ROOT / "src", "record_contaminated_before", require_native=False)

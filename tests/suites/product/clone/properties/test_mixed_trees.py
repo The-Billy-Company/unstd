@@ -211,16 +211,15 @@ def test_mutating_either_side_never_reaches_the_other(generated: object) -> None
 
 
 @given(_TREE)
-def test_shared_alias_is_cloned_separately_unlike_deepcopy(shared: object) -> None:
+def test_shared_alias_identity_is_preserved_like_deepcopy(shared: object) -> None:
     source = [shared, {"again": shared}]
     expected = copy.deepcopy(source)
     actual = clone.deep(source)
 
     _assert_twin(actual, expected)
     assert expected[0] is expected[1]["again"]
-    if isinstance(shared, _MUTABLE):
-        assert actual[0] is not actual[1]["again"]
-    assert not _mutable_ids(actual[0]) & _mutable_ids(actual[1]["again"])
+    assert actual[0] is actual[1]["again"]
+    assert not _mutable_ids(actual) & _mutable_ids(source)
 
 
 @pytest.fixture(scope="module")
@@ -238,6 +237,89 @@ _BUILTIN = st.recursive(
     ),
     max_leaves=12,
 )
+
+
+@st.composite
+def _aliased_builtin(draw: st.DrawFn) -> object:
+    """A bounded acyclic graph with aliases repeated through several containers."""
+    pool: list[Any] = [draw(st.lists(_BUILTIN, max_size=3))]
+    for _ in range(draw(st.integers(min_value=1, max_value=5))):
+        shared = pool[draw(st.integers(min_value=0, max_value=len(pool) - 1))]
+        other = pool[draw(st.integers(min_value=0, max_value=len(pool) - 1))]
+        shape = draw(st.sampled_from(["list", "tuple", "dict"]))
+        if shape == "dict":
+            pool.append({"first": shared, "again": shared, "other": other})
+        elif shape == "tuple":
+            pool.append((shared, shared, other))
+        else:
+            pool.append([shared, shared, other])
+    return [{"branch": pool[-1]}, {"branch": pool[-1]}]
+
+
+@given(source=_aliased_builtin())
+@pytest.mark.parametrize("backend", ["native", "native_checked"])
+def test_native_tree_copy_expands_every_alias_in_a_builtin_graph(
+    backend: str, source: Any
+) -> None:
+    """An optimization may reuse immutable leaves, never a copied mutable branch."""
+    native = pytest.importorskip("unstd.clone._clone_native")
+    copier = native.clone_checked if backend == "native_checked" else native.clone
+    expected = copy.deepcopy(source)
+    assert expected[0]["branch"] is expected[1]["branch"]
+    snapshot = copy.deepcopy(source)
+
+    actual = copier(source)
+    assert actual is not NotImplemented
+    _assert_twin(actual, expected)
+    mutable_nodes = [node for node in _nodes(actual) if type(node) in (list, dict)]
+    mutable_ids = [id(node) for node in mutable_nodes]
+    assert len(mutable_ids) == len(set(mutable_ids))
+    assert not set(mutable_ids) & _mutable_ids(source)
+    _mutate_all(actual)
+    _assert_twin(source, snapshot)
+
+
+def _assert_builtin_aliases(
+    actual: Any, source: Any, twins: dict[int, Any] | None = None
+) -> None:
+    if type(source) not in (dict, list, tuple):
+        return
+    if twins is None:
+        twins = {}
+    if id(source) in twins:
+        assert actual is twins[id(source)]
+        return
+    twins[id(source)] = actual
+    if type(source) is dict:
+        for key, value in source.items():
+            _assert_builtin_aliases(actual[key], value, twins)
+    else:
+        for value, original in zip(actual, source, strict=True):
+            _assert_builtin_aliases(value, original, twins)
+
+
+@given(source=_aliased_builtin())
+@pytest.mark.parametrize("backend", ["python", "native"])
+def test_deep_preserves_every_alias_in_a_builtin_graph(
+    backend: str, source: Any
+) -> None:
+    expected = copy.deepcopy(source)
+    snapshot = copy.deepcopy(source)
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        if backend == "python":
+            monkeypatch.setattr(structural, "_native_clone", None)
+            monkeypatch.setattr(structural, "_native_records", None)
+            if hasattr(structural, "_native_graph"):
+                monkeypatch.setattr(structural, "_native_graph", None)
+        else:
+            pytest.importorskip("unstd.clone._clone_native")
+        actual = clone.deep(source)
+
+    _assert_twin(actual, expected)
+    _assert_builtin_aliases(actual, source)
+    assert not _mutable_ids(actual) & _mutable_ids(source)
+    _mutate_all(actual)
+    _assert_twin(source, snapshot)
 
 
 @given(builtin=_BUILTIN, source=_TREE)

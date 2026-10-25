@@ -305,12 +305,13 @@ def test_safe_temporal_values_keep_the_fast_identity_path(
     assert clone.asdict(_TemporalBox(value))["value"] is value
 
 
-def test_shared_reference_is_cloned_twice() -> None:
-    """The documented divergence: aliasing is not preserved (deepcopy's memo is not kept)."""
+def test_shared_reference_identity_is_preserved() -> None:
+    """One source object maps to one clone throughout a deep call."""
     inner = [1]
     cloned = clone.deep({"a": inner, "b": inner})
     assert cloned == {"a": [1], "b": [1]}
-    assert cloned["a"] is not cloned["b"]
+    assert cloned["a"] is cloned["b"]
+    assert cloned["a"] is not inner
 
 
 # ── objects that require a real deepcopy still work ────────────────────────────

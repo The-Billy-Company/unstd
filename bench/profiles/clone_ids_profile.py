@@ -64,6 +64,11 @@ class Record:
     values: Any
 
 
+@dataclass
+class InheritedRecord(Record):
+    """Inherited layouts retain the Python dataclass reconstruction recipe."""
+
+
 @dataclass(slots=True)
 class Slotted:
     """Slotted records follow the general copy protocol."""
@@ -199,6 +204,7 @@ def _workloads(
         ("records500", [{"id": i, "name": "café", "score": 1.5} for i in range(500)]),
         ("dataclass", Record("root", [Record("child", [1, 2])])),
         ("dataclasses200", [Record("row", [i, i + 1]) for i in range(200)]),
+        ("dataclass-inherited", InheritedRecord("child", [1, 2])),
         ("slotted", Slotted([1, 2])),
         ("enum", Choice.FIRST),
         ("custom", Custom()),
@@ -240,13 +246,16 @@ def _workloads(
     )
     shared: list[int] = [1]
     shared_input = [shared, shared]
+    # Saved wrappers predate the per-call memo. Validate their historical
+    # contract without accepting alias splitting from the current walker.
+    preserves_aliases = "memo" in inspect.signature(clone._walk).parameters
     cases.append(
         Workload(
             "clone.deep/shared",
             partial(clone.deep, shared_input),
             lambda result: (
                 _same(result, shared_input)
-                and result[0] is not result[1]
+                and (result[0] is result[1]) == preserves_aliases
                 and result[0] is not shared
             ),
         )
@@ -450,6 +459,8 @@ def _profile(
     clone = modules[0]
     clone._NODES.clear()
     clone._FIELDS.clear()
+    if hasattr(clone, "_RECORDS"):
+        clone._RECORDS.clear()
     clone._PYDANTIC_UNDEFINED = None
     reset_control = _fork_reset_control(modules[1])
     profiler = cProfile.Profile()
@@ -497,9 +508,17 @@ def _profile(
                     "calls": entry[1] if entry else 0,
                     "self_ns": entry[2] * 1e9 if entry else 0,
                     "cumulative_ns": entry[3] * 1e9 if entry else 0,
-                    "skipped": "optional model workload disabled"
-                    if stdlib_only and name in ("_model", "_reduced")
-                    else None,
+                    "skipped": (
+                        "optional model workload disabled"
+                        if stdlib_only and name in ("_model", "_reduced")
+                        else "native record kernel unavailable"
+                        if name == "_record_class"
+                        and getattr(clone, "_native_records", None) is None
+                        else "tree-record selector unused by graph cloning"
+                        if name == "_record_class"
+                        and "memo" in inspect.signature(clone._walk).parameters
+                        else None
+                    ),
                 }
             )
     missing = [

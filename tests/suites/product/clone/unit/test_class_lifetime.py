@@ -7,6 +7,8 @@ Weak references observe collection independently of either cache implementation.
 import copy
 import dataclasses
 import gc
+import subprocess
+import sys
 import weakref
 
 import pytest
@@ -38,3 +40,48 @@ def test_generated_classes_are_released_after_their_instances(operation, referen
     gc.collect()
     assert all(item() is None for item in control), "stdlib collection control failed"
     assert all(item() is None for item in observed), "clone metadata retained a class"
+
+
+def test_direct_native_module_deallocation_releases_cached_weakrefs() -> None:
+    pytest.importorskip("unstd.clone._clone_native")
+    # Clear builtin functions' references to their module to select direct
+    # refcount deallocation; cyclic GC's module clear hook is not sufficient.
+    code = """
+import dataclasses
+import importlib.util
+import sys
+import weakref
+from unstd.clone import _clone_native as native
+from unstd.clone import structural
+
+spec = importlib.util.spec_from_file_location(
+    '_clone_direct_dealloc._clone_native', native.__file__)
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+
+@dataclasses.dataclass
+class Row:
+    values: object
+
+source = Row([1])
+class_reference = weakref.ref(Row)
+baseline = sys.getrefcount(class_reference)
+for _ in range(5):
+    actual = module.clone_dataclass(source, {}, structural._walk)
+    assert actual.values == [1] and actual.values is not source.values
+assert sys.getrefcount(class_reference) > baseline, 'native cache was not warmed'
+
+module_reference = weakref.ref(module)
+module.__dict__.clear()
+del module
+assert module_reference() is None, 'direct module deallocation was not reached'
+assert sys.getrefcount(class_reference) == baseline, 'module state leaked a weakref'
+"""
+    completed = subprocess.run(  # noqa: S603 — fixed interpreter and literal test source
+        [sys.executable, "-X", "faulthandler", "-c", code],
+        check=False,
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    assert completed.returncode == 0, completed.stdout + completed.stderr

@@ -1,0 +1,2936 @@
+{
+  "python": "3.13.16 (main, Oct  9 2026, 15:11:24) [Clang 22.1.3 ]",
+  "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "rounds": 9,
+  "includes_output_destruction": true,
+  "inputs_checks_outside_timing": true,
+  "gc_threshold": [
+    2000,
+    10,
+    10
+  ],
+  "class_layout": {
+    "Record": {
+      "address": 32374195216,
+      "cache_bucket": 27
+    },
+    "Frozen": {
+      "address": 32374196240,
+      "cache_bucket": 27
+    },
+    "Branch": {
+      "address": 32374197264,
+      "cache_bucket": 27
+    }
+  },
+  "harness_source": "from __future__ import annotations\n\nimport argparse\nimport copy\nfrom dataclasses import dataclass, is_dataclass\nfrom functools import partial\nimport gc\nimport hashlib\nimport json\nfrom pathlib import Path\nimport platform\nimport sys\n\nfrom bench.profiles import clone_cpu as timing\nfrom unstd.clone import structural\n\n\n@dataclass\nclass Record:\n    name: str\n    values: object\n\n\n@dataclass(frozen=True)\nclass Frozen:\n    name: str\n    values: object\n\n\n@dataclass\nclass Branch:\n    name: str\n    children: object\n\n\nclass Foreign:\n    def __init__(self, values):\n        self.values = values\n\n    def __deepcopy__(self, memo):\n        twin = object.__new__(type(self))\n        memo[id(self)] = twin\n        twin.values = copy.deepcopy(self.values, memo)\n        return twin\n\n\ndef check(actual, source):\n    \"\"\"Inspect graph values, identity, exact types and separation outside timing.\"\"\"\n    seen = {}\n    outputs = {}\n\n    def visit(new, old):\n        assert type(new) is type(old), (type(new), type(old))\n        container = type(old) in (dict, list, tuple)\n        stateful = is_dataclass(old) or isinstance(old, Foreign)\n        if not container and not stateful:\n            assert new == old\n            return\n        if id(old) in seen:\n            assert new is seen[id(old)]\n            return\n        assert new is not old\n        assert id(new) not in outputs or outputs[id(new)] is old\n        seen[id(old)] = new\n        outputs[id(new)] = old\n        if type(old) is dict:\n            assert len(new) == len(old)\n            for (key, value), (old_key, old_value) in zip(new.items(), old.items(), strict=True):\n                visit(key, old_key)\n                visit(value, old_value)\n        elif type(old) in (list, tuple):\n            assert len(new) == len(old)\n            for value, old_value in zip(new, old, strict=True):\n                visit(value, old_value)\n        else:\n            # Dataclass reconstruction updates a new __dict__, as deepcopy does;\n            # compare state values without treating that implicit mapping as a\n            # separately cloned source graph node.\n            assert list(vars(new)) == list(vars(old))\n            for name, value in vars(old).items():\n                visit(vars(new)[name], value)\n\n    visit(actual, source)\n\n\ndef workloads():\n    shared = [1, 2]\n    records = [Record(str(i), shared) for i in range(200)]\n    repeated = Record('same', [1, 2])\n    shared_large = list(range(1000))\n    mixed = [Record(str(i), shared) for i in range(100)]\n    mixed.extend((Foreign(shared), shared))\n    return {\n        'dataclass-distinct-200': [Record(str(i), [i, i + 1]) for i in range(200)],\n        'dataclass-scalar-500': [Record(str(i), i) for i in range(500)],\n        'dataclass-homogeneous-500': [Record('row', [i, i + 1]) for i in range(500)],\n        'dataclass-shared-fields-200': [records, shared, records[0]],\n        'dataclass-repeated-record-500': [repeated] * 500,\n        'dataclass-nested-100': Branch('root', [Branch(str(i), Record('leaf', [i])) for i in range(100)]),\n        'dataclass-frozen-200': [Frozen(str(i), [i, i + 1]) for i in range(200)],\n        'dataclass-custom-hook-100': mixed,\n        'builtin-nested-distinct-200': {'rows': [{'id': i, 'items': [i, i + 1], 'meta': {'active': True}} for i in range(200)]},\n        'builtin-shared-1000x500': [shared_large] * 500,\n    }\n\n\ndef metadata(module):\n    result = timing._metadata(module)\n    helper = getattr(module, '_native_dataclass', None)\n    result['native_dataclass_entrypoint'] = getattr(helper, '__name__', None)\n    return result\n\n\ndef main():\n    parser = argparse.ArgumentParser()\n    parser.add_argument('--before-dir', type=Path, required=True)\n    parser.add_argument('--output', type=Path, required=True)\n    parser.add_argument('--rounds', type=int, default=9)\n    args = parser.parse_args()\n    before = timing._snapshot(args.before_dir, 'before_dataclass_identity')\n    # The saved wrapper predates this helper, but explicitly avoid accidental\n    # import leakage when rerunning with a future helper-aware saved wrapper.\n    manifest = json.loads((args.before_dir / 'manifest.json').read_text())\n    if 'native_dataclass_entrypoint' not in manifest:\n        before._native_dataclass = None\n    source = Path(__file__).read_text()\n    result = {\n        'python': sys.version,\n        'platform': platform.platform(),\n        'machine': platform.machine(),\n        'rounds': args.rounds,\n        'includes_output_destruction': True,\n        'inputs_checks_outside_timing': True,\n        'gc_threshold': gc.get_threshold(),\n        'class_layout': {cls.__name__: {'address': id(cls), 'cache_bucket': ((id(cls) >> 4) ^ ((id(cls) >> 4) >> 16)) & 31} for cls in (Record, Frozen, Branch)},\n        'harness_source': source,\n        'harness_sha256': hashlib.sha256(source.encode()).hexdigest(),\n        'before': metadata(before),\n        'after': metadata(structural),\n        'before_sources': {name: (args.before_dir / name).read_text() for name in ('structural.py', '_clone_native.c', 'manifest.json')},\n        'comparisons': {},\n    }\n    for enabled in (False, True):\n        group = result['comparisons']['gc-enabled' if enabled else 'gc-disabled'] = {}\n        for name, prepared in workloads().items():\n            calls = {\n                'before': partial(before.deep, prepared),\n                'after': partial(structural.deep, prepared),\n                'stdlib': partial(copy.deepcopy, prepared),\n            }\n            for call in calls.values():\n                check(call(), prepared)\n            samples = timing._timings(calls, args.rounds, enabled)\n            for values in samples.values():\n                values['speedup_vs_before_cpu'] = samples['before']['median_cpu_ns'] / values['median_cpu_ns']\n                values['speedup_vs_stdlib_cpu'] = samples['stdlib']['median_cpu_ns'] / values['median_cpu_ns']\n            group[name] = samples\n            old = samples['before']['median_cpu_ns'] / 1000\n            new = samples['after']['median_cpu_ns'] / 1000\n            print(f'{enabled=} {name}: {old:.2f} -> {new:.2f} us ({old/new:.2f}x)', flush=True)\n    args.output.write_text(json.dumps(result, indent=2) + '\\n')\n\n\nif __name__ == '__main__':\n    main()\n",
+  "harness_sha256": "42b8c0342b7e5cf72ee9be76db578e70c0dfdfe5a49a5a6e5b5cd6739ad566e1",
+  "before": {
+    "source": "/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/unstd-clone-dataclass-before-7_bgde9y/structural.py",
+    "source_sha256": "d8174371953afb53555f8d5a3f2def7fa6acbf36824d628924ba6eb4b6967abc",
+    "snapshot_manifest_sha256": "085a8a82f63050682b39f67363c90edd270dcce6c0c79d7374d4d4cf6979c54f",
+    "native_source_sha256": "01775a8e8a0cbf9cb2637963162940cff626e92adb34c0e74bcab4aab5de25d8",
+    "native": "/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/unstd-clone-dataclass-before-7_bgde9y/_clone_native.cpython-313-darwin.so",
+    "native_entrypoint": "clone_checked",
+    "native_graph_entrypoint": "clone_graph",
+    "native_dataclass_entrypoint": null,
+    "native_sha256": "ed00731f44a5fa88d767327b8104a339c85e47a144dadef7eaa1de5d216de8ca",
+    "native_records": {
+      "entrypoint": "clone_records",
+      "module": "_clone_cpu_before_dataclass_identity._clone_native",
+      "path": "/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/unstd-clone-dataclass-before-7_bgde9y/_clone_native.cpython-313-darwin.so",
+      "source_sha256": "01775a8e8a0cbf9cb2637963162940cff626e92adb34c0e74bcab4aab5de25d8",
+      "sha256": "ed00731f44a5fa88d767327b8104a339c85e47a144dadef7eaa1de5d216de8ca"
+    }
+  },
+  "after": {
+    "source": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/clone/structural.py",
+    "source_sha256": "75a4fd6d4c6f04a5688a894a846eec2c7bf78da2710978504a3375cad76e501f",
+    "snapshot_manifest_sha256": null,
+    "native_source_sha256": "e1c881d6842a45880a4a70aa02a0c57fae2982eb4f4e6a303da28f1af7d76369",
+    "native": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/clone/_clone_native.cpython-313-darwin.so",
+    "native_entrypoint": "clone_checked",
+    "native_graph_entrypoint": "clone_graph",
+    "native_dataclass_entrypoint": "clone_dataclass",
+    "native_sha256": "6c4049d55284d7b8e044ed0de97f08249be1fb75ba6a4f1044a623dd21cae97d",
+    "native_records": {
+      "entrypoint": "clone_records",
+      "module": "unstd.clone._clone_native",
+      "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/clone/_clone_native.cpython-313-darwin.so",
+      "source_sha256": "e1c881d6842a45880a4a70aa02a0c57fae2982eb4f4e6a303da28f1af7d76369",
+      "sha256": "6c4049d55284d7b8e044ed0de97f08249be1fb75ba6a4f1044a623dd21cae97d"
+    }
+  },
+  "before_sources": {
+    "structural.py": "\"\"\"Fast structural deep clone \u2014 a stdlib-``copy``-faithful stand-in for data.\n\n``copy.deepcopy`` is a general object-graph walker: every node pays a memo lookup,\na dispatch-table probe, and (for anything but a builtin container) a\n``__reduce_ex__`` round-trip. Data crossing a program's seams \u2014 ``dict``/``list``/\n``tuple``/``set`` trees, dataclasses, pydantic models, ``msgspec.Struct`` \u2014 can\nuse exact-type dispatch and a shared memo instead:\n\n- **Scalar leaves never pay a call.** The container walks test each child's\n  exact type inline and return atoms (``str``/``int``/``float``/``bool``/``None``/\n  ``bytes`` \u2026) as-is. Immutable temporal values enter the memo to keep references\n  consistent across foreign copy hooks. Datetimes and times stay shared when\n  their timezone is absent or an exact immutable stdlib type; custom timezones\n  retain ``deepcopy``'s copy protocol.\n- **Data classes are rebuilt the way ``deepcopy`` rebuilds them**, with the walker\n  in place of the recursive ``deepcopy``: a plain dataclass is ``cls.__new__`` plus\n  its walked ``__dict__`` (what ``object.__reduce_ex__(4)`` reconstructs to); a\n  pydantic model copies ``BaseModel.__deepcopy__``'s fields and state; a\n  ``(callable, args)`` reducer such as ``msgspec.Struct`` is re-called on walked\n  args. Each shape is admitted per class, once, only when the class leaves the\n  default copy protocol alone.\n- **Everything else is copied by ``copy.deepcopy``, per node.** A custom\n  ``__deepcopy__``, a dict subclass, an lxml element, a lock: the walker hands that\n  one node to ``deepcopy`` and keeps walking its siblings.\n\nA per-call memo preserves shared references across structural nodes and foreign\ncopy hooks: an object reached twice reuses the same clone. Immutable leaves stay\nshared with the source. The native walk detects builtin cycles and hands the\nwhole graph to ``deepcopy``; the Python walker also\nmemoizes mutable outputs before visiting their children.\n\n:func:`asdict` is the same walker in ``dataclasses.asdict``'s shape \u2014 dataclasses\nbecome ``dict``, ``dict``/``list``/``tuple`` are rebuilt, and every other leaf is\ndeep-copied \u2014 without ``asdict``'s ``fields()`` call per instance and\n``deepcopy`` per non-atomic leaf. Containers ``asdict`` special-cases but this\nwalker does not (namedtuples, ``dict``/``list``/``tuple`` subclasses) hand the\nwhole call back to the stdlib, so the result is always ``dataclasses.asdict``'s.\n\nNo extra is needed. An optional bundled C walker accelerates bounded exact\ndict/list/tuple graphs, including dataclass and model state. Foreign\nnodes retain this Python implementation and their existing copy protocols. The\n``copy``/``deepcopy`` re-exports keep a file\nmigrating off ``import copy`` working after a one-line import swap.\n\"\"\"\n\nfrom __future__ import annotations\n\nfrom collections.abc import Callable\nimport copy as _stdlib\nimport copyreg\nimport dataclasses\nimport datetime as _dt\nimport enum\nimport sys\nimport types\nfrom typing import Any\nimport weakref\nfrom zoneinfo import ZoneInfo\n\n\n_native_clone: Callable[[Any], Any] | None\ntry:\n    from unstd.clone._clone_native import clone_checked as _native_clone\nexcept ImportError:\n    _native_clone = None\n\n_native_graph: Callable[..., Any] | None\ntry:\n    from unstd.clone._clone_native import clone_graph as _native_graph\nexcept ImportError:\n    _native_graph = None\n\n_native_records: Callable[[Any, type, Callable[[Any], Any]], Any] | None\ntry:\n    from unstd.clone._clone_native import clone_records as _native_records\nexcept ImportError:\n    _native_records = None\n\n\ncopy = _stdlib.copy\ndeepcopy = _stdlib.deepcopy\n\n__all__ = [\"asdict\", \"copy\", \"deep\", \"deepcopy\"]\n\n# Exact types ``copy.deepcopy`` returns as-is, plus the immutable datetime values\n# it would only rebuild equal.\n_ATOMS: frozenset[type] = frozenset(\n    {\n        type(None),\n        int,\n        float,\n        bool,\n        complex,\n        bytes,\n        str,\n        range,\n        type,\n        property,\n        types.CodeType,\n        types.FunctionType,\n        types.BuiltinFunctionType,\n        types.EllipsisType,\n        types.NotImplementedType,\n        weakref.ref,\n        _dt.date,\n        _dt.timedelta,\n        _dt.timezone,\n    }\n)\n# These immutable temporal values are rebuilt by stdlib deepcopy. They must\n# enter our memo so foreign copy hooks and structural siblings agree on identity.\n_GRAPH_ATOMS = _ATOMS - {_dt.date, _dt.timedelta, _dt.timezone}\n# A datetime/time is immutable, but a caller's tzinfo can own mutable state.\n# Admit only exact immutable timezone types; subclasses keep their copy hooks.\n_TIMEZONES = frozenset({type(None), _dt.timezone, ZoneInfo})\n\ntype _Clone = Callable[[Any, dict[int, Any]], Any]\n# Admission metadata must not keep dynamically generated classes alive.\n_NODES: weakref.WeakKeyDictionary[type, _Clone | None] = weakref.WeakKeyDictionary()\n_RECORDS: weakref.WeakSet[type] = weakref.WeakSet()\n\n\ndef _walk(o: Any, memo: dict[int, Any] | None = None) -> Any:\n    t = type(o)\n    if t in _GRAPH_ATOMS:\n        return o\n    if memo is None:\n        memo = {}\n    identity = id(o)\n    if identity in memo:\n        return memo[identity]\n    # Copy hooks may remove a source node while we walk. Pin it until this\n    # operation ends so its id cannot be recycled into a different memo entry.\n    try:\n        memo[id(memo)].append(o)\n    except KeyError:\n        memo[id(memo)] = [o]\n    if t is _dt.timezone:\n        offset = o.utcoffset(None)\n        copied_offset = _walk(offset, memo)\n        twin_zone = (\n            o\n            if copied_offset is offset\n            else _dt.timezone(copied_offset, o.tzname(None))\n        )\n        memo[identity] = twin_zone\n        return twin_zone\n    if t in _ATOMS or t is ZoneInfo:\n        memo[identity] = o\n        return o\n    if t is dict:\n        twin: Any = {}\n        memo[identity] = twin\n        for k, v in o.items():\n            key = (\n                k\n                if type(k) is str\n                else k\n                if type(k) in _GRAPH_ATOMS\n                else _walk(k, memo)\n            )\n            twin[key] = v if type(v) in _GRAPH_ATOMS else _walk(v, memo)\n        return twin\n    if t is list:\n        twin = []\n        memo[identity] = twin\n        # Append as we go: a foreign copy hook can refer back to this list.\n        for v in o:\n            twin.append(v if type(v) in _GRAPH_ATOMS else _walk(v, memo))\n        return twin\n    if t is tuple:\n        values = [v if type(v) in _GRAPH_ATOMS else _walk(v, memo) for v in o]\n        # A child can recursively finish this tuple through a mutable backref.\n        if identity in memo:\n            return memo[identity]\n        twin = tuple(values)\n    elif t is _dt.datetime or t is _dt.time:\n        zone = o.tzinfo\n        if type(zone) in _TIMEZONES:\n            copied_zone = _walk(zone, memo)\n            twin = o if copied_zone is zone else o.replace(tzinfo=copied_zone)\n        else:\n            twin = _stdlib.deepcopy(o, memo)\n    elif t is set:\n        twin = set()\n        memo[identity] = twin\n        for v in o:\n            twin.add(v if type(v) in _GRAPH_ATOMS else _walk(v, memo))\n        return twin\n    elif t is frozenset:\n        values = [v if type(v) in _GRAPH_ATOMS else _walk(v, memo) for v in o]\n        if identity in memo:\n            return memo[identity]\n        twin = frozenset(values)\n    else:\n        try:\n            node = _NODES[t]\n        except KeyError:\n            node = _NODES[t] = _admit(t)\n        twin = node(o, memo) if node else _stdlib.deepcopy(o, memo)\n    memo[identity] = twin\n    return twin\n\n\n# \u2500\u2500 per-class admission: which default-protocol shapes the walker may rebuild \u2500\u2500\n\n\ndef _default_protocol(cls: type) -> bool:\n    \"\"\"Whether ``deepcopy`` would take the default ``object.__reduce_ex__`` route.\"\"\"\n    return (\n        getattr(cls, \"__deepcopy__\", None) is None\n        and cls not in copyreg.dispatch_table\n        and getattr(cls, \"__reduce_ex__\", None) is object.__reduce_ex__\n        and getattr(cls, \"__reduce__\", None) is object.__reduce__\n    )\n\n\ndef _admit(cls: type) -> _Clone | None:\n    if isinstance(cls, enum.EnumType):\n        return (\n            _same\n            if getattr(cls, \"__deepcopy__\", None) is enum.Enum.__deepcopy__\n            else None\n        )\n    if (pd := sys.modules.get(\"pydantic\")) and issubclass(cls, pd.BaseModel):\n        return (\n            _model\n            if getattr(cls, \"__deepcopy__\", None) is pd.BaseModel.__deepcopy__\n            else None\n        )\n    if (ms := sys.modules.get(\"msgspec\")) and issubclass(cls, ms.Struct):\n        return (\n            _reduced\n            if getattr(cls, \"__deepcopy__\", None) is None\n            and cls not in copyreg.dispatch_table\n            and getattr(cls, \"__reduce_ex__\", None) is object.__reduce_ex__\n            and getattr(cls, \"__reduce__\", None) is ms.Struct.__reduce__\n            else None\n        )\n    if (\n        dataclasses.is_dataclass(cls)\n        and _default_protocol(cls)\n        and getattr(cls, \"__getstate__\", None) is object.__getstate__\n        and not hasattr(cls, \"__setstate__\")\n        and not hasattr(cls, \"__slots__\")\n        and not hasattr(cls, \"__getnewargs__\")\n        and not hasattr(cls, \"__getnewargs_ex__\")\n    ):\n        # Read the first MRO entries statically. A custom descriptor for\n        # __new__ or __dict__ must not run merely to choose an accelerator.\n        # Native records use ordinary allocation/attribute reading only;\n        # custom-new and descriptor-bearing records retain _dataclass. Setters\n        # are bypassed by __dict__.update, including frozen dataclass setters.\n        if (\n            _native_records is not None\n            and type(cls) is type\n            and cls.__base__ is object\n            and \"__del__\" not in vars(cls)\n        ):\n            attributes: dict[str, Any] = {}\n            for base in cls.__mro__:\n                namespace = vars(base)\n                for name in (\n                    \"__new__\",\n                    \"__getattribute__\",\n                    \"__dict__\",\n                ):\n                    if name not in attributes and name in namespace:\n                        attributes[name] = namespace[name]\n            descriptor = attributes.get(\"__dict__\")\n            if (\n                attributes.get(\"__new__\") is object.__new__\n                and attributes.get(\"__getattribute__\") is object.__getattribute__\n                and type(descriptor) is types.GetSetDescriptorType\n                and descriptor.__objclass__ is cls\n            ):\n                _RECORDS.add(cls)\n        return _dataclass\n    return None\n\n\ndef _same(o: Any, memo: dict[int, Any]) -> Any:\n    return o\n\n\ndef _walk_data(o: Any, memo: dict[int, Any]) -> Any:\n    \"\"\"Try native cloning at a state boundary with the enclosing graph's memo.\"\"\"\n    if id(o) in memo:\n        return memo[id(o)]\n    if _native_clone is not None and _native_graph is not None:\n        result = _native_graph(o, memo)\n        if result is not NotImplemented:\n            return result\n    return _walk(o, memo)\n\n\ndef _dataclass(o: Any, memo: dict[int, Any]) -> Any:\n    cls: Any = type(o)\n    twin = cls.__new__(cls)\n    memo[id(o)] = twin\n    if state := o.__dict__:\n        twin.__dict__.update(_walk_data(state, memo))\n    return twin\n\n\ndef _reduced(o: Any, memo: dict[int, Any]) -> Any:\n    rv = o.__reduce__()\n    if len(rv) != 2:  # state/items need deepcopy's full _reconstruct\n        return _stdlib.deepcopy(o, memo)\n    fn, args = rv\n    values = [a if type(a) in _GRAPH_ATOMS else _walk(a, memo) for a in args]\n    if id(o) in memo:\n        return memo[id(o)]\n    return fn(*values)\n\n\n_PYDANTIC_UNDEFINED: Any = None\n\n\ndef _model(o: Any, memo: dict[int, Any]) -> Any:\n    \"\"\"``pydantic.BaseModel.__deepcopy__``, with the walker in place of ``deepcopy``.\"\"\"\n    global _PYDANTIC_UNDEFINED\n    if _PYDANTIC_UNDEFINED is None:\n        # Keep the optional import lazy, but out of every model in a large tree.\n        from pydantic_core import PydanticUndefined\n\n        _PYDANTIC_UNDEFINED = PydanticUndefined\n\n    cls: Any = type(o)\n    setattr_ = object.__setattr__\n    twin = cls.__new__(cls)\n    memo[id(o)] = twin\n    setattr_(twin, \"__dict__\", _walk_data(o.__dict__, memo))\n    extra = o.__pydantic_extra__\n    setattr_(\n        twin, \"__pydantic_extra__\", None if extra is None else _walk_data(extra, memo)\n    )\n    setattr_(twin, \"__pydantic_fields_set__\", _walk(o.__pydantic_fields_set__, memo))\n    private = getattr(o, \"__pydantic_private__\", None)\n    if private is None:\n        copied_private = None\n    elif id(private) in memo:\n        copied_private = memo[id(private)]\n        # Keep aliases to private state while applying pydantic's filtering,\n        # including when an outer container reached this dictionary first.\n        for key, value in list(copied_private.items()):\n            if value is _PYDANTIC_UNDEFINED:\n                del copied_private[key]\n    else:\n        # Snapshot before invoking hooks, retaining pydantic's filtering order.\n        snapshot = (\n            private.copy()\n            if type(private) is dict\n            else {k: v for k, v in private.items() if v is not _PYDANTIC_UNDEFINED}\n        )\n        copied_private = {}\n        memo[id(private)] = copied_private\n        try:\n            memo[id(memo)].append(private)\n        except KeyError:\n            memo[id(memo)] = [private]\n        copied_private.update(\n            {\n                (\n                    k\n                    if type(k) is str\n                    else k\n                    if type(k) in _GRAPH_ATOMS\n                    else _walk(k, memo)\n                ): (v if type(v) in _GRAPH_ATOMS else _walk(v, memo))\n                for k, v in snapshot.items()\n                if v is not _PYDANTIC_UNDEFINED\n            }\n        )\n    setattr_(twin, \"__pydantic_private__\", copied_private)\n    return twin\n\n\n# \u2500\u2500 the surface \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n\ndef _record_class(obj: Any) -> type | None:\n    \"\"\"Find the first foreign type through at most 32 builtin data values.\"\"\"\n    if type(obj) is dict and type(next(iter(obj), None)) is not str:\n        return None\n    stack = [(iter((obj,)), False)]\n    remaining = 32\n    while stack and remaining:\n        iterator, mapping = stack[-1]\n        try:\n            value = next(iterator)\n        except StopIteration:\n            stack.pop()\n            continue\n        except RuntimeError:\n            # Exact dict iteration can be invalidated by an allocation-triggered\n            # collector callback. Let the normal walker restart from live data.\n            return None\n        remaining -= 1\n        if mapping:\n            key, value = value\n            if type(key) is not str:\n                return None\n        cls = type(value)\n        if cls in _ATOMS:\n            continue\n        if cls is list or cls is tuple:\n            stack.append((iter(value), False))\n            continue\n        if cls is dict:\n            stack.append((iter(value.items()), True))\n            continue\n        if cls is _dt.datetime or cls is _dt.time:\n            return None\n        try:\n            node = _NODES[cls]\n        except KeyError:\n            node = _NODES[cls] = _admit(cls)\n        return cls if node is _dataclass and cls in _RECORDS else None\n    return None\n\n\ndef deep[T](obj: T) -> T:\n    \"\"\"Deep-clone data, preserving shared references within each call.\n\n    Exact builtin containers, dataclasses, pydantic models and msgspec structs\n    use a structural walk. Foreign nodes retain ``copy.deepcopy``'s protocol\n    and share the same memo. Mutable clones are independent of their sources;\n    repeated references reuse their clone. Immutable atoms remain shared.\n    \"\"\"\n    kind = type(obj)\n    if kind in _GRAPH_ATOMS:\n        return obj\n    try:\n        if (\n            _native_clone is not None\n            and _native_graph is not None\n            and (kind is dict or kind is list or kind is tuple)\n        ):\n            cloned = _native_graph(obj)\n            if cloned is not NotImplemented:\n                return cloned  # type: ignore[no-any-return]\n        return _walk(obj)  # type: ignore[no-any-return]\n    except RecursionError:\n        return _stdlib.deepcopy(obj)\n\n\n_FIELDS: weakref.WeakKeyDictionary[type, tuple[str, ...]] = weakref.WeakKeyDictionary()\n\n\nclass _DeferError(Exception):\n    \"\"\"A container ``dataclasses.asdict`` treats specially and this walker does not.\"\"\"\n\n\ndef _plain_field(o: Any) -> Any:\n    \"\"\"Try native data conversion once at a dataclass field boundary.\"\"\"\n    t = type(o)\n    if _native_clone is not None and (t is dict or t is list or t is tuple):\n        result = _native_clone(o)\n        if result is not NotImplemented:\n            return result\n    return _plain(o)\n\n\ndef _plain(o: Any) -> Any:\n    t = type(o)\n    if t in _ATOMS:\n        return o\n    if t is dict:\n        return {\n            (k if type(k) is str else _plain(k)): (\n                v if type(v) in _ATOMS else _plain(v)\n            )\n            for k, v in o.items()\n        }\n    if t is list:\n        return [v if type(v) in _ATOMS else _plain(v) for v in o]\n    if t is tuple:\n        return tuple([v if type(v) in _ATOMS else _plain(v) for v in o])\n    # ``t`` is already a type; avoid is_dataclass's instance/type dispatch for\n    # every record in the tree while retaining its inherited-field semantics.\n    if hasattr(t, \"__dataclass_fields__\"):\n        try:\n            names = _FIELDS[t]\n        except KeyError:\n            names = _FIELDS[t] = tuple(f.name for f in dataclasses.fields(t))\n        return {\n            n: (v if type(v := getattr(o, n)) in _ATOMS else _plain_field(v))\n            for n in names\n        }\n    if isinstance(o, (dict, list, tuple)):\n        raise _DeferError\n    return _walk(o)\n\n\ndef asdict(\n    obj: Any, *, dict_factory: Callable[[list[tuple[str, Any]]], Any] = dict\n) -> Any:\n    \"\"\"``dataclasses.asdict``, walked with exact-type dispatch \u2014 same result, same errors.\n\n    A custom ``dict_factory``, a non-dataclass argument, or a tree holding a\n    container ``asdict`` special-cases (namedtuple, ``dict``/``list``/``tuple``\n    subclass) is handed to the stdlib, so the answer is always the stdlib's.\n    \"\"\"\n    if (\n        dict_factory is not dict\n        # Inline is_dataclass's predicate without changing class/metaclass\n        # attribute access or the stdlib's non-instance error behavior.\n        or not hasattr(\n            obj if isinstance(obj, type) else type(obj), \"__dataclass_fields__\"\n        )\n        or isinstance(obj, type)\n    ):\n        return dataclasses.asdict(obj, dict_factory=dict_factory)\n    try:\n        return _plain(obj)\n    except _DeferError:\n        return dataclasses.asdict(obj)\n",
+    "_clone_native.c": "/* Optional builtin tree and admitted record cloning.\n *\n * clone/clone_checked refuse foreign nodes without invoking copy/hash/equality\n * hooks. clone_records receives the Python walker for foreign nodes, so it can\n * finish already allocated twins without retrying observable reconstruction.\n *\n * Container allocation can run cyclic GC and arbitrary Python finalizers even\n * while the GIL is held. Every item is owned across recursive allocations;\n * dictionary cursors retain Python's mutation checks. Presized sequence\n * outputs stay untracked until their NULL slots have all been filled.\n */\n#define PY_SSIZE_T_CLEAN\n#include <Python.h>\n#include <stdint.h>\n\n#define MAX_DEPTH 128\n#define MAX_CONTAINERS 65536\n#define INLINE_MEMO_SIZE 16\n\ntypedef struct {\n    PyObject *source;\n    PyObject *copied;\n} MemoEntry;\n\ntypedef struct {\n    Py_ssize_t remaining;\n    unsigned int count;\n    PyObject *ancestors[MAX_DEPTH];\n} Proof;\n\ntypedef struct {\n    Py_ssize_t remaining;\n    PyTypeObject *record_type;\n    unsigned int record_version;\n    PyObject *walk;\n    PyObject *dict_name;\n    PyObject *update_name;\n    PyObject *memo;\n    MemoEntry *entries;\n    Py_ssize_t capacity;\n    Py_ssize_t used;\n    MemoEntry inline_entries[INLINE_MEMO_SIZE];\n    unsigned int count;\n    PyObject *ancestors[MAX_DEPTH];\n} CopyContext;\n\nstatic int clone_value(PyObject *, PyObject **, unsigned int, CopyContext *);\nstatic int atom(PyObject *);\nstatic int eligible(PyObject *, unsigned int, Proof *);\nstatic int record_current(CopyContext *);\nstatic int clone_record(PyObject *, PyObject **, unsigned int, CopyContext *);\n\n/* Only completed containers enter this private pointer-key table. Owning both\n * references keeps source addresses stable and never exposes NULL sequence\n * slots to Python, even if allocation-triggered GC mutates the source graph.\n * The inline table handles small graphs without allocating any Python memo\n * objects. Optional caller memos are exported only after the whole walk succeeds. */\nstatic size_t\nmemo_hash(PyObject *source)\n{\n    uintptr_t address = (uintptr_t)source >> 4;\n    return (size_t)(address ^ (address >> 16));\n}\n\nstatic MemoEntry *\nmemo_entry(MemoEntry *entries, Py_ssize_t capacity, PyObject *source)\n{\n    size_t mask = (size_t)capacity - 1;\n    size_t position = memo_hash(source) & mask;\n    while (entries[position].source != NULL\n           && entries[position].source != source) {\n        position = (position + 1) & mask;\n    }\n    return &entries[position];\n}\n\nstatic int\nmemo_lookup(PyObject *source, PyObject **result, CopyContext *context)\n{\n    /* Preserve the caller's memo precedence, including entries installed by a\n     * reentrant collector callback. Pure builtin root calls have no outer memo. */\n    if (context->memo != NULL && PyDict_GET_SIZE(context->memo) != 0) {\n        PyObject *identity = PyLong_FromVoidPtr(source);\n        if (identity == NULL) {\n            return -1;\n        }\n        PyObject *copied = PyDict_GetItemWithError(context->memo, identity);\n        Py_DECREF(identity);\n        if (copied != NULL) {\n            *result = Py_NewRef(copied);\n            return 1;\n        }\n        if (PyErr_Occurred()) {\n            return -1;\n        }\n    }\n    MemoEntry *entry = memo_entry(context->entries, context->capacity, source);\n    if (entry->source != NULL) {\n        *result = Py_NewRef(entry->copied);\n        return 1;\n    }\n    return 0;\n}\n\nstatic int\nmemo_grow(CopyContext *context)\n{\n    Py_ssize_t capacity = context->capacity * 2;\n    MemoEntry *entries = PyMem_Calloc((size_t)capacity, sizeof(MemoEntry));\n    if (entries == NULL) {\n        PyErr_NoMemory();\n        return -1;\n    }\n    for (Py_ssize_t i = 0; i < context->capacity; i++) {\n        MemoEntry entry = context->entries[i];\n        if (entry.source != NULL) {\n            *memo_entry(entries, capacity, entry.source) = entry;\n        }\n    }\n    if (context->entries != context->inline_entries) {\n        PyMem_Free(context->entries);\n    }\n    context->entries = entries;\n    context->capacity = capacity;\n    return 0;\n}\n\nstatic int\nmemo_store(PyObject *source, PyObject *copied, CopyContext *context)\n{\n    if ((context->used + 1) * 3 >= context->capacity * 2\n        && memo_grow(context) < 0) {\n        return -1;\n    }\n    MemoEntry *entry = memo_entry(context->entries, context->capacity, source);\n    if (entry->source == NULL) {\n        entry->source = Py_NewRef(source);\n        entry->copied = Py_NewRef(copied);\n        ++context->used;\n    } else {\n        Py_SETREF(entry->copied, Py_NewRef(copied));\n    }\n    return 0;\n}\n\nstatic void\nmemo_clear(CopyContext *context)\n{\n    for (Py_ssize_t i = 0; i < context->capacity; i++) {\n        MemoEntry entry = context->entries[i];\n        if (entry.source != NULL) {\n            /* Clear first: decrefs can run source finalizers during cleanup. */\n            context->entries[i].source = NULL;\n            context->entries[i].copied = NULL;\n            Py_DECREF(entry.source);\n            Py_DECREF(entry.copied);\n        }\n    }\n    if (context->entries != context->inline_entries) {\n        PyMem_Free(context->entries);\n    }\n}\n\nstatic int\nmemo_export(CopyContext *context)\n{\n    PyObject *pending = _PyDict_NewPresized(context->used);\n    if (pending == NULL) {\n        return -1;\n    }\n    PyObject *sources = PyList_New(context->used);\n    if (sources == NULL) {\n        Py_DECREF(pending);\n        return -1;\n    }\n    if (PyObject_GC_IsTracked(sources)) {\n        PyObject_GC_UnTrack(sources);\n    }\n    Py_ssize_t written = 0;\n    int status = 0;\n    for (Py_ssize_t i = 0; i < context->capacity; i++) {\n        MemoEntry entry = context->entries[i];\n        if (entry.source == NULL) {\n            continue;\n        }\n        PyList_SET_ITEM(sources, written++, Py_NewRef(entry.source));\n        PyObject *identity = PyLong_FromVoidPtr(entry.source);\n        if (identity == NULL) {\n            status = -1;\n            break;\n        }\n        status = PyDict_SetItem(pending, identity, entry.copied);\n        Py_DECREF(identity);\n        if (status < 0) {\n            break;\n        }\n    }\n    if (status == 0) {\n        PyObject_GC_Track(sources);\n        /* Match copy._keep_alive's reserved ID(memo) entry so Python deepcopy\n         * can continue using these identities without source address reuse. */\n        PyObject *identity = PyLong_FromVoidPtr(context->memo);\n        PyObject *alive = identity == NULL ? NULL\n            : PyDict_GetItemWithError(context->memo, identity);\n        if (identity == NULL || (alive == NULL && PyErr_Occurred())) {\n            status = -1;\n        } else if (alive == NULL) {\n            status = PyDict_SetItem(context->memo, identity, sources);\n        } else if (!PyList_CheckExact(alive)) {\n            PyErr_SetString(PyExc_TypeError,\n                            \"clone memo keep-alive entry must be a list\");\n            status = -1;\n        } else {\n            Py_INCREF(alive);\n            Py_ssize_t size = PyList_GET_SIZE(alive);\n            status = PyList_SetSlice(alive, size, size, sources);\n            Py_DECREF(alive);\n        }\n        Py_XDECREF(identity);\n        if (status == 0) {\n            status = PyDict_Update(context->memo, pending);\n        }\n    }\n    Py_DECREF(sources);\n    Py_DECREF(pending);\n    return status;\n}\n\n/* The Python admission layer owns copy protocol eligibility. Recheck the\n * narrower allocation/attribute contract here without invoking descriptors or\n * metaclass hooks. Inherited/extension layouts and finalizers stay in Python. */\nstatic int\nrecord_admissible(PyTypeObject *type)\n{\n    if (Py_TYPE(type) != &PyType_Type || type->tp_base != &PyBaseObject_Type\n        || type->tp_new != PyBaseObject_Type.tp_new\n        || type->tp_alloc != PyType_GenericAlloc\n        || type->tp_getattro != PyObject_GenericGetAttr\n        || !(type->tp_flags & Py_TPFLAGS_HEAPTYPE)\n        || !(type->tp_flags & Py_TPFLAGS_HAVE_GC)\n        || (type->tp_flags & Py_TPFLAGS_IS_ABSTRACT)\n        || type->tp_dict == NULL) {\n        return 0;\n    }\n    int dictionary = 0;\n    Py_ssize_t position = 0;\n    PyObject *key, *value;\n    while (PyDict_Next(type->tp_dict, &position, &key, &value)) {\n        if (!PyUnicode_CheckExact(key)) {\n            return 0;\n        }\n        if (PyUnicode_CompareWithASCIIString(key, \"__dict__\") == 0) {\n            dictionary = Py_IS_TYPE(value, &PyGetSetDescr_Type)\n                && PyDescr_TYPE(value) == type;\n        } else if (PyUnicode_CompareWithASCIIString(key, \"__del__\") == 0\n                   || PyUnicode_CompareWithASCIIString(key, \"__slots__\") == 0) {\n            return 0;\n        }\n    }\n    return dictionary;\n}\n\nstatic int\nrecord_current(CopyContext *context)\n{\n    PyTypeObject *type = context->record_type;\n    if (context->record_version != 0\n        && context->record_version == type->tp_version_tag) {\n        return 1;\n    }\n    if (!record_admissible(type)) {\n        return 0;\n    }\n    context->record_version = type->tp_version_tag;\n    return 1;\n}\n\nstatic int\npython_value(PyObject *source, PyObject **result, CopyContext *context)\n{\n    *result = PyObject_CallOneArg(context->walk, source);\n    return *result == NULL ? -1 : 1;\n}\n\nstatic int\nshallow_atoms(PyObject *source)\n{\n    if (PyList_CheckExact(source) || PyTuple_CheckExact(source)) {\n        Py_ssize_t size = Py_SIZE(source);\n        for (Py_ssize_t i = 0; i < size; i++) {\n            PyObject *item = PyList_CheckExact(source)\n                ? PyList_GET_ITEM(source, i) : PyTuple_GET_ITEM(source, i);\n            if (!atom(item)) {\n                return 0;\n            }\n        }\n        return 1;\n    }\n    if (PyDict_CheckExact(source)) {\n        Py_ssize_t position = 0;\n        PyObject *key, *value;\n        while (PyDict_Next(source, &position, &key, &value)) {\n            if (!PyUnicode_CheckExact(key) || !atom(value)) {\n                return 0;\n            }\n        }\n        return 1;\n    }\n    return 0;\n}\n\n/* An allocation-free, bounded eligibility pass avoids constructing partial\n * clones of ordinary foreign trees. The GIL and absence of callbacks make\n * borrowed references safe in this pass only. The copying pass revalidates\n * everything because its allocations can trigger source-mutating finalizers. */\nstatic int\neligible_contents(PyObject *source, unsigned int depth, Proof *proof)\n{\n    if (PyList_CheckExact(source) || PyTuple_CheckExact(source)) {\n        Py_ssize_t size = Py_SIZE(source);\n        for (Py_ssize_t i = 0; i < size; i++) {\n            PyObject *item = PyList_CheckExact(source)\n                ? PyList_GET_ITEM(source, i) : PyTuple_GET_ITEM(source, i);\n            int status = eligible(item, depth - 1, proof);\n            if (status != 1) {\n                return status;\n            }\n        }\n        return 1;\n    }\n    if (PyDict_CheckExact(source)) {\n        Py_ssize_t position = 0;\n        PyObject *key, *value;\n        while (PyDict_Next(source, &position, &key, &value)) {\n            if (!PyUnicode_CheckExact(key)) {\n                return 0;\n            }\n            int status = eligible(value, depth - 1, proof);\n            if (status != 1) {\n                return status;\n            }\n        }\n        return 1;\n    }\n    return 0;\n}\n\nstatic int\neligible(PyObject *source, unsigned int depth, Proof *proof)\n{\n    if (atom(source)) {\n        return 1;\n    }\n    if (depth == 0 || (!PyList_CheckExact(source) && !PyTuple_CheckExact(source)\n                       && !PyDict_CheckExact(source))) {\n        return 0;\n    }\n    if (--proof->remaining < 0) {\n        return 0;\n    }\n    for (unsigned int i = 0; i < proof->count; i++) {\n        if (proof->ancestors[i] == source) {\n            return 2;\n        }\n    }\n    /* Also guard the proof itself against a nearly exhausted native C stack.\n     * No allocation/callback occurs unless entering fails; errors unwind the\n     * proof immediately without touching another borrowed source reference. */\n    if (Py_EnterRecursiveCall(\" while checking a builtin clone tree\")) {\n        /* Native stack pressure must defer to the Python walker. It does not\n         * prove a cycle and must not select the whole-graph cycle fallback. */\n        if (PyErr_ExceptionMatches(PyExc_RecursionError)) {\n            PyErr_Clear();\n            return 0;\n        }\n        return -1;\n    }\n    proof->ancestors[proof->count++] = source;\n    int status = eligible_contents(source, depth, proof);\n    --proof->count;\n    Py_LeaveRecursiveCall();\n    return status;\n}\n\nstatic int\natom(PyObject *value)\n{\n    PyTypeObject *kind = Py_TYPE(value);\n    return kind == &PyLong_Type || kind == &PyUnicode_Type\n        || kind == &PyFloat_Type || kind == &PyBool_Type || value == Py_None\n        || kind == &PyBytes_Type || kind == &PyComplex_Type\n        || value == Py_Ellipsis || value == Py_NotImplemented;\n}\n\n/* 1: owned result; 0: unsupported (no exception); -1: real failure. */\nstatic int\nclone_sequence(PyObject *source, PyObject **result, unsigned int depth,\n               CopyContext *context)\n{\n    int tuple = PyTuple_CheckExact(source);\n    Py_ssize_t size = Py_SIZE(source);\n    PyObject *output = tuple ? PyTuple_New(size) : PyList_New(size);\n    if (output == NULL) {\n        return -1;\n    }\n    /* No partially initialized list/tuple may appear in gc.get_objects() or\n     * gc.get_referrers() during allocations further down the tree. A completed\n     * result is tracked again before it can be published to its parent. */\n    if (PyObject_GC_IsTracked(output)) {\n        PyObject_GC_UnTrack(output);\n    }\n    Py_ssize_t written = 0;\n    PyObject *held = NULL;\n    int status = 1;\n    while (written < Py_SIZE(source)) {\n        /* Re-read the live list's size and item after every recursive copy.\n         * A finalizer may clear, replace or append source items. Tuples are\n         * immutable, but use the same owned-item discipline. */\n        PyObject *item = Py_NewRef(tuple\n            ? PyTuple_GET_ITEM(source, written)\n            : PyList_GET_ITEM(source, written));\n        if (context->walk != NULL) {\n            /* Python's comprehension pins the next item before replacing its\n             * previous loop variable. Releasing a hook-bearing old item any\n             * earlier could append/remove source elements at a different step. */\n            PyObject *previous = held;\n            held = item;\n            Py_XDECREF(previous);\n        }\n        PyObject *copied = NULL;\n        if (atom(item)) {\n            copied = context->walk != NULL ? Py_NewRef(item) : item;\n        } else {\n            status = clone_value(item, &copied, depth - 1, context);\n            if (context->walk == NULL) {\n                Py_DECREF(item);\n            }\n        }\n        if (status != 1) {\n            break;\n        }\n        if (tuple) {\n            PyTuple_SET_ITEM(output, written, copied);\n        } else if (written < size) {\n            PyList_SET_ITEM(output, written, copied);\n        } else {\n            int appended = PyList_Append(output, copied);\n            Py_DECREF(copied);\n            if (appended < 0) {\n                status = -1;\n                break;\n            }\n        }\n        ++written;\n    }\n    Py_XDECREF(held);\n    if (status != 1) {\n        Py_DECREF(output);\n        return status;\n    }\n    if (!tuple && written < size) {\n        /* A source-shrinking finalizer can leave unused NULL slots. Slice only\n         * the initialized prefix; never expose those slots to Python or GC. */\n        *result = PyList_GetSlice(output, 0, written);\n        Py_DECREF(output);\n        return *result == NULL ? -1 : 1;\n    }\n    if (Py_SIZE(output) != 0 || !tuple) {\n        PyObject_GC_Track(output);\n    }\n    *result = output;\n    return 1;\n}\n\nstatic int\nclone_dict(PyObject *source, PyObject **result, unsigned int depth,\n           CopyContext *context)\n{\n    PyObject *output = _PyDict_NewPresized(PyDict_Size(source));\n    if (output == NULL) {\n        return -1;\n    }\n    if (PyObject_GC_IsTracked(output)) {\n        PyObject_GC_UnTrack(output);\n    }\n    Py_ssize_t expected = PyDict_GET_SIZE(source);\n    Py_ssize_t remaining = expected;\n    Py_ssize_t position = 0;\n    PyObject *held_key = NULL, *held_value = NULL;\n    int status = 1;\n    for (;;) {\n        /* Match the GIL dict-item iterator's size and remaining-item checks.\n         * Only the integer cursor survives an allocation; PyDict_Next rereads\n         * the live table on every call and performs no key lookup or callback.\n         * In particular, do not require remaining == 0 on normal exhaustion:\n         * equal-sized key replacements can legitimately end iteration early. */\n        if (PyDict_GET_SIZE(source) != expected) {\n            PyErr_SetString(PyExc_RuntimeError,\n                            \"dictionary changed size during iteration\");\n            status = -1;\n            break;\n        }\n        PyObject *key, *value;\n        if (!PyDict_Next(source, &position, &key, &value)) {\n            break;\n        }\n        if (remaining == 0) {\n            PyErr_SetString(PyExc_RuntimeError,\n                            \"dictionary keys changed during iteration\");\n            status = -1;\n            break;\n        }\n        --remaining;\n        /* An items iterator retains its last pair until the next pair is\n         * already pinned. Preserve that lifetime and decref order: finalizers\n         * reached through a source-mutated old value may change later items. */\n        Py_INCREF(key);\n        Py_INCREF(value);\n        PyObject *previous_key = held_key, *previous_value = held_value;\n        held_key = key;\n        held_value = value;\n        Py_XDECREF(previous_key);\n        Py_XDECREF(previous_value);\n        if (!PyUnicode_CheckExact(key) && context->walk == NULL) {\n            status = 0;\n            break;\n        }\n        PyObject *copied_key = NULL;\n        if (PyUnicode_CheckExact(key) || atom(key)) {\n            copied_key = Py_NewRef(key);\n        } else {\n            status = python_value(key, &copied_key, context);\n            if (status != 1) {\n                break;\n            }\n        }\n        PyObject *copied = NULL;\n        if (atom(value)) {\n            copied = Py_NewRef(value);\n        } else {\n            status = clone_value(value, &copied, depth - 1, context);\n        }\n        if (status != 1) {\n            Py_DECREF(copied_key);\n            break;\n        }\n        int inserted = PyDict_SetItem(output, copied_key, copied);\n        /* This private result cannot be reached through GC introspection while\n         * another child is allocated. The presized table needs no growth for\n         * the expected number of items. All stored keys are exact strings. */\n        if (PyObject_GC_IsTracked(output)) {\n            PyObject_GC_UnTrack(output);\n        }\n        Py_DECREF(copied_key);\n        Py_DECREF(copied);\n        if (inserted < 0) {\n            status = -1;\n            break;\n        }\n    }\n    Py_XDECREF(held_key);\n    Py_XDECREF(held_value);\n    if (status != 1) {\n        Py_DECREF(output);\n        return status;\n    }\n    PyObject_GC_Track(output);\n    *result = output;\n    return 1;\n}\n\nstatic int\nclone_value(PyObject *source, PyObject **result, unsigned int depth,\n            CopyContext *context)\n{\n    if (atom(source)) {\n        *result = Py_NewRef(source);\n        return 1;\n    }\n    if (context->entries != NULL) {\n        int found = memo_lookup(source, result, context);\n        if (found != 0) {\n            return found;\n        }\n    }\n    if (depth == 0) {\n        return context->walk != NULL\n            ? python_value(source, result, context) : 0;\n    }\n    int record = Py_TYPE(source) == context->record_type;\n    if (!PyList_CheckExact(source) && !PyTuple_CheckExact(source)\n        && !PyDict_CheckExact(source) && !record) {\n        return context->walk != NULL\n            ? python_value(source, result, context) : 0;\n    }\n    if (--context->remaining < 0) {\n        return context->walk != NULL\n            ? python_value(source, result, context) : 0;\n    }\n    if (context->walk != NULL || context->entries != NULL) {\n        if (record && !record_current(context)) {\n            return python_value(source, result, context);\n        }\n        for (unsigned int i = 0; i < context->count; i++) {\n            if (context->ancestors[i] == source) {\n                PyErr_SetString(PyExc_RecursionError, \"cyclic clone graph\");\n                return -1;\n            }\n        }\n    }\n    if (Py_EnterRecursiveCall(\" while cloning a builtin tree\")) {\n        if (PyErr_ExceptionMatches(PyExc_RecursionError)) {\n            PyErr_Clear();\n            return context->walk != NULL\n                ? python_value(source, result, context) : 0;\n        }\n        return -1;\n    }\n    if (context->walk != NULL || context->entries != NULL) {\n        context->ancestors[context->count++] = source;\n    }\n    int status;\n    if (record) {\n        status = clone_record(source, result, depth, context);\n    } else if (PyDict_CheckExact(source) && shallow_atoms(source)) {\n        PyObject *copied = PyDict_Copy(source);\n        if (copied == NULL) {\n            status = -1;\n        } else {\n            if (shallow_atoms(copied)) {\n                *result = copied;\n                status = 1;\n            } else {\n                Py_DECREF(copied);\n                status = context->walk != NULL\n                    ? python_value(source, result, context) : 0;\n            }\n        }\n    } else {\n        status = PyDict_CheckExact(source)\n            ? clone_dict(source, result, depth, context)\n            : clone_sequence(source, result, depth, context);\n    }\n    if (context->walk != NULL || context->entries != NULL) {\n        --context->count;\n    }\n    Py_LeaveRecursiveCall();\n    if (status == 1 && context->entries != NULL\n        && memo_store(source, *result, context) < 0) {\n        Py_CLEAR(*result);\n        return -1;\n    }\n    return status;\n}\n\nstatic int\nclone_record(PyObject *source, PyObject **result, unsigned int depth,\n             CopyContext *context)\n{\n    /* record_current() already selected object.__new__'s allocation slot.\n     * After allocating, finish THIS twin even if a GC callback changes the\n     * class. Refusing and restarting would create extra observable instances. */\n    PyObject *twin = PyType_GenericAlloc(context->record_type, 0);\n    if (twin == NULL) {\n        return -1;\n    }\n    if (PyObject_GC_IsTracked(twin)) {\n        PyObject_GC_UnTrack(twin);\n    }\n    PyObject *state = PyObject_GetAttr(source, context->dict_name);\n    if (state == NULL) {\n        Py_DECREF(twin);\n        return -1;\n    }\n    int truth = PyObject_IsTrue(state);\n    if (truth <= 0) {\n        if (truth < 0) {\n            Py_DECREF(state);\n            Py_DECREF(twin);\n            return -1;\n        }\n    } else {\n        /* Python resolves twin.__dict__.update before traversing state. Keep\n         * that order and the selected destination across descendant hooks. */\n        PyObject *destination = PyObject_GetAttr(twin, context->dict_name);\n        if (destination == NULL) {\n            Py_DECREF(state);\n            Py_DECREF(twin);\n            return -1;\n        }\n        PyObject *update = NULL;\n        int builtin_update = PyDict_CheckExact(state)\n            && PyDict_CheckExact(destination);\n        if (!builtin_update) {\n            update = PyObject_GetAttr(destination, context->update_name);\n            if (update == NULL) {\n                Py_DECREF(destination);\n                Py_DECREF(state);\n                Py_DECREF(twin);\n                return -1;\n            }\n        }\n        PyObject *copied = NULL;\n        int status = clone_value(state, &copied, depth - 1, context);\n        if (status != 1) {\n            Py_XDECREF(update);\n            Py_DECREF(destination);\n            Py_DECREF(state);\n            Py_DECREF(twin);\n            return status;\n        }\n        int applied;\n        if (builtin_update) {\n            applied = PyDict_Update(destination, copied);\n        } else {\n            PyObject *returned = PyObject_CallOneArg(update, copied);\n            applied = returned == NULL ? -1 : 0;\n            Py_XDECREF(returned);\n            Py_DECREF(update);\n        }\n        Py_DECREF(copied);\n        Py_DECREF(destination);\n        if (applied < 0) {\n            Py_DECREF(state);\n            Py_DECREF(twin);\n            return -1;\n        }\n    }\n    if (!PyObject_GC_IsTracked(twin)) {\n        PyObject_GC_Track(twin);\n    }\n    Py_DECREF(state);\n    *result = twin;\n    return 1;\n}\n\nstatic int\nclone_budget(unsigned int *budget, int *limit)\n{\n    /* The C stack guard alone cannot model Python's frame budget on 3.12+.\n     * These versioned CPython wheels use the same Python-frame budget field\n     * as the JSON guard on our tested interpreter range. Future interpreters\n     * use the conservative public frame walk until their ABI is validated. */\n    int recursion_limit = Py_GetRecursionLimit();\n    *limit = recursion_limit;\n#if PY_VERSION_HEX >= 0x030C0000 && PY_VERSION_HEX < 0x030F0000\n    int remaining = PyThreadState_Get()->py_recursion_remaining - 8;\n#else\n    int remaining = recursion_limit - 8;\n    PyFrameObject *frame = PyThreadState_GetFrame(PyThreadState_Get());\n    while (frame != NULL) {\n        --remaining;\n        PyFrameObject *previous = PyFrame_GetBack(frame);\n        Py_DECREF(frame);\n        frame = previous;\n    }\n    if (PyErr_Occurred()) {\n        return -1;\n    }\n#endif\n    if (remaining <= 0) {\n        return 0;\n    }\n    *budget = remaining < MAX_DEPTH\n        ? (unsigned int)remaining : MAX_DEPTH;\n    return 1;\n}\n\nstatic PyObject *\nclone_builtin_impl(PyObject *source, int cycle_error)\n{\n    unsigned int budget;\n    int recursion_limit;\n    int allowance = clone_budget(&budget, &recursion_limit);\n    if (allowance < 0) {\n        return NULL;\n    }\n    if (allowance == 0) {\n        Py_RETURN_NOTIMPLEMENTED;\n    }\n    if (shallow_atoms(source)) {\n        /* Bulk copies remove per-item iterator/append overhead on flat data.\n         * Revalidate the owned snapshot: allocation may have run a finalizer\n         * which inserted a foreign value into the source after the proof. */\n        PyObject *copied;\n        if (PyTuple_CheckExact(source)) {\n            Py_ssize_t size = PyTuple_GET_SIZE(source);\n            copied = PyTuple_New(size);\n            if (copied != NULL) {\n                for (Py_ssize_t i = 0; i < size; i++) {\n                    PyTuple_SET_ITEM(copied, i,\n                                    Py_NewRef(PyTuple_GET_ITEM(source, i)));\n                }\n            }\n        } else {\n            copied = PyDict_CheckExact(source)\n                ? PyDict_Copy(source) : PyList_GetSlice(source, 0, PY_SSIZE_T_MAX);\n        }\n        if (copied == NULL) {\n            return NULL;\n        }\n        if (shallow_atoms(copied) && Py_GetRecursionLimit() == recursion_limit) {\n            return copied;\n        }\n        Py_DECREF(copied);\n        Py_RETURN_NOTIMPLEMENTED;\n    }\n    Proof proof = {MAX_CONTAINERS, 0, {NULL}};\n    int accepted = eligible(source, budget, &proof);\n    if (accepted < 0) {\n        return NULL;\n    }\n    if (accepted != 1) {\n        if (accepted == 2 && cycle_error) {\n            PyErr_SetString(PyExc_RecursionError, \"cyclic builtin clone tree\");\n            return NULL;\n        }\n        Py_RETURN_NOTIMPLEMENTED;\n    }\n    CopyContext context = {0};\n    context.remaining = MAX_CONTAINERS;\n    PyObject *result = NULL;\n    int status = clone_value(source, &result, budget, &context);\n    if (status < 0) {\n        return NULL;\n    }\n    if (status == 0) {\n        Py_RETURN_NOTIMPLEMENTED;\n    }\n    if (Py_GetRecursionLimit() != recursion_limit) {\n        Py_DECREF(result);\n        Py_RETURN_NOTIMPLEMENTED;\n    }\n    return result;\n}\n\nstatic PyObject *\nclone_records(PyObject *module, PyObject *const *args, Py_ssize_t count)\n{\n    (void)module;\n    if (count != 3) {\n        PyErr_SetString(PyExc_TypeError,\n                        \"clone_records requires source, class and walker\");\n        return NULL;\n    }\n    PyObject *source = args[0];\n    if (!PyType_Check(args[1]) || !PyCallable_Check(args[2])) {\n        PyErr_SetString(PyExc_TypeError,\n                        \"clone_records requires a class and callable walker\");\n        return NULL;\n    }\n    PyTypeObject *type = (PyTypeObject *)args[1];\n    if ((Py_TYPE(source) != type && !PyList_CheckExact(source)\n         && !PyTuple_CheckExact(source) && !PyDict_CheckExact(source))\n        || !record_admissible(type)) {\n        Py_RETURN_NOTIMPLEMENTED;\n    }\n    unsigned int budget;\n    int recursion_limit;\n    int allowance = clone_budget(&budget, &recursion_limit);\n    if (allowance < 0) {\n        return NULL;\n    }\n    if (allowance == 0) {\n        Py_RETURN_NOTIMPLEMENTED;\n    }\n    /* Allocate names before admitting the first custom-class allocation.\n     * Initial refusal is safe; after entering the walk every unsupported node\n     * delegates at its current position instead of abandoning partial twins. */\n    PyObject *dict_name = PyUnicode_InternFromString(\"__dict__\");\n    if (dict_name == NULL) {\n        return NULL;\n    }\n    PyObject *update_name = PyUnicode_InternFromString(\"update\");\n    if (update_name == NULL) {\n        Py_DECREF(dict_name);\n        return NULL;\n    }\n    if (!record_admissible(type)) {\n        Py_DECREF(dict_name);\n        Py_DECREF(update_name);\n        Py_RETURN_NOTIMPLEMENTED;\n    }\n    /* Refuse stack pressure before copying begins. A later recursive limit\n     * uses the Python walker at that node with all parent items still owned. */\n    if (Py_EnterRecursiveCall(\" while entering a record clone tree\")) {\n        Py_DECREF(dict_name);\n        Py_DECREF(update_name);\n        if (PyErr_ExceptionMatches(PyExc_RecursionError)) {\n            PyErr_Clear();\n            Py_RETURN_NOTIMPLEMENTED;\n        }\n        return NULL;\n    }\n    CopyContext context = {0};\n    context.remaining = MAX_CONTAINERS;\n    context.record_type = type;\n    context.record_version = type->tp_version_tag;\n    context.walk = args[2];\n    context.dict_name = dict_name;\n    context.update_name = update_name;\n    PyObject *result = NULL;\n    int status = clone_value(source, &result, budget, &context);\n    Py_LeaveRecursiveCall();\n    Py_DECREF(dict_name);\n    Py_DECREF(update_name);\n    if (status != 1) {\n        return NULL;\n    }\n    return result;\n}\n\nstatic PyObject *\nclone_builtin(PyObject *module, PyObject *source)\n{\n    (void)module;\n    return clone_builtin_impl(source, 0);\n}\n\nstatic PyObject *\nclone_checked(PyObject *module, PyObject *source)\n{\n    (void)module;\n    return clone_builtin_impl(source, 1);\n}\n\nstatic PyObject *\nclone_graph(PyObject *module, PyObject *const *args, Py_ssize_t count)\n{\n    (void)module;\n    if (count < 1 || count > 2\n        || (count == 2 && !PyDict_CheckExact(args[1]))) {\n        PyErr_SetString(PyExc_TypeError,\n                        \"clone_graph requires source and optional exact memo dict\");\n        return NULL;\n    }\n    PyObject *source = args[0];\n    PyObject *memo = count == 2 ? args[1] : NULL;\n    if (memo != NULL && PyDict_GET_SIZE(memo) != 0) {\n        PyObject *source_id = PyLong_FromVoidPtr(source);\n        if (source_id == NULL) {\n            return NULL;\n        }\n        PyObject *existing = PyDict_GetItemWithError(memo, source_id);\n        Py_DECREF(source_id);\n        if (existing != NULL) {\n            return Py_NewRef(existing);\n        }\n        if (PyErr_Occurred()) {\n            return NULL;\n        }\n    }\n    if (atom(source)) {\n        return Py_NewRef(source);\n    }\n    unsigned int budget;\n    int recursion_limit;\n    int allowance = clone_budget(&budget, &recursion_limit);\n    if (allowance < 0) {\n        return NULL;\n    }\n    if (allowance == 0) {\n        Py_RETURN_NOTIMPLEMENTED;\n    }\n    /* A closed scalar dictionary contains no child identity to remember.\n     * Avoid creating a table for this common root shape, and revalidate the\n     * copied values because dictionary allocation may run mutating finalizers. */\n    if (memo == NULL && PyDict_CheckExact(source) && shallow_atoms(source)) {\n        PyObject *copied = PyDict_Copy(source);\n        if (copied == NULL) {\n            return NULL;\n        }\n        if (shallow_atoms(copied)\n            && Py_GetRecursionLimit() == recursion_limit) {\n            return copied;\n        }\n        Py_DECREF(copied);\n        Py_RETURN_NOTIMPLEMENTED;\n    }\n    /* The copying pass validates types and budgets as it goes, detects active\n     * ancestors, and discards its private memo on any refusal. An eligibility\n     * tree walk here would repeatedly expand shared subgraphs. */\n    CopyContext context = {0};\n    context.remaining = MAX_CONTAINERS;\n    context.memo = memo;\n    context.entries = context.inline_entries;\n    context.capacity = INLINE_MEMO_SIZE;\n    PyObject *result = NULL;\n    int status = clone_value(source, &result, budget, &context);\n    if (status == 1 && Py_GetRecursionLimit() != recursion_limit) {\n        Py_CLEAR(result);\n        status = 0;\n    }\n    if (status == 1 && memo != NULL && memo_export(&context) < 0) {\n        Py_CLEAR(result);\n        status = -1;\n    }\n    memo_clear(&context);\n    if (status < 0) {\n        return NULL;\n    }\n    if (status == 0) {\n        Py_RETURN_NOTIMPLEMENTED;\n    }\n    return result;\n}\n\nstatic PyMethodDef methods[] = {\n    {\"clone\", clone_builtin, METH_O,\n     \"Clone exact builtin data or return NotImplemented without copy hooks.\"},\n    {\"clone_checked\", clone_checked, METH_O,\n     \"Clone builtin data, raising RecursionError for a proved builtin cycle.\"},\n    {\"clone_graph\", (PyCFunction)(void(*)(void))clone_graph, METH_FASTCALL,\n     \"Clone builtin data while preserving identities in a shared copy memo.\"},\n    {\"clone_records\", (PyCFunction)(void(*)(void))clone_records, METH_FASTCALL,\n     \"Clone an admitted record tree, delegating foreign nodes to its walker.\"},\n    {NULL, NULL, 0, NULL}\n};\n\nstatic PyModuleDef_Slot slots[] = {\n    {Py_mod_multiple_interpreters, Py_MOD_PER_INTERPRETER_GIL_SUPPORTED},\n#if PY_VERSION_HEX >= 0x030D0000\n    {Py_mod_gil, Py_MOD_GIL_USED},\n#endif\n    {0, NULL}\n};\n\nstatic struct PyModuleDef definition = {\n    PyModuleDef_HEAD_INIT,\n    \"_clone_native\",\n     \"Optional structural cloning with Python-owned protocol delegation.\",\n    0,\n    methods,\n    slots,\n    NULL,\n    NULL,\n    NULL\n};\n\nPyMODINIT_FUNC\nPyInit__clone_native(void)\n{\n#ifdef Py_GIL_DISABLED\n    PyErr_SetString(PyExc_ImportError, \"native cloning requires a GIL build\");\n    return NULL;\n#else\n    return PyModuleDef_Init(&definition);\n#endif\n}\n",
+    "manifest.json": "{\n  \"native_entrypoint\": \"clone_checked\",\n  \"native_graph_entrypoint\": \"clone_graph\",\n  \"native_records_entrypoint\": \"clone_records\",\n  \"files\": {\n    \"structural.py\": \"d8174371953afb53555f8d5a3f2def7fa6acbf36824d628924ba6eb4b6967abc\",\n    \"_clone_native.c\": \"01775a8e8a0cbf9cb2637963162940cff626e92adb34c0e74bcab4aab5de25d8\",\n    \"_clone_native.cpython-313-darwin.so\": \"ed00731f44a5fa88d767327b8104a339c85e47a144dadef7eaa1de5d216de8ca\"\n  }\n}\n"
+  },
+  "comparisons": {
+    "gc-disabled": {
+      "dataclass-distinct-200": {
+        "before": {
+          "iterations": 32,
+          "samples": [
+            {
+              "wall_ns": 250720.0625,
+              "cpu_ns": 228906.25
+            },
+            {
+              "wall_ns": 284136.71875,
+              "cpu_ns": 225062.5
+            },
+            {
+              "wall_ns": 266877.59375,
+              "cpu_ns": 238906.25
+            },
+            {
+              "wall_ns": 221132.8125,
+              "cpu_ns": 217281.25
+            },
+            {
+              "wall_ns": 244407.53125,
+              "cpu_ns": 228281.25
+            },
+            {
+              "wall_ns": 246481.75,
+              "cpu_ns": 220500.0
+            },
+            {
+              "wall_ns": 256921.875,
+              "cpu_ns": 231250.0
+            },
+            {
+              "wall_ns": 304769.53125,
+              "cpu_ns": 255062.5
+            },
+            {
+              "wall_ns": 233253.90625,
+              "cpu_ns": 218156.25
+            }
+          ],
+          "min_wall_ns": 221132.8125,
+          "median_wall_ns": 250720.0625,
+          "min_cpu_ns": 217281.25,
+          "median_cpu_ns": 228281.25,
+          "speedup_vs_before_cpu": 1.0,
+          "speedup_vs_stdlib_cpu": 2.4877207392197125
+        },
+        "after": {
+          "iterations": 24,
+          "samples": [
+            {
+              "wall_ns": 267213.5416666667,
+              "cpu_ns": 228083.33333333334
+            },
+            {
+              "wall_ns": 245843.75,
+              "cpu_ns": 200375.0
+            },
+            {
+              "wall_ns": 345373.25,
+              "cpu_ns": 237625.0
+            },
+            {
+              "wall_ns": 240541.66666666666,
+              "cpu_ns": 218208.33333333334
+            },
+            {
+              "wall_ns": 206998.25,
+              "cpu_ns": 197875.0
+            },
+            {
+              "wall_ns": 189918.41666666666,
+              "cpu_ns": 189958.33333333334
+            },
+            {
+              "wall_ns": 187496.5,
+              "cpu_ns": 187625.0
+            },
+            {
+              "wall_ns": 254630.20833333334,
+              "cpu_ns": 218875.0
+            },
+            {
+              "wall_ns": 212564.25,
+              "cpu_ns": 197625.0
+            }
+          ],
+          "min_wall_ns": 187496.5,
+          "median_wall_ns": 240541.66666666666,
+          "min_cpu_ns": 187625.0,
+          "median_cpu_ns": 200375.0,
+          "speedup_vs_before_cpu": 1.1392701185277605,
+          "speedup_vs_stdlib_cpu": 2.8341859014348096
+        },
+        "stdlib": {
+          "iterations": 10,
+          "samples": [
+            {
+              "wall_ns": 629766.7,
+              "cpu_ns": 578400.0
+            },
+            {
+              "wall_ns": 787275.0,
+              "cpu_ns": 559200.0
+            },
+            {
+              "wall_ns": 595358.3,
+              "cpu_ns": 564600.0
+            },
+            {
+              "wall_ns": 585404.2,
+              "cpu_ns": 567900.0
+            },
+            {
+              "wall_ns": 749708.3,
+              "cpu_ns": 599200.0
+            },
+            {
+              "wall_ns": 642929.2,
+              "cpu_ns": 594300.0
+            },
+            {
+              "wall_ns": 559654.1,
+              "cpu_ns": 559800.0
+            },
+            {
+              "wall_ns": 590679.2,
+              "cpu_ns": 556100.0
+            },
+            {
+              "wall_ns": 767629.2,
+              "cpu_ns": 650200.0
+            }
+          ],
+          "min_wall_ns": 559654.1,
+          "median_wall_ns": 629766.7,
+          "min_cpu_ns": 556100.0,
+          "median_cpu_ns": 567900.0,
+          "speedup_vs_before_cpu": 0.40197437929212887,
+          "speedup_vs_stdlib_cpu": 1.0
+        }
+      },
+      "dataclass-scalar-500": {
+        "before": {
+          "iterations": 18,
+          "samples": [
+            {
+              "wall_ns": 602259.2222222222,
+              "cpu_ns": 527000.0
+            },
+            {
+              "wall_ns": 562814.7777777778,
+              "cpu_ns": 522277.77777777775
+            },
+            {
+              "wall_ns": 590437.5,
+              "cpu_ns": 530555.5555555555
+            },
+            {
+              "wall_ns": 1892495.3333333333,
+              "cpu_ns": 617833.3333333334
+            },
+            {
+              "wall_ns": 1798032.388888889,
+              "cpu_ns": 552222.2222222222
+            },
+            {
+              "wall_ns": 593666.6666666666,
+              "cpu_ns": 513444.44444444444
+            },
+            {
+              "wall_ns": 636743.0555555555,
+              "cpu_ns": 535555.5555555555
+            },
+            {
+              "wall_ns": 598224.5555555555,
+              "cpu_ns": 516611.1111111111
+            },
+            {
+              "wall_ns": 882993.0555555555,
+              "cpu_ns": 519111.1111111111
+            }
+          ],
+          "min_wall_ns": 562814.7777777778,
+          "median_wall_ns": 602259.2222222222,
+          "min_cpu_ns": 513444.44444444444,
+          "median_cpu_ns": 527000.0,
+          "speedup_vs_before_cpu": 1.0,
+          "speedup_vs_stdlib_cpu": 2.5227703984819736
+        },
+        "after": {
+          "iterations": 11,
+          "samples": [
+            {
+              "wall_ns": 469481.0,
+              "cpu_ns": 441090.9090909091
+            },
+            {
+              "wall_ns": 551416.6363636364,
+              "cpu_ns": 493545.45454545453
+            },
+            {
+              "wall_ns": 537878.7272727273,
+              "cpu_ns": 475363.63636363635
+            },
+            {
+              "wall_ns": 512227.2727272727,
+              "cpu_ns": 478636.36363636365
+            },
+            {
+              "wall_ns": 3158780.272727273,
+              "cpu_ns": 512636.36363636365
+            },
+            {
+              "wall_ns": 1565939.3636363635,
+              "cpu_ns": 482181.8181818182
+            },
+            {
+              "wall_ns": 469852.2727272727,
+              "cpu_ns": 446636.36363636365
+            },
+            {
+              "wall_ns": 518424.2727272727,
+              "cpu_ns": 438090.9090909091
+            },
+            {
+              "wall_ns": 475000.0,
+              "cpu_ns": 459363.63636363635
+            }
+          ],
+          "min_wall_ns": 469481.0,
+          "median_wall_ns": 518424.2727272727,
+          "min_cpu_ns": 438090.9090909091,
+          "median_cpu_ns": 475363.63636363635,
+          "speedup_vs_before_cpu": 1.1086249760948557,
+          "speedup_vs_stdlib_cpu": 2.7968062727098872
+        },
+        "stdlib": {
+          "iterations": 4,
+          "samples": [
+            {
+              "wall_ns": 1152072.75,
+              "cpu_ns": 1152750.0
+            },
+            {
+              "wall_ns": 1409583.25,
+              "cpu_ns": 1164250.0
+            },
+            {
+              "wall_ns": 1530125.0,
+              "cpu_ns": 1366750.0
+            },
+            {
+              "wall_ns": 1366927.0,
+              "cpu_ns": 1273000.0
+            },
+            {
+              "wall_ns": 2800666.75,
+              "cpu_ns": 1329500.0
+            },
+            {
+              "wall_ns": 1200583.25,
+              "cpu_ns": 1165250.0
+            },
+            {
+              "wall_ns": 1626093.75,
+              "cpu_ns": 1366000.0
+            },
+            {
+              "wall_ns": 3601104.25,
+              "cpu_ns": 1739750.0
+            },
+            {
+              "wall_ns": 5580354.0,
+              "cpu_ns": 1746250.0
+            }
+          ],
+          "min_wall_ns": 1152072.75,
+          "median_wall_ns": 1530125.0,
+          "min_cpu_ns": 1152750.0,
+          "median_cpu_ns": 1329500.0,
+          "speedup_vs_before_cpu": 0.3963896201579541,
+          "speedup_vs_stdlib_cpu": 1.0
+        }
+      },
+      "dataclass-homogeneous-500": {
+        "before": {
+          "iterations": 12,
+          "samples": [
+            {
+              "wall_ns": 964986.0833333334,
+              "cpu_ns": 691833.3333333334
+            },
+            {
+              "wall_ns": 2178079.8333333335,
+              "cpu_ns": 737666.6666666666
+            },
+            {
+              "wall_ns": 1207888.9166666667,
+              "cpu_ns": 753083.3333333334
+            },
+            {
+              "wall_ns": 801503.5,
+              "cpu_ns": 693333.3333333334
+            },
+            {
+              "wall_ns": 727576.3333333334,
+              "cpu_ns": 671916.6666666666
+            },
+            {
+              "wall_ns": 837982.6666666666,
+              "cpu_ns": 683250.0
+            },
+            {
+              "wall_ns": 808083.3333333334,
+              "cpu_ns": 680583.3333333334
+            },
+            {
+              "wall_ns": 744968.75,
+              "cpu_ns": 662000.0
+            },
+            {
+              "wall_ns": 611916.6666666666,
+              "cpu_ns": 606833.3333333334
+            }
+          ],
+          "min_wall_ns": 611916.6666666666,
+          "median_wall_ns": 808083.3333333334,
+          "min_cpu_ns": 606833.3333333334,
+          "median_cpu_ns": 683250.0,
+          "speedup_vs_before_cpu": 1.0,
+          "speedup_vs_stdlib_cpu": 2.433955360409806
+        },
+        "after": {
+          "iterations": 18,
+          "samples": [
+            {
+              "wall_ns": 1570932.888888889,
+              "cpu_ns": 645111.1111111111
+            },
+            {
+              "wall_ns": 980310.2222222222,
+              "cpu_ns": 578722.2222222222
+            },
+            {
+              "wall_ns": 904983.7777777778,
+              "cpu_ns": 699000.0
+            },
+            {
+              "wall_ns": 826233.7777777778,
+              "cpu_ns": 689611.1111111111
+            },
+            {
+              "wall_ns": 685601.8333333334,
+              "cpu_ns": 623388.8888888889
+            },
+            {
+              "wall_ns": 703344.9444444445,
+              "cpu_ns": 610611.1111111111
+            },
+            {
+              "wall_ns": 721921.2777777778,
+              "cpu_ns": 620055.5555555555
+            },
+            {
+              "wall_ns": 727636.6111111111,
+              "cpu_ns": 628666.6666666666
+            },
+            {
+              "wall_ns": 667240.7222222222,
+              "cpu_ns": 589666.6666666666
+            }
+          ],
+          "min_wall_ns": 667240.7222222222,
+          "median_wall_ns": 727636.6111111111,
+          "min_cpu_ns": 578722.2222222222,
+          "median_cpu_ns": 623388.8888888889,
+          "speedup_vs_before_cpu": 1.0960253096871937,
+          "speedup_vs_stdlib_cpu": 2.667676677657963
+        },
+        "stdlib": {
+          "iterations": 4,
+          "samples": [
+            {
+              "wall_ns": 2112885.25,
+              "cpu_ns": 1663000.0
+            },
+            {
+              "wall_ns": 24921677.25,
+              "cpu_ns": 2013250.0
+            },
+            {
+              "wall_ns": 2334802.25,
+              "cpu_ns": 1901250.0
+            },
+            {
+              "wall_ns": 1950583.25,
+              "cpu_ns": 1692750.0
+            },
+            {
+              "wall_ns": 1699479.0,
+              "cpu_ns": 1633500.0
+            },
+            {
+              "wall_ns": 1573198.0,
+              "cpu_ns": 1502250.0
+            },
+            {
+              "wall_ns": 1959177.0,
+              "cpu_ns": 1792000.0
+            },
+            {
+              "wall_ns": 1728583.5,
+              "cpu_ns": 1585750.0
+            },
+            {
+              "wall_ns": 2126771.0,
+              "cpu_ns": 1591750.0
+            }
+          ],
+          "min_wall_ns": 1573198.0,
+          "median_wall_ns": 1959177.0,
+          "min_cpu_ns": 1502250.0,
+          "median_cpu_ns": 1663000.0,
+          "speedup_vs_before_cpu": 0.4108538785327721,
+          "speedup_vs_stdlib_cpu": 1.0
+        }
+      },
+      "dataclass-shared-fields-200": {
+        "before": {
+          "iterations": 21,
+          "samples": [
+            {
+              "wall_ns": 912585.3333333334,
+              "cpu_ns": 263095.2380952381
+            },
+            {
+              "wall_ns": 265293.6666666667,
+              "cpu_ns": 242380.95238095237
+            },
+            {
+              "wall_ns": 266849.1904761905,
+              "cpu_ns": 221714.2857142857
+            },
+            {
+              "wall_ns": 411817.4761904762,
+              "cpu_ns": 204761.90476190476
+            },
+            {
+              "wall_ns": 913509.9047619047,
+              "cpu_ns": 228761.90476190476
+            },
+            {
+              "wall_ns": 289849.1904761905,
+              "cpu_ns": 235000.0
+            },
+            {
+              "wall_ns": 291023.8095238095,
+              "cpu_ns": 235952.38095238095
+            },
+            {
+              "wall_ns": 228958.33333333334,
+              "cpu_ns": 202285.7142857143
+            },
+            {
+              "wall_ns": 215750.0,
+              "cpu_ns": 201523.80952380953
+            }
+          ],
+          "min_wall_ns": 215750.0,
+          "median_wall_ns": 289849.1904761905,
+          "min_cpu_ns": 201523.80952380953,
+          "median_cpu_ns": 228761.90476190476,
+          "speedup_vs_before_cpu": 1.0,
+          "speedup_vs_stdlib_cpu": 2.193547044129892
+        },
+        "after": {
+          "iterations": 36,
+          "samples": [
+            {
+              "wall_ns": 411541.6666666667,
+              "cpu_ns": 207555.55555555556
+            },
+            {
+              "wall_ns": 261619.22222222222,
+              "cpu_ns": 224916.66666666666
+            },
+            {
+              "wall_ns": 195607.63888888888,
+              "cpu_ns": 183250.0
+            },
+            {
+              "wall_ns": 446465.27777777775,
+              "cpu_ns": 203638.88888888888
+            },
+            {
+              "wall_ns": 584489.5833333334,
+              "cpu_ns": 204444.44444444444
+            },
+            {
+              "wall_ns": 217687.5,
+              "cpu_ns": 196972.22222222222
+            },
+            {
+              "wall_ns": 234888.88888888888,
+              "cpu_ns": 205638.88888888888
+            },
+            {
+              "wall_ns": 248142.36111111112,
+              "cpu_ns": 207666.66666666666
+            },
+            {
+              "wall_ns": 199673.61111111112,
+              "cpu_ns": 184361.11111111112
+            }
+          ],
+          "min_wall_ns": 195607.63888888888,
+          "median_wall_ns": 248142.36111111112,
+          "min_cpu_ns": 183250.0,
+          "median_cpu_ns": 204444.44444444444,
+          "speedup_vs_before_cpu": 1.118944099378882,
+          "speedup_vs_stdlib_cpu": 2.4544565217391305
+        },
+        "stdlib": {
+          "iterations": 10,
+          "samples": [
+            {
+              "wall_ns": 700020.8,
+              "cpu_ns": 519200.0
+            },
+            {
+              "wall_ns": 622150.0,
+              "cpu_ns": 563100.0
+            },
+            {
+              "wall_ns": 535708.3,
+              "cpu_ns": 501800.0
+            },
+            {
+              "wall_ns": 450866.6,
+              "cpu_ns": 440600.0
+            },
+            {
+              "wall_ns": 492041.6,
+              "cpu_ns": 464400.0
+            },
+            {
+              "wall_ns": 457720.8,
+              "cpu_ns": 452400.0
+            },
+            {
+              "wall_ns": 659783.3,
+              "cpu_ns": 508000.0
+            },
+            {
+              "wall_ns": 779720.9,
+              "cpu_ns": 511600.0
+            },
+            {
+              "wall_ns": 441833.4,
+              "cpu_ns": 442000.0
+            }
+          ],
+          "min_wall_ns": 441833.4,
+          "median_wall_ns": 535708.3,
+          "min_cpu_ns": 440600.0,
+          "median_cpu_ns": 501800.0,
+          "speedup_vs_before_cpu": 0.45588263204843515,
+          "speedup_vs_stdlib_cpu": 1.0
+        }
+      },
+      "dataclass-repeated-record-500": {
+        "before": {
+          "iterations": 126,
+          "samples": [
+            {
+              "wall_ns": 56137.89682539683,
+              "cpu_ns": 54857.142857142855
+            },
+            {
+              "wall_ns": 60558.19841269841,
+              "cpu_ns": 57293.65079365079
+            },
+            {
+              "wall_ns": 55618.71428571428,
+              "cpu_ns": 53761.90476190476
+            },
+            {
+              "wall_ns": 62550.269841269845,
+              "cpu_ns": 59309.52380952381
+            },
+            {
+              "wall_ns": 63329.69841269841,
+              "cpu_ns": 58142.857142857145
+            },
+            {
+              "wall_ns": 54676.920634920636,
+              "cpu_ns": 54293.65079365079
+            },
+            {
+              "wall_ns": 55049.60317460317,
+              "cpu_ns": 54857.142857142855
+            },
+            {
+              "wall_ns": 66152.44444444444,
+              "cpu_ns": 59468.25396825397
+            },
+            {
+              "wall_ns": 57082.00793650794,
+              "cpu_ns": 53634.920634920636
+            }
+          ],
+          "min_wall_ns": 54676.920634920636,
+          "median_wall_ns": 57082.00793650794,
+          "min_cpu_ns": 53634.920634920636,
+          "median_cpu_ns": 54857.142857142855,
+          "speedup_vs_before_cpu": 1.0,
+          "speedup_vs_stdlib_cpu": 0.866455078125
+        },
+        "after": {
+          "iterations": 126,
+          "samples": [
+            {
+              "wall_ns": 60892.857142857145,
+              "cpu_ns": 57587.30158730159
+            },
+            {
+              "wall_ns": 54425.59523809524,
+              "cpu_ns": 53492.06349206349
+            },
+            {
+              "wall_ns": 60719.24603174603,
+              "cpu_ns": 56650.793650793654
+            },
+            {
+              "wall_ns": 63788.031746031746,
+              "cpu_ns": 58103.1746031746
+            },
+            {
+              "wall_ns": 64369.04761904762,
+              "cpu_ns": 59484.12698412698
+            },
+            {
+              "wall_ns": 57125.65873015873,
+              "cpu_ns": 56158.730158730155
+            },
+            {
+              "wall_ns": 55446.09523809524,
+              "cpu_ns": 55055.555555555555
+            },
+            {
+              "wall_ns": 53997.69047619047,
+              "cpu_ns": 51761.90476190476
+            },
+            {
+              "wall_ns": 55693.78571428572,
+              "cpu_ns": 53523.80952380953
+            }
+          ],
+          "min_wall_ns": 53997.69047619047,
+          "median_wall_ns": 57125.65873015873,
+          "min_cpu_ns": 51761.90476190476,
+          "median_cpu_ns": 56158.730158730155,
+          "speedup_vs_before_cpu": 0.9768230638778972,
+          "speedup_vs_stdlib_cpu": 0.8463733041266253
+        },
+        "stdlib": {
+          "iterations": 128,
+          "samples": [
+            {
+              "wall_ns": 47071.6171875,
+              "cpu_ns": 45171.875
+            },
+            {
+              "wall_ns": 53040.6953125,
+              "cpu_ns": 48750.0
+            },
+            {
+              "wall_ns": 54852.21875,
+              "cpu_ns": 49765.625
+            },
+            {
+              "wall_ns": 48276.0390625,
+              "cpu_ns": 45929.6875
+            },
+            {
+              "wall_ns": 53249.3515625,
+              "cpu_ns": 49859.375
+            },
+            {
+              "wall_ns": 49229.8203125,
+              "cpu_ns": 47531.25
+            },
+            {
+              "wall_ns": 50726.234375,
+              "cpu_ns": 45296.875
+            },
+            {
+              "wall_ns": 38093.4296875,
+              "cpu_ns": 38101.5625
+            },
+            {
+              "wall_ns": 51099.28125,
+              "cpu_ns": 48992.1875
+            }
+          ],
+          "min_wall_ns": 38093.4296875,
+          "median_wall_ns": 50726.234375,
+          "min_cpu_ns": 38101.5625,
+          "median_cpu_ns": 47531.25,
+          "speedup_vs_before_cpu": 1.1541279233586925,
+          "speedup_vs_stdlib_cpu": 1.0
+        }
+      },
+      "dataclass-nested-100": {
+        "before": {
+          "iterations": 26,
+          "samples": [
+            {
+              "wall_ns": 256336.53846153847,
+              "cpu_ns": 232153.84615384616
+            },
+            {
+              "wall_ns": 249344.57692307694,
+              "cpu_ns": 238423.07692307694
+            },
+            {
+              "wall_ns": 265982.3461538461,
+              "cpu_ns": 239423.07692307694
+            },
+            {
+              "wall_ns": 287506.42307692306,
+              "cpu_ns": 258538.46153846153
+            },
+            {
+              "wall_ns": 248740.38461538462,
+              "cpu_ns": 240769.23076923078
+            },
+            {
+              "wall_ns": 264363.8076923077,
+              "cpu_ns": 242192.3076923077
+            },
+            {
+              "wall_ns": 224423.07692307694,
+              "cpu_ns": 224538.46153846153
+            },
+            {
+              "wall_ns": 264902.23076923075,
+              "cpu_ns": 250730.76923076922
+            },
+            {
+              "wall_ns": 1014445.5,
+              "cpu_ns": 282576.92307692306
+            }
+          ],
+          "min_wall_ns": 224423.07692307694,
+          "median_wall_ns": 264363.8076923077,
+          "min_cpu_ns": 224538.46153846153,
+          "median_cpu_ns": 240769.23076923078,
+          "speedup_vs_before_cpu": 1.0,
+          "speedup_vs_stdlib_cpu": 2.08
+        },
+        "after": {
+          "iterations": 32,
+          "samples": [
+            {
+              "wall_ns": 252510.40625,
+              "cpu_ns": 222031.25
+            },
+            {
+              "wall_ns": 247089.84375,
+              "cpu_ns": 224281.25
+            },
+            {
+              "wall_ns": 217587.25,
+              "cpu_ns": 210000.0
+            },
+            {
+              "wall_ns": 245493.5,
+              "cpu_ns": 229968.75
+            },
+            {
+              "wall_ns": 283985.6875,
+              "cpu_ns": 244406.25
+            },
+            {
+              "wall_ns": 246048.1875,
+              "cpu_ns": 228093.75
+            },
+            {
+              "wall_ns": 241955.71875,
+              "cpu_ns": 221156.25
+            },
+            {
+              "wall_ns": 229457.03125,
+              "cpu_ns": 221187.5
+            },
+            {
+              "wall_ns": 822235.65625,
+              "cpu_ns": 297843.75
+            }
+          ],
+          "min_wall_ns": 217587.25,
+          "median_wall_ns": 246048.1875,
+          "min_cpu_ns": 210000.0,
+          "median_cpu_ns": 224281.25,
+          "speedup_vs_before_cpu": 1.0735147533252591,
+          "speedup_vs_stdlib_cpu": 2.232910686916539
+        },
+        "stdlib": {
+          "iterations": 20,
+          "samples": [
+            {
+              "wall_ns": 670139.6,
+              "cpu_ns": 500800.0
+            },
+            {
+              "wall_ns": 533781.25,
+              "cpu_ns": 486300.0
+            },
+            {
+              "wall_ns": 494712.5,
+              "cpu_ns": 473450.0
+            },
+            {
+              "wall_ns": 483168.75,
+              "cpu_ns": 481450.0
+            },
+            {
+              "wall_ns": 552166.7,
+              "cpu_ns": 512200.0
+            },
+            {
+              "wall_ns": 492231.25,
+              "cpu_ns": 473700.0
+            },
+            {
+              "wall_ns": 588752.1,
+              "cpu_ns": 529500.0
+            },
+            {
+              "wall_ns": 599868.75,
+              "cpu_ns": 531150.0
+            },
+            {
+              "wall_ns": 1249039.6,
+              "cpu_ns": 595200.0
+            }
+          ],
+          "min_wall_ns": 483168.75,
+          "median_wall_ns": 552166.7,
+          "min_cpu_ns": 473450.0,
+          "median_cpu_ns": 500800.0,
+          "speedup_vs_before_cpu": 0.4807692307692308,
+          "speedup_vs_stdlib_cpu": 1.0
+        }
+      },
+      "dataclass-frozen-200": {
+        "before": {
+          "iterations": 18,
+          "samples": [
+            {
+              "wall_ns": 540949.0555555555,
+              "cpu_ns": 295222.22222222225
+            },
+            {
+              "wall_ns": 230937.5,
+              "cpu_ns": 217500.0
+            },
+            {
+              "wall_ns": 257662.05555555556,
+              "cpu_ns": 241111.11111111112
+            },
+            {
+              "wall_ns": 329449.1111111111,
+              "cpu_ns": 282333.3333333333
+            },
+            {
+              "wall_ns": 322557.8888888889,
+              "cpu_ns": 279055.55555555556
+            },
+            {
+              "wall_ns": 695439.7777777778,
+              "cpu_ns": 267277.77777777775
+            },
+            {
+              "wall_ns": 881861.1111111111,
+              "cpu_ns": 300111.1111111111
+            },
+            {
+              "wall_ns": 341416.6666666667,
+              "cpu_ns": 278722.22222222225
+            },
+            {
+              "wall_ns": 237004.66666666666,
+              "cpu_ns": 229833.33333333334
+            }
+          ],
+          "min_wall_ns": 230937.5,
+          "median_wall_ns": 329449.1111111111,
+          "min_cpu_ns": 217500.0,
+          "median_cpu_ns": 278722.22222222225,
+          "speedup_vs_before_cpu": 1.0,
+          "speedup_vs_stdlib_cpu": 2.413693442296193
+        },
+        "after": {
+          "iterations": 20,
+          "samples": [
+            {
+              "wall_ns": 196062.5,
+              "cpu_ns": 196150.0
+            },
+            {
+              "wall_ns": 211979.15,
+              "cpu_ns": 202050.0
+            },
+            {
+              "wall_ns": 253110.4,
+              "cpu_ns": 232350.0
+            },
+            {
+              "wall_ns": 251589.6,
+              "cpu_ns": 236850.0
+            },
+            {
+              "wall_ns": 273193.75,
+              "cpu_ns": 246200.0
+            },
+            {
+              "wall_ns": 1855570.85,
+              "cpu_ns": 275100.0
+            },
+            {
+              "wall_ns": 704866.65,
+              "cpu_ns": 257900.0
+            },
+            {
+              "wall_ns": 447014.55,
+              "cpu_ns": 273550.0
+            },
+            {
+              "wall_ns": 229643.75,
+              "cpu_ns": 217750.0
+            }
+          ],
+          "min_wall_ns": 196062.5,
+          "median_wall_ns": 253110.4,
+          "min_cpu_ns": 196150.0,
+          "median_cpu_ns": 236850.0,
+          "speedup_vs_before_cpu": 1.176787934229353,
+          "speedup_vs_stdlib_cpu": 2.8404053198226724
+        },
+        "stdlib": {
+          "iterations": 8,
+          "samples": [
+            {
+              "wall_ns": 562463.5,
+              "cpu_ns": 562750.0
+            },
+            {
+              "wall_ns": 549953.125,
+              "cpu_ns": 550125.0
+            },
+            {
+              "wall_ns": 746869.875,
+              "cpu_ns": 679875.0
+            },
+            {
+              "wall_ns": 756312.5,
+              "cpu_ns": 672750.0
+            },
+            {
+              "wall_ns": 793073.0,
+              "cpu_ns": 706125.0
+            },
+            {
+              "wall_ns": 1188359.375,
+              "cpu_ns": 736750.0
+            },
+            {
+              "wall_ns": 2658359.375,
+              "cpu_ns": 711750.0
+            },
+            {
+              "wall_ns": 2273333.375,
+              "cpu_ns": 671875.0
+            },
+            {
+              "wall_ns": 631015.625,
+              "cpu_ns": 608250.0
+            }
+          ],
+          "min_wall_ns": 549953.125,
+          "median_wall_ns": 756312.5,
+          "min_cpu_ns": 550125.0,
+          "median_cpu_ns": 672750.0,
+          "speedup_vs_before_cpu": 0.4143028200999216,
+          "speedup_vs_stdlib_cpu": 1.0
+        }
+      },
+      "dataclass-custom-hook-100": {
+        "before": {
+          "iterations": 27,
+          "samples": [
+            {
+              "wall_ns": 99263.88888888889,
+              "cpu_ns": 98925.92592592593
+            },
+            {
+              "wall_ns": 98651.22222222222,
+              "cpu_ns": 98740.74074074074
+            },
+            {
+              "wall_ns": 111424.37037037036,
+              "cpu_ns": 105148.14814814815
+            },
+            {
+              "wall_ns": 144371.92592592593,
+              "cpu_ns": 126259.25925925926
+            },
+            {
+              "wall_ns": 130189.81481481482,
+              "cpu_ns": 117333.33333333333
+            },
+            {
+              "wall_ns": 112628.11111111111,
+              "cpu_ns": 107814.81481481482
+            },
+            {
+              "wall_ns": 131419.74074074073,
+              "cpu_ns": 117222.22222222222
+            },
+            {
+              "wall_ns": 141225.2962962963,
+              "cpu_ns": 119333.33333333333
+            },
+            {
+              "wall_ns": 120217.5925925926,
+              "cpu_ns": 105592.5925925926
+            }
+          ],
+          "min_wall_ns": 98651.22222222222,
+          "median_wall_ns": 120217.5925925926,
+          "min_cpu_ns": 98740.74074074074,
+          "median_cpu_ns": 107814.81481481482,
+          "speedup_vs_before_cpu": 1.0,
+          "speedup_vs_stdlib_cpu": 2.295602885606321
+        },
+        "after": {
+          "iterations": 49,
+          "samples": [
+            {
+              "wall_ns": 165662.4081632653,
+              "cpu_ns": 95530.61224489796
+            },
+            {
+              "wall_ns": 108487.24489795919,
+              "cpu_ns": 92816.32653061225
+            },
+            {
+              "wall_ns": 93625.0,
+              "cpu_ns": 92448.97959183673
+            },
+            {
+              "wall_ns": 112060.38775510204,
+              "cpu_ns": 103244.89795918367
+            },
+            {
+              "wall_ns": 94823.14285714286,
+              "cpu_ns": 90775.51020408163
+            },
+            {
+              "wall_ns": 143153.0612244898,
+              "cpu_ns": 115204.08163265306
+            },
+            {
+              "wall_ns": 123000.0,
+              "cpu_ns": 107897.95918367348
+            },
+            {
+              "wall_ns": 129617.3469387755,
+              "cpu_ns": 111551.02040816327
+            },
+            {
+              "wall_ns": 132301.02040816325,
+              "cpu_ns": 104224.48979591837
+            }
+          ],
+          "min_wall_ns": 93625.0,
+          "median_wall_ns": 123000.0,
+          "min_cpu_ns": 90775.51020408163,
+          "median_cpu_ns": 103244.89795918367,
+          "speedup_vs_before_cpu": 1.0442628831638519,
+          "speedup_vs_stdlib_cpu": 2.3972128879225143
+        },
+        "stdlib": {
+          "iterations": 20,
+          "samples": [
+            {
+              "wall_ns": 496770.8,
+              "cpu_ns": 259850.0
+            },
+            {
+              "wall_ns": 371089.55,
+              "cpu_ns": 245500.0
+            },
+            {
+              "wall_ns": 224335.45,
+              "cpu_ns": 224450.0
+            },
+            {
+              "wall_ns": 285243.75,
+              "cpu_ns": 270800.0
+            },
+            {
+              "wall_ns": 279743.75,
+              "cpu_ns": 253100.0
+            },
+            {
+              "wall_ns": 256139.55,
+              "cpu_ns": 237600.0
+            },
+            {
+              "wall_ns": 267902.05,
+              "cpu_ns": 247500.0
+            },
+            {
+              "wall_ns": 325660.4,
+              "cpu_ns": 270050.0
+            },
+            {
+              "wall_ns": 266952.1,
+              "cpu_ns": 243550.0
+            }
+          ],
+          "min_wall_ns": 224335.45,
+          "median_wall_ns": 279743.75,
+          "min_cpu_ns": 224450.0,
+          "median_cpu_ns": 247500.0,
+          "speedup_vs_before_cpu": 0.4356154133931912,
+          "speedup_vs_stdlib_cpu": 1.0
+        }
+      },
+      "builtin-nested-distinct-200": {
+        "before": {
+          "iterations": 156,
+          "samples": [
+            {
+              "wall_ns": 67454.58974358975,
+              "cpu_ns": 49570.51282051282
+            },
+            {
+              "wall_ns": 107415.59615384616,
+              "cpu_ns": 49788.46153846154
+            },
+            {
+              "wall_ns": 61534.1858974359,
+              "cpu_ns": 48525.64102564102
+            },
+            {
+              "wall_ns": 89326.65384615384,
+              "cpu_ns": 50025.64102564102
+            },
+            {
+              "wall_ns": 111206.46153846153,
+              "cpu_ns": 51102.5641025641
+            },
+            {
+              "wall_ns": 83323.71794871795,
+              "cpu_ns": 49557.692307692305
+            },
+            {
+              "wall_ns": 47420.942307692305,
+              "cpu_ns": 46673.07692307692
+            },
+            {
+              "wall_ns": 59471.416666666664,
+              "cpu_ns": 50980.769230769234
+            },
+            {
+              "wall_ns": 48871.794871794875,
+              "cpu_ns": 48192.307692307695
+            }
+          ],
+          "min_wall_ns": 47420.942307692305,
+          "median_wall_ns": 67454.58974358975,
+          "min_cpu_ns": 46673.07692307692,
+          "median_cpu_ns": 49570.51282051282,
+          "speedup_vs_before_cpu": 1.0,
+          "speedup_vs_stdlib_cpu": 9.632742790637527
+        },
+        "after": {
+          "iterations": 128,
+          "samples": [
+            {
+              "wall_ns": 61248.375,
+              "cpu_ns": 50429.6875
+            },
+            {
+              "wall_ns": 77009.765625,
+              "cpu_ns": 49570.3125
+            },
+            {
+              "wall_ns": 61480.140625,
+              "cpu_ns": 48046.875
+            },
+            {
+              "wall_ns": 123068.359375,
+              "cpu_ns": 52859.375
+            },
+            {
+              "wall_ns": 98278.0,
+              "cpu_ns": 51445.3125
+            },
+            {
+              "wall_ns": 64084.3125,
+              "cpu_ns": 51179.6875
+            },
+            {
+              "wall_ns": 45983.7265625,
+              "cpu_ns": 45992.1875
+            },
+            {
+              "wall_ns": 52637.3671875,
+              "cpu_ns": 50343.75
+            },
+            {
+              "wall_ns": 55207.6796875,
+              "cpu_ns": 48421.875
+            }
+          ],
+          "min_wall_ns": 45983.7265625,
+          "median_wall_ns": 61480.140625,
+          "min_cpu_ns": 45992.1875,
+          "median_cpu_ns": 50343.75,
+          "speedup_vs_before_cpu": 0.9846408505626383,
+          "speedup_vs_stdlib_cpu": 9.484792054624457
+        },
+        "stdlib": {
+          "iterations": 20,
+          "samples": [
+            {
+              "wall_ns": 542081.25,
+              "cpu_ns": 482100.0
+            },
+            {
+              "wall_ns": 3216358.3,
+              "cpu_ns": 482450.0
+            },
+            {
+              "wall_ns": 1159581.25,
+              "cpu_ns": 443550.0
+            },
+            {
+              "wall_ns": 1566068.75,
+              "cpu_ns": 505900.0
+            },
+            {
+              "wall_ns": 1618204.15,
+              "cpu_ns": 534450.0
+            },
+            {
+              "wall_ns": 544687.5,
+              "cpu_ns": 464450.0
+            },
+            {
+              "wall_ns": 531760.4,
+              "cpu_ns": 469250.0
+            },
+            {
+              "wall_ns": 574064.6,
+              "cpu_ns": 477500.0
+            },
+            {
+              "wall_ns": 483843.75,
+              "cpu_ns": 472450.0
+            }
+          ],
+          "min_wall_ns": 483843.75,
+          "median_wall_ns": 574064.6,
+          "min_cpu_ns": 443550.0,
+          "median_cpu_ns": 477500.0,
+          "speedup_vs_before_cpu": 0.10381259229426769,
+          "speedup_vs_stdlib_cpu": 1.0
+        }
+      },
+      "builtin-shared-1000x500": {
+        "before": {
+          "iterations": 64,
+          "samples": [
+            {
+              "wall_ns": 16585.28125,
+              "cpu_ns": 8250.0
+            },
+            {
+              "wall_ns": 11395.828125,
+              "cpu_ns": 8734.375
+            },
+            {
+              "wall_ns": 10002.609375,
+              "cpu_ns": 8484.375
+            },
+            {
+              "wall_ns": 7503.265625,
+              "cpu_ns": 7515.625
+            },
+            {
+              "wall_ns": 7564.453125,
+              "cpu_ns": 7578.125
+            },
+            {
+              "wall_ns": 7550.78125,
+              "cpu_ns": 7562.5
+            },
+            {
+              "wall_ns": 7478.515625,
+              "cpu_ns": 7500.0
+            },
+            {
+              "wall_ns": 7581.390625,
+              "cpu_ns": 7578.125
+            },
+            {
+              "wall_ns": 7472.65625,
+              "cpu_ns": 7484.375
+            }
+          ],
+          "min_wall_ns": 7472.65625,
+          "median_wall_ns": 7564.453125,
+          "min_cpu_ns": 7484.375,
+          "median_cpu_ns": 7578.125,
+          "speedup_vs_before_cpu": 1.0,
+          "speedup_vs_stdlib_cpu": 23.09278350515464
+        },
+        "after": {
+          "iterations": 384,
+          "samples": [
+            {
+              "wall_ns": 20926.432291666668,
+              "cpu_ns": 8744.791666666666
+            },
+            {
+              "wall_ns": 15853.296875,
+              "cpu_ns": 8502.604166666666
+            },
+            {
+              "wall_ns": 8602.7578125,
+              "cpu_ns": 8044.270833333333
+            },
+            {
+              "wall_ns": 8509.765625,
+              "cpu_ns": 7846.354166666667
+            },
+            {
+              "wall_ns": 7522.244791666667,
+              "cpu_ns": 7526.041666666667
+            },
+            {
+              "wall_ns": 9379.450520833334,
+              "cpu_ns": 8338.541666666666
+            },
+            {
+              "wall_ns": 7469.184895833333,
+              "cpu_ns": 7471.354166666667
+            },
+            {
+              "wall_ns": 8213.109375,
+              "cpu_ns": 7729.166666666667
+            },
+            {
+              "wall_ns": 7762.479166666667,
+              "cpu_ns": 7580.729166666667
+            }
+          ],
+          "min_wall_ns": 7469.184895833333,
+          "median_wall_ns": 8509.765625,
+          "min_cpu_ns": 7471.354166666667,
+          "median_cpu_ns": 7846.354166666667,
+          "speedup_vs_before_cpu": 0.9658148025224029,
+          "speedup_vs_stdlib_cpu": 22.30335214072353
+        },
+        "stdlib": {
+          "iterations": 26,
+          "samples": [
+            {
+              "wall_ns": 490772.42307692306,
+              "cpu_ns": 180423.07692307694
+            },
+            {
+              "wall_ns": 476049.6538461539,
+              "cpu_ns": 189576.92307692306
+            },
+            {
+              "wall_ns": 179245.1923076923,
+              "cpu_ns": 162269.23076923078
+            },
+            {
+              "wall_ns": 195484.0,
+              "cpu_ns": 173884.61538461538
+            },
+            {
+              "wall_ns": 155663.46153846153,
+              "cpu_ns": 155730.76923076922
+            },
+            {
+              "wall_ns": 205028.84615384616,
+              "cpu_ns": 181769.23076923078
+            },
+            {
+              "wall_ns": 163211.53846153847,
+              "cpu_ns": 163076.92307692306
+            },
+            {
+              "wall_ns": 222136.23076923078,
+              "cpu_ns": 185576.92307692306
+            },
+            {
+              "wall_ns": 179195.5,
+              "cpu_ns": 175000.0
+            }
+          ],
+          "min_wall_ns": 155663.46153846153,
+          "median_wall_ns": 195484.0,
+          "min_cpu_ns": 155730.76923076922,
+          "median_cpu_ns": 175000.0,
+          "speedup_vs_before_cpu": 0.04330357142857143,
+          "speedup_vs_stdlib_cpu": 1.0
+        }
+      }
+    },
+    "gc-enabled": {
+      "dataclass-distinct-200": {
+        "before": {
+          "iterations": 42,
+          "samples": [
+            {
+              "wall_ns": 225900.7857142857,
+              "cpu_ns": 223952.38095238095
+            },
+            {
+              "wall_ns": 286172.61904761905,
+              "cpu_ns": 253285.7142857143
+            },
+            {
+              "wall_ns": 232473.2142857143,
+              "cpu_ns": 229857.14285714287
+            },
+            {
+              "wall_ns": 270255.95238095237,
+              "cpu_ns": 254380.95238095237
+            },
+            {
+              "wall_ns": 307338.28571428574,
+              "cpu_ns": 277047.61904761905
+            },
+            {
+              "wall_ns": 259967.2619047619,
+              "cpu_ns": 256023.80952380953
+            },
+            {
+              "wall_ns": 280475.21428571426,
+              "cpu_ns": 269523.8095238095
+            },
+            {
+              "wall_ns": 329890.85714285716,
+              "cpu_ns": 277380.95238095237
+            },
+            {
+              "wall_ns": 249282.7380952381,
+              "cpu_ns": 238523.80952380953
+            }
+          ],
+          "min_wall_ns": 225900.7857142857,
+          "median_wall_ns": 270255.95238095237,
+          "min_cpu_ns": 223952.38095238095,
+          "median_cpu_ns": 254380.95238095237,
+          "speedup_vs_before_cpu": 1.0,
+          "speedup_vs_stdlib_cpu": 2.405278921752153
+        },
+        "after": {
+          "iterations": 30,
+          "samples": [
+            {
+              "wall_ns": 205086.1,
+              "cpu_ns": 198266.66666666666
+            },
+            {
+              "wall_ns": 205152.76666666666,
+              "cpu_ns": 205233.33333333334
+            },
+            {
+              "wall_ns": 265515.26666666666,
+              "cpu_ns": 239200.0
+            },
+            {
+              "wall_ns": 200326.4,
+              "cpu_ns": 200366.66666666666
+            },
+            {
+              "wall_ns": 232077.76666666666,
+              "cpu_ns": 227433.33333333334
+            },
+            {
+              "wall_ns": 265551.36666666664,
+              "cpu_ns": 259233.33333333334
+            },
+            {
+              "wall_ns": 240544.43333333332,
+              "cpu_ns": 230500.0
+            },
+            {
+              "wall_ns": 237709.73333333334,
+              "cpu_ns": 231800.0
+            },
+            {
+              "wall_ns": 217859.73333333334,
+              "cpu_ns": 209766.66666666666
+            }
+          ],
+          "min_wall_ns": 200326.4,
+          "median_wall_ns": 232077.76666666666,
+          "min_cpu_ns": 198266.66666666666,
+          "median_cpu_ns": 227433.33333333334,
+          "speedup_vs_before_cpu": 1.1184857938485373,
+          "speedup_vs_stdlib_cpu": 2.6902703042231106
+        },
+        "stdlib": {
+          "iterations": 14,
+          "samples": [
+            {
+              "wall_ns": 569485.1428571428,
+              "cpu_ns": 569571.4285714285
+            },
+            {
+              "wall_ns": 918979.2142857143,
+              "cpu_ns": 580000.0
+            },
+            {
+              "wall_ns": 647657.7142857143,
+              "cpu_ns": 611857.1428571428
+            },
+            {
+              "wall_ns": 622223.2142857143,
+              "cpu_ns": 595214.2857142857
+            },
+            {
+              "wall_ns": 700735.1428571428,
+              "cpu_ns": 680357.1428571428
+            },
+            {
+              "wall_ns": 652494.0714285715,
+              "cpu_ns": 637285.7142857143
+            },
+            {
+              "wall_ns": 624101.2142857143,
+              "cpu_ns": 614571.4285714285
+            },
+            {
+              "wall_ns": 582943.5,
+              "cpu_ns": 570285.7142857143
+            },
+            {
+              "wall_ns": 692321.4285714285,
+              "cpu_ns": 648785.7142857143
+            }
+          ],
+          "min_wall_ns": 569485.1428571428,
+          "median_wall_ns": 647657.7142857143,
+          "min_cpu_ns": 569571.4285714285,
+          "median_cpu_ns": 611857.1428571428,
+          "speedup_vs_before_cpu": 0.41575219861467816,
+          "speedup_vs_stdlib_cpu": 1.0
+        }
+      },
+      "dataclass-scalar-500": {
+        "before": {
+          "iterations": 7,
+          "samples": [
+            {
+              "wall_ns": 1331964.2857142857,
+              "cpu_ns": 613285.7142857143
+            },
+            {
+              "wall_ns": 467035.71428571426,
+              "cpu_ns": 467285.71428571426
+            },
+            {
+              "wall_ns": 468327.4285714286,
+              "cpu_ns": 468428.5714285714
+            },
+            {
+              "wall_ns": 469702.4285714286,
+              "cpu_ns": 470000.0
+            },
+            {
+              "wall_ns": 1378255.857142857,
+              "cpu_ns": 547285.7142857143
+            },
+            {
+              "wall_ns": 793910.7142857143,
+              "cpu_ns": 534428.5714285715
+            },
+            {
+              "wall_ns": 544660.7142857143,
+              "cpu_ns": 488285.71428571426
+            },
+            {
+              "wall_ns": 907327.4285714285,
+              "cpu_ns": 561571.4285714285
+            },
+            {
+              "wall_ns": 735619.0,
+              "cpu_ns": 574285.7142857143
+            }
+          ],
+          "min_wall_ns": 467035.71428571426,
+          "median_wall_ns": 735619.0,
+          "min_cpu_ns": 467285.71428571426,
+          "median_cpu_ns": 534428.5714285715,
+          "speedup_vs_before_cpu": 1.0,
+          "speedup_vs_stdlib_cpu": 2.2210638866613204
+        },
+        "after": {
+          "iterations": 9,
+          "samples": [
+            {
+              "wall_ns": 647412.1111111111,
+              "cpu_ns": 449000.0
+            },
+            {
+              "wall_ns": 1059296.2222222222,
+              "cpu_ns": 462222.22222222225
+            },
+            {
+              "wall_ns": 736476.7777777778,
+              "cpu_ns": 431777.77777777775
+            },
+            {
+              "wall_ns": 423810.22222222225,
+              "cpu_ns": 424000.0
+            },
+            {
+              "wall_ns": 418963.0,
+              "cpu_ns": 419222.22222222225
+            },
+            {
+              "wall_ns": 415930.55555555556,
+              "cpu_ns": 416111.1111111111
+            },
+            {
+              "wall_ns": 852930.5555555555,
+              "cpu_ns": 494444.44444444444
+            },
+            {
+              "wall_ns": 501416.6666666667,
+              "cpu_ns": 472555.55555555556
+            },
+            {
+              "wall_ns": 576101.8888888889,
+              "cpu_ns": 459444.44444444444
+            }
+          ],
+          "min_wall_ns": 415930.55555555556,
+          "median_wall_ns": 576101.8888888889,
+          "min_cpu_ns": 416111.1111111111,
+          "median_cpu_ns": 449000.0,
+          "speedup_vs_before_cpu": 1.1902640789055043,
+          "speedup_vs_stdlib_cpu": 2.643652561247216
+        },
+        "stdlib": {
+          "iterations": 1,
+          "samples": [
+            {
+              "wall_ns": 1224417.0,
+              "cpu_ns": 1227000.0
+            },
+            {
+              "wall_ns": 1161916.0,
+              "cpu_ns": 1163000.0
+            },
+            {
+              "wall_ns": 1179500.0,
+              "cpu_ns": 1181000.0
+            },
+            {
+              "wall_ns": 1160875.0,
+              "cpu_ns": 1161000.0
+            },
+            {
+              "wall_ns": 1179417.0,
+              "cpu_ns": 1181000.0
+            },
+            {
+              "wall_ns": 1398791.0,
+              "cpu_ns": 1284000.0
+            },
+            {
+              "wall_ns": 1477709.0,
+              "cpu_ns": 1350000.0
+            },
+            {
+              "wall_ns": 1185417.0,
+              "cpu_ns": 1187000.0
+            },
+            {
+              "wall_ns": 4864042.0,
+              "cpu_ns": 1646000.0
+            }
+          ],
+          "min_wall_ns": 1160875.0,
+          "median_wall_ns": 1185417.0,
+          "min_cpu_ns": 1161000.0,
+          "median_cpu_ns": 1187000.0,
+          "speedup_vs_before_cpu": 0.4502346852810206,
+          "speedup_vs_stdlib_cpu": 1.0
+        }
+      },
+      "dataclass-homogeneous-500": {
+        "before": {
+          "iterations": 7,
+          "samples": [
+            {
+              "wall_ns": 605619.0,
+              "cpu_ns": 603000.0
+            },
+            {
+              "wall_ns": 879708.2857142857,
+              "cpu_ns": 630142.8571428572
+            },
+            {
+              "wall_ns": 784238.1428571428,
+              "cpu_ns": 632000.0
+            },
+            {
+              "wall_ns": 648660.7142857143,
+              "cpu_ns": 623000.0
+            },
+            {
+              "wall_ns": 994017.8571428572,
+              "cpu_ns": 658142.8571428572
+            },
+            {
+              "wall_ns": 1057482.142857143,
+              "cpu_ns": 749142.8571428572
+            },
+            {
+              "wall_ns": 677137.0,
+              "cpu_ns": 638428.5714285715
+            },
+            {
+              "wall_ns": 642958.2857142857,
+              "cpu_ns": 619000.0
+            },
+            {
+              "wall_ns": 747946.4285714285,
+              "cpu_ns": 623000.0
+            }
+          ],
+          "min_wall_ns": 605619.0,
+          "median_wall_ns": 747946.4285714285,
+          "min_cpu_ns": 603000.0,
+          "median_cpu_ns": 630142.8571428572,
+          "speedup_vs_before_cpu": 1.0,
+          "speedup_vs_stdlib_cpu": 2.450238041260485
+        },
+        "after": {
+          "iterations": 9,
+          "samples": [
+            {
+              "wall_ns": 793194.4444444445,
+              "cpu_ns": 574555.5555555555
+            },
+            {
+              "wall_ns": 4732569.444444444,
+              "cpu_ns": 630666.6666666666
+            },
+            {
+              "wall_ns": 651884.3333333334,
+              "cpu_ns": 549666.6666666666
+            },
+            {
+              "wall_ns": 811907.4444444445,
+              "cpu_ns": 607888.8888888889
+            },
+            {
+              "wall_ns": 663263.8888888889,
+              "cpu_ns": 578444.4444444445
+            },
+            {
+              "wall_ns": 703888.8888888889,
+              "cpu_ns": 616444.4444444445
+            },
+            {
+              "wall_ns": 529847.2222222222,
+              "cpu_ns": 530000.0
+            },
+            {
+              "wall_ns": 772370.3333333334,
+              "cpu_ns": 565444.4444444445
+            },
+            {
+              "wall_ns": 614078.6666666666,
+              "cpu_ns": 582222.2222222222
+            }
+          ],
+          "min_wall_ns": 529847.2222222222,
+          "median_wall_ns": 703888.8888888889,
+          "min_cpu_ns": 530000.0,
+          "median_cpu_ns": 578444.4444444445,
+          "speedup_vs_before_cpu": 1.0893748970967565,
+          "speedup_vs_stdlib_cpu": 2.669227814060699
+        },
+        "stdlib": {
+          "iterations": 4,
+          "samples": [
+            {
+              "wall_ns": 16076708.5,
+              "cpu_ns": 1493250.0
+            },
+            {
+              "wall_ns": 2985260.5,
+              "cpu_ns": 1616000.0
+            },
+            {
+              "wall_ns": 1544416.5,
+              "cpu_ns": 1523000.0
+            },
+            {
+              "wall_ns": 2013229.25,
+              "cpu_ns": 1501500.0
+            },
+            {
+              "wall_ns": 1642052.25,
+              "cpu_ns": 1544000.0
+            },
+            {
+              "wall_ns": 3221396.0,
+              "cpu_ns": 1833750.0
+            },
+            {
+              "wall_ns": 2410073.0,
+              "cpu_ns": 1610750.0
+            },
+            {
+              "wall_ns": 1616666.75,
+              "cpu_ns": 1511750.0
+            },
+            {
+              "wall_ns": 1790677.25,
+              "cpu_ns": 1595250.0
+            }
+          ],
+          "min_wall_ns": 1544416.5,
+          "median_wall_ns": 2013229.25,
+          "min_cpu_ns": 1493250.0,
+          "median_cpu_ns": 1544000.0,
+          "speedup_vs_before_cpu": 0.4081236121391562,
+          "speedup_vs_stdlib_cpu": 1.0
+        }
+      },
+      "dataclass-shared-fields-200": {
+        "before": {
+          "iterations": 28,
+          "samples": [
+            {
+              "wall_ns": 269700.89285714284,
+              "cpu_ns": 219357.14285714287
+            },
+            {
+              "wall_ns": 325671.14285714284,
+              "cpu_ns": 225678.57142857142
+            },
+            {
+              "wall_ns": 268720.25,
+              "cpu_ns": 228928.57142857142
+            },
+            {
+              "wall_ns": 190686.0,
+              "cpu_ns": 190750.0
+            },
+            {
+              "wall_ns": 207497.0357142857,
+              "cpu_ns": 199964.2857142857
+            },
+            {
+              "wall_ns": 221319.9642857143,
+              "cpu_ns": 211214.2857142857
+            },
+            {
+              "wall_ns": 264738.10714285716,
+              "cpu_ns": 221642.85714285713
+            },
+            {
+              "wall_ns": 230882.42857142858,
+              "cpu_ns": 226785.7142857143
+            },
+            {
+              "wall_ns": 269019.35714285716,
+              "cpu_ns": 246035.7142857143
+            }
+          ],
+          "min_wall_ns": 190686.0,
+          "median_wall_ns": 264738.10714285716,
+          "min_cpu_ns": 190750.0,
+          "median_cpu_ns": 221642.85714285713,
+          "speedup_vs_before_cpu": 1.0,
+          "speedup_vs_stdlib_cpu": 2.2037705446342253
+        },
+        "after": {
+          "iterations": 26,
+          "samples": [
+            {
+              "wall_ns": 290511.1923076923,
+              "cpu_ns": 217769.23076923078
+            },
+            {
+              "wall_ns": 281879.8076923077,
+              "cpu_ns": 191000.0
+            },
+            {
+              "wall_ns": 284326.92307692306,
+              "cpu_ns": 204769.23076923078
+            },
+            {
+              "wall_ns": 444185.8846153846,
+              "cpu_ns": 183461.53846153847
+            },
+            {
+              "wall_ns": 317113.76923076925,
+              "cpu_ns": 188076.92307692306
+            },
+            {
+              "wall_ns": 184277.23076923078,
+              "cpu_ns": 179576.92307692306
+            },
+            {
+              "wall_ns": 184584.92307692306,
+              "cpu_ns": 180576.92307692306
+            },
+            {
+              "wall_ns": 248176.26923076922,
+              "cpu_ns": 208000.0
+            },
+            {
+              "wall_ns": 205615.38461538462,
+              "cpu_ns": 197076.92307692306
+            }
+          ],
+          "min_wall_ns": 184277.23076923078,
+          "median_wall_ns": 281879.8076923077,
+          "min_cpu_ns": 179576.92307692306,
+          "median_cpu_ns": 191000.0,
+          "speedup_vs_before_cpu": 1.1604338070306657,
+          "speedup_vs_stdlib_cpu": 2.5573298429319373
+        },
+        "stdlib": {
+          "iterations": 20,
+          "samples": [
+            {
+              "wall_ns": 565804.15,
+              "cpu_ns": 470250.0
+            },
+            {
+              "wall_ns": 440787.5,
+              "cpu_ns": 440900.0
+            },
+            {
+              "wall_ns": 2570604.2,
+              "cpu_ns": 487950.0
+            },
+            {
+              "wall_ns": 1243729.2,
+              "cpu_ns": 488450.0
+            },
+            {
+              "wall_ns": 565012.5,
+              "cpu_ns": 480350.0
+            },
+            {
+              "wall_ns": 753018.75,
+              "cpu_ns": 542300.0
+            },
+            {
+              "wall_ns": 532960.4,
+              "cpu_ns": 496850.0
+            },
+            {
+              "wall_ns": 566072.9,
+              "cpu_ns": 505050.0
+            },
+            {
+              "wall_ns": 574497.95,
+              "cpu_ns": 522050.0
+            }
+          ],
+          "min_wall_ns": 440787.5,
+          "median_wall_ns": 566072.9,
+          "min_cpu_ns": 440900.0,
+          "median_cpu_ns": 488450.0,
+          "speedup_vs_before_cpu": 0.45376774929441527,
+          "speedup_vs_stdlib_cpu": 1.0
+        }
+      },
+      "dataclass-repeated-record-500": {
+        "before": {
+          "iterations": 128,
+          "samples": [
+            {
+              "wall_ns": 76044.59375,
+              "cpu_ns": 67703.125
+            },
+            {
+              "wall_ns": 64707.6796875,
+              "cpu_ns": 57937.5
+            },
+            {
+              "wall_ns": 52441.40625,
+              "cpu_ns": 52453.125
+            },
+            {
+              "wall_ns": 56207.03125,
+              "cpu_ns": 54414.0625
+            },
+            {
+              "wall_ns": 71125.65625,
+              "cpu_ns": 62250.0
+            },
+            {
+              "wall_ns": 65706.3828125,
+              "cpu_ns": 59593.75
+            },
+            {
+              "wall_ns": 63397.78125,
+              "cpu_ns": 57890.625
+            },
+            {
+              "wall_ns": 52492.1875,
+              "cpu_ns": 52507.8125
+            },
+            {
+              "wall_ns": 52294.59375,
+              "cpu_ns": 52296.875
+            }
+          ],
+          "min_wall_ns": 52294.59375,
+          "median_wall_ns": 63397.78125,
+          "min_cpu_ns": 52296.875,
+          "median_cpu_ns": 57890.625,
+          "speedup_vs_before_cpu": 1.0,
+          "speedup_vs_stdlib_cpu": 0.8226366673303688
+        },
+        "after": {
+          "iterations": 124,
+          "samples": [
+            {
+              "wall_ns": 70727.82258064517,
+              "cpu_ns": 63298.3870967742
+            },
+            {
+              "wall_ns": 56894.48387096774,
+              "cpu_ns": 54830.645161290326
+            },
+            {
+              "wall_ns": 58903.22580645161,
+              "cpu_ns": 55620.967741935485
+            },
+            {
+              "wall_ns": 52483.20161290323,
+              "cpu_ns": 52491.93548387097
+            },
+            {
+              "wall_ns": 64688.50806451613,
+              "cpu_ns": 59370.967741935485
+            },
+            {
+              "wall_ns": 69512.09677419355,
+              "cpu_ns": 60427.41935483871
+            },
+            {
+              "wall_ns": 59750.67741935484,
+              "cpu_ns": 55967.74193548387
+            },
+            {
+              "wall_ns": 55925.74193548387,
+              "cpu_ns": 54895.16129032258
+            },
+            {
+              "wall_ns": 61078.959677419356,
+              "cpu_ns": 56129.032258064515
+            }
+          ],
+          "min_wall_ns": 52483.20161290323,
+          "median_wall_ns": 59750.67741935484,
+          "min_cpu_ns": 52491.93548387097,
+          "median_cpu_ns": 55967.74193548387,
+          "speedup_vs_before_cpu": 1.0343569884726225,
+          "speedup_vs_stdlib_cpu": 0.8508999858269948
+        },
+        "stdlib": {
+          "iterations": 122,
+          "samples": [
+            {
+              "wall_ns": 58063.86885245902,
+              "cpu_ns": 54278.688524590165
+            },
+            {
+              "wall_ns": 55905.737704918036,
+              "cpu_ns": 48459.016393442624
+            },
+            {
+              "wall_ns": 44692.2868852459,
+              "cpu_ns": 43278.688524590165
+            },
+            {
+              "wall_ns": 51768.77868852459,
+              "cpu_ns": 47622.95081967213
+            },
+            {
+              "wall_ns": 56820.016393442624,
+              "cpu_ns": 50934.42622950819
+            },
+            {
+              "wall_ns": 46465.852459016394,
+              "cpu_ns": 44073.770491803276
+            },
+            {
+              "wall_ns": 44915.647540983606,
+              "cpu_ns": 44368.852459016394
+            },
+            {
+              "wall_ns": 43280.737704918036,
+              "cpu_ns": 43295.08196721312
+            },
+            {
+              "wall_ns": 64047.475409836065,
+              "cpu_ns": 55393.44262295082
+            }
+          ],
+          "min_wall_ns": 43280.737704918036,
+          "median_wall_ns": 51768.77868852459,
+          "min_cpu_ns": 43278.688524590165,
+          "median_cpu_ns": 47622.95081967213,
+          "speedup_vs_before_cpu": 1.2156034853700517,
+          "speedup_vs_stdlib_cpu": 1.0
+        }
+      },
+      "dataclass-nested-100": {
+        "before": {
+          "iterations": 17,
+          "samples": [
+            {
+              "wall_ns": 250487.76470588235,
+              "cpu_ns": 247529.41176470587
+            },
+            {
+              "wall_ns": 355482.82352941175,
+              "cpu_ns": 322000.0
+            },
+            {
+              "wall_ns": 264446.1176470588,
+              "cpu_ns": 256411.76470588235
+            },
+            {
+              "wall_ns": 231806.35294117648,
+              "cpu_ns": 231882.35294117648
+            },
+            {
+              "wall_ns": 297009.76470588235,
+              "cpu_ns": 280470.5882352941
+            },
+            {
+              "wall_ns": 259338.23529411765,
+              "cpu_ns": 254941.17647058822
+            },
+            {
+              "wall_ns": 234480.35294117648,
+              "cpu_ns": 232705.88235294117
+            },
+            {
+              "wall_ns": 265779.4117647059,
+              "cpu_ns": 244176.4705882353
+            },
+            {
+              "wall_ns": 226848.0588235294,
+              "cpu_ns": 226941.17647058822
+            }
+          ],
+          "min_wall_ns": 226848.0588235294,
+          "median_wall_ns": 259338.23529411765,
+          "min_cpu_ns": 226941.17647058822,
+          "median_cpu_ns": 247529.41176470587,
+          "speedup_vs_before_cpu": 1.0,
+          "speedup_vs_stdlib_cpu": 2.0172686945500633
+        },
+        "after": {
+          "iterations": 24,
+          "samples": [
+            {
+              "wall_ns": 276871.5416666667,
+              "cpu_ns": 268625.0
+            },
+            {
+              "wall_ns": 294935.7916666667,
+              "cpu_ns": 274041.6666666667
+            },
+            {
+              "wall_ns": 278468.75,
+              "cpu_ns": 249250.0
+            },
+            {
+              "wall_ns": 214656.25,
+              "cpu_ns": 213250.0
+            },
+            {
+              "wall_ns": 243727.45833333334,
+              "cpu_ns": 239833.33333333334
+            },
+            {
+              "wall_ns": 210689.25,
+              "cpu_ns": 210500.0
+            },
+            {
+              "wall_ns": 214145.83333333334,
+              "cpu_ns": 212291.66666666666
+            },
+            {
+              "wall_ns": 251909.70833333334,
+              "cpu_ns": 236291.66666666666
+            },
+            {
+              "wall_ns": 206784.70833333334,
+              "cpu_ns": 206875.0
+            }
+          ],
+          "min_wall_ns": 206784.70833333334,
+          "median_wall_ns": 243727.45833333334,
+          "min_cpu_ns": 206875.0,
+          "median_cpu_ns": 236291.66666666666,
+          "speedup_vs_before_cpu": 1.047558787224994,
+          "speedup_vs_stdlib_cpu": 2.1132075471698113
+        },
+        "stdlib": {
+          "iterations": 12,
+          "samples": [
+            {
+              "wall_ns": 590322.9166666666,
+              "cpu_ns": 572250.0
+            },
+            {
+              "wall_ns": 625989.5833333334,
+              "cpu_ns": 589583.3333333334
+            },
+            {
+              "wall_ns": 566895.8333333334,
+              "cpu_ns": 530916.6666666666
+            },
+            {
+              "wall_ns": 570864.5833333334,
+              "cpu_ns": 548833.3333333334
+            },
+            {
+              "wall_ns": 475732.5833333333,
+              "cpu_ns": 475583.3333333333
+            },
+            {
+              "wall_ns": 476836.8333333333,
+              "cpu_ns": 471750.0
+            },
+            {
+              "wall_ns": 508274.3333333333,
+              "cpu_ns": 499333.3333333333
+            },
+            {
+              "wall_ns": 482656.25,
+              "cpu_ns": 481833.3333333333
+            },
+            {
+              "wall_ns": 492965.3333333333,
+              "cpu_ns": 493083.3333333333
+            }
+          ],
+          "min_wall_ns": 475732.5833333333,
+          "median_wall_ns": 508274.3333333333,
+          "min_cpu_ns": 471750.0,
+          "median_cpu_ns": 499333.3333333333,
+          "speedup_vs_before_cpu": 0.49571978324039895,
+          "speedup_vs_stdlib_cpu": 1.0
+        }
+      },
+      "dataclass-frozen-200": {
+        "before": {
+          "iterations": 19,
+          "samples": [
+            {
+              "wall_ns": 633464.8947368421,
+              "cpu_ns": 251736.84210526315
+            },
+            {
+              "wall_ns": 220054.84210526315,
+              "cpu_ns": 220210.52631578947
+            },
+            {
+              "wall_ns": 218592.1052631579,
+              "cpu_ns": 218684.2105263158
+            },
+            {
+              "wall_ns": 370660.1052631579,
+              "cpu_ns": 224263.15789473685
+            },
+            {
+              "wall_ns": 1240581.105263158,
+              "cpu_ns": 307421.05263157893
+            },
+            {
+              "wall_ns": 869118.4210526316,
+              "cpu_ns": 247210.52631578947
+            },
+            {
+              "wall_ns": 229741.26315789475,
+              "cpu_ns": 229894.73684210525
+            },
+            {
+              "wall_ns": 218263.15789473685,
+              "cpu_ns": 218368.42105263157
+            },
+            {
+              "wall_ns": 823526.3157894737,
+              "cpu_ns": 288210.5263157895
+            }
+          ],
+          "min_wall_ns": 218263.15789473685,
+          "median_wall_ns": 370660.1052631579,
+          "min_cpu_ns": 218368.42105263157,
+          "median_cpu_ns": 229894.73684210525,
+          "speedup_vs_before_cpu": 1.0,
+          "speedup_vs_stdlib_cpu": 2.666437728937729
+        },
+        "after": {
+          "iterations": 20,
+          "samples": [
+            {
+              "wall_ns": 690304.2,
+              "cpu_ns": 231650.0
+            },
+            {
+              "wall_ns": 196510.45,
+              "cpu_ns": 196600.0
+            },
+            {
+              "wall_ns": 494550.0,
+              "cpu_ns": 205050.0
+            },
+            {
+              "wall_ns": 200531.25,
+              "cpu_ns": 200600.0
+            },
+            {
+              "wall_ns": 200118.75,
+              "cpu_ns": 200200.0
+            },
+            {
+              "wall_ns": 198156.25,
+              "cpu_ns": 198300.0
+            },
+            {
+              "wall_ns": 607793.75,
+              "cpu_ns": 228650.0
+            },
+            {
+              "wall_ns": 207714.55,
+              "cpu_ns": 200650.0
+            },
+            {
+              "wall_ns": 193479.15,
+              "cpu_ns": 193550.0
+            }
+          ],
+          "min_wall_ns": 193479.15,
+          "median_wall_ns": 200531.25,
+          "min_cpu_ns": 193550.0,
+          "median_cpu_ns": 200600.0,
+          "speedup_vs_before_cpu": 1.146035577478092,
+          "speedup_vs_stdlib_cpu": 3.0558325024925224
+        },
+        "stdlib": {
+          "iterations": 14,
+          "samples": [
+            {
+              "wall_ns": 563875.0,
+              "cpu_ns": 561928.5714285715
+            },
+            {
+              "wall_ns": 552761.9285714285,
+              "cpu_ns": 552857.1428571428
+            },
+            {
+              "wall_ns": 584717.2857142857,
+              "cpu_ns": 576142.8571428572
+            },
+            {
+              "wall_ns": 892735.0714285715,
+              "cpu_ns": 613000.0
+            },
+            {
+              "wall_ns": 1132303.5714285714,
+              "cpu_ns": 625857.1428571428
+            },
+            {
+              "wall_ns": 1124839.2857142857,
+              "cpu_ns": 615071.4285714285
+            },
+            {
+              "wall_ns": 1081747.0714285714,
+              "cpu_ns": 692571.4285714285
+            },
+            {
+              "wall_ns": 723943.4285714285,
+              "cpu_ns": 625428.5714285715
+            },
+            {
+              "wall_ns": 550473.2142857143,
+              "cpu_ns": 550642.8571428572
+            }
+          ],
+          "min_wall_ns": 550473.2142857143,
+          "median_wall_ns": 723943.4285714285,
+          "min_cpu_ns": 550642.8571428572,
+          "median_cpu_ns": 613000.0,
+          "speedup_vs_before_cpu": 0.37503219713230873,
+          "speedup_vs_stdlib_cpu": 1.0
+        }
+      },
+      "dataclass-custom-hook-100": {
+        "before": {
+          "iterations": 41,
+          "samples": [
+            {
+              "wall_ns": 160597.56097560975,
+              "cpu_ns": 119073.17073170732
+            },
+            {
+              "wall_ns": 142515.24390243902,
+              "cpu_ns": 117365.85365853658
+            },
+            {
+              "wall_ns": 98564.0243902439,
+              "cpu_ns": 98585.36585365854
+            },
+            {
+              "wall_ns": 121175.80487804877,
+              "cpu_ns": 106878.0487804878
+            },
+            {
+              "wall_ns": 118024.39024390244,
+              "cpu_ns": 105073.17073170732
+            },
+            {
+              "wall_ns": 210773.36585365853,
+              "cpu_ns": 126926.82926829268
+            },
+            {
+              "wall_ns": 124341.46341463414,
+              "cpu_ns": 110682.9268292683
+            },
+            {
+              "wall_ns": 107552.82926829268,
+              "cpu_ns": 105121.9512195122
+            },
+            {
+              "wall_ns": 146425.82926829267,
+              "cpu_ns": 121975.60975609756
+            }
+          ],
+          "min_wall_ns": 98564.0243902439,
+          "median_wall_ns": 124341.46341463414,
+          "min_cpu_ns": 98585.36585365854,
+          "median_cpu_ns": 110682.9268292683,
+          "speedup_vs_before_cpu": 1.0,
+          "speedup_vs_stdlib_cpu": 2.332488614661378
+        },
+        "after": {
+          "iterations": 48,
+          "samples": [
+            {
+              "wall_ns": 126138.02083333333,
+              "cpu_ns": 96083.33333333333
+            },
+            {
+              "wall_ns": 87990.45833333333,
+              "cpu_ns": 88041.66666666667
+            },
+            {
+              "wall_ns": 93256.08333333333,
+              "cpu_ns": 90812.5
+            },
+            {
+              "wall_ns": 168776.04166666666,
+              "cpu_ns": 109312.5
+            },
+            {
+              "wall_ns": 161006.08333333334,
+              "cpu_ns": 89395.83333333333
+            },
+            {
+              "wall_ns": 130131.08333333333,
+              "cpu_ns": 105770.83333333333
+            },
+            {
+              "wall_ns": 137167.54166666666,
+              "cpu_ns": 99375.0
+            },
+            {
+              "wall_ns": 134952.25,
+              "cpu_ns": 103104.16666666667
+            },
+            {
+              "wall_ns": 88086.79166666667,
+              "cpu_ns": 88125.0
+            }
+          ],
+          "min_wall_ns": 87990.45833333333,
+          "median_wall_ns": 130131.08333333333,
+          "min_cpu_ns": 88041.66666666667,
+          "median_cpu_ns": 96083.33333333333,
+          "speedup_vs_before_cpu": 1.1519472003046138,
+          "speedup_vs_stdlib_cpu": 2.686903729401561
+        },
+        "stdlib": {
+          "iterations": 12,
+          "samples": [
+            {
+              "wall_ns": 238298.58333333334,
+              "cpu_ns": 238333.33333333334
+            },
+            {
+              "wall_ns": 314628.5,
+              "cpu_ns": 255916.66666666666
+            },
+            {
+              "wall_ns": 424409.75,
+              "cpu_ns": 300833.3333333333
+            },
+            {
+              "wall_ns": 339541.6666666667,
+              "cpu_ns": 292166.6666666667
+            },
+            {
+              "wall_ns": 327552.0833333333,
+              "cpu_ns": 279916.6666666667
+            },
+            {
+              "wall_ns": 519947.9166666667,
+              "cpu_ns": 291833.3333333333
+            },
+            {
+              "wall_ns": 276215.25,
+              "cpu_ns": 245833.33333333334
+            },
+            {
+              "wall_ns": 314510.4166666667,
+              "cpu_ns": 258166.66666666666
+            },
+            {
+              "wall_ns": 224854.16666666666,
+              "cpu_ns": 225000.0
+            }
+          ],
+          "min_wall_ns": 224854.16666666666,
+          "median_wall_ns": 314628.5,
+          "min_cpu_ns": 225000.0,
+          "median_cpu_ns": 258166.66666666666,
+          "speedup_vs_before_cpu": 0.4287266371695351,
+          "speedup_vs_stdlib_cpu": 1.0
+        }
+      },
+      "builtin-nested-distinct-200": {
+        "before": {
+          "iterations": 112,
+          "samples": [
+            {
+              "wall_ns": 64948.66071428572,
+              "cpu_ns": 59535.71428571428
+            },
+            {
+              "wall_ns": 73154.39285714286,
+              "cpu_ns": 60107.142857142855
+            },
+            {
+              "wall_ns": 63796.5,
+              "cpu_ns": 57812.5
+            },
+            {
+              "wall_ns": 55739.580357142855,
+              "cpu_ns": 54080.357142857145
+            },
+            {
+              "wall_ns": 54675.22321428572,
+              "cpu_ns": 53580.357142857145
+            },
+            {
+              "wall_ns": 56893.232142857145,
+              "cpu_ns": 55312.5
+            },
+            {
+              "wall_ns": 77883.17857142857,
+              "cpu_ns": 66062.5
+            },
+            {
+              "wall_ns": 62992.1875,
+              "cpu_ns": 57919.642857142855
+            },
+            {
+              "wall_ns": 76902.90178571429,
+              "cpu_ns": 63080.357142857145
+            }
+          ],
+          "min_wall_ns": 54675.22321428572,
+          "median_wall_ns": 63796.5,
+          "min_cpu_ns": 53580.357142857145,
+          "median_cpu_ns": 57919.642857142855,
+          "speedup_vs_before_cpu": 1.0,
+          "speedup_vs_stdlib_cpu": 9.921072915060892
+        },
+        "after": {
+          "iterations": 136,
+          "samples": [
+            {
+              "wall_ns": 59556.98529411765,
+              "cpu_ns": 54463.23529411765
+            },
+            {
+              "wall_ns": 63669.117647058825,
+              "cpu_ns": 57125.0
+            },
+            {
+              "wall_ns": 61981.92647058824,
+              "cpu_ns": 57610.294117647056
+            },
+            {
+              "wall_ns": 65941.78676470589,
+              "cpu_ns": 57698.529411764706
+            },
+            {
+              "wall_ns": 56246.01470588235,
+              "cpu_ns": 54705.882352941175
+            },
+            {
+              "wall_ns": 63444.242647058825,
+              "cpu_ns": 59838.23529411765
+            },
+            {
+              "wall_ns": 68566.79411764706,
+              "cpu_ns": 61963.23529411765
+            },
+            {
+              "wall_ns": 66469.05882352941,
+              "cpu_ns": 59580.882352941175
+            },
+            {
+              "wall_ns": 52751.529411764706,
+              "cpu_ns": 52772.05882352941
+            }
+          ],
+          "min_wall_ns": 52751.529411764706,
+          "median_wall_ns": 63444.242647058825,
+          "min_cpu_ns": 52772.05882352941,
+          "median_cpu_ns": 57610.294117647056,
+          "speedup_vs_before_cpu": 1.005369678183973,
+          "speedup_vs_stdlib_cpu": 9.9743458838545
+        },
+        "stdlib": {
+          "iterations": 8,
+          "samples": [
+            {
+              "wall_ns": 644395.875,
+              "cpu_ns": 532375.0
+            },
+            {
+              "wall_ns": 662369.75,
+              "cpu_ns": 574625.0
+            },
+            {
+              "wall_ns": 679265.625,
+              "cpu_ns": 578875.0
+            },
+            {
+              "wall_ns": 614401.0,
+              "cpu_ns": 522500.0
+            },
+            {
+              "wall_ns": 600500.0,
+              "cpu_ns": 529625.0
+            },
+            {
+              "wall_ns": 632104.125,
+              "cpu_ns": 586000.0
+            },
+            {
+              "wall_ns": 615302.125,
+              "cpu_ns": 584625.0
+            },
+            {
+              "wall_ns": 696515.625,
+              "cpu_ns": 610250.0
+            },
+            {
+              "wall_ns": 537130.25,
+              "cpu_ns": 523375.0
+            }
+          ],
+          "min_wall_ns": 537130.25,
+          "median_wall_ns": 632104.125,
+          "min_cpu_ns": 522500.0,
+          "median_cpu_ns": 574625.0,
+          "speedup_vs_before_cpu": 0.10079554989278722,
+          "speedup_vs_stdlib_cpu": 1.0
+        }
+      },
+      "builtin-shared-1000x500": {
+        "before": {
+          "iterations": 768,
+          "samples": [
+            {
+              "wall_ns": 7980.5234375,
+              "cpu_ns": 7984.375
+            },
+            {
+              "wall_ns": 8421.061197916666,
+              "cpu_ns": 8162.760416666667
+            },
+            {
+              "wall_ns": 9761.7734375,
+              "cpu_ns": 8513.020833333334
+            },
+            {
+              "wall_ns": 10319.390625,
+              "cpu_ns": 8878.90625
+            },
+            {
+              "wall_ns": 10104.763020833334,
+              "cpu_ns": 8795.572916666666
+            },
+            {
+              "wall_ns": 8857.259114583334,
+              "cpu_ns": 8851.5625
+            },
+            {
+              "wall_ns": 9625.434895833334,
+              "cpu_ns": 8890.625
+            },
+            {
+              "wall_ns": 9029.514322916666,
+              "cpu_ns": 8580.729166666666
+            },
+            {
+              "wall_ns": 9149.5234375,
+              "cpu_ns": 8617.1875
+            }
+          ],
+          "min_wall_ns": 7980.5234375,
+          "median_wall_ns": 9149.5234375,
+          "min_cpu_ns": 7984.375,
+          "median_cpu_ns": 8617.1875,
+          "speedup_vs_before_cpu": 1.0,
+          "speedup_vs_stdlib_cpu": 20.250226654578423
+        },
+        "after": {
+          "iterations": 1152,
+          "samples": [
+            {
+              "wall_ns": 8782.732638888889,
+              "cpu_ns": 8269.097222222223
+            },
+            {
+              "wall_ns": 8184.822916666667,
+              "cpu_ns": 7959.201388888889
+            },
+            {
+              "wall_ns": 8128.363715277777,
+              "cpu_ns": 8029.513888888889
+            },
+            {
+              "wall_ns": 8730.612847222223,
+              "cpu_ns": 8286.458333333334
+            },
+            {
+              "wall_ns": 9368.453993055555,
+              "cpu_ns": 8309.027777777777
+            },
+            {
+              "wall_ns": 9261.574652777777,
+              "cpu_ns": 8697.048611111111
+            },
+            {
+              "wall_ns": 10382.595486111111,
+              "cpu_ns": 8868.055555555555
+            },
+            {
+              "wall_ns": 9515.118923611111,
+              "cpu_ns": 8764.756944444445
+            },
+            {
+              "wall_ns": 10545.283854166666,
+              "cpu_ns": 8810.763888888889
+            }
+          ],
+          "min_wall_ns": 8128.363715277777,
+          "median_wall_ns": 9261.574652777777,
+          "min_cpu_ns": 7959.201388888889,
+          "median_cpu_ns": 8309.027777777777,
+          "speedup_vs_before_cpu": 1.037087338069369,
+          "speedup_vs_stdlib_cpu": 21.001253656498122
+        },
+        "stdlib": {
+          "iterations": 44,
+          "samples": [
+            {
+              "wall_ns": 168518.93181818182,
+              "cpu_ns": 165522.72727272726
+            },
+            {
+              "wall_ns": 161536.93181818182,
+              "cpu_ns": 161568.18181818182
+            },
+            {
+              "wall_ns": 163475.38636363635,
+              "cpu_ns": 163545.45454545456
+            },
+            {
+              "wall_ns": 171692.22727272726,
+              "cpu_ns": 169977.27272727274
+            },
+            {
+              "wall_ns": 213393.95454545456,
+              "cpu_ns": 184772.72727272726
+            },
+            {
+              "wall_ns": 198771.77272727274,
+              "cpu_ns": 174500.0
+            },
+            {
+              "wall_ns": 202541.6590909091,
+              "cpu_ns": 185568.18181818182
+            },
+            {
+              "wall_ns": 196565.3409090909,
+              "cpu_ns": 184500.0
+            },
+            {
+              "wall_ns": 205102.27272727274,
+              "cpu_ns": 183840.9090909091
+            }
+          ],
+          "min_wall_ns": 161536.93181818182,
+          "median_wall_ns": 196565.3409090909,
+          "min_cpu_ns": 161568.18181818182,
+          "median_cpu_ns": 174500.0,
+          "speedup_vs_before_cpu": 0.04938216332378224,
+          "speedup_vs_stdlib_cpu": 1.0
+        }
+      }
+    }
+  }
+}

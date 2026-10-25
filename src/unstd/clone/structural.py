@@ -3,18 +3,19 @@
 ``copy.deepcopy`` is a general object-graph walker: every node pays a memo lookup,
 a dispatch-table probe, and (for anything but a builtin container) a
 ``__reduce_ex__`` round-trip. Data crossing a program's seams — ``dict``/``list``/
-``tuple``/``set`` trees, dataclasses, pydantic models, ``msgspec.Struct`` — needs
-none of that generality, so :func:`deep` walks it with exact-type dispatch instead:
+``tuple``/``set`` trees, dataclasses, pydantic models, ``msgspec.Struct`` — can
+use exact-type dispatch and a shared memo instead:
 
-- **Leaves never pay a call.** The container comprehensions test each child's
+- **Scalar leaves never pay a call.** The container walks test each child's
   exact type inline and return atoms (``str``/``int``/``float``/``bool``/``None``/
-  ``bytes``/immutable date and duration values …) as-is. Datetimes and times
-  also stay shared when their timezone is absent or an exact immutable stdlib
-  type; custom timezones retain ``deepcopy``'s copy protocol.
+  ``bytes`` …) as-is. Immutable temporal values enter the memo to keep references
+  consistent across foreign copy hooks. Datetimes and times stay shared when
+  their timezone is absent or an exact immutable stdlib type; custom timezones
+  retain ``deepcopy``'s copy protocol.
 - **Data classes are rebuilt the way ``deepcopy`` rebuilds them**, with the walker
   in place of the recursive ``deepcopy``: a plain dataclass is ``cls.__new__`` plus
   its walked ``__dict__`` (what ``object.__reduce_ex__(4)`` reconstructs to); a
-  pydantic model mirrors ``BaseModel.__deepcopy__`` line for line; a
+  pydantic model copies ``BaseModel.__deepcopy__``'s fields and state; a
   ``(callable, args)`` reducer such as ``msgspec.Struct`` is re-called on walked
   args. Each shape is admitted per class, once, only when the class leaves the
   default copy protocol alone.
@@ -22,12 +23,11 @@ none of that generality, so :func:`deep` walks it with exact-type dispatch inste
   ``__deepcopy__``, a dict subclass, an lxml element, a lock: the walker hands that
   one node to ``deepcopy`` and keeps walking its siblings.
 
-Two semantic differences from ``deepcopy``, both deliberate and both what the
-serialization round-trip this replaced already had: **shared references are not
-preserved** (an object reached twice is cloned twice), and a **cycle** among
-walked containers is detected by the recursion limit and handed to ``deepcopy``
-whole. Use :func:`deepcopy` directly for live object graphs where aliasing is
-meaning.
+A per-call memo preserves shared references across structural nodes and foreign
+copy hooks: an object reached twice reuses the same clone. Immutable leaves stay
+shared with the source. The native walk detects builtin cycles and hands the
+whole graph to ``deepcopy``; the Python walker also
+memoizes mutable outputs before visiting their children.
 
 :func:`asdict` is the same walker in ``dataclasses.asdict``'s shape — dataclasses
 become ``dict``, ``dict``/``list``/``tuple`` are rebuilt, and every other leaf is
@@ -37,7 +37,8 @@ walker does not (namedtuples, ``dict``/``list``/``tuple`` subclasses) hand the
 whole call back to the stdlib, so the result is always ``dataclasses.asdict``'s.
 
 No extra is needed. An optional bundled C walker accelerates bounded exact
-dict/list/tuple trees; other shapes retain this Python implementation. The
+dict/list/tuple graphs, including dataclass and model state. Foreign
+nodes retain this Python implementation and their existing copy protocols. The
 ``copy``/``deepcopy`` re-exports keep a file
 migrating off ``import copy`` working after a one-line import swap.
 """
@@ -59,9 +60,29 @@ from zoneinfo import ZoneInfo
 
 _native_clone: Callable[[Any], Any] | None
 try:
-    from unstd.clone._clone_native import clone as _native_clone
+    from unstd.clone._clone_native import clone_checked as _native_clone
 except ImportError:
     _native_clone = None
+
+_native_graph: Callable[..., Any] | None
+try:
+    from unstd.clone._clone_native import clone_graph as _native_graph
+except ImportError:
+    _native_graph = None
+
+_native_records: Callable[[Any, type, Callable[[Any], Any]], Any] | None
+try:
+    from unstd.clone._clone_native import clone_records as _native_records
+except ImportError:
+    _native_records = None
+
+_native_dataclass: (
+    Callable[[Any, dict[int, Any], Callable[[Any, dict[int, Any]], Any]], Any] | None
+)
+try:
+    from unstd.clone._clone_native import clone_dataclass as _native_dataclass
+except ImportError:
+    _native_dataclass = None
 
 
 copy = _stdlib.copy
@@ -94,41 +115,99 @@ _ATOMS: frozenset[type] = frozenset(
         _dt.timezone,
     }
 )
+# These immutable temporal values are rebuilt by stdlib deepcopy. They must
+# enter our memo so foreign copy hooks and structural siblings agree on identity.
+_GRAPH_ATOMS = _ATOMS - {_dt.date, _dt.timedelta, _dt.timezone}
 # A datetime/time is immutable, but a caller's tzinfo can own mutable state.
 # Admit only exact immutable timezone types; subclasses keep their copy hooks.
 _TIMEZONES = frozenset({type(None), _dt.timezone, ZoneInfo})
 
-type _Clone = Callable[[Any], Any]
+type _Clone = Callable[[Any, dict[int, Any]], Any]
 # Admission metadata must not keep dynamically generated classes alive.
 _NODES: weakref.WeakKeyDictionary[type, _Clone | None] = weakref.WeakKeyDictionary()
+_RECORDS: weakref.WeakSet[type] = weakref.WeakSet()
 
 
-def _walk(o: Any) -> Any:
+def _walk(o: Any, memo: dict[int, Any] | None = None) -> Any:
     t = type(o)
-    if t is dict:
-        return {
-            (k if type(k) is str else k if type(k) in _ATOMS else _walk(k)): (
-                v if type(v) in _ATOMS else _walk(v)
-            )
-            for k, v in o.items()
-        }
-    if t is list:
-        return [v if type(v) in _ATOMS else _walk(v) for v in o]
-    if t is tuple:
-        return tuple([v if type(v) in _ATOMS else _walk(v) for v in o])
-    if t in _ATOMS:
+    if t in _GRAPH_ATOMS:
         return o
-    if t is _dt.datetime or t is _dt.time:
-        return o if type(o.tzinfo) in _TIMEZONES else _stdlib.deepcopy(o)
-    if t is set:
-        return {v if type(v) in _ATOMS else _walk(v) for v in o}
-    if t is frozenset:
-        return frozenset([v if type(v) in _ATOMS else _walk(v) for v in o])
+    if memo is None:
+        memo = {}
+    identity = id(o)
+    if identity in memo:
+        return memo[identity]
+    # Copy hooks may remove a source node while we walk. Pin it until this
+    # operation ends so its id cannot be recycled into a different memo entry.
     try:
-        node = _NODES[t]
+        memo[id(memo)].append(o)
     except KeyError:
-        node = _NODES[t] = _admit(t)
-    return node(o) if node else _stdlib.deepcopy(o)
+        memo[id(memo)] = [o]
+    if t is _dt.timezone:
+        offset = o.utcoffset(None)
+        copied_offset = _walk(offset, memo)
+        twin_zone = (
+            o
+            if copied_offset is offset
+            else _dt.timezone(copied_offset, o.tzname(None))
+        )
+        memo[identity] = twin_zone
+        return twin_zone
+    if t in _ATOMS or t is ZoneInfo:
+        memo[identity] = o
+        return o
+    if t is dict:
+        twin: Any = {}
+        memo[identity] = twin
+        for k, v in o.items():
+            key = (
+                k
+                if type(k) is str
+                else k
+                if type(k) in _GRAPH_ATOMS
+                else _walk(k, memo)
+            )
+            twin[key] = v if type(v) in _GRAPH_ATOMS else _walk(v, memo)
+        return twin
+    if t is list:
+        twin = []
+        memo[identity] = twin
+        # Append as we go: a foreign copy hook can refer back to this list.
+        for v in o:
+            twin.append(v if type(v) in _GRAPH_ATOMS else _walk(v, memo))
+        return twin
+    if t is tuple:
+        values = [v if type(v) in _GRAPH_ATOMS else _walk(v, memo) for v in o]
+        # A child can recursively finish this tuple through a mutable backref.
+        if identity in memo:
+            return memo[identity]
+        twin = tuple(values)
+    elif t is _dt.datetime or t is _dt.time:
+        zone = o.tzinfo
+        if type(zone) in _TIMEZONES:
+            copied_zone = _walk(zone, memo)
+            twin = o if copied_zone is zone else o.replace(tzinfo=copied_zone)
+        else:
+            twin = _stdlib.deepcopy(o, memo)
+    elif t is set:
+        twin = set()
+        memo[identity] = twin
+        for v in o:
+            twin.add(v if type(v) in _GRAPH_ATOMS else _walk(v, memo))
+        return twin
+    elif t is frozenset:
+        values = [v if type(v) in _GRAPH_ATOMS else _walk(v, memo) for v in o]
+        if identity in memo:
+            return memo[identity]
+        twin = frozenset(values)
+    else:
+        try:
+            node = _NODES[t]
+        except KeyError:
+            node = _NODES[t] = _admit(t)
+        twin = node(o, memo) if node else _stdlib.deepcopy(o, memo)
+    memo[identity] = twin
+    return twin
 
 
 # ── per-class admission: which default-protocol shapes the walker may rebuild ──
@@ -175,35 +254,83 @@ def _admit(cls: type) -> _Clone | None:
         and not hasattr(cls, "__getnewargs__")
         and not hasattr(cls, "__getnewargs_ex__")
     ):
+        # Read the first MRO entries statically. A custom descriptor for
+        # __new__ or __dict__ must not run merely to choose an accelerator.
+        # Native records use ordinary allocation/attribute reading only;
+        # custom-new and descriptor-bearing records retain _dataclass. Setters
+        # are bypassed by __dict__.update, including frozen dataclass setters.
+        if (
+            _native_records is not None
+            and type(cls) is type
+            and cls.__base__ is object
+            and "__del__" not in vars(cls)
+        ):
+            attributes: dict[str, Any] = {}
+            for base in cls.__mro__:
+                namespace = vars(base)
+                for name in (
+                    "__new__",
+                    "__getattribute__",
+                    "__dict__",
+                ):
+                    if name not in attributes and name in namespace:
+                        attributes[name] = namespace[name]
+            descriptor = attributes.get("__dict__")
+            if (
+                attributes.get("__new__") is object.__new__
+                and attributes.get("__getattribute__") is object.__getattribute__
+                and type(descriptor) is types.GetSetDescriptorType
+                and descriptor.__objclass__ is cls
+            ):
+                _RECORDS.add(cls)
         return _dataclass
     return None
 
 
-def _same(o: Any) -> Any:
+def _same(o: Any, memo: dict[int, Any]) -> Any:
     return o
 
 
-def _dataclass(o: Any) -> Any:
+def _walk_data(o: Any, memo: dict[int, Any]) -> Any:
+    """Try native cloning at a state boundary with the enclosing graph's memo."""
+    if id(o) in memo:
+        return memo[id(o)]
+    if _native_clone is not None and _native_graph is not None:
+        result = _native_graph(o, memo)
+        if result is not NotImplemented:
+            return result
+    return _walk(o, memo)
+
+
+def _dataclass(o: Any, memo: dict[int, Any]) -> Any:
+    if _native_clone is not None and _native_dataclass is not None:
+        twin = _native_dataclass(o, memo, _walk)
+        if twin is not NotImplemented:
+            return twin
     cls: Any = type(o)
     twin = cls.__new__(cls)
+    memo[id(o)] = twin
     if state := o.__dict__:
-        twin.__dict__.update(_walk(state))
+        twin.__dict__.update(_walk_data(state, memo))
     return twin
 
 
-def _reduced(o: Any) -> Any:
+def _reduced(o: Any, memo: dict[int, Any]) -> Any:
     rv = o.__reduce__()
     if len(rv) != 2:  # state/items need deepcopy's full _reconstruct
-        return _stdlib.deepcopy(o)
+        return _stdlib.deepcopy(o, memo)
     fn, args = rv
-    return fn(*[a if type(a) in _ATOMS else _walk(a) for a in args])
+    values = [a if type(a) in _GRAPH_ATOMS else _walk(a, memo) for a in args]
+    if id(o) in memo:
+        return memo[id(o)]
+    return fn(*values)
 
 
 _PYDANTIC_UNDEFINED: Any = None
 
 
-def _model(o: Any) -> Any:
-    """``pydantic.BaseModel.__deepcopy__``, with the walker in place of ``deepcopy``."""
+def _model(o: Any, memo: dict[int, Any]) -> Any:
+    """Reconstruct pydantic instance state with the enclosing graph's memo."""
     global _PYDANTIC_UNDEFINED
     if _PYDANTIC_UNDEFINED is None:
         # Keep the optional import lazy, but out of every model in a large tree.
@@ -214,57 +341,116 @@ def _model(o: Any) -> Any:
     cls: Any = type(o)
     setattr_ = object.__setattr__
     twin = cls.__new__(cls)
-    setattr_(twin, "__dict__", _walk(o.__dict__))
+    memo[id(o)] = twin
+    setattr_(twin, "__dict__", _walk_data(o.__dict__, memo))
     extra = o.__pydantic_extra__
-    setattr_(twin, "__pydantic_extra__", None if extra is None else _walk(extra))
-    setattr_(twin, "__pydantic_fields_set__", set(o.__pydantic_fields_set__))
+    setattr_(
+        twin, "__pydantic_extra__", None if extra is None else _walk_data(extra, memo)
+    )
+    setattr_(twin, "__pydantic_fields_set__", _walk(o.__pydantic_fields_set__, memo))
     private = getattr(o, "__pydantic_private__", None)
-    if private is not None:
-        # Snapshot before invoking user copy hooks, as pydantic's filtered
-        # dictionary does. The C copy replaces a second Python traversal.
-        private = (
+    if private is None:
+        copied_private = None
+    elif id(private) in memo:
+        copied_private = memo[id(private)]
+        # Keep aliases to private state while applying pydantic's filtering,
+        # including when an outer container reached this dictionary first.
+        for key, value in list(copied_private.items()):
+            if value is _PYDANTIC_UNDEFINED:
+                del copied_private[key]
+    else:
+        # Snapshot before invoking hooks, retaining pydantic's filtering order.
+        snapshot = (
             private.copy()
             if type(private) is dict
             else {k: v for k, v in private.items() if v is not _PYDANTIC_UNDEFINED}
         )
-    setattr_(
-        twin,
-        "__pydantic_private__",
-        None
-        if private is None
-        else {
-            (k if type(k) is str else k if type(k) in _ATOMS else _walk(k)): (
-                v if type(v) in _ATOMS else _walk(v)
-            )
-            for k, v in private.items()
-            if v is not _PYDANTIC_UNDEFINED
-        },
-    )
+        copied_private = {}
+        memo[id(private)] = copied_private
+        try:
+            memo[id(memo)].append(private)
+        except KeyError:
+            memo[id(memo)] = [private]
+        copied_private.update(
+            {
+                (
+                    k
+                    if type(k) is str
+                    else k
+                    if type(k) in _GRAPH_ATOMS
+                    else _walk(k, memo)
+                ): (v if type(v) in _GRAPH_ATOMS else _walk(v, memo))
+                for k, v in snapshot.items()
+                if v is not _PYDANTIC_UNDEFINED
+            }
+        )
+    setattr_(twin, "__pydantic_private__", copied_private)
     return twin
 
 
 # ── the surface ────────────────────────────────────────────────────────────────
 
 
-def deep[T](obj: T) -> T:
-    """Deep-clone ``obj`` — an exact-type structural walk, ``copy.deepcopy`` per foreign node.
+def _record_class(obj: Any) -> type | None:
+    """Find the first foreign type through at most 32 builtin data values."""
+    if type(obj) is dict and type(next(iter(obj), None)) is not str:
+        return None
+    stack = [(iter((obj,)), False)]
+    remaining = 32
+    while stack and remaining:
+        iterator, mapping = stack[-1]
+        try:
+            value = next(iterator)
+        except StopIteration:
+            stack.pop()
+            continue
+        except RuntimeError:
+            # Exact dict iteration can be invalidated by an allocation-triggered
+            # collector callback. Let the normal walker restart from live data.
+            return None
+        remaining -= 1
+        if mapping:
+            key, value = value
+            if type(key) is not str:
+                return None
+        cls = type(value)
+        if cls in _ATOMS:
+            continue
+        if cls is list or cls is tuple:
+            stack.append((iter(value), False))
+            continue
+        if cls is dict:
+            stack.append((iter(value.items()), True))
+            continue
+        if cls is _dt.datetime or cls is _dt.time:
+            return None
+        try:
+            node = _NODES[cls]
+        except KeyError:
+            node = _NODES[cls] = _admit(cls)
+        return cls if node is _dataclass and cls in _RECORDS else None
+    return None
 
-    Plain data (``dict``/``list``/``tuple``/``set``/``frozenset``, dataclasses,
-    pydantic models, ``msgspec.Struct``) is rebuilt without ``deepcopy``'s memo and
-    reducer machinery; any node the walker does not own — a custom
-    ``__deepcopy__``, a container subclass, a live resource — is copied by
-    ``copy.deepcopy`` itself. The result is value-equal and fully independent of
-    the source. Unlike ``deepcopy``, an object reached twice is cloned twice; a
-    cyclic graph falls back to ``deepcopy`` whole.
+
+def deep[T](obj: T) -> T:
+    """Deep-clone data, preserving shared references within each call.
+
+    Exact builtin containers, dataclasses, pydantic models and msgspec structs
+    use a structural walk. Foreign nodes retain ``copy.deepcopy``'s protocol
+    and share the same memo. Owned mutable data is copied independently;
+    repeated references reuse their clone. Immutable atoms remain shared, and
+    foreign copy hooks control their own results.
     """
     kind = type(obj)
-    if kind in _ATOMS:
+    if kind in _GRAPH_ATOMS:
         return obj
     try:
-        if _native_clone is not None and (
-            kind is dict or kind is list or kind is tuple
+        if (
+            _native_clone is not None
+            and _native_graph is not None
+            and (kind is dict or kind is list or kind is tuple)
         ):
-            cloned = _native_clone(obj)
+            cloned = _native_graph(obj)
             if cloned is not NotImplemented:
                 return cloned  # type: ignore[no-any-return]
         return _walk(obj)  # type: ignore[no-any-return]
@@ -277,6 +463,16 @@ _FIELDS: weakref.WeakKeyDictionary[type, tuple[str, ...]] = weakref.WeakKeyDicti
 
 class _DeferError(Exception):
     """A container ``dataclasses.asdict`` treats specially and this walker does not."""
+
+
+def _plain_field(o: Any) -> Any:
+    """Try native data conversion once at a dataclass field boundary."""
+    t = type(o)
+    if _native_clone is not None and (t is dict or t is list or t is tuple):
+        result = _native_clone(o)
+        if result is not NotImplemented:
+            return result
+    return _plain(o)
 
 
 def _plain(o: Any) -> Any:
@@ -302,7 +498,8 @@ def _plain(o: Any) -> Any:
         except KeyError:
             names = _FIELDS[t] = tuple(f.name for f in dataclasses.fields(t))
         return {
-            n: (v if type(v := getattr(o, n)) in _ATOMS else _plain(v)) for n in names
+            n: (v if type(v := getattr(o, n)) in _ATOMS else _plain_field(v))
+            for n in names
         }
     if isinstance(o, (dict, list, tuple)):
         raise _DeferError

@@ -1,4 +1,4 @@
-"""Output-checked profiles and paired timings for the three bundled C kernels.
+"""Output-checked profiles and paired timings for the four bundled C kernels.
 
 Run ``python bench/native_profile.py --compare-source /tmp/before/src``.
 The comparison directory must contain ``unstd``. Text measurements deliberately
@@ -56,6 +56,14 @@ class Workload:
     check: Callable[[Any], bool]
 
 
+@dataclass
+class Record:
+    """Ordinary records exercise native reconstruction with a shared memo."""
+
+    name: str
+    values: list[int]
+
+
 class Custom:
     """An observable user protocol that must retain Python fallback handling."""
 
@@ -84,6 +92,8 @@ def _same(actual: Any, expected: Any) -> bool:
             _same(value, old_value)
             for value, old_value in zip(actual, expected, strict=True)
         )
+    if dataclasses.is_dataclass(expected) and not isinstance(expected, type):
+        return _same(actual.__dict__, expected.__dict__)
     return bool(actual == expected)
 
 
@@ -101,6 +111,8 @@ def _isolated(actual: Any, original: Any) -> bool:
             _isolated(value, old_value)
             for value, old_value in zip(actual, original, strict=True)
         )
+    if dataclasses.is_dataclass(original) and not isinstance(original, type):
+        return actual is not original and _isolated(actual.__dict__, original.__dict__)
     return True
 
 
@@ -151,6 +163,14 @@ def _workloads(clone: Any, fuzz: Any) -> list[Workload]:
             [{"id": i, "name": "東京", "score": 1.5} for i in range(500)],
         ),
         ("mixed-custom-fallback", {"data": [1, 2], "custom": Custom()}),
+        (
+            "dataclass-records",
+            [Record("row", [i, i + 1]) for i in range(200)],
+        ),
+        (
+            "dataclass-wrapped",
+            {"rows": [Record("row", [i, i + 1]) for i in range(200)]},
+        ),
     ):
         expected = copy.deepcopy(value)
         cases.append(
@@ -162,6 +182,7 @@ def _workloads(clone: Any, fuzz: Any) -> list[Workload]:
         )
     shared = [1, {"value": [2]}]
     aliased = [shared, shared]
+    preserves_aliases = "memo" in inspect.signature(clone._walk).parameters
     cases.append(
         Workload(
             "clone.deep/shared-branch-semantics",
@@ -169,8 +190,9 @@ def _workloads(clone: Any, fuzz: Any) -> list[Workload]:
             lambda result: (
                 _same(result, aliased)
                 and _isolated(result, aliased)
-                and result[0] is not result[1]
-                and result[0][1]["value"] is not result[1][1]["value"]
+                and (result[0] is result[1]) == preserves_aliases
+                and (result[0][1]["value"] is result[1][1]["value"])
+                == preserves_aliases
             ),
         )
     )
@@ -267,7 +289,10 @@ def _profile(cases: list[Workload], source: Path) -> dict[str, Any]:
             "cumulative_ns": entry.totaltime * 1e9,
         }
         if inspect.iscode(code):
-            if code.co_filename.startswith(source_root):
+            if (
+                code.co_filename.startswith(source_root)
+                or code is copy.deepcopy.__code__
+            ):
                 python.append(
                     {
                         "function": code.co_name,
@@ -322,7 +347,8 @@ def _assert_native_execution(profile: dict[str, Any]) -> dict[str, int]:
         if any(name in row["function"] for name in _NATIVE_NAMES)
     }
     for module, function in (
-        (_NATIVE_NAMES[0], "clone"),
+        (_NATIVE_NAMES[0], "clone_graph"),
+        (_NATIVE_NAMES[0], "clone_dataclass"),
         (_NATIVE_NAMES[1], "distance"),
         (_NATIVE_NAMES[1], "jaro"),
     ):
@@ -337,14 +363,19 @@ def _assert_native_execution(profile: dict[str, Any]) -> dict[str, int]:
 @contextmanager
 def _native_results(
     clone: ModuleType, fuzz: ModuleType
-) -> Iterator[dict[str, list[bool]]]:
+) -> Iterator[tuple[dict[str, list[bool]], dict[str, int]]]:
     """Observe actual native returns only during untimed route profiling."""
     outcomes: dict[str, list[bool]] = {}
+    recursion_errors: dict[str, int] = {}
     saved = []
 
     def track(function: Callable[..., Any], name: str) -> Callable[..., Any]:
         def recorded(*args: Any) -> Any:
-            result = function(*args)
+            try:
+                result = function(*args)
+            except RecursionError:
+                recursion_errors[name] = recursion_errors.get(name, 0) + 1
+                raise
             outcomes.setdefault(name, []).append(result is not NotImplemented)
             return result
 
@@ -352,7 +383,8 @@ def _native_results(
 
     try:
         for module, attribute, name in (
-            (clone, "_native_clone", "clone"),
+            (clone, "_native_graph", "graph"),
+            (clone, "_native_dataclass", "dataclass"),
             (fuzz, "_native_distance", "distance"),
             (fuzz, "_native_jaro", "jaro"),
         ):
@@ -360,7 +392,7 @@ def _native_results(
             if original is not None:
                 saved.append((module, attribute, original))
                 setattr(module, attribute, track(original, name))
-        yield outcomes
+        yield outcomes, recursion_errors
     finally:
         for module, attribute, original in saved:
             setattr(module, attribute, original)
@@ -370,17 +402,21 @@ def _routes(
     cases: list[Workload], source: Path, clone: Any, fuzz: Any
 ) -> dict[str, Any]:
     """Prove per-workload native execution and the declared Python fallbacks."""
-    with _native_results(clone, fuzz) as outcomes:
-        return _checked_routes(cases, source, outcomes)
+    with _native_results(clone, fuzz) as (outcomes, recursion_errors):
+        return _checked_routes(cases, source, outcomes, recursion_errors)
 
 
 def _checked_routes(
-    cases: list[Workload], source: Path, outcomes: dict[str, list[bool]]
+    cases: list[Workload],
+    source: Path,
+    outcomes: dict[str, list[bool]],
+    recursion_errors: dict[str, int],
 ) -> dict[str, Any]:
     """A C call that refuses its input is not evidence of acceleration."""
     routes = {}
     for case in cases:
         outcomes.clear()
+        recursion_errors.clear()
         profile = _profile([case], source)
         c_calls = {
             row["function"]: row["calls"]
@@ -391,14 +427,29 @@ def _checked_routes(
         completed = {name: all(results) for name, results in outcomes.items()}
         if case.name.startswith("clone.deep/"):
             fallback = "fallback" in case.name
-            if fallback:
+            if case.name == "clone.deep/cycle-fallback":
+                valid = (
+                    any("_clone_native.clone_graph>" in name for name in c_calls)
+                    and recursion_errors.get("graph") == 3
+                    and not outcomes
+                    and bool(python_calls.get("deepcopy"))
+                    and not python_calls.get("_walk")
+                )
+            elif case.name.startswith("clone.deep/dataclass-"):
+                valid = (
+                    any("_clone_native.clone_dataclass>" in name for name in c_calls)
+                    and completed.get("dataclass", False)
+                    and outcomes.get("graph") == [False, False, False]
+                    and bool(python_calls.get("_walk"))
+                )
+            elif fallback:
                 valid = bool(python_calls.get("_walk")) and not any(
                     any(results) for results in outcomes.values()
                 )
             else:
                 valid = (
-                    any("_clone_native.clone>" in name for name in c_calls)
-                    and completed.get("clone", False)
+                    any("_clone_native.clone_graph>" in name for name in c_calls)
+                    and completed.get("graph", False)
                     and not python_calls.get("_walk")
                 )
         else:
@@ -421,6 +472,7 @@ def _checked_routes(
             "native_returns": {
                 name: list(results) for name, results in outcomes.items()
             },
+            "native_recursion_errors": dict(recursion_errors),
             "python_calls": python_calls,
         }
     return routes
@@ -486,7 +538,18 @@ def _validate_comparison(bundles: dict[str, dict[str, Any]]) -> None:
         raise AssertionError(msg)
     for old, new in zip(before["cases"], after["cases"], strict=True):
         old_result, new_result = old.call(), new.call()
-        if not old.check(new_result) or not new.check(old_result):
+        # Historical clone wrappers intentionally expanded aliases. Compare
+        # their declared alias contracts separately while retaining type/value
+        # agreement; all other workloads still require cross-contract checks.
+        if old.name == "clone.deep/shared-branch-semantics":
+            valid = (
+                old.check(old_result)
+                and new.check(new_result)
+                and _same(old_result, new_result)
+            )
+        else:
+            valid = old.check(new_result) and new.check(old_result)
+        if not valid:
             msg = f"comparison output mismatch: {old.name}"
             raise AssertionError(msg)
 

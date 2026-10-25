@@ -59,9 +59,9 @@ measurements and compatibility boundaries.
 
 `clone`, `proc`, `fs`, and `iters` ship in the base install.
 
-Check the module contract when migrating: `clone.deep` intentionally duplicates
-shared references, text similarity uses different algorithms across backends,
-and random bulk draws can return arrays or lists with different seeded streams.
+Check the module contract when migrating: text similarity uses different
+algorithms across backends, and random bulk draws can return arrays or lists
+with different seeded streams.
 These helpers extend the stdlib rather than promising an import-only migration.
 
 Opt into explicit contracts when results or guarantees must survive backend
