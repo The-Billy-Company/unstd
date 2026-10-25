@@ -51,7 +51,21 @@ _NATIVE_MODULES = (
     "unstd.compress._gzip_native",
     "unstd.containers._sorted_native",
     "unstd.proc._proc_native",
+    "unstd.rand._rand_native",
+    "unstd.pack._pack_native",
 ) + (("unstd.fs._fs_native",) if sys.platform == "linux" else ())
+
+_FS_FALLBACK = """
+from pathlib import Path
+import tempfile
+from unstd import fs
+assert fs._native is None
+with tempfile.TemporaryDirectory() as directory:
+    destination = Path(directory) / 'nested' / 'state.bin'
+    assert fs.atomic_write(destination, b'installed filesystem fallback') == destination
+    assert destination.read_bytes() == b'installed filesystem fallback'
+    assert list(destination.parent.iterdir()) == [destination]
+"""
 
 
 def _wheel_files(wheel: Path) -> dict[str, bytes]:
@@ -190,13 +204,14 @@ def test_wheel_metadata_identity_python_license_and_description(
     assert (
         metadata["License-Expression"]
         == project["license"]
-        == "Apache-2.0 AND MIT AND Zlib"
+        == "Apache-2.0 AND MIT AND Zlib AND BSD-3-Clause"
     )
     licenses = {
         "LICENSE",
         "NOTICE",
         "native/compress/vendor/libdeflate/COPYING",
         "native/compress/vendor/zlib/LICENSE",
+        "native/compress/vendor/isa-l/LICENSE",
     }
     assert set(metadata.get_all("License-File", [])) == licenses
     assert metadata["Description-Content-Type"] == "text/markdown"
@@ -302,6 +317,8 @@ def test_sdist_contains_all_sources_and_rebuild_inputs_without_local_caches(
         "native/proc/src/adapter.c",
         "native/proc/src/pipes.c",
         "native/proc/src/pipes.h",
+        "native/rand/src/adapter.c",
+        "native/pack/src/adapter.c",
         "native/fs/src/adapter.c",
         "native/crypto/src/adapter.c",
         "native/serde/src/adapter.c",
@@ -313,8 +330,10 @@ def test_sdist_contains_all_sources_and_rebuild_inputs_without_local_caches(
         "native/compress/src/module.h",
         "native/compress/src/shape.h",
         "native/compress/vendor/libdeflate/UPSTREAM.json",
+        "native/compress/vendor/isa-l/UPSTREAM.json",
         "native/compress/vendor/libdeflate/COPYING",
         "native/compress/vendor/zlib/LICENSE",
+        "native/compress/vendor/isa-l/LICENSE",
     ):
         assert files[required] == (artifacts.source / required).read_bytes()
     for source in (artifacts.source / "native").rglob("*"):
@@ -390,6 +409,8 @@ assert gzipx.GzipFile is gzip.GzipFile
 assert gzipx.decompress(gzip.compress(b'portable gzip')) == b'portable gzip'
 """)
 
+    consumer.run(_FS_FALLBACK)
+
 
 @pytest.mark.skipif(os.name == "nt", reason="MSVC does not choose its compiler via CC")
 def test_failed_editable_build_clears_its_stale_native_module(
@@ -433,6 +454,8 @@ assert gzipx.GzipFile is gzip.GzipFile
 assert gzipx.decompress(gzip.compress(b'portable gzip')) == b'portable gzip'
 """)
 
+    consumer.run(_FS_FALLBACK)
+
 
 @pytest.mark.parametrize("failed_module", _NATIVE_MODULES)
 def test_optional_compiler_failure_preserves_other_native_modules(
@@ -470,6 +493,9 @@ def test_optional_compiler_failure_preserves_other_native_modules(
         failed_module
     }
     assert not wheels[0].name.endswith("-py3-none-any.whl")
+    if failed_module == "unstd.fs._fs_native":
+        consumer = create_consumer(tmp_path / "consumer", wheels[0])
+        consumer.run(_FS_FALLBACK)
     strict = checked_command(
         [
             uv_executable(),

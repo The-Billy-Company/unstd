@@ -185,7 +185,8 @@ def runtime_report() -> dict[str, Any]:
         native = import_module("unstd.serde._json_native")
         jsonx = import_module("unstd.serde.jsonx")
         ndjson = import_module("unstd.serde.ndjson")
-        encoding = import_module("unstd.serde._internal.json_encode")
+        # Follow the installed facade across package layout revisions.
+        encoding = import_module(jsonx._exact_encode.__module__)
         binary = Path(native.__file__).resolve()
         _require(
             any(binary.name.endswith(suffix) for suffix in EXTENSION_SUFFIXES),

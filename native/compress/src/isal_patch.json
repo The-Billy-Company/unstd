@@ -1,0 +1,105 @@
+{
+  "schema": 1,
+  "files": {
+    "igzip/igzip_inflate.c": {
+      "before_sha256": "973bc6c6b54e5513c9d141e5396d50ef4a0c324301b5394c7ae2190d24acab22",
+      "after_sha256": "855dba50dde4e9fe084f22198712d6f40e9935854245d7ea5670f7415ada1af6",
+      "replacements": [
+        {
+          "old": "\n/* Reads data from the in_buffer and sets the huff code corresponding to that\n * data */\nstatic int inline setup_dynamic_header(struct inflate_state *state)\n{\n        int i, j;\n",
+          "new": "\n/* Reads data from the in_buffer and sets the huff code corresponding to that\n * data */\nstatic int\nunstd_invalid_tree(uint16_t *count, int allow_empty, int allow_single)\n{\n        int left = 1;\n        unsigned int total = 0;\n        for (unsigned int bits = 1; bits <= 15; ++bits) {\n                left = (left << 1) - count[bits];\n                total += count[bits];\n                if (left < 0) return 1;\n        }\n        return left != 0 && !(allow_empty && total == 0)\n            && !(allow_single && total == 1 && count[1] == 1);\n}\n\nstatic int inline setup_dynamic_header(struct inflate_state *state)\n{\n        int i, j;\n"
+        },
+        {
+          "old": "        hclen = inflate_in_read_bits_unsafe(state, 4);\n\n        if (hlit > 29 || hdist > 29 || hclen > 15)\n                return ISAL_INVALID_BLOCK;\n\n        /* Create the code huffman code for decoding the lit/len and dist huffman codes */\n        for (i = 0; i < 4; i++) {\n",
+          "new": "        hclen = inflate_in_read_bits_unsafe(state, 4);\n\n        if (hlit > 29 || hdist > 29 || hclen > 15)\n                return -22; /* too many length or distance symbols */\n\n        /* Create the code huffman code for decoding the lit/len and dist huffman codes */\n        for (i = 0; i < 4; i++) {\n"
+        },
+        {
+          "old": "        if (state->read_in_length < 0)\n                return ISAL_END_INPUT;\n\n        if (!flag || set_codes(code_huff, CODE_LEN_CODES, code_count))\n                return ISAL_INVALID_BLOCK;\n\n        make_inflate_huff_code_header(&inflate_code_huff, code_huff, CODE_LEN_CODES, code_count,\n                                      CODE_LEN_CODES);\n",
+          "new": "        if (state->read_in_length < 0)\n                return ISAL_END_INPUT;\n\n        if (!flag || unstd_invalid_tree(code_count, 0, 0)\n            || set_codes(code_huff, CODE_LEN_CODES, code_count))\n                return -23; /* invalid code lengths set */\n\n        make_inflate_huff_code_header(&inflate_code_huff, code_huff, CODE_LEN_CODES, code_count,\n                                      CODE_LEN_CODES);\n"
+        },
+        {
+          "old": "                symbol = decode_next_header(state, &inflate_code_huff);\n\n                if (state->read_in_length < 0) {\n                        if (current > &lit_and_dist_huff[256] && lit_and_dist_huff[256].length <= 0)\n                                return ISAL_INVALID_BLOCK;\n                        return ISAL_END_INPUT;\n                }\n\n",
+          "new": "                symbol = decode_next_header(state, &inflate_code_huff);\n\n                if (state->read_in_length < 0) {\n                        return ISAL_END_INPUT;\n                }\n\n"
+        },
+        {
+          "old": "                         * repeated length */\n\n                        i = 3 + inflate_in_read_bits(state, 2);\n\n                        if (current + i > end || previous == NULL)\n                                return ISAL_INVALID_BLOCK;\n\n                        rep_code = *previous;\n                        for (j = 0; j < i; j++) {\n",
+          "new": "                         * repeated length */\n\n                        i = 3 + inflate_in_read_bits(state, 2);\n                        if (state->read_in_length < 0) return ISAL_END_INPUT;\n\n                        if (current + i > end || previous == NULL)\n                                return -24; /* invalid bit length repeat */\n\n                        rep_code = *previous;\n                        for (j = 0; j < i; j++) {\n"
+        },
+        {
+          "old": "                         * repeated zeroes length lit/len/dist elements to have\n                         * length 0. */\n                        i = 3 + inflate_in_read_bits(state, 3);\n\n                        current = current + i;\n                        previous = current - 1;\n",
+          "new": "                         * repeated zeroes length lit/len/dist elements to have\n                         * length 0. */\n                        i = 3 + inflate_in_read_bits(state, 3);\n                        if (state->read_in_length < 0) return ISAL_END_INPUT;\n\n                        current = current + i;\n                        previous = current - 1;\n"
+        },
+        {
+          "old": "                         * repeated zeroes length lit/len/dist elements to have\n                         * length 0. */\n                        i = 11 + inflate_in_read_bits(state, 7);\n\n                        current = current + i;\n                        previous = current - 1;\n",
+          "new": "                         * repeated zeroes length lit/len/dist elements to have\n                         * length 0. */\n                        i = 11 + inflate_in_read_bits(state, 7);\n                        if (state->read_in_length < 0) return ISAL_END_INPUT;\n\n                        current = current + i;\n                        previous = current - 1;\n"
+        },
+        {
+          "old": "                        }\n\n                } else\n                        return ISAL_INVALID_BLOCK;\n        }\n\n        if (current > end || lit_and_dist_huff[256].length <= 0)\n                return ISAL_INVALID_BLOCK;\n\n        if (state->read_in_length < 0)\n                return ISAL_END_INPUT;\n\n        if (set_codes(&lit_and_dist_huff[LIT_LEN], DIST_LEN, dist_count))\n                return ISAL_INVALID_BLOCK;\n\n        if (state->hist_bits && state->hist_bits < 15)\n                max_dist = 2 * state->hist_bits;\n",
+          "new": "                        }\n\n                } else\n                        return -23;\n        }\n\n        if (current > end) return -24;\n        if (lit_and_dist_huff[256].length <= 0) return -25;\n\n        if (state->read_in_length < 0)\n                return ISAL_END_INPUT;\n\n        if (unstd_invalid_tree(lit_count, 0, 1))\n                return -26;\n\n        if (unstd_invalid_tree(dist_count, 1, 1)\n            || set_codes(&lit_and_dist_huff[LIT_LEN], DIST_LEN, dist_count))\n                return -27; /* invalid distances set */\n\n        if (state->hist_bits && state->hist_bits < 15)\n                max_dist = 2 * state->hist_bits;\n"
+        },
+        {
+          "old": "\n        if (set_and_expand_lit_len_huffcode(lit_and_dist_huff, LIT_LEN, lit_count, lit_expand_count,\n                                            code_list))\n                return ISAL_INVALID_BLOCK;\n\n        make_inflate_huff_code_lit_len(&state->lit_huff_code, lit_and_dist_huff, LIT_LEN_ELEMS,\n                                       lit_count, code_list, multisym);\n",
+          "new": "\n        if (set_and_expand_lit_len_huffcode(lit_and_dist_huff, LIT_LEN, lit_count, lit_expand_count,\n                                            code_list))\n                return -26; /* invalid literal/lengths set */\n\n        make_inflate_huff_code_lit_len(&state->lit_huff_code, lit_and_dist_huff, LIT_LEN_ELEMS,\n                                       lit_count, code_list, multisym);\n"
+        },
+        {
+          "old": "\n                /* Check if len and nlen match */\n                if (len != (~nlen & 0xffff))\n                        return ISAL_INVALID_BLOCK;\n\n                state->type0_block_len = len;\n                state->block_state = ISAL_BLOCK_TYPE0;\n",
+          "new": "\n                /* Check if len and nlen match */\n                if (len != (~nlen & 0xffff))\n                        return -21; /* invalid stored block lengths */\n\n                state->type0_block_len = len;\n                state->block_state = ISAL_BLOCK_TYPE0;\n"
+        },
+        {
+          "old": "                ret = setup_dynamic_header(state);\n\n        else\n                ret = ISAL_INVALID_BLOCK;\n\n        return ret;\n}\n",
+          "new": "                ret = setup_dynamic_header(state);\n\n        else\n                ret = -20; /* invalid block type */\n\n        return ret;\n}\n"
+        },
+        {
+          "old": "                decode_next_lit_len(&next_lits, &sym_count, state, &state->lit_huff_code);\n\n                if (sym_count == 0)\n                        return ISAL_INVALID_SYMBOL;\n\n                if (state->read_in_length < 0) {\n                        state->read_in = read_in_tmp;\n",
+          "new": "                decode_next_lit_len(&next_lits, &sym_count, state, &state->lit_huff_code);\n\n                if (sym_count == 0)\n                        return -29;\n\n                if (state->read_in_length < 0) {\n                        state->read_in = read_in_tmp;\n"
+        },
+        {
+          "old": "\n                                if (state->read_in_length >= 0) {\n                                        if (next_dist >= DIST_LEN)\n                                                return ISAL_INVALID_SYMBOL;\n\n                                        look_back_dist =\n                                                rfc->dist_start[next_dist] +\n",
+          "new": "\n                                if (state->read_in_length >= 0) {\n                                        if (next_dist >= DIST_LEN)\n                                                return -30;\n\n                                        look_back_dist =\n                                                rfc->dist_start[next_dist] +\n"
+        },
+        {
+          "old": "                        } else\n                                /* Else the read in bits do not\n                                 * correspond to any valid symbol */\n                                return ISAL_INVALID_SYMBOL;\n\n                        next_lits >>= 8;\n                        sym_count--;\n",
+          "new": "                        } else\n                                /* Else the read in bits do not\n                                 * correspond to any valid symbol */\n                                return -29;\n\n                        next_lits >>= 8;\n                        sym_count--;\n"
+        },
+        {
+          "old": "        return ret;\n}\n\nint\nisal_inflate(struct inflate_state *state)\n{\n",
+          "new": "        return ret;\n}\n\nstatic int\nunstd_decode_huffman_block(struct inflate_state *state, uint8_t *start_out)\n{\n        int ret = decode_huffman_code_block_stateless(state, start_out);\n        if (ret == ISAL_END_INPUT && (state->avail_in > 0 || state->read_in_length > 0))\n                return decode_huffman_code_block_stateless_base(state, start_out);\n        return ret;\n}\n\nint\nisal_inflate(struct inflate_state *state)\n{\n"
+        },
+        {
+          "old": "\n                        if ((int32_t) state->avail_out < 0)\n                                state->avail_out = 0;\n\n                        /* Decode into internal buffer until exit */\n                        while (state->block_state != ISAL_BLOCK_INPUT_DONE) {\n                                if (state->block_state == ISAL_BLOCK_NEW_HDR ||\n                                    state->block_state == ISAL_BLOCK_HDR) {\n                                        ret = read_header_stateful(state);\n",
+          "new": "\n                        if ((int32_t) state->avail_out < 0)\n                                state->avail_out = 0;\n                        /* Do not decode output beyond the caller's budget.\n                         * Pending history-buffer bytes count toward it. */\n                        uint32_t pending = state->tmp_out_valid - state->tmp_out_processed;\n                        uint32_t budget = pending < avail_out ? avail_out - pending : 0;\n                        if (state->avail_out > budget)\n                                state->avail_out = budget;\n\n                        /* Decode into internal buffer until exit. */\n                        while (budget != 0 && state->block_state != ISAL_BLOCK_INPUT_DONE) {\n                                if (state->block_state == ISAL_BLOCK_NEW_HDR ||\n                                    state->block_state == ISAL_BLOCK_HDR) {\n                                        ret = read_header_stateful(state);\n"
+        },
+        {
+          "old": "                                        ret = decode_literal_block(state);\n                                } else {\n                                        uint8_t *tmp = state->tmp_out_buffer;\n                                        ret = decode_huffman_code_block_stateless(state, tmp);\n                                }\n\n                                if (ret)\n",
+          "new": "                                        ret = decode_literal_block(state);\n                                } else {\n                                        uint8_t *tmp = state->tmp_out_buffer;\n                                        ret = unstd_decode_huffman_block(state, tmp);\n                                }\n\n                                if (ret)\n"
+        },
+        {
+          "old": "                state->avail_out -= copy_size;\n                state->next_out += copy_size;\n\n                if (ret == ISAL_INVALID_LOOKBACK || ret == ISAL_INVALID_BLOCK ||\n                    ret == ISAL_INVALID_SYMBOL) {\n                        /* Set total_out to not count data in tmp_out_buffer */\n                        state->total_out -= state->tmp_out_valid - state->tmp_out_processed;\n                        if (state->crc_flag)\n",
+          "new": "                state->avail_out -= copy_size;\n                state->next_out += copy_size;\n\n                if (ret < 0) {\n                        /* Set total_out to not count data in tmp_out_buffer */\n                        state->total_out -= state->tmp_out_valid - state->tmp_out_processed;\n                        if (state->crc_flag)\n"
+        },
+        {
+          "old": "                                if (state->block_state == ISAL_BLOCK_TYPE0)\n                                        ret = decode_literal_block(state);\n                                else\n                                        ret = decode_huffman_code_block_stateless(state, start_out);\n                                if (ret)\n                                        break;\n                        }\n",
+          "new": "                                if (state->block_state == ISAL_BLOCK_TYPE0)\n                                        ret = decode_literal_block(state);\n                                else\n                                        ret = unstd_decode_huffman_block(state, start_out);\n                                if (ret)\n                                        break;\n                        }\n"
+        },
+        {
+          "old": "                        state->copy_overflow_length = 0;\n                }\n\n                if (ret == ISAL_INVALID_LOOKBACK || ret == ISAL_INVALID_BLOCK ||\n                    ret == ISAL_INVALID_SYMBOL) {\n                        state->total_out -= state->tmp_out_valid - state->tmp_out_processed;\n                        return ret;\n                }\n",
+          "new": "                        state->copy_overflow_length = 0;\n                }\n\n                if (ret < 0) {\n                        state->total_out -= state->tmp_out_valid - state->tmp_out_processed;\n                        return ret;\n                }\n"
+        },
+        {
+          "old": "                bit_count = next_sym >> LARGE_SHORT_CODE_LEN_OFFSET;\n                state->read_in >>= bit_count;\n                state->read_in_length -= bit_count;\n",
+          "new": "                bit_count = next_sym >> LARGE_SHORT_CODE_LEN_OFFSET;\n                /* At a short input tail the table can pack a complete first\n                 * literal with an incomplete following symbol. Recover only\n                 * a literal whose code is proved by every table completion.\n                 * This cold path never supplies padding to the decoder. */\n                uint32_t count = (next_sym >> LARGE_SYM_COUNT_OFFSET) & LARGE_SYM_COUNT_MASK;\n                if (state->avail_in == 0 && state->read_in_length > 0\n                    && bit_count > (uint32_t)state->read_in_length && count > 1) {\n                        uint32_t literal = next_sym & 255U;\n                        unsigned int available = (unsigned int)state->read_in_length;\n                        if (available > ISAL_DECODE_LONG_BITS)\n                                available = ISAL_DECODE_LONG_BITS;\n                        for (unsigned int bits = 1; bits <= available; ++bits) {\n                                uint32_t stride = 1U << bits;\n                                uint32_t first = (uint32_t)state->read_in & (stride - 1U);\n                                uint32_t index;\n                                for (index = first; index < (1U << ISAL_DECODE_LONG_BITS);\n                                     index += stride) {\n                                        uint32_t entry = huff_code->short_code_lookup[index];\n                                        uint32_t n = (entry >> LARGE_SYM_COUNT_OFFSET) & LARGE_SYM_COUNT_MASK;\n                                        uint32_t symbol = entry & (n > 1 ? 255U : LARGE_SHORT_SYM_MASK);\n                                        if ((entry & LARGE_FLAG_BIT) != 0 || n == 0\n                                            || symbol != literal)\n                                                break;\n                                }\n                                if (index >= (1U << ISAL_DECODE_LONG_BITS)) {\n                                        state->read_in >>= bits;\n                                        state->read_in_length -= (int32_t)bits;\n                                        *sym_count = 1;\n                                        *next_lits = literal;\n                                        return;\n                                }\n                        }\n                }\n                state->read_in >>= bit_count;\n                state->read_in_length -= bit_count;\n"
+        }
+      ]
+    },
+    "igzip/igzip_decode_block_stateless.asm": {
+      "before_sha256": "4cfc2c6ac1cae68c2b9608227fa0b4895b0b809f939c475534f1d1cd3d2c19fe",
+      "after_sha256": "ffab110ec6da26edff50d4574b1667f7799ee86f51c229c783192870d544d2b6",
+      "replacements": [
+        {
+          "old": "invalid_dist_symbol_ %+ next_sym:\n\tcmp\tread_in_length, next_sym\n\tjl\tend_of_input\n\tjmp\tinvalid_symbol\ninvalid_dist_symbol_ %+ next_sym3:\n\tcmp\tread_in_length, next_sym3\n\tjl\tend_of_input\ninvalid_symbol:\n\tmov\trax, INVALID_SYMBOL\n\tjmp\tend\n\nend_symbol_pre:\n",
+          "new": "invalid_dist_symbol_ %+ next_sym:\n\tcmp\tread_in_length, next_sym\n\tjl\tend_of_input\n\tjmp\tinvalid_distance_symbol\ninvalid_dist_symbol_ %+ next_sym3:\n\tcmp\tread_in_length, next_sym3\n\tjl\tend_of_input\ninvalid_distance_symbol:\n\tmov\trax, -30\n\tjmp\tend\ninvalid_symbol:\n\tmov\trax, -29\n\tjmp\tend\n\nend_symbol_pre:\n"
+        }
+      ]
+    }
+  }
+}

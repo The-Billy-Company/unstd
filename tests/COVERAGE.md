@@ -15,12 +15,10 @@ visibly planned until it contains meaningful tests and its runner is verified.
 
 ## Organization and evidence
 
-The organization follows Billy's [test architecture](../../billy/services/ai/tests/README.md),
-[product and assurance split](../../billy/services/ai/tests/suites/README.md),
-[support boundary](../../billy/services/ai/tests/support/README.md), and
-[standalone tooling boundary](../../billy/services/ai/tests/tooling/README.md).
-Billy's service-specific evals, provider infrastructure, and browser machinery do
-not become unstd requirements merely because the directory organization matches.
+The [test architecture](README.md) separates
+[product contracts from cross-module assurance](suites/README.md), keeps reusable
+fixtures and helpers in [support](support/README.md), and places standalone
+campaigns in [tooling](tooling/README.md).
 
 ```text
 tests/
@@ -143,7 +141,7 @@ this matrix: RFC 1952 layout, multi-member and truncation parity with stdlib
 | `time` — P1 | UTC formatting, local human time, parsing/span, DST examples, protobuf bridge | Generated aware instants; multiple IANA transition families; fractional offsets; folds/gaps/disambiguation; date bounds; epoch negatives/overflow; fraction precision; optional bridge absent/present | Aware `datetime` arithmetic and independently chosen zone-transition fixtures; protobuf Timestamp's declared range/precision. Pin wall clocks rather than relying on narrow real-time windows. |
 | `model` — P1 | Config inheritance, unknown-field rejection, aliases, frozen models/settings | Nested model/settings trees; alias conflicts; environment/dotenv precedence in isolated workers; schema `additionalProperties`; frozen models with mutable/unhashable values | Pydantic model/schema behavior with explicit equivalent configuration; fixture-defined source precedence and preservation/rejection rules. `StrictModel` does not currently imply Pydantic `strict=True`. |
 | `containers` — P1 | Sorted operations, missing backends, persistent versions | Stateful insert/delete/update/range/index sequences; sorted key functions; duplicates; hash/comparison errors; mutation contexts; historical-version isolation | Small list/bisect/dict/set reference models and immutable-history snapshots. Test the wrapper contract, not every unchanged dependency feature. |
-| `rand` — P1 | Seed reproducibility, bounds/shapes, membership/permutations, secure-random separation | Invalid/zero sizes; equal/reversed/extreme ranges; endpoint rules; empty inputs; zero/negative/non-finite weights; seed failure atomicity; documented per-engine state ownership | Bounds, shape, membership and multiset laws; same-seed sequence within one backend. Do not assert NumPy/stdlib identical streams or infer CSPRNG security from frequency tests. |
+| `rand` — P1 | Seed reproducibility, bounds/shapes, membership/permutations, secure-random separation, native shuffle and explicit keyed batches | Full engine-state parity; custom numeric/engine hooks; invalid/zero sizes; equal/reversed/extreme ranges; endpoint rules; empty inputs; invalid weights; seed failure atomicity; SplitMix64 vectors/rejection and chunk/order independence; native cancellation, reference ownership and GC observers | Independent stdlib/NumPy references and complete states; fixed SplitMix64-v1 vectors plus native/Python agreement. Do not assert identical streams across different algorithms or infer CSPRNG security from frequency tests. |
 | `text` — P1 | Similarity endpoints, pinned difflib divergence, native/fallback distances, batch/cutoff laws | Generated Unicode and repeated strings; ties/cutoff/limit boundaries; one-shot choices; worker settings; large all-pairs allocation; portable metric-law checks | Native Indel/Jaro-Winkler/Levenshtein definitions and independent small reference calculations. Fast ratio intentionally differs from difflib on stated cases; cdist must match its own scalar path. |
 | `iters` — P1 | Exact consumption, infinite-stream laziness, chunks/windows, partition and dedup properties | Stateful one-shot/raising iterators; all stride/size boundaries; mixed hashability; predicate faults; uneven partition consumption; retained-object counts | Simple finite list specifications, counting iterators, and mathematical window/group/dedup laws. `tee` buffering grows when consumers diverge; test that stated behavior instead of inventing a constant-space claim. |
 | `toml` — P1 | `tomllib` read parity, generated writer round trips, missing writer backend | Malformed documents, binary/text handle requirements, read/write faults, style-preserving edits, date/time/numeric boundaries, dialect-version fixtures | Running `tomllib` for reads; exact reviewed style fixtures for edits; round trips over everything TOML 1.0 can represent, including ESC; unrepresentable offsets and aware times must be refused before writing. |
@@ -208,6 +206,15 @@ An interrupted process may leave scratch files; distinguish that from a torn
 destination. Monkeypatching `fsync` proves ordering/error handling, not survival
 of a real power loss. Any future crash-durability claim needs a controlled
 filesystem/VM experiment with its own environment and limitations.
+
+Linux filesystem contracts additionally exercise the real compiled atomic-write
+entrypoint and forced Python fallback. A test-only ELF observer injects signals,
+short writes and errors at syscall returns, distinguishing rollback from a
+committed replacement and retaining cleanup-error notes. Profile events prove
+native acceptance; installed direct/sdist consumers and compiler-failure checks
+cover packaging. The [fs integration guide](suites/product/fs/integration/README.md)
+maps these cases, and the [qualification report](../bench/reports/fs/production/README.md)
+retains interpreter, sanitizer and workload evidence with its platform limits.
 
 The [chaos runner](tooling/chaos/README.md) now executes repeated atomic-write
 and process histories, actual SIGINT/SIGKILL, stream faults and clock/entropy

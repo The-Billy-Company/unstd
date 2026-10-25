@@ -11,4 +11,9 @@ Verification rejects an incompatible selected captured row. Whole-registry
 revision comparisons must freeze a fresh, separate baseline on the comparison
 worker with the same interpreter and dependencies as the candidate.
 
+The two `RaggedDecoder` workloads retain measurements from a fresh native
+CPython 3.14.9 wheel, with independent `struct` output checks. Their rows record
+the runtime and native source/binary hashes; `ragged_addition_provenance`
+preserves the raw measurements without altering existing ceilings.
+
 See the [benchmark guide](../README.md).

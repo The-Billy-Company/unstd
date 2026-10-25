@@ -92,6 +92,12 @@ jobs:
           git -C .local/performance/source-before rev-parse HEAD > .local/performance/evidence/before-revision.txt
       # Build each revision's own native modules. Neither measurement may load
       # the other revision's Python source or compiled kernels.
+      - name: Provide Yasm for native gzip builds
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends yasm
+          yasm --version
       - name: Build separate before and current installations
         run: |
           uv pip install --python .venv/bin/python --no-deps --no-build-isolation --no-cache --target .local/performance/installed-before .local/performance/source-before

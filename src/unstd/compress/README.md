@@ -3,7 +3,7 @@ doc_radar:
   sentinels:
     - file: src/unstd/compress/gzipx.py
       contains: ['GzipFile = _stdlib.GzipFile', 'if type(data) is not bytes']
-    - file: src/unstd/compress/_reader.py
+    - file: src/unstd/compress/engines/reader.py
       contains: ['_factory = _accelerated.Inflater', '_zlib_globals["crc32"] = _crc32']
     - file: native/compress/src/adapter.c
       contains: ['libdeflate_gzip_decompress_ex(', 'MAX_OUTPUT_BYTES']
@@ -16,6 +16,22 @@ doc_radar:
 ---
 
 # `unstd.compress`
+
+The public import shelf stays at this package root: `gzipx` and `zlibx` own
+accelerated codecs, and the format-named ports expose original modules. Their
+filenames are consumer import paths and pair with typing stubs. This is the
+language-package-root case in the restructure rules; turning every small port
+into a one-file package would add interfaces without adding ownership.
+
+| Location | Responsibility |
+| --- | --- |
+| `gzipx.py`, `zlibx.py` | Public gzip and zlib operations, backend selection and fallbacks. |
+| `bz2.py`, `lzma.py`, `zlib.py` | Original interpreter codecs. |
+| `tarfile.py`, `zipfile.py` | Original interpreter archive APIs. |
+| `zstd.py`, `zstandard.py` | Original stdlib and optional Zstandard providers. |
+| [`engines/`](engines/README.md) | Native provider admission, bounded reading, flush validation and import identity. |
+| [`libarchive/`](libarchive/README.md) | Original libarchive binding and its qualified typing surface. |
+| `*.pyi`, `_gzip_native` binary | Type information and the built private extension. |
 
 Gzip through a stdlib-compatible surface, with native codecs behind
 `unstd[compress]`. A base install binds the five public names directly to stdlib
@@ -49,10 +65,13 @@ Python 3.14, and one-shot `compress` timestamps defaulting to current time befor
 File writers retain `mtime=None`. Compressed bytes and ratios may differ between
 engines; the interchange contract is gzip streams and identical recovered bytes.
 
-With the compression extra, Linux streams use zlib-ng's native SIMD inflater;
-macOS keeps its faster platform `libz` through the bundled C adapter. Other
+With the compression extra, Linux normally uses zlib-ng's native SIMD inflater.
+Linux x86_64 builds with the reviewed ISA-L codec and supported CPU can use the
+bundled bridge, selecting ISA-L before decoding for admitted stream shapes and
+retaining zlib-ng for other inputs. macOS keeps its faster platform `libz`
+through the bundled C adapter. Other
 platforms retain the bundled inflater. The compiled extension supplies
-libdeflate CRC32 on all three paths. The running interpreter still supplies gzip
+libdeflate CRC32 on native paths. The running interpreter still supplies gzip
 framing, buffering, header/trailer checks, concatenated members and seeking.
 Small reads keep a bounded output budget rather than expanding the whole member.
 Bytes delivered before malformed-stream failures retain the interpreter's order.
@@ -64,7 +83,8 @@ On Mac ARM, the C adapter can select the already loaded zlib-ng inflater for a
 complete small DEFLATE block dominated by repeated short-distance matches.
 The bounded probe selects before decoding and preserves source consumption,
 output limits and the interpreter's framing. Incomplete probes keep Apple libz;
-Linux keeps its zlib-ng SIMD reader. Selection adds no package dependency.
+Linux keeps its zlib-ng SIMD reader unless its optional ISA-L route admits the
+stream. Selection adds no package dependency.
 The [single-stream qualification](../../../bench/reports/compress/single-stream/README.md)
 records repetitive-stream gains, server parity, edge costs and streaming checks.
 
@@ -76,8 +96,16 @@ stdlib's permissive parsing or diagnostics use `gzip.decompress`. Bytearray,
 view and subclass inputs retain stdlib behavior through that fallback. Streamed
 reads do not replay a failed decode.
 
-Writes use [python-zlib-ng](https://python-zlib-ng.readthedocs.io/en/stable/).
-If a source build lacks the compiled read extension, streams use the zlib-ng
+Whole-buffer `compress` can use the private C encoder for exact `bytes` objects,
+exact integer levels 6 or 9, and integer `mtime=0`. Conservative input guards
+keep small, low-entropy and short-period inputs on the existing
+[python-zlib-ng](https://python-zlib-ng.readthedocs.io/en/stable/) route. Level 6
+also requires a compact ASCII JSON-shaped prefix and uses native level 1 with
+the owned three-candidate hash-table matchfinder; level 9 uses native level 6.
+Other levels, timestamps and buffer types retain the existing provider route.
+Stream writers and compressor copies keep their existing behavior.
+
+If a source build lacks the compiled extension, streams use the zlib-ng
 inflater and CRC32; one-shot decompression uses stdlib. Without the compression
 extra, all five names remain exact stdlib bindings. Exceptions retain stdlib
 families, including the original `BadGzipFile` class.
@@ -88,9 +116,9 @@ samples. Throughput varies with platform, payload, compression level and read
 shape. Automatic format detection, parallel framing of a single stream and
 archive extraction are outside the gzip interface.
 
-The [Billy qualification](../../../bench/reports/compress/billy-throughput.md)
+The [consumer qualification](../../../bench/reports/compress/README.md)
 measures the frozen dataset, two-pass upload, bounded HTTP and journal workloads
-on Mac and Foundry Linux. Four independent upload streams improved 1.83× and
+on Mac and the Linux server. Four independent upload streams improved 1.83× and
 4.58× respectively; these are paired workload results. The
 [port matrix](../../../bench/reports/compress/port-contracts.md) records external
 codec coverage and the precise compatibility boundaries.

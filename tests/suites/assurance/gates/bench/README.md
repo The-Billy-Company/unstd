@@ -17,10 +17,25 @@ rejection, unchanged signatures, independent output checks, shared calibrated
 batch counts, alternating sample order, and repeatable filesystem fixtures.
 Its checks use no machine-speed thresholds.
 
-`test_billy_fs.py` pins consumer-source and payload receipts, synthetic-data
-boundaries, byte-oriented browser writes, retained quota checks, shared paths,
-independent content/mode checks, and native-entrypoint evidence. Untimed sentinel
-resets prevent a no-op native call from borrowing a preceding Python result.
+[`test_billy_fs.py`](test_billy_fs.py) pins consumer-source and payload receipts,
+synthetic-data boundaries, byte-oriented browser writes, retained quota checks,
+shared paths, independent content/mode checks, and native-entrypoint evidence.
+Untimed sentinel resets prevent a no-op native call from borrowing a preceding
+Python result.
+
+[`test_billy_fs_installed.py`](test_billy_fs_installed.py) gates the production
+[`billy_fs_installed.py`](../../../../../bench/profiles/billy_fs_installed.py)
+driver. Both independent public fs modules come from one selected installation;
+one retains native dispatch and the other forces Python fallback. The gates
+reject missing/noncompiled or ambient binaries, shared module state, inactive or
+declined native routes, no-op results, and wheel members that differ from the
+loaded fs sources/binary. Public text inputs stay text at dispatch. Support
+modules need file provenance and direct `--help` works without site packages.
+The driver proves each route and checks fresh sentinel/output state outside
+timing, preserving profile hooks on failure. The retained [production report](../../../../../bench/reports/fs/production/README.md)
+covers all 13 Billy shapes through direct and sdist-rebuilt Linux wheels, with
+disk and tmpfs results kept separate. These gates impose no machine-speed
+threshold and the test-only ELF observer is excluded from profiling.
 
 `test_jsonx_throughput.py` rejects missing/wrong installed native extensions,
 inactive bindings, incorrect native results, source changes and empty workload
@@ -39,7 +54,7 @@ side of timing.
 
 `test_gzip_reads.py` rejects changed decoded bytes and incorrectly imported
 comparison sources, and checks bounded output, concatenated lines and rewinds.
-`test_billy_gzip.py` checks Billy's exact HTTP sentinel budget, upload chunk sizes
+The gzip consumer gates check the exact HTTP sentinel budget, upload chunk sizes
 and position restoration, full-query EOF, per-entry journal writes and batch
 flushes, appended members, and fixture/output corruption rejection.
 It validates all 14 committed synthetic consumer shapes, rejects nonfinite or
@@ -54,7 +69,7 @@ restoration, and the complete-worker byte denominator including both upload
 passes. It rejects comparisons with different frozen inputs and uses no
 wall-time thresholds.
 
-`test_billy_gzip_requests.py` checks exact checkpoint/full compressed-byte
+The gzip request gates check exact checkpoint/full compressed-byte
 identity, bounded prefix ownership and retirement, original fixture bytes,
 level/prefix misses, and the threshold/shrink gate. It proves that a contract
 failure remains ineligible while other cases can still be measured, and that
@@ -64,7 +79,7 @@ the final report is retained before failure. It has no machine-speed assertions.
 failures, source hashes despite stale bytecode, crossover workload coverage,
 output/type checks, and retained alternating samples.
 
-`test_billy_audio.py` rejects changed PCM/WAV bytes, post-measurement drift,
+The audio consumer gates reject changed PCM/WAV bytes, post-measurement drift,
 borrowed/read-only sample storage, missing/ambiguous consumer receipts and
 source changes during timing. It checks compact CLI evidence without speed
 thresholds.
@@ -76,7 +91,7 @@ rows, checks real workload oracles and proves fixture cleanup/state restoration.
 `test_speeds_workflow.py` checks isolated revision builds, native-source triggers,
 independent Linux/macOS jobs and evidence on Python 3.13 and 3.14, and each
 platform/interpreter pair's shared-worker comparison policy. Python 3.14 covers
-the version-specific C fast paths. The Billy gzip workflow gate also pins the
+the version-specific C fast paths. The gzip consumer workflow gate also pins the
 direct entry point, isolated installations, shared benchmark dependencies,
 committed fixtures, 30% wall-time limit and retained report. These tests have no
 machine-speed assertions.
@@ -102,6 +117,13 @@ batches and retain separate wall/CPU evidence. `test_rand_diagnose.py` exercises
 alternating direct controls, source identities, cleanup and baseline overwrite
 rejection. Candidate-only delays remain failures; an equally slow control cannot
 convert a candidate above its frozen ceiling to a pass.
+
+The rand backend and consumer gates compare source bytes, public signatures,
+native bindings, exact outputs and complete RNG states outside timing. Keyed
+and sparse-sampling gates separately validate explicit stream/strategy changes,
+source receipts, input laws and report retention when a requested speedup fails.
+The measured 100× scope is an 8,000-key count phase, not a complete application
+workflow. See the [rand evidence](../../../../../bench/reports/rand/README.md).
 
 From the repository root:
 

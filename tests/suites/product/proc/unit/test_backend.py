@@ -12,7 +12,7 @@ import time
 
 import pytest
 
-from unstd.proc._internal import backend
+from unstd.proc import backend
 
 
 _NATIVE = (sys.platform == "linux" and hasattr(os, "pidfd_open")) or (

@@ -1,10 +1,10 @@
-# Billy compression port contracts
+# Compression port contracts
 
 This is an API and behavior inventory, with no throughput claim. It maps the
-external Python codec calls inspected in Billy on 2026-10-25 to `unstd` routes.
-Billy paths below are relative to its repository. The inspected checkout's HEAD
+external Python codec calls inspected in the consumer on 2026-10-25 to `unstd` routes.
+Source paths below are relative to the consumer repository. The inspected checkout's HEAD
 was `b913877f51c711679a4a405ca152cca9a9f0f95a`; key source hashes appear below.
-No Billy source was changed for this inventory.
+No consumer source was changed for this inventory.
 
 ## Route and guarantee matrix
 
@@ -31,23 +31,23 @@ optional codec. Missing optional providers fail when their namespace is requeste
 The `archives` extra supplies its binding on Linux/macOS; Windows requires a
 compatible binding and native library supplied separately.
 
-## Observed Billy operations
+## Observed consumer operations
 
-| Billy source and symbol | External operations and corresponding route |
+| Consumer source and symbol | External operations and corresponding route |
 | --- | --- |
 | `services/ai/tools/base/datasets.py`: `query_dataset`, `materialize_datasets` | Already imports `gzipx as gzip`: decode `BytesIO` streams into `ijson` batches or `sandbox_upload_from`; encode result rows with `gzip.compress`. Existing `zlib.error` catches remain valid. |
 | `services/ai/tools/code/sandbox/client/channel.py`: `sandbox_upload_from` | Codec-agnostic source contract: save `tell()`, rewind, hash/count in 256 KiB reads, rewind for streamed transfer, restore position. `gzipx.GzipFile` supports that contract without retaining a decoded-output cache across rewinds. |
 | `services/ai/engine/runtime/journal/buffer.py`: `_open_file`, `_flush_batch`; `journal/replay.py`: `load_journal` | Already uses `gzipx`: append binary files, write one encoded entry at a time, flush batches, close/reopen into later members, iterate and parse lines on replay. A flush retains the current member; reopening append creates another member. |
-| `services/ai/core/foundation/io/net/body.py`: `_decoded`; `core/domain/knowledge/reading/mime.py`: `native_mime` | Gzip `read(max_bytes + 1)` uses `gzipx`. Bounded zlib/raw/gzip `decompressobj` operations, wrapper fallback, `eof`, `unused_data` and `unconsumed_tail` use `zlib` or `zlibx`'s exact stdlib decoder. HTTP allowance charging, completeness checks, refusal and MIME policy remain Billy's. |
-| `services/ai/core/foundation/util/text/compress.py`: `gzip_encode`, `gzip_decode`, `_GzipPrefix.encode` | `compress`/`decompress(wbits=31)`, compressor copy, 64 KiB prefix checkpoint, memoryview suffix and final flush can use `zlibx`; `zlib` retains stock compression. `gzip_request`, `gzip_request_scope` and the prefix lifetime/locking policy remain Billy's. |
-| `scripts/act/delivery/ship/hosting/downloads.py`: `_stock`, `_matches`, `preserve` | **Keep the identity `zlib` route** for level-9 raw DEFLATE, custom gzip header/trailer, incremental CRC and comparison against the published compressed SHA256. `gzipx`/`zlibx` make no stock compressed-byte promise. Publisher OS-byte normalization, hash authentication and Node/host-gzip alternatives remain Billy's. |
-| `services/ai/core/foundation/util/text/compress.py`: `_Contexts`, `zstd_encode`, `zstd_decode`, `wire_compress_for`, `wire_decompress`; `core/platform/jobs/signalbus/adapters/jetstream.py` | Use `zstandard`: native context construction, dictionary IDs, frame content/window sizes, complete-buffer decode options, incremental `eof`/`unused_data`, and `ZstdError`. Thread-local reuse, dictionary dispatch, magic byte, emit-if-smaller rule, concatenated-frame loop and whole-wire passthrough on failure remain Billy's. |
+| `services/ai/core/foundation/io/net/body.py`: `_decoded`; `core/domain/knowledge/reading/mime.py`: `native_mime` | Gzip `read(max_bytes + 1)` uses `gzipx`. Bounded zlib/raw/gzip `decompressobj` operations, wrapper fallback, `eof`, `unused_data` and `unconsumed_tail` use `zlib` or `zlibx`'s exact stdlib decoder. HTTP allowance charging, completeness checks, refusal and MIME policy remain with the application. |
+| `services/ai/core/foundation/util/text/compress.py`: `gzip_encode`, `gzip_decode`, `_GzipPrefix.encode` | `compress`/`decompress(wbits=31)`, compressor copy, 64 KiB prefix checkpoint, memoryview suffix and final flush can use `zlibx`; `zlib` retains stock compression. `gzip_request`, `gzip_request_scope` and the prefix lifetime/locking policy remain with the application. |
+| `scripts/act/delivery/ship/hosting/downloads.py`: `_stock`, `_matches`, `preserve` | **Keep the identity `zlib` route** for level-9 raw DEFLATE, custom gzip header/trailer, incremental CRC and comparison against the published compressed SHA256. `gzipx`/`zlibx` make no stock compressed-byte promise. Publisher OS-byte normalization, hash authentication and Node/host-gzip alternatives remain with the application. |
+| `services/ai/core/foundation/util/text/compress.py`: `_Contexts`, `zstd_encode`, `zstd_decode`, `wire_compress_for`, `wire_decompress`; `core/platform/jobs/signalbus/adapters/jetstream.py` | Use `zstandard`: native context construction, dictionary IDs, frame content/window sizes, complete-buffer decode options, incremental `eof`/`unused_data`, and `ZstdError`. Thread-local reuse, dictionary dispatch, magic byte, emit-if-smaller rule, concatenated-frame loop and whole-wire passthrough on failure remain with the application. |
 | `scripts/observe/telemetry/wire_entropy/dict_train.py`: `train_all`; `dict_eval.py`: `_train`, `_verify_roundtrip`; `services/ai/evals/suites/agent/artifacts/creative/photography.py`: `_bundle` | `zstandard` preserves `train_dictionary`, `ZstdCompressionDict.dict_id()/as_bytes()`, dictionary codecs and `stream_reader(BytesIO(...)).read()` with its original defaults. The last operation reads complete output and is not an added bounded-decode API. |
 | `tools/igor/connectors/telemetry/answers/artifacts.py`: `load`, `save` | `zstd` preserves stdlib `.zst` text `open`, UTF-8 reads/writes, `newline=""`, and ownership of a supplied binary stream. JSON framing, private-file policy, fsync and publication remain Igor's. |
 | `services/ai/core/foundation/io/net/tracking.py`: `hosts`, `header`, `refresh`; `scripts/observe/telemetry/entropy/baselines.py` | `lzma` preserves UTF-8 text opens, preset `9 | PRESET_EXTREME`, and raw `FORMAT_RAW`/`FILTER_LZMA2` encoding. `infra/docker/dockerfiles/sandbox/blender_security_proof.py` also exercises original bz2/lzma/zlib native error and allocation-failure state; identity ports retain that installed interpreter's behavior and patches. |
-| `services/ai/tools/code/media/blender/authoring/creation.py`: `create`; `tools/code/sandbox/contents/snapshot.py`: `_restore`; `core/domain/knowledge/reading/opendocument.py`: `_package` | `zipfile` preserves `ZipFile`, `ZipInfo`, compression constants/levels, member metadata, reads/writes and `BadZipFile`/`is_zipfile`. Package-specific validation, duplicate/path checks and extraction policy remain Billy's. |
-| `scripts/act/delivery/ship/push/context.py`: `extract`; `scripts/act/workspace/archive/attic.py`: `_StreamingTar`, `assert_safe_archive`, `probe_archive` | `tarfile` preserves `r|` iteration, `TarFile` subclassing and `stream=True` header-cache behavior where the runtime supports it. Manifest/hash checks, path/link validation, subprocess lifecycle and extraction remain Billy's. |
-| `services/ai/core/foundation/util/archives.py`: `members`, `Budget`; `core/domain/knowledge/reading/metadata.py`: `_archive` | `libarchive` preserves raw-format registration, memory opens, archive/entry iteration, bounded `get_blocks`, metadata, filter names, `ArchiveError` and `ffi.error_string`. Shared cumulative byte/entry/depth budgets, names/links/encryption policy and promotion of warnings to failures remain Billy's. Header-only metadata inspection does not establish payload integrity. |
+| `services/ai/tools/code/media/blender/authoring/creation.py`: `create`; `tools/code/sandbox/contents/snapshot.py`: `_restore`; `core/domain/knowledge/reading/opendocument.py`: `_package` | `zipfile` preserves `ZipFile`, `ZipInfo`, compression constants/levels, member metadata, reads/writes and `BadZipFile`/`is_zipfile`. Package-specific validation, duplicate/path checks and extraction policy remain with the application. |
+| `scripts/act/delivery/ship/push/context.py`: `extract`; `scripts/act/workspace/archive/attic.py`: `_StreamingTar`, `assert_safe_archive`, `probe_archive` | `tarfile` preserves `r|` iteration, `TarFile` subclassing and `stream=True` header-cache behavior where the runtime supports it. Manifest/hash checks, path/link validation, subprocess lifecycle and extraction remain with the application. |
+| `services/ai/core/foundation/util/archives.py`: `members`, `Budget`; `core/domain/knowledge/reading/metadata.py`: `_archive` | `libarchive` preserves raw-format registration, memory opens, archive/entry iteration, bounded `get_blocks`, metadata, filter names, `ArchiveError` and `ffi.error_string`. Shared cumulative byte/entry/depth budgets, names/links/encryption policy and promotion of warnings to failures remain with the application. Header-only metadata inspection does not establish payload integrity. |
 
 ## Behavior, state and memory boundaries
 
@@ -78,7 +78,7 @@ compatible binding and native library supplied separately.
   cap equal to the requested length. `zlib.decompress(..., bufsize=...)` is an
   initial allocation hint, not an output limit; `decompressobj(...).decompress`
   with `max_length=0` is unlimited. Native python-zstandard's `max_output_size`
-  is not a strict budget for frames with a known content size. Billy's
+  is not a strict budget for frames with a known content size. The consumer
   `zstd_decode` therefore also checks declared content size and window size.
   Stream reads, decoder windows, dictionaries, retained input and application
   accumulation have their original separate costs.
@@ -93,7 +93,7 @@ compatible binding and native library supplied separately.
   writer deterministic but do not guarantee stock DEFLATE bytes or identical
   gzip headers across codecs. Identity ports preserve the original call within
   the installed runtime; matching persisted compressed hashes across native
-  versions still needs the original encoder/build and Billy's authentication.
+  versions still needs the original encoder/build and application authentication.
 
 ## Excluded owners
 
@@ -104,7 +104,7 @@ through `unstd.compress` do not replace it. Likewise, `attic.py`'s external
 `evals/suites/substrate/snapshots/replay.py::_tolerant_load`'s `gzip -cdf`
 recovery retain their own process, format and failure protocols. Go/native
 services and browser `DecompressionStream` also remain outside these Python
-routes. This port does not move Billy's wire framing, application budgets,
+routes. This port does not move application wire framing, application budgets,
 archive policy, recovery policy or publication/authentication into `unstd`.
 
 ## Verification and source evidence
@@ -128,14 +128,14 @@ and [`test_stream_faults.py`](../../../tests/suites/product/compress/integration
 [`test_rfc1952_layout.py`](../../../tests/suites/product/compress/unit/test_rfc1952_layout.py)
 and [`test_native_buffers.py`](../../../tests/suites/product/compress/unit/test_native_buffers.py)
 cover defaults, framing, callbacks, one-shot validation/fallback and byte delivery.
-[`billy_gzip.py`](../../profiles/billy_gzip.py) records the ten source-consumer
+The gzip consumer profiler in the [profile directory](../../profiles/) records the ten source-consumer
 symbols and hashes for its dataset, upload, bounded HTTP and journal fixtures;
 those fixtures validate the isolated codec/I/O portion, excluding RPC scheduling
 and filesystem latency.
 
 The routing implementation is in
 [`gzipx.py`](../../../src/unstd/compress/gzipx.py),
-[`_reader.py`](../../../src/unstd/compress/_reader.py),
+[`engines/reader.py`](../../../src/unstd/compress/engines/reader.py),
 [`zlibx.py`](../../../src/unstd/compress/zlibx.py), and the module-alias files in
 [`src/unstd/compress`](../../../src/unstd/compress).
 With the inspected python-zstandard 0.25.0 C backend, a declared 4,096-byte

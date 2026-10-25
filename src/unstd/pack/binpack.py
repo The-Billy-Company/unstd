@@ -22,14 +22,15 @@ subset, returning a ``list`` instead of an ``ndarray``. Compatible values have
 the same layout; accepted dtypes, input coercion, and errors follow the backend.
 For example, NumPy truncates floats for integer dtypes while struct rejects them.
 
-:func:`pack_array_portable` / :func:`unpack_array_portable` always use struct's
+:func:`pack_array_portable` / :func:`unpack_array_portable` always retain struct's
 portable dtype subset and conversion rules, returning bytes / a fresh list of
 Python scalars regardless of whether NumPy is installed. Choose these helpers
 when validation and return types must remain stable across installations.
 
 Backend & fallback: NumPy is provided by the ``pack`` extra. The scalar
 struct surface never needs it; the array helpers prefer it and degrade to
-``struct`` when it is absent. The explicit portable helpers always use struct.
+``struct`` when it is absent. The explicit portable helpers retain struct's
+conversions, with a primitive buffer shortcut for matching integer and float64 arrays.
 Tests pin shared layouts for compatible inputs and the portable validation rules.
 
 Prior art:
@@ -46,10 +47,12 @@ Prior art:
 from __future__ import annotations
 
 from collections.abc import Iterable  # noqa: TC003 — runtime type introspection
+from operator import index as _index
 import struct as _struct
 from typing import TYPE_CHECKING
 
-from unstd.pack._internal.dtype import _array_struct, _struct_spec
+from unstd.pack.buffers import _pack_buffer
+from unstd.pack.dtypes import _array_struct, _struct_spec
 
 
 if TYPE_CHECKING:
@@ -135,53 +138,87 @@ def pack_array_portable(dtype: str, seq: Iterable[float]) -> bytes:
     values (or ``__index__``); floats are not silently truncated. Values outside
     the format's range raise the same exception as stdlib ``struct.pack``.
     The input iterable is consumed once before values are converted.
+    Matching one-dimensional primitive arrays can snapshot their byte storage
+    directly when doing so preserves struct's numeric conversions.
     """
     return _pack_array_struct(dtype, seq)
 
 
 def _pack_array_struct(dtype: DTypeLike, seq: Iterable[float]) -> bytes:
     """Shared struct body, retaining legacy dtype-object handling."""
-    order, char, _ = _struct_spec(dtype)
+    order, char, size = _struct_spec(dtype)
+    packed = _pack_buffer(order, char, size, seq)
+    if packed is not None:
+        return packed
     # Freeze before reading the count. The bound method reuses this tuple for
     # argument expansion, avoiding a second copy to prepend a format argument.
     vals = tuple(seq)
     return _array_struct(order, char, len(vals)).pack(*vals)
 
 
-def unpack_array(dtype: DTypeLike, buf: bytes | bytearray | memoryview) -> _ArrayResult:
+def unpack_array(
+    dtype: DTypeLike,
+    buf: bytes | bytearray | memoryview,
+    *,
+    count: int = -1,
+    offset: int = 0,
+) -> _ArrayResult:
     """Unpack ``dtype``-typed contiguous bytes into an array of scalars.
 
     With NumPy present this returns a **zero-copy** ``numpy.frombuffer`` view
     whose writability follows ``buf``; without it, a ``list`` decoded via stdlib
-    ``struct``. Both require the buffer's byte size to be a whole multiple of
-    the dtype's itemsize (a partial trailing element raises, matching
-    ``numpy.frombuffer``).
+    ``struct``. With the default ``count=-1``, the remaining buffer's byte size
+    must be a whole multiple of the dtype's itemsize (a partial trailing
+    element raises, matching ``numpy.frombuffer``).
+
+    ``offset`` selects a byte position in the original buffer; ``count``
+    selects elements, or ``-1`` selects the whole remainder. Explicit counts
+    permit unrelated trailing bytes. NumPy views retain the original buffer
+    without slicing or copying it; fallback results are independent lists.
+    Bounds, conversion, and errors follow the selected backend.
     """
     if _HAVE_NUMPY:
-        return np.frombuffer(
-            buf, dtype=dtype
-        )  # accepts the spec as-is; no extra dtype build
-    return _unpack_array_struct(dtype, buf)
+        return np.frombuffer(buf, dtype=dtype, count=count, offset=offset)
+    return _unpack_array_struct(dtype, buf, count=count, offset=offset)
 
 
 def unpack_array_portable(
-    dtype: str, buf: bytes | bytearray | memoryview
+    dtype: str,
+    buf: bytes | bytearray | memoryview,
+    *,
+    count: int = -1,
+    offset: int = 0,
 ) -> list[float]:
     """Decode portable numeric bytes to a fresh list, independent of NumPy.
 
     Uses the same dtype subset as :func:`pack_array_portable`. Buffers must be
-    contiguous and contain a whole number of elements; partial elements raise
+    contiguous; default whole-remainder decoding rejects partial elements with
     :class:`error`. Contiguous typed and multidimensional memoryviews use their
     full byte size. The result contains Python scalars and does not alias *buf*.
+
+    ``offset`` is a byte position, including unaligned positions. ``count``
+    is the number of elements, or ``-1`` for the whole remaining buffer.
+    Explicit counts allow trailing bytes beyond the selected elements.
+    Both arguments accept ``__index__``; counts below ``-1`` raise
+    :class:`ValueError`, and invalid byte ranges raise :class:`error`.
     """
-    return _unpack_array_struct(dtype, buf)
+    return _unpack_array_struct(dtype, buf, count=count, offset=offset)
 
 
 def _unpack_array_struct(
-    dtype: DTypeLike, buf: bytes | bytearray | memoryview
+    dtype: DTypeLike,
+    buf: bytes | bytearray | memoryview,
+    *,
+    count: int = -1,
+    offset: int = 0,
 ) -> list[float]:
     """Shared struct body, retaining legacy dtype-object and buffer handling."""
     order, char, size = _struct_spec(dtype)
+    count = _index(count)
+    offset = _index(offset)
+    if count < -1:
+        msg = "unstd.pack: count must be -1 or nonnegative"
+        raise ValueError(msg)
     # Other exporters' lengths count elements or a first dimension, not bytes;
     # scalar views have no length at all. Keep the original buffer for struct's
     # contiguous-buffer checks without copying or changing its interpretation.
@@ -190,7 +227,22 @@ def _unpack_array_struct(
     else:
         with memoryview(buf) as view:
             nbytes = view.nbytes
-    if nbytes % size:
-        msg = f"unstd.pack: buffer size {nbytes} is not a multiple of itemsize {size}"
+    if not 0 <= offset <= nbytes:
+        msg = f"unstd.pack: offset is outside buffer size {nbytes}"
         raise error(msg)
-    return list(_struct.unpack(f"{order}{nbytes // size}{char}", buf))
+    available = nbytes - offset
+    if count == -1:
+        if available % size:
+            msg = (
+                f"unstd.pack: buffer size {available} is not a multiple "
+                f"of itemsize {size}"
+            )
+            raise error(msg)
+        count = available // size
+    elif count > available // size:
+        msg = (
+            f"unstd.pack: selected elements of itemsize {size} do not fit "
+            f"in {available} bytes"
+        )
+        raise error(msg)
+    return list(_array_struct(order, char, count).unpack_from(buf, offset))

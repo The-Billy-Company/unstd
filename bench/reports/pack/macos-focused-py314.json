@@ -1,0 +1,2366 @@
+{
+  "generated_at": "2026-10-25T21:12:18.894257+00:00",
+  "python": "3.14.9 (main, Oct 21 2026, 17:47:42) [Clang 23.1.3 ]",
+  "executable": "/Users/griffinstrier/Billy-Company/unstd/.venv/bin/python",
+  "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "harness_sha256": "34081141cf0e07eb6acad1bfea98b0d264922739f29ea351c7ec04c7af189453",
+  "rounds": 9,
+  "measurement": "complete call including output allocation and refcount cleanup; setup and oracle checks excluded; GC disabled during operation batches",
+  "summary": {
+    "billy/embedding-pack-page-200x256-lists": {
+      "baseline_median_wall_ns": 266000.8409090909,
+      "candidate_median_wall_ns": 248043.32587064678,
+      "median_wall_speedup": 1.0723966870522001,
+      "observed_conservative_wall_speedup": 0.8252397140318112,
+      "paired_wall_speedups": [
+        0.928077611240611,
+        1.374175353608087,
+        1.5792558339326237,
+        1.0402991584319459,
+        1.074337881215575,
+        1.0422116664957113,
+        1.1203810115445987,
+        1.0018880692063366,
+        0.9589534144007165
+      ],
+      "baseline_median_cpu_ns": 257090.9090909091,
+      "candidate_median_cpu_ns": 238922.8855721393,
+      "median_cpu_speedup": 1.0760413698975029,
+      "observed_conservative_cpu_speedup": 0.8556649772784596
+    },
+    "billy/embedding-unpack-page-200x256-owned-lists": {
+      "baseline_median_wall_ns": 505925.1302083333,
+      "candidate_median_wall_ns": 470085.2658227848,
+      "median_wall_speedup": 1.0762411991850422,
+      "observed_conservative_wall_speedup": 0.6968073337907306,
+      "paired_wall_speedups": [
+        1.021530603174239,
+        1.3012360365885058,
+        1.122985873374708,
+        1.1432994335259485,
+        1.387133177145396,
+        0.8996443989563335,
+        1.6651481941986965,
+        0.9825449943236821,
+        0.7616460545724963
+      ],
+      "baseline_median_cpu_ns": 465545.89371980674,
+      "candidate_median_cpu_ns": 445215.1898734177,
+      "median_cpu_speedup": 1.0456648926380283,
+      "observed_conservative_cpu_speedup": 0.7661679043324282
+    },
+    "billy/f32-unpack-256-owned-list": {
+      "baseline_median_wall_ns": 9845.08703870387,
+      "candidate_median_wall_ns": 8462.711739216073,
+      "median_wall_speedup": 1.1633489763194806,
+      "observed_conservative_wall_speedup": 0.7075135957457036,
+      "paired_wall_speedups": [
+        0.9665306127280928,
+        1.235934837903906,
+        0.9685687326692481,
+        1.1522208986048874,
+        1.0754662706879472,
+        1.1185306586250547,
+        0.9466671059047888,
+        1.008439620369747,
+        1.0001764853279347
+      ],
+      "baseline_median_cpu_ns": 9195.725646123261,
+      "candidate_median_cpu_ns": 8167.126255662793,
+      "median_cpu_speedup": 1.1259438581284664,
+      "observed_conservative_cpu_speedup": 0.8066085283393282
+    },
+    "portable/list/256": {
+      "baseline_median_wall_ns": 1344.2541083108365,
+      "candidate_median_wall_ns": 1267.9572829319259,
+      "median_wall_speedup": 1.0601730250742263,
+      "observed_conservative_wall_speedup": 0.665283792825862,
+      "paired_wall_speedups": [
+        1.0485977527128623,
+        0.6928342306526029,
+        0.9144052137691729,
+        1.1402881960423752,
+        1.0116865025375945,
+        1.0027527722157314,
+        0.994598359007182,
+        1.2422919489241355,
+        1.114657532248627
+      ],
+      "baseline_median_cpu_ns": 1241.4980160527602,
+      "candidate_median_cpu_ns": 1213.3978085568087,
+      "median_cpu_speedup": 1.0231582810664321,
+      "observed_conservative_cpu_speedup": 0.8242361945490367
+    },
+    "portable/generator/256": {
+      "baseline_median_wall_ns": 5499.819032475078,
+      "candidate_median_wall_ns": 5363.6504282390215,
+      "median_wall_speedup": 1.0253873003205323,
+      "observed_conservative_wall_speedup": 0.635863517830261,
+      "paired_wall_speedups": [
+        0.9417950549642082,
+        0.7731892572213267,
+        0.7690535403697262,
+        1.1542715467799336,
+        1.0648096649757162,
+        1.0311473985639639,
+        0.9584072114147622,
+        0.9918338473161759,
+        0.9857089618138388
+      ],
+      "baseline_median_cpu_ns": 5127.8103356419815,
+      "candidate_median_cpu_ns": 5113.6689935145305,
+      "median_cpu_speedup": 1.0027654003701425,
+      "observed_conservative_cpu_speedup": 0.8209943308225274
+    },
+    "portable/ndarray/<f8/51200": {
+      "baseline_median_wall_ns": 1051834.670212766,
+      "candidate_median_wall_ns": 6339.753091753524,
+      "median_wall_speedup": 165.9109834389208,
+      "observed_conservative_wall_speedup": 112.25945731763096,
+      "paired_wall_speedups": [
+        175.19598999715095,
+        168.381493012803,
+        164.171266399536,
+        212.30406809000573,
+        137.80127249737575,
+        164.41084157987453,
+        130.7984046875431,
+        165.9109834389208,
+        173.04352914088807
+      ],
+      "baseline_median_cpu_ns": 976285.7142857143,
+      "candidate_median_cpu_ns": 5797.807420208457,
+      "median_cpu_speedup": 168.38877933110314,
+      "observed_conservative_cpu_speedup": 152.52046596434718
+    },
+    "portable/ndarray/>f8/51200": {
+      "baseline_median_wall_ns": 1044717.7419354839,
+      "candidate_median_wall_ns": 5912.139503816794,
+      "median_wall_speedup": 176.7072210087446,
+      "observed_conservative_wall_speedup": 138.90958032728696,
+      "paired_wall_speedups": [
+        185.67118535405322,
+        179.42983915631586,
+        214.9702342288322,
+        166.39798999920447,
+        166.67718282967365,
+        184.88677206379725,
+        156.27187529163004,
+        188.3806254270551,
+        176.92178360848433
+      ],
+      "baseline_median_cpu_ns": 982236.5591397849,
+      "candidate_median_cpu_ns": 5606.679389312977,
+      "median_cpu_speedup": 175.19042751259312,
+      "observed_conservative_cpu_speedup": 148.72493877574652
+    },
+    "portable/ndarray/<i4/51200": {
+      "baseline_median_wall_ns": 1149057.0652173914,
+      "candidate_median_wall_ns": 3137.4335120124,
+      "median_wall_speedup": 366.24108871724513,
+      "observed_conservative_wall_speedup": 258.3752584034281,
+      "paired_wall_speedups": [
+        350.2487951206488,
+        295.47415701436125,
+        843.5199935514544,
+        333.75093169538536,
+        390.54695347456357,
+        439.68771244831703,
+        328.5624847776807,
+        363.87066491756246,
+        294.4670474522995
+      ],
+      "baseline_median_cpu_ns": 1077010.8695652173,
+      "candidate_median_cpu_ns": 3014.950917075691,
+      "median_cpu_speedup": 357.2233509558586,
+      "observed_conservative_cpu_speedup": 296.38336881800353
+    },
+    "portable/ndarray/>i4/51200": {
+      "baseline_median_wall_ns": 1084566.0099009902,
+      "candidate_median_wall_ns": 3286.094188639643,
+      "median_wall_speedup": 330.04714644225464,
+      "observed_conservative_wall_speedup": 245.82954404772366,
+      "paired_wall_speedups": [
+        326.6217695104688,
+        387.8406135972975,
+        415.27833960866957,
+        262.9023026742038,
+        287.5748039835978,
+        473.980851676989,
+        310.4145980494723,
+        297.6836907830802,
+        347.99167019568455
+      ],
+      "baseline_median_cpu_ns": 1040455.5555555555,
+      "candidate_median_cpu_ns": 3134.822248458612,
+      "median_cpu_speedup": 331.90256834088314,
+      "observed_conservative_cpu_speedup": 283.9240817962059
+    },
+    "numpy/pack/51200": {
+      "baseline_median_wall_ns": 5505.526117282356,
+      "candidate_median_wall_ns": 5448.239586696804,
+      "median_wall_speedup": 1.0105146863815297,
+      "observed_conservative_wall_speedup": 0.6696140947067278,
+      "paired_wall_speedups": [
+        1.038192856733545,
+        0.8257904959415171,
+        1.0583534165623525,
+        0.7841633044922507,
+        0.9642559700426416,
+        1.1134994137411196,
+        1.0624569955480254,
+        0.8242143512231026,
+        1.0350959637573927
+      ],
+      "baseline_median_cpu_ns": 5226.236650549918,
+      "candidate_median_cpu_ns": 5231.8372618663225,
+      "median_cpu_speedup": 0.9989295134699188,
+      "observed_conservative_cpu_speedup": 0.8279488820982654
+    }
+  },
+  "samples": {
+    "baseline": [
+      {
+        "source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src",
+        "source_hashes": {
+          "unstd/__init__.py": "b52aa5df64f0215833b16bcd1a5153ad2f5fe2535902a24911d77c19bc874cad",
+          "unstd/pack/__init__.py": "3399b170cfd1dd1bce7aedf15e65fb029c0e4ce61baebc80d5ec7cd712b704fa",
+          "unstd/pack/_internal/__init__.py": "a08e459abdda80cce16be41398da88cc7ef99825c588fc8e8b6bfa40e88136a7",
+          "unstd/pack/_internal/dtype.py": "9adac429d0055a2f213e648fffb2657674fb2efd589b3476ca48d4cad1437e17",
+          "unstd/pack/binpack.py": "2770b38dbc874406b511947b2415e161f02870a766beb7730407a87542ae1f14"
+        },
+        "imported_source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src/unstd/pack/binpack.py",
+        "numpy_version": "2.5.3",
+        "signatures": {
+          "pack_array": "(dtype: 'DTypeLike', seq: 'Iterable[float]') -> 'bytes'",
+          "unpack_array": "(dtype: 'DTypeLike', buf: 'bytes | bytearray | memoryview') -> '_ArrayResult'",
+          "pack_array_portable": "(dtype: 'str', seq: 'Iterable[float]') -> 'bytes'",
+          "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
+        },
+        "measurements": {
+          "billy/embedding-pack-page-200x256-lists": {
+            "iterations": 442,
+            "wall_ns": 101014875,
+            "cpu_ns": 99197000,
+            "wall_ns_per_call": 228540.4411764706,
+            "cpu_ns_per_call": 224427.60180995477,
+            "note": "Two hundred independent !256d rows, including join and argument expansion",
+            "oracle_passed": true
+          },
+          "billy/embedding-unpack-page-200x256-owned-lists": {
+            "iterations": 224,
+            "wall_ns": 99748459,
+            "cpu_ns": 96015000,
+            "wall_ns_per_call": 445305.62053571426,
+            "cpu_ns_per_call": 428638.39285714284,
+            "note": "Two hundred !256d records decoded to owned Python lists",
+            "oracle_passed": true
+          },
+          "billy/f32-unpack-256-owned-list": {
+            "iterations": 12094,
+            "wall_ns": 98831625,
+            "cpu_ns": 95804000,
+            "wall_ns_per_call": 8171.955101703324,
+            "cpu_ns_per_call": 7921.614023482719,
+            "note": "Existing float32 little-endian view followed by Python float conversion",
+            "oracle_passed": true
+          },
+          "portable/list/256": {
+            "iterations": 90065,
+            "wall_ns": 105071459,
+            "cpu_ns": 100452000,
+            "wall_ns_per_call": 1166.6180980403042,
+            "cpu_ns_per_call": 1115.3278187975352,
+            "note": "Python float list; input snapshot and struct conversion included",
+            "oracle_passed": true
+          },
+          "portable/generator/256": {
+            "iterations": 20592,
+            "wall_ns": 99617333,
+            "cpu_ns": 97249000,
+            "wall_ns_per_call": 4837.671571484071,
+            "cpu_ns_per_call": 4722.659285159285,
+            "note": "Fresh generator over Python floats; creation and complete consumption included",
+            "oracle_passed": true
+          },
+          "portable/ndarray/<f8/51200": {
+            "iterations": 101,
+            "wall_ns": 96231791,
+            "cpu_ns": 93660000,
+            "wall_ns_per_call": 952790.0099009901,
+            "cpu_ns_per_call": 927326.7326732674,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/>f8/51200": {
+            "iterations": 103,
+            "wall_ns": 104305375,
+            "cpu_ns": 98095000,
+            "wall_ns_per_call": 1012673.5436893204,
+            "cpu_ns_per_call": 952378.6407766991,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/<i4/51200": {
+            "iterations": 97,
+            "wall_ns": 97472083,
+            "cpu_ns": 96778000,
+            "wall_ns_per_call": 1004866.8350515463,
+            "cpu_ns_per_call": 997711.3402061856,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/>i4/51200": {
+            "iterations": 90,
+            "wall_ns": 96317791,
+            "cpu_ns": 93641000,
+            "wall_ns_per_call": 1070197.677777778,
+            "cpu_ns_per_call": 1040455.5555555555,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "numpy/pack/51200": {
+            "iterations": 20277,
+            "wall_ns": 105750125,
+            "cpu_ns": 102696000,
+            "wall_ns_per_call": 5215.274695467771,
+            "cpu_ns_per_call": 5064.654534694481,
+            "note": "Existing NumPy encode control; prebuilt typed array to owned bytes",
+            "oracle_passed": true
+          }
+        }
+      },
+      {
+        "source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src",
+        "source_hashes": {
+          "unstd/__init__.py": "b52aa5df64f0215833b16bcd1a5153ad2f5fe2535902a24911d77c19bc874cad",
+          "unstd/pack/__init__.py": "3399b170cfd1dd1bce7aedf15e65fb029c0e4ce61baebc80d5ec7cd712b704fa",
+          "unstd/pack/_internal/__init__.py": "a08e459abdda80cce16be41398da88cc7ef99825c588fc8e8b6bfa40e88136a7",
+          "unstd/pack/_internal/dtype.py": "9adac429d0055a2f213e648fffb2657674fb2efd589b3476ca48d4cad1437e17",
+          "unstd/pack/binpack.py": "2770b38dbc874406b511947b2415e161f02870a766beb7730407a87542ae1f14"
+        },
+        "imported_source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src/unstd/pack/binpack.py",
+        "numpy_version": "2.5.3",
+        "signatures": {
+          "pack_array": "(dtype: 'DTypeLike', seq: 'Iterable[float]') -> 'bytes'",
+          "unpack_array": "(dtype: 'DTypeLike', buf: 'bytes | bytearray | memoryview') -> '_ArrayResult'",
+          "pack_array_portable": "(dtype: 'str', seq: 'Iterable[float]') -> 'bytes'",
+          "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
+        },
+        "measurements": {
+          "billy/embedding-pack-page-200x256-lists": {
+            "iterations": 412,
+            "wall_ns": 133829083,
+            "cpu_ns": 115863000,
+            "wall_ns_per_call": 324827.8713592233,
+            "cpu_ns_per_call": 281220.87378640776,
+            "note": "Two hundred independent !256d rows, including join and argument expansion",
+            "oracle_passed": true
+          },
+          "billy/embedding-unpack-page-200x256-owned-lists": {
+            "iterations": 152,
+            "wall_ns": 92977167,
+            "cpu_ns": 80335000,
+            "wall_ns_per_call": 611691.8881578947,
+            "cpu_ns_per_call": 528519.7368421053,
+            "note": "Two hundred !256d records decoded to owned Python lists",
+            "oracle_passed": true
+          },
+          "billy/f32-unpack-256-owned-list": {
+            "iterations": 10593,
+            "wall_ns": 110286500,
+            "cpu_ns": 97900000,
+            "wall_ns_per_call": 10411.262154252809,
+            "cpu_ns_per_call": 9241.952232606438,
+            "note": "Existing float32 little-endian view followed by Python float conversion",
+            "oracle_passed": true
+          },
+          "portable/list/256": {
+            "iterations": 72549,
+            "wall_ns": 86011375,
+            "cpu_ns": 81693000,
+            "wall_ns_per_call": 1185.5625163682478,
+            "cpu_ns_per_call": 1126.0389529835008,
+            "note": "Python float list; input snapshot and struct conversion included",
+            "oracle_passed": true
+          },
+          "portable/generator/256": {
+            "iterations": 16351,
+            "wall_ns": 89927541,
+            "cpu_ns": 82140000,
+            "wall_ns_per_call": 5499.819032475078,
+            "cpu_ns_per_call": 5023.545960491713,
+            "note": "Fresh generator over Python floats; creation and complete consumption included",
+            "oracle_passed": true
+          },
+          "portable/ndarray/<f8/51200": {
+            "iterations": 105,
+            "wall_ns": 112114459,
+            "cpu_ns": 102510000,
+            "wall_ns_per_call": 1067756.7523809525,
+            "cpu_ns_per_call": 976285.7142857143,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/>f8/51200": {
+            "iterations": 99,
+            "wall_ns": 113353000,
+            "cpu_ns": 101851000,
+            "wall_ns_per_call": 1144979.797979798,
+            "cpu_ns_per_call": 1028797.9797979798,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/<i4/51200": {
+            "iterations": 70,
+            "wall_ns": 76317250,
+            "cpu_ns": 72145000,
+            "wall_ns_per_call": 1090246.4285714286,
+            "cpu_ns_per_call": 1030642.8571428572,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/>i4/51200": {
+            "iterations": 52,
+            "wall_ns": 65295500,
+            "cpu_ns": 58241000,
+            "wall_ns_per_call": 1255682.6923076923,
+            "cpu_ns_per_call": 1120019.2307692308,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "numpy/pack/51200": {
+            "iterations": 15797,
+            "wall_ns": 97662584,
+            "cpu_ns": 88474000,
+            "wall_ns_per_call": 6182.350066468317,
+            "cpu_ns_per_call": 5600.683674115338,
+            "note": "Existing NumPy encode control; prebuilt typed array to owned bytes",
+            "oracle_passed": true
+          }
+        }
+      },
+      {
+        "source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src",
+        "source_hashes": {
+          "unstd/__init__.py": "b52aa5df64f0215833b16bcd1a5153ad2f5fe2535902a24911d77c19bc874cad",
+          "unstd/pack/__init__.py": "3399b170cfd1dd1bce7aedf15e65fb029c0e4ce61baebc80d5ec7cd712b704fa",
+          "unstd/pack/_internal/__init__.py": "a08e459abdda80cce16be41398da88cc7ef99825c588fc8e8b6bfa40e88136a7",
+          "unstd/pack/_internal/dtype.py": "9adac429d0055a2f213e648fffb2657674fb2efd589b3476ca48d4cad1437e17",
+          "unstd/pack/binpack.py": "2770b38dbc874406b511947b2415e161f02870a766beb7730407a87542ae1f14"
+        },
+        "imported_source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src/unstd/pack/binpack.py",
+        "numpy_version": "2.5.3",
+        "signatures": {
+          "pack_array": "(dtype: 'DTypeLike', seq: 'Iterable[float]') -> 'bytes'",
+          "unpack_array": "(dtype: 'DTypeLike', buf: 'bytes | bytearray | memoryview') -> '_ArrayResult'",
+          "pack_array_portable": "(dtype: 'str', seq: 'Iterable[float]') -> 'bytes'",
+          "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
+        },
+        "measurements": {
+          "billy/embedding-pack-page-200x256-lists": {
+            "iterations": 273,
+            "wall_ns": 101833000,
+            "cpu_ns": 79909000,
+            "wall_ns_per_call": 373014.65201465203,
+            "cpu_ns_per_call": 292706.9597069597,
+            "note": "Two hundred independent !256d rows, including join and argument expansion",
+            "oracle_passed": true
+          },
+          "billy/embedding-unpack-page-200x256-owned-lists": {
+            "iterations": 192,
+            "wall_ns": 97137625,
+            "cpu_ns": 89991000,
+            "wall_ns_per_call": 505925.1302083333,
+            "cpu_ns_per_call": 468703.125,
+            "note": "Two hundred !256d records decoded to owned Python lists",
+            "oracle_passed": true
+          },
+          "billy/f32-unpack-256-owned-list": {
+            "iterations": 9772,
+            "wall_ns": 109321375,
+            "cpu_ns": 92061000,
+            "wall_ns_per_call": 11187.205792058943,
+            "cpu_ns_per_call": 9420.896438804748,
+            "note": "Existing float32 little-endian view followed by Python float conversion",
+            "oracle_passed": true
+          },
+          "portable/list/256": {
+            "iterations": 65457,
+            "wall_ns": 92983584,
+            "cpu_ns": 82981000,
+            "wall_ns_per_call": 1420.5292634859527,
+            "cpu_ns_per_call": 1267.7177383625892,
+            "note": "Python float list; input snapshot and struct conversion included",
+            "oracle_passed": true
+          },
+          "portable/generator/256": {
+            "iterations": 18241,
+            "wall_ns": 106727833,
+            "cpu_ns": 95625000,
+            "wall_ns_per_call": 5850.985856038595,
+            "cpu_ns_per_call": 5242.311276794036,
+            "note": "Fresh generator over Python floats; creation and complete consumption included",
+            "oracle_passed": true
+          },
+          "portable/ndarray/<f8/51200": {
+            "iterations": 95,
+            "wall_ns": 107165667,
+            "cpu_ns": 94166000,
+            "wall_ns_per_call": 1128059.652631579,
+            "cpu_ns_per_call": 991221.052631579,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/>f8/51200": {
+            "iterations": 78,
+            "wall_ns": 104355792,
+            "cpu_ns": 86514000,
+            "wall_ns_per_call": 1337894.7692307692,
+            "cpu_ns_per_call": 1109153.8461538462,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/<i4/51200": {
+            "iterations": 22,
+            "wall_ns": 55003208,
+            "cpu_ns": 27239000,
+            "wall_ns_per_call": 2500145.8181818184,
+            "cpu_ns_per_call": 1238136.3636363635,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/>i4/51200": {
+            "iterations": 73,
+            "wall_ns": 91610250,
+            "cpu_ns": 79492000,
+            "wall_ns_per_call": 1254934.9315068494,
+            "cpu_ns_per_call": 1088931.506849315,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "numpy/pack/51200": {
+            "iterations": 19355,
+            "wall_ns": 106559458,
+            "cpu_ns": 99769000,
+            "wall_ns_per_call": 5505.526117282356,
+            "cpu_ns_per_call": 5154.688710927409,
+            "note": "Existing NumPy encode control; prebuilt typed array to owned bytes",
+            "oracle_passed": true
+          }
+        }
+      },
+      {
+        "source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src",
+        "source_hashes": {
+          "unstd/__init__.py": "b52aa5df64f0215833b16bcd1a5153ad2f5fe2535902a24911d77c19bc874cad",
+          "unstd/pack/__init__.py": "3399b170cfd1dd1bce7aedf15e65fb029c0e4ce61baebc80d5ec7cd712b704fa",
+          "unstd/pack/_internal/__init__.py": "a08e459abdda80cce16be41398da88cc7ef99825c588fc8e8b6bfa40e88136a7",
+          "unstd/pack/_internal/dtype.py": "9adac429d0055a2f213e648fffb2657674fb2efd589b3476ca48d4cad1437e17",
+          "unstd/pack/binpack.py": "2770b38dbc874406b511947b2415e161f02870a766beb7730407a87542ae1f14"
+        },
+        "imported_source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src/unstd/pack/binpack.py",
+        "numpy_version": "2.5.3",
+        "signatures": {
+          "pack_array": "(dtype: 'DTypeLike', seq: 'Iterable[float]') -> 'bytes'",
+          "unpack_array": "(dtype: 'DTypeLike', buf: 'bytes | bytearray | memoryview') -> '_ArrayResult'",
+          "pack_array_portable": "(dtype: 'str', seq: 'Iterable[float]') -> 'bytes'",
+          "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
+        },
+        "measurements": {
+          "billy/embedding-pack-page-200x256-lists": {
+            "iterations": 399,
+            "wall_ns": 102957666,
+            "cpu_ns": 97036000,
+            "wall_ns_per_call": 258039.26315789475,
+            "cpu_ns_per_call": 243197.99498746867,
+            "note": "Two hundred independent !256d rows, including join and argument expansion",
+            "oracle_passed": true
+          },
+          "billy/embedding-unpack-page-200x256-owned-lists": {
+            "iterations": 213,
+            "wall_ns": 102468541,
+            "cpu_ns": 95726000,
+            "wall_ns_per_call": 481072.96244131454,
+            "cpu_ns_per_call": 449417.8403755869,
+            "note": "Two hundred !256d records decoded to owned Python lists",
+            "oracle_passed": true
+          },
+          "billy/f32-unpack-256-owned-list": {
+            "iterations": 12075,
+            "wall_ns": 110283500,
+            "cpu_ns": 101464000,
+            "wall_ns_per_call": 9133.20910973085,
+            "cpu_ns_per_call": 8402.815734989648,
+            "note": "Existing float32 little-endian view followed by Python float conversion",
+            "oracle_passed": true
+          },
+          "portable/list/256": {
+            "iterations": 74423,
+            "wall_ns": 93866208,
+            "cpu_ns": 87120000,
+            "wall_ns_per_call": 1261.252677263749,
+            "cpu_ns_per_call": 1170.6058610913292,
+            "note": "Python float list; input snapshot and struct conversion included",
+            "oracle_passed": true
+          },
+          "portable/generator/256": {
+            "iterations": 17930,
+            "wall_ns": 99264584,
+            "cpu_ns": 92446000,
+            "wall_ns_per_call": 5536.228890128276,
+            "cpu_ns_per_call": 5155.9397657557165,
+            "note": "Fresh generator over Python floats; creation and complete consumption included",
+            "oracle_passed": true
+          },
+          "portable/ndarray/<f8/51200": {
+            "iterations": 94,
+            "wall_ns": 110660333,
+            "cpu_ns": 93671000,
+            "wall_ns_per_call": 1177237.585106383,
+            "cpu_ns_per_call": 996500.0,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/>f8/51200": {
+            "iterations": 105,
+            "wall_ns": 98672459,
+            "cpu_ns": 94855000,
+            "wall_ns_per_call": 939737.7047619048,
+            "cpu_ns_per_call": 903380.9523809524,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/<i4/51200": {
+            "iterations": 90,
+            "wall_ns": 92926208,
+            "cpu_ns": 89445000,
+            "wall_ns_per_call": 1032513.4222222222,
+            "cpu_ns_per_call": 993833.3333333334,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/>i4/51200": {
+            "iterations": 101,
+            "wall_ns": 109541167,
+            "cpu_ns": 104424000,
+            "wall_ns_per_call": 1084566.0099009902,
+            "cpu_ns_per_call": 1033900.9900990099,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "numpy/pack/51200": {
+            "iterations": 17889,
+            "wall_ns": 101224250,
+            "cpu_ns": 94132000,
+            "wall_ns_per_call": 5658.463301470178,
+            "cpu_ns_per_call": 5262.0045838224605,
+            "note": "Existing NumPy encode control; prebuilt typed array to owned bytes",
+            "oracle_passed": true
+          }
+        }
+      },
+      {
+        "source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src",
+        "source_hashes": {
+          "unstd/__init__.py": "b52aa5df64f0215833b16bcd1a5153ad2f5fe2535902a24911d77c19bc874cad",
+          "unstd/pack/__init__.py": "3399b170cfd1dd1bce7aedf15e65fb029c0e4ce61baebc80d5ec7cd712b704fa",
+          "unstd/pack/_internal/__init__.py": "a08e459abdda80cce16be41398da88cc7ef99825c588fc8e8b6bfa40e88136a7",
+          "unstd/pack/_internal/dtype.py": "9adac429d0055a2f213e648fffb2657674fb2efd589b3476ca48d4cad1437e17",
+          "unstd/pack/binpack.py": "2770b38dbc874406b511947b2415e161f02870a766beb7730407a87542ae1f14"
+        },
+        "imported_source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src/unstd/pack/binpack.py",
+        "numpy_version": "2.5.3",
+        "signatures": {
+          "pack_array": "(dtype: 'DTypeLike', seq: 'Iterable[float]') -> 'bytes'",
+          "unpack_array": "(dtype: 'DTypeLike', buf: 'bytes | bytearray | memoryview') -> '_ArrayResult'",
+          "pack_array_portable": "(dtype: 'str', seq: 'Iterable[float]') -> 'bytes'",
+          "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
+        },
+        "measurements": {
+          "billy/embedding-pack-page-200x256-lists": {
+            "iterations": 422,
+            "wall_ns": 105775000,
+            "cpu_ns": 101423000,
+            "wall_ns_per_call": 250651.65876777252,
+            "cpu_ns_per_call": 240338.8625592417,
+            "note": "Two hundred independent !256d rows, including join and argument expansion",
+            "oracle_passed": true
+          },
+          "billy/embedding-unpack-page-200x256-owned-lists": {
+            "iterations": 236,
+            "wall_ns": 137362250,
+            "cpu_ns": 102528000,
+            "wall_ns_per_call": 582043.4322033898,
+            "cpu_ns_per_call": 434440.6779661017,
+            "note": "Two hundred !256d records decoded to owned Python lists",
+            "oracle_passed": true
+          },
+          "billy/f32-unpack-256-owned-list": {
+            "iterations": 11801,
+            "wall_ns": 96530208,
+            "cpu_ns": 94523000,
+            "wall_ns_per_call": 8179.832895517329,
+            "cpu_ns_per_call": 8009.744936869757,
+            "note": "Existing float32 little-endian view followed by Python float conversion",
+            "oracle_passed": true
+          },
+          "portable/list/256": {
+            "iterations": 88107,
+            "wall_ns": 100302667,
+            "cpu_ns": 97973000,
+            "wall_ns_per_call": 1138.4188202980467,
+            "cpu_ns_per_call": 1111.9774819253862,
+            "note": "Python float list; input snapshot and struct conversion included",
+            "oracle_passed": true
+          },
+          "portable/generator/256": {
+            "iterations": 20258,
+            "wall_ns": 103353042,
+            "cpu_ns": 98667000,
+            "wall_ns_per_call": 5101.838384835621,
+            "cpu_ns_per_call": 4870.520288281173,
+            "note": "Fresh generator over Python floats; creation and complete consumption included",
+            "oracle_passed": true
+          },
+          "portable/ndarray/<f8/51200": {
+            "iterations": 104,
+            "wall_ns": 95188083,
+            "cpu_ns": 93807000,
+            "wall_ns_per_call": 915270.0288461539,
+            "cpu_ns_per_call": 901990.3846153846,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/>f8/51200": {
+            "iterations": 110,
+            "wall_ns": 100342000,
+            "cpu_ns": 98292000,
+            "wall_ns_per_call": 912200.0,
+            "cpu_ns_per_call": 893563.6363636364,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/<i4/51200": {
+            "iterations": 80,
+            "wall_ns": 96745042,
+            "cpu_ns": 88699000,
+            "wall_ns_per_call": 1209313.025,
+            "cpu_ns_per_call": 1108737.5,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/>i4/51200": {
+            "iterations": 98,
+            "wall_ns": 99385208,
+            "cpu_ns": 97225000,
+            "wall_ns_per_call": 1014134.775510204,
+            "cpu_ns_per_call": 992091.8367346938,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "numpy/pack/51200": {
+            "iterations": 18734,
+            "wall_ns": 93915833,
+            "cpu_ns": 92425000,
+            "wall_ns_per_call": 5013.122291021672,
+            "cpu_ns_per_call": 4933.543290274368,
+            "note": "Existing NumPy encode control; prebuilt typed array to owned bytes",
+            "oracle_passed": true
+          }
+        }
+      },
+      {
+        "source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src",
+        "source_hashes": {
+          "unstd/__init__.py": "b52aa5df64f0215833b16bcd1a5153ad2f5fe2535902a24911d77c19bc874cad",
+          "unstd/pack/__init__.py": "3399b170cfd1dd1bce7aedf15e65fb029c0e4ce61baebc80d5ec7cd712b704fa",
+          "unstd/pack/_internal/__init__.py": "a08e459abdda80cce16be41398da88cc7ef99825c588fc8e8b6bfa40e88136a7",
+          "unstd/pack/_internal/dtype.py": "9adac429d0055a2f213e648fffb2657674fb2efd589b3476ca48d4cad1437e17",
+          "unstd/pack/binpack.py": "2770b38dbc874406b511947b2415e161f02870a766beb7730407a87542ae1f14"
+        },
+        "imported_source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src/unstd/pack/binpack.py",
+        "numpy_version": "2.5.3",
+        "signatures": {
+          "pack_array": "(dtype: 'DTypeLike', seq: 'Iterable[float]') -> 'bytes'",
+          "unpack_array": "(dtype: 'DTypeLike', buf: 'bytes | bytearray | memoryview') -> '_ArrayResult'",
+          "pack_array_portable": "(dtype: 'str', seq: 'Iterable[float]') -> 'bytes'",
+          "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
+        },
+        "measurements": {
+          "billy/embedding-pack-page-200x256-lists": {
+            "iterations": 369,
+            "wall_ns": 106503833,
+            "cpu_ns": 99700000,
+            "wall_ns_per_call": 288628.27371273714,
+            "cpu_ns_per_call": 270189.701897019,
+            "note": "Two hundred independent !256d rows, including join and argument expansion",
+            "oracle_passed": true
+          },
+          "billy/embedding-unpack-page-200x256-owned-lists": {
+            "iterations": 176,
+            "wall_ns": 101188000,
+            "cpu_ns": 95186000,
+            "wall_ns_per_call": 574931.8181818182,
+            "cpu_ns_per_call": 540829.5454545454,
+            "note": "Two hundred !256d records decoded to owned Python lists",
+            "oracle_passed": true
+          },
+          "billy/f32-unpack-256-owned-list": {
+            "iterations": 10060,
+            "wall_ns": 104417917,
+            "cpu_ns": 92509000,
+            "wall_ns_per_call": 10379.514612326044,
+            "cpu_ns_per_call": 9195.725646123261,
+            "note": "Existing float32 little-endian view followed by Python float conversion",
+            "oracle_passed": true
+          },
+          "portable/list/256": {
+            "iterations": 70302,
+            "wall_ns": 97708209,
+            "cpu_ns": 92784000,
+            "wall_ns_per_call": 1389.8354100879064,
+            "cpu_ns_per_call": 1319.7917555688316,
+            "note": "Python float list; input snapshot and struct conversion included",
+            "oracle_passed": true
+          },
+          "portable/generator/256": {
+            "iterations": 17021,
+            "wall_ns": 101356250,
+            "cpu_ns": 93370000,
+            "wall_ns_per_call": 5954.776452617355,
+            "cpu_ns_per_call": 5485.57664062041,
+            "note": "Fresh generator over Python floats; creation and complete consumption included",
+            "oracle_passed": true
+          },
+          "portable/ndarray/<f8/51200": {
+            "iterations": 83,
+            "wall_ns": 82999208,
+            "cpu_ns": 78933000,
+            "wall_ns_per_call": 999990.4578313254,
+            "cpu_ns_per_call": 951000.0,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/>f8/51200": {
+            "iterations": 85,
+            "wall_ns": 93487083,
+            "cpu_ns": 88357000,
+            "wall_ns_per_call": 1099848.0352941176,
+            "cpu_ns_per_call": 1039494.1176470588,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/<i4/51200": {
+            "iterations": 83,
+            "wall_ns": 114497750,
+            "cpu_ns": 98314000,
+            "wall_ns_per_call": 1379490.9638554216,
+            "cpu_ns_per_call": 1184506.0240963856,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/>i4/51200": {
+            "iterations": 72,
+            "wall_ns": 112143292,
+            "cpu_ns": 89551000,
+            "wall_ns_per_call": 1557545.7222222222,
+            "cpu_ns_per_call": 1243763.888888889,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "numpy/pack/51200": {
+            "iterations": 16037,
+            "wall_ns": 97290250,
+            "cpu_ns": 90645000,
+            "wall_ns_per_call": 6066.61158570805,
+            "cpu_ns_per_call": 5652.241691089356,
+            "note": "Existing NumPy encode control; prebuilt typed array to owned bytes",
+            "oracle_passed": true
+          }
+        }
+      },
+      {
+        "source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src",
+        "source_hashes": {
+          "unstd/__init__.py": "b52aa5df64f0215833b16bcd1a5153ad2f5fe2535902a24911d77c19bc874cad",
+          "unstd/pack/__init__.py": "3399b170cfd1dd1bce7aedf15e65fb029c0e4ce61baebc80d5ec7cd712b704fa",
+          "unstd/pack/_internal/__init__.py": "a08e459abdda80cce16be41398da88cc7ef99825c588fc8e8b6bfa40e88136a7",
+          "unstd/pack/_internal/dtype.py": "9adac429d0055a2f213e648fffb2657674fb2efd589b3476ca48d4cad1437e17",
+          "unstd/pack/binpack.py": "2770b38dbc874406b511947b2415e161f02870a766beb7730407a87542ae1f14"
+        },
+        "imported_source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src/unstd/pack/binpack.py",
+        "numpy_version": "2.5.3",
+        "signatures": {
+          "pack_array": "(dtype: 'DTypeLike', seq: 'Iterable[float]') -> 'bytes'",
+          "unpack_array": "(dtype: 'DTypeLike', buf: 'bytes | bytearray | memoryview') -> '_ArrayResult'",
+          "pack_array_portable": "(dtype: 'str', seq: 'Iterable[float]') -> 'bytes'",
+          "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
+        },
+        "measurements": {
+          "billy/embedding-pack-page-200x256-lists": {
+            "iterations": 267,
+            "wall_ns": 82071041,
+            "cpu_ns": 73997000,
+            "wall_ns_per_call": 307382.17602996255,
+            "cpu_ns_per_call": 277142.32209737826,
+            "note": "Two hundred independent !256d rows, including join and argument expansion",
+            "oracle_passed": true
+          },
+          "billy/embedding-unpack-page-200x256-owned-lists": {
+            "iterations": 150,
+            "wall_ns": 129502625,
+            "cpu_ns": 89207000,
+            "wall_ns_per_call": 863350.8333333334,
+            "cpu_ns_per_call": 594713.3333333334,
+            "note": "Two hundred !256d records decoded to owned Python lists",
+            "oracle_passed": true
+          },
+          "billy/f32-unpack-256-owned-list": {
+            "iterations": 8154,
+            "wall_ns": 83939792,
+            "cpu_ns": 76303000,
+            "wall_ns_per_call": 10294.308560215844,
+            "cpu_ns_per_call": 9357.738533235222,
+            "note": "Existing float32 little-endian view followed by Python float conversion",
+            "oracle_passed": true
+          },
+          "portable/list/256": {
+            "iterations": 73164,
+            "wall_ns": 101753417,
+            "cpu_ns": 96805000,
+            "wall_ns_per_call": 1390.7579820676835,
+            "cpu_ns_per_call": 1323.1233940189163,
+            "note": "Python float list; input snapshot and struct conversion included",
+            "oracle_passed": true
+          },
+          "portable/generator/256": {
+            "iterations": 17156,
+            "wall_ns": 98108583,
+            "cpu_ns": 89491000,
+            "wall_ns_per_call": 5718.616402424807,
+            "cpu_ns_per_call": 5216.3091629750525,
+            "note": "Fresh generator over Python floats; creation and complete consumption included",
+            "oracle_passed": true
+          },
+          "portable/ndarray/<f8/51200": {
+            "iterations": 93,
+            "wall_ns": 99177167,
+            "cpu_ns": 92677000,
+            "wall_ns_per_call": 1066421.1505376345,
+            "cpu_ns_per_call": 996526.8817204301,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/>f8/51200": {
+            "iterations": 95,
+            "wall_ns": 97490500,
+            "cpu_ns": 90314000,
+            "wall_ns_per_call": 1026215.7894736842,
+            "cpu_ns_per_call": 950673.6842105263,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/<i4/51200": {
+            "iterations": 92,
+            "wall_ns": 105713250,
+            "cpu_ns": 99059000,
+            "wall_ns_per_call": 1149057.0652173914,
+            "cpu_ns_per_call": 1076728.2608695652,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/>i4/51200": {
+            "iterations": 86,
+            "wall_ns": 98892166,
+            "cpu_ns": 93165000,
+            "wall_ns_per_call": 1149908.9069767443,
+            "cpu_ns_per_call": 1083313.953488372,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "numpy/pack/51200": {
+            "iterations": 16924,
+            "wall_ns": 110525167,
+            "cpu_ns": 94786000,
+            "wall_ns_per_call": 6530.676376743087,
+            "cpu_ns_per_call": 5600.685417159064,
+            "note": "Existing NumPy encode control; prebuilt typed array to owned bytes",
+            "oracle_passed": true
+          }
+        }
+      },
+      {
+        "source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src",
+        "source_hashes": {
+          "unstd/__init__.py": "b52aa5df64f0215833b16bcd1a5153ad2f5fe2535902a24911d77c19bc874cad",
+          "unstd/pack/__init__.py": "3399b170cfd1dd1bce7aedf15e65fb029c0e4ce61baebc80d5ec7cd712b704fa",
+          "unstd/pack/_internal/__init__.py": "a08e459abdda80cce16be41398da88cc7ef99825c588fc8e8b6bfa40e88136a7",
+          "unstd/pack/_internal/dtype.py": "9adac429d0055a2f213e648fffb2657674fb2efd589b3476ca48d4cad1437e17",
+          "unstd/pack/binpack.py": "2770b38dbc874406b511947b2415e161f02870a766beb7730407a87542ae1f14"
+        },
+        "imported_source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src/unstd/pack/binpack.py",
+        "numpy_version": "2.5.3",
+        "signatures": {
+          "pack_array": "(dtype: 'DTypeLike', seq: 'Iterable[float]') -> 'bytes'",
+          "unpack_array": "(dtype: 'DTypeLike', buf: 'bytes | bytearray | memoryview') -> '_ArrayResult'",
+          "pack_array_portable": "(dtype: 'str', seq: 'Iterable[float]') -> 'bytes'",
+          "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
+        },
+        "measurements": {
+          "billy/embedding-pack-page-200x256-lists": {
+            "iterations": 396,
+            "wall_ns": 105336333,
+            "cpu_ns": 101808000,
+            "wall_ns_per_call": 266000.8409090909,
+            "cpu_ns_per_call": 257090.9090909091,
+            "note": "Two hundred independent !256d rows, including join and argument expansion",
+            "oracle_passed": true
+          },
+          "billy/embedding-unpack-page-200x256-owned-lists": {
+            "iterations": 209,
+            "wall_ns": 99955125,
+            "cpu_ns": 96495000,
+            "wall_ns_per_call": 478254.1866028708,
+            "cpu_ns_per_call": 461698.56459330145,
+            "note": "Two hundred !256d records decoded to owned Python lists",
+            "oracle_passed": true
+          },
+          "billy/f32-unpack-256-owned-list": {
+            "iterations": 11110,
+            "wall_ns": 109378917,
+            "cpu_ns": 103070000,
+            "wall_ns_per_call": 9845.08703870387,
+            "cpu_ns_per_call": 9277.227722772277,
+            "note": "Existing float32 little-endian view followed by Python float conversion",
+            "oracle_passed": true
+          },
+          "portable/list/256": {
+            "iterations": 80191,
+            "wall_ns": 126314708,
+            "cpu_ns": 103169000,
+            "wall_ns_per_call": 1575.1731241660536,
+            "cpu_ns_per_call": 1286.5408836403087,
+            "note": "Python float list; input snapshot and struct conversion included",
+            "oracle_passed": true
+          },
+          "portable/generator/256": {
+            "iterations": 19972,
+            "wall_ns": 100783375,
+            "cpu_ns": 97465000,
+            "wall_ns_per_call": 5046.233476867615,
+            "cpu_ns_per_call": 4880.082114960946,
+            "note": "Fresh generator over Python floats; creation and complete consumption included",
+            "oracle_passed": true
+          },
+          "portable/ndarray/<f8/51200": {
+            "iterations": 94,
+            "wall_ns": 98872459,
+            "cpu_ns": 93633000,
+            "wall_ns_per_call": 1051834.670212766,
+            "cpu_ns_per_call": 996095.7446808511,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/>f8/51200": {
+            "iterations": 93,
+            "wall_ns": 97158750,
+            "cpu_ns": 91348000,
+            "wall_ns_per_call": 1044717.7419354839,
+            "cpu_ns_per_call": 982236.5591397849,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/<i4/51200": {
+            "iterations": 87,
+            "wall_ns": 103709250,
+            "cpu_ns": 96419000,
+            "wall_ns_per_call": 1192060.3448275863,
+            "cpu_ns_per_call": 1108264.367816092,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/>i4/51200": {
+            "iterations": 88,
+            "wall_ns": 92133875,
+            "cpu_ns": 89316000,
+            "wall_ns_per_call": 1046975.8522727273,
+            "cpu_ns_per_call": 1014954.5454545454,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "numpy/pack/51200": {
+            "iterations": 18852,
+            "wall_ns": 99249084,
+            "cpu_ns": 96242000,
+            "wall_ns_per_call": 5264.644812221515,
+            "cpu_ns_per_call": 5105.134733715256,
+            "note": "Existing NumPy encode control; prebuilt typed array to owned bytes",
+            "oracle_passed": true
+          }
+        }
+      },
+      {
+        "source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src",
+        "source_hashes": {
+          "unstd/__init__.py": "b52aa5df64f0215833b16bcd1a5153ad2f5fe2535902a24911d77c19bc874cad",
+          "unstd/pack/__init__.py": "3399b170cfd1dd1bce7aedf15e65fb029c0e4ce61baebc80d5ec7cd712b704fa",
+          "unstd/pack/_internal/__init__.py": "a08e459abdda80cce16be41398da88cc7ef99825c588fc8e8b6bfa40e88136a7",
+          "unstd/pack/_internal/dtype.py": "9adac429d0055a2f213e648fffb2657674fb2efd589b3476ca48d4cad1437e17",
+          "unstd/pack/binpack.py": "2770b38dbc874406b511947b2415e161f02870a766beb7730407a87542ae1f14"
+        },
+        "imported_source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src/unstd/pack/binpack.py",
+        "numpy_version": "2.5.3",
+        "signatures": {
+          "pack_array": "(dtype: 'DTypeLike', seq: 'Iterable[float]') -> 'bytes'",
+          "unpack_array": "(dtype: 'DTypeLike', buf: 'bytes | bytearray | memoryview') -> '_ArrayResult'",
+          "pack_array_portable": "(dtype: 'str', seq: 'Iterable[float]') -> 'bytes'",
+          "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
+        },
+        "measurements": {
+          "billy/embedding-pack-page-200x256-lists": {
+            "iterations": 379,
+            "wall_ns": 91442833,
+            "cpu_ns": 88790000,
+            "wall_ns_per_call": 241273.96569920843,
+            "cpu_ns_per_call": 234274.40633245383,
+            "note": "Two hundred independent !256d rows, including join and argument expansion",
+            "oracle_passed": true
+          },
+          "billy/embedding-unpack-page-200x256-owned-lists": {
+            "iterations": 207,
+            "wall_ns": 98824375,
+            "cpu_ns": 96368000,
+            "wall_ns_per_call": 477412.43961352657,
+            "cpu_ns_per_call": 465545.89371980674,
+            "note": "Two hundred !256d records decoded to owned Python lists",
+            "oracle_passed": true
+          },
+          "billy/f32-unpack-256-owned-list": {
+            "iterations": 11545,
+            "wall_ns": 97719250,
+            "cpu_ns": 94855000,
+            "wall_ns_per_call": 8464.205283672585,
+            "cpu_ns_per_call": 8216.110870506713,
+            "note": "Existing float32 little-endian view followed by Python float conversion",
+            "oracle_passed": true
+          },
+          "portable/list/256": {
+            "iterations": 55193,
+            "wall_ns": 74193417,
+            "cpu_ns": 68522000,
+            "wall_ns_per_call": 1344.2541083108365,
+            "cpu_ns_per_call": 1241.4980160527602,
+            "note": "Python float list; input snapshot and struct conversion included",
+            "oracle_passed": true
+          },
+          "portable/generator/256": {
+            "iterations": 18770,
+            "wall_ns": 99236958,
+            "cpu_ns": 96249000,
+            "wall_ns_per_call": 5286.998295151838,
+            "cpu_ns_per_call": 5127.8103356419815,
+            "note": "Fresh generator over Python floats; creation and complete consumption included",
+            "oracle_passed": true
+          },
+          "portable/ndarray/<f8/51200": {
+            "iterations": 95,
+            "wall_ns": 93775834,
+            "cpu_ns": 90189000,
+            "wall_ns_per_call": 987114.0421052632,
+            "cpu_ns_per_call": 949357.8947368421,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/>f8/51200": {
+            "iterations": 94,
+            "wall_ns": 98322709,
+            "cpu_ns": 92677000,
+            "wall_ns_per_call": 1045986.2659574468,
+            "cpu_ns_per_call": 985925.5319148937,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/<i4/51200": {
+            "iterations": 92,
+            "wall_ns": 105361542,
+            "cpu_ns": 99085000,
+            "wall_ns_per_call": 1145234.152173913,
+            "cpu_ns_per_call": 1077010.8695652173,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/>i4/51200": {
+            "iterations": 92,
+            "wall_ns": 96899334,
+            "cpu_ns": 94972000,
+            "wall_ns_per_call": 1053253.6304347827,
+            "cpu_ns_per_call": 1032304.3478260869,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "numpy/pack/51200": {
+            "iterations": 18821,
+            "wall_ns": 102000542,
+            "cpu_ns": 98363000,
+            "wall_ns_per_call": 5419.5070400085015,
+            "cpu_ns_per_call": 5226.236650549918,
+            "note": "Existing NumPy encode control; prebuilt typed array to owned bytes",
+            "oracle_passed": true
+          }
+        }
+      }
+    ],
+    "candidate": [
+      {
+        "source": "/Users/griffinstrier/Billy-Company/unstd/src",
+        "source_hashes": {
+          "unstd/__init__.py": "b52aa5df64f0215833b16bcd1a5153ad2f5fe2535902a24911d77c19bc874cad",
+          "unstd/pack/__init__.py": "3399b170cfd1dd1bce7aedf15e65fb029c0e4ce61baebc80d5ec7cd712b704fa",
+          "unstd/pack/_internal/__init__.py": "a08e459abdda80cce16be41398da88cc7ef99825c588fc8e8b6bfa40e88136a7",
+          "unstd/pack/_internal/buffer.py": "c9db4ab3435ef7bb18f597dcfff81253503fabe94ed386c4ce467eff6220fa91",
+          "unstd/pack/_internal/dtype.py": "9adac429d0055a2f213e648fffb2657674fb2efd589b3476ca48d4cad1437e17",
+          "unstd/pack/binpack.py": "5c0c6a48f314e75cbb75f5ddebef84d9b6993d6e894007a8e27deeff362648db"
+        },
+        "imported_source": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/pack/binpack.py",
+        "numpy_version": "2.5.3",
+        "signatures": {
+          "pack_array": "(dtype: 'DTypeLike', seq: 'Iterable[float]') -> 'bytes'",
+          "unpack_array": "(dtype: 'DTypeLike', buf: 'bytes | bytearray | memoryview') -> '_ArrayResult'",
+          "pack_array_portable": "(dtype: 'str', seq: 'Iterable[float]') -> 'bytes'",
+          "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
+        },
+        "measurements": {
+          "billy/embedding-pack-page-200x256-lists": {
+            "iterations": 407,
+            "wall_ns": 100224333,
+            "cpu_ns": 95758000,
+            "wall_ns_per_call": 246251.43243243243,
+            "cpu_ns_per_call": 235277.6412776413,
+            "note": "Two hundred independent !256d rows, including join and argument expansion",
+            "oracle_passed": true
+          },
+          "billy/embedding-unpack-page-200x256-owned-lists": {
+            "iterations": 225,
+            "wall_ns": 98082000,
+            "cpu_ns": 95778000,
+            "wall_ns_per_call": 435920.0,
+            "cpu_ns_per_call": 425680.0,
+            "note": "Two hundred !256d records decoded to owned Python lists",
+            "oracle_passed": true
+          },
+          "billy/f32-unpack-256-owned-list": {
+            "iterations": 11997,
+            "wall_ns": 101433875,
+            "cpu_ns": 95864000,
+            "wall_ns_per_call": 8454.936650829373,
+            "cpu_ns_per_call": 7990.664332749854,
+            "note": "Existing float32 little-endian view followed by Python float conversion",
+            "oracle_passed": true
+          },
+          "portable/list/256": {
+            "iterations": 91089,
+            "wall_ns": 101341125,
+            "cpu_ns": 99428000,
+            "wall_ns_per_call": 1112.5506372888055,
+            "cpu_ns_per_call": 1091.5478268506624,
+            "note": "Python float list; input snapshot and struct conversion included",
+            "oracle_passed": true
+          },
+          "portable/generator/256": {
+            "iterations": 19603,
+            "wall_ns": 100693750,
+            "cpu_ns": 96800000,
+            "wall_ns_per_call": 5136.65000255063,
+            "cpu_ns_per_call": 4938.0196908636435,
+            "note": "Fresh generator over Python floats; creation and complete consumption included",
+            "oracle_passed": true
+          },
+          "portable/ndarray/<f8/51200": {
+            "iterations": 18316,
+            "wall_ns": 99610167,
+            "cpu_ns": 97113000,
+            "wall_ns_per_call": 5438.423618694038,
+            "cpu_ns_per_call": 5302.0856082114,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/>f8/51200": {
+            "iterations": 18260,
+            "wall_ns": 99592292,
+            "cpu_ns": 97088000,
+            "wall_ns_per_call": 5454.123329682366,
+            "cpu_ns_per_call": 5316.97699890471,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/<i4/51200": {
+            "iterations": 34543,
+            "wall_ns": 99104167,
+            "cpu_ns": 98111000,
+            "wall_ns_per_call": 2869.008684827606,
+            "cpu_ns_per_call": 2840.2570708971425,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/>i4/51200": {
+            "iterations": 30972,
+            "wall_ns": 101481792,
+            "cpu_ns": 96565000,
+            "wall_ns_per_call": 3276.5656722200697,
+            "cpu_ns_per_call": 3117.816091954023,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "numpy/pack/51200": {
+            "iterations": 19472,
+            "wall_ns": 97815958,
+            "cpu_ns": 96146000,
+            "wall_ns_per_call": 5023.416084634347,
+            "cpu_ns_per_call": 4937.6540673788,
+            "note": "Existing NumPy encode control; prebuilt typed array to owned bytes",
+            "oracle_passed": true
+          }
+        }
+      },
+      {
+        "source": "/Users/griffinstrier/Billy-Company/unstd/src",
+        "source_hashes": {
+          "unstd/__init__.py": "b52aa5df64f0215833b16bcd1a5153ad2f5fe2535902a24911d77c19bc874cad",
+          "unstd/pack/__init__.py": "3399b170cfd1dd1bce7aedf15e65fb029c0e4ce61baebc80d5ec7cd712b704fa",
+          "unstd/pack/_internal/__init__.py": "a08e459abdda80cce16be41398da88cc7ef99825c588fc8e8b6bfa40e88136a7",
+          "unstd/pack/_internal/buffer.py": "c9db4ab3435ef7bb18f597dcfff81253503fabe94ed386c4ce467eff6220fa91",
+          "unstd/pack/_internal/dtype.py": "9adac429d0055a2f213e648fffb2657674fb2efd589b3476ca48d4cad1437e17",
+          "unstd/pack/binpack.py": "5c0c6a48f314e75cbb75f5ddebef84d9b6993d6e894007a8e27deeff362648db"
+        },
+        "imported_source": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/pack/binpack.py",
+        "numpy_version": "2.5.3",
+        "signatures": {
+          "pack_array": "(dtype: 'DTypeLike', seq: 'Iterable[float]') -> 'bytes'",
+          "unpack_array": "(dtype: 'DTypeLike', buf: 'bytes | bytearray | memoryview') -> '_ArrayResult'",
+          "pack_array_portable": "(dtype: 'str', seq: 'Iterable[float]') -> 'bytes'",
+          "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
+        },
+        "measurements": {
+          "billy/embedding-pack-page-200x256-lists": {
+            "iterations": 447,
+            "wall_ns": 105661958,
+            "cpu_ns": 102822000,
+            "wall_ns_per_call": 236380.2192393736,
+            "cpu_ns_per_call": 230026.8456375839,
+            "note": "Two hundred independent !256d rows, including join and argument expansion",
+            "oracle_passed": true
+          },
+          "billy/embedding-unpack-page-200x256-owned-lists": {
+            "iterations": 237,
+            "wall_ns": 111410208,
+            "cpu_ns": 105516000,
+            "wall_ns_per_call": 470085.2658227848,
+            "cpu_ns_per_call": 445215.1898734177,
+            "note": "Two hundred !256d records decoded to owned Python lists",
+            "oracle_passed": true
+          },
+          "billy/f32-unpack-256-owned-list": {
+            "iterations": 11684,
+            "wall_ns": 98423625,
+            "cpu_ns": 92397000,
+            "wall_ns_per_call": 8423.79536117768,
+            "cpu_ns_per_call": 7907.993837726806,
+            "note": "Existing float32 little-endian view followed by Python float conversion",
+            "oracle_passed": true
+          },
+          "portable/list/256": {
+            "iterations": 41177,
+            "wall_ns": 70461166,
+            "cpu_ns": 53172000,
+            "wall_ns_per_call": 1711.177744857566,
+            "cpu_ns_per_call": 1291.303397527746,
+            "note": "Python float list; input snapshot and struct conversion included",
+            "oracle_passed": true
+          },
+          "portable/generator/256": {
+            "iterations": 17793,
+            "wall_ns": 126564459,
+            "cpu_ns": 101946000,
+            "wall_ns_per_call": 7113.160175349857,
+            "cpu_ns_per_call": 5729.556567189344,
+            "note": "Fresh generator over Python floats; creation and complete consumption included",
+            "oracle_passed": true
+          },
+          "portable/ndarray/<f8/51200": {
+            "iterations": 14648,
+            "wall_ns": 92887292,
+            "cpu_ns": 85478000,
+            "wall_ns_per_call": 6341.295193883124,
+            "cpu_ns_per_call": 5835.472419442927,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/>f8/51200": {
+            "iterations": 16340,
+            "wall_ns": 104269000,
+            "cpu_ns": 94662000,
+            "wall_ns_per_call": 6381.211750305997,
+            "cpu_ns_per_call": 5793.268053855569,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/<i4/51200": {
+            "iterations": 23672,
+            "wall_ns": 87345417,
+            "cpu_ns": 79377000,
+            "wall_ns_per_call": 3689.819913822237,
+            "cpu_ns_per_call": 3353.202095302467,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/>i4/51200": {
+            "iterations": 28567,
+            "wall_ns": 92489250,
+            "cpu_ns": 87023000,
+            "wall_ns_per_call": 3237.6255819652047,
+            "cpu_ns_per_call": 3046.277172961809,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "numpy/pack/51200": {
+            "iterations": 16060,
+            "wall_ns": 120234542,
+            "cpu_ns": 91522000,
+            "wall_ns_per_call": 7486.584184308842,
+            "cpu_ns_per_call": 5698.754669987547,
+            "note": "Existing NumPy encode control; prebuilt typed array to owned bytes",
+            "oracle_passed": true
+          }
+        }
+      },
+      {
+        "source": "/Users/griffinstrier/Billy-Company/unstd/src",
+        "source_hashes": {
+          "unstd/__init__.py": "b52aa5df64f0215833b16bcd1a5153ad2f5fe2535902a24911d77c19bc874cad",
+          "unstd/pack/__init__.py": "3399b170cfd1dd1bce7aedf15e65fb029c0e4ce61baebc80d5ec7cd712b704fa",
+          "unstd/pack/_internal/__init__.py": "a08e459abdda80cce16be41398da88cc7ef99825c588fc8e8b6bfa40e88136a7",
+          "unstd/pack/_internal/buffer.py": "c9db4ab3435ef7bb18f597dcfff81253503fabe94ed386c4ce467eff6220fa91",
+          "unstd/pack/_internal/dtype.py": "9adac429d0055a2f213e648fffb2657674fb2efd589b3476ca48d4cad1437e17",
+          "unstd/pack/binpack.py": "5c0c6a48f314e75cbb75f5ddebef84d9b6993d6e894007a8e27deeff362648db"
+        },
+        "imported_source": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/pack/binpack.py",
+        "numpy_version": "2.5.3",
+        "signatures": {
+          "pack_array": "(dtype: 'DTypeLike', seq: 'Iterable[float]') -> 'bytes'",
+          "unpack_array": "(dtype: 'DTypeLike', buf: 'bytes | bytearray | memoryview') -> '_ArrayResult'",
+          "pack_array_portable": "(dtype: 'str', seq: 'Iterable[float]') -> 'bytes'",
+          "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
+        },
+        "measurements": {
+          "billy/embedding-pack-page-200x256-lists": {
+            "iterations": 439,
+            "wall_ns": 103690250,
+            "cpu_ns": 101123000,
+            "wall_ns_per_call": 236196.46924829157,
+            "cpu_ns_per_call": 230348.51936218678,
+            "note": "Two hundred independent !256d rows, including join and argument expansion",
+            "oracle_passed": true
+          },
+          "billy/embedding-unpack-page-200x256-owned-lists": {
+            "iterations": 220,
+            "wall_ns": 99113917,
+            "cpu_ns": 96621000,
+            "wall_ns_per_call": 450517.80454545456,
+            "cpu_ns_per_call": 439186.36363636365,
+            "note": "Two hundred !256d records decoded to owned Python lists",
+            "oracle_passed": true
+          },
+          "billy/f32-unpack-256-owned-list": {
+            "iterations": 10220,
+            "wall_ns": 118043500,
+            "cpu_ns": 97113000,
+            "wall_ns_per_call": 11550.244618395303,
+            "cpu_ns_per_call": 9502.25048923679,
+            "note": "Existing float32 little-endian view followed by Python float conversion",
+            "oracle_passed": true
+          },
+          "portable/list/256": {
+            "iterations": 61647,
+            "wall_ns": 95768666,
+            "cpu_ns": 83168000,
+            "wall_ns_per_call": 1553.5008354015606,
+            "cpu_ns_per_call": 1349.1005239508816,
+            "note": "Python float list; input snapshot and struct conversion included",
+            "oracle_passed": true
+          },
+          "portable/generator/256": {
+            "iterations": 14586,
+            "wall_ns": 110970791,
+            "cpu_ns": 83904000,
+            "wall_ns_per_call": 7608.03448512272,
+            "cpu_ns_per_call": 5752.365281777046,
+            "note": "Fresh generator over Python floats; creation and complete consumption included",
+            "oracle_passed": true
+          },
+          "portable/ndarray/<f8/51200": {
+            "iterations": 14715,
+            "wall_ns": 101110250,
+            "cpu_ns": 87023000,
+            "wall_ns_per_call": 6871.236833163439,
+            "cpu_ns_per_call": 5913.897383622154,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/>f8/51200": {
+            "iterations": 16242,
+            "wall_ns": 101084166,
+            "cpu_ns": 92989000,
+            "wall_ns_per_call": 6223.62800147765,
+            "cpu_ns_per_call": 5725.218569141732,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/<i4/51200": {
+            "iterations": 29870,
+            "wall_ns": 88533000,
+            "cpu_ns": 86649000,
+            "wall_ns_per_call": 2963.9437562772014,
+            "cpu_ns_per_call": 2900.870438567124,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/>i4/51200": {
+            "iterations": 32983,
+            "wall_ns": 99671750,
+            "cpu_ns": 97164000,
+            "wall_ns_per_call": 3021.912803565473,
+            "cpu_ns_per_call": 2945.881211533214,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "numpy/pack/51200": {
+            "iterations": 19110,
+            "wall_ns": 99409708,
+            "cpu_ns": 96310000,
+            "wall_ns_per_call": 5201.973207744636,
+            "cpu_ns_per_call": 5039.769754055468,
+            "note": "Existing NumPy encode control; prebuilt typed array to owned bytes",
+            "oracle_passed": true
+          }
+        }
+      },
+      {
+        "source": "/Users/griffinstrier/Billy-Company/unstd/src",
+        "source_hashes": {
+          "unstd/__init__.py": "b52aa5df64f0215833b16bcd1a5153ad2f5fe2535902a24911d77c19bc874cad",
+          "unstd/pack/__init__.py": "3399b170cfd1dd1bce7aedf15e65fb029c0e4ce61baebc80d5ec7cd712b704fa",
+          "unstd/pack/_internal/__init__.py": "a08e459abdda80cce16be41398da88cc7ef99825c588fc8e8b6bfa40e88136a7",
+          "unstd/pack/_internal/buffer.py": "c9db4ab3435ef7bb18f597dcfff81253503fabe94ed386c4ce467eff6220fa91",
+          "unstd/pack/_internal/dtype.py": "9adac429d0055a2f213e648fffb2657674fb2efd589b3476ca48d4cad1437e17",
+          "unstd/pack/binpack.py": "5c0c6a48f314e75cbb75f5ddebef84d9b6993d6e894007a8e27deeff362648db"
+        },
+        "imported_source": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/pack/binpack.py",
+        "numpy_version": "2.5.3",
+        "signatures": {
+          "pack_array": "(dtype: 'DTypeLike', seq: 'Iterable[float]') -> 'bytes'",
+          "unpack_array": "(dtype: 'DTypeLike', buf: 'bytes | bytearray | memoryview') -> '_ArrayResult'",
+          "pack_array_portable": "(dtype: 'str', seq: 'Iterable[float]') -> 'bytes'",
+          "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
+        },
+        "measurements": {
+          "billy/embedding-pack-page-200x256-lists": {
+            "iterations": 402,
+            "wall_ns": 99713417,
+            "cpu_ns": 96047000,
+            "wall_ns_per_call": 248043.32587064678,
+            "cpu_ns_per_call": 238922.8855721393,
+            "note": "Two hundred independent !256d rows, including join and argument expansion",
+            "oracle_passed": true
+          },
+          "billy/embedding-unpack-page-200x256-owned-lists": {
+            "iterations": 234,
+            "wall_ns": 98461584,
+            "cpu_ns": 97446000,
+            "wall_ns_per_call": 420776.0,
+            "cpu_ns_per_call": 416435.89743589744,
+            "note": "Two hundred !256d records decoded to owned Python lists",
+            "oracle_passed": true
+          },
+          "billy/f32-unpack-256-owned-list": {
+            "iterations": 12668,
+            "wall_ns": 100414333,
+            "cpu_ns": 98172000,
+            "wall_ns_per_call": 7926.612961793496,
+            "cpu_ns_per_call": 7749.605304704768,
+            "note": "Existing float32 little-endian view followed by Python float conversion",
+            "oracle_passed": true
+          },
+          "portable/list/256": {
+            "iterations": 90099,
+            "wall_ns": 99656916,
+            "cpu_ns": 97807000,
+            "wall_ns_per_call": 1106.0823760530084,
+            "cpu_ns_per_call": 1085.550339071466,
+            "note": "Python float list; input snapshot and struct conversion included",
+            "oracle_passed": true
+          },
+          "portable/generator/256": {
+            "iterations": 20302,
+            "wall_ns": 97374417,
+            "cpu_ns": 95218000,
+            "wall_ns_per_call": 4796.296768791252,
+            "cpu_ns_per_call": 4690.07979509408,
+            "note": "Fresh generator over Python floats; creation and complete consumption included",
+            "oracle_passed": true
+          },
+          "portable/ndarray/<f8/51200": {
+            "iterations": 17441,
+            "wall_ns": 96711292,
+            "cpu_ns": 93411000,
+            "wall_ns_per_call": 5545.054297345336,
+            "cpu_ns_per_call": 5355.828220858895,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/>f8/51200": {
+            "iterations": 17985,
+            "wall_ns": 101570834,
+            "cpu_ns": 97769000,
+            "wall_ns_per_call": 5647.530386433139,
+            "cpu_ns_per_call": 5436.141228801779,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/<i4/51200": {
+            "iterations": 29139,
+            "wall_ns": 90146291,
+            "cpu_ns": 86579000,
+            "wall_ns_per_call": 3093.6645389340747,
+            "cpu_ns_per_call": 2971.241291739593,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/>i4/51200": {
+            "iterations": 25051,
+            "wall_ns": 103344333,
+            "cpu_ns": 81660000,
+            "wall_ns_per_call": 4125.357590515348,
+            "cpu_ns_per_call": 3259.750109776057,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "numpy/pack/51200": {
+            "iterations": 17553,
+            "wall_ns": 126661125,
+            "cpu_ns": 104594000,
+            "wall_ns_per_call": 7215.924628268672,
+            "cpu_ns_per_call": 5958.753489432006,
+            "note": "Existing NumPy encode control; prebuilt typed array to owned bytes",
+            "oracle_passed": true
+          }
+        }
+      },
+      {
+        "source": "/Users/griffinstrier/Billy-Company/unstd/src",
+        "source_hashes": {
+          "unstd/__init__.py": "b52aa5df64f0215833b16bcd1a5153ad2f5fe2535902a24911d77c19bc874cad",
+          "unstd/pack/__init__.py": "3399b170cfd1dd1bce7aedf15e65fb029c0e4ce61baebc80d5ec7cd712b704fa",
+          "unstd/pack/_internal/__init__.py": "a08e459abdda80cce16be41398da88cc7ef99825c588fc8e8b6bfa40e88136a7",
+          "unstd/pack/_internal/buffer.py": "c9db4ab3435ef7bb18f597dcfff81253503fabe94ed386c4ce467eff6220fa91",
+          "unstd/pack/_internal/dtype.py": "9adac429d0055a2f213e648fffb2657674fb2efd589b3476ca48d4cad1437e17",
+          "unstd/pack/binpack.py": "5c0c6a48f314e75cbb75f5ddebef84d9b6993d6e894007a8e27deeff362648db"
+        },
+        "imported_source": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/pack/binpack.py",
+        "numpy_version": "2.5.3",
+        "signatures": {
+          "pack_array": "(dtype: 'DTypeLike', seq: 'Iterable[float]') -> 'bytes'",
+          "unpack_array": "(dtype: 'DTypeLike', buf: 'bytes | bytearray | memoryview') -> '_ArrayResult'",
+          "pack_array_portable": "(dtype: 'str', seq: 'Iterable[float]') -> 'bytes'",
+          "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
+        },
+        "measurements": {
+          "billy/embedding-pack-page-200x256-lists": {
+            "iterations": 443,
+            "wall_ns": 103355459,
+            "cpu_ns": 101577000,
+            "wall_ns_per_call": 233308.03386004514,
+            "cpu_ns_per_call": 229293.45372460497,
+            "note": "Two hundred independent !256d rows, including join and argument expansion",
+            "oracle_passed": true
+          },
+          "billy/embedding-unpack-page-200x256-owned-lists": {
+            "iterations": 236,
+            "wall_ns": 99026000,
+            "cpu_ns": 98423000,
+            "wall_ns_per_call": 419601.69491525425,
+            "cpu_ns_per_call": 417046.6101694915,
+            "note": "Two hundred !256d records decoded to owned Python lists",
+            "oracle_passed": true
+          },
+          "billy/f32-unpack-256-owned-list": {
+            "iterations": 13519,
+            "wall_ns": 102823458,
+            "cpu_ns": 101563000,
+            "wall_ns_per_call": 7605.8479177453955,
+            "cpu_ns_per_call": 7512.611879576892,
+            "note": "Existing float32 little-endian view followed by Python float conversion",
+            "oracle_passed": true
+          },
+          "portable/list/256": {
+            "iterations": 89895,
+            "wall_ns": 101156000,
+            "cpu_ns": 99399000,
+            "wall_ns_per_call": 1125.2683686523167,
+            "cpu_ns_per_call": 1105.7233439012182,
+            "note": "Python float list; input snapshot and struct conversion included",
+            "oracle_passed": true
+          },
+          "portable/generator/256": {
+            "iterations": 20964,
+            "wall_ns": 100445125,
+            "cpu_ns": 98940000,
+            "wall_ns_per_call": 4791.314873115818,
+            "cpu_ns_per_call": 4719.519175729823,
+            "note": "Fresh generator over Python floats; creation and complete consumption included",
+            "oracle_passed": true
+          },
+          "portable/ndarray/<f8/51200": {
+            "iterations": 17754,
+            "wall_ns": 117921292,
+            "cpu_ns": 96653000,
+            "wall_ns_per_call": 6641.956291539935,
+            "cpu_ns_per_call": 5444.01261687507,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/>f8/51200": {
+            "iterations": 18731,
+            "wall_ns": 102512041,
+            "cpu_ns": 100271000,
+            "wall_ns_per_call": 5472.854679408467,
+            "cpu_ns_per_call": 5353.211254070792,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/<i4/51200": {
+            "iterations": 32999,
+            "wall_ns": 102180084,
+            "cpu_ns": 98586000,
+            "wall_ns_per_call": 3096.4600139398162,
+            "cpu_ns_per_call": 2987.545077123549,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/>i4/51200": {
+            "iterations": 32250,
+            "wall_ns": 113729875,
+            "cpu_ns": 104975000,
+            "wall_ns_per_call": 3526.5077519379847,
+            "cpu_ns_per_call": 3255.0387596899227,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "numpy/pack/51200": {
+            "iterations": 19373,
+            "wall_ns": 100719333,
+            "cpu_ns": 97733000,
+            "wall_ns_per_call": 5198.953853300986,
+            "cpu_ns_per_call": 5044.804624993548,
+            "note": "Existing NumPy encode control; prebuilt typed array to owned bytes",
+            "oracle_passed": true
+          }
+        }
+      },
+      {
+        "source": "/Users/griffinstrier/Billy-Company/unstd/src",
+        "source_hashes": {
+          "unstd/__init__.py": "b52aa5df64f0215833b16bcd1a5153ad2f5fe2535902a24911d77c19bc874cad",
+          "unstd/pack/__init__.py": "3399b170cfd1dd1bce7aedf15e65fb029c0e4ce61baebc80d5ec7cd712b704fa",
+          "unstd/pack/_internal/__init__.py": "a08e459abdda80cce16be41398da88cc7ef99825c588fc8e8b6bfa40e88136a7",
+          "unstd/pack/_internal/buffer.py": "c9db4ab3435ef7bb18f597dcfff81253503fabe94ed386c4ce467eff6220fa91",
+          "unstd/pack/_internal/dtype.py": "9adac429d0055a2f213e648fffb2657674fb2efd589b3476ca48d4cad1437e17",
+          "unstd/pack/binpack.py": "5c0c6a48f314e75cbb75f5ddebef84d9b6993d6e894007a8e27deeff362648db"
+        },
+        "imported_source": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/pack/binpack.py",
+        "numpy_version": "2.5.3",
+        "signatures": {
+          "pack_array": "(dtype: 'DTypeLike', seq: 'Iterable[float]') -> 'bytes'",
+          "unpack_array": "(dtype: 'DTypeLike', buf: 'bytes | bytearray | memoryview') -> '_ArrayResult'",
+          "pack_array_portable": "(dtype: 'str', seq: 'Iterable[float]') -> 'bytes'",
+          "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
+        },
+        "measurements": {
+          "billy/embedding-pack-page-200x256-lists": {
+            "iterations": 390,
+            "wall_ns": 108005917,
+            "cpu_ns": 102216000,
+            "wall_ns_per_call": 276938.24871794874,
+            "cpu_ns_per_call": 262092.3076923077,
+            "note": "Two hundred independent !256d rows, including join and argument expansion",
+            "oracle_passed": true
+          },
+          "billy/embedding-unpack-page-200x256-owned-lists": {
+            "iterations": 153,
+            "wall_ns": 97777042,
+            "cpu_ns": 85597000,
+            "wall_ns_per_call": 639065.6339869282,
+            "cpu_ns_per_call": 559457.5163398692,
+            "note": "Two hundred !256d records decoded to owned Python lists",
+            "oracle_passed": true
+          },
+          "billy/f32-unpack-256-owned-list": {
+            "iterations": 10882,
+            "wall_ns": 100980583,
+            "cpu_ns": 95474000,
+            "wall_ns_per_call": 9279.597776144092,
+            "cpu_ns_per_call": 8773.571034736262,
+            "note": "Existing float32 little-endian view followed by Python float conversion",
+            "oracle_passed": true
+          },
+          "portable/list/256": {
+            "iterations": 75552,
+            "wall_ns": 104716584,
+            "cpu_ns": 95187000,
+            "wall_ns_per_call": 1386.0200127064802,
+            "cpu_ns_per_call": 1259.8872299872935,
+            "note": "Python float list; input snapshot and struct conversion included",
+            "oracle_passed": true
+          },
+          "portable/generator/256": {
+            "iterations": 18520,
+            "wall_ns": 106951208,
+            "cpu_ns": 102488000,
+            "wall_ns_per_call": 5774.903239740821,
+            "cpu_ns_per_call": 5533.909287257019,
+            "note": "Fresh generator over Python floats; creation and complete consumption included",
+            "oracle_passed": true
+          },
+          "portable/ndarray/<f8/51200": {
+            "iterations": 15614,
+            "wall_ns": 94968500,
+            "cpu_ns": 90713000,
+            "wall_ns_per_call": 6082.265915204303,
+            "cpu_ns_per_call": 5809.722044319201,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/>f8/51200": {
+            "iterations": 16348,
+            "wall_ns": 97250417,
+            "cpu_ns": 93522000,
+            "wall_ns_per_call": 5948.765414729631,
+            "cpu_ns_per_call": 5720.6997797895765,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/<i4/51200": {
+            "iterations": 30968,
+            "wall_ns": 97160041,
+            "cpu_ns": 93367000,
+            "wall_ns_per_call": 3137.4335120124,
+            "cpu_ns_per_call": 3014.950917075691,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/>i4/51200": {
+            "iterations": 30492,
+            "wall_ns": 100199584,
+            "cpu_ns": 95587000,
+            "wall_ns_per_call": 3286.094188639643,
+            "cpu_ns_per_call": 3134.822248458612,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "numpy/pack/51200": {
+            "iterations": 12388,
+            "wall_ns": 67492792,
+            "cpu_ns": 64812000,
+            "wall_ns_per_call": 5448.239586696804,
+            "cpu_ns_per_call": 5231.8372618663225,
+            "note": "Existing NumPy encode control; prebuilt typed array to owned bytes",
+            "oracle_passed": true
+          }
+        }
+      },
+      {
+        "source": "/Users/griffinstrier/Billy-Company/unstd/src",
+        "source_hashes": {
+          "unstd/__init__.py": "b52aa5df64f0215833b16bcd1a5153ad2f5fe2535902a24911d77c19bc874cad",
+          "unstd/pack/__init__.py": "3399b170cfd1dd1bce7aedf15e65fb029c0e4ce61baebc80d5ec7cd712b704fa",
+          "unstd/pack/_internal/__init__.py": "a08e459abdda80cce16be41398da88cc7ef99825c588fc8e8b6bfa40e88136a7",
+          "unstd/pack/_internal/buffer.py": "c9db4ab3435ef7bb18f597dcfff81253503fabe94ed386c4ce467eff6220fa91",
+          "unstd/pack/_internal/dtype.py": "9adac429d0055a2f213e648fffb2657674fb2efd589b3476ca48d4cad1437e17",
+          "unstd/pack/binpack.py": "5c0c6a48f314e75cbb75f5ddebef84d9b6993d6e894007a8e27deeff362648db"
+        },
+        "imported_source": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/pack/binpack.py",
+        "numpy_version": "2.5.3",
+        "signatures": {
+          "pack_array": "(dtype: 'DTypeLike', seq: 'Iterable[float]') -> 'bytes'",
+          "unpack_array": "(dtype: 'DTypeLike', buf: 'bytes | bytearray | memoryview') -> '_ArrayResult'",
+          "pack_array_portable": "(dtype: 'str', seq: 'Iterable[float]') -> 'bytes'",
+          "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
+        },
+        "measurements": {
+          "billy/embedding-pack-page-200x256-lists": {
+            "iterations": 334,
+            "wall_ns": 91634583,
+            "cpu_ns": 87603000,
+            "wall_ns_per_call": 274355.0389221557,
+            "cpu_ns_per_call": 262284.43113772455,
+            "note": "Two hundred independent !256d rows, including join and argument expansion",
+            "oracle_passed": true
+          },
+          "billy/embedding-unpack-page-200x256-owned-lists": {
+            "iterations": 202,
+            "wall_ns": 104733542,
+            "cpu_ns": 98961000,
+            "wall_ns_per_call": 518482.88118811883,
+            "cpu_ns_per_call": 489905.9405940594,
+            "note": "Two hundred !256d records decoded to owned Python lists",
+            "oracle_passed": true
+          },
+          "billy/f32-unpack-256-owned-list": {
+            "iterations": 8894,
+            "wall_ns": 96715709,
+            "cpu_ns": 87347000,
+            "wall_ns_per_call": 10874.264560377782,
+            "cpu_ns_per_call": 9820.890487969418,
+            "note": "Existing float32 little-endian view followed by Python float conversion",
+            "oracle_passed": true
+          },
+          "portable/list/256": {
+            "iterations": 77109,
+            "wall_ns": 107822375,
+            "cpu_ns": 98512000,
+            "wall_ns_per_call": 1398.3111569336913,
+            "cpu_ns_per_call": 1277.5681178591344,
+            "note": "Python float list; input snapshot and struct conversion included",
+            "oracle_passed": true
+          },
+          "portable/generator/256": {
+            "iterations": 14970,
+            "wall_ns": 89322875,
+            "cpu_ns": 80874000,
+            "wall_ns_per_call": 5966.7919171676685,
+            "cpu_ns_per_call": 5402.404809619238,
+            "note": "Fresh generator over Python floats; creation and complete consumption included",
+            "oracle_passed": true
+          },
+          "portable/ndarray/<f8/51200": {
+            "iterations": 16370,
+            "wall_ns": 133467333,
+            "cpu_ns": 96375000,
+            "wall_ns_per_call": 8153.16634086744,
+            "cpu_ns_per_call": 5887.293830177154,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/>f8/51200": {
+            "iterations": 15681,
+            "wall_ns": 102974958,
+            "cpu_ns": 94214000,
+            "wall_ns_per_call": 6566.861679739813,
+            "cpu_ns_per_call": 6008.162744722913,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/<i4/51200": {
+            "iterations": 27361,
+            "wall_ns": 95687584,
+            "cpu_ns": 89773000,
+            "wall_ns_per_call": 3497.225393808706,
+            "cpu_ns_per_call": 3281.0569789115893,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/>i4/51200": {
+            "iterations": 27140,
+            "wall_ns": 100538209,
+            "cpu_ns": 94833000,
+            "wall_ns_per_call": 3704.429218865144,
+            "cpu_ns_per_call": 3494.2151805453204,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "numpy/pack/51200": {
+            "iterations": 14113,
+            "wall_ns": 86749333,
+            "cpu_ns": 79737000,
+            "wall_ns_per_call": 6146.76773187841,
+            "cpu_ns_per_call": 5649.897257847375,
+            "note": "Existing NumPy encode control; prebuilt typed array to owned bytes",
+            "oracle_passed": true
+          }
+        }
+      },
+      {
+        "source": "/Users/griffinstrier/Billy-Company/unstd/src",
+        "source_hashes": {
+          "unstd/__init__.py": "b52aa5df64f0215833b16bcd1a5153ad2f5fe2535902a24911d77c19bc874cad",
+          "unstd/pack/__init__.py": "3399b170cfd1dd1bce7aedf15e65fb029c0e4ce61baebc80d5ec7cd712b704fa",
+          "unstd/pack/_internal/__init__.py": "a08e459abdda80cce16be41398da88cc7ef99825c588fc8e8b6bfa40e88136a7",
+          "unstd/pack/_internal/buffer.py": "c9db4ab3435ef7bb18f597dcfff81253503fabe94ed386c4ce467eff6220fa91",
+          "unstd/pack/_internal/dtype.py": "9adac429d0055a2f213e648fffb2657674fb2efd589b3476ca48d4cad1437e17",
+          "unstd/pack/binpack.py": "5c0c6a48f314e75cbb75f5ddebef84d9b6993d6e894007a8e27deeff362648db"
+        },
+        "imported_source": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/pack/binpack.py",
+        "numpy_version": "2.5.3",
+        "signatures": {
+          "pack_array": "(dtype: 'DTypeLike', seq: 'Iterable[float]') -> 'bytes'",
+          "unpack_array": "(dtype: 'DTypeLike', buf: 'bytes | bytearray | memoryview') -> '_ArrayResult'",
+          "pack_array_portable": "(dtype: 'str', seq: 'Iterable[float]') -> 'bytes'",
+          "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
+        },
+        "measurements": {
+          "billy/embedding-pack-page-200x256-lists": {
+            "iterations": 379,
+            "wall_ns": 100624333,
+            "cpu_ns": 96786000,
+            "wall_ns_per_call": 265499.5593667546,
+            "cpu_ns_per_call": 255372.03166226912,
+            "note": "Two hundred independent !256d rows, including join and argument expansion",
+            "oracle_passed": true
+          },
+          "billy/embedding-unpack-page-200x256-owned-lists": {
+            "iterations": 201,
+            "wall_ns": 97836834,
+            "cpu_ns": 92977000,
+            "wall_ns_per_call": 486750.41791044775,
+            "cpu_ns_per_call": 462572.1393034826,
+            "note": "Two hundred !256d records decoded to owned Python lists",
+            "oracle_passed": true
+          },
+          "billy/f32-unpack-256-owned-list": {
+            "iterations": 10330,
+            "wall_ns": 100848625,
+            "cpu_ns": 96455000,
+            "wall_ns_per_call": 9762.693610842207,
+            "cpu_ns_per_call": 9337.366892545982,
+            "note": "Existing float32 little-endian view followed by Python float conversion",
+            "oracle_passed": true
+          },
+          "portable/list/256": {
+            "iterations": 74654,
+            "wall_ns": 94658083,
+            "cpu_ns": 90585000,
+            "wall_ns_per_call": 1267.9572829319259,
+            "cpu_ns_per_call": 1213.3978085568087,
+            "note": "Python float list; input snapshot and struct conversion included",
+            "oracle_passed": true
+          },
+          "portable/generator/256": {
+            "iterations": 20057,
+            "wall_ns": 102045625,
+            "cpu_ns": 98076000,
+            "wall_ns_per_call": 5087.7810739392735,
+            "cpu_ns_per_call": 4889.8638879194295,
+            "note": "Fresh generator over Python floats; creation and complete consumption included",
+            "oracle_passed": true
+          },
+          "portable/ndarray/<f8/51200": {
+            "iterations": 18517,
+            "wall_ns": 117393208,
+            "cpu_ns": 107358000,
+            "wall_ns_per_call": 6339.753091753524,
+            "cpu_ns_per_call": 5797.807420208457,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/>f8/51200": {
+            "iterations": 18643,
+            "wall_ns": 103390000,
+            "cpu_ns": 100669000,
+            "wall_ns_per_call": 5545.781258381162,
+            "cpu_ns_per_call": 5399.828353805718,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/<i4/51200": {
+            "iterations": 32636,
+            "wall_ns": 106917334,
+            "cpu_ns": 103541000,
+            "wall_ns_per_call": 3276.05509253585,
+            "cpu_ns_per_call": 3172.600808922662,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/>i4/51200": {
+            "iterations": 30820,
+            "wall_ns": 108396250,
+            "cpu_ns": 100254000,
+            "wall_ns_per_call": 3517.074951330305,
+            "cpu_ns_per_call": 3252.887735236859,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "numpy/pack/51200": {
+            "iterations": 14805,
+            "wall_ns": 94566500,
+            "cpu_ns": 84729000,
+            "wall_ns_per_call": 6387.470449172577,
+            "cpu_ns_per_call": 5722.998986828774,
+            "note": "Existing NumPy encode control; prebuilt typed array to owned bytes",
+            "oracle_passed": true
+          }
+        }
+      },
+      {
+        "source": "/Users/griffinstrier/Billy-Company/unstd/src",
+        "source_hashes": {
+          "unstd/__init__.py": "b52aa5df64f0215833b16bcd1a5153ad2f5fe2535902a24911d77c19bc874cad",
+          "unstd/pack/__init__.py": "3399b170cfd1dd1bce7aedf15e65fb029c0e4ce61baebc80d5ec7cd712b704fa",
+          "unstd/pack/_internal/__init__.py": "a08e459abdda80cce16be41398da88cc7ef99825c588fc8e8b6bfa40e88136a7",
+          "unstd/pack/_internal/buffer.py": "c9db4ab3435ef7bb18f597dcfff81253503fabe94ed386c4ce467eff6220fa91",
+          "unstd/pack/_internal/dtype.py": "9adac429d0055a2f213e648fffb2657674fb2efd589b3476ca48d4cad1437e17",
+          "unstd/pack/binpack.py": "5c0c6a48f314e75cbb75f5ddebef84d9b6993d6e894007a8e27deeff362648db"
+        },
+        "imported_source": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/pack/binpack.py",
+        "numpy_version": "2.5.3",
+        "signatures": {
+          "pack_array": "(dtype: 'DTypeLike', seq: 'Iterable[float]') -> 'bytes'",
+          "unpack_array": "(dtype: 'DTypeLike', buf: 'bytes | bytearray | memoryview') -> '_ArrayResult'",
+          "pack_array_portable": "(dtype: 'str', seq: 'Iterable[float]') -> 'bytes'",
+          "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
+        },
+        "measurements": {
+          "billy/embedding-pack-page-200x256-lists": {
+            "iterations": 398,
+            "wall_ns": 100137334,
+            "cpu_ns": 96634000,
+            "wall_ns_per_call": 251601.34170854272,
+            "cpu_ns_per_call": 242798.99497487437,
+            "note": "Two hundred independent !256d rows, including join and argument expansion",
+            "oracle_passed": true
+          },
+          "billy/embedding-unpack-page-200x256-owned-lists": {
+            "iterations": 170,
+            "wall_ns": 106558833,
+            "cpu_ns": 92289000,
+            "wall_ns_per_call": 626816.6647058823,
+            "cpu_ns_per_call": 542876.4705882353,
+            "note": "Two hundred !256d records decoded to owned Python lists",
+            "oracle_passed": true
+          },
+          "billy/f32-unpack-256-owned-list": {
+            "iterations": 10154,
+            "wall_ns": 85930375,
+            "cpu_ns": 82929000,
+            "wall_ns_per_call": 8462.711739216073,
+            "cpu_ns_per_call": 8167.126255662793,
+            "note": "Existing float32 little-endian view followed by Python float conversion",
+            "oracle_passed": true
+          },
+          "portable/list/256": {
+            "iterations": 85126,
+            "wall_ns": 102660209,
+            "cpu_ns": 98921000,
+            "wall_ns_per_call": 1205.9794774804407,
+            "cpu_ns_per_call": 1162.053896576839,
+            "note": "Python float list; input snapshot and struct conversion included",
+            "oracle_passed": true
+          },
+          "portable/generator/256": {
+            "iterations": 20199,
+            "wall_ns": 108340375,
+            "cpu_ns": 103291000,
+            "wall_ns_per_call": 5363.6504282390215,
+            "cpu_ns_per_call": 5113.6689935145305,
+            "note": "Fresh generator over Python floats; creation and complete consumption included",
+            "oracle_passed": true
+          },
+          "portable/ndarray/<f8/51200": {
+            "iterations": 15570,
+            "wall_ns": 88817916,
+            "cpu_ns": 85777000,
+            "wall_ns_per_call": 5704.426204238921,
+            "cpu_ns_per_call": 5509.120102761722,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/>f8/51200": {
+            "iterations": 15720,
+            "wall_ns": 92938833,
+            "cpu_ns": 88137000,
+            "wall_ns_per_call": 5912.139503816794,
+            "cpu_ns_per_call": 5606.679389312977,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/<i4/51200": {
+            "iterations": 33531,
+            "wall_ns": 130407958,
+            "cpu_ns": 105185000,
+            "wall_ns_per_call": 3889.1759267543466,
+            "cpu_ns_per_call": 3136.947898959172,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "portable/ndarray/>i4/51200": {
+            "iterations": 32154,
+            "wall_ns": 97319333,
+            "cpu_ns": 94726000,
+            "wall_ns_per_call": 3026.663338931393,
+            "cpu_ns_per_call": 2946.009827704174,
+            "note": "Exact one-dimensional typed ndarray; bytes output; no cached result",
+            "oracle_passed": true
+          },
+          "numpy/pack/51200": {
+            "iterations": 18706,
+            "wall_ns": 97940000,
+            "cpu_ns": 95001000,
+            "wall_ns_per_call": 5235.753234256388,
+            "cpu_ns_per_call": 5078.637870202074,
+            "note": "Existing NumPy encode control; prebuilt typed array to owned bytes",
+            "oracle_passed": true
+          }
+        }
+      }
+    ]
+  },
+  "cold_import_summary": {
+    "wall_ns": {
+      "baseline_median_ns": 43557959,
+      "candidate_median_ns": 43616500,
+      "median_speedup": 0.9986578244471702
+    },
+    "cpu_ns": {
+      "baseline_median_ns": 40548000,
+      "candidate_median_ns": 39654000,
+      "median_speedup": 1.022545014374338
+    },
+    "process_wall_ns": {
+      "baseline_median_ns": 70953625,
+      "candidate_median_ns": 73986500,
+      "median_speedup": 0.9590077243821508
+    }
+  },
+  "cold_import_samples": {
+    "baseline": [
+      {
+        "wall_ns": 57439541,
+        "cpu_ns": 45221000,
+        "numpy_loaded": true,
+        "source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src/unstd/pack/binpack.py",
+        "process_wall_ns": 97707417
+      },
+      {
+        "wall_ns": 68564833,
+        "cpu_ns": 51218000,
+        "numpy_loaded": true,
+        "source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src/unstd/pack/binpack.py",
+        "process_wall_ns": 147366458
+      },
+      {
+        "wall_ns": 29233708,
+        "cpu_ns": 29017000,
+        "numpy_loaded": true,
+        "source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src/unstd/pack/binpack.py",
+        "process_wall_ns": 52927500
+      },
+      {
+        "wall_ns": 45172458,
+        "cpu_ns": 40548000,
+        "numpy_loaded": true,
+        "source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src/unstd/pack/binpack.py",
+        "process_wall_ns": 70953625
+      },
+      {
+        "wall_ns": 30423334,
+        "cpu_ns": 30038000,
+        "numpy_loaded": true,
+        "source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src/unstd/pack/binpack.py",
+        "process_wall_ns": 52015958
+      },
+      {
+        "wall_ns": 45186458,
+        "cpu_ns": 42449000,
+        "numpy_loaded": true,
+        "source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src/unstd/pack/binpack.py",
+        "process_wall_ns": 75459875
+      },
+      {
+        "wall_ns": 43557959,
+        "cpu_ns": 41776000,
+        "numpy_loaded": true,
+        "source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src/unstd/pack/binpack.py",
+        "process_wall_ns": 77082417
+      },
+      {
+        "wall_ns": 32977916,
+        "cpu_ns": 32157000,
+        "numpy_loaded": true,
+        "source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src/unstd/pack/binpack.py",
+        "process_wall_ns": 56948500
+      },
+      {
+        "wall_ns": 36889625,
+        "cpu_ns": 35023000,
+        "numpy_loaded": true,
+        "source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src/unstd/pack/binpack.py",
+        "process_wall_ns": 65718834
+      }
+    ],
+    "candidate": [
+      {
+        "wall_ns": 35618916,
+        "cpu_ns": 31559000,
+        "numpy_loaded": true,
+        "source": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/pack/binpack.py",
+        "process_wall_ns": 57442208
+      },
+      {
+        "wall_ns": 33740459,
+        "cpu_ns": 32197000,
+        "numpy_loaded": true,
+        "source": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/pack/binpack.py",
+        "process_wall_ns": 58407042
+      },
+      {
+        "wall_ns": 32663083,
+        "cpu_ns": 31844000,
+        "numpy_loaded": true,
+        "source": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/pack/binpack.py",
+        "process_wall_ns": 54304667
+      },
+      {
+        "wall_ns": 44333500,
+        "cpu_ns": 39863000,
+        "numpy_loaded": true,
+        "source": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/pack/binpack.py",
+        "process_wall_ns": 75355959
+      },
+      {
+        "wall_ns": 43616500,
+        "cpu_ns": 39654000,
+        "numpy_loaded": true,
+        "source": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/pack/binpack.py",
+        "process_wall_ns": 73986500
+      },
+      {
+        "wall_ns": 47118709,
+        "cpu_ns": 43911000,
+        "numpy_loaded": true,
+        "source": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/pack/binpack.py",
+        "process_wall_ns": 78322041
+      },
+      {
+        "wall_ns": 94677500,
+        "cpu_ns": 58521000,
+        "numpy_loaded": true,
+        "source": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/pack/binpack.py",
+        "process_wall_ns": 132549125
+      },
+      {
+        "wall_ns": 52534917,
+        "cpu_ns": 42344000,
+        "numpy_loaded": true,
+        "source": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/pack/binpack.py",
+        "process_wall_ns": 104311250
+      },
+      {
+        "wall_ns": 37924375,
+        "cpu_ns": 36310000,
+        "numpy_loaded": true,
+        "source": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/pack/binpack.py",
+        "process_wall_ns": 65766708
+      }
+    ]
+  }
+}

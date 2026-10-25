@@ -10,8 +10,7 @@ from hypothesis import given
 from hypothesis import strategies as st
 import pytest
 
-from unstd.serde import jsonx
-from unstd.serde._internal import json_encode
+from unstd.serde import encoding, jsonx
 
 
 native = pytest.importorskip("unstd.serde._json_native")
@@ -56,7 +55,7 @@ def test_unicode_tree_reaches_native_output_without_stdlib_retry(
         pytest.fail("eligible Unicode output was encoded again through stdlib")
 
     monkeypatch.setattr(jsonx, "_DEFAULT_ENCODER", SimpleNamespace(encode=forbidden))
-    monkeypatch.setattr(json_encode, "_encoder", forbidden)
+    monkeypatch.setattr(encoding, "_encoder", forbidden)
     assert jsonx.dumps(value, sort_keys=sort_keys, **options) == expected
 
 

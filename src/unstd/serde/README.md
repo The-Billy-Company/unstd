@@ -1,3 +1,12 @@
+---
+doc_radar:
+  sentinels:
+    - file: src/unstd/serde/encoding.py
+      contains: ['def _exact_encode(', 'def _encoder(']
+    - file: src/unstd/serde/recursion.py
+      contains: ['def _check_headroom[', 'def _recursion_result[']
+---
+
 # `serde` — serialization/deserialization helpers
 
 Part of [`unstd`](../README.md). Stdlib-compatible JSON and Base64 codecs,
@@ -117,9 +126,9 @@ retain gains, measured losses, source hashes and sanitizer/failure-injection
 evidence. The [shared-branch qualification](../../../bench/reports/serde/jsonx-100x.md)
 reports cases exceeding 100× separately from the existing independent records;
 uniform 100× acceleration across arbitrary JSON is not established.
-The [Billy fixture comparison](../../../bench/reports/serde/billy-serde-optimization-results.md)
-retains release regressions as well as gains. Compatibility checking has a cost relative
-to the permissive 2.1 codec; measured results are not a universal speed promise.
+The [serde reports](../../../bench/reports/serde/README.md) retain release
+regressions as well as gains. Compatibility checking has a cost relative to the
+permissive 2.1 codec; measured results are not a universal speed promise.
 
 **Compact bytes:** `dumpb` equals
 `json.dumps(obj, ensure_ascii=False, separators=(",", ":"), ...).encode()` with
@@ -391,4 +400,19 @@ row once, so a later schema failure cannot replay earlier conversion hooks.
 
 ## Implementation layout
 
-JSON encoding proofs and recursion helpers live in [`_internal/`](_internal/README.md). Public codec functions retain their module, signature and native-dispatch bindings.
+The package is a flat codec leaf: each file owns a concrete concern.
+
+| File | Responsibility |
+| --- | --- |
+| [`jsonx.py`](jsonx.py) | JSON entry points, backend selection and native dispatch |
+| [`encoding.py`](encoding.py) | Exact-output eligibility proofs, bounded snapshots and reusable encoders |
+| [`recursion.py`](recursion.py) | The two Python frames needed to retain stdlib recursion headroom |
+| [`b64.py`](b64.py) | Base64 codec and transport conveniences |
+| [`ndjson.py`](ndjson.py) | Line-delimited streams and typed record integration |
+| [`structs.py`](structs.py) | Typed msgspec schemas and reusable codecs |
+
+`__init__.py` introduces the namespace. `_json_native.pyi` describes the optional
+compiled extension; its sources live in [`native/serde/`](../../../native/serde/README.md).
+The implementation filenames describe their roles and preserve all public codec
+imports. Run `uv run --no-sync python -m pytest tests/suites/product/serde -q`
+from the repository root.

@@ -50,10 +50,25 @@ def test_pack_partial_elements_cannot_be_silently_ignored(monkeypatch):
     monkeypatch.setattr(
         pack.binpack,
         "unpack_array",
-        lambda dtype, raw: original(dtype, raw[: len(raw) // 2 * 2]),
+        lambda dtype, raw, **kwargs: original(
+            dtype, raw[: len(raw) // 2 * 2], **kwargs
+        ),
     )
     with pytest.raises(AssertionError, match="partial trailing"):
         pack.fuzz(b"\x01\x02\x00\x80")
+
+
+def test_pack_window_oracle_rejects_ignoring_the_byte_offset(monkeypatch):
+    original = pack.binpack.unpack_array
+
+    def wrong_window(dtype, raw, **kwargs):
+        if kwargs:
+            return original(dtype, raw, count=kwargs["count"], offset=0)
+        return original(dtype, raw)
+
+    monkeypatch.setattr(pack.binpack, "unpack_array", wrong_window)
+    with pytest.raises(AssertionError):
+        pack.fuzz(b"\x01\x02\x00\x80\xff\x7f")
 
 
 @pytest.mark.parametrize("selector", range(20))

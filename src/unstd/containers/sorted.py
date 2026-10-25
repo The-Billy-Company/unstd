@@ -19,7 +19,7 @@ this module is guarded: with the ``containers`` extra it exposes compatible
 subclasses when the bundled native kernels are available and the original
 upstream classes otherwise. Upstream classes are never modified. Without the
 extra, each public name is a placeholder that
-raises a clear ImportError on construction (see :func:`unstd._extra.missing`).
+raises a clear ImportError on construction (see :func:`unstd.extras.missing`).
 """
 
 from __future__ import annotations
@@ -45,7 +45,7 @@ else:
 
         HAVE_SORTEDCONTAINERS = True
     except ImportError:  # base install without the `containers` extra
-        from unstd._extra import missing
+        from unstd.extras import missing
 
         HAVE_SORTEDCONTAINERS = False
         _HAVE_NATIVE = False
@@ -59,12 +59,12 @@ else:
         # A future dependency release remains usable through its own classes.
         if getattr(_backend, "__version__", None) == "2.4.0":
             try:
-                from unstd.containers._sorted import (
+                from unstd.containers.ordering import (
                     SortedDict,
                     SortedList,
                     SortedSet,
                 )
-                from unstd.containers._sorted import (
+                from unstd.containers.ordering import (
                     SortedKeyList as SortedKeyList,
                 )
             except ImportError:

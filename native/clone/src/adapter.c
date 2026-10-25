@@ -13,6 +13,7 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 #include <stdint.h>
+#include <datetime.h>
 
 #define MAX_DEPTH 128
 #define MAX_CONTAINERS 65536
@@ -34,6 +35,13 @@ typedef struct {
     PyObject *dict_name;
     PyObject *update_name;
     RecordEntry records[RECORD_CACHE_SIZE];
+    PyObject *datetime_module;
+    PyObject *datetime_capsule;
+    PyDateTime_CAPI *datetime_api;
+    PyObject *copy_module;
+    PyObject *deepcopy;
+    PyObject *tz_keywords;
+    PyObject *temporal_names;
 } ModuleState;
 
 typedef struct {
@@ -61,6 +69,7 @@ typedef struct {
     RecordRecipe recipes[MAX_RECORD_TYPES];
     unsigned int recipe_count;
     int direct_graph;
+    int temporal_graph;
     PyObject *dict_name;
     PyObject *update_name;
     PyObject *memo;
@@ -71,6 +80,23 @@ typedef struct {
     unsigned int count;
     PyObject *ancestors[MAX_DEPTH];
 } CopyContext;
+
+/* Canonical admission may run descriptors. Before resuming temporal leaves,
+ * verify that its memo still has only identity keys and an ordinary pin list.
+ * This scan happens at admission boundaries, never once per temporal value. */
+static int
+temporal_memo_safe(CopyContext *context)
+{
+    Py_ssize_t position = 0;
+    PyObject *key, *value;
+    while (PyDict_Next(context->memo, &position, &key, &value)) {
+        if (!PyLong_CheckExact(key)) {
+            return 0;
+        }
+    }
+    PyObject *alive = PyDict_GetItemWithError(context->memo, context->memo_identity);
+    return alive != NULL && PyList_CheckExact(alive);
+}
 
 static int clone_value(PyObject *, PyObject **, unsigned int, CopyContext *);
 static int clone_closed_value(PyObject *, PyObject **, unsigned int, CopyContext *);
@@ -94,7 +120,9 @@ static size_t
 memo_hash(PyObject *source)
 {
     uintptr_t address = (uintptr_t)source >> 4;
-    return (size_t)(address ^ (address >> 16));
+    /* Fold nearby allocator bits into the low table-index bits so aligned
+     * small containers do not cluster at the same initial slot. */
+    return (size_t)(address ^ (address >> 4));
 }
 
 static MemoEntry *
@@ -352,6 +380,7 @@ memo_pin(PyObject *source, CopyContext *context)
     } else {
         /* Match Python's append semantics for a caller-modified reserved memo
          * entry, including errors or an overridden append on a list subclass. */
+        context->temporal_graph = 0;
         PyObject *returned = PyObject_CallMethod(alive, "append", "O", source);
         status = returned == NULL ? -1 : 0;
         Py_XDECREF(returned);
@@ -417,6 +446,9 @@ record_current(CopyContext *context)
 static int
 python_value(PyObject *source, PyObject **result, CopyContext *context)
 {
+    /* Arbitrary copy hooks may inject foreign memo keys. Retain the general
+     * walk from this boundary onward instead of adding observable lookups. */
+    context->temporal_graph = 0;
 #if PY_VERSION_HEX >= 0x030C0000 && PY_VERSION_HEX < 0x030F0000
     PyThreadState *state = NULL;
     if (context->direct_graph) {
@@ -433,6 +465,147 @@ python_value(PyObject *source, PyObject **result, CopyContext *context)
         --state->py_recursion_remaining;
     }
 #endif
+    return *result == NULL ? -1 : 1;
+}
+
+/* Only the canonical structural continuation opts into this specialization.
+ * The generic custom-walker API continues to delegate every temporal node. */
+static int
+temporal_value(PyObject *source, PyObject **result, CopyContext *context)
+{
+    ModuleState *state = context->module_state;
+    PyDateTime_CAPI *api = state->datetime_api;
+    PyTypeObject *type = Py_TYPE(source);
+    if (type != api->DateTimeType && type != api->TimeType) {
+        return 0;
+    }
+    if (!PyFunction_Check(context->walk)) {
+        return 0;
+    }
+    PyObject *globals = PyFunction_GetGlobals(context->walk);
+    if (PyDict_GetItemWithError(globals, PyTuple_GET_ITEM(state->temporal_names, 9)) != context->walk
+        || PyDict_GetItemWithError(globals, PyTuple_GET_ITEM(state->temporal_names, 0)) != context->walk
+        || PyDict_GetItemWithError(globals, PyTuple_GET_ITEM(state->temporal_names, 1))
+            != PyFunction_GetCode(context->walk)
+        || PyDict_GetItemWithError(globals, PyTuple_GET_ITEM(state->temporal_names, 2)) != state->copy_module) {
+        return PyErr_Occurred() ? -1 : 0;
+    }
+    if (PyDict_GetItemWithError(globals, PyTuple_GET_ITEM(state->temporal_names, 3)) != state->datetime_module) {
+        return PyErr_Occurred() ? -1 : 0;
+    }
+    PyObject *datetime_namespace = PyModule_GetDict(state->datetime_module);
+    if (PyDict_GetItemWithError(datetime_namespace, PyTuple_GET_ITEM(state->temporal_names, 4)) != (PyObject *)api->DateTimeType
+        || PyDict_GetItemWithError(datetime_namespace, PyTuple_GET_ITEM(state->temporal_names, 5)) != (PyObject *)api->TimeType
+        || PyDict_GetItemWithError(datetime_namespace, PyTuple_GET_ITEM(state->temporal_names, 10))
+            != (PyObject *)Py_TYPE(api->TimeZone_UTC)) {
+        return PyErr_Occurred() ? -1 : 0;
+    }
+    PyObject *copy_namespace = PyModule_GetDict(state->copy_module);
+    PyObject *dispatch = PyDict_GetItemWithError(copy_namespace, PyTuple_GET_ITEM(state->temporal_names, 7));
+    PyObject *deep_dispatch = PyDict_GetItemWithError(copy_namespace, PyTuple_GET_ITEM(state->temporal_names, 8));
+    if (PyDict_GetItemWithError(copy_namespace, PyTuple_GET_ITEM(state->temporal_names, 6)) != state->deepcopy
+        || dispatch == NULL || !PyDict_CheckExact(dispatch)
+        || deep_dispatch == NULL || !PyDict_CheckExact(deep_dispatch)
+        || PyDict_GetItemWithError(dispatch, (PyObject *)type) != NULL
+        || PyDict_GetItemWithError(deep_dispatch, (PyObject *)type) != NULL) {
+        return PyErr_Occurred() ? -1 : 0;
+    }
+    PyObject *zone = type == api->DateTimeType
+        ? PyDateTime_DATE_GET_TZINFO(source) : PyDateTime_TIME_GET_TZINFO(source);
+    if (zone != Py_None && zone != api->TimeZone_UTC) {
+        return 0;
+    }
+    PyObject *identity = PyLong_FromVoidPtr(source);
+    if (identity == NULL) {
+        return -1;
+    }
+    int found = PyDict_Contains(context->memo, identity);
+    if (found != 0) {
+        if (found > 0) {
+            *result = PyObject_GetItem(context->memo, identity);
+        }
+        Py_DECREF(identity);
+        return *result != NULL ? 1 : -1;
+    }
+    if (memo_pin(source, context) < 0) {
+        Py_DECREF(identity);
+        return -1;
+    }
+    /* Mirror the canonical timezone branch with the same shared memo. UTC's
+     * offset still uses the Python continuation; source pins, memo overrides
+     * and recursive frame accounting keep their established order. */
+    PyObject *copied_zone = NULL;
+#if PY_VERSION_HEX >= 0x030C0000 && PY_VERSION_HEX < 0x030F0000
+    PyThreadState *thread = PyThreadState_Get();
+    if (thread->py_recursion_remaining <= 0) {
+        Py_DECREF(identity);
+        PyErr_SetString(PyExc_RecursionError,
+                        "maximum recursion depth while cloning a timezone");
+        return -1;
+    }
+    --thread->py_recursion_remaining;
+#endif
+    if (zone == Py_None) {
+        /* _walk returns graph atoms before consulting caller memo entries. */
+        copied_zone = Py_NewRef(zone);
+    } else {
+        PyObject *zone_identity = PyLong_FromVoidPtr(zone);
+        if (zone_identity != NULL) {
+            int zone_found = PyDict_Contains(context->memo, zone_identity);
+            if (zone_found > 0) {
+                copied_zone = PyObject_GetItem(context->memo, zone_identity);
+            } else if (zone_found == 0 && memo_pin(zone, context) == 0) {
+                PyObject *offset = PyObject_CallMethod(zone, "utcoffset", "O", Py_None);
+                if (offset != NULL) {
+                    /* The first timezone still walks its offset with the same
+                     * Python continuation; subsequent references use its memo. */
+                    PyObject *copied_offset = PyObject_CallFunctionObjArgs(
+                        context->walk, offset, context->memo, NULL);
+                    if (copied_offset == offset) {
+                        copied_zone = Py_NewRef(zone);
+                    } else if (copied_offset != NULL) {
+                        PyObject *name = PyObject_CallMethod(zone, "tzname", "O", Py_None);
+                        PyObject *zone_type = PyObject_GetAttrString(state->datetime_module, "timezone");
+                        if (name != NULL && zone_type != NULL) {
+                            copied_zone = PyObject_CallFunctionObjArgs(
+                                zone_type, copied_offset, name, NULL);
+                        }
+                        Py_XDECREF(name);
+                        Py_XDECREF(zone_type);
+                    }
+                    Py_XDECREF(copied_offset);
+                    Py_DECREF(offset);
+                }
+                if (copied_zone != NULL
+                    && PyDict_SetItem(context->memo, zone_identity, copied_zone) < 0) {
+                    Py_CLEAR(copied_zone);
+                }
+            }
+            Py_DECREF(zone_identity);
+        }
+    }
+#if PY_VERSION_HEX >= 0x030C0000 && PY_VERSION_HEX < 0x030F0000
+    ++thread->py_recursion_remaining;
+#endif
+    if (copied_zone == NULL) {
+        Py_DECREF(identity);
+        return -1;
+    }
+    if (copied_zone == zone) {
+        *result = Py_NewRef(source);
+    } else {
+        PyObject *replace = PyObject_GetAttrString(source, "replace");
+        if (replace != NULL) {
+            PyObject *arguments[] = {copied_zone};
+            *result = PyObject_Vectorcall(replace, arguments, 0, state->tz_keywords);
+            Py_DECREF(replace);
+        }
+    }
+    Py_DECREF(copied_zone);
+    if (*result != NULL && PyDict_SetItem(context->memo, identity, *result) < 0) {
+        Py_CLEAR(*result);
+    }
+    Py_DECREF(identity);
     return *result == NULL ? -1 : 1;
 }
 
@@ -453,7 +626,12 @@ record_recipe(PyTypeObject *type, CopyContext *context)
      * currently reserved virtual _walk frame represents. */
     ++state->py_recursion_remaining;
 #endif
+    int temporal = context->temporal_graph;
+    context->temporal_graph = 0;
     PyObject *pair = PyObject_CallOneArg(context->admit, (PyObject *)type);
+    if (pair != NULL && temporal) {
+        context->temporal_graph = temporal_memo_safe(context);
+    }
 #if PY_VERSION_HEX >= 0x030C0000 && PY_VERSION_HEX < 0x030F0000
     --state->py_recursion_remaining;
 #endif
@@ -484,6 +662,7 @@ static int
 python_recipe(PyObject *source, PyObject **result, CopyContext *context,
               RecordRecipe *recipe)
 {
+    context->temporal_graph = 0;
     *result = PyObject_CallFunctionObjArgs(recipe->handler, source,
                                           context->memo, NULL);
     if (*result == NULL) {
@@ -1075,7 +1254,11 @@ clone_value(PyObject *source, PyObject **result, unsigned int depth,
                 }
             }
         }
-        if (delegate) {
+        int temporal = delegate && context->temporal_graph
+            ? temporal_value(source, result, context) : 0;
+        if (temporal != 0) {
+            status = temporal;
+        } else if (delegate) {
             /* Python owns unsupported-node dispatch from its first lookup.
              * Repeating a memo lookup could invoke foreign key equality
              * twice or select a class changed by that first comparison. */
@@ -1559,7 +1742,7 @@ clone_builtin(PyObject *module, PyObject *source)
 
 static PyObject *
 clone_direct_graph(PyObject *module, PyObject *source, PyTypeObject *type, PyObject *walk,
-                   PyObject *admit, PyObject *memo)
+                   PyObject *admit, PyObject *memo, int temporal)
 {
 #if PY_VERSION_HEX < 0x030C0000 || PY_VERSION_HEX >= 0x030F0000
     /* The versioned frame-budget ABI is validated on supported wheel targets;
@@ -1626,6 +1809,7 @@ clone_direct_graph(PyObject *module, PyObject *source, PyTypeObject *type, PyObj
     context.memo = memo;
     context.memo_identity = memo_identity;
     context.direct_graph = 1;
+    context.temporal_graph = temporal && PyDict_Size(memo) == 0;
     PyObject *result = NULL;
     int status = clone_value(source, &result, budget, &context);
     Py_LeaveRecursiveCall();
@@ -1655,7 +1839,7 @@ clone_record_graph(PyObject *module, PyObject *const *args, Py_ssize_t count)
         return NULL;
     }
     return clone_direct_graph(module, args[0], (PyTypeObject *)args[1], args[2],
-                              NULL, args[3]);
+                              NULL, args[3], 0);
 }
 
 static PyObject *
@@ -1667,7 +1851,19 @@ clone_walk_graph(PyObject *module, PyObject *const *args, Py_ssize_t count)
                         "clone_walk_graph requires source, walker, admission and memo");
         return NULL;
     }
-    return clone_direct_graph(module, args[0], NULL, args[1], args[2], args[3]);
+    return clone_direct_graph(module, args[0], NULL, args[1], args[2], args[3], 0);
+}
+
+static PyObject *
+clone_walk_canonical_graph(PyObject *module, PyObject *const *args, Py_ssize_t count)
+{
+    if (count != 4 || !PyCallable_Check(args[1]) || !PyCallable_Check(args[2])
+        || !PyDict_CheckExact(args[3])) {
+        PyErr_SetString(PyExc_TypeError,
+                        "clone_walk_canonical_graph requires source, walker, admission and memo");
+        return NULL;
+    }
+    return clone_direct_graph(module, args[0], NULL, args[1], args[2], args[3], 1);
 }
 
 static PyObject *
@@ -1900,7 +2096,7 @@ clone_state_graph(PyObject *module, PyObject *source, PyObject *memo, PyObject *
     }
     --thread->py_recursion_remaining;
 #endif
-    PyObject *copied = clone_direct_graph(module, source, NULL, walk, NULL, memo);
+    PyObject *copied = clone_direct_graph(module, source, NULL, walk, NULL, memo, 0);
     if (copied == Py_NotImplemented) {
         Py_DECREF(copied);
         PyObject *values[] = {source, memo};
@@ -2056,7 +2252,25 @@ module_exec(PyObject *module)
         return -1;
     }
     state->update_name = PyUnicode_InternFromString("update");
-    return state->update_name == NULL ? -1 : 0;
+    state->datetime_module = PyImport_ImportModule("datetime");
+    if (state->update_name == NULL || state->datetime_module == NULL) {
+        return -1;
+    }
+    state->datetime_capsule = PyObject_GetAttrString(state->datetime_module, "datetime_CAPI");
+    if (state->datetime_capsule == NULL) {
+        return -1;
+    }
+    state->datetime_api = PyCapsule_GetPointer(state->datetime_capsule, PyDateTime_CAPSULE_NAME);
+    state->copy_module = PyImport_ImportModule("copy");
+    if (state->datetime_api == NULL || state->copy_module == NULL) {
+        return -1;
+    }
+    state->deepcopy = PyObject_GetAttrString(state->copy_module, "deepcopy");
+    state->tz_keywords = Py_BuildValue("(s)", "tzinfo");
+    state->temporal_names = Py_BuildValue("(sssssssssss)", "_TEMPORAL_WALK", "_TEMPORAL_WALK_CODE",
+        "_stdlib", "_dt", "datetime", "time", "deepcopy", "dispatch_table", "_deepcopy_dispatch", "_walk", "timezone");
+    return state->deepcopy == NULL || state->tz_keywords == NULL
+        || state->temporal_names == NULL ? -1 : 0;
 }
 
 static int
@@ -2065,6 +2279,12 @@ module_traverse(PyObject *module, visitproc visit, void *arg)
     ModuleState *state = PyModule_GetState(module);
     Py_VISIT(state->dict_name);
     Py_VISIT(state->update_name);
+    Py_VISIT(state->datetime_module);
+    Py_VISIT(state->datetime_capsule);
+    Py_VISIT(state->copy_module);
+    Py_VISIT(state->deepcopy);
+    Py_VISIT(state->tz_keywords);
+    Py_VISIT(state->temporal_names);
     for (unsigned int i = 0; i < RECORD_CACHE_SIZE; i++) {
         Py_VISIT(state->records[i].reference);
     }
@@ -2077,6 +2297,13 @@ module_clear(PyObject *module)
     ModuleState *state = PyModule_GetState(module);
     Py_CLEAR(state->dict_name);
     Py_CLEAR(state->update_name);
+    state->datetime_api = NULL;
+    Py_CLEAR(state->datetime_module);
+    Py_CLEAR(state->datetime_capsule);
+    Py_CLEAR(state->copy_module);
+    Py_CLEAR(state->deepcopy);
+    Py_CLEAR(state->tz_keywords);
+    Py_CLEAR(state->temporal_names);
     for (unsigned int i = 0; i < RECORD_CACHE_SIZE; i++) {
         Py_CLEAR(state->records[i].reference);
         state->records[i].version = 0;
@@ -2098,6 +2325,8 @@ static PyMethodDef methods[] = {
      "Clone builtin data, raising RecursionError for a proved builtin cycle."},
     {"clone_graph", (PyCFunction)(void(*)(void))clone_graph, METH_FASTCALL,
      "Clone builtin data while preserving identities in a shared copy memo."},
+    {"clone_walk_canonical_graph", (PyCFunction)(void(*)(void))clone_walk_canonical_graph, METH_FASTCALL,
+     "Clone canonical structural graphs with guarded immutable temporal leaves."},
     {"clone_walk_graph", (PyCFunction)(void(*)(void))clone_walk_graph, METH_FASTCALL,
      "Clone builtin and admitted record graphs with a shared Python memo."},
     {"clone_record_graph", (PyCFunction)(void(*)(void))clone_record_graph, METH_FASTCALL,

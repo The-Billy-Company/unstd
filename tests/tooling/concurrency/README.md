@@ -1,6 +1,6 @@
 # Recorded concurrency campaigns
 
-This active lane follows Billy's `assurance/adversarial/concurrency` organization.
+This active lane lives under `assurance/adversarial/concurrency`.
 Product expectations live in suites, reusable actor mechanics in support, and
 campaign supervision here. It reuses the bounded chaos engine, with separate
 discovery, lane admission, fixtures, reports and replay validation.

@@ -2,8 +2,8 @@
 doc_radar:
   sentinels:
     - file: ../src/unstd/yaml/__init__.py
-      contains: ['from unstd.yaml import _codec as codec', 'globals()[name] = backend']
-    - file: ../src/unstd/yaml/_codec.py
+      contains: ['from unstd.yaml import codec', 'globals()[name] = backend']
+    - file: ../src/unstd/yaml/codec.py
       contains: ['def loads(', 'def dumps(']
     - file: ../src/unstd/time/timeutil.py
       contains: ['strftime = _time.strftime', 'combine = datetime.combine']
@@ -51,34 +51,46 @@ guides explain the purpose of each first-party source and tooling directory.
 
 ## Python packages
 
-All paths below are relative to `src/unstd/`. Public modules stay at their
-existing paths. `_internal` packages are implementation details.
+All paths below are relative to `src/unstd/`. Public module paths remain
+stable. Each domain owns its code and a guide with an exact file map and test
+command. Small domains are flat code leaves; descriptive filenames express
+responsibility without an extra helper package.
 
-| Package | Public interface | Private implementation boundary |
+| Package | Public interface | Supporting concerns |
 | --- | --- | --- |
-| `audio` | `wavx.py` | `_internal/pcm.py` owns pure sample conversion and frame validation; backend state and file I/O remain in `wavx` |
-| `clone` | Package exports and `structural.py` | Exact-type walker and optional private clone extension |
-| `compress` | `gzipx.py` | `_backend.py`, `_reader.py`, private native extension |
-| `containers` | Lazy package exports, `persistent.py`, `sorted.py` | Guarded imports, compatible sorted subclasses and private native kernels |
-| `crypto` | `digest.py`, `tls.py`, `token.py` | `_blake3.py` and private native stream extension |
-| `fs` | Package functions | `_internal/durability.py` and `walk.py`; atomic-write orchestration retains public sync and cleanup hooks |
-| `ids` | `uid.py` | Private UUID fallback state stays with the generator |
-| `iters` | Package functions and `consecutive.py`, `distinct.py`, `reshape.py`, `select.py` | Small focused combinator modules |
-| `model` | Package classes, `base.py`, `settings.py` | Strict Pydantic model and settings configuration |
-| `pack` | `binpack.py` | `_internal/dtype.py` owns portable dtype grammar and bounded struct caches |
-| `proc` | Package functions and classes | `_internal/results.py` implements result/error classes; `backend.py` admits native spawning/capture and kernel exit notifications; execution orchestration stays at the public module |
-| `rand` | Package functions, `draw.py`, `crypto.py` | Seeded engines remain separate from unseedable security draws |
-| `rex` | Package functions, flags and types | `_internal/profile.py` proves semantic eligibility; `patterns.py` owns adapters; caches remain public-module state |
-| `serde` | `jsonx.py`, `b64.py`, `ndjson.py`, `structs.py` | `_internal/json_encode.py` and `json_common.py`; private native JSON extension |
-| `text` | `fuzz.py` | Private native text extension; scorer dispatch remains with public calls |
-| `time` | `timeutil.py`, `zoned.py` | Native clock/calendar bindings, instant arithmetic and optional zoned-time backend stay separate |
-| `toml` | Package format functions and builders | `_internal/common.py` normalizes plain data to the shared TOML dialect |
-| `yaml` | Lazy backend modules and YAML 1.2 helpers | `_codec.py` owns document functions; `_internal/engine.py` owns safe parser policy; `values.py` validates results without expanding aliases |
+| `audio` | `wavx.py` | `pcm.py` owns sample conversion and frame validation. |
+| `clone` | Package exports, `structural.py` | Graph walking and optional native cloning. |
+| `compress` | `gzipx.py`, `zlibx.py`, original codec/archive ports | `engines/` owns provider admission, gzip reading, flush validation and import identity; `libarchive/` owns its binding and type surface. |
+| `containers` | Lazy package exports, `persistent.py`, `sorted.py` | `ordering.py` owns compatible accelerated collection classes. |
+| `crypto` | `digest.py`, `tls.py`, `token.py` | `hashing.py` owns BLAKE3 admission and worker policy. |
+| `fs` | Package functions | `durability.py` and `traversal.py`; public orchestration owns Linux native admission and injectable sync/cleanup hooks. |
+| `ids` | `uid.py` | UUID generation and fallback state stay together. |
+| `iters` | Package functions | `consecutive.py`, `distinct.py`, `reshape.py`, `select.py` own focused combinators. |
+| `model` | Package classes, `base.py`, `settings.py` | Strict model and settings configuration. |
+| `pack` | `binpack.py`, `ragged.py` | `dtypes.py` owns portable dtype grammar and caches; `buffers.py` owns bounded buffer admission; ragged layouts own immutable frames and optional fused native validation. |
+| `proc` | Package functions and classes | `backend.py` owns spawning/capture; `results.py` owns results and errors. |
+| `rand` | Package functions, `draw.py`, `crypto.py` | `keyed.py` owns keyed deterministic integer batches; secure draws remain separate. |
+| `rex` | Package functions, flags and types | `profile.py` proves semantic eligibility; `patterns.py` owns adapters; public caches stay at the entrypoint. |
+| `serde` | `jsonx.py`, `b64.py`, `ndjson.py`, `structs.py` | `encoding.py` owns JSON eligibility/encoding; `recursion.py` preserves interpreter stack budgets. |
+| `text` | `fuzz.py` | Scorer admission and native dispatch stay with the calls. |
+| `time` | `timeutil.py`, `zoned.py` | Native calendar bindings, instant arithmetic and zoned-time backend remain distinct. |
+| `toml` | Package format functions and builders | `dialect.py` normalizes data to the shared TOML dialect. |
+| `yaml` | Lazy package functions, original backend modules | `codec.py` owns document operations/value policy; `parser.py` owns safe parsing and emitting. |
 
-Small modules stay focused rather than gaining empty wrapper layers. Public
-entrypoints retain their original definitions when they own backend switches,
-caches or injectable state. This preserves the behavior of our fault, concurrency
-and fallback tests, as well as signatures and hot-call dispatch.
+`extras.py` owns the shared deferred `ImportError` placeholders. The package
+root and compression facade use the restructure rule's language-package-root
+utility shelf: public import files may sit beside concern packages when making
+each tiny module a package would only add a shallow boundary. All other domain
+source folders are code leaves. Interpreter initializers, native binaries and
+native typing stubs retain their required names; Python implementation files
+use descriptive names without a leading underscore.
+Support modules declare an empty `__all__`, so naming clarity does not expand
+the public operation inventory or its performance workload obligations.
+
+Public entrypoints retain definitions that own backend switches, caches or
+injectable state. Source moves preserve algorithms, signatures and hot-call
+dispatch. The historical `unstd.rex._faithful` module identity remains registered
+for serialized exception/pattern compatibility, without a duplicate source file.
 
 ## Native implementation boundary
 
@@ -86,21 +98,33 @@ and fallback tests, as well as signatures and hot-call dispatch.
 native/
   audio/                         reviewed external libsndfile build policy
   clone/src/                     structural cloning kernel
+  containers/src/                admitted sorted-container query kernels
   crypto/src/                    streaming digest/token kernel
+  fs/
+    src/                         Linux atomic-write kernel
+    qualification/               test-only syscall fault/signal observer
+    experiments/                 historical standalone profiling proof
   serde/src/                     JSON kernel and private headers
+  proc/src/                      POSIX spawning and captured-pipe kernels
+  pack/src/                      immutable numeric-frame and finite-value validation
+  rand/src/                      stdlib-faithful shuffle and explicit keyed integers
   text/
     src/                         default C kernel
     rust/                        optional Rust prototype and CPython adapter
   compress/
     src/                         gzip adapters and stream/inflater code
-    vendor/{libdeflate,zlib}/     authenticated upstream sources and licenses
+    vendor/{libdeflate,zlib,isa-l}/ authenticated upstream sources and licenses
     experiments/                 qualification tools and retained evidence
 ```
 
-Builds read native sources from this tree and emit the same underscored binary
-modules as before: `unstd.serde._json_native`, `unstd.clone._clone_native`,
-`unstd.crypto._stream_native`, `unstd.text._text_native` and
-`unstd.compress._gzip_native`. Their typing stubs retain the same paths.
+Builds read native sources from this tree and emit private binary modules,
+including `unstd.serde._json_native`, `unstd.clone._clone_native`,
+`unstd.crypto._stream_native`, `unstd.text._text_native`,
+`unstd.compress._gzip_native`, `unstd.containers._sorted_native`,
+`unstd.proc._proc_native` and `unstd.rand._rand_native`.
+Linux additionally builds `unstd.fs._fs_native`.
+The [build registry](../hatch_build.py) lists all bundled extensions; their typing
+stubs live beside the Python interfaces.
 Wheels contain Python interfaces and optional binaries; native source belongs
 in the source distribution. Vendored source contents, licenses and authenticated
 manifests retain their meaning after relocation.
@@ -109,14 +133,36 @@ These modules are private. Users call the documented Python APIs; builds and
 internal qualification tools may inspect the binary bindings. Python privacy is
 a naming and support boundary, not an access-control mechanism.
 
+Filesystem dispatch admits exact bytes and default UTF-8 text with an existing
+parent only when its OS/path/orchestration bindings retain their original
+identity. Unsupported inputs and missing native capabilities select the complete
+Python implementation before scratch creation; a native I/O exception never
+retries the write. Streaming `atomic_writer` remains Python. The kernel records
+descriptor ownership before checking signals and successful rename before
+reporting post-commit cancellation. The [filesystem source guide](../native/fs/README.md)
+maps production and test-only sources; its standalone experiment is excluded
+from package builds.
+
 ## Cross-platform performance
 
 Linux and macOS share the first-party JSON, clone, text and crypto kernels.
+They also share admitted sorted-container and rand kernels. Process creation
+uses the native route on macOS and stdlib on Linux; captured text pipes can use
+the native poll/read loop on both. Filesystem native atomic writes are
+Linux-only. These kernels add no third-party runtime dependency; sorted
+containers retain their existing optional backend requirements.
 Acceleration still depends on the installed extras, successful native builds,
 CPython version and build configuration. Compare matching dependency versions
 and ordinary GIL-enabled release interpreters; compiler-free source installs
 and free-threaded interpreters can select portable fallbacks. Native builds
 retain the selected Python toolchain's compiler and optimization settings.
+
+Atomic-write acceleration is Linux-only and needs no extra. Its
+[installed-package qualification](../bench/reports/fs/production/README.md)
+checks native and forced-Python routes from direct wheels and sdist rebuilds,
+including cancellation, cleanup/error parity and 13 consumer workload shapes.
+Small-write CPU savings and variable disk wall time are recorded separately;
+the Linux arm64 measurements do not establish a speedup on every storage device.
 
 Gzip streaming is an intentional exception: macOS uses platform libz through
 the bundled adapter, while Linux selects zlib-ng's SIMD inflater. The private
@@ -124,12 +170,23 @@ Linux adapter still compiles the authenticated zlib closure. Both public paths
 reuse the running interpreter's gzip framing and bounded read implementation;
 libdeflate supplies native CRC32. The bundled inflater has a per-object lock
 and releases the GIL for native calls with at least 32 KiB of output space.
-The retained [qualification](../bench/reports/compress/billy-throughput.md)
-records the active decoder, independent-stream throughput and paired Billy
+The retained [qualification reports](../bench/reports/compress/README.md)
+record the active decoder, independent-stream throughput and paired
 consumer timings on both machines.
+Mac ARM can select an already-loaded zlib-ng provider after a bounded probe of
+eligible repetitive streams; ordinary streams retain Apple libz. Qualified
+Linux x86_64 builds can additionally assemble the private ISA-L decoder with
+NASM/Yasm and admit it through the bundled bounded bridge. This is a build- and
+input-dependent capability, not a universal stream route or speed guarantee.
 Eligible complete buffers use libdeflate on both platforms, with its supported
 CPU-specific instruction dispatch. BLAKE3 worker counts respect process CPU
 availability, including Linux affinity on Python 3.12, and are sampled at import.
+
+Rand's default streams retain exact engine output/state. The explicit
+`ints(..., seeds=...)` path instead uses versioned, stateless SplitMix64 values;
+its native and Python implementations agree. Its qualified 100× gains apply
+to batched per-key counts, while complete consumer timings remain separately
+reported. See the [rand evidence](../bench/reports/rand/README.md).
 
 Compression module ports expose the actual stdlib or optional provider module,
 preserving its classes, native contexts and qualified imports. `zlibx` retains
@@ -162,7 +219,7 @@ subclasses when their bundled CPython accelerator is available. Exported process
 their historical `unstd.proc` identity for pickling and inspection.
 
 The [public API contract](../tests/support/packaging/public_api.json) captures the
-44 pre-reorganization modules and 275 declared exports. Its
+45 public modules and 324 declared exports. Its
 [gate](../tests/suites/assurance/gates/packaging/test_public_api.py) checks export
 lists, package-owned callable signatures, module identity and process-result
 pickling. It preserves legacy availability flags, including wildcard imports;

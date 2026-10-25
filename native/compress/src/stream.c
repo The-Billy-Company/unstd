@@ -23,6 +23,8 @@ typedef struct {
     int needs_input;
     int legacy;
     int selected_backend;
+    unsigned char unused_prefix[8];
+    int unused_prefix_size;
 } Inflater;
 
 typedef struct {
@@ -139,6 +141,7 @@ Inflater_init(Inflater *self, PyObject *args, PyObject *kwargs)
     self->offset = 0;
     self->eof = 0;
     self->selected_backend = 0;
+    self->unused_prefix_size = 0;
     self->needs_input = 1;
     self->legacy = legacy;
     self->unused_data = PyBytes_FromStringAndSize(NULL, 0);
@@ -158,6 +161,7 @@ Inflater_init(Inflater *self, PyObject *args, PyObject *kwargs)
         PyThread_release_lock(self->lock);
         return -1;
     }
+    unstd_inflate_legacy(self->decoder, legacy);
     self->selected_backend = unstd_inflate_backend(self->decoder);
     PyThread_release_lock(self->lock);
     return 0;
@@ -274,6 +278,12 @@ inflate_buffer(Inflater *self, unsigned char *output, Py_ssize_t capacity,
         self->offset += consumed;
         *used += produced;
         if (status == 1) {
+            self->unused_prefix_size = unstd_inflate_unused_prefix(
+                self->decoder, self->unused_prefix);
+            if (self->unused_prefix_size < 0) {
+                PyErr_SetString(PyExc_RuntimeError, "invalid inflater bit buffer");
+                return -1;
+            }
             self->eof = 1;
             if (!self->legacy) {
                 /* Match CPython's input-buffer inflater: release the native
@@ -294,7 +304,8 @@ inflate_buffer(Inflater *self, unsigned char *output, Py_ssize_t capacity,
         if (consumed == 0 && produced == 0) {
             return 0;
         }
-        if (*used < capacity && self->offset == PyBytes_GET_SIZE(self->input)) {
+        if (*used < capacity && self->offset == PyBytes_GET_SIZE(self->input)
+                && self->selected_backend != 4) {
             return 0;
         }
     }
@@ -305,12 +316,20 @@ static int
 finish_input(Inflater *self)
 {
     if (self->eof) {
-        PyObject *unused = PyBytes_FromStringAndSize(
-            PyBytes_AS_STRING(self->input) + self->offset,
-            PyBytes_GET_SIZE(self->input) - self->offset);
+        Py_ssize_t tail = PyBytes_GET_SIZE(self->input) - self->offset;
+        if (tail > PY_SSIZE_T_MAX - self->unused_prefix_size) {
+            PyErr_NoMemory();
+            return -1;
+        }
+        PyObject *unused = PyBytes_FromStringAndSize(NULL,
+            tail + self->unused_prefix_size);
         if (unused == NULL) {
             return -1;
         }
+        memcpy(PyBytes_AS_STRING(unused), self->unused_prefix,
+               self->unused_prefix_size);
+        memcpy(PyBytes_AS_STRING(unused) + self->unused_prefix_size,
+               PyBytes_AS_STRING(self->input) + self->offset, tail);
         Py_SETREF(self->unused_data, unused);
         Py_CLEAR(self->input);
         self->offset = 0;
@@ -581,7 +600,8 @@ Inflater_get_backend(Inflater *self, void *closure)
 {
     (void)closure;
     enter_inflater(self);
-    const char *name = self->selected_backend == 2 ? "ng"
+    const char *name = self->selected_backend == 4 ? "isal"
+        : self->selected_backend == 2 ? "ng"
         : self->selected_backend == 1 ? "apple"
         : self->selected_backend == 3 ? "zlib" : "pending";
     PyObject *result = PyUnicode_FromString(name);

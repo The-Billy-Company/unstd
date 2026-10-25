@@ -102,6 +102,12 @@ jobs:
           languages: ${{ matrix.language }}
           build-mode: ${{ matrix.build-mode }}
           queries: security-extended
+      - name: Provide Yasm for native gzip builds
+        if: matrix.language == 'c-cpp'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends yasm
+          yasm --version
       - name: Trace all C extensions and the Rust CPython adapter
         if: matrix.language == 'c-cpp'
         shell: bash

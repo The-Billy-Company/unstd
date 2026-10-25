@@ -79,6 +79,12 @@ jobs:
           enable-cache: false
           version: "0.13.5"
           python-version: "3.14"
+      - name: Provide Yasm for native gzip builds
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends yasm
+          yasm --version
       - name: Build experimental Rust text extension
         run: uv sync --locked --group dev --python 3.14 --reinstall-package unstd
       - name: Rust text extension must import
@@ -197,6 +203,12 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install --yes --no-install-recommends libarchive-dev
+      - name: Provide Yasm for native gzip builds
+        if: matrix.environment.id != 'fallback'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends yasm
+          yasm --version
       - name: Install test environment & rebuild local extensions
         run: uv sync ${{ matrix.environment.sync }} --group dev ${{ matrix.group.dependencies }} --reinstall-package unstd --python ${{ matrix.environment.python }}
       - name: Check the test interpreter's TLS security fixes
@@ -326,6 +338,11 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install --yes --no-install-recommends libarchive-dev
+      - name: Provide Yasm for native gzip builds
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends yasm
+          yasm --version
       - name: Install one partial environment & rebuild local extensions
         run: uv sync --locked ${{ matrix.install.sync }} --group dev --reinstall-package unstd --python 3.14
       - name: Show resolved backend versions
@@ -368,6 +385,12 @@ jobs:
           python-version: "3.14"
           cache-suffix: resources
           cache-dependency-glob: "uv.lock\npyproject.toml\n"
+      - name: Provide Yasm for native gzip builds
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends yasm
+          yasm --version
       - name: Install test environment
         run: uv sync --locked --all-extras --group dev --python 3.14 --reinstall-package unstd
       # The suite owns both installed and import-blocked stdlib worker policies.
@@ -418,18 +441,38 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache-suffix: native
           cache-dependency-glob: "uv.lock\npyproject.toml\n"
+      - name: Provide Yasm for native gzip builds
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends yasm
+          yasm --version
       - name: Install test environment
-        run: uv sync --locked --extra serde --extra crypto --extra compress --extra containers --group dev --python ${{ matrix.python-version }} --reinstall-package unstd
+        run: uv sync --locked --extra serde --extra crypto --extra compress --extra containers --extra rand --group dev --python ${{ matrix.python-version }} --reinstall-package unstd
       - name: Check the native-test interpreter's TLS security fixes
         run: uv run --no-sync python -m tests.tooling.runtime --json
       - name: Every native module must import
         run: >-
           uv run --no-sync python -c
-          "import unstd.serde._json_native, unstd.clone._clone_native, unstd.crypto._stream_native, unstd.text._text_native, unstd.compress._gzip_native, unstd.containers._sorted_native, unstd.proc._proc_native, unstd.fs._fs_native"
+          "import unstd.serde._json_native, unstd.clone._clone_native, unstd.crypto._stream_native, unstd.text._text_native, unstd.compress._gzip_native, unstd.containers._sorted_native, unstd.proc._proc_native, unstd.fs._fs_native, unstd.rand._rand_native, unstd.pack._pack_native"
+      - name: Require active ISA-L in the strict Linux x86 build
+        run: |
+          uv run --no-sync python - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+          from unstd.compress import _gzip_native as native
+          if getattr(native, "ISAL_STREAMING", False) is not True:
+              raise RuntimeError("strict Linux x86 native tests require active ISA-L streaming")
+          version = json.loads(Path("native/compress/vendor/isa-l/UPSTREAM.json").read_text())["version"]
+          patch = hashlib.sha256(Path("native/compress/src/isal_patch.json").read_bytes()).hexdigest()
+          if native.ISAL_RUNTIME_VERSION != version or native.ISAL_PATCH_SHA256 != patch:
+              raise RuntimeError("native ISA-L build provenance differs from reviewed inputs")
+          print(json.dumps({"isal_streaming": True, "version": version, "patch_sha256": patch}))
+          PY
       - name: Native compatibility with the debug allocator
         id: tests
         run: >
-          uv run --no-sync python -m pytest tests/suites/product/clone tests/suites/product/text tests/suites/product/serde tests/suites/product/crypto tests/suites/product/compress tests/suites/product/containers tests/suites/product/proc tests/suites/product/fs -q --junitxml=.local/native.xml
+          uv run --no-sync python -m pytest tests/suites/product/clone tests/suites/product/text tests/suites/product/serde tests/suites/product/crypto tests/suites/product/compress tests/suites/product/containers tests/suites/product/proc tests/suites/product/fs tests/suites/product/rand tests/suites/product/pack -q --junitxml=.local/native.xml
 
       - name: Summarize native safety
         if: always() && steps.tests.outcome != 'skipped'
@@ -475,13 +518,18 @@ jobs:
           cache-suffix: native-sanitizers
           cache-dependency-glob: "uv.lock\npyproject.toml\n"
       - name: Install test environment
-        run: uv sync --locked --extra serde --extra crypto --extra compress --extra containers --group dev --group build --no-install-project --python 3.14
+        run: uv sync --locked --extra serde --extra crypto --extra compress --extra containers --extra rand --group dev --group build --no-install-project --python 3.14
       # Stable Rust kernels retain their bounds checks and unit tests. These
       # sanitizer flags instrument our C modules and the text CPython shim.
+      - name: Provide Yasm for native gzip builds
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends yasm
+          yasm --version
       - name: Build C boundaries with address and undefined behavior checks
         env:
           CC: gcc
-          CFLAGS: -O1 -g -fsanitize=address,undefined -fno-omit-frame-pointer
+          CFLAGS: -O1 -g -fsanitize=address,undefined -fno-omit-frame-pointer -DUNSTD_CONTAINERS_TESTING=1
           LDFLAGS: -fsanitize=address,undefined
           CIBUILDWHEEL: "1"
         run: uv pip install --python .venv/bin/python --no-deps --reinstall --editable .
@@ -494,13 +542,14 @@ jobs:
           UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
           PYTHONMALLOC: malloc
           UNSTD_NATIVE_SANITIZERS: "1"
+          UNSTD_CONTAINERS_REQUIRE_TEST_HOOKS: "1"
         run: |
           LD_PRELOAD="$(gcc -print-file-name=libasan.so)"
           export LD_PRELOAD
-          .venv/bin/python -c "import unstd.serde._json_native, unstd.clone._clone_native, unstd.crypto._stream_native, unstd.text._text_native, unstd.compress._gzip_native, unstd.containers._sorted_native, unstd.proc._proc_native, unstd.fs._fs_native"
-          .venv/bin/python -m pytest tests/suites/product/clone tests/suites/product/text tests/suites/product/serde tests/suites/product/crypto tests/suites/product/compress tests/suites/product/containers tests/suites/product/fs -p tests.tooling.ci.sharding --ci-shard ${{ matrix.shard }}/3 -q --junitxml=.local/native-sanitizers-${{ matrix.shard }}.xml
+          .venv/bin/python -c "import unstd.serde._json_native, unstd.clone._clone_native, unstd.crypto._stream_native, unstd.text._text_native, unstd.compress._gzip_native, unstd.containers._sorted_native, unstd.proc._proc_native, unstd.fs._fs_native, unstd.rand._rand_native, unstd.pack._pack_native"
+          .venv/bin/python -m pytest tests/suites/product/clone tests/suites/product/text tests/suites/product/serde tests/suites/product/crypto tests/suites/product/compress tests/suites/product/containers tests/suites/product/fs tests/suites/product/rand tests/suites/product/pack -p tests.tooling.ci.sharding --ci-shard ${{ matrix.shard }}/3 -q --junitxml=.local/native-sanitizers-${{ matrix.shard }}.xml
           if [ "${{ matrix.shard }}" = "1" ]; then
-            env -u LD_PRELOAD .venv/bin/python -m tests.tooling.runtime.proc_memory --sanitize --output .local/proc-memory --tests tests/suites/product/proc
+            env -u LD_PRELOAD CC=gcc .venv/bin/python -m tests.tooling.runtime.proc_memory --sanitize --output .local/proc-memory --tests tests/suites/product/proc
           fi
 
       - name: Summarize sanitizer checks

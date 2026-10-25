@@ -579,12 +579,23 @@
         "module": "unstd.pack.binpack"
       },
       "unpack_array": {
-        "signature": "(dtype: 'DTypeLike', buf: 'bytes | bytearray | memoryview') -> '_ArrayResult'",
+        "signature": "(dtype: 'DTypeLike', buf: 'bytes | bytearray | memoryview', *, count: 'int' = -1, offset: 'int' = 0) -> '_ArrayResult'",
         "module": "unstd.pack.binpack"
       },
       "unpack_array_portable": {
-        "signature": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'",
+        "signature": "(dtype: 'str', buf: 'bytes | bytearray | memoryview', *, count: 'int' = -1, offset: 'int' = 0) -> 'list[float]'",
         "module": "unstd.pack.binpack"
+      }
+    }
+  },
+  "unstd.pack.ragged": {
+    "exports": [
+      "RaggedDecoder"
+    ],
+    "callables": {
+      "RaggedDecoder": {
+        "signature": "(dtype: 'str', *, columns: 'int', index_dtype: 'str' = '=i8', finite: 'bool' = False, allow_empty: 'bool' = True) -> None",
+        "module": "unstd.pack.ragged"
       }
     }
   },
@@ -652,7 +663,7 @@
         "module": "unstd.rand.draw"
       },
       "ints": {
-        "signature": "(n: int, low: int, high: int, *, endpoint: bool = False) -> numpy.ndarray | list[int]",
+        "signature": "(n: int, low: int, high: int, *, endpoint: bool = False, seeds: collections.abc.Sequence[int] | None = None) -> numpy.ndarray | list[int]",
         "module": "unstd.rand.draw"
       },
       "seed": {
@@ -701,7 +712,7 @@
         "module": "unstd.rand.draw"
       },
       "ints": {
-        "signature": "(n: int, low: int, high: int, *, endpoint: bool = False) -> numpy.ndarray | list[int]",
+        "signature": "(n: int, low: int, high: int, *, endpoint: bool = False, seeds: collections.abc.Sequence[int] | None = None) -> numpy.ndarray | list[int]",
         "module": "unstd.rand.draw"
       },
       "seed": {

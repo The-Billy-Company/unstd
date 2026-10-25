@@ -6,21 +6,62 @@ These drivers compare saved and current implementations, check outputs and impor
 - [`jsonx_throughput.py`](jsonx_throughput.py)
 - [`jsonx_existing.py`](jsonx_existing.py) — three saved sources, unchanged JSONX registry/core fixtures and separate Python profiles; run this file directly to select sources before import
 - [`clone_ids_profile.py`](clone_ids_profile.py)
+- [`containers.py`](containers.py) — isolated before/current sorted-query, immutable-map and cold-import measurements, with native dispatch checks
+- [`containers_mutations.py`](containers_mutations.py) — paired scalar and batch mutations, retained/exclusive ID ownership controls, and actual native mutation counters
 - [`clone_cpu.py`](clone_cpu.py) — paired wall and process CPU measurements, including large trees, preserved aliases and cyclic fallback
 - [`clone_common_cpu.py`](clone_common_cpu.py) — public Python clone entrypoints on common nested data and dataclasses, against saved native baselines
 - [`native_profile.py`](native_profile.py)
+- [`ragged.py`](ragged.py) — complete captured numeric-frame decoding with fused validation, immutable output, exact result-class construction, native-route proof and an explicit speedup gate
+- [`pack_backend.py`](pack_backend.py) — typed buffer packing and selected-region decoding, with saved-source comparisons and exact wire checks
+- [`pack_consumers.py`](pack_consumers.py) — complete captured buffer decode/publication operations and explicit prospective API choices
+- [`rand_backend.py`](rand_backend.py) — saved/current bulk, scalar and construction timings with exact values and full engine-state checks
+- [`billy_rand.py`](billy_rand.py) — captured consumer slices with unchanged streams, separate profiles and explicit speedup gates
+- [`rand_keyed.py`](rand_keyed.py) — opt-in per-key integer count batches and complete captured consumer costs, with separate target results
+- [`rand_strategies.py`](rand_strategies.py) — prospective sparse sampling through the existing public API, labelled independently from backend acceleration
 - [`proc_backend.py`](proc_backend.py) — paired Linux/macOS process latency, exact captured I/O, source/signature checks, and separate wait-route profiles; run this file directly
-- [`billy_proc.py`](billy_proc.py) — source-backed Billy Git, metadata and capture workloads, native/Python/stdlib controls, exact outputs and separate native-route profiles; run this file directly
+- Process consumer profile — source-backed Git, metadata and capture workloads, native/Python/stdlib controls, exact outputs and separate native-route profiles; run the driver directly
 - [`crypto_hash.py`](crypto_hash.py)
 - [`fs_backend.py`](fs_backend.py) — paired filesystem traversal and atomic-write timings with real syncing, independent output checks, source isolation, and profiles
-- [`billy_fs.py`](billy_fs.py) — Linux native-write experiments using captured Billy consumers, synthetic payloads, exact browser/notebook reference functions, and real syncing
-- [`billy_serde.py`](billy_serde.py)
-- [`billy_audio.py`](billy_audio.py) — exact PCM wrapping and raw normalization ports, paired timings, allocation peaks and captured Billy consumer source
+- [`billy_fs.py`](billy_fs.py) — historical Linux native-write experiment using captured consumers, synthetic payloads, exact browser/notebook reference functions, and real syncing
+- [`billy_fs_installed.py`](billy_fs_installed.py) — built Linux public `atomic_write` versus its Python fallback, with wheel hashes and accepted native-routing proof for every workload
+- Serde consumer profile — saved-fixture comparisons against isolated package installations
+- Audio consumer profile — exact PCM wrapping and raw normalization ports, paired timings, allocation peaks and captured consumer source
 - [`gzip_reads.py`](gzip_reads.py) — paired CPU/wall read timings, including bounded-memory repetitive streams at 8, 64 and 256 KiB read sizes; records the selected native backend outside timing
-- [`billy_gzip.py`](billy_gzip.py) — frozen Billy consumer receipts, real ijson batches, bounded HTTP reads, two-pass uploads, and journal writes/flushes/replay
-- [`billy_gzip_requests.py`](billy_gzip_requests.py) — direct request compression and fresh/warm 64 KiB compressor checkpoints, with strict compressed-byte equality and retained contract failures
-- [`gzip_concurrency.py`](gzip_concurrency.py) — independent Billy streams on 1, 2 and 4 warmed executor workers, with isolated installations and aggregate wall throughput
+- Gzip consumer profile — frozen consumer receipts, real ijson batches, bounded HTTP reads, two-pass uploads, and journal writes/flushes/replay
+- Gzip request profile — direct request compression and fresh/warm 64 KiB compressor checkpoints, with strict compressed-byte equality and retained contract failures
+- [`gzip_concurrency.py`](gzip_concurrency.py) — independent consumer streams on 1, 2 and 4 warmed executor workers, with isolated installations and aggregate wall throughput
 - [`text_native_compare.py`](text_native_compare.py)
+
+For filesystem backend work, use the direct file entry point of
+[`billy_fs_installed.py`](billy_fs_installed.py) inside Linux. Select one built,
+installed package root and its wheel; both lanes load identical fs bytes from
+that root. One public module keeps native dispatch and the other sets
+`_native=None`. The checked [Billy fixtures](../workloads/billy_fs.json) require
+the captured consumer checkout for source hashes and reference ASTs, without
+importing application dependencies.
+
+```console
+python bench/profiles/billy_fs_installed.py --source /tmp/fs-install --wheel /tmp/fs-dist/unstd-3.1.6-cp314-cp314-linux_aarch64.whl --fixtures bench/workloads/billy_fs.json --billy-source ../billy --root /tmp --rounds 9 --output /tmp/fs-installed.json
+```
+
+Use the wheel's actual ABI/platform filename. Before and after each workload,
+untimed profile hooks require an actual C call with zero Python fallbacks in the
+native lane and Python fallback calls with zero native entries in the control.
+Sentinel resets and independent byte/mode/scratch checks reject declined or
+no-op writers. Loaded Python/binary files must match the supplied wheel, and
+source, fixture, harness and binary hashes are checked again after timing.
+Calibration and separate cProfile runs stay outside alternating wall/CPU
+samples; real fsync remains inside the measured operations.
+
+The [installed qualification](../reports/fs/production/README.md) retains direct
+wheel and sdist-rebuilt wheel results, cancellation/error coverage, and fallback
+packaging checks for its recorded source snapshot. These are synthetic workload
+shapes, not service-frequency weights; disk regressions remain visible and
+tmpfs measures CPU/VFS overhead. Later source edits require fresh evidence.
+The [historical experiment](../reports/fs/billy-linux.md) uses a separately built
+`_fs_experiment` binary through `billy_fs.py run --native-extension ...`; its
+comparison lane explicitly forces Python even when public native dispatch is
+available. Its ratios and admission limits are separate from installed results.
 
 For installed clone baselines, add `--infer-native-bindings` to load only the
 entrypoints imported by that baseline's own Python wrapper. Use
@@ -30,26 +71,23 @@ The guard takes the median of matched current/before batch ratios, retaining
 independent latency medians for inspection. The output report is saved before
 a failed guard exits.
 
-Run the Billy gzip comparison through its direct file entry point so neither
-product installation loads before a worker selects its source:
-
-```console
-python bench/profiles/billy_gzip.py run --fixtures bench/workloads/billy_gzip.json.gz --baseline-source /tmp/installed-before --source /tmp/installed-current --rounds 7 --repetitions 3 --max-slowdown 1.30 --output /tmp/billy-gzip.json
-```
+Run the gzip consumer comparison through its direct file entry point so neither
+product installation loads before a worker selects its source. Select the two
+installed roots with `--baseline-source` and `--source`, supply the committed
+transport fixtures with `--fixtures`, and save evidence with `--output`.
 
 Both workers share the invoking interpreter and dependencies. The committed
-synthetic fixtures need no Billy checkout; their source receipts document the
+synthetic fixtures need no external checkout; their source receipts document the
 consumer contract. The optional slowdown limit compares wall time and writes
 the raw report before failing. CPU samples remain diagnostic.
 
-Measure Billy's separate request encoder and prefix-copy workloads with:
-
-```console
-python bench/profiles/billy_gzip_requests.py run --fixtures bench/workloads/billy_gzip_requests.json.gz --baseline-source /tmp/installed-before --source /tmp/installed-current --require-native --rounds 9 --batch-ms 20 --output /tmp/billy-gzip-requests.json
-```
+The separate request profile measures encoder and prefix-copy workloads.
+Use its direct file entry point with the request fixtures and the two installed
+roots. `--require-native` checks the selected native route; `--rounds` and
+`--batch-ms` control the measurement budget.
 
 This profile leaves the original 14 stream fixtures unchanged. It captures
-`gzip_encode`, `gzip_request`, and `_GzipPrefix` source receipts, and measures
+request encoder and compressor checkpoint source receipts, and measures
 public synthetic request bodies with direct level-six compression, first-use
 checkpoint construction, warmed copies, and level/prefix misses. Header mapping,
 context-variable lookup and network work are excluded. Each checkpoint must
@@ -60,11 +98,10 @@ still measured, and the retained report then exits unsuccessfully. Repeat
 binary hashes accompany the per-case C-call proof. No compression-level mapping
 or relaxed byte oracle is used.
 
-Measure concurrent upload streams through the direct entry point:
-
-```console
-python bench/profiles/gzip_concurrency.py run --fixtures bench/workloads/billy_gzip.json.gz --baseline-source /tmp/installed-before --source /tmp/installed-current --workers 1,2,4 --rounds 7 --output /tmp/gzip-concurrency.json
-```
+Measure concurrent upload streams through the direct entry point of
+[`gzip_concurrency.py`](gzip_concurrency.py). Supply the transport fixtures with
+`--fixtures`, the installed roots with `--baseline-source` and `--source`, and
+worker counts with `--workers 1,2,4`. Save evidence with `--output`.
 
 Each worker job opens independent streams over the same frozen fixture. Thread
 creation and correctness checks remain outside timing; calibrated batches

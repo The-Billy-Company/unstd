@@ -50,6 +50,12 @@ jobs:
           python-version: "3.14"
       # Both lanes install extras; the stdlib worker blocks acceleration imports
       # before product loading, and propagates that policy into nested workers.
+      - name: Provide Yasm for native gzip builds
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends yasm
+          yasm --version
       - name: Install locked dependencies and rebuild unstd
         run: uv sync --locked --all-extras --group dev --python 3.14 --reinstall-package unstd
       - name: Run all fault injection groups

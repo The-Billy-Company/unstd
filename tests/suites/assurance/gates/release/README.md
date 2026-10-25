@@ -1,5 +1,21 @@
 # Release verifier gates
 
+`test_rand_build.py` checks the shuffle kernel's platform and interpreter build
+selection, standalone C source registration, installed-wheel import preflight,
+and inclusion in the installed rand contracts without requiring NumPy.
+
+[`test_fs_build.py`](test_fs_build.py) checks Linux-only filesystem build and
+wheel preflight selection, free-threaded fallback, and inclusion of the full
+[fs suite](../../../product/fs/README.md) in the installed-wheel runner.
+Release verifier fixtures require the fs accelerator in supported Linux native
+wheels and reject its plain or ABI-suffixed `.so`/`.pyd` binaries in macOS or
+Windows wheels while accepting the cross-platform `_fs_native.pyi` typing stub.
+The source archive retains
+`native/fs/src/adapter.c`; ordinary optional compiler failure and strict release
+failure are exercised by the [packaging plane](../../planes/packaging/README.md).
+The Linux import preflight prevents missing binaries from silently skipping the
+62 native integration contracts in release-wheel testing.
+
 `test_proc_memory.py` checks the process memory-audit bootstrap: native dispatch
 remains separate from the stdlib controller fallback, macOS loader selection is
 restored, source fingerprints exclude generated binaries, and help works without
@@ -57,3 +73,10 @@ job, authenticated build/test dependencies, pinned source/fix downloads,
 same-job builder trust policy, authenticated local wheel installation, and
 actual-loaded-library preflight before audio contracts. Negative checks reject
 download corruption and wheel/provenance tampering without network or builds.
+
+`test_isal_build.py` verifies the Linux x86_64 build guard, accepted assembler
+versions, exact source and patch staging, tamper rejection, optional native-zlib
+fallback, required-build failures, and assembly-only archive boundaries.
+Its real-hook regression checks default-gzip configuration on both ordinary
+and retained-compiler builds, while unrelated modules and the explicitly
+reviewed zlib-rs experiment keep their own build paths.

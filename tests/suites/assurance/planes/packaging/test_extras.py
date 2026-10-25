@@ -16,6 +16,7 @@ from tests.support.packaging.artifacts import (
     create_consumer,
     install_extra_closure,
 )
+from tests.support.packaging.surfaces import EXTRA_MODULES
 
 
 if TYPE_CHECKING:
@@ -241,6 +242,23 @@ assert isinstance(values, numpy.ndarray)
 assert values.tolist() == [1, -2, 300]
 assert values.base is wire
 assert binpack.unpack_array_portable('>i2', wire) == [1, -2, 300]
+framed = b'HDR' + wire + b'tail'
+selected = binpack.unpack_array('>i2', framed, count=3, offset=3)
+assert selected.tolist() == [1, -2, 300]
+assert selected.base is framed
+assert not selected.flags.writeable
+assert binpack.unpack_array_portable('>i2', framed, count=3, offset=3) == [1, -2, 300]
+from unstd.pack import ragged
+import struct
+frame = bytearray(struct.pack('<3i6f', 0, 1, 3, 1.5, -2.0, 3.0, 4.0, 5.5, 6.0))
+rows, boundaries = ragged.RaggedDecoder('<f4', columns=2, index_dtype='<i4', finite=True, allow_empty=False).unpack(frame, index_count=3)
+assert type(rows) is type(boundaries) is numpy.ndarray
+assert rows.dtype == numpy.dtype('<f4') and boundaries.dtype == numpy.dtype('<i4')
+assert rows.shape == (3, 2) and boundaries.tolist() == [0, 1, 3]
+assert rows.tolist() == [[1.5, -2.0], [3.0, 4.0], [5.5, 6.0]]
+assert not rows.flags.writeable and not boundaries.flags.writeable
+frame[:] = bytes(len(frame))
+assert rows[0].tolist() == [1.5, -2.0] and boundaries.tolist() == [0, 1, 3]
 try:
     binpack.pack_array_portable('u1', [1.9])
 except struct.error:
@@ -307,8 +325,8 @@ assert toml.loads(toml.dumps(document)) == {'value': 7}
 import ruamel.yaml
 import yaml as pyyaml
 from unstd import yaml
-from unstd.yaml import _codec
-assert _codec._YAML is ruamel.yaml.YAML
+from unstd.yaml import codec
+assert codec._YAML is ruamel.yaml.YAML
 assert yaml.ruamel is ruamel.yaml
 assert yaml.pyyaml is pyyaml
 assert yaml.loads('enabled: true\\nvalue: 7\\n') == {'enabled': True, 'value': 7}
@@ -358,7 +376,8 @@ assert len(head) == 7
 assert head + decoder.decompress(decoder.unconsumed_tail) == payload
 assert decoder.eof
 assert zlibx.error is zlib.error
-from unstd.compress import _gzip_native, _reader
+from unstd.compress import _gzip_native
+from unstd.compress.engines import reader as _reader
 assert Path(_gzip_native.__file__).resolve().is_relative_to(Path(sys.prefix).resolve())
 expanded = b'A' * 1_000_000
 raw_wire = zlib.compress(expanded, wbits=-15)
@@ -458,6 +477,7 @@ def test_every_declared_extra_has_an_isolated_backend_probe(
 ) -> None:
     extras = artifacts.project["optional-dependencies"]
     assert isinstance(extras, dict)
+    assert EXTRA_MODULES.keys() <= _EXTRA_CASES.keys()
     assert extras.keys() == _EXTRA_CASES.keys(), (
         f"add isolated runtime probes for extras {sorted(extras.keys() - _EXTRA_CASES.keys())}; "
         f"remove stale probes {sorted(_EXTRA_CASES.keys() - extras.keys())}"
@@ -507,6 +527,7 @@ for distribution, module in {_BACKEND_MODULES!r}.items():
         assert specification is None, (distribution, module)
 """
         + _EXTRA_CASES[extra]
+        + f"\nassert set({EXTRA_MODULES.get(extra, ())!r}) <= sys.modules.keys()\n"
         + """
 for name, module in tuple(sys.modules.items()):
     if name.startswith('unstd.') and getattr(module, '__file__', None):

@@ -130,18 +130,17 @@ baseline verification retains strict API and native-environment equality. The
 local committed snapshot remains separate from ephemeral CI worker baselines.
 
 Before the full function verification, each normal performance job also runs
-[`profiles/billy_gzip.py`](profiles/billy_gzip.py) against the separately installed
-revisions with the same interpreter and dependencies. Its
-[`14 committed synthetic fixtures`](workloads/billy_gzip.json.gz) freeze Billy's
-ijson query, upload, bounded HTTP, and journal consumption patterns without
-requiring a Billy checkout. Seven rounds in each of three alternating
-repetitions must keep every case within **30% of the comparison revision's wall
-time**. Independent output checks run around timing; raw wall/CPU samples,
-fixture hashes and import provenance are saved to `billy-gzip.json` before a
-slowdown can fail the job. Existing artifact retention keeps this evidence even
-when later function verification fails. This comparison does not rewrite the
-committed function ceilings, and the focused `gzip_diagnostic` option remains a
-separate measurement mode.
+the gzip consumer comparison against the separately installed revisions with
+the same interpreter and dependencies. Its 14 committed synthetic fixtures
+freeze ijson query, upload, bounded HTTP, and journal consumption patterns
+without requiring an external checkout. Seven rounds in each of three
+alternating repetitions must keep every case within **30% of the comparison
+revision's wall time**. Independent output checks run around timing; raw wall/CPU
+samples, fixture hashes and import provenance are saved to a dedicated gzip
+report before a slowdown can fail the job. Existing artifact retention keeps
+this evidence even when later function verification fails. This comparison
+does not rewrite the committed function ceilings, and the focused
+`gzip_diagnostic` option remains a separate measurement mode.
 
 We initialize backend metadata and native routes before both timing phases.
 Reports retain hashes of installed product modules, native libraries, workloads

@@ -9,8 +9,11 @@ Historical JSON and Markdown reports are grouped by measured domain. JSON measur
 - [`crypto/`](crypto/README.md)
 - [`fs/`](fs/README.md)
 - [`general/`](general/README.md)
+- [`iters/`](iters/README.md)
 - [`native/`](native/README.md)
+- [`pack/`](pack/README.md)
 - [`proc/`](proc/README.md)
+- [`rand/`](rand/README.md)
 - [`serde/`](serde/README.md)
 - [`text/`](text/README.md)
 

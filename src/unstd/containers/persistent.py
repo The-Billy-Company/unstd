@@ -18,7 +18,7 @@ view, not a value; ``dict(old, **{k: v})`` is a full ``O(n)`` copy with no
 sharing), so this module is guarded: with the ``containers`` extra it re-exports
 the real class verbatim (``unstd.containers.Map`` *is* ``immutables.Map``);
 without it, :class:`Map` is a placeholder that raises a clear ImportError on
-construction (see :func:`unstd._extra.missing`).
+construction (see :func:`unstd.extras.missing`).
 """
 
 from __future__ import annotations
@@ -41,7 +41,7 @@ else:
 
         HAVE_IMMUTABLES = True
     except ImportError:  # base install without the `containers` extra
-        from unstd._extra import missing
+        from unstd.extras import missing
 
         HAVE_IMMUTABLES = False
         Map = missing("containers.Map", "containers")

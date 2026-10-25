@@ -16,7 +16,7 @@ from importlib import import_module
 from typing import TYPE_CHECKING, Protocol, cast, override, runtime_checkable
 import zlib as _stdlib
 
-from unstd.compress._validation import flush_mode as _flush_mode
+from unstd.compress.engines.flush import flush_mode as _flush_mode
 
 
 __all__ = [

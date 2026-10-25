@@ -1417,6 +1417,156 @@
       "rounds": 11,
       "spread": 1.7841413483023243
     },
+    "unstd.pack.ragged.RaggedDecoder": {
+      "captured_environment": {
+        "backends": {
+          "blake3": "1.0.10",
+          "immutables": "0.21",
+          "irregex": "2.6.0",
+          "libarchive-c": "5.3",
+          "msgspec": "0.22.0",
+          "numpy": "2.5.3",
+          "orjson": "3.12.0",
+          "protobuf": "7.36.2",
+          "pybase64": "1.5.0",
+          "pydantic": "2.13.5",
+          "pydantic-settings": "2.15.0",
+          "pyyaml": "6.0.3",
+          "rapidfuzz": "3.14.6",
+          "ruamel-yaml": "0.19.1",
+          "sortedcontainers": "2.4.0",
+          "soundfile": "0.14.0",
+          "tomlkit": "0.15.1",
+          "uuid-utils": "1.0.0",
+          "whenever": "0.10.5",
+          "zlib-ng": "1.0.0",
+          "zstandard": "0.25.0"
+        },
+        "cpu": "Apple M5 Max",
+        "cpu_count": 18,
+        "implementation": "CPython",
+        "machine": "arm64",
+        "native": {
+          "clone._clone_native": true,
+          "compress._gzip_native": true,
+          "containers._sorted_native": true,
+          "crypto._stream_native": true,
+          "serde._json_native": true,
+          "text._text_native": true
+        },
+        "native_implementations": {
+          "clone._clone_native": "c",
+          "compress._gzip_native": "c",
+          "containers._sorted_native": "c",
+          "crypto._stream_native": "c",
+          "serde._json_native": "c",
+          "text._text_native": "c"
+        },
+        "python": "3.14.9",
+        "python_debug": 0,
+        "python_free_threaded": 0,
+        "system": "Darwin",
+        "system_release": "25.6.0",
+        "thread_settings": {
+          "MKL_NUM_THREADS": null,
+          "OMP_NUM_THREADS": null,
+          "OPENBLAS_NUM_THREADS": null
+        }
+      },
+      "captured_provenance": {
+        "capture": "bench.speeds.timings(_ragged_cases(), rounds=9), fresh strict CPython3.14 wheel; independent struct oracle",
+        "native_pack_kernel": 1,
+        "native_pack_sha256": "541f66600856b4c5df9b8b823f0720569f20e2644ec29f72f72cf85b449b5a64",
+        "native_pack_source_sha256": "28661e1ed299b204227ba16afb8a67ca83d6fe3dd6caffd7267f8507cdb2cdf3",
+        "product_source_receipt_sha256": "a3e38c87d015ffa648f08a037115a3253914ddb41d171ca9673d357afccacb5a",
+        "workload_sources": {
+          "speed_cases_codecs.py": "3923505d06f0e7e3ebfedfe920fcdfd198ea733ed4250271892f66d57f6fd03c",
+          "speed_cases_operations.py": "54572576bc9cea79179d60a84d428a7f2f232e1d6de46233c3ee00ab196cf497",
+          "speed_cases_runtime.py": "b1e5bf41dd71aa289732d15574bb5a110c2650b989d7271b2927b6d4a4a075cd"
+        }
+      },
+      "ceiling_ns": 1023.354541015625,
+      "iterations": 8192,
+      "measured_ns": 787.19580078125,
+      "note": "compile four-column little-endian float32 rows and uint32 boundaries; finite, nonempty segments",
+      "rounds": 9,
+      "spread": 0.15771252163999364
+    },
+    "unstd.pack.ragged.RaggedDecoder.unpack": {
+      "captured_environment": {
+        "backends": {
+          "blake3": "1.0.10",
+          "immutables": "0.21",
+          "irregex": "2.6.0",
+          "libarchive-c": "5.3",
+          "msgspec": "0.22.0",
+          "numpy": "2.5.3",
+          "orjson": "3.12.0",
+          "protobuf": "7.36.2",
+          "pybase64": "1.5.0",
+          "pydantic": "2.13.5",
+          "pydantic-settings": "2.15.0",
+          "pyyaml": "6.0.3",
+          "rapidfuzz": "3.14.6",
+          "ruamel-yaml": "0.19.1",
+          "sortedcontainers": "2.4.0",
+          "soundfile": "0.14.0",
+          "tomlkit": "0.15.1",
+          "uuid-utils": "1.0.0",
+          "whenever": "0.10.5",
+          "zlib-ng": "1.0.0",
+          "zstandard": "0.25.0"
+        },
+        "cpu": "Apple M5 Max",
+        "cpu_count": 18,
+        "implementation": "CPython",
+        "machine": "arm64",
+        "native": {
+          "clone._clone_native": true,
+          "compress._gzip_native": true,
+          "containers._sorted_native": true,
+          "crypto._stream_native": true,
+          "serde._json_native": true,
+          "text._text_native": true
+        },
+        "native_implementations": {
+          "clone._clone_native": "c",
+          "compress._gzip_native": "c",
+          "containers._sorted_native": "c",
+          "crypto._stream_native": "c",
+          "serde._json_native": "c",
+          "text._text_native": "c"
+        },
+        "python": "3.14.9",
+        "python_debug": 0,
+        "python_free_threaded": 0,
+        "system": "Darwin",
+        "system_release": "25.6.0",
+        "thread_settings": {
+          "MKL_NUM_THREADS": null,
+          "OMP_NUM_THREADS": null,
+          "OPENBLAS_NUM_THREADS": null
+        }
+      },
+      "captured_provenance": {
+        "capture": "bench.speeds.timings(_ragged_cases(), rounds=9), fresh strict CPython3.14 wheel; independent struct oracle",
+        "native_pack_kernel": 1,
+        "native_pack_sha256": "541f66600856b4c5df9b8b823f0720569f20e2644ec29f72f72cf85b449b5a64",
+        "native_pack_source_sha256": "28661e1ed299b204227ba16afb8a67ca83d6fe3dd6caffd7267f8507cdb2cdf3",
+        "product_source_receipt_sha256": "a3e38c87d015ffa648f08a037115a3253914ddb41d171ca9673d357afccacb5a",
+        "workload_sources": {
+          "speed_cases_codecs.py": "3923505d06f0e7e3ebfedfe920fcdfd198ea733ed4250271892f66d57f6fd03c",
+          "speed_cases_operations.py": "54572576bc9cea79179d60a84d428a7f2f232e1d6de46233c3ee00ab196cf497",
+          "speed_cases_runtime.py": "b1e5bf41dd71aa289732d15574bb5a110c2650b989d7271b2927b6d4a4a075cd"
+        }
+      },
+      "ceiling_ns": 1036.2482177734375,
+      "iterations": 8192,
+      "measured_ns": 797.114013671875,
+      "note": "validate 33 boundaries and 64 four-column finite float32 rows; immutable NumPy views",
+      "rounds": 9,
+      "spread": 0.10696868188126171
+    },
     "unstd.proc.CompletedProcess": {
       "ceiling_ns": 373.9959716796875,
       "iterations": 16384,
@@ -4334,6 +4484,71 @@
       "OPENBLAS_NUM_THREADS": null
     }
   },
+  "ragged_addition_provenance": {
+    "cases": [
+      "unstd.pack.ragged.RaggedDecoder",
+      "unstd.pack.ragged.RaggedDecoder.unpack"
+    ],
+    "raw_measurements": {
+      "unstd.pack.ragged.RaggedDecoder": {
+        "cpu_samples_ns": [
+          null,
+          782.01806640625,
+          792.8619384765625,
+          797.9888916015625,
+          791.4022216796875,
+          790.461181640625,
+          797.3734130859375,
+          807.4085693359375,
+          881.4595947265625
+        ],
+        "iters": 8192,
+        "per_op_ns": 787.19580078125,
+        "rounds": 9,
+        "samples_ns": [
+          787.19580078125,
+          790.76123046875,
+          804.3721923828125,
+          812.71875,
+          795.4559326171875,
+          810.5264892578125,
+          821.502685546875,
+          831.487060546875,
+          911.346435546875
+        ],
+        "spread": 0.15771252163999364
+      },
+      "unstd.pack.ragged.RaggedDecoder.unpack": {
+        "cpu_samples_ns": [
+          null,
+          857.721923828125,
+          827.1331787109375,
+          794.10302734375,
+          842.3614501953125,
+          853.363037109375,
+          874.944091796875,
+          791.7734375,
+          823.73046875
+        ],
+        "iters": 8192,
+        "per_op_ns": 797.114013671875,
+        "rounds": 9,
+        "samples_ns": [
+          863.337158203125,
+          868.830322265625,
+          838.2415771484375,
+          799.75390625,
+          851.262451171875,
+          866.363525390625,
+          882.3802490234375,
+          797.114013671875,
+          827.18408203125
+        ],
+        "spread": 0.10696868188126171
+      }
+    },
+    "scope": "Only new RaggedDecoder constructor and complete frame decode workloads; all existing rows, ceilings and global environment retained."
+  },
   "recorded": "2026-10-22T04:29:15.587567+00:00",
   "schema": 1,
   "time_addition_provenance": {
@@ -4586,7 +4801,7 @@
   },
   "tolerance": 0.3,
   "workload_sources": {
-    "speed_cases_codecs.py": "e7754b63f38d3b9ef1ad0c46594c530990bd0933b3e6a8fad39f48583e0041c4",
+    "speed_cases_codecs.py": "3923505d06f0e7e3ebfedfe920fcdfd198ea733ed4250271892f66d57f6fd03c",
     "speed_cases_operations.py": "54572576bc9cea79179d60a84d428a7f2f232e1d6de46233c3ee00ab196cf497",
     "speed_cases_runtime.py": "b1e5bf41dd71aa289732d15574bb5a110c2650b989d7271b2927b6d4a4a075cd"
   }

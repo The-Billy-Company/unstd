@@ -14,6 +14,22 @@ the structures the stdlib has **no equivalent for**.
 from unstd.containers import SortedDict, SortedList, SortedSet, Map
 ```
 
+## Source ownership
+
+This package is a flat leaf: its public modules and native adapters share one
+small collection API without additional package boundaries.
+
+| File | Responsibility |
+| --- | --- |
+| [`__init__.py`](__init__.py) | Lazy public type exports |
+| [`sorted.py`](sorted.py) | Sorted backend selection and public pickle paths |
+| [`ordering.py`](ordering.py) | Accelerated sorted subclasses and native bindings |
+| [`persistent.py`](persistent.py) | Guarded persistent map export |
+| [`_sorted_native.pyi`](_sorted_native.pyi) | Native ABI declarations; [C source ownership](../../../native/containers/README.md) |
+
+Run the [container contract suite](../../../tests/suites/product/containers/README.md)
+with `uv run --no-sync pytest tests/suites/product/containers -q`.
+
 ## Backend
 
 Both families ride the single **`containers` extra**
@@ -57,7 +73,7 @@ native list insertion and binary search within short runs. Performance depends
 on workload, collection size and load factor; the first positional query can
 also build an index. Range iteration costs time proportional to the number of
 returned values. On supported CPython builds, bundled C kernels accelerate rank
-and positional queries in
+and positional queries, plus eligible integer batches, in
 compatible subclasses of the upstream sorted classes. The upstream APIs and
 ordering semantics apply, including keyed collections, views, range scans,
 copying and pickling. Accelerated classes have their own identities; they remain
@@ -67,6 +83,25 @@ Without the native extension, on other interpreters or with an unqualified
 backend version, the original upstream classes remain available. The
 `containers` extra is required in either case; the extension accelerates the
 backend's algorithms rather than providing a substitute for the dependency.
+
+Ordered integer indexes can use the existing batch APIs for ingestion and
+expiration:
+
+```python
+ids.update(next_ids)  # increasing list/tuple at or beyond the current maximum
+del ids[:ids.bisect_left(cutoff)]  # expire the oldest IDs or timestamps
+```
+
+The native mutation paths target substantial batches below the backend's
+rebuild thresholds. Prefix/suffix deletion drops whole blocks and delegates a
+partial boundary to the backend. Increasing exact signed 64-bit integer
+list/tuple updates stage replacement tail blocks. Generic values, keyed
+collections, custom subclasses, helper overrides and aliased storage retain
+upstream mutation behavior. Individual `add`, `remove`, `discard` and `pop`
+also retain their upstream algorithms. Performance depends on batch size and
+ownership of the removed values; the
+[mutation evaluation](../../../bench/reports/containers/mutations/README.md)
+records both retained and exclusively owned integer controls.
 
 ## `Map` — persistent immutable HAMT
 
@@ -110,6 +145,6 @@ entire batch is available so the backend can choose a merge/rebuild strategy.
 The [performance evaluation](../../../bench/reports/containers/README.md) records
 paired Linux and macOS startup and operation measurements. Lazy exports reduce
 startup work for consumers of one family. Native kernels target sorted-list
-queries and their use inside sorted dictionaries and sets. Mutations retain the
-upstream algorithms; `Map` retains its
-existing native `immutables` implementation.
+queries and their use inside sorted dictionaries and sets. Eligible integer
+batch mutations add native paths; `Map` retains its existing native
+`immutables` implementation.

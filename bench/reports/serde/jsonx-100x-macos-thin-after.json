@@ -1,0 +1,7387 @@
+{
+  "driver_sha256": "271e736bf675c52432add3b4c54bbcda17f76935d634a55278a4dd8ac2821be1",
+  "protocol": "Two persistent installed-root workers alternate per case; case order reverses each repetition; variant order alternates per case/repetition. Correctness and fixture creation are outside timing. No control normalization.",
+  "estimator": "median across repetitions of minimum raw wall-clock batch means",
+  "rounds": 7,
+  "repetitions": 3,
+  "provenance": {
+    "before": {
+      "provenance": {
+        "source": "/private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/json100-encoding-scaycqna/prework/src",
+        "imported_jsonx": "/private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/json100-encoding-scaycqna/prework/src/unstd/serde/jsonx.py",
+        "native_module": "/private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/json100-encoding-scaycqna/prework/src/unstd/serde/_json_native.cpython-314-darwin.so",
+        "dispatch": {
+          "loads": {
+            "bound": true,
+            "ready": true
+          },
+          "dumpb": {
+            "bound": true,
+            "ready": true
+          }
+        },
+        "sha256": {
+          "unstd/serde/__init__.py": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d",
+          "unstd/serde/_internal/__init__.py": "6aed7cdb4acd19aa8dfa7668c884fd937f2add4574c73531bd6cdde569f53f05",
+          "unstd/serde/_internal/json_common.py": "cb4ee6fce1510e202b4126e67b53ac73b9e7b73a9d67d010b451b7fa45ea0b8f",
+          "unstd/serde/_internal/json_encode.py": "a01fe8460bd4a70573fed3ebff35c1a1f318bf477bb17c41b165a0a5aacc46a4",
+          "unstd/serde/_json_common.py": "fb088bf068ac0dd5f2dd1675cb60cb682da6aec80320b85d98aa39c16a7f6781",
+          "unstd/serde/_json_encode.py": "d010007e07fbe5e46a1bcfb6984b2730f30564e4a2dc15306baedda9f2ab8ec1",
+          "unstd/serde/_json_native.cpython-314-darwin.so": "856ae2049c997db77493f6d2fe88aa49eb25ab1f4784c2a3448c0975f6c98ba7",
+          "unstd/serde/_json_native.pyi": "275cb98230bf6a337bbc224ebfcd13025859b7ccef2800fb6d4ef7ac3796d47e",
+          "unstd/serde/b64.py": "c9fa198b3a6a4dffab239697c2d35c717ab2adea1977e7c1bd2226c30c4dbe32",
+          "unstd/serde/jsonx.py": "a15639db6e2b4495c9f50aec12c6830c931e48563a506ad56d51598c393d7ca4",
+          "unstd/serde/ndjson.py": "98c1f5bb1b78d2548390683b9b4bc062c4dc900b1fc27837e7941c7ee4553550",
+          "unstd/serde/structs.py": "ebe5eb0c8cba8e8bc01137c9e4f768d86cb900d15c67600cbaf38f0accfa6c65"
+        },
+        "native_source_sha256": {
+          "src/adapter.c": "4255c7f31b58ce2b370b3269a7568ec9c7eb73f52cf431c88da8c449d73578ab",
+          "src/decode.h": "d46206a3c04858ac3739d2590b4c1a02d23a2801cbec3387fa4893d28e56624f",
+          "src/encode.h": "d9cd56b16da3dfd72b36fa8ae00f7b82e4be7cc37629ef129dc0b3a9c9ac6c1e",
+          "src/escape.h": "937fe2288c702b38b752e4c7b4a09a91239bba86d2907b0f89c24f99a13d3e92",
+          "src/identity.h": "e9dd9fb8b4f8188de9f3180699749fab34d16307177b5f0814a0cf1681d592bf",
+          "src/lines.h": "b2f9b71876976199b3a02b53572672f581438e237353a92205211fbd27ea74d0",
+          "src/repeat.h": "6d8ef0ca60b10a5a2888bbb921e009957f59fa0dff5f8db16ce67fa65a1e917d"
+        },
+        "native_qualification": {
+          "dispatch": {
+            "loads": {
+              "bound": true,
+              "ready": true
+            },
+            "dumpb": {
+              "bound": true,
+              "ready": true
+            }
+          },
+          "probes": {
+            "native_integer_encoding": true,
+            "native_compact_bytes": true,
+            "native_ndjson_encoding": true,
+            "native_ndjson_decode": true,
+            "public_text": true,
+            "public_compact_bytes": true,
+            "public_decode": true
+          }
+        }
+      },
+      "cases": [
+        "dumpb/empty2",
+        "dumps/empty2",
+        "raw-orjson/empty2",
+        "dumpb/empty64",
+        "dumps/empty64",
+        "raw-orjson/empty64",
+        "dumpb/int2",
+        "dumps/int2",
+        "raw-orjson/int2",
+        "dumpb/int4096",
+        "dumps/int4096",
+        "raw-orjson/int4096",
+        "dumpb/ints16x256",
+        "dumps/ints16x256",
+        "raw-orjson/ints16x256",
+        "dumpb/ints32x128",
+        "dumps/ints32x128",
+        "raw-orjson/ints32x128",
+        "dumpb/dict4096",
+        "dumps/dict4096",
+        "raw-orjson/dict4096"
+      ]
+    },
+    "after": {
+      "provenance": {
+        "source": "/private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/json100-encoding-scaycqna/candidate/src",
+        "imported_jsonx": "/private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/json100-encoding-scaycqna/candidate/src/unstd/serde/jsonx.py",
+        "native_module": "/private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/json100-encoding-scaycqna/candidate/src/unstd/serde/_json_native.cpython-314-darwin.so",
+        "dispatch": {
+          "loads": {
+            "bound": true,
+            "ready": true
+          },
+          "dumpb": {
+            "bound": true,
+            "ready": true
+          }
+        },
+        "sha256": {
+          "unstd/serde/__init__.py": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d",
+          "unstd/serde/_internal/__init__.py": "6aed7cdb4acd19aa8dfa7668c884fd937f2add4574c73531bd6cdde569f53f05",
+          "unstd/serde/_internal/json_common.py": "cb4ee6fce1510e202b4126e67b53ac73b9e7b73a9d67d010b451b7fa45ea0b8f",
+          "unstd/serde/_internal/json_encode.py": "a01fe8460bd4a70573fed3ebff35c1a1f318bf477bb17c41b165a0a5aacc46a4",
+          "unstd/serde/_json_common.py": "fb088bf068ac0dd5f2dd1675cb60cb682da6aec80320b85d98aa39c16a7f6781",
+          "unstd/serde/_json_encode.py": "d010007e07fbe5e46a1bcfb6984b2730f30564e4a2dc15306baedda9f2ab8ec1",
+          "unstd/serde/_json_native.cpython-314-darwin.so": "f9bdaa6a23652547d48f177ea0a3fa04fbacf63ab2b505620e890b9ba3da06ca",
+          "unstd/serde/_json_native.pyi": "275cb98230bf6a337bbc224ebfcd13025859b7ccef2800fb6d4ef7ac3796d47e",
+          "unstd/serde/b64.py": "c9fa198b3a6a4dffab239697c2d35c717ab2adea1977e7c1bd2226c30c4dbe32",
+          "unstd/serde/jsonx.py": "a15639db6e2b4495c9f50aec12c6830c931e48563a506ad56d51598c393d7ca4",
+          "unstd/serde/ndjson.py": "98c1f5bb1b78d2548390683b9b4bc062c4dc900b1fc27837e7941c7ee4553550",
+          "unstd/serde/structs.py": "ebe5eb0c8cba8e8bc01137c9e4f768d86cb900d15c67600cbaf38f0accfa6c65"
+        },
+        "native_source_sha256": {
+          "src/adapter.c": "4255c7f31b58ce2b370b3269a7568ec9c7eb73f52cf431c88da8c449d73578ab",
+          "src/decode.h": "d46206a3c04858ac3739d2590b4c1a02d23a2801cbec3387fa4893d28e56624f",
+          "src/encode.h": "d9cd56b16da3dfd72b36fa8ae00f7b82e4be7cc37629ef129dc0b3a9c9ac6c1e",
+          "src/escape.h": "937fe2288c702b38b752e4c7b4a09a91239bba86d2907b0f89c24f99a13d3e92",
+          "src/identity.h": "e9dd9fb8b4f8188de9f3180699749fab34d16307177b5f0814a0cf1681d592bf",
+          "src/lines.h": "b2f9b71876976199b3a02b53572672f581438e237353a92205211fbd27ea74d0",
+          "src/repeat.h": "a47c65565ff257f68b20494809df947c29cf2efbe0c1f0b01db847c32ecaee39"
+        },
+        "native_qualification": {
+          "dispatch": {
+            "loads": {
+              "bound": true,
+              "ready": true
+            },
+            "dumpb": {
+              "bound": true,
+              "ready": true
+            }
+          },
+          "probes": {
+            "native_integer_encoding": true,
+            "native_compact_bytes": true,
+            "native_ndjson_encoding": true,
+            "native_ndjson_decode": true,
+            "public_text": true,
+            "public_compact_bytes": true,
+            "public_decode": true
+          }
+        }
+      },
+      "cases": [
+        "dumpb/empty2",
+        "dumps/empty2",
+        "raw-orjson/empty2",
+        "dumpb/empty64",
+        "dumps/empty64",
+        "raw-orjson/empty64",
+        "dumpb/int2",
+        "dumps/int2",
+        "raw-orjson/int2",
+        "dumpb/int4096",
+        "dumps/int4096",
+        "raw-orjson/int4096",
+        "dumpb/ints16x256",
+        "dumps/ints16x256",
+        "raw-orjson/ints16x256",
+        "dumpb/ints32x128",
+        "dumps/ints32x128",
+        "raw-orjson/ints32x128",
+        "dumpb/dict4096",
+        "dumps/dict4096",
+        "raw-orjson/dict4096"
+      ]
+    }
+  },
+  "comparisons": {
+    "dumpb/empty2": {
+      "before_ns": 66.49977620442708,
+      "after_ns": 66.74882956112133,
+      "before_over_after": 0.9962687981447497,
+      "before_stdlib_ns": 693.9189453125,
+      "after_stdlib_ns": 696.93505859375
+    },
+    "dumps/empty2": {
+      "before_ns": 250.59127807617188,
+      "after_ns": 240.846435546875,
+      "before_over_after": 1.040460812746387,
+      "before_stdlib_ns": 459.3785400390625,
+      "after_stdlib_ns": 470.20721435546875
+    },
+    "raw-orjson/empty2": {
+      "before_ns": 37.03784942626953,
+      "after_ns": 38.25345734627016,
+      "before_over_after": 0.9682222731138534,
+      "before_stdlib_ns": 683.32421875,
+      "after_stdlib_ns": 689.478515625
+    },
+    "dumpb/empty64": {
+      "before_ns": 538.0020141601562,
+      "after_ns": 542.6559448242188,
+      "before_over_after": 0.9914237912466434,
+      "before_stdlib_ns": 1367.080965909091,
+      "after_stdlib_ns": 1428.5662615740741
+    },
+    "dumps/empty64": {
+      "before_ns": 851.0589599609375,
+      "after_ns": 870.732666015625,
+      "before_over_after": 0.977405572545346,
+      "before_stdlib_ns": 1215.6901041666667,
+      "after_stdlib_ns": 1206.87353515625
+    },
+    "raw-orjson/empty64": {
+      "before_ns": 262.13583984375,
+      "after_ns": 265.19775390625,
+      "before_over_after": 0.9884542232451092,
+      "before_stdlib_ns": 1389.3585227272727,
+      "after_stdlib_ns": 1380.8353587962963
+    },
+    "dumpb/int2": {
+      "before_ns": 71.39000525841347,
+      "after_ns": 74.743310546875,
+      "before_over_after": 0.9551357136320779,
+      "before_stdlib_ns": 796.69189453125,
+      "after_stdlib_ns": 768.2342529296875
+    },
+    "dumps/int2": {
+      "before_ns": 253.3505859375,
+      "after_ns": 255.5704833984375,
+      "before_over_after": 0.9913139520987773,
+      "before_stdlib_ns": 562.7949829101562,
+      "after_stdlib_ns": 532.71484375
+    },
+    "raw-orjson/int2": {
+      "before_ns": 45.547299985532405,
+      "after_ns": 44.4232177734375,
+      "before_over_after": 1.0253039349339308,
+      "before_stdlib_ns": 775.5380859375,
+      "after_stdlib_ns": 806.8695068359375
+    },
+    "dumpb/int4096": {
+      "before_ns": 37077.3125,
+      "after_ns": 38110.3515625,
+      "before_over_after": 0.9728934785393978,
+      "before_stdlib_ns": 185837.34615384616,
+      "after_stdlib_ns": 189510.0
+    },
+    "dumps/int4096": {
+      "before_ns": 50031.8984375,
+      "after_ns": 52603.1875,
+      "before_over_after": 0.9511191396433913,
+      "before_stdlib_ns": 184160.84,
+      "after_stdlib_ns": 191568.5625
+    },
+    "raw-orjson/int4096": {
+      "before_ns": 22290.690104166668,
+      "after_ns": 21694.552083333332,
+      "before_over_after": 1.027478696888668,
+      "before_stdlib_ns": 202204.71739130435,
+      "after_stdlib_ns": 191137.5
+    },
+    "dumpb/ints16x256": {
+      "before_ns": 11546.821614583334,
+      "after_ns": 11929.091145833334,
+      "before_over_after": 0.967954848648841,
+      "before_stdlib_ns": 74001.953125,
+      "after_stdlib_ns": 73657.2265625
+    },
+    "dumps/ints16x256": {
+      "before_ns": 22673.502604166668,
+      "after_ns": 23768.989583333332,
+      "before_over_after": 0.9539110833750033,
+      "before_stdlib_ns": 79825.1953125,
+      "after_stdlib_ns": 78663.734375
+    },
+    "raw-orjson/ints16x256": {
+      "before_ns": 8667.8466796875,
+      "after_ns": 9400.901785714286,
+      "before_over_after": 0.9220228949587852,
+      "before_stdlib_ns": 76804.76612903226,
+      "after_stdlib_ns": 75495.69841269842
+    },
+    "dumpb/ints32x128": {
+      "before_ns": 12790.635416666666,
+      "after_ns": 1814.3470203488373,
+      "before_over_after": 7.049718313648434,
+      "before_stdlib_ns": 70925.43421052632,
+      "after_stdlib_ns": 71673.828125
+    },
+    "dumps/ints32x128": {
+      "before_ns": 22292.859375,
+      "after_ns": 2961.2268518518517,
+      "before_over_after": 7.528251123705297,
+      "before_stdlib_ns": 69536.78125,
+      "after_stdlib_ns": 68339.515625
+    },
+    "raw-orjson/ints32x128": {
+      "before_ns": 9955.357142857143,
+      "after_ns": 9649.088169642857,
+      "before_over_after": 1.031740716617954,
+      "before_stdlib_ns": 69245.1171875,
+      "after_stdlib_ns": 70690.47959183673
+    },
+    "dumpb/dict4096": {
+      "before_ns": 62798.828125,
+      "after_ns": 62037.765625,
+      "before_over_after": 1.0122677290571747,
+      "before_stdlib_ns": 287514.3125,
+      "after_stdlib_ns": 281333.3333333333
+    },
+    "dumps/dict4096": {
+      "before_ns": 99210.5,
+      "after_ns": 100084.58,
+      "before_over_after": 0.9912665867209514,
+      "before_stdlib_ns": 286008.3333333333,
+      "after_stdlib_ns": 261057.3125
+    },
+    "raw-orjson/dict4096": {
+      "before_ns": 32868.9765625,
+      "after_ns": 31253.7421875,
+      "before_over_after": 1.0516813111629881,
+      "before_stdlib_ns": 277463.53125,
+      "after_stdlib_ns": 267687.5
+    }
+  },
+  "samples": [
+    {
+      "label": "before",
+      "repetition": 0,
+      "case": "dumpb/empty2",
+      "identical_output": true,
+      "started_unix_ns": 1792961835176834000,
+      "finished_unix_ns": 1792961835314566000,
+      "candidate": {
+        "per_op_ns": 69.39116559709821,
+        "iters": 114688,
+        "rounds": 7,
+        "spread": 0.14463856379991089,
+        "samples_ns": [
+          69.39116559709821,
+          69.90668596540179,
+          77.50557163783482,
+          79.42780412946429,
+          76.89375523158482,
+          73.43946184430804,
+          70.89633614676339
+        ],
+        "cpu_samples_ns": [
+          null,
+          68.02550397600446,
+          73.97060721261161,
+          74.31756591796875,
+          73.02747453962054,
+          70.81422642299107,
+          68.191162109375
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 726.9031982421875,
+        "iters": 8192,
+        "rounds": 7,
+        "spread": 0.1265018369242514,
+        "samples_ns": [
+          738.28125,
+          772.2523193359375,
+          797.09375,
+          726.9031982421875,
+          787.2772216796875,
+          818.8577880859375,
+          789.337158203125
+        ],
+        "cpu_samples_ns": [
+          null,
+          742.8079833984375,
+          753.60107421875,
+          714.4775390625,
+          744.3643798828125,
+          801.859619140625,
+          754.17578125
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 0,
+      "case": "dumpb/empty2",
+      "identical_output": true,
+      "started_unix_ns": 1792961835314772000,
+      "finished_unix_ns": 1792961835469140000,
+      "candidate": {
+        "per_op_ns": 73.73873138427734,
+        "iters": 131072,
+        "rounds": 7,
+        "spread": 0.11570868041174608,
+        "samples_ns": [
+          73.73873138427734,
+          79.54056549072266,
+          82.27094268798828,
+          74.04454803466797,
+          77.15479278564453,
+          78.3850326538086,
+          74.73310089111328
+        ],
+        "cpu_samples_ns": [
+          null,
+          78.11450958251953,
+          79.40260314941406,
+          72.21031188964844,
+          73.45549774169922,
+          75.28813171386719,
+          70.80046081542969
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 772.2015380859375,
+        "iters": 8192,
+        "rounds": 7,
+        "spread": 0.10268002450253917,
+        "samples_ns": [
+          846.8831787109375,
+          846.6846923828125,
+          772.2015380859375,
+          834.0198974609375,
+          851.4912109375,
+          781.636474609375,
+          831.0445556640625
+        ],
+        "cpu_samples_ns": [
+          null,
+          827.7587890625,
+          751.2716064453125,
+          802.388427734375,
+          822.8048095703125,
+          756.88671875,
+          795.9493408203125
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 0,
+      "case": "dumps/empty2",
+      "identical_output": true,
+      "started_unix_ns": 1792961835469305000,
+      "finished_unix_ns": 1792961835629112000,
+      "candidate": {
+        "per_op_ns": 250.01907348632812,
+        "iters": 32768,
+        "rounds": 7,
+        "spread": 0.15274921041790634,
+        "samples_ns": [
+          250.01907348632812,
+          272.4482116699219,
+          288.20928955078125,
+          271.3775634765625,
+          287.7349853515625,
+          277.58026123046875,
+          284.0003967285156
+        ],
+        "cpu_samples_ns": [
+          null,
+          262.21209716796875,
+          282.8369140625,
+          261.8408203125,
+          274.4000549316406,
+          269.9190673828125,
+          276.9114074707031
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 479.4769287109375,
+        "iters": 16384,
+        "rounds": 7,
+        "spread": 0.10150743086274384,
+        "samples_ns": [
+          510.32513427734375,
+          503.25775146484375,
+          510.9710693359375,
+          479.4769287109375,
+          493.2530517578125,
+          528.1473999023438,
+          515.4622802734375
+        ],
+        "cpu_samples_ns": [
+          null,
+          492.08831787109375,
+          501.953125,
+          475.79193115234375,
+          486.67144775390625,
+          522.3770141601562,
+          509.198486328125
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 0,
+      "case": "dumps/empty2",
+      "identical_output": true,
+      "started_unix_ns": 1792961835629300000,
+      "finished_unix_ns": 1792961835791848000,
+      "candidate": {
+        "per_op_ns": 264.57086181640625,
+        "iters": 32768,
+        "rounds": 7,
+        "spread": 0.09915556428095043,
+        "samples_ns": [
+          274.05419921875,
+          264.57086181640625,
+          267.920166015625,
+          276.04547119140625,
+          274.7764587402344,
+          290.8045349121094,
+          269.13323974609375
+        ],
+        "cpu_samples_ns": [
+          null,
+          259.94744873046875,
+          263.1988525390625,
+          267.13055419921875,
+          270.2827453613281,
+          279.4583740234375,
+          263.4696960449219
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 493.46160888671875,
+        "iters": 16384,
+        "rounds": 7,
+        "spread": 0.06955382736282255,
+        "samples_ns": [
+          511.00921630859375,
+          505.53131103515625,
+          521.3241577148438,
+          513.7278442382812,
+          527.7837524414062,
+          493.46160888671875,
+          502.436279296875
+        ],
+        "cpu_samples_ns": [
+          null,
+          494.733154296875,
+          502.581298828125,
+          504.99981689453125,
+          508.31097412109375,
+          481.57757568359375,
+          490.631103515625
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 0,
+      "case": "raw-orjson/empty2",
+      "identical_output": true,
+      "started_unix_ns": 1792961835792063000,
+      "finished_unix_ns": 1792961835926563000,
+      "candidate": {
+        "per_op_ns": 38.62548828125,
+        "iters": 204800,
+        "rounds": 7,
+        "spread": 0.14946387712533973,
+        "samples_ns": [
+          39.689736328125,
+          40.0872802734375,
+          44.398603515625,
+          42.92826171875,
+          40.757041015625,
+          41.8050146484375,
+          38.62548828125
+        ],
+        "cpu_samples_ns": [
+          null,
+          39.1056298828125,
+          43.6606884765625,
+          41.3460302734375,
+          39.4781494140625,
+          40.23681640625,
+          38.4200048828125
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 729.9652099609375,
+        "iters": 8192,
+        "rounds": 7,
+        "spread": 0.08107761449863082,
+        "samples_ns": [
+          729.9652099609375,
+          779.5257568359375,
+          761.906982421875,
+          744.4559326171875,
+          789.1490478515625,
+          732.208251953125,
+          751.759765625
+        ],
+        "cpu_samples_ns": [
+          null,
+          759.7198486328125,
+          747.47216796875,
+          734.9090576171875,
+          775.482177734375,
+          724.69580078125,
+          737.9505615234375
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 0,
+      "case": "raw-orjson/empty2",
+      "identical_output": true,
+      "started_unix_ns": 1792961835927250000,
+      "finished_unix_ns": 1792961836078666000,
+      "candidate": {
+        "per_op_ns": 39.30549473916331,
+        "iters": 253952,
+        "rounds": 7,
+        "spread": 0.061850530805897065,
+        "samples_ns": [
+          39.30549473916331,
+          41.16952416204637,
+          40.67435184601815,
+          41.088473412298384,
+          41.73656045236895,
+          41.378882623487904,
+          40.60298402847782
+        ],
+        "cpu_samples_ns": [
+          null,
+          40.839902816280244,
+          40.03496330015121,
+          40.33931609122984,
+          41.043027816280244,
+          40.224955897177416,
+          39.82527800529234
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 704.7628173828125,
+        "iters": 8192,
+        "rounds": 7,
+        "spread": 0.052186079751384666,
+        "samples_ns": [
+          719.9046630859375,
+          724.6856689453125,
+          731.908203125,
+          723.943115234375,
+          704.7628173828125,
+          721.8883056640625,
+          741.5416259765625
+        ],
+        "cpu_samples_ns": [
+          null,
+          714.6707763671875,
+          724.8382568359375,
+          708.9893798828125,
+          697.346923828125,
+          720.026611328125,
+          724.344970703125
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 0,
+      "case": "dumpb/empty64",
+      "identical_output": true,
+      "started_unix_ns": 1792961836078817000,
+      "finished_unix_ns": 1792961836248866000,
+      "candidate": {
+        "per_op_ns": 562.700927734375,
+        "iters": 16384,
+        "rounds": 7,
+        "spread": 0.09239679142389676,
+        "samples_ns": [
+          579.8492431640625,
+          590.3701782226562,
+          562.700927734375,
+          590.3981323242188,
+          596.5576171875,
+          569.2163696289062,
+          614.6926879882812
+        ],
+        "cpu_samples_ns": [
+          null,
+          581.1843872070312,
+          553.5252685546875,
+          584.393798828125,
+          583.740234375,
+          552.533447265625,
+          595.0800170898438
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 1538.4425223214287,
+        "iters": 5376,
+        "rounds": 7,
+        "spread": 0.12145840232716418,
+        "samples_ns": [
+          1653.126674107143,
+          1550.579799107143,
+          1538.4425223214287,
+          1665.0466889880952,
+          1587.8441220238096,
+          1725.299293154762,
+          1546.9060639880952
+        ],
+        "cpu_samples_ns": [
+          null,
+          1507.409412202381,
+          1522.2051711309523,
+          1620.310825892857,
+          1553.416480654762,
+          1681.237537202381,
+          1519.7870163690477
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 0,
+      "case": "dumpb/empty64",
+      "identical_output": true,
+      "started_unix_ns": 1792961836249050000,
+      "finished_unix_ns": 1792961836343986000,
+      "candidate": {
+        "per_op_ns": 554.3162841796875,
+        "iters": 8192,
+        "rounds": 7,
+        "spread": 0.1018322341161856,
+        "samples_ns": [
+          610.7635498046875,
+          583.9639892578125,
+          589.0859375,
+          554.3162841796875,
+          586.60888671875,
+          608.205078125,
+          584.95068359375
+        ],
+        "cpu_samples_ns": [
+          null,
+          566.71142578125,
+          577.728271484375,
+          550.6591796875,
+          580.474853515625,
+          586.4307861328125,
+          574.9866943359375
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 1529.6161151960785,
+        "iters": 3264,
+        "rounds": 7,
+        "spread": 0.5736745510966383,
+        "samples_ns": [
+          1534.5306372549019,
+          1531.862745098039,
+          1565.6914828431372,
+          1541.0281862745098,
+          1539.4454656862745,
+          1529.6161151960785,
+          2407.1179534313724
+        ],
+        "cpu_samples_ns": [
+          null,
+          1499.7319240196077,
+          1536.4329044117646,
+          1506.6764705882354,
+          1510.0719975490197,
+          1504.8382352941176,
+          1687.8575367647059
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 0,
+      "case": "dumps/empty64",
+      "identical_output": true,
+      "started_unix_ns": 1792961836345268000,
+      "finished_unix_ns": 1792961836460614000,
+      "candidate": {
+        "per_op_ns": 946.1908903301887,
+        "iters": 6784,
+        "rounds": 7,
+        "spread": 0.17618370829288674,
+        "samples_ns": [
+          1112.8943101415093,
+          1054.6137971698113,
+          946.1908903301887,
+          986.4693396226415,
+          1093.4122936320755,
+          1056.063237028302,
+          1074.5994988207547
+        ],
+        "cpu_samples_ns": [
+          null,
+          1045.2166863207547,
+          920.5053066037735,
+          969.6589033018868,
+          1077.130011792453,
+          1019.3163325471698,
+          1026.7970224056603
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 1309.4902663934427,
+        "iters": 3904,
+        "rounds": 7,
+        "spread": 0.10901912073940045,
+        "samples_ns": [
+          1309.4902663934427,
+          1389.2907274590164,
+          1452.249743852459,
+          1321.4439036885246,
+          1332.127305327869,
+          1327.8155737704917,
+          1432.6331967213114
+        ],
+        "cpu_samples_ns": [
+          null,
+          1357.8806352459017,
+          1420.5730020491803,
+          1304.0258709016393,
+          1312.4894979508197,
+          1328.0397028688524,
+          1407.189293032787
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 0,
+      "case": "dumps/empty64",
+      "identical_output": true,
+      "started_unix_ns": 1792961836460814000,
+      "finished_unix_ns": 1792961836581321000,
+      "candidate": {
+        "per_op_ns": 935.0941162109375,
+        "iters": 8192,
+        "rounds": 7,
+        "spread": 0.09602559485011732,
+        "samples_ns": [
+          935.0941162109375,
+          1024.8870849609375,
+          1020.757080078125,
+          996.124267578125,
+          947.86572265625,
+          1005.401611328125,
+          1001.337646484375
+        ],
+        "cpu_samples_ns": [
+          null,
+          1006.7901611328125,
+          996.917724609375,
+          980.036376953125,
+          935.1297607421875,
+          983.7392578125,
+          977.691650390625
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 1287.5663377192982,
+        "iters": 3648,
+        "rounds": 7,
+        "spread": 0.20176698441274316,
+        "samples_ns": [
+          1401.921326754386,
+          1364.263706140351,
+          1287.5663377192982,
+          1314.1332236842106,
+          1547.3547149122808,
+          1397.329769736842,
+          1542.96875
+        ],
+        "cpu_samples_ns": [
+          null,
+          1346.6167763157894,
+          1275.5962171052631,
+          1293.7225877192982,
+          1544.2708333333333,
+          1387.232730263158,
+          1540.1362390350878
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 0,
+      "case": "raw-orjson/empty64",
+      "identical_output": true,
+      "started_unix_ns": 1792961836581506000,
+      "finished_unix_ns": 1792961836703961000,
+      "candidate": {
+        "per_op_ns": 307.4764404296875,
+        "iters": 24576,
+        "rounds": 7,
+        "spread": 0.04793317471578597,
+        "samples_ns": [
+          313.9275309244792,
+          322.2147623697917,
+          318.7679443359375,
+          320.2768961588542,
+          315.9704996744792,
+          307.4764404296875,
+          309.4211018880208
+        ],
+        "cpu_samples_ns": [
+          null,
+          318.7730712890625,
+          313.0323486328125,
+          308.4716796875,
+          309.4228108723958,
+          297.0750732421875,
+          303.9449055989583
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 1516.6015625,
+        "iters": 3328,
+        "rounds": 7,
+        "spread": 0.15936896329684483,
+        "samples_ns": [
+          1516.6015625,
+          1758.30078125,
+          1593.2115384615386,
+          1665.301983173077,
+          1691.6565504807693,
+          1561.6361177884614,
+          1558.919170673077
+        ],
+        "cpu_samples_ns": [
+          null,
+          1693.0838341346155,
+          1568.9477163461538,
+          1635.7923677884614,
+          1654.196514423077,
+          1538.4741586538462,
+          1530.8494591346155
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 0,
+      "case": "raw-orjson/empty64",
+      "identical_output": true,
+      "started_unix_ns": 1792961836704189000,
+      "finished_unix_ns": 1792961836861677000,
+      "candidate": {
+        "per_op_ns": 274.9277648925781,
+        "iters": 32768,
+        "rounds": 7,
+        "spread": 0.14524167558661594,
+        "samples_ns": [
+          274.9277648925781,
+          314.8587341308594,
+          291.7976379394531,
+          292.60382080078125,
+          289.5711364746094,
+          298.6564636230469,
+          293.6719055175781
+        ],
+        "cpu_samples_ns": [
+          null,
+          306.353271484375,
+          283.56170654296875,
+          290.429443359375,
+          284.8421936035156,
+          293.75201416015625,
+          289.8101806640625
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 1612.9494485294117,
+        "iters": 3264,
+        "rounds": 7,
+        "spread": 1.3368761974878942,
+        "samples_ns": [
+          1742.736519607843,
+          2273.9099264705883,
+          3769.263174019608,
+          2529.079963235294,
+          1624.0042892156862,
+          1612.9494485294117,
+          1624.7830882352941
+        ],
+        "cpu_samples_ns": [
+          null,
+          1869.6893382352941,
+          1916.3345588235295,
+          1872.5744485294117,
+          1577.9718137254902,
+          1567.2870710784314,
+          1563.2276348039215
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 0,
+      "case": "dumpb/int2",
+      "identical_output": true,
+      "started_unix_ns": 1792961836861823000,
+      "finished_unix_ns": 1792961837018431000,
+      "candidate": {
+        "per_op_ns": 80.29247174944196,
+        "iters": 114688,
+        "rounds": 7,
+        "spread": 0.054677250560699726,
+        "samples_ns": [
+          81.9854736328125,
+          82.66412353515625,
+          84.68264334542411,
+          80.992919921875,
+          84.609619140625,
+          81.87684849330357,
+          80.29247174944196
+        ],
+        "cpu_samples_ns": [
+          null,
+          79.18657575334821,
+          82.50462995256696,
+          79.68430873325893,
+          82.20345633370536,
+          80.05233328683036,
+          78.20746721540179
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 887.262939453125,
+        "iters": 8192,
+        "rounds": 7,
+        "spread": 0.09541803777362406,
+        "samples_ns": [
+          887.262939453125,
+          948.9898681640625,
+          967.3206787109375,
+          921.783447265625,
+          971.2117919921875,
+          912.1907958984375,
+          971.923828125
+        ],
+        "cpu_samples_ns": [
+          null,
+          917.327880859375,
+          941.0350341796875,
+          900.054931640625,
+          924.4945068359375,
+          886.70849609375,
+          934.0770263671875
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 0,
+      "case": "dumpb/int2",
+      "identical_output": true,
+      "started_unix_ns": 1792961837018602000,
+      "finished_unix_ns": 1792961837179020000,
+      "candidate": {
+        "per_op_ns": 78.68855794270833,
+        "iters": 122880,
+        "rounds": 7,
+        "spread": 0.101472813299894,
+        "samples_ns": [
+          81.1913330078125,
+          82.79927571614583,
+          86.67330729166666,
+          79.77939453125,
+          83.667333984375,
+          81.96241048177083,
+          78.68855794270833
+        ],
+        "cpu_samples_ns": [
+          null,
+          80.14356282552083,
+          85.0921630859375,
+          78.72281087239584,
+          82.19164225260417,
+          80.41245930989584,
+          77.47633463541666
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 855.6875,
+        "iters": 8192,
+        "rounds": 7,
+        "spread": 0.1815556010791761,
+        "samples_ns": [
+          855.6875,
+          876.1392822265625,
+          898.630859375,
+          974.81787109375,
+          1011.0423583984375,
+          885.3048095703125,
+          964.90478515625
+        ],
+        "cpu_samples_ns": [
+          null,
+          864.715576171875,
+          873.5301513671875,
+          961.5833740234375,
+          988.703369140625,
+          875.5950927734375,
+          937.6729736328125
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 0,
+      "case": "dumps/int2",
+      "identical_output": true,
+      "started_unix_ns": 1792961837179161000,
+      "finished_unix_ns": 1792961837323165000,
+      "candidate": {
+        "per_op_ns": 272.555908203125,
+        "iters": 24576,
+        "rounds": 7,
+        "spread": 0.18637081996806967,
+        "samples_ns": [
+          273.0526529947917,
+          299.4554036458333,
+          323.3523763020833,
+          292.4109700520833,
+          272.555908203125,
+          299.5707194010417,
+          281.1940511067708
+        ],
+        "cpu_samples_ns": [
+          null,
+          295.1914469401042,
+          313.1866455078125,
+          284.4340006510417,
+          268.6953938802083,
+          294.6268717447917,
+          278.717041015625
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 583.4195006127451,
+        "iters": 13056,
+        "rounds": 7,
+        "spread": 0.09567796248584604,
+        "samples_ns": [
+          639.2398897058823,
+          583.4195006127451,
+          601.9806219362745,
+          593.7212775735294,
+          612.3621323529412,
+          603.5507046568628,
+          600.2349111519608
+        ],
+        "cpu_samples_ns": [
+          null,
+          577.6686580882352,
+          587.4597886029412,
+          586.4608609068628,
+          601.8848039215686,
+          591.9852175245098,
+          593.6255361519608
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 0,
+      "case": "dumps/int2",
+      "identical_output": true,
+      "started_unix_ns": 1792961837323307000,
+      "finished_unix_ns": 1792961837507334000,
+      "candidate": {
+        "per_op_ns": 277.1263122558594,
+        "iters": 32768,
+        "rounds": 7,
+        "spread": 0.12230836786102661,
+        "samples_ns": [
+          284.56878662109375,
+          305.7161865234375,
+          310.754150390625,
+          311.02117919921875,
+          277.1263122558594,
+          281.1622619628906,
+          287.15643310546875
+        ],
+        "cpu_samples_ns": [
+          null,
+          295.434326171875,
+          297.34039306640625,
+          293.58544921875,
+          270.63751220703125,
+          274.0020751953125,
+          279.80804443359375
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 588.513671875,
+        "iters": 16384,
+        "rounds": 7,
+        "spread": 0.1203173588456088,
+        "samples_ns": [
+          622.759521484375,
+          659.3220825195312,
+          629.4097900390625,
+          612.469970703125,
+          588.513671875,
+          618.1538696289062,
+          631.103515625
+        ],
+        "cpu_samples_ns": [
+          null,
+          646.4970703125,
+          618.1818237304688,
+          600.4562377929688,
+          578.9819946289062,
+          606.6004638671875,
+          619.0567016601562
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 0,
+      "case": "raw-orjson/int2",
+      "identical_output": true,
+      "started_unix_ns": 1792961837507531000,
+      "finished_unix_ns": 1792961837622711000,
+      "candidate": {
+        "per_op_ns": 45.547299985532405,
+        "iters": 110592,
+        "rounds": 7,
+        "spread": 0.10556529096613235,
+        "samples_ns": [
+          45.547299985532405,
+          46.807553891782405,
+          47.52190031828704,
+          50.355513961226855,
+          47.71027741608796,
+          48.371120876736114,
+          47.038510923032405
+        ],
+        "cpu_samples_ns": [
+          null,
+          46.066469545717595,
+          46.369384765625,
+          48.934751157407405,
+          46.763852719907405,
+          46.59167932581018,
+          45.915771484375
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 825.5361328125,
+        "iters": 8192,
+        "rounds": 7,
+        "spread": 0.14664801164962638,
+        "samples_ns": [
+          865.234375,
+          884.4451904296875,
+          946.599365234375,
+          868.062255859375,
+          921.4222412109375,
+          882.232666015625,
+          825.5361328125
+        ],
+        "cpu_samples_ns": [
+          null,
+          873.1434326171875,
+          926.84423828125,
+          863.444091796875,
+          904.50537109375,
+          870.7122802734375,
+          823.2828369140625
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 0,
+      "case": "raw-orjson/int2",
+      "identical_output": true,
+      "started_unix_ns": 1792961837622863000,
+      "finished_unix_ns": 1792961837781873000,
+      "candidate": {
+        "per_op_ns": 44.96784855769231,
+        "iters": 212992,
+        "rounds": 7,
+        "spread": 0.08740271244144789,
+        "samples_ns": [
+          44.96784855769231,
+          48.89816049429086,
+          46.85093806340144,
+          46.54947603665865,
+          45.78340970552885,
+          45.78830190805289,
+          46.49881216195914
+        ],
+        "cpu_samples_ns": [
+          null,
+          48.31284743088942,
+          46.1431650015024,
+          45.6676025390625,
+          45.17872971754808,
+          45.09852482722356,
+          45.77245154747596
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 811.4522705078125,
+        "iters": 8192,
+        "rounds": 7,
+        "spread": 0.12728628277720505,
+        "samples_ns": [
+          842.9769287109375,
+          860.3006591796875,
+          914.739013671875,
+          857.2235107421875,
+          872.553466796875,
+          874.384521484375,
+          811.4522705078125
+        ],
+        "cpu_samples_ns": [
+          null,
+          846.2423095703125,
+          894.3887939453125,
+          845.158935546875,
+          851.776123046875,
+          845.34716796875,
+          806.1319580078125
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 0,
+      "case": "dumpb/int4096",
+      "identical_output": true,
+      "started_unix_ns": 1792961837782288000,
+      "finished_unix_ns": 1792961837914959000,
+      "candidate": {
+        "per_op_ns": 38110.3515625,
+        "iters": 128,
+        "rounds": 7,
+        "spread": 0.19040778987828316,
+        "samples_ns": [
+          40080.734375,
+          45366.859375,
+          41986.0,
+          40993.1640625,
+          43746.4140625,
+          44139.9765625,
+          38110.3515625
+        ],
+        "cpu_samples_ns": [
+          null,
+          44344.078125,
+          41128.5859375,
+          40580.40625,
+          43327.1484375,
+          43625.3203125,
+          37953.125
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 199993.75,
+        "iters": 40,
+        "rounds": 7,
+        "spread": 0.07173136660520642,
+        "samples_ns": [
+          212130.225,
+          203653.125,
+          200270.825,
+          202883.325,
+          199993.75,
+          214339.575,
+          201575.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          201478.125,
+          197767.7,
+          198559.375,
+          197454.15,
+          208977.075,
+          195903.125
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 0,
+      "case": "dumpb/int4096",
+      "identical_output": true,
+      "started_unix_ns": 1792961837915566000,
+      "finished_unix_ns": 1792961838062846000,
+      "candidate": {
+        "per_op_ns": 39932.6171875,
+        "iters": 128,
+        "rounds": 7,
+        "spread": 0.07929197133843634,
+        "samples_ns": [
+          40872.7265625,
+          41334.6328125,
+          39932.6171875,
+          43098.953125,
+          40559.25,
+          41679.3671875,
+          41296.875
+        ],
+        "cpu_samples_ns": [
+          null,
+          40013.0234375,
+          38807.2890625,
+          41147.4609375,
+          39631.8359375,
+          40069.6640625,
+          39633.7890625
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 205132.8125,
+        "iters": 48,
+        "rounds": 7,
+        "spread": 0.05671295273641315,
+        "samples_ns": [
+          205132.8125,
+          215802.08333333334,
+          214486.10416666666,
+          216766.5,
+          209651.04166666666,
+          209991.3125,
+          206068.58333333334
+        ],
+        "cpu_samples_ns": [
+          null,
+          207532.125,
+          209022.5625,
+          211296.875,
+          205520.83333333334,
+          202809.89583333334,
+          202178.8125
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 0,
+      "case": "dumps/int4096",
+      "identical_output": true,
+      "started_unix_ns": 1792961838063330000,
+      "finished_unix_ns": 1792961838220825000,
+      "candidate": {
+        "per_op_ns": 54641.6015625,
+        "iters": 128,
+        "rounds": 7,
+        "spread": 0.06410137079334441,
+        "samples_ns": [
+          54641.6015625,
+          55652.6640625,
+          58144.203125,
+          56963.8671875,
+          55136.71875,
+          56437.171875,
+          55631.5078125
+        ],
+        "cpu_samples_ns": [
+          null,
+          55381.515625,
+          55541.015625,
+          56063.4765625,
+          54625.9765625,
+          55386.71875,
+          54308.265625
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 203692.70833333334,
+        "iters": 48,
+        "rounds": 7,
+        "spread": 0.06830478917896136,
+        "samples_ns": [
+          207661.45833333334,
+          215425.33333333334,
+          217605.89583333334,
+          208793.39583333334,
+          203692.70833333334,
+          204063.375,
+          209927.95833333334
+        ],
+        "cpu_samples_ns": [
+          null,
+          209721.35416666666,
+          210850.6875,
+          205731.77083333334,
+          200484.375,
+          201092.02083333334,
+          205415.79166666666
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 0,
+      "case": "dumps/int4096",
+      "identical_output": true,
+      "started_unix_ns": 1792961838221245000,
+      "finished_unix_ns": 1792961838371299000,
+      "candidate": {
+        "per_op_ns": 52603.1875,
+        "iters": 128,
+        "rounds": 7,
+        "spread": 0.06381920772386654,
+        "samples_ns": [
+          55960.28125,
+          54338.8671875,
+          53340.5,
+          52603.1875,
+          53412.7578125,
+          55292.640625,
+          53335.28125
+        ],
+        "cpu_samples_ns": [
+          null,
+          54098.953125,
+          53221.6796875,
+          52399.0859375,
+          53253.2578125,
+          54795.2421875,
+          52994.7890625
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 190677.9375,
+        "iters": 48,
+        "rounds": 7,
+        "spread": 0.11848720481011776,
+        "samples_ns": [
+          194702.25,
+          190677.9375,
+          197820.3125,
+          195046.875,
+          196881.9375,
+          213270.83333333334,
+          203141.5
+        ],
+        "cpu_samples_ns": [
+          null,
+          190460.9375,
+          194966.14583333334,
+          194096.35416666666,
+          194967.89583333334,
+          213023.4375,
+          201528.64583333334
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 0,
+      "case": "raw-orjson/int4096",
+      "identical_output": true,
+      "started_unix_ns": 1792961838371673000,
+      "finished_unix_ns": 1792961838577446000,
+      "candidate": {
+        "per_op_ns": 21694.552083333332,
+        "iters": 384,
+        "rounds": 7,
+        "spread": 0.2299924568235977,
+        "samples_ns": [
+          22182.291666666668,
+          22455.403645833332,
+          22191.731770833332,
+          21694.552083333332,
+          22552.625,
+          22144.640625,
+          26684.135416666668
+        ],
+        "cpu_samples_ns": [
+          null,
+          22195.744791666668,
+          22102.7578125,
+          21683.268229166668,
+          22421.765625,
+          21897.026041666668,
+          22498.588541666668
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 246195.15789473685,
+        "iters": 38,
+        "rounds": 7,
+        "spread": 0.19223720249318682,
+        "samples_ns": [
+          246195.15789473685,
+          247341.0,
+          246572.36842105264,
+          246327.84210526315,
+          246788.36842105264,
+          246640.34210526315,
+          293523.0263157895
+        ],
+        "cpu_samples_ns": [
+          null,
+          247400.2105263158,
+          246615.13157894736,
+          246373.8947368421,
+          246835.52631578947,
+          246690.7894736842,
+          247448.47368421053
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 0,
+      "case": "raw-orjson/int4096",
+      "identical_output": true,
+      "started_unix_ns": 1792961838577974000,
+      "finished_unix_ns": 1792961838723948000,
+      "candidate": {
+        "per_op_ns": 26404.296875,
+        "iters": 192,
+        "rounds": 7,
+        "spread": 1.2963730058929408,
+        "samples_ns": [
+          30360.890625,
+          26878.473958333332,
+          60634.114583333336,
+          27053.604166666668,
+          26404.296875,
+          26447.916666666668,
+          27000.864583333332
+        ],
+        "cpu_samples_ns": [
+          null,
+          25491.755208333332,
+          25400.177083333332,
+          25354.166666666668,
+          26420.359375,
+          26459.416666666668,
+          27010.854166666668
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 250728.02777777778,
+        "iters": 36,
+        "rounds": 7,
+        "spread": 0.05105498886631143,
+        "samples_ns": [
+          254135.41666666666,
+          259524.30555555556,
+          256768.52777777778,
+          263528.94444444444,
+          260366.91666666666,
+          262590.27777777775,
+          250728.02777777778
+        ],
+        "cpu_samples_ns": [
+          null,
+          259607.63888888888,
+          256835.63888888888,
+          263576.3888888889,
+          260414.36111111112,
+          262650.47222222225,
+          250774.30555555556
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 0,
+      "case": "dumpb/ints16x256",
+      "identical_output": true,
+      "started_unix_ns": 1792961838729148000,
+      "finished_unix_ns": 1792961838888019000,
+      "candidate": {
+        "per_op_ns": 14186.5890625,
+        "iters": 640,
+        "rounds": 7,
+        "spread": 0.023303588765666343,
+        "samples_ns": [
+          14186.5890625,
+          14486.1328125,
+          14448.1125,
+          14517.1875,
+          14505.0140625,
+          14485.6125,
+          14391.5359375
+        ],
+        "cpu_samples_ns": [
+          null,
+          14491.1453125,
+          14450.390625,
+          14519.0109375,
+          14507.03125,
+          14487.109375,
+          14393.359375
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 96292.54166666667,
+        "iters": 48,
+        "rounds": 7,
+        "spread": 0.5408773870942757,
+        "samples_ns": [
+          148375.0,
+          97938.35416666667,
+          96292.54166666667,
+          98119.79166666667,
+          98126.72916666667,
+          97301.20833333333,
+          101901.04166666667
+        ],
+        "cpu_samples_ns": [
+          null,
+          97809.02083333333,
+          96339.41666666667,
+          98158.85416666667,
+          98151.91666666667,
+          97328.125,
+          101929.6875
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 0,
+      "case": "dumpb/ints16x256",
+      "identical_output": true,
+      "started_unix_ns": 1792961838888383000,
+      "finished_unix_ns": 1792961839066654000,
+      "candidate": {
+        "per_op_ns": 13596.1578125,
+        "iters": 640,
+        "rounds": 7,
+        "spread": 0.10853445383984285,
+        "samples_ns": [
+          14409.375,
+          13647.5265625,
+          13596.1578125,
+          13616.6015625,
+          14353.190625,
+          14363.0859375,
+          15071.809375
+        ],
+        "cpu_samples_ns": [
+          null,
+          13653.45,
+          13599.7390625,
+          13618.0328125,
+          14215.234375,
+          14366.2765625,
+          15074.0875
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 94667.57608695653,
+        "iters": 92,
+        "rounds": 7,
+        "spread": 0.14211146394758684,
+        "samples_ns": [
+          98626.81521739131,
+          100113.22826086957,
+          106231.88043478261,
+          104015.85869565218,
+          108120.92391304347,
+          102116.40217391304,
+          94667.57608695653
+        ],
+        "cpu_samples_ns": [
+          null,
+          100139.94565217392,
+          101132.69565217392,
+          90932.52173913043,
+          96895.38043478261,
+          96957.88043478261,
+          94076.98913043478
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 0,
+      "case": "dumps/ints16x256",
+      "identical_output": true,
+      "started_unix_ns": 1792961839066928000,
+      "finished_unix_ns": 1792961839211669000,
+      "candidate": {
+        "per_op_ns": 23768.989583333332,
+        "iters": 384,
+        "rounds": 7,
+        "spread": 0.2485996941918808,
+        "samples_ns": [
+          23841.796875,
+          23874.1328125,
+          29677.953125,
+          23768.989583333332,
+          24830.296875,
+          25561.088541666668,
+          24969.510416666668
+        ],
+        "cpu_samples_ns": [
+          null,
+          23763.020833333332,
+          24360.3515625,
+          23590.9296875,
+          24369.140625,
+          24747.395833333332,
+          24448.0234375
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 78838.03225806452,
+        "iters": 62,
+        "rounds": 7,
+        "spread": 0.16394883098422694,
+        "samples_ns": [
+          91278.2258064516,
+          88735.8870967742,
+          91763.43548387097,
+          86961.01612903226,
+          78838.03225806452,
+          88284.95161290323,
+          87439.51612903226
+        ],
+        "cpu_samples_ns": [
+          null,
+          86000.67741935483,
+          90671.37096774194,
+          84371.64516129032,
+          78479.83870967742,
+          86938.17741935483,
+          86022.17741935483
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 0,
+      "case": "dumps/ints16x256",
+      "identical_output": true,
+      "started_unix_ns": 1792961839212037000,
+      "finished_unix_ns": 1792961839384043000,
+      "candidate": {
+        "per_op_ns": 22673.502604166668,
+        "iters": 384,
+        "rounds": 7,
+        "spread": 0.08701707033437181,
+        "samples_ns": [
+          23897.893229166668,
+          24646.484375,
+          24113.171875,
+          22673.502604166668,
+          24055.4453125,
+          23220.377604166668,
+          23512.044270833332
+        ],
+        "cpu_samples_ns": [
+          null,
+          23395.291666666668,
+          23043.403645833332,
+          22301.106770833332,
+          23665.690104166668,
+          22874.674479166668,
+          23044.8125
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 77015.625,
+        "iters": 120,
+        "rounds": 7,
+        "spread": 0.12877527557990126,
+        "samples_ns": [
+          79313.89166666666,
+          86933.33333333333,
+          78676.04166666667,
+          80206.6,
+          77015.625,
+          79093.05833333333,
+          83300.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          85218.4,
+          77859.025,
+          78971.175,
+          75814.93333333333,
+          77442.01666666666,
+          81947.225
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 0,
+      "case": "raw-orjson/ints16x256",
+      "identical_output": true,
+      "started_unix_ns": 1792961839384273000,
+      "finished_unix_ns": 1792961839585607000,
+      "candidate": {
+        "per_op_ns": 8466.146484375,
+        "iters": 1024,
+        "rounds": 7,
+        "spread": 1.4339672459268498,
+        "samples_ns": [
+          8466.146484375,
+          9363.8916015625,
+          20236.9384765625,
+          20606.3232421875,
+          10689.8603515625,
+          11098.0634765625,
+          9594.279296875
+        ],
+        "cpu_samples_ns": [
+          null,
+          9178.22265625,
+          9761.7587890625,
+          9689.697265625,
+          10465.576171875,
+          10850.5458984375,
+          9489.2177734375
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 76804.76612903226,
+        "iters": 124,
+        "rounds": 7,
+        "spread": 0.11643661646921903,
+        "samples_ns": [
+          77505.70967741935,
+          82227.15322580645,
+          81659.6129032258,
+          78754.70967741935,
+          85747.65322580645,
+          76815.8629032258,
+          76804.76612903226
+        ],
+        "cpu_samples_ns": [
+          null,
+          81432.45967741935,
+          80328.96774193548,
+          77894.15322580645,
+          83315.19354838709,
+          76385.08064516129,
+          76059.4758064516
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 0,
+      "case": "raw-orjson/ints16x256",
+      "identical_output": true,
+      "started_unix_ns": 1792961839585936000,
+      "finished_unix_ns": 1792961839737134000,
+      "candidate": {
+        "per_op_ns": 8562.065104166666,
+        "iters": 768,
+        "rounds": 7,
+        "spread": 0.07732433490387133,
+        "samples_ns": [
+          8580.62109375,
+          8685.654947916666,
+          8932.5625,
+          8562.065104166666,
+          9096.08203125,
+          8620.930989583334,
+          9224.12109375
+        ],
+        "cpu_samples_ns": [
+          null,
+          8674.75,
+          8837.673177083334,
+          8533.638020833334,
+          8900.3359375,
+          8604.546875,
+          9193.033854166666
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 72371.7421875,
+        "iters": 128,
+        "rounds": 7,
+        "spread": 0.11972063077537061,
+        "samples_ns": [
+          75387.6953125,
+          76834.3125,
+          74248.3671875,
+          76123.046875,
+          72371.7421875,
+          72705.078125,
+          81036.1328125
+        ],
+        "cpu_samples_ns": [
+          null,
+          76284.828125,
+          73880.5390625,
+          75313.15625,
+          71984.703125,
+          72288.4140625,
+          80580.7265625
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 0,
+      "case": "dumpb/ints32x128",
+      "identical_output": true,
+      "started_unix_ns": 1792961839737396000,
+      "finished_unix_ns": 1792961839903901000,
+      "candidate": {
+        "per_op_ns": 1799.7960304054054,
+        "iters": 4736,
+        "rounds": 7,
+        "spread": 0.02332670955347089,
+        "samples_ns": [
+          1801.8458614864865,
+          1809.7814611486488,
+          1841.779349662162,
+          1799.7960304054054,
+          1825.3361486486488,
+          1825.7673141891892,
+          1815.2360641891892
+        ],
+        "cpu_samples_ns": [
+          null,
+          1797.6668074324325,
+          1822.388724662162,
+          1798.097972972973,
+          1819.133445945946,
+          1820.6378800675675,
+          1808.320945945946
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 69811.8515625,
+        "iters": 128,
+        "rounds": 7,
+        "spread": 0.21788944548164446,
+        "samples_ns": [
+          69811.8515625,
+          71331.375,
+          72691.40625,
+          85023.1171875,
+          83368.4921875,
+          75891.2734375,
+          84375.9765625
+        ],
+        "cpu_samples_ns": [
+          null,
+          70558.9140625,
+          71667.6484375,
+          82962.234375,
+          80818.03125,
+          72843.09375,
+          82605.140625
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 0,
+      "case": "dumpb/ints32x128",
+      "identical_output": true,
+      "started_unix_ns": 1792961839904141000,
+      "finished_unix_ns": 1792961840078696000,
+      "candidate": {
+        "per_op_ns": 12387.044270833334,
+        "iters": 768,
+        "rounds": 7,
+        "spread": 0.07678763829395843,
+        "samples_ns": [
+          12766.873697916666,
+          12876.682291666666,
+          12465.440104166666,
+          13338.216145833334,
+          13165.0390625,
+          12867.62109375,
+          12387.044270833334
+        ],
+        "cpu_samples_ns": [
+          null,
+          12626.302083333334,
+          12404.2421875,
+          12996.690104166666,
+          12926.26953125,
+          12683.5390625,
+          12340.223958333334
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 70611.328125,
+        "iters": 128,
+        "rounds": 7,
+        "spread": 0.06916438469836528,
+        "samples_ns": [
+          72488.9375,
+          75495.1171875,
+          72662.109375,
+          74533.203125,
+          71974.609375,
+          71455.7265625,
+          70611.328125
+        ],
+        "cpu_samples_ns": [
+          null,
+          74499.34375,
+          72559.8984375,
+          73505.53125,
+          71756.515625,
+          70841.46875,
+          70153.3203125
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 0,
+      "case": "dumps/ints32x128",
+      "identical_output": true,
+      "started_unix_ns": 1792961840078932000,
+      "finished_unix_ns": 1792961840243403000,
+      "candidate": {
+        "per_op_ns": 22959.854166666668,
+        "iters": 384,
+        "rounds": 7,
+        "spread": 0.04348804480283974,
+        "samples_ns": [
+          23082.901041666668,
+          23483.5078125,
+          23140.515625,
+          23035.807291666668,
+          22959.854166666668,
+          23515.734375,
+          23958.333333333332
+        ],
+        "cpu_samples_ns": [
+          null,
+          23310.546875,
+          22981.119791666668,
+          22849.934895833332,
+          22872.505208333332,
+          23166.8828125,
+          23331.705729166668
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 69103.1875,
+        "iters": 128,
+        "rounds": 7,
+        "spread": 0.06604333103302941,
+        "samples_ns": [
+          69103.1875,
+          70228.515625,
+          69472.65625,
+          73666.9921875,
+          69957.6796875,
+          71276.6953125,
+          69669.59375
+        ],
+        "cpu_samples_ns": [
+          null,
+          70087.5703125,
+          69228.1875,
+          73024.734375,
+          69849.609375,
+          70823.8984375,
+          69261.390625
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 0,
+      "case": "dumps/ints32x128",
+      "identical_output": true,
+      "started_unix_ns": 1792961840243647000,
+      "finished_unix_ns": 1792961840405128000,
+      "candidate": {
+        "per_op_ns": 2895.7741477272725,
+        "iters": 2816,
+        "rounds": 7,
+        "spread": 0.12985161567232817,
+        "samples_ns": [
+          2946.096590909091,
+          2914.580255681818,
+          2895.7741477272725,
+          3271.795099431818,
+          3085.064275568182,
+          2993.1196732954545,
+          3010.1207386363635
+        ],
+        "cpu_samples_ns": [
+          null,
+          2896.188565340909,
+          2880.4303977272725,
+          3240.5152698863635,
+          3018.924715909091,
+          2980.0248579545455,
+          2988.088778409091
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 69965.8203125,
+        "iters": 128,
+        "rounds": 7,
+        "spread": 0.06849516365412799,
+        "samples_ns": [
+          69965.8203125,
+          71861.0078125,
+          70305.6640625,
+          71351.234375,
+          74758.140625,
+          72397.1328125,
+          70398.4375
+        ],
+        "cpu_samples_ns": [
+          null,
+          71024.7421875,
+          69848.953125,
+          70569.0078125,
+          73217.4453125,
+          71057.6171875,
+          68854.4921875
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 0,
+      "case": "raw-orjson/ints32x128",
+      "identical_output": true,
+      "started_unix_ns": 1792961840405391000,
+      "finished_unix_ns": 1792961840578317000,
+      "candidate": {
+        "per_op_ns": 9792.318080357143,
+        "iters": 896,
+        "rounds": 7,
+        "spread": 0.09024373036581039,
+        "samples_ns": [
+          9792.318080357143,
+          10676.013392857143,
+          10385.64955357143,
+          10362.862723214286,
+          10316.779017857143,
+          10184.245535714286,
+          10458.612723214286
+        ],
+        "cpu_samples_ns": [
+          null,
+          10195.777901785714,
+          10031.99330357143,
+          10033.715401785714,
+          10211.9140625,
+          9972.143973214286,
+          10049.525669642857
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 73505.53125,
+        "iters": 128,
+        "rounds": 7,
+        "spread": 0.05312907999695601,
+        "samples_ns": [
+          77410.8125,
+          77119.4609375,
+          76620.4375,
+          73517.90625,
+          74875.0,
+          73505.53125,
+          75397.140625
+        ],
+        "cpu_samples_ns": [
+          null,
+          74709.640625,
+          75093.75,
+          72119.46875,
+          72837.5703125,
+          72167.6484375,
+          72940.4296875
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 0,
+      "case": "raw-orjson/ints32x128",
+      "identical_output": true,
+      "started_unix_ns": 1792961840578589000,
+      "finished_unix_ns": 1792961840759551000,
+      "candidate": {
+        "per_op_ns": 9959.9140625,
+        "iters": 896,
+        "rounds": 7,
+        "spread": 0.06894736411573044,
+        "samples_ns": [
+          9969.7734375,
+          10280.36607142857,
+          9959.9140625,
+          10096.77232142857,
+          10646.62388392857,
+          10311.895089285714,
+          10032.31919642857
+        ],
+        "cpu_samples_ns": [
+          null,
+          10053.89732142857,
+          9893.275669642857,
+          9971.308035714286,
+          10625.046875,
+          10144.763392857143,
+          9945.17299107143
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 70973.6328125,
+        "iters": 128,
+        "rounds": 7,
+        "spread": 0.5810549142094473,
+        "samples_ns": [
+          72409.1796875,
+          70973.6328125,
+          77696.609375,
+          112213.2109375,
+          88750.0,
+          87928.7109375,
+          90419.2734375
+        ],
+        "cpu_samples_ns": [
+          null,
+          70569.015625,
+          75547.203125,
+          85093.75,
+          82702.796875,
+          78805.9921875,
+          83397.78125
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 0,
+      "case": "dumpb/dict4096",
+      "identical_output": true,
+      "started_unix_ns": 1792961840760219000,
+      "finished_unix_ns": 1792961840898131000,
+      "candidate": {
+        "per_op_ns": 67140.625,
+        "iters": 96,
+        "rounds": 7,
+        "spread": 0.117317042898146,
+        "samples_ns": [
+          67140.625,
+          75017.36458333333,
+          73479.16666666667,
+          68835.9375,
+          70626.73958333333,
+          67625.875,
+          69475.26041666667
+        ],
+        "cpu_samples_ns": [
+          null,
+          69711.375,
+          66618.48958333333,
+          65510.416666666664,
+          65539.5,
+          62771.697916666664,
+          64605.46875
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 293568.1818181818,
+        "iters": 22,
+        "rounds": 7,
+        "spread": 0.19764000929008282,
+        "samples_ns": [
+          351589.0,
+          327850.36363636365,
+          308532.1818181818,
+          346719.7272727273,
+          293568.1818181818,
+          313005.6818181818,
+          297113.63636363635
+        ],
+        "cpu_samples_ns": [
+          null,
+          316115.54545454547,
+          302518.95454545453,
+          345018.95454545453,
+          292520.8181818182,
+          304825.7727272727,
+          294244.3181818182
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 0,
+      "case": "dumpb/dict4096",
+      "identical_output": true,
+      "started_unix_ns": 1792961840898699000,
+      "finished_unix_ns": 1792961841057285000,
+      "candidate": {
+        "per_op_ns": 62037.765625,
+        "iters": 128,
+        "rounds": 7,
+        "spread": 0.037590384083082455,
+        "samples_ns": [
+          63372.0703125,
+          63840.5,
+          63004.8828125,
+          62989.9140625,
+          62037.765625,
+          63409.1796875,
+          64369.7890625
+        ],
+        "cpu_samples_ns": [
+          null,
+          63242.8359375,
+          62800.453125,
+          62495.1171875,
+          62029.625,
+          63050.453125,
+          64364.5859375
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 271000.0,
+        "iters": 34,
+        "rounds": 7,
+        "spread": 0.031216084219665725,
+        "samples_ns": [
+          277372.5588235294,
+          276085.76470588235,
+          279459.5588235294,
+          273816.17647058825,
+          277974.26470588235,
+          274363.9705882353,
+          271000.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          276039.20588235295,
+          278017.14705882355,
+          273709.5588235294,
+          276781.85294117645,
+          273724.26470588235,
+          270251.23529411765
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 0,
+      "case": "dumps/dict4096",
+      "identical_output": true,
+      "started_unix_ns": 1792961841057810000,
+      "finished_unix_ns": 1792961841227012000,
+      "candidate": {
+        "per_op_ns": 100084.58,
+        "iters": 100,
+        "rounds": 7,
+        "spread": 0.03546590293929394,
+        "samples_ns": [
+          100179.16,
+          103634.17,
+          102977.5,
+          100989.16,
+          101377.08,
+          100084.58,
+          101450.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          102517.5,
+          102300.42,
+          100744.58,
+          101023.75,
+          99916.66,
+          101192.09
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 261057.3125,
+        "iters": 32,
+        "rounds": 7,
+        "spread": 0.04632603424966309,
+        "samples_ns": [
+          273151.0625,
+          271191.40625,
+          266843.75,
+          261057.3125,
+          271135.40625,
+          261548.1875,
+          267643.21875
+        ],
+        "cpu_samples_ns": [
+          null,
+          261180.96875,
+          258730.46875,
+          255834.65625,
+          264944.03125,
+          255660.15625,
+          258363.28125
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 0,
+      "case": "dumps/dict4096",
+      "identical_output": true,
+      "started_unix_ns": 1792961841227567000,
+      "finished_unix_ns": 1792961841400205000,
+      "candidate": {
+        "per_op_ns": 99210.5,
+        "iters": 96,
+        "rounds": 7,
+        "spread": 0.07917550729677471,
+        "samples_ns": [
+          99210.5,
+          100734.375,
+          107065.54166666667,
+          105914.0625,
+          105614.15625,
+          106305.98958333333,
+          103659.71875
+        ],
+        "cpu_samples_ns": [
+          null,
+          98192.27083333333,
+          104176.21875,
+          103478.73958333333,
+          102805.11458333333,
+          103303.82291666667,
+          101356.33333333333
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 286008.3333333333,
+        "iters": 30,
+        "rounds": 7,
+        "spread": 0.2554460534366714,
+        "samples_ns": [
+          287662.5,
+          296611.1,
+          286008.3333333333,
+          290516.6666666667,
+          359068.0333333333,
+          299968.06666666665,
+          300240.3
+        ],
+        "cpu_samples_ns": [
+          null,
+          288316.6666666667,
+          282520.8333333333,
+          283711.1,
+          354984.73333333334,
+          293837.5,
+          295858.3333333333
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 0,
+      "case": "raw-orjson/dict4096",
+      "identical_output": true,
+      "started_unix_ns": 1792961841400932000,
+      "finished_unix_ns": 1792961841556234000,
+      "candidate": {
+        "per_op_ns": 33223.6328125,
+        "iters": 128,
+        "rounds": 7,
+        "spread": 1.3807648217277564,
+        "samples_ns": [
+          45727.5390625,
+          65317.0546875,
+          72114.5859375,
+          79097.65625,
+          78484.375,
+          59779.296875,
+          33223.6328125
+        ],
+        "cpu_samples_ns": [
+          null,
+          45771.8125,
+          46031.90625,
+          47842.7734375,
+          47248.046875,
+          42924.1484375,
+          33023.109375
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 277463.53125,
+        "iters": 32,
+        "rounds": 7,
+        "spread": 0.1297092759825531,
+        "samples_ns": [
+          291834.65625,
+          313453.125,
+          304140.625,
+          289502.625,
+          286126.28125,
+          284619.78125,
+          277463.53125
+        ],
+        "cpu_samples_ns": [
+          null,
+          303144.53125,
+          296460.9375,
+          285774.71875,
+          283848.9375,
+          280158.84375,
+          274145.8125
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 0,
+      "case": "raw-orjson/dict4096",
+      "identical_output": true,
+      "started_unix_ns": 1792961841556721000,
+      "finished_unix_ns": 1792961841723098000,
+      "candidate": {
+        "per_op_ns": 31411.1328125,
+        "iters": 256,
+        "rounds": 7,
+        "spread": 0.03088238768848127,
+        "samples_ns": [
+          31432.78125,
+          32285.64453125,
+          31511.5546875,
+          32351.88671875,
+          31411.1328125,
+          32381.18359375,
+          31431.8046875
+        ],
+        "cpu_samples_ns": [
+          null,
+          31718.5859375,
+          31170.57421875,
+          31822.75390625,
+          31117.67578125,
+          31628.41796875,
+          31213.37890625
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 260973.36111111112,
+        "iters": 36,
+        "rounds": 7,
+        "spread": 0.1745114257617396,
+        "samples_ns": [
+          269913.19444444444,
+          260973.36111111112,
+          270250.0,
+          306516.19444444444,
+          275376.1666666667,
+          279223.3888888889,
+          277023.1388888889
+        ],
+        "cpu_samples_ns": [
+          null,
+          259753.47222222222,
+          266074.05555555556,
+          303157.4166666667,
+          272392.3611111111,
+          273809.02777777775,
+          273650.47222222225
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 1,
+      "case": "raw-orjson/dict4096",
+      "identical_output": true,
+      "started_unix_ns": 1792961841723630000,
+      "finished_unix_ns": 1792961841887526000,
+      "candidate": {
+        "per_op_ns": 30797.52734375,
+        "iters": 256,
+        "rounds": 7,
+        "spread": 0.1425747323718536,
+        "samples_ns": [
+          32219.23828125,
+          31931.15234375,
+          32474.7734375,
+          30797.52734375,
+          35188.4765625,
+          32195.9609375,
+          32557.94140625
+        ],
+        "cpu_samples_ns": [
+          null,
+          31813.640625,
+          31803.22265625,
+          30750.48828125,
+          34405.92578125,
+          32042.15625,
+          32141.11328125
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 267687.5,
+        "iters": 34,
+        "rounds": 7,
+        "spread": 0.18041230033923444,
+        "samples_ns": [
+          268803.9117647059,
+          276306.3823529412,
+          267687.5,
+          315981.6176470588,
+          279787.9705882353,
+          283708.32352941175,
+          268913.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          270650.73529411765,
+          265832.1176470588,
+          293264.70588235295,
+          271691.17647058825,
+          272799.0294117647,
+          265827.20588235295
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 1,
+      "case": "raw-orjson/dict4096",
+      "identical_output": true,
+      "started_unix_ns": 1792961841888105000,
+      "finished_unix_ns": 1792961842031202000,
+      "candidate": {
+        "per_op_ns": 31139.6484375,
+        "iters": 256,
+        "rounds": 7,
+        "spread": 0.029217800357512466,
+        "samples_ns": [
+          31267.25,
+          32049.48046875,
+          31794.2734375,
+          31351.7265625,
+          31139.6484375,
+          31328.2890625,
+          31457.35546875
+        ],
+        "cpu_samples_ns": [
+          null,
+          31670.24609375,
+          31691.08203125,
+          31352.375,
+          31019.6953125,
+          30970.703125,
+          31274.7421875
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 273779.2,
+        "iters": 20,
+        "rounds": 7,
+        "spread": 0.4678876262331105,
+        "samples_ns": [
+          396464.6,
+          401877.1,
+          378341.65,
+          287997.95,
+          298420.8,
+          287081.25,
+          273779.2
+        ],
+        "cpu_samples_ns": [
+          null,
+          347708.35,
+          333981.25,
+          275122.95,
+          285218.75,
+          275650.0,
+          269500.0
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 1,
+      "case": "dumps/dict4096",
+      "identical_output": true,
+      "started_unix_ns": 1792961842031801000,
+      "finished_unix_ns": 1792961842165560000,
+      "candidate": {
+        "per_op_ns": 99207.50980392157,
+        "iters": 51,
+        "rounds": 7,
+        "spread": 0.05277944842489984,
+        "samples_ns": [
+          104443.62745098039,
+          101578.43137254902,
+          101593.96078431372,
+          101275.3137254902,
+          101522.05882352941,
+          99207.50980392157,
+          104348.03921568628
+        ],
+        "cpu_samples_ns": [
+          null,
+          98818.62745098039,
+          98911.76470588235,
+          98823.5294117647,
+          99454.25490196078,
+          98428.92156862745,
+          100286.76470588235
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 278928.40625,
+        "iters": 32,
+        "rounds": 7,
+        "spread": 0.16205054410803668,
+        "samples_ns": [
+          278928.40625,
+          297574.21875,
+          279889.3125,
+          298598.9375,
+          287878.90625,
+          321598.9375,
+          324128.90625
+        ],
+        "cpu_samples_ns": [
+          null,
+          291361.96875,
+          274736.96875,
+          286951.8125,
+          281065.125,
+          303203.125,
+          298300.78125
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 1,
+      "case": "dumps/dict4096",
+      "identical_output": true,
+      "started_unix_ns": 1792961842166416000,
+      "finished_unix_ns": 1792961842290933000,
+      "candidate": {
+        "per_op_ns": 98905.44871794872,
+        "iters": 78,
+        "rounds": 7,
+        "spread": 0.14424447072929664,
+        "samples_ns": [
+          105200.32051282052,
+          101769.23076923077,
+          104725.43589743589,
+          113172.01282051283,
+          106858.97435897436,
+          98905.44871794872,
+          105970.61538461539
+        ],
+        "cpu_samples_ns": [
+          null,
+          99405.98717948717,
+          101164.52564102564,
+          106138.88461538461,
+          102306.6282051282,
+          96851.5,
+          103494.11538461539
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 255517.52631578947,
+        "iters": 19,
+        "rounds": 7,
+        "spread": 0.2002730063011436,
+        "samples_ns": [
+          271524.15789473685,
+          255517.52631578947,
+          281370.63157894736,
+          306690.7894736842,
+          302817.94736842107,
+          293837.7368421053,
+          279100.84210526315
+        ],
+        "cpu_samples_ns": [
+          null,
+          250971.47368421053,
+          268907.8947368421,
+          297043.84210526315,
+          289921.05263157893,
+          283973.6842105263,
+          266568.0
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 1,
+      "case": "dumpb/dict4096",
+      "identical_output": true,
+      "started_unix_ns": 1792961842291417000,
+      "finished_unix_ns": 1792961842457888000,
+      "candidate": {
+        "per_op_ns": 62560.8671875,
+        "iters": 128,
+        "rounds": 7,
+        "spread": 0.16347104963154008,
+        "samples_ns": [
+          62858.078125,
+          66895.5078125,
+          70110.3515625,
+          72787.7578125,
+          65262.046875,
+          64252.28125,
+          62560.8671875
+        ],
+        "cpu_samples_ns": [
+          null,
+          62634.1171875,
+          64318.03125,
+          64394.203125,
+          62592.125,
+          61876.953125,
+          61051.4296875
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 292375.0,
+        "iters": 32,
+        "rounds": 7,
+        "spread": 0.11754938007695596,
+        "samples_ns": [
+          303493.5,
+          303041.65625,
+          299000.0,
+          319856.78125,
+          326743.5,
+          303174.46875,
+          292375.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          292132.8125,
+          285425.78125,
+          295371.09375,
+          294968.75,
+          291860.6875,
+          279822.90625
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 1,
+      "case": "dumpb/dict4096",
+      "identical_output": true,
+      "started_unix_ns": 1792961842458423000,
+      "finished_unix_ns": 1792961842630835000,
+      "candidate": {
+        "per_op_ns": 62798.828125,
+        "iters": 128,
+        "rounds": 7,
+        "spread": 0.15355220352688706,
+        "samples_ns": [
+          63315.4296875,
+          62798.828125,
+          63182.9375,
+          72042.96875,
+          72441.7265625,
+          71327.1484375,
+          66317.703125
+        ],
+        "cpu_samples_ns": [
+          null,
+          60995.4453125,
+          60474.2890625,
+          64895.1796875,
+          66896.484375,
+          65885.421875,
+          62897.4609375
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 287514.3125,
+        "iters": 32,
+        "rounds": 7,
+        "spread": 0.03399298165373941,
+        "samples_ns": [
+          297287.78125,
+          293908.875,
+          287602.875,
+          288046.875,
+          293438.8125,
+          287514.3125,
+          291003.90625
+        ],
+        "cpu_samples_ns": [
+          null,
+          290457.03125,
+          284438.8125,
+          285720.0625,
+          287738.28125,
+          284303.375,
+          286941.40625
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 1,
+      "case": "raw-orjson/ints32x128",
+      "identical_output": true,
+      "started_unix_ns": 1792961842631049000,
+      "finished_unix_ns": 1792961842796947000,
+      "candidate": {
+        "per_op_ns": 9955.357142857143,
+        "iters": 896,
+        "rounds": 7,
+        "spread": 0.05764663677130045,
+        "samples_ns": [
+          10279.900669642857,
+          10361.328125,
+          9955.357142857143,
+          10130.580357142857,
+          10140.48549107143,
+          10429.082589285714,
+          10529.25
+        ],
+        "cpu_samples_ns": [
+          null,
+          10216.145089285714,
+          9912.109375,
+          9954.565848214286,
+          10021.34486607143,
+          10104.35267857143,
+          10134.997767857143
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 69245.1171875,
+        "iters": 128,
+        "rounds": 7,
+        "spread": 0.06207195340375422,
+        "samples_ns": [
+          69245.1171875,
+          69427.734375,
+          69987.625,
+          70501.953125,
+          73543.296875,
+          70818.6875,
+          72849.9375
+        ],
+        "cpu_samples_ns": [
+          null,
+          69377.28125,
+          69796.2265625,
+          69942.3828125,
+          71915.359375,
+          70271.15625,
+          71354.1640625
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 1,
+      "case": "raw-orjson/ints32x128",
+      "identical_output": true,
+      "started_unix_ns": 1792961842797172000,
+      "finished_unix_ns": 1792961842956738000,
+      "candidate": {
+        "per_op_ns": 9649.088169642857,
+        "iters": 896,
+        "rounds": 7,
+        "spread": 0.2175581450088444,
+        "samples_ns": [
+          9983.25892857143,
+          9875.511160714286,
+          9698.38169642857,
+          9972.982142857143,
+          9649.088169642857,
+          11021.57700892857,
+          11748.325892857143
+        ],
+        "cpu_samples_ns": [
+          null,
+          9625.88392857143,
+          9573.1953125,
+          9700.474330357143,
+          9546.270089285714,
+          10579.520089285714,
+          10583.752232142857
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 70690.47959183673,
+        "iters": 98,
+        "rounds": 7,
+        "spread": 0.32812879140986423,
+        "samples_ns": [
+          70690.47959183673,
+          78420.91836734694,
+          85092.26530612246,
+          83111.82653061225,
+          76783.59183673469,
+          89611.82653061225,
+          93886.0612244898
+        ],
+        "cpu_samples_ns": [
+          null,
+          73792.9387755102,
+          80050.59183673469,
+          77897.95918367348,
+          73395.40816326531,
+          81995.32653061225,
+          86899.6530612245
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 1,
+      "case": "dumps/ints32x128",
+      "identical_output": true,
+      "started_unix_ns": 1792961842956941000,
+      "finished_unix_ns": 1792961843089729000,
+      "candidate": {
+        "per_op_ns": 2961.2268518518517,
+        "iters": 1728,
+        "rounds": 7,
+        "spread": 0.1683359390267735,
+        "samples_ns": [
+          2961.2268518518517,
+          3345.3177083333335,
+          3066.261574074074,
+          3112.702546296296,
+          3459.7077546296296,
+          3145.0862268518517,
+          3165.9675925925926
+        ],
+        "cpu_samples_ns": [
+          null,
+          3208.646990740741,
+          3003.7372685185187,
+          3065.924189814815,
+          3180.5798611111113,
+          3013.936921296296,
+          3022.472800925926
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 68339.515625,
+        "iters": 128,
+        "rounds": 7,
+        "spread": 0.15176797647956697,
+        "samples_ns": [
+          78711.265625,
+          69721.03125,
+          70311.1953125,
+          68339.515625,
+          70206.375,
+          70631.8359375,
+          69456.703125
+        ],
+        "cpu_samples_ns": [
+          null,
+          68502.9296875,
+          68653.6484375,
+          67558.59375,
+          68458.65625,
+          69790.0390625,
+          68299.15625
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 1,
+      "case": "dumps/ints32x128",
+      "identical_output": true,
+      "started_unix_ns": 1792961843089994000,
+      "finished_unix_ns": 1792961843286182000,
+      "candidate": {
+        "per_op_ns": 22292.859375,
+        "iters": 384,
+        "rounds": 7,
+        "spread": 0.048790263324695944,
+        "samples_ns": [
+          22719.294270833332,
+          23307.075520833332,
+          22292.859375,
+          23380.533854166668,
+          22923.067708333332,
+          22367.622395833332,
+          22528.755208333332
+        ],
+        "cpu_samples_ns": [
+          null,
+          22869.03125,
+          22045.356770833332,
+          22688.260416666668,
+          22531.359375,
+          22308.268229166668,
+          22167.536458333332
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 88139.6484375,
+        "iters": 128,
+        "rounds": 7,
+        "spread": 0.5121747936402415,
+        "samples_ns": [
+          88139.6484375,
+          133282.5546875,
+          97576.171875,
+          97836.9140625,
+          110581.703125,
+          92456.7109375,
+          97635.09375
+        ],
+        "cpu_samples_ns": [
+          null,
+          92830.078125,
+          93814.78125,
+          95649.0859375,
+          95365.8828125,
+          91715.8203125,
+          93505.859375
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 1,
+      "case": "dumpb/ints32x128",
+      "identical_output": true,
+      "started_unix_ns": 1792961843286489000,
+      "finished_unix_ns": 1792961843451466000,
+      "candidate": {
+        "per_op_ns": 13459.83125,
+        "iters": 640,
+        "rounds": 7,
+        "spread": 0.08248884528177126,
+        "samples_ns": [
+          13921.028125,
+          13921.5484375,
+          13669.465625,
+          13657.1625,
+          14570.1171875,
+          13598.503125,
+          13459.83125
+        ],
+        "cpu_samples_ns": [
+          null,
+          13333.1375,
+          13271.6140625,
+          13233.528125,
+          14039.778125,
+          13313.671875,
+          13234.7015625
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 92604.60638297872,
+        "iters": 94,
+        "rounds": 7,
+        "spread": 0.06880763823958484,
+        "samples_ns": [
+          92891.85106382979,
+          93994.24468085106,
+          95674.20212765958,
+          92604.60638297872,
+          96002.65957446808,
+          97648.93617021276,
+          98976.51063829787
+        ],
+        "cpu_samples_ns": [
+          null,
+          92599.28723404255,
+          93145.82978723405,
+          91773.0425531915,
+          92950.79787234042,
+          95448.13829787234,
+          95553.63829787234
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 1,
+      "case": "dumpb/ints32x128",
+      "identical_output": true,
+      "started_unix_ns": 1792961843451945000,
+      "finished_unix_ns": 1792961843605584000,
+      "candidate": {
+        "per_op_ns": 2320.657169117647,
+        "iters": 2176,
+        "rounds": 7,
+        "spread": 0.09686123075399772,
+        "samples_ns": [
+          2426.1447610294117,
+          2410.213694852941,
+          2320.657169117647,
+          2360.887867647059,
+          2491.823529411765,
+          2545.4388786764707,
+          2465.1116727941176
+        ],
+        "cpu_samples_ns": [
+          null,
+          2329.484375,
+          2315.716911764706,
+          2318.723345588235,
+          2354.4728860294117,
+          2419.0602022058824,
+          2343.098805147059
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 77610.0234375,
+        "iters": 128,
+        "rounds": 7,
+        "spread": 0.22576739091066583,
+        "samples_ns": [
+          95131.8359375,
+          90964.84375,
+          94149.0859375,
+          91954.4296875,
+          81501.625,
+          77610.0234375,
+          85007.484375
+        ],
+        "cpu_samples_ns": [
+          null,
+          89649.4140625,
+          90064.125,
+          77855.46875,
+          76214.84375,
+          72602.859375,
+          82728.515625
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 1,
+      "case": "raw-orjson/ints16x256",
+      "identical_output": true,
+      "started_unix_ns": 1792961843606046000,
+      "finished_unix_ns": 1792961843784559000,
+      "candidate": {
+        "per_op_ns": 9400.901785714286,
+        "iters": 896,
+        "rounds": 7,
+        "spread": 0.12634236267227403,
+        "samples_ns": [
+          9796.875,
+          9863.42075892857,
+          9735.816964285714,
+          10588.63392857143,
+          10098.214285714286,
+          10539.526785714286,
+          9400.901785714286
+        ],
+        "cpu_samples_ns": [
+          null,
+          9709.12388392857,
+          9733.16517857143,
+          9875.18638392857,
+          9903.599330357143,
+          9875.0,
+          9089.239955357143
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 75495.69841269842,
+        "iters": 126,
+        "rounds": 7,
+        "spread": 0.22510837892792798,
+        "samples_ns": [
+          75495.69841269842,
+          80593.57936507936,
+          77016.53174603175,
+          78082.01587301587,
+          76047.61904761905,
+          80111.11111111111,
+          92490.41269841269
+        ],
+        "cpu_samples_ns": [
+          null,
+          80352.84126984127,
+          76868.71428571429,
+          76799.60317460318,
+          75666.34126984127,
+          77964.28571428571,
+          85391.86507936507
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 1,
+      "case": "raw-orjson/ints16x256",
+      "identical_output": true,
+      "started_unix_ns": 1792961843784837000,
+      "finished_unix_ns": 1792961844024171000,
+      "candidate": {
+        "per_op_ns": 8667.8466796875,
+        "iters": 1024,
+        "rounds": 7,
+        "spread": 0.1523370935259904,
+        "samples_ns": [
+          8745.7685546875,
+          9141.6416015625,
+          8667.8466796875,
+          8787.7197265625,
+          9988.28125,
+          8942.0166015625,
+          9911.05078125
+        ],
+        "cpu_samples_ns": [
+          null,
+          8950.236328125,
+          8541.7080078125,
+          8631.7548828125,
+          9503.173828125,
+          8829.9560546875,
+          9516.5205078125
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 94242.72222222222,
+        "iters": 126,
+        "rounds": 7,
+        "spread": 0.781209917013507,
+        "samples_ns": [
+          131183.1984126984,
+          131792.0,
+          167866.07142857142,
+          120214.28571428571,
+          99698.41269841269,
+          95958.33333333333,
+          94242.72222222222
+        ],
+        "cpu_samples_ns": [
+          null,
+          101171.62698412698,
+          100113.75396825396,
+          99360.44444444444,
+          95148.80952380953,
+          95978.5,
+          94258.26984126984
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 1,
+      "case": "dumps/ints16x256",
+      "identical_output": true,
+      "started_unix_ns": 1792961844024583000,
+      "finished_unix_ns": 1792961844139499000,
+      "candidate": {
+        "per_op_ns": 25860.70588235294,
+        "iters": 204,
+        "rounds": 7,
+        "spread": 0.41575946852519075,
+        "samples_ns": [
+          25860.70588235294,
+          32237.539215686276,
+          34405.02450980392,
+          30607.843137254902,
+          26240.397058823528,
+          29753.676470588234,
+          36612.53921568627
+        ],
+        "cpu_samples_ns": [
+          null,
+          25294.31862745098,
+          25178.50980392157,
+          24882.96568627451,
+          23566.382352941175,
+          25065.357843137255,
+          25102.529411764706
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 105312.91836734694,
+        "iters": 49,
+        "rounds": 7,
+        "spread": 0.2528827112513863,
+        "samples_ns": [
+          112883.51020408163,
+          105585.02040816327,
+          122914.12244897959,
+          114709.1836734694,
+          105312.91836734694,
+          117504.24489795919,
+          131944.73469387754
+        ],
+        "cpu_samples_ns": [
+          null,
+          98763.61224489796,
+          97949.83673469388,
+          96036.57142857143,
+          98834.1836734694,
+          98971.9387755102,
+          99242.3469387755
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 1,
+      "case": "dumps/ints16x256",
+      "identical_output": true,
+      "started_unix_ns": 1792961844140050000,
+      "finished_unix_ns": 1792961844307936000,
+      "candidate": {
+        "per_op_ns": 29494.46484375,
+        "iters": 256,
+        "rounds": 7,
+        "spread": 0.2801383681233621,
+        "samples_ns": [
+          34186.6875,
+          29494.46484375,
+          37756.99609375,
+          31362.79296875,
+          33598.14453125,
+          30692.3828125,
+          30086.265625
+        ],
+        "cpu_samples_ns": [
+          null,
+          25193.51953125,
+          25429.03515625,
+          25126.46484375,
+          25044.2734375,
+          24979.4921875,
+          24822.4296875
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 76276.25,
+        "iters": 100,
+        "rounds": 7,
+        "spread": 0.5334720833811311,
+        "samples_ns": [
+          95039.17,
+          116967.5,
+          102198.75,
+          102947.08,
+          84066.25,
+          77810.42,
+          76276.25
+        ],
+        "cpu_samples_ns": [
+          null,
+          96803.75,
+          96778.33,
+          97470.0,
+          82360.84,
+          77535.0,
+          75080.42
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 1,
+      "case": "dumpb/ints16x256",
+      "identical_output": true,
+      "started_unix_ns": 1792961844308213000,
+      "finished_unix_ns": 1792961844488011000,
+      "candidate": {
+        "per_op_ns": 11929.091145833334,
+        "iters": 768,
+        "rounds": 7,
+        "spread": 0.11497780613787505,
+        "samples_ns": [
+          13300.671875,
+          12562.229166666666,
+          13017.578125,
+          12501.735677083334,
+          11929.091145833334,
+          12379.9921875,
+          13275.82421875
+        ],
+        "cpu_samples_ns": [
+          null,
+          12136.934895833334,
+          12427.083333333334,
+          12092.122395833334,
+          11869.412760416666,
+          12184.842447916666,
+          12529.78515625
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 73657.2265625,
+        "iters": 128,
+        "rounds": 7,
+        "spread": 0.1681405369572423,
+        "samples_ns": [
+          75408.8515625,
+          76897.4609375,
+          76697.59375,
+          79051.7578125,
+          86041.9921875,
+          83291.34375,
+          73657.2265625
+        ],
+        "cpu_samples_ns": [
+          null,
+          75272.1328125,
+          74485.0234375,
+          76539.0625,
+          80624.671875,
+          82277.015625,
+          72347.9765625
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 1,
+      "case": "dumpb/ints16x256",
+      "identical_output": true,
+      "started_unix_ns": 1792961844488243000,
+      "finished_unix_ns": 1792961844697565000,
+      "candidate": {
+        "per_op_ns": 11465.8671875,
+        "iters": 896,
+        "rounds": 7,
+        "spread": 1.4113366565379366,
+        "samples_ns": [
+          11608.816964285714,
+          11465.8671875,
+          11687.779017857143,
+          11742.1875,
+          12068.21986607143,
+          27648.065848214286,
+          20778.738839285714
+        ],
+        "cpu_samples_ns": [
+          null,
+          11379.603794642857,
+          11481.166294642857,
+          11569.38169642857,
+          11775.158482142857,
+          13710.9375,
+          13268.78794642857
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 74001.953125,
+        "iters": 128,
+        "rounds": 7,
+        "spread": 0.17905365673414447,
+        "samples_ns": [
+          74001.953125,
+          87252.2734375,
+          79395.8359375,
+          75304.3671875,
+          76831.0546875,
+          78563.8046875,
+          84342.125
+        ],
+        "cpu_samples_ns": [
+          null,
+          82436.1953125,
+          77229.4921875,
+          73641.6015625,
+          74624.0234375,
+          76962.890625,
+          81980.140625
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 1,
+      "case": "raw-orjson/int4096",
+      "identical_output": true,
+      "started_unix_ns": 1792961844697920000,
+      "finished_unix_ns": 1792961844866827000,
+      "candidate": {
+        "per_op_ns": 22290.690104166668,
+        "iters": 384,
+        "rounds": 7,
+        "spread": 0.20888765570921625,
+        "samples_ns": [
+          22557.401041666668,
+          23997.395833333332,
+          22617.296875,
+          26946.940104166668,
+          22684.6796875,
+          22486.653645833332,
+          22290.690104166668
+        ],
+        "cpu_samples_ns": [
+          null,
+          22985.895833333332,
+          21966.471354166668,
+          25606.3359375,
+          22444.3359375,
+          22101.346354166668,
+          22089.84375
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 202204.71739130435,
+        "iters": 46,
+        "rounds": 7,
+        "spread": 0.058104910251846574,
+        "samples_ns": [
+          205832.4347826087,
+          202204.71739130435,
+          213953.80434782608,
+          203504.52173913043,
+          210884.0652173913,
+          210000.91304347827,
+          204789.84782608695
+        ],
+        "cpu_samples_ns": [
+          null,
+          199444.76086956522,
+          209566.13043478262,
+          200496.39130434784,
+          204770.8260869565,
+          204051.63043478262,
+          202081.52173913043
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 1,
+      "case": "raw-orjson/int4096",
+      "identical_output": true,
+      "started_unix_ns": 1792961844867265000,
+      "finished_unix_ns": 1792961845036680000,
+      "candidate": {
+        "per_op_ns": 21743.489583333332,
+        "iters": 384,
+        "rounds": 7,
+        "spread": 0.043091322833702615,
+        "samples_ns": [
+          22274.846354166668,
+          22404.296875,
+          21743.489583333332,
+          22447.697916666668,
+          22341.255208333332,
+          21931.53125,
+          22680.4453125
+        ],
+        "cpu_samples_ns": [
+          null,
+          21975.151041666668,
+          21484.700520833332,
+          22278.4296875,
+          21931.966145833332,
+          21769.640625,
+          22380.424479166668
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 191137.5,
+        "iters": 50,
+        "rounds": 7,
+        "spread": 0.13438848996141523,
+        "samples_ns": [
+          194800.0,
+          197894.18,
+          194200.0,
+          191137.5,
+          211187.5,
+          216824.18,
+          205531.66
+        ],
+        "cpu_samples_ns": [
+          null,
+          196122.5,
+          193520.84,
+          190809.18,
+          209884.16,
+          210214.18,
+          204343.34
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 1,
+      "case": "dumps/int4096",
+      "identical_output": true,
+      "started_unix_ns": 1792961845037106000,
+      "finished_unix_ns": 1792961845187432000,
+      "candidate": {
+        "per_op_ns": 53875.3203125,
+        "iters": 128,
+        "rounds": 7,
+        "spread": 0.05779896030200517,
+        "samples_ns": [
+          53875.3203125,
+          54730.46875,
+          56065.4296875,
+          56202.46875,
+          55681.640625,
+          55861.0,
+          56989.2578125
+        ],
+        "cpu_samples_ns": [
+          null,
+          54485.3515625,
+          55475.2578125,
+          55238.6015625,
+          54626.3046875,
+          54664.390625,
+          56142.2578125
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 192047.72916666666,
+        "iters": 48,
+        "rounds": 7,
+        "spread": 0.04728381866009654,
+        "samples_ns": [
+          192047.72916666666,
+          193551.22916666666,
+          193324.66666666666,
+          195163.1875,
+          195627.60416666666,
+          195821.1875,
+          201128.47916666666
+        ],
+        "cpu_samples_ns": [
+          null,
+          193472.20833333334,
+          192959.20833333334,
+          195041.66666666666,
+          195010.41666666666,
+          194875.0,
+          197993.0625
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 1,
+      "case": "dumps/int4096",
+      "identical_output": true,
+      "started_unix_ns": 1792961845187847000,
+      "finished_unix_ns": 1792961845334274000,
+      "candidate": {
+        "per_op_ns": 49265.625,
+        "iters": 128,
+        "rounds": 7,
+        "spread": 0.06916682524579765,
+        "samples_ns": [
+          52673.171875,
+          51791.9921875,
+          50853.515625,
+          50245.1171875,
+          50351.2421875,
+          49265.625,
+          50629.8828125
+        ],
+        "cpu_samples_ns": [
+          null,
+          51787.109375,
+          50857.7421875,
+          50197.265625,
+          50355.7890625,
+          49268.234375,
+          50560.546875
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 182948.73076923078,
+        "iters": 52,
+        "rounds": 7,
+        "spread": 0.04432368294858564,
+        "samples_ns": [
+          185727.5576923077,
+          191057.6923076923,
+          184624.1923076923,
+          183536.0576923077,
+          188715.5576923077,
+          183693.90384615384,
+          182948.73076923078
+        ],
+        "cpu_samples_ns": [
+          null,
+          188587.34615384616,
+          184165.07692307694,
+          183287.67307692306,
+          188708.34615384616,
+          183520.84615384616,
+          182671.48076923078
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 1,
+      "case": "dumpb/int4096",
+      "identical_output": true,
+      "started_unix_ns": 1792961845334635000,
+      "finished_unix_ns": 1792961845460014000,
+      "candidate": {
+        "per_op_ns": 36573.890625,
+        "iters": 128,
+        "rounds": 7,
+        "spread": 0.09025863310105527,
+        "samples_ns": [
+          39875.0,
+          36573.890625,
+          37682.9453125,
+          37683.59375,
+          37994.140625,
+          39588.21875,
+          37969.078125
+        ],
+        "cpu_samples_ns": [
+          null,
+          36426.109375,
+          37634.4375,
+          37567.3828125,
+          37842.4453125,
+          39082.359375,
+          37973.953125
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 183814.30434782608,
+        "iters": 46,
+        "rounds": 7,
+        "spread": 0.09233184056972431,
+        "samples_ns": [
+          183814.30434782608,
+          184721.91304347827,
+          200786.21739130435,
+          192328.80434782608,
+          194265.41304347827,
+          194175.71739130435,
+          190670.28260869565
+        ],
+        "cpu_samples_ns": [
+          null,
+          183922.10869565216,
+          200217.39130434784,
+          192293.47826086957,
+          193704.71739130435,
+          193769.02173913043,
+          190487.3260869565
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 1,
+      "case": "dumpb/int4096",
+      "identical_output": true,
+      "started_unix_ns": 1792961845460414000,
+      "finished_unix_ns": 1792961845643098000,
+      "candidate": {
+        "per_op_ns": 35937.5,
+        "iters": 256,
+        "rounds": 7,
+        "spread": 0.14826532608695653,
+        "samples_ns": [
+          35937.5,
+          41265.78515625,
+          39263.99609375,
+          38821.2890625,
+          39202.1484375,
+          37109.046875,
+          38960.9375
+        ],
+        "cpu_samples_ns": [
+          null,
+          41120.9296875,
+          39231.12109375,
+          38744.953125,
+          39198.2421875,
+          37098.3046875,
+          38848.6328125
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 189510.0,
+        "iters": 50,
+        "rounds": 7,
+        "spread": 0.03116806500976202,
+        "samples_ns": [
+          190429.18,
+          190832.5,
+          190279.16,
+          189510.0,
+          191594.18,
+          195416.66,
+          191162.5
+        ],
+        "cpu_samples_ns": [
+          null,
+          190595.0,
+          190290.84,
+          189401.66,
+          191255.0,
+          194245.0,
+          190854.16
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 1,
+      "case": "raw-orjson/int2",
+      "identical_output": true,
+      "started_unix_ns": 1792961845643217000,
+      "finished_unix_ns": 1792961845785670000,
+      "candidate": {
+        "per_op_ns": 44.4232177734375,
+        "iters": 204800,
+        "rounds": 7,
+        "spread": 0.017980352554854844,
+        "samples_ns": [
+          44.6455908203125,
+          44.4232177734375,
+          44.9312353515625,
+          45.06876953125,
+          44.5782470703125,
+          45.221962890625,
+          45.0840234375
+        ],
+        "cpu_samples_ns": [
+          null,
+          44.393310546875,
+          44.840087890625,
+          44.9527978515625,
+          44.5808935546875,
+          45.1556396484375,
+          44.9176025390625
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 772.2269287109375,
+        "iters": 8192,
+        "rounds": 7,
+        "spread": 0.055030103145975166,
+        "samples_ns": [
+          814.72265625,
+          805.938720703125,
+          799.2197265625,
+          778.9154052734375,
+          772.2269287109375,
+          780.9041748046875,
+          781.6314697265625
+        ],
+        "cpu_samples_ns": [
+          null,
+          805.5826416015625,
+          799.18408203125,
+          778.9306640625,
+          772.27783203125,
+          777.374267578125,
+          779.5867919921875
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 1,
+      "case": "raw-orjson/int2",
+      "identical_output": true,
+      "started_unix_ns": 1792961845785821000,
+      "finished_unix_ns": 1792961845931116000,
+      "candidate": {
+        "per_op_ns": 41.243233816964285,
+        "iters": 229376,
+        "rounds": 7,
+        "spread": 0.12676782582370283,
+        "samples_ns": [
+          41.782200404575896,
+          41.61616734095982,
+          41.530609130859375,
+          42.908987862723215,
+          41.243233816964285,
+          41.270847865513396,
+          46.471548897879465
+        ],
+        "cpu_samples_ns": [
+          null,
+          41.47865513392857,
+          41.492640904017854,
+          42.728607177734375,
+          41.179840087890625,
+          41.27702113560268,
+          46.46482631138393
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 767.3900146484375,
+        "iters": 8192,
+        "rounds": 7,
+        "spread": 0.03545302689479085,
+        "samples_ns": [
+          794.5963134765625,
+          784.9781494140625,
+          793.2332763671875,
+          778.62548828125,
+          780.965087890625,
+          767.3900146484375,
+          768.6868896484375
+        ],
+        "cpu_samples_ns": [
+          null,
+          785.4207763671875,
+          792.90771484375,
+          778.193115234375,
+          779.6224365234375,
+          767.156005859375,
+          767.232177734375
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 1,
+      "case": "dumps/int2",
+      "identical_output": true,
+      "started_unix_ns": 1792961845931248000,
+      "finished_unix_ns": 1792961846088996000,
+      "candidate": {
+        "per_op_ns": 246.43325805664062,
+        "iters": 32768,
+        "rounds": 7,
+        "spread": 0.04523669912230461,
+        "samples_ns": [
+          246.99783325195312,
+          246.43325805664062,
+          249.50027465820312,
+          257.5810852050781,
+          253.29464721679688,
+          249.23834228515625,
+          251.4864501953125
+        ],
+        "cpu_samples_ns": [
+          null,
+          246.07977294921875,
+          248.60128784179688,
+          257.5162353515625,
+          252.56600952148438,
+          248.980224609375,
+          250.80743408203125
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 530.0445556640625,
+        "iters": 16384,
+        "rounds": 7,
+        "spread": 0.11994887295966837,
+        "samples_ns": [
+          542.63818359375,
+          535.6801147460938,
+          532.5164794921875,
+          530.0445556640625,
+          534.1033935546875,
+          534.7620239257812,
+          593.622802734375
+        ],
+        "cpu_samples_ns": [
+          null,
+          534.6476440429688,
+          531.44580078125,
+          530.0038452148438,
+          534.0423583984375,
+          534.48486328125,
+          593.1599731445312
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 1,
+      "case": "dumps/int2",
+      "identical_output": true,
+      "started_unix_ns": 1792961846089146000,
+      "finished_unix_ns": 1792961846247665000,
+      "candidate": {
+        "per_op_ns": 243.78460693359375,
+        "iters": 32768,
+        "rounds": 7,
+        "spread": 0.046051404460554606,
+        "samples_ns": [
+          251.7852783203125,
+          245.0535888671875,
+          246.46124267578125,
+          243.78460693359375,
+          249.114990234375,
+          246.46759033203125,
+          255.01123046875
+        ],
+        "cpu_samples_ns": [
+          null,
+          244.99005126953125,
+          245.68304443359375,
+          243.70193481445312,
+          246.79818725585938,
+          244.87814331054688,
+          252.9385986328125
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 529.23583984375,
+        "iters": 16384,
+        "rounds": 7,
+        "spread": 0.0989121208626456,
+        "samples_ns": [
+          529.23583984375,
+          569.0332641601562,
+          542.5771484375,
+          530.9066772460938,
+          581.5836791992188,
+          542.2871704101562,
+          540.4052734375
+        ],
+        "cpu_samples_ns": [
+          null,
+          568.7536010742188,
+          540.3239135742188,
+          529.388427734375,
+          578.0538330078125,
+          542.3253784179688,
+          540.3162841796875
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 1,
+      "case": "dumpb/int2",
+      "identical_output": true,
+      "started_unix_ns": 1792961846247798000,
+      "finished_unix_ns": 1792961846394263000,
+      "candidate": {
+        "per_op_ns": 70.61767578125,
+        "iters": 131072,
+        "rounds": 7,
+        "spread": 0.08784388504753673,
+        "samples_ns": [
+          74.57288360595703,
+          73.18464660644531,
+          70.61767578125,
+          76.0177001953125,
+          73.43482971191406,
+          73.52225494384766,
+          76.82100677490234
+        ],
+        "cpu_samples_ns": [
+          null,
+          72.91666412353516,
+          70.62212371826172,
+          75.34408569335938,
+          73.20022583007812,
+          73.29718780517578,
+          76.65951538085938
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 768.2342529296875,
+        "iters": 8192,
+        "rounds": 7,
+        "spread": 0.05852726080997875,
+        "samples_ns": [
+          776.9927978515625,
+          782.94873046875,
+          768.2342529296875,
+          813.1968994140625,
+          784.4390869140625,
+          800.6185302734375,
+          781.2042236328125
+        ],
+        "cpu_samples_ns": [
+          null,
+          778.411865234375,
+          767.023681640625,
+          801.727294921875,
+          777.4556884765625,
+          790.435791015625,
+          778.13720703125
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 1,
+      "case": "dumpb/int2",
+      "identical_output": true,
+      "started_unix_ns": 1792961846394454000,
+      "finished_unix_ns": 1792961846544165000,
+      "candidate": {
+        "per_op_ns": 71.24519348144531,
+        "iters": 131072,
+        "rounds": 7,
+        "spread": 0.059745348432522154,
+        "samples_ns": [
+          71.24519348144531,
+          74.8179702758789,
+          71.41622161865234,
+          73.29590606689453,
+          74.90412139892578,
+          73.73428344726562,
+          75.50176239013672
+        ],
+        "cpu_samples_ns": [
+          null,
+          73.11407470703125,
+          71.122802734375,
+          72.82575225830078,
+          73.68978118896484,
+          72.91349029541016,
+          74.1567611694336
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 792.5975341796875,
+        "iters": 8192,
+        "rounds": 7,
+        "spread": 0.07527384663910552,
+        "samples_ns": [
+          821.0804443359375,
+          852.2593994140625,
+          795.8780517578125,
+          848.907470703125,
+          792.5975341796875,
+          798.96044921875,
+          812.591552734375
+        ],
+        "cpu_samples_ns": [
+          null,
+          830.449462890625,
+          790.690185546875,
+          834.320068359375,
+          784.3017578125,
+          786.646484375,
+          795.8831787109375
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 1,
+      "case": "raw-orjson/empty64",
+      "identical_output": true,
+      "started_unix_ns": 1792961846544301000,
+      "finished_unix_ns": 1792961846714632000,
+      "candidate": {
+        "per_op_ns": 252.68936157226562,
+        "iters": 32768,
+        "rounds": 7,
+        "spread": 0.1520759650367597,
+        "samples_ns": [
+          285.6127624511719,
+          266.2747497558594,
+          274.3504943847656,
+          252.68936157226562,
+          265.40118408203125,
+          269.4816589355469,
+          291.1173400878906
+        ],
+        "cpu_samples_ns": [
+          null,
+          264.2097473144531,
+          271.56573486328125,
+          248.29483032226562,
+          258.67333984375,
+          268.5877380371094,
+          290.246337890625
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 1367.2644886363637,
+        "iters": 7040,
+        "rounds": 7,
+        "spread": 0.0725976781359429,
+        "samples_ns": [
+          1367.2644886363637,
+          1390.7019886363637,
+          1466.524715909091,
+          1444.2886363636364,
+          1405.9836647727273,
+          1405.9954545454545,
+          1386.440625
+        ],
+        "cpu_samples_ns": [
+          null,
+          1382.220596590909,
+          1465.9681818181818,
+          1438.7428977272727,
+          1404.403409090909,
+          1400.3610795454545,
+          1383.783096590909
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 1,
+      "case": "raw-orjson/empty64",
+      "identical_output": true,
+      "started_unix_ns": 1792961846714783000,
+      "finished_unix_ns": 1792961846885206000,
+      "candidate": {
+        "per_op_ns": 252.12225341796875,
+        "iters": 32768,
+        "rounds": 7,
+        "spread": 0.16225276104630346,
+        "samples_ns": [
+          267.55267333984375,
+          252.12225341796875,
+          287.19329833984375,
+          293.02978515625,
+          262.1396484375,
+          278.594970703125,
+          265.814453125
+        ],
+        "cpu_samples_ns": [
+          null,
+          251.77639770507812,
+          286.9351806640625,
+          290.0352478027344,
+          260.9494323730469,
+          274.4356689453125,
+          264.95867919921875
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 1359.6341145833333,
+        "iters": 6912,
+        "rounds": 7,
+        "spread": 0.09742097903645655,
+        "samples_ns": [
+          1359.6341145833333,
+          1397.382523148148,
+          1432.3881655092594,
+          1402.1990740740741,
+          1410.5300925925926,
+          1453.82421875,
+          1492.0910011574074
+        ],
+        "cpu_samples_ns": [
+          null,
+          1390.69140625,
+          1414.3819444444443,
+          1398.298900462963,
+          1387.9304108796296,
+          1430.7002314814815,
+          1464.7894965277778
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 1,
+      "case": "dumps/empty64",
+      "identical_output": true,
+      "started_unix_ns": 1792961846885347000,
+      "finished_unix_ns": 1792961847043950000,
+      "candidate": {
+        "per_op_ns": 870.732666015625,
+        "iters": 8192,
+        "rounds": 7,
+        "spread": 0.0703474057772266,
+        "samples_ns": [
+          876.6275634765625,
+          870.732666015625,
+          909.723876953125,
+          895.975830078125,
+          931.9864501953125,
+          897.237060546875,
+          919.586181640625
+        ],
+        "cpu_samples_ns": [
+          null,
+          863.56103515625,
+          905.0546875,
+          891.4337158203125,
+          916.4378662109375,
+          893.88525390625,
+          897.8729248046875
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 1206.87353515625,
+        "iters": 8192,
+        "rounds": 7,
+        "spread": 0.07455292499788604,
+        "samples_ns": [
+          1206.87353515625,
+          1222.198486328125,
+          1251.042724609375,
+          1251.2716064453125,
+          1240.437744140625,
+          1296.59521484375,
+          1296.8494873046875
+        ],
+        "cpu_samples_ns": [
+          null,
+          1205.3629150390625,
+          1231.2672119140625,
+          1231.084228515625,
+          1223.2767333984375,
+          1255.6915283203125,
+          1285.736083984375
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 1,
+      "case": "dumps/empty64",
+      "identical_output": true,
+      "started_unix_ns": 1792961847044100000,
+      "finished_unix_ns": 1792961847195938000,
+      "candidate": {
+        "per_op_ns": 851.0589599609375,
+        "iters": 8192,
+        "rounds": 7,
+        "spread": 0.1416465441506051,
+        "samples_ns": [
+          851.0589599609375,
+          910.151123046875,
+          886.4542236328125,
+          914.179443359375,
+          891.7490234375,
+          885.614990234375,
+          971.6085205078125
+        ],
+        "cpu_samples_ns": [
+          null,
+          898.6715087890625,
+          873.321533203125,
+          895.5128173828125,
+          883.783935546875,
+          882.9395751953125,
+          939.7073974609375
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 1215.6901041666667,
+        "iters": 5760,
+        "rounds": 7,
+        "spread": 0.8423213552544673,
+        "samples_ns": [
+          1895.95625,
+          2239.691840277778,
+          1244.0177083333333,
+          1259.0350694444444,
+          1241.796875,
+          1226.4973958333333,
+          1215.6901041666667
+        ],
+        "cpu_samples_ns": [
+          null,
+          1561.3571180555555,
+          1229.3982638888888,
+          1257.1397569444443,
+          1225.3326388888888,
+          1208.3550347222222,
+          1200.0796875
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 1,
+      "case": "dumpb/empty64",
+      "identical_output": true,
+      "started_unix_ns": 1792961847196082000,
+      "finished_unix_ns": 1792961847375719000,
+      "candidate": {
+        "per_op_ns": 538.0020141601562,
+        "iters": 16384,
+        "rounds": 7,
+        "spread": 0.048584029382985665,
+        "samples_ns": [
+          538.0020141601562,
+          546.92333984375,
+          546.2850341796875,
+          564.1403198242188,
+          548.5331420898438,
+          557.0220947265625,
+          546.3485717773438
+        ],
+        "cpu_samples_ns": [
+          null,
+          543.40869140625,
+          545.2473754882812,
+          556.1370849609375,
+          543.3680419921875,
+          550.9414672851562,
+          543.9885864257812
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 1367.080965909091,
+        "iters": 7040,
+        "rounds": 7,
+        "spread": 0.25937512013923164,
+        "samples_ns": [
+          1367.080965909091,
+          1440.713778409091,
+          1551.556534090909,
+          1721.667755681818,
+          1522.040625,
+          1621.596875,
+          1598.4197443181818
+        ],
+        "cpu_samples_ns": [
+          null,
+          1428.9477272727272,
+          1498.271875,
+          1592.96875,
+          1467.5485795454545,
+          1531.924715909091,
+          1497.8220170454545
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 1,
+      "case": "dumpb/empty64",
+      "identical_output": true,
+      "started_unix_ns": 1792961847375864000,
+      "finished_unix_ns": 1792961847509324000,
+      "candidate": {
+        "per_op_ns": 542.6559448242188,
+        "iters": 16384,
+        "rounds": 7,
+        "spread": 0.07755614604861726,
+        "samples_ns": [
+          559.2321166992188,
+          546.2595825195312,
+          542.6559448242188,
+          584.7422485351562,
+          548.5890502929688,
+          560.9283447265625,
+          582.0567016601562
+        ],
+        "cpu_samples_ns": [
+          null,
+          538.9149780273438,
+          535.3114013671875,
+          555.9794311523438,
+          540.4459228515625,
+          550.8245239257812,
+          568.499267578125
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 1428.5662615740741,
+        "iters": 3456,
+        "rounds": 7,
+        "spread": 0.27123579006000453,
+        "samples_ns": [
+          1490.572048611111,
+          1520.302951388889,
+          1463.372974537037,
+          1428.5662615740741,
+          1497.130787037037,
+          1816.0445601851852,
+          1463.8550347222222
+        ],
+        "cpu_samples_ns": [
+          null,
+          1488.8237847222222,
+          1436.2097800925926,
+          1401.1261574074074,
+          1463.4331597222222,
+          1765.6730324074074,
+          1438.826099537037
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 1,
+      "case": "raw-orjson/empty2",
+      "identical_output": true,
+      "started_unix_ns": 1792961847509464000,
+      "finished_unix_ns": 1792961847656223000,
+      "candidate": {
+        "per_op_ns": 38.25345734627016,
+        "iters": 253952,
+        "rounds": 7,
+        "spread": 0.0651385314922721,
+        "samples_ns": [
+          38.469376102570564,
+          38.88480894027218,
+          40.74523138230847,
+          39.512880386844756,
+          39.37637427545363,
+          38.597022271925404,
+          38.25345734627016
+        ],
+        "cpu_samples_ns": [
+          null,
+          38.566343245967744,
+          39.44479271673387,
+          38.79834378150202,
+          38.71204007056452,
+          37.994384765625,
+          37.177631993447584
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 689.478515625,
+        "iters": 8192,
+        "rounds": 7,
+        "spread": 0.1879063235631549,
+        "samples_ns": [
+          719.1365966796875,
+          689.478515625,
+          770.9757080078125,
+          722.5545654296875,
+          819.035888671875,
+          808.8785400390625,
+          795.2677001953125
+        ],
+        "cpu_samples_ns": [
+          null,
+          684.844970703125,
+          752.38037109375,
+          702.41796875,
+          800.4608154296875,
+          792.48046875,
+          781.4178466796875
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 1,
+      "case": "raw-orjson/empty2",
+      "identical_output": true,
+      "started_unix_ns": 1792961847656376000,
+      "finished_unix_ns": 1792961847771926000,
+      "candidate": {
+        "per_op_ns": 36.45731201171875,
+        "iters": 163840,
+        "rounds": 7,
+        "spread": 0.23597921102477312,
+        "samples_ns": [
+          40.26768798828125,
+          38.33643798828125,
+          37.73396606445313,
+          36.45731201171875,
+          40.64661865234375,
+          45.060479736328126,
+          42.103326416015626
+        ],
+        "cpu_samples_ns": [
+          null,
+          37.41099243164062,
+          37.34461669921875,
+          36.1943603515625,
+          39.449560546875,
+          43.940484619140626,
+          40.837347412109374
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 683.32421875,
+        "iters": 8192,
+        "rounds": 7,
+        "spread": 0.11568543454276257,
+        "samples_ns": [
+          738.189697265625,
+          713.5823974609375,
+          738.4083251953125,
+          762.3748779296875,
+          683.32421875,
+          718.6229248046875,
+          694.0357666015625
+        ],
+        "cpu_samples_ns": [
+          null,
+          708.546875,
+          724.8992919921875,
+          738.311767578125,
+          682.0322265625,
+          709.5081787109375,
+          689.453125
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 1,
+      "case": "dumps/empty2",
+      "identical_output": true,
+      "started_unix_ns": 1792961847772056000,
+      "finished_unix_ns": 1792961847923145000,
+      "candidate": {
+        "per_op_ns": 249.92495727539062,
+        "iters": 32768,
+        "rounds": 7,
+        "spread": 0.09302523792236952,
+        "samples_ns": [
+          249.92495727539062,
+          256.2650146484375,
+          273.1742858886719,
+          257.2288513183594,
+          257.0788269042969,
+          256.9936218261719,
+          250.689208984375
+        ],
+        "cpu_samples_ns": [
+          null,
+          252.24685668945312,
+          269.72198486328125,
+          254.68826293945312,
+          255.33804321289062,
+          255.17779541015625,
+          250.40817260742188
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 459.3785400390625,
+        "iters": 16384,
+        "rounds": 7,
+        "spread": 0.05131896039279034,
+        "samples_ns": [
+          459.3785400390625,
+          469.03228759765625,
+          468.9305419921875,
+          470.89642333984375,
+          471.440673828125,
+          467.62591552734375,
+          482.953369140625
+        ],
+        "cpu_samples_ns": [
+          null,
+          464.88702392578125,
+          468.2591552734375,
+          468.073486328125,
+          470.19195556640625,
+          462.51934814453125,
+          481.69451904296875
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 1,
+      "case": "dumps/empty2",
+      "identical_output": true,
+      "started_unix_ns": 1792961847923324000,
+      "finished_unix_ns": 1792961848057919000,
+      "candidate": {
+        "per_op_ns": 240.846435546875,
+        "iters": 24576,
+        "rounds": 7,
+        "spread": 0.10160005622531484,
+        "samples_ns": [
+          244.12027994791666,
+          252.24137369791666,
+          255.0218505859375,
+          247.984130859375,
+          245.78348795572916,
+          240.846435546875,
+          265.3164469401042
+        ],
+        "cpu_samples_ns": [
+          null,
+          247.801025390625,
+          252.02262369791666,
+          245.77669270833334,
+          243.68965657552084,
+          238.9407958984375,
+          265.1943359375
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 469.32476806640625,
+        "iters": 16384,
+        "rounds": 7,
+        "spread": 0.13044434968216706,
+        "samples_ns": [
+          500.96636962890625,
+          530.5455322265625,
+          495.867431640625,
+          478.52325439453125,
+          469.32476806640625,
+          473.1851806640625,
+          512.1536254882812
+        ],
+        "cpu_samples_ns": [
+          null,
+          502.08538818359375,
+          485.86529541015625,
+          476.77362060546875,
+          468.85174560546875,
+          472.82159423828125,
+          510.55657958984375
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 1,
+      "case": "dumpb/empty2",
+      "identical_output": true,
+      "started_unix_ns": 1792961848058059000,
+      "finished_unix_ns": 1792961848199824000,
+      "candidate": {
+        "per_op_ns": 66.74882956112133,
+        "iters": 139264,
+        "rounds": 7,
+        "spread": 0.03392242592792007,
+        "samples_ns": [
+          67.62067009420956,
+          67.09020278033088,
+          68.37732651654412,
+          69.01311178768383,
+          67.87587603400735,
+          67.40614947150735,
+          66.74882956112133
+        ],
+        "cpu_samples_ns": [
+          null,
+          66.87388700597427,
+          67.96324965533088,
+          68.18614286534927,
+          67.4911247702206,
+          66.83977912454044,
+          66.52473000919117
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 696.93505859375,
+        "iters": 8192,
+        "rounds": 7,
+        "spread": 0.17254030797513947,
+        "samples_ns": [
+          729.792236328125,
+          817.1844482421875,
+          742.7877197265625,
+          768.6920166015625,
+          752.7822265625,
+          696.93505859375,
+          702.9876708984375
+        ],
+        "cpu_samples_ns": [
+          null,
+          790.1204833984375,
+          732.421875,
+          755.1981201171875,
+          736.5264892578125,
+          694.9716796875,
+          698.73046875
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 1,
+      "case": "dumpb/empty2",
+      "identical_output": true,
+      "started_unix_ns": 1792961848199973000,
+      "finished_unix_ns": 1792961848346354000,
+      "candidate": {
+        "per_op_ns": 66.49977620442708,
+        "iters": 147456,
+        "rounds": 7,
+        "spread": 0.06931710047664691,
+        "samples_ns": [
+          68.98215738932292,
+          70.21699354383681,
+          71.10934787326389,
+          67.82955593532986,
+          68.51930745442708,
+          66.49977620442708,
+          67.24294026692708
+        ],
+        "cpu_samples_ns": [
+          null,
+          70.22292073567708,
+          71.01243082682292,
+          67.83040364583333,
+          68.09375678168402,
+          66.42800564236111,
+          66.96432156032986
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 693.9189453125,
+        "iters": 8192,
+        "rounds": 7,
+        "spread": 0.05136681945415883,
+        "samples_ns": [
+          708.6995849609375,
+          693.9189453125,
+          724.1058349609375,
+          698.4710693359375,
+          729.5633544921875,
+          717.1580810546875,
+          720.428466796875
+        ],
+        "cpu_samples_ns": [
+          null,
+          694.0155029296875,
+          717.22412109375,
+          696.5128173828125,
+          722.7630615234375,
+          710.16943359375,
+          718.76025390625
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 2,
+      "case": "dumpb/empty2",
+      "identical_output": true,
+      "started_unix_ns": 1792961848346538000,
+      "finished_unix_ns": 1792961848478803000,
+      "candidate": {
+        "per_op_ns": 62.891639709472656,
+        "iters": 131072,
+        "rounds": 7,
+        "spread": 0.07701690566182393,
+        "samples_ns": [
+          67.73535919189453,
+          66.04544067382812,
+          66.6850357055664,
+          65.72659301757812,
+          65.69068145751953,
+          62.99463653564453,
+          62.891639709472656
+        ],
+        "cpu_samples_ns": [
+          null,
+          65.85311889648438,
+          66.6329116821289,
+          65.73168182373047,
+          65.59403991699219,
+          63.001312255859375,
+          62.89354705810547
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 671.651123046875,
+        "iters": 8192,
+        "rounds": 7,
+        "spread": 0.13880151925623474,
+        "samples_ns": [
+          671.651123046875,
+          763.4683837890625,
+          691.5994873046875,
+          684.051513671875,
+          764.8773193359375,
+          700.220703125,
+          708.16552734375
+        ],
+        "cpu_samples_ns": [
+          null,
+          744.4305419921875,
+          687.0828857421875,
+          681.52880859375,
+          742.00439453125,
+          699.79345703125,
+          701.28369140625
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 2,
+      "case": "dumpb/empty2",
+      "identical_output": true,
+      "started_unix_ns": 1792961848478963000,
+      "finished_unix_ns": 1792961848621567000,
+      "candidate": {
+        "per_op_ns": 65.24234347873264,
+        "iters": 147456,
+        "rounds": 7,
+        "spread": 0.05958281252030196,
+        "samples_ns": [
+          65.24234347873264,
+          65.63850911458333,
+          66.39466688368056,
+          65.61166042751736,
+          65.53480360243056,
+          69.12966579861111,
+          68.93101671006944
+        ],
+        "cpu_samples_ns": [
+          null,
+          65.47744411892361,
+          66.34351942274306,
+          65.37176513671875,
+          65.50400797526042,
+          68.68320041232639,
+          68.82929144965277
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 684.7381591796875,
+        "iters": 8192,
+        "rounds": 7,
+        "spread": 0.04814867966573816,
+        "samples_ns": [
+          704.9102783203125,
+          704.2694091796875,
+          708.2315673828125,
+          701.1871337890625,
+          717.7073974609375,
+          684.7381591796875,
+          698.9288330078125
+        ],
+        "cpu_samples_ns": [
+          null,
+          703.79638671875,
+          701.9754638671875,
+          696.8536376953125,
+          706.4718017578125,
+          682.3934326171875,
+          694.574951171875
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 2,
+      "case": "dumps/empty2",
+      "identical_output": true,
+      "started_unix_ns": 1792961848621709000,
+      "finished_unix_ns": 1792961848743651000,
+      "candidate": {
+        "per_op_ns": 236.87744140625,
+        "iters": 20480,
+        "rounds": 7,
+        "spread": 0.14071115691832,
+        "samples_ns": [
+          250.77109375,
+          247.28798828125,
+          237.298583984375,
+          236.87744140625,
+          270.208740234375,
+          254.56953125,
+          263.441943359375
+        ],
+        "cpu_samples_ns": [
+          null,
+          241.912841796875,
+          235.856103515625,
+          236.855029296875,
+          270.015478515625,
+          251.45673828125,
+          263.468408203125
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 470.20721435546875,
+        "iters": 16384,
+        "rounds": 7,
+        "spread": 0.22158212587821063,
+        "samples_ns": [
+          470.20721435546875,
+          481.93359375,
+          493.87872314453125,
+          494.34912109375,
+          489.70538330078125,
+          574.396728515625,
+          498.4588623046875
+        ],
+        "cpu_samples_ns": [
+          null,
+          474.5330810546875,
+          483.69854736328125,
+          489.40533447265625,
+          482.34814453125,
+          536.748291015625,
+          497.37548828125
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 2,
+      "case": "dumps/empty2",
+      "identical_output": true,
+      "started_unix_ns": 1792961848743817000,
+      "finished_unix_ns": 1792961848891757000,
+      "candidate": {
+        "per_op_ns": 250.59127807617188,
+        "iters": 32768,
+        "rounds": 7,
+        "spread": 0.04207078595241357,
+        "samples_ns": [
+          257.8315734863281,
+          250.59127807617188,
+          261.13385009765625,
+          253.08990478515625,
+          252.23541259765625,
+          256.3374938964844,
+          255.62542724609375
+        ],
+        "cpu_samples_ns": [
+          null,
+          249.90081787109375,
+          257.8989562988281,
+          252.98562622070312,
+          252.15655517578125,
+          255.37615966796875,
+          253.69137573242188
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 455.706298828125,
+        "iters": 16384,
+        "rounds": 7,
+        "spread": 0.05428839375690102,
+        "samples_ns": [
+          469.89697265625,
+          464.9200439453125,
+          458.53167724609375,
+          455.706298828125,
+          473.44207763671875,
+          480.44586181640625,
+          462.4150390625
+        ],
+        "cpu_samples_ns": [
+          null,
+          464.54107666015625,
+          458.1756591796875,
+          455.52825927734375,
+          473.47003173828125,
+          479.83807373046875,
+          462.20904541015625
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 2,
+      "case": "raw-orjson/empty2",
+      "identical_output": true,
+      "started_unix_ns": 1792961848891901000,
+      "finished_unix_ns": 1792961848986111000,
+      "candidate": {
+        "per_op_ns": 37.03784942626953,
+        "iters": 131072,
+        "rounds": 7,
+        "spread": 0.042364961248294156,
+        "samples_ns": [
+          38.606956481933594,
+          38.059547424316406,
+          38.051605224609375,
+          37.40087890625,
+          37.43107604980469,
+          37.03784942626953,
+          37.07313537597656
+        ],
+        "cpu_samples_ns": [
+          null,
+          38.06654357910156,
+          38.02045440673828,
+          37.293113708496094,
+          37.354469299316406,
+          37.038482666015625,
+          37.076637268066406
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 655.57861328125,
+        "iters": 8192,
+        "rounds": 7,
+        "spread": 0.035370822083604876,
+        "samples_ns": [
+          678.705810546875,
+          665.4561767578125,
+          655.57861328125,
+          657.8878173828125,
+          660.6292724609375,
+          678.7669677734375,
+          663.0960693359375
+        ],
+        "cpu_samples_ns": [
+          null,
+          664.3270263671875,
+          655.6396484375,
+          657.93359375,
+          659.80029296875,
+          678.44140625,
+          659.978271484375
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 2,
+      "case": "raw-orjson/empty2",
+      "identical_output": true,
+      "started_unix_ns": 1792961848986262000,
+      "finished_unix_ns": 1792961849125363000,
+      "candidate": {
+        "per_op_ns": 35.58457623106061,
+        "iters": 270336,
+        "rounds": 7,
+        "spread": 0.056112647757872516,
+        "samples_ns": [
+          36.07254675662879,
+          35.58457623106061,
+          36.06591796875,
+          36.05466900449811,
+          36.372329249526516,
+          35.97452059659091,
+          37.58132102272727
+        ],
+        "cpu_samples_ns": [
+          null,
+          35.58503491950758,
+          35.98916163589015,
+          36.04449647845644,
+          36.31668738162879,
+          35.96943433357008,
+          37.583322236032195
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 675.5167236328125,
+        "iters": 8192,
+        "rounds": 7,
+        "spread": 0.029425174196619233,
+        "samples_ns": [
+          682.1746826171875,
+          693.140625,
+          695.3939208984375,
+          694.60546875,
+          678.655029296875,
+          691.838623046875,
+          675.5167236328125
+        ],
+        "cpu_samples_ns": [
+          null,
+          693.232177734375,
+          695.4345703125,
+          692.387939453125,
+          678.72119140625,
+          689.9820556640625,
+          675.6134033203125
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 2,
+      "case": "dumpb/empty64",
+      "identical_output": true,
+      "started_unix_ns": 1792961849125488000,
+      "finished_unix_ns": 1792961849291958000,
+      "candidate": {
+        "per_op_ns": 497.18218994140625,
+        "iters": 16384,
+        "rounds": 7,
+        "spread": 0.09538619316158335,
+        "samples_ns": [
+          544.6065063476562,
+          513.519287109375,
+          520.2713012695312,
+          538.7445678710938,
+          531.4051513671875,
+          497.24072265625,
+          497.18218994140625
+        ],
+        "cpu_samples_ns": [
+          null,
+          513.13525390625,
+          518.9361572265625,
+          538.77001953125,
+          530.4616088867188,
+          497.15167236328125,
+          496.8592529296875
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 1359.421595982143,
+        "iters": 7168,
+        "rounds": 7,
+        "spread": 0.016150411100440524,
+        "samples_ns": [
+          1359.421595982143,
+          1362.4093191964287,
+          1379.5223214285713,
+          1373.331752232143,
+          1379.7781808035713,
+          1381.3768136160713,
+          1375.7964564732142
+        ],
+        "cpu_samples_ns": [
+          null,
+          1361.6768973214287,
+          1376.6508091517858,
+          1370.1869419642858,
+          1376.4705636160713,
+          1379.173549107143,
+          1371.128627232143
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 2,
+      "case": "dumpb/empty64",
+      "identical_output": true,
+      "started_unix_ns": 1792961849292103000,
+      "finished_unix_ns": 1792961849457805000,
+      "candidate": {
+        "per_op_ns": 479.34210205078125,
+        "iters": 16384,
+        "rounds": 7,
+        "spread": 0.2005837876188588,
+        "samples_ns": [
+          510.23101806640625,
+          543.2357788085938,
+          575.4903564453125,
+          546.0001831054688,
+          553.7083740234375,
+          479.34210205078125,
+          499.17095947265625
+        ],
+        "cpu_samples_ns": [
+          null,
+          539.4693603515625,
+          575.225830078125,
+          545.5398559570312,
+          553.6906127929688,
+          477.40679931640625,
+          499.1328125
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 1361.2571022727273,
+        "iters": 7040,
+        "rounds": 7,
+        "spread": 0.01665666657970939,
+        "samples_ns": [
+          1361.2571022727273,
+          1372.1413352272727,
+          1374.0826704545455,
+          1371.490340909091,
+          1383.9311079545455,
+          1381.6879261363636,
+          1370.8036931818183
+        ],
+        "cpu_samples_ns": [
+          null,
+          1371.6146306818182,
+          1370.0936079545454,
+          1368.1049715909091,
+          1380.456818181818,
+          1379.9360795454545,
+          1367.96875
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 2,
+      "case": "dumps/empty64",
+      "identical_output": true,
+      "started_unix_ns": 1792961849457939000,
+      "finished_unix_ns": 1792961849607436000,
+      "candidate": {
+        "per_op_ns": 818.05419921875,
+        "iters": 8192,
+        "rounds": 7,
+        "spread": 0.0807219279265836,
+        "samples_ns": [
+          818.05419921875,
+          855.865478515625,
+          841.644287109375,
+          884.089111328125,
+          861.3636474609375,
+          844.6400146484375,
+          841.618896484375
+        ],
+        "cpu_samples_ns": [
+          null,
+          845.95751953125,
+          839.630126953125,
+          883.9466552734375,
+          857.442138671875,
+          844.7061767578125,
+          841.084716796875
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 1168.0462549603174,
+        "iters": 8064,
+        "rounds": 7,
+        "spread": 0.034712247687550594,
+        "samples_ns": [
+          1185.4642857142858,
+          1205.9719742063492,
+          1208.591765873016,
+          1174.9441964285713,
+          1172.6551339285713,
+          1168.0462549603174,
+          1192.0057043650793
+        ],
+        "cpu_samples_ns": [
+          null,
+          1197.9166666666667,
+          1200.923859126984,
+          1173.6370287698412,
+          1166.7286706349207,
+          1165.2044890873017,
+          1187.9185267857142
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 2,
+      "case": "dumps/empty64",
+      "identical_output": true,
+      "started_unix_ns": 1792961849607589000,
+      "finished_unix_ns": 1792961849780548000,
+      "candidate": {
+        "per_op_ns": 847.0001220703125,
+        "iters": 8192,
+        "rounds": 7,
+        "spread": 0.07182619034751121,
+        "samples_ns": [
+          897.5626220703125,
+          907.8369140625,
+          882.4412841796875,
+          853.0426025390625,
+          873.13330078125,
+          885.8896484375,
+          847.0001220703125
+        ],
+        "cpu_samples_ns": [
+          null,
+          901.468994140625,
+          879.1300048828125,
+          851.4354248046875,
+          867.76220703125,
+          884.185791015625,
+          842.8243408203125
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 1193.6475409836066,
+        "iters": 7808,
+        "rounds": 7,
+        "spread": 0.9661793991416309,
+        "samples_ns": [
+          2346.9252049180327,
+          1212.6985143442623,
+          1222.992443647541,
+          1215.5694159836066,
+          1200.280737704918,
+          1216.0444415983607,
+          1193.6475409836066
+        ],
+        "cpu_samples_ns": [
+          null,
+          1204.6618852459017,
+          1212.5918288934427,
+          1201.7109375,
+          1195.9368596311476,
+          1204.9446721311476,
+          1191.2301485655737
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 2,
+      "case": "raw-orjson/empty64",
+      "identical_output": true,
+      "started_unix_ns": 1792961849780716000,
+      "finished_unix_ns": 1792961849957786000,
+      "candidate": {
+        "per_op_ns": 265.19775390625,
+        "iters": 32768,
+        "rounds": 7,
+        "spread": 0.11169930955120828,
+        "samples_ns": [
+          275.0892639160156,
+          290.3658447265625,
+          278.23638916015625,
+          294.8201599121094,
+          293.701171875,
+          267.4903869628906,
+          265.19775390625
+        ],
+        "cpu_samples_ns": [
+          null,
+          289.05230712890625,
+          273.38665771484375,
+          292.3800354003906,
+          291.656494140625,
+          264.5416259765625,
+          261.7136535644531
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 1380.8353587962963,
+        "iters": 6912,
+        "rounds": 7,
+        "spread": 0.12388229498255195,
+        "samples_ns": [
+          1380.8353587962963,
+          1410.2767650462963,
+          1404.495804398148,
+          1551.896412037037,
+          1396.8943865740741,
+          1404.2787905092594,
+          1494.068287037037
+        ],
+        "cpu_samples_ns": [
+          null,
+          1401.650462962963,
+          1398.2808159722222,
+          1547.580295138889,
+          1387.0261863425926,
+          1399.2392939814815,
+          1478.9618055555557
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 2,
+      "case": "raw-orjson/empty64",
+      "identical_output": true,
+      "started_unix_ns": 1792961849957934000,
+      "finished_unix_ns": 1792961850107043000,
+      "candidate": {
+        "per_op_ns": 262.13583984375,
+        "iters": 20480,
+        "rounds": 7,
+        "spread": 0.14647831757672752,
+        "samples_ns": [
+          262.13583984375,
+          300.51474609375,
+          283.0322265625,
+          283.0423828125,
+          263.54169921875,
+          300.533056640625,
+          264.119482421875
+        ],
+        "cpu_samples_ns": [
+          null,
+          297.110986328125,
+          278.448486328125,
+          282.411669921875,
+          262.66884765625,
+          298.797607421875,
+          263.9017578125
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 1389.3585227272727,
+        "iters": 7040,
+        "rounds": 7,
+        "spread": 0.13423440592065256,
+        "samples_ns": [
+          1389.3585227272727,
+          1472.2538352272727,
+          1508.0078125,
+          1550.9410511363637,
+          1442.8857954545454,
+          1407.1436079545454,
+          1575.8582386363637
+        ],
+        "cpu_samples_ns": [
+          null,
+          1446.6146306818182,
+          1465.0272727272727,
+          1531.025,
+          1424.6271306818182,
+          1397.2951704545455,
+          1534.7833806818182
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 2,
+      "case": "dumpb/int2",
+      "identical_output": true,
+      "started_unix_ns": 1792961850107205000,
+      "finished_unix_ns": 1792961850244962000,
+      "candidate": {
+        "per_op_ns": 71.39000525841347,
+        "iters": 106496,
+        "rounds": 7,
+        "spread": 0.13395915951464932,
+        "samples_ns": [
+          75.50323016826923,
+          71.39000525841347,
+          76.84521484375,
+          78.0131084735577,
+          78.59137432391827,
+          80.95335036057692,
+          75.36277418870192
+        ],
+        "cpu_samples_ns": [
+          null,
+          71.0914776141827,
+          75.99541766826923,
+          74.7997577373798,
+          75.62803297776442,
+          78.34801307091347,
+          73.93040114182692
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 796.69189453125,
+        "iters": 8192,
+        "rounds": 7,
+        "spread": 0.16700513291963534,
+        "samples_ns": [
+          816.6351318359375,
+          823.2269287109375,
+          796.69189453125,
+          834.50830078125,
+          929.7435302734375,
+          800.7099609375,
+          893.3359375
+        ],
+        "cpu_samples_ns": [
+          null,
+          810.8876953125,
+          793.645263671875,
+          822.0723876953125,
+          923.853515625,
+          798.2738037109375,
+          891.6168212890625
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 2,
+      "case": "dumpb/int2",
+      "identical_output": true,
+      "started_unix_ns": 1792961850245109000,
+      "finished_unix_ns": 1792961850388844000,
+      "candidate": {
+        "per_op_ns": 74.743310546875,
+        "iters": 122880,
+        "rounds": 7,
+        "spread": 0.04634198338105526,
+        "samples_ns": [
+          78.20706380208334,
+          75.11121419270833,
+          74.86300455729166,
+          75.71919759114583,
+          74.92403971354166,
+          74.743310546875,
+          75.90569661458333
+        ],
+        "cpu_samples_ns": [
+          null,
+          75.01051432291666,
+          73.93731282552083,
+          75.53067220052084,
+          74.86708170572916,
+          74.66871744791666,
+          75.91315104166667
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 759.1806640625,
+        "iters": 8192,
+        "rounds": 7,
+        "spread": 0.04694472350820233,
+        "samples_ns": [
+          782.6385498046875,
+          792.3380126953125,
+          787.068603515625,
+          779.89697265625,
+          774.86669921875,
+          794.8201904296875,
+          759.1806640625
+        ],
+        "cpu_samples_ns": [
+          null,
+          787.6077880859375,
+          778.4373779296875,
+          779.3680419921875,
+          769.34814453125,
+          791.681884765625,
+          758.6771240234375
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 2,
+      "case": "dumps/int2",
+      "identical_output": true,
+      "started_unix_ns": 1792961850388981000,
+      "finished_unix_ns": 1792961850573668000,
+      "candidate": {
+        "per_op_ns": 255.5704833984375,
+        "iters": 40960,
+        "rounds": 7,
+        "spread": 0.030353929202696136,
+        "samples_ns": [
+          256.2154052734375,
+          263.094091796875,
+          255.5704833984375,
+          263.3280517578125,
+          257.4472900390625,
+          259.9822998046875,
+          261.583447265625
+        ],
+        "cpu_samples_ns": [
+          null,
+          258.556103515625,
+          251.1871337890625,
+          262.2914794921875,
+          256.139111328125,
+          259.081005859375,
+          260.4502197265625
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 532.71484375,
+        "iters": 16384,
+        "rounds": 7,
+        "spread": 0.06828127864344638,
+        "samples_ns": [
+          553.448974609375,
+          547.0835571289062,
+          540.0593872070312,
+          532.71484375,
+          569.0892944335938,
+          551.2974853515625,
+          566.5079956054688
+        ],
+        "cpu_samples_ns": [
+          null,
+          544.9473266601562,
+          537.6459350585938,
+          532.2163696289062,
+          555.041015625,
+          544.64208984375,
+          560.0712890625
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 2,
+      "case": "dumps/int2",
+      "identical_output": true,
+      "started_unix_ns": 1792961850573821000,
+      "finished_unix_ns": 1792961850744114000,
+      "candidate": {
+        "per_op_ns": 253.3505859375,
+        "iters": 32768,
+        "rounds": 7,
+        "spread": 0.16915010638666927,
+        "samples_ns": [
+          254.6907958984375,
+          253.3505859375,
+          259.00396728515625,
+          296.2048645019531,
+          270.5268859863281,
+          268.3804931640625,
+          275.23675537109375
+        ],
+        "cpu_samples_ns": [
+          null,
+          252.3714599609375,
+          258.18505859375,
+          296.0751953125,
+          268.40972900390625,
+          267.0936584472656,
+          274.58447265625
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 562.7949829101562,
+        "iters": 16384,
+        "rounds": 7,
+        "spread": 0.1744329389763376,
+        "samples_ns": [
+          577.71044921875,
+          588.9689331054688,
+          569.6182250976562,
+          562.7949829101562,
+          632.1614379882812,
+          660.9649658203125,
+          580.866455078125
+        ],
+        "cpu_samples_ns": [
+          null,
+          582.537353515625,
+          566.6097412109375,
+          562.1668090820312,
+          607.3455810546875,
+          617.5155639648438,
+          562.0982055664062
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 2,
+      "case": "raw-orjson/int2",
+      "identical_output": true,
+      "started_unix_ns": 1792961850744311000,
+      "finished_unix_ns": 1792961850902181000,
+      "candidate": {
+        "per_op_ns": 46.3487803141276,
+        "iters": 196608,
+        "rounds": 7,
+        "spread": 0.12108313147781721,
+        "samples_ns": [
+          46.56537373860677,
+          51.960835774739586,
+          47.21154276529948,
+          50.97643534342448,
+          46.3487803141276,
+          48.85228474934896,
+          48.984527587890625
+        ],
+        "cpu_samples_ns": [
+          null,
+          48.43987528483073,
+          45.14906311035156,
+          48.954010009765625,
+          44.97973124186198,
+          47.2751210530599,
+          46.57384745279948
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 775.5380859375,
+        "iters": 8192,
+        "rounds": 7,
+        "spread": 0.08996777690892538,
+        "samples_ns": [
+          845.3115234375,
+          806.025146484375,
+          800.5828857421875,
+          788.263916015625,
+          797.6328125,
+          792.241455078125,
+          775.5380859375
+        ],
+        "cpu_samples_ns": [
+          null,
+          805.8828125,
+          798.25341796875,
+          786.590576171875,
+          793.1060791015625,
+          789.7847900390625,
+          774.6328125
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 2,
+      "case": "raw-orjson/int2",
+      "identical_output": true,
+      "started_unix_ns": 1792961850902338000,
+      "finished_unix_ns": 1792961851056434000,
+      "candidate": {
+        "per_op_ns": 42.163303920200896,
+        "iters": 229376,
+        "rounds": 7,
+        "spread": 0.17742453147214682,
+        "samples_ns": [
+          42.66847882952009,
+          42.163303920200896,
+          42.74967738560268,
+          45.94384765625,
+          49.64410836356027,
+          45.77709524972098,
+          46.0506591796875
+        ],
+        "cpu_samples_ns": [
+          null,
+          41.950953892299104,
+          42.68392072405134,
+          45.662109375,
+          49.641017368861604,
+          45.52459716796875,
+          46.034131731305806
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 806.8695068359375,
+        "iters": 8192,
+        "rounds": 7,
+        "spread": 0.07676015053234743,
+        "samples_ns": [
+          822.728515625,
+          806.8695068359375,
+          868.804931640625,
+          840.09814453125,
+          810.65869140625,
+          835.322021484375,
+          843.953369140625
+        ],
+        "cpu_samples_ns": [
+          null,
+          805.633544921875,
+          850.01123046875,
+          828.52685546875,
+          809.6212158203125,
+          829.52880859375,
+          835.9527587890625
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 2,
+      "case": "dumpb/int4096",
+      "identical_output": true,
+      "started_unix_ns": 1792961851056867000,
+      "finished_unix_ns": 1792961851184856000,
+      "candidate": {
+        "per_op_ns": 38983.3984375,
+        "iters": 128,
+        "rounds": 7,
+        "spread": 0.050736140684886896,
+        "samples_ns": [
+          39979.8125,
+          40646.8125,
+          40961.265625,
+          40945.96875,
+          39493.4921875,
+          38983.3984375,
+          39143.5546875
+        ],
+        "cpu_samples_ns": [
+          null,
+          40518.2265625,
+          40698.2421875,
+          40940.4296875,
+          39415.3671875,
+          38935.546875,
+          39168.6171875
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 184819.73913043478,
+        "iters": 46,
+        "rounds": 7,
+        "spread": 0.05353347821402476,
+        "samples_ns": [
+          194713.78260869565,
+          190076.08695652173,
+          188183.86956521738,
+          187390.39130434784,
+          184819.73913043478,
+          190921.19565217392,
+          187227.36956521738
+        ],
+        "cpu_samples_ns": [
+          null,
+          189511.76086956522,
+          187138.58695652173,
+          186410.3260869565,
+          184540.76086956522,
+          189229.15217391305,
+          186380.4347826087
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 2,
+      "case": "dumpb/int4096",
+      "identical_output": true,
+      "started_unix_ns": 1792961851185254000,
+      "finished_unix_ns": 1792961851363094000,
+      "candidate": {
+        "per_op_ns": 37077.3125,
+        "iters": 256,
+        "rounds": 7,
+        "spread": 0.060451387893877155,
+        "samples_ns": [
+          37300.9453125,
+          39318.6875,
+          38958.171875,
+          38418.29296875,
+          37340.0078125,
+          38090.8203125,
+          37077.3125
+        ],
+        "cpu_samples_ns": [
+          null,
+          38969.890625,
+          38809.2421875,
+          38347.8203125,
+          37158.85546875,
+          37924.15625,
+          37080.40625
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 185837.34615384616,
+        "iters": 52,
+        "rounds": 7,
+        "spread": 0.018234307875932033,
+        "samples_ns": [
+          188202.73076923078,
+          186117.78846153847,
+          186597.75,
+          185837.34615384616,
+          189225.96153846153,
+          187403.03846153847,
+          186240.38461538462
+        ],
+        "cpu_samples_ns": [
+          null,
+          185176.28846153847,
+          185921.46153846153,
+          184936.6923076923,
+          187539.26923076922,
+          186809.3076923077,
+          185897.42307692306
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 2,
+      "case": "dumps/int4096",
+      "identical_output": true,
+      "started_unix_ns": 1792961851363467000,
+      "finished_unix_ns": 1792961851509333000,
+      "candidate": {
+        "per_op_ns": 50031.8984375,
+        "iters": 128,
+        "rounds": 7,
+        "spread": 0.04245994313315427,
+        "samples_ns": [
+          50941.0859375,
+          50031.8984375,
+          51818.359375,
+          51434.5703125,
+          50525.7109375,
+          51172.8515625,
+          52156.25
+        ],
+        "cpu_samples_ns": [
+          null,
+          50013.671875,
+          51647.7890625,
+          51143.875,
+          50491.2109375,
+          51014.328125,
+          51639.9765625
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 184160.84,
+        "iters": 50,
+        "rounds": 7,
+        "spread": 0.051829694086973105,
+        "samples_ns": [
+          184160.84,
+          187505.0,
+          187780.82,
+          187035.0,
+          193705.84,
+          191431.66,
+          187964.16
+        ],
+        "cpu_samples_ns": [
+          null,
+          186870.0,
+          187005.84,
+          186174.16,
+          189718.34,
+          189538.34,
+          186913.32
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 2,
+      "case": "dumps/int4096",
+      "identical_output": true,
+      "started_unix_ns": 1792961851509730000,
+      "finished_unix_ns": 1792961851658219000,
+      "candidate": {
+        "per_op_ns": 52491.859375,
+        "iters": 128,
+        "rounds": 7,
+        "spread": 0.05181249830702916,
+        "samples_ns": [
+          54589.84375,
+          55031.25,
+          55211.59375,
+          55010.421875,
+          52491.859375,
+          52764.96875,
+          53858.71875
+        ],
+        "cpu_samples_ns": [
+          null,
+          53292.96875,
+          54181.96875,
+          53487.625,
+          51791.34375,
+          52111.984375,
+          53062.828125
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 191568.5625,
+        "iters": 48,
+        "rounds": 7,
+        "spread": 0.04544913260493877,
+        "samples_ns": [
+          193758.6875,
+          195613.72916666666,
+          200221.35416666666,
+          191568.5625,
+          200275.1875,
+          195566.83333333334,
+          196421.02083333334
+        ],
+        "cpu_samples_ns": [
+          null,
+          193222.20833333334,
+          195149.3125,
+          188715.27083333334,
+          195016.5,
+          194020.83333333334,
+          191712.6875
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 2,
+      "case": "raw-orjson/int4096",
+      "identical_output": true,
+      "started_unix_ns": 1792961851658572000,
+      "finished_unix_ns": 1792961851824893000,
+      "candidate": {
+        "per_op_ns": 21157.877604166668,
+        "iters": 384,
+        "rounds": 7,
+        "spread": 0.10815883810022,
+        "samples_ns": [
+          21308.052083333332,
+          23446.2890625,
+          21556.640625,
+          22208.442708333332,
+          22462.0234375,
+          21157.877604166668,
+          22367.729166666668
+        ],
+        "cpu_samples_ns": [
+          null,
+          22986.653645833332,
+          21227.755208333332,
+          21854.4921875,
+          22050.130208333332,
+          20629.557291666668,
+          22101.34375
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 187750.0,
+        "iters": 50,
+        "rounds": 7,
+        "spread": 0.14639595206391479,
+        "samples_ns": [
+          187750.0,
+          191002.5,
+          192250.84,
+          192009.16,
+          215235.84,
+          200018.34,
+          195840.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          187969.16,
+          189310.0,
+          189330.84,
+          211286.68,
+          196734.16,
+          193874.18
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 2,
+      "case": "raw-orjson/int4096",
+      "identical_output": true,
+      "started_unix_ns": 1792961851825262000,
+      "finished_unix_ns": 1792961851977043000,
+      "candidate": {
+        "per_op_ns": 21230.143229166668,
+        "iters": 384,
+        "rounds": 7,
+        "spread": 0.09868805102807464,
+        "samples_ns": [
+          22164.713541666668,
+          22142.361979166668,
+          21797.8515625,
+          23004.989583333332,
+          22409.505208333332,
+          21230.143229166668,
+          23325.3046875
+        ],
+        "cpu_samples_ns": [
+          null,
+          21139.322916666668,
+          21449.328125,
+          22700.846354166668,
+          22086.046875,
+          21089.408854166668,
+          22746.09375
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 197067.97368421053,
+        "iters": 38,
+        "rounds": 7,
+        "spread": 0.05842226760389783,
+        "samples_ns": [
+          207534.0,
+          205028.5,
+          201679.81578947368,
+          206160.1052631579,
+          197067.97368421053,
+          200070.15789473685,
+          208581.13157894736
+        ],
+        "cpu_samples_ns": [
+          null,
+          201922.13157894736,
+          200888.15789473685,
+          203472.57894736843,
+          196296.05263157896,
+          197338.81578947368,
+          203225.86842105264
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 2,
+      "case": "dumpb/ints16x256",
+      "identical_output": true,
+      "started_unix_ns": 1792961851977321000,
+      "finished_unix_ns": 1792961852146065000,
+      "candidate": {
+        "per_op_ns": 11546.821614583334,
+        "iters": 768,
+        "rounds": 7,
+        "spread": 0.052854100926718314,
+        "samples_ns": [
+          11574.490885416666,
+          11946.614583333334,
+          12157.118489583334,
+          11800.673177083334,
+          11562.98828125,
+          11607.80078125,
+          11546.821614583334
+        ],
+        "cpu_samples_ns": [
+          null,
+          11770.5078125,
+          11863.389322916666,
+          11560.654947916666,
+          11390.354166666666,
+          11460.8828125,
+          11360.677083333334
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 72766.9296875,
+        "iters": 128,
+        "rounds": 7,
+        "spread": 0.05602572940768616,
+        "samples_ns": [
+          72768.234375,
+          76843.75,
+          73878.578125,
+          72766.9296875,
+          73583.984375,
+          75805.6640625,
+          75403.3203125
+        ],
+        "cpu_samples_ns": [
+          null,
+          76126.296875,
+          72979.8203125,
+          72132.484375,
+          72843.75,
+          74811.5234375,
+          73785.15625
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 2,
+      "case": "dumpb/ints16x256",
+      "identical_output": true,
+      "started_unix_ns": 1792961852146343000,
+      "finished_unix_ns": 1792961852335253000,
+      "candidate": {
+        "per_op_ns": 11476.5078125,
+        "iters": 768,
+        "rounds": 7,
+        "spread": 0.10221480519875406,
+        "samples_ns": [
+          12649.576822916666,
+          12221.19140625,
+          12326.171875,
+          11649.3046875,
+          11927.516927083334,
+          12206.705729166666,
+          11476.5078125
+        ],
+        "cpu_samples_ns": [
+          null,
+          11877.821614583334,
+          12035.264322916666,
+          11565.5390625,
+          11851.399739583334,
+          11982.475260416666,
+          11475.477864583334
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 71364.58333333333,
+        "iters": 120,
+        "rounds": 7,
+        "spread": 0.8055758283462269,
+        "samples_ns": [
+          80741.325,
+          128854.16666666667,
+          71364.58333333333,
+          73593.4,
+          74177.775,
+          83496.525,
+          73722.91666666667
+        ],
+        "cpu_samples_ns": [
+          null,
+          88784.375,
+          71159.375,
+          72910.41666666667,
+          73188.54166666667,
+          79117.01666666666,
+          72374.65
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 2,
+      "case": "dumps/ints16x256",
+      "identical_output": true,
+      "started_unix_ns": 1792961852335496000,
+      "finished_unix_ns": 1792961852517148000,
+      "candidate": {
+        "per_op_ns": 23203.015625,
+        "iters": 384,
+        "rounds": 7,
+        "spread": 0.085859102815075,
+        "samples_ns": [
+          23325.1953125,
+          23638.020833333332,
+          24733.5078125,
+          25147.5703125,
+          23203.015625,
+          25195.205729166668,
+          24145.940104166668
+        ],
+        "cpu_samples_ns": [
+          null,
+          22969.401041666668,
+          24145.182291666668,
+          24351.5625,
+          22425.455729166668,
+          24151.041666666668,
+          23055.557291666668
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 78663.734375,
+        "iters": 128,
+        "rounds": 7,
+        "spread": 0.09356320683828456,
+        "samples_ns": [
+          80177.734375,
+          81370.765625,
+          78663.734375,
+          86023.765625,
+          81993.1640625,
+          84659.1796875,
+          79322.9140625
+        ],
+        "cpu_samples_ns": [
+          null,
+          79179.0390625,
+          77157.875,
+          83054.6875,
+          79731.1171875,
+          82984.046875,
+          78265.953125
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 2,
+      "case": "dumps/ints16x256",
+      "identical_output": true,
+      "started_unix_ns": 1792961852517427000,
+      "finished_unix_ns": 1792961852695482000,
+      "candidate": {
+        "per_op_ns": 21989.692708333332,
+        "iters": 384,
+        "rounds": 7,
+        "spread": 0.1463210391421549,
+        "samples_ns": [
+          24385.091145833332,
+          25207.247395833332,
+          23744.684895833332,
+          22242.403645833332,
+          22508.8984375,
+          21989.692708333332,
+          22722.4375
+        ],
+        "cpu_samples_ns": [
+          null,
+          23521.375,
+          23025.822916666668,
+          21728.515625,
+          22321.723958333332,
+          21692.817708333332,
+          22494.247395833332
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 79825.1953125,
+        "iters": 128,
+        "rounds": 7,
+        "spread": 0.13439199422566397,
+        "samples_ns": [
+          79825.1953125,
+          81094.0703125,
+          81900.7109375,
+          84240.234375,
+          89143.2265625,
+          90553.0625,
+          83021.8125
+        ],
+        "cpu_samples_ns": [
+          null,
+          79654.9453125,
+          79223.3046875,
+          81776.6953125,
+          79999.0234375,
+          86131.8359375,
+          81291.6640625
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 2,
+      "case": "raw-orjson/ints16x256",
+      "identical_output": true,
+      "started_unix_ns": 1792961852695697000,
+      "finished_unix_ns": 1792961852841180000,
+      "candidate": {
+        "per_op_ns": 9034.651041666666,
+        "iters": 576,
+        "rounds": 7,
+        "spread": 0.12135779701569517,
+        "samples_ns": [
+          9034.651041666666,
+          9842.810763888889,
+          9505.642361111111,
+          10131.076388888889,
+          9437.934027777777,
+          9669.199652777777,
+          9317.491319444445
+        ],
+        "cpu_samples_ns": [
+          null,
+          9438.585069444445,
+          9207.826388888889,
+          9983.289930555555,
+          9209.345486111111,
+          9241.102430555555,
+          9162.616319444445
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 75324.8671875,
+        "iters": 128,
+        "rounds": 7,
+        "spread": 0.09980643220101927,
+        "samples_ns": [
+          75324.8671875,
+          82842.7734375,
+          76057.2890625,
+          76709.9609375,
+          75888.015625,
+          80398.765625,
+          79515.296875
+        ],
+        "cpu_samples_ns": [
+          null,
+          80071.609375,
+          75210.6171875,
+          75774.7421875,
+          75203.7734375,
+          78403.96875,
+          76972.328125
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 2,
+      "case": "raw-orjson/ints16x256",
+      "identical_output": true,
+      "started_unix_ns": 1792961852841435000,
+      "finished_unix_ns": 1792961852983381000,
+      "candidate": {
+        "per_op_ns": 9623.6982421875,
+        "iters": 1024,
+        "rounds": 7,
+        "spread": 0.16912027570287255,
+        "samples_ns": [
+          9623.6982421875,
+          10588.826171875,
+          9863.4443359375,
+          10211.181640625,
+          11251.2607421875,
+          9967.611328125,
+          10030.96484375
+        ],
+        "cpu_samples_ns": [
+          null,
+          9666.50390625,
+          9711.5068359375,
+          9778.23828125,
+          9918.7822265625,
+          9423.6650390625,
+          9698.771484375
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 77130.859375,
+        "iters": 64,
+        "rounds": 7,
+        "spread": 0.15055764604593452,
+        "samples_ns": [
+          83568.359375,
+          88743.5,
+          77130.859375,
+          78065.109375,
+          84341.15625,
+          80984.375,
+          78867.1875
+        ],
+        "cpu_samples_ns": [
+          null,
+          87003.265625,
+          76412.109375,
+          77311.84375,
+          81074.875,
+          78867.1875,
+          77045.578125
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 2,
+      "case": "dumpb/ints32x128",
+      "identical_output": true,
+      "started_unix_ns": 1792961852983686000,
+      "finished_unix_ns": 1792961853115883000,
+      "candidate": {
+        "per_op_ns": 1814.3470203488373,
+        "iters": 2752,
+        "rounds": 7,
+        "spread": 0.08928191259788792,
+        "samples_ns": [
+          1857.2707122093022,
+          1976.3353924418604,
+          1939.9375,
+          1903.0704941860465,
+          1923.4193313953488,
+          1892.9720203488373,
+          1814.3470203488373
+        ],
+        "cpu_samples_ns": [
+          null,
+          1910.5952034883721,
+          1891.5483284883721,
+          1874.1824127906978,
+          1875.2122093023256,
+          1859.829215116279,
+          1804.4905523255813
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 71673.828125,
+        "iters": 128,
+        "rounds": 7,
+        "spread": 0.1308734773959724,
+        "samples_ns": [
+          71673.828125,
+          72439.125,
+          73106.7734375,
+          75243.4921875,
+          81054.03125,
+          75372.0703125,
+          77127.9296875
+        ],
+        "cpu_samples_ns": [
+          null,
+          71595.375,
+          72063.1484375,
+          73790.6875,
+          79086.265625,
+          74213.8671875,
+          75135.0859375
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 2,
+      "case": "dumpb/ints32x128",
+      "identical_output": true,
+      "started_unix_ns": 1792961853116123000,
+      "finished_unix_ns": 1792961853266648000,
+      "candidate": {
+        "per_op_ns": 12790.635416666666,
+        "iters": 768,
+        "rounds": 7,
+        "spread": 0.05290623999817575,
+        "samples_ns": [
+          13122.342447916666,
+          13467.33984375,
+          12790.635416666666,
+          12942.220052083334,
+          13086.751302083334,
+          13007.8671875,
+          12830.946614583334
+        ],
+        "cpu_samples_ns": [
+          null,
+          13044.651041666666,
+          12565.647135416666,
+          12760.524739583334,
+          12740.614583333334,
+          12828.015625,
+          12626.735677083334
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 70925.43421052632,
+        "iters": 76,
+        "rounds": 7,
+        "spread": 0.08201404254616551,
+        "samples_ns": [
+          72620.61842105263,
+          73429.27631578948,
+          74608.0,
+          73225.86842105263,
+          72135.96052631579,
+          76742.31578947368,
+          70925.43421052632
+        ],
+        "cpu_samples_ns": [
+          null,
+          72424.8947368421,
+          72850.86842105263,
+          72390.8947368421,
+          71387.61842105263,
+          74882.68421052632,
+          70686.96052631579
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 2,
+      "case": "dumps/ints32x128",
+      "identical_output": true,
+      "started_unix_ns": 1792961853266868000,
+      "finished_unix_ns": 1792961853433220000,
+      "candidate": {
+        "per_op_ns": 22016.927083333332,
+        "iters": 384,
+        "rounds": 7,
+        "spread": 0.0352425335620084,
+        "samples_ns": [
+          22379.776041666668,
+          22634.005208333332,
+          22792.859375,
+          22016.927083333332,
+          22199.325520833332,
+          22395.940104166668,
+          22526.692708333332
+        ],
+        "cpu_samples_ns": [
+          null,
+          22530.924479166668,
+          22319.3359375,
+          21817.3828125,
+          21981.2265625,
+          22054.6875,
+          22038.84375
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 69536.78125,
+        "iters": 128,
+        "rounds": 7,
+        "spread": 0.09870473225276012,
+        "samples_ns": [
+          69536.78125,
+          74018.5546875,
+          74180.6640625,
+          76400.390625,
+          72203.125,
+          73287.4296875,
+          72720.703125
+        ],
+        "cpu_samples_ns": [
+          null,
+          72033.8515625,
+          72362.3046875,
+          73768.234375,
+          71104.8203125,
+          71639.6484375,
+          71303.0625
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 2,
+      "case": "dumps/ints32x128",
+      "identical_output": true,
+      "started_unix_ns": 1792961853433455000,
+      "finished_unix_ns": 1792961853571821000,
+      "candidate": {
+        "per_op_ns": 3000.6747685185187,
+        "iters": 1728,
+        "rounds": 7,
+        "spread": 0.07523867124022644,
+        "samples_ns": [
+          3078.728009259259,
+          3218.894675925926,
+          3226.441550925926,
+          3176.528935185185,
+          3153.935185185185,
+          3000.6747685185187,
+          3102.141203703704
+        ],
+        "cpu_samples_ns": [
+          null,
+          3121.792824074074,
+          3128.8582175925926,
+          3060.402199074074,
+          3047.019675925926,
+          2941.1649305555557,
+          3012.3935185185187
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 67730.17741935483,
+        "iters": 124,
+        "rounds": 7,
+        "spread": 0.43625131600222994,
+        "samples_ns": [
+          69896.16935483871,
+          67730.17741935483,
+          68853.16129032258,
+          69172.04838709677,
+          70293.34677419355,
+          88515.79032258065,
+          97277.55645161291
+        ],
+        "cpu_samples_ns": [
+          null,
+          67083.33064516129,
+          68424.06451612903,
+          68089.71774193548,
+          69071.91129032258,
+          78829.6370967742,
+          91265.79032258065
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 2,
+      "case": "raw-orjson/ints32x128",
+      "identical_output": true,
+      "started_unix_ns": 1792961853572523000,
+      "finished_unix_ns": 1792961853703898000,
+      "candidate": {
+        "per_op_ns": 9540.52734375,
+        "iters": 512,
+        "rounds": 7,
+        "spread": 0.18883607144684988,
+        "samples_ns": [
+          10463.8671875,
+          11342.123046875,
+          9675.455078125,
+          10015.216796875,
+          9540.52734375,
+          9687.5,
+          10526.935546875
+        ],
+        "cpu_samples_ns": [
+          null,
+          9987.142578125,
+          9571.208984375,
+          9837.564453125,
+          9487.955078125,
+          9627.9296875,
+          10422.689453125
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 69100.19841269842,
+        "iters": 126,
+        "rounds": 7,
+        "spread": 0.12760397972808063,
+        "samples_ns": [
+          69100.19841269842,
+          77917.65873015873,
+          75636.90476190476,
+          76736.76984126984,
+          74862.76190476191,
+          73898.80952380953,
+          73721.88888888889
+        ],
+        "cpu_samples_ns": [
+          null,
+          75525.12698412698,
+          73459.65873015873,
+          74235.11904761905,
+          72977.8492063492,
+          72304.89682539682,
+          72272.48412698413
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 2,
+      "case": "raw-orjson/ints32x128",
+      "identical_output": true,
+      "started_unix_ns": 1792961853704152000,
+      "finished_unix_ns": 1792961853831594000,
+      "candidate": {
+        "per_op_ns": 9906.005859375,
+        "iters": 512,
+        "rounds": 7,
+        "spread": 0.04327788046826864,
+        "samples_ns": [
+          10176.7578125,
+          10026.53125,
+          10334.716796875,
+          10197.998046875,
+          9906.005859375,
+          10199.13671875,
+          9914.224609375
+        ],
+        "cpu_samples_ns": [
+          null,
+          9959.87890625,
+          10173.013671875,
+          10051.3515625,
+          9866.455078125,
+          9952.068359375,
+          9845.458984375
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 67431.3203125,
+        "iters": 128,
+        "rounds": 7,
+        "spread": 0.0480281499382068,
+        "samples_ns": [
+          70669.921875,
+          69458.65625,
+          68794.6015625,
+          70309.5703125,
+          67436.8515625,
+          69257.15625,
+          67431.3203125
+        ],
+        "cpu_samples_ns": [
+          null,
+          68771.15625,
+          68027.015625,
+          69397.7890625,
+          67184.8984375,
+          68337.890625,
+          67168.6171875
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 2,
+      "case": "dumpb/dict4096",
+      "identical_output": true,
+      "started_unix_ns": 1792961853832077000,
+      "finished_unix_ns": 1792961853963912000,
+      "candidate": {
+        "per_op_ns": 60274.4140625,
+        "iters": 128,
+        "rounds": 7,
+        "spread": 0.44937159151666367,
+        "samples_ns": [
+          63479.4921875,
+          80066.078125,
+          76656.25,
+          87360.0234375,
+          60294.921875,
+          60274.4140625,
+          60789.390625
+        ],
+        "cpu_samples_ns": [
+          null,
+          73175.78125,
+          72352.5390625,
+          66486.9765625,
+          59375.9765625,
+          59218.75,
+          59140.9453125
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 276620.3888888889,
+        "iters": 18,
+        "rounds": 7,
+        "spread": 0.21076979342126906,
+        "samples_ns": [
+          279453.6666666667,
+          276620.3888888889,
+          280912.0,
+          288513.8888888889,
+          313696.72222222225,
+          321469.8888888889,
+          334923.6111111111
+        ],
+        "cpu_samples_ns": [
+          null,
+          274118.05555555556,
+          275409.72222222225,
+          280678.27777777775,
+          296960.6666666667,
+          303155.1111111111,
+          304692.1666666667
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 2,
+      "case": "dumpb/dict4096",
+      "identical_output": true,
+      "started_unix_ns": 1792961853964423000,
+      "finished_unix_ns": 1792961854091593000,
+      "candidate": {
+        "per_op_ns": 61674.15625,
+        "iters": 128,
+        "rounds": 7,
+        "spread": 0.13275934054630864,
+        "samples_ns": [
+          61674.15625,
+          63960.609375,
+          68382.484375,
+          66801.7578125,
+          69861.9765625,
+          68308.59375,
+          67207.03125
+        ],
+        "cpu_samples_ns": [
+          null,
+          62217.125,
+          65818.359375,
+          64700.1953125,
+          65655.921875,
+          64246.4140625,
+          65387.6953125
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 281333.3333333333,
+        "iters": 18,
+        "rounds": 7,
+        "spread": 0.1637539494470774,
+        "samples_ns": [
+          297370.3888888889,
+          281333.3333333333,
+          316486.1111111111,
+          320314.77777777775,
+          327402.77777777775,
+          304168.94444444444,
+          293041.6666666667
+        ],
+        "cpu_samples_ns": [
+          null,
+          274303.27777777775,
+          302462.94444444444,
+          316497.6666666667,
+          317770.8333333333,
+          291620.3888888889,
+          284037.0
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 2,
+      "case": "dumps/dict4096",
+      "identical_output": true,
+      "started_unix_ns": 1792961854092157000,
+      "finished_unix_ns": 1792961854193264000,
+      "candidate": {
+        "per_op_ns": 106961.89361702128,
+        "iters": 47,
+        "rounds": 7,
+        "spread": 0.21926500370284982,
+        "samples_ns": [
+          109459.21276595745,
+          121865.25531914894,
+          130414.89361702128,
+          113780.12765957447,
+          111656.02127659574,
+          116287.23404255319,
+          106961.89361702128
+        ],
+        "cpu_samples_ns": [
+          null,
+          117601.93617021276,
+          111390.9574468085,
+          111013.29787234042,
+          109635.63829787234,
+          110136.51063829787,
+          105243.8085106383
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 283718.17647058825,
+        "iters": 17,
+        "rounds": 7,
+        "spread": 0.2336790713402633,
+        "samples_ns": [
+          350017.17647058825,
+          289051.4705882353,
+          289941.17647058825,
+          294007.35294117645,
+          291634.76470588235,
+          291139.70588235295,
+          283718.17647058825
+        ],
+        "cpu_samples_ns": [
+          null,
+          280786.76470588235,
+          279747.5294117647,
+          281889.70588235295,
+          278127.4705882353,
+          281424.0,
+          274995.0588235294
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 2,
+      "case": "dumps/dict4096",
+      "identical_output": true,
+      "started_unix_ns": 1792961854193815000,
+      "finished_unix_ns": 1792961854310000000,
+      "candidate": {
+        "per_op_ns": 100170.91836734694,
+        "iters": 49,
+        "rounds": 7,
+        "spread": 0.14605974482389794,
+        "samples_ns": [
+          108429.42857142857,
+          103522.95918367348,
+          101568.02040816327,
+          114801.85714285714,
+          104949.8163265306,
+          101771.26530612246,
+          100170.91836734694
+        ],
+        "cpu_samples_ns": [
+          null,
+          101622.44897959183,
+          100587.59183673469,
+          108894.57142857143,
+          103153.0612244898,
+          100722.77551020408,
+          99813.77551020408
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 294767.375,
+        "iters": 24,
+        "rounds": 7,
+        "spread": 0.11668806065574025,
+        "samples_ns": [
+          329163.2083333333,
+          313465.2916666667,
+          307348.9583333333,
+          306921.875,
+          294767.375,
+          300835.0416666667,
+          305369.7916666667
+        ],
+        "cpu_samples_ns": [
+          null,
+          302833.3333333333,
+          298190.9583333333,
+          298027.75,
+          289720.5,
+          293774.2916666667,
+          294192.7083333333
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 2,
+      "case": "raw-orjson/dict4096",
+      "identical_output": true,
+      "started_unix_ns": 1792961854310534000,
+      "finished_unix_ns": 1792961854438776000,
+      "candidate": {
+        "per_op_ns": 32868.9765625,
+        "iters": 256,
+        "rounds": 7,
+        "spread": 0.09215293486520462,
+        "samples_ns": [
+          33578.125,
+          34453.9375,
+          34967.125,
+          33751.3046875,
+          32868.9765625,
+          34594.56640625,
+          35897.94921875
+        ],
+        "cpu_samples_ns": [
+          null,
+          33205.73046875,
+          33937.17578125,
+          32921.38671875,
+          31934.2421875,
+          33837.890625,
+          34733.5625
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 282360.29411764705,
+        "iters": 17,
+        "rounds": 7,
+        "spread": 0.08821811931980938,
+        "samples_ns": [
+          307269.5882352941,
+          297428.9411764706,
+          293789.23529411765,
+          295409.35294117645,
+          300201.0,
+          282360.29411764705,
+          291394.5882352941
+        ],
+        "cpu_samples_ns": [
+          null,
+          288860.29411764705,
+          287409.29411764705,
+          288480.35294117645,
+          290960.82352941175,
+          276352.9411764706,
+          282477.9411764706
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 2,
+      "case": "raw-orjson/dict4096",
+      "identical_output": true,
+      "started_unix_ns": 1792961854439259000,
+      "finished_unix_ns": 1792961854615069000,
+      "candidate": {
+        "per_op_ns": 31253.7421875,
+        "iters": 256,
+        "rounds": 7,
+        "spread": 0.10146184994346927,
+        "samples_ns": [
+          31428.875,
+          33450.84765625,
+          32763.18359375,
+          33419.59765625,
+          32537.92578125,
+          31253.7421875,
+          34424.8046875
+        ],
+        "cpu_samples_ns": [
+          null,
+          32581.70703125,
+          32096.35546875,
+          33066.5703125,
+          32332.35546875,
+          31180.6640625,
+          33974.9375
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 268854.1666666667,
+        "iters": 36,
+        "rounds": 7,
+        "spread": 0.1713591114555082,
+        "samples_ns": [
+          271824.05555555556,
+          284851.8611111111,
+          280668.97222222225,
+          274824.0833333333,
+          276832.1666666667,
+          314924.77777777775,
+          268854.1666666667
+        ],
+        "cpu_samples_ns": [
+          null,
+          279226.8333333333,
+          275578.72222222225,
+          270229.1666666667,
+          269214.1388888889,
+          297097.22222222225,
+          266306.69444444444
+        ]
+      }
+    }
+  ],
+  "max_slowdown": 1.15,
+  "regressions": [],
+  "passed": true
+}

@@ -33,6 +33,32 @@ exact new bytes after every commit across 64 generations. Per-reader counters
 must prove all 64 pre-commit and post-commit reads occurred. Worker and readiness
 deadlines bound hangs, and fixture teardown kills and reaps owned workers.
 
+[`test_native_atomic.py`](test_native_atomic.py) adds 62 Linux contracts against
+the real compiled native entrypoint and the public `fs.atomic_write` API. Profile
+events prove that an admitted call enters the compiled builtin without Python
+fallback; comparison children explicitly set `fs._native=None`. Ordinary cases
+cover byte/UTF-8 publication, private creation under restrictive umasks, retained
+sharing modes, encoding-error fields and cleanup, other-codec fallback, and
+filesystem rejection errors.
+
+Its test-only [ELF observer](../../../../../native/fs/qualification/README.md)
+performs real successful I/O and delivers signals synchronously at selected
+syscall returns. Pre-commit cancellation must retain prior bytes and release
+owned descriptors/scratch files. Post-rename cancellation must retain complete
+new bytes and identify the committed replacement. Custom cancellation and
+KeyboardInterrupt exercise the pre-commit write, file-sync and close seams;
+native scratch-open cancellation additionally checks acquired ownership.
+Strict directory-sync checks distinguish preflight from post-commit failure.
+Other controls cover short writes, EINTR, Linux close without retry, precise
+error/filename fields, cleanup failures that retain the primary exception, and
+ENOSYS/EPERM entropy refusal before scratch creation with successful Python
+fallback. Each child has a fixed timeout and checks its descriptor delta.
+
+Native cases carry Linux/backend guards. A missing C compiler skips only cases
+that need the observer, which is built in a private temporary directory. Child
+launches preserve an existing sanitizer preload before appending the observer.
+No observer is loaded during [installed Billy profiling](../../../../../bench/reports/fs/production/README.md).
+
 These are syscall-error and process-interruption contracts. They do not simulate
 power loss or prove storage-device persistence. Default directory sync remains
 best effort; strict mode requires OS acknowledgments and propagates failures.

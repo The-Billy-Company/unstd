@@ -80,21 +80,22 @@ def test_public_signature_change_prevents_comparison():
         )
 
 
-def test_source_fingerprint_includes_internal_backend(tmp_path):
+@pytest.mark.parametrize("legacy", [False, True])
+def test_source_fingerprint_includes_internal_backend(tmp_path, legacy):
     proc = tmp_path / "unstd" / "proc"
-    internal = proc / "_internal"
-    internal.mkdir(parents=True)
+    proc.mkdir(parents=True)
+    # Earlier comparison trees keep their original nested backend.
+    relative = "_internal/backend.py" if legacy else "backend.py"
     (proc / "__init__.py").write_text("# public\n")
-    helper = internal / "backend.py"
+    helper = proc / relative
+    helper.parent.mkdir(exist_ok=True)
     helper.write_text("# original\n")
     before = profile._source_hashes(tmp_path)
     helper.write_text("# changed\n")
     after = profile._source_hashes(tmp_path)
     assert before["unstd/proc/__init__.py"] == after["unstd/proc/__init__.py"]
-    assert (
-        before["unstd/proc/_internal/backend.py"]
-        != after["unstd/proc/_internal/backend.py"]
-    )
+    path = f"unstd/proc/{relative}"
+    assert before[path] != after[path]
 
 
 def test_direct_script_help_needs_no_product_or_optional_dependencies(tmp_path):

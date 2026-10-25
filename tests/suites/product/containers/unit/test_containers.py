@@ -7,7 +7,7 @@ Two contracts are pinned here:
    clear, actionable ImportError naming the extra. This dev env has no extra
    installed, so the ImportError path is exercised for real (at minimum via the
    backend that is absent); the message contract is also asserted directly
-   through :func:`unstd._extra.missing`, independent of which backends
+   through :func:`unstd.extras.missing`, independent of which backends
    happen to resolve.
 
 2. **The surfaces themselves, where the backend is present.** Sorted-collection
@@ -31,10 +31,10 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from unstd._extra import missing
 from unstd.containers import Map, SortedDict, SortedList, SortedSet
 from unstd.containers.persistent import HAVE_IMMUTABLES
 from unstd.containers.sorted import HAVE_SORTEDCONTAINERS
+from unstd.extras import missing
 
 
 if TYPE_CHECKING:

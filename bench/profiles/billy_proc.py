@@ -35,7 +35,77 @@ if TYPE_CHECKING:
 
 _ROOT = Path(__file__).resolve().parents[2]
 _RECEIPTS = _ROOT / "bench/workloads/billy_proc_receipts.json"
-_MODES = ("baseline", "candidate", "python", "stdlib")
+_MODES = ("baseline", "candidate", "python", "stdlib", "spawn", "io")
+
+
+def _configure_mode(backend: ModuleType, mode: str) -> Any:
+    """Select kernels only within an isolated worker, before audit or timing."""
+    if mode == "python":
+        vars(backend)["_native"] = None
+    if mode in {"spawn", "io"}:
+        vars(backend)["_SPAWN_NATIVE"] = mode == "spawn"
+    native = getattr(backend, "_native", None) if mode != "stdlib" else None
+    if native is not None and mode in {"spawn", "io"}:
+        disabled = "communicate" if mode == "spawn" else "spawn"
+
+        def decline(*args: Any, **kwargs: Any) -> Any:
+            return NotImplemented
+
+        setattr(native, disabled, decline)
+    return native
+
+
+def _expected_native(
+    mode: str, *, spawn_enabled: bool, stdin_text: bool
+) -> tuple[str, ...]:
+    """Admitted kernels follow the platform policy and the public input shape."""
+    expected = []
+    if mode == "spawn" or (mode == "candidate" and spawn_enabled):
+        expected.append("spawn")
+    if mode in {"candidate", "io"} and not stdin_text:
+        expected.append("communicate")
+    return tuple(expected)
+
+
+def _verify_routes(
+    mode: str,
+    routes: dict[str, dict[str, int]],
+    *,
+    require_native: bool,
+    case: str,
+    spawn_enabled: bool | None = None,
+    stdin_text: bool = False,
+) -> None:
+    """Reject inactive kernels and accidental native work in isolated controls."""
+    if mode == "baseline":
+        return
+    if spawn_enabled is None:
+        spawn_enabled = sys.platform == "darwin"
+    expected = _expected_native(
+        mode, spawn_enabled=spawn_enabled, stdin_text=stdin_text
+    )
+    for kernel in ("spawn", "communicate"):
+        counts = routes.get(kernel, {})
+        if kernel in expected:
+            if require_native and not counts.get("accepted", 0):
+                message = f"{mode} did not successfully use native {kernel}: {case}"
+                raise RuntimeError(message)
+        elif counts.get("accepted", 0):
+            message = f"native {kernel} leaked into the {mode} control: {case}"
+            raise RuntimeError(message)
+    if mode == "io" or (mode == "candidate" and not spawn_enabled):
+        counts = routes.get("spawn", {})
+        if counts.get("calls", sum(counts.values())):
+            message = f"disabled native spawn was entered in {mode}: {case}"
+            raise RuntimeError(message)
+    if (
+        require_native
+        and mode == "spawn"
+        and not stdin_text
+        and not routes.get("communicate", {}).get("declined", 0)
+    ):
+        message = f"spawn did not prove native communicate was declined: {case}"
+        raise RuntimeError(message)
 
 
 @dataclass(frozen=True)
@@ -544,10 +614,19 @@ def _worker(args: argparse.Namespace) -> dict[str, Any]:
     ):
         message = "worker loaded the wrong proc source"
         raise RuntimeError(message)
-    backend = importlib.import_module("unstd.proc._internal.backend")
-    if args.mode == "python":
-        vars(backend)["_native"] = None
-    native = getattr(backend, "_native", None) if args.mode != "stdlib" else None
+    backend = (
+        sys.modules.get("unstd.proc.backend")
+        or sys.modules["unstd.proc._internal.backend"]
+    )
+    native = _configure_mode(backend, args.mode)
+    spawn_enabled = bool(getattr(backend, "_SPAWN_NATIVE", True))
+    if (
+        args.require_native
+        and args.mode in {"candidate", "spawn", "io"}
+        and native is None
+    ):
+        message = f"{args.mode} did not load the native extension"
+        raise RuntimeError(message)
     native_file = getattr(native, "__file__", None)
     if native_file is not None and not Path(native_file).resolve().is_relative_to(
         source / "unstd/proc"
@@ -575,24 +654,30 @@ def _worker(args: argparse.Namespace) -> dict[str, Any]:
         )
         measured = _measure(call, case, native)
         routes = measured["profile"]["native_routes"]
-        if (
-            args.require_native
-            and args.mode == "candidate"
-            and not routes.get("spawn", {}).get("accepted", 0)
-        ):
-            message = f"candidate did not successfully use native spawn: {case.name}"
-            raise RuntimeError(message)
-        if args.mode in {"python", "stdlib"} and any(
-            route["accepted"] for route in routes.values()
-        ):
-            message = f"native operation leaked into the {args.mode} control"
-            raise RuntimeError(message)
+        stdin_text = (case.options or {}).get("stdin_text") is not None
+        _verify_routes(
+            args.mode,
+            routes,
+            require_native=args.require_native,
+            case=case.name,
+            spawn_enabled=spawn_enabled,
+            stdin_text=stdin_text,
+        )
+        measured["expected_native_kernels"] = _expected_native(
+            args.mode, spawn_enabled=spawn_enabled, stdin_text=stdin_text
+        )
+        measured["native_claim_eligible"] = bool(measured["expected_native_kernels"])
+        if stdin_text and not measured["native_claim_eligible"]:
+            measured["native_coverage_note"] = (
+                "unaccelerated stdin stress; stdlib fallback, no native gain claimed"
+            )
         measurements[case.name] = measured
     if hashes != _source_hashes(source):
         message = "proc source changed during a measured worker"
         raise RuntimeError(message)
     return {
         "mode": args.mode,
+        "native_spawn_policy": spawn_enabled,
         "harness_sha256": _sha(Path(__file__).read_bytes()),
         "source": str(source),
         "source_hashes": hashes,
@@ -624,10 +709,12 @@ def _run(args: argparse.Namespace) -> dict[str, Any]:
         or any(mode not in _MODES for mode in modes)
         or "baseline" not in modes
     ):
-        message = "modes must be unique baseline/candidate/python/stdlib values including baseline"
+        message = "modes must be unique baseline/candidate/python/stdlib/spawn/io values including baseline"
         raise ValueError(message)
-    if args.require_native and "candidate" not in modes:
-        message = "--require-native needs candidate among the measured modes"
+    if args.require_native and not {"candidate", "spawn", "io"}.intersection(modes):
+        message = (
+            "--require-native needs candidate, spawn or io among the measured modes"
+        )
         raise ValueError(message)
     harness_hash = _sha(Path(__file__).read_bytes())
     receipts_hash = _sha(_RECEIPTS.read_bytes())

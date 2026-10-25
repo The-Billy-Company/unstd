@@ -1,3 +1,12 @@
+---
+doc_radar:
+  sentinels:
+    - file: src/unstd/model/base.py
+      contains: ['class StrictModel(BaseModel):', 'class FrozenModel(StrictModel):']
+    - file: src/unstd/model/settings.py
+      contains: ['class StrictSettings(BaseSettings):']
+---
+
 # `unstd.model` — the strict Pydantic spine
 
 One shared base for every Pydantic wire shape across every Python deployable in
@@ -13,6 +22,18 @@ from unstd.model import StrictModel, FrozenModel, StrictSettings
 class CreateProjectInput(StrictModel):  # extra='forbid' + validate_by_name
     name: str
 ```
+
+## Source ownership
+
+This flat leaf owns one inherited configuration policy across models and settings.
+
+| File | Responsibility |
+| --- | --- |
+| [`__init__.py`](__init__.py) | Public `StrictModel`, `FrozenModel`, and `StrictSettings` exports |
+| [`base.py`](base.py) | Required Pydantic import and strict/frozen model configurations |
+| [`settings.py`](settings.py) | Required settings backend and environment-settings configuration |
+
+The [validation guide](#validation) gives the current product-suite run path.
 
 ## The family (three shapes, one posture)
 

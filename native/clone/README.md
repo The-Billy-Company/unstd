@@ -2,7 +2,7 @@
 
 [`src/adapter.c`](src/adapter.c) is the complete C implementation and CPython
 binding for `unstd.clone._clone_native`; its filename is independent of the
-installed module name. [`src/README.md`](src/README.md) maps its five entrypoints.
+installed module name. [`src/README.md`](src/README.md) maps its native entrypoints.
 
 The [Python walker](../../src/unstd/clone/structural.py) admits copy protocols
 and chooses graph-preserving `deep` or positional `asdict` semantics. Native

@@ -1,9 +1,9 @@
 ---
 doc_radar:
   sentinels:
-  - file: src/unstd/rex/_internal/profile.py
+  - file: src/unstd/rex/profile.py
     contains: ['_parser.parse(pattern, flags)']
-  - file: src/unstd/rex/_internal/patterns.py
+  - file: src/unstd/rex/patterns.py
     contains: ['if started:']
   - file: pyproject.toml
     contains: ['"msgspec>=0.22"', exclude-newer = "P2D", '"blake3>=1.0.10"', '"pyyaml>=6.0.3"', 'select = "cp3{12,13}-macosx_x86_64"', sysconfig.get_config_var("CFLAGS")]
@@ -13,7 +13,7 @@ doc_radar:
     contains: ['TAG: ${{ github.ref_name }}', Build and test CPython wheels, 'UV_MANAGED_PYTHON: "1"', python -m tests.tooling.release.wheels]
   - file: src/unstd/serde/structs.py
     contains: ['Callable[[Decimal], object]', 'decimal_format: _DecimalFormat']
-  - file: src/unstd/compress/_reader.py
+  - file: src/unstd/compress/engines/reader.py
     contains: [_factory = _accelerated.Inflater, '_zlib_globals["crc32"] = _crc32']
   - file: native/compress/src/adapter.c
     contains: [libdeflate_gzip_decompress_ex(, MAX_OUTPUT_BYTES]
@@ -42,6 +42,13 @@ doc_radar:
 # Changelog
 
 <!-- towncrier release notes start -->
+
+## Unreleased
+
+The [October 25 change index](docs/updates-2026-10-25.md) covers today's native
+backends, API additions, source organization, qualification and runtime updates.
+Caller-facing details remain in [per-change fragments](changelog.d/README.md)
+until release; published version notes below remain historical records.
 
 ## [3.1.6] - 2026-10-25
 
@@ -561,7 +568,7 @@ records the remaining one-time namespace cost.
 - Whole-blob NDJSON reads batch native parsing over strict physical newline
   boundaries. Streaming reads, callbacks and error diagnostics keep their
   existing behavior.
-- Added an output-checked Billy fixture comparison with source and fixture
+- Added an output-checked consumer fixture comparison with source and fixture
   fingerprints, alternating before/after CPU batches, direct-call companions and
   an optional release-regression gate. The measurement report retains residual
   costs relative to the permissive 2.1.1 codec; no universal speedup or
@@ -659,7 +666,7 @@ records the remaining one-time namespace cost.
   the authority across Python 3.12–3.14 and optional-backend/base configurations;
   generated cases include large integers, non-finite values, lone surrogates,
   mixed keys, formatting options, binary encodings and malformed input.
-- The test suite follows Billy's Python organization: module-owned contracts
+- The test suite organizes Python coverage into module-owned contracts
   under `tests/suites/product`, cross-cutting assurance under
   `tests/suites/assurance`, shared support, and standalone tooling. A validated
   inventory distinguishes active coverage from planned lanes and provides
@@ -1116,7 +1123,7 @@ and each old name fails at import rather than changing meaning in place.
   modes — plain hash, keyed hash (the MAC), and `derive_key` — are checked
   against the authors' answers across 35 input lengths spanning the chunk and
   subtree boundaries, where the previous fixture carried seven hand-picked rows.
-- `rex` is now backed by [irregex](https://github.com/The-Billy-Company/irregex)
+- `rex` is now backed by `irregex`
   (`import irgx`) instead of `google-re2`; the extra installs `irregex>=2.3.0`.
   The surface, the stdlib-`re` fidelity contract, and the degrade-to-`re`
   fallback for backreference/lookaround patterns are unchanged.

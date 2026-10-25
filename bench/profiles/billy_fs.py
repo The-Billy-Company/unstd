@@ -327,6 +327,8 @@ def _prepare(
     root: Path,
     python: ModuleType,
     native: ModuleType | None,
+    *,
+    public_native: bool = False,
 ) -> list[Prepared]:
     writers: dict[str, Callable[..., Any]] = {"python": python.atomic_write}
     if native is not None:
@@ -340,7 +342,7 @@ def _prepare(
                 raise RuntimeError(message)
             return path
 
-        writers["native"] = native_write
+        writers["native"] = native.atomic_write if public_native else native_write
     prepared = []
     for recipe in fixture["cases"]:
         value = _payload(recipe)
@@ -480,6 +482,9 @@ def main(argv: list[str] | None = None) -> None:
         parser.error("select --python-only or --native-extension")
     fixture = _load_fixtures(args.fixtures, args.billy_source)
     python, evidence = _BASE._load_source(args.source)
+    # The comparison lane remains Python after production dispatch is enabled.
+    if hasattr(python, "_native"):
+        python._native = None
     native, native_evidence = (
         _load_native(args.native_extension)
         if args.native_extension is not None

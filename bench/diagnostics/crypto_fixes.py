@@ -149,7 +149,7 @@ def _pool_cases(source: Path, stack: ExitStack) -> list[Workload]:
     candidates = {}
     for cap in (1, 2, 4, 8):
         module, _ = _load(source)
-        sys.modules[module.__package__ + "._blake3"].__dict__["_PARALLEL_THREADS"] = cap
+        sys.modules[module.__package__ + ".hashing"].__dict__["_PARALLEL_THREADS"] = cap
         candidates[cap] = module
     executor = stack.enter_context(ThreadPoolExecutor(max_workers=4))
     cases = []

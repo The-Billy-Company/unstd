@@ -59,20 +59,20 @@ def test_each_alias_spends_its_full_logical_visit_budget(repeat):
 
 
 def test_aliases_at_another_depth_are_revalidated_before_copying():
-    leaf = [1.5, "escaped\n", "café"]
+    leaf = [1.5, "escaped\n", "café"] * 16
     nested = leaf
     for _ in range(14):
         nested = [nested]
-    value = [leaf, leaf, nested]
+    value = [leaf] * 128 + [nested]
     assert _native(value) == _compact(value)
-    too_deep = [leaf, leaf, [nested]]
+    too_deep = [leaf] * 128 + [[nested]]
     assert _native(too_deep) is NotImplemented
     assert jsonx.dumpb(too_deep) == _compact(too_deep)
 
 
 def test_private_output_limit_preserves_the_complete_public_result():
-    leaf = [1.5, "x" * 256] * 8
-    value = [leaf] * 600
+    leaf = [1.5, "x" * 256] * 16
+    value = [leaf] * 300
     expected = _compact(value)
     assert len(expected) > 1024 * 1024
     assert 1 + len(value) * (1 + len(leaf)) < 262144
@@ -81,8 +81,8 @@ def test_private_output_limit_preserves_the_complete_public_result():
 
 
 def test_declined_shared_writer_keeps_the_existing_wide_integer_backend():
-    leaf = [2**40, -(2**40)]
-    value = [leaf] * 32
+    leaf = [2**40, -(2**40)] * 16
+    value = [leaf] * 128
     assert _native(value) == _compact(value)
 
 
@@ -99,9 +99,9 @@ def test_declined_shared_values_keep_the_stdlib_result_or_error(leaf):
 
 
 def test_cycles_are_never_completed_or_cached():
-    leaf = [1.5]
+    leaf = [1.5] * 31
     leaf.append(leaf)
-    value = [leaf, leaf]
+    value = [leaf] * 128
     assert _native(value) is NotImplemented
     for function in (json.dumps, jsonx.dumps, jsonx.dumpb):
         with pytest.raises(ValueError, match="Circular reference"):
@@ -109,8 +109,8 @@ def test_cycles_are_never_completed_or_cached():
 
 
 def test_source_mutations_between_calls_are_visible_in_every_alias():
-    leaf = {"score": 1.5, "text": "first"}
-    value = [leaf] * 64
+    leaf = {"score": 1.5, "text": "first", **{str(index): index for index in range(30)}}
+    value = [leaf] * 128
     first = jsonx.dumpb(value)
     leaf["score"] = -0.0
     leaf["text"] = 'second "quoted" café'
@@ -121,8 +121,8 @@ def test_source_mutations_between_calls_are_visible_in_every_alias():
 
 
 def test_completed_and_declined_caches_release_their_owned_references():
-    leaf = [1.5, " ".join(("not", "interned", "101"))]
-    value = [leaf] * 64
+    leaf = [1.5, " ".join(("not", "interned", "101"))] * 16
+    value = [leaf] * 128
     before = (sys.getrefcount(leaf), sys.getrefcount(leaf[1]))
     for _ in range(20):
         assert _native(value) == _compact(value)
@@ -135,8 +135,16 @@ def test_completed_and_declined_caches_release_their_owned_references():
 
 def test_many_distinct_branches_and_aliases_survive_cache_replacement():
     leaves = [
-        [(index * 7919) % 20000 - 10000, index / 97, "café"] for index in range(96)
+        [(index * 7919) % 20000 - 10000, index / 97, "café"] * 10 + [0, 1]
+        for index in range(96)
     ]
     value = [leaves[0], leaves[0], *leaves, *reversed(leaves)]
+    assert _native(value) == _compact(value)
+    assert jsonx.dumps(value) == json.dumps(value)
+
+
+def test_shared_wide_dictionary_uses_the_same_exact_scalar_spellings():
+    leaf = {str(index): index / 7 for index in range(32)}
+    value = [leaf] * 128
     assert _native(value) == _compact(value)
     assert jsonx.dumps(value) == json.dumps(value)

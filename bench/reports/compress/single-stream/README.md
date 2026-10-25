@@ -13,10 +13,10 @@ counts are recorded in [qualification.json](qualification.json).
 
 | Workload | Mac CPU speedup | Mac wall speedup |
 | --- | ---: | ---: |
-| Billy bounded HTTP expansion refusal | 2.61× | 2.51× |
+| Bounded HTTP expansion refusal | 2.61× | 2.51× |
 | 1 MiB repeated byte, 8 / 64 / 256 KiB reads | 2.15 / 2.06 / 3.12× | 2.13 / 2.04 / 3.06× |
 | 1 MiB period-16 input, 8 / 64 / 256 KiB reads | 1.63 / 1.41 / 1.63× | 1.63 / 1.41 / 1.63× |
-| Billy dataset upload, 20,001 / 40,001 rows | 1.00 / 1.01× | See raw samples |
+| Dataset upload, 20,001 / 40,001 rows | 1.00 / 1.01× | See raw samples |
 
 The counted stream cases discard chunks and independently verify every decoded
 byte outside timing. They retain bounded memory. These are warm, in-memory
@@ -26,11 +26,11 @@ period-16 reached about 6.0 and 11.2 GiB/s respectively. Absolute rates vary wit
 hardware, data and contention; identical Mac/server runtimes are not promised.
 Large JSON uploads have no substantial additional gain in this change.
 
-The Mac is an Apple M5 Max running Python 3.14.9. Billy's actual Linux server is
+The Mac is an Apple M5 Max running Python 3.14.9. The actual Linux server is
 an AMD Ryzen 9 7950X3D running the Python 3.14.8 CI image, with this qualification
 pinned to one CPU. The provider is python-zlib-ng 1.0.0 / zlib-ng 2.2.5.
-The Mac paired profile uses nine alternating rounds; Billy's 14 cases use nine
-rounds and three process repetitions. The Mac Billy run passes the existing
+The Mac paired profile uses nine alternating rounds; the 14 consumer cases use nine
+rounds and three process repetitions. The Mac consumer run passes the existing
 30% wall guard.
 
 The server was running other jobs. Two process-level comparisons exceeded that
@@ -41,7 +41,7 @@ and jointly calibrated batches of at least 30 ms CPU. All 14 cases pass the
 same 30% wall guard. CPU speedups range from 0.948× to 1.056×, with a 1.006×
 geometric mean. The separate 21-case read profile ranges from 0.955× to 1.072×.
 This supports throughput near parity on the server; it does not establish a
-Linux speedup. See [Linux timings](billy-linux-interleaved.json),
+Linux speedup. See the retained Linux consumer timings in this directory,
 [read timings](reads-linux16.json) and [backend proof](metadata-linux16.json).
 
 The C selection probe reads at most 8 KiB of already held compressed input and
@@ -76,7 +76,7 @@ Validation:
 - 103 relevant benchmark gates pass; changed Python/stub files pass lint and
   strict typing checks.
 
-[Mac read samples](reads-macos16.json), [Mac Billy samples](billy-macos16.json),
+[Mac read samples](reads-macos16.json), Mac consumer samples retained in this directory,
 [cross-version receipt](native-python-versions.json),
 [packaging receipt](packaging-receipt.json),
 [public histories](public-traces-final16.json),
@@ -85,11 +85,10 @@ and [edge timings](edges-final16.json) retain the detailed evidence.
 `shape-oracle.json.gz` and the compressed logs retain classifier results.
 `reproduction-sources.tar.gz` archives the qualification scripts and frozen
 header; scripts retain the original qualification paths recorded in the receipts.
-The regular paired profiles can be repeated with:
+The regular paired read profile can be repeated with:
 
 ```console
 python bench/profiles/gzip_reads.py --source /tmp/current --baseline-source /tmp/before --runs 9 --batch-ms 15 --require-native --output /tmp/reads.json
-python bench/profiles/billy_gzip.py run --source /tmp/current --baseline-source /tmp/before --fixtures bench/workloads/billy_gzip.json.gz --rounds 9 --repetitions 3 --max-slowdown 1.30 --output /tmp/billy.json
 ```
 
 Alternative whole-stream backends and wrapper/output-buffer changes evaluated

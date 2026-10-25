@@ -1,0 +1,1212 @@
+{
+  "environment": {
+    "python": "3.14.8 (main, Oct  6 2026, 02:02:59) [GCC 14.2.0]",
+    "platform": "Linux-7.0.14-linuxkit-aarch64-with-glibc2.41",
+    "machine": "aarch64"
+  },
+  "sources": {
+    "proposed": {
+      "path": "/tmp/rand-current/unstd/rand/draw.py",
+      "sha256": "1f7879df232688c5a3e94c9d8cf76bedf1d7c1038dbe9aa98f1c902b2a55a457",
+      "public_signatures": {
+        "Generator": "(seed: int | None = None, *, backend: Literal['stdlib', 'numpy'] = 'stdlib', bit_generator: Literal['PCG64', 'PCG64DXSM', 'SFC64', 'Philox'] | None = None) -> None",
+        "choice": "(seq)",
+        "choices": "(seq: collections.abc.Sequence[T], n: int, *, weights: collections.abc.Sequence[float] | None = None) -> list[T]",
+        "floats": "(n: int, *, low: float = 0.0, high: float = 1.0) -> numpy.ndarray | list[float]",
+        "ints": "(n: int, low: int, high: int, *, endpoint: bool = False, seeds: collections.abc.Sequence[int] | None = None) -> numpy.ndarray | list[int]",
+        "randint": "(a, b)",
+        "random": "()",
+        "sample": "(population, k, *, counts=None)",
+        "seed": "(n: int | None = None) -> None",
+        "shuffle": "(x)",
+        "uniform": "(a, b)",
+        "Generator.seed": "(self, n: int | None = None) -> None",
+        "Generator.random": "(self) -> float",
+        "Generator.randint": "(self, a: int, b: int) -> int",
+        "Generator.uniform": "(self, a: float, b: float) -> float",
+        "Generator.choice": "(self, seq: collections.abc.Sequence[T]) -> T",
+        "Generator.shuffle": "(self, x: collections.abc.MutableSequence[T]) -> None",
+        "Generator.sample": "(self, population: collections.abc.Sequence[T], k: int, *, counts: collections.abc.Sequence[int] | None = None) -> list[T]",
+        "Generator.floats": "(self, n: int, *, low: float = 0.0, high: float = 1.0) -> numpy.ndarray | list[float]",
+        "Generator.ints": "(self, n: int, low: int, high: int, *, endpoint: bool = False, seeds: collections.abc.Sequence[int] | None = None) -> numpy.ndarray | list[int]",
+        "Generator.choices": "(self, seq: collections.abc.Sequence[T], n: int, *, weights: collections.abc.Sequence[float] | None = None) -> list[T]"
+      },
+      "compatible_public_signatures": {
+        "Generator": "(seed: int | None = None, *, backend: Literal['stdlib', 'numpy'] = 'stdlib', bit_generator: Literal['PCG64', 'PCG64DXSM', 'SFC64', 'Philox'] | None = None) -> None",
+        "choice": "(seq)",
+        "choices": "(seq: collections.abc.Sequence[T], n: int, *, weights: collections.abc.Sequence[float] | None = None) -> list[T]",
+        "floats": "(n: int, *, low: float = 0.0, high: float = 1.0) -> numpy.ndarray | list[float]",
+        "ints": "(n: int, low: int, high: int, *, endpoint: bool = False) -> numpy.ndarray | list[int]",
+        "randint": "(a, b)",
+        "random": "()",
+        "sample": "(population, k, *, counts=None)",
+        "seed": "(n: int | None = None) -> None",
+        "shuffle": "(x)",
+        "uniform": "(a, b)",
+        "Generator.seed": "(self, n: int | None = None) -> None",
+        "Generator.random": "(self) -> float",
+        "Generator.randint": "(self, a: int, b: int) -> int",
+        "Generator.uniform": "(self, a: float, b: float) -> float",
+        "Generator.choice": "(self, seq: collections.abc.Sequence[T]) -> T",
+        "Generator.shuffle": "(self, x: collections.abc.MutableSequence[T]) -> None",
+        "Generator.sample": "(self, population: collections.abc.Sequence[T], k: int, *, counts: collections.abc.Sequence[int] | None = None) -> list[T]",
+        "Generator.floats": "(self, n: int, *, low: float = 0.0, high: float = 1.0) -> numpy.ndarray | list[float]",
+        "Generator.ints": "(self, n: int, low: int, high: int, *, endpoint: bool = False) -> numpy.ndarray | list[int]",
+        "Generator.choices": "(self, seq: collections.abc.Sequence[T], n: int, *, weights: collections.abc.Sequence[float] | None = None) -> list[T]"
+      },
+      "optional_public_additions": {
+        "ints": "seeds: collections.abc.Sequence[int] | None = None",
+        "Generator.ints": "seeds: collections.abc.Sequence[int] | None = None"
+      },
+      "helpers": {
+        "_keyed_ints": {
+          "native_binding": {
+            "module": "unstd.rand._rand_native",
+            "name": "seeded_ints"
+          },
+          "module": "unstd.rand._keyed",
+          "path": "/tmp/rand-current/unstd/rand/_keyed.py",
+          "sha256": "51b70ae8ab7171493dc3c08b463c10bd1fad2162b256b3a23a7f60fa3c6983f6"
+        }
+      },
+      "have_numpy": true,
+      "native": {
+        "_native": {
+          "module": "unstd.rand._rand_native",
+          "name": "unstd.rand._rand_native",
+          "path": "/tmp/rand-current/unstd/rand/_rand_native.cpython-314-aarch64-linux-gnu.so",
+          "sha256": "d2d0536dd4f95b6eba1ddd0a18fb6581d146d0ef9b334c4a93215bcd8f26f296"
+        }
+      }
+    },
+    "original": {
+      "path": "/workspace/bench/reports/rand/before-draw.py.txt",
+      "sha256": "dc178890d7c64ea2351dc2b8aa3858b6d1a5db8c1b6333a4294510a73e4a2aad",
+      "public_signatures": {
+        "Generator": "(seed: int | None = None, *, backend: Literal['stdlib', 'numpy'] = 'stdlib', bit_generator: Literal['PCG64', 'PCG64DXSM', 'SFC64', 'Philox'] | None = None) -> None",
+        "choice": "(seq)",
+        "choices": "(seq: collections.abc.Sequence[T], n: int, *, weights: collections.abc.Sequence[float] | None = None) -> list[T]",
+        "floats": "(n: int, *, low: float = 0.0, high: float = 1.0) -> numpy.ndarray | list[float]",
+        "ints": "(n: int, low: int, high: int, *, endpoint: bool = False) -> numpy.ndarray | list[int]",
+        "randint": "(a, b)",
+        "random": "()",
+        "sample": "(population, k, *, counts=None)",
+        "seed": "(n: int | None = None) -> None",
+        "shuffle": "(x)",
+        "uniform": "(a, b)",
+        "Generator.seed": "(self, n: int | None = None) -> None",
+        "Generator.random": "(self) -> float",
+        "Generator.randint": "(self, a: int, b: int) -> int",
+        "Generator.uniform": "(self, a: float, b: float) -> float",
+        "Generator.choice": "(self, seq: collections.abc.Sequence[T]) -> T",
+        "Generator.shuffle": "(self, x: collections.abc.MutableSequence[T]) -> None",
+        "Generator.sample": "(self, population: collections.abc.Sequence[T], k: int, *, counts: collections.abc.Sequence[int] | None = None) -> list[T]",
+        "Generator.floats": "(self, n: int, *, low: float = 0.0, high: float = 1.0) -> numpy.ndarray | list[float]",
+        "Generator.ints": "(self, n: int, low: int, high: int, *, endpoint: bool = False) -> numpy.ndarray | list[int]",
+        "Generator.choices": "(self, seq: collections.abc.Sequence[T], n: int, *, weights: collections.abc.Sequence[float] | None = None) -> list[T]"
+      },
+      "compatible_public_signatures": {
+        "Generator": "(seed: int | None = None, *, backend: Literal['stdlib', 'numpy'] = 'stdlib', bit_generator: Literal['PCG64', 'PCG64DXSM', 'SFC64', 'Philox'] | None = None) -> None",
+        "choice": "(seq)",
+        "choices": "(seq: collections.abc.Sequence[T], n: int, *, weights: collections.abc.Sequence[float] | None = None) -> list[T]",
+        "floats": "(n: int, *, low: float = 0.0, high: float = 1.0) -> numpy.ndarray | list[float]",
+        "ints": "(n: int, low: int, high: int, *, endpoint: bool = False) -> numpy.ndarray | list[int]",
+        "randint": "(a, b)",
+        "random": "()",
+        "sample": "(population, k, *, counts=None)",
+        "seed": "(n: int | None = None) -> None",
+        "shuffle": "(x)",
+        "uniform": "(a, b)",
+        "Generator.seed": "(self, n: int | None = None) -> None",
+        "Generator.random": "(self) -> float",
+        "Generator.randint": "(self, a: int, b: int) -> int",
+        "Generator.uniform": "(self, a: float, b: float) -> float",
+        "Generator.choice": "(self, seq: collections.abc.Sequence[T]) -> T",
+        "Generator.shuffle": "(self, x: collections.abc.MutableSequence[T]) -> None",
+        "Generator.sample": "(self, population: collections.abc.Sequence[T], k: int, *, counts: collections.abc.Sequence[int] | None = None) -> list[T]",
+        "Generator.floats": "(self, n: int, *, low: float = 0.0, high: float = 1.0) -> numpy.ndarray | list[float]",
+        "Generator.ints": "(self, n: int, low: int, high: int, *, endpoint: bool = False) -> numpy.ndarray | list[int]",
+        "Generator.choices": "(self, seq: collections.abc.Sequence[T], n: int, *, weights: collections.abc.Sequence[float] | None = None) -> list[T]"
+      },
+      "optional_public_additions": {},
+      "helpers": {},
+      "have_numpy": true,
+      "native": {}
+    }
+  },
+  "receipts": {
+    "version": 1,
+    "repository": "The-Billy-Company/billy",
+    "commit": "b4ce9e820bba6d5049158a3d170a2eb7bc101951",
+    "consumer": {
+      "source_path": "services/anvil/anvil/datagen/corpus.py",
+      "source_file_sha256": "3d5bf5d3ed7610599cb1e19255bc827084541855e2bebc8cd4189c2dde1a07de",
+      "source": "def _trim(examples: list[TrainExample], cap: int, rng: rand.Generator) -> list[TrainExample]:\n    \"\"\"Deterministically trim a track to its budget (shuffle then cut).\"\"\"\n    if cap <= 0:\n        return []\n    if len(examples) <= cap:\n        return examples\n    shuffled = examples[:]\n    rng.shuffle(shuffled)\n    return shuffled[:cap]\n",
+      "symbols": {
+        "_trim": {
+          "line": 125,
+          "ast_sha256": "86d6efff597fb2c07853da4227319573769fff1d121b51b6e065161445f79321"
+        }
+      },
+      "test_references": [
+        {
+          "path": "services/anvil/tests/test_corpus.py",
+          "sha256": "ce2dfa8349db5dd7d158e7d07bee50187fd476cc890d7cd93c1a4096b38ed53b"
+        }
+      ]
+    },
+    "population_size_receipts": [
+      {
+        "size": 8000,
+        "path": "services/anvil/anvil/datagen/anvil_dataset.research.toml",
+        "file_sha256": "28e0e638972f0251d42f9ac22de58876160955e99884b9f1ae07dc52bdbf28ce",
+        "basis": "corpus.total_examples value; budget-scale population, not observed overproduction count",
+        "value": 8000
+      },
+      {
+        "size": 400,
+        "path": "services/anvil/tests/test_corpus.py",
+        "file_sha256": "ce2dfa8349db5dd7d158e7d07bee50187fd476cc890d7cd93c1a4096b38ed53b",
+        "basis": "explicit total=400 test fixture"
+      }
+    ],
+    "retention_fraction_provenance": "1%, 10%, 50% are hypothetical sparse/dense migration sensitivity cases, not captured production retention ratios."
+  },
+  "fixture_sha256": "0225b0d12adb3ecda53629a76b1a423e1d23b9e148bafc0658eb7af6bd98af7a",
+  "harness_sha256": "03ed2439a34a36b0bfd4acd5b057a0876fbbf39da6f0506e33859cbd1e95dc10",
+  "proposal": "Replace full _trim shuffle-and-slice with Generator(seed, backend='stdlib').sample(population, cap); this API already existed before the backend work.",
+  "semantic_change": "Opt-in migration changes same-seed selected values, output order and engine state. Only count, membership and unique identities are required to match. No app files were modified.",
+  "method": "alternating paired complete calls including Generator construction and result allocation; fixtures and output checks outside timing; raw wall and thread CPU samples",
+  "workloads": [
+    {
+      "samples": {
+        "original": [
+          {
+            "operations": 52,
+            "wall_ns": 60931917,
+            "thread_cpu_ns": 60931333
+          },
+          {
+            "operations": 52,
+            "wall_ns": 61038875,
+            "thread_cpu_ns": 61045000
+          },
+          {
+            "operations": 52,
+            "wall_ns": 58262542,
+            "thread_cpu_ns": 58262999
+          },
+          {
+            "operations": 52,
+            "wall_ns": 66766833,
+            "thread_cpu_ns": 66771833
+          },
+          {
+            "operations": 52,
+            "wall_ns": 57792834,
+            "thread_cpu_ns": 57796959
+          },
+          {
+            "operations": 52,
+            "wall_ns": 59537000,
+            "thread_cpu_ns": 59536374
+          },
+          {
+            "operations": 52,
+            "wall_ns": 59878250,
+            "thread_cpu_ns": 59881916
+          },
+          {
+            "operations": 52,
+            "wall_ns": 53694376,
+            "thread_cpu_ns": 53697958
+          },
+          {
+            "operations": 52,
+            "wall_ns": 85544709,
+            "thread_cpu_ns": 85551374
+          }
+        ],
+        "proposed": [
+          {
+            "operations": 52,
+            "wall_ns": 689375,
+            "thread_cpu_ns": 692042
+          },
+          {
+            "operations": 52,
+            "wall_ns": 652375,
+            "thread_cpu_ns": 654584
+          },
+          {
+            "operations": 52,
+            "wall_ns": 703542,
+            "thread_cpu_ns": 705834
+          },
+          {
+            "operations": 52,
+            "wall_ns": 725625,
+            "thread_cpu_ns": 729542
+          },
+          {
+            "operations": 52,
+            "wall_ns": 836667,
+            "thread_cpu_ns": 839542
+          },
+          {
+            "operations": 52,
+            "wall_ns": 1979167,
+            "thread_cpu_ns": 1982416
+          },
+          {
+            "operations": 52,
+            "wall_ns": 892875,
+            "thread_cpu_ns": 897417
+          },
+          {
+            "operations": 52,
+            "wall_ns": 692875,
+            "thread_cpu_ns": 696959
+          },
+          {
+            "operations": 52,
+            "wall_ns": 975125,
+            "thread_cpu_ns": 979875
+          }
+        ]
+      },
+      "orders": [
+        [
+          "original",
+          "proposed"
+        ],
+        [
+          "proposed",
+          "original"
+        ],
+        [
+          "original",
+          "proposed"
+        ],
+        [
+          "proposed",
+          "original"
+        ],
+        [
+          "original",
+          "proposed"
+        ],
+        [
+          "proposed",
+          "original"
+        ],
+        [
+          "original",
+          "proposed"
+        ],
+        [
+          "proposed",
+          "original"
+        ],
+        [
+          "original",
+          "proposed"
+        ]
+      ],
+      "calibration": {
+        "original": {
+          "operations": 1,
+          "wall_ns": 3673916,
+          "thread_cpu_ns": 1559750
+        },
+        "proposed": {
+          "operations": 1,
+          "wall_ns": 57875,
+          "thread_cpu_ns": 60959
+        }
+      },
+      "median_per_call_ns": {
+        "original": {
+          "wall_ns": 1151504.8076923077,
+          "thread_cpu_ns": 1151575.3076923077
+        },
+        "proposed": {
+          "wall_ns": 13954.326923076924,
+          "thread_cpu_ns": 14029.653846153846
+        }
+      },
+      "median_matched_original_over_proposed": 82.8131682259197,
+      "name": "prospective-sample-population-8000-cap-80",
+      "population": 8000,
+      "cap": 80,
+      "fraction": 0.01,
+      "size_receipt": {
+        "size": 8000,
+        "path": "services/anvil/anvil/datagen/anvil_dataset.research.toml",
+        "file_sha256": "28e0e638972f0251d42f9ac22de58876160955e99884b9f1ae07dc52bdbf28ce",
+        "basis": "corpus.total_examples value; budget-scale population, not observed overproduction count",
+        "value": 8000
+      },
+      "required_speedup": 100,
+      "target_passed": false
+    },
+    {
+      "samples": {
+        "original": [
+          {
+            "operations": 15,
+            "wall_ns": 25999208,
+            "thread_cpu_ns": 25730583
+          },
+          {
+            "operations": 15,
+            "wall_ns": 29152917,
+            "thread_cpu_ns": 29135708
+          },
+          {
+            "operations": 15,
+            "wall_ns": 20719250,
+            "thread_cpu_ns": 20726542
+          },
+          {
+            "operations": 15,
+            "wall_ns": 21783750,
+            "thread_cpu_ns": 21791875
+          },
+          {
+            "operations": 15,
+            "wall_ns": 15495875,
+            "thread_cpu_ns": 15501042
+          },
+          {
+            "operations": 15,
+            "wall_ns": 16183333,
+            "thread_cpu_ns": 16188666
+          },
+          {
+            "operations": 15,
+            "wall_ns": 16441708,
+            "thread_cpu_ns": 16447708
+          },
+          {
+            "operations": 15,
+            "wall_ns": 16325542,
+            "thread_cpu_ns": 16329958
+          },
+          {
+            "operations": 15,
+            "wall_ns": 14660542,
+            "thread_cpu_ns": 14651000
+          }
+        ],
+        "proposed": [
+          {
+            "operations": 15,
+            "wall_ns": 7044750,
+            "thread_cpu_ns": 7038792
+          },
+          {
+            "operations": 15,
+            "wall_ns": 4166791,
+            "thread_cpu_ns": 4173458
+          },
+          {
+            "operations": 15,
+            "wall_ns": 1601792,
+            "thread_cpu_ns": 1608416
+          },
+          {
+            "operations": 15,
+            "wall_ns": 3910417,
+            "thread_cpu_ns": 3917458
+          },
+          {
+            "operations": 15,
+            "wall_ns": 1540500,
+            "thread_cpu_ns": 1545584
+          },
+          {
+            "operations": 15,
+            "wall_ns": 2789167,
+            "thread_cpu_ns": 2793209
+          },
+          {
+            "operations": 15,
+            "wall_ns": 2357208,
+            "thread_cpu_ns": 2360042
+          },
+          {
+            "operations": 15,
+            "wall_ns": 1625834,
+            "thread_cpu_ns": 1629333
+          },
+          {
+            "operations": 15,
+            "wall_ns": 1774584,
+            "thread_cpu_ns": 1778916
+          }
+        ]
+      },
+      "orders": [
+        [
+          "original",
+          "proposed"
+        ],
+        [
+          "proposed",
+          "original"
+        ],
+        [
+          "original",
+          "proposed"
+        ],
+        [
+          "proposed",
+          "original"
+        ],
+        [
+          "original",
+          "proposed"
+        ],
+        [
+          "proposed",
+          "original"
+        ],
+        [
+          "original",
+          "proposed"
+        ],
+        [
+          "proposed",
+          "original"
+        ],
+        [
+          "original",
+          "proposed"
+        ]
+      ],
+      "calibration": {
+        "original": {
+          "operations": 1,
+          "wall_ns": 1613000,
+          "thread_cpu_ns": 1622125
+        },
+        "proposed": {
+          "operations": 1,
+          "wall_ns": 201584,
+          "thread_cpu_ns": 206334
+        }
+      },
+      "median_per_call_ns": {
+        "original": {
+          "wall_ns": 1096113.8666666667,
+          "thread_cpu_ns": 1096513.8666666667
+        },
+        "proposed": {
+          "wall_ns": 157147.2,
+          "thread_cpu_ns": 157336.13333333333
+        }
+      },
+      "median_matched_original_over_proposed": 6.996491304699468,
+      "name": "prospective-sample-population-8000-cap-800",
+      "population": 8000,
+      "cap": 800,
+      "fraction": 0.1,
+      "size_receipt": {
+        "size": 8000,
+        "path": "services/anvil/anvil/datagen/anvil_dataset.research.toml",
+        "file_sha256": "28e0e638972f0251d42f9ac22de58876160955e99884b9f1ae07dc52bdbf28ce",
+        "basis": "corpus.total_examples value; budget-scale population, not observed overproduction count",
+        "value": 8000
+      },
+      "required_speedup": 100,
+      "target_passed": false
+    },
+    {
+      "samples": {
+        "original": [
+          {
+            "operations": 5,
+            "wall_ns": 6954792,
+            "thread_cpu_ns": 6958875
+          },
+          {
+            "operations": 5,
+            "wall_ns": 5616291,
+            "thread_cpu_ns": 5624791
+          },
+          {
+            "operations": 5,
+            "wall_ns": 6246875,
+            "thread_cpu_ns": 6254084
+          },
+          {
+            "operations": 5,
+            "wall_ns": 5064000,
+            "thread_cpu_ns": 5068959
+          },
+          {
+            "operations": 5,
+            "wall_ns": 5165875,
+            "thread_cpu_ns": 5170708
+          },
+          {
+            "operations": 5,
+            "wall_ns": 6030792,
+            "thread_cpu_ns": 6036583
+          },
+          {
+            "operations": 5,
+            "wall_ns": 5243833,
+            "thread_cpu_ns": 5249666
+          },
+          {
+            "operations": 5,
+            "wall_ns": 6019792,
+            "thread_cpu_ns": 6025000
+          },
+          {
+            "operations": 5,
+            "wall_ns": 9675250,
+            "thread_cpu_ns": 9680333
+          }
+        ],
+        "proposed": [
+          {
+            "operations": 5,
+            "wall_ns": 4517417,
+            "thread_cpu_ns": 4523416
+          },
+          {
+            "operations": 5,
+            "wall_ns": 2524875,
+            "thread_cpu_ns": 2530083
+          },
+          {
+            "operations": 5,
+            "wall_ns": 2819875,
+            "thread_cpu_ns": 2824500
+          },
+          {
+            "operations": 5,
+            "wall_ns": 3667250,
+            "thread_cpu_ns": 3671875
+          },
+          {
+            "operations": 5,
+            "wall_ns": 3677250,
+            "thread_cpu_ns": 3682000
+          },
+          {
+            "operations": 5,
+            "wall_ns": 2404625,
+            "thread_cpu_ns": 2410834
+          },
+          {
+            "operations": 5,
+            "wall_ns": 3264334,
+            "thread_cpu_ns": 3270000
+          },
+          {
+            "operations": 5,
+            "wall_ns": 4084375,
+            "thread_cpu_ns": 4089625
+          },
+          {
+            "operations": 5,
+            "wall_ns": 2491625,
+            "thread_cpu_ns": 2495500
+          }
+        ]
+      },
+      "orders": [
+        [
+          "original",
+          "proposed"
+        ],
+        [
+          "proposed",
+          "original"
+        ],
+        [
+          "original",
+          "proposed"
+        ],
+        [
+          "proposed",
+          "original"
+        ],
+        [
+          "original",
+          "proposed"
+        ],
+        [
+          "proposed",
+          "original"
+        ],
+        [
+          "original",
+          "proposed"
+        ],
+        [
+          "proposed",
+          "original"
+        ],
+        [
+          "original",
+          "proposed"
+        ]
+      ],
+      "calibration": {
+        "original": {
+          "operations": 1,
+          "wall_ns": 1258083,
+          "thread_cpu_ns": 1263334
+        },
+        "proposed": {
+          "operations": 1,
+          "wall_ns": 697625,
+          "thread_cpu_ns": 702375
+        }
+      },
+      "median_per_call_ns": {
+        "original": {
+          "wall_ns": 1203958.4,
+          "thread_cpu_ns": 1205000.0
+        },
+        "proposed": {
+          "wall_ns": 652866.8,
+          "thread_cpu_ns": 654000.0
+        }
+      },
+      "median_matched_original_over_proposed": 1.6064021022358619,
+      "name": "prospective-sample-population-8000-cap-4000",
+      "population": 8000,
+      "cap": 4000,
+      "fraction": 0.5,
+      "size_receipt": {
+        "size": 8000,
+        "path": "services/anvil/anvil/datagen/anvil_dataset.research.toml",
+        "file_sha256": "28e0e638972f0251d42f9ac22de58876160955e99884b9f1ae07dc52bdbf28ce",
+        "basis": "corpus.total_examples value; budget-scale population, not observed overproduction count",
+        "value": 8000
+      },
+      "required_speedup": 100,
+      "target_passed": false
+    },
+    {
+      "samples": {
+        "original": [
+          {
+            "operations": 456,
+            "wall_ns": 26364250,
+            "thread_cpu_ns": 26343708
+          },
+          {
+            "operations": 456,
+            "wall_ns": 22790583,
+            "thread_cpu_ns": 22794583
+          },
+          {
+            "operations": 456,
+            "wall_ns": 23117750,
+            "thread_cpu_ns": 23122500
+          },
+          {
+            "operations": 456,
+            "wall_ns": 26805375,
+            "thread_cpu_ns": 26809500
+          },
+          {
+            "operations": 456,
+            "wall_ns": 20300042,
+            "thread_cpu_ns": 20303875
+          },
+          {
+            "operations": 456,
+            "wall_ns": 21485666,
+            "thread_cpu_ns": 21490208
+          },
+          {
+            "operations": 456,
+            "wall_ns": 19748375,
+            "thread_cpu_ns": 19751875
+          },
+          {
+            "operations": 456,
+            "wall_ns": 20526541,
+            "thread_cpu_ns": 20531000
+          },
+          {
+            "operations": 456,
+            "wall_ns": 25979458,
+            "thread_cpu_ns": 25984750
+          }
+        ],
+        "proposed": [
+          {
+            "operations": 456,
+            "wall_ns": 3457333,
+            "thread_cpu_ns": 3464292
+          },
+          {
+            "operations": 456,
+            "wall_ns": 3531708,
+            "thread_cpu_ns": 3534958
+          },
+          {
+            "operations": 456,
+            "wall_ns": 3493666,
+            "thread_cpu_ns": 3497500
+          },
+          {
+            "operations": 456,
+            "wall_ns": 3170750,
+            "thread_cpu_ns": 3175458
+          },
+          {
+            "operations": 456,
+            "wall_ns": 2237250,
+            "thread_cpu_ns": 2241959
+          },
+          {
+            "operations": 456,
+            "wall_ns": 2791541,
+            "thread_cpu_ns": 2794250
+          },
+          {
+            "operations": 456,
+            "wall_ns": 2364500,
+            "thread_cpu_ns": 2367584
+          },
+          {
+            "operations": 456,
+            "wall_ns": 2685375,
+            "thread_cpu_ns": 2689000
+          },
+          {
+            "operations": 456,
+            "wall_ns": 7074167,
+            "thread_cpu_ns": 7081125
+          }
+        ]
+      },
+      "orders": [
+        [
+          "original",
+          "proposed"
+        ],
+        [
+          "proposed",
+          "original"
+        ],
+        [
+          "original",
+          "proposed"
+        ],
+        [
+          "proposed",
+          "original"
+        ],
+        [
+          "original",
+          "proposed"
+        ],
+        [
+          "proposed",
+          "original"
+        ],
+        [
+          "original",
+          "proposed"
+        ],
+        [
+          "proposed",
+          "original"
+        ],
+        [
+          "original",
+          "proposed"
+        ]
+      ],
+      "calibration": {
+        "original": {
+          "operations": 1,
+          "wall_ns": 38792,
+          "thread_cpu_ns": 42166
+        },
+        "proposed": {
+          "operations": 1,
+          "wall_ns": 6584,
+          "thread_cpu_ns": 7042
+        }
+      },
+      "median_per_call_ns": {
+        "original": {
+          "wall_ns": 49979.34868421053,
+          "thread_cpu_ns": 49988.120614035084
+        },
+        "proposed": {
+          "wall_ns": 6953.399122807017,
+          "thread_cpu_ns": 6963.723684210527
+        }
+      },
+      "median_matched_original_over_proposed": 7.643826653633106,
+      "name": "prospective-sample-population-400-cap-4",
+      "population": 400,
+      "cap": 4,
+      "fraction": 0.01,
+      "size_receipt": {
+        "size": 400,
+        "path": "services/anvil/tests/test_corpus.py",
+        "file_sha256": "ce2dfa8349db5dd7d158e7d07bee50187fd476cc890d7cd93c1a4096b38ed53b",
+        "basis": "explicit total=400 test fixture"
+      },
+      "required_speedup": 100,
+      "target_passed": false
+    },
+    {
+      "samples": {
+        "original": [
+          {
+            "operations": 160,
+            "wall_ns": 9795542,
+            "thread_cpu_ns": 9801625
+          },
+          {
+            "operations": 160,
+            "wall_ns": 11606459,
+            "thread_cpu_ns": 11614041
+          },
+          {
+            "operations": 160,
+            "wall_ns": 9399417,
+            "thread_cpu_ns": 9405833
+          },
+          {
+            "operations": 160,
+            "wall_ns": 8116375,
+            "thread_cpu_ns": 8121208
+          },
+          {
+            "operations": 160,
+            "wall_ns": 13963708,
+            "thread_cpu_ns": 13968958
+          },
+          {
+            "operations": 160,
+            "wall_ns": 7236375,
+            "thread_cpu_ns": 7241333
+          },
+          {
+            "operations": 160,
+            "wall_ns": 8032083,
+            "thread_cpu_ns": 8036542
+          },
+          {
+            "operations": 160,
+            "wall_ns": 7322875,
+            "thread_cpu_ns": 7326958
+          },
+          {
+            "operations": 160,
+            "wall_ns": 6923666,
+            "thread_cpu_ns": 6927834
+          }
+        ],
+        "proposed": [
+          {
+            "operations": 160,
+            "wall_ns": 2579541,
+            "thread_cpu_ns": 2582375
+          },
+          {
+            "operations": 160,
+            "wall_ns": 2758625,
+            "thread_cpu_ns": 2762875
+          },
+          {
+            "operations": 160,
+            "wall_ns": 1459583,
+            "thread_cpu_ns": 1462583
+          },
+          {
+            "operations": 160,
+            "wall_ns": 2914458,
+            "thread_cpu_ns": 2918834
+          },
+          {
+            "operations": 160,
+            "wall_ns": 1477834,
+            "thread_cpu_ns": 1480750
+          },
+          {
+            "operations": 160,
+            "wall_ns": 1818292,
+            "thread_cpu_ns": 1823125
+          },
+          {
+            "operations": 160,
+            "wall_ns": 1932958,
+            "thread_cpu_ns": 1936000
+          },
+          {
+            "operations": 160,
+            "wall_ns": 1873500,
+            "thread_cpu_ns": 1878167
+          },
+          {
+            "operations": 160,
+            "wall_ns": 1579416,
+            "thread_cpu_ns": 1582541
+          }
+        ]
+      },
+      "orders": [
+        [
+          "original",
+          "proposed"
+        ],
+        [
+          "proposed",
+          "original"
+        ],
+        [
+          "original",
+          "proposed"
+        ],
+        [
+          "proposed",
+          "original"
+        ],
+        [
+          "original",
+          "proposed"
+        ],
+        [
+          "proposed",
+          "original"
+        ],
+        [
+          "original",
+          "proposed"
+        ],
+        [
+          "proposed",
+          "original"
+        ],
+        [
+          "original",
+          "proposed"
+        ]
+      ],
+      "calibration": {
+        "original": {
+          "operations": 1,
+          "wall_ns": 51375,
+          "thread_cpu_ns": 53833
+        },
+        "proposed": {
+          "operations": 1,
+          "wall_ns": 18750,
+          "thread_cpu_ns": 19208
+        }
+      },
+      "median_per_call_ns": {
+        "original": {
+          "wall_ns": 50727.34375,
+          "thread_cpu_ns": 50757.55
+        },
+        "proposed": {
+          "wall_ns": 11709.375,
+          "thread_cpu_ns": 11738.54375
+        }
+      },
+      "median_matched_original_over_proposed": 4.155332397289543,
+      "name": "prospective-sample-population-400-cap-40",
+      "population": 400,
+      "cap": 40,
+      "fraction": 0.1,
+      "size_receipt": {
+        "size": 400,
+        "path": "services/anvil/tests/test_corpus.py",
+        "file_sha256": "ce2dfa8349db5dd7d158e7d07bee50187fd476cc890d7cd93c1a4096b38ed53b",
+        "basis": "explicit total=400 test fixture"
+      },
+      "required_speedup": 100,
+      "target_passed": false
+    },
+    {
+      "samples": {
+        "original": [
+          {
+            "operations": 99,
+            "wall_ns": 4634250,
+            "thread_cpu_ns": 4642917
+          },
+          {
+            "operations": 99,
+            "wall_ns": 3982917,
+            "thread_cpu_ns": 3988792
+          },
+          {
+            "operations": 99,
+            "wall_ns": 4403375,
+            "thread_cpu_ns": 4418084
+          },
+          {
+            "operations": 99,
+            "wall_ns": 4991417,
+            "thread_cpu_ns": 4995042
+          },
+          {
+            "operations": 99,
+            "wall_ns": 5416333,
+            "thread_cpu_ns": 5421334
+          },
+          {
+            "operations": 99,
+            "wall_ns": 4994917,
+            "thread_cpu_ns": 4998791
+          },
+          {
+            "operations": 99,
+            "wall_ns": 4801625,
+            "thread_cpu_ns": 4805417
+          },
+          {
+            "operations": 99,
+            "wall_ns": 5409750,
+            "thread_cpu_ns": 5414125
+          },
+          {
+            "operations": 99,
+            "wall_ns": 4835958,
+            "thread_cpu_ns": 4840583
+          }
+        ],
+        "proposed": [
+          {
+            "operations": 99,
+            "wall_ns": 3019041,
+            "thread_cpu_ns": 3023625
+          },
+          {
+            "operations": 99,
+            "wall_ns": 2860875,
+            "thread_cpu_ns": 2864875
+          },
+          {
+            "operations": 99,
+            "wall_ns": 2859750,
+            "thread_cpu_ns": 2862916
+          },
+          {
+            "operations": 99,
+            "wall_ns": 3084292,
+            "thread_cpu_ns": 3087250
+          },
+          {
+            "operations": 99,
+            "wall_ns": 3014583,
+            "thread_cpu_ns": 3017750
+          },
+          {
+            "operations": 99,
+            "wall_ns": 2635958,
+            "thread_cpu_ns": 2639416
+          },
+          {
+            "operations": 99,
+            "wall_ns": 2866292,
+            "thread_cpu_ns": 2869625
+          },
+          {
+            "operations": 99,
+            "wall_ns": 3986958,
+            "thread_cpu_ns": 3990459
+          },
+          {
+            "operations": 99,
+            "wall_ns": 2957500,
+            "thread_cpu_ns": 2961083
+          }
+        ]
+      },
+      "orders": [
+        [
+          "original",
+          "proposed"
+        ],
+        [
+          "proposed",
+          "original"
+        ],
+        [
+          "original",
+          "proposed"
+        ],
+        [
+          "proposed",
+          "original"
+        ],
+        [
+          "original",
+          "proposed"
+        ],
+        [
+          "proposed",
+          "original"
+        ],
+        [
+          "original",
+          "proposed"
+        ],
+        [
+          "proposed",
+          "original"
+        ],
+        [
+          "original",
+          "proposed"
+        ]
+      ],
+      "calibration": {
+        "original": {
+          "operations": 1,
+          "wall_ns": 43458,
+          "thread_cpu_ns": 45209
+        },
+        "proposed": {
+          "operations": 1,
+          "wall_ns": 30500,
+          "thread_cpu_ns": 30958
+        }
+      },
+      "median_per_call_ns": {
+        "original": {
+          "wall_ns": 48848.06060606061,
+          "thread_cpu_ns": 48894.77777777778
+        },
+        "proposed": {
+          "wall_ns": 29873.737373737375,
+          "thread_cpu_ns": 29909.929292929293
+        }
+      },
+      "median_matched_original_over_proposed": 1.6183347750472394,
+      "name": "prospective-sample-population-400-cap-200",
+      "population": 400,
+      "cap": 200,
+      "fraction": 0.5,
+      "size_receipt": {
+        "size": 400,
+        "path": "services/anvil/tests/test_corpus.py",
+        "file_sha256": "ce2dfa8349db5dd7d158e7d07bee50187fd476cc890d7cd93c1a4096b38ed53b",
+        "basis": "explicit total=400 test fixture"
+      },
+      "required_speedup": 100,
+      "target_passed": false
+    }
+  ],
+  "all_targets_passed": false
+}

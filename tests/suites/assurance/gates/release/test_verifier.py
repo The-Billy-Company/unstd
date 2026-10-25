@@ -315,10 +315,11 @@ def _vendored_release(dist: Path, *, native: bool = True) -> list[tuple[str, byt
     license_names = (
         "native/compress/vendor/libdeflate/COPYING",
         "native/compress/vendor/zlib/LICENSE",
+        "native/compress/vendor/isa-l/LICENSE",
     )
     metadata = (
         METADATA.rstrip(b"\n")
-        + b"\nLicense-Expression: Apache-2.0 AND MIT AND Zlib\n"
+        + b"\nLicense-Expression: Apache-2.0 AND MIT AND Zlib AND BSD-3-Clause\n"
         + "".join(f"License-File: {name}\n" for name in license_names).encode()
         + b"\n"
     )
@@ -326,11 +327,11 @@ def _vendored_release(dist: Path, *, native: bool = True) -> list[tuple[str, byt
         ("unstd-3.1.0/PKG-INFO", metadata),
         (
             "unstd-3.1.0/pyproject.toml",
-            b'[project]\nname = "unstd"\nversion = "3.1.0"\nlicense = "Apache-2.0 AND MIT AND Zlib"\n',
+            b'[project]\nname = "unstd"\nversion = "3.1.0"\nlicense = "Apache-2.0 AND MIT AND Zlib AND BSD-3-Clause"\n',
         ),
         *[
             (f"unstd-3.1.0/{path.relative_to(REPO_ROOT).as_posix()}", path.read_bytes())
-            for project in ("libdeflate", "zlib")
+            for project in ("libdeflate", "zlib", "isa-l")
             for path in sorted(
                 (REPO_ROOT / "native/compress/vendor" / project).rglob("*")
             )
@@ -339,6 +340,7 @@ def _vendored_release(dist: Path, *, native: bool = True) -> list[tuple[str, byt
     ]
     _write_sdist(dist / SDIST, members)
     files = _wheel_files()
+    files["unstd/fs/_fs_native.pyi"] = b"def atomic_write(*args, **kwargs): ...\n"
     files[f"{INFO}/METADATA"] = metadata
     for license_name in license_names:
         files[f"{INFO}/licenses/{license_name}"] = (
@@ -382,9 +384,13 @@ def test_native_wheel_cannot_silently_omit_an_accelerator(
 
 
 @pytest.mark.parametrize("platform", ["win_amd64", "macosx_10_13_x86_64"])
-@pytest.mark.parametrize("include_fs", [False, True])
-def test_non_linux_release_does_not_require_or_admit_the_linux_fs_module(
-    dist: Path, platform: str, include_fs: bool
+@pytest.mark.parametrize(
+    "fs_suffix",
+    [None, ".so", ".abi3.so", ".cpython-313-darwin.so", ".pyd", ".cp313-win_amd64.pyd"],
+    ids=["stub-only", "plain-so", "abi3-so", "cpython-so", "plain-pyd", "cpython-pyd"],
+)
+def test_non_linux_release_accepts_fs_stub_and_rejects_fs_binaries(
+    dist: Path, platform: str, fs_suffix: str | None
 ) -> None:
     _vendored_release(dist)
     wheel = next(dist.glob("*.whl"))
@@ -394,18 +400,25 @@ def test_non_linux_release_does_not_require_or_admit_the_linux_fs_module(
     for module in release._NATIVE_MODULES:
         old = f"{module}.cpython-313-x86_64-linux-gnu.so"
         del files[old]
-        if module == "unstd/fs/_fs_native" and not include_fs:
+        if module == "unstd/fs/_fs_native":
             continue
         if platform.startswith("macosx"):
             files[f"{module}.cpython-313-darwin.so"] = _macho(_deployment((10, 13, 0)))
         else:
             files[f"{module}.cp313-win_amd64.pyd"] = b"native fixture"
+    assert "unstd/fs/_fs_native.pyi" in files
+    if fs_suffix is not None:
+        files[f"unstd/fs/_fs_native{fs_suffix}"] = (
+            _macho(_deployment((10, 13, 0)))
+            if platform.startswith("macosx")
+            else b"native fixture"
+        )
     files[f"{INFO}/WHEEL"] = (
         f"Wheel-Version: 1.0\nRoot-Is-Purelib: false\nTag: cp313-cp313-{platform}\n\n"
     ).encode()
     wheel.unlink()
     _write_wheel(dist / f"unstd-3.1.0-cp313-cp313-{platform}.whl", files)
-    if include_fs:
+    if fs_suffix is not None:
         with pytest.raises(release.ReleaseError, match="Linux-only filesystem"):
             release.verify(dist)
     else:
@@ -413,7 +426,9 @@ def test_non_linux_release_does_not_require_or_admit_the_linux_fs_module(
 
 
 @pytest.mark.parametrize("mutation", ["missing", "changed"])
-@pytest.mark.parametrize("license_path", ["libdeflate/COPYING", "zlib/LICENSE"])
+@pytest.mark.parametrize(
+    "license_path", ["libdeflate/COPYING", "zlib/LICENSE", "isa-l/LICENSE"]
+)
 def test_rehashed_native_wheel_must_retain_the_upstream_license(
     dist: Path, mutation: str, license_path: str
 ) -> None:
@@ -440,6 +455,8 @@ def test_rehashed_native_wheel_must_retain_the_upstream_license(
     [
         ("libdeflate", "lib/deflate_decompress.c", "COPYING"),
         ("zlib", "inflate.c", "LICENSE"),
+        ("isa-l", "igzip/igzip_inflate.c", "LICENSE"),
+        ("isa-l", "igzip/igzip_decode_block_stateless.asm", "LICENSE"),
     ],
 )
 def test_vendored_source_and_license_inventory_is_authenticated(
@@ -470,7 +487,7 @@ def test_vendored_source_and_license_inventory_is_authenticated(
         release.verify(dist)
 
 
-@pytest.mark.parametrize("project", ["libdeflate", "zlib"])
+@pytest.mark.parametrize("project", ["libdeflate", "zlib", "isa-l"])
 def test_native_gzip_source_dependencies_cannot_be_omitted(
     dist: Path, project: str
 ) -> None:
@@ -494,7 +511,14 @@ def test_native_gzip_requires_vendored_provenance(dist: Path) -> None:
         release.verify(dist)
 
 
-@pytest.mark.parametrize("expression", ["Apache-2.0", "Apache-2.0 OR MIT OR Zlib"])
+@pytest.mark.parametrize(
+    "expression",
+    [
+        "Apache-2.0",
+        "Apache-2.0 AND MIT AND Zlib",
+        "Apache-2.0 OR MIT OR Zlib OR BSD-3-Clause",
+    ],
+)
 def test_vendored_license_terms_cannot_be_omitted_or_presented_as_alternatives(
     dist: Path, expression: str
 ) -> None:
@@ -502,7 +526,12 @@ def test_vendored_license_terms_cannot_be_omitted_or_presented_as_alternatives(
     _write_sdist(
         dist / SDIST,
         [
-            (name, data.replace(b"Apache-2.0 AND MIT AND Zlib", expression.encode()))
+            (
+                name,
+                data.replace(
+                    b"Apache-2.0 AND MIT AND Zlib AND BSD-3-Clause", expression.encode()
+                ),
+            )
             if name.endswith(("/PKG-INFO", "/pyproject.toml"))
             else (name, data)
             for name, data in members

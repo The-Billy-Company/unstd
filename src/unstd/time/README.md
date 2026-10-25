@@ -1,3 +1,12 @@
+---
+doc_radar:
+  sentinels:
+    - file: src/unstd/time/timeutil.py
+      contains: ['def span(', 'def proto_timestamp(']
+    - file: src/unstd/time/zoned.py
+      contains: ['def wall(']
+---
+
 # `unstd.time`
 
 Clocks and time — the one seam callers route time reads through, so wall /
@@ -16,12 +25,19 @@ timeutil.span(created_at, unit="days", assume_utc=True)  # age, or None
 zoned.wall(2026, 3, 8, 2, 30, "America/New_York")  # DST gap → 3:30 EDT
 ```
 
-## Modules
+## Source ownership
+
+This flat leaf separates absolute instants from local wall-clock disambiguation;
+both concerns retain their existing public module names.
 
 | File          | Role                                                                                                                         |
 | ------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `timeutil.py` | Clocks (`wall`, `mono`, `perf`, `elapsed_ms`, `epoch_*`), `iso` / `human` formatting, ISO parsing, and `span`. Pure stdlib. |
-| `zoned.py`    | DST-correct wall-clock time in an IANA zone (`wall`, `parse`, `now`, `instant`, `to_utc`) over `whenever`.                 |
+| [`__init__.py`](__init__.py) | Package documentation; callers import the time utility and zone modules independently. |
+| [`timeutil.py`](timeutil.py) | Stdlib clock bindings, epoch conversion, formatting, parsing, elapsed spans, and the lazy protobuf bridge. |
+| [`zoned.py`](zoned.py) | Optional `whenever` backend, DST-correct wall time, zone parsing, and UTC conversion. |
+
+Run the [time contracts](../../../tests/suites/product/time/README.md) from
+the repository root with `uv run --no-sync pytest tests/suites/product/time -q`.
 
 Absolute instants — parsing, formatting and elapsed durations — live in
 `timeutil` and cost no dependency. Durations account for each endpoint's UTC

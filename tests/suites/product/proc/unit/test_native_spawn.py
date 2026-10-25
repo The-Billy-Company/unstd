@@ -13,6 +13,7 @@ import pytest
 
 from tests.support.environment.process import run_python
 from unstd import proc
+from unstd.proc import backend
 
 
 if TYPE_CHECKING:
@@ -21,6 +22,12 @@ if TYPE_CHECKING:
 
 native = pytest.importorskip("unstd.proc._proc_native")
 pytestmark = pytest.mark.skipif(os.name != "posix", reason="POSIX native spawn")
+
+
+def _native_worker(code, *, cwd, timeout):
+    """Qualify the C boundary even where production selects stdlib creation."""
+    prefix = "from unstd.proc import backend\nbackend._SPAWN_NATIVE = True\n"
+    return run_python(prefix + code, cwd=cwd, timeout=timeout)
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -34,6 +41,9 @@ def admitted_native_platform():
         return result
 
     with pytest.MonkeyPatch.context() as patch:
+        # Exercise the native boundary independently of the measured dispatch
+        # policy, which retains stdlib creation on Linux.
+        patch.setattr(backend, "_SPAWN_NATIVE", True)
         patch.setattr(native, "spawn", observe)
         assert (
             proc.capture([sys.executable, "-c", "print('admitted')"], timeout=3)
@@ -41,6 +51,9 @@ def admitted_native_platform():
         )
     if not any(accepted):
         pytest.skip("platform libc lacks safe native spawn facilities")
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(backend, "_SPAWN_NATIVE", True)
+        yield
 
 
 def test_public_run_reaches_native_spawn_and_publishes_ownership(monkeypatch):
@@ -195,7 +208,7 @@ finally:
     os.unsetenv(key)
 print('RAW_ENVIRONMENT')
 """
-    result = run_python(code, cwd=tmp_path, timeout=10)
+    result = _native_worker(code, cwd=tmp_path, timeout=10)
     assert result.returncode == 0, result.stderr
     assert result.stdout == "RAW_ENVIRONMENT\n"
 
@@ -224,7 +237,7 @@ assert records == [('runner', ['runner', 'before audit'])], records
 assert result.argv == ('runner', 'before audit')
 print('AUDITED_EXACTLY_ONCE')
 """
-    result = run_python(code, cwd=tmp_path, timeout=10)
+    result = _native_worker(code, cwd=tmp_path, timeout=10)
     assert result.returncode == 0, result.stderr
     assert result.stdout == "AUDITED_EXACTLY_ONCE\n"
 
@@ -254,7 +267,7 @@ assert result.stdout == 'owned value\\n', result
 assert records == ['subprocess.Popen'], records
 print('OWNED_ENVIRONMENT_ITEMS')
 """
-    result = run_python(code, cwd=tmp_path, timeout=10)
+    result = _native_worker(code, cwd=tmp_path, timeout=10)
     assert result.returncode == 0, result.stderr
     assert result.stdout == "OWNED_ENVIRONMENT_ITEMS\n"
 
@@ -287,7 +300,7 @@ else:
     raise AssertionError('audit refusal created an unreaped child')
 print('REFUSED_BEFORE_SPAWN')
 """
-    result = run_python(code, cwd=tmp_path, timeout=10)
+    result = _native_worker(code, cwd=tmp_path, timeout=10)
     assert result.returncode == 0, result.stderr
     assert result.stdout == "REFUSED_BEFORE_SPAWN\n"
 
@@ -341,7 +354,7 @@ assert json.loads(result.stdout)['argv'] == ['owned candidates'], result
 assert candidates == []
 print('OWNED_EXECUTABLE_CANDIDATES')
 """
-    result = run_python(code, cwd=tmp_path, timeout=10)
+    result = _native_worker(code, cwd=tmp_path, timeout=10)
     assert result.returncode == 0, result.stderr
     assert result.stdout == "OWNED_EXECUTABLE_CANDIDATES\n"
 
@@ -365,7 +378,7 @@ else:
     raise AssertionError('empty executable search created a child')
 print('EMPTY_SEARCH_REJECTED')
 """
-    result = run_python(code, cwd=tmp_path, timeout=10)
+    result = _native_worker(code, cwd=tmp_path, timeout=10)
     assert result.returncode == 0, result.stderr
     assert result.stdout == "EMPTY_SEARCH_REJECTED\n"
 
@@ -401,7 +414,7 @@ else:
 assert records == ['subprocess.Popen','subprocess.Popen'], records
 print('EMPTY_AUDITED_ARGV')
 """
-    result = run_python(code, cwd=tmp_path, timeout=10)
+    result = _native_worker(code, cwd=tmp_path, timeout=10)
     assert result.returncode == 0, result.stderr
     assert result.stdout == "EMPTY_AUDITED_ARGV\n"
 
@@ -451,7 +464,7 @@ os.get_exec_path = lambda environment: [{str(directory)!r},InspectingPath('/miss
 assert proc.run(['runner', 'gc safe'],timeout=3).returncode == 0
 print('PRIVATE_OWNERS_NOT_GC_VISIBLE')
 """
-    result = run_python(code, cwd=tmp_path, timeout=15)
+    result = _native_worker(code, cwd=tmp_path, timeout=15)
     assert result.returncode == 0, result.stderr
     assert result.stdout == "PRIVATE_OWNERS_NOT_GC_VISIBLE\n"
 
@@ -470,6 +483,6 @@ result = proc.run([sys.executable, '-c', "import os;print(os.environ.get('UNSTD_
 assert result.stdout == 'absent\\n', result
 print('NULL_ENVIRON_ACCEPTED')
 """
-    result = run_python(code, cwd=tmp_path, timeout=10)
+    result = _native_worker(code, cwd=tmp_path, timeout=10)
     assert result.returncode == 0, result.stderr
     assert result.stdout == "NULL_ENVIRON_ACCEPTED\n"

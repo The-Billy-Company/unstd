@@ -174,7 +174,9 @@ def _native_backends(
     """Observe selected engines outside timing, retaining each completed state."""
     if codec is gzip:
         return None
-    reader = sys.modules.get("unstd.compress._reader")
+    reader = sys.modules.get("unstd.compress.engines.reader") or sys.modules.get(
+        "unstd.compress._reader"
+    )
     factory = getattr(reader, "_factory", None)
     if not callable(factory) or not hasattr(factory, "_selected_backend"):
         return None
@@ -255,6 +257,7 @@ def _metadata(codec: ModuleType, cases: list[_Case]) -> dict[str, object]:
             for name in ("_inflate.py", "_reader.py", "_backend.py")
             if (path := paths[0].with_name(name)).exists()
         )
+        paths.extend(sorted((paths[0].parent / "engines").glob("*.py")))
         native = sys.modules.get("unstd.compress._gzip_native")
         if native is not None and native.__file__ is not None:
             paths.append(Path(native.__file__).resolve())
@@ -266,7 +269,9 @@ def _metadata(codec: ModuleType, cases: list[_Case]) -> dict[str, object]:
             backend = sys.modules.get(name)
             if backend is not None and backend.__file__ is not None:
                 paths.append(Path(backend.__file__).resolve())
-        reader = sys.modules.get("unstd.compress._reader")
+        reader = sys.modules.get("unstd.compress.engines.reader") or sys.modules.get(
+            "unstd.compress._reader"
+        )
         if reader is not None:
             factory = getattr(reader, "_factory", None)
             owner = getattr(factory, "__module__", "")
@@ -283,6 +288,9 @@ def _metadata(codec: ModuleType, cases: list[_Case]) -> dict[str, object]:
                 ),
                 "crc32": getattr(getattr(reader, "_crc32", None), "__module__", None),
                 "adaptive_ng_version": getattr(reader, "_adaptive_ng_version", None),
+                "isal_runtime_version": getattr(native, "ISAL_RUNTIME_VERSION", None),
+                "isal_patch_sha256": getattr(native, "ISAL_PATCH_SHA256", None),
+                "isal_streaming": bool(getattr(native, "ISAL_STREAMING", False)),
             }
     packed = codec.compress(cases[0].raw, mtime=0)
     if gzip.decompress(packed) != cases[0].raw:
@@ -290,7 +298,8 @@ def _metadata(codec: ModuleType, cases: list[_Case]) -> dict[str, object]:
         raise AssertionError(message)
     native_calls = _native_calls(lambda: codec.compress(cases[0].raw, mtime=0))
     if getattr(codec, "_backend", None) is not None and not any(
-        name.startswith("zlib_ng") for name in native_calls
+        name.startswith(("zlib_ng", "unstd.compress._gzip_native"))
+        for name in native_calls
     ):
         message = "installed native gzip backend did not execute compression"
         raise AssertionError(message)

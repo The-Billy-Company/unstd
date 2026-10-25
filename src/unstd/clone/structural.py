@@ -87,9 +87,16 @@ _native_walk_graph: (
     Callable[[Any, _Clone, _RecordAdmission, dict[int, Any]], Any] | None
 )
 try:
-    from unstd.clone._clone_native import clone_walk_graph as _native_walk_graph
+    from unstd.clone._clone_native import (
+        clone_walk_canonical_graph as _native_walk_graph,
+    )
 except ImportError:
-    _native_walk_graph = None
+    try:
+        from unstd.clone._clone_native import clone_walk_graph as _legacy_walk_graph
+    except ImportError:
+        _native_walk_graph = None
+    else:
+        _native_walk_graph = _legacy_walk_graph
 
 _native_records: Callable[[Any, type, Callable[[Any], Any]], Any] | None
 try:
@@ -236,6 +243,10 @@ def _walk(o: Any, memo: dict[int, Any] | None = None) -> Any:
         twin = node(o, memo) if node else _foreign(o, memo)
     memo[identity] = twin
     return twin
+
+
+_TEMPORAL_WALK = _walk
+_TEMPORAL_WALK_CODE = _walk.__code__
 
 
 # ── per-class admission: which default-protocol shapes the walker may rebuild ──

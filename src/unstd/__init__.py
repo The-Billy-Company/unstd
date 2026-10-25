@@ -36,7 +36,8 @@ failing loud where no faithful substitute exists:
 - ``rand`` (``random``) — numpy PCG64 bulk draws; security-sensitive draws stay
   on ``secrets`` regardless of the extra.
 - ``pack`` (``struct``) — numpy bulk pack/unpack.
-- ``clone`` (``copy``) — an exact-type structural deep clone, pure stdlib.
+- ``clone`` (``copy``) — an exact-type structural deep clone with optional
+  bundled C acceleration and no third-party runtime dependency.
 - ``text`` (``difflib``) — rapidfuzz similarity and fuzzy matching.
 - ``audio`` (``wave``) — soundfile read/write plus a streaming writer.
 - ``toml`` (``tomllib``) — reading is stdlib; writing needs tomlkit.
@@ -46,8 +47,9 @@ failing loud where no faithful substitute exists:
   stdlib framing and a base fallback. ``zstd`` adds the original ``zstandard``
   provider; ``archives`` adds the original ``libarchive`` binding and requires
   a separately installed native libarchive library.
-- ``proc`` (``subprocess``) · ``fs`` (``os``) · ``iters`` (``itertools``) —
-  pure stdlib, no extra, always present in the base install.
+- ``proc`` (``subprocess``) · ``fs`` (``os``) — operating-system helpers with
+  optional bundled CPython acceleration and no third-party runtime dependency.
+- ``iters`` (``itertools``) — pure stdlib combinators, always in the base install.
 
 Import the module, not its members::
 

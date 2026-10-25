@@ -11,11 +11,25 @@ implementations across block splits, positional indexes, keys, user subclasses,
 copying, pickling and comparison failures. Blocking the native module or using
 an unqualified backend version retains the original upstream implementations.
 
+`test_native_integer_queries.py` compares signed-integer boundaries and arbitrary
+precision queries with stdlib bisect. Exact-integer queries meeting stored int
+subclasses must preserve callbacks that clear storage or replace dictionaries,
+including finalizers that replace the live dictionary again.
+Plain keywords must retain native queries; string subclass keywords preserve
+the upstream binder's equality calls, exception identity and finalizer order.
+
 `test_native_memory.py` probes descriptor/capsule reclamation, reinstallation
 from active comparisons, corrupted state and overflow rejection, and 24,000
 mixed operations across keyed/keyless collections and small block loads. Unsafe
 state probes run in bounded owned interpreters. The native qualification driver
 also runs them under ASan/UBSan; ordinary runs support Python's debug allocator.
+
+`test_native_mutations.py` compares scalar controls, slice expiration and batch
+ingestion with upstream, including object identity, iterators, storage aliases,
+helper overrides, callbacks and finalizer timing. Testing builds add exhaustive
+allocation/commit failpoints and deterministic staging reentry. Set
+`UNSTD_CONTAINERS_REQUIRE_TEST_HOOKS=1` to require their presence; production
+builds omit those hooks.
 
 `test_lazy_exports.py` checks fresh-process package discovery, imports of each
 family, cached class identity, star imports and reloads. Loading one family must

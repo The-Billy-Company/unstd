@@ -1,6 +1,11 @@
 # JSON acceleration on Foundry
 
-Validated on 2026-10-25 with fresh CPython 3.14.9 builds on Billy's Foundry
+This records the earlier portability qualification. The subsequent
+[shared-branch and wide-decode qualification](jsonx-100x.md) covers the later
+native changes and their measured speedups; the raw reports below retain their
+original source and binary hashes.
+
+Validated on 2026-10-25 with fresh CPython 3.14.9 builds on the Foundry host
 (AMD Ryzen 9 7950X3D, Linux x86_64) and macOS arm64. The native JSON paths survive
 both the direct wheel and a wheel independently rebuilt from the source
 distribution. Foundry's two clean builds contain identical JSON machine-code

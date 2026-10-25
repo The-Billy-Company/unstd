@@ -14,4 +14,6 @@ across collection, shared branches remain independent, and unsupported trees
 retain their Python validation and error behavior. The retained safety tests
 cover live-source mutation, forced collection, metadata changes, private-output
 discard and cache cleanup. Existing public Python benchmarks qualify these
-changes; a 100× throughput improvement has not been established.
+changes; they do not establish a universal 100× improvement. Separately
+qualified shared-branch cases exceeding 100× are recorded in the
+[shared-branch evidence](../bench/reports/serde/jsonx-100x.md).

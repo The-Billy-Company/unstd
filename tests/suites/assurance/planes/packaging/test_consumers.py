@@ -13,6 +13,7 @@ from tests.support.packaging.artifacts import (
     Consumer,
     clean_environment,
 )
+from tests.support.packaging.surfaces import EXTRA_MODULES
 
 
 if TYPE_CHECKING:
@@ -231,6 +232,28 @@ assert binpack.unpack('>H', b'\\x12\\x34') == (0x1234,)
 assert binpack.Struct is struct.Struct
 assert binpack.pack_array_portable('<f4', [1.0, -2.5]) == expected
 assert binpack.unpack_array_portable('<f4', expected) == [1.0, -2.5]
+framed = b'HDR' + expected + b'tail'
+assert binpack.unpack_array('<f4', framed, count=2, offset=3) == [1.0, -2.5]
+assert binpack.unpack_array_portable('<f4', framed, count=2, offset=3) == [1.0, -2.5]
+""",
+    "pack.ragged": """
+import struct
+from unstd.pack import ragged
+frame = struct.pack('<3i6f', 0, 1, 3, 1.5, -2.0, 3.0, 4.0, 5.5, 6.0)
+decoder = ragged.RaggedDecoder('<f4', columns=2, index_dtype='<i4', finite=True, allow_empty=False)
+source = bytearray(frame)
+values, offsets = decoder.unpack(source, index_count=3)
+assert values == ((1.5, -2.0), (3.0, 4.0), (5.5, 6.0))
+assert offsets == (0, 1, 3)
+source[:] = bytes(len(source))
+assert values[0] == (1.5, -2.0) and offsets == (0, 1, 3)
+invalid = struct.pack('<3i6f', 0, 1, 2, 1.5, -2.0, 3.0, 4.0, 5.5, 6.0)
+try:
+    decoder.unpack(invalid, index_count=3)
+except ValueError:
+    pass
+else:
+    raise AssertionError('ragged decoder accepted an incomplete boundary table')
 """,
     "rand": """
 import random
@@ -248,6 +271,9 @@ stream = rand.Generator(173)
 reference = random.Random(173)
 assert stream.backend == 'stdlib'
 assert stream.floats(3) == [reference.uniform(0.0, 1.0) for _ in range(3)]
+state = stream._py.getstate()
+assert stream.ints(3, 1, 5, seeds=[0, 1, 2]) == [4, 2, 3]
+assert stream._py.getstate() == state
 """,
     "rex": """
 import re
@@ -367,21 +393,28 @@ _PROBE_MODULES = {
         "unstd.compress.tarfile",
         "unstd.compress.zipfile",
         "unstd.compress.zlib",
+        "unstd.compress.engines",
+        "unstd.compress.engines.imports",
     ),
     "compress.zstd": ("unstd.compress.zstd",),
-    "compress.zlibx": ("unstd.compress.zlibx",),
+    "compress.zlibx": ("unstd.compress.zlibx", "unstd.compress.engines.flush"),
     "compress.zstandard": ("unstd.compress.zstandard",),
     "compress.libarchive": ("unstd.compress.libarchive",),
     "compress.gzipx": ("unstd.compress", "unstd.compress.gzipx"),
-    "serde.jsonx": ("unstd.serde", "unstd.serde.jsonx"),
+    "serde.jsonx": (
+        "unstd.serde",
+        "unstd.serde.jsonx",
+        "unstd.serde.encoding",
+        "unstd.serde.recursion",
+    ),
     "serde.b64": ("unstd.serde.b64",),
     "serde.ndjson": ("unstd.serde.ndjson",),
     "serde.structs": ("unstd.serde.structs",),
     "crypto.tls": ("unstd.crypto", "unstd.crypto.tls"),
     "crypto.digest": ("unstd.crypto.digest",),
     "crypto.token": ("unstd.crypto.token",),
-    "fs": ("unstd.fs",),
-    "proc": ("unstd.proc",),
+    "fs": ("unstd.fs", "unstd.fs.durability", "unstd.fs.traversal"),
+    "proc": ("unstd.proc", "unstd.proc.backend", "unstd.proc.results"),
     "clone": ("unstd.clone", "unstd.clone.structural"),
     "ids.uid": ("unstd.ids", "unstd.ids.uid"),
     "iters": (
@@ -391,14 +424,20 @@ _PROBE_MODULES = {
         "unstd.iters.reshape",
         "unstd.iters.select",
     ),
-    "pack.binpack": ("unstd.pack", "unstd.pack.binpack"),
-    "rand": ("unstd.rand", "unstd.rand.crypto", "unstd.rand.draw"),
-    "rex": ("unstd.rex",),
+    "pack.binpack": (
+        "unstd.pack",
+        "unstd.pack.binpack",
+        "unstd.pack.buffers",
+        "unstd.pack.dtypes",
+    ),
+    "pack.ragged": ("unstd.pack.ragged",),
+    "rand": ("unstd.rand", "unstd.rand.crypto", "unstd.rand.draw", "unstd.rand.keyed"),
+    "rex": ("unstd.rex", "unstd.rex.patterns", "unstd.rex.profile"),
     "text.fuzz": ("unstd.text", "unstd.text.fuzz"),
     "time.timeutil": ("unstd.time", "unstd.time.timeutil"),
     "time.zoned": ("unstd.time.zoned",),
-    "toml": ("unstd.toml",),
-    "audio.wavx": ("unstd.audio", "unstd.audio.wavx"),
+    "toml": ("unstd.toml", "unstd.extras"),
+    "audio.wavx": ("unstd.audio", "unstd.audio.wavx", "unstd.audio.pcm"),
     "containers.SortedList": ("unstd.containers", "unstd.containers.sorted"),
     "containers.Map": ("unstd.containers.persistent",),
     "model": ("unstd.model", "unstd.model.base", "unstd.model.settings"),
@@ -424,13 +463,16 @@ def test_every_public_module_has_an_installed_behavior_probe(
     modules = set()
     for name in artifacts.package_files:
         parts = name.removesuffix(".py").split("/")
-        if not name.endswith(".py") or len(parts) < 3:
+        if not name.endswith(".py"):
             continue
         if parts[-1] == "__init__":
             parts.pop()
+        if len(parts) < 2:
+            continue
         if not any(part.startswith("_") for part in parts):
             modules.add(".".join(parts))
     covered = {module for targets in _PROBE_MODULES.values() for module in targets}
+    covered.update(module for targets in EXTRA_MODULES.values() for module in targets)
     assert _PROBE_MODULES.keys() <= _STDLIB_CASES.keys() | _MISSING_EXTRA_CASES.keys()
     assert modules == covered, (
         f"installed consumer probes must cover every public module; "
@@ -540,6 +582,8 @@ for module in {_PROBE_MODULES[surface]!r}:
         "unstd.text._text_native",
         "unstd.compress._gzip_native",
         "unstd.proc._proc_native",
+        "unstd.rand._rand_native",
+        "unstd.pack._pack_native",
         "unstd.fs._fs_native",
     ],
 )
@@ -595,7 +639,7 @@ assert native.decompress(b'not a gzip frame') is None
 """,
         "unstd.proc._proc_native": """
 from unstd import proc
-from unstd.proc._internal import backend
+from unstd.proc import backend
 assert backend._native is native
 calls = []
 communicate = native.communicate
@@ -611,6 +655,38 @@ assert result.returncode == 0
 if os.name == 'posix':
     assert calls == [True]
 """,
+        "unstd.rand._rand_native": """
+import random
+from unstd import rand
+from unstd.rand import draw
+assert not rand.HAVE_NUMPY
+assert draw._native is native
+calls = []
+shuffle = native.shuffle
+def observe(getrandbits, items):
+    calls.append(getrandbits.__self__)
+    return shuffle(getrandbits, items)
+native.shuffle = observe
+subject = rand.Generator(173)
+reference = random.Random(173)
+actual, expected = list(range(256)), list(range(256))
+subject.shuffle(actual)
+reference.shuffle(expected)
+assert calls == [subject._py]
+assert actual == expected
+assert subject._py.getstate() == reference.getstate()
+assert rand.shuffle.__func__ is random.Random.shuffle
+""",
+        "unstd.pack._pack_native": """
+import struct
+from unstd.pack import ragged
+assert ragged._native is native
+frame = struct.pack('<2q4f', 0, 2, 1.0, -2.0, 3.0, 4.0)
+assert native.validate(frame, 2, 2, 'f', '<', 'q', '<', True, False) == 2
+values, offsets = ragged.RaggedDecoder('<f4', columns=2, index_dtype='<i8', finite=True, allow_empty=False).unpack(frame, index_count=2)
+assert values == ((1.0, -2.0), (3.0, 4.0))
+assert offsets == (0, 2)
+""",
         "unstd.fs._fs_native": """
 import tempfile
 from unstd import fs
@@ -625,6 +701,7 @@ def observe(*arguments, **keywords):
 native.atomic_write = observe
 with tempfile.TemporaryDirectory() as directory:
     destination = Path(directory) / 'nested' / 'state.json'
+    destination.parent.mkdir()
     assert fs.atomic_write(destination, b'installed native fs', durable='strict') == destination
     assert destination.read_bytes() == b'installed native fs'
     assert calls == [True]

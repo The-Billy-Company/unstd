@@ -89,7 +89,7 @@ def _cases(source: Path, c_path: Path | None) -> list[tuple[Workload, str]]:
         spec.loader.exec_module(c_module)
         c_digest, c_token = _load(source)
         c_digest.blake3 = c_token.blake3 = c_module.blake3
-        sys.modules[c_digest.__package__ + "._blake3"].__dict__["blake3"] = (
+        sys.modules[c_digest.__package__ + ".hashing"].__dict__["blake3"] = (
             c_module.blake3
         )
         c_modules = (c_digest, c_token)

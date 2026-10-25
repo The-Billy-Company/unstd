@@ -1,7 +1,7 @@
-# Billy gzip throughput qualification
+# Gzip throughput qualification
 
 Paired measurements on 2026-10-25 compare the previous native gzip implementation
-with this change on the actual Mac and Billy Foundry CPU. Four independent
+with this change on the actual Mac and Foundry CPU. Four independent
 upload streams gained **1.83× on Mac and 4.58× on Linux**. Linux bounded HTTP
 expansion refusal gained **13.24×**; its two-pass dataset uploads gained about
 **1.26×** in the single-stream consumer measurements. Mac single-stream large
@@ -30,7 +30,7 @@ its isolated copy savings are not included as an application speed claim.
 | --- | --- | --- |
 | CPU | Apple M5 Max, 18 logical CPUs | Foundry AX102, Ryzen 9 7950X3D, 16 cores / 32 threads |
 | Interpreter | CPython 3.14.8, ordinary GIL build | CPython 3.14.8, ordinary GIL build |
-| Extension toolchain | Apple Clang 21, release `-O3` | GCC 12.2, release `-O3` in `billy-ci-runner:local` |
+| Extension toolchain | Apple Clang 21, release `-O3` | GCC 12.2, release `-O3` in the local CI runner container |
 | Runtime | macOS 26.6 arm64 | Linux 6.8 x86_64; container glibc 2.36 |
 | Active streaming codec | Apple libz 1.2.12 | zlib-ng 2.2.5, python-zlib-ng 1.0.0 |
 | Native CRC | libdeflate 1.25 | libdeflate 1.25 |
@@ -54,7 +54,7 @@ maximum-slowdown gate. Individual small gains/losses include scheduler noise;
 unchanged writer controls show that not every difference is an implementation
 improvement.
 
-The frozen fixtures reproduce Billy's gzip consumption shapes: real `ijson`
+The frozen fixtures reproduce captured gzip consumption shapes: real `ijson`
 batching and EOF exhaustion, two 256 KiB upload passes with digest/count and
 rewind/position restoration, HTTP `read(max_bytes + 1)`, and per-line journal
 writes with batch flushes and one/two-member replay. They use synthetic records,
@@ -133,25 +133,13 @@ across different provider versions.
 
 ## Retained evidence and reproduction
 
-- [Mac consumer timings](billy-macos-py314.json)
-- [Linux consumer timings](billy-linux-py314.json)
+- Mac and Linux consumer timings are retained in this directory.
 - [Mac independent-stream timings](concurrency-macos-py314.json)
 - [Linux independent-stream timings](concurrency-linux-py314.json)
 - [Source, build and test qualification](qualification-py314.json)
 - [Python 3.12/3.13 native compilation qualification](native-python-versions.json)
 - [Final installed-wheel and source-distribution consumer receipt](packaging-final-receipt.json)
 - Test outcomes: [Mac](tests-macos-py314.txt), [Linux](tests-linux-py314.txt), [benchmark/API gates](gates-macos-py314.txt)
-
-```console
-PYTHONPATH=SHARED_DEPS:REPO python bench/profiles/billy_gzip.py run \
-  --fixtures bench/workloads/billy_gzip.json.gz \
-  --baseline-source BEFORE_INSTALL --source CURRENT_INSTALL \
-  --rounds 7 --repetitions 3 --max-slowdown 1.30 --output consumer.json
-PYTHONPATH=SHARED_DEPS:REPO python bench/profiles/gzip_concurrency.py run \
-  --fixtures bench/workloads/billy_gzip.json.gz \
-  --baseline-source BEFORE_INSTALL --source CURRENT_INSTALL \
-  --workers 1,2,4 --rounds 7 --output concurrency.json
-```
 
 The performance workflow repeats the frozen consumer guard on Linux/macOS with
 Python 3.13/3.14 and independently built revisions. Concurrency remains an

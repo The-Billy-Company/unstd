@@ -1,0 +1,384 @@
+{
+  "environment": {
+    "python": "3.14.8 (main, Oct  6 2026, 02:02:59) [GCC 14.2.0]",
+    "platform": "Linux-7.0.14-linuxkit-aarch64-with-glibc2.41"
+  },
+  "sources": {
+    "keyed": {
+      "path": "/tmp/rand-current/unstd/rand/draw.py",
+      "sha256": "d1db31f2d9f5f35143e4af2bb71126e2ed9a59e283b9b6adba73929b34b7fb7b",
+      "public_signatures": {
+        "Generator": "(seed: int | None = None, *, backend: Literal['stdlib', 'numpy'] = 'stdlib', bit_generator: Literal['PCG64', 'PCG64DXSM', 'SFC64', 'Philox'] | None = None) -> None",
+        "choice": "(seq)",
+        "choices": "(seq: collections.abc.Sequence[T], n: int, *, weights: collections.abc.Sequence[float] | None = None) -> list[T]",
+        "floats": "(n: int, *, low: float = 0.0, high: float = 1.0) -> numpy.ndarray | list[float]",
+        "ints": "(n: int, low: int, high: int, *, endpoint: bool = False, seeds: collections.abc.Sequence[int] | None = None) -> numpy.ndarray | list[int]",
+        "randint": "(a, b)",
+        "random": "()",
+        "sample": "(population, k, *, counts=None)",
+        "seed": "(n: int | None = None) -> None",
+        "shuffle": "(x)",
+        "uniform": "(a, b)",
+        "Generator.seed": "(self, n: int | None = None) -> None",
+        "Generator.random": "(self) -> float",
+        "Generator.randint": "(self, a: int, b: int) -> int",
+        "Generator.uniform": "(self, a: float, b: float) -> float",
+        "Generator.choice": "(self, seq: collections.abc.Sequence[T]) -> T",
+        "Generator.shuffle": "(self, x: collections.abc.MutableSequence[T]) -> None",
+        "Generator.sample": "(self, population: collections.abc.Sequence[T], k: int, *, counts: collections.abc.Sequence[int] | None = None) -> list[T]",
+        "Generator.floats": "(self, n: int, *, low: float = 0.0, high: float = 1.0) -> numpy.ndarray | list[float]",
+        "Generator.ints": "(self, n: int, low: int, high: int, *, endpoint: bool = False, seeds: collections.abc.Sequence[int] | None = None) -> numpy.ndarray | list[int]",
+        "Generator.choices": "(self, seq: collections.abc.Sequence[T], n: int, *, weights: collections.abc.Sequence[float] | None = None) -> list[T]"
+      },
+      "compatible_public_signatures": {
+        "Generator": "(seed: int | None = None, *, backend: Literal['stdlib', 'numpy'] = 'stdlib', bit_generator: Literal['PCG64', 'PCG64DXSM', 'SFC64', 'Philox'] | None = None) -> None",
+        "choice": "(seq)",
+        "choices": "(seq: collections.abc.Sequence[T], n: int, *, weights: collections.abc.Sequence[float] | None = None) -> list[T]",
+        "floats": "(n: int, *, low: float = 0.0, high: float = 1.0) -> numpy.ndarray | list[float]",
+        "ints": "(n: int, low: int, high: int, *, endpoint: bool = False) -> numpy.ndarray | list[int]",
+        "randint": "(a, b)",
+        "random": "()",
+        "sample": "(population, k, *, counts=None)",
+        "seed": "(n: int | None = None) -> None",
+        "shuffle": "(x)",
+        "uniform": "(a, b)",
+        "Generator.seed": "(self, n: int | None = None) -> None",
+        "Generator.random": "(self) -> float",
+        "Generator.randint": "(self, a: int, b: int) -> int",
+        "Generator.uniform": "(self, a: float, b: float) -> float",
+        "Generator.choice": "(self, seq: collections.abc.Sequence[T]) -> T",
+        "Generator.shuffle": "(self, x: collections.abc.MutableSequence[T]) -> None",
+        "Generator.sample": "(self, population: collections.abc.Sequence[T], k: int, *, counts: collections.abc.Sequence[int] | None = None) -> list[T]",
+        "Generator.floats": "(self, n: int, *, low: float = 0.0, high: float = 1.0) -> numpy.ndarray | list[float]",
+        "Generator.ints": "(self, n: int, low: int, high: int, *, endpoint: bool = False) -> numpy.ndarray | list[int]",
+        "Generator.choices": "(self, seq: collections.abc.Sequence[T], n: int, *, weights: collections.abc.Sequence[float] | None = None) -> list[T]"
+      },
+      "optional_public_additions": {
+        "ints": "seeds: collections.abc.Sequence[int] | None = None",
+        "Generator.ints": "seeds: collections.abc.Sequence[int] | None = None"
+      },
+      "helpers": {
+        "_keyed_ints": {
+          "native_binding": {
+            "module": "unstd.rand._rand_native",
+            "name": "seeded_ints"
+          },
+          "module": "unstd.rand.keyed",
+          "path": "/tmp/rand-current/unstd/rand/keyed.py",
+          "sha256": "51b70ae8ab7171493dc3c08b463c10bd1fad2162b256b3a23a7f60fa3c6983f6"
+        }
+      },
+      "have_numpy": true,
+      "native": {
+        "_native": {
+          "module": "unstd.rand._rand_native",
+          "name": "unstd.rand._rand_native",
+          "path": "/tmp/rand-current/unstd/rand/_rand_native.cpython-314-aarch64-linux-gnu.so",
+          "sha256": "d2d0536dd4f95b6eba1ddd0a18fb6581d146d0ef9b334c4a93215bcd8f26f296"
+        }
+      }
+    },
+    "original": {
+      "path": "/workspace/bench/reports/rand/before-draw.py.txt",
+      "sha256": "dc178890d7c64ea2351dc2b8aa3858b6d1a5db8c1b6333a4294510a73e4a2aad",
+      "public_signatures": {
+        "Generator": "(seed: int | None = None, *, backend: Literal['stdlib', 'numpy'] = 'stdlib', bit_generator: Literal['PCG64', 'PCG64DXSM', 'SFC64', 'Philox'] | None = None) -> None",
+        "choice": "(seq)",
+        "choices": "(seq: collections.abc.Sequence[T], n: int, *, weights: collections.abc.Sequence[float] | None = None) -> list[T]",
+        "floats": "(n: int, *, low: float = 0.0, high: float = 1.0) -> numpy.ndarray | list[float]",
+        "ints": "(n: int, low: int, high: int, *, endpoint: bool = False) -> numpy.ndarray | list[int]",
+        "randint": "(a, b)",
+        "random": "()",
+        "sample": "(population, k, *, counts=None)",
+        "seed": "(n: int | None = None) -> None",
+        "shuffle": "(x)",
+        "uniform": "(a, b)",
+        "Generator.seed": "(self, n: int | None = None) -> None",
+        "Generator.random": "(self) -> float",
+        "Generator.randint": "(self, a: int, b: int) -> int",
+        "Generator.uniform": "(self, a: float, b: float) -> float",
+        "Generator.choice": "(self, seq: collections.abc.Sequence[T]) -> T",
+        "Generator.shuffle": "(self, x: collections.abc.MutableSequence[T]) -> None",
+        "Generator.sample": "(self, population: collections.abc.Sequence[T], k: int, *, counts: collections.abc.Sequence[int] | None = None) -> list[T]",
+        "Generator.floats": "(self, n: int, *, low: float = 0.0, high: float = 1.0) -> numpy.ndarray | list[float]",
+        "Generator.ints": "(self, n: int, low: int, high: int, *, endpoint: bool = False) -> numpy.ndarray | list[int]",
+        "Generator.choices": "(self, seq: collections.abc.Sequence[T], n: int, *, weights: collections.abc.Sequence[float] | None = None) -> list[T]"
+      },
+      "compatible_public_signatures": {
+        "Generator": "(seed: int | None = None, *, backend: Literal['stdlib', 'numpy'] = 'stdlib', bit_generator: Literal['PCG64', 'PCG64DXSM', 'SFC64', 'Philox'] | None = None) -> None",
+        "choice": "(seq)",
+        "choices": "(seq: collections.abc.Sequence[T], n: int, *, weights: collections.abc.Sequence[float] | None = None) -> list[T]",
+        "floats": "(n: int, *, low: float = 0.0, high: float = 1.0) -> numpy.ndarray | list[float]",
+        "ints": "(n: int, low: int, high: int, *, endpoint: bool = False) -> numpy.ndarray | list[int]",
+        "randint": "(a, b)",
+        "random": "()",
+        "sample": "(population, k, *, counts=None)",
+        "seed": "(n: int | None = None) -> None",
+        "shuffle": "(x)",
+        "uniform": "(a, b)",
+        "Generator.seed": "(self, n: int | None = None) -> None",
+        "Generator.random": "(self) -> float",
+        "Generator.randint": "(self, a: int, b: int) -> int",
+        "Generator.uniform": "(self, a: float, b: float) -> float",
+        "Generator.choice": "(self, seq: collections.abc.Sequence[T]) -> T",
+        "Generator.shuffle": "(self, x: collections.abc.MutableSequence[T]) -> None",
+        "Generator.sample": "(self, population: collections.abc.Sequence[T], k: int, *, counts: collections.abc.Sequence[int] | None = None) -> list[T]",
+        "Generator.floats": "(self, n: int, *, low: float = 0.0, high: float = 1.0) -> numpy.ndarray | list[float]",
+        "Generator.ints": "(self, n: int, low: int, high: int, *, endpoint: bool = False) -> numpy.ndarray | list[int]",
+        "Generator.choices": "(self, seq: collections.abc.Sequence[T], n: int, *, weights: collections.abc.Sequence[float] | None = None) -> list[T]"
+      },
+      "optional_public_additions": {},
+      "helpers": {},
+      "have_numpy": true,
+      "native": {}
+    }
+  },
+  "scope": "8,000 independently keyed counts in [1,4], fresh batch Generator included; full consumer and input key hashing excluded, both original per-key construction and all result/input conversion costs included",
+  "configured_size_receipt": {
+    "version": 1,
+    "repository": "The-Billy-Company/billy",
+    "commit": "2f66095c1fd0d84922c0b0fbcac6b4e61aae06de",
+    "consumers": {
+      "engine": {
+        "source_path": "services/anvil/anvil/datagen/engine.py",
+        "source_file_sha256": "3b867c3e5ac09c2975558478a824c5834935eeb150cde137f886106523124327",
+        "source": "def _trigger_text(ex: TrainExample) -> str:\n    \"\"\"The triggering (last) user turn \u2014 the stable per-example dedup/seed key.\"\"\"\n    return next(\n        (str(m.get(\"content\", \"\")) for m in reversed(ex.messages) if m.get(\"role\") == \"user\"), \"\"\n    )\n\ndef _distractor_specs(\n    target: ToolSchema, ex: TrainExample, spec_by_name: dict[str, ToolSchema]\n) -> list[FunctionSpec]:\n    \"\"\"Function specs for sibling tools shown beside ``target`` (target excluded).\n\n    Prefers same-capability siblings (the hard distractors \u2014 a model that can\n    pick ``make_payment`` over ``list_charges`` has learned selection, not just\n    arg-shaping), then any other live tool. The count + ordering are derived\n    deterministically from the example's trigger turn so a rebuild is byte-stable.\n    \"\"\"\n    siblings = sorted(\n        (t for n, t in spec_by_name.items() if n != target.name),\n        key=lambda t: (t.capability_key != target.capability_key, t.name),\n    )\n    if not siblings:\n        return []\n    seed = int.from_bytes(\n        hashlib.blake2b(f\"{target.name}|{_trigger_text(ex)}\".encode(), digest_size=8).digest(),\n        \"big\",\n    )\n    k = min(len(siblings), rand.Generator(seed, backend=\"stdlib\").randint(1, _MAX_DISTRACTORS))\n    return [tool_spec(t) for t in siblings[:k]]\n",
+        "symbols": {
+          "_trigger_text": {
+            "line": 282,
+            "ast_sha256": "dc6cf5fd4f63d06e8db44d1b0766a536e47c2cd97e5b2a300785299f96cbca2d"
+          },
+          "_distractor_specs": {
+            "line": 289,
+            "ast_sha256": "03ac75da138b90be47af823e9ff99e9552dc6d149ffe999e6fc99762377f3b89"
+          }
+        }
+      },
+      "emit": {
+        "source_path": "services/anvil/anvil/datagen/emit.py",
+        "source_file_sha256": "376fb37b09186e0fedfe5fc8609f24a4b65b624fa003e295b21fa1f3a8472af5",
+        "source": "def _misleading_distractors(\n    ex: TrainExample, spec_by_name: dict[str, ToolSchema]\n) -> list[FunctionSpec]:\n    \"\"\"Sibling specs offered beside the discovery verbs \u2014 the real target absent.\n\n    The adversarial half of the discovery weave: prefer same-capability siblings of\n    the *hidden* tool (the tempting near-misses) so the model can't shortcut to a\n    direct call and must reach for ``find_tool``/``forge_tool``. The discovery verbs\n    and the hidden target are excluded; count + ordering are derived deterministically\n    from the trigger turn so a rebuild is byte-stable.\n    \"\"\"\n    hidden = spec_by_name.get(ex.hidden_tool)\n    cap = hidden.capability_key if hidden else ex.capability_key\n    exclude = {ex.hidden_tool, *DISCOVERY_VERBS}\n    sibs = sorted(\n        (t for n, t in spec_by_name.items() if n not in exclude),\n        key=lambda t: (t.capability_key != cap, t.name),\n    )\n    if not sibs:\n        return []\n    seed = int.from_bytes(\n        hashlib.blake2b(f\"{ex.hidden_tool}|{_trigger_text(ex)}\".encode(), digest_size=8).digest(),\n        \"big\",\n    )\n    k = min(len(sibs), rand.Generator(seed, backend=\"stdlib\").randint(1, _MAX_DISTRACTORS))\n    return [tool_spec(t) for t in sibs[:k]]\n",
+        "symbols": {
+          "_misleading_distractors": {
+            "line": 106,
+            "ast_sha256": "82a4a904f0d49828d9158403f9943793bdb200249a2d85ab732c7874f95188b8"
+          }
+        }
+      },
+      "spec": {
+        "source_path": "services/anvil/anvil/datagen/synth.py",
+        "source_file_sha256": "c19a5bb59d39f5f9bfc950a5653ffb05e7f047512d13c66b9248e1063eb5a762",
+        "source": "def tool_spec(tool: ToolSchema) -> FunctionSpec:\n    \"\"\"OpenAI function spec for a tool \u2014 the ``tools`` entry beside ``messages``.\"\"\"\n    return {\n        \"type\": \"function\",\n        \"function\": {\n            \"name\": tool.name,\n            \"description\": tool.description,\n            \"parameters\": tool.args_schema or {\"type\": \"object\", \"properties\": {}},\n        },\n    }\n",
+        "symbols": {
+          "tool_spec": {
+            "line": 77,
+            "ast_sha256": "444cc5538b0b2f14bbc7df4e5f2aa012ca18c8479fafdbd7a9b6ba9c22c34fe6"
+          }
+        }
+      }
+    },
+    "size_provenance": {
+      "24": "small public catalog scenario; diagnostic batch size, not an observed production count",
+      "371": "live tool count documented in anvil_dataset.research.toml recipe-fanout rationale",
+      "8000": "corpus.total_examples configured budget in anvil_dataset.research.toml"
+    },
+    "input_provenance": "Synthetic tool names, trigger messages and schemas following exact captured BLAKE2b64 seed expressions; no customer payloads.",
+    "config_receipt": {
+      "source_path": "services/anvil/anvil/datagen/anvil_dataset.research.toml",
+      "sha256": "28e0e638972f0251d42f9ac22de58876160955e99884b9f1ae07dc52bdbf28ce",
+      "total_examples": 8000,
+      "documented_live_tools": 371
+    }
+  },
+  "driver_sha256": "4fb41ea93fade823b4572c03c2fb68f374c7490a32236bb21294b9bcb77cae3b",
+  "phase_harness_sha256": "3a5351963cce8c866fde4ab805134e7af0358f59655c694694199cf8e1adbe0b",
+  "timing_harness_sha256": "55259e9ae20300a9a84e5642bf679771da4d240face824d2679f2c7a5ddd9903",
+  "required_speedup": 100,
+  "all_pairs_on_both_clocks_pass": true,
+  "pair_ratios": {
+    "wall_ns": [
+      264.17356377638055,
+      306.6915981152161,
+      222.6493238580164,
+      255.6856945321958,
+      375.8425258482686,
+      258.9834838649725,
+      306.9315487709058,
+      312.1960200133422,
+      297.9758586690542
+    ],
+    "thread_cpu_ns": [
+      263.6300072665961,
+      306.011961173069,
+      224.9305961793177,
+      257.1937911940077,
+      374.40521494180354,
+      257.9594418904774,
+      306.5083515695067,
+      311.79940055519944,
+      297.4791813647349
+    ]
+  },
+  "timings": {
+    "samples": {
+      "original": [
+        {
+          "operations": 16,
+          "wall_ns": 677506126,
+          "thread_cpu_ns": 677342205
+        },
+        {
+          "operations": 16,
+          "wall_ns": 741286167,
+          "thread_cpu_ns": 740854958
+        },
+        {
+          "operations": 16,
+          "wall_ns": 804283500,
+          "thread_cpu_ns": 803930292
+        },
+        {
+          "operations": 16,
+          "wall_ns": 699705125,
+          "thread_cpu_ns": 694937881
+        },
+        {
+          "operations": 16,
+          "wall_ns": 775472501,
+          "thread_cpu_ns": 773817703
+        },
+        {
+          "operations": 16,
+          "wall_ns": 702319958,
+          "thread_cpu_ns": 700402706
+        },
+        {
+          "operations": 16,
+          "wall_ns": 683613292,
+          "thread_cpu_ns": 683513624
+        },
+        {
+          "operations": 16,
+          "wall_ns": 701972751,
+          "thread_cpu_ns": 701886330
+        },
+        {
+          "operations": 16,
+          "wall_ns": 723199626,
+          "thread_cpu_ns": 723134705
+        }
+      ],
+      "keyed": [
+        {
+          "operations": 16,
+          "wall_ns": 2564625,
+          "thread_cpu_ns": 2569291
+        },
+        {
+          "operations": 16,
+          "wall_ns": 2417041,
+          "thread_cpu_ns": 2421000
+        },
+        {
+          "operations": 16,
+          "wall_ns": 3612333,
+          "thread_cpu_ns": 3574126
+        },
+        {
+          "operations": 16,
+          "wall_ns": 2736583,
+          "thread_cpu_ns": 2702001
+        },
+        {
+          "operations": 16,
+          "wall_ns": 2063291,
+          "thread_cpu_ns": 2066792
+        },
+        {
+          "operations": 16,
+          "wall_ns": 2711833,
+          "thread_cpu_ns": 2715166
+        },
+        {
+          "operations": 16,
+          "wall_ns": 2227250,
+          "thread_cpu_ns": 2230000
+        },
+        {
+          "operations": 16,
+          "wall_ns": 2248500,
+          "thread_cpu_ns": 2251083
+        },
+        {
+          "operations": 16,
+          "wall_ns": 2427041,
+          "thread_cpu_ns": 2430875
+        }
+      ]
+    },
+    "orders": [
+      [
+        "original",
+        "keyed"
+      ],
+      [
+        "keyed",
+        "original"
+      ],
+      [
+        "original",
+        "keyed"
+      ],
+      [
+        "keyed",
+        "original"
+      ],
+      [
+        "original",
+        "keyed"
+      ],
+      [
+        "keyed",
+        "original"
+      ],
+      [
+        "original",
+        "keyed"
+      ],
+      [
+        "keyed",
+        "original"
+      ],
+      [
+        "original",
+        "keyed"
+      ]
+    ],
+    "calibration": {
+      "original": {
+        "operations": 1,
+        "wall_ns": 42620959,
+        "thread_cpu_ns": 42627000
+      },
+      "keyed": {
+        "operations": 1,
+        "wall_ns": 195000,
+        "thread_cpu_ns": 197166
+      }
+    },
+    "median_per_call_ns": {
+      "original": {
+        "wall_ns": 43894997.375,
+        "thread_cpu_ns": 43867895.625
+      },
+      "keyed": {
+        "wall_ns": 151690.0625,
+        "thread_cpu_ns": 151929.6875
+      }
+    },
+    "median_matched_original_over_keyed": {
+      "wall_ns": 297.9758586690542,
+      "thread_cpu_ns": 297.4791813647349
+    }
+  }
+}

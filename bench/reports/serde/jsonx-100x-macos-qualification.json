@@ -1,0 +1,67 @@
+{
+  "date": "2026-10-25",
+  "baseline_commit": "94589856d2e604310b55020e40c51010f2af4755",
+  "prework_scope": "Frozen JSON source/native closure before this turn; fresh native compilation in the same interpreter.",
+  "native_preflight": {
+    "backends": {
+      "msgspec": "0.22.0",
+      "orjson": "3.12.0"
+    },
+    "checks": [
+      "bindings",
+      "encoding",
+      "repeated_floats",
+      "ascii",
+      "decoding",
+      "strict_identity",
+      "ndjson"
+    ],
+    "errors": [],
+    "executable": "/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/unstd-json-100x-pujh6dku/consumer/bin/python",
+    "jsonx": "/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/unstd-json-100x-pujh6dku/consumer/lib/python3.14/site-packages/unstd/serde/jsonx.py",
+    "native": "/private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/unstd-json-100x-pujh6dku/consumer/lib/python3.14/site-packages/unstd/serde/_json_native.cpython-314-darwin.so",
+    "native_sha256": "6e6e03a906faeeee692de531e2ff0432b9e3d98062ac6e1a7955cdf52d79ae05",
+    "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+    "python": "3.14.9",
+    "schema": 1
+  },
+  "source_sha256": {
+    "src/unstd/serde/__init__.py": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d",
+    "src/unstd/serde/_internal/__init__.py": "6aed7cdb4acd19aa8dfa7668c884fd937f2add4574c73531bd6cdde569f53f05",
+    "src/unstd/serde/_internal/json_common.py": "cb4ee6fce1510e202b4126e67b53ac73b9e7b73a9d67d010b451b7fa45ea0b8f",
+    "src/unstd/serde/_internal/json_encode.py": "a01fe8460bd4a70573fed3ebff35c1a1f318bf477bb17c41b165a0a5aacc46a4",
+    "src/unstd/serde/_json_common.py": "fb088bf068ac0dd5f2dd1675cb60cb682da6aec80320b85d98aa39c16a7f6781",
+    "src/unstd/serde/_json_encode.py": "d010007e07fbe5e46a1bcfb6984b2730f30564e4a2dc15306baedda9f2ab8ec1",
+    "src/unstd/serde/_json_native.pyi": "275cb98230bf6a337bbc224ebfcd13025859b7ccef2800fb6d4ef7ac3796d47e",
+    "src/unstd/serde/b64.py": "c9fa198b3a6a4dffab239697c2d35c717ab2adea1977e7c1bd2226c30c4dbe32",
+    "src/unstd/serde/jsonx.py": "a15639db6e2b4495c9f50aec12c6830c931e48563a506ad56d51598c393d7ca4",
+    "src/unstd/serde/ndjson.py": "98c1f5bb1b78d2548390683b9b4bc062c4dc900b1fc27837e7941c7ee4553550",
+    "src/unstd/serde/structs.py": "ebe5eb0c8cba8e8bc01137c9e4f768d86cb900d15c67600cbaf38f0accfa6c65",
+    "native/serde/src/adapter.c": "4255c7f31b58ce2b370b3269a7568ec9c7eb73f52cf431c88da8c449d73578ab",
+    "native/serde/src/decode.h": "15c77c222b6036aa86b26b78419f2d0f570bd8195f08606716a61dc5785b76d1",
+    "native/serde/src/encode.h": "d9cd56b16da3dfd72b36fa8ae00f7b82e4be7cc37629ef129dc0b3a9c9ac6c1e",
+    "native/serde/src/escape.h": "937fe2288c702b38b752e4c7b4a09a91239bba86d2907b0f89c24f99a13d3e92",
+    "native/serde/src/identity.h": "e9dd9fb8b4f8188de9f3180699749fab34d16307177b5f0814a0cf1681d592bf",
+    "native/serde/src/lines.h": "b2f9b71876976199b3a02b53572672f581438e237353a92205211fbd27ea74d0",
+    "native/serde/src/repeat.h": "15a7ba8b7c3d07646a4d4ad0d5770f514ca21142d70162e9c1f18959b180d663"
+  },
+  "wheel_sha256": "a69c1fdc0ccd1aad0f21f8b13ee84cd23fd69dc7294112729e2d1d4363a37c0d",
+  "native_sha256": "6e6e03a906faeeee692de531e2ff0432b9e3d98062ac6e1a7955cdf52d79ae05",
+  "tests": {
+    "tests": 3216,
+    "errors": 0,
+    "failures": 0,
+    "skipped": 24
+  },
+  "tests_passed": 3192,
+  "performance_protocol": "Frozen 58-case isolated-worker harness shared with Foundry; 7 rounds, 3 alternating repetitions.",
+  "benchmarks": {
+    "jsonx-100x-macos-prework-release-py314.json": "b3a592d0c340e59d044913bfeb1c126e9210748f897ee25ef75c774a35170ec0",
+    "jsonx-100x-macos-original-release-py314.json": "519822020de62b63b6b38c4d9b7bd4a814ccb4b412af5f6482a3bb73061dc0cf"
+  },
+  "build_command": "CIBUILDWHEEL=1 uv build --wheel --no-build-isolation --python <development venv interpreter> <frozen candidate>",
+  "allocator": "Performance:default/unset;tests:PYTHONMALLOC=debug",
+  "temporary_directory_removed": true,
+  "build_logs_archive": "jsonx-100x-macos-build-logs.tar.gz",
+  "build_logs_archive_sha256": "3c7e666618b3afc0262d477dadbbd54cafc291320331f55c8f227bb434af1e63"
+}

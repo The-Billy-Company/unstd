@@ -8,11 +8,11 @@ path = "hatch_build.py"
 [tool.cibuildwheel]
 build = "cp3{12,13,14}-*"
 archs = ["auto64"]
-test-extras = ["serde", "crypto", "compress", "containers"]
+test-extras = ["serde", "crypto", "compress", "containers", "rand"]
 test-requires = ["pytest>=8.2", "hypothesis>=6.100", "packaging>=24.2"]
 test-command = [
   "python {project}/tests/tooling/runtime/tls.py --json",
-  "python -c \"import unstd.serde._json_native, unstd.clone._clone_native, unstd.crypto._stream_native, unstd.text._text_native, unstd.compress._gzip_native, unstd.containers._sorted_native, unstd.proc._proc_native\"",
+  "python -c \"import unstd.serde._json_native, unstd.clone._clone_native, unstd.crypto._stream_native, unstd.text._text_native, unstd.compress._gzip_native, unstd.containers._sorted_native, unstd.proc._proc_native, unstd.rand._rand_native, unstd.pack._pack_native\"",
   "python -c \"import importlib, sys; sys.platform != 'linux' or importlib.import_module('unstd.fs._fs_native')\"",
   "python {project}/tests/tooling/runtime/json_acceleration.py --json",
   "python {project}/tests/tooling/release/wheel_tests.py --workers 4",
@@ -33,12 +33,13 @@ version = "3.1.6"
 description = "stdlib-faithful accelerated replacements behind optional extras"
 readme = "README.md"
 requires-python = ">=3.12"
-license = "Apache-2.0 AND MIT AND Zlib"
+license = "Apache-2.0 AND MIT AND Zlib AND BSD-3-Clause"
 license-files = [
   "LICENSE",
   "NOTICE",
   "native/compress/vendor/libdeflate/COPYING",
   "native/compress/vendor/zlib/LICENSE",
+  "native/compress/vendor/isa-l/LICENSE",
 ]
 authors = [{ name = "The Billy Company" }]
 keywords = [

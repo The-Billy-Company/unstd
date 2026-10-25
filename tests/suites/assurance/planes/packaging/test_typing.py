@@ -21,7 +21,8 @@ if TYPE_CHECKING:
     from tests.support.packaging.artifacts import Artifacts
 
 
-_POSITIVE = """from datetime import datetime
+_POSITIVE = """from collections.abc import Sequence
+from datetime import datetime
 from pathlib import Path
 import sys
 from typing import Literal, assert_type
@@ -29,6 +30,7 @@ from unstd import clone, fs, proc, rand, rex
 from unstd.compress import bz2, lzma, tarfile, zipfile, zlib, zlibx
 from unstd.ids import uid
 from unstd.pack import binpack
+from unstd.pack.ragged import RaggedDecoder
 from unstd.serde import b64, jsonx
 from unstd.time import timeutil
 
@@ -39,8 +41,18 @@ assert_type(jsonx.dumpb({'value': 1}), bytes)
 assert_type(jsonx.canonical_strict({'value': 1}), bytes)
 assert_type(binpack.pack_array_portable('i4', [1, 2]), bytes)
 assert_type(binpack.unpack_array_portable('i4', b''), list[float])
+assert_type(binpack.unpack_array_portable('i4', b'prefix', count=0, offset=6), list[float])
+decoder = RaggedDecoder('<f4', columns=2, index_dtype='<i4', finite=True, allow_empty=False)
+assert_type(decoder.dtype, str)
+assert_type(decoder.columns, int)
+assert_type(decoder.index_dtype, str)
+assert_type(decoder.finite, bool)
+assert_type(decoder.allow_empty, bool)
 assert_type(rand.Generator(173).random(), float)
 assert_type(rand.Generator(173).backend, Literal['stdlib', 'numpy'])
+seeds: Sequence[int] = [173, 179]
+rand.ints(2, 0, 10, seeds=seeds)
+rand.Generator(173).ints(2, 0, 10, endpoint=True, seeds=seeds)
 assert_type(rex.compile_linear('[a-z]+').requires_ascii, bool)
 assert_type(uid.new(), str)
 assert_type(uid.new_hex(), str)
@@ -65,6 +77,7 @@ _NEGATIVE = """from unstd.ids import uid
 from unstd.serde import b64, jsonx
 from unstd import clone, fs, rand
 from unstd.compress import bz2, zlib, zlibx
+from unstd.pack.ragged import RaggedDecoder
 
 wrong_bytes: bytes = b64.encode(b'wire')
 wrong_text: str = b64.decode('d2lyZQ==')
@@ -77,6 +90,9 @@ rand.Generator(173, backend='auto')
 wrong_bz2: str = bz2.compress(b'wire')
 wrong_zlib: int = zlib.compressobj().compress(b'wire')
 wrong_zlibx: str = zlibx.decompressobj().unused_data
+RaggedDecoder('<f4', columns='two')
+RaggedDecoder('<f4', columns=2).unpack(b'', index_count='two')
+wrong_ragged: str = RaggedDecoder('<f4', columns=2).unpack(b'', index_count=1)
 """
 
 
@@ -114,10 +130,12 @@ def test_downstream_strict_mypy_consumes_installed_types_with_negative_controls(
     assert result.stdout == result.stderr == ""
     rejected = checked_command([*common, negative], cwd=consumer.root, expected_code=1)
     errors = [line for line in rejected.stdout.splitlines() if ": error:" in line]
-    assert len(errors) == 10, rejected.stdout
+    assert len(errors) == 13, rejected.stdout
     assert all("[assignment]" in line for line in errors[:4]), rejected.stdout
     assert all("[arg-type]" in line for line in errors[4:7]), rejected.stdout
-    assert all("[assignment]" in line for line in errors[7:]), rejected.stdout
+    assert all("[assignment]" in line for line in errors[7:10]), rejected.stdout
+    assert all("[arg-type]" in line for line in errors[10:12]), rejected.stdout
+    assert "[assignment]" in errors[12], rejected.stdout
     assert not rejected.stderr
 
 

@@ -2,6 +2,10 @@
 
 Contracts for `unstd.pack.binpack`: stdlib wire formats and compatible array packing on NumPy and stdlib implementations.
 
+`unstd.pack.ragged` adds complete boundary-table/matrix validation with an
+optional native kernel. Contracts compare native and stdlib admission,
+immutable storage, byte order, late nonfinite values, and safe integer bounds.
+
 - [unit/](unit/README.md): struct parity, array formats, buffer handling, and backend agreement.
 - [properties/](properties/README.md): generated struct formats, offsets, and truncated inputs.
 - [regression/](regression/README.md): dtype spelling and buffer byte-size defects.

@@ -163,17 +163,19 @@ def main() -> None:
     )
     proof = f"""import sys
 from unstd import proc
-from unstd.proc._internal import backend
+from unstd.proc import backend
 assert backend._native.__file__ == {str(extension)!r}, backend._native.__file__
-routes = []
-spawn = backend._native.spawn
-def observe(*args):
-    outcome = spawn(*args)
-    routes.append(outcome is not NotImplemented)
-    return outcome
-backend._native.spawn = observe
+routes = {{'spawn': [], 'communicate': []}}
+for name in routes:
+    operation = getattr(backend._native, name)
+    def observe(*args, _name=name, _operation=operation):
+        outcome = _operation(*args)
+        routes[_name].append(outcome is not NotImplemented)
+        return outcome
+    setattr(backend._native, name, observe)
 assert proc.capture([sys.executable, '-c', "print('native audit')"]) == 'native audit'
-assert routes == [True], routes
+assert routes['spawn'] == ([True] if sys.platform == 'darwin' else []), routes
+assert routes['communicate'] == [True], routes
 """
     verified = _run([str(wrapper), "-c", proof], cwd=output)
     xml = args.junitxml.resolve() if args.junitxml else output / "tests.xml"
@@ -185,6 +187,9 @@ assert routes == [True], routes
         str(_ROOT / args.tests),
         "-q",
         "--tb=short",
+        f"--basetemp={output / 'pytest'}",
+        "-o",
+        f"cache_dir={output / 'pytest-cache'}",
         f"--junitxml={xml}",
     ]
     # The wrapper restores loader/source variables in child environments. The

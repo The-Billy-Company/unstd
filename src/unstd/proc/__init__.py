@@ -9,9 +9,10 @@ you needed to debug the failure. This module is not a drop-in of every
 holes and nothing more.
 
 Backend: stdlib with optional bundled C acceleration, no third-party dependency.
-On Linux and macOS, native spawning preserves descriptor isolation and a native
-pipe loop accelerates captured output without stdin. Other shapes retain stdlib
-execution. Bounded waits use kernel exit notifications where available. The
+macOS uses native spawning with descriptor isolation; Linux retains its optimized
+stdlib launch path. Both use a native pipe loop for captured output without
+stdin. Other shapes retain stdlib execution. Bounded waits use kernel exit
+notifications where available. The
 package works in a base ``unstd`` install with zero dependency closure.
 
 The guarantees, versus a raw ``subprocess.run``:
@@ -51,8 +52,8 @@ import subprocess  # nosec B404 # the public API is a subprocess wrapper
 import time
 from typing import TYPE_CHECKING, TypedDict, Unpack
 
-from unstd.proc._internal.backend import Popen as _Popen
-from unstd.proc._internal.results import CompletedProcess, ProcessError
+from unstd.proc.backend import Popen as _Popen
+from unstd.proc.results import CompletedProcess, ProcessError
 
 
 if TYPE_CHECKING:

@@ -1,3 +1,12 @@
+---
+doc_radar:
+  sentinels:
+    - file: wavx.py
+      contains: ['from unstd.audio.pcm import']
+    - file: pcm.py
+      contains: ['def _check_pcm_frames(']
+---
+
 # `unstd.audio`
 
 Part of [`unstd`](../README.md). PCM buffer conversion and WAV readers/writers
@@ -94,7 +103,7 @@ caller's responsibility.
 
 `decode_pcm(raw, *, channels=1, width=2, dtype="float32")` decodes interleaved
 little-endian PCM directly. The sample rate stays with the caller. Defaults
-match Billy's mono PCM16 voice taps; widths 1/2/4 represent unsigned PCM8 and
+decode mono PCM16 voice frames; widths 1/2/4 represent unsigned PCM8 and
 signed PCM16/32. Output dtypes and channel shapes match `read`. PCM16 is
 available as Python lists without dependencies; NumPy adds PCM8/32 and arrays,
 without requiring soundfile. Arrays own writable storage and never alias the
@@ -106,11 +115,11 @@ with one output array instead of full intermediate arrays. PCM32-to-int16 conver
 float64 precision before rounding. This conversion does not resample, downmix,
 retain a rolling buffer, or apply voice activity policy.
 
-Billy currently uses `wrap_pcm` for sound observations, batch STT uploads and
-narration. Its live voice consumers separately normalize raw PCM16 for feature
-extraction, rolling retention, diarized STT and turn inference. The
-[consumer audit and measurements](../../../bench/reports/audio/billy-audio.md)
-record exact source locations, adoption examples, timings and allocation bounds.
+Use `wrap_pcm` for sound observations, batch STT uploads and narration.
+Live voice pipelines can separately normalize raw PCM16 for feature extraction,
+rolling retention, diarized STT and turn inference. The
+[audio reports](../../../bench/reports/audio/README.md) retain consumer audits,
+adoption examples, timings and allocation bounds.
 
 ## Prior art
 
@@ -120,6 +129,20 @@ record exact source locations, adoption examples, timings and allocation bounds.
 - The stdlib [`wave`](https://docs.python.org/3/library/wave.html) module — the
   raw-frame surface `unstd.audio` replaces, and the fallback codec.
 
-## Implementation layout
+## Source ownership
 
-Pure sample conversion and frame checks live in [`_internal/`](_internal/README.md); `wavx` retains backend selection, I/O and its public definitions.
+This package is one cohesive code leaf. [`wavx.py`](wavx.py) owns WAV I/O,
+backend selection, public types and streaming writers. [`pcm.py`](pcm.py) owns
+contiguous-buffer normalization, scalar/frame validation, integer clipping,
+channel checks and stdlib PCM16 conversion without NumPy or soundfile.
+`wavx` imports these conversion routines directly; callers continue to use
+`from unstd.audio import wavx`.
+
+| File | Responsibility |
+| --- | --- |
+| [`__init__.py`](__init__.py) | Package entry point and usage contract |
+| [`wavx.py`](wavx.py) | Public WAV and raw PCM operations |
+| [`pcm.py`](pcm.py) | Sample conversion and frame validation |
+
+Run the contracts from the repository root with
+`uv run --no-sync python -m pytest tests/suites/product/audio -q`.

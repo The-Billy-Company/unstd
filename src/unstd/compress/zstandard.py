@@ -2,7 +2,7 @@
 
 import sys
 
-from unstd.compress._ports import register_package as _register_package
+from unstd.compress.engines.imports import register_package as _register_package
 
 
 try:

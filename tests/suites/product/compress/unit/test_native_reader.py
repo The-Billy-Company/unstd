@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 @pytest.fixture
 def reader_module():
     pytest.importorskip("zlib_ng.zlib_ng")
-    from unstd.compress import _reader
+    from unstd.compress.engines import reader as _reader
 
     return _reader
 
@@ -100,7 +100,12 @@ def test_reader_executes_native_crc_without_modifying_stdlib(reader_module) -> N
     assert zlib.crc32 not in calls
     assert gzip._GzipReader.read.__globals__["zlib"] is zlib
     if reader_module._bundled_inflater:
-        assert reader_module._Reader.read.__code__ is gzip._GzipReader.read.__code__
+        expected = (
+            reader_module._read_buffered
+            if reader_module._modern and reader_module._isal_streaming
+            else gzip._GzipReader.read
+        )
+        assert reader_module._Reader.read.__code__ is expected.__code__
 
 
 @pytest.mark.parametrize("platform", ["linux", "darwin", "win32"])
@@ -110,7 +115,15 @@ def test_platform_inflater_policy_retains_native_crc_and_error_family(
     monkeypatch.setattr(sys, "platform", platform)
     loaded = runpy.run_path(reader_module.__file__)
     bundled = loaded["_accelerated"]
-    assert loaded["_bundled_inflater"] == (bundled is not None and platform != "linux")
+    expected_native = bundled is not None and (
+        platform != "linux"
+        or (
+            loaded["_modern"]
+            and getattr(bundled, "ISAL_STREAMING", False)
+            and loaded["_adaptive_ng_version"] is not None
+        )
+    )
+    assert loaded["_bundled_inflater"] == expected_native
     if bundled is not None:
         assert loaded["_crc32"] is bundled.crc32
     if not loaded["_bundled_inflater"]:
@@ -144,7 +157,8 @@ def test_missing_bundled_extension_keeps_the_portable_native_reader() -> None:
                 return None
 
         sys.meta_path.insert(0, BlockBundled())
-        from unstd.compress import _reader, gzipx
+        from unstd.compress import gzipx
+        from unstd.compress.engines import reader as _reader
 
         assert _reader._accelerated is None
         payload = b"portable native gzip reader\\n" * 100

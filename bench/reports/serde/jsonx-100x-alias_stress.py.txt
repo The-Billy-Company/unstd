@@ -1,0 +1,74 @@
+import gc, hashlib, json, math, os, random, struct, sys
+from pathlib import Path
+from unstd.serde import jsonx, _json_native as native
+root=Path(sys.argv[1]).resolve()
+assert Path(native.__file__).resolve().is_relative_to(root)
+rng=random.Random(20261025)
+counts=dict(matrices=0,accepted=0,declined=0,mutations=0,refcounts=0,cycles=0,budgets=0)
+texts=['ascii, : \\"','café 汉字 🙂\x7f',''.join(map(chr,range(32))),'é😀'*80]
+floats=[0.0,-0.0,1.5,1e-5,1e20,5e-324,sys.float_info.max]
+while len(floats)<128:
+ f=struct.unpack('!d',rng.getrandbits(64).to_bytes(8,'big'))[0]
+ if math.isfinite(f):floats.append(f)
+def verify(value,public=True):
+ for ascii in (False,True):
+  for spaced in (False,True):
+   opts=dict(ensure_ascii=ascii,separators=(', ',': ') if spaced else (',',':'))
+   expected=json.dumps(value,**opts);actual=native.encode_text(value,ascii,spaced)
+   counts['declined' if actual is NotImplemented else 'accepted']+=1
+   if actual is not NotImplemented:assert type(actual)is str and actual==expected
+   if public:assert jsonx.dumps(value,**opts)==expected
+ expected=json.dumps(value,ensure_ascii=False,separators=(',',':')).encode()
+ actual=native.dumpb(value,False,None,False)
+ counts['declined' if actual is NotImplemented else 'accepted']+=1
+ if actual is not NotImplemented:assert type(actual)is bytes and actual==expected
+ if public:assert jsonx.dumpb(value)==expected
+for i in range(180):
+ text=texts[i%4];width=32+16*((i//2)%2)
+ values=[text if j%8==0 else floats[(i+j)%128] if j%8==1 else i+j for j in range(width)]
+ branch={str(j):item for j,item in enumerate(values)} if i%2 else values
+ aliases=[branch]*rng.randrange(128,180)
+ value=[branch,branch,aliases,dict(nested=branch)] if i%3==0 else aliases
+ verify(value);counts['matrices']+=1
+ if type(branch)is dict:
+  branch['0']=texts[(i+1)%4];branch['1']=floats[(i+17)%128];branch[str(width-1)]=i+1
+ else:
+  branch[0]=texts[(i+1)%4];branch[1]=floats[(i+17)%128];branch[-1]=i+1
+ verify(value);counts['mutations']+=1
+ before=(sys.getrefcount(branch),sys.getrefcount(text))
+ for _ in range(12):native.encode_text(value,True,True);native.dumpb(value,False,None,False)
+ assert (sys.getrefcount(branch),sys.getrefcount(text))==before
+ counts['refcounts']+=1
+for size in (8,64,256,1024,4096):
+ leaf=[1.5,'café😀'*16,*range(46)]
+ verify([leaf]*128+[[dict(text='x'*200,score=1.5,id=i)for i in range(size)],leaf]);counts['matrices']+=1
+leaf=[1.5]*256
+for size,accepted in ((1020,True),(1021,False)):
+ value=[leaf]*size;expected=json.dumps(value,ensure_ascii=False,separators=(',',':'))
+ assert len(expected)<1024*1024
+ before=sys.getrefcount(leaf)
+ for _ in range(3):
+  result=native.encode_text(value,False,False)
+  assert (result is not NotImplemented)==accepted
+  if accepted:assert result==expected
+ assert sys.getrefcount(leaf)==before;counts['budgets']+=1
+leaf=[1.5,'text',*range(30)]
+for depth in range(20):
+ nested=leaf
+ for _ in range(depth):nested=[nested]
+ verify([leaf]*128+[nested],depth<18);counts['matrices']+=1
+for shape in range(3):
+ cycle=[1.5]*32
+ if shape==0:cycle.append(cycle)
+ elif shape==1:cycle.append(dict(cycle=cycle))
+ else:other=[cycle,1.5];cycle.extend([other,other])
+ value=[cycle]*128
+ assert native.encode_text(value,True,True)is NotImplemented
+ assert native.dumpb(value,False,None,False)is NotImplemented
+ for fn in (jsonx.dumps,jsonx.dumpb):
+  try:fn(value)
+  except ValueError as e:assert str(e)=='Circular reference detected'
+  else:raise AssertionError('cycle escaped')
+ counts['cycles']+=1
+gc.collect();assert counts['accepted']>1000
+print(json.dumps(dict(counts=counts,native=native.__file__,allocator=os.environ.get('PYTHONMALLOC'),native_sha256=hashlib.sha256(Path(native.__file__).read_bytes()).hexdigest())),flush=True)

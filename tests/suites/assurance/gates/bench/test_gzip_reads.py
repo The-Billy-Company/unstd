@@ -113,7 +113,7 @@ def test_backend_proof_restores_the_factory_outside_timing(monkeypatch, fails):
     class Stream:
         _selected_backend = "pending"
 
-    reader = ModuleType("unstd.compress._reader")
+    reader = ModuleType("unstd.compress.engines.reader")
     reader._factory = Stream
     monkeypatch.setitem(sys.modules, reader.__name__, reader)
 

@@ -1,0 +1,567 @@
+{
+  "recorded_utc": "2026-10-25T21:07:22.298012+00:00",
+  "host": "Billy Foundry",
+  "baseline_commit": "94589856d2e604310b55020e40c51010f2af4755",
+  "prework_scope": "JSON Python/native source closure frozen before this turn; built with the same current non-JSON source/build recipe as combined.",
+  "environment": {
+    "python": "3.14.9 (main, Oct 21 2026, 17:48:02) [Clang 23.1.3 ]",
+    "platform": "Linux-6.8.0-147-generic-x86_64-with-glibc2.41",
+    "machine": "x86_64",
+    "cpu_model": "AMD Ryzen 9 7950X3D 16-Core Processor",
+    "loadavg": [
+      23.53076171875,
+      25.74755859375,
+      25.224609375
+    ],
+    "compiler": "cc (Debian 14.2.0-19) 14.2.0",
+    "compiler_command": "cc -pthread",
+    "cflags": "-fno-strict-overflow -Wsign-compare -Wunreachable-code -DNDEBUG -g -O3 -Wall -O3 -fstack-protector -fstack-clash-protection -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -fPIC",
+    "dependencies": {
+      "orjson": "3.12.0",
+      "msgspec": "0.22.0",
+      "pybase64": "1.5.0",
+      "hatchling": "1.32.4",
+      "setuptools": "84.2.1",
+      "pytest": "9.1.1",
+      "hypothesis": "6.170.9"
+    },
+    "uv": "uv 0.13.5 (x86_64-unknown-linux-gnu)"
+  },
+  "benchmark_environment": {
+    "PYTHONMALLOC": null,
+    "allocator": "unset/default",
+    "PYTHONHASHSEED": "0 (exported by benchmark scripts)",
+    "allocator_probe_context": "same container image environment; scripts never override PYTHONMALLOC",
+    "safety_debug_allocator": "Separate isolated sanitizer/debug runs; no debug allocator in these timing commands"
+  },
+  "resources": {
+    "cpuset": [
+      30
+    ],
+    "cpu_quota_cores": 1,
+    "memory_bytes": 2147483648,
+    "shared_ci_host": true,
+    "cpu_stat": "usage_usec 694817046\nuser_usec 678464986\nsystem_usec 16352060\ncore_sched.force_idle_usec 0\nnr_periods 7644\nnr_throttled 331\nthrottled_usec 139543\nnr_bursts 0\nburst_usec 0\n"
+  },
+  "source_sha256": {
+    "original": {
+      "src/unstd/serde/__init__.py": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d",
+      "src/unstd/serde/_internal/__init__.py": "6aed7cdb4acd19aa8dfa7668c884fd937f2add4574c73531bd6cdde569f53f05",
+      "src/unstd/serde/_internal/json_common.py": "cb4ee6fce1510e202b4126e67b53ac73b9e7b73a9d67d010b451b7fa45ea0b8f",
+      "src/unstd/serde/_internal/json_encode.py": "8c27e3ed7bc6052315bc3d3ce17987ef078c751a4348396cc29fe103578f5553",
+      "src/unstd/serde/_json_common.py": "fb088bf068ac0dd5f2dd1675cb60cb682da6aec80320b85d98aa39c16a7f6781",
+      "src/unstd/serde/_json_encode.py": "d010007e07fbe5e46a1bcfb6984b2730f30564e4a2dc15306baedda9f2ab8ec1",
+      "src/unstd/serde/_json_native.pyi": "8e1a78292638c68ef25a9c149dd07de835af34bab57c9ffe8ab48a4a99a6c7a1",
+      "src/unstd/serde/b64.py": "c9fa198b3a6a4dffab239697c2d35c717ab2adea1977e7c1bd2226c30c4dbe32",
+      "src/unstd/serde/jsonx.py": "934c8005f7de765ac3600761dd7ddee7f9e08d81d2a55f6bcfb79b6ea6e4d663",
+      "src/unstd/serde/ndjson.py": "98c1f5bb1b78d2548390683b9b4bc062c4dc900b1fc27837e7941c7ee4553550",
+      "src/unstd/serde/structs.py": "ebe5eb0c8cba8e8bc01137c9e4f768d86cb900d15c67600cbaf38f0accfa6c65",
+      "native/serde/src/_json_decode_native.h": "acb1c5a574ba8bdc664c708222bebd06b571e8c102404ffa714a6c2ebfbf6eec",
+      "native/serde/src/_json_encode_native.h": "d9cd56b16da3dfd72b36fa8ae00f7b82e4be7cc37629ef129dc0b3a9c9ac6c1e",
+      "native/serde/src/_json_lines_native.h": "b2f9b71876976199b3a02b53572672f581438e237353a92205211fbd27ea74d0",
+      "native/serde/src/_json_native.c": "01cfd935049f43ec617b02f41d931902c353b37e11ffb973219fbfd5ad4852b3"
+    },
+    "prework": {
+      "src/unstd/serde/__init__.py": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d",
+      "src/unstd/serde/_internal/__init__.py": "6aed7cdb4acd19aa8dfa7668c884fd937f2add4574c73531bd6cdde569f53f05",
+      "src/unstd/serde/_internal/json_common.py": "cb4ee6fce1510e202b4126e67b53ac73b9e7b73a9d67d010b451b7fa45ea0b8f",
+      "src/unstd/serde/_internal/json_encode.py": "a01fe8460bd4a70573fed3ebff35c1a1f318bf477bb17c41b165a0a5aacc46a4",
+      "src/unstd/serde/_json_common.py": "fb088bf068ac0dd5f2dd1675cb60cb682da6aec80320b85d98aa39c16a7f6781",
+      "src/unstd/serde/_json_encode.py": "d010007e07fbe5e46a1bcfb6984b2730f30564e4a2dc15306baedda9f2ab8ec1",
+      "src/unstd/serde/_json_native.pyi": "275cb98230bf6a337bbc224ebfcd13025859b7ccef2800fb6d4ef7ac3796d47e",
+      "src/unstd/serde/b64.py": "c9fa198b3a6a4dffab239697c2d35c717ab2adea1977e7c1bd2226c30c4dbe32",
+      "src/unstd/serde/jsonx.py": "a15639db6e2b4495c9f50aec12c6830c931e48563a506ad56d51598c393d7ca4",
+      "src/unstd/serde/ndjson.py": "98c1f5bb1b78d2548390683b9b4bc062c4dc900b1fc27837e7941c7ee4553550",
+      "src/unstd/serde/structs.py": "ebe5eb0c8cba8e8bc01137c9e4f768d86cb900d15c67600cbaf38f0accfa6c65",
+      "native/serde/src/adapter.c": "4255c7f31b58ce2b370b3269a7568ec9c7eb73f52cf431c88da8c449d73578ab",
+      "native/serde/src/decode.h": "d46206a3c04858ac3739d2590b4c1a02d23a2801cbec3387fa4893d28e56624f",
+      "native/serde/src/encode.h": "d9cd56b16da3dfd72b36fa8ae00f7b82e4be7cc37629ef129dc0b3a9c9ac6c1e",
+      "native/serde/src/escape.h": "937fe2288c702b38b752e4c7b4a09a91239bba86d2907b0f89c24f99a13d3e92",
+      "native/serde/src/identity.h": "e9dd9fb8b4f8188de9f3180699749fab34d16307177b5f0814a0cf1681d592bf",
+      "native/serde/src/lines.h": "b2f9b71876976199b3a02b53572672f581438e237353a92205211fbd27ea74d0",
+      "native/serde/src/repeat.h": "6d8ef0ca60b10a5a2888bbb921e009957f59fa0dff5f8db16ce67fa65a1e917d"
+    },
+    "combined": {
+      "src/unstd/serde/__init__.py": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d",
+      "src/unstd/serde/_internal/__init__.py": "6aed7cdb4acd19aa8dfa7668c884fd937f2add4574c73531bd6cdde569f53f05",
+      "src/unstd/serde/_internal/json_common.py": "cb4ee6fce1510e202b4126e67b53ac73b9e7b73a9d67d010b451b7fa45ea0b8f",
+      "src/unstd/serde/_internal/json_encode.py": "a01fe8460bd4a70573fed3ebff35c1a1f318bf477bb17c41b165a0a5aacc46a4",
+      "src/unstd/serde/_json_common.py": "fb088bf068ac0dd5f2dd1675cb60cb682da6aec80320b85d98aa39c16a7f6781",
+      "src/unstd/serde/_json_encode.py": "d010007e07fbe5e46a1bcfb6984b2730f30564e4a2dc15306baedda9f2ab8ec1",
+      "src/unstd/serde/_json_native.pyi": "275cb98230bf6a337bbc224ebfcd13025859b7ccef2800fb6d4ef7ac3796d47e",
+      "src/unstd/serde/b64.py": "c9fa198b3a6a4dffab239697c2d35c717ab2adea1977e7c1bd2226c30c4dbe32",
+      "src/unstd/serde/jsonx.py": "a15639db6e2b4495c9f50aec12c6830c931e48563a506ad56d51598c393d7ca4",
+      "src/unstd/serde/ndjson.py": "98c1f5bb1b78d2548390683b9b4bc062c4dc900b1fc27837e7941c7ee4553550",
+      "src/unstd/serde/structs.py": "ebe5eb0c8cba8e8bc01137c9e4f768d86cb900d15c67600cbaf38f0accfa6c65",
+      "native/serde/src/adapter.c": "4255c7f31b58ce2b370b3269a7568ec9c7eb73f52cf431c88da8c449d73578ab",
+      "native/serde/src/decode.h": "15c77c222b6036aa86b26b78419f2d0f570bd8195f08606716a61dc5785b76d1",
+      "native/serde/src/encode.h": "d9cd56b16da3dfd72b36fa8ae00f7b82e4be7cc37629ef129dc0b3a9c9ac6c1e",
+      "native/serde/src/escape.h": "937fe2288c702b38b752e4c7b4a09a91239bba86d2907b0f89c24f99a13d3e92",
+      "native/serde/src/identity.h": "e9dd9fb8b4f8188de9f3180699749fab34d16307177b5f0814a0cf1681d592bf",
+      "native/serde/src/lines.h": "b2f9b71876976199b3a02b53572672f581438e237353a92205211fbd27ea74d0",
+      "native/serde/src/repeat.h": "a47c65565ff257f68b20494809df947c29cf2efbe0c1f0b01db847c32ecaee39"
+    }
+  },
+  "build_inputs_sha256": {
+    "hatch_build.py": "a0559309eb8b24b1008ee341a9ed71c2c5cdfe34d06a2d30f2c79604e02748f9",
+    "pyproject.toml": "01d70e875d27fddda5aeff9e7a21408dda044c8a2b7d910b0827e74c5f5ae82a",
+    "uv.lock": "4ea1c0cc2d2087513e14e6be2f10fff33c47d79c0ea1d3d6bb74034edcdc0b16",
+    "bench/profiles/jsonx_throughput.py": "28ac9dcc10aa4db361d8e2b2263e15a8f98205a56c0f04dde66b16d70686ba26",
+    "tests/tooling/runtime/json_acceleration.py": "24710fc8a2d71a780491c8dacb84a610ddf899b98d1cdc6b3d4e60b9c09a9641",
+    "tests/suites/product/serde/parity/test_jsonx_shared_encode.py": "cd2b85deef77d073b9f7ced8b4d6cee8df7ee8381439d92b0d99ae864e12ba7b"
+  },
+  "artifacts": {
+    "original": {
+      "filename": "unstd-3.1.6-cp314-cp314-linux_x86_64.whl",
+      "sha256": "d95aa7144f6b94fcbfaee2af4a8343dfe51f6346f7e77f7b87694ad90893f754",
+      "native_member": "unstd/serde/_json_native.cpython-314-x86_64-linux-gnu.so",
+      "native_sha256": "3b4ba2029e40207ddf1e28401178509c64a6d16745a919f93564fde28216f650",
+      "native_elf_sections_sha256": {
+        ".text": "e349292a81081e951cf4f32ccef5a081eace27a4f2b734a061267a75860fdbd7",
+        ".rodata": "1482b79961160adf16485bc33d8c2e6effe87486de80745caeeb955389da77b0"
+      },
+      "python_sha256": {
+        "unstd/serde/__init__.py": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d",
+        "unstd/serde/_json_common.py": "fb088bf068ac0dd5f2dd1675cb60cb682da6aec80320b85d98aa39c16a7f6781",
+        "unstd/serde/_json_encode.py": "d010007e07fbe5e46a1bcfb6984b2730f30564e4a2dc15306baedda9f2ab8ec1",
+        "unstd/serde/_json_native.pyi": "8e1a78292638c68ef25a9c149dd07de835af34bab57c9ffe8ab48a4a99a6c7a1",
+        "unstd/serde/b64.py": "c9fa198b3a6a4dffab239697c2d35c717ab2adea1977e7c1bd2226c30c4dbe32",
+        "unstd/serde/jsonx.py": "934c8005f7de765ac3600761dd7ddee7f9e08d81d2a55f6bcfb79b6ea6e4d663",
+        "unstd/serde/ndjson.py": "98c1f5bb1b78d2548390683b9b4bc062c4dc900b1fc27837e7941c7ee4553550",
+        "unstd/serde/structs.py": "ebe5eb0c8cba8e8bc01137c9e4f768d86cb900d15c67600cbaf38f0accfa6c65",
+        "unstd/serde/_internal/__init__.py": "6aed7cdb4acd19aa8dfa7668c884fd937f2add4574c73531bd6cdde569f53f05",
+        "unstd/serde/_internal/json_common.py": "cb4ee6fce1510e202b4126e67b53ac73b9e7b73a9d67d010b451b7fa45ea0b8f",
+        "unstd/serde/_internal/json_encode.py": "8c27e3ed7bc6052315bc3d3ce17987ef078c751a4348396cc29fe103578f5553"
+      },
+      "has_transfer_metadata": false
+    },
+    "prework": {
+      "filename": "unstd-3.1.6-cp314-cp314-linux_x86_64.whl",
+      "sha256": "69b61ddd617add10bc39e6e3ab3a1906f10a1b48fbf6950ee4058de975498e47",
+      "native_member": "unstd/serde/_json_native.cpython-314-x86_64-linux-gnu.so",
+      "native_sha256": "21d4e59086bd2ccfa8cb048751cde056d4f71f6880978cb62ba2fea9372b2fca",
+      "native_elf_sections_sha256": {
+        ".text": "95a3a6cfe4fddc4700da2fb8647d2c87839c57f6f1aeab983c61be11e342390f",
+        ".rodata": "e9601cfa87a5f2992e464c2ad8cdeac8247b410b4ba080a30daa7ef8588a0431"
+      },
+      "python_sha256": {
+        "unstd/serde/__init__.py": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d",
+        "unstd/serde/_json_common.py": "fb088bf068ac0dd5f2dd1675cb60cb682da6aec80320b85d98aa39c16a7f6781",
+        "unstd/serde/_json_encode.py": "d010007e07fbe5e46a1bcfb6984b2730f30564e4a2dc15306baedda9f2ab8ec1",
+        "unstd/serde/_json_native.pyi": "275cb98230bf6a337bbc224ebfcd13025859b7ccef2800fb6d4ef7ac3796d47e",
+        "unstd/serde/b64.py": "c9fa198b3a6a4dffab239697c2d35c717ab2adea1977e7c1bd2226c30c4dbe32",
+        "unstd/serde/jsonx.py": "a15639db6e2b4495c9f50aec12c6830c931e48563a506ad56d51598c393d7ca4",
+        "unstd/serde/ndjson.py": "98c1f5bb1b78d2548390683b9b4bc062c4dc900b1fc27837e7941c7ee4553550",
+        "unstd/serde/structs.py": "ebe5eb0c8cba8e8bc01137c9e4f768d86cb900d15c67600cbaf38f0accfa6c65",
+        "unstd/serde/_internal/__init__.py": "6aed7cdb4acd19aa8dfa7668c884fd937f2add4574c73531bd6cdde569f53f05",
+        "unstd/serde/_internal/json_common.py": "cb4ee6fce1510e202b4126e67b53ac73b9e7b73a9d67d010b451b7fa45ea0b8f",
+        "unstd/serde/_internal/json_encode.py": "a01fe8460bd4a70573fed3ebff35c1a1f318bf477bb17c41b165a0a5aacc46a4"
+      },
+      "has_transfer_metadata": false
+    },
+    "combined": {
+      "filename": "unstd-3.1.6-cp314-cp314-linux_x86_64.whl",
+      "sha256": "731eab07183659e8b127e40704af925105b1fb8fa65412fd0706351e2636546a",
+      "native_member": "unstd/serde/_json_native.cpython-314-x86_64-linux-gnu.so",
+      "native_sha256": "3a1ce199eef5451a2d341258f5a90b7ebc348af748d05cbcc8d37735fed83621",
+      "native_elf_sections_sha256": {
+        ".text": "7af7b4e47406ade1c7c0ff6d816b02b5650ce4453e461327efb106720bb96fd5",
+        ".rodata": "757b2dcbfd08b852b154463f866fe14ca71f6ccc12f1e59481850a90f699af97"
+      },
+      "python_sha256": {
+        "unstd/serde/__init__.py": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d",
+        "unstd/serde/_json_common.py": "fb088bf068ac0dd5f2dd1675cb60cb682da6aec80320b85d98aa39c16a7f6781",
+        "unstd/serde/_json_encode.py": "d010007e07fbe5e46a1bcfb6984b2730f30564e4a2dc15306baedda9f2ab8ec1",
+        "unstd/serde/_json_native.pyi": "275cb98230bf6a337bbc224ebfcd13025859b7ccef2800fb6d4ef7ac3796d47e",
+        "unstd/serde/b64.py": "c9fa198b3a6a4dffab239697c2d35c717ab2adea1977e7c1bd2226c30c4dbe32",
+        "unstd/serde/jsonx.py": "a15639db6e2b4495c9f50aec12c6830c931e48563a506ad56d51598c393d7ca4",
+        "unstd/serde/ndjson.py": "98c1f5bb1b78d2548390683b9b4bc062c4dc900b1fc27837e7941c7ee4553550",
+        "unstd/serde/structs.py": "ebe5eb0c8cba8e8bc01137c9e4f768d86cb900d15c67600cbaf38f0accfa6c65",
+        "unstd/serde/_internal/__init__.py": "6aed7cdb4acd19aa8dfa7668c884fd937f2add4574c73531bd6cdde569f53f05",
+        "unstd/serde/_internal/json_common.py": "cb4ee6fce1510e202b4126e67b53ac73b9e7b73a9d67d010b451b7fa45ea0b8f",
+        "unstd/serde/_internal/json_encode.py": "a01fe8460bd4a70573fed3ebff35c1a1f318bf477bb17c41b165a0a5aacc46a4"
+      },
+      "has_transfer_metadata": false
+    },
+    "rebuilt": {
+      "filename": "unstd-3.1.6-cp314-cp314-linux_x86_64.whl",
+      "sha256": "6cbb1a3af56d14e6d6f125d1b98d4be3e7fa23888f07097dfd82e22658d4648e",
+      "native_member": "unstd/serde/_json_native.cpython-314-x86_64-linux-gnu.so",
+      "native_sha256": "c1b79872198bc22e2cb7b1b9ebc7fb82429d76dd6bd42ceeb9aa7326edb02be2",
+      "native_elf_sections_sha256": {
+        ".text": "7af7b4e47406ade1c7c0ff6d816b02b5650ce4453e461327efb106720bb96fd5",
+        ".rodata": "757b2dcbfd08b852b154463f866fe14ca71f6ccc12f1e59481850a90f699af97"
+      },
+      "python_sha256": {
+        "unstd/serde/__init__.py": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d",
+        "unstd/serde/_json_common.py": "fb088bf068ac0dd5f2dd1675cb60cb682da6aec80320b85d98aa39c16a7f6781",
+        "unstd/serde/_json_encode.py": "d010007e07fbe5e46a1bcfb6984b2730f30564e4a2dc15306baedda9f2ab8ec1",
+        "unstd/serde/_json_native.pyi": "275cb98230bf6a337bbc224ebfcd13025859b7ccef2800fb6d4ef7ac3796d47e",
+        "unstd/serde/b64.py": "c9fa198b3a6a4dffab239697c2d35c717ab2adea1977e7c1bd2226c30c4dbe32",
+        "unstd/serde/jsonx.py": "a15639db6e2b4495c9f50aec12c6830c931e48563a506ad56d51598c393d7ca4",
+        "unstd/serde/ndjson.py": "98c1f5bb1b78d2548390683b9b4bc062c4dc900b1fc27837e7941c7ee4553550",
+        "unstd/serde/structs.py": "ebe5eb0c8cba8e8bc01137c9e4f768d86cb900d15c67600cbaf38f0accfa6c65",
+        "unstd/serde/_internal/__init__.py": "6aed7cdb4acd19aa8dfa7668c884fd937f2add4574c73531bd6cdde569f53f05",
+        "unstd/serde/_internal/json_common.py": "cb4ee6fce1510e202b4126e67b53ac73b9e7b73a9d67d010b451b7fa45ea0b8f",
+        "unstd/serde/_internal/json_encode.py": "a01fe8460bd4a70573fed3ebff35c1a1f318bf477bb17c41b165a0a5aacc46a4"
+      },
+      "has_transfer_metadata": false
+    }
+  },
+  "sdist": {
+    "filename": "unstd-3.1.6.tar.gz",
+    "sha256": "1b06950bf008b187c00ca3e6c4a37b5afcfcd18654b2146343f541b254cb9509",
+    "native_source_sha256": {
+      "native/serde/src/adapter.c": "4255c7f31b58ce2b370b3269a7568ec9c7eb73f52cf431c88da8c449d73578ab",
+      "native/serde/src/decode.h": "15c77c222b6036aa86b26b78419f2d0f570bd8195f08606716a61dc5785b76d1",
+      "native/serde/src/encode.h": "d9cd56b16da3dfd72b36fa8ae00f7b82e4be7cc37629ef129dc0b3a9c9ac6c1e",
+      "native/serde/src/escape.h": "937fe2288c702b38b752e4c7b4a09a91239bba86d2907b0f89c24f99a13d3e92",
+      "native/serde/src/identity.h": "e9dd9fb8b4f8188de9f3180699749fab34d16307177b5f0814a0cf1681d592bf",
+      "native/serde/src/lines.h": "b2f9b71876976199b3a02b53572672f581438e237353a92205211fbd27ea74d0",
+      "native/serde/src/repeat.h": "a47c65565ff257f68b20494809df947c29cf2efbe0c1f0b01db847c32ecaee39"
+    }
+  },
+  "artifact_checks": {
+    "sdist_has_complete_native_closure": true,
+    "wheels_match_combined_python": true,
+    "wheels_match_native_machine_code": true,
+    "no_transfer_metadata": true
+  },
+  "tests": {
+    "combined": {
+      "summary": {
+        "name": "pytest",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "25",
+        "tests": "3216",
+        "time": "9.394",
+        "timestamp": "2026-10-25T20:59:10.864649+00:00",
+        "hostname": "1eee39001263"
+      },
+      "log_sha256": "7bd63f11d1eda4f0ca658a81b7effa351f6cb8021113186b1d9da9b11c582621",
+      "skips": [
+        {
+          "case": "test_indented_float_bit_patterns_cache_collisions_and_call_isolation",
+          "reason": "finite float normalization is needed on 3.12"
+        },
+        {
+          "case": "test_whole_operation_privacy_and_reentrancy",
+          "reason": "requires the isolated forced-GC audit build"
+        },
+        {
+          "case": "test_declined_tree_never_publishes_completed_sibling_copies",
+          "reason": "requires the isolated forced-GC audit build"
+        },
+        {
+          "case": "test_list_current_item_is_pinned_during_source_clear",
+          "reason": "requires the isolated forced-GC audit build"
+        },
+        {
+          "case": "test_dictionary_current_pair_is_pinned_during_source_clear",
+          "reason": "requires the isolated forced-GC audit build"
+        },
+        {
+          "case": "test_gc_injected_unsupported_values_are_declined",
+          "reason": "requires the isolated forced-GC audit build"
+        },
+        {
+          "case": "test_each_owned_allocation_failure_preserves_errors_and_privacy",
+          "reason": "requires the isolated allocation-failure audit build"
+        },
+        {
+          "case": "test_allocation_error_survives_a_simultaneous_walker_change",
+          "reason": "requires the isolated allocation-failure audit build"
+        },
+        {
+          "case": "test_configuration_allocation_failures_release_captured_references",
+          "reason": "requires the isolated allocation-failure audit build"
+        },
+        {
+          "case": "test_configuration_pins_function_and_code_before_allocating_metadata",
+          "reason": "requires the isolated forced-GC audit build"
+        },
+        {
+          "case": "test_walker_replaced_during_copy_discards_the_owned_result",
+          "reason": "requires the isolated forced-GC audit build"
+        },
+        {
+          "case": "test_walker_change_does_not_replace_an_inflight_dictionary_error",
+          "reason": "requires the isolated forced-GC audit build"
+        },
+        {
+          "case": "test_last_leaf_recursion_limit_change_discards_the_owned_result",
+          "reason": "requires the isolated forced-GC audit build"
+        },
+        {
+          "case": "test_indented_float_tokens_use_the_stdlib_number_spelling[False]",
+          "reason": "newer stdlib already encodes indented floats in C"
+        },
+        {
+          "case": "test_indented_float_tokens_use_the_stdlib_number_spelling[True]",
+          "reason": "newer stdlib already encodes indented floats in C"
+        },
+        {
+          "case": "test_indented_float_extremes_and_notation_boundaries[0.0]",
+          "reason": "newer stdlib already encodes indented floats in C"
+        },
+        {
+          "case": "test_indented_float_extremes_and_notation_boundaries[-0.0]",
+          "reason": "newer stdlib already encodes indented floats in C"
+        },
+        {
+          "case": "test_indented_float_extremes_and_notation_boundaries[1e-05]",
+          "reason": "newer stdlib already encodes indented floats in C"
+        },
+        {
+          "case": "test_indented_float_extremes_and_notation_boundaries[1e-06]",
+          "reason": "newer stdlib already encodes indented floats in C"
+        },
+        {
+          "case": "test_indented_float_extremes_and_notation_boundaries[1e+16]",
+          "reason": "newer stdlib already encodes indented floats in C"
+        },
+        {
+          "case": "test_indented_float_extremes_and_notation_boundaries[1e+20]",
+          "reason": "newer stdlib already encodes indented floats in C"
+        },
+        {
+          "case": "test_indented_float_extremes_and_notation_boundaries[5e-324]",
+          "reason": "newer stdlib already encodes indented floats in C"
+        },
+        {
+          "case": "test_indented_float_extremes_and_notation_boundaries[-5e-324]",
+          "reason": "newer stdlib already encodes indented floats in C"
+        },
+        {
+          "case": "test_indented_float_extremes_and_notation_boundaries[1.7976931348623157e+308]",
+          "reason": "newer stdlib already encodes indented floats in C"
+        },
+        {
+          "case": "test_consumer_typing_infers_records_and_rejects_mismatched_writes",
+          "reason": "could not import 'mypy.api': No module named 'mypy'"
+        }
+      ]
+    },
+    "rebuilt": {
+      "summary": {
+        "name": "pytest",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "25",
+        "tests": "3216",
+        "time": "9.145",
+        "timestamp": "2026-10-25T20:59:21.140143+00:00",
+        "hostname": "1eee39001263"
+      },
+      "log_sha256": "8006518c95853ad026dad883b5c046f8bc209de7803d8083b11f0fe18999cd5f",
+      "skips": [
+        {
+          "case": "test_indented_float_bit_patterns_cache_collisions_and_call_isolation",
+          "reason": "finite float normalization is needed on 3.12"
+        },
+        {
+          "case": "test_whole_operation_privacy_and_reentrancy",
+          "reason": "requires the isolated forced-GC audit build"
+        },
+        {
+          "case": "test_declined_tree_never_publishes_completed_sibling_copies",
+          "reason": "requires the isolated forced-GC audit build"
+        },
+        {
+          "case": "test_list_current_item_is_pinned_during_source_clear",
+          "reason": "requires the isolated forced-GC audit build"
+        },
+        {
+          "case": "test_dictionary_current_pair_is_pinned_during_source_clear",
+          "reason": "requires the isolated forced-GC audit build"
+        },
+        {
+          "case": "test_gc_injected_unsupported_values_are_declined",
+          "reason": "requires the isolated forced-GC audit build"
+        },
+        {
+          "case": "test_each_owned_allocation_failure_preserves_errors_and_privacy",
+          "reason": "requires the isolated allocation-failure audit build"
+        },
+        {
+          "case": "test_allocation_error_survives_a_simultaneous_walker_change",
+          "reason": "requires the isolated allocation-failure audit build"
+        },
+        {
+          "case": "test_configuration_allocation_failures_release_captured_references",
+          "reason": "requires the isolated allocation-failure audit build"
+        },
+        {
+          "case": "test_configuration_pins_function_and_code_before_allocating_metadata",
+          "reason": "requires the isolated forced-GC audit build"
+        },
+        {
+          "case": "test_walker_replaced_during_copy_discards_the_owned_result",
+          "reason": "requires the isolated forced-GC audit build"
+        },
+        {
+          "case": "test_walker_change_does_not_replace_an_inflight_dictionary_error",
+          "reason": "requires the isolated forced-GC audit build"
+        },
+        {
+          "case": "test_last_leaf_recursion_limit_change_discards_the_owned_result",
+          "reason": "requires the isolated forced-GC audit build"
+        },
+        {
+          "case": "test_indented_float_tokens_use_the_stdlib_number_spelling[False]",
+          "reason": "newer stdlib already encodes indented floats in C"
+        },
+        {
+          "case": "test_indented_float_tokens_use_the_stdlib_number_spelling[True]",
+          "reason": "newer stdlib already encodes indented floats in C"
+        },
+        {
+          "case": "test_indented_float_extremes_and_notation_boundaries[0.0]",
+          "reason": "newer stdlib already encodes indented floats in C"
+        },
+        {
+          "case": "test_indented_float_extremes_and_notation_boundaries[-0.0]",
+          "reason": "newer stdlib already encodes indented floats in C"
+        },
+        {
+          "case": "test_indented_float_extremes_and_notation_boundaries[1e-05]",
+          "reason": "newer stdlib already encodes indented floats in C"
+        },
+        {
+          "case": "test_indented_float_extremes_and_notation_boundaries[1e-06]",
+          "reason": "newer stdlib already encodes indented floats in C"
+        },
+        {
+          "case": "test_indented_float_extremes_and_notation_boundaries[1e+16]",
+          "reason": "newer stdlib already encodes indented floats in C"
+        },
+        {
+          "case": "test_indented_float_extremes_and_notation_boundaries[1e+20]",
+          "reason": "newer stdlib already encodes indented floats in C"
+        },
+        {
+          "case": "test_indented_float_extremes_and_notation_boundaries[5e-324]",
+          "reason": "newer stdlib already encodes indented floats in C"
+        },
+        {
+          "case": "test_indented_float_extremes_and_notation_boundaries[-5e-324]",
+          "reason": "newer stdlib already encodes indented floats in C"
+        },
+        {
+          "case": "test_indented_float_extremes_and_notation_boundaries[1.7976931348623157e+308]",
+          "reason": "newer stdlib already encodes indented floats in C"
+        },
+        {
+          "case": "test_consumer_typing_infers_records_and_rejects_mismatched_writes",
+          "reason": "could not import 'mypy.api': No module named 'mypy'"
+        }
+      ]
+    }
+  },
+  "preflight": {
+    "combined": {
+      "backends": {
+        "msgspec": "0.22.0",
+        "orjson": "3.12.0"
+      },
+      "checks": [
+        "bindings",
+        "encoding",
+        "repeated_floats",
+        "ascii",
+        "decoding",
+        "strict_identity",
+        "ndjson"
+      ],
+      "errors": [],
+      "executable": "/qualification/env/bin/python",
+      "jsonx": "/qualification/installed-combined/unstd/serde/jsonx.py",
+      "native": "/qualification/installed-combined/unstd/serde/_json_native.cpython-314-x86_64-linux-gnu.so",
+      "native_sha256": "3a1ce199eef5451a2d341258f5a90b7ebc348af748d05cbcc8d37735fed83621",
+      "platform": "Linux-6.8.0-147-generic-x86_64-with-glibc2.41",
+      "python": "3.14.9",
+      "schema": 1
+    },
+    "rebuilt": {
+      "backends": {
+        "msgspec": "0.22.0",
+        "orjson": "3.12.0"
+      },
+      "checks": [
+        "bindings",
+        "encoding",
+        "repeated_floats",
+        "ascii",
+        "decoding",
+        "strict_identity",
+        "ndjson"
+      ],
+      "errors": [],
+      "executable": "/qualification/env/bin/python",
+      "jsonx": "/qualification/installed-rebuilt/unstd/serde/jsonx.py",
+      "native": "/qualification/installed-rebuilt/unstd/serde/_json_native.cpython-314-x86_64-linux-gnu.so",
+      "native_sha256": "c1b79872198bc22e2cb7b1b9ebc7fb82429d76dd6bd42ceeb9aa7326edb02be2",
+      "platform": "Linux-6.8.0-147-generic-x86_64-with-glibc2.41",
+      "python": "3.14.9",
+      "schema": 1
+    }
+  },
+  "commands": {
+    "initial_build_and_test": "#!/bin/sh\nset -eu\ncd /qualification\nexport CIBUILDWHEEL=1\nfor label in original prework combined; do\n uv build --python env/bin/python --no-build-isolation \"$label\" --wheel --out-dir \"wheel-$label\" > \"build-$label.log\" 2>&1\n uv pip install --python env/bin/python --no-deps --target \"installed-$label\" wheel-$label/*.whl > \"install-$label.log\" 2>&1\ndone\nuv build --python env/bin/python --no-build-isolation combined --sdist --out-dir sdist > build-sdist.log 2>&1\nuv build --python env/bin/python --no-build-isolation sdist/*.tar.gz --wheel --out-dir wheel-rebuilt > build-rebuilt.log 2>&1\nuv pip install --python env/bin/python --no-deps --target installed-rebuilt wheel-rebuilt/*.whl > install-rebuilt.log 2>&1\nuv pip install --python env/bin/python --no-deps wheel-combined/*.whl > install-env.log 2>&1\nPYTHONPATH=/qualification/installed-combined env/bin/python combined/tests/tooling/runtime/json_acceleration.py --json > smoke-combined.json\nPYTHONPATH=/qualification/installed-rebuilt env/bin/python combined/tests/tooling/runtime/json_acceleration.py --json > smoke-rebuilt.json\nPYTHONPATH=/qualification/combined env/bin/python -m pytest combined/tests/suites/product/serde -c combined/pyproject.toml --require-extra serde -q --junitxml=serde-combined.xml > serde-combined.log 2>&1\nuv venv --python 3.14.9 env-rebuilt > env-rebuilt.log 2>&1\nuv pip install --python env-rebuilt/bin/python wheel-rebuilt/*.whl orjson==3.12.0 msgspec==0.22.0 pybase64==1.5.0 pytest hypothesis packaging numpy >> env-rebuilt.log 2>&1\nPYTHONPATH=/qualification/combined env-rebuilt/bin/python -m pytest combined/tests/suites/product/serde -c combined/pyproject.toml --require-extra serde -q --junitxml=serde-rebuilt.xml > serde-rebuilt.log 2>&1\n",
+    "initial_benchmarks": "#!/bin/sh\nset -eu\ncd /qualification\nexport PYTHONHASHSEED=0\nexport PYTHONPATH=/qualification/combined\nenv/bin/python -m bench.profiles.jsonx_throughput --compare-source installed-original --source installed-combined --require-native --rounds 7 --repetitions 3 --output original-combined-full.json > original-combined-full.log 2>&1\nenv/bin/python -m bench.profiles.jsonx_throughput --compare-source installed-prework --source installed-combined --require-native --rounds 7 --repetitions 3 --output prework-combined-full.json > prework-combined-full.log 2>&1\nenv/bin/python interleaved.py --compare-source installed-original --source installed-combined --harness combined --include floats-256 --rounds 9 --repetitions 5 --output original-combined-shared.json > original-combined-shared.log 2>&1\nenv/bin/python interleaved.py --compare-source installed-prework --source installed-combined --harness combined --include floats-256 --rounds 9 --repetitions 5 --output prework-combined-shared.json > prework-combined-shared.log 2>&1\nenv/bin/python scalar-probe.py --compare-source installed-prework --source installed-combined --harness combined --rounds 11 --repetitions 9 --output prework-combined-scalars.json > prework-combined-scalars.log 2>&1\nenv/bin/python interleaved.py --compare-source installed-combined --source installed-rebuilt --harness combined --include '' --rounds 9 --repetitions 5 --max-slowdown 1.15 --output combined-rebuilt.json > combined-rebuilt.log 2>&1\n",
+    "final_refresh": "#!/bin/sh\nset -eu\ncd /qualification\nexport CIBUILDWHEEL=1\nuv build --python env/bin/python --no-build-isolation combined --wheel --sdist --out-dir wheel-combined > build-combined-final.log 2>&1\nuv build --python env/bin/python --no-build-isolation wheel-combined/*.tar.gz --wheel --out-dir wheel-rebuilt > build-rebuilt-final.log 2>&1\nmkdir sdist\ncp wheel-combined/*.tar.gz sdist/\nuv pip install --python env/bin/python --no-deps --target installed-combined wheel-combined/*.whl > install-combined-final.log 2>&1\nuv pip install --python env/bin/python --no-deps --target installed-rebuilt wheel-rebuilt/*.whl > install-rebuilt-final.log 2>&1\nuv pip install --python env/bin/python --no-deps --reinstall wheel-combined/*.whl > install-env-final.log 2>&1\nuv pip install --python env-rebuilt/bin/python --no-deps --reinstall wheel-rebuilt/*.whl > install-env-rebuilt-final.log 2>&1\nPYTHONPATH=/qualification/installed-combined env/bin/python combined/tests/tooling/runtime/json_acceleration.py --json > smoke-combined.json\nPYTHONPATH=/qualification/installed-rebuilt env/bin/python combined/tests/tooling/runtime/json_acceleration.py --json > smoke-rebuilt.json\nPYTHONPATH=/qualification/combined env/bin/python -m pytest combined/tests/suites/product/serde -c combined/pyproject.toml --require-extra serde -q --junitxml=serde-combined.xml > serde-combined.log 2>&1\nPYTHONPATH=/qualification/combined env-rebuilt/bin/python -m pytest combined/tests/suites/product/serde -c combined/pyproject.toml --require-extra serde -q --junitxml=serde-rebuilt.xml > serde-rebuilt.log 2>&1\nexport PYTHONHASHSEED=0\nexport PYTHONPATH=/qualification/combined\nenv/bin/python -m bench.profiles.jsonx_throughput --compare-source installed-prework --source installed-combined --require-native --rounds 7 --repetitions 3 --output prework-final-full.json > prework-final-full.log 2>&1\nenv/bin/python interleaved.py --compare-source installed-original --source installed-combined --harness combined --include floats-256 --rounds 9 --repetitions 5 --output original-final-shared.json > original-final-shared.log 2>&1\nenv/bin/python interleaved.py --compare-source installed-prework --source installed-combined --harness combined --include floats-256 --rounds 9 --repetitions 5 --output prework-final-shared.json > prework-final-shared.log 2>&1\nenv/bin/python scalar-probe.py --compare-source installed-prework --source installed-combined --harness combined --rounds 11 --repetitions 9 --output prework-final-scalars.json > prework-final-scalars.log 2>&1\nenv/bin/python interleaved.py --compare-source installed-combined --source installed-rebuilt --harness combined --include '' --rounds 9 --repetitions 5 --max-slowdown 1.15 --output final-rebuilt.json > final-rebuilt.log 2>&1\n"
+  },
+  "drivers_sha256": {
+    "interleaved.py": "7710f97986c836d2a6b69d450ec63910e919817d045c89d5ea3706bbb0047593",
+    "scalar-probe.py": "8d2dd1ee611bc5ae88cba10b48b182a1b942bfa77f72047198f47b3a16347d80"
+  },
+  "logs_sha256": {
+    "prework-combined-shared.log": "4a2fa8b2e567368197b7662c9eb111f781cc34120440a9384c7133649664c13d",
+    "env-rebuilt.log": "4385bee5c667536331dd252961813638bab0456eb56eedb73b091bf193c12498",
+    "install-rebuilt.log": "88c9ac0556601d7299e7e466900780f8e40d6ecdf302f830313cfc1003e6d3cd",
+    "build-rebuilt-final.log": "8dfa5e94be203896c6b8aca0a139d20b7b5f9d25ff5d9d3e9e6e3c4f7d01d69d",
+    "build-prework.log": "07591f34bbc14fb3eb061aa4cf34d14231d8553a4849282fb6c89dd249ed2332",
+    "install-original.log": "6ce76f91363bd8a083c9055f163150d65078b938f6e228c8afb5f13ee0e910e6",
+    "prework-final-shared.log": "4a2fa8b2e567368197b7662c9eb111f781cc34120440a9384c7133649664c13d",
+    "prework-combined-scalars.log": "34c8f81890ff17f138911eb0d98a7611783d90144d8096391a4b8591f98487a6",
+    "final-rebuilt.log": "4a2fa8b2e567368197b7662c9eb111f781cc34120440a9384c7133649664c13d",
+    "install-rebuilt-final.log": "88df194f254a7f8bf6f9c6ea24de3342c1f8052e7ae4f9446c7405807668006c",
+    "build-sdist.log": "382dd9aa4873e2a015d93cbac6ed0eb89d0a306aa6fc378439dc452c02657c5a",
+    "prework-combined-full.log": "bd6a46103c22099db8a6beba4f82cc9dc5c8a38166158fcefdf1425e784255b0",
+    "combined-rebuilt.log": "4a2fa8b2e567368197b7662c9eb111f781cc34120440a9384c7133649664c13d",
+    "install-env-final.log": "355e21fe723a03ed165539be5d198803b025b85a4650e113ed1ac45d2c188d13",
+    "install-prework.log": "84a1694de758b04f93f2ea2f26d4d70adc5cafd35e66da08a51b232510a68904",
+    "install-env.log": "105d481b10a427491e7bd765e33559d5481067fa0263e56887572df6e1b515b4",
+    "serde-rebuilt.log": "8006518c95853ad026dad883b5c046f8bc209de7803d8083b11f0fe18999cd5f",
+    "original-combined-full.log": "bd6a46103c22099db8a6beba4f82cc9dc5c8a38166158fcefdf1425e784255b0",
+    "python-install.log": "953907c6171c4c5ce0104a6c2c8cf6301784a2f1d2b055fecd88810ea1b2192e",
+    "build-original.log": "42c7dff15d93369afed8783e085fc84a3152e723d19b39a0ec3204673dc03781",
+    "build-rebuilt.log": "e66993650864f835b99453dcf69cf7eebe42ef03ef78568499fb53559c863903",
+    "uv-install.log": "1b3f86cd039a9f153af089d396eac0e1d13f8d85faebb0a2060d50a11ff26f32",
+    "serde-combined.log": "7bd63f11d1eda4f0ca658a81b7effa351f6cb8021113186b1d9da9b11c582621",
+    "env.log": "42eba5c27b63957d11ff84f835c05b8a463bd1f34f06caef463f1327ef39b40a",
+    "apt.log": "8df8aa5f5e897410146acc2b60379bcd95c440b8f7a11c42aaf7d9b63a5e35c3",
+    "prework-final-full.log": "bd6a46103c22099db8a6beba4f82cc9dc5c8a38166158fcefdf1425e784255b0",
+    "original-combined-shared.log": "4a2fa8b2e567368197b7662c9eb111f781cc34120440a9384c7133649664c13d",
+    "install-combined-final.log": "7c5ef95b3a4ae50d7349b5d62b40a12670b231c015a25d35e6c4cadf3d4478d9",
+    "install-env-rebuilt-final.log": "fc67fd703735412a5d3099afbef60f5beffa7110a83c16e94fa6d7052810efec",
+    "install-combined.log": "fa60fa24408b96145c0a3b07172d922ff20713caff0129dfaf15b77ffce9920e",
+    "original-final-shared.log": "4a2fa8b2e567368197b7662c9eb111f781cc34120440a9384c7133649664c13d",
+    "build-combined.log": "fc2566b65a55085ec5f81002727ab712bd1d0e64eeaa3874489877721f2ebb01",
+    "build-combined-final.log": "0e6e1d87252196216fbc0a1eb7fe5a8f387a3d8ad498633c7cb71f56dabb66cb",
+    "prework-final-scalars.log": "34c8f81890ff17f138911eb0d98a7611783d90144d8096391a4b8591f98487a6"
+  },
+  "final_memo_admission": {
+    "minimum_leaf_width": 32,
+    "minimum_estimated_flat_work": 4096,
+    "repeat_header_sha256": "a47c65565ff257f68b20494809df947c29cf2efbe0c1f0b01db847c32ecaee39"
+  },
+  "notes": [
+    "Every result is rebuilt per operation; flat alias spans live only for one uninterrupted encoding call.",
+    "Shared and independent scenarios have equal scalar values and output bytes but distinct container sharing; existing50profile cases were retained.",
+    "100x is a named shared-branch result, not a universal claim for ordinary independent values.",
+    "Raw unpaired report aggregation is retained. Matched case/repetition ratios are summarized separately without controls normalization.",
+    "Initial db10eaa source-specific timing reports are preliminary. Final source a47c655 narrows memo admission to wide enough branches/work after measured tiny non-float regressions; final refresh reports have final in their filenames."
+  ]
+}

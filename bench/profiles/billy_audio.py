@@ -279,7 +279,9 @@ def _report(
     baseline_path: Path, billy_root: Path | None, rounds: int
 ) -> dict[str, Any]:
     sources = [Path(__file__).resolve(), baseline_path, _CANDIDATE]
-    sources.extend(sorted((_CANDIDATE.parent / "_internal").glob("*.py")))
+    sources.extend(
+        path for path in sorted(_CANDIDATE.parent.rglob("*.py")) if path != _CANDIDATE
+    )
     hashes = {str(path.resolve()): _sha(path.read_bytes()) for path in sources}
     baseline = _load(baseline_path, "_billy_audio_baseline")
     candidate = _load(_CANDIDATE, "_billy_audio_candidate")

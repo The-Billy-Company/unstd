@@ -18,7 +18,9 @@ consistent; they are not interchangeable.
 from __future__ import annotations
 
 from collections import deque
-from itertools import batched, chain, groupby, islice, tee
+from itertools import batched, chain, groupby, islice, pairwise, tee
+from operator import index
+from sys import maxsize
 from typing import TYPE_CHECKING
 
 
@@ -51,6 +53,9 @@ def chunked[T](
 def _chunked[T](
     iterable: Iterable[T], n: int, *, strict: bool
 ) -> Iterator[tuple[T, ...]]:
+    if strict is False:
+        yield from batched(iterable, n)
+        return
     # `batched` only ever shorts its *last* batch, so a short batch seen here
     # is necessarily final — no lookahead needed to match its own strict timing.
     for batch in batched(iterable, n):
@@ -68,7 +73,7 @@ def windowed[T](
     Only **complete** windows are emitted — a trailing remainder shorter than *n*,
     or one that cannot advance a full *step*, is dropped — so ``windowed(seq, 2)``
     is a size/stride-tunable superset of stdlib :func:`itertools.pairwise`. Lazy:
-    holds at most *n* items in a ``deque`` regardless of input length. ``n == 0``
+    uses O(*n*) storage in stdlib iterators or a ``deque``. ``n == 0``
     yields a single empty tuple — a deliberate divergence from current
     ``more-itertools`` (``>=11.0``), which raises ``ValueError`` on ``n <= 0`` and,
     for a nonzero ``n``, pads an incomplete tail with ``fillvalue`` instead of
@@ -90,12 +95,23 @@ def windowed[T](
 
 
 def _staggered[T](iterable: Iterable[T], n: int) -> Iterator[tuple[T, ...]]:
+    n = index(n)
+    if n > maxsize:
+        msg = "Python int too large to convert to C ssize_t"
+        raise OverflowError(msg)
+    if n == 2:
+        return pairwise(iterable)
     # The `pairwise` shape generalized: n staggered `tee` views zipped together
-    # is a C-level walk, ~5x a Python deque loop, and `zip` stopping at the
-    # shortest view is exactly "complete windows only".
-    views = tee(iterable, n)
-    for lag, view in enumerate(views):
-        next(islice(view, lag, lag), None)
+    # keep the walk in C; stopping at the shortest means complete windows only.
+    # Fork the advancing view at each offset rather than walking 0 + 1 + ... +
+    # (n - 1) positions through independent views: startup is linear in n.
+    (view,) = tee(iterable, 1)
+    views = []
+    for _ in range(n - 1):
+        previous, view = tee(view)
+        views.append(previous)
+        next(view, None)
+    views.append(view)
     return zip(*views, strict=False)
 
 
@@ -103,13 +119,24 @@ def _strided[T](it: Iterator[T], n: int, step: int) -> Iterator[tuple[T, ...]]:
     window: deque[T] = deque(islice(it, n), maxlen=n)
     if len(window) == n:
         yield tuple(window)
+    if type(step) is not int or step > maxsize:
+        # Preserve islice's index conversion and error timing for custom sizes.
+        while True:
+            advanced = 0
+            for item in islice(it, step):
+                window.append(item)
+                advanced += 1
+            if advanced < step:
+                return
+            yield tuple(window)
     while True:
-        advanced = 0
-        for item in islice(it, step):
-            window.append(item)
-            advanced += 1
-        if advanced < step:  # ran out mid-stride → no more complete windows
+        window.extend(islice(it, step - 1))
+        try:
+            item = next(it)
+        except StopIteration:  # ran out mid-stride → no more complete windows
             return
+        window.append(item)
+        del item
         yield tuple(window)
 
 

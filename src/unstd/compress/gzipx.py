@@ -1,7 +1,7 @@
 """Stdlib-compatible gzip with optional native compression and read kernels.
 
 ``unstd[compress]`` enables zlib-ng writes, native bounded inflation and CRC, and
-libdeflate decoding for eligible byte buffers. Read framing and buffering follow
+libdeflate codecs for eligible byte buffers. Read framing and buffering follow
 the running interpreter's gzip implementation. Base installs bind directly to
 stdlib ``gzip``; unsupported buffer cases retain stdlib parsing and diagnostics.
 """
@@ -17,7 +17,7 @@ from os import PathLike, fspath
 from typing import TYPE_CHECKING, Literal, cast, overload, override
 import zlib
 
-from unstd.compress._validation import deferred_flush_mode as _deferred_flush_mode
+from unstd.compress.engines.flush import deferred_flush_mode as _deferred_flush_mode
 
 
 if TYPE_CHECKING:
@@ -26,11 +26,12 @@ if TYPE_CHECKING:
     from gzip import _ReadableFileobj, _WritableFileobj
     from typing import IO, Protocol
 
-    from unstd.compress._backend import gzip as _backend
-    from unstd.compress._backend import native as _native
-    from unstd.compress._reader import _Reader
+    from unstd.compress.engines.native import gzip as _backend
+    from unstd.compress.engines.native import native as _native
+    from unstd.compress.engines.reader import _Reader
 
     _decode_buffer: Callable[[object], bytes | None] | None
+    _encode_buffer: Callable[[object, int], bytes | None] | None
 
     class _Compressor(Protocol):
         def __call__(
@@ -45,20 +46,24 @@ if TYPE_CHECKING:
         name: str | bytes
 
 else:
+    _encode_buffer = None
     try:
-        from unstd.compress._backend import gzip as _backend
-        from unstd.compress._backend import native as _native
+        from unstd.compress.engines.native import gzip as _backend
+        from unstd.compress.engines.native import native as _native
     except ImportError:
         _backend = None
         _decode_buffer = None
     else:
         _Base = _backend.GzipFile
-        from unstd.compress._reader import _Reader
+        from unstd.compress.engines.reader import _Reader
 
         try:
             from unstd.compress._gzip_native import decompress as _decode_buffer
+
         except ImportError:
             _decode_buffer = None
+        with suppress(ImportError):
+            from unstd.compress._gzip_native import compress as _encode_buffer
 
 
 __all__ = ["BadGzipFile", "GzipFile", "compress", "decompress", "open"]
@@ -261,6 +266,17 @@ if TYPE_CHECKING or _backend is not None:
         mtime: float | None = _DEFAULT_MTIME,
     ) -> bytes:
         """Compress a buffer with this interpreter's stdlib level/mtime defaults."""
+        if (
+            _encode_buffer is not None
+            and type(data) is bytes
+            and type(compresslevel) is int
+            and compresslevel in (6, 9)
+            and type(mtime) is int
+            and mtime == 0
+        ):
+            encoded = _encode_buffer(data, compresslevel)
+            if encoded is not None:
+                return encoded
         try:
             result: bytes = _backend.compress(data, compresslevel, mtime=mtime)
         except _native.error:

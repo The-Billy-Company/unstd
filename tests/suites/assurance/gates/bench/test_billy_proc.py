@@ -198,3 +198,123 @@ def test_fixture_metadata_and_inventory_have_independent_exact_oracles(tmp_path)
     manifest = json.loads((Path(fixture["root"]) / "fixture.json").read_text())
     assert manifest["tracked_source_files"] == 129
     assert len(set(manifest["inventory"].rstrip("\0").split("\0"))) == 130
+
+
+@pytest.mark.parametrize(
+    ("mode", "enabled", "disabled"),
+    [("spawn", "spawn", "communicate"), ("io", "communicate", "spawn")],
+)
+def test_stage_control_declines_other_kernel_before_it_runs(mode, enabled, disabled):
+    calls = []
+
+    def spawn(*args, **kwargs):
+        calls.append("spawn")
+        return 123
+
+    def communicate(*args, **kwargs):
+        calls.append("communicate")
+        return b"stdout", b"stderr"
+
+    native = SimpleNamespace(spawn=spawn, communicate=communicate)
+    backend = SimpleNamespace(_native=native)
+    assert profile._configure_mode(backend, mode) is native
+    assert backend._SPAWN_NATIVE is (mode == "spawn")
+    assert getattr(native, disabled)("arbitrary arguments") is NotImplemented
+    assert calls == []
+    assert getattr(native, enabled)() is not NotImplemented
+    assert calls == [enabled]
+
+
+@pytest.mark.parametrize(
+    ("mode", "enabled", "disabled"),
+    [("spawn", "spawn", "communicate"), ("io", "communicate", "spawn")],
+)
+@pytest.mark.parametrize(
+    "failure", ["declined-enabled", "accepted-disabled", "missing-decline"]
+)
+def test_stage_proof_rejects_inactive_or_leaking_kernels(
+    mode, enabled, disabled, failure
+):
+    routes = {
+        enabled: {"accepted": 1, "declined": 0},
+        disabled: {"accepted": 0, "declined": int(mode == "spawn")},
+    }
+    if failure == "declined-enabled":
+        routes[enabled] = {"accepted": 0, "declined": 1}
+    elif failure == "accepted-disabled":
+        routes[disabled] = {"accepted": 1, "declined": 0}
+    else:
+        routes[disabled] = {"accepted": 0, "declined": int(mode == "io")}
+    with pytest.raises(RuntimeError):
+        profile._verify_routes(mode, routes, require_native=True, case="fixture")
+
+
+@pytest.mark.parametrize(
+    ("mode", "enabled", "disabled"),
+    [("spawn", "spawn", "communicate"), ("io", "communicate", "spawn")],
+)
+def test_stage_proof_accepts_only_successful_selected_kernel(mode, enabled, disabled):
+    profile._verify_routes(
+        mode,
+        {
+            enabled: {"accepted": 1, "declined": 0},
+            disabled: {"accepted": 0, "declined": int(mode == "spawn")},
+        },
+        require_native=True,
+        case="fixture",
+    )
+
+
+@pytest.mark.parametrize(
+    ("spawn_enabled", "stdin_text", "expected"),
+    [
+        (False, False, ("communicate",)),
+        (True, False, ("spawn", "communicate")),
+        (False, True, ()),
+        (True, True, ("spawn",)),
+    ],
+)
+def test_candidate_native_proof_follows_platform_and_stdin_admission(
+    spawn_enabled, stdin_text, expected
+):
+    assert (
+        profile._expected_native(
+            "candidate", spawn_enabled=spawn_enabled, stdin_text=stdin_text
+        )
+        == expected
+    )
+    routes = {kernel: {"accepted": 1} for kernel in expected}
+    profile._verify_routes(
+        "candidate",
+        routes,
+        require_native=True,
+        case="fixture",
+        spawn_enabled=spawn_enabled,
+        stdin_text=stdin_text,
+    )
+    if expected:
+        del routes[expected[-1]]
+        with pytest.raises(RuntimeError, match="did not successfully use"):
+            profile._verify_routes(
+                "candidate",
+                routes,
+                require_native=True,
+                case="fixture",
+                spawn_enabled=spawn_enabled,
+                stdin_text=stdin_text,
+            )
+
+
+@pytest.mark.parametrize("accepted", [0, 1])
+def test_linux_candidate_cannot_enter_native_spawn_even_if_it_declines(accepted):
+    with pytest.raises(RuntimeError, match="native spawn"):
+        profile._verify_routes(
+            "candidate",
+            {
+                "spawn": {"accepted": accepted, "declined": 1 - accepted},
+                "communicate": {"accepted": 1},
+            },
+            require_native=True,
+            case="fixture",
+            spawn_enabled=False,
+        )

@@ -26,15 +26,15 @@ cleanup when reader initialization fails on older CPython patch releases. That
 fix changes only the constructor's exception path; normal read paths measured
 here are unchanged.
 
-## Why the earlier improvement did not fit Billy
+## Why the earlier improvement did not fit the consumer workloads
 
 The earlier benchmark improved large level-6 writes, while one-shot reads ran at
-0.56× stdlib speed. Billy already compresses outbound requests directly through
+0.56× stdlib speed. The consumer already compresses outbound requests directly through
 zlib with `wbits=31`, explicitly using level 1 for its Claude/Gemini request bodies.
 Its gzip reads include datasets, HTTP bodies limited to a maximum output size,
 concatenated journal members, and uploads that rewind a stream between hashing
 and transmission. A faster large write does not establish a benefit for these
-operations. Billy's inspected Python 3.14 environment does not install the
+operations. The inspected consumer Python 3.14 environment does not install the
 compression extra, and its existing gzip paths remain in place.
 
 The native codec itself was slower on the saved 10–18 KiB JSON captures. On
@@ -84,7 +84,7 @@ and must recover the independent original bytes before timing.
 Every measured case improved against the previous implementation. Larger streams
 are close to direct stdlib; small streams retain about 1 µs of wrapper overhead.
 The change removes the previous regression, but does not establish a reason for
-Billy to replace its existing stdlib streams. These are local CPU workloads using
+the consumer to replace its existing stdlib streams. These are local CPU workloads using
 saved bytes and generated consumption shapes, not production request latency.
 
 ## Python 3.14.6 and limits
@@ -107,7 +107,7 @@ The bounded expansion case is a real limitation: Python 3.14's default buffered
 reader can inflate 128 KiB while satisfying the 2,009-byte read. Native inflation
 handles this highly repetitive payload faster than stdlib. Both current and
 direct stdlib follow the same path; this change does not improve that existing
-Billy operation. This is another reason to retain Billy's present gzip choices
+consumer operation. This is another reason to retain the present gzip choices
 instead of enabling the extra based on a large-write benchmark.
 
 A temporary 8 KiB buffer improved this bounded shape, but changed malformed
@@ -137,8 +137,8 @@ git archive 15036df src/unstd | tar -x -C .local/gzip-read-before
 .venv/bin/python bench/gzip_reads.py --baseline-source .local/gzip-read-before/src --runs 7 --output /tmp/gzip-reads.json
 ```
 
-Repeat `--fixture PATH` to add exact saved payloads. The recorded runs add Billy's
-`source_record_capture.json` and `purchase_capture.json` from its test fixtures.
+Repeat `--fixture PATH` to add exact saved payloads. The recorded runs add
+`source_record_capture.json` and `purchase_capture.json` from consumer test fixtures.
 Their bytes are not copied into this repository; the reports retain hashes and
 sizes. Generated cases reproduce dataset counts, bounded HTTP reads, concatenated
 line iteration, 256 KiB upload reads and a second pass after `seek(0)`. Run with

@@ -1,9 +1,16 @@
-# Billy filesystem operations: Linux native evaluation
+# Filesystem operations: Linux native evaluation
+
+The [production follow-up](production/README.md) completes cancellation/error
+qualification and verifies installed public dispatch for its recorded package
+snapshot. This page retains the earlier experimental measurements and their
+original admission limits. The [report index](README.md) distinguishes all three
+stages; prototype ratios below do not describe the shipped public backend.
 
 A native one-shot writer can reduce CPU for small atomic writes on Linux.
-The evidence does not establish a broad Billy server latency improvement:
+The evidence does not establish a broad server latency improvement:
 large checkpoints gain little, disk timings vary, and browser cache scanning
-can dominate the complete operation. The C proof remains explicitly unshipped.
+can dominate the complete operation. This standalone `_fs_experiment` proof
+remains unshipped; production uses the separately qualified `_fs_native` backend.
 
 Measured October 25, 2026, in an isolated **Linux aarch64 Docker Desktop VM**,
 CPython **3.14.8**, GCC **14.2.0**, with two CPUs of quota and a 2 GiB memory
@@ -11,9 +18,9 @@ limit. The storage paths were container overlay storage over the VM disk and
 `/dev/shm` tmpfs. These are Linux measurements, not production-device or x86_64
 certification. tmpfs shows CPU/VFS headroom and provides no persistence claim.
 
-## What Billy actually uses
+## Captured consumer operations
 
-Only three direct `unstd.fs` calls were found in Billy Python code, all
+At capture time, three direct `unstd.fs` calls were found in the consumer Python code, all
 `atomic_write` in tooling:
 
 | Consumer | Captured operation |
@@ -30,14 +37,14 @@ The server candidates are prospective migrations:
   Scenarios cover 4 KiB, 64 KiB, 1 MiB, and just under 4 MiB, plus complete landing
   with 0, 64, or 512 peer profiles. Peer fixtures are 128 bytes each; this tests
   metadata-scan scaling, not an observed state-size distribution.
-- **Notebook persistence:** `libs/runtime/jupyter/billy_jupyter/policy.py:73`
+- **Notebook persistence:** the notebook policy at line 73
   writes bytes, fsyncs the file, replaces, and requires a parent-directory
   fsync. Retention consumers include receipts, checkpoints, source snapshots,
   originals, documents, identity, and history. Periodic checkpoints run at most
   once per second. Scenarios cover 4 KiB, 1 MiB, and the 18 MiB notebook ceiling.
 
 No direct `atomic_writer`, `atomic_replace`, `ensure_dir`, `sync_dir`, or
-`walk_files` use was found. This does not mean Billy never traverses files:
+`walk_files` use was found. The application also traverses files through other APIs:
 Bridge listings additionally need pruning, sorting, metadata, or deadlines,
 and the sandbox session walker is already Rust. A generic native walker is
 not justified by the current fs call sites.
@@ -48,11 +55,11 @@ new names, and conflict checks for rewrites. This proof does not implement that
 contract. Gzip journal append and cached embedding reads also are not one-shot
 atomic-write workloads.
 
-The [fixture](../../workloads/billy_fs.json) retains exact consumer symbol/file
+The captured [filesystem fixture](../../workloads/billy_fs.json) retains exact consumer symbol/file
 hashes and input-file receipts. All payloads are synthetic; no token, cookie,
 user notebook, or local login state was captured. Sizes are sensitivity cases,
 not production-frequency weights. Full-file hashes identify the captured
-working-tree sources independently of concurrent unrelated Billy commits.
+working-tree sources independently of concurrent unrelated application commits.
 
 ## Native proof and fair comparison
 
@@ -68,12 +75,12 @@ Isolated browser cases encode before both binary writers, matching the source
 operation. Complete browser cases compile the captured `land_state` AST and
 replace only its publication block, retaining its encoding and budget scan.
 The captured original browser and notebook functions also run as reference
-lanes without importing Billy's application dependencies.
+lanes without importing application dependencies.
 
 Every destination is initially 0600. Original browser/notebook writers reset
 replacement mode to 0600; `unstd` and the prototype preserve existing modes.
 Notebook candidate lanes use `durable="strict"`, adding a preflight sync to
-Billy's original post-commit directory-sync contract. Consequently those lanes
+the original post-commit directory-sync contract. Consequently those lanes
 are migration experiments, rather than claims of full drop-in parity.
 
 The report serialization control uses identical stdlib-compatible JSON for
@@ -82,7 +89,7 @@ component and resulting byte size are controlled.
 
 ## Measured results
 
-Ratios are **current Python time / native time**. Above 1 means faster native
+Ratios are **captured Python-snapshot time / prototype-native time**. Above 1 means faster native
 code. Wall time and process CPU remain separate. These complete 13-round runs
 retain losses, including noisy disk cases.
 
@@ -130,11 +137,11 @@ run; the complete cache-scan cases had CPU ratios of 1.09–1.10×.
 The 4 KiB checkpoint still had no wall improvement. The 18 MiB checkpoint in the
 complete run measured 1.02× wall and 0.99× CPU: no meaningful native gain.
 
-Comparison with the **actual captured Billy routines**, rather than the current
+Comparison with the **actual captured consumer routines**, rather than the current
 Python fs API, is also retained for the longer run. These reference lanes carry
 the mode and strict-preflight differences explained above:
 
-| Reference operation | Billy/native wall ratio | Billy/native CPU ratio |
+| Reference operation | Consumer/native wall ratio | Consumer/native CPU ratio |
 | --- | ---: | ---: |
 | browser-land-65536-peers-64 | 0.87 | 0.98 |
 | browser-land-65536-peers-512 | 1.09 | 1.10 |
@@ -174,26 +181,35 @@ The proof is outside `hatch_build.py` and public dispatch. It handles Python
 signals after its C transaction, so cancellation can be reported after commit.
 That timing differs from Python's intermediate cancellation checkpoints.
 Complete argument/error-note parity, allocator faults, and additional platform
-qualification remain prerequisites to production integration. The current
-public fs backend and Billy files were not changed for this experiment.
+qualification were left for later production work. Public fs dispatch and
+consumer files were not changed for this experiment. The
+[production qualification](production/README.md) records the later implementation,
+including syscall-boundary cancellation, fallback and installed-package proof;
+its results do not retroactively change this prototype's behavior or ratios.
 
 ## Reproduction and retained evidence
 
-The direct [driver](../../profiles/billy_fs.py) needs only stdlib plus the
-explicitly built experiment. Checked Billy source files are required for
+The direct [experiment driver](../../profiles/billy_fs.py) needs only stdlib plus the
+explicitly built experiment. Checked consumer source files are required for
 reference ASTs and drift checks; application dependencies are not imported.
 Run inside Linux, using the extension filename printed by the build:
 
 ```console
 python native/fs/experiments/build.py --output-dir /tmp/fs-proof --observer
 python native/fs/experiments/qualify.py --extension-dir /tmp/fs-proof --observer /tmp/fs-proof/observe.so
-python bench/profiles/billy_fs.py run --fixtures bench/workloads/billy_fs.json --billy-source ../billy --source src --native-extension /tmp/fs-proof/_fs_experiment.cpython-314-aarch64-linux-gnu.so --root /tmp --rounds 13 --repetitions 3 --output /tmp/billy-fs.json
+python bench/profiles/billy_fs.py run --fixtures bench/workloads/billy_fs.json --billy-source ../billy --source src --native-extension /tmp/fs-proof/_fs_experiment.cpython-314-aarch64-linux-gnu.so --root /tmp --rounds 13 --output /tmp/fs-experiment.json
 ```
 
+Use the built extension's actual filename. The driver forces its Python lane to
+fallback even when the selected source has production native dispatch. These
+commands measure the source/driver selected at rerun time; exact historical
+reproduction requires the hashes in the retained reports and manifest.
 Use `--root /dev/shm` for the tmpfs diagnostic, or `--python-only` for source
 profiles without an extension. `--include NAME` selects an exact workload.
-Regenerate fixtures deliberately with the `fixtures` subcommand when Billy
+Regenerate fixtures deliberately with the `fixtures` subcommand when consumer
 source changes; drift does not silently update the captured contracts.
+
+The raw measurements remain separate from the later installed-wheel evidence:
 
 - [Complete disk-backed overlay run](billy-native-linux-overlay-py314.json)
 - [Complete tmpfs run](billy-native-linux-tmpfs-py314.json)

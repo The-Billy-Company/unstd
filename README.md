@@ -2,10 +2,8 @@
 
 **An accelerated Python standard library for hot-path operations.**
 
-unstd speeds up serialization, compression, deep copying, hashing, and other
-operations that dominate busy Python services. It combines bundled native code
-and optional accelerated backends with familiar Python APIs and focused utility
-helpers.
+unstd accelerates serialization, compression, deep copying, hashing, and other
+hot paths with bundled native code, optional backends, and familiar Python APIs.
 
 Requires **Python 3.12+**. The base install has **no third-party runtime
 dependencies**.
@@ -22,6 +20,9 @@ python -m pip install 'unstd[serde,compress]'
 Install only the extras you need. Compatible CPython wheels include bundled C
 extensions; source builds use them when a compiler is available and retain
 portable fallbacks otherwise.
+
+Linux CPython wheels also accelerate [`fs.atomic_write`](src/unstd/fs/README.md)
+without an extra dependency, while retaining the complete Python fallback.
 
 ## Quick start
 
@@ -45,16 +46,21 @@ To migrate existing JSON calls, use `from unstd.serde import jsonx as json`.
 
 | Operation | Module | Optional extra |
 | --- | --- | --- |
-| JSON, Base64, NDJSON, typed codecs | [serde](src/unstd/serde/README.md) | `serde` |
-| Deep copying and dataclass conversion | [clone](src/unstd/clone/README.md) | None |
-| Gzip compression and streaming | [compress](src/unstd/compress/README.md) | `compress` |
-| UUIDs and BLAKE3 hashing | [ids](src/unstd/ids/README.md), [crypto](src/unstd/crypto/README.md) | `ids`, `crypto` |
-| Regex and fuzzy matching | [rex](src/unstd/rex/README.md), [text](src/unstd/text/README.md) | `rex`, `text` |
-| Bulk packing and random draws | [pack](src/unstd/pack/README.md), [rand](src/unstd/rand/README.md) | `pack`, `rand` |
-| Atomic files, subprocesses, iteration | [fs](src/unstd/fs/README.md), [proc](src/unstd/proc/README.md), [iters](src/unstd/iters/README.md) | None |
+| JSON, Base64, NDJSON, typed codecs | [`serde`](src/unstd/serde/README.md) | `serde` |
+| Deep copying and dataclass conversion | [`clone`](src/unstd/clone/README.md) | None |
+| Gzip/zlib streams, Zstandard, archive bindings | [`compress`](src/unstd/compress/README.md) | `compress`, `zstd`, `archives` |
+| UUIDs and BLAKE3 hashing | [`ids`](src/unstd/ids/README.md), [`crypto`](src/unstd/crypto/README.md) | `ids`, `crypto` |
+| Clocks, zoned time, Protobuf timestamp bridge | [`time`](src/unstd/time/README.md) | `time`, `proto` |
+| Validated models and settings | [`model`](src/unstd/model/README.md) | `model` |
+| Sorted collections and persistent mappings | [`containers`](src/unstd/containers/README.md) | `containers` |
+| Regex and fuzzy matching | [`rex`](src/unstd/rex/README.md), [`text`](src/unstd/text/README.md) | `rex`, `text` |
+| Bulk packing and random draws | [`pack`](src/unstd/pack/README.md), [`rand`](src/unstd/rand/README.md) | `pack`, `rand` |
+| TOML writing and YAML parsing/editing | [`toml`](src/unstd/toml/README.md), [`yaml`](src/unstd/yaml/README.md) | `toml`, `yaml` |
+| Audio decoding, encoding, and streaming | [`audio`](src/unstd/audio/README.md) | `audio` |
+| Atomic files, subprocesses, iteration | [`fs`](src/unstd/fs/README.md), [`proc`](src/unstd/proc/README.md), [`iters`](src/unstd/iters/README.md) | None |
 
-The [module index](src/unstd/README.md) also covers containers, time, models,
-TOML, YAML, audio, and their backend requirements.
+The [module index](src/unstd/README.md) and individual guides describe backend
+requirements and fallback behavior.
 
 ## Compatibility and performance
 
@@ -78,4 +84,7 @@ both gains and regressions.
 See the [test guide](tests/README.md), [architecture](docs/architecture.md),
 [API inventory](docs/api.md), and [security policy](SECURITY.md).
 
-Apache-2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE) for licensing details.
+[October 25 updates](docs/updates-2026-10-25.md) distinguish published releases
+from unreleased work.
+
+First-party code is Apache-2.0; bundled licenses are listed in [NOTICE](NOTICE).

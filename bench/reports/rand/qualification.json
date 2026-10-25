@@ -1,0 +1,106 @@
+{
+  "date": "2026-10-25",
+  "scope": "Explicit opt-in 8,000-key integer-count phase with fresh batch construction; complete workflows do not achieve100x",
+  "qualified": true,
+  "proofs": {
+    "macos": {
+      "report": "keyed-release-macos-py314.json",
+      "sha256": "115c9d7866801fa70a8f7bb917c39b947c5958355a12f94c0de868a690bf2ad9",
+      "median_speedup": {
+        "wall_ns": 346.79577748026406,
+        "thread_cpu_ns": 343.16113547195937
+      },
+      "min_speedup": {
+        "wall_ns": 289.442531336154,
+        "thread_cpu_ns": 292.16845968864703
+      },
+      "all_nine_pairs_both_clocks_pass_100x": true
+    },
+    "linux": {
+      "report": "keyed-release-linux-py314.json",
+      "sha256": "44cfb12e60e55b1741f836481ea1bd739bf43b986ad31de24cea91125614a985",
+      "median_speedup": {
+        "wall_ns": 316.4880609075791,
+        "thread_cpu_ns": 315.9531285578357
+      },
+      "min_speedup": {
+        "wall_ns": 114.50594750695646,
+        "thread_cpu_ns": 113.15218186626605
+      },
+      "all_nine_pairs_both_clocks_pass_100x": true
+    }
+  },
+  "final_source_sha256": {
+    "src/unstd/rand/draw.py": "d1db31f2d9f5f35143e4af2bb71126e2ed9a59e283b9b6adba73929b34b7fb7b",
+    "src/unstd/rand/keyed.py": "ba4886979d9096f66b01fcf1451ee883a9fc5e37adb017e5371c784ae3f9cd47",
+    "src/unstd/rand/_rand_native.pyi": "3ae754e85b169809e0c1165aa48f39378cbaa687820bf800aca3a120af68202c",
+    "native/rand/src/adapter.c": "f67c56552aef7107f920f9370179c78968c38e97f9260323bd5078d56c97bc63",
+    "native/rand/src/keyed.h": "367ff81ac10159c5fb1ff2bc817a090111d43f85843e75bdf75e55dcbf9de6b6",
+    "hatch_build.py": "7d0339cff5ad4a83b82e18c7d68dae932ef8f64285ca16df8ca2c1d1963cdb57",
+    "pyproject.toml": "a64f371cad1cee142de38bcb154931f498514ef6e6e40eaa91896842b61277b7"
+  },
+  "relocation": {
+    "measured_wrapper": "measured-draw.py.txt",
+    "only_top_level_keyed_import_path_changed": true,
+    "measured_helper": "measured-keyed.py.txt",
+    "only_empty_export_tuple_added_to_helper": true,
+    "all_other_ast_nodes_equal": true,
+    "final_source_and_native_binaries_remeasured": true
+  },
+  "wheel": {
+    "path": "/tmp/unstd-rand-release-final/unstd-3.1.6-cp314-cp314-macosx_11_0_arm64.whl",
+    "sha256": "3d53437f2d5774c92eda1e136a59c4412b36ddd39dbc484964bbdb223518731e",
+    "native_member": "unstd/rand/_rand_native.cpython-314-darwin.so",
+    "native_sha256": "66788a06c079eb406d6673ecafffa95b7707419fd8631ae53be781b4bce19e9e",
+    "exact_final_python_sources": true,
+    "native_binary_equals_final_mac_proof": true,
+    "strict_build_log": "build-macos-release-py314.txt",
+    "installed_test_log": "tests-installed-macos-py314.txt",
+    "installed_product_security_tests": 538
+  },
+  "tests": {
+    "macos_py312": 538,
+    "macos_py313": 538,
+    "macos_py314_with_gates": 630,
+    "linux_py314_with_harness": 557
+  },
+  "limitations": [
+    "Linux is an aarch64 Docker Desktop VM on the same Mac, not x86_64 production hardware.",
+    "Complete workflows and tiny fresh batches do not achieve100x.",
+    "Explicit SplitMix64-v1 changes seeded values; default streams retain exact outputs/state.",
+    "Broader failing and slow samples remain in their reports."
+  ],
+  "artifacts": {
+    "README.md": "c94a576bda2fadc5f538041937bbbfdaf6a5ef6b462ca17254ced2385d9b119d",
+    "backend-linux-py314.json": "ca793ffa1236ea9cea7bf23bf80407adf92124096466ab56b8d147df46803d45",
+    "backend-macos-initial-py314.json": "d0979603523703cf34984ebbcc5de21263c731c19009ac091f718f1ed3c93468",
+    "backend-macos-py314.json": "6c1003a986c487dbc3f16aad9a3e996e9260146f4e25bb98d0928d07e8d36aca",
+    "before-draw.py.txt": "dc178890d7c64ea2351dc2b8aa3858b6d1a5db8c1b6333a4294510a73e4a2aad",
+    "billy-linux-py314.json": "f392c8623ba9105fa56f880e90593787fa0f0019e4aa9c8190acd901276369c1",
+    "billy-macos-py314.json": "da039e5dbe7bd6a724d1cb89bed3318cc75e9ec6d1a0fa281d03f05421390729",
+    "build-macos-final-py314.txt": "36b30cdb882372f4a660be373ebe25d718da97e2ebb035855ffab8bce56efc00",
+    "build-macos-py314.txt": "93ee878e5df6948fe04691194ecee5544016cb6278dd5ad16557582eb203c0a7",
+    "build-macos-release-py314.txt": "3a042a2337fd56fe4a81bd2f8ed100e8f4429c6d128daecde40de927bce60a8b",
+    "keyed-final-binary-linux-py314.json": "01426622e884f957fbe881ca81dbd5f9c82e856b1d712b1b6e1b35d46349c58e",
+    "keyed-final-binary-macos-py314.json": "1a28ad3cf232275c68d72d63dc8428fba7b01f457f3017198b4fd3af39e9bb58",
+    "keyed-linux-py314.json": "6128b4733d8f478452338ed5eb98275038fe91e66d415c897437523db025bcc1",
+    "keyed-macos-initial-py314.json": "eb74560b6f4ea76c89f28bfab93027ad7bb3a9b61da5cc662ab9eeb26def369f",
+    "keyed-macos-py314.json": "2aeabbd8aeedc9784feba4a5e3b80e1c9579b5bd52bb748f3b8d4c2b504879b9",
+    "keyed-macos-wheel-py314.json": "0fbe8c1ef190bc163be1907e4820812e1d81aed1e6b7952bd2171e8b83c24ff7",
+    "keyed-release-linux-py314.json": "44cfb12e60e55b1741f836481ea1bd739bf43b986ad31de24cea91125614a985",
+    "keyed-release-macos-py314.json": "115c9d7866801fa70a8f7bb917c39b947c5958355a12f94c0de868a690bf2ad9",
+    "measured-draw.py.txt": "1f7879df232688c5a3e94c9d8cf76bedf1d7c1038dbe9aa98f1c902b2a55a457",
+    "measured-keyed.py.txt": "51b70ae8ab7171493dc3c08b463c10bd1fad2162b256b3a23a7f60fa3c6983f6",
+    "qualification-linux-py314.json": "831e2074b1e8c7283671b92bfe2a7e5166e7a5009113594ef288cb633c50c896",
+    "qualification-macos-py312.json": "5d4a2c8703480bc3e3f1fb5da5710b6ec56eaa77816e9a62646f8f553b08795c",
+    "qualification-macos-py313.json": "49d2990aa00838a35e28cf0204faba5ad6ce6a10c5a68acae9c450ed2c719045",
+    "qualify-keyed.py.txt": "4fb41ea93fade823b4572c03c2fb68f374c7490a32236bb21294b9bcb77cae3b",
+    "strategies-linux-py314.json": "d5f90a14bba5f2e721a62afe4572c37700af9c45d9726edc1d35ff37b6b869ee",
+    "strategies-macos-py314.json": "afbc80249a1e8ff33b0239cebb2abe5acde7197b4f3708882c3122be6a7095a9",
+    "tests-installed-macos-py314.txt": "bf283cfa128967385ef41fab03275eb166cada06e00f35f6aff5418e9756257a",
+    "tests-linux-py314.txt": "ec1cfd0b5523d670f94d91ed34b9fbfab84978bbf17fe2941924def66c69504e",
+    "tests-macos-py312.txt": "7896df1f040834cefe8667abf3467e12c33cca3fda148c0f64d292bc4390b68d",
+    "tests-macos-py313.txt": "c062a5867ce914b8213f9a08ebc112215185d50fb484face13527be6596503e8",
+    "tests-macos-py314.txt": "de113cba1f85640294037e67667dc178fd96fffdbf0eb1e010e36b273f1f8a9e"
+  }
+}

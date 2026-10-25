@@ -92,13 +92,10 @@ def python_argv(code: str, args: Sequence[str] = ()) -> list[str]:
     """Preserve the parent's product origin and repository support imports."""
     paths = [str(REPO_ROOT)]
     package = find_spec("unstd")
-    source = REPO_ROOT / "src"
-    if (
-        package is not None
-        and package.origin is not None
-        and Path(package.origin).resolve().is_relative_to(source.resolve())
-    ):
-        paths.insert(0, str(source))
+    if package is not None and package.origin is not None:
+        # Extracted wheels can precede an older installed distribution through
+        # PYTHONPATH, which an explicit child environment deliberately drops.
+        paths.insert(0, str(Path(package.origin).resolve().parent.parent))
     prelude = f"import sys; sys.path[:0] = {paths!r};\n"
     if os.environ.get("UNSTD_CHAOS_BACKEND") == "stdlib":
         prelude += "from tests.support.chaos.journal import apply_backend_policy; apply_backend_policy();\n"

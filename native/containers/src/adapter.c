@@ -157,6 +157,9 @@ fallback(Context *context, enum Method method, PyObject *self,
     if (forward == NULL) return PyErr_NoMemory();
     forward[0] = self;
     for (size_t i = 1; i < total; i++) forward[i] = args[i - 1];
+    /* The upstream binder/call may replace __dict__ and run its finalizers.
+     * No field lookup follows on this path, so do not postpone that cleanup. */
+    Py_CLEAR(context->dict);
     PyObject *result = PyObject_Vectorcall(context->config->methods[method],
                                          forward, nargs + 1, kwnames);
     PyMem_Free(forward);
@@ -170,7 +173,7 @@ single_argument(PyObject *const *args, size_t nargs, PyObject *kwnames,
     if (kwnames == NULL || PyTuple_GET_SIZE(kwnames) == 0)
         return nargs == 1 ? args[0] : NULL;
     if (nargs == 0 && PyTuple_GET_SIZE(kwnames) == 1 &&
-        PyUnicode_Check(PyTuple_GET_ITEM(kwnames, 0)) &&
+        PyUnicode_CheckExact(PyTuple_GET_ITEM(kwnames, 0)) &&
         PyUnicode_CompareWithASCIIString(PyTuple_GET_ITEM(kwnames, 0), name) == 0)
         return args[0];
     return NULL;
@@ -183,15 +186,50 @@ owned_item(PyObject *list, Py_ssize_t index)
     return item == NULL ? NULL : Py_NewRef(item);
 }
 
-/* Reuse the stdlib kernel itself, including its same-type comparison fast path
- * and NotImplemented/reflected-comparison behavior. It owns each fetched item
- * across callbacks and performs checked indexing after reentrant mutations. */
+/* Exact integers cannot run Python comparison callbacks. If every item
+ * visited by the binary search is exact, its borrowed references and the
+ * captured instance dictionary remain live for this callback-free phase.
+ * Reject subclasses before comparing them, preserving the generic path's
+ * reflected comparisons, exceptions and reentrant mutation semantics. */
 static int
-bisect_list(Config *config, PyObject *list, PyObject *value, int right,
-            Py_ssize_t *result)
+bisect_integers(PyObject *list, PyObject *value, int right, Py_ssize_t *result)
 {
+    if (!PyLong_CheckExact(value)) return 0;
+    int overflow = 0;
+    long long target = PyLong_AsLongLongAndOverflow(value, &overflow);
+    if (overflow) return 0;
+    if (target == -1 && PyErr_Occurred()) return -1;
+    Py_ssize_t low = 0, high = PyList_GET_SIZE(list);
+    while (low < high) {
+        Py_ssize_t middle = low + (high - low) / 2;
+        PyObject *item = PyList_GET_ITEM(list, middle);
+        if (!PyLong_CheckExact(item)) return 0;
+        long long number = PyLong_AsLongLongAndOverflow(item, &overflow);
+        if (overflow) return 0;
+        if (number == -1 && PyErr_Occurred()) return -1;
+        int less = right ? target < number : number < target;
+        if (right ? less : !less) high = middle;
+        else low = middle + 1;
+    }
+    *result = low;
+    return 1;
+}
+
+/* Reuse the stdlib kernel for comparisons which may call Python. It owns
+ * fetched items across callbacks and checks indexing after mutations. */
+static int
+bisect_list(Context *context, PyObject *list, PyObject *value, int right,
+            Py_ssize_t *result, int *may_reenter)
+{
+    int primitive = bisect_integers(list, value, right, result);
+    *may_reenter = primitive == 0;
+    if (primitive != 0) return primitive < 0 ? -1 : 0;
     PyObject *args[] = {list, value};
-    PyObject *rank = PyObject_Vectorcall(config->bisect[right], args, 2, NULL);
+    /* Lists and the configuration stay owned across comparisons. The dict
+     * itself is reacquired afterward so replacement finalizers run upstream's
+     * way, during the callback rather than after it has returned. */
+    Py_CLEAR(context->dict);
+    PyObject *rank = PyObject_Vectorcall(context->config->bisect[right], args, 2, NULL);
     if (rank == NULL) return -1;
     *result = PyLong_AsSsize_t(rank);
     Py_DECREF(rank);
@@ -205,9 +243,11 @@ call_index_helper(Context *context, PyObject *self, Py_ssize_t position,
     PyObject *pos = PyLong_FromSsize_t(position);
     PyObject *idx = PyLong_FromSsize_t(index);
     PyObject *result = NULL;
-    if (pos != NULL && idx != NULL)
+    if (pos != NULL && idx != NULL) {
+        Py_CLEAR(context->dict);
         result = PyObject_CallMethodObjArgs(self, context->config->loc_name,
                                            pos, idx, NULL);
+    }
     Py_XDECREF(pos);
     Py_XDECREF(idx);
     return result;
@@ -233,8 +273,10 @@ native_bisect(PyObject *self, PyTypeObject *defining_class,
         goto done;
     }
     Py_ssize_t position, index;
-    if (bisect_list(context.config, maxes, value, right, &position) < 0) goto done;
-    if (context_refresh(&context, self) < 0) goto done;
+    int may_reenter;
+    if (bisect_list(&context, maxes, value, right, &position,
+                    &may_reenter) < 0) goto done;
+    if (may_reenter && context_refresh(&context, self) < 0) goto done;
     if (position == PyList_GET_SIZE(maxes)) {
         PyObject *length = field(&context, LENGTH);
         if (length == NULL) {
@@ -254,8 +296,9 @@ native_bisect(PyObject *self, PyTypeObject *defining_class,
         PyErr_SetString(PyExc_TypeError, "sorted list block changed during comparison");
         goto done;
     }
-    if (bisect_list(context.config, sublist, value, right, &index) < 0) goto done;
-    if (context_refresh(&context, self) < 0) goto done;
+    if (bisect_list(&context, sublist, value, right, &index,
+                    &may_reenter) < 0) goto done;
+    if (may_reenter && context_refresh(&context, self) < 0) goto done;
     if (helper_unchanged(&context, defining_class)) {
         result = loc_value(&context, self, position, index);
         if (result != NULL || PyErr_Occurred()) goto done;
@@ -294,6 +337,7 @@ loc_value(Context *context, PyObject *self, Py_ssize_t position, Py_ssize_t loca
     PyObject *index = list_field(context, INDEX);
     if (index == NULL) return NULL;
     if (PyList_GET_SIZE(index) == 0) {
+        Py_CLEAR(context->dict);
         PyObject *built = PyObject_CallMethodObjArgs(self, context->config->build_name,
                                                     NULL);
         if (built == NULL) goto done;
@@ -407,6 +451,7 @@ native_pos(PyObject *self, PyTypeObject *defining_class,
     index = list_field(&context, INDEX);
     if (index == NULL) goto slow;
     if (PyList_GET_SIZE(index) == 0) {
+        Py_CLEAR(context.dict);
         PyObject *built = PyObject_CallMethodObjArgs(self, context.config->build_name,
                                                     NULL);
         if (built == NULL) goto done;

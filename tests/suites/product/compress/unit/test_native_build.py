@@ -134,7 +134,7 @@ def test_build_selection_preserves_default_and_never_mixes_inflater_sources(
             return str(tmp_path / "not-built.so")
 
     monkeypatch.setattr(build_hook, "Extension", extension)
-    monkeypatch.setattr(build_hook, "build_ext", Compile)
+    monkeypatch.setattr(build_hook, "_IsalBuildExt", Compile)
     monkeypatch.setattr(build_hook.sys, "platform", platform)
     hook = build_hook.CustomBuildHook(
         str(REPO_ROOT), {}, None, None, str(tmp_path), "wheel"

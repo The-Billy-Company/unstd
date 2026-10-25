@@ -1,9 +1,34 @@
+---
+doc_radar:
+  sentinels:
+    - file: src/unstd/iters/__init__.py
+      contains: ['from unstd.iters.consecutive import chunked, runs, windowed', 'from unstd.iters.select import first, ilen, last, nth, take']
+    - file: src/unstd/iters/reshape.py
+      contains: ['def partition[T](']
+---
+
 # `iters` — lazy iterator & functional combinators
 
 Part of [`unstd`](../README.md). The curated, `more-itertools`-style
 set of combinators the stdlib leaves as copy-paste "recipes" — chunk a stream,
 slide a window, take the first N, drop duplicates in order, split on a predicate
 in one pass. It kills hand-rolled accumulator loops across the codebase.
+
+## Source ownership
+
+This flat leaf groups the combinators by their work on a stream. Its package
+initializer exposes the shared public surface without adding package layers.
+
+| File | Responsibility |
+| --- | --- |
+| [`__init__.py`](__init__.py) | Public combinator exports plus stdlib `batched` and `pairwise` |
+| [`consecutive.py`](consecutive.py) | Chunks, sliding windows, and consecutive-key runs |
+| [`distinct.py`](distinct.py) | Global and consecutive duplicate removal, including unhashable keys |
+| [`reshape.py`](reshape.py) | One-level flattening and shared-pass predicate partitioning |
+| [`select.py`](select.py) | First, last, and indexed selection, bounded prefixes, and counting |
+
+Run the [iterator contracts](../../../tests/suites/product/iters/README.md) from
+the repository root with `uv run --no-sync pytest tests/suites/product/iters -q`.
 
 ## Pure stdlib — no extra, no backend
 

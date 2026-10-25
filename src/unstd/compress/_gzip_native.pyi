@@ -27,3 +27,9 @@ class Inflater:
     def unused_data(self) -> bytes: ...
     @property
     def unconsumed_tail(self) -> bytes: ...
+
+def compress(data: object, level: int, /) -> bytes | None: ...
+
+ISAL_RUNTIME_VERSION: str | None
+ISAL_PATCH_SHA256: str | None
+ISAL_STREAMING: bool

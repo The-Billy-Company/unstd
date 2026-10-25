@@ -1,0 +1,68 @@
+"""Retained final-binary proof for the configured 8,000-key count phase."""
+
+import argparse
+from functools import partial
+import hashlib
+import json
+from pathlib import Path
+import platform
+import sys
+from types import SimpleNamespace
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+from bench.profiles import rand_backend as timing, rand_keyed as phase
+
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument("--source", type=Path, required=True)
+parser.add_argument("--before", type=Path, required=True)
+parser.add_argument("--output", type=Path, required=True)
+args = parser.parse_args()
+current, current_evidence = timing._load_source(args.source)
+before, before_evidence = timing._load_source(args.before)
+evidence = {"keyed": current_evidence, "original": before_evidence}
+timing._check_sources(evidence)
+if not current_evidence["helpers"]["_keyed_ints"].get("native_binding"):
+    raise RuntimeError("native seeded_ints is required")
+examples = [
+    SimpleNamespace(
+        hidden_tool=f"tool_{index % 371}",
+        messages=[{"role": "user", "content": f"public synthetic request {index}"}],
+    )
+    for index in range(8000)
+]
+seeds = phase._seeds(examples)
+calls = {
+    "original": partial(phase._original_phase, before, seeds),
+    "keyed": partial(phase._keyed_phase, current, seeds, None),
+}
+row = phase._measure(
+    calls, partial(phase._check_counts, n=8000), rounds=9, minimum_ns=3_000_000
+)
+ratios = {
+    clock: [
+        old[clock] / new[clock]
+        for old, new in zip(row["samples"]["original"], row["samples"]["keyed"])
+    ]
+    for clock in ("wall_ns", "thread_cpu_ns")
+}
+timing._check_sources(evidence)
+report = {
+    "environment": {"python": sys.version, "platform": platform.platform()},
+    "sources": evidence,
+    "scope": "8,000 independently keyed counts in [1,4], fresh batch Generator included; full consumer and input key hashing excluded, both original per-key construction and all result/input conversion costs included",
+    "configured_size_receipt": json.loads(
+        (Path(phase.__file__).parents[1] / "workloads/rand_keyed.json").read_text()
+    ),
+    "driver_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+    "phase_harness_sha256": hashlib.sha256(Path(phase.__file__).read_bytes()).hexdigest(),
+    "timing_harness_sha256": hashlib.sha256(Path(timing.__file__).read_bytes()).hexdigest(),
+    "required_speedup": 100,
+    "all_pairs_on_both_clocks_pass": all(v >= 100 for values in ratios.values() for v in values),
+    "pair_ratios": ratios,
+    "timings": row,
+}
+args.output.parent.mkdir(parents=True, exist_ok=True)
+args.output.write_text(json.dumps(report, indent=2) + "\n")
+print(json.dumps({"all_pairs_pass": report["all_pairs_on_both_clocks_pass"], "median_ratios": row["median_matched_original_over_keyed"], "min_ratios": {k: min(v) for k,v in ratios.items()}}))
+if not report["all_pairs_on_both_clocks_pass"]:
+    raise SystemExit(1)

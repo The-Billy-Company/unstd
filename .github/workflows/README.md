@@ -27,13 +27,13 @@ wheel providers upgrade their patch release before TLS and ABI admission.
 The text extra retains its older floor on Python 3.12/3.13 and uses RapidFuzz
 3.14 or newer on Python 3.14, where that series supplies compatible wheels.
 
-Each normal performance comparison also gates all 14 frozen Billy gzip consumer
+Each normal performance comparison also gates all 14 frozen gzip consumer
 shapes before the full function verification. Both installations use the same
 worker, interpreter, dependencies and committed synthetic fixtures; a case above
 130% of the comparison revision's wall time fails after saving its raw evidence.
 The Linux/macOS and Python 3.13/3.14 jobs retain that evidence independently.
-No Billy checkout is required. Manual `gzip_diagnostic` runs keep their separate
-check name and do not satisfy the normal performance checks.
+No application checkout is required. Manual `gzip_diagnostic` runs keep their
+separate check name and do not satisfy the normal performance checks.
 
 The clone comparison also checks 30 common graph and dataclass workloads with
 GC enabled. It proves successful native graph, dataclass and `asdict` routes in
@@ -58,6 +58,24 @@ The Linux full-extra test environments and the isolated `archives` lane
 explicitly install native libarchive for runtime qualification. The Python
 `archives` extra supplies its binding; it does not bundle that native library.
 Base-install jobs retain their dependency-free import and missing-extra checks.
+
+Linux native test, sanitizer, security, performance, and campaign builds install
+Yasm before compiling the private ISA-L gzip decoder. The build requires Yasm
+1.3 or newer, or NASM 2.11.01 or newer; release Linux x86_64 containers already
+supply Yasm. The native build never downloads an assembler or codec source. The
+base install matrix keeps its ordinary fallback build when no assembler is present.
+The strict Linux x86 native job requires active ISA-L streaming and checks its
+compiled version and patch digest against the reviewed source inputs before
+running product contracts.
+
+Linux native allocator and ASan/UBSan jobs also require the filesystem extension
+to import and run the fs product contracts. Its signal/error observer is built
+only for tests and preserves sanitizer preload order. Release wheel tests include
+fs; the verifier requires the binary on supported Linux native wheels and rejects
+it on other platforms, while retaining the portable typing stub. Compiler-failure
+and pristine installed-consumer checks cover native dispatch and the Python
+fallback. The [filesystem qualification](../../bench/reports/fs/production/README.md)
+records the separate installed workload and sanitizer evidence.
 
 The dependency-floor job restores the committed `uv.lock` immediately after
 installing its lowest-direct environment. Tests retain those installed versions

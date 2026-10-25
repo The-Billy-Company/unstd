@@ -23,9 +23,17 @@ Install with the extra: `pip install 'unstd[crypto]'`.
 | File        | Role                                                                                                      |
 | ----------- | --------------------------------------------------------------------------------------------------------- |
 | `digest.py` | BLAKE3-256 - `raw` (bytes) / `hex` (full or truncated) / `Stream`, `derive_key`, and the `legacy_blake2b` escape hatch. |
+| [`hashing.py`](hashing.py) | Required BLAKE3 backend import, process CPU cap, and fresh per-call worker pools shared by digest and token APIs. |
 | [`native/crypto/src/adapter.c`](../../../native/crypto/src/adapter.c) | Optional bounded stream batching and canonical token-envelope parsing; cryptographic primitives remain in their existing backends. |
 | `token.py`  | Keyed-BLAKE3 `mac_raw` / `mac_hex` / `verify_mac`, constant-time `equal`, and the claims envelope.         |
 | `tls.py`    | A verifying TLS client context with no parameter for skipping verification.                                |
+
+This package stays a flat leaf with a small public surface. Backend admission in
+`hashing.py` allows the stdlib-only TLS module to load without the crypto extra.
+Native ABI declarations remain at [`_stream_native.pyi`](_stream_native.pyi).
+
+Run the [cryptographic contract suite](../../../tests/suites/product/crypto/README.md)
+with `uv run --no-sync pytest tests/suites/product/crypto -q`.
 
 There is deliberately no sealing or key-management module. An empty one would be
 a promise nobody kept.

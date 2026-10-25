@@ -12,8 +12,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from unstd.serde import jsonx
-from unstd.serde._internal import json_encode
+from unstd.serde import encoding, jsonx
 
 
 native = pytest.importorskip("unstd.serde._json_native")
@@ -45,7 +44,7 @@ def test_repeated_float_public_encoding_avoids_fallback(
         pytest.fail("repeated finite floats fell back to the stdlib encoder")
 
     monkeypatch.setattr(jsonx, "_DEFAULT_ENCODER", SimpleNamespace(encode=forbidden))
-    monkeypatch.setattr(json_encode, "_encoder", forbidden)
+    monkeypatch.setattr(encoding, "_encoder", forbidden)
     assert jsonx.dumps(value, **options) == expected
     assert jsonx.dumpb(value) == expected_bytes
 

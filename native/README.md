@@ -14,16 +14,18 @@ headers. Python module names remain independent of source filenames.
 | [`clone/`](clone/README.md) | [`adapter.c`](clone/src/adapter.c) | Container graphs and admitted dataclasses |
 | [`containers/`](containers/README.md) | [`adapter.c`](containers/src/adapter.c) | Sorted collection operations and positional indexes |
 | [`proc/`](proc/README.md) | [`adapter.c`](proc/src/adapter.c), [`pipes.c`](proc/src/pipes.c) | POSIX spawning and captured-output exchange |
-| [`fs/`](fs/src/README.md) | [`adapter.c`](fs/src/adapter.c) | Linux atomic writes with signal-aware rollback and durable commit reporting |
+| [`rand/`](rand/README.md) | [`adapter.c`](rand/src/adapter.c), [`keyed.h`](rand/src/keyed.h) | Seed-faithful list shuffling and explicit SplitMix64-v1 integer batches |
+| [`pack/`](pack/README.md) | [`adapter.c`](pack/src/adapter.c) | Immutable numeric frame geometry, integer boundaries, and finite-value scans |
+| [`fs/`](fs/README.md) | [`adapter.c`](fs/src/adapter.c) | Linux atomic writes with signal-aware rollback and durable commit reporting |
 | [`crypto/`](crypto/README.md) | [`adapter.c`](crypto/src/adapter.c) | Hash-stream batching and bearer-envelope parsing |
 | [`serde/`](serde/README.md) | [`adapter.c`](serde/src/adapter.c) | JSON proofs, codec dispatch and implementation headers |
 | [`text/`](text/README.md) | [`adapter.c`](text/src/adapter.c), [`rust/adapter.c`](text/rust/adapter.c) | Levenshtein and Jaro metrics |
 | [`compress/`](compress/README.md) | [`adapter.c`](compress/src/adapter.c) | Gzip buffer decoding, stream inflation and checksums |
 | [`audio/`](audio/README.md) | External build recipe | Reviewed libsndfile patch and build provenance |
 
-[`hatch_build.py`](../hatch_build.py) attempts seven extensions on CPython,
-plus the filesystem extension on Linux,
-skipping free-threaded builds and other interpreters. Local compiler failures
+[`hatch_build.py`](../hatch_build.py) attempts the registered extensions on
+CPython, restricting the filesystem extension to Linux and skipping
+free-threaded builds and other interpreters. Local compiler failures
 leave Python fallbacks available; `CIBUILDWHEEL=1` makes those failures fatal.
 Default kernels use C; `UNSTD_TEXT_RUST=1` selects the Rust text implementation.
 The reviewed gzip archive experiment has separate

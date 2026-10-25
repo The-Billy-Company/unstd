@@ -9,6 +9,7 @@ and reconstruction code for `unstd.clone._clone_native`.
 | `clone_checked` | The same tree semantics, but a proved cycle raises `RecursionError`; `asdict` copies repeated structural positions separately. |
 | `clone_graph` | Validate while copying and preserve aliases in a pointer-key table; optionally consult and extend the Python memo. A detected cycle raises `RecursionError`. |
 | `clone_walk_graph` | Walk mixed builtin and admitted dataclass graphs using the actual Python memo; select class handlers at each pinned source node and delegate foreign nodes in place. |
+| `clone_walk_canonical_graph` | The canonical Python walk may also handle exact naive/UTC datetime and time leaves natively, preserving its memo, timezone and recursion policy. The original custom-walker entry point keeps delegating those leaves. |
 | `clone_record_graph` | Walk a specified admitted record class with the same shared memo and callback rules. |
 | `clone_records` | Copy trees containing an admitted record class; after copying starts, delegate foreign nodes to the supplied Python walker in place. |
 | `clone_dataclass` | Recheck an admitted layout, memoize one safe empty twin, then populate its state through the actual shared-memo continuation. The optional `reuse_memo=False` marks an already selected and pinned Python handler. |
@@ -36,6 +37,13 @@ recipes, selected after the current source is pinned. Destination state updates
 are captured before descendant hooks, and an allocated twin is finished rather
 than retried. The mixed continuation preserves Python recursion headroom on
 the validated CPython 3.12–3.14 ABI; other interpreters use the Python walker.
+
+The canonical temporal shortcut starts only with a fresh memo. It checks the
+Python walker, temporal class bindings and copy registries before use. Foreign
+continuations disable it for the remaining graph; admission may retain it only
+after checking that memo keys and source pins remain ordinary builtin values.
+Older extensions retain the existing `clone_walk_graph` import and shared-memo
+calling convention. The Python temporal policy remains authoritative.
 
 Keep recursive items owned across allocations: GC/finalizers can mutate live
 sources even with the GIL held. Lists are reread live, dictionary cursors check

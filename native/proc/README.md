@@ -7,6 +7,11 @@ and captured-output exchange; unavailable facilities retain the Python path.
 
 ## Process creation
 
+Production selects native spawning on macOS and stdlib creation on Linux.
+Paired command profiles found Linux's existing launch path cheaper for common
+metadata calls. The C spawn boundary is still qualified directly on both
+platforms; capture acceleration is selected on both.
+
 `spawn` admits the runner's ordinary POSIX shape and publishes the child's PID
 and ownership on its `Popen` before returning through a signal checkpoint.
 macOS uses `POSIX_SPAWN_CLOEXEC_DEFAULT` with explicit stdio actions. Linux uses
@@ -59,7 +64,7 @@ separate installation root. The normal optional wheel build is configured in
 Persistent contracts live in
 [`test_native_spawn.py`](../../tests/suites/product/proc/unit/test_native_spawn.py)
 and [`test_native_io.py`](../../tests/suites/product/proc/unit/test_native_io.py).
-Native proof is separate from portable fallback coverage. Billy workload
+Native proof is separate from portable fallback coverage. Consumer workload
 receipts and paired measurements live under [`bench/`](../../bench/README.md).
 
 The OS interfaces follow Apple's local `posix_spawn(2)`,

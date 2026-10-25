@@ -126,8 +126,8 @@ Original-module ports preserve module, class, exception and native callback
 identity and add no per-operation adapter. Their upstream version-specific
 contracts remain in force. Archive policies, cumulative expansion limits and
 Zstandard frame/window checks remain caller responsibilities. See the
-[port contract matrix](../bench/reports/compress/port-contracts.md) for Billy's
-operation mapping and verification.
+[port contract matrix](../bench/reports/compress/port-contracts.md) for
+consumer operation mapping and verification.
 
 ## Containers
 
@@ -200,9 +200,21 @@ Import `from unstd import fs`.
 
 `ensure_dir` returns a `Path`; `walk_files` yields paths. `atomic_writer` is a
 context manager for writing the replacement file; `atomic_write` and
-`atomic_replace` perform complete operations. Durability options and strict
-directory-sync failures retain their existing meanings. This package uses only
-the stdlib.
+`atomic_replace` perform complete operations and return the destination `Path`.
+All three write operations accept `durable=False`, `True`, or `"strict"`.
+Strict mode requires directory-sync acknowledgments before and after replacement;
+a post-commit failure reports that the new data is already committed.
+`sync_dir(path, *, strict=False)` returns `None` and suppresses OS errors by
+default, while `strict=True` reports them.
+
+This package needs no extra or third-party runtime dependency. Ordinary
+GIL-enabled Linux CPython builds use the bundled native `atomic_write` backend
+for exact bytes and default UTF-8 text with an existing parent. Other platforms,
+unsupported inputs, custom OS/path bindings, and unavailable native capabilities
+retain the complete Python path. Native I/O errors propagate without retrying
+the write. `atomic_writer` retains the Python streaming implementation.
+The [filesystem guide](../src/unstd/fs/README.md) describes admission, mode
+preservation, cancellation, cleanup notes, and the durability limits.
 
 ## Identifiers
 
@@ -257,6 +269,7 @@ Import `from unstd.pack import binpack`.
 | Module | Exported API |
 | --- | --- |
 | [`unstd.pack.binpack`](../src/unstd/pack/binpack.py) | `Struct`, `calcsize`, `error`, `iter_unpack`, `pack`, `pack_array`, `pack_array_portable`, `pack_into`, `unpack`, `unpack_array`, `unpack_array_portable`, `unpack_from` |
+| [`unstd.pack.ragged`](../src/unstd/pack/ragged.py) | `RaggedDecoder` |
 
 The scalar functions, `Struct`, and `error` are the exact stdlib `struct`
 objects. Compiled `Struct` instances keep their stdlib `format`, `size`,
@@ -266,6 +279,28 @@ objects. Compiled `Struct` instances keep their stdlib `format`, `size`,
 array/view return behavior. The `pack` extra provides NumPy. The explicit
 `pack_array_portable` and `unpack_array_portable` functions always use the
 portable dtype subset and stdlib validation, returning bytes and an owned list.
+
+`RaggedDecoder(dtype, *, columns, index_dtype="=i8", finite=False,
+allow_empty=True)` compiles an integer-boundary table followed by numeric rows.
+`unpack(buf, *, index_count)` validates geometry, boundaries, and the configured
+finite-value constraint on every call. Exact bytes back immutable NumPy views;
+other contiguous exporters snapshot before validation. Without NumPy, results
+are tuple rows and integer boundaries. The optional native validator and stdlib
+fallback enforce the same contract. Identity, publication limits, and
+normalization remain with the caller.
+
+Both decoders accept keyword-only `offset=0` in bytes and `count=-1` in elements.
+The default count consumes the whole remainder; an explicit nonnegative count
+selects a region without slicing and permits unrelated trailing bytes. Portable
+decoding validates bounds and always returns independent Python scalars; NumPy
+decoding retains views over the original buffer.
+
+Portable packing can copy matching primitive storage from exact one-dimensional
+`array.array` and NumPy arrays, including admitted strides and byte orders,
+without boxing every scalar. Integer width/signedness and float64 must match;
+float16/float32 conversions, subclasses and other iterables retain stdlib
+validation. Output remains owned bytes. The
+[packing guide](../src/unstd/pack/README.md) documents admission and fallback.
 
 ## Processes
 
@@ -281,9 +316,10 @@ are the original stdlib exception classes. `run` returns `CompletedProcess`,
 continues to use explicit argument sequences, captured output, and finite
 positive timeouts.
 
-On Linux and macOS, an optional bundled C backend accelerates admitted process
-creation and captured output without stdin; bounded waits use kernel exit
-notifications. Unsupported shapes retain stdlib execution. The public
+An optional bundled C backend handles admitted macOS process creation and
+captured output without stdin on Linux/macOS. Linux keeps stdlib creation;
+bounded waits use kernel exit notifications. Unsupported shapes retain stdlib
+execution. The public
 signatures, captured output, timeout exceptions and direct-child cleanup
 contracts are unchanged. See the
 [backend details and measurements](../src/unstd/proc/README.md#backend).
@@ -305,7 +341,7 @@ holds the `CompletedProcess`; inherited `returncode`, `cmd`, `output`, `stdout`,
 and `stderr` remain available. Its string representation includes captured
 stderr. Both result classes retain the public module identity `unstd.proc`,
 including for class lookup and `CompletedProcess` pickles, while their
-[definitions](../src/unstd/proc/_internal/results.py) live privately.
+[definitions](../src/unstd/proc/results.py) live privately.
 
 ## Randomness
 
@@ -335,7 +371,7 @@ generator.choice(seq: Sequence[T]) -> T
 generator.shuffle(x: MutableSequence[T]) -> None
 generator.sample(population: Sequence[T], k: int, *, counts=None) -> list[T]
 generator.floats(n: int, *, low=0.0, high=1.0) -> FloatArray
-generator.ints(n: int, low: int, high: int, *, endpoint=False) -> IntArray
+generator.ints(n: int, low: int, high: int, *, endpoint=False, seeds=None) -> IntArray
 generator.choices(seq: Sequence[T], n: int, *, weights=None) -> list[T]
 ```
 
@@ -343,6 +379,23 @@ generator.choices(seq: Sequence[T], n: int, *, weights=None) -> list[T]
 extra. `bit_generator` accepts `PCG64`, `PCG64DXSM`, `SFC64`, or `Philox` when
 using NumPy. Instance streams do not reseed module-level draws. `FloatArray`
 and `IntArray` remain the existing return annotation aliases in `rand.draw`.
+
+Module-level `ints` accepts the same `seeds=None` keyword. Supplying one unsigned
+64-bit integer key per result selects the explicit **SplitMix64-v1** stream,
+with effective inclusive output bounds in signed int64. This opt-in changes
+values relative to constructing an MT19937 generator per key. It preserves each
+key's value across reordered/chunked batches and leaves both ordinary engines
+untouched; duplicate keys repeat results. Counts, keys and bounds are validated
+even for empty batches. Return containers retain the selected backend's list or
+int64 ndarray contract. Secure draws continue to use `rand.crypto`.
+
+`Generator.shuffle` can use an optional CPython kernel for ordinary lists while
+preserving exact stdlib permutations and subsequent RNG state. Custom methods,
+engine hooks, sequence types and missing native support retain stdlib execution.
+Module-level scalar aliases keep their direct stdlib bindings. The
+[rand guide](../src/unstd/rand/README.md) covers these choices; the
+[qualification](../bench/reports/rand/README.md) separates keyed count-phase
+speedups from complete consumer costs.
 
 ## Regular expressions
 
@@ -535,7 +588,8 @@ compatibility diagnostics rather than the supported capability API for new code:
 | `unstd.containers.sorted` | `HAVE_SORTEDCONTAINERS` |
 | `unstd.containers.persistent` | `HAVE_IMMUTABLES` |
 
-Private `_internal` packages own implementation details. The bundled extension
+Supporting modules have descriptive concern names; their location does not
+add them to the supported API. The bundled extension
 modules `unstd.serde._json_native`, `unstd.clone._clone_native`,
 `unstd.crypto._stream_native`, `unstd.text._text_native`,
 `unstd.compress._gzip_native`, `unstd.containers._sorted_native`, and

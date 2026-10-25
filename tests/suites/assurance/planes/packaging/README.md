@@ -1,5 +1,13 @@
 # Installed packaging contracts
 
+Linux wheels additionally exercise the packaged native filesystem writer
+through public `fs.atomic_write`, then select its Python fallback in the same
+pristine consumer. The native probe observes accepted strict byte publication
+through the real installed kernel, then verifies a text overwrite with
+`fs._native=None`. Non-Linux builds exclude that accelerator; free-threaded
+builds retain Python. Source archives retain its production C entrypoint
+`native/fs/src/adapter.c` independently of the historical experiment.
+
 This lane freezes the working tree's release inputs into an external session
 snapshot, including new/untracked package sources, before reading its oracles or
 building real artifacts. This keeps concurrent edits from changing inputs between
@@ -40,6 +48,10 @@ cache, backend, resolver, import or native library failure is skipped there.
   native CPython or portable wheel tags, metadata, supported Python and
   license metadata are checked. An explicit compiler failure verifies the
   portable fallback; native release builds require the extension to compile.
+  For fs, both a missing compiler and failure of only its C source are followed
+  by an isolated installed-consumer write with recursive parent creation and
+  scratch cleanup. A failure of only fs preserves the other native modules;
+  the same source failure must reject a strict release build without a wheel.
   In opted-in Rust builds, missing Cargo and invalid Rust sources independently
   disable only the text extension, clear stale editable text binaries, and fail
   required native builds. C compilation failures remain independent.
@@ -93,8 +105,10 @@ cache, backend, resolver, import or native library failure is skipped there.
   filesystem, processes, cloning, UUIDs, iterators, numeric packing, random draws,
   regex, text similarity, clocks, TOML reading, gzip and WAV framing/PCM. Independent
   stdlib outputs or fixed byte/value fixtures supply expected values.
-  A completeness gate derives every public module from the snapshot and requires
-  an explicit behavior probe for each; adding a new module without installed
+  Ragged packing also checks fixed integer-boundary/numeric-row frames with
+  immutable tuple output in base installs and immutable NumPy arrays with the
+  `pack` extra. A completeness gate derives every public module from the snapshot
+  and requires an explicit base or required-extra behavior probe for each; adding a new module without installed
   consumer evidence fails with the missing probe named. Successful probes also
   verify each assigned module actually loaded from the consumer environment.
   The exact stdlib compression/archive aliases instead require their declared
@@ -106,7 +120,7 @@ cache, backend, resolver, import or native library failure is skipped there.
   called, not merely imported.
 - The host's mypy checks an external strict consumer against the fresh
   interpreter's installed package. A successful fixture uses `assert_type`; a
-  negative control requires ten real type errors, including invalid explicit
+  negative control requires thirteen real type errors, including invalid explicit
   durability/backend policies and compression return types, so a missing typing marker or
   `Any` leakage cannot masquerade as success. No type checker is installed into
   the consumer environment. Required-extra runs also check installed native
@@ -122,3 +136,9 @@ Platform coverage and combinations of multiple extras remain separate evidence.
 Per-extra runtime probes follow the versions in the frozen session lockfile;
 the dependency-floor job's re-resolved lock therefore drives its floor consumers.
 The lane itself needs no registry access.
+
+The [fs integration suite](../../../product/fs/integration/README.md) separately
+checks real Linux native/fallback cancellation and error parity, including the
+test-only ELF observer. The [production qualification](../../../../../bench/reports/fs/production/README.md)
+retains direct/sdist-installed suite receipts, compiler-failure evidence, and
+Billy workload profiles tied to the tested wheel bytes.

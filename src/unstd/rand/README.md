@@ -9,6 +9,21 @@ legible paths.
 | [`draw`](#draw--seedable-prng) (re-exported at the package top level) | numpy `Generator(PCG64)` → stdlib `random` fallback | simulations, sampling, shuffles, bulk arrays, ML/eval draws |
 | [`crypto`](#crypto--the-csprng-path)                                  | **always** stdlib `secrets` (CSPRNG)                | tokens, keys, salts, nonces, OTP/reset codes                |
 
+## Source ownership
+
+This package stays a flat leaf; each module owns a distinct randomness concern.
+
+| File | Responsibility |
+| --- | --- |
+| [`__init__.py`](__init__.py) | Public draw exports and the secure randomness module |
+| [`draw.py`](draw.py) | Seedable scalar and bulk public APIs, engine selection, and state |
+| [`keyed.py`](keyed.py) | Independent SplitMix64-v1 batch validation, native dispatch, and portable algorithm |
+| [`crypto.py`](crypto.py) | Secure draws using stdlib `secrets` |
+| [`_rand_native.pyi`](_rand_native.pyi) | Native ABI declarations; [kernel ownership](../../../native/rand/README.md) |
+
+Run the [randomness contract suite](../../../tests/suites/product/rand/README.md)
+with `uv run --no-sync pytest tests/suites/product/rand -q`.
+
 ## Backend & fallback
 
 The **`rand` extra** (`pip install 'unstd[rand]'`) provides
@@ -18,6 +33,12 @@ Twister); bulk functions also use it when NumPy is absent. The bulk array helper
 return a Python `list` on that fallback and an `ndarray` with NumPy.
 `HAVE_NUMPY` exposes which backend is live. The `crypto` path never
 touches the extra — it is always `secrets`.
+
+CPython builds also provide an optional native loop for `Generator.shuffle`
+on ordinary lists. It calls the same live stdlib bit engine and preserves
+the exact permutation and subsequent RNG state. Custom sequences, engine
+hooks, missing compilers and unsupported interpreters retain stdlib behavior.
+Module-level scalar exports remain directly bound stdlib methods.
 
 ## `draw` — seedable PRNG
 
@@ -98,6 +119,36 @@ Weight validation retains the selected engine's behavior. For weighted draws,
 use finite non-negative weights with a positive
 total and one weight per population item; exact extreme-value limits and errors
 can differ between engines. A non-positive total raises `ValueError` on both.
+
+### Independent keyed integer batches
+
+When each item needs one reproducible integer from its own key, pass `seeds`
+to the existing `ints` API instead of constructing a generator for every key:
+
+```python
+keys = [1234, 5678, 9012]
+counts = run.ints(len(keys), 1, 4, endpoint=True, seeds=keys)
+# Also available as rand.ints(..., seeds=keys).
+```
+
+This explicit opt-in uses **SplitMix64-v1**, a different simulation stream from
+`Generator(key).randint(...)`. Each key must support `operator.index` and fit
+unsigned 64 bits; `n` must equal the number of keys. The effective inclusive
+output bounds must fit signed int64. Validation applies to empty batches too.
+It returns the selected backend's usual list or int64 ndarray. A native kernel
+accelerates batches without a NumPy dependency; a portable Python implementation
+produces identical values when the kernel is absent.
+
+Each key starts a local SplitMix64 state, adds `0x9E3779B97F4A7C15`, and applies
+the standard two-multiply finalizer. For interval width `w`, words below
+`2**64 % w` are rejected and the accepted word is reduced modulo `w`.
+Rejection advances only that key's local state. Reordering or chunking a batch
+preserves each key's value, and duplicate keys repeat values. Calls leave both
+ordinary engines untouched; `seed()` does not affect keyed results. This path
+is for simulation and deterministic selection; secure values use `crypto`.
+
+The [backend qualification](../../../bench/reports/rand/) separates
+keyed count-phase gains from complete consumer costs and unchanged-stream gains.
 
 The bulk helpers `floats`/`ints` return a NumPy `ndarray` on the NumPy backend and
 a Python `list` on the stdlib fallback, with different seeded sequences. These

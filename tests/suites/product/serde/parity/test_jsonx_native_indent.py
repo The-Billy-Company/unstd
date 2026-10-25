@@ -12,8 +12,7 @@ from hypothesis import given
 from hypothesis import strategies as st
 import pytest
 
-from unstd.serde import jsonx
-from unstd.serde._internal import json_encode
+from unstd.serde import encoding, jsonx
 
 
 native = pytest.importorskip("unstd.serde._json_native")
@@ -39,7 +38,7 @@ def test_public_wide_documents_avoid_the_stdlib_fallback(
         pytest.fail("a wide builtin tree fell back to stdlib encoding")
 
     monkeypatch.setattr(jsonx, "_DEFAULT_ENCODER", SimpleNamespace(encode=forbidden))
-    monkeypatch.setattr(json_encode, "_encoder", forbidden)
+    monkeypatch.setattr(encoding, "_encoder", forbidden)
     assert jsonx.dumps(value, **options) == expected
 
 

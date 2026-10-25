@@ -15,30 +15,43 @@ from bench.profiles import fs_backend as profile
 from unstd import fs
 
 
-def _source(root, marker):
+def _source(root, marker, *, legacy=False):
     package = root / "unstd" / "fs"
-    internal = package / "_internal"
-    internal.mkdir(parents=True)
-    (internal / "__init__.py").write_text("", encoding="utf-8")
-    (internal / "walk.py").write_text(
-        f"def marker():\n    return {marker!r}\n", encoding="utf-8"
-    )
+    package.mkdir(parents=True)
+    if legacy:
+        # Historical snapshots remain valid comparison inputs.
+        implementation = package / "_internal"
+        implementation.mkdir()
+        (implementation / "__init__.py").write_text("", encoding="utf-8")
+        traversal = implementation / "walk.py"
+        module = "unstd.fs._internal.walk"
+    else:
+        traversal = package / "traversal.py"
+        module = "unstd.fs.traversal"
+    traversal.write_text(f"def marker():\n    return {marker!r}\n", encoding="utf-8")
     (package / "__init__.py").write_text(
-        "from unstd.fs._internal.walk import marker\n"
+        f"from {module} import marker\n"
         "__all__ = ['marker']\n_FD_WALK_SUPPORTED = True\n",
         encoding="utf-8",
     )
     return root
 
 
-def test_saved_source_binds_its_own_internals_and_restores_live_imports(tmp_path):
+@pytest.mark.parametrize("legacy", [False, True])
+def test_saved_source_binds_its_own_internals_and_restores_live_imports(
+    tmp_path, legacy
+):
     live = {
         name: module
         for name, module in sys.modules.copy().items()
         if name == "unstd" or name.startswith("unstd.")
     }
-    before, old_evidence = profile._load_source(_source(tmp_path / "old", "old"))
-    current, new_evidence = profile._load_source(_source(tmp_path / "new", "new"))
+    before, old_evidence = profile._load_source(
+        _source(tmp_path / "old", "old", legacy=legacy)
+    )
+    current, new_evidence = profile._load_source(
+        _source(tmp_path / "new", "new", legacy=legacy)
+    )
     assert before.marker() == "old"
     assert current.marker() == "new"
     assert fs is sys.modules["unstd.fs"]
@@ -47,16 +60,14 @@ def test_saved_source_binds_its_own_internals_and_restores_live_imports(tmp_path
         for name, module in sys.modules.copy().items()
         if name == "unstd" or name.startswith("unstd.")
     } == live
-    assert (
-        old_evidence["files_sha256"]["unstd/fs/_internal/walk.py"]
-        != (new_evidence["files_sha256"]["unstd/fs/_internal/walk.py"])
-    )
+    path = "unstd/fs/_internal/walk.py" if legacy else "unstd/fs/traversal.py"
+    assert old_evidence["files_sha256"][path] != new_evidence["files_sha256"][path]
     profile._check_signatures({"before": old_evidence, "current": new_evidence})
 
 
 def test_stale_bytecode_cannot_disagree_with_recorded_source_hash(tmp_path):
     source = _source(tmp_path, "old")
-    path = source / "unstd" / "fs" / "_internal" / "walk.py"
+    path = source / "unstd" / "fs" / "traversal.py"
     py_compile.compile(str(path), doraise=True)
     info = path.stat()
     path.write_text("def marker():\n    return 'new'\n", encoding="utf-8")
@@ -65,7 +76,7 @@ def test_stale_bytecode_cannot_disagree_with_recorded_source_hash(tmp_path):
     finders = list(sys.meta_path)
     module, evidence = profile._load_source(source)
     assert module.marker() == "new"
-    assert "unstd/fs/_internal/walk.py" in evidence["files_sha256"]
+    assert "unstd/fs/traversal.py" in evidence["files_sha256"]
     assert sys.meta_path == finders
     assert sys.modules["unstd.fs"] is fs
 
@@ -91,7 +102,7 @@ def test_changed_sources_are_rejected_before_report_publication(tmp_path, change
     source = _source(tmp_path, "before")
     _module, evidence = profile._load_source(source)
     profile._check_source_hashes({"current": evidence})
-    path = source / "unstd" / "fs" / "_internal" / "walk.py"
+    path = source / "unstd" / "fs" / "traversal.py"
     if change == "edit":
         path.write_text("def marker():\n    return 'after'\n", encoding="utf-8")
     else:

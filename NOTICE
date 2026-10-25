@@ -18,18 +18,22 @@ Samuel Neves, Zooko Wilcox-O'Hearn).
 
 ---
 
-Native gzip reads include unmodified source from libdeflate 1.25 by Eric
+Native gzip includes unmodified source from libdeflate 1.25 by Eric
 Biggers and contributors (MIT) and zlib 1.3.2 by Jean-loup Gailly and Mark
-Adler (Zlib). Source provenance and full license notices are included under
-native/compress/vendor/libdeflate/ and native/compress/vendor/zlib/; built distributions
-retain both license files. macOS uses its platform libz for stream inflation.
+Adler (Zlib), plus ISA-L 2.31.1 by Intel Corporation and contributors
+(BSD-3-Clause). Source provenance and full license notices are included under
+native/compress/vendor/libdeflate/, native/compress/vendor/zlib/, and
+native/compress/vendor/isa-l/; built distributions retain all three license files.
+Project-owned ISA-L adaptations apply to verified private build snapshots.
+macOS uses its platform libz for stream inflation.
 
     https://github.com/ebiggers/libdeflate
     https://zlib.net/
+    https://github.com/intel/isa-l
 
 ---
 
-The sorted collection adapters in src/unstd/containers/_sorted.py adapt
+The sorted collection adapters in src/unstd/containers/ordering.py adapt
 initializers from sortedcontainers 2.4.0 by Grant Jenks (copyright 2014-2019),
 licensed under Apache License 2.0. The upstream package remains an optional
 runtime dependency.

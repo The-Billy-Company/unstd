@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import ast
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -18,6 +19,7 @@ import pytest
 
 from tests.support.environment.anchors import REPO_ROOT
 from tests.support.environment.backends import require_backend
+from tests.support.environment.process import run_python
 from tests.tooling.ci import groups as ci
 from tests.tooling.ci.sharding import parse_shard
 from tests.tooling.release import verify, wheel_tests
@@ -240,6 +242,9 @@ def test_sanitizer_shards_retain_both_engines_every_module_and_failure_evidence(
         "tests/suites/product/crypto",
         "tests/suites/product/compress",
         "tests/suites/product/containers",
+        "tests/suites/product/fs",
+        "tests/suites/product/pack",
+        "tests/suites/product/rand",
     }
     for shard in matrix["shard"]:
         tokens = shlex.split(command.replace("${{ matrix.shard }}", str(shard)))
@@ -260,8 +265,10 @@ def test_sanitizer_shards_retain_both_engines_every_module_and_failure_evidence(
     ]
     assert "${{ matrix.shard }}" in artifact["with"]["name"]
     assert 'if [ "${{ matrix.shard }}" = "1" ]; then' in step["run"]
+    # Rebuild with the same compiler as the GCC sanitizer runtime while keeping
+    # the controller itself outside the preloaded runtime.
     assert (
-        "env -u LD_PRELOAD .venv/bin/python -m tests.tooling.runtime.proc_memory"
+        "env -u LD_PRELOAD CC=gcc .venv/bin/python -m tests.tooling.runtime.proc_memory"
         " --sanitize --output .local/proc-memory --tests tests/suites/product/proc"
     ) in step["run"]
 
@@ -294,6 +301,76 @@ def test_every_built_native_module_has_allocator_sanitizer_and_wheel_contracts(
             module in "\n".join(step.get("run", "") for step in steps)
             for module in modules
         )
+
+
+@pytest.mark.parametrize("change", [None, "inactive", "missing", "version", "patch"])
+def test_strict_linux_native_preflight_requires_active_reviewed_isal(workflow, change):
+    command = next(
+        step["run"]
+        for step in workflow["jobs"]["native"]["steps"]
+        if step.get("name") == "Require active ISA-L in the strict Linux x86 build"
+    )
+    assert "uv run --no-sync python - <<'PY'" in command
+    script = command.split("<<'PY'\n", 1)[1].rsplit("\nPY", 1)[0]
+    vendor = REPO_ROOT / "native/compress/vendor/isa-l/UPSTREAM.json"
+    patch = REPO_ROOT / "native/compress/src/isal_patch.json"
+    configuration = {
+        "ISAL_STREAMING": True,
+        "ISAL_RUNTIME_VERSION": json.loads(vendor.read_text())["version"],
+        "ISAL_PATCH_SHA256": hashlib.sha256(patch.read_bytes()).hexdigest(),
+    }
+    if change == "inactive":
+        configuration["ISAL_STREAMING"] = False
+    elif change == "missing":
+        del configuration["ISAL_STREAMING"]
+    elif change == "version":
+        configuration["ISAL_RUNTIME_VERSION"] = "unreviewed"
+    elif change == "patch":
+        configuration["ISAL_PATCH_SHA256"] = "0" * 64
+    result = run_python(
+        "import json, sys\n"
+        "from types import ModuleType, SimpleNamespace\n"
+        "module = ModuleType('unstd.compress')\n"
+        "module._gzip_native = SimpleNamespace(**json.loads(sys.argv[1]))\n"
+        "sys.modules['unstd.compress'] = module\n" + script,
+        [json.dumps(configuration)],
+        cwd=REPO_ROOT,
+        timeout=30,
+    )
+    if change is None:
+        assert result.returncode == 0, result.stderr
+        assert json.loads(result.stdout)["isal_streaming"] is True
+    else:
+        assert result.returncode != 0
+        assert "ISA-L" in result.stderr
+
+
+def test_sanitizer_build_and_proc_audit_use_the_preloaded_compiler_runtime(workflow):
+    steps = workflow["jobs"]["native-sanitizers"]["steps"]
+    build = next(
+        step
+        for step in steps
+        if "uv pip install " in step.get("run", "") and "--editable ." in step["run"]
+    )
+    assert build["env"]["CC"] == "gcc"
+    for name in ("CFLAGS", "LDFLAGS"):
+        assert "-fsanitize=address,undefined" in shlex.split(build["env"][name])
+    execute = next(step for step in steps if step.get("id") == "tests")
+    assert 'LD_PRELOAD="$(gcc -print-file-name=libasan.so)"' in execute["run"]
+    # The proc runner compiles another instrumented extension. It must select
+    # the same compiler while its uninstrumented controller starts without ASan.
+    audit = next(
+        line.strip()
+        for line in execute["run"].splitlines()
+        if "-m tests.tooling.runtime.proc_memory" in line
+    )
+    assert shlex.split(audit)[:5] == [
+        "env",
+        "-u",
+        "LD_PRELOAD",
+        "CC=gcc",
+        ".venv/bin/python",
+    ]
 
 
 def test_parallel_type_matrix_runs_every_combination_and_preserves_failure(
@@ -386,9 +463,7 @@ def test_required_linux_archive_consumers_provision_the_native_runtime(workflow)
         ("extras", "matrix.install.id == 'archives'"),
     ):
         steps = workflow["jobs"][identity]["steps"]
-        native = next(
-            step for step in steps if "apt-get install" in step.get("run", "")
-        )
+        native = next(step for step in steps if "libarchive-dev" in step.get("run", ""))
         assert native["if"] == condition
         assert native["run"].splitlines() == [
             "sudo apt-get update",
@@ -400,6 +475,51 @@ def test_required_linux_archive_consumers_provision_the_native_runtime(workflow)
             for index, step in enumerate(steps)
             if step.get("run", "").startswith("uv sync ")
         )
+
+
+@pytest.mark.parametrize(
+    ("filename", "identity", "condition"),
+    [
+        ("ci", "native-rust", "runner.os == 'Linux'"),
+        ("ci", "test", "matrix.environment.id != 'fallback'"),
+        ("ci", "extras", None),
+        ("ci", "resources", "runner.os == 'Linux'"),
+        ("ci", "native", None),
+        ("ci", "native-sanitizers", None),
+        ("static-analysis", "codeql", "matrix.language == 'c-cpp'"),
+        ("performance", "compare", "runner.os == 'Linux'"),
+        ("fuzz", "campaign", None),
+        ("chaos", "campaign", "runner.os == 'Linux'"),
+        ("concurrency", "campaign", "runner.os == 'Linux'"),
+    ],
+)
+def test_linux_native_builds_provision_the_assembler_before_compiling(
+    filename, identity, condition
+):
+    yaml = require_backend("ruamel.yaml").YAML(typ="safe", pure=True)
+    workflow = yaml.load((REPO_ROOT / f".github/workflows/{filename}.yml").read_text())
+    steps = workflow["jobs"][identity]["steps"]
+    assembler = next(
+        step
+        for step in steps
+        if "sudo apt-get install --yes --no-install-recommends yasm"
+        in step.get("run", "")
+    )
+    assert assembler.get("if") == condition
+    assert "sudo apt-get update" in assembler["run"].splitlines()
+    assert assembler["run"].splitlines()[-1] == "yasm --version"
+    assert not assembler.get("continue-on-error", False)
+    compilation = next(
+        index
+        for index, step in enumerate(steps)
+        if "--reinstall-package unstd" in step.get("run", "")
+        or "uv build " in step.get("run", "")
+        or (
+            "uv pip install " in step.get("run", "")
+            and ("--editable ." in step["run"] or "--target " in step["run"])
+        )
+    )
+    assert steps.index(assembler) < compilation
 
 
 def test_cached_dependency_setup_rebuilds_source_before_running_tests(workflow):

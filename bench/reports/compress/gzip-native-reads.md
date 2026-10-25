@@ -1,7 +1,7 @@
 ---
 doc_radar:
   sentinels:
-    - file: src/unstd/compress/_reader.py
+    - file: src/unstd/compress/engines/reader.py
       contains: ['_factory = _accelerated.Inflater', '_zlib_globals["crc32"] = _crc32']
     - file: native/compress/src/adapter.c
       contains: ['libdeflate_gzip_decompress_ex(', 'MAX_OUTPUT_BYTES', 'sizeof(ModuleState)']
@@ -37,7 +37,7 @@ hashes, interpreter details, dependency versions and native codec versions.
 Speedup below is the 3.1.3 median CPU time divided by the candidate median CPU
 time; values above 1 indicate lower candidate CPU cost.
 
-Upload cases follow Billy's bounded consumption: read 256 KiB chunks to compute
+Upload cases follow bounded consumer reads: read 256 KiB chunks to compute
 an incremental BLAKE3 digest and byte count, rewind, then read/count/discard the
 second pass. The timed result contains a 32-byte digest and two counts. Before
 timing, a separate validator checks every chunk in both passes against the
@@ -122,7 +122,7 @@ operation and fixture generator source, environment and binary hashes, case
 order, and all 31 samples for that case.
 
 That timed consumer concatenated and retained two complete expanded outputs.
-Billy's upload hashes/counts bounded chunks and streams its second pass. The
+The upload consumer hashes/counts bounded chunks and streams its second pass. The
 corrected benchmark measures that consumption pattern; historical joined-upload
 numbers and current bounded-upload numbers have different timed contracts.
 The diagnostics do not establish allocator, alignment, cache or codec causality.

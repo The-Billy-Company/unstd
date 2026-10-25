@@ -48,7 +48,7 @@ python -m pytest tests/suites/product/serde/parity/test_jsonx_native_memory.py -
 
 All runs used the final bounded C source and the normal optimized extension.
 
-| Python | Complete serde suite plus existing Billy benchmark gates | Additional memory checks, including resources |
+| Python | Complete serde suite plus existing consumer benchmark gates | Additional memory checks, including resources |
 | --- | ---: | ---: |
 | 3.12.15 | 2,921 passed, 65 skipped | 116 passed |
 | 3.13.16 | 2,931 passed, 55 skipped | 115 passed, 1 skipped |

@@ -1,6 +1,6 @@
 # Process exit latency on Linux and macOS
 
-The subsequent [Billy native-backend qualification](billy-native.md) measures
+The subsequent [native-backend qualification](billy-native.md) measures
 ordinary commands and large captured output, with source receipts and sanitizer
 evidence. The measurements below record the earlier Python wait optimization.
 
@@ -12,7 +12,7 @@ dependency or public API change.
 
 ## Implementation
 
-The private [`Popen` backend](../../../src/unstd/proc/_internal/backend.py)
+The private [`Popen` backend](../../../src/unstd/proc/backend.py)
 overrides bounded `_wait` calls. It first checks whether the child has already
 exited. A running child uses a Linux pidfd with `poll`, or macOS kqueue with
 `NOTE_EXIT`. Readiness only observes exit; stdlib still reaps the child and

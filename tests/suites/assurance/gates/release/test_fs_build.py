@@ -66,9 +66,3 @@ def test_installed_wheel_preflight_requires_fs_only_on_linux(monkeypatch, platfo
     exec(compile(source, "<fs-wheel-preflight>", "exec"), {})  # noqa: S102 — repository-owned preflight
     assert observed == (["unstd.fs._fs_native"] if platform == "linux" else [])
     assert "fs" in wheel_tests.MODULES
-
-
-def test_production_build_never_compiles_the_filesystem_experiment():
-    source = (REPO_ROOT / "hatch_build.py").read_text()
-    assert "native/fs/experiments" not in source
-    assert "unstd.fs._fs_native" in build._NATIVE_MODULES

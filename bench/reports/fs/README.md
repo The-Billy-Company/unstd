@@ -1,37 +1,49 @@
 # Filesystem backend evaluation
 
-The later [Billy/Linux native evaluation](billy-linux.md) profiles captured
-consumer operations and an explicitly built C proof on Linux. The historical
-measurements below describe the initial Python optimization on macOS.
+The [production qualification](production/README.md) records the installed Linux
+backend, Python fallback, cancellation/errors, packaging, and checked Billy
+workloads. Its [manifest](production/manifest.json) identifies the qualified
+source snapshot and retained direct-wheel/sdist artifacts. Later workspace
+edits do not update that evidence.
+
+| Stage | Evidence | Scope |
+| --- | --- | --- |
+| Installed Linux backend | [Production qualification](production/README.md) | Public native dispatch versus forced Python fallback from identical installed packages; direct wheel, sdist rebuild, signals/errors, compiler fallback and sanitizers |
+| Standalone Linux prototype | [Historical Billy evaluation](billy-linux.md) | Explicit `_fs_experiment` binary; original cancellation/error limitations, synthetic consumer shapes and separate reference lanes |
+| Python orchestration | Results below and [Linux follow-up](backend-linux-py314.json) | Initial traversal/directory/writer changes, before production native dispatch |
+
+The historical measurements below describe the initial Python optimization on
+macOS. They do not measure the installed native backend or the latest checkout.
 
 Measured October 25, 2026 on macOS arm64 with CPython 3.12.15, 3.13.17,
 and 3.14.9. This is local warm-cache evidence; storage behavior and scheduling
 vary substantially between samples.
 
-## Implementation and decisions
+## Historical Python implementation and decisions
 
-The descriptor walker retains `O_NOFOLLOW`, parent-relative child opens, lazy
-iteration, and handles bounded by traversal depth. It now caches string
-prefixes, constructs `Path` objects only for yielded files, and checks the
-common file case first. Explicit scanner/descriptor ownership replaces two
-`ExitStack` allocations per directory. A final cleanup stack still releases
-every live ancestor when iteration or a close fails.
+The descriptor walker retained `O_NOFOLLOW`, parent-relative child opens, lazy
+iteration, and handles bounded by traversal depth. That snapshot cached string
+prefixes, constructed `Path` objects only for yielded files, and checked the
+common file case first. Explicit scanner/descriptor ownership replaced two
+`ExitStack` allocations per directory. A final cleanup stack still released
+every live ancestor when iteration or a close failed.
 
-`ensure_dir` checks an existing directory before attempting `mkdir`. This
-avoids a failed syscall and exception on the common idempotent path. Strict
-parent preparation reuses its successful directory stat instead of attempting
-creation again. Creating a missing directory pays for an initial stat; the
+`ensure_dir` checked an existing directory before attempting `mkdir`. This
+avoided a failed syscall and exception on the common idempotent path. Strict
+parent preparation reused its successful directory stat instead of attempting
+creation again. Creating a missing directory paid for an initial stat; the
 create/remove workload below retains that cost.
 
 No file sync, directory-sync preflight, permission copying, atomic rename, or
-rollback step was removed. The portable walker keeps every identity recheck;
-the explicitly following walker is unchanged. The package remains pure stdlib.
+rollback step was removed. The portable walker kept every identity recheck;
+the explicitly following walker was unchanged. This stage changed Python
+orchestration only, adding no compiled backend or third-party runtime dependency.
 
 ## Results
 
-Each number is **before time / current time**; above 1 means faster current
-code. Wall latency and process CPU are shown separately. Full tables retain
-losses and unchanged-code controls, rather than asserting a uniform gain.
+Each number is **before time / candidate-snapshot time**; above 1 means faster
+candidate code. Wall latency and process CPU are shown separately. Full tables
+retain losses and unchanged-code controls, rather than asserting a uniform gain.
 
 | Workload | Python 3.12 wall / CPU | Python 3.13 wall / CPU | Python 3.14 wall / CPU |
 | --- | ---: | ---: | ---: |
@@ -114,7 +126,7 @@ sample, median timings, and the top profile entries. The snapshot contains the
 four original runtime Python files, and its contents were checked against all
 three reports' baseline hashes.
 
-To reproduce from the repository root:
+To rerun the comparison driver from the repository root:
 
 ```console
 mkdir -p /tmp/unstd-fs-before
@@ -125,12 +137,15 @@ python3.14 bench/profiles/fs_backend.py --compare-source /tmp/unstd-fs-before --
 Repeat with Python 3.12 and 3.13. The direct entry point needs no optional
 packages. `--include NAME` selects a workload and can be repeated. Absolute
 paths in retained profiles describe the original run; hashes identify source
-contents after extraction to another location.
+contents after extraction to another location. The archive retains the original
+baseline. `--source src` selects the checkout at rerun time; matching the original
+candidate requires the source bytes identified in the report. A new run neither
+reproduces those candidate bytes automatically nor replaces the historical data.
 
 ## Validation
 
-All **163 fs product tests** passed on Python 3.12, 3.13, and 3.14. The Python
-3.14 combined run passed **177 tests**, including 14 harness contracts. Two
+At this stage, all **163 fs product tests** passed on Python 3.12, 3.13, and 3.14.
+The Python 3.14 combined run passed **177 tests**, including 14 harness contracts. Two
 mixed atomic/strict-durability fault histories passed separately. Ruff lint and
 formatting and strict mypy passed for the fs runtime and benchmark driver.
 
@@ -142,4 +157,6 @@ strict-sync preflight, and post-commit failure tests remain in place.
 
 The initial portable branch checks ran on macOS. The subsequent Linux follow-up
 passed all 163 fs product tests and retained a [Linux Python comparison](backend-linux-py314.json).
-Windows execution was not performed.
+Windows execution was not performed. The subsequent installed native
+qualification and its larger contract suite are recorded separately in
+[production/](production/README.md).

@@ -122,7 +122,7 @@ sys.meta_path.insert(0, NoCodecs())
 import unstd.compress as codecs
 assert {'bz2', 'lzma', 'tarfile', 'zipfile', 'zlib', 'zstd', 'zstandard'} <= set(dir(codecs))
 assert not any(name.split('.')[0] in blocked for name in sys.modules)
-assert 'unstd.compress._ports' not in sys.modules
+assert 'unstd.compress.engines.imports' not in sys.modules
 """,
         cwd=tmp_path,
         timeout=15,

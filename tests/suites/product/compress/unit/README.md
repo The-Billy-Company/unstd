@@ -53,3 +53,18 @@ uv run --no-sync pytest tests/suites/product/compress/unit -q
 ```
 
 See [the module test overview](../README.md) for related evidence.
+
+`test_native_encoder.py` qualifies the complete-buffer compression kernels with
+frozen Billy request bytes, gzip headers/trailers and decoder consumption,
+observed request quality, unsupported workload and capability fallbacks, all
+other levels/timestamps, 37 differential argument/callback histories, failure
+propagation without replay, independent concurrent encoders and Python-thread
+progress during large native calls. Stateful writers and compressor copies
+retain their existing provider and tests.
+
+`test_stream_histories.py` compares 73 bounded native read and source-error
+histories with the running stdlib. It covers short sources, complete and later
+members, truncated dynamic bodies, malformed blocks, `read`, `read1` and
+`readinto` budgets, and repeated body errors across reset. Delivered bytes,
+exception details and identity, source calls/position/ownership, and destination
+buffer mutation must retain their order.

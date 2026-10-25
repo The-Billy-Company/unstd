@@ -8,6 +8,9 @@
  * NotImplemented before publishing any result. Every cache is operation-local.
  */
 #include <cpython/longintrepr.h>
+
+#define MIN_SHARED_WIDTH 32
+#define MIN_SHARED_WORK 4096
 typedef struct {
     EncodeProof tree;
     uint64_t bits[4];
@@ -91,7 +94,8 @@ repeat_string(RepeatWriter *writer, PyObject *value)
     if (PyUnicode_GET_LENGTH(value) > 256) { return 0; }
     static const char hex[] = "0123456789abcdef";
     Py_ssize_t start = writer->size;
-    if (PyUnicode_IS_ASCII(value)) {
+    /* Tiny keys suit the inline emitter better than a scan plus memcpy. */
+    if (PyUnicode_IS_ASCII(value) && PyUnicode_GET_LENGTH(value) >= 8) {
         const char *source = (const char *)PyUnicode_1BYTE_DATA(value);
         Py_ssize_t length = PyUnicode_GET_LENGTH(value), index = 0;
         for (; index < length; index++) {
@@ -331,13 +335,22 @@ guarded_repeated_encode(NativeState *state, PyObject *value, PyObject *option, i
     if (PyList_CheckExact(value) && PyList_GET_SIZE(value) > 1
         && PyList_GET_ITEM(value,0) == PyList_GET_ITEM(value,1)
         && (PyList_CheckExact(PyList_GET_ITEM(value,0)) || PyDict_CheckExact(PyList_GET_ITEM(value,0)))) {
-        if (Py_EnterRecursiveCall(" while proving JSON encoding")) return NULL;
-        RepeatProof proof = {.tree = {.remaining = MAX_WIDE_VALUES}};
-        PyObject *result = repeat_write_shared(value,ascii,spaced,&proof);
-        Py_LeaveRecursiveCall();
-        if (result != Py_NotImplemented) return result;
-        Py_DECREF(result);
-        /* Preserve the existing backend domain when memo admission declines. */
+        PyObject *branch = PyList_GET_ITEM(value,0);
+        Py_ssize_t width = PyList_CheckExact(branch)
+            ? PyList_GET_SIZE(branch) : PyDict_GET_SIZE(branch);
+        /* Small branches already suit the backend. The guarded sum cannot
+         * overflow: its arm is reached only when width < MIN_SHARED_WORK. */
+        if (width >= MIN_SHARED_WIDTH
+            && (width >= MIN_SHARED_WORK
+                || PyList_GET_SIZE(value) >= (MIN_SHARED_WORK + width - 1) / width)) {
+            if (Py_EnterRecursiveCall(" while proving JSON encoding")) return NULL;
+            RepeatProof proof = {.tree = {.remaining = MAX_WIDE_VALUES}};
+            PyObject *result = repeat_write_shared(value,ascii,spaced,&proof);
+            Py_LeaveRecursiveCall();
+            if (result != Py_NotImplemented) return result;
+            Py_DECREF(result);
+            /* Preserve the backend domain when memo admission declines. */
+        }
     }
     if (Py_EnterRecursiveCall(" while proving JSON encoding")) { return NULL; }
     EncodeProof ordinary = {.remaining = MAX_WIDE_VALUES};

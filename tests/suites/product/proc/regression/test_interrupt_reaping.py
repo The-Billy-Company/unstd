@@ -66,7 +66,7 @@ import sys
 import threading
 import time
 from unstd import proc
-from unstd.proc._internal import backend
+from unstd.proc import backend
 
 stop = threading.Event()
 sender_errors = []

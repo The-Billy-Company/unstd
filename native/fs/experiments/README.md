@@ -1,12 +1,18 @@
 # Linux atomic-commit proof
 
+This is the historical profiling prototype. The separately implemented
+[production backend](../src/README.md) is now wired into Linux public dispatch;
+its [installed-package qualification](../../../bench/reports/fs/production/README.md)
+covers cancellation/error parity and the Python fallback. The limitations below
+describe this prototype.
+
 This is an explicit experiment, outside `hatch_build.py` and the public fs
 dispatch. It measures whether moving a complete one-shot atomic write into C
-reduces the Python work in Billy's small state, token, report, and checkpoint
+reduces the Python work in small state, token, report, and checkpoint
 writes. It does not claim an improvement until the Linux consumer measurements
 establish one.
 
-The [Billy/Linux evaluation](../../../bench/reports/fs/billy-linux.md) retains
+The [Linux consumer evaluation](../../../bench/reports/fs/README.md) retains
 the measured CPU gains, variable disk latency, consumer boundaries, and raw
 profiles. It supports further work on small atomic writes, with this proof
 remaining outside production dispatch.
@@ -61,8 +67,9 @@ sync, batched commits, or payload cache is used.
   explicit reason this proof is not a drop-in backend.
 - The error-stage note and filename reporting are experimental. Complete error
   and cleanup-note parity, signal timing, alternate interpreters, allocator
-  failures, and platform-specific pathname corner cases require a separate
-  production qualification before integrating this module.
+  failures, and platform-specific pathname corner cases are not qualified for
+  this module. The production implementation and its separate qualification
+  are linked above.
 
 ## Build and qualify
 

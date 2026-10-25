@@ -12,7 +12,7 @@ import pytest
 
 from tests.support.environment.process import run_python
 from unstd import proc
-from unstd.proc._internal import backend
+from unstd.proc import backend
 
 
 pytestmark = pytest.mark.skipif(os.name != "posix", reason="POSIX captured pipe kernel")
@@ -20,10 +20,28 @@ pytestmark = pytest.mark.skipif(os.name != "posix", reason="POSIX captured pipe 
 
 @pytest.fixture
 def native():
+    if sys.platform not in {"linux", "darwin"}:
+        pytest.skip("native capture is qualified on Linux and macOS")
     if backend._native is None:
         pytest.skip("optional proc native binary is absent")
     assert callable(backend._native.communicate)
     return backend._native
+
+
+def test_default_policy_uses_the_selected_native_kernels(monkeypatch, native):
+    calls = {"spawn": [], "communicate": []}
+    for name in calls:
+        operation = getattr(native, name)
+
+        def observe(*arguments, _name=name, _operation=operation):
+            result = _operation(*arguments)
+            calls[_name].append(result is not NotImplemented)
+            return result
+
+        monkeypatch.setattr(native, name, observe)
+    assert proc.capture([sys.executable, "-c", "print('selected')"]) == "selected"
+    assert calls["spawn"] == ([True] if sys.platform == "darwin" else [])
+    assert calls["communicate"] == [True]
 
 
 def test_large_unicode_and_newlines_use_native_capture(monkeypatch, native):
@@ -98,7 +116,7 @@ import os
 from pathlib import Path
 import sys
 from unstd import proc
-from unstd.proc._internal import backend
+from unstd.proc import backend
 assert backend._native is not None
 communicate = backend._native.communicate
 calls = []
@@ -215,6 +233,30 @@ def test_repeated_native_drains_preserve_descriptor_ownership_and_flags(
                     os.close(descriptor)
 
 
+@pytest.mark.parametrize("blocking", [False, True])
+def test_duplicate_pipe_descriptors_restore_their_shared_flags(native, blocking):
+    reader, writer = os.pipe()
+    duplicate = os.dup(reader)
+    try:
+        os.set_blocking(reader, blocking)
+        os.write(writer, b"shared pipe")
+        os.close(writer)
+        writer = -1
+        out, err, expired, *_ = native.communicate(
+            reader, duplicate, time.monotonic() + 1
+        )
+        # Both logical streams consume one kernel queue; their split is not
+        # ordered relative to each other, but every byte must be retained.
+        assert sorted(out + err) == sorted(b"shared pipe")
+        assert expired is False
+        assert os.get_blocking(reader) is blocking
+        assert os.get_blocking(duplicate) is blocking
+    finally:
+        for descriptor in (reader, duplicate, writer):
+            if descriptor >= 0:
+                os.close(descriptor)
+
+
 def test_native_timeout_and_setup_error_restore_pipe_flags(native):
     outread, outwrite = os.pipe()
     errread, errwrite = os.pipe()
@@ -293,7 +335,7 @@ from pathlib import Path
 import resource
 import sys
 from unstd import proc
-from unstd.proc._internal import backend
+from unstd.proc import backend
 assert backend._native is not None
 communicate = backend._native.communicate
 calls = []
@@ -371,7 +413,7 @@ import sys
 import threading
 import time
 from unstd import proc
-from unstd.proc._internal import backend
+from unstd.proc import backend
 assert backend._native is not None
 communicate = backend._native.communicate
 calls = []

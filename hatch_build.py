@@ -14,7 +14,7 @@ import subprocess  # nosec B404 # build tools require explicit compiler processe
 import sys
 import sysconfig
 from tempfile import NamedTemporaryFile, TemporaryDirectory
-from typing import Any
+from typing import Any, NamedTuple
 
 from hatchling.builders.hooks.plugin.interface import BuildHookInterface
 from setuptools import Distribution, Extension
@@ -33,6 +33,8 @@ _NATIVE_MODULES = (
     "unstd.containers._sorted_native",
     "unstd.proc._proc_native",
     "unstd.fs._fs_native",
+    "unstd.rand._rand_native",
+    "unstd.pack._pack_native",
 )
 
 _COMPILER_KEYS = {
@@ -159,7 +161,219 @@ def _compiler_commands() -> dict[str, list[str] | None] | None:
     return commands
 
 
-class _ContainerBuildExt(build_ext):
+_ISAL_VERSION = "2.31.1"
+_ISAL_MANIFEST_SHA256 = (
+    "179611c79b1589d8f5e601610e1e07249d15ff992660fc3b25cbe1b609decaa7"
+)
+_ISAL_HELPER_SHA256 = "5ef06292f0a03eacf7dc62d7693e1228b5e6d75669685f2908925aa6a6cd1e57"
+_ISAL_PATCH_SHA256 = "9101816bc8756622f6eef8e56f0d870efdba2e1893dff6e2c6566d4dc36c4f4c"
+_ISAL_C_SOURCES = ("igzip/igzip_inflate.c", "igzip/hufftables_c.c")
+_ISAL_ASM_SOURCES = (
+    "igzip/igzip_decode_block_stateless_01.asm",
+    "igzip/igzip_decode_block_stateless_04.asm",
+    "igzip/igzip_inflate_multibinary.asm",
+    "igzip/rfc1951_lookup.asm",
+)
+
+
+class _IsalConfig(NamedTuple):
+    vendor: Path
+    helper: Path
+    patch: Path
+    temporary: Path
+
+
+def _isal_platform() -> bool:
+    """Use only the Linux x86_64 interpreter target; other builds keep zlib."""
+    return (
+        sys.platform == "linux"
+        and sys.maxsize > 2**32
+        and sysconfig.get_platform().rsplit("-", 1)[-1].lower() in {"x86_64", "amd64"}
+    )
+
+
+def _isal_assembler() -> tuple[str, str] | None:
+    """Admit the NASM subset or the Yasm version qualified for these units."""
+    for name, minimum in (("nasm", (2, 11, 1)), ("yasm", (1, 3, 0))):
+        executable = shutil.which(name)
+        if executable is None:
+            continue
+        try:
+            result = subprocess.run(  # noqa: S603 # nosec B603 # discovered build tool, explicit argv
+                [executable, "--version"],
+                check=True,
+                text=True,
+                capture_output=True,
+                timeout=10,
+            )
+        except (OSError, subprocess.SubprocessError):
+            continue
+        first = result.stdout.splitlines()[0] if result.stdout else ""
+        match = re.fullmatch(r"(?:NASM version|yasm) (\d+)\.(\d+)(?:\.(\d+))?.*", first)
+        if match is not None:
+            version = tuple(int(part or "0") for part in match.groups())
+            if version >= minimum:
+                return executable, first
+    return None
+
+
+def _checked_bytes(path: Path, expected: str) -> bytes:
+    data = path.read_bytes()
+    if hashlib.sha256(data).hexdigest() != expected:
+        msg = f"ISA-L reviewed input hash mismatch: {path}"
+        raise ValueError(msg)
+    return data
+
+
+def _stage_isal(config: _IsalConfig) -> Path:
+    """Copy authenticated originals, then apply authenticated exact edits.
+
+    Owned patch JSON uses {"schema":1,"files":{relative:{"before_sha256":...,
+    "after_sha256":...,"replacements":[{"old":...,"new":...}]}}}. Every old
+    string must occur exactly once; output hashes prohibit fuzzy application.
+    The file itself is pinned. No patch utility or network access is needed.
+    """
+    payload = _checked_bytes(config.vendor / "UPSTREAM.json", _ISAL_MANIFEST_SHA256)
+    manifest = json.loads(payload)
+    stage = config.temporary / "source"
+    stage.mkdir(parents=True, exist_ok=False)
+    originals = manifest["files"]
+    observed = {
+        path.relative_to(config.vendor).as_posix()
+        for path in config.vendor.rglob("*")
+        if path.is_file()
+    }
+    if observed != originals.keys() | {"UPSTREAM.json"}:
+        msg = "ISA-L reviewed source inventory mismatch"
+        raise ValueError(msg)
+    for name, digest in originals.items():
+        data = _checked_bytes(config.vendor / name, digest)
+        target = stage / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(data)
+    helper = _checked_bytes(config.helper, _ISAL_HELPER_SHA256)
+    (stage / "isal_helpers.c").write_bytes(helper)
+    patch = json.loads(_checked_bytes(config.patch, _ISAL_PATCH_SHA256))
+    if patch.get("schema") != 1 or not isinstance(patch.get("files"), dict):
+        msg = "Invalid owned ISA-L patch schema"
+        raise ValueError(msg)
+    for name, change in patch["files"].items():
+        if name not in originals:
+            msg = f"Owned ISA-L patch targets an unreviewed file: {name}"
+            raise ValueError(msg)
+        data = _checked_bytes(stage / name, change["before_sha256"])
+        if change["before_sha256"] != originals[name]:
+            msg = f"Owned ISA-L patch has the wrong upstream base: {name}"
+            raise ValueError(msg)
+        for edit in change["replacements"]:
+            old, new = edit["old"].encode(), edit["new"].encode()
+            if not old or data.count(old) != 1:
+                msg = f"Owned ISA-L patch does not match exactly once: {name}"
+                raise ValueError(msg)
+            data = data.replace(old, new, 1)
+        if hashlib.sha256(data).hexdigest() != change["after_sha256"]:
+            msg = f"Owned ISA-L patched source hash mismatch: {name}"
+            raise ValueError(msg)
+        (stage / name).write_bytes(data)
+    return stage
+
+
+class _IsalBuildExt(build_ext):
+    """The normal and retained-container routes share one admitted C compiler."""
+
+    unstd_isal_config: _IsalConfig | None = None
+
+    def build_extensions(self) -> None:
+        config = self.unstd_isal_config
+        if config is not None and _isal_platform():
+            assembler = _isal_assembler()
+            required = os.environ.get("CIBUILDWHEEL") == "1"
+            if assembler is None:
+                message = (
+                    "Linux x86_64 ISA-L gzip acceleration needs NASM >=2.11.01 "
+                    "or Yasm >=1.3.0 on PATH; install a build tool before building"
+                )
+                if required:
+                    raise RuntimeError(message)
+                self.warn(message + "; using the native zlib inflater")
+            else:
+                # Integrity errors deliberately remain fatal in optional builds.
+                stage = _stage_isal(config)
+                try:
+                    archive = self._assemble_isal(config, stage, assembler)
+                except (
+                    BaseError,
+                    CCompilerError,
+                    OSError,
+                    subprocess.SubprocessError,
+                ) as exc:
+                    if required:
+                        raise
+                    self.warn(f"ISA-L assembly unavailable: {exc}; using native zlib")
+                else:
+                    for extension in self.extensions:
+                        if extension.name != "unstd.compress._gzip_native":
+                            continue
+                        extension.sources.extend(
+                            str(stage / name) for name in _ISAL_C_SOURCES
+                        )
+                        extension.sources.append(str(stage / "isal_helpers.c"))
+                        extension.include_dirs.extend(
+                            (str(stage / "include"), str(stage / "igzip"))
+                        )
+                        extension.extra_objects.append(str(archive))
+                        extension.extra_compile_args.append("-fvisibility=hidden")
+                        extension.extra_link_args.append("-Wl,--exclude-libs,ALL")
+                        extension.define_macros.extend(
+                            (
+                                ("UNSTD_WITH_ISAL", None),
+                                ("UNSTD_ISAL_VERSION", f'"{_ISAL_VERSION}"'),
+                                (
+                                    "UNSTD_ISAL_PATCH_SHA256",
+                                    f'"{_ISAL_PATCH_SHA256}"',
+                                ),
+                            )
+                        )
+        super().build_extensions()
+
+    def _assemble_isal(
+        self, config: _IsalConfig, stage: Path, assembler: tuple[str, str]
+    ) -> Path:
+        directory = config.temporary / "asm"
+        directory.mkdir(parents=True, exist_ok=False)
+        objects = []
+        for name in _ISAL_ASM_SOURCES:
+            output = directory / (Path(name).stem + ".o")
+            subprocess.run(  # noqa: S603 # nosec B603 # verified source snapshot, explicit argv
+                [
+                    assembler[0],
+                    "-f",
+                    "elf64",
+                    "-DAS_FEATURE_LEVEL=4",
+                    "-DREL_TEXT",
+                    "-I" + str(stage / "include") + "/",
+                    "-I" + str(stage / "igzip") + "/",
+                    str(stage / name),
+                    "-o",
+                    str(output),
+                ],
+                check=True,
+                timeout=30,
+            )
+            objects.append(str(output))
+        # create_static_lib calls the same archiver configured by setuptools;
+        # _ContainerBuildExt has already restored its admitted executable list.
+        self.compiler.create_static_lib(
+            objects, "unstd_isal_asm", output_dir=str(directory)
+        )
+        archive = Path(
+            self.compiler.library_filename("unstd_isal_asm", output_dir=str(directory))
+        )
+        self.announce(f"Private ISA-L decoder assembled with {assembler[1]}", level=2)
+        return archive
+
+
+class _ContainerBuildExt(_IsalBuildExt):
     compiler_commands: dict[str, list[str] | None]
 
     def build_extensions(self) -> None:
@@ -227,7 +441,7 @@ class CustomBuildHook(BuildHookInterface):
         if gzip_buffers:
             sources.extend(
                 str(Path(self.root) / "native/compress/src" / name)
-                for name in ("stream.c", "inflate.c")
+                for name in ("stream.c", "inflate.c", "fast.c")
             )
             sources.extend(
                 str(gzip_root / name)
@@ -238,6 +452,7 @@ class CustomBuildHook(BuildHookInterface):
                     "lib/deflate_decompress.c",
                     "lib/crc32.c",
                     "lib/gzip_decompress.c",
+                    "lib/gzip_compress.c",
                 )
             )
             if sys.platform != "darwin" and zlib_rs is None:
@@ -291,8 +506,15 @@ class CustomBuildHook(BuildHookInterface):
             {"name": "unstd-native", "ext_modules": [extension]}
         )
         command = (
-            _ContainerBuildExt if self._compiler_commands is not None else build_ext
+            _ContainerBuildExt if self._compiler_commands is not None else _IsalBuildExt
         )(distribution)
+        if gzip_buffers and zlib_rs is None:
+            command.unstd_isal_config = _IsalConfig(
+                gzip_root.parent / "isa-l",
+                source.parent / "isal_helpers.c",
+                source.parent / "isal_patch.json",
+                temporary / "reviewed-isa-l",
+            )
         if self._compiler_commands is not None:
             command.compiler_commands = self._compiler_commands
         command.build_lib = str(temporary / "lib")

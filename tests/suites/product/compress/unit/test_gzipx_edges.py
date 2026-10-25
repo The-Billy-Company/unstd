@@ -41,7 +41,7 @@ def test_reads_construct_one_native_inflater_without_redundant_readers(
     path = tmp_path / "payload.gz"
     path.write_bytes(packed)
     source = io.BytesIO(packed)
-    from unstd.compress import _reader
+    from unstd.compress.engines import reader as _reader
 
     factory = _reader._factory
     native_inflaters = []

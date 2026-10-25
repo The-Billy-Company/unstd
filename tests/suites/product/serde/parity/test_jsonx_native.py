@@ -170,7 +170,7 @@ def test_native_spacing_handles_escaped_quotes_and_trailing_backslashes(
 def test_public_default_spacing_accepts_a_larger_punctuated_text_tree(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    from unstd.serde._internal import json_encode as _json_encode
+    from unstd.serde import encoding as _json_encode
 
     value = {"records:": [{"text,": 'quoted "words", path ' + "\\" + " : " * 20}] * 40}
     expected = json.dumps(value)

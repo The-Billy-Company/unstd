@@ -4,43 +4,46 @@
   "sanitize": true,
   "native_source_hashes": {
     "experiments/build.py": "e21ffef19ae0e059e8dfca3322042e386250e7f2a24e6dac4e90b21e05fb35dc",
+    "experiments/paired.py": "fef533dd61323022d6ebace430e25398aae96a87cd1a8d137c85e46aa138df60",
     "src/adapter.c": "9fdc201e0a3461c763067e4486c7cee98d2d039aee7ac1b693fd0adeeb2aebea",
-    "src/pipes.c": "d99ef9fbfe548061bae68ce07e289e96e57282b96f23fe517bad17d996011642",
+    "src/pipes.c": "382b88e855418fde6427dd8dfb90c839ccdcf8e247ed543900e69aa97bc754f3",
     "src/pipes.h": "fa3b7498bea77521a5f12fc254cfccfdd4881d84fae051b2ff589314f5bccaa9"
   },
   "python_source_hashes": {
     "__init__.py": "b52aa5df64f0215833b16bcd1a5153ad2f5fe2535902a24911d77c19bc874cad",
-    "proc/__init__.py": "5a973661b41d816b07137c845023ea36a73d69787dcfc85a0ac1e2f155d68d5a",
-    "proc/_internal/__init__.py": "0e3ab3cc36fe12141f7c35f38686d8593af857e8406c4c12d450be14029fb627",
-    "proc/_internal/backend.py": "7cc69555bfa721faf68255bb77a00781cc6e3d8358618cbeca9a32ef6abf5c66",
-    "proc/_internal/results.py": "2526821bfc779402966835f5e2cf3349bf80e457c0894f469ced42b7f5ae75f9",
-    "proc/_proc_native.pyi": "e4b44251eef79dddb06ddbf99961efa01deea55320dbd9a7ff31c408a28d306c"
+    "proc/__init__.py": "2f7486f90af312e6a8be5a9dd1d0e49415fb89c4bf93540b6c743c0f4e26511d",
+    "proc/_proc_native.pyi": "e4b44251eef79dddb06ddbf99961efa01deea55320dbd9a7ff31c408a28d306c",
+    "proc/backend.py": "9eddc4240fbe5b0882b9a03ad8e0788a6783b23dde57bebe2ef68265430d0652",
+    "proc/results.py": "5beac9cd269e9743d0b073c8cac3b14e0fac6c6c675a74bd29ca8c09c4245738"
   },
   "sources_unchanged": true,
-  "extension_sha256": "4a3723ddff6d8f718c05f039c79b94fa799d67f0c6e8ac4d56e5d97b7dfdb09b",
-  "runner_sha256": "6f81f0e913c93ef5dfcb23d533f173aedc038e912c353a5fa11fa72152188bb8",
-  "bootstrap_sha256": "cedcdaebe088d63ac65072c83204c70a443b5cb65e81b483d7dd2e63eb6d948d",
+  "extension_sha256": "5692690fc0823fd17316ae50d822ccb8bc1f5b81f7b4c2813d9cea16bdcc3406",
+  "runner_sha256": "f55b5f23adb77901b928f727399d4ea6c49014d998b561f70fc3c07449bccf7e",
+  "bootstrap_sha256": "549804495fe0fee86561c836a7bd4c714e21e973191dcaff51a0e335a9bd039c",
   "build_command": [
     "/Users/griffinstrier/Billy-Company/unstd/.venv/bin/python",
     "/Users/griffinstrier/Billy-Company/unstd/native/proc/experiments/build.py",
     "--warnings-as-errors",
     "--output",
-    "/private/tmp/unstd-proc-memory-final-macos/src",
+    "/private/tmp/unstd-proc-memory-flat-final-macos/src",
     "--sanitize"
   ],
   "test_command": [
-    "/private/tmp/unstd-proc-memory-final-macos/python",
+    "/private/tmp/unstd-proc-memory-flat-final-macos/python",
     "-m",
     "pytest",
     "/Users/griffinstrier/Billy-Company/unstd/tests/suites/product/proc",
     "-q",
     "--tb=short",
-    "--junitxml=/private/tmp/unstd-proc-memory-final-macos/tests.xml",
+    "--basetemp=/private/tmp/unstd-proc-memory-flat-final-macos/pytest",
+    "-o",
+    "cache_dir=/private/tmp/unstd-proc-memory-flat-final-macos/pytest-cache",
+    "--junitxml=/private/tmp/unstd-proc-memory-flat-final-macos/tests.xml",
     "-k",
     "not hostile_argv and not allocation_limit"
   ],
   "environment": {
-    "PYTHONPATH": "/private/tmp/unstd-proc-memory-final-macos/src:/private/tmp/unstd-proc-memory-final-macos/bootstrap:/Users/griffinstrier/Billy-Company/unstd",
+    "PYTHONPATH": "/private/tmp/unstd-proc-memory-flat-final-macos/src:/private/tmp/unstd-proc-memory-flat-final-macos/bootstrap:/Users/griffinstrier/Billy-Company/unstd",
     "PYTHONMALLOC": "malloc",
     "DYLD_INSERT_LIBRARIES": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/21/lib/darwin/libclang_rt.asan_osx_dynamic.dylib",
     "ASAN_OPTIONS": "detect_leaks=0:abort_on_error=1:strict_string_checks=1",
@@ -51,5 +54,5 @@
   "verification_output": "",
   "test_exit_code": 0,
   "qualification_exit_code": 0,
-  "junitxml": "/private/tmp/unstd-proc-memory-final-macos/tests.xml"
+  "junitxml": "/private/tmp/unstd-proc-memory-flat-final-macos/tests.xml"
 }

@@ -1,3 +1,12 @@
+---
+doc_radar:
+  sentinels:
+    - file: src/unstd/clone/__init__.py
+      contains: ['from unstd.clone.structural import asdict, copy, deep, deepcopy']
+    - file: src/unstd/clone/structural.py
+      contains: ['def deep[T](', 'def asdict(']
+---
+
 # `unstd.clone`
 
 Part of [`unstd`](../README.md). A fast **structural deep clone** for data, and
@@ -15,6 +24,19 @@ plain = clone.asdict(record)  # dataclasses.asdict, walked
 shallow = clone.copy(payload)  # re-exported stdlib copy.copy
 exact = clone.deepcopy(payload)  # re-exported stdlib copy.deepcopy
 ```
+
+## Source ownership
+
+This flat leaf keeps one structural-copy API and its shared walker together.
+
+| File | Responsibility |
+| --- | --- |
+| [`__init__.py`](__init__.py) | Public `deep`, `asdict`, `copy`, and `deepcopy` exports |
+| [`structural.py`](structural.py) | Graph memo, shape admission, Python traversal, and optional native dispatch |
+| [`_clone_native.pyi`](_clone_native.pyi) | Native ABI declarations; [C source ownership](../../../native/clone/README.md) |
+
+Run the [cloning contracts](../../../tests/suites/product/clone/README.md) from
+the repository root with `uv run --no-sync pytest tests/suites/product/clone -q`.
 
 ## Why it's fast
 

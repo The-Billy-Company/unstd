@@ -408,12 +408,17 @@ def _worker(source: Path, rounds: int, fallback: bool) -> dict[str, Any]:
             "rounds": measurement.rounds,
         }
     try:
-        from unstd.serde._internal.json_encode import _encoder
+        from unstd.serde.encoding import _encoder
     except ModuleNotFoundError:
-        # Saved comparison revisions retain the earlier private layout.
-        from unstd.serde._json_encode import _encoder as _legacy_encoder
+        # Saved comparison revisions retain the earlier private layouts.
+        try:
+            from unstd.serde._internal.json_encode import _encoder as _grouped_encoder
 
-        _encoder = _legacy_encoder
+            _encoder = _grouped_encoder
+        except ModuleNotFoundError:
+            from unstd.serde._json_encode import _encoder as _legacy_encoder
+
+            _encoder = _legacy_encoder
 
     _encoder.cache_clear()
     profile = cProfile.Profile()

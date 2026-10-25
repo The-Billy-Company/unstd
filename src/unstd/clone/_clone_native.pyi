@@ -28,3 +28,10 @@ def clone_walk_graph(
     memo: dict[int, Any],
     /,
 ) -> Any: ...
+def clone_walk_canonical_graph(
+    source: Any,
+    walk: Callable[[Any, dict[int, Any]], Any],
+    admit: Callable[[type], tuple[bool, Callable[[Any, dict[int, Any]], Any]]],
+    memo: dict[int, Any],
+    /,
+) -> Any: ...

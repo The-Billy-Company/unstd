@@ -1,6 +1,8 @@
 """Filesystem *operations* the stdlib ``pathlib``/``os`` leave to the caller.
 
-Pure stdlib — **no optional extra**. ``pathlib`` is excellent path
+**No optional extra or third-party runtime dependency.** Linux CPython can use
+the bundled atomic-write kernel; the complete Python path uses only stdlib.
+``pathlib`` is excellent path
 *algebra* (joins, suffixes, parents); what it lacks is the durable-write and
 fast-walk *operations* every service otherwise re-rolls by hand. This module is
 those operations, and only those — it is **not** a ``pathlib`` replacement, so
@@ -49,20 +51,28 @@ Import the module, not its members::
 
 from __future__ import annotations
 
-from contextlib import AbstractContextManager, contextmanager
+from contextlib import AbstractContextManager, contextmanager, suppress
 import errno
 import os
 from pathlib import Path
 import secrets
 import stat
+import sys
 from typing import IO, TYPE_CHECKING, Literal, overload
 
-from unstd.fs._internal.durability import sync_directory as _sync_directory
-from unstd.fs._internal.walk import _walk_descriptors, _walk_following, _walk_portable
+from unstd.fs.durability import sync_directory as _sync_directory
+from unstd.fs.traversal import _walk_descriptors, _walk_following, _walk_portable
 
 
 if TYPE_CHECKING:
     from collections.abc import Generator, Iterator
+    from types import ModuleType
+
+
+_native: ModuleType | None = None
+if sys.platform == "linux":
+    with suppress(ImportError):
+        from unstd.fs import _fs_native as _native
 
 
 __all__ = [
@@ -204,6 +214,7 @@ def _atomic_writer(
     strict = durable == "strict"
     _prepare_parent(dest.parent, strict=strict)
     fd, tmp_path = _scratch(dest)
+    identity: tuple[int, int] | None = None
     try:
         try:
             # Retain descriptor ownership even if stream construction fails.
@@ -215,6 +226,11 @@ def _atomic_writer(
                 yield fh
                 fh.flush()
                 os.fsync(fh.fileno())
+                # A signal can arrive after rename succeeds but before its
+                # Python call returns. Retain proof of the committed inode.
+                with suppress(OSError):
+                    info = os.fstat(fd)
+                    identity = (info.st_dev, info.st_ino)
             except BaseException as error:
                 try:
                     fh.close()
@@ -228,7 +244,15 @@ def _atomic_writer(
             raise
         else:
             os.close(fd)
-        tmp_path.replace(dest)
+        try:
+            tmp_path.replace(dest)
+        except BaseException as error:
+            # Diagnostics must never replace the original cancellation/error.
+            with suppress(BaseException):
+                published = dest.stat()
+                if identity == (published.st_dev, published.st_ino):
+                    error.add_note("replacement already committed before cancellation")
+            raise
     except BaseException as error:
         _discard_scratch(tmp_path, error)
         raise
@@ -279,6 +303,61 @@ def atomic_writer(
     return _atomic_writer(Path(path), mode, encoding, durable)
 
 
+def _atomic_write_python(
+    dest: Path, data: str | bytes, encoding: str, durable: _Durability
+) -> Path:
+    """The complete Python path, including text streams and rollback hooks."""
+    if isinstance(data, bytes):
+        with atomic_writer(dest, mode="wb", durable=durable) as fh:
+            fh.write(data)
+    else:
+        with atomic_writer(dest, mode="w", encoding=encoding, durable=durable) as fh:
+            fh.write(data)
+    return dest
+
+
+_OS = os
+
+
+def _native_bindings() -> tuple[object, ...]:
+    """The bindings whose custom behavior requires Python orchestration."""
+    return (
+        os.open,
+        os.close,
+        os.fsync,
+        os.stat,
+        os.fstat,
+        os.replace,
+        os.mkdir,
+        os.unlink,
+        os.fdopen,
+        getattr(os, "fchmod", None),
+        Path.stat,
+        Path.replace,
+        Path.unlink,
+        Path.mkdir,
+        Path.is_dir,
+        ensure_dir,
+        sync_dir,
+        _prepare_parent,
+        _scratch,
+        _sync_committed,
+        atomic_writer,
+        secrets.token_hex,
+    )
+
+
+_NATIVE_BINDINGS = _native_bindings()
+
+
+def _native_bindings_intact() -> bool:
+    """Use identity so hook equality cannot execute or impersonate a binding."""
+    return os is _OS and all(
+        current is original
+        for current, original in zip(_native_bindings(), _NATIVE_BINDINGS, strict=True)
+    )
+
+
 def atomic_write(
     path: _Pathish,
     data: str | bytes,
@@ -297,15 +376,38 @@ def atomic_write(
     the parent directory too, with best-effort errors. ``durable="strict"``
     requires directory-sync acknowledgments and propagates failures; a failure
     after replacement leaves the new data committed. Returns *path*.
+
+    Ordinary Linux CPython builds accelerate exact ``bytes`` and default UTF-8
+    ``str`` writes with an existing parent. Other inputs, custom bindings and
+    unavailable native capabilities retain Python behavior. Native I/O errors
+    propagate without retrying through Python. Cancellation before replacement
+    attempts scratch cleanup; cancellation after a successful replacement
+    reports committed state. Cleanup failures add notes to the primary error.
     """
     dest = Path(path)
-    if isinstance(data, bytes):
-        with atomic_writer(dest, mode="wb", durable=durable) as fh:
-            fh.write(data)
-    else:
-        with atomic_writer(dest, mode="w", encoding=encoding, durable=durable) as fh:
-            fh.write(data)
-    return dest
+    if (
+        _native is not None
+        and _native_bindings_intact()
+        and (
+            durable is False
+            or durable is True
+            or (type(durable) is str and durable == "strict")
+        )
+    ):
+        payload: str | bytes | None = None
+        if type(data) is bytes:
+            payload = data
+        elif type(data) is str and type(encoding) is str and encoding == "utf-8":
+            # Native encoding happens after scratch acquisition, like TextIO.
+            payload = data
+        if payload is not None:
+            result = _native.atomic_write(dest, payload, durable=durable)
+            if result is None:
+                return dest
+            if result is not NotImplemented:
+                msg = "native atomic_write returned an invalid result"
+                raise RuntimeError(msg)
+    return _atomic_write_python(dest, data, encoding, durable)
 
 
 def atomic_replace(

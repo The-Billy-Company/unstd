@@ -323,6 +323,64 @@ def _pack_cases(*, comparison: bool = False) -> list[Case]:
     ]
 
 
+def _ragged_cases(*, comparison: bool = False) -> list[Case]:
+    """Check complete immutable numeric frames against fixed struct values."""
+    import numpy as np
+
+    if TYPE_CHECKING:
+        from unstd.pack import ragged
+    else:
+        try:
+            ragged = import_module("unstd.pack.ragged")
+        except ModuleNotFoundError as error:
+            if comparison and error.name == "unstd.pack.ragged":
+                return []
+            raise
+
+    boundaries = tuple(range(0, 65, 2))
+    numbers = tuple(float(value) for value in range(256))
+    payload = struct.pack("<256f", *numbers)
+    wire = struct.pack("<33I", *boundaries) + payload
+    expected = tuple(struct.iter_unpack("<4f", payload))
+
+    def decoder() -> ragged.RaggedDecoder:
+        return ragged.RaggedDecoder(
+            "<f4", columns=4, index_dtype="<u4", finite=True, allow_empty=False
+        )
+
+    compiled = decoder()
+
+    def configured(value: Any) -> None:
+        assert type(value) is ragged.RaggedDecoder
+        assert (value.dtype, value.columns, value.index_dtype) == ("<f4", 4, "<u4")
+        assert value.finite is True
+        assert value.allow_empty is False
+
+    def unpacked(value: Any) -> None:
+        matrix, offsets = value
+        np.testing.assert_array_equal(matrix, expected)
+        np.testing.assert_array_equal(offsets, boundaries)
+        assert matrix.dtype.str == "<f4"
+        assert offsets.dtype.str == "<u4"
+        assert not matrix.flags.writeable
+        assert not offsets.flags.writeable
+
+    return [
+        Case(
+            "unstd.pack.ragged.RaggedDecoder",
+            decoder,
+            configured,
+            "compile four-column little-endian float32 rows and uint32 boundaries; finite, nonempty segments",
+        ),
+        Case(
+            "unstd.pack.ragged.RaggedDecoder.unpack",
+            partial(compiled.unpack, wire, index_count=33),
+            unpacked,
+            "validate 33 boundaries and 64 four-column finite float32 rows; immutable NumPy views",
+        ),
+    ]
+
+
 def _compress_cases() -> list[Case]:
     from unstd.compress import gzipx
 
@@ -919,6 +977,7 @@ def cases(stack: ExitStack, *, comparison: bool = False) -> list[Case]:
     return [
         *_serde_cases(comparison=comparison),
         *_pack_cases(comparison=comparison),
+        *_ragged_cases(comparison=comparison),
         *_compress_cases(),
         *_zlib_cases(comparison=comparison),
         *_audio_cases(comparison=comparison),

@@ -1,5 +1,5 @@
-/* Native zlib ABI and checked allocator boundary. The optional macOS arm64
- * route binds the already imported zlib-ng provider before any body decode. */
+/* Native codec ABI and checked allocator boundary. Optional platform routes
+ * bind the already imported zlib-ng provider before any body decode. */
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 #include <stdint.h>
@@ -16,12 +16,38 @@
 #include "stream.h"
 #include "module.h"
 
-#if defined(__APPLE__) && (defined(__aarch64__) || defined(__arm64__)) \
+#if defined(__linux__) && defined(__x86_64__) && defined(UNSTD_WITH_ISAL) \
         && !defined(UNSTD_ZLIB_RS)
+#define UNSTD_LINUX_ISAL 1
+#ifndef UNSTD_ISAL_VERSION
+#error "UNSTD_WITH_ISAL requires a reviewed ISA-L version"
+#endif
+#ifndef UNSTD_ISAL_PATCH_SHA256
+#error "UNSTD_WITH_ISAL requires a reviewed core patch digest"
+#endif
+#endif
+
+#if defined(UNSTD_LINUX_ISAL) || (defined(__APPLE__) && \
+        (defined(__aarch64__) || defined(__arm64__)) && !defined(UNSTD_ZLIB_RS))
 #define UNSTD_ADAPTIVE_NG 1
 #include <dlfcn.h>
+#ifdef UNSTD_LINUX_ISAL
+#include "igzip_lib.h"
+#else
 #include "shape.h"
 #endif
+#endif
+
+static int
+isal_cpu_supported(void)
+{
+#if defined(UNSTD_LINUX_ISAL) && (defined(__GNUC__) || defined(__clang__))
+    __builtin_cpu_init();
+    return __builtin_cpu_supports("sse4.2") && __builtin_cpu_supports("pclmul");
+#else
+    return 0;
+#endif
+}
 
 static voidpf
 allocate(voidpf opaque, uInt items, uInt size)
@@ -95,6 +121,11 @@ typedef struct {
     int pending;
     int engine;
     int wbits;
+#ifdef UNSTD_LINUX_ISAL
+    struct inflate_state *isa;
+    int isa_error;
+    const char *isa_message;
+#endif
 } Decoder;
 
 void
@@ -212,9 +243,37 @@ unstd_inflate_create(int wbits, int *status, void *api)
         *status = Z_MEM_ERROR;
         return NULL;
     }
+#ifdef UNSTD_LINUX_ISAL
+    if (api != NULL) {
+        NgAPI *binding = api;
+        if (binding->owners == PY_SSIZE_T_MAX) {
+            PyMem_RawFree(decoder);
+            *status = Z_MEM_ERROR;
+            return NULL;
+        }
+        binding->owners++;
+        decoder->api = binding;
+        decoder->ng.zalloc = allocate;
+        decoder->ng.zfree = release;
+        *status = binding->init(&decoder->ng, wbits, binding->version,
+                               (int32_t)sizeof(decoder->ng));
+        if (*status != Z_OK) {
+            if (decoder->ng.state != NULL) {
+                binding->end(&decoder->ng);
+            }
+            unstd_ng_api_free(binding);
+            PyMem_RawFree(decoder);
+            return NULL;
+        }
+        decoder->engine = 2;
+        decoder->wbits = wbits;
+        decoder->pending = wbits == -15 && isal_cpu_supported();
+        return decoder;
+    }
+#endif
     decoder->apple.zalloc = allocate;
     decoder->apple.zfree = release;
-    *status = inflateInit2_(&decoder->apple, wbits, zlibVersion(),
+    *status = inflateInit2_(&decoder->apple, wbits, unstd_inflate_version(),
                            (int)sizeof(decoder->apple));
     if (*status != Z_OK) {
         PyMem_RawFree(decoder);
@@ -235,7 +294,12 @@ unstd_inflate_create(int wbits, int *status, void *api)
     }
     decoder->api = binding;
     decoder->pending = api != NULL && wbits == -15;
-    decoder->engine = 1;
+    decoder->engine =
+#ifdef UNSTD_LINUX_ISAL
+        3;
+#else
+        1;
+#endif
     decoder->wbits = wbits;
     return decoder;
 }
@@ -264,6 +328,25 @@ unstd_inflate_decode(void *value,
         if (input_size == 0) {
             return Z_BUF_ERROR;
         }
+#ifdef UNSTD_LINUX_ISAL
+        /* Conservatively keep the existing NG path for short-distance,
+         * fixed/stored, fragmented and small reads. A nonfinal dynamic
+         * block remains eligible: most large JSON streams start that way. */
+        if (input_size >= 8192 && output_size >= 16384
+                && (input[0] & 6U) == 4U && (input[1] & 31U) >= 8U) {
+            struct inflate_state *isa = PyMem_RawMalloc(sizeof(*isa));
+            if (isa == NULL) {
+                return Z_MEM_ERROR;
+            }
+            isal_inflate_init(isa);
+            isa->crc_flag = ISAL_DEFLATE;
+            decoder->api->end(&decoder->ng);
+            decoder->isa = isa;
+            decoder->engine = 4;
+        }
+        decoder->pending = 0;
+    }
+#else
         /* A buffered prefix read can ask for only 8 KiB and then close.
          * Inspecting an entire highly expanding block costs more than decoding
          * that prefix. Reserve the whole-block probe for larger output calls. */
@@ -295,6 +378,88 @@ unstd_inflate_decode(void *value,
             decoder->pending = 0;
         }
     }
+#endif
+#ifdef UNSTD_LINUX_ISAL
+    if (decoder->engine == 4) {
+        if (decoder->isa_error) {
+            *message = decoder->isa_message;
+            return decoder->isa_error;
+        }
+        struct inflate_state *state = decoder->isa;
+        /* An incomplete saved header needs new compressed bytes. Re-entering
+         * the parser with padding alone can turn truncation into bad BTYPE. */
+        if (input_size == 0 && state->block_state == ISAL_BLOCK_HDR) {
+            if (state->copy_overflow_length != 0 || state->write_overflow_len != 0
+                    || state->tmp_out_valid < state->tmp_out_processed) {
+                *message = "ISA-L pending header invariant";
+                decoder->isa_error = Z_STREAM_ERROR;
+                decoder->isa_message = *message;
+                return Z_STREAM_ERROR;
+            }
+            uint32_t pending = (uint32_t)(state->tmp_out_valid - state->tmp_out_processed);
+            uint32_t copied = pending < output_size ? pending : output_size;
+            if (copied != 0) {
+                memcpy(output, state->tmp_out_buffer + state->tmp_out_processed, copied);
+                state->tmp_out_processed += (int32_t)copied;
+                state->total_out += copied;
+            }
+            *produced = copied;
+            return copied != 0 ? Z_OK : Z_BUF_ERROR;
+        }
+        state->next_in = (uint8_t *)input;
+        state->avail_in = input_size;
+        state->next_out = output;
+        state->avail_out = output_size;
+        int status = isal_inflate(state);
+        /* An incomplete header owns all its saved bits, including full
+         * bytes held before tmp_in staging begins. Returning those bytes
+         * would change needs_input or duplicate the header on the next call. */
+        if (status >= 0 && state->block_state != ISAL_BLOCK_HDR
+                && state->tmp_in_size == 0
+                && (state->avail_out == 0 || state->block_state == ISAL_BLOCK_FINISH)) {
+            int bits = state->read_in_length;
+            if (bits < 0 || bits > 64) {
+                *message = "ISA-L input accounting invariant";
+                decoder->isa_error = Z_STREAM_ERROR;
+                decoder->isa_message = *message;
+                return Z_STREAM_ERROR;
+            }
+            uint32_t buffered = (uint32_t)bits / 8U;
+            uint32_t supplied = input_size - state->avail_in;
+            /* Only the newest full bytes can belong to this call. Older
+             * held bytes stay in read_in; EOF exposes them via its prefix. */
+            uint32_t rewind = buffered < supplied ? buffered : supplied;
+            state->next_in -= rewind;
+            state->avail_in += rewind;
+            bits -= (int)(rewind * 8U);
+            if (bits < 64) state->read_in &= (UINT64_C(1) << bits) - 1U;
+            state->read_in_length = bits;
+        }
+        *consumed = input_size - state->avail_in;
+        *produced = output_size - state->avail_out;
+        state->next_in = NULL;
+        state->avail_in = 0;
+        state->next_out = NULL;
+        state->avail_out = 0;
+        if (status < 0) {
+            static const char *const diagnostics[] = {
+                "invalid block type", "invalid stored block lengths",
+                "too many length or distance symbols", "invalid code lengths set",
+                "invalid bit length repeat", "invalid code -- missing end-of-block",
+                "invalid literal/lengths set", "invalid distances set",
+                "invalid deflate data", "invalid literal/length code", "invalid distance code"
+            };
+            *message = status <= -20 && status >= -30 ? diagnostics[-status - 20]
+                : status == ISAL_INVALID_LOOKBACK ? "invalid distance too far back"
+                : status == ISAL_INVALID_SYMBOL ? "invalid literal/length code"
+                : "invalid block type";
+            decoder->isa_error = Z_DATA_ERROR;
+            decoder->isa_message = *message;
+            return Z_DATA_ERROR;
+        }
+        return state->block_state == ISAL_BLOCK_FINISH ? Z_STREAM_END : Z_OK;
+    }
+#endif
     if (decoder->engine == 2) {
         decoder->ng.next_in = input;
         decoder->ng.avail_in = input_size;
@@ -331,6 +496,12 @@ unstd_inflate_free(void *value)
 {
     Decoder *decoder = value;
     if (decoder != NULL) {
+#ifdef UNSTD_LINUX_ISAL
+        if (decoder->engine == 4) {
+            PyMem_RawFree(decoder->isa);
+        }
+        else
+#endif
         if (decoder->engine == 2) {
             decoder->api->end(&decoder->ng);
         }
@@ -343,8 +514,8 @@ unstd_inflate_free(void *value)
 }
 
 #else
-/* Linux, macOS x86 and the explicitly selected Rust archive retain the
- * original codec, native ABI and checked allocator calls unchanged. */
+/* Unsupported platforms and the explicitly selected Rust archive retain
+ * the original codec, native ABI and checked allocator calls unchanged. */
 void
 unstd_ng_api_free(void *api)
 {
@@ -435,4 +606,55 @@ unstd_inflate_version(void)
 #else
     return zlibVersion();
 #endif
+}
+
+int
+unstd_inflate_unused_prefix(void *value, unsigned char *output)
+{
+#ifdef UNSTD_LINUX_ISAL
+    Decoder *decoder = value;
+    if (decoder->engine == 4) {
+        struct inflate_state *state = decoder->isa;
+        int bits = state->read_in_length;
+        if (bits < 0 || bits > 64) return -1;
+        int size = bits / 8;
+        uint64_t bytes = state->read_in >> (bits % 8);
+        for (int i = 0; i < size; ++i) {
+            output[i] = (unsigned char)(bytes >> (8 * i));
+        }
+        return size;
+    }
+#else
+    (void)value;
+    (void)output;
+#endif
+    return 0;
+}
+
+void
+unstd_inflate_legacy(void *value, int legacy)
+{
+#ifdef UNSTD_LINUX_ISAL
+    Decoder *decoder = value;
+    if (legacy) decoder->pending = 0;
+#else
+    (void)value;
+    (void)legacy;
+#endif
+}
+
+int
+unstd_add_isal_metadata(PyObject *module)
+{
+#ifdef UNSTD_LINUX_ISAL
+    if (PyModule_AddStringConstant(module, "ISAL_RUNTIME_VERSION", UNSTD_ISAL_VERSION) < 0
+            || PyModule_AddStringConstant(module, "ISAL_PATCH_SHA256", UNSTD_ISAL_PATCH_SHA256) < 0)
+        return -1;
+#else
+    if (PyModule_AddObjectRef(module, "ISAL_RUNTIME_VERSION", Py_None) < 0
+            || PyModule_AddObjectRef(module, "ISAL_PATCH_SHA256", Py_None) < 0)
+        return -1;
+#endif
+    return PyModule_AddObjectRef(module, "ISAL_STREAMING",
+                                 isal_cpu_supported() ? Py_True : Py_False);
 }

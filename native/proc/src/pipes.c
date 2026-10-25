@@ -115,8 +115,15 @@ exchange(int outfd, int errfd, double deadline)
         do {
             flags[index] = fcntl(descriptors[index], F_GETFL);
         } while (flags[index] < 0 && errno == EINTR);
-        if (flags[index] < 0
-            || set_flags(descriptors[index], flags[index] | O_NONBLOCK) < 0) {
+        if (flags[index] < 0) {
+            saved_error = errno;
+            goto done;
+        }
+    }
+    /* Snapshot both flags before changing either descriptor: distinct fd
+     * numbers can refer to the same open-file description through dup(). */
+    for (int index = 0; index < 2; index++) {
+        if (set_flags(descriptors[index], flags[index] | O_NONBLOCK) < 0) {
             saved_error = errno;
             goto done;
         }
