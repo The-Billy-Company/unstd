@@ -284,7 +284,7 @@ def test_dedicated_gate_requires_parser_and_builder_before_any_optional_skip(
         tokens[index + 1]
         for index, value in enumerate(tokens)
         if value == "--only-group"
-    } == {"supply-chain", "release"}
+    } == {"supply-chain", "release", "build"}
     manifest = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text())
     assert {
         re.split(r"[<>=!~;\[]", requirement, maxsplit=1)[0]
