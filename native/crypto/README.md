@@ -1,6 +1,7 @@
-# Native hash streaming
+# Native crypto helpers
 
-[`src/`](src/README.md) contains the private stream kernel used by
-[`unstd.crypto`](../../src/unstd/crypto/README.md). Its installed extension remains
-`unstd.crypto._stream_native`; digest algorithms and public contracts remain in
-the Python wrappers.
+[`src/`](src/README.md) builds `unstd.crypto._stream_native`: bounded stream
+batching and canonical bearer-envelope parsing. [`digest.py`](../../src/unstd/crypto/digest.py)
+and [`token.py`](../../src/unstd/crypto/token.py) select these helpers and retain
+Python fallbacks. BLAKE3, MAC computation and constant-time comparison remain
+in their existing backends.

@@ -1,26 +1,26 @@
 # Private native implementations
 
-Build inputs live here; the installed Python API lives under
-[`src/unstd/`](../src/unstd/README.md). Python wrappers select these optional
-kernels behind their existing private extension names. C, headers, Rust sources,
-and qualification evidence are shipped in the source archive, outside the
-installed Python package.
+Build inputs for private CPython extensions; public APIs and fallback policy
+live under [`src/unstd/`](../src/unstd/README.md). Native sources ship in the
+sdist, outside the installed Python package.
 
 | Directory | Responsibility |
 | --- | --- |
-| [`clone/`](clone/README.md) | Exact-type structural cloning kernel |
-| [`crypto/`](crypto/README.md) | Bounded hash-stream absorption kernel |
+| [`clone/`](clone/README.md) | Exact-type container graphs and admitted dataclass copying |
+| [`crypto/`](crypto/README.md) | Hash-stream batching and bearer-envelope parsing |
 | [`serde/`](serde/README.md) | Guarded JSON encode, decode, and line kernels |
 | [`text/`](text/README.md) | C fuzzy metrics and the opt-in Rust prototype |
 | [`compress/`](compress/README.md) | Gzip adapter, inflater, authenticated vendors, and qualification |
 | [`audio/`](audio/README.md) | Reviewed external audio-runtime patches and build provenance |
 
-[`hatch_build.py`](../hatch_build.py) owns compiler selection, portable fallbacks,
-editable extension cleanup, and wheel inclusion. Default builds require only a
-C compiler; unavailable optional compilers preserve Python fallbacks. Release
-builds require every declared native module to compile. Cargo runs only when
-`UNSTD_TEXT_RUST=1` explicitly selects the text prototype.
+[`hatch_build.py`](../hatch_build.py) attempts five extensions on CPython,
+skipping free-threaded builds and other interpreters. Local compiler failures
+leave Python fallbacks available; `CIBUILDWHEEL=1` makes those failures fatal.
+Default kernels use C; `UNSTD_TEXT_RUST=1` selects the Rust text implementation.
+The reviewed gzip archive experiment has separate
+[build requirements](compress/experiments/README.md).
 
-Vendored gzip source retains its upstream directory structure, licenses, and
-per-file provenance manifests under [`compress/vendor/`](compress/vendor/README.md).
-Generated compiler and Cargo outputs are ignored local artifacts.
+Editable builds replace extension files atomically and remove stale module
+ABIs; wheel builds include only successful outputs. Compiler and Cargo outputs
+are ignored. Vendored gzip sources retain licenses and per-file hashes under
+[`compress/vendor/`](compress/vendor/README.md).
