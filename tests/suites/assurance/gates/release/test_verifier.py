@@ -9,6 +9,7 @@ import io
 import json
 import shutil
 import stat
+import struct
 import subprocess
 import sys
 import tarfile
@@ -126,6 +127,188 @@ def test_multiple_wheels_and_build_tags_are_verified(dist: Path) -> None:
     )
     _write_wheel(dist / "unstd-3.1.0-1-cp313-cp313-manylinux_2_17_x86_64.whl", files)
     assert len(release.verify(dist)["artifacts"]) == 3
+
+
+def _macho(*commands: bytes, machine: int = 0x01000007, order: str = "<") -> bytes:
+    body = b"".join(commands)
+    header = struct.pack(
+        order + "8I", 0xFEEDFACF, machine, 0, 8, len(commands), len(body), 0, 0
+    )
+    return header + body + b"native image body"
+
+
+def _deployment(
+    version: tuple[int, int, int], *, modern: bool = False, order: str = "<"
+) -> bytes:
+    packed = version[0] << 16 | version[1] << 8 | version[2]
+    if modern:
+        return struct.pack(order + "6I", 0x32, 24, 1, packed, packed, 0)
+    return struct.pack(order + "4I", 0x24, 16, packed, packed)
+
+
+def _macos_wheel(
+    dist: Path,
+    payload: bytes,
+    *,
+    platform: str = "macosx_10_13_x86_64",
+    name: str = "unstd/example.cpython-312-darwin.so",
+    additions: dict[str, bytes] | None = None,
+) -> Path:
+    (dist / WHEEL).unlink(missing_ok=True)
+    files = _wheel_files()
+    tags = "".join(f"Tag: cp312-cp312-{value}\n" for value in platform.split("."))
+    files[f"{INFO}/WHEEL"] = (
+        f"Wheel-Version: 1.0\nRoot-Is-Purelib: false\n{tags}\n".encode()
+    )
+    files[name] = payload
+    files.update(additions or {})
+    path = dist / f"unstd-3.1.0-cp312-cp312-{platform}.whl"
+    _write_wheel(path, files)
+    return path
+
+
+@pytest.mark.parametrize("modern", [False, True])
+@pytest.mark.parametrize("order", ["<", ">"])
+@pytest.mark.parametrize(
+    ("platform", "machine", "version"),
+    [
+        ("macosx_10_13_x86_64", 0x01000007, (10, 13, 0)),
+        ("macosx_10_13_x86_64", 0x01000007, (10, 12, 0)),
+        ("macosx_11_0_arm64", 0x0100000C, (11, 0, 0)),
+    ],
+)
+def test_mac_native_deployment_and_record_are_checked_together(
+    dist: Path, modern: bool, order: str, platform: str, machine: int, version
+) -> None:
+    payload = _macho(
+        _deployment(version, modern=modern, order=order), machine=machine, order=order
+    )
+    path = _macos_wheel(dist, payload, platform=platform)
+    report = release.verify(dist)
+    wheel = next(item for item in report["artifacts"] if item["filename"] == path.name)
+    assert wheel["sha256"] == hashlib.sha256(path.read_bytes()).hexdigest()
+    with zipfile.ZipFile(path) as archive:
+        files = {name: archive.read(name) for name in archive.namelist()}
+    files["unstd/example.cpython-312-darwin.so"] += b"unrecorded mutation"
+    _write_wheel(path, files)
+    with pytest.raises(release.ReleaseError, match="RECORD hash or size mismatch"):
+        release.verify(dist)
+
+
+@pytest.mark.parametrize("modern", [False, True])
+@pytest.mark.parametrize("version", [(10, 15, 0), (10, 13, 1), (11, 0, 0)])
+def test_correctly_rehashed_mac_binary_cannot_exceed_declared_floor(
+    dist: Path, modern: bool, version
+) -> None:
+    _macos_wheel(dist, _macho(_deployment(version, modern=modern)))
+    with pytest.raises(
+        release.ReleaseError, match=r"deployment version.*exceeds wheel platform"
+    ):
+        release.verify(dist)
+
+
+def test_platform_tag_case_cannot_bypass_macos_admission(dist: Path) -> None:
+    _macos_wheel(dist, _macho(_deployment((10, 15, 0))), platform="MACOSX_10_13_X86_64")
+    with pytest.raises(release.ReleaseError, match="exceeds wheel platform"):
+        release.verify(dist)
+
+
+def test_lowest_of_compressed_macos_platform_tags_must_be_supported(dist: Path) -> None:
+    _macos_wheel(
+        dist,
+        _macho(_deployment((10, 15, 0))),
+        platform="macosx_10_13_x86_64.macosx_10_15_x86_64",
+    )
+    with pytest.raises(release.ReleaseError, match="exceeds wheel platform"):
+        release.verify(dist)
+
+
+@pytest.mark.parametrize("name", ["unstd/native", "unstd/.dylibs/dependency.dylib"])
+def test_every_embedded_macos_binary_obeys_the_wheel_floor(
+    dist: Path, name: str
+) -> None:
+    _macos_wheel(
+        dist,
+        _macho(_deployment((10, 13, 0))),
+        additions={name: _macho(_deployment((10, 15, 0), modern=True))},
+    )
+    with pytest.raises(release.ReleaseError, match="exceeds wheel platform"):
+        release.verify(dist)
+
+
+def test_macos_binary_architecture_must_match_declared_wheel(dist: Path) -> None:
+    _macos_wheel(dist, _macho(_deployment((11, 0, 0)), machine=0x0100000C))
+    with pytest.raises(release.ReleaseError, match="architecture differs"):
+        release.verify(dist)
+
+
+@pytest.mark.parametrize(
+    ("payload", "message"),
+    [
+        (b"not a native image", "unsupported or malformed Mach-O"),
+        (b"\xcf\xfa\xed\xfe", "truncated Mach-O header"),
+        (b"\xce\xfa\xed\xfe" + b"\0" * 28, "unsupported or malformed Mach-O"),
+        (b"\xca\xfe\xba\xbe" + b"\0" * 28, "unsupported or malformed Mach-O"),
+        (_macho(), "no macOS deployment command"),
+        (_macho(struct.pack("<2I", 1, 0)), "load-command size"),
+        (_macho(struct.pack("<3I", 1, 12, 0)), "load-command size"),
+        (_macho(struct.pack("<2I", 1, 16)), "load-command size"),
+        (_macho(struct.pack("<2I", 0x24, 8)), "deployment command"),
+        (_macho(struct.pack("<2I", 0x32, 8)), "build-version command"),
+        (
+            _macho(struct.pack("<6I", 0x32, 24, 2, 0xA0D00, 0xA0F00, 0)),
+            "macOS build-version",
+        ),
+        (
+            _macho(struct.pack("<6I", 0x32, 24, 1, 0xA0D00, 0xA0F00, 1)),
+            "macOS build-version",
+        ),
+        (_macho(_deployment((0, 0, 0))), "ambiguous Mach-O deployment"),
+        (_macho(_deployment((0, 13, 0))), "ambiguous Mach-O deployment"),
+        (
+            _macho(_deployment((10, 13, 0)), _deployment((10, 13, 0))),
+            "ambiguous Mach-O deployment",
+        ),
+        (
+            _macho(_deployment((10, 13, 0)), _deployment((10, 15, 0), modern=True)),
+            "ambiguous Mach-O deployment",
+        ),
+    ],
+)
+def test_malformed_or_ambiguous_macos_deployment_metadata_fails_closed(
+    dist: Path, payload: bytes, message: str
+) -> None:
+    _macos_wheel(dist, payload)
+    with pytest.raises(release.ReleaseError, match=message):
+        release.verify(dist)
+
+
+@pytest.mark.parametrize(
+    ("count", "command_bytes"), [(1, release.MAX_METADATA_BYTES + 8), (2, 8), (0, 8)]
+)
+def test_macos_load_command_work_is_bounded_by_the_member(
+    dist: Path, count: int, command_bytes: int
+) -> None:
+    payload = struct.pack(
+        "<8I", 0xFEEDFACF, 0x01000007, 0, 8, count, command_bytes, 0, 0
+    )
+    if command_bytes == 8:
+        payload += b"\0" * 8
+    _macos_wheel(dist, payload)
+    with pytest.raises(release.ReleaseError, match="load-command table"):
+        release.verify(dist)
+
+
+@pytest.mark.parametrize(
+    "platform",
+    ["macosx_11_0_universal2", "macosx_65536_0_arm64", "macosx_10_256_x86_64"],
+)
+def test_macos_native_format_support_cannot_expand_without_review(
+    dist: Path, platform: str
+) -> None:
+    _macos_wheel(dist, _macho(_deployment((10, 13, 0))), platform=platform)
+    with pytest.raises(release.ReleaseError, match=r"macOS.*platform|deployment tag"):
+        release.verify(dist)
 
 
 def _vendored_release(dist: Path, *, native: bool = True) -> list[tuple[str, bytes]]:
