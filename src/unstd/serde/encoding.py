@@ -12,6 +12,9 @@ import json
 from typing import TYPE_CHECKING, Any
 
 
+__all__ = ()
+
+
 if TYPE_CHECKING:
     from collections.abc import Callable
     from types import ModuleType, NotImplementedType

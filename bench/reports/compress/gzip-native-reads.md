@@ -1,7 +1,7 @@
 ---
 doc_radar:
   sentinels:
-    - file: src/unstd/compress/_reader.py
+    - file: src/unstd/compress/engines/reader.py
       contains: ['_factory = _accelerated.Inflater', '_zlib_globals["crc32"] = _crc32']
     - file: native/compress/src/adapter.c
       contains: ['libdeflate_gzip_decompress_ex(', 'MAX_OUTPUT_BYTES', 'sizeof(ModuleState)']

@@ -13,7 +13,7 @@ from typing import TypedDict, Unpack
 
 
 try:
-    from blake3 import blake3
+    from blake3 import blake3 as blake3
 except ImportError as exc:  # fail loud, don't fork the digest
     msg = "unstd.crypto.digest/token require the 'crypto' extra — install with: pip install 'unstd[crypto]'"
     raise ImportError(msg) from exc
@@ -57,4 +57,4 @@ def _parallel_hasher(data: bytes, **options: Unpack[_HashOptions]) -> blake3:
     return blake3(data, **options)
 
 
-__all__ = ["blake3"]
+__all__ = ()

@@ -3,13 +3,24 @@ doc_radar:
   sentinels:
     - file: src/unstd/compress/gzipx.py
       contains: ['GzipFile = _stdlib.GzipFile', 'if type(data) is not bytes']
-    - file: src/unstd/compress/_reader.py
+    - file: src/unstd/compress/engines/reader.py
       contains: ['_factory = _accelerated.Inflater', '_zlib_globals["crc32"] = _crc32']
     - file: native/compress/src/adapter.c
       contains: ['libdeflate_gzip_decompress_ex(', 'MAX_OUTPUT_BYTES']
 ---
 
 # `unstd.compress`
+
+The public `gzipx.py` import stays at the package root, beside its grouped
+[`engines/`](engines/README.md) concern. This is the restructure rule's
+language-package-root shelf: the public import and native ABI stay stable while
+implementation ownership has a descriptive home.
+
+| Location | Responsibility |
+| --- | --- |
+| `gzipx.py` | Public gzip operations, backend selection and fallbacks. |
+| [`engines/`](engines/README.md) | Native provider admission and bounded gzip reading. |
+| `_gzip_native` binary and `.pyi` | Built native implementation and its type surface. |
 
 Gzip through a stdlib-compatible surface, with native codecs behind
 `unstd[compress]`. A base install binds the five public names directly to stdlib

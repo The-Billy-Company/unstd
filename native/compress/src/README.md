@@ -20,7 +20,7 @@ Streaming retains exact `bytes`, snapshots other buffer exporters, and rechecks
 state after exporter callbacks. It keeps the GIL and respects `max_length`;
 negative limits, and zero in legacy mode, mean unlimited. `needs_input`,
 `unused_data`, and legacy `unconsumed_tail` must match the reader mode selected
-by [`_reader.py`](../../../src/unstd/compress/_reader.py). Preserve these state
+by [`_reader.py`](../../../src/unstd/compress/engines/reader.py). Preserve these state
 transitions when changing buffering, especially at EOF and bounded reads.
 
 `inflate.c` bounds allocator multiplication and uses Python RAW allocators.

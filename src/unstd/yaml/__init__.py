@@ -34,7 +34,7 @@ def __getattr__(name: str) -> object:
     if name not in __all__:
         msg = f"module {__name__!r} has no attribute {name!r}"
         raise AttributeError(msg)
-    from unstd.yaml import _codec as codec
+    from unstd.yaml import codec
 
     globals().update((key, getattr(codec, key)) for key in __all__)
     return globals()[name]

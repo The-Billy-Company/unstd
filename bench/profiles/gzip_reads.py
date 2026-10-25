@@ -189,6 +189,7 @@ def _metadata(codec: ModuleType, cases: list[_Case]) -> dict[str, object]:
             for name in ("_inflate.py", "_reader.py", "_backend.py")
             if (path := paths[0].with_name(name)).exists()
         )
+        paths.extend(sorted((paths[0].parent / "engines").glob("*.py")))
         native = sys.modules.get("unstd.compress._gzip_native")
         if native is not None and native.__file__ is not None:
             paths.append(Path(native.__file__).resolve())

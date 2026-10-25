@@ -91,7 +91,7 @@ def test_audio_cli_writes_checked_timing_memory_and_source_evidence(
     assert report["schema"] == 1
     assert report["source_sha256"][str(baseline)] == profile._sha(baseline.read_bytes())
     assert (
-        str(profile._CANDIDATE.parent / "_internal/pcm.py") in report["source_sha256"]
+        str(profile._CANDIDATE.parent / "pcm.py") in report["source_sha256"]
     )
     assert report["source_contracts"] == {}
     assert len(report["rows"]) == 2

@@ -14,6 +14,20 @@ the structures the stdlib has **no equivalent for**.
 from unstd.containers import SortedDict, SortedList, SortedSet, Map
 ```
 
+## Source ownership
+
+This package is a flat leaf: its public modules share one
+small collection API without additional package boundaries.
+
+| File | Responsibility |
+| --- | --- |
+| [`__init__.py`](__init__.py) | Public type exports |
+| [`sorted.py`](sorted.py) | Guarded sorted backend and public type exports |
+| [`persistent.py`](persistent.py) | Guarded persistent map export |
+
+Run the [container contract suite](../../../tests/suites/product/containers/README.md)
+with `uv run --no-sync pytest tests/suites/product/containers -q`.
+
 ## Backend
 
 Both families ride the single **`containers` extra**

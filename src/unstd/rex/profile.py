@@ -11,6 +11,9 @@ from typing import Any
 import warnings
 
 
+__all__ = ()
+
+
 _INLINE_FLAGS = re.compile(r"\(\?([aiLmsux]*)(?:-([imsx]+))?([:)])")
 _POSIX_TOKEN = re.compile(r"\[:\^?[A-Za-z]+:\]|\[([.=])(?:\\.|[^\[\\])*?\1\]")
 

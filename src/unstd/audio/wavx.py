@@ -41,15 +41,15 @@ import struct
 from typing import IO, TYPE_CHECKING, Protocol, Self, cast
 import wave
 
-from unstd.audio._internal.pcm import _bad_subtype as _bad_subtype
-from unstd.audio._internal.pcm import _bad_width as _bad_width
-from unstd.audio._internal.pcm import _check_channels as _check_channels
-from unstd.audio._internal.pcm import _check_dtype as _check_dtype
-from unstd.audio._internal.pcm import _check_pcm_frames as _check_pcm_frames
-from unstd.audio._internal.pcm import _pcm16 as _pcm16
-from unstd.audio._internal.pcm import _pcm_buffer as _pcm_buffer
-from unstd.audio._internal.pcm import _python_integers as _python_integers
-from unstd.audio._internal.pcm import _read_array as _read_array
+from unstd.audio.pcm import _bad_subtype as _bad_subtype
+from unstd.audio.pcm import _bad_width as _bad_width
+from unstd.audio.pcm import _check_channels as _check_channels
+from unstd.audio.pcm import _check_dtype as _check_dtype
+from unstd.audio.pcm import _check_pcm_frames as _check_pcm_frames
+from unstd.audio.pcm import _pcm16 as _pcm16
+from unstd.audio.pcm import _pcm_buffer as _pcm_buffer
+from unstd.audio.pcm import _python_integers as _python_integers
+from unstd.audio.pcm import _read_array as _read_array
 
 
 if TYPE_CHECKING:

@@ -7,6 +7,9 @@ import sys
 from typing import TYPE_CHECKING
 
 
+__all__ = ()
+
+
 if TYPE_CHECKING:
     from collections.abc import Buffer, Callable, Sequence
     import wave

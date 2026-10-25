@@ -7,6 +7,9 @@ import subprocess  # nosec B404 # exception compatibility, no process creation
 from typing import override
 
 
+__all__ = ()
+
+
 @dataclass(frozen=True, slots=True)
 class CompletedProcess:
     """The captured outcome of a finished child — immutable, decoded, self-describing."""

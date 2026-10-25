@@ -98,15 +98,21 @@ from re import (  # faithful re-export of the flag + type vocabulary
     X,
     escape,
 )
+import sys as _sys
 from typing import TYPE_CHECKING, Any, Final
 
-from ._internal.patterns import (
+from . import patterns as _patterns
+from .patterns import (
     LinearRegexError,
     _absent_as_empty,
     _LinearPattern,
     _StrictLinearPattern,
 )
-from ._internal.profile import native_profile
+from .profile import native_profile
+
+
+# Preserve serialized regex class names without a duplicate compatibility file.
+_sys.modules[f"{__name__}._faithful"] = _patterns
 
 
 if TYPE_CHECKING:

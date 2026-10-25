@@ -11,7 +11,7 @@ from typing import Any
 import pytest
 
 from unstd.serde import jsonx
-from unstd.serde._internal.json_encode import _UNSAFE, _snapshot
+from unstd.serde.encoding import _UNSAFE, _snapshot
 
 
 @pytest.mark.parametrize("container", [list, tuple])

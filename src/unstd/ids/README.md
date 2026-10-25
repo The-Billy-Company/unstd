@@ -1,14 +1,28 @@
+---
+doc_radar:
+  sentinels:
+    - file: src/unstd/ids/uid.py
+      contains: ['def new() -> str:', 'def _reset_after_fork()']
+---
+
 # `unstd.ids`
 
 Identifier generation — one UID strategy shared across the program.
 Content-addressed ids are BLAKE3 digests and live with the digest:
 `unstd.crypto.digest.hex(data)` (or `hex(data, 8)` for a short id).
 
-## Modules
+## Source ownership
+
+This flat leaf keeps identifier generation, derivation, and parsing behind the
+single `uid` module.
 
 | File      | Role                                                                                                                                               |
 | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `uid.py`  | `new` / `new_hex` mint a UUIDv7 (RFC 9562); `derive` computes a v5; `parse` reads one back. `ids` extra → `uuid-utils`; stdlib fallback otherwise. |
+| [`__init__.py`](__init__.py) | Package documentation; importing the package leaves `uid` backend selection deferred. |
+| [`uid.py`](uid.py) | `new` / `new_hex` mint a UUIDv7 (RFC 9562); `derive` computes a v5; `parse` reads one back. Owns optional backend selection and fallback clock, counter, entropy, and fork state. |
+
+Run the [identifier contracts](../../../tests/suites/product/ids/README.md) from
+the repository root with `uv run --no-sync pytest tests/suites/product/ids -q`.
 
 ## Minted vs derived
 

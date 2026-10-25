@@ -19,7 +19,7 @@ plain ``list`` + ``bisect.insort`` is ``O(n)`` per insert and easy to desync), s
 this module is guarded: with the ``containers`` extra it re-exports the real
 classes verbatim (a thin, faithful wrapper — ``unstd.containers.SortedDict`` *is*
 ``sortedcontainers.SortedDict``); without it, each name is a placeholder that
-raises a clear ImportError on construction (see :func:`unstd._extra.missing`).
+raises a clear ImportError on construction (see :func:`unstd.extras.missing`).
 """
 
 from __future__ import annotations
@@ -41,7 +41,7 @@ else:
 
         HAVE_SORTEDCONTAINERS = True
     except ImportError:  # base install without the `containers` extra
-        from unstd._extra import missing
+        from unstd.extras import missing
 
         HAVE_SORTEDCONTAINERS = False
         SortedDict, SortedList, SortedSet = (

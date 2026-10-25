@@ -118,9 +118,11 @@ def _workloads(benchmark: Path) -> tuple[Any, list[Any], dict[str, Any], Any]:
     cases, metadata = module._cases()
     from unstd.serde import jsonx
 
-    encoder_module = sys.modules.get(
-        "unstd.serde._internal.json_encode"
-    ) or sys.modules.get("unstd.serde._json_encode")
+    encoder_module = (
+        sys.modules.get("unstd.serde.encoding")
+        or sys.modules.get("unstd.serde._internal.json_encode")
+        or sys.modules.get("unstd.serde._json_encode")
+    )
     native_guard = getattr(encoder_module, "_native_encode", None)
     native_spacing = native_guard
     native_facade = getattr(jsonx, "_native_dumpb", None)

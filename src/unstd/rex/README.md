@@ -1,9 +1,9 @@
 ---
 doc_radar:
   sentinels:
-    - file: src/unstd/rex/_internal/profile.py
+    - file: src/unstd/rex/profile.py
       contains: ['_parser.parse(pattern, flags)', 'parsed.getwidth()[0] == 0']
-    - file: src/unstd/rex/_internal/patterns.py
+    - file: src/unstd/rex/patterns.py
       contains: ['started = True', 'if started:']
     - file: src/unstd/rex/__init__.py
       contains: ['python = _re.compile(pattern, flags)', 'profile, _irgx.error', '_MAXCACHE = 512']
@@ -137,4 +137,15 @@ Cox](https://swtch.com/~rsc/regexp/regexp1.html); the language contract comes fr
 
 ## Implementation layout
 
-Semantic proofs and compiled-pattern adapters live in [`_internal/`](_internal/README.md). The public package owns compilation policy and caches; `_faithful` retains compatibility imports.
+The regex package is a flat matching leaf with three owners:
+
+| File | Responsibility |
+| --- | --- |
+| [`__init__.py`](__init__.py) | Public compilation policy, backend selection, operations and bounded caches |
+| [`profile.py`](profile.py) | Parsed syntax and Unicode eligibility proofs |
+| [`patterns.py`](patterns.py) | Compiled-pattern adapters, Unicode recovery and strict linear operations |
+
+The package registers the old private regex module name as an alias of
+`patterns`, preserving historical class pickles without a duplicate source file.
+Run `uv run --no-sync python -m pytest tests/suites/product/rex -q` from the
+repository root.

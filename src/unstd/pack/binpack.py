@@ -49,7 +49,7 @@ from collections.abc import Iterable  # noqa: TC003 — runtime type introspecti
 import struct as _struct
 from typing import TYPE_CHECKING
 
-from unstd.pack._internal.dtype import _array_struct, _struct_spec
+from unstd.pack.dtypes import _array_struct, _struct_spec
 
 
 if TYPE_CHECKING:

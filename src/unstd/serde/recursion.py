@@ -8,6 +8,9 @@ result. Callers retry a failed probe through stdlib for its own diagnostics.
 from __future__ import annotations
 
 
+__all__ = ()
+
+
 def _check_headroom[T](value: T) -> T:
     return _recursion_result(value)
 

@@ -15,6 +15,9 @@ from ruamel.yaml.representer import RoundTripRepresenter
 from ruamel.yaml.scalarfloat import ScalarFloat
 
 
+__all__ = ()
+
+
 if TYPE_CHECKING:
     from ruamel.yaml import YAML
     from ruamel.yaml.nodes import MappingNode, Node, ScalarNode

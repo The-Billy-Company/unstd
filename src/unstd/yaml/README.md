@@ -1,3 +1,12 @@
+---
+doc_radar:
+  sentinels:
+    - file: src/unstd/yaml/codec.py
+      contains: ['def loads(', 'def _is_value(']
+    - file: src/unstd/yaml/parser.py
+      contains: ['class _SafeConstructor(', 'def create_engine(']
+---
+
 # `unstd.yaml`
 
 Safe YAML 1.2 loading and document editing behind `unstd[yaml]`. We use
@@ -57,6 +66,17 @@ environment merging, or implicit schema coercion.
 
 ## Implementation layout
 
-The public namespace loads backend bindings and native operations on demand.
-Native operations live in `_codec.py`; parser safety policy and value validation
-live in [`_internal/`](_internal/README.md). Each operation owns its parser.
+The package is a flat YAML document leaf:
+
+| File | Responsibility |
+| --- | --- |
+| [`__init__.py`](__init__.py) | Lazy public functions and original backend module bindings |
+| [`codec.py`](codec.py) | Document operations, native value types and alias-aware validation |
+| [`parser.py`](parser.py) | Safe constructors, duplicate-key policy and editable emission |
+| [`__init__.pyi`](__init__.pyi) | Static types for the lazy public namespace |
+
+`codec` loads parser policy only with the optional backend; each operation owns
+its parser. Value validation stays beside the codec that uses it. Public
+functions retain their `unstd.yaml` identity. Run
+`uv run --no-sync python -m pytest tests/suites/product/yaml -q` from the
+repository root.

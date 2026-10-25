@@ -305,7 +305,7 @@ assert toml.loads(toml.dumps(document)) == {'value': 7}
 import ruamel.yaml
 import yaml as pyyaml
 from unstd import yaml
-from unstd.yaml import _codec
+from unstd.yaml import codec as _codec
 assert _codec._YAML is ruamel.yaml.YAML
 assert yaml.ruamel is ruamel.yaml
 assert yaml.pyyaml is pyyaml

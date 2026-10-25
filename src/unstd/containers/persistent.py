@@ -18,7 +18,7 @@ view, not a value; ``dict(old, **{k: v})`` is a full ``O(n)`` copy with no
 sharing), so this module is guarded: with the ``containers`` extra it re-exports
 the real class verbatim (``unstd.containers.Map`` *is* ``immutables.Map``);
 without it, :class:`Map` is a placeholder that raises a clear ImportError on
-construction (see :func:`unstd._extra.missing`).
+construction (see :func:`unstd.extras.missing`).
 """
 
 from __future__ import annotations
@@ -28,7 +28,7 @@ from typing import TYPE_CHECKING
 
 # The type checker reads the real backend; the runtime keeps the guard. Splitting
 # them is what lets `Map` stay a genuine generic class to a caller's annotations
-# while still degrading to `_extra.missing` on a base install — rebinding a name
+# while still degrading to `extras.missing` on a base install — rebinding a name
 # that a checker knows to be a class is otherwise an error, and `immutables`
 # (unlike `sortedcontainers`) ships `py.typed`, so it is one here.
 if TYPE_CHECKING:
@@ -41,7 +41,7 @@ else:
 
         HAVE_IMMUTABLES = True
     except ImportError:  # base install without the `containers` extra
-        from unstd._extra import missing
+        from unstd.extras import missing
 
         HAVE_IMMUTABLES = False
         Map = missing("containers.Map", "containers")

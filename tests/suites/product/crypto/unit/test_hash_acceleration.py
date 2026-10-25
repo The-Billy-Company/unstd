@@ -291,7 +291,7 @@ _WRONG_KIND_PANIC = type(
 
 @pytest.fixture
 def parallel_backend(monkeypatch):
-    backend = importlib.import_module("unstd.crypto._blake3")
+    backend = importlib.import_module("unstd.crypto.hashing")
     # Failure injection does not need a large buffer; the real crossover is
     # independently exercised above. Force multiple workers even on one-CPU CI.
     monkeypatch.setattr(backend, "_PARALLEL_THREADS", 2)

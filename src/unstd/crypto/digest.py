@@ -38,7 +38,7 @@ from __future__ import annotations
 import hashlib
 from typing import TYPE_CHECKING, Self
 
-from unstd.crypto._blake3 import _PARALLEL_MIN_BYTES, _parallel_hasher, blake3
+from unstd.crypto.hashing import _PARALLEL_MIN_BYTES, _parallel_hasher, blake3
 
 
 if TYPE_CHECKING:

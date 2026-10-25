@@ -57,8 +57,8 @@ import secrets
 import stat
 from typing import IO, TYPE_CHECKING, Literal, overload
 
-from unstd.fs._internal.durability import sync_directory as _sync_directory
-from unstd.fs._internal.walk import _walk_descriptors, _walk_following, _walk_portable
+from unstd.fs.durability import sync_directory as _sync_directory
+from unstd.fs.traversal import _walk_descriptors, _walk_following, _walk_portable
 
 
 if TYPE_CHECKING:

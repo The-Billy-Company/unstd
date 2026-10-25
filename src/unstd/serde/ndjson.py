@@ -36,7 +36,7 @@ import errno
 import io
 from typing import TYPE_CHECKING, Protocol, overload
 
-from unstd._extra import missing
+from unstd.extras import missing
 from unstd.serde import jsonx
 
 

@@ -9,6 +9,9 @@ import stat
 from typing import TYPE_CHECKING
 
 
+__all__ = ()
+
+
 if TYPE_CHECKING:
     from collections.abc import Iterator
     from types import ModuleType

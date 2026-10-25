@@ -9,6 +9,19 @@ legible paths.
 | [`draw`](#draw--seedable-prng) (re-exported at the package top level) | numpy `Generator(PCG64)` → stdlib `random` fallback | simulations, sampling, shuffles, bulk arrays, ML/eval draws |
 | [`crypto`](#crypto--the-csprng-path)                                  | **always** stdlib `secrets` (CSPRNG)                | tokens, keys, salts, nonces, OTP/reset codes                |
 
+## Source ownership
+
+This package stays a flat leaf; each module owns a distinct randomness concern.
+
+| File | Responsibility |
+| --- | --- |
+| [`__init__.py`](__init__.py) | Public draw exports and the secure randomness module |
+| [`draw.py`](draw.py) | Seedable scalar and bulk public APIs, engine selection, and state |
+| [`crypto.py`](crypto.py) | Secure draws using stdlib `secrets` |
+
+Run the [randomness contract suite](../../../tests/suites/product/rand/README.md)
+with `uv run --no-sync pytest tests/suites/product/rand -q`.
+
 ## Backend & fallback
 
 The **`rand` extra** (`pip install 'unstd[rand]'`) provides

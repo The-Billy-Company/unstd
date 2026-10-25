@@ -1,9 +1,9 @@
 ---
 doc_radar:
   sentinels:
-  - file: src/unstd/rex/_internal/profile.py
+  - file: src/unstd/rex/profile.py
     contains: ['_parser.parse(pattern, flags)']
-  - file: src/unstd/rex/_internal/patterns.py
+  - file: src/unstd/rex/patterns.py
     contains: ['if started:']
   - file: pyproject.toml
     contains: ['"msgspec>=0.22"', exclude-newer = "P2D", '"blake3>=1.0.10"', '"pyyaml>=6.0.3"', 'select = "cp3{12,13}-macosx_x86_64"', sysconfig.get_config_var("CFLAGS")]
@@ -13,7 +13,7 @@ doc_radar:
     contains: ['TAG: ${{ github.ref_name }}', Build and test CPython wheels, 'UV_MANAGED_PYTHON: "1"', python -m tests.tooling.release.wheels]
   - file: src/unstd/serde/structs.py
     contains: ['Callable[[Decimal], object]', 'decimal_format: _DecimalFormat']
-  - file: src/unstd/compress/_reader.py
+  - file: src/unstd/compress/engines/reader.py
     contains: [_factory = _accelerated.Inflater, '_zlib_globals["crc32"] = _crc32']
   - file: native/compress/src/adapter.c
     contains: [libdeflate_gzip_decompress_ex(, MAX_OUTPUT_BYTES]

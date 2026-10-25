@@ -7,6 +7,12 @@ import re
 import sys
 from typing import TYPE_CHECKING, Any, NoReturn, override
 
+from .profile import _faithful_classes as _faithful_classes
+from .profile import native_profile as native_profile
+
+
+__all__ = ()
+
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator, Sequence

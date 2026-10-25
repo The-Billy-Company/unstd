@@ -10,6 +10,9 @@ from tomlkit.container import Container
 from tomlkit.items import Item, KeyType, SingleKey, String, StringType, Trivia
 
 
+__all__ = ()
+
+
 # TOML 1.0 basic-string escapes; ESC falls in the control range as ``\u001b``.
 _ESCAPES = str.maketrans(
     {chr(c): f"\\u{c:04x}" for c in (*range(0x20), 0x7F)}

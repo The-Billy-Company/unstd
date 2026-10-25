@@ -1,3 +1,12 @@
+---
+doc_radar:
+  sentinels:
+    - file: binpack.py
+      contains: ["from unstd.pack.dtypes import"]
+    - file: dtypes.py
+      contains: ["def _struct_spec("]
+---
+
 # `pack` — binary packing
 
 Part of [`unstd`](../README.md). A stdlib-`struct`-faithful surface plus
@@ -144,6 +153,20 @@ Tests compare the portable numeric layouts and buffer behavior in
   quantization, a self-describing frame header) — the direction a future `pack`
   array backend would go; NumPy is the backend for now.
 
-## Implementation layout
+## Source ownership
 
-Portable dtype grammar and bounded format caches live in [`_internal/`](_internal/README.md); `binpack` keeps public calls and optional-backend dispatch.
+The package keeps its cohesive modules together as one code leaf.
+
+| File | Responsibility |
+| --- | --- |
+| [`__init__.py`](__init__.py) | Package entry point and usage contract |
+| [`binpack.py`](binpack.py) | Public scalar and homogeneous-array operations |
+| [`dtypes.py`](dtypes.py) | Numeric dtype grammar, aliases, byte order and bounded struct caches |
+
+`dtypes.py` owns the portable numeric dtype grammar, aliases, byte-order rules,
+and bounded parser/compiled-format caches. It uses only stdlib `struct`.
+The public `binpack` module retains backend selection, array operations,
+and direct stdlib aliases.
+
+Run the contracts from the repository root with
+`uv run --no-sync python -m pytest tests/suites/product/pack -q`.

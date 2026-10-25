@@ -24,9 +24,9 @@ if TYPE_CHECKING:
     from gzip import _ReadableFileobj, _WritableFileobj
     from typing import IO, Protocol
 
-    from unstd.compress._backend import gzip as _backend
-    from unstd.compress._backend import native as _native
-    from unstd.compress._reader import _Reader
+    from unstd.compress.engines.native import gzip as _backend
+    from unstd.compress.engines.native import native as _native
+    from unstd.compress.engines.reader import _Reader
 
     _decode_buffer: Callable[[object], bytes | None] | None
 
@@ -44,14 +44,14 @@ if TYPE_CHECKING:
 
 else:
     try:
-        from unstd.compress._backend import gzip as _backend
-        from unstd.compress._backend import native as _native
+        from unstd.compress.engines.native import gzip as _backend
+        from unstd.compress.engines.native import native as _native
     except ImportError:
         _backend = None
         _decode_buffer = None
     else:
         _Base = _backend.GzipFile
-        from unstd.compress._reader import _Reader
+        from unstd.compress.engines.reader import _Reader
 
         try:
             from unstd.compress._gzip_native import decompress as _decode_buffer

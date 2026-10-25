@@ -6,6 +6,9 @@ from functools import lru_cache
 import struct as _struct
 
 
+__all__ = ()
+
+
 # NumPy typestr kind+itemsize → stdlib ``struct` format char (standard sizes).
 _STRUCT_CHAR = {
     "i1": "b",

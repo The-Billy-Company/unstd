@@ -49,7 +49,7 @@ import subprocess  # nosec B404 # the public API is a subprocess wrapper
 import time
 from typing import TYPE_CHECKING, TypedDict, Unpack
 
-from unstd.proc._internal.results import CompletedProcess, ProcessError
+from unstd.proc.results import CompletedProcess, ProcessError
 
 
 if TYPE_CHECKING:

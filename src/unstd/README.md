@@ -20,14 +20,21 @@ from stdlib behavior.
 Import the relevant module directly, for example
 `from unstd.serde import jsonx`. [`__init__.py`](__init__.py) resolves
 `__version__` lazily from installed metadata; it does not eagerly load the module
-groups. [`_extra.py`](_extra.py) provides deferred `ImportError` placeholders for
+groups. [`extras.py`](extras.py) provides deferred `ImportError` placeholders for
 capabilities without a fallback. [`py.typed`](py.typed) marks the package's inline
 type information for consumers.
 
-Public modules retain their existing import paths. Larger implementations keep
-private mechanisms under their owning package's `_internal/` directory; smaller
-packages keep focused modules without extra nesting. The
-[public API inventory](../../docs/api.md) lists the exact supported exports.
+Public modules retain their existing import paths. Small domains are cohesive
+code leaves with descriptive names such as `audio/pcm.py`, `fs/traversal.py`,
+`proc/results.py`, and `serde/encoding.py`. Their guides map owned files and the
+current test command; shallow helper packages are removed.
+
+Compression engine integration lives in
+[`compress/engines/`](compress/engines/README.md). Its public `gzipx.py` and the
+shared `extras.py` module stay on their respective package-root import shelves,
+as allowed by the restructure rule for language package roots. Supporting
+modules declare an empty `__all__`; naming clarity does not expand the supported
+[public API](../../docs/api.md).
 
 All C and Rust source lives under [`native/`](../../native/README.md), outside
 the installable Python tree. Private native extension names and `.pyi` stubs

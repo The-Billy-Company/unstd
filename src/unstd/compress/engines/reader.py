@@ -15,7 +15,10 @@ import zlib
 
 from zlib_ng import zlib_ng as _native
 
-from unstd.compress._backend import native as _codec
+from unstd.compress.engines.native import native as _codec
+
+
+__all__ = ()
 
 
 if TYPE_CHECKING:

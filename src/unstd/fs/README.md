@@ -1,3 +1,12 @@
+---
+doc_radar:
+  sentinels:
+    - file: __init__.py
+      contains: ["from unstd.fs.durability import"]
+    - file: traversal.py
+      contains: ["def _walk_descriptors("]
+---
+
 # `unstd.fs` — filesystem operations `pathlib`/`os` lack
 
 Part of [`unstd`](../README.md). **Pure stdlib — no optional extra.**
@@ -124,6 +133,22 @@ read untrusted, concurrently modified trees must also protect their file opens.
   cache; the parent-directory-fsync durability nuance is documented in LWN's
   _"Ensuring data reaches disk"_ and the SQLite atomic-commit docs.
 
-## Implementation layout
+## Source ownership
 
-Traversal and directory-sync mechanisms live in [`_internal/`](_internal/README.md). The package keeps atomic-write orchestration and passes its OS binding explicitly to the private helpers.
+The package keeps its cohesive modules together as one code leaf.
+
+| File | Responsibility |
+| --- | --- |
+| [`__init__.py`](__init__.py) | Public filesystem operations and atomic commits |
+| [`durability.py`](durability.py) | Directory synchronization and descriptor cleanup |
+| [`traversal.py`](traversal.py) | Descriptor-anchored, portable and symlink-following walks |
+
+`durability.py` owns directory synchronization and descriptor cleanup.
+`traversal.py` owns descriptor-anchored, portable and symlink-following traversal.
+The public `unstd.fs` module passes its operating-system binding explicitly,
+keeping fault injection and platform behavior consistent. Atomic-write
+orchestration stays at the public module so its sync and cleanup hooks retain
+their existing behavior. These modules are private implementation details.
+
+Run the contracts from the repository root with
+`uv run --no-sync python -m pytest tests/suites/product/fs -q`.

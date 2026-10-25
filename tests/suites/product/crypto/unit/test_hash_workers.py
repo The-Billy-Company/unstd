@@ -10,7 +10,7 @@ import pytest
 
 
 blake3 = pytest.importorskip("blake3").blake3
-backend = importlib.import_module("unstd.crypto._blake3")
+backend = importlib.import_module("unstd.crypto.hashing")
 digest = importlib.import_module("unstd.crypto.digest")
 token = importlib.import_module("unstd.crypto.token")
 _KEY = bytes(range(32))

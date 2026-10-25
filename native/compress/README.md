@@ -2,7 +2,7 @@
 
 Private build inputs for `unstd.compress._gzip_native`. Start with
 [`gzipx.py`](../../src/unstd/compress/gzipx.py) for public dispatch and
-[`_reader.py`](../../src/unstd/compress/_reader.py) for streaming integration.
+[`_reader.py`](../../src/unstd/compress/engines/reader.py) for streaming integration.
 
 | File | Responsibility |
 | --- | --- |

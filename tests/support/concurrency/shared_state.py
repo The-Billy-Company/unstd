@@ -555,7 +555,7 @@ def _yaml_reentry(seed, *, broken=False):
 
 def _yaml_failure_isolation(seed, *, broken=False):
     from unstd import yaml
-    from unstd.yaml import _codec
+    from unstd.yaml import codec as _codec
 
     gate = _Gate("yaml.invalid_and_healthy", PARTIES)
     actors = ordered(

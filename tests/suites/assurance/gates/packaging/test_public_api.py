@@ -84,7 +84,7 @@ def _assert_contract(name, module) -> None:
             and attribute in {"dump", "dumps"}
             and not module._HAVE_TOMLKIT
         ):
-            assert value.__module__ == "unstd._extra"
+            assert value.__module__ == "unstd.extras"
             with pytest.raises(ImportError, match="'toml' extra"):
                 value()
             continue

@@ -2,8 +2,8 @@
 doc_radar:
   sentinels:
     - file: ../src/unstd/yaml/__init__.py
-      contains: ['from unstd.yaml import _codec as codec', 'globals()[name] = backend']
-    - file: ../src/unstd/yaml/_codec.py
+      contains: ['from unstd.yaml import codec', 'globals()[name] = backend']
+    - file: ../src/unstd/yaml/codec.py
       contains: ['def loads(', 'def dumps(']
     - file: ../src/unstd/time/timeutil.py
       contains: ['strftime = _time.strftime', 'combine = datetime.combine']
@@ -52,28 +52,34 @@ guides explain the purpose of each first-party source and tooling directory.
 ## Python packages
 
 All paths below are relative to `src/unstd/`. Public modules stay at their
-existing paths. `_internal` packages are implementation details.
+existing paths. Supporting modules use descriptive concern names and remain implementation details.
 
 | Package | Public interface | Private implementation boundary |
 | --- | --- | --- |
-| `audio` | `wavx.py` | `_internal/pcm.py` owns pure sample conversion and frame validation; backend state and file I/O remain in `wavx` |
+| `audio` | `wavx.py` | `pcm.py` owns pure sample conversion and frame validation; backend state and file I/O remain in `wavx` |
 | `clone` | Package exports and `structural.py` | Exact-type walker and optional private clone extension |
-| `compress` | `gzipx.py` | `_backend.py`, `_reader.py`, private native extension |
+| `compress` | `gzipx.py` | `engines/native.py`, `engines/reader.py`, private native extension |
 | `containers` | Package exports, `persistent.py`, `sorted.py` | Guarded imports and deferred missing-extra placeholders |
-| `crypto` | `digest.py`, `tls.py`, `token.py` | `_blake3.py` and private native stream extension |
-| `fs` | Package functions | `_internal/durability.py` and `walk.py`; atomic-write orchestration retains public sync and cleanup hooks |
+| `crypto` | `digest.py`, `tls.py`, `token.py` | `hashing.py` and private native stream extension |
+| `fs` | Package functions | `durability.py` and `traversal.py`; atomic-write orchestration retains public sync and cleanup hooks |
 | `ids` | `uid.py` | Private UUID fallback state stays with the generator |
 | `iters` | Package functions and `consecutive.py`, `distinct.py`, `reshape.py`, `select.py` | Small focused combinator modules |
 | `model` | Package classes, `base.py`, `settings.py` | Strict Pydantic model and settings configuration |
-| `pack` | `binpack.py` | `_internal/dtype.py` owns portable dtype grammar and bounded struct caches |
-| `proc` | Package functions and classes | `_internal/results.py` implements result/error classes; execution stays at the public module |
+| `pack` | `binpack.py` | `dtypes.py` owns portable dtype grammar and bounded struct caches |
+| `proc` | Package functions and classes | `results.py` implements result/error classes; execution stays at the public module |
 | `rand` | Package functions, `draw.py`, `crypto.py` | Seeded engines remain separate from unseedable security draws |
-| `rex` | Package functions, flags and types | `_internal/profile.py` proves semantic eligibility; `patterns.py` owns adapters; caches remain public-module state |
-| `serde` | `jsonx.py`, `b64.py`, `ndjson.py`, `structs.py` | `_internal/json_encode.py` and `json_common.py`; private native JSON extension |
+| `rex` | Package functions, flags and types | `profile.py` proves semantic eligibility; `patterns.py` owns adapters; caches remain public-module state |
+| `serde` | `jsonx.py`, `b64.py`, `ndjson.py`, `structs.py` | `encoding.py` and `recursion.py`; private native JSON extension |
 | `text` | `fuzz.py` | Private native text extension; scorer dispatch remains with public calls |
 | `time` | `timeutil.py`, `zoned.py` | Native clock/calendar bindings, instant arithmetic and optional zoned-time backend stay separate |
-| `toml` | Package format functions and builders | `_internal/common.py` normalizes plain data to the shared TOML dialect |
-| `yaml` | Lazy backend modules and YAML 1.2 helpers | `_codec.py` owns document functions; `_internal/engine.py` owns safe parser policy; `values.py` validates results without expanding aliases |
+| `toml` | Package format functions and builders | `dialect.py` normalizes plain data to the shared TOML dialect |
+| `yaml` | Lazy backend modules and YAML 1.2 helpers | `codec.py` owns document functions and value validation; `parser.py` owns safe parser policy |
+
+The package root and compression facade retain the rule's documented
+language-package-root import shelf, avoiding one-file wrapper packages. Other
+domain source folders are flat code leaves. Support modules declare an empty
+`__all__`, preserving the public operation inventory. Historical regex pickle
+identities remain registered without a duplicate compatibility source file.
 
 Small modules stay focused rather than gaining empty wrapper layers. Public
 entrypoints retain their original definitions when they own backend switches,

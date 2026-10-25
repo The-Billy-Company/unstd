@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 @pytest.fixture
 def reader_module():
     pytest.importorskip("zlib_ng.zlib_ng")
-    from unstd.compress import _reader
+    from unstd.compress.engines import reader as _reader
 
     return _reader
 
@@ -116,7 +116,8 @@ def test_missing_bundled_extension_keeps_the_portable_native_reader() -> None:
                 return None
 
         sys.meta_path.insert(0, BlockBundled())
-        from unstd.compress import _reader, gzipx
+        from unstd.compress import gzipx
+        from unstd.compress.engines import reader as _reader
 
         assert _reader._accelerated is None
         payload = b"portable native gzip reader\\n" * 100

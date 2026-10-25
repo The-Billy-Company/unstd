@@ -1,3 +1,12 @@
+---
+doc_radar:
+  sentinels:
+    - file: __init__.py
+      contains: ["from unstd.toml.dialect import"]
+    - file: dialect.py
+      contains: ["def _common_mapping("]
+---
+
 # `unstd.toml`
 
 Part of [`unstd`](../README.md). A faithful stand-in for the stdlib
@@ -76,6 +85,18 @@ Read such a document back with `tomlkit.parse` (or this module's `parse`) — no
 - **[`tomlkit`](https://github.com/sdispater/tomlkit)** — Sébastien Eustace; the
   style-preserving TOML engine behind Poetry.
 
-## Implementation layout
+## Source ownership
 
-TOML dialect normalization lives in [`_internal/`](_internal/README.md). The public package keeps stdlib read aliases, optional write imports and document builders.
+The package keeps its cohesive modules together as one code leaf.
+
+| File | Responsibility |
+| --- | --- |
+| [`__init__.py`](__init__.py) | Public read/write API and style-preserving document builders |
+| [`dialect.py`](dialect.py) | Common-dialect value validation and normalization |
+
+`dialect.py` validates values and normalizes plain data to the common TOML
+dialect. It loads only when the optional writing backend is available.
+The public module retains stdlib read aliases, builders, and write entrypoints.
+
+Run the contracts from the repository root with
+`uv run --no-sync python -m pytest tests/suites/product/toml -q`.

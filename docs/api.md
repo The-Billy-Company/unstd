@@ -275,7 +275,7 @@ holds the `CompletedProcess`; inherited `returncode`, `cmd`, `output`, `stdout`,
 and `stderr` remain available. Its string representation includes captured
 stderr. Both result classes retain the public module identity `unstd.proc`,
 including for class lookup and `CompletedProcess` pickles, while their
-[definitions](../src/unstd/proc/_internal/results.py) live privately.
+[definitions](../src/unstd/proc/results.py) live privately.
 
 ## Randomness
 
@@ -505,7 +505,8 @@ compatibility diagnostics rather than the supported capability API for new code:
 | `unstd.containers.sorted` | `HAVE_SORTEDCONTAINERS` |
 | `unstd.containers.persistent` | `HAVE_IMMUTABLES` |
 
-Private `_internal` packages own implementation details. The bundled extension
+Supporting modules have descriptive concern names; their location does not
+add them to the supported API. The bundled extension
 modules `unstd.serde._json_native`, `unstd.clone._clone_native`,
 `unstd.crypto._stream_native`, `unstd.text._text_native`, and
 `unstd.compress._gzip_native` retain their private import names for build/runtime

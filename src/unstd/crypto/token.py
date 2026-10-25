@@ -25,7 +25,7 @@ import hmac
 import sys
 from typing import TYPE_CHECKING
 
-from unstd.crypto._blake3 import _PARALLEL_MIN_BYTES, _parallel_hasher, blake3
+from unstd.crypto.hashing import _PARALLEL_MIN_BYTES, _parallel_hasher, blake3
 from unstd.serde import b64
 
 

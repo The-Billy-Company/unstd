@@ -102,7 +102,7 @@ if TYPE_CHECKING:
         dumps as _dumps,
     )
 
-    from unstd.toml._internal.common import _common_mapping
+    from unstd.toml.dialect import _common_mapping
 
     _HAVE_TOMLKIT = True
 else:
@@ -122,11 +122,11 @@ else:
             dumps as _dumps,
         )
 
-        from unstd.toml._internal.common import _common_mapping
+        from unstd.toml.dialect import _common_mapping
 
         _HAVE_TOMLKIT = True
     except ImportError:  # write path has no stdlib equivalent — tomllib is read-only
-        from unstd._extra import missing
+        from unstd.extras import missing
 
         _HAVE_TOMLKIT = False
         (

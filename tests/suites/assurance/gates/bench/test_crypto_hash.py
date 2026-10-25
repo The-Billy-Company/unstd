@@ -17,28 +17,30 @@ import unstd.crypto
 @pytest.mark.parametrize(
     "imports",
     [
-        "from unstd.crypto._blake3 import VALUE",
-        "from ._blake3 import VALUE",
-        "import unstd.crypto._blake3\nVALUE = unstd.crypto._blake3.VALUE",
-        "import unstd.crypto._blake3 as backend\nVALUE = backend.VALUE",
-        "from unstd.crypto import _blake3\nVALUE = _blake3.VALUE",
-        "from unstd import crypto\nVALUE = crypto._blake3.VALUE",
+        "from unstd.crypto.{backend} import VALUE",
+        "from .{backend} import VALUE",
+        "import unstd.crypto.{backend}\nVALUE = unstd.crypto.{backend}.VALUE",
+        "import unstd.crypto.{backend} as backend\nVALUE = backend.VALUE",
+        "from unstd.crypto import {backend}\nVALUE = {backend}.VALUE",
+        "from unstd import crypto\nVALUE = crypto.{backend}.VALUE",
     ],
 )
+@pytest.mark.parametrize("backend", ["hashing", "_blake3"])
 def test_saved_helpers_resolve_independently_of_live_crypto(
-    tmp_path, monkeypatch, imports
+    tmp_path, monkeypatch, imports, backend
 ):
+    # Saved comparisons must keep loading the historical backend filename too.
     directory = tmp_path / "unstd" / "crypto"
     directory.mkdir(parents=True)
-    (directory / "_marker.py").write_text("VALUE = 'saved helper'\n")
-    helper = directory / "_blake3.py"
-    helper.write_text("from ._marker import VALUE\n")
-    (directory / "digest.py").write_text("from unstd.crypto._blake3 import VALUE\n")
-    (directory / "token.py").write_text(imports + "\n")
-    live = ModuleType("unstd.crypto._blake3")
+    (directory / "marker.py").write_text("VALUE = 'saved helper'\n")
+    helper = directory / f"{backend}.py"
+    helper.write_text("from .marker import VALUE\n")
+    (directory / "digest.py").write_text(f"from unstd.crypto.{backend} import VALUE\n")
+    (directory / "token.py").write_text(imports.format(backend=backend) + "\n")
+    live = ModuleType(f"unstd.crypto.{backend}")
     live.VALUE = "live helper"
     monkeypatch.setitem(sys.modules, live.__name__, live)
-    monkeypatch.setattr(unstd.crypto, "_blake3", live, raising=False)
+    monkeypatch.setattr(unstd.crypto, backend, live, raising=False)
     original = {
         name: module
         for name, module in sys.modules.items()
@@ -53,11 +55,11 @@ def test_saved_helpers_resolve_independently_of_live_crypto(
         for name, module in sys.modules.items()
         if name == "unstd" or name.startswith("unstd.")
     } == original
-    assert unstd.crypto._blake3 is live
+    assert getattr(unstd.crypto, backend) is live
     namespace = digest.__name__.split(".", 1)[0]
-    selected = sys.modules[f"{namespace}.crypto._blake3"]
+    selected = sys.modules[f"{namespace}.crypto.{backend}"]
     assert selected.__file__ == str(helper)
-    assert compare._source_hashes(tmp_path)["unstd/crypto/_blake3.py"] == (
+    assert compare._source_hashes(tmp_path)[f"unstd/crypto/{backend}.py"] == (
         hashlib.sha256(helper.read_bytes()).hexdigest()
     )
 
@@ -65,8 +67,8 @@ def test_saved_helpers_resolve_independently_of_live_crypto(
 def test_absent_saved_helper_fails_without_using_live_helper(tmp_path, monkeypatch):
     directory = tmp_path / "unstd" / "crypto"
     directory.mkdir(parents=True)
-    (directory / "digest.py").write_text("from unstd.crypto._blake3 import VALUE\n")
-    live = ModuleType("unstd.crypto._blake3")
+    (directory / "digest.py").write_text("from unstd.crypto.hashing import VALUE\n")
+    live = ModuleType("unstd.crypto.hashing")
     live.VALUE = "must never be used"
     monkeypatch.setitem(sys.modules, live.__name__, live)
     original = set(sys.modules)
@@ -85,19 +87,19 @@ def test_absent_saved_helper_fails_without_using_live_helper(tmp_path, monkeypat
 def test_saved_source_hash_matches_execution_despite_stale_bytecode(tmp_path):
     directory = tmp_path / "unstd" / "crypto"
     directory.mkdir(parents=True)
-    helper = directory / "_blake3.py"
+    helper = directory / "hashing.py"
     helper.write_text("VALUE = 'stale'\n")
     original_stat = helper.stat()
     py_compile.compile(str(helper), doraise=True)
     helper.write_text("VALUE = 'fresh'\n")
     os.utime(helper, ns=(original_stat.st_atime_ns, original_stat.st_mtime_ns))
     for module in ("digest", "token"):
-        (directory / f"{module}.py").write_text("from ._blake3 import VALUE\n")
+        (directory / f"{module}.py").write_text("from .hashing import VALUE\n")
 
     digest, token = compare._load(tmp_path)
 
     assert digest.VALUE == token.VALUE == "fresh"
-    assert compare._source_hashes(tmp_path)["unstd/crypto/_blake3.py"] == (
+    assert compare._source_hashes(tmp_path)["unstd/crypto/hashing.py"] == (
         hashlib.sha256(b"VALUE = 'fresh'\n").hexdigest()
     )
 

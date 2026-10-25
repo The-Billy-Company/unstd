@@ -1,3 +1,12 @@
+---
+doc_radar:
+  sentinels:
+    - file: wavx.py
+      contains: ["from unstd.audio.pcm import"]
+    - file: pcm.py
+      contains: ["def _check_pcm_frames("]
+---
+
 # `unstd.audio`
 
 Part of [`unstd`](../README.md). PCM buffer conversion and WAV readers/writers
@@ -120,6 +129,21 @@ record exact source locations, adoption examples, timings and allocation bounds.
 - The stdlib [`wave`](https://docs.python.org/3/library/wave.html) module — the
   raw-frame surface `unstd.audio` replaces, and the fallback codec.
 
-## Implementation layout
+## Source ownership
 
-Pure sample conversion and frame checks live in [`_internal/`](_internal/README.md); `wavx` retains backend selection, I/O and its public definitions.
+The package keeps its cohesive modules together as one code leaf.
+
+| File | Responsibility |
+| --- | --- |
+| [`__init__.py`](__init__.py) | Package entry point and usage contract |
+| [`wavx.py`](wavx.py) | Public WAV and raw PCM operations |
+| [`pcm.py`](pcm.py) | Sample conversion and frame validation |
+
+`pcm.py` owns contiguous-buffer normalization, scalar and frame validation,
+integer clipping, channel checks, and stdlib PCM16 conversion. It has no runtime
+dependency on NumPy or soundfile.
+The public `wavx` module owns WAV I/O, backend selection, public types,
+streaming writers, and NumPy conversion paths.
+
+Run the contracts from the repository root with
+`uv run --no-sync python -m pytest tests/suites/product/audio -q`.

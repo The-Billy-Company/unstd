@@ -1,3 +1,12 @@
+---
+doc_radar:
+  sentinels:
+    - file: __init__.py
+      contains: ["from unstd.proc.results import"]
+    - file: results.py
+      contains: ["__module__ = \"unstd.proc\""]
+---
+
 # `unstd.proc`
 
 Part of [`unstd`](../README.md). A safe, ergonomic runner over the
@@ -57,6 +66,18 @@ exception couldn't keep.
   — the surface hardened here, and its own [security note](https://docs.python.org/3/library/subprocess.html#security-considerations)
   on `shell=True` with untrusted input.
 
-## Implementation layout
+## Source ownership
 
-Result and error implementations live in [`_internal/`](_internal/README.md), retaining `unstd.proc` as their public identity. Process execution remains in the package interface.
+The package keeps its cohesive modules together as one code leaf.
+
+| File | Responsibility |
+| --- | --- |
+| [`__init__.py`](__init__.py) | Public execution, validation, timeout cleanup and logging |
+| [`results.py`](results.py) | Captured outcomes and process errors |
+
+`results.py` owns captured outcomes and process errors. The public
+`unstd.proc` module owns execution, validation, timeout handling, and logging.
+Result classes keep their `unstd.proc` identity for existing imports and pickles.
+
+Run the contracts from the repository root with
+`uv run --no-sync python -m pytest tests/suites/product/proc -q`.

@@ -12,6 +12,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Never
 
 
+__all__ = ()
+
+
 if TYPE_CHECKING:
     from collections.abc import Callable
 

@@ -8,6 +8,9 @@ from typing import TYPE_CHECKING, Protocol, runtime_checkable
 from zlib_ng import gzip_ng, zlib_ng
 
 
+__all__ = ()
+
+
 if TYPE_CHECKING:
     from collections.abc import Buffer
 

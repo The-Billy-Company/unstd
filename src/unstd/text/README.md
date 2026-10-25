@@ -1,3 +1,10 @@
+---
+doc_radar:
+  sentinels:
+    - file: src/unstd/text/fuzz.py
+      contains: ['from unstd.text._text_native import distance as _native_distance', 'def best_match(']
+---
+
 # `unstd.text`
 
 String similarity, fuzzy matching, Levenshtein distance, and Jaro–Winkler name
@@ -15,6 +22,19 @@ fuzz.distance("kitten", "sitting")  # 3
 fuzz.jaro_winkler("Jon", "Jonathan")  # approximately 0.8542
 fuzz.cdist(["aple", "bananna"], ["apple", "banana"])  # list[list[float]]
 ```
+
+## Source ownership
+
+This flat leaf keeps scorer selection, ranking, and batch behavior in the same
+public module so every matching API shares its metric policy.
+
+| File | Responsibility |
+| --- | --- |
+| [`__init__.py`](__init__.py) | Package documentation; callers import the `fuzz` module |
+| [`fuzz.py`](fuzz.py) | Similarity/distance algorithms, optional backend selection, matching, ranking, and batch scoring |
+| [`_text_native.pyi`](_text_native.pyi) | Native ABI declarations; [kernel source ownership](../../../native/text/README.md) |
+
+The [validation guide](#validation) gives the current product-suite run path.
 
 ## Backends and score differences
 

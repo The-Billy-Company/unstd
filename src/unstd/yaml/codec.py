@@ -13,10 +13,12 @@ from collections.abc import Hashable, MutableSet
 from contextlib import closing
 from datetime import date, datetime
 import io
-from typing import IO, TYPE_CHECKING
+from typing import IO, TYPE_CHECKING, TypeGuard
 
-from unstd._extra import missing
-from unstd.yaml._internal.values import _is_value
+from unstd.extras import missing
+
+
+__all__ = ()
 
 
 if TYPE_CHECKING:
@@ -25,7 +27,7 @@ if TYPE_CHECKING:
     from ruamel.yaml import YAML as _YAML
     from ruamel.yaml.error import YAMLError as YAMLError
 
-    from unstd.yaml._internal.engine import create_engine as _create_engine
+    from unstd.yaml.parser import create_engine as _create_engine
 
     _HAVE_YAML = True
 else:
@@ -33,7 +35,7 @@ else:
         from ruamel.yaml import YAML as _YAML
         from ruamel.yaml.error import YAMLError as YAMLError
 
-        from unstd.yaml._internal.engine import create_engine as _create_engine
+        from unstd.yaml.parser import create_engine as _create_engine
     except ImportError:
         _YAML = None
         YAMLError = ValueError
@@ -57,6 +59,32 @@ def _engine(*, editable: bool = False) -> _YAML:
     if not _HAVE_YAML:
         missing("yaml", "yaml")()
     return _create_engine(_YAML, editable=editable)
+
+
+def _is_value(value: object) -> TypeGuard[YamlValue]:
+    """Narrow the untyped backend boundary without copying or expanding aliases."""
+    pending = [value]
+    seen: set[int] = set()
+    while pending:
+        node = pending.pop()
+        if node is None or isinstance(node, str | int | float | bytes | date):
+            continue
+        identity = id(node)
+        if identity in seen:
+            continue
+        seen.add(identity)
+        if isinstance(node, dict):
+            if not all(isinstance(key, Hashable) for key in node):
+                return False
+            pending.extend(node.values())
+        elif isinstance(node, list | tuple):
+            pending.extend(node)
+        elif isinstance(node, MutableSet):
+            if not all(isinstance(item, Hashable) for item in node):
+                return False
+        else:
+            return False
+    return True
 
 
 def _value(value: object) -> YamlValue:
