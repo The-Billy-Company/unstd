@@ -18,7 +18,7 @@ test-command = [
 
 # Keep the existing Intel wheel floor without losing the provider's optimization flags.
 [[tool.cibuildwheel.overrides]]
-select = "cp312-macosx_x86_64"
+select = "cp3{12,13}-macosx_x86_64"
 inherit.environment = "append"
 [tool.cibuildwheel.overrides.environment]
 MACOSX_DEPLOYMENT_TARGET = "10.13"

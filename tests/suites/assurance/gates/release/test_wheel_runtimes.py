@@ -41,11 +41,37 @@ def test_installer_contract_rejects_new_arguments_and_changed_defaults():
             wheels._contract(installer, ("configuration", "arch"), (None,))
 
 
-@pytest.mark.skipif(
-    sys.platform not in {"darwin", "win32"}, reason="native installer platforms"
+def _native_provider_configurations():
+    if sys.platform not in {"darwin", "win32"}:
+        return [pytest.param(None, marks=pytest.mark.skip(reason="native installers"))]
+    name = "macos" if sys.platform == "darwin" else "windows"
+    builder = import_module(f"cibuildwheel.platforms.{name}")
+    arguments = CommandLineArguments.defaults()
+    arguments.package_dir = REPO_ROOT
+    options = compute_options(name, arguments, {})
+    native_platform = (
+        f"macosx_{platform.machine()}"
+        if name == "macos"
+        else sysconfig.get_platform().replace("-", "_")
+    )
+    return [
+        item
+        for item in builder.all_python_configurations()
+        if options.globals.build_selector(item.identifier)
+        and item.identifier.startswith("cp")
+        and "t-" not in item.identifier
+        and item.identifier.endswith("-" + native_platform)
+        and (name == "macos" or item.version.startswith("3.12."))
+    ]
+
+
+@pytest.mark.parametrize(
+    "configuration",
+    _native_provider_configurations(),
+    ids=lambda item: getattr(item, "identifier", "native-only"),
 )
-def test_actual_native_312_provider_passes_tls_and_preserves_builder_catalog(
-    monkeypatch, tmp_path, capsys
+def test_actual_native_provider_passes_tls_and_preserves_builder_catalog(
+    monkeypatch, tmp_path, capsys, configuration
 ):
     name = "macos" if sys.platform == "darwin" else "windows"
     builder = import_module(f"cibuildwheel.platforms.{name}")
@@ -56,11 +82,6 @@ def test_actual_native_312_provider_passes_tls_and_preserves_builder_catalog(
     assert builder.install_cpython.__wrapped__ is original
     assert builder.all_python_configurations() == configurations
     if name == "macos":
-        configuration = next(
-            item
-            for item in configurations
-            if item.identifier == f"cp312-macosx_{platform.machine()}"
-        )
         executable = builder.install_cpython(
             tmp_path,
             configuration.version,
@@ -69,40 +90,42 @@ def test_actual_native_312_provider_passes_tls_and_preserves_builder_catalog(
             configuration.sha256,
         )
     else:
-        native_platform = sysconfig.get_platform().replace("-", "_")
-        configuration = next(
-            item
-            for item in configurations
-            if item.identifier == f"cp312-{native_platform}"
-        )
         executable = builder.install_cpython(configuration)
     report = json.loads(capsys.readouterr().out)
     assert report["errors"] == []
-    assert report["version_info"] == [3, 12]
+    assert report["version_info"] == [
+        int(part) for part in configuration.version.split(".")[:2]
+    ]
     assert report["implementation"] == "cpython"
+    assert report["gil_disabled"] is False
     assert Path(report["executable"]).resolve() == executable.resolve()
     assert executable.is_file()
 
 
-def test_native_machine_and_pointer_width_cannot_mask_an_emulated_windows_abi():
+def test_native_runtime_cannot_mask_emulated_or_free_threaded_abis():
     report = {
         "errors": [],
         "implementation": "cpython",
         "version_info": [3, 12],
         "machine": platform.machine(),
         "bits": struct.calcsize("P") * 8,
+        "gil_disabled": False,
         "platform": "win-amd64",
     }
     with pytest.raises(RuntimeError, match="admitted native build"):
         wheels._validate_runtime(report, "3.12", "win_arm64")
     report["platform"] = "win-arm64"
     wheels._validate_runtime(report, "3.12", "win_arm64")
+    report["gil_disabled"] = True
+    with pytest.raises(RuntimeError, match="admitted native build"):
+        wheels._validate_runtime(report, "3.12", "win_arm64")
 
 
 @pytest.mark.parametrize("incoming_flags", [None, "", "-O3 -fno-fast-math"])
+@pytest.mark.parametrize("identifier", ["cp312-macosx_x86_64", "cp313-macosx_x86_64"])
 @pytest.mark.skipif(os.name == "nt", reason="the native Unix compiler owns macOS flags")
-def test_actual_builder_preserves_intel_312_flags_and_effective_deployment_target(
-    monkeypatch, incoming_flags
+def test_actual_builder_preserves_intel_flags_and_effective_deployment_target(
+    monkeypatch, incoming_flags, identifier
 ):
     from setuptools._distutils.ccompiler import new_compiler
     from setuptools._distutils.sysconfig import customize_compiler
@@ -115,7 +138,7 @@ def test_actual_builder_preserves_intel_312_flags_and_effective_deployment_targe
     }
     if incoming_flags is not None:
         previous.update(CFLAGS=incoming_flags, LDFLAGS="-Wl,-headerpad,40")
-    selected = options.build_options("cp312-macosx_x86_64").environment.as_dictionary(
+    selected = options.build_options(identifier).environment.as_dictionary(
         prev_environment=previous
     )
     assert selected["MACOSX_DEPLOYMENT_TARGET"] == "10.13"
@@ -127,13 +150,14 @@ def test_actual_builder_preserves_intel_312_flags_and_effective_deployment_targe
     )
     assert selected["CFLAGS"] == f"{original_flags} {target}"
     assert selected["LDFLAGS"] == f"{previous.get('LDFLAGS', '')} {target}"
-    for identifier in (
+    for unaffected in (
         "cp312-macosx_arm64",
-        "cp313-macosx_x86_64",
+        "cp313-macosx_arm64",
+        "cp314-macosx_arm64",
         "cp314-macosx_x86_64",
     ):
         assert (
-            options.build_options(identifier).environment.as_dictionary(
+            options.build_options(unaffected).environment.as_dictionary(
                 prev_environment=previous
             )
             == previous

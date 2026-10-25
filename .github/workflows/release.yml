@@ -98,7 +98,9 @@ jobs:
             uv export --project "{package}" --locked --only-group release-uv
             --no-emit-project --no-header --output-file release-uv.txt &&
             python -m pip install --prefix /usr/local --no-deps --only-binary :all:
-            --require-hashes --requirement release-uv.txt
+            --require-hashes --requirement release-uv.txt &&
+            python "{package}/tests/tooling/release/wheels.py" --linux-runtime cp${{ matrix.python }}
+          CIBW_ENVIRONMENT_LINUX: "UNSTD_WHEEL_COMPILER_CONFIG=/tmp/unstd-wheel-compiler.json"
           CIBW_BEFORE_BUILD: >-
             uv export --project "{package}" --locked --only-group build
             --no-emit-project --no-header --output-file build-constraints.txt
