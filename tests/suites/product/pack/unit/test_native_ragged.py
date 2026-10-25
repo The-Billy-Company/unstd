@@ -117,3 +117,56 @@ def test_failure_does_not_poison_a_later_frame(native):
     with pytest.raises(ValueError, match="indices"):
         native.validate(bad, 2, 1, "f", ">", "Q", ">", True, True)
     assert native.validate(*_ARGUMENTS) == 2
+
+
+@pytest.mark.parametrize("count", [16383, 16384, 16385])
+@pytest.mark.parametrize("order", ["<", ">"])
+def test_float32_scan_transition_admits_the_full_finite_range(native, count, order):
+    # Two uint8 boundaries deliberately leave every float32 word unaligned.
+    # Counts bracket the native 64 KiB scan transition and its vector tail.
+    byteorder = "little" if order == "<" else "big"
+    patterns = (
+        0x00000000,  # Positive and negative zero.
+        0x80000000,
+        0x00000001,  # Smallest and largest subnormals, both signs.
+        0x80000001,
+        0x007FFFFF,
+        0x807FFFFF,
+        0x00800000,  # Smallest normal values, both signs.
+        0x80800000,
+        0x7F7FFFFF,  # Largest finite values, both signs.
+        0xFF7FFFFF,
+    )
+    payload = b"".join(
+        patterns[position % len(patterns)].to_bytes(4, byteorder)
+        for position in range(count)
+    )
+    source = b"\x00\x01" + payload
+    assert native.validate(source, 2, count, "f", order, "B", "=", True, False) == 1
+
+
+@pytest.mark.parametrize("count", [16383, 16384, 16385])
+@pytest.mark.parametrize("order", ["<", ">"])
+def test_float32_scan_transition_rejects_nonfinite_words_and_respects_flag(
+    native, count, order
+):
+    byteorder = "little" if order == "<" else "big"
+    for pattern in (
+        0x7F800000,  # Both infinities and both signs of quiet/signaling NaNs.
+        0xFF800000,
+        0x7FC00001,
+        0xFFC00001,
+        0x7F800001,
+        0xFF800001,
+    ):
+        for position in (0, count // 2, count - 1):
+            source = (
+                b"\x00\x01"
+                + bytes(position * 4)
+                + pattern.to_bytes(4, byteorder)
+                + bytes((count - position - 1) * 4)
+            )
+            arguments = (source, 2, count, "f", order, "B", "=")
+            with pytest.raises(ValueError, match="nonfinite"):
+                native.validate(*arguments, True, False)
+            assert native.validate(*arguments, False, False) == 1

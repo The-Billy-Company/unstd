@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+import copy
 import cProfile
 from dataclasses import dataclass
 from enum import Enum
@@ -58,6 +59,18 @@ class _Example:
         return self.kind.value, self.tool_name, self.messages, self.mask_seed
 
 
+def _consumer_ast_hash(node: ast.AST) -> str:
+    """Retain receipt formatting across Python's empty-field dump change."""
+    normalized = copy.deepcopy(node)
+    for child in ast.walk(normalized):
+        for field, value in ast.iter_fields(child):
+            if isinstance(value, list) and not value:
+                delattr(child, field)
+    return hashlib.sha256(
+        ast.dump(normalized, include_attributes=False).encode()
+    ).hexdigest()
+
+
 def _load_consumers(path: Path) -> tuple[dict[str, Any], dict[str, Any]]:
     """Check every captured symbol AST against its original source receipt."""
     raw = path.read_bytes()
@@ -69,9 +82,7 @@ def _load_consumers(path: Path) -> tuple[dict[str, Any], dict[str, Any]]:
     for name, item in captured["consumers"].items():
         tree = ast.parse(item["source"], filename=item["source_path"])
         symbols = {
-            node.name: hashlib.sha256(
-                ast.dump(node, include_attributes=False).encode()
-            ).hexdigest()
+            node.name: _consumer_ast_hash(node)
             for node in tree.body
             if isinstance(node, (ast.FunctionDef, ast.ClassDef))
         }

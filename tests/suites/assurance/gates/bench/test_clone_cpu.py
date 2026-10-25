@@ -22,6 +22,52 @@ class ListSubclass(list):
     pass
 
 
+def test_calibration_cold_probe_cannot_select_an_undersized_steady_batch(monkeypatch):
+    counts = []
+    steady_call_ns = 1_000_000
+
+    def batch(call, count):
+        counts.append(count)
+        return {"wall_ns": 1_000_000_000 if len(counts) == 1 else steady_call_ns}
+
+    monkeypatch.setattr(profile, "_batch", batch)
+    count = profile._calibrate(lambda: None)
+    assert counts[:3] == [1, 1, 1]
+    assert count > 1
+    assert count * steady_call_ns >= profile.BATCH_TARGET_NS
+
+
+def test_calibration_preserves_all_gc_enabled_rounds_and_persistent_slowdown(
+    monkeypatch,
+):
+    import gc
+
+    from bench.profiles import clone_common_cpu
+
+    def before():
+        return 1_000_000
+
+    def current():
+        return 1_200_000
+
+    def batch(call, count):
+        assert gc.isenabled()
+        return {"wall_ns": call(), "cpu_ns": call()}
+
+    monkeypatch.setattr(profile, "_batch", batch)
+    timings = profile._timings({"current": current, "before": before}, 9, True)
+    assert timings["current"]["iterations"] != timings["before"]["iterations"]
+    for label, call in (("current", current), ("before", before)):
+        assert timings[label]["iterations"] * call() >= profile.BATCH_TARGET_NS
+    assert all(len(values["samples"]) == 9 for values in timings.values())
+    failures = clone_common_cpu._regressions({"slow": {"timings": timings}}, 1.10)
+    assert {failure["metric"] for failure in failures} == {
+        "median_wall_ns",
+        "median_cpu_ns",
+    }
+    assert all(failure["slowdown"] == 1.2 for failure in failures)
+
+
 @pytest.mark.parametrize(
     ("actual", "expected"),
     [

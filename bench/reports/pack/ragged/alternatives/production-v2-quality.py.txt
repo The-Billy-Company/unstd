@@ -1,0 +1,51 @@
+"""Exact-bit oracle for the version-2 NEON magnitude reduction; no timings."""
+from pathlib import Path
+import hashlib,importlib.util,json,struct,sys,sysconfig
+root=Path.cwd();folder=root/'.local/pack-ragged-next-production'
+sys.path.insert(0,str(folder/'src'))
+from unstd.pack import _pack_native as native
+assert native.KERNEL_VERSION==2
+suffix=sysconfig.get_config_var('EXT_SUFFIX')
+path=root/'.local/pack-ragged-next-native/direct-reference/src/unstd/pack'/('_pack_native'+suffix)
+spec=importlib.util.spec_from_file_location('_quality_ref._pack_native',path)
+reference=importlib.util.module_from_spec(spec);sys.modules[spec.name]=reference;spec.loader.exec_module(reference)
+checks=0
+# Replay the 7440 direct-comparison assertions against the production module.
+for order in '<>=':
+ endian=sys.byteorder if order=='=' else 'little' if order=='<' else 'big'
+ for n in (0,1,3,4,7,8,15,16,17,31,32,33,63,64,65,257):
+  code='B' if n<=255 else 'H';prefix=struct.pack('=3'+code,0,0,n)
+  values=struct.pack(order+str(n)+'f',*[float(i) for i in range(n)])
+  args=(prefix+values,3,1,'f',order,code,'=',True,True)
+  assert native.validate(*args)==reference.validate(*args)==n;checks+=1
+  for i in range(n):
+   for bits in (0x7f800000,0xff800000,0x7f800001,0x7fc00001):
+    data=bytearray(values);data[i*4:i*4+4]=bits.to_bytes(4,endian)
+    try:native.validate(prefix+data,3,1,'f',order,code,'=',True,True)
+    except ValueError:checks+=1
+    else:raise AssertionError((order,n,i,bits))
+small_checks=checks
+# Force an unaligned 3-byte index prefix while varying the SIMD/chunk threshold.
+finite=(0,0x80000000,1,0x80000001,0x007fffff,0x807fffff,0x00800000,0x80800000,0x7f7fffff,0xff7fffff,0x3f800000,0xbf800000)
+nonfinite=(0x7f800000,0xff800000,0x7f800001,0xff800001,0x7fc00001,0xffc00001,0x7fffffff,0xffffffff)
+for order in '<>=':
+ endian=sys.byteorder if order=='=' else 'little' if order=='<' else 'big'
+ unit=b''.join(v.to_bytes(4,endian) for v in finite)
+ for n in (16383,16384,16385,16387,16388,16399,16400,262143,262144,262145,278527,278528,278529):
+  values=(unit*((n+len(finite)-1)//len(finite)))[:n*4]
+  prefix=bytes((0,0,1));args=(3,n,'f',order,'B','=',True,True)
+  assert native.validate(prefix+values,*args)==reference.validate(prefix+values,*args)==1;checks+=1
+  positions=set(range(16))|set(range(n-16,n))|set(range(16376,min(n,16408)))|set(range(262136,min(n,262160)))
+  for i in sorted(positions):
+   for bits in nonfinite:
+    data=bytearray(values);data[i*4:i*4+4]=bits.to_bytes(4,endian)
+    bad=prefix+data
+    try:native.validate(bad,*args)
+    except ValueError:checks+=1
+    else:raise AssertionError((order,n,i,bits))
+  # Confirm the exact finite=False contract continues to admit nonfinite words.
+  data=bytearray(values);data[-4:]=(0xffffffff).to_bytes(4,endian)
+  assert native.validate(prefix+data,*args[:-2],False,True)==1;checks+=1
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+result={'kernel_version':native.KERNEL_VERSION,'python':sys.version,'runtime_extension':native.__file__,'small_replay_assertions':small_checks,'threshold_chunk_extreme_assertions':checks-small_checks,'assertions':checks,'source_sha256':sha(root/'native/pack/src/adapter.c'),'extension_sha256':sha(Path(native.__file__)),'harness_sha256':sha(Path(__file__)),'status':'passed','performance_run':False}
+(folder/'quality.json').write_text(json.dumps(result,indent=2)+'\n');print(json.dumps(result,indent=2))

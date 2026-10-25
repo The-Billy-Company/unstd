@@ -6,6 +6,10 @@ audits, baseline floors, source isolation, workload coverage, paired timing, and
 observed native dispatch. Deliberately wrong outputs and declined native calls
 must fail before they can support an acceleration claim.
 
+The serde profiler resolves encoder caches in the selected current or historical
+source layout. A missing layout may select an older location; a broken encoder
+or missing dependency must remain an error rather than borrowing another codec.
+
 SortedList operation variants use stdlib bisect positions and an independently
 sorted insertion model. Their fresh-list fixture cannot accumulate state across
 batches; a deliberately disabled insertion fails its output oracle. Additive

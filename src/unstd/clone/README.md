@@ -90,7 +90,9 @@ against the previous Python implementation.
   fields-set with the same memo. A `msgspec.Struct` is re-built
   through its own reducer, so `__post_init__` runs as under `deepcopy`.
   Each shape is admitted once per class, and only when the class leaves the
-  default copy protocol alone.
+  default copy protocol alone. The weak metadata cache reuses the complete
+  admission result for ordinary metaclasses; custom metaclasses retain their
+  mapping hash and equality callbacks.
   Plain dataclasses also use native reconstruction for allocation, memo
   publication, state cloning and dictionary update. A bounded weak cache
   rechecks native layout admission when the class changes; custom allocators,

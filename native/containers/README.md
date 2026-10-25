@@ -1,7 +1,7 @@
 # Sorted container kernels
 
 `src/adapter.c` implements the optional `unstd.containers._sorted_native`
-extension with the public CPython C API on Python 3.12–3.14. It contains no
+extension with the CPython C API on Python 3.12–3.14. It contains no
 platform-specific instructions or operating-system interfaces.
 
 `install(cls, base, keyed=False)` installs native descriptors on unstd's own
@@ -11,7 +11,7 @@ Keyed classes receive positional-index translation while retaining upstream key
 extraction. Keyless classes also receive eligible prefix/suffix slice deletion
 and monotonic integer `update` kernels. Single-item insertion/removal, general
 block maintenance and positional-index building remain upstream.
-`KERNEL_VERSION` identifies the implementation in benchmark receipts; version 2
+`KERNEL_VERSION` identifies the implementation in benchmark receipts; version 3
 uses separate production/testing capsule namespaces so configuration layouts
 cannot be mixed. The Python facade enables these layout-dependent kernels only
 with verified `sortedcontainers` 2.4.0. Other versions retain upstream classes.
@@ -23,6 +23,12 @@ binary searches; unsupported values delegate the complete call before any
 Python comparison. Generic reads, index building, string-subclass keyword
 binding and nonstandard metadata retain upstream callbacks and finalizer timing.
 The native code releases temporary state before entering those fallbacks.
+
+Validated class layouts are cached under CPython's read-only type version tag.
+Class and base changes invalidate that admission. Python 3.12 additionally
+requires its valid-version flag; Python 3.13–3.14 use nonzero tags. Other minor
+versions rescan the layout each time. The cache adds no class references;
+instance keys, arrays, values, bounds and mutation aliases remain checked on use.
 
 ## Mutations
 

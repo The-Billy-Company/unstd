@@ -204,7 +204,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install --yes --no-install-recommends libarchive-dev
       - name: Provide Yasm for native gzip builds
-        if: matrix.environment.id != 'fallback'
+        # Base-install packaging also exercises strict native release builds.
+        if: matrix.environment.id != 'fallback' || matrix.group.id == 'packaging'
         run: |
           sudo apt-get update
           sudo apt-get install --yes --no-install-recommends yasm

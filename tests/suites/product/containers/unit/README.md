@@ -31,6 +31,11 @@ allocation/commit failpoints and deterministic staging reentry. Set
 `UNSTD_CONTAINERS_REQUIRE_TEST_HOOKS=1` to require their presence; production
 builds omit those hooks.
 
+`test_native_type_metadata.py` and `test_native_metadata_keys.py` exercise
+foreign namespace keys, colliding capsule lookups and class/base metadata
+changes. Owned workers reset interpreter caches when comparing strict callback
+traces, and repeat the upstream oracle independently.
+
 `test_native_metadata_keys.py` retains exact callback counts and replaced-dictionary
 finalizer traces by resetting upstream bytecode caches before each side and
 checking the oracle against itself. Foreign class/base keys must keep descriptor

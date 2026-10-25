@@ -62,8 +62,10 @@ Base-install jobs retain their dependency-free import and missing-extra checks.
 Linux native test, sanitizer, security, performance, and campaign builds install
 Yasm before compiling the private ISA-L gzip decoder. The build requires Yasm
 1.3 or newer, or NASM 2.11.01 or newer; release Linux x86_64 containers already
-supply Yasm. The native build never downloads an assembler or codec source. The
-base install matrix keeps its ordinary fallback build when no assembler is present.
+supply Yasm. The native build never downloads an assembler or codec source.
+Base-install packaging also provisions Yasm because its release-build controls
+require the strict native route. Other base-install lanes retain their ordinary
+fallback build when no assembler is present.
 The strict Linux x86 native job requires active ISA-L streaming and checks its
 compiled version and patch digest against the reviewed source inputs before
 running product contracts.

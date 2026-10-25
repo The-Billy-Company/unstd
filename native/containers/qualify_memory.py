@@ -33,7 +33,8 @@ class _Selection:
         self, config: pytest.Config, items: list[pytest.Item]
     ) -> None:
         """Retain each test in exactly one sanitizer phase."""
-        kept, removed = [], []
+        kept: list[pytest.Item] = []
+        removed: list[pytest.Item] = []
         for item in items:
             code = getattr(getattr(item, "obj", None), "__code__", None)
             owns_child = code is not None and "run_python" in code.co_names
@@ -71,11 +72,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     if children:
         original = process.python_argv
 
-        def routed_argv(code: str, arguments: Sequence[str] = ()) -> list[str]:
+        def routed_argv(code: str, args: Sequence[str] = ()) -> list[str]:
             nonlocal routed
             routed += 1
             prelude = f"import sys; sys.path.insert(0, {str(sanitized / 'src')!r});\n"
-            return original(prelude + code, arguments)
+            return original(prelude + code, args)
 
         process.python_argv = routed_argv
         # Setting the environment after process startup does not load ASan in

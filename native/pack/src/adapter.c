@@ -14,6 +14,7 @@
 
 #define SCAN_BYTES ((Py_ssize_t)1 << 20)
 #define THREAD_BYTES ((Py_ssize_t)1 << 16)
+#define F32_MAX_COUNT ((Py_ssize_t)1 << 14)
 
 static int
 invalid(const char *message)
@@ -94,12 +95,58 @@ finite_scalar(const unsigned char *data, Py_ssize_t count,
     return 1;
 }
 
+#if defined(PACK_NEON)
+static int
+finite_f32_max(const unsigned char *data, Py_ssize_t count, int little)
+{
+    /* Clearing the sign orders finite magnitudes below every infinity/NaN. */
+    uint32x4_t mask = vdupq_n_u32(UINT32_C(0x7fffffff));
+    uint32x4_t a0 = vdupq_n_u32(0), a1 = a0, a2 = a0, a3 = a0;
+    if (little) {
+        for (; count >= 16; count -= 16, data += 64) {
+            uint32x4_t a = vreinterpretq_u32_u8(vld1q_u8(data));
+            uint32x4_t b = vreinterpretq_u32_u8(vld1q_u8(data + 16));
+            uint32x4_t c = vreinterpretq_u32_u8(vld1q_u8(data + 32));
+            uint32x4_t d = vreinterpretq_u32_u8(vld1q_u8(data + 48));
+            a0 = vmaxq_u32(a0, vandq_u32(a, mask));
+            a1 = vmaxq_u32(a1, vandq_u32(b, mask));
+            a2 = vmaxq_u32(a2, vandq_u32(c, mask));
+            a3 = vmaxq_u32(a3, vandq_u32(d, mask));
+        }
+    } else {
+        for (; count >= 16; count -= 16, data += 64) {
+            uint32x4_t a = vreinterpretq_u32_u8(vrev32q_u8(vld1q_u8(data)));
+            uint32x4_t b = vreinterpretq_u32_u8(vrev32q_u8(vld1q_u8(data + 16)));
+            uint32x4_t c = vreinterpretq_u32_u8(vrev32q_u8(vld1q_u8(data + 32)));
+            uint32x4_t d = vreinterpretq_u32_u8(vrev32q_u8(vld1q_u8(data + 48)));
+            a0 = vmaxq_u32(a0, vandq_u32(a, mask));
+            a1 = vmaxq_u32(a1, vandq_u32(b, mask));
+            a2 = vmaxq_u32(a2, vandq_u32(c, mask));
+            a3 = vmaxq_u32(a3, vandq_u32(d, mask));
+        }
+    }
+    a0 = vmaxq_u32(vmaxq_u32(a0, a1), vmaxq_u32(a2, a3));
+    for (; count >= 4; count -= 4, data += 16) {
+        uint8x16_t raw = vld1q_u8(data);
+        if (!little) raw = vrev32q_u8(raw);
+        a0 = vmaxq_u32(a0, vandq_u32(vreinterpretq_u32_u8(raw), mask));
+    }
+    uint32_t maximum = vmaxvq_u32(a0);
+    for (; count; count--, data += 4) {
+        uint32_t value = (uint32_t)word(data, 4, little) & UINT32_C(0x7fffffff);
+        if (value > maximum) maximum = value;
+    }
+    return maximum < UINT32_C(0x7f800000);
+}
+#endif
+
 static int
 finite_f32(const unsigned char *data, Py_ssize_t count, int little)
 {
     /* Independent reductions avoid a dependency-bound one-vector scan. */
 #if defined(PACK_NEON)
     if (native_little()) {
+        if (count >= F32_MAX_COUNT) return finite_f32_max(data, count, little);
         uint32x4_t mask = vdupq_n_u32(UINT32_C(0x7f800000));
         uint32x4_t bad = vdupq_n_u32(0), b1 = bad, b2 = bad, b3 = bad;
         if (little) {
@@ -363,7 +410,7 @@ PyInit__pack_native(void)
 {
     PyObject *module = PyModule_Create(&definition);
     if (module == NULL) return NULL;
-    if (PyModule_AddIntConstant(module, "KERNEL_VERSION", 1) < 0) {
+    if (PyModule_AddIntConstant(module, "KERNEL_VERSION", 2) < 0) {
         Py_DECREF(module);
         return NULL;
     }

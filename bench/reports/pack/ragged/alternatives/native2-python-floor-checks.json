@@ -1,0 +1,200 @@
+{
+  "schema": 1,
+  "phase": 2,
+  "kernel_version": 2,
+  "generated_at": "2026-10-25T23:50:48.570882+00:00",
+  "host_platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+  "host_machine": "arm64",
+  "scope": "actual macOS floor interpreters; native validator plus forced stdlib ragged decoder; no NumPy; no performance measurement",
+  "compiler": "/usr/bin/clang",
+  "compiler_version": "Apple clang version 21.0.0 (clang-2100.3.34.2)\nTarget: arm64-apple-darwin25.6.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin\n",
+  "native_source": "native/pack/src/adapter.c",
+  "native_source_sha256": "f1c09efc2f32feee2b6ea5ddab6620665cf38a0a98cf0e9344d2c9ca7c621467",
+  "smoke_program": "bench/reports/pack/ragged/alternatives/native2-python-floor-smoke.py.txt",
+  "smoke_program_sha256": "ab44f06044f9627e1dfe8853af725f991c9bc7f80a03dd27142c04a648c49059",
+  "results": [
+    {
+      "requested_version": "3.12.15",
+      "metadata": {
+        "version": "3.12.15 (main, Oct 21 2026, 17:38:27) [Clang 23.1.3 ]",
+        "version_info": [
+          3,
+          12,
+          15
+        ],
+        "executable": "/Users/griffinstrier/.local/share/uv/python/cpython-3.12.15-macos-aarch64-none/bin/python3",
+        "include": "/Users/griffinstrier/.local/share/uv/python/cpython-3.12.15-macos-aarch64-none/include/python3.12",
+        "ext_suffix": ".cpython-312-darwin.so",
+        "soabi": "cpython-312-darwin",
+        "platform": "macosx-11.0-arm64",
+        "cc": "cc",
+        "cflags": "-fno-strict-overflow -Wsign-compare -Wunreachable-code -DNDEBUG -g -O3 -Wall -O3 -arch arm64 -mmacosx-version-min=11.0 -Wno-nullability-completeness -Wno-expansion-to-defined -Wno-undef-prefix -fPIC",
+        "ldshared": "cc -bundle -undefined dynamic_lookup -arch arm64 -mmacosx-version-min=11.0 -Wl,-headerpad,40"
+      },
+      "metadata_command": [
+        "/Users/griffinstrier/.local/share/uv/python/cpython-3.12.15-macos-aarch64-none/bin/python3",
+        "-I",
+        "-S",
+        "-c",
+        "import json,sys,sysconfig;print(json.dumps(dict(version=sys.version,version_info=list(sys.version_info[:3]),executable=sys.executable,include=sysconfig.get_paths()[\"include\"],ext_suffix=sysconfig.get_config_var(\"EXT_SUFFIX\"),soabi=sysconfig.get_config_var(\"SOABI\"),platform=sysconfig.get_platform(),cc=sysconfig.get_config_var(\"CC\"),cflags=sysconfig.get_config_var(\"CFLAGS\"),ldshared=sysconfig.get_config_var(\"LDSHARED\"))))"
+      ],
+      "build_command": [
+        "/usr/bin/clang",
+        "-bundle",
+        "-undefined",
+        "dynamic_lookup",
+        "-O3",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-fPIC",
+        "-I/Users/griffinstrier/.local/share/uv/python/cpython-3.12.15-macos-aarch64-none/include/python3.12",
+        "/Users/griffinstrier/Billy-Company/unstd/.local/pack-ragged-native2-floor/3.12.15/adapter.c",
+        "-o",
+        "/Users/griffinstrier/Billy-Company/unstd/.local/pack-ragged-native2-floor/3.12.15/src/unstd/pack/_pack_native.cpython-312-darwin.so"
+      ],
+      "build_exit_code": 0,
+      "build_stdout": "",
+      "build_stderr": "",
+      "frozen_c_source_sha256": "f1c09efc2f32feee2b6ea5ddab6620665cf38a0a98cf0e9344d2c9ca7c621467",
+      "extension_sha256": "b95cd614a2d53211bda0fea2817b1cc2ebb4ab69cc1da950af17d8901b24deed",
+      "runtime_command": [
+        "/Users/griffinstrier/.local/share/uv/python/cpython-3.12.15-macos-aarch64-none/bin/python3",
+        "-I",
+        "-S",
+        "/Users/griffinstrier/Billy-Company/unstd/bench/reports/pack/ragged/alternatives/native2-python-floor-smoke.py.txt",
+        "/Users/griffinstrier/Billy-Company/unstd/.local/pack-ragged-native2-floor/3.12.15/src"
+      ],
+      "runtime_exit_code": 0,
+      "runtime_stdout": "{\"python\": \"3.12.15 (main, Oct 21 2026, 17:38:27) [Clang 23.1.3 ]\", \"executable\": \"/Users/griffinstrier/.local/share/uv/python/cpython-3.12.15-macos-aarch64-none/bin/python3\", \"implementation\": \"cpython\", \"soabi\": \"cpython-312-darwin\", \"numpy_loaded\": false, \"native_module\": \"/Users/griffinstrier/Billy-Company/unstd/.local/pack-ragged-native2-floor/3.12.15/src/unstd/pack/_pack_native.cpython-312-darwin.so\", \"native_kernel_version\": 2, \"isolated\": true, \"site_disabled\": true, \"modes\": {\"native\": {\"checks\": 5712, \"result\": \"passed\"}, \"stdlib\": {\"checks\": 5712, \"result\": \"passed\"}, \"native_direct_guards\": {\"checks\": 11, \"result\": \"passed\"}}, \"checks\": 11435, \"result\": \"passed\"}\n",
+      "runtime_stderr": "",
+      "runtime_result": {
+        "python": "3.12.15 (main, Oct 21 2026, 17:38:27) [Clang 23.1.3 ]",
+        "executable": "/Users/griffinstrier/.local/share/uv/python/cpython-3.12.15-macos-aarch64-none/bin/python3",
+        "implementation": "cpython",
+        "soabi": "cpython-312-darwin",
+        "numpy_loaded": false,
+        "native_module": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-ragged-native2-floor/3.12.15/src/unstd/pack/_pack_native.cpython-312-darwin.so",
+        "native_kernel_version": 2,
+        "isolated": true,
+        "site_disabled": true,
+        "modes": {
+          "native": {
+            "checks": 5712,
+            "result": "passed"
+          },
+          "stdlib": {
+            "checks": 5712,
+            "result": "passed"
+          },
+          "native_direct_guards": {
+            "checks": 11,
+            "result": "passed"
+          }
+        },
+        "checks": 11435,
+        "result": "passed"
+      },
+      "pack_source_hashes": {
+        "unstd/pack/__init__.py": "d44fc4095d269ee7ef3f961cdc1e096b28af896900b387b8a907cea77228edd1",
+        "unstd/pack/_pack_native.pyi": "4fce662154903203681b1199f098ab0c651a7e07146c32defe546bcd0177cd1c",
+        "unstd/pack/binpack.py": "29fd70e184bf2e18c288d4483fa630108cff1829af5b16ae129059afd9a7741e",
+        "unstd/pack/buffers.py": "25f72e707c06616aeb6e867ba8f1e12680e52a9e9ae88992994f8553a69342ed",
+        "unstd/pack/dtypes.py": "284df185b9aea56a436d6052ddb749849a9cf956a70258fe7aef32b35120b763",
+        "unstd/pack/ragged.py": "4bfbd36b3891cba10e00b9694a438f741371df89a22c811c73c10c7998d486f1"
+      }
+    },
+    {
+      "requested_version": "3.13.17",
+      "metadata": {
+        "version": "3.13.17 (main, Oct 21 2026, 17:49:18) [Clang 23.1.3 ]",
+        "version_info": [
+          3,
+          13,
+          17
+        ],
+        "executable": "/Users/griffinstrier/.local/share/uv/python/cpython-3.13.17-macos-aarch64-none/bin/python3",
+        "include": "/Users/griffinstrier/.local/share/uv/python/cpython-3.13.17-macos-aarch64-none/include/python3.13",
+        "ext_suffix": ".cpython-313-darwin.so",
+        "soabi": "cpython-313-darwin",
+        "platform": "macosx-11.0-arm64",
+        "cc": "cc",
+        "cflags": "-fno-strict-overflow -Wsign-compare -Wunreachable-code -DNDEBUG -g -O3 -Wall -O3 -arch arm64 -mmacosx-version-min=11.0 -Wno-nullability-completeness -Wno-expansion-to-defined -Wno-undef-prefix -fPIC",
+        "ldshared": "cc -bundle -undefined dynamic_lookup -arch arm64 -mmacosx-version-min=11.0 -Wl,-headerpad,40"
+      },
+      "metadata_command": [
+        "/Users/griffinstrier/.local/share/uv/python/cpython-3.13.17-macos-aarch64-none/bin/python3",
+        "-I",
+        "-S",
+        "-c",
+        "import json,sys,sysconfig;print(json.dumps(dict(version=sys.version,version_info=list(sys.version_info[:3]),executable=sys.executable,include=sysconfig.get_paths()[\"include\"],ext_suffix=sysconfig.get_config_var(\"EXT_SUFFIX\"),soabi=sysconfig.get_config_var(\"SOABI\"),platform=sysconfig.get_platform(),cc=sysconfig.get_config_var(\"CC\"),cflags=sysconfig.get_config_var(\"CFLAGS\"),ldshared=sysconfig.get_config_var(\"LDSHARED\"))))"
+      ],
+      "build_command": [
+        "/usr/bin/clang",
+        "-bundle",
+        "-undefined",
+        "dynamic_lookup",
+        "-O3",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-fPIC",
+        "-I/Users/griffinstrier/.local/share/uv/python/cpython-3.13.17-macos-aarch64-none/include/python3.13",
+        "/Users/griffinstrier/Billy-Company/unstd/.local/pack-ragged-native2-floor/3.13.17/adapter.c",
+        "-o",
+        "/Users/griffinstrier/Billy-Company/unstd/.local/pack-ragged-native2-floor/3.13.17/src/unstd/pack/_pack_native.cpython-313-darwin.so"
+      ],
+      "build_exit_code": 0,
+      "build_stdout": "",
+      "build_stderr": "",
+      "frozen_c_source_sha256": "f1c09efc2f32feee2b6ea5ddab6620665cf38a0a98cf0e9344d2c9ca7c621467",
+      "extension_sha256": "0df6f938adf304f7923c31efc80289bd835b2795c9b59c62cc3e552ea4d1bab1",
+      "runtime_command": [
+        "/Users/griffinstrier/.local/share/uv/python/cpython-3.13.17-macos-aarch64-none/bin/python3",
+        "-I",
+        "-S",
+        "/Users/griffinstrier/Billy-Company/unstd/bench/reports/pack/ragged/alternatives/native2-python-floor-smoke.py.txt",
+        "/Users/griffinstrier/Billy-Company/unstd/.local/pack-ragged-native2-floor/3.13.17/src"
+      ],
+      "runtime_exit_code": 0,
+      "runtime_stdout": "{\"python\": \"3.13.17 (main, Oct 21 2026, 17:49:18) [Clang 23.1.3 ]\", \"executable\": \"/Users/griffinstrier/.local/share/uv/python/cpython-3.13.17-macos-aarch64-none/bin/python3\", \"implementation\": \"cpython\", \"soabi\": \"cpython-313-darwin\", \"numpy_loaded\": false, \"native_module\": \"/Users/griffinstrier/Billy-Company/unstd/.local/pack-ragged-native2-floor/3.13.17/src/unstd/pack/_pack_native.cpython-313-darwin.so\", \"native_kernel_version\": 2, \"isolated\": true, \"site_disabled\": true, \"modes\": {\"native\": {\"checks\": 5712, \"result\": \"passed\"}, \"stdlib\": {\"checks\": 5712, \"result\": \"passed\"}, \"native_direct_guards\": {\"checks\": 11, \"result\": \"passed\"}}, \"checks\": 11435, \"result\": \"passed\"}\n",
+      "runtime_stderr": "",
+      "runtime_result": {
+        "python": "3.13.17 (main, Oct 21 2026, 17:49:18) [Clang 23.1.3 ]",
+        "executable": "/Users/griffinstrier/.local/share/uv/python/cpython-3.13.17-macos-aarch64-none/bin/python3",
+        "implementation": "cpython",
+        "soabi": "cpython-313-darwin",
+        "numpy_loaded": false,
+        "native_module": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-ragged-native2-floor/3.13.17/src/unstd/pack/_pack_native.cpython-313-darwin.so",
+        "native_kernel_version": 2,
+        "isolated": true,
+        "site_disabled": true,
+        "modes": {
+          "native": {
+            "checks": 5712,
+            "result": "passed"
+          },
+          "stdlib": {
+            "checks": 5712,
+            "result": "passed"
+          },
+          "native_direct_guards": {
+            "checks": 11,
+            "result": "passed"
+          }
+        },
+        "checks": 11435,
+        "result": "passed"
+      },
+      "pack_source_hashes": {
+        "unstd/pack/__init__.py": "d44fc4095d269ee7ef3f961cdc1e096b28af896900b387b8a907cea77228edd1",
+        "unstd/pack/_pack_native.pyi": "4fce662154903203681b1199f098ab0c651a7e07146c32defe546bcd0177cd1c",
+        "unstd/pack/binpack.py": "29fd70e184bf2e18c288d4483fa630108cff1829af5b16ae129059afd9a7741e",
+        "unstd/pack/buffers.py": "25f72e707c06616aeb6e867ba8f1e12680e52a9e9ae88992994f8553a69342ed",
+        "unstd/pack/dtypes.py": "284df185b9aea56a436d6052ddb749849a9cf956a70258fe7aef32b35120b763",
+        "unstd/pack/ragged.py": "4bfbd36b3891cba10e00b9694a438f741371df89a22c811c73c10c7998d486f1"
+      }
+    }
+  ],
+  "result": "passed"
+}

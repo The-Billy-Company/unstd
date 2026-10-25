@@ -1,0 +1,399 @@
+{
+  "capture_sha256": "4e4b6696cd7639e11e99c837e6f921cf8a7c9ec37c2409dc6cab769999ddd6c2",
+  "consumer_capture_sha256": "0c53b36a47a5a3458c0bb36f85f39bd7890a2d1d1fa25cfebbe994145ec017b4",
+  "scope": "three synchronous numeric admission/assembly stages only; no network, inference, callbacks, offload scheduling, breaker or logging",
+  "recipe": {
+    "capacity": 2048,
+    "dimension": 128,
+    "document_maximum": 512
+  },
+  "colbert_source_path": "services/ai/core/foundation/llm/local/colbert.py",
+  "colbert_source_sha256": "e474f0b30e7b8b1015d6e316447a84430523b41b609e0f72e6fe1d787b1d7cd3",
+  "pins_sha256": "90b7bbc412f2f0452f65f979b87955540c715b29b043a7193eb38485dd6f62fc",
+  "remote_source_path": "services/ai/core/foundation/llm/local/remote.py",
+  "remote_source_sha256": "0769c5dfecc25701959e938479234e4c0421158c99b6d7b15417d6332634c097",
+  "definitions_sha256": {
+    "TokenIndex": "130378f6b06e3528a7196d8476b0f98f42cafef527ec9a48cecfeb18884650ec",
+    "_remote_index": "15f46fa98c496e37d30fcfb6e1d179c76f071394ea975070544c07372993ca3c",
+    "validate": "fdf46c9ce290568c88293fe5dee6e4aed4040bf79ec46e79ba9193f5e3a723eb",
+    "project": "9450c33252a72d4a45a36e7b7aeb451408a70be623ca2e40c1feff5b45089785"
+  },
+  "project_remote_ast_sha256": "05a9dddcad5b04ef9d4170604c5e1502a769227f026bc92dcd3ea0684e538073",
+  "identity_sha256": "7812f6c55c71ca1eefb804075e76c2475ef616151ec5270a52224a0d88b72201",
+  "probe_sha256": "60f521f013aee4c12011e252928abcbc613dd952bcc0536c6ae82287f1b8cee2",
+  "private_result_sha256": "aa51fec61563c4f5e1ca95f4a1764fbab94ae02f06e0825a92a88e8ceca94b01",
+  "private_definitions": "Original application definitions and identity remain in ignored .local/pack-project-capture.json and are not copied into this report.",
+  "oracles": {
+    "valid": {
+      "0docs/1rows": "identical complete immutable result",
+      "1docs/1rows": "identical complete immutable result",
+      "1docs/512rows": "identical complete immutable result",
+      "32docs/1rows": "identical complete immutable result",
+      "32docs/32rows": "identical complete immutable result",
+      "32docs/128rows": "identical complete immutable result",
+      "256docs/1rows": "identical complete immutable result",
+      "256docs/32rows": "identical complete immutable result",
+      "256docs/512rows": "identical complete immutable result"
+    },
+    "invalid_order_and_error_parity": {
+      "header-identity@0": {
+        "type": "ValueError",
+        "message": "Recall inference implementation differs",
+        "events": [
+          "_validate"
+        ]
+      },
+      "header-identity@1": {
+        "type": "ValueError",
+        "message": "Recall inference implementation differs",
+        "events": [
+          "_validate",
+          "caller",
+          "_validate"
+        ]
+      },
+      "header-identity@2": {
+        "type": "ValueError",
+        "message": "Recall inference implementation differs",
+        "events": [
+          "_validate",
+          "caller",
+          "_validate",
+          "caller",
+          "_validate"
+        ]
+      },
+      "short-header@0": {
+        "type": "ValueError",
+        "message": "Recall projection shape differs",
+        "events": [
+          "_validate",
+          "caller"
+        ]
+      },
+      "short-header@1": {
+        "type": "ValueError",
+        "message": "Recall projection shape differs",
+        "events": [
+          "_validate",
+          "caller",
+          "_validate",
+          "caller"
+        ]
+      },
+      "short-header@2": {
+        "type": "ValueError",
+        "message": "Recall projection shape differs",
+        "events": [
+          "_validate",
+          "caller",
+          "_validate",
+          "caller",
+          "_validate",
+          "caller"
+        ]
+      },
+      "partial-header@0": {
+        "type": "ValueError",
+        "message": "buffer size must be a multiple of element size",
+        "events": [
+          "_validate"
+        ]
+      },
+      "partial-header@1": {
+        "type": "ValueError",
+        "message": "buffer size must be a multiple of element size",
+        "events": [
+          "_validate",
+          "caller",
+          "_validate"
+        ]
+      },
+      "partial-header@2": {
+        "type": "ValueError",
+        "message": "buffer size must be a multiple of element size",
+        "events": [
+          "_validate",
+          "caller",
+          "_validate",
+          "caller",
+          "_validate"
+        ]
+      },
+      "partial-row@0": {
+        "type": "ValueError",
+        "message": "buffer size must be a multiple of element size",
+        "events": [
+          "_validate"
+        ]
+      },
+      "partial-row@1": {
+        "type": "ValueError",
+        "message": "buffer size must be a multiple of element size",
+        "events": [
+          "_validate",
+          "caller",
+          "_validate"
+        ]
+      },
+      "partial-row@2": {
+        "type": "ValueError",
+        "message": "Recall projection exceeds its publication allowance",
+        "events": [
+          "_validate",
+          "caller",
+          "_validate",
+          "caller",
+          "_validate"
+        ]
+      },
+      "first-boundary@0": {
+        "type": "ValueError",
+        "message": "invalid ColBERT token index",
+        "events": [
+          "_validate"
+        ]
+      },
+      "first-boundary@1": {
+        "type": "ValueError",
+        "message": "invalid ColBERT token index",
+        "events": [
+          "_validate",
+          "caller",
+          "_validate"
+        ]
+      },
+      "first-boundary@2": {
+        "type": "ValueError",
+        "message": "invalid ColBERT token index",
+        "events": [
+          "_validate",
+          "caller",
+          "_validate",
+          "caller",
+          "_validate"
+        ]
+      },
+      "terminal-boundary@0": {
+        "type": "ValueError",
+        "message": "invalid ColBERT token index",
+        "events": [
+          "_validate"
+        ]
+      },
+      "terminal-boundary@1": {
+        "type": "ValueError",
+        "message": "invalid ColBERT token index",
+        "events": [
+          "_validate",
+          "caller",
+          "_validate"
+        ]
+      },
+      "terminal-boundary@2": {
+        "type": "ValueError",
+        "message": "invalid ColBERT token index",
+        "events": [
+          "_validate",
+          "caller",
+          "_validate",
+          "caller",
+          "_validate"
+        ]
+      },
+      "negative-boundary@0": {
+        "type": "ValueError",
+        "message": "invalid ColBERT token index",
+        "events": [
+          "_validate"
+        ]
+      },
+      "negative-boundary@1": {
+        "type": "ValueError",
+        "message": "invalid ColBERT token index",
+        "events": [
+          "_validate",
+          "caller",
+          "_validate"
+        ]
+      },
+      "negative-boundary@2": {
+        "type": "ValueError",
+        "message": "invalid ColBERT token index",
+        "events": [
+          "_validate",
+          "caller",
+          "_validate",
+          "caller",
+          "_validate"
+        ]
+      },
+      "late-nan@0": {
+        "type": "ValueError",
+        "message": "invalid ColBERT token index",
+        "events": [
+          "_validate"
+        ]
+      },
+      "late-nan@1": {
+        "type": "ValueError",
+        "message": "invalid ColBERT token index",
+        "events": [
+          "_validate",
+          "caller",
+          "_validate"
+        ]
+      },
+      "late-nan@2": {
+        "type": "ValueError",
+        "message": "invalid ColBERT token index",
+        "events": [
+          "_validate",
+          "caller",
+          "_validate",
+          "caller",
+          "_validate"
+        ]
+      },
+      "late-positive-infinity@0": {
+        "type": "ValueError",
+        "message": "invalid ColBERT token index",
+        "events": [
+          "_validate"
+        ]
+      },
+      "late-positive-infinity@1": {
+        "type": "ValueError",
+        "message": "invalid ColBERT token index",
+        "events": [
+          "_validate",
+          "caller",
+          "_validate"
+        ]
+      },
+      "late-positive-infinity@2": {
+        "type": "ValueError",
+        "message": "invalid ColBERT token index",
+        "events": [
+          "_validate",
+          "caller",
+          "_validate",
+          "caller",
+          "_validate"
+        ]
+      },
+      "late-negative-infinity@0": {
+        "type": "ValueError",
+        "message": "invalid ColBERT token index",
+        "events": [
+          "_validate"
+        ]
+      },
+      "late-negative-infinity@1": {
+        "type": "ValueError",
+        "message": "invalid ColBERT token index",
+        "events": [
+          "_validate",
+          "caller",
+          "_validate"
+        ]
+      },
+      "late-negative-infinity@2": {
+        "type": "ValueError",
+        "message": "invalid ColBERT token index",
+        "events": [
+          "_validate",
+          "caller",
+          "_validate",
+          "caller",
+          "_validate"
+        ]
+      },
+      "response-publication-budget": {
+        "type": "ValueError",
+        "message": "Recall projection exceeds its publication allowance",
+        "events": [
+          "_validate"
+        ]
+      },
+      "empty-identity/0docs": [
+        "ValueError",
+        "invalid ColBERT token index"
+      ],
+      "empty-identity/1docs": [
+        "ValueError",
+        "invalid ColBERT token index"
+      ]
+    },
+    "candidate_legacy_error_fallback_calls": 24
+  },
+  "native_execution_proof": {
+    "KERNEL_VERSION": 1,
+    "calls": [
+      {
+        "bytes": 1040,
+        "index_count": 2,
+        "columns": 128,
+        "finite": true,
+        "allow_empty": false
+      },
+      {
+        "bytes": 1040,
+        "index_count": 2,
+        "columns": 128,
+        "finite": true,
+        "allow_empty": false
+      },
+      {
+        "bytes": 1040,
+        "index_count": 2,
+        "columns": 128,
+        "finite": true,
+        "allow_empty": false
+      },
+      {
+        "bytes": 1040,
+        "index_count": 2,
+        "columns": 128,
+        "finite": true,
+        "allow_empty": false
+      },
+      {
+        "bytes": 1040,
+        "index_count": 2,
+        "columns": 128,
+        "finite": true,
+        "allow_empty": false
+      },
+      {
+        "bytes": 1040,
+        "index_count": 2,
+        "columns": 128,
+        "finite": true,
+        "allow_empty": false
+      },
+      {
+        "bytes": 1040,
+        "index_count": 2,
+        "columns": 128,
+        "finite": true,
+        "allow_empty": false
+      },
+      {
+        "bytes": 1040,
+        "index_count": 2,
+        "columns": 128,
+        "finite": true,
+        "allow_empty": false
+      }
+    ],
+    "repeated_results_cached": false
+  },
+  "limitations": [
+    "macOS source-checkout prototype only; no Linux result for this alternative and no release API added",
+    "The measured implementation validates each response before consuming the next, then reuses ownership via response.extensions; there is no cached fresh-input validation claim",
+    "Candidate numeric errors use the original validator only to preserve exact existing error messages/stage; malformed payloads are covered by untimed oracles, not by the valid-path speedup",
+    "The final trusted join is private application-adapter research; its safety follows prior immutable admission and cumulative boundaries, not acceptance of arbitrary external NumPy arrays",
+    "All eight measured cases fail 100x on median and conservative criteria"
+  ]
+}

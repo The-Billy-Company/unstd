@@ -334,6 +334,97 @@ def test_serde_profile_oracle_keeps_types_and_dictionary_order() -> None:
     assert not _same({"a": 1, "b": 2}, {"b": 2, "a": 1})
 
 
+@pytest.mark.parametrize("layout", range(3))
+def test_serde_profile_resolves_current_and_saved_encoder_layouts(
+    monkeypatch: pytest.MonkeyPatch, layout: int
+) -> None:
+    from bench.profiles import serde_profile
+
+    names = (
+        "unstd.serde.encoding",
+        "unstd.serde._internal.json_encode",
+        "unstd.serde._json_encode",
+    )
+    imports = []
+    cleared = []
+
+    def selected(name):
+        imports.append(name)
+        if name != names[layout]:
+            missing = "unstd.serde._internal" if name == names[1] else name
+            raise ModuleNotFoundError(name=missing)
+        return SimpleNamespace(
+            _encoder=SimpleNamespace(cache_clear=lambda: cleared.append(name))
+        )
+
+    monkeypatch.setattr(serde_profile.importlib, "import_module", selected)
+    serde_profile._clear_encoder_cache()
+    assert imports == list(names[: layout + 1])
+    assert cleared == [names[layout]]
+
+
+@pytest.mark.parametrize("missing", ["encoder_dependency", None])
+def test_serde_profile_preserves_errors_inside_an_existing_layout(
+    monkeypatch: pytest.MonkeyPatch, missing: str | None
+) -> None:
+    from bench.profiles import serde_profile
+
+    sentinel = ModuleNotFoundError("broken encoder dependency", name=missing)
+    imports = []
+
+    def broken(name):
+        imports.append(name)
+        raise sentinel
+
+    monkeypatch.setattr(serde_profile.importlib, "import_module", broken)
+    with pytest.raises(ModuleNotFoundError) as caught:
+        serde_profile._clear_encoder_cache()
+    assert caught.value is sentinel
+    assert imports == ["unstd.serde.encoding"]
+
+
+def test_serde_profile_refuses_a_missing_encoder_in_an_existing_layout(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from bench.profiles import serde_profile
+
+    imports = []
+
+    def incomplete(name):
+        imports.append(name)
+        return SimpleNamespace()
+
+    monkeypatch.setattr(serde_profile.importlib, "import_module", incomplete)
+    with pytest.raises(AttributeError, match="_encoder"):
+        serde_profile._clear_encoder_cache()
+    assert imports == ["unstd.serde.encoding"]
+
+
+def test_serde_profile_preserves_the_final_missing_layout_error(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from bench.profiles import serde_profile
+
+    imports = []
+    errors = []
+
+    def absent(name):
+        imports.append(name)
+        error = ModuleNotFoundError(name=name)
+        errors.append(error)
+        raise error
+
+    monkeypatch.setattr(serde_profile.importlib, "import_module", absent)
+    with pytest.raises(ModuleNotFoundError) as caught:
+        serde_profile._clear_encoder_cache()
+    assert caught.value is errors[-1]
+    assert imports == [
+        "unstd.serde.encoding",
+        "unstd.serde._internal.json_encode",
+        "unstd.serde._json_encode",
+    ]
+
+
 def test_serde_profile_refuses_to_measure_a_different_imported_source(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

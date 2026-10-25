@@ -1,0 +1,17 @@
+macOS native2 threshold regressions
+Generated 2026-10-25T23:52:13.002199+00:00
+$ .venv/bin/python -c <following source>
+
+import hashlib,json,platform,sys,importlib.metadata
+from pathlib import Path
+from unstd.pack import ragged
+assert ragged._native.KERNEL_VERSION==2
+print(json.dumps({'python':sys.version,'platform':platform.platform(),'numpy':importlib.metadata.version('numpy'),'pytest':importlib.metadata.version('pytest'),'kernel_version':ragged._native.KERNEL_VERSION,'native':ragged._native.__file__,'native_sha256':hashlib.sha256(Path(ragged._native.__file__).read_bytes()).hexdigest(),'adapter_sha256':hashlib.sha256(Path('native/pack/src/adapter.c').read_bytes()).hexdigest(),'test_sha256':hashlib.sha256(Path('tests/suites/product/pack/unit/test_native_ragged.py').read_bytes()).hexdigest()}))
+import pytest
+raise SystemExit(int(pytest.main(['-q','tests/suites/product/pack/unit/test_native_ragged.py','-k','float32_scan_transition'])))
+
+{"python": "3.14.9 (main, Oct 21 2026, 17:47:42) [Clang 23.1.3 ]", "platform": "macOS-26.6-arm64-arm-64bit-Mach-O", "numpy": "2.5.3", "pytest": "9.1.1", "kernel_version": 2, "native": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/pack/_pack_native.cpython-314-darwin.so", "native_sha256": "5d033149960b258d7715607fafa47cffc9024010265d1d28678415ac69afbe22", "adapter_sha256": "f1c09efc2f32feee2b6ea5ddab6620665cf38a0a98cf0e9344d2c9ca7c621467", "test_sha256": "8542d6f7cc6fc9034aa30522b61fc7df38c0312ffde77f188f13b07094231ae3"}
+............                                                             [100%]
+12 passed, 30 deselected in 0.05s
+
+exit_code=0; wall_seconds=0.450393

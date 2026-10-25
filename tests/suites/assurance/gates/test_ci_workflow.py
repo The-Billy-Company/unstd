@@ -481,7 +481,11 @@ def test_required_linux_archive_consumers_provision_the_native_runtime(workflow)
     ("filename", "identity", "condition"),
     [
         ("ci", "native-rust", "runner.os == 'Linux'"),
-        ("ci", "test", "matrix.environment.id != 'fallback'"),
+        (
+            "ci",
+            "test",
+            "matrix.environment.id != 'fallback' || matrix.group.id == 'packaging'",
+        ),
         ("ci", "extras", None),
         ("ci", "resources", "runner.os == 'Linux'"),
         ("ci", "native", None),

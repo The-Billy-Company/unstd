@@ -39,7 +39,7 @@ def test_native_types_inherit_upstream_without_modifying_its_methods() -> None:
     assert inspect.isfunction(upstream.SortedList.add)
     assert inspect.isfunction(upstream.SortedList._loc)
     assert inspect.ismethoddescriptor(SortedList._loc)
-    assert _sorted_native.KERNEL_VERSION == 2
+    assert _sorted_native.KERNEL_VERSION == 3
     assert isinstance(SortedDict()._list, SortedList)
     assert isinstance(SortedSet()._list, SortedList)
 

@@ -1,0 +1,398 @@
+
+STAGE copy-sdist
+COMMAND ["docker", "cp", "/tmp/unstd-pack-native2-artifacts/packaging-artifacts0/source/unstd-3.1.6.tar.gz", "unstd-pack-next-qualification:/tmp/pack-native2-wheel.tar.gz"]
+
+RESULT {"name": "copy-sdist", "command": ["docker", "cp", "/tmp/unstd-pack-native2-artifacts/packaging-artifacts0/source/unstd-3.1.6.tar.gz", "unstd-pack-next-qualification:/tmp/pack-native2-wheel.tar.gz"], "exit_code": 0, "seconds": 0.22015404200647026}
+
+STAGE safe-extract-and-match-final-sources
+COMMAND ["docker", "exec", "-i", "unstd-pack-next-qualification", "python", "-"]
+SCRIPT
+
+from pathlib import Path
+import hashlib,json,tarfile
+base=Path('/tmp/pack-native2-wheel')
+assert not base.exists(),str(base)
+(base/'source').mkdir(parents=True)
+(base/'run').mkdir()
+with tarfile.open('/tmp/pack-native2-wheel.tar.gz') as archive:
+    archive.extractall(base/'source',filter='data')
+roots=list((base/'source').iterdir())
+assert len(roots)==1
+source=roots[0]
+files=[Path('native/pack/src/adapter.c')]
+files.extend(sorted(Path('/workspace/src/unstd/pack').glob('*.py')))
+files.extend(sorted(Path('/workspace/src/unstd/pack').glob('*.pyi')))
+checks={}
+for value in files:
+    relative=value.relative_to('/workspace') if value.is_absolute() else value
+    expected=(Path('/workspace')/relative).read_bytes()
+    actual=(source/relative).read_bytes()
+    assert actual==expected,str(relative)
+    checks[str(relative)]=hashlib.sha256(actual).hexdigest()
+print('RECEIPT '+json.dumps({'source':str(source),'source_sha256':checks}))
+
+RECEIPT {"source": "/tmp/pack-native2-wheel/source/unstd-3.1.6", "source_sha256": {"native/pack/src/adapter.c": "f1c09efc2f32feee2b6ea5ddab6620665cf38a0a98cf0e9344d2c9ca7c621467", "src/unstd/pack/__init__.py": "d44fc4095d269ee7ef3f961cdc1e096b28af896900b387b8a907cea77228edd1", "src/unstd/pack/binpack.py": "29fd70e184bf2e18c288d4483fa630108cff1829af5b16ae129059afd9a7741e", "src/unstd/pack/buffers.py": "25f72e707c06616aeb6e867ba8f1e12680e52a9e9ae88992994f8553a69342ed", "src/unstd/pack/dtypes.py": "284df185b9aea56a436d6052ddb749849a9cf956a70258fe7aef32b35120b763", "src/unstd/pack/ragged.py": "4bfbd36b3891cba10e00b9694a438f741371df89a22c811c73c10c7998d486f1", "src/unstd/pack/_pack_native.pyi": "4fce662154903203681b1199f098ab0c651a7e07146c32defe546bcd0177cd1c"}}
+
+RESULT {"name": "safe-extract-and-match-final-sources", "command": ["docker", "exec", "-i", "unstd-pack-next-qualification", "python", "-"], "exit_code": 0, "seconds": 0.6017853750381619, "evidence": {"source": "/tmp/pack-native2-wheel/source/unstd-3.1.6", "source_sha256": {"native/pack/src/adapter.c": "f1c09efc2f32feee2b6ea5ddab6620665cf38a0a98cf0e9344d2c9ca7c621467", "src/unstd/pack/__init__.py": "d44fc4095d269ee7ef3f961cdc1e096b28af896900b387b8a907cea77228edd1", "src/unstd/pack/binpack.py": "29fd70e184bf2e18c288d4483fa630108cff1829af5b16ae129059afd9a7741e", "src/unstd/pack/buffers.py": "25f72e707c06616aeb6e867ba8f1e12680e52a9e9ae88992994f8553a69342ed", "src/unstd/pack/dtypes.py": "284df185b9aea56a436d6052ddb749849a9cf956a70258fe7aef32b35120b763", "src/unstd/pack/ragged.py": "4bfbd36b3891cba10e00b9694a438f741371df89a22c811c73c10c7998d486f1", "src/unstd/pack/_pack_native.pyi": "4fce662154903203681b1199f098ab0c651a7e07146c32defe546bcd0177cd1c"}}}
+
+STAGE install-exact-build-backends
+COMMAND ["docker", "exec", "unstd-pack-next-qualification", "python", "-m", "pip", "install", "--disable-pip-version-check", "hatchling==1.32.4", "setuptools==84.2.0"]
+Collecting hatchling==1.32.4
+  Downloading hatchling-1.32.4-py3-none-any.whl.metadata (3.9 kB)
+Requirement already satisfied: setuptools==84.2.0 in ./usr/local/lib/python3.14/site-packages (84.2.0)
+Requirement already satisfied: packaging>=24.2 in ./usr/local/lib/python3.14/site-packages (from hatchling==1.32.4) (26.3)
+Collecting pathspec>=0.10.1 (from hatchling==1.32.4)
+  Downloading pathspec-1.1.1-py3-none-any.whl.metadata (14 kB)
+Requirement already satisfied: pluggy>=1.0.0 in ./usr/local/lib/python3.14/site-packages (from hatchling==1.32.4) (1.7.0)
+Collecting tomlkit>=0.11.1 (from hatchling==1.32.4)
+  Downloading tomlkit-0.15.2-py3-none-any.whl.metadata (3.4 kB)
+Collecting trove-classifiers (from hatchling==1.32.4)
+  Downloading trove_classifiers-2026.9.21.13-py3-none-any.whl.metadata (2.4 kB)
+Downloading hatchling-1.32.4-py3-none-any.whl (78 kB)
+Downloading pathspec-1.1.1-py3-none-any.whl (57 kB)
+Downloading tomlkit-0.15.2-py3-none-any.whl (52 kB)
+Downloading trove_classifiers-2026.9.21.13-py3-none-any.whl (14 kB)
+Installing collected packages: trove-classifiers, tomlkit, pathspec, hatchling
+
+Successfully installed hatchling-1.32.4 pathspec-1.1.1 tomlkit-0.15.2 trove-classifiers-2026.9.21.13
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+
+RESULT {"name": "install-exact-build-backends", "command": ["docker", "exec", "unstd-pack-next-qualification", "python", "-m", "pip", "install", "--disable-pip-version-check", "hatchling==1.32.4", "setuptools==84.2.0"], "exit_code": 0, "seconds": 1.2286290409974754}
+
+STAGE actual-project-wheel-build-from-sdist
+COMMAND ["docker", "exec", "unstd-pack-next-qualification", "python", "-m", "pip", "wheel", "--disable-pip-version-check", "--no-build-isolation", "--no-deps", "--wheel-dir", "/tmp/pack-native2-wheel/wheels", "-v", "/tmp/pack-native2-wheel/source/unstd-3.1.6"]
+Processing ./tmp/pack-native2-wheel/source/unstd-3.1.6
+  Preparing metadata (pyproject.toml): started
+  Running command Preparing metadata (pyproject.toml)
+  In file included from /tmp/pack-native2-wheel/source/unstd-3.1.6/native/serde/src/adapter.c:462:
+  /tmp/pack-native2-wheel/source/unstd-3.1.6/native/serde/src/repeat.h:294:1: warning: ‘always_inline’ function might not be inlinable unless also declared ‘inline’ [-Wattributes]
+    294 | repeat_write_result_inner(PyObject *value, int ascii, int spaced,
+        | ^~~~~~~~~~~~~~~~~~~~~~~~~
+  In file included from /tmp/pack-native2-wheel/source/unstd-3.1.6/native/clone/src/adapter.c:16:
+  /usr/local/include/python3.14/datetime.h:197:25: warning: ‘PyDateTimeAPI’ defined but not used [-Wunused-variable]
+    197 | static PyDateTime_CAPI *PyDateTimeAPI = NULL;
+        |                         ^~~~~~~~~~~~~
+  In file included from /tmp/pack-native2-wheel/source/unstd-3.1.6/native/compress/src/../vendor/libdeflate/lib/matchfinder_common.h:8,
+                   from /tmp/pack-native2-wheel/source/unstd-3.1.6/native/compress/src/fast.h:52,
+                   from /tmp/pack-native2-wheel/source/unstd-3.1.6/native/compress/src/fast.c:5:
+  /tmp/pack-native2-wheel/source/unstd-3.1.6/native/compress/src/../vendor/libdeflate/lib/deflate_compress.c: In function ‘deflate_flush_block’:
+  /tmp/pack-native2-wheel/source/unstd-3.1.6/native/compress/src/../vendor/libdeflate/lib/deflate_compress.c:1836:51: warning: comparison of integer expressions of different signedness: ‘long int’ and ‘size_t’ {aka ‘long unsigned int’} [-Wsign-compare]
+   1836 |                         ASSERT(os->end - out_next >=
+        |                                                   ^~
+  /tmp/pack-native2-wheel/source/unstd-3.1.6/native/compress/src/../vendor/libdeflate/lib/lib_common.h:99:29: note: in definition of macro ‘ASSERT’
+     99 | #define ASSERT(expr) (void)(expr)
+        |                             ^~~~
+  In file included from /tmp/pack-native2-wheel/source/unstd-3.1.6/native/compress/src/fast.c:6:
+  /tmp/pack-native2-wheel/source/unstd-3.1.6/native/compress/src/../vendor/libdeflate/lib/deflate_compress.c: In function ‘choose_max_block_end’:
+  /tmp/pack-native2-wheel/source/unstd-3.1.6/native/compress/src/../vendor/libdeflate/lib/deflate_compress.c:2384:37: warning: comparison of integer expressions of different signedness: ‘long int’ and ‘size_t’ {aka ‘long unsigned int’} [-Wsign-compare]
+   2384 |         if (in_end - in_block_begin < soft_max_len + MIN_BLOCK_LENGTH)
+        |                                     ^
+  /tmp/pack-native2-wheel/source/unstd-3.1.6/native/compress/src/../vendor/libdeflate/lib/deflate_compress.c: In function ‘deflate_compress_none’:
+  /tmp/pack-native2-wheel/source/unstd-3.1.6/native/compress/src/../vendor/libdeflate/lib/deflate_compress.c:2424:40: warning: comparison of integer expressions of different signedness: ‘long int’ and ‘size_t’ {aka ‘long unsigned int’} [-Wsign-compare]
+   2424 |                 if (out_end - out_next < 5 + len)
+        |                                        ^
+  In file included from /tmp/pack-native2-wheel/source/unstd-3.1.6/native/compress/src/../vendor/libdeflate/lib/lib_common.h:40:
+  /tmp/pack-native2-wheel/source/unstd-3.1.6/native/compress/src/../vendor/libdeflate/lib/deflate_compress.c: In function ‘deflate_compress_near_optimal’:
+  /tmp/pack-native2-wheel/source/unstd-3.1.6/native/compress/src/../vendor/libdeflate/lib/../common_defs.h:308:38: warning: comparison of integer expressions of different signedness: ‘long int’ and ‘long unsigned int’ [-Wsign-compare]
+    308 | #define MIN(a, b)               ((a) <= (b) ? (a) : (b))
+        |                                      ^~
+  /tmp/pack-native2-wheel/source/unstd-3.1.6/native/compress/src/../vendor/libdeflate/lib/deflate_compress.c:3602:27: note: in expansion of macro ‘MIN’
+   3602 |                 in_next + MIN(in_end - in_next, MATCHFINDER_WINDOW_SIZE);
+        |                           ^~~
+  /tmp/pack-native2-wheel/source/unstd-3.1.6/native/compress/src/../vendor/libdeflate/lib/../common_defs.h:308:47: warning: operand of ‘?:’ changes signedness from ‘long int’ to ‘long unsigned int’ due to unsignedness of other operand [-Wsign-compare]
+    308 | #define MIN(a, b)               ((a) <= (b) ? (a) : (b))
+        |                                               ^~~
+  /tmp/pack-native2-wheel/source/unstd-3.1.6/native/compress/src/../vendor/libdeflate/lib/deflate_compress.c:3602:27: note: in expansion of macro ‘MIN’
+   3602 |                 in_next + MIN(in_end - in_next, MATCHFINDER_WINDOW_SIZE);
+        |                           ^~~
+  /tmp/pack-native2-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/arm/cpu_features.c: In function ‘scan_auxv’:
+  /tmp/pack-native2-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/arm/cpu_features.c:84:33: warning: comparison of integer expressions of different signedness: ‘int’ and ‘long unsigned int’ [-Wsign-compare]
+     84 |                 } while (filled < 2 * sizeof(long));
+        |                                 ^
+  /tmp/pack-native2-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/arm/cpu_features.c:97:33: warning: comparison of integer expressions of different signedness: ‘int’ and ‘long unsigned int’ [-Wsign-compare]
+     97 |                 } while (filled >= 2 * sizeof(long));
+        |                                 ^~
+  In file included from /tmp/pack-native2-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/lib_common.h:40,
+                   from /tmp/pack-native2-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/deflate_decompress.c:45:
+  /tmp/pack-native2-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/decompress_template.h: In function ‘deflate_decompress_default’:
+  /tmp/pack-native2-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/deflate_decompress.c:239:37: warning: comparison of integer expressions of different signedness: ‘long int’ and ‘long unsigned int’ [-Wsign-compare]
+    239 |             likely(in_end - in_next >= sizeof(bitbuf_t))) {             \
+        |                                     ^~
+  /tmp/pack-native2-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/../common_defs.h:231:53: note: in definition of macro ‘likely’
+    231 | #  define likely(expr)          __builtin_expect(!!(expr), 1)
+        |                                                     ^~~~
+  /tmp/pack-native2-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/decompress_template.h:77:9: note: in expansion of macro ‘REFILL_BITS’
+     77 |         REFILL_BITS();
+        |         ^~~~~~~~~~~
+  /tmp/pack-native2-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/deflate_decompress.c:239:37: warning: comparison of integer expressions of different signedness: ‘long int’ and ‘long unsigned int’ [-Wsign-compare]
+    239 |             likely(in_end - in_next >= sizeof(bitbuf_t))) {             \
+        |                                     ^~
+  /tmp/pack-native2-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/../common_defs.h:231:53: note: in definition of macro ‘likely’
+    231 | #  define likely(expr)          __builtin_expect(!!(expr), 1)
+        |                                                     ^~~~
+  /tmp/pack-native2-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/decompress_template.h:123:25: note: in expansion of macro ‘REFILL_BITS’
+    123 |                         REFILL_BITS();
+        |                         ^~~~~~~~~~~
+  /tmp/pack-native2-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/deflate_decompress.c:239:37: warning: comparison of integer expressions of different signedness: ‘long int’ and ‘long unsigned int’ [-Wsign-compare]
+    239 |             likely(in_end - in_next >= sizeof(bitbuf_t))) {             \
+        |                                     ^~
+  /tmp/pack-native2-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/../common_defs.h:231:53: note: in definition of macro ‘likely’
+    231 | #  define likely(expr)          __builtin_expect(!!(expr), 1)
+        |                                                     ^~~~
+  /tmp/pack-native2-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/decompress_template.h:137:41: note: in expansion of macro ‘REFILL_BITS’
+    137 |                                         REFILL_BITS();
+        |                                         ^~~~~~~~~~~
+  /tmp/pack-native2-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/deflate_decompress.c:239:37: warning: comparison of integer expressions of different signedness: ‘long int’ and ‘long unsigned int’ [-Wsign-compare]
+    239 |             likely(in_end - in_next >= sizeof(bitbuf_t))) {             \
+        |                                     ^~
+  /tmp/pack-native2-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/../common_defs.h:231:53: note: in definition of macro ‘likely’
+    231 | #  define likely(expr)          __builtin_expect(!!(expr), 1)
+        |                                                     ^~~~
+  /tmp/pack-native2-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/decompress_template.h:158:33: note: in expansion of macro ‘REFILL_BITS’
+    158 |                                 REFILL_BITS();
+        |                                 ^~~~~~~~~~~
+  /tmp/pack-native2-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/deflate_decompress.c:239:37: warning: comparison of integer expressions of different signedness: ‘long int’ and ‘long unsigned int’ [-Wsign-compare]
+    239 |             likely(in_end - in_next >= sizeof(bitbuf_t))) {             \
+        |                                     ^~
+  /tmp/pack-native2-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/../common_defs.h:231:53: note: in definition of macro ‘likely’
+    231 | #  define likely(expr)          __builtin_expect(!!(expr), 1)
+        |                                                     ^~~~
+  /tmp/pack-native2-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/decompress_template.h:686:17: note: in expansion of macro ‘REFILL_BITS’
+    686 |                 REFILL_BITS();
+        |                 ^~~~~~~~~~~
+  /tmp/pack-native2-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/deflate_decompress.c:239:37: warning: comparison of integer expressions of different signedness: ‘long int’ and ‘long unsigned int’ [-Wsign-compare]
+    239 |             likely(in_end - in_next >= sizeof(bitbuf_t))) {             \
+        |                                     ^~
+  /tmp/pack-native2-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/../common_defs.h:231:53: note: in definition of macro ‘likely’
+    231 | #  define likely(expr)          __builtin_expect(!!(expr), 1)
+        |                                                     ^~~~
+  /tmp/pack-native2-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/decompress_template.h:712:25: note: in expansion of macro ‘REFILL_BITS’
+    712 |                         REFILL_BITS();
+        |                         ^~~~~~~~~~~
+  /tmp/pack-native2-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/deflate_decompress.c:239:37: warning: comparison of integer expressions of different signedness: ‘long int’ and ‘long unsigned int’ [-Wsign-compare]
+    239 |             likely(in_end - in_next >= sizeof(bitbuf_t))) {             \
+        |                                     ^~
+  /tmp/pack-native2-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/../common_defs.h:231:53: note: in definition of macro ‘likely’
+    231 | #  define likely(expr)          __builtin_expect(!!(expr), 1)
+        |                                                     ^~~~
+  /tmp/pack-native2-wheel/source/unstd-3.1.6/native/compress/vendor/libdeflate/lib/decompress_template.h:720:33: note: in expansion of macro ‘REFILL_BITS’
+    720 |                                 REFILL_BITS();
+        |                                 ^~~~~~~~~~~
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Building wheels for collected packages: unstd
+  Building wheel for unstd (pyproject.toml): started
+  Running command Building wheel for unstd (pyproject.toml)
+  Building wheel for unstd (pyproject.toml): finished with status 'done'
+  Created wheel for unstd: filename=unstd-3.1.6-cp314-cp314-linux_aarch64.whl size=1051587 sha256=2001d3821a2953d470cc033e18f59d39d6fbe60810e817957169078cf0b833d9
+  Stored in directory: /tmp/pip-ephem-wheel-cache-om5h5fdu/wheels/4d/c8/b3/7a5126a53dc6721ad5c264937b17a892c23cc66f997c10599e
+Successfully built unstd
+
+RESULT {"name": "actual-project-wheel-build-from-sdist", "command": ["docker", "exec", "unstd-pack-next-qualification", "python", "-m", "pip", "wheel", "--disable-pip-version-check", "--no-build-isolation", "--no-deps", "--wheel-dir", "/tmp/pack-native2-wheel/wheels", "-v", "/tmp/pack-native2-wheel/source/unstd-3.1.6"], "exit_code": 0, "seconds": 7.317077749990858}
+
+STAGE verify-wheel-native-and-python-members
+COMMAND ["docker", "exec", "-i", "unstd-pack-next-qualification", "python", "-"]
+SCRIPT
+
+from pathlib import Path
+import hashlib,json,zipfile
+base=Path('/tmp/pack-native2-wheel')
+wheels=list((base/'wheels').glob('*.whl'))
+assert len(wheels)==1
+wheel=wheels[0]
+with zipfile.ZipFile(wheel) as archive:
+    natives=[name for name in archive.namelist() if name.startswith('unstd/pack/_pack_native.') and name.endswith('.so')]
+    assert len(natives)==1,natives
+    checks={}
+    for source in sorted(Path('/workspace/src/unstd/pack').glob('*')):
+        if source.suffix not in ('.py','.pyi'):
+            continue
+        member='unstd/pack/'+source.name
+        actual=archive.read(member)
+        assert actual==source.read_bytes(),member
+        checks[member]=hashlib.sha256(actual).hexdigest()
+    result={'wheel':str(wheel),'wheel_sha256':hashlib.sha256(wheel.read_bytes()).hexdigest(),'native_member':natives[0],'native_sha256':hashlib.sha256(archive.read(natives[0])).hexdigest(),'python_sources':checks}
+print('RECEIPT '+json.dumps(result))
+
+RECEIPT {"wheel": "/tmp/pack-native2-wheel/wheels/unstd-3.1.6-cp314-cp314-linux_aarch64.whl", "wheel_sha256": "2001d3821a2953d470cc033e18f59d39d6fbe60810e817957169078cf0b833d9", "native_member": "unstd/pack/_pack_native.cpython-314-aarch64-linux-gnu.so", "native_sha256": "f37f85b9aca0b226744c86effaa16640006158225e0f9b2cec1029915d36fbe3", "python_sources": {"unstd/pack/__init__.py": "d44fc4095d269ee7ef3f961cdc1e096b28af896900b387b8a907cea77228edd1", "unstd/pack/_pack_native.pyi": "4fce662154903203681b1199f098ab0c651a7e07146c32defe546bcd0177cd1c", "unstd/pack/binpack.py": "29fd70e184bf2e18c288d4483fa630108cff1829af5b16ae129059afd9a7741e", "unstd/pack/buffers.py": "25f72e707c06616aeb6e867ba8f1e12680e52a9e9ae88992994f8553a69342ed", "unstd/pack/dtypes.py": "284df185b9aea56a436d6052ddb749849a9cf956a70258fe7aef32b35120b763", "unstd/pack/ragged.py": "4bfbd36b3891cba10e00b9694a438f741371df89a22c811c73c10c7998d486f1"}}
+
+RESULT {"name": "verify-wheel-native-and-python-members", "command": ["docker", "exec", "-i", "unstd-pack-next-qualification", "python", "-"], "exit_code": 0, "seconds": 0.06687191699165851, "evidence": {"wheel": "/tmp/pack-native2-wheel/wheels/unstd-3.1.6-cp314-cp314-linux_aarch64.whl", "wheel_sha256": "2001d3821a2953d470cc033e18f59d39d6fbe60810e817957169078cf0b833d9", "native_member": "unstd/pack/_pack_native.cpython-314-aarch64-linux-gnu.so", "native_sha256": "f37f85b9aca0b226744c86effaa16640006158225e0f9b2cec1029915d36fbe3", "python_sources": {"unstd/pack/__init__.py": "d44fc4095d269ee7ef3f961cdc1e096b28af896900b387b8a907cea77228edd1", "unstd/pack/_pack_native.pyi": "4fce662154903203681b1199f098ab0c651a7e07146c32defe546bcd0177cd1c", "unstd/pack/binpack.py": "29fd70e184bf2e18c288d4483fa630108cff1829af5b16ae129059afd9a7741e", "unstd/pack/buffers.py": "25f72e707c06616aeb6e867ba8f1e12680e52a9e9ae88992994f8553a69342ed", "unstd/pack/dtypes.py": "284df185b9aea56a436d6052ddb749849a9cf956a70258fe7aef32b35120b763", "unstd/pack/ragged.py": "4bfbd36b3891cba10e00b9694a438f741371df89a22c811c73c10c7998d486f1"}}}
+
+STAGE create-pristine-consumer
+COMMAND ["docker", "exec", "unstd-pack-next-qualification", "python", "-m", "venv", "--without-pip", "/tmp/pack-native2-wheel/consumer"]
+
+RESULT {"name": "create-pristine-consumer", "command": ["docker", "exec", "unstd-pack-next-qualification", "python", "-m", "venv", "--without-pip", "/tmp/pack-native2-wheel/consumer"], "exit_code": 0, "seconds": 0.07520095899235457}
+
+STAGE install-wheel-without-dependencies
+COMMAND ["docker", "exec", "unstd-pack-next-qualification", "python", "-m", "pip", "--python", "/tmp/pack-native2-wheel/consumer/bin/python", "install", "--disable-pip-version-check", "--no-index", "--no-deps", "/tmp/pack-native2-wheel/wheels/unstd-3.1.6-cp314-cp314-linux_aarch64.whl"]
+Processing ./tmp/pack-native2-wheel/wheels/unstd-3.1.6-cp314-cp314-linux_aarch64.whl
+Installing collected packages: unstd
+Successfully installed unstd-3.1.6
+
+RESULT {"name": "install-wheel-without-dependencies", "command": ["docker", "exec", "unstd-pack-next-qualification", "python", "-m", "pip", "--python", "/tmp/pack-native2-wheel/consumer/bin/python", "install", "--disable-pip-version-check", "--no-index", "--no-deps", "/tmp/pack-native2-wheel/wheels/unstd-3.1.6-cp314-cp314-linux_aarch64.whl"], "exit_code": 0, "seconds": 0.4902901250170544}
+
+STAGE pristine-base-tuple-native-and-snapshot-checks
+COMMAND ["docker", "exec", "-i", "-w", "/tmp/pack-native2-wheel/run", "-e", "HYPOTHESIS_STORAGE_DIRECTORY=/tmp/pack-native2-wheel/hypothesis", "unstd-pack-next-qualification", "/tmp/pack-native2-wheel/consumer/bin/python", "-I", "-"]
+SCRIPT
+
+from pathlib import Path
+import importlib.metadata,json,struct,sys
+assert {dist.metadata['Name'] for dist in importlib.metadata.distributions()}=={'unstd'}
+try:
+    import numpy
+except ImportError:
+    pass
+else:
+    raise AssertionError('pristine consumer unexpectedly has NumPy')
+from unstd.pack import ragged
+assert not ragged.binpack._HAVE_NUMPY
+assert ragged._native.KERNEL_VERSION==2
+assert Path(ragged.__file__).is_relative_to(sys.prefix)
+assert Path(ragged._native.__file__).is_relative_to(sys.prefix)
+source=struct.pack('<3q4f',0,1,2,1.0,-2.0,3.0,4.0)
+decoder=ragged.RaggedDecoder('<f4',columns=2,finite=True,allow_empty=False)
+values,offsets=decoder.unpack(source,index_count=3)
+assert type(values) is tuple and type(offsets) is tuple
+assert values==((1.0,-2.0),(3.0,4.0)) and offsets==(0,1,2)
+mutable=bytearray(source)
+first=decoder.unpack(memoryview(mutable).toreadonly(),index_count=3)
+struct.pack_into('<I',mutable,len(mutable)-4,0x7f800001)
+try:
+    decoder.unpack(mutable,index_count=3)
+except ValueError:
+    pass
+else:
+    raise AssertionError('late NaN admitted')
+assert first==(values,offsets)
+print('RECEIPT '+json.dumps({'mode':'pristine-base','python':sys.version,'prefix':sys.prefix,'ragged':ragged.__file__,'native':ragged._native.__file__,'kernel_version':ragged._native.KERNEL_VERSION,'checks':'tuple and immutable mutable-source snapshot passed'}))
+
+RECEIPT {"mode": "pristine-base", "python": "3.14.8 (main, Oct  6 2026, 02:02:59) [GCC 14.2.0]", "prefix": "/tmp/pack-native2-wheel/consumer", "ragged": "/tmp/pack-native2-wheel/consumer/lib/python3.14/site-packages/unstd/pack/ragged.py", "native": "/tmp/pack-native2-wheel/consumer/lib/python3.14/site-packages/unstd/pack/_pack_native.cpython-314-aarch64-linux-gnu.so", "kernel_version": 2, "checks": "tuple and immutable mutable-source snapshot passed"}
+
+RESULT {"name": "pristine-base-tuple-native-and-snapshot-checks", "command": ["docker", "exec", "-i", "-w", "/tmp/pack-native2-wheel/run", "-e", "HYPOTHESIS_STORAGE_DIRECTORY=/tmp/pack-native2-wheel/hypothesis", "unstd-pack-next-qualification", "/tmp/pack-native2-wheel/consumer/bin/python", "-I", "-"], "exit_code": 0, "seconds": 0.07936008309479803, "evidence": {"mode": "pristine-base", "python": "3.14.8 (main, Oct  6 2026, 02:02:59) [GCC 14.2.0]", "prefix": "/tmp/pack-native2-wheel/consumer", "ragged": "/tmp/pack-native2-wheel/consumer/lib/python3.14/site-packages/unstd/pack/ragged.py", "native": "/tmp/pack-native2-wheel/consumer/lib/python3.14/site-packages/unstd/pack/_pack_native.cpython-314-aarch64-linux-gnu.so", "kernel_version": 2, "checks": "tuple and immutable mutable-source snapshot passed"}}
+
+STAGE install-only-numpy-runtime-extra
+COMMAND ["docker", "exec", "unstd-pack-next-qualification", "python", "-m", "pip", "--python", "/tmp/pack-native2-wheel/consumer/bin/python", "install", "--disable-pip-version-check", "numpy==2.5.3"]
+Collecting numpy==2.5.3
+  Using cached numpy-2.5.3-cp314-cp314-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl.metadata (6.6 kB)
+Using cached numpy-2.5.3-cp314-cp314-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl (15.7 MB)
+Installing collected packages: numpy
+Successfully installed numpy-2.5.3
+
+RESULT {"name": "install-only-numpy-runtime-extra", "command": ["docker", "exec", "unstd-pack-next-qualification", "python", "-m", "pip", "--python", "/tmp/pack-native2-wheel/consumer/bin/python", "install", "--disable-pip-version-check", "numpy==2.5.3"], "exit_code": 0, "seconds": 1.7145975830499083}
+
+STAGE numpy-immutable-ownership-and-adverse-checks
+COMMAND ["docker", "exec", "-i", "-w", "/tmp/pack-native2-wheel/run", "-e", "HYPOTHESIS_STORAGE_DIRECTORY=/tmp/pack-native2-wheel/hypothesis", "unstd-pack-next-qualification", "/tmp/pack-native2-wheel/consumer/bin/python", "-I", "-"]
+SCRIPT
+
+from pathlib import Path
+import importlib.metadata,json,struct,sys
+assert {dist.metadata['Name'] for dist in importlib.metadata.distributions()}=={'unstd','numpy'}
+import numpy as np
+from unstd.pack import ragged
+assert np.__version__=='2.5.3'
+assert ragged._native.KERNEL_VERSION==2
+assert Path(ragged.__file__).is_relative_to(sys.prefix)
+source=struct.pack('<3q4f',0,1,2,1.0,-2.0,3.0,4.0)
+decoder=ragged.RaggedDecoder('<f4',columns=2,finite=True,allow_empty=False)
+values,offsets=decoder.unpack(source,index_count=3)
+for array in (values,offsets):
+    assert not array.flags.writeable
+    owner=array
+    while isinstance(owner,np.ndarray):
+        owner=owner.base
+    assert owner is source
+mutable=bytearray(source)
+view=memoryview(mutable).toreadonly()
+first,_=decoder.unpack(view,index_count=3)
+view.release()
+mutable[:]=bytes(len(mutable))
+mutable.extend(b'x')
+assert first.tolist()==[[1.0,-2.0],[3.0,4.0]]
+for bad in (source[:-4]+struct.pack('<I',0x7f800001),source+b'x'):
+    try:
+        decoder.unpack(bad,index_count=3)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError('invalid source admitted')
+print('RECEIPT '+json.dumps({'mode':'numpy-only','numpy':np.__version__,'prefix':sys.prefix,'checks':'immutable exact bytes views, mutable snapshot, late NaN and partial row passed'}))
+
+RECEIPT {"mode": "numpy-only", "numpy": "2.5.3", "prefix": "/tmp/pack-native2-wheel/consumer", "checks": "immutable exact bytes views, mutable snapshot, late NaN and partial row passed"}
+
+RESULT {"name": "numpy-immutable-ownership-and-adverse-checks", "command": ["docker", "exec", "-i", "-w", "/tmp/pack-native2-wheel/run", "-e", "HYPOTHESIS_STORAGE_DIRECTORY=/tmp/pack-native2-wheel/hypothesis", "unstd-pack-next-qualification", "/tmp/pack-native2-wheel/consumer/bin/python", "-I", "-"], "exit_code": 0, "seconds": 0.12582591699901968, "evidence": {"mode": "numpy-only", "numpy": "2.5.3", "prefix": "/tmp/pack-native2-wheel/consumer", "checks": "immutable exact bytes views, mutable snapshot, late NaN and partial row passed"}}
+
+STAGE install-exact-test-tools
+COMMAND ["docker", "exec", "unstd-pack-next-qualification", "python", "-m", "pip", "--python", "/tmp/pack-native2-wheel/consumer/bin/python", "install", "--disable-pip-version-check", "pytest==9.1.1", "hypothesis==6.168.3", "packaging==26.3"]
+Collecting pytest==9.1.1
+  Using cached pytest-9.1.1-py3-none-any.whl.metadata (7.6 kB)
+Collecting hypothesis==6.168.3
+  Using cached hypothesis-6.168.3-cp314-cp314-manylinux_2_17_aarch64.manylinux2014_aarch64.whl.metadata (5.7 kB)
+Collecting packaging==26.3
+  Using cached packaging-26.3-py3-none-any.whl.metadata (3.5 kB)
+Collecting iniconfig>=1.0.1 (from pytest==9.1.1)
+  Using cached iniconfig-2.3.1-py3-none-any.whl.metadata (2.8 kB)
+Collecting pluggy<2,>=1.5 (from pytest==9.1.1)
+  Using cached pluggy-1.7.0-py3-none-any.whl.metadata (5.0 kB)
+Collecting pygments>=2.7.2 (from pytest==9.1.1)
+  Using cached pygments-2.21.0-py3-none-any.whl.metadata (2.5 kB)
+Collecting sortedcontainers<3.0.0,>=2.1.0 (from hypothesis==6.168.3)
+  Using cached sortedcontainers-2.4.0-py2.py3-none-any.whl.metadata (10 kB)
+Using cached pytest-9.1.1-py3-none-any.whl (386 kB)
+Using cached hypothesis-6.168.3-cp314-cp314-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (1.1 MB)
+Using cached packaging-26.3-py3-none-any.whl (129 kB)
+Using cached pluggy-1.7.0-py3-none-any.whl (27 kB)
+Using cached sortedcontainers-2.4.0-py2.py3-none-any.whl (29 kB)
+Using cached iniconfig-2.3.1-py3-none-any.whl (7.6 kB)
+Using cached pygments-2.21.0-py3-none-any.whl (1.3 MB)
+Installing collected packages: sortedcontainers, pygments, pluggy, packaging, iniconfig, hypothesis, pytest
+
+Successfully installed hypothesis-6.168.3 iniconfig-2.3.1 packaging-26.3 pluggy-1.7.0 pygments-2.21.0 pytest-9.1.1 sortedcontainers-2.4.0
+
+RESULT {"name": "install-exact-test-tools", "command": ["docker", "exec", "unstd-pack-next-qualification", "python", "-m", "pip", "--python", "/tmp/pack-native2-wheel/consumer/bin/python", "install", "--disable-pip-version-check", "pytest==9.1.1", "hypothesis==6.168.3", "packaging==26.3"], "exit_code": 0, "seconds": 1.8609163749497384}
+
+STAGE installed-wheel-full-product-pack-suite
+COMMAND ["docker", "exec", "-i", "-w", "/tmp/pack-native2-wheel/run", "-e", "HYPOTHESIS_STORAGE_DIRECTORY=/tmp/pack-native2-wheel/hypothesis", "unstd-pack-next-qualification", "/tmp/pack-native2-wheel/consumer/bin/python", "-I", "-"]
+SCRIPT
+
+from pathlib import Path
+import hashlib,importlib,json,sys
+from unstd.pack import ragged
+assert ragged._native.KERNEL_VERSION==2
+modules=['unstd','unstd.pack','unstd.pack.binpack','unstd.pack.ragged','unstd.pack.dtypes','unstd.pack.buffers','unstd.pack._pack_native']
+for name in modules:
+    module=importlib.import_module(name)
+    assert Path(module.__file__).is_relative_to(sys.prefix),(name,module.__file__)
+sys.path.insert(0,'/workspace')
+import pytest
+status=pytest.main(['-q','-p','no:cacheprovider','--basetemp','/tmp/pack-native2-wheel/pytest','/workspace/tests/suites/product/pack'])
+origins={name:module.__file__ for name,module in sys.modules.items() if name.startswith('unstd.pack') or name=='unstd' if getattr(module,'__file__',None)}
+assert all(Path(origin).is_relative_to(sys.prefix) for origin in origins.values()),origins
+print('RECEIPT '+json.dumps({'pytest_exit_code':int(status),'kernel_version':ragged._native.KERNEL_VERSION,'installed_product_origins':origins,'native_sha256':hashlib.sha256(Path(ragged._native.__file__).read_bytes()).hexdigest(),'test_source':'/workspace/tests/suites/product/pack','workspace_source_imported':False}))
+raise SystemExit(int(status))
+
+........................................................................ [  5%]
+........................................................................ [ 11%]
+........................................................................ [ 17%]
+........................................................................ [ 22%]
+........................................................................ [ 28%]
+........................................................................ [ 34%]
+........................................................................ [ 40%]
+........................................................................ [ 45%]
+........................................................................ [ 51%]
+........................................................................ [ 57%]
+........................................................................ [ 62%]
+........................................................................ [ 68%]
+........................................................................ [ 74%]
+........................................................................ [ 80%]
+........................................................................ [ 85%]
+........................................................................ [ 91%]
+........................................................................ [ 97%]
+...................................                                      [100%]
+1259 passed in 1.98s
+RECEIPT {"pytest_exit_code": 0, "kernel_version": 2, "installed_product_origins": {"unstd": "/tmp/pack-native2-wheel/consumer/lib/python3.14/site-packages/unstd/__init__.py", "unstd.pack": "/tmp/pack-native2-wheel/consumer/lib/python3.14/site-packages/unstd/pack/__init__.py", "unstd.pack.buffers": "/tmp/pack-native2-wheel/consumer/lib/python3.14/site-packages/unstd/pack/buffers.py", "unstd.pack.dtypes": "/tmp/pack-native2-wheel/consumer/lib/python3.14/site-packages/unstd/pack/dtypes.py", "unstd.pack.binpack": "/tmp/pack-native2-wheel/consumer/lib/python3.14/site-packages/unstd/pack/binpack.py", "unstd.pack._pack_native": "/tmp/pack-native2-wheel/consumer/lib/python3.14/site-packages/unstd/pack/_pack_native.cpython-314-aarch64-linux-gnu.so", "unstd.pack.ragged": "/tmp/pack-native2-wheel/consumer/lib/python3.14/site-packages/unstd/pack/ragged.py"}, "native_sha256": "f37f85b9aca0b226744c86effaa16640006158225e0f9b2cec1029915d36fbe3", "test_source": "/workspace/tests/suites/product/pack", "workspace_source_imported": false}
+
+RESULT {"name": "installed-wheel-full-product-pack-suite", "command": ["docker", "exec", "-i", "-w", "/tmp/pack-native2-wheel/run", "-e", "HYPOTHESIS_STORAGE_DIRECTORY=/tmp/pack-native2-wheel/hypothesis", "unstd-pack-next-qualification", "/tmp/pack-native2-wheel/consumer/bin/python", "-I", "-"], "exit_code": 0, "seconds": 2.9796761670149863, "evidence": {"pytest_exit_code": 0, "kernel_version": 2, "installed_product_origins": {"unstd": "/tmp/pack-native2-wheel/consumer/lib/python3.14/site-packages/unstd/__init__.py", "unstd.pack": "/tmp/pack-native2-wheel/consumer/lib/python3.14/site-packages/unstd/pack/__init__.py", "unstd.pack.buffers": "/tmp/pack-native2-wheel/consumer/lib/python3.14/site-packages/unstd/pack/buffers.py", "unstd.pack.dtypes": "/tmp/pack-native2-wheel/consumer/lib/python3.14/site-packages/unstd/pack/dtypes.py", "unstd.pack.binpack": "/tmp/pack-native2-wheel/consumer/lib/python3.14/site-packages/unstd/pack/binpack.py", "unstd.pack._pack_native": "/tmp/pack-native2-wheel/consumer/lib/python3.14/site-packages/unstd/pack/_pack_native.cpython-314-aarch64-linux-gnu.so", "unstd.pack.ragged": "/tmp/pack-native2-wheel/consumer/lib/python3.14/site-packages/unstd/pack/ragged.py"}, "native_sha256": "f37f85b9aca0b226744c86effaa16640006158225e0f9b2cec1029915d36fbe3", "test_source": "/workspace/tests/suites/product/pack", "workspace_source_imported": false}}
+
+STAGE copy-qualified-linux-wheel-to-stable-host-artifacts
+COMMAND ["docker", "cp", "unstd-pack-next-qualification:/tmp/pack-native2-wheel/wheels/unstd-3.1.6-cp314-cp314-linux_aarch64.whl", "/Users/griffinstrier/Billy-Company/unstd/.local/pack-ragged-next-production/artifacts/unstd-3.1.6-cp314-cp314-linux_aarch64.whl"]
+
+RESULT {"name": "copy-qualified-linux-wheel-to-stable-host-artifacts", "command": ["docker", "cp", "unstd-pack-next-qualification:/tmp/pack-native2-wheel/wheels/unstd-3.1.6-cp314-cp314-linux_aarch64.whl", "/Users/griffinstrier/Billy-Company/unstd/.local/pack-ragged-next-production/artifacts/unstd-3.1.6-cp314-cp314-linux_aarch64.whl"], "exit_code": 0, "seconds": 0.03006891591940075}

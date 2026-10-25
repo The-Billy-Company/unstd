@@ -423,23 +423,41 @@ record_admissible(PyTypeObject *type)
     return dictionary;
 }
 
+static unsigned int
+record_version(PyTypeObject *type)
+{
+#if PY_VERSION_HEX >= 0x030C0000 && PY_VERSION_HEX < 0x030D0000
+    /* Failed base assignment in 3.12 may leave a nonzero invalid tag. */
+    if (!(PyType_GetFlags(type) & Py_TPFLAGS_VALID_VERSION_TAG)) {
+        return 0;
+    }
+    return type->tp_version_tag;
+#elif PY_VERSION_HEX >= 0x030D0000 && PY_VERSION_HEX < 0x030F0000
+    return type->tp_version_tag;
+#else
+    /* Other interpreter versions retain uncached allocation admission. */
+    (void)type;
+    return 0;
+#endif
+}
+
 static int
 record_current(CopyContext *context)
 {
     PyTypeObject *type = context->record_type;
     if (context->record_version != 0
-        && context->record_version == type->tp_version_tag) {
+        && context->record_version == record_version(type)) {
         return 1;
     }
     if (context->module_state != NULL
         && record_cached(type, context->module_state)) {
-        context->record_version = type->tp_version_tag;
+        context->record_version = record_version(type);
         return 1;
     }
     if (!record_admissible(type)) {
         return 0;
     }
-    context->record_version = type->tp_version_tag;
+    context->record_version = record_version(type);
     return 1;
 }
 
@@ -1718,7 +1736,7 @@ clone_records(PyObject *module, PyObject *const *args, Py_ssize_t count)
     CopyContext context = {0};
     context.remaining = MAX_CONTAINERS;
     context.record_type = type;
-    context.record_version = type->tp_version_tag;
+    context.record_version = record_version(type);
     context.walk = args[2];
     context.dict_name = dict_name;
     context.update_name = update_name;
@@ -1801,7 +1819,7 @@ clone_direct_graph(PyObject *module, PyObject *source, PyTypeObject *type, PyObj
     context.remaining = MAX_CONTAINERS;
     context.module_state = state;
     context.record_type = type;
-    context.record_version = type != NULL ? type->tp_version_tag : 0;
+    context.record_version = type != NULL ? record_version(type) : 0;
     context.walk = walk;
     context.admit = admit;
     context.dict_name = dict_name;
@@ -1985,7 +2003,7 @@ record_ref_status(PyObject *reference, PyTypeObject *type)
 static int
 record_cached(PyTypeObject *type, ModuleState *state)
 {
-    unsigned int version = type->tp_version_tag;
+    unsigned int version = record_version(type);
     if (version == 0) {
         return 0;
     }
@@ -2004,7 +2022,7 @@ record_cached(PyTypeObject *type, ModuleState *state)
 static int
 record_cache_store(PyTypeObject *type, unsigned int version, ModuleState *state)
 {
-    if (version == 0 || type->tp_version_tag != version) {
+    if (version == 0 || record_version(type) != version) {
         return 0;
     }
     size_t index = memo_hash((PyObject *)type);
@@ -2032,7 +2050,7 @@ record_cache_store(PyTypeObject *type, unsigned int version, ModuleState *state)
         Py_DECREF(type);
         return -1;
     }
-    if (type->tp_version_tag == version) {
+    if (record_version(type) == version) {
         Py_XSETREF(available->reference, reference);
         available->version = version;
     } else {
@@ -2147,7 +2165,7 @@ clone_dataclass(PyObject *module, PyObject *const *args, Py_ssize_t count)
         Py_DECREF(identity);
         Py_RETURN_NOTIMPLEMENTED;
     }
-    unsigned int version = type->tp_version_tag;
+    unsigned int version = record_version(type);
     /* Keep the selected class through every callback and cache check, even
      * when both source and twin move to another class during reconstruction. */
     Py_INCREF(type);

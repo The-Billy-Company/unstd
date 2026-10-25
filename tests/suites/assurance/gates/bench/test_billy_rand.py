@@ -15,11 +15,17 @@ from unstd.rand import draw
 FIXTURES = Path(profile.__file__).resolve().parents[1] / "workloads/billy_rand.json"
 
 
-def test_captured_function_edits_cannot_retain_an_old_source_receipt(tmp_path):
+@pytest.mark.parametrize(
+    "replacement",
+    ["return shuffled", "return 'keywords=[]'", "return shuffled[:cap] + []"],
+)
+def test_captured_function_edits_cannot_retain_an_old_source_receipt(
+    tmp_path, replacement
+):
     captured = json.loads(FIXTURES.read_text())
     captured["consumers"]["corpus_trim"]["source"] = captured["consumers"][
         "corpus_trim"
-    ]["source"].replace("return shuffled[:cap]", "return shuffled")
+    ]["source"].replace("return shuffled[:cap]", replacement)
     changed = tmp_path / "changed.json"
     changed.write_text(json.dumps(captured))
     with pytest.raises(ValueError, match="AST disagrees"):

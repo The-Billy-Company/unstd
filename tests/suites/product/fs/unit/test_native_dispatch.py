@@ -95,7 +95,8 @@ def test_text_subclass_keeps_stream_behavior_without_calling_encode(
     monkeypatch.setattr(fs, "_native", SimpleNamespace(atomic_write=forbidden))
     path = tmp_path / "state"
     fs.atomic_write(path, Text("héllo"))
-    assert path.read_text() == "héllo"
+    assert path.read_bytes() == b"h\xc3\xa9llo"
+    assert path.read_text(encoding="utf-8") == "héllo"
 
 
 def test_custom_os_binding_remains_observable_on_python_path(tmp_path, monkeypatch):

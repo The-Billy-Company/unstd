@@ -1,0 +1,69 @@
+Linux native2 optimized source qualification
+Generated 2026-10-25T23:51:50.451595+00:00
+
+isolated setuptools optimized build
+$ docker exec -i unstd-pack-next-qualification python -
+
+from pathlib import Path
+import hashlib,json,os,platform,shutil,sys,importlib.metadata
+from setuptools import Distribution,Extension
+root=Path('/tmp/pack-native2-source')
+assert not root.exists(),str(root)
+shutil.copytree('/workspace/src',root/'src',ignore=shutil.ignore_patterns('__pycache__','*.pyc','*.so','*.pyd'))
+source=Path('/workspace/native/pack/src/adapter.c')
+print(json.dumps({'python':sys.version,'platform':platform.platform(),'versions':{name:importlib.metadata.version(name) for name in ('numpy','pytest','hypothesis','setuptools')},'adapter_sha256':hashlib.sha256(source.read_bytes()).hexdigest(),'source_root':str(root),'cflags':['-O3', '-Wall', '-Wextra', '-Werror'],'ldflags':[]}))
+dist=Distribution({'name':'pack-native2-qualification','ext_modules':[Extension('unstd.pack._pack_native',sources=[str(source)],extra_compile_args=['-O3', '-Wall', '-Wextra', '-Werror'],extra_link_args=[])]})
+build=dist.get_command_obj('build_ext')
+build.build_lib=str(root/'src')
+build.build_temp=str(root/'build')
+build.ensure_finalized()
+build.run()
+print('BUILD_COMPLETE')
+
+{"python": "3.14.8 (main, Oct  6 2026, 02:02:59) [GCC 14.2.0]", "platform": "Linux-7.0.14-linuxkit-aarch64-with-glibc2.41", "versions": {"numpy": "2.5.3", "pytest": "9.1.1", "hypothesis": "6.168.3", "setuptools": "84.2.0"}, "adapter_sha256": "f1c09efc2f32feee2b6ea5ddab6620665cf38a0a98cf0e9344d2c9ca7c621467", "source_root": "/tmp/pack-native2-source", "cflags": ["-O3", "-Wall", "-Wextra", "-Werror"], "ldflags": []}
+BUILD_COMPLETE
+
+exit_code=0; wall_seconds=0.500298
+
+full product/pack optimized tests
+$ docker exec -i unstd-pack-next-qualification python -
+
+import sys,os,json,hashlib,platform
+from pathlib import Path
+sys.dont_write_bytecode=True
+sys.path.insert(0,'/workspace')
+sys.path.insert(0,'/tmp/pack-native2-source/src')
+from unstd.pack import ragged
+assert ragged._native.KERNEL_VERSION==2
+assert Path(ragged.__file__).is_relative_to('/tmp/pack-native2-source/src')
+assert Path(ragged._native.__file__).is_relative_to('/tmp/pack-native2-source/src')
+print(json.dumps({'kernel_version':ragged._native.KERNEL_VERSION,'ragged':ragged.__file__,'native':ragged._native.__file__,'ragged_sha256':hashlib.sha256(Path(ragged.__file__).read_bytes()).hexdigest(),'native_sha256':hashlib.sha256(Path(ragged._native.__file__).read_bytes()).hexdigest(),'test_sha256':hashlib.sha256(Path('/workspace/tests/suites/product/pack/unit/test_native_ragged.py').read_bytes()).hexdigest(),'sanitizer_env':{name:os.environ.get(name) for name in ('LD_PRELOAD','ASAN_OPTIONS','UBSAN_OPTIONS','PYTHONMALLOC')}}))
+import pytest
+status=pytest.main(['-q','-p','no:cacheprovider','--basetemp','/tmp/pack-native2-source/pytest','/workspace/tests/suites/product/pack'])
+print('PACK_MODULE_ORIGINS',json.dumps({name:module.__file__ for name,module in sys.modules.items() if name.startswith('unstd.pack') and getattr(module,'__file__',None)},sort_keys=True))
+assert all(Path(module.__file__).is_relative_to('/tmp/pack-native2-source/src') for name,module in sys.modules.items() if name.startswith('unstd.pack') and getattr(module,'__file__',None))
+raise SystemExit(int(status))
+
+{"kernel_version": 2, "ragged": "/tmp/pack-native2-source/src/unstd/pack/ragged.py", "native": "/tmp/pack-native2-source/src/unstd/pack/_pack_native.cpython-314-aarch64-linux-gnu.so", "ragged_sha256": "4bfbd36b3891cba10e00b9694a438f741371df89a22c811c73c10c7998d486f1", "native_sha256": "f4145874925ed813bf5fb0946768a973e0d36d6bb0e2c2baf2facca0e125cdbb", "test_sha256": "8542d6f7cc6fc9034aa30522b61fc7df38c0312ffde77f188f13b07094231ae3", "sanitizer_env": {"LD_PRELOAD": null, "ASAN_OPTIONS": null, "UBSAN_OPTIONS": null, "PYTHONMALLOC": null}}
+........................................................................ [  5%]
+........................................................................ [ 11%]
+........................................................................ [ 17%]
+........................................................................ [ 22%]
+........................................................................ [ 28%]
+........................................................................ [ 34%]
+........................................................................ [ 40%]
+........................................................................ [ 45%]
+........................................................................ [ 51%]
+........................................................................ [ 57%]
+........................................................................ [ 62%]
+........................................................................ [ 68%]
+........................................................................ [ 74%]
+........................................................................ [ 80%]
+........................................................................ [ 85%]
+........................................................................ [ 91%]
+........................................................................ [ 97%]
+...................................                                      [100%]
+1259 passed in 1.48s
+PACK_MODULE_ORIGINS {"unstd.pack": "/tmp/pack-native2-source/src/unstd/pack/__init__.py", "unstd.pack._pack_native": "/tmp/pack-native2-source/src/unstd/pack/_pack_native.cpython-314-aarch64-linux-gnu.so", "unstd.pack.binpack": "/tmp/pack-native2-source/src/unstd/pack/binpack.py", "unstd.pack.buffers": "/tmp/pack-native2-source/src/unstd/pack/buffers.py", "unstd.pack.dtypes": "/tmp/pack-native2-source/src/unstd/pack/dtypes.py", "unstd.pack.ragged": "/tmp/pack-native2-source/src/unstd/pack/ragged.py"}
+
+exit_code=0; wall_seconds=2.146790

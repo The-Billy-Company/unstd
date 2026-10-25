@@ -77,7 +77,10 @@ entrypoints imported by that baseline's own Python wrapper. Use
 routes and gate both wall and process CPU latency across all 30 common workloads.
 The guard takes the median of matched current/before batch ratios, retaining
 independent latency medians for inspection. The output report is saved before
-a failed guard exits.
+a failed guard exits. Calibration targets 50 ms batches using the fastest of
+three probes, so one cold call cannot select a tiny steady-state batch. This
+chooses iteration counts only; all nine measured rounds retain collector and
+scheduling costs with GC enabled.
 
 Run the gzip consumer comparison through its direct file entry point so neither
 product installation loads before a worker selects its source. Select the two

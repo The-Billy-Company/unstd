@@ -24,7 +24,9 @@ uv run --no-sync pytest -q --require-extras tests/suites/assurance/planes/packag
 
 The host needs `uv`, the project's dev environment, and cached Hatchling and
 setuptools build dependencies. Default native builds retain the C kernels and do
-not require Cargo. The opt-in `UNSTD_TEXT_RUST=1` text experiment needs a stable
+not require Cargo. Strict Linux x86_64 builds need Yasm >=1.3 or NASM >=2.11.01
+for ISA-L, including the base-install packaging lane; CI provisions Yasm before
+these builds. The opt-in `UNSTD_TEXT_RUST=1` text experiment needs a stable
 Rust/Cargo toolchain; it has no crate dependencies and builds with `--locked --offline`.
 Prepare Python build dependencies using the project's two-day quarantine before
 running this offline lane. Build commands explicitly use `--offline`, isolated

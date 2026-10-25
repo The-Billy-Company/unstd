@@ -84,27 +84,51 @@ def test_base_selection_preserves_python_wrappers_and_records_prior_selection() 
     assert text._HAVE_RAPIDFUZZ is False
 
 
-def test_native_proof_requires_each_real_extension_profile_entry() -> None:
+@pytest.mark.parametrize("walk", ["clone_walk_graph", "clone_walk_canonical_graph"])
+def test_native_proof_requires_each_real_extension_profile_entry(walk: str) -> None:
     names = [
         "unstd.clone._clone_native.clone_graph",
-        "unstd.clone._clone_native.clone_walk_graph",
+        f"unstd.clone._clone_native.{walk}",
         "unstd.text._text_native.distance",
         "unstd.text._text_native.jaro",
     ]
     entries = [{"function": f"<built-in method {name}>", "calls": 3} for name in names]
-    assert len(_assert_native_execution({"c": entries})) == 4
+    assert len(_assert_native_execution({"c": entries}, walk_entrypoint=walk)) == 4
+    other = (
+        "clone_walk_canonical_graph"
+        if walk == "clone_walk_graph"
+        else "clone_walk_graph"
+    )
     with pytest.raises(AssertionError, match="kernel did not execute"):
-        _assert_native_execution({"c": entries[:-1]})
+        _assert_native_execution({"c": entries}, walk_entrypoint=other)
+    with pytest.raises(AssertionError, match="kernel did not execute"):
+        _assert_native_execution({"c": entries[:-1]}, walk_entrypoint=walk)
     with pytest.raises(AssertionError, match="kernel did not execute"):
         _assert_native_execution(
-            {"c": [{"function": "<built-in method other.jaro>", "calls": 3}]}
+            {"c": [{"function": "<built-in method other.jaro>", "calls": 3}]},
+            walk_entrypoint=walk,
         )
     legacy = [
         {**row, "function": row["function"].replace("clone_graph>", "clone>")}
         for row in entries
     ]
     with pytest.raises(AssertionError, match=r"kernel did not execute: .+clone_graph"):
-        _assert_native_execution({"c": legacy})
+        _assert_native_execution({"c": legacy}, walk_entrypoint=walk)
+
+
+def test_clone_walk_proof_rejects_python_wrappers_and_other_builtins() -> None:
+    native = pytest.importorskip("unstd.clone._clone_native")
+    selected = SimpleNamespace(_native_walk_graph=native.clone_walk_graph)
+    assert native_profile._walk_entrypoint(selected) == "clone_walk_graph"
+    selected._native_walk_graph = native.clone_graph
+    assert native_profile._walk_entrypoint(selected) == ""
+
+    def clone_walk_graph(*args):
+        return native.clone_walk_graph(*args)
+
+    clone_walk_graph.__module__ = native.__name__
+    selected._native_walk_graph = clone_walk_graph
+    assert native_profile._walk_entrypoint(selected) == ""
 
 
 def test_native_module_absence_is_explicit_failure(monkeypatch) -> None:
@@ -234,7 +258,9 @@ def test_built_extensions_are_exercised_by_the_public_workloads() -> None:
 
 def test_clone_routes_are_proven_without_the_optional_text_extension() -> None:
     native = pytest.importorskip("unstd.clone._clone_native")
-    assert structural._native_walk_graph is native.clone_walk_graph
+    expected = getattr(native, "clone_walk_canonical_graph", native.clone_walk_graph)
+    assert structural._native_walk_graph is expected
+    assert native_profile._walk_entrypoint(structural) == expected.__name__
     text = SimpleNamespace(**vars(fuzz))
     _base_text(text)
     cases = [

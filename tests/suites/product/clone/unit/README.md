@@ -16,6 +16,11 @@
 
 `test_dataclass_recipes.py` checks conservative native record admission and state-copy ordering. A builtin-state positive control must stay in the native helper; supplied twins avoid allocation, unsafe or replaced allocators refuse before copying, and a dictionary-subclass state hook reuses the safely published parent and shared outer field memo. Source keep-alives, class replacement inside a direct callback and cyclic partial-twin collection cover native ownership. Custom allocation, attribute access, update lookup and live container mutation retain their observations on both backends.
 
+`test_graph_record_cache.py` checks weak class ownership, metaclass hash/equality
+traces and exact callback errors on cold and warmed admission. Class mutations
+must invalidate layout decisions even after version assignment is exhausted;
+the controls verify exhaustion before changing allocator or attribute behavior.
+
 `test_native_admission_boundaries.py` covers 60 combinations of Python, native and native-helper fallback dispatch. It fixes the source type before memo-key equality can change it, retains a selected dataclass handler after admission writes the memo, and requires custom keep-alive appends to run once in preorder. Atomic siblings ignore hook-written memo overrides. Ordinary and custom-new outer records check state continuations when the general native walker is disabled; an isolated low-limit worker also checks recursion reservations and recovery. A graph with 40 distinct dataclass types exercises recipe-cache overflow on both backends, retaining shared aliases and mutable-field isolation when memo equality changes the 33rd record's class.
 
 Run from the repository root:

@@ -124,10 +124,28 @@ owned_class_config(PyTypeObject *cls)
     return capsule;
 }
 
+static unsigned int
+layout_version(PyTypeObject *cls)
+{
+#if PY_VERSION_HEX >= 0x030C0000 && PY_VERSION_HEX < 0x030D0000
+    /* In 3.12 a failed version assignment can leave a nonzero invalid tag. */
+    if (!(PyType_GetFlags(cls) & Py_TPFLAGS_VALID_VERSION_TAG)) {
+        return 0;
+    }
+    return cls->tp_version_tag;
+#elif PY_VERSION_HEX >= 0x030D0000 && PY_VERSION_HEX < 0x030F0000
+    return cls->tp_version_tag;
+#else
+    /* New interpreter versions use the checked, uncached admission path. */
+    (void)cls;
+    return 0;
+#endif
+}
+
 static int
 ordinary_layout(PyTypeObject *cls, Config *config)
 {
-    unsigned int version = cls->tp_version_tag;
+    unsigned int version = layout_version(cls);
     if (version != 0 && version == config->layout_version) {
         return 1;
     }
@@ -161,7 +179,7 @@ ordinary_layout(PyTypeObject *cls, Config *config)
     ordinary = 1;
 done:
     Py_XDECREF(mro);
-    if (ordinary && cls->tp_version_tag != version) {
+    if (ordinary && layout_version(cls) != version) {
         ordinary = 0;
     }
     if (ordinary && version != 0) {
@@ -1740,7 +1758,7 @@ PyInit__sorted_native(void)
     if (module == NULL) {
         return NULL;
     }
-    if (PyModule_AddIntConstant(module, "KERNEL_VERSION", 2) < 0) {
+    if (PyModule_AddIntConstant(module, "KERNEL_VERSION", 3) < 0) {
         Py_DECREF(module);
         return NULL;
     }

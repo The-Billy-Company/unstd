@@ -154,7 +154,9 @@ _GRAPH_ATOMS = _ATOMS - {_dt.date, _dt.timedelta, _dt.timezone}
 _TIMEZONES = frozenset({type(None), _dt.timezone, ZoneInfo})
 
 # Admission metadata must not keep dynamically generated classes alive.
-_NODES: weakref.WeakKeyDictionary[type, _Clone | None] = weakref.WeakKeyDictionary()
+_NODES: weakref.WeakKeyDictionary[type, tuple[bool, _Clone]] = (
+    weakref.WeakKeyDictionary()
+)
 _RECORDS: weakref.WeakSet[type] = weakref.WeakSet()
 
 
@@ -236,10 +238,15 @@ def _walk(o: Any, memo: dict[int, Any] | None = None) -> Any:
             return memo[identity]
         twin = frozenset(values)
     else:
+        node: _Clone | None
         try:
-            node = _NODES[t]
+            node = _NODES[t][1]
         except KeyError:
-            node = _NODES[t] = _admit(t)
+            node = _admit(t)
+            _NODES[t] = (
+                type(t) is type and node is _dataclass and t in _RECORDS,
+                node or _foreign,
+            )
         twin = node(o, memo) if node else _foreign(o, memo)
     memo[identity] = twin
     return twin
@@ -460,10 +467,20 @@ def _model(o: Any, memo: dict[int, Any]) -> Any:
 def _record_admit(cls: type) -> tuple[bool, _Clone]:
     """Select the same handler as Python at an already pinned source node."""
     try:
-        node = _NODES[cls]
+        pair = _NODES[cls]
     except KeyError:
-        node = _NODES[cls] = _admit(cls)
-    return node is _dataclass and cls in _RECORDS, node or _foreign
+        node = _admit(cls)
+        pair = (
+            type(cls) is type and node is _dataclass and cls in _RECORDS,
+            node or _foreign,
+        )
+        _NODES[cls] = pair
+    if type(cls) is type:
+        return pair
+    # Metaclass hashes and equality remain observable on the original weak-set
+    # membership route. Exact metaclasses alone reuse the stored native flag.
+    node = pair[1]
+    return node is _dataclass and cls in _RECORDS, node
 
 
 def deep[T](obj: T) -> T:

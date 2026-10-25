@@ -208,3 +208,53 @@ def test_layout_declines_foreign_class_keys_before_observable_lookup(
     assert repeated_oracle == before
     assert current == before
     assert current["trace"]
+
+
+_VERSION_CHURN = r"""
+import json, sys, sortedcontainers
+from unstd.containers import _sorted_native
+
+placement = sys.argv[1]
+
+def observe(native):
+    base = type('Base', (sortedcontainers.SortedList,), {})
+    owned = type('Owned', (base,), {})
+    if native: _sorted_native.install(owned, sortedcontainers.SortedList)
+    values = owned(range(256))
+    values._reset(16)
+    owner = owned if placement == 'class' else base
+    for epoch in range(2048):
+        setattr(owner, '_metadata_epoch', epoch)
+        assert values.bisect_left(50) == 50
+    trace = []
+    sentinel = LookupError('version churn getter')
+    def get(self):
+        trace.append('get')
+        raise sentinel
+    def set(self, value):
+        self.__dict__['_lists'] = value
+    owner._lists = property(get, set)
+    caught = None
+    try: values.bisect_left(50)
+    except Exception as error:
+        assert error is sentinel
+        caught = str(error)
+    finally:
+        del owner._lists
+    values._check()
+    return {'trace':trace, 'caught':caught, 'values':list(values)}
+
+print(json.dumps([observe(False), observe(True)]))
+"""
+
+
+@pytest.mark.parametrize("placement", ["class", "base"])
+def test_layout_cache_rechecks_descriptors_after_repeated_type_changes(
+    tmp_path: Path, placement: str
+) -> None:
+    result = run_python(_VERSION_CHURN, [placement], cwd=tmp_path, timeout=30)
+    assert result.returncode == 0, result.stderr
+    before, current = json.loads(result.stdout)
+    assert current == before
+    assert current["trace"] == ["get"]
+    assert current["caught"] == "version churn getter"

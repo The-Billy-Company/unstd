@@ -104,6 +104,9 @@ __all__ = [
     "unpack_from",
 ]
 
+_ARRAY_COUNT = -1
+_ARRAY_OFFSET = 0
+
 
 def pack_array(dtype: DTypeLike, seq: Iterable[float]) -> bytes:
     """Pack a homogeneous numeric sequence into ``dtype``-typed contiguous bytes.
@@ -160,8 +163,8 @@ def unpack_array(
     dtype: DTypeLike,
     buf: bytes | bytearray | memoryview,
     *,
-    count: int = -1,
-    offset: int = 0,
+    count: int = _ARRAY_COUNT,
+    offset: int = _ARRAY_OFFSET,
 ) -> _ArrayResult:
     """Unpack ``dtype``-typed contiguous bytes into an array of scalars.
 
@@ -178,9 +181,9 @@ def unpack_array(
     Bounds, conversion, and errors follow the selected backend.
     """
     if _HAVE_NUMPY:
-        # Keep the original whole-buffer call cheap. Other range objects go
-        # untouched to NumPy so its index hooks and validation order still run.
-        if type(count) is int and count == -1 and type(offset) is int and offset == 0:
+        # Identity admits only the builtin defaults without calling range hooks.
+        # Other objects go untouched to NumPy with its original validation order.
+        if count is _ARRAY_COUNT and offset is _ARRAY_OFFSET:
             return np.frombuffer(buf, dtype=dtype)
         return np.frombuffer(buf, dtype=dtype, count=count, offset=offset)
     return _unpack_array_struct(dtype, buf, count=count, offset=offset)

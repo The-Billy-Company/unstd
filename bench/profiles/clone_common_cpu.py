@@ -507,6 +507,11 @@ def main(argv: Sequence[str] | None = None) -> None:
             Path(base.__file__).read_bytes()
         ).hexdigest(),
         "gc_enabled_during_batches": args.gc_enabled,
+        "calibration": {
+            "batch_target_ns": base.BATCH_TARGET_NS,
+            "probes_per_count": base.CALIBRATION_PROBES,
+            "count_selection": "fastest calibration probe",
+        },
         "gc_threshold": gc.get_threshold(),
         "rounds": args.rounds,
         "infer_native_bindings": args.infer_native_bindings,
