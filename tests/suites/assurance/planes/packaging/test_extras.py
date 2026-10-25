@@ -48,6 +48,7 @@ _BACKEND_MODULES = {
     "soundfile": "soundfile",
     "tomlkit": "tomlkit",
     "ruamel-yaml": "ruamel.yaml",
+    "pyyaml": "yaml",
     "zlib-ng": "zlib_ng",
 }
 
@@ -302,8 +303,12 @@ assert toml.loads(toml.dumps(document)) == {'value': 7}
 """,
     "yaml": """
 import ruamel.yaml
+import yaml as pyyaml
 from unstd import yaml
-assert yaml._YAML is ruamel.yaml.YAML
+from unstd.yaml import _codec
+assert _codec._YAML is ruamel.yaml.YAML
+assert yaml.ruamel is ruamel.yaml
+assert yaml.pyyaml is pyyaml
 assert yaml.loads('enabled: true\\nvalue: 7\\n') == {'enabled': True, 'value': 7}
 document = yaml.parse('# retained\\nvalue: 1\\n')
 assert isinstance(document, ruamel.yaml.comments.CommentedMap)
