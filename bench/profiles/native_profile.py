@@ -332,11 +332,19 @@ def _native_modules(source: Path) -> dict[str, Any]:
             "path": str(path),
             "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
         }
-        c_source = expected / (name.rsplit(".", 1)[-1] + ".c")
-        if c_source.is_file():
-            modules[name]["c_source_sha256"] = hashlib.sha256(
-                c_source.read_bytes()
-            ).hexdigest()
+        for directory in (
+            expected,
+            source.parent / "native" / name.split(".")[1] / "src",
+        ):
+            for filename in ("adapter.c", name.rsplit(".", 1)[-1] + ".c"):
+                c_source = directory / filename
+                if c_source.is_file():
+                    modules[name]["c_source_sha256"] = hashlib.sha256(
+                        c_source.read_bytes()
+                    ).hexdigest()
+                    break
+            if "c_source_sha256" in modules[name]:
+                break
     return modules
 
 

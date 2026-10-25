@@ -1,20 +1,22 @@
-# Default C text kernels
+# Default C text adapter
 
-[`_text_native.c`](_text_native.c) implements `distance` and `jaro` in
-`unstd.text._text_native`. Calls retain the GIL and borrow immutable CPython
-1-, 2-, or 4-byte string storage without transcoding; NULs and lone surrogates
-remain code points. No Python callbacks run inside either kernel.
+[`adapter.c`](adapter.c) is the complete C implementation and module binding
+for `unstd.text._text_native`. `distance` uses multiword bit vectors with stack
+scratch for patterns up to 64 code points; `jaro` matches within sliding windows
+and applies Python's integer transposition floor.
 
-Non-exact strings and work outside these limits return `NotImplemented` to
-[`fuzz.py`](../../../src/unstd/text/fuzz.py); allocation failure raises
-`MemoryError`:
+Both calls hold the GIL and borrow immutable CPython 1-, 2-, or 4-byte string
+storage without transcoding. Embedded NULs and lone surrogates remain code
+points; no Python callbacks run inside the kernels.
 
 | Kernel | Work limits |
 | --- | --- |
-| Levenshtein, both inputs nonempty | Shorter length ≤ 65,536; longer ≤ 262,144; longer × ceil(shorter / 64) ≤ 4,194,304; shorter input has ≤ 256 distinct code points |
-| Jaro | Each length ≤ 65,536; length product ≤ 4,194,304 |
+| Levenshtein, both inputs nonempty | Shorter length ≤ 65,536; longer ≤ 262,144; longer × ceil(shorter / 64) ≤ 4,194,304; shorter input has ≤ 256 distinct code points. An empty input returns the other length directly. |
+| Jaro | Each length ≤ 65,536; length product ≤ 4,194,304. |
 
-Levenshtein uses multiword bit vectors and stack scratch for patterns up to
-64 code points. Jaro preserves Python's separate double operations and integer
-transposition floor; the build hook disables fast-math and contraction.
-The [Rust prototype](../rust/README.md) implements the same refusal protocol.
+Non-exact strings or exceeded work limits return `NotImplemented` to
+[`fuzz.py`](../../../src/unstd/text/fuzz.py); allocation failure raises
+`MemoryError`. Maintain that distinction when changing budgets or scratch
+storage. Jaro preserves Python's separate double operations: the
+[build hook](../../../hatch_build.py) disables fast-math and contraction.
+The [Rust alternative](../rust/README.md) must retain the same contracts.

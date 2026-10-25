@@ -374,8 +374,8 @@ static int unchanged_encoder(NativeState *, PyObject *);
 static int configure_encoder(NativeState *, PyObject *);
 static void detach_watcher(NativeState *);
 
-#include "_json_decode_native.h"
-#include "_json_lines_native.h"
+#include "decode.h"
+#include "lines.h"
 
 static PyObject *
 configure(PyObject *module, PyObject *globals)
@@ -485,7 +485,7 @@ line(PyObject *module, PyObject *value)
     return transport_encode(state, value, state->newline_option);
 }
 
-#include "_json_encode_native.h"
+#include "encode.h"
 
 static PyMethodDef methods[] = {
     {"encode", (PyCFunction)(void (*)(void))encode,

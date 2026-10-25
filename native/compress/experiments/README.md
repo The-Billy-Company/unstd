@@ -1,8 +1,16 @@
 # Isolated gzip qualification
 
-These candidates leave the default libdeflate 1.25 and zlib build unchanged.
-Qualification artifacts stay local until source, license,
-dependency provenance and platform behavior are reviewed for distribution.
+These files qualify candidates without changing the default libdeflate 1.25 and
+zlib build:
+
+| File | Responsibility |
+| --- | --- |
+| [`qualify_libdeflate.py`](qualify_libdeflate.py) | Stage authenticated candidate files, compile an isolated extension, and emit `qualification.json` |
+| [`libdeflate-1.26.json`](libdeflate-1.26.json) | Reviewed archive identity and hashes of the candidate's 24 retained files |
+| [`zlib-rs-0.6.7.json`](zlib-rs-0.6.7.json) | Evidence for one source, lockfile, toolchain, flags, and static-archive build |
+
+Qualification artifacts stay local until source, license, dependency provenance,
+and platform behavior are reviewed for distribution.
 
 ## libdeflate 1.26
 
@@ -15,9 +23,9 @@ python native/compress/experiments/qualify_libdeflate.py \
   --output /absolute/path/to/new-output
 ```
 
-[`qualify_libdeflate.py`](qualify_libdeflate.py) authenticates the fixed
-[review manifest](libdeflate-1.26.json), copies and hashes its 24 files, and
-compiles only an extension in a new output directory outside `native/`. It makes
+`qualify_libdeflate.py` authenticates the fixed review manifest, copies and hashes
+its 24 files, and compiles only an extension in a new output directory outside
+`native/`. It makes
 no downloads or dependency-resolution calls. GNU C11 is selected on Unix;
 Windows uses `/std:c11`. `qualification.json` records the review and binary
 hashes, size and build paths. A changed manifest, source mismatch or build failure

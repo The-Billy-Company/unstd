@@ -208,15 +208,11 @@ class CustomBuildHook(BuildHookInterface):
             else None
         )
         source = (
-            Path(self.root) / "native/text/rust/adapter.c"
-            if rust_text
-            else Path(self.root) / "native/compress/src/adapter.c"
-            if gzip_buffers
-            else Path(self.root)
+            Path(self.root)
             / "native"
             / relative.parts[1]
-            / "src"
-            / f"{relative.name}.c"
+            / ("rust" if rust_text else "src")
+            / "adapter.c"
         )
         gzip_root = Path(self.root) / "native/compress/vendor/libdeflate"
         sources = [str(source)]

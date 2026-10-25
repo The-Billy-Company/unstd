@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 from types import SimpleNamespace
 
 import pytest
@@ -199,6 +200,12 @@ def test_built_extensions_are_exercised_by_the_public_workloads() -> None:
     pytest.importorskip("unstd.text._text_native")
     result = _bundle(REPO_ROOT / "src", "gate_native", require_native=True)
     assert len(result["native_modules"]) == 2
+    for name, metadata in result["native_modules"].items():
+        source = REPO_ROOT / "native" / name.split(".")[1] / "src/adapter.c"
+        assert (
+            metadata["c_source_sha256"]
+            == hashlib.sha256(source.read_bytes()).hexdigest()
+        )
     assert len(result["native_execution"]) == 4
     assert result["profile"]["python"]
     assert result["profile"]["c"]

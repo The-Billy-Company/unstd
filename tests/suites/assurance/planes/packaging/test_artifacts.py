@@ -274,6 +274,13 @@ def test_sdist_contains_all_sources_and_rebuild_inputs_without_local_caches(
         "native/text/rust/Cargo.lock",
         "native/text/rust/src/lib.rs",
         "native/text/rust/adapter.c",
+        "native/text/src/adapter.c",
+        "native/clone/src/adapter.c",
+        "native/crypto/src/adapter.c",
+        "native/serde/src/adapter.c",
+        "native/serde/src/encode.h",
+        "native/serde/src/decode.h",
+        "native/serde/src/lines.h",
         "native/compress/src/adapter.c",
         "native/compress/vendor/libdeflate/UPSTREAM.json",
         "native/compress/vendor/libdeflate/COPYING",
@@ -406,13 +413,7 @@ def test_optional_compiler_failure_preserves_other_native_modules(
     source = tmp_path / "partial"
     shutil.copytree(artifacts.source, source)
     implementation = (
-        source / "native/compress/src/adapter.c"
-        if failed_module == "unstd.compress._gzip_native"
-        else source
-        / "native"
-        / failed_module.split(".")[1]
-        / "src"
-        / f"{failed_module.rsplit('.', 1)[1]}.c"
+        source / "native" / failed_module.split(".")[1] / "src" / "adapter.c"
     )
     implementation.write_text("#error unstd_test_native_failure\n", encoding="utf-8")
     output = tmp_path / "output"
