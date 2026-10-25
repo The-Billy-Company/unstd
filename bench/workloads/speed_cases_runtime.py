@@ -519,6 +519,14 @@ def _time() -> list[Case]:
         assert value.tzinfo is UTC
         assert abs((value - datetime.now(UTC)).total_seconds()) < 60
 
+    def local_datetime(value: Any) -> None:
+        assert type(value) is datetime
+        assert value.tzinfo is None
+        assert (
+            abs((value - datetime.now()).total_seconds())  # noqa: DTZ005 - native local-naive workload
+            < 60
+        )
+
     def today(value: Any) -> None:
         assert type(value) is date
         assert abs((value - datetime.now(UTC).date()).days) <= 1
@@ -553,6 +561,96 @@ def _time() -> list[Case]:
         )
 
     return [
+        Case(
+            "unstd.time.timeutil.wall_ns",
+            timeutil.wall_ns,
+            int_clock,
+            "one integer wall-clock read",
+        ),
+        Case(
+            "unstd.time.timeutil.perf_ns",
+            timeutil.perf_ns,
+            int_clock,
+            "one integer performance-counter read",
+        ),
+        Case(
+            "unstd.time.timeutil.process_time",
+            timeutil.process_time,
+            float_clock,
+            "one process CPU-clock read",
+        ),
+        Case(
+            "unstd.time.timeutil.process_time_ns",
+            timeutil.process_time_ns,
+            int_clock,
+            "one integer process CPU-clock read",
+        ),
+        *(
+            [
+                Case(
+                    "unstd.time.timeutil.thread_time",
+                    timeutil.thread_time,
+                    float_clock,
+                    "one thread CPU-clock read",
+                ),
+                Case(
+                    "unstd.time.timeutil.thread_time_ns",
+                    timeutil.thread_time_ns,
+                    int_clock,
+                    "one integer thread CPU-clock read",
+                ),
+            ]
+            if hasattr(timeutil, "thread_time")
+            else []
+        ),
+        Case(
+            "unstd.time.timeutil.sleep",
+            partial(timeutil.sleep, 0),
+            expect(None),
+            "one native zero-duration yield",
+        ),
+        Case(
+            "unstd.time.timeutil.now",
+            partial(timeutil.now, UTC),
+            utc_datetime,
+            "current native datetime in explicit UTC",
+        ),
+        Case(
+            "unstd.time.timeutil.date_today",
+            timeutil.date_today,
+            today,
+            "current native local calendar date",
+        ),
+        Case(
+            "unstd.time.timeutil.datetime_today",
+            timeutil.datetime_today,
+            local_datetime,
+            "current native local-naive datetime",
+        ),
+        Case(
+            "unstd.time.timeutil.from_iso",
+            partial(timeutil.from_iso, raw),
+            expect(stamp),
+            "strict native decode of one RFC-3339 UTC timestamp",
+        ),
+        Case(
+            "unstd.time.timeutil.date_from_iso",
+            partial(timeutil.date_from_iso, "2026-01-01"),
+            expect(stamp.date()),
+            "strict native decode of one ISO calendar date",
+        ),
+        Case(
+            "unstd.time.timeutil.time_from_iso",
+            partial(timeutil.time_from_iso, "00:00:00+00:00"),
+            expect(stamp.timetz()),
+            "strict native decode of one ISO time with a UTC offset",
+        ),
+        Case(
+            "unstd.time.timeutil.from_timestamp",
+            partial(timeutil.from_timestamp, epoch, UTC),
+            expect(stamp),
+            "native epoch decode in explicit UTC",
+        ),
         Case(
             "unstd.time.timeutil.wall",
             timeutil.wall,

@@ -1448,6 +1448,30 @@
       "rounds": 11,
       "spread": 0.13719478420422357
     },
+    "unstd.time.timeutil.date_from_iso": {
+      "ceiling_ns": 32.2597158203125,
+      "iterations": 409600,
+      "measured_ns": 24.815166015625,
+      "note": "strict native decode of one ISO calendar date",
+      "rounds": 9,
+      "spread": 0.10028981851367513
+    },
+    "unstd.time.timeutil.date_today": {
+      "ceiling_ns": 355.5183410644531,
+      "iterations": 32768,
+      "measured_ns": 273.47564697265625,
+      "note": "current native local calendar date",
+      "rounds": 9,
+      "spread": 0.19886544845864138
+    },
+    "unstd.time.timeutil.datetime_today": {
+      "ceiling_ns": 436.85760498046875,
+      "iterations": 24576,
+      "measured_ns": 336.0443115234375,
+      "note": "current native local-naive datetime",
+      "rounds": 9,
+      "spread": 0.2384476834824199
+    },
     "unstd.time.timeutil.elapsed_ms": {
       "ceiling_ns": 73.20501220703126,
       "iterations": 81920,
@@ -1488,6 +1512,22 @@
       "rounds": 11,
       "spread": 0.18224365037168913
     },
+    "unstd.time.timeutil.from_iso": {
+      "ceiling_ns": 40.15586853027344,
+      "iterations": 163840,
+      "measured_ns": 30.889129638671875,
+      "note": "strict native decode of one RFC-3339 UTC timestamp",
+      "rounds": 9,
+      "spread": 0.12562056956553955
+    },
+    "unstd.time.timeutil.from_timestamp": {
+      "ceiling_ns": 104.82559204101562,
+      "iterations": 114688,
+      "measured_ns": 80.63507080078125,
+      "note": "native epoch decode in explicit UTC",
+      "rounds": 9,
+      "spread": 0.06810126650717056
+    },
     "unstd.time.timeutil.human": {
       "ceiling_ns": 2431.3783793604653,
       "iterations": 2752,
@@ -1519,6 +1559,14 @@
       "note": "one integer monotonic-clock read",
       "rounds": 11,
       "spread": 0.31384114411441144
+    },
+    "unstd.time.timeutil.now": {
+      "ceiling_ns": 96.53269042968749,
+      "iterations": 106496,
+      "measured_ns": 74.25591571514423,
+      "note": "current native datetime in explicit UTC",
+      "rounds": 9,
+      "spread": 0.15640889847922815
     },
     "unstd.time.timeutil.now_tz": {
       "ceiling_ns": 152.61749267578125,
@@ -1560,6 +1608,30 @@
       "rounds": 11,
       "spread": 0.0780649267982177
     },
+    "unstd.time.timeutil.perf_ns": {
+      "ceiling_ns": 34.01328125,
+      "iterations": 385024,
+      "measured_ns": 26.1640625,
+      "note": "one integer performance-counter read",
+      "rounds": 9,
+      "spread": 0.3247700567968844
+    },
+    "unstd.time.timeutil.process_time": {
+      "ceiling_ns": 491.00887858072923,
+      "iterations": 24576,
+      "measured_ns": 377.6991373697917,
+      "note": "one process CPU-clock read",
+      "rounds": 9,
+      "spread": 0.12747332729031297
+    },
+    "unstd.time.timeutil.process_time_ns": {
+      "ceiling_ns": 632.8811645507812,
+      "iterations": 16384,
+      "measured_ns": 486.8316650390625,
+      "note": "one integer process CPU-clock read",
+      "rounds": 9,
+      "spread": 7.923512552891396
+    },
     "unstd.time.timeutil.proto_timestamp": {
       "ceiling_ns": 1543.501613451087,
       "iterations": 5888,
@@ -1576,6 +1648,14 @@
       "rounds": 11,
       "spread": 1.0460869423552093
     },
+    "unstd.time.timeutil.sleep": {
+      "ceiling_ns": 241.47210388183595,
+      "iterations": 32768,
+      "measured_ns": 185.74777221679688,
+      "note": "one native zero-duration yield",
+      "rounds": 9,
+      "spread": 0.0672723924080227
+    },
     "unstd.time.timeutil.span": {
       "ceiling_ns": 1090.8513916015625,
       "iterations": 8192,
@@ -1583,6 +1663,30 @@
       "note": "duration between two RFC-3339 timestamps in minutes",
       "rounds": 11,
       "spread": 1.1458444682182622
+    },
+    "unstd.time.timeutil.thread_time": {
+      "ceiling_ns": 174.06832139756946,
+      "iterations": 36864,
+      "measured_ns": 133.89870876736111,
+      "note": "one thread CPU-clock read",
+      "rounds": 9,
+      "spread": 0.11600043111464611
+    },
+    "unstd.time.timeutil.thread_time_ns": {
+      "ceiling_ns": 169.4133734809028,
+      "iterations": 36864,
+      "measured_ns": 130.31797960069446,
+      "note": "one integer thread CPU-clock read",
+      "rounds": 9,
+      "spread": 0.31956589888264925
+    },
+    "unstd.time.timeutil.time_from_iso": {
+      "ceiling_ns": 39.09759521484375,
+      "iterations": 327680,
+      "measured_ns": 30.0750732421875,
+      "note": "strict native decode of one ISO time with a UTC offset",
+      "rounds": 9,
+      "spread": 1.3170091324200914
     },
     "unstd.time.timeutil.today": {
       "ceiling_ns": 300.78633626302087,
@@ -1607,6 +1711,14 @@
       "note": "one wall-clock read",
       "rounds": 11,
       "spread": 0.21242865360518465
+    },
+    "unstd.time.timeutil.wall_ns": {
+      "ceiling_ns": 36.68883236155791,
+      "iterations": 278528,
+      "measured_ns": 28.222178739659928,
+      "note": "one integer wall-clock read",
+      "rounds": 9,
+      "spread": 0.20481722479784475
     },
     "unstd.time.zoned.instant": {
       "ceiling_ns": 383.86134033203126,
@@ -1911,10 +2023,258 @@
   },
   "recorded": "2026-10-22T04:29:15.587567+00:00",
   "schema": 1,
+  "time_addition_provenance": {
+    "cases": [
+      "unstd.time.timeutil.date_from_iso",
+      "unstd.time.timeutil.date_today",
+      "unstd.time.timeutil.datetime_today",
+      "unstd.time.timeutil.from_iso",
+      "unstd.time.timeutil.from_timestamp",
+      "unstd.time.timeutil.now",
+      "unstd.time.timeutil.perf_ns",
+      "unstd.time.timeutil.process_time",
+      "unstd.time.timeutil.process_time_ns",
+      "unstd.time.timeutil.sleep",
+      "unstd.time.timeutil.thread_time",
+      "unstd.time.timeutil.thread_time_ns",
+      "unstd.time.timeutil.time_from_iso",
+      "unstd.time.timeutil.wall_ns"
+    ],
+    "measurement_baseline": {
+      "cases": {
+        "unstd.time.timeutil.date_from_iso": {
+          "ceiling_ns": 32.2597158203125,
+          "iterations": 409600,
+          "measured_ns": 24.815166015625,
+          "note": "strict native decode of one ISO calendar date",
+          "rounds": 9,
+          "spread": 0.10028981851367513
+        },
+        "unstd.time.timeutil.date_today": {
+          "ceiling_ns": 355.5183410644531,
+          "iterations": 32768,
+          "measured_ns": 273.47564697265625,
+          "note": "current native local calendar date",
+          "rounds": 9,
+          "spread": 0.19886544845864138
+        },
+        "unstd.time.timeutil.datetime_today": {
+          "ceiling_ns": 436.85760498046875,
+          "iterations": 24576,
+          "measured_ns": 336.0443115234375,
+          "note": "current native local-naive datetime",
+          "rounds": 9,
+          "spread": 0.2384476834824199
+        },
+        "unstd.time.timeutil.from_iso": {
+          "ceiling_ns": 40.15586853027344,
+          "iterations": 163840,
+          "measured_ns": 30.889129638671875,
+          "note": "strict native decode of one RFC-3339 UTC timestamp",
+          "rounds": 9,
+          "spread": 0.12562056956553955
+        },
+        "unstd.time.timeutil.from_timestamp": {
+          "ceiling_ns": 104.82559204101562,
+          "iterations": 114688,
+          "measured_ns": 80.63507080078125,
+          "note": "native epoch decode in explicit UTC",
+          "rounds": 9,
+          "spread": 0.06810126650717056
+        },
+        "unstd.time.timeutil.now": {
+          "ceiling_ns": 96.53269042968749,
+          "iterations": 106496,
+          "measured_ns": 74.25591571514423,
+          "note": "current native datetime in explicit UTC",
+          "rounds": 9,
+          "spread": 0.15640889847922815
+        },
+        "unstd.time.timeutil.perf_ns": {
+          "ceiling_ns": 34.01328125,
+          "iterations": 385024,
+          "measured_ns": 26.1640625,
+          "note": "one integer performance-counter read",
+          "rounds": 9,
+          "spread": 0.3247700567968844
+        },
+        "unstd.time.timeutil.process_time": {
+          "ceiling_ns": 491.00887858072923,
+          "iterations": 24576,
+          "measured_ns": 377.6991373697917,
+          "note": "one process CPU-clock read",
+          "rounds": 9,
+          "spread": 0.12747332729031297
+        },
+        "unstd.time.timeutil.process_time_ns": {
+          "ceiling_ns": 632.8811645507812,
+          "iterations": 16384,
+          "measured_ns": 486.8316650390625,
+          "note": "one integer process CPU-clock read",
+          "rounds": 9,
+          "spread": 7.923512552891396
+        },
+        "unstd.time.timeutil.sleep": {
+          "ceiling_ns": 241.47210388183595,
+          "iterations": 32768,
+          "measured_ns": 185.74777221679688,
+          "note": "one native zero-duration yield",
+          "rounds": 9,
+          "spread": 0.0672723924080227
+        },
+        "unstd.time.timeutil.thread_time": {
+          "ceiling_ns": 174.06832139756946,
+          "iterations": 36864,
+          "measured_ns": 133.89870876736111,
+          "note": "one thread CPU-clock read",
+          "rounds": 9,
+          "spread": 0.11600043111464611
+        },
+        "unstd.time.timeutil.thread_time_ns": {
+          "ceiling_ns": 169.4133734809028,
+          "iterations": 36864,
+          "measured_ns": 130.31797960069446,
+          "note": "one integer thread CPU-clock read",
+          "rounds": 9,
+          "spread": 0.31956589888264925
+        },
+        "unstd.time.timeutil.time_from_iso": {
+          "ceiling_ns": 39.09759521484375,
+          "iterations": 327680,
+          "measured_ns": 30.0750732421875,
+          "note": "strict native decode of one ISO time with a UTC offset",
+          "rounds": 9,
+          "spread": 1.3170091324200914
+        },
+        "unstd.time.timeutil.wall_ns": {
+          "ceiling_ns": 36.68883236155791,
+          "iterations": 278528,
+          "measured_ns": 28.222178739659928,
+          "note": "one integer wall-clock read",
+          "rounds": 9,
+          "spread": 0.20481722479784475
+        }
+      },
+      "environment": {
+        "backends": {
+          "PyYAML": "6.0.3",
+          "blake3": "1.0.10",
+          "immutables": "0.21",
+          "irregex": "2.6.0",
+          "msgspec": "0.22.0",
+          "numpy": "2.5.3",
+          "orjson": "3.12.0",
+          "protobuf": "7.36.2",
+          "pybase64": "1.5.0",
+          "pydantic": "2.13.5",
+          "pydantic-settings": "2.15.0",
+          "rapidfuzz": "3.14.6",
+          "ruamel-yaml": "0.19.1",
+          "sortedcontainers": "2.4.0",
+          "soundfile": "0.14.0",
+          "tomlkit": "0.15.1",
+          "uuid-utils": "1.0.0",
+          "whenever": "0.10.5",
+          "zlib-ng": "1.0.0"
+        },
+        "cpu": "Apple M5 Max",
+        "cpu_count": 18,
+        "implementation": "CPython",
+        "machine": "arm64",
+        "native": {
+          "clone._clone_native": true,
+          "compress._gzip_native": false,
+          "crypto._stream_native": true,
+          "serde._json_native": true,
+          "text._text_native": true
+        },
+        "native_implementations": {
+          "clone._clone_native": "c",
+          "crypto._stream_native": "c",
+          "serde._json_native": "c",
+          "text._text_native": "c"
+        },
+        "python": "3.13.14",
+        "python_debug": 0,
+        "python_free_threaded": 0,
+        "system": "Darwin",
+        "system_release": "25.6.0",
+        "thread_settings": {
+          "MKL_NUM_THREADS": null,
+          "OMP_NUM_THREADS": null,
+          "OPENBLAS_NUM_THREADS": null
+        }
+      },
+      "recorded": "2026-10-25T04:18:42.656725+00:00",
+      "schema": 1,
+      "tolerance": 0.3,
+      "workload_sources": {
+        "speed_cases_codecs.py": "8dda94b94688b43d9aecce530132dc6e278ab3a42aee0790c2e0f40b7fae5092",
+        "speed_cases_operations.py": "54572576bc9cea79179d60a84d428a7f2f232e1d6de46233c3ee00ab196cf497",
+        "speed_cases_runtime.py": "870b236e77cb2e7b6066c7cc9497ad0fd8cfaaf6b506b59d3ccedee295739bb7"
+      }
+    },
+    "measurement_environment": {
+      "backends": {
+        "PyYAML": "6.0.3",
+        "blake3": "1.0.10",
+        "immutables": "0.21",
+        "irregex": "2.6.0",
+        "msgspec": "0.22.0",
+        "numpy": "2.5.3",
+        "orjson": "3.12.0",
+        "protobuf": "7.36.2",
+        "pybase64": "1.5.0",
+        "pydantic": "2.13.5",
+        "pydantic-settings": "2.15.0",
+        "rapidfuzz": "3.14.6",
+        "ruamel-yaml": "0.19.1",
+        "sortedcontainers": "2.4.0",
+        "soundfile": "0.14.0",
+        "tomlkit": "0.15.1",
+        "uuid-utils": "1.0.0",
+        "whenever": "0.10.5",
+        "zlib-ng": "1.0.0"
+      },
+      "cpu": "Apple M5 Max",
+      "cpu_count": 18,
+      "implementation": "CPython",
+      "machine": "arm64",
+      "native": {
+        "clone._clone_native": true,
+        "compress._gzip_native": false,
+        "crypto._stream_native": true,
+        "serde._json_native": true,
+        "text._text_native": true
+      },
+      "native_implementations": {
+        "clone._clone_native": "c",
+        "crypto._stream_native": "c",
+        "serde._json_native": "c",
+        "text._text_native": "c"
+      },
+      "python": "3.13.14",
+      "python_debug": 0,
+      "python_free_threaded": 0,
+      "system": "Darwin",
+      "system_release": "25.6.0",
+      "thread_settings": {
+        "MKL_NUM_THREADS": null,
+        "OMP_NUM_THREADS": null,
+        "OPENBLAS_NUM_THREADS": null
+      }
+    },
+    "note": "Fourteen new direct stdlib time bindings measured on the existing frozen CPython 3.13.14 interpreter and backend versions. The newly enumerated unavailable compress._gzip_native=False field and newly declared ambient PyYAML=6.0.3 distribution are recorded here, not represented as old evidence. None of these fourteen calls invokes either backend. All 226 existing case rows, ceilings, recording metadata and original global environment are unchanged; only the reviewed runtime workload fingerprint advances for the additive registry entries. Absolute verification continues to reject incomparable worker environments.",
+    "prior_baseline_sha256": "2572835eb20e695e8fe09e5a6c255a8b9d09e3aa0f26c6984dfe0a00c164365d",
+    "product_source_sha256": {
+      "src/unstd/time/timeutil.py": "9e67e19434ff18012b996fdd2b6f3e56ca6c59718760324a87023abaeaa5032b"
+    },
+    "recorded": "2026-10-25T04:18:42.658425+00:00"
+  },
   "tolerance": 0.3,
   "workload_sources": {
     "speed_cases_codecs.py": "8dda94b94688b43d9aecce530132dc6e278ab3a42aee0790c2e0f40b7fae5092",
     "speed_cases_operations.py": "54572576bc9cea79179d60a84d428a7f2f232e1d6de46233c3ee00ab196cf497",
-    "speed_cases_runtime.py": "aaaabeda9dc5cda40bf0eec8637b254d750711b6003ed3e8daaa4f6a1f71c431"
+    "speed_cases_runtime.py": "870b236e77cb2e7b6066c7cc9497ad0fd8cfaaf6b506b59d3ccedee295739bb7"
   }
 }

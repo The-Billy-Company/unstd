@@ -1,0 +1,175 @@
+{
+  "cases": {
+    "unstd.time.timeutil.date_from_iso": {
+      "ceiling_ns": 33.94394721137153,
+      "iterations": 368640,
+      "measured_ns": 26.110728624131944,
+      "note": "strict native decode of one ISO calendar date",
+      "rounds": 7,
+      "spread": 0.13222735663826526
+    },
+    "unstd.time.timeutil.date_today": {
+      "ceiling_ns": 395.13498942057294,
+      "iterations": 24576,
+      "measured_ns": 303.9499918619792,
+      "note": "current native local calendar date",
+      "rounds": 7,
+      "spread": 0.08735085928479393
+    },
+    "unstd.time.timeutil.datetime_today": {
+      "ceiling_ns": 503.97084554036456,
+      "iterations": 24576,
+      "measured_ns": 387.6698811848958,
+      "note": "current native local-naive datetime",
+      "rounds": 7,
+      "spread": 0.02763961741822905
+    },
+    "unstd.time.timeutil.from_iso": {
+      "ceiling_ns": 44.3857958984375,
+      "iterations": 286720,
+      "measured_ns": 34.142919921875,
+      "note": "strict native decode of one RFC-3339 UTC timestamp",
+      "rounds": 7,
+      "spread": 0.04076242014624303
+    },
+    "unstd.time.timeutil.from_timestamp": {
+      "ceiling_ns": 110.94970703125,
+      "iterations": 106496,
+      "measured_ns": 85.34592848557692,
+      "note": "native epoch decode in explicit UTC",
+      "rounds": 7,
+      "spread": 0.04500869182528331
+    },
+    "unstd.time.timeutil.now": {
+      "ceiling_ns": 110.69104178292412,
+      "iterations": 114688,
+      "measured_ns": 85.14695521763393,
+      "note": "current native datetime in explicit UTC",
+      "rounds": 7,
+      "spread": 0.05620637245996911
+    },
+    "unstd.time.timeutil.perf_ns": {
+      "ceiling_ns": 41.45759376319679,
+      "iterations": 303104,
+      "measured_ns": 31.89045674092061,
+      "note": "one integer performance-counter read",
+      "rounds": 7,
+      "spread": 0.09740635466642528
+    },
+    "unstd.time.timeutil.process_time": {
+      "ceiling_ns": 551.8394470214844,
+      "iterations": 16384,
+      "measured_ns": 424.49188232421875,
+      "note": "one process CPU-clock read",
+      "rounds": 7,
+      "spread": 0.1347196031560596
+    },
+    "unstd.time.timeutil.process_time_ns": {
+      "ceiling_ns": 584.8175048828125,
+      "iterations": 16384,
+      "measured_ns": 449.859619140625,
+      "note": "one integer process CPU-clock read",
+      "rounds": 7,
+      "spread": 0.06135377518485856
+    },
+    "unstd.time.timeutil.sleep": {
+      "ceiling_ns": 249.238056640625,
+      "iterations": 40960,
+      "measured_ns": 191.72158203125,
+      "note": "one native zero-duration yield",
+      "rounds": 7,
+      "spread": 0.06585668304614489
+    },
+    "unstd.time.timeutil.thread_time": {
+      "ceiling_ns": 174.770654296875,
+      "iterations": 36864,
+      "measured_ns": 134.43896484375,
+      "note": "one thread CPU-clock read",
+      "rounds": 7,
+      "spread": 0.07619616631133679
+    },
+    "unstd.time.timeutil.thread_time_ns": {
+      "ceiling_ns": 184.06136169433594,
+      "iterations": 65536,
+      "measured_ns": 141.58566284179688,
+      "note": "one integer thread CPU-clock read",
+      "rounds": 7,
+      "spread": 0.03826755116253355
+    },
+    "unstd.time.timeutil.time_from_iso": {
+      "ceiling_ns": 40.88353474934896,
+      "iterations": 245760,
+      "measured_ns": 31.448872884114582,
+      "note": "strict native decode of one ISO time with a UTC offset",
+      "rounds": 7,
+      "spread": 0.048950591127427986
+    },
+    "unstd.time.timeutil.wall_ns": {
+      "ceiling_ns": 44.39051159274194,
+      "iterations": 253952,
+      "measured_ns": 34.146547379032256,
+      "note": "one integer wall-clock read",
+      "rounds": 7,
+      "spread": 0.15233180004944888
+    }
+  },
+  "environment": {
+    "backends": {
+      "PyYAML": "6.0.3",
+      "blake3": "1.0.10",
+      "immutables": "0.21",
+      "irregex": "2.6.0",
+      "msgspec": "0.22.0",
+      "numpy": "2.5.3",
+      "orjson": "3.12.0",
+      "protobuf": "7.36.2",
+      "pybase64": "1.5.0",
+      "pydantic": "2.13.5",
+      "pydantic-settings": "2.15.0",
+      "rapidfuzz": "3.14.6",
+      "ruamel-yaml": "0.19.1",
+      "sortedcontainers": "2.4.0",
+      "soundfile": "0.14.0+unstd.474e4d3",
+      "tomlkit": "0.15.1",
+      "uuid-utils": "1.0.0",
+      "whenever": "0.10.5",
+      "zlib-ng": "1.0.0"
+    },
+    "cpu": "Apple M5 Max",
+    "cpu_count": 18,
+    "implementation": "CPython",
+    "machine": "arm64",
+    "native": {
+      "clone._clone_native": true,
+      "compress._gzip_native": true,
+      "crypto._stream_native": true,
+      "serde._json_native": true,
+      "text._text_native": true
+    },
+    "native_implementations": {
+      "clone._clone_native": "c",
+      "compress._gzip_native": "c",
+      "crypto._stream_native": "c",
+      "serde._json_native": "c",
+      "text._text_native": "c"
+    },
+    "python": "3.13.16",
+    "python_debug": 0,
+    "python_free_threaded": 0,
+    "system": "Darwin",
+    "system_release": "25.6.0",
+    "thread_settings": {
+      "MKL_NUM_THREADS": null,
+      "OMP_NUM_THREADS": null,
+      "OPENBLAS_NUM_THREADS": null
+    }
+  },
+  "recorded": "2026-10-25T04:10:59.747415+00:00",
+  "schema": 1,
+  "tolerance": 0.3,
+  "workload_sources": {
+    "speed_cases_codecs.py": "8dda94b94688b43d9aecce530132dc6e278ab3a42aee0790c2e0f40b7fae5092",
+    "speed_cases_operations.py": "54572576bc9cea79179d60a84d428a7f2f232e1d6de46233c3ee00ab196cf497",
+    "speed_cases_runtime.py": "870b236e77cb2e7b6066c7cc9497ad0fd8cfaaf6b506b59d3ccedee295739bb7"
+  }
+}
