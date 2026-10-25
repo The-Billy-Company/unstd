@@ -43,7 +43,13 @@ jobs:
         run: python -m tests.tooling.static_analysis bandit .local/sast/bandit.json
       - name: Reject duplicated production implementation
         shell: bash
-        run: uv run --no-sync pylint src/unstd | tee .local/sast/duplicates.txt
+        # Explicit implementation paths avoid checking .py twice through its .pyi.
+        run: |
+          sources=()
+          while IFS= read -r -d '' source; do
+            sources+=("$source")
+          done < <(find src/unstd -name '*.py' -print0)
+          uv run --no-sync pylint "${sources[@]}" | tee .local/sast/duplicates.txt
       - name: Prove findings and broken scans cannot pass
         run: uv run --no-sync python -m pytest tests/suites/assurance/gates/static_analysis -q --junitxml=.local/sast/gates.xml
       - name: Retain Python and duplication evidence

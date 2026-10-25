@@ -36,7 +36,7 @@ def __getattr__(name: str) -> object:
         raise AttributeError(msg)
     from unstd.yaml import _codec as codec
 
-    globals().update((key, getattr(codec, key)) for key in codec.__all__)
+    globals().update((key, getattr(codec, key)) for key in __all__)
     return globals()[name]
 
 

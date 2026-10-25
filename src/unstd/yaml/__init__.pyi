@@ -10,7 +10,6 @@ from unstd.yaml._codec import (
 from unstd.yaml._codec import (
     YamlValue as YamlValue,
 )
-from unstd.yaml._codec import __all__ as __all__
 from unstd.yaml._codec import (
     dump as dump,
 )

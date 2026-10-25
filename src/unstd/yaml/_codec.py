@@ -23,7 +23,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable, Iterator
 
     from ruamel.yaml import YAML as _YAML
-    from ruamel.yaml.error import YAMLError
+    from ruamel.yaml.error import YAMLError as YAMLError
 
     from unstd.yaml._internal.engine import create_engine as _create_engine
 
@@ -31,7 +31,7 @@ if TYPE_CHECKING:
 else:
     try:
         from ruamel.yaml import YAML as _YAML
-        from ruamel.yaml.error import YAMLError
+        from ruamel.yaml.error import YAMLError as YAMLError
 
         from unstd.yaml._internal.engine import create_engine as _create_engine
     except ImportError:
@@ -50,19 +50,6 @@ type YamlValue = (
     | tuple[YamlValue, ...]
     | MutableSet[Hashable]
 )
-
-__all__ = [
-    "YAMLError",
-    "YamlScalar",
-    "YamlValue",
-    "dump",
-    "dump_all",
-    "dumps",
-    "load",
-    "load_all",
-    "loads",
-    "parse",
-]
 
 
 def _engine(*, editable: bool = False) -> _YAML:
