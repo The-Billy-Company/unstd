@@ -29,9 +29,9 @@ exact builtin structural cloning, exact-string Levenshtein/Jaro scoring, and
 gzip reads selected through the compression extra.
 Source builds use these modules when a compiler is available and otherwise keep
 the portable fallback. The runtime dependency set and public APIs are unchanged.
-See the [Billy fixture measurements](bench/billy-serde-optimization-results.md)
+See the [Billy fixture measurements](bench/reports/serde/billy-serde-optimization-results.md)
 for release comparisons, including remaining overhead relative to 2.1.1.
-The [native kernel audit](bench/native-results.md) records clone and text
+The [native kernel audit](bench/reports/native/native-results.md) records clone and text
 measurements and compatibility boundaries.
 
 ## Groups
@@ -83,12 +83,18 @@ changes. Existing defaults and persisted canonical bytes remain unchanged:
 
 ## Repository layout
 
-- [`src/`](src/README.md) contains the installable Python package and bundled C
-  extensions; [`src/unstd/`](src/unstd/README.md) indexes the module APIs.
+The [architecture guide](docs/architecture.md) maps every package and repository
+area. The [public API inventory](docs/api.md) lists supported imports and exports,
+including the compatibility boundary around private native implementations.
+
+- [`src/`](src/README.md) contains the installable Python interfaces and private
+  Python implementations; [`src/unstd/`](src/unstd/README.md) indexes the module APIs.
 - [`tests/`](tests/README.md) contains product and assurance suites, shared
   support, and standalone campaign tools.
-- [`bench/`](bench/README.md) contains benchmark drivers and recorded results.
-- [`native/`](native/README.md) contains the gzip kernels and opt-in Rust text experiment.
+- [`bench/`](bench/README.md) separates benchmark runners, workloads, frozen
+  baselines, reports, and audits.
+- [`native/`](native/README.md) owns all bundled C sources, reviewed vendors,
+  and the opt-in Rust text experiment.
 - [`.github/`](.github/OVERVIEW.md) contains CI, campaign, audit, and release workflows.
 - [`changelog.d/`](changelog.d/README.md) contains unreleased change fragments.
 

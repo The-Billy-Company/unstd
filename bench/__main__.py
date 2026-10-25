@@ -11,8 +11,8 @@ from __future__ import annotations
 import argparse
 import sys
 
-from bench import cases as case_mod
-from bench import report
+from bench.core import cases as case_mod
+from bench.core import report
 
 
 def _parser() -> argparse.ArgumentParser:

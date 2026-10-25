@@ -5,7 +5,7 @@ doc_radar:
       contains: ['GzipFile = _stdlib.GzipFile', 'if type(data) is not bytes']
     - file: src/unstd/compress/_reader.py
       contains: ['_factory = _accelerated.Inflater', '_zlib_globals["crc32"] = _crc32']
-    - file: native/compress/adapter.c
+    - file: native/compress/src/adapter.c
       contains: ['libdeflate_gzip_decompress_ex(', 'MAX_OUTPUT_BYTES']
 ---
 
@@ -64,7 +64,7 @@ inflater and CRC32; one-shot decompression uses stdlib. Without the compression
 extra, all five names remain exact stdlib bindings. Exceptions retain stdlib
 families, including the original `BadGzipFile` class.
 
-The [paired read measurements](../../../bench/gzip-native-reads-results.json)
+The [paired read measurements](../../../bench/reports/compress/gzip-native-reads-results.json)
 record workload outputs, observed native calls, source identities and raw timing
 samples. Throughput varies with platform, payload, compression level and read
 shape. Threaded streams, raw zlib, automatic format detection and archive

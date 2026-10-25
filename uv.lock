@@ -1736,6 +1736,15 @@ wheels = [
 ]
 
 [[package]]
+name = "types-pyyaml"
+version = "6.0.12.20260906"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/90/6e/abec85b9013db5b934b0280a6dd104904d84f7bcbaab2e2f3def87ac7463/types_pyyaml-6.0.12.20260906.tar.gz", hash = "sha256:f59c1cc05010b833d2d72287bbaa72610106b28d42d89a907313117faba85212", size = 18649, upload-time = "2026-09-06T06:35:35.362Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/15/c0/fc0644b7ddcfb969e95845837143cb5173ddd6e06ee4ba5fc493cd9329b7/types_pyyaml-6.0.12.20260906-py3-none-any.whl", hash = "sha256:bca893ff0d51df5c9053137d5d0e6ccd36e939a196356f1d5c16372422f5137b", size = 21282, upload-time = "2026-09-06T06:35:34.372Z" },
+]
+
+[[package]]
 name = "typing-extensions"
 version = "4.16.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1779,7 +1788,7 @@ wheels = [
 
 [[package]]
 name = "unstd"
-version = "3.1.4"
+version = "3.1.5"
 source = { editable = "." }
 
 [package.optional-dependencies]
@@ -1831,6 +1840,7 @@ toml = [
     { name = "tomlkit" },
 ]
 yaml = [
+    { name = "pyyaml" },
     { name = "ruamel-yaml" },
 ]
 
@@ -1854,6 +1864,7 @@ dev = [
     { name = "ruff" },
     { name = "sortedcontainers-stubs" },
     { name = "types-protobuf" },
+    { name = "types-pyyaml" },
 ]
 fuzz = [
     { name = "atheris", marker = "python_full_version < '3.13' and platform_machine == 'x86_64' and sys_platform == 'linux'" },
@@ -1892,6 +1903,7 @@ requires-dist = [
     { name = "pybase64", marker = "extra == 'serde'", specifier = ">=1.5" },
     { name = "pydantic", marker = "extra == 'model'", specifier = ">=2.13" },
     { name = "pydantic-settings", marker = "extra == 'model'", specifier = ">=2.15" },
+    { name = "pyyaml", marker = "extra == 'yaml'", specifier = ">=6.0.3" },
     { name = "rapidfuzz", marker = "extra == 'text'", specifier = ">=3.12.0" },
     { name = "ruamel-yaml", marker = "extra == 'yaml'", specifier = ">=0.19" },
     { name = "sortedcontainers", marker = "extra == 'containers'", specifier = ">=2.4" },
@@ -1919,10 +1931,11 @@ dev = [
     { name = "cryptography", specifier = ">=44.0" },
     { name = "hypothesis", specifier = ">=6.100" },
     { name = "mypy", specifier = ">=2.4" },
-    { name = "pytest", specifier = ">=8.0" },
+    { name = "pytest", specifier = ">=8.2" },
     { name = "ruff", specifier = ">=0.16.10" },
     { name = "sortedcontainers-stubs", specifier = ">=2.4.3" },
     { name = "types-protobuf", specifier = ">=7.35.1.20260906" },
+    { name = "types-pyyaml", specifier = ">=6.0" },
 ]
 fuzz = [{ name = "atheris", marker = "python_full_version == '3.12.*' and platform_machine == 'x86_64' and sys_platform == 'linux'", specifier = "==3.0.0" }]
 release = [
@@ -1939,7 +1952,7 @@ static-analysis = [
 supply-chain = [
     { name = "hypothesis", specifier = ">=6.100" },
     { name = "packaging", specifier = ">=24" },
-    { name = "pytest", specifier = ">=8.0" },
+    { name = "pytest", specifier = ">=8.2" },
     { name = "ruamel-yaml", specifier = ">=0.19" },
 ]
 

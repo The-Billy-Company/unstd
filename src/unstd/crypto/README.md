@@ -23,7 +23,7 @@ Install with the extra: `pip install 'unstd[crypto]'`.
 | File        | Role                                                                                                      |
 | ----------- | --------------------------------------------------------------------------------------------------------- |
 | `digest.py` | BLAKE3-256 - `raw` (bytes) / `hex` (full or truncated) / `Stream`, `derive_key`, and the `legacy_blake2b` escape hatch. |
-| `_stream_native.c` | Optional bounded stream batching and canonical token-envelope parsing; cryptographic primitives remain in their existing backends. |
+| [`native/crypto/src/_stream_native.c`](../../../native/crypto/src/_stream_native.c) | Optional bounded stream batching and canonical token-envelope parsing; cryptographic primitives remain in their existing backends. |
 | `token.py`  | Keyed-BLAKE3 `mac_raw` / `mac_hex` / `verify_mac`, constant-time `equal`, and the claims envelope.         |
 | `tls.py`    | A verifying TLS client context with no parameter for skipping verification.                                |
 
@@ -127,11 +127,11 @@ Python implementation. The helper owns no cryptographic implementation and
 retains no messages, keys, hashers, or worker pools between calls.
 
 Hex output uses Python's byte-to-hex conversion after BLAKE3 finalization.
-[Current paired measurements](../../../bench/crypto-hash-adaptive-results.md)
+[Current paired measurements](../../../bench/reports/crypto/crypto-hash-adaptive-results.md)
 cover adaptive workers and native stream batching. The
-[previous tuning report](../../../bench/crypto-hash-tuning-results.md) records
+[previous tuning report](../../../bench/reports/crypto/crypto-hash-tuning-results.md) records
 the 4 MiB crossover and hex-output savings; the
-[initial report](../../../bench/crypto-hash-results.md) covers the earlier
+[initial report](../../../bench/reports/crypto/crypto-hash-results.md) covers the earlier
 16 MiB threshold.
 
 TLS certificate paths use `None` for omission. Explicitly empty `cafile`,

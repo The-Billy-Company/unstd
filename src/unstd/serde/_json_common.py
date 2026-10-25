@@ -1,16 +1,15 @@
-"""Retain stdlib codec entry frames before exposing a native result.
+"""Compatibility access to private JSON common helpers."""
 
-Stdlib's Python encoder and decoder entry points add frames above their native
-scanners. These two frames retain their recursion headroom without rewalking a
-result. Callers retry a failed probe through stdlib for its own diagnostics.
-"""
+from typing import Any
 
-from __future__ import annotations
+from unstd.serde._internal import json_common as _implementation
 
 
-def _check_headroom[T](value: T) -> T:
-    return _recursion_result(value)
+def __getattr__(name: str) -> Any:
+    """Resolve historical helper names from their owning implementation."""
+    return getattr(_implementation, name)
 
 
-def _recursion_result[T](value: T) -> T:
-    return value
+def __dir__() -> list[str]:
+    """Include helper names for existing diagnostic tools."""
+    return sorted(set(globals()) | set(dir(_implementation)))

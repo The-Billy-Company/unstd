@@ -35,13 +35,20 @@ Prior art: ``soundfile`` (github.com/bastibe/python-soundfile) over libsndfile
 
 from __future__ import annotations
 
-import array
-from collections.abc import Callable, Iterator, Sequence
+from collections.abc import Iterator, Sequence
 import contextlib
 import struct
-import sys
 from typing import IO, TYPE_CHECKING, Protocol, Self, cast
 import wave
+
+from unstd.audio._internal.pcm import _bad_subtype as _bad_subtype
+from unstd.audio._internal.pcm import _bad_width as _bad_width
+from unstd.audio._internal.pcm import _check_channels as _check_channels
+from unstd.audio._internal.pcm import _check_dtype as _check_dtype
+from unstd.audio._internal.pcm import _check_pcm_frames as _check_pcm_frames
+from unstd.audio._internal.pcm import _pcm16 as _pcm16
+from unstd.audio._internal.pcm import _python_integers as _python_integers
+from unstd.audio._internal.pcm import _read_array as _read_array
 
 
 if TYPE_CHECKING:
@@ -121,7 +128,6 @@ type PathOrFile = str | IO[bytes]
 # numpy.ndarray when numpy is present, else list / list[list] (1-D mono, 2-D multichannel).
 type Samples = NDArray[_np.generic] | Sequence[float] | Sequence[Sequence[float]]
 
-_DTYPES = ("float32", "float64", "int16")
 # stdlib-fallback little-endian PCM dtype codes by sample width (bytes).
 _PCM_CODE = {1: "<u1", 2: "<i2", 4: "<i4"}
 # write subtype → (sample width, LE dtype code, full-scale magnitude 2**(w-1)).
@@ -373,13 +379,6 @@ class Writer:
         self.close()
 
 
-def _python_integers(samples: object) -> bool:
-    """Whether a plain Python sample tree contains only integer sample counts."""
-    if isinstance(samples, int):
-        return True
-    return isinstance(samples, list | tuple) and all(map(_python_integers, samples))
-
-
 def _sample_array(samples: Samples) -> NDArray[_np.generic]:
     """Keep mixed signed/unsigned Python integers out of NumPy's float promotion."""
     arr = _np.asarray(samples)
@@ -495,24 +494,6 @@ def _quantize(arr: NDArray[_np.generic], code: str, scale: int) -> bytes:
 # ── pure-stdlib `array` floor (16-bit PCM only) ────────────────────────────────
 
 
-def _read_array(raw: bytes, nchannels: int, sampwidth: int, dtype: str) -> Samples:
-    if sampwidth != 2:
-        raise ValueError(_bad_width(sampwidth, "16"))
-    _check_pcm_frames(raw, nchannels, sampwidth)
-    a = array.array("h")  # signed 16-bit
-    a.frombytes(raw)
-    if sys.byteorder == "big":  # WAV PCM is little-endian
-        a.byteswap()
-    conv: Callable[[int], float] = (
-        (lambda v: v) if dtype == "int16" else (lambda v: v / 32768.0)
-    )
-    if nchannels == 1:
-        return [conv(v) for v in a]
-    return [
-        [conv(a[i + c]) for c in range(nchannels)] for i in range(0, len(a), nchannels)
-    ]
-
-
 def _write_array(
     fp: PathOrFile, samples: Samples, samplerate: int, subtype: str
 ) -> None:
@@ -522,71 +503,7 @@ def _write_array(
     _write_frames(fp, raw, nchannels, 2, samplerate)
 
 
-def _pcm16(samples: Samples) -> tuple[bytes, int]:
-    """Little-endian PCM16 bytes of list samples, and their channel count."""
-    flat, nchannels = _flatten(samples)
-    ints = array.array("h", map(_to_int16, flat))
-    if sys.byteorder == "big":
-        ints.byteswap()
-    return ints.tobytes(), nchannels
-
-
-def _flatten(samples: Samples) -> tuple[list[float], int]:
-    seq: list[object] = list(samples)
-    if seq and isinstance(seq[0], list | tuple):
-        nchannels = len(seq[0])
-        return (
-            [_scalar(v) for frame in seq for v in _frame(frame, nchannels)],
-            nchannels,
-        )
-    return [_scalar(v) for v in seq], 1
-
-
-def _frame(frame: object, nchannels: int) -> Sequence[float]:
-    """Narrow one multichannel frame to a sequence — mixed mono/frame input is a bug."""
-    if not isinstance(frame, list | tuple):
-        msg = f"expected a per-frame sequence of samples, got {type(frame).__name__}"
-        raise TypeError(msg)
-    if len(frame) != nchannels:
-        msg = f"expected {nchannels} samples per frame, got {len(frame)}"
-        raise ValueError(msg)
-    return frame
-
-
-def _scalar(v: object) -> float:
-    """Narrow one mono sample to a number — anything else is a bug."""
-    if isinstance(v, int | float):
-        return v
-    msg = f"expected a numeric sample, got {type(v).__name__}"
-    raise TypeError(msg)
-
-
-def _to_int16(v: float) -> int:
-    scaled = round(max(-1.0, min(1.0, v)) * 32768.0) if isinstance(v, float) else int(v)
-    return max(-32768, min(32767, scaled))
-
-
 # ── shared ─────────────────────────────────────────────────────────────────────
-
-
-def _check_pcm_frames(raw: bytes, nchannels: int, sampwidth: int) -> None:
-    """Reject truncated interleaved frames before decoding or channel indexing."""
-    if len(raw) % (nchannels * sampwidth):
-        msg = "PCM data is not a whole number of frames"
-        raise ValueError(msg)
-
-
-def _check_channels(wav: wave.Wave_write, nchannels: int) -> None:
-    """A streamed chunk must match the channel count fixed in the header."""
-    if nchannels != (expected := wav.getnchannels()):
-        msg = f"expected {expected}-channel frames, got {nchannels}"
-        raise ValueError(msg)
-
-
-def _check_dtype(dtype: str) -> None:
-    if dtype not in _DTYPES:
-        msg = f"dtype must be one of {_DTYPES}, got {dtype!r}"
-        raise ValueError(msg)
 
 
 def _write_frames(
@@ -601,16 +518,3 @@ def _write_frames(
 
 # RIFF/WAVE container + `fmt ` chunk (PCM, 16 bytes) + `data` chunk header.
 _RIFF_PCM = struct.Struct("<4sI4s4sIHHIIHH4sI")
-
-_INSTALL_HINT = "install the 'audio' extra (soundfile): pip install 'unstd[audio]'"
-
-
-def _bad_width(sampwidth: int, supported: str) -> str:
-    return (
-        f"unstd.audio stdlib fallback supports {supported}-bit PCM, got "
-        f"{sampwidth * 8}-bit — {_INSTALL_HINT}"
-    )
-
-
-def _bad_subtype(subtype: str) -> str:
-    return f"unstd.audio stdlib fallback cannot write subtype {subtype!r} — {_INSTALL_HINT}"

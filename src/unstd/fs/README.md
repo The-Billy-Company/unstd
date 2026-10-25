@@ -123,3 +123,7 @@ read untrusted, concurrently modified trees must also protect their file opens.
   SQLite's rollback/WAL commit, Postgres, and CPython's `importlib` bytecode
   cache; the parent-directory-fsync durability nuance is documented in LWN's
   _"Ensuring data reaches disk"_ and the SQLite atomic-commit docs.
+
+## Implementation layout
+
+Traversal and directory-sync mechanisms live in [`_internal/`](_internal/README.md). The package keeps atomic-write orchestration and passes its OS binding explicitly to the private helpers.

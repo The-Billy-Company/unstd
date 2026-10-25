@@ -139,6 +139,7 @@ def build_artifacts(root: Path) -> Artifacts:
         "NOTICE",
         "CHANGELOG.md",
         "bench",
+        "docs",
         "tests",
         "changelog.d",
         "uv.lock",

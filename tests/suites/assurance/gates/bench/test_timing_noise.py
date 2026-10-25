@@ -7,7 +7,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from bench import timing
+from bench.core import timing
 
 
 def test_preempted_tiny_calibration_batch_is_not_an_adequate_measurement(

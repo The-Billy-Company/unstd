@@ -5,6 +5,11 @@ Safe YAML 1.2 loading and document editing behind `unstd[yaml]`. We use
 comment-preserving edits. The base install still has no third-party dependencies;
 YAML calls without the extra raise an `ImportError` naming the install command.
 
+For existing PyYAML or ruamel code, we expose the original backend module through
+`from unstd.yaml import pyyaml` or `from unstd.yaml import ruamel`. These bindings
+keep the original loader, dumper, node and event objects; choosing one does not
+load the other backend. Their dialects and error handling stay unchanged.
+
 ```python
 from unstd import yaml
 
@@ -49,3 +54,9 @@ Parser errors retain ruamel's source marks and inherit `yaml.YAMLError`. Native
 scalar conversion errors propagate from the backend. Arbitrary Python objects
 passed to the writer raise a representer error. We do not add interpolation,
 environment merging, or implicit schema coercion.
+
+## Implementation layout
+
+The public namespace loads backend bindings and native operations on demand.
+Native operations live in `_codec.py`; parser safety policy and value validation
+live in [`_internal/`](_internal/README.md). Each operation owns its parser.

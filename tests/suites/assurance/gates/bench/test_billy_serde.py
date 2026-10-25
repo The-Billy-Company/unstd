@@ -7,7 +7,7 @@ import sys
 from types import SimpleNamespace
 from typing import TYPE_CHECKING
 
-from bench import billy_serde
+from bench.profiles import billy_serde
 
 
 if TYPE_CHECKING:

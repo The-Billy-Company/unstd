@@ -28,7 +28,7 @@ import sysconfig
 import tomllib
 from typing import TYPE_CHECKING, Any, NoReturn
 
-from bench.timing import Measurement, measure
+from bench.core.timing import Measurement, measure
 
 
 if TYPE_CHECKING:
@@ -36,7 +36,7 @@ if TYPE_CHECKING:
 
 
 ROOT = Path(__file__).resolve().parents[1]
-BASELINE = ROOT / "bench/speeds.json"
+BASELINE = ROOT / "bench/baselines/speeds.json"
 _PROVIDERS = ("codecs", "runtime", "operations")
 _NATIVE = (
     "clone._clone_native",
@@ -107,7 +107,7 @@ def registry(
     with ExitStack() as stack:
         selected = []
         for provider in _PROVIDERS:
-            module = importlib.import_module(f"bench.speed_cases_{provider}")
+            module = importlib.import_module(f"bench.workloads.speed_cases_{provider}")
             selected.extend(module.cases(stack, comparison=comparison))
         validate_cases(selected)
         unknown = set(groups) - {case.package for case in selected}
@@ -235,7 +235,7 @@ def check_coverage(
     validate_cases(cases)
     exclusions: dict[str, str] = {}
     for provider in _PROVIDERS:
-        module = importlib.import_module(f"bench.speed_cases_{provider}")
+        module = importlib.import_module(f"bench.workloads.speed_cases_{provider}")
         exclusions.update(getattr(module, "EXCLUSIONS", {}))
     apis = public_apis() if source is None else public_apis(source)
     covered = {case.name.split("#", 1)[0] for case in cases}
@@ -349,7 +349,7 @@ def workload_sources() -> dict[str, str]:
     """Fingerprint workload fixtures so edited payloads cannot compare silently."""
     return {
         f"speed_cases_{provider}.py": hashlib.sha256(
-            (ROOT / f"bench/speed_cases_{provider}.py").read_bytes()
+            (ROOT / f"bench/workloads/speed_cases_{provider}.py").read_bytes()
         ).hexdigest()
         for provider in _PROVIDERS
     }

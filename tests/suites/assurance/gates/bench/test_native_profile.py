@@ -7,8 +7,9 @@ from types import SimpleNamespace
 
 import pytest
 
-from bench import native_profile
-from bench.native_profile import (
+from bench.core.timing import Measurement
+from bench.profiles import native_profile
+from bench.profiles.native_profile import (
     Workload,
     _assert_native_execution,
     _base_text,
@@ -22,7 +23,6 @@ from bench.native_profile import (
     _validate_comparison,
     _workloads,
 )
-from bench.timing import Measurement
 from tests.support.environment.anchors import REPO_ROOT
 from unstd.clone import structural
 from unstd.text import fuzz

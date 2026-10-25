@@ -97,7 +97,7 @@ def test_tls_workload_accepts_lazy_default_roots_and_rejects_insecure_policy(
     all_backends: None, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     del all_backends
-    from bench import speed_cases_runtime
+    from bench.workloads import speed_cases_runtime
 
     def lazy_context(*, cafile: str | None = None) -> ssl.SSLContext:
         assert cafile is None
@@ -134,6 +134,30 @@ def test_tls_workload_accepts_lazy_default_roots_and_rejects_insecure_policy(
     [
         ("unstd.serde.jsonx", "canonical_strict"),
         ("unstd.crypto.token", "prepare_verifier"),
+        *(
+            ("unstd.time.timeutil", name)
+            for name in (
+                "strftime",
+                "gmtime",
+                "localtime",
+                "strptime",
+                "combine",
+                "wall_ns",
+                "perf_ns",
+                "process_time",
+                "process_time_ns",
+                "thread_time",
+                "thread_time_ns",
+                "sleep",
+                "now",
+                "date_today",
+                "datetime_today",
+                "from_iso",
+                "date_from_iso",
+                "time_from_iso",
+                "from_timestamp",
+            )
+        ),
     ],
 )
 def test_only_comparison_registry_accepts_apis_missing_from_an_older_revision(
@@ -152,7 +176,7 @@ def test_filesystem_workloads_reuse_bounded_private_storage(
     all_backends: None, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     del all_backends
-    from bench import speed_cases_operations
+    from bench.workloads import speed_cases_operations
 
     owned: list[Path] = []
 

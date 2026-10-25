@@ -18,8 +18,9 @@ the stdlib functions, bound directly: no wrapper frame on the hottest calls in a
 program, and patching the module attribute in a test still redirects every
 caller that reads it through the module.
 
-Everything here is absolute-instant work. Durations account for each endpoint's
-UTC offset so a shared IANA zone cannot select wall-clock arithmetic.
+Native bindings retain the stdlib's local-calendar and formatting semantics.
+Instant durations account for each endpoint's UTC offset so a shared IANA zone
+cannot select wall-clock arithmetic.
 DST-correct *wall-clock* work — "9am in New York next Tuesday" — is
 :mod:`unstd.time.zoned`, behind the ``time`` extra.
 
@@ -32,6 +33,7 @@ only third-party touchpoint is the protobuf ``Timestamp`` bridge
 from __future__ import annotations
 
 from datetime import UTC, date, datetime, timedelta, tzinfo
+from datetime import time as _civil_time
 from functools import cache, partial
 import time as _time
 from typing import TYPE_CHECKING, Literal
@@ -44,26 +46,45 @@ if TYPE_CHECKING:
 
 __all__ = [
     "Unit",
+    "combine",
+    "date_from_iso",
+    "date_today",
+    "datetime_today",
     "elapsed_ms",
     "epoch_ms",
     "epoch_s",
     "from_epoch_ms",
     "from_epoch_s",
+    "from_iso",
+    "from_timestamp",
+    "gmtime",
     "human",
     "iso",
+    "localtime",
     "mono",
     "mono_ns",
+    "now",
     "now_tz",
     "parse_date",
     "parse_iso",
     "parse_utc",
     "perf",
+    "perf_ns",
+    "process_time",
+    "process_time_ns",
     "proto_timestamp",
     "proto_timestamp_ms",
+    "sleep",
     "span",
+    "strftime",
+    "strptime",
+    "thread_time",
+    "thread_time_ns",
+    "time_from_iso",
     "today",
     "utcnow",
     "wall",
+    "wall_ns",
 ]
 
 type Unit = Literal["seconds", "minutes", "hours", "days"]
@@ -83,6 +104,9 @@ _PROTO_HINT = (
 wall = _time.time
 """Seconds since the Unix epoch as a float — wall clock, so it can jump."""
 
+wall_ns = _time.time_ns
+"""The wall clock in integer nanoseconds — no float rounding of the epoch."""
+
 mono = _time.monotonic
 """A monotonic clock read in seconds — never goes backwards, no fixed epoch.
 
@@ -95,6 +119,30 @@ mono_ns = _time.monotonic_ns
 
 perf = _time.perf_counter
 """The highest-resolution clock available, for timing a short span."""
+
+perf_ns = _time.perf_counter_ns
+""":data:`perf` in integer nanoseconds, without a conversion through float."""
+
+process_time = _time.process_time
+"""CPU seconds consumed by this process, excluding time spent asleep."""
+
+process_time_ns = _time.process_time_ns
+""":data:`process_time` in integer nanoseconds."""
+
+if hasattr(_time, "thread_time"):
+    thread_time = _time.thread_time
+    """CPU seconds consumed by the calling thread, where the host supports it."""
+
+    thread_time_ns = _time.thread_time_ns
+    """:data:`thread_time` in integer nanoseconds."""
+
+else:
+    __all__ = [
+        name for name in __all__ if name not in ("thread_time", "thread_time_ns")
+    ]
+
+sleep = _time.sleep
+"""Suspend the calling thread, retaining the platform's sleep and signal semantics."""
 
 
 def elapsed_ms(start: float) -> float:
@@ -115,6 +163,15 @@ def epoch_ms() -> int:
 utcnow = partial(datetime.now, UTC)
 """The current instant as a UTC-aware datetime (never naive) — ``datetime.now(UTC)``, pre-bound."""
 
+now = datetime.now
+"""The stdlib clock unchanged: local and naive by default, or aware with an explicit zone."""
+
+date_today = date.today
+"""The native local calendar date, retaining the stdlib read path without a wrapper."""
+
+datetime_today = datetime.today
+"""The native local-naive datetime, retaining the stdlib's ``today`` read path."""
+
 
 def now_tz(tz: tzinfo) -> datetime:
     """The current aware datetime in *tz*. UTC now is :data:`utcnow`."""
@@ -131,6 +188,15 @@ def today(*, utc: bool = False) -> date:
 
 
 # ── formatting ─────────────────────────────────────────────────────────────────
+
+strftime = _time.strftime
+"""Format a native time tuple, retaining platform directives and the local-time default."""
+
+gmtime = _time.gmtime
+"""Convert epoch seconds to the native UTC time tuple without an intermediate datetime."""
+
+localtime = _time.localtime
+"""Convert epoch seconds to the native local time tuple, retaining the host's DST rules."""
 
 
 def iso(dt: datetime | None = None, *, ms: bool = False) -> str:
@@ -164,6 +230,24 @@ def _human(dt: datetime) -> str:
 
 
 # ── parsing ────────────────────────────────────────────────────────────────────
+
+strptime = datetime.strptime
+"""Parse an explicit datetime format, retaining native directives, defaults and errors."""
+
+combine = datetime.combine
+"""Assemble a date and time, retaining the native timezone override and fold semantics."""
+
+from_iso = datetime.fromisoformat
+"""Decode an ISO datetime unchanged; invalid input raises the stdlib exception."""
+
+date_from_iso = date.fromisoformat
+"""Decode an ISO calendar date, retaining the stdlib's accepted forms and errors."""
+
+time_from_iso = _civil_time.fromisoformat
+"""Decode an ISO time, retaining offsets and the stdlib's errors without coercion."""
+
+from_timestamp = datetime.fromtimestamp
+"""Decode epoch seconds with the native local-naive default and optional timezone."""
 
 
 def parse_iso(raw: str) -> datetime | None:

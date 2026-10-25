@@ -9,8 +9,8 @@ from typing import TYPE_CHECKING, Any
 
 import pytest
 
-from bench import rand_diagnose as diagnosis
 from bench import speeds
+from bench.diagnostics import rand_diagnose as diagnosis
 
 
 if TYPE_CHECKING:
@@ -151,7 +151,7 @@ def test_invalid_repetitions_do_not_run_a_batch(repetitions: int) -> None:
 
 def test_real_controls_match_original_oracles_without_mutating_caller_engines() -> None:
     pytest.importorskip("numpy")
-    from bench import speed_cases_runtime
+    from bench.workloads import speed_cases_runtime
     from unstd.rand import draw
 
     before_state, before_engine = draw._py.getstate(), draw._gen

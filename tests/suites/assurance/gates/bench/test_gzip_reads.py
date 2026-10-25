@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from bench import gzip_reads
+from bench.profiles import gzip_reads
 
 
 if TYPE_CHECKING:

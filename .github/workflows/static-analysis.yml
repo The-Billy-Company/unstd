@@ -43,7 +43,13 @@ jobs:
         run: python -m tests.tooling.static_analysis bandit .local/sast/bandit.json
       - name: Reject duplicated production implementation
         shell: bash
-        run: uv run --no-sync pylint src/unstd | tee .local/sast/duplicates.txt
+        # Explicit implementation paths avoid checking .py twice through its .pyi.
+        run: |
+          sources=()
+          while IFS= read -r -d '' source; do
+            sources+=("$source")
+          done < <(find src/unstd -name '*.py' -print0)
+          uv run --no-sync pylint "${sources[@]}" | tee .local/sast/duplicates.txt
       - name: Prove findings and broken scans cannot pass
         run: uv run --no-sync python -m pytest tests/suites/assurance/gates/static_analysis -q --junitxml=.local/sast/gates.xml
       - name: Retain Python and duplication evidence
@@ -152,7 +158,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p .local/sast
-          cargo clippy --manifest-path native/text/Cargo.toml --locked --offline --all-targets -- -D warnings 2>&1 | tee .local/sast/clippy.txt
+          cargo clippy --manifest-path native/text/rust/Cargo.toml --locked --offline --all-targets -- -D warnings 2>&1 | tee .local/sast/clippy.txt
       - name: Retain Rust analysis evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

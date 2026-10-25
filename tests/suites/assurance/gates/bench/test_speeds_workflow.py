@@ -112,7 +112,7 @@ def test_one_worker_baseline_and_harness_judge_both_revisions(
         ".local/performance/source-before/src/unstd"
     )
     assert "--revision-baseline" in shlex.split(measurements["verify"]["run"])
-    assert baseline_paths[0] != "bench/speeds.json"
+    assert baseline_paths[0] != "bench/baselines/speeds.json"
     assert "installed-before:" in measurements["freeze"]["env"]["PYTHONPATH"]
     assert "installed-current:" in measurements["verify"]["env"]["PYTHONPATH"]
     for step in measurements.values():

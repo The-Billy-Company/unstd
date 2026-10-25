@@ -76,6 +76,8 @@ def test_findings_and_scanner_failures_keep_the_actual_shell_step_red(
     )
     executable.chmod(0o700)
     (tmp_path / ".local/sast").mkdir(parents=True)
+    (tmp_path / "src/unstd").mkdir(parents=True)
+    (tmp_path / "src/unstd/probe.py").write_text("value = 1\n")
     # GitHub uses -eo pipefail for an explicit bash shell. Its default Linux
     # shell uses -e; model the step's declared policy so a missing pipefail is
     # observable when a scanner is piped through tee.
@@ -114,14 +116,47 @@ def test_python_scans_cover_full_production_source_without_thresholds_or_baselin
     )
     assert "if" not in bandit
     duplicate = _scanner_step(workflow, "pylint")
-    assert shlex.split(duplicate["run"])[:5] == [
-        "uv",
-        "run",
-        "--no-sync",
-        "pylint",
-        "src/unstd",
-    ]
+    assert "find src/unstd -name '*.py' -print0" in duplicate["run"]
+    assert 'uv run --no-sync pylint "${sources[@]}"' in duplicate["run"]
     assert "if" not in duplicate
+
+
+def test_duplicate_scan_checks_each_implementation_once_with_its_real_path(
+    workflows, tmp_path: Path
+):
+    step = _scanner_step(workflows["static-analysis"], "pylint")
+    sources = ("__init__.py", "yaml/__init__.py", "with spaces/value.py")
+    for source in (*sources, "yaml/__init__.pyi"):
+        path = tmp_path / "src/unstd" / source
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("value = 1\n")
+    (tmp_path / ".local/sast").mkdir(parents=True)
+    called = tmp_path / "scanner-arguments.json"
+    executable = tmp_path / "uv"
+    executable.write_text(
+        f"#!{sys.executable}\n"
+        "import json, os, sys\n"
+        "from pathlib import Path\n"
+        "Path(os.environ['SAST_SCANNER_CALLED']).write_text(json.dumps(sys.argv[1:]))\n"
+    )
+    executable.chmod(0o700)
+    result = subprocess.run(  # noqa: S603 — repository workflow and fixture-owned scanner
+        ["/bin/bash", "-e", "-o", "pipefail", "-c", step["run"]],
+        cwd=tmp_path,
+        env={
+            **os.environ,
+            "PATH": f"{tmp_path}:{os.environ['PATH']}",
+            "SAST_SCANNER_CALLED": str(called),
+        },
+        capture_output=True,
+        text=True,
+        timeout=10,
+        check=False,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    arguments = json.loads(called.read_text())
+    assert arguments[:3] == ["run", "--no-sync", "pylint"]
+    assert sorted(arguments[3:]) == sorted(f"src/unstd/{source}" for source in sources)
 
 
 def test_codeql_covers_every_language_with_extended_full_source_queries(workflows):

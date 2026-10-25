@@ -8,7 +8,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from bench import text_native_compare as compare
+from bench.profiles import text_native_compare as compare
 from tests.support.environment.anchors import REPO_ROOT
 
 

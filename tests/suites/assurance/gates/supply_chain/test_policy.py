@@ -99,7 +99,7 @@ def test_crypto_minimum_excludes_releases_before_the_reviewed_backend_fixes():
 def repo(tmp_path: Path) -> Path:
     (tmp_path / "pyproject.toml").write_text(_MANIFEST)
     (tmp_path / "uv.lock").write_text(_LOCK)
-    native = tmp_path / "native/text"
+    native = tmp_path / "native/text/rust"
     native.mkdir(parents=True)
     (native / "Cargo.toml").write_text(_CARGO)
     (native / "Cargo.lock").write_text(_CARGO_LOCK)
@@ -303,7 +303,7 @@ def test_build_group_and_native_manifest_are_required_inputs(repo):
     ):
         supply_chain.check_policy(repo)
     (repo / "pyproject.toml").write_text(_MANIFEST)
-    (repo / "native/text/Cargo.toml").unlink()
+    (repo / "native/text/rust/Cargo.toml").unlink()
     with pytest.raises(
         supply_chain.SupplyChainError, match="native crate manifest is missing"
     ):
@@ -311,8 +311,8 @@ def test_build_group_and_native_manifest_are_required_inputs(repo):
 
 
 def test_python_only_checkout_needs_no_unrelated_native_experiment(repo):
-    (repo / "native/text/Cargo.lock").unlink()
-    (repo / "native/text/Cargo.toml").unlink()
+    (repo / "native/text/rust/Cargo.lock").unlink()
+    (repo / "native/text/rust/Cargo.toml").unlink()
     assert supply_chain.check_policy(repo)["rust_packages"] == 0
 
 
@@ -362,7 +362,7 @@ def test_duplicate_package_and_missing_editable_root_cannot_claim_valid_lock(rep
     "spec", ['"1"', '{git = "https://example.com/repo"}', '{path = "../other"}']
 )
 def test_new_rust_dependencies_require_their_own_audited_lane(repo, section, spec):
-    with (repo / "native/text/Cargo.toml").open("a") as stream:
+    with (repo / "native/text/rust/Cargo.toml").open("a") as stream:
         stream.write(f"\n[{section}]\nexternal = {spec}\n")
     with pytest.raises(
         supply_chain.SupplyChainError,
@@ -383,7 +383,7 @@ def test_new_rust_dependencies_require_their_own_audited_lane(repo, section, spe
 def test_external_crate_lock_entries_cannot_escape_the_dependency_free_contract(
     repo, mutation
 ):
-    with (repo / "native/text/Cargo.lock").open("a") as stream:
+    with (repo / "native/text/rust/Cargo.lock").open("a") as stream:
         stream.write('\n[[package]]\nname = "external"\nversion = "1.0.0"\n' + mutation)
     with pytest.raises(
         supply_chain.SupplyChainError,
@@ -399,6 +399,7 @@ def test_external_crate_lock_entries_cannot_escape_the_dependency_free_contract(
         ".cargo/config.toml",
         "native/.cargo/config.toml",
         "native/text/.cargo/config.toml",
+        "native/text/rust/.cargo/config.toml",
     ],
 )
 def test_cargo_source_replacement_is_rejected_at_every_repository_ancestor(
@@ -420,14 +421,18 @@ def test_cargo_source_replacement_is_rejected_at_every_repository_ancestor(
             'version = 1\nrequires-python = ">=3.12"\noptions = "invalid"',
             "expected a TOML table",
         ),
-        ("native/text/Cargo.lock", "version = 3\npackage = []", "exactly one local"),
         (
-            "native/text/Cargo.lock",
+            "native/text/rust/Cargo.lock",
+            "version = 3\npackage = []",
+            "exactly one local",
+        ),
+        (
+            "native/text/rust/Cargo.lock",
             _CARGO_LOCK.replace("0.1.0", "0.2.0"),
             "unapproved local",
         ),
         (
-            "native/text/Cargo.toml",
+            "native/text/rust/Cargo.toml",
             _CARGO + '[patch.crates-io]\nevil = "1"\n',
             "patch/replace",
         ),
@@ -519,8 +524,8 @@ def test_sbom_contains_every_locked_component_hash_and_dependency_deterministica
 def test_sbom_includes_authenticated_vendored_c_source_and_license(
     repo, project, version, license_id, archive_sha256, archive_url, source_file
 ):
-    source = REPO_ROOT / "native/compress" / project
-    destination = repo / "native/compress" / project
+    source = REPO_ROOT / "native/compress/vendor" / project
+    destination = repo / "native/compress/vendor" / project
     shutil.copytree(source, destination)
     assert supply_chain.check_policy(repo)["vendored_packages"] == 1
     component = next(
@@ -553,8 +558,8 @@ def test_sbom_includes_authenticated_vendored_c_source_and_license(
 def test_vendored_c_cannot_escape_the_source_checkout(
     repo, tmp_path, project, source_file
 ):
-    destination = repo / "native/compress" / project
-    shutil.copytree(REPO_ROOT / "native/compress" / project, destination)
+    destination = repo / "native/compress/vendor" / project
+    shutil.copytree(REPO_ROOT / "native/compress/vendor" / project, destination)
     outside = tmp_path.parent / f"{tmp_path.name}-outside.c"
     outside.write_text("Changed source")
     member = destination / source_file

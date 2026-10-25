@@ -1,0 +1,198 @@
+{
+  "added_cases": [
+    "unstd.time.timeutil.combine",
+    "unstd.time.timeutil.gmtime",
+    "unstd.time.timeutil.localtime",
+    "unstd.time.timeutil.strftime",
+    "unstd.time.timeutil.strptime"
+  ],
+  "baseline_sha256": "0ee80a28e3cae55c31aa57da1f7ce21862db09ff710d854740d23c64f751dc8d",
+  "cases": {
+    "unstd.time.timeutil.combine": {
+      "attempts_ns": [
+        44.0863247575431,
+        43.70843505859375,
+        46.71458082932692
+      ],
+      "ceiling_ns": 41.590367002744934,
+      "iterations": 114688,
+      "ns": 43.70843505859375,
+      "rounds": 9,
+      "spread": 0.12117239892092954
+    },
+    "unstd.time.timeutil.gmtime": {
+      "attempts_ns": [
+        171.33583984375,
+        193.70089285714286,
+        179.51202392578125
+      ],
+      "ceiling_ns": 152.18213161892362,
+      "iterations": 40960,
+      "ns": 171.33583984375,
+      "rounds": 9,
+      "spread": 0.22472255296301638
+    },
+    "unstd.time.timeutil.localtime": {
+      "attempts_ns": [
+        290.5845642089844,
+        277.21148681640625,
+        281.7789306640625
+      ],
+      "ceiling_ns": 252.71937052408853,
+      "iterations": 16384,
+      "ns": 277.21148681640625,
+      "rounds": 9,
+      "spread": 0.22360663635144665
+    },
+    "unstd.time.timeutil.strftime": {
+      "attempts_ns": [
+        557.538330078125
+      ],
+      "ceiling_ns": 589.2112731933594,
+      "iterations": 16384,
+      "ns": 557.538330078125,
+      "rounds": 9,
+      "spread": 0.2514539052589311
+    },
+    "unstd.time.timeutil.strptime": {
+      "attempts_ns": [
+        2440.2721774193546,
+        2904.665625,
+        2626.380657327586
+      ],
+      "ceiling_ns": 2269.6741615853657,
+      "iterations": 1984,
+      "ns": 2440.2721774193546,
+      "rounds": 9,
+      "spread": 0.4447227099039554
+    }
+  },
+  "environment": {
+    "backends": {
+      "PyYAML": "6.0.3",
+      "blake3": "1.0.10",
+      "immutables": "0.21",
+      "irregex": "2.6.0",
+      "msgspec": "0.22.0",
+      "numpy": "2.5.3",
+      "orjson": "3.12.0",
+      "protobuf": "7.36.2",
+      "pybase64": "1.5.0",
+      "pydantic": "2.13.5",
+      "pydantic-settings": "2.15.0",
+      "rapidfuzz": "3.14.6",
+      "ruamel-yaml": "0.19.1",
+      "sortedcontainers": "2.4.0",
+      "soundfile": "0.14.0",
+      "tomlkit": "0.15.1",
+      "uuid-utils": "1.0.0",
+      "whenever": "0.10.5",
+      "zlib-ng": "1.0.0"
+    },
+    "cpu": "Apple M5 Max",
+    "cpu_count": 18,
+    "implementation": "CPython",
+    "machine": "arm64",
+    "native": {
+      "clone._clone_native": true,
+      "compress._gzip_native": false,
+      "crypto._stream_native": true,
+      "serde._json_native": true,
+      "text._text_native": true
+    },
+    "native_implementations": {
+      "clone._clone_native": "c",
+      "crypto._stream_native": "c",
+      "serde._json_native": "c",
+      "text._text_native": "c"
+    },
+    "python": "3.13.14",
+    "python_debug": 0,
+    "python_free_threaded": 0,
+    "system": "Darwin",
+    "system_release": "25.6.0",
+    "thread_settings": {
+      "MKL_NUM_THREADS": null,
+      "OMP_NUM_THREADS": null,
+      "OPENBLAS_NUM_THREADS": null
+    }
+  },
+  "failed": [
+    "unstd.time.timeutil.gmtime",
+    "unstd.time.timeutil.localtime",
+    "unstd.time.timeutil.strptime",
+    "unstd.time.timeutil.combine"
+  ],
+  "initial_repeat": {
+    "cases": {
+      "unstd.time.timeutil.combine": {
+        "attempts_ns": [
+          43.54297295932112,
+          42.79686658135776,
+          39.92027627268145
+        ],
+        "ceiling_ns": 41.590367002744934,
+        "iterations": 126976,
+        "ns": 39.92027627268145,
+        "rounds": 9,
+        "spread": 0.06871941284499233
+      },
+      "unstd.time.timeutil.gmtime": {
+        "attempts_ns": [
+          154.05162217881946,
+          167.10553850446428,
+          166.45448521205358
+        ],
+        "ceiling_ns": 152.18213161892362,
+        "iterations": 36864,
+        "ns": 154.05162217881946,
+        "rounds": 9,
+        "spread": 0.5310172163595476
+      },
+      "unstd.time.timeutil.localtime": {
+        "attempts_ns": [
+          293.7876383463542,
+          258.14947509765625,
+          273.42730712890625
+        ],
+        "ceiling_ns": 252.71937052408853,
+        "iterations": 32768,
+        "ns": 258.14947509765625,
+        "rounds": 9,
+        "spread": 0.24276779805561907
+      },
+      "unstd.time.timeutil.strftime": {
+        "attempts_ns": [
+          494.80438232421875
+        ],
+        "ceiling_ns": 589.2112731933594,
+        "iterations": 16384,
+        "ns": 494.80438232421875,
+        "rounds": 9,
+        "spread": 0.1672242386863002
+      },
+      "unstd.time.timeutil.strptime": {
+        "attempts_ns": [
+          2423.2237723214284,
+          2342.990625,
+          2283.116145833333
+        ],
+        "ceiling_ns": 2269.6741615853657,
+        "iterations": 1920,
+        "ns": 2283.116145833333,
+        "rounds": 9,
+        "spread": 0.2613161425254181
+      }
+    },
+    "failed": [
+      "unstd.time.timeutil.gmtime",
+      "unstd.time.timeutil.localtime",
+      "unstd.time.timeutil.strptime"
+    ]
+  },
+  "old_metadata_preserved": true,
+  "old_rows_preserved": 240,
+  "prior_baseline_sha256": "a66e3d4439a4a681e89f8bf3a83af5a374ebbca23a9a681ee1460f54c1f71591",
+  "recorded": "2026-10-25T05:12:48.999168+00:00",
+  "schema": 1
+}

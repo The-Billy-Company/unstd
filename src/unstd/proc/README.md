@@ -56,3 +56,7 @@ exception couldn't keep.
 - Python stdlib [`subprocess`](https://docs.python.org/3/library/subprocess.html)
   — the surface hardened here, and its own [security note](https://docs.python.org/3/library/subprocess.html#security-considerations)
   on `shell=True` with untrusted input.
+
+## Implementation layout
+
+Result and error implementations live in [`_internal/`](_internal/README.md), retaining `unstd.proc` as their public identity. Process execution remains in the package interface.

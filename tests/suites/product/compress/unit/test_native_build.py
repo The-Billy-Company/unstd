@@ -144,7 +144,7 @@ def test_build_selection_preserves_default_and_never_mixes_inflater_sources(
     )
     (actual,) = captured
     assert actual.extra_compile_args == []
-    bundled = any("/compress/zlib/" in source for source in actual.sources)
+    bundled = any("/compress/vendor/zlib/" in source for source in actual.sources)
     if alternate:
         assert actual.define_macros == [("UNSTD_ZLIB_RS", None)]
         (staged,) = actual.extra_objects
@@ -168,7 +168,7 @@ def test_build_selection_preserves_default_and_never_mixes_inflater_sources(
 def qualification(tmp_path, monkeypatch):
     spec = importlib.util.spec_from_file_location(
         "unstd_test_libdeflate_qualification",
-        REPO_ROOT / "native/compress/qualify_libdeflate.py",
+        REPO_ROOT / "native/compress/experiments/qualify_libdeflate.py",
     )
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)

@@ -13,11 +13,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      UV_PROJECT_ENVIRONMENT: ${{ runner.temp }}/unstd-audio-security
+      UV_MANAGED_PYTHON: "1"
     defaults:
       run:
         shell: bash
     steps:
+      - name: Select the isolated environment after the runner starts
+        id: environment
+        run: printf 'UV_PROJECT_ENVIRONMENT=%s/unstd-audio-security\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
       - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:

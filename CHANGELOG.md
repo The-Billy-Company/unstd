@@ -1,25 +1,162 @@
 ---
 doc_radar:
   sentinels:
-    - file: src/unstd/rex/_faithful.py
-      contains: ['_parser.parse(pattern, flags)', 'if started:']
+    - file: src/unstd/rex/_internal/profile.py
+      contains: ['_parser.parse(pattern, flags)']
+    - file: src/unstd/rex/_internal/patterns.py
+      contains: ['if started:']
     - file: pyproject.toml
-      contains: ['"msgspec>=0.22"', 'exclude-newer = "P2D"']
+      contains: ['"msgspec>=0.22"', 'exclude-newer = "P2D"', '"blake3>=1.0.10"', '"pyyaml>=6.0.3"']
     - file: .github/workflows/ci.yml
-      contains: ['github.sha || github.ref', 'version: "latest-known"', 'uv sync --locked']
+      contains: ['github.sha || github.ref', 'version: "0.13.4"', 'uv sync --locked']
     - file: .github/workflows/release.yml
       contains: ['TAG: ${{ github.ref_name }}', 'Build and test CPython wheels']
     - file: src/unstd/serde/structs.py
       contains: ['Callable[[Decimal], object]', 'decimal_format: _DecimalFormat']
     - file: src/unstd/compress/_reader.py
       contains: ['_factory = _accelerated.Inflater', '_zlib_globals["crc32"] = _crc32']
-    - file: native/compress/adapter.c
+    - file: native/compress/src/adapter.c
       contains: ['libdeflate_gzip_decompress_ex(', 'MAX_OUTPUT_BYTES']
+    - file: src/unstd/time/timeutil.py
+      contains: ['strftime = _time.strftime', 'gmtime = _time.gmtime', 'localtime = _time.localtime', 'strptime = datetime.strptime', 'combine = datetime.combine']
+    - file: src/unstd/yaml/__init__.py
+      contains: ['if name in ("pyyaml", "ruamel"):', 'globals()[name] = backend', 'globals().update((key, getattr(codec, key)) for key in __all__)']
+    - file: src/unstd/crypto/token.py
+      contains: ['_DEFAULT_MAX_TOKEN_CHARS = 8192', 'def prepare_verifier(']
+    - file: src/unstd/rand/draw.py
+      contains: ['"PCG64", "PCG64DXSM", "SFC64", "Philox"', '_py = _random.Random(seed)']
+    - file: src/unstd/audio/wavx.py
+      contains: ['def _read_int16_numpy(', 'return cast("NDArray[_np.int16]", arr.copy())']
+    - file: src/unstd/toml/__init__.py
+      contains: ['return _dumps(_common_mapping(data), sort_keys=sort_keys)']
+    - file: hatch_build.py
+      contains: ['UNSTD_GZIP_ZLIB_RS is a local qualification experiment;', 'release wheels require a reviewed source/license/SBOM closure']
 ---
 
 # Changelog
 
 <!-- towncrier release notes start -->
+
+## [3.1.5] - 2026-10-25
+
+### Changed
+
+- We expose nanosecond clocks, process and thread CPU clocks, sleep, native datetime
+  reads and strict ISO decoders through direct stdlib bindings. They retain native
+  precision, exceptions and platform availability without an extra call frame.
+
+- We expose native time tuples, explicit format parsing and date/time assembly through
+  direct stdlib bindings. Formatting keeps the platform directives and local-time
+  default; parsing and assembly keep their native timezone, fold and error behavior
+  without an extra call frame.
+
+- We add lazy `yaml.pyyaml` and `yaml.ruamel` bindings to the original backend modules.
+  Loader, dumper, parser, event and node objects keep their exact identity and behavior;
+  importing one contract does not load the other backend. Native YAML 1.2 helpers bind
+  their original callables on first access.
+
+  We verify both YAML backends in isolated wheel and source-distribution consumers,
+  including their exact dependency closure and module origins.
+
+- We fix `toml.dumps`/`toml.dump` writing text stdlib `tomllib` cannot read. ESC in
+  plain strings and keys is now spelled `\u001b` instead of the TOML 1.1-only `\e`. UTC
+  offsets that are not whole minutes, and `time` values carrying an offset, now raise
+  `ValueError` before anything is written, where tomlkit used to emit syntax no TOML
+  version accepts. Items already inside a parsed or tomlkit-built document keep their
+  spelling. `toml.dumps` is no longer the same object as `tomlkit.dumps`.
+
+- **Bounded token verification and patched crypto tooling.**
+
+  `token.verify` now rejects encoded envelopes longer than 8192 characters before
+  scanning, slicing, decoding or hashing. Pass a larger positive
+  `max_token_chars=` limit, or explicitly `None` after enforcing a request bound,
+  for bulk envelopes. Token bytes, MACs, canonical encoding rules and key errors
+  within the bound are unchanged. Verification authenticates before decoding
+  claims and checks canonical Base64 lengths and terminal bits directly.
+
+  `token.prepare_verifier(max_token_chars=...)` explicitly prepares a reusable
+  size policy and optional native envelope parser at startup. It retains no
+  signing keys or request data. Token-only imports keep the direct Python path;
+  imports after `digest` reuse an already loaded helper. This avoids imposing
+  native loading costs on token-only users or deferring setup to a first request.
+
+  The crypto extra requires `blake3>=1.0.10` for reviewed upstream correctness and
+  dependency fixes. Worker caps respect process CPU availability on Python 3.13+
+  without per-call probes. Existing algorithms, native stream batching and exact
+  `secrets` aliases remain in place.
+
+  Development uses CPython 3.13.16 with patched OpenSSL 3.5.9. CI, release tooling
+  and wheel tests run a branch-aware TLS-runtime preflight; no version checks are
+  added to crypto hot calls. Package support still starts at Python 3.12. TLS
+  contexts remain independently configured; callers may reuse a configured context
+  without sharing mutable policy across unrelated callers.
+
+- We read PCM16 as `int16` through the NumPy fallback by copying sample counts
+  directly, avoiding float normalization and requantization. Whole-file and
+  streaming reads retain owned writable arrays, little-endian dtype, channel
+  shape and frame validation. SoundFile routing and float conversions are unchanged.
+
+  We add authenticated patched-libsndfile build tooling, host-qualified SoundFile
+  wheels and offline admission of the actual loaded library against separately
+  trusted provenance. A required audio-security CI lane builds, admits and tests
+  the patched reference artifact. These checks run outside production audio calls.
+
+- **Explicit simulation engines and cheaper generator construction.**
+
+  `rand.Generator(..., backend="numpy", bit_generator=...)` accepts `"PCG64"`,
+  `"PCG64DXSM"`, `"SFC64"`, or `"Philox"`. The selected algorithm survives
+  reseeding. Existing defaults and seeded scalar/bulk sequences remain unchanged;
+  other bit generators are explicit new simulation streams, never secure randomness.
+
+  Ordinary `Generator` construction initializes the stdlib engine once instead of
+  seeding from OS entropy before immediately applying the requested seed. Subclasses
+  retain their initialized state and virtual `seed()` hook. Draw dispatch and instance
+  slots are unchanged. UUID documentation now distinguishes the fallback's 12-bit
+  counter from CPython 3.14's 42-bit counter.
+
+- We add an isolated libdeflate 1.26 qualification builder with a fixed reviewed
+  manifest, copied source/license hash checks and C11 compilation. Default
+  libdeflate 1.25 and compiler settings remain unchanged: 1.26 adds first-use
+  Linux ARM64 CPU-identification syscalls and does not establish universal savings.
+
+  We add a local build-only zlib-rs inflater qualification option using a reviewed,
+  privately prefixed static archive and mandatory SHA256. Default platform/vendored
+  zlib, gzip framing, checked Python allocation callbacks and compiler-free
+  fallbacks remain intact. The experiment is blocked from release wheel builds
+  pending full source/license/SBOM and platform qualification.
+
+- We reorganize package internals, native sources and benchmark tooling while
+  preserving existing public imports, exports and call signatures. Native source
+  now lives under `native/<package>/src/`; private extension module names remain
+  unchanged. Benchmark commands retain compatibility entry points, with recorded
+  evidence and frozen baselines separated from executable tools.
+
+  The root README links to a complete public API inventory and architecture guide.
+
+- We preserve the frozen public API while checking interpreter-derived defaults and
+  inherited constructors against their actual native owners. Backend and Python upgrades
+  keep their own parameter contracts; owned parameters, fields, wrappers and allocation
+  hooks remain strictly checked.
+
+- We keep matrix tests on the managed Python runtime selected by setup-uv, so the
+  runner's older OpenSSL cannot replace it. The test dependency floor now includes the
+  `pytest.importorskip(exc_type=...)` API used by the suite; the TLS admission policy
+  stays unchanged.
+
+  We select the isolated audio environment after the runner starts, so GitHub can
+  validate the reusable security workflow before running it. The audio job also selects
+  managed Python explicitly.
+
+- We compare every time operation available in the previous release and report new
+  native bindings separately. The current revision still requires the full API; existing
+  workload definitions, measurements and regression ceilings stay unchanged.
+
+The calendar [native-callable proof](bench/audits/calendar-native-bindings.json)
+records the same native functions and bound methods without a Python wrapper.
+The separate [absolute timing certificate](bench/audits/calendar-certificate.json)
+retains four new ceiling misses from the repeated measurements; those limits
+were not raised. The [YAML import diagnostic](bench/audits/yaml-backend-imports.json)
+records the remaining one-time namespace cost.
 
 ## [3.1.4] - 2026-10-22
 
@@ -33,7 +170,7 @@ doc_radar:
   diagnostics. Writes remain on zlib-ng; source builds without the read
   extension retain the portable zlib-ng stream backend, and base installs keep
   exact stdlib bindings.
-- Paired [gzip read measurements](bench/gzip-native-reads-results.json) record
+- Paired [gzip read measurements](bench/reports/compress/gzip-native-reads-results.json) record
   identical recovered bytes and observed native execution before timing.
   Require the read extension in native wheel and sanitizer coverage, including
   exact input-boundary reads and malformed concatenated-member histories.

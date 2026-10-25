@@ -555,20 +555,21 @@ def _yaml_reentry(seed, *, broken=False):
 
 def _yaml_failure_isolation(seed, *, broken=False):
     from unstd import yaml
+    from unstd.yaml import _codec
 
     gate = _Gate("yaml.invalid_and_healthy", PARTIES)
     actors = ordered(
         seed, "concurrency.yaml.failure", ["duplicate", "unknown", "editable", "safe"]
     )
     sessions = Queue()
-    engine = yaml._engine
+    engine = _codec._engine
 
     def own_engine(**kwargs):
         parser = engine(**kwargs)
         sessions.put(parser)
         return parser
 
-    yaml._engine = own_engine
+    _codec._engine = own_engine
 
     def action(actor):
         gate.wait()

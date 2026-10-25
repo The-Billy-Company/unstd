@@ -1,20 +1,26 @@
-# Native kernels and experiments
+# Private native implementations
 
-[`compress/`](compress/) contains the compiled gzip reader, the libdeflate
-buffer and CRC kernels, and the source closure used for portable inflation.
-Each vendored directory retains its upstream license and an authenticated
-source manifest. macOS links platform zlib; other release platforms compile
-the vendored zlib sources with prefixed symbols. Gzip framing stays faithful
-to the running interpreter through the Python wrapper.
+Build inputs live here; the installed Python API lives under
+[`src/unstd/`](../src/unstd/README.md). Python wrappers select these optional
+kernels behind their existing private extension names. C, headers, Rust sources,
+and qualification evidence are shipped in the source archive, outside the
+installed Python package.
 
-[`text/`](text/README.md) contains an opt-in Rust implementation of the bundled
-text kernels, with a C adapter for CPython. It is selected at build time with
-`UNSTD_TEXT_RUST=1`; ordinary builds use the C implementation under
-[`src/unstd/text/`](../src/unstd/text/README.md).
+| Directory | Responsibility |
+| --- | --- |
+| [`clone/`](clone/README.md) | Exact-type structural cloning kernel |
+| [`crypto/`](crypto/README.md) | Bounded hash-stream absorption kernel |
+| [`serde/`](serde/README.md) | Guarded JSON encode, decode, and line kernels |
+| [`text/`](text/README.md) | C fuzzy metrics and the opt-in Rust prototype |
+| [`compress/`](compress/README.md) | Gzip adapter, inflater, authenticated vendors, and qualification |
+| [`audio/`](audio/README.md) | Reviewed external audio-runtime patches and build provenance |
 
-The default JSON, clone, crypto stream, and text C extensions live beside their
-Python wrappers under [`src/unstd/`](../src/unstd/README.md).
-[`hatch_build.py`](../hatch_build.py)
-builds the extensions, and the [comparison report](../bench/rust-text-results.md)
-records the Rust experiment's measured tradeoffs. Cargo's generated `target/`
-directories are ignored build output.
+[`hatch_build.py`](../hatch_build.py) owns compiler selection, portable fallbacks,
+editable extension cleanup, and wheel inclusion. Default builds require only a
+C compiler; unavailable optional compilers preserve Python fallbacks. Release
+builds require every declared native module to compile. Cargo runs only when
+`UNSTD_TEXT_RUST=1` explicitly selects the text prototype.
+
+Vendored gzip source retains its upstream directory structure, licenses, and
+per-file provenance manifests under [`compress/vendor/`](compress/vendor/README.md).
+Generated compiler and Cargo outputs are ignored local artifacts.

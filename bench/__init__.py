@@ -20,9 +20,9 @@ floors rather than values.
 
 from __future__ import annotations
 
-from bench.cases import Case, audit, groups, registry
-from bench.report import Result, markdown, run, table, write_baseline
-from bench.timing import Measurement, measure
+from bench.core.cases import Case, audit, groups, registry
+from bench.core.report import Result, markdown, run, table, write_baseline
+from bench.core.timing import Measurement, measure
 
 
 __all__ = [

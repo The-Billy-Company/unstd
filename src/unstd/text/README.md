@@ -81,10 +81,10 @@ or work beyond its internal bounds defer to Python; string subclasses and
 non-string sequences retain their Python behavior. Builds without the extension
 also work. Installing RapidFuzz selects its public distance and name scorers.
 
-The C implementation lives in [`_text_native.c`](_text_native.c), with signatures
+The C implementation lives in [`native/text/src/_text_native.c`](../../../native/text/src/_text_native.c), with signatures
 in [`_text_native.pyi`](_text_native.pyi). An opt-in
 [Rust experiment](../../../native/text/README.md) implements the same kernel
-boundary. [Measurements](../../../bench/native-results.md) document workloads
+boundary. [Measurements](../../../bench/reports/native/native-results.md) document workloads
 and fallback costs.
 
 ## Validation
