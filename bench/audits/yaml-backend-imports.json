@@ -650,5 +650,637 @@
       }
     ],
     "reproduction_program": "import json\nimport platform\nfrom pathlib import Path\nimport statistics\nimport subprocess\nimport sys\nimport importlib.metadata\n\nprogram = '''\nimport json\nfrom time import perf_counter_ns\nimport yaml\nstart = perf_counter_ns()\nimport unstd\nroot = perf_counter_ns() - start\nstart = perf_counter_ns()\nfrom unstd.yaml import pyyaml\nnamespace = perf_counter_ns() - start\nstart = perf_counter_ns()\nfrom unstd.yaml import pyyaml\ncached = perf_counter_ns() - start\nstart = perf_counter_ns()\nimport yaml\nnative_cached = perf_counter_ns() - start\nprint(json.dumps(dict(root_ns=root, namespace_ns=namespace, cached_binding_ns=cached, native_cached_ns=native_cached)))\n'''\nrows = [json.loads(subprocess.check_output([sys.executable, '-I', '-c', program], text=True)) for _ in range(101)]\nresult = dict(python=sys.version, platform=platform.platform(), executable=sys.executable, package_version=importlib.metadata.version('unstd'), backend_version=importlib.metadata.version('PyYAML'), timer='time.perf_counter_ns', rounds=len(rows), scope='Fresh isolated interpreter per round; PyYAML already loaded, all Unstd modules initially absent; warm filesystem and bytecode caches.', medians_ns={key:statistics.median(row[key] for row in rows) for key in rows[0]}, combined_root_namespace_median_ns=statistics.median(row['root_ns']+row['namespace_ns'] for row in rows), measurements=rows)\nPath('/tmp/unstd-yaml-import-probe.json').write_text(json.dumps(result, indent=2)+'\\n')\nresult.pop('measurements')\nprint(json.dumps(result, indent=2))\n"
+  },
+  "clean_installed_wheel_verification": {
+    "python": "3.14.8 (main, Oct 14 2026, 00:55:47) [Clang 23.1.3 ]",
+    "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+    "executable": "/tmp/unstd-yaml-import-clean/bin/python",
+    "package_version": "3.1.5",
+    "backend_version": "6.0.3",
+    "timer": "time.perf_counter_ns",
+    "rounds": 101,
+    "scope": "Fresh isolated interpreter per round; PyYAML already loaded, all Unstd modules initially absent; warm filesystem and bytecode caches.",
+    "medians_ns": {
+      "root_ns": 323416,
+      "namespace_ns": 237917,
+      "cached_binding_ns": 584,
+      "native_cached_ns": 209
+    },
+    "combined_root_namespace_median_ns": 583459,
+    "measurements": [
+      {
+        "root_ns": 2408792,
+        "namespace_ns": 1817625,
+        "cached_binding_ns": 958,
+        "native_cached_ns": 250
+      },
+      {
+        "root_ns": 915666,
+        "namespace_ns": 270083,
+        "cached_binding_ns": 458,
+        "native_cached_ns": 208
+      },
+      {
+        "root_ns": 1280458,
+        "namespace_ns": 475167,
+        "cached_binding_ns": 667,
+        "native_cached_ns": 292
+      },
+      {
+        "root_ns": 325209,
+        "namespace_ns": 189834,
+        "cached_binding_ns": 500,
+        "native_cached_ns": 250
+      },
+      {
+        "root_ns": 385750,
+        "namespace_ns": 234708,
+        "cached_binding_ns": 583,
+        "native_cached_ns": 208
+      },
+      {
+        "root_ns": 325500,
+        "namespace_ns": 256917,
+        "cached_binding_ns": 625,
+        "native_cached_ns": 292
+      },
+      {
+        "root_ns": 250541,
+        "namespace_ns": 178833,
+        "cached_binding_ns": 542,
+        "native_cached_ns": 167
+      },
+      {
+        "root_ns": 350458,
+        "namespace_ns": 219209,
+        "cached_binding_ns": 542,
+        "native_cached_ns": 167
+      },
+      {
+        "root_ns": 405667,
+        "namespace_ns": 343709,
+        "cached_binding_ns": 583,
+        "native_cached_ns": 208
+      },
+      {
+        "root_ns": 1235917,
+        "namespace_ns": 6709875,
+        "cached_binding_ns": 584,
+        "native_cached_ns": 250
+      },
+      {
+        "root_ns": 320417,
+        "namespace_ns": 284833,
+        "cached_binding_ns": 542,
+        "native_cached_ns": 166
+      },
+      {
+        "root_ns": 272417,
+        "namespace_ns": 311042,
+        "cached_binding_ns": 750,
+        "native_cached_ns": 250
+      },
+      {
+        "root_ns": 917125,
+        "namespace_ns": 587833,
+        "cached_binding_ns": 708,
+        "native_cached_ns": 292
+      },
+      {
+        "root_ns": 692208,
+        "namespace_ns": 333917,
+        "cached_binding_ns": 875,
+        "native_cached_ns": 291
+      },
+      {
+        "root_ns": 329583,
+        "namespace_ns": 187000,
+        "cached_binding_ns": 542,
+        "native_cached_ns": 291
+      },
+      {
+        "root_ns": 356625,
+        "namespace_ns": 236500,
+        "cached_binding_ns": 500,
+        "native_cached_ns": 209
+      },
+      {
+        "root_ns": 496375,
+        "namespace_ns": 185750,
+        "cached_binding_ns": 500,
+        "native_cached_ns": 208
+      },
+      {
+        "root_ns": 507750,
+        "namespace_ns": 301500,
+        "cached_binding_ns": 625,
+        "native_cached_ns": 209
+      },
+      {
+        "root_ns": 276084,
+        "namespace_ns": 237917,
+        "cached_binding_ns": 542,
+        "native_cached_ns": 167
+      },
+      {
+        "root_ns": 370584,
+        "namespace_ns": 217500,
+        "cached_binding_ns": 750,
+        "native_cached_ns": 208
+      },
+      {
+        "root_ns": 8600875,
+        "namespace_ns": 1778042,
+        "cached_binding_ns": 666,
+        "native_cached_ns": 209
+      },
+      {
+        "root_ns": 383291,
+        "namespace_ns": 243708,
+        "cached_binding_ns": 583,
+        "native_cached_ns": 208
+      },
+      {
+        "root_ns": 239916,
+        "namespace_ns": 163083,
+        "cached_binding_ns": 584,
+        "native_cached_ns": 209
+      },
+      {
+        "root_ns": 310459,
+        "namespace_ns": 2909875,
+        "cached_binding_ns": 584,
+        "native_cached_ns": 208
+      },
+      {
+        "root_ns": 295792,
+        "namespace_ns": 203000,
+        "cached_binding_ns": 542,
+        "native_cached_ns": 208
+      },
+      {
+        "root_ns": 323416,
+        "namespace_ns": 8085125,
+        "cached_binding_ns": 791,
+        "native_cached_ns": 291
+      },
+      {
+        "root_ns": 556167,
+        "namespace_ns": 301458,
+        "cached_binding_ns": 708,
+        "native_cached_ns": 292
+      },
+      {
+        "root_ns": 299958,
+        "namespace_ns": 202833,
+        "cached_binding_ns": 584,
+        "native_cached_ns": 250
+      },
+      {
+        "root_ns": 353542,
+        "namespace_ns": 224125,
+        "cached_binding_ns": 625,
+        "native_cached_ns": 209
+      },
+      {
+        "root_ns": 303292,
+        "namespace_ns": 243750,
+        "cached_binding_ns": 667,
+        "native_cached_ns": 167
+      },
+      {
+        "root_ns": 418083,
+        "namespace_ns": 386958,
+        "cached_binding_ns": 625,
+        "native_cached_ns": 334
+      },
+      {
+        "root_ns": 298375,
+        "namespace_ns": 262667,
+        "cached_binding_ns": 583,
+        "native_cached_ns": 208
+      },
+      {
+        "root_ns": 248250,
+        "namespace_ns": 177000,
+        "cached_binding_ns": 541,
+        "native_cached_ns": 166
+      },
+      {
+        "root_ns": 342667,
+        "namespace_ns": 255375,
+        "cached_binding_ns": 625,
+        "native_cached_ns": 208
+      },
+      {
+        "root_ns": 456000,
+        "namespace_ns": 248417,
+        "cached_binding_ns": 500,
+        "native_cached_ns": 208
+      },
+      {
+        "root_ns": 297250,
+        "namespace_ns": 231334,
+        "cached_binding_ns": 625,
+        "native_cached_ns": 208
+      },
+      {
+        "root_ns": 304625,
+        "namespace_ns": 247958,
+        "cached_binding_ns": 667,
+        "native_cached_ns": 209
+      },
+      {
+        "root_ns": 418042,
+        "namespace_ns": 198959,
+        "cached_binding_ns": 500,
+        "native_cached_ns": 250
+      },
+      {
+        "root_ns": 253166,
+        "namespace_ns": 232625,
+        "cached_binding_ns": 542,
+        "native_cached_ns": 208
+      },
+      {
+        "root_ns": 253125,
+        "namespace_ns": 1612959,
+        "cached_binding_ns": 875,
+        "native_cached_ns": 500
+      },
+      {
+        "root_ns": 288667,
+        "namespace_ns": 241167,
+        "cached_binding_ns": 500,
+        "native_cached_ns": 208
+      },
+      {
+        "root_ns": 359208,
+        "namespace_ns": 197708,
+        "cached_binding_ns": 542,
+        "native_cached_ns": 167
+      },
+      {
+        "root_ns": 395208,
+        "namespace_ns": 652125,
+        "cached_binding_ns": 542,
+        "native_cached_ns": 250
+      },
+      {
+        "root_ns": 280750,
+        "namespace_ns": 211583,
+        "cached_binding_ns": 625,
+        "native_cached_ns": 167
+      },
+      {
+        "root_ns": 327667,
+        "namespace_ns": 231125,
+        "cached_binding_ns": 583,
+        "native_cached_ns": 209
+      },
+      {
+        "root_ns": 263042,
+        "namespace_ns": 220042,
+        "cached_binding_ns": 666,
+        "native_cached_ns": 208
+      },
+      {
+        "root_ns": 237167,
+        "namespace_ns": 612209,
+        "cached_binding_ns": 750,
+        "native_cached_ns": 292
+      },
+      {
+        "root_ns": 316458,
+        "namespace_ns": 384667,
+        "cached_binding_ns": 833,
+        "native_cached_ns": 250
+      },
+      {
+        "root_ns": 287000,
+        "namespace_ns": 561916,
+        "cached_binding_ns": 833,
+        "native_cached_ns": 333
+      },
+      {
+        "root_ns": 241125,
+        "namespace_ns": 158917,
+        "cached_binding_ns": 583,
+        "native_cached_ns": 208
+      },
+      {
+        "root_ns": 566541,
+        "namespace_ns": 331625,
+        "cached_binding_ns": 792,
+        "native_cached_ns": 208
+      },
+      {
+        "root_ns": 251458,
+        "namespace_ns": 209708,
+        "cached_binding_ns": 541,
+        "native_cached_ns": 167
+      },
+      {
+        "root_ns": 353458,
+        "namespace_ns": 190875,
+        "cached_binding_ns": 542,
+        "native_cached_ns": 208
+      },
+      {
+        "root_ns": 371750,
+        "namespace_ns": 227542,
+        "cached_binding_ns": 417,
+        "native_cached_ns": 250
+      },
+      {
+        "root_ns": 310125,
+        "namespace_ns": 350500,
+        "cached_binding_ns": 875,
+        "native_cached_ns": 375
+      },
+      {
+        "root_ns": 289459,
+        "namespace_ns": 207625,
+        "cached_binding_ns": 500,
+        "native_cached_ns": 208
+      },
+      {
+        "root_ns": 272334,
+        "namespace_ns": 211708,
+        "cached_binding_ns": 583,
+        "native_cached_ns": 166
+      },
+      {
+        "root_ns": 283875,
+        "namespace_ns": 170375,
+        "cached_binding_ns": 542,
+        "native_cached_ns": 208
+      },
+      {
+        "root_ns": 331333,
+        "namespace_ns": 198250,
+        "cached_binding_ns": 542,
+        "native_cached_ns": 167
+      },
+      {
+        "root_ns": 280042,
+        "namespace_ns": 10248709,
+        "cached_binding_ns": 750,
+        "native_cached_ns": 208
+      },
+      {
+        "root_ns": 324667,
+        "namespace_ns": 240083,
+        "cached_binding_ns": 666,
+        "native_cached_ns": 208
+      },
+      {
+        "root_ns": 1861542,
+        "namespace_ns": 312458,
+        "cached_binding_ns": 666,
+        "native_cached_ns": 291
+      },
+      {
+        "root_ns": 313084,
+        "namespace_ns": 287917,
+        "cached_binding_ns": 583,
+        "native_cached_ns": 167
+      },
+      {
+        "root_ns": 891584,
+        "namespace_ns": 237500,
+        "cached_binding_ns": 625,
+        "native_cached_ns": 209
+      },
+      {
+        "root_ns": 322375,
+        "namespace_ns": 191792,
+        "cached_binding_ns": 542,
+        "native_cached_ns": 208
+      },
+      {
+        "root_ns": 311625,
+        "namespace_ns": 201667,
+        "cached_binding_ns": 500,
+        "native_cached_ns": 167
+      },
+      {
+        "root_ns": 387792,
+        "namespace_ns": 208583,
+        "cached_binding_ns": 500,
+        "native_cached_ns": 209
+      },
+      {
+        "root_ns": 297250,
+        "namespace_ns": 214375,
+        "cached_binding_ns": 500,
+        "native_cached_ns": 250
+      },
+      {
+        "root_ns": 325542,
+        "namespace_ns": 244625,
+        "cached_binding_ns": 542,
+        "native_cached_ns": 208
+      },
+      {
+        "root_ns": 275666,
+        "namespace_ns": 184250,
+        "cached_binding_ns": 708,
+        "native_cached_ns": 292
+      },
+      {
+        "root_ns": 296708,
+        "namespace_ns": 174084,
+        "cached_binding_ns": 458,
+        "native_cached_ns": 167
+      },
+      {
+        "root_ns": 296333,
+        "namespace_ns": 204292,
+        "cached_binding_ns": 667,
+        "native_cached_ns": 291
+      },
+      {
+        "root_ns": 230208,
+        "namespace_ns": 171083,
+        "cached_binding_ns": 666,
+        "native_cached_ns": 208
+      },
+      {
+        "root_ns": 399750,
+        "namespace_ns": 322625,
+        "cached_binding_ns": 833,
+        "native_cached_ns": 208
+      },
+      {
+        "root_ns": 1418667,
+        "namespace_ns": 545625,
+        "cached_binding_ns": 3500,
+        "native_cached_ns": 334
+      },
+      {
+        "root_ns": 348042,
+        "namespace_ns": 230583,
+        "cached_binding_ns": 583,
+        "native_cached_ns": 209
+      },
+      {
+        "root_ns": 347791,
+        "namespace_ns": 201084,
+        "cached_binding_ns": 542,
+        "native_cached_ns": 208
+      },
+      {
+        "root_ns": 1272166,
+        "namespace_ns": 432666,
+        "cached_binding_ns": 792,
+        "native_cached_ns": 209
+      },
+      {
+        "root_ns": 3448042,
+        "namespace_ns": 453166,
+        "cached_binding_ns": 750,
+        "native_cached_ns": 292
+      },
+      {
+        "root_ns": 406333,
+        "namespace_ns": 5124958,
+        "cached_binding_ns": 584,
+        "native_cached_ns": 250
+      },
+      {
+        "root_ns": 313917,
+        "namespace_ns": 3226250,
+        "cached_binding_ns": 750,
+        "native_cached_ns": 250
+      },
+      {
+        "root_ns": 586166,
+        "namespace_ns": 660625,
+        "cached_binding_ns": 750,
+        "native_cached_ns": 250
+      },
+      {
+        "root_ns": 266000,
+        "namespace_ns": 383958,
+        "cached_binding_ns": 1000,
+        "native_cached_ns": 292
+      },
+      {
+        "root_ns": 269709,
+        "namespace_ns": 176584,
+        "cached_binding_ns": 500,
+        "native_cached_ns": 208
+      },
+      {
+        "root_ns": 310125,
+        "namespace_ns": 14573500,
+        "cached_binding_ns": 708,
+        "native_cached_ns": 250
+      },
+      {
+        "root_ns": 265208,
+        "namespace_ns": 293250,
+        "cached_binding_ns": 500,
+        "native_cached_ns": 209
+      },
+      {
+        "root_ns": 271375,
+        "namespace_ns": 171500,
+        "cached_binding_ns": 500,
+        "native_cached_ns": 167
+      },
+      {
+        "root_ns": 303416,
+        "namespace_ns": 204709,
+        "cached_binding_ns": 583,
+        "native_cached_ns": 208
+      },
+      {
+        "root_ns": 324166,
+        "namespace_ns": 228834,
+        "cached_binding_ns": 541,
+        "native_cached_ns": 167
+      },
+      {
+        "root_ns": 1903917,
+        "namespace_ns": 2830167,
+        "cached_binding_ns": 916,
+        "native_cached_ns": 333
+      },
+      {
+        "root_ns": 252959,
+        "namespace_ns": 166959,
+        "cached_binding_ns": 500,
+        "native_cached_ns": 250
+      },
+      {
+        "root_ns": 298125,
+        "namespace_ns": 199916,
+        "cached_binding_ns": 500,
+        "native_cached_ns": 208
+      },
+      {
+        "root_ns": 340666,
+        "namespace_ns": 210958,
+        "cached_binding_ns": 666,
+        "native_cached_ns": 209
+      },
+      {
+        "root_ns": 233459,
+        "namespace_ns": 781667,
+        "cached_binding_ns": 667,
+        "native_cached_ns": 209
+      },
+      {
+        "root_ns": 296375,
+        "namespace_ns": 1090542,
+        "cached_binding_ns": 500,
+        "native_cached_ns": 209
+      },
+      {
+        "root_ns": 298958,
+        "namespace_ns": 210833,
+        "cached_binding_ns": 625,
+        "native_cached_ns": 250
+      },
+      {
+        "root_ns": 281333,
+        "namespace_ns": 195291,
+        "cached_binding_ns": 625,
+        "native_cached_ns": 209
+      },
+      {
+        "root_ns": 442375,
+        "namespace_ns": 233500,
+        "cached_binding_ns": 583,
+        "native_cached_ns": 208
+      },
+      {
+        "root_ns": 560333,
+        "namespace_ns": 1322833,
+        "cached_binding_ns": 750,
+        "native_cached_ns": 292
+      },
+      {
+        "root_ns": 282708,
+        "namespace_ns": 188834,
+        "cached_binding_ns": 541,
+        "native_cached_ns": 167
+      },
+      {
+        "root_ns": 495958,
+        "namespace_ns": 354375,
+        "cached_binding_ns": 625,
+        "native_cached_ns": 250
+      }
+    ],
+    "wheel_sha256": "3e22b85c9b707ddf1eabff968d65fddf0bcd9d5a23e98d473e04be1f248cfa5f",
+    "source_sha256": {
+      "src/unstd/__init__.py": "35bf25962f426429a3c3ab55c69f1644d46838ee925cf0365db07ff809c442fb",
+      "src/unstd/yaml/__init__.py": "f6dcdc7e7f3e19809bced38c68081c2bf1872ee0f9665d72d17a028134d43fb0",
+      "src/unstd/yaml/_codec.py": "58d84a62a56c9a9d8e28c8e22f1ad4350a8e316c02ae65ce23ca727f247ddf12",
+      "pyproject.toml": "b47597cae5a01b52fbe8d4c8f56b9bab341160d90509c31447c926d1fd186ad6"
+    }
   }
 }
