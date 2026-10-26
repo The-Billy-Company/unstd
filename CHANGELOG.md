@@ -47,6 +47,20 @@ doc_radar:
 
 <!-- towncrier release notes start -->
 
+## [4.0.1] - 2026-10-25
+
+### Fixed
+
+- Linux wheel builds bootstrap the locked uv frontend using the target
+  interpreter already provided by cibuildwheel. An older frontend no longer
+  tries to provision the development Python pin before it can update itself.
+- Wheel-test source builds authenticate `wheel` on every supported platform,
+  including CPython 3.14's immutables build, through the locked build closure.
+  Build dependencies retain hash verification.
+
+The 4.0.0 tag failed release qualification and was not published to PyPI.
+This release includes its changes; the tag and its evidence remain unchanged.
+
 ## [4.0.0] - 2026-10-25
 
 This major release changes `clone.deep` to preserve shared references instead

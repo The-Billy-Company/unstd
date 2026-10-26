@@ -43,7 +43,7 @@ maps those source closures and licenses. Default builds need no Cargo,
 source downloads, or system libdeflate.
 
 Linux x86_64 builds can include a private ISA-L 2.31.1 decoder assembled locally
-with NASM or Yasm. The build verifies the original vendored sources, copies them
+with NASM or Yasm. The build verifies the reviewed vendored sources, copies them
 to a private build directory, and applies the owned bounded-read and error
 corrections there. Conservative CPU and stream-shape admission governs decoder
 selection; other platforms and ineligible streams retain their existing routes.

@@ -398,7 +398,7 @@ make_inflate_huff_code_lit_len(struct inflate_huff_code_large *result,
         uint32_t max_length;
         uint16_t first_bits;
         uint32_t code_length;
-        uint16_t long_bits;
+        uint32_t long_bits;
         uint16_t min_increment;
         uint32_t code_list_len;
         uint32_t last_length, min_length;
@@ -612,7 +612,7 @@ static void inline make_inflate_huff_code_dist(struct inflate_huff_code_small *r
         uint32_t max_length;
         uint16_t first_bits;
         uint32_t code_length;
-        uint16_t long_bits;
+        uint32_t long_bits;
         uint16_t min_increment;
         uint32_t code_list[DIST_LEN + 2]; /* The +2 is for the extra codes in the static header */
         uint32_t code_list_len;
@@ -755,7 +755,7 @@ static void inline make_inflate_huff_code_header(struct inflate_huff_code_small 
         uint32_t max_length;
         uint16_t first_bits;
         uint32_t code_length;
-        uint16_t long_bits;
+        uint32_t long_bits;
         uint16_t min_increment;
         uint32_t code_list[DIST_LEN + 2]; /* The +2 is for the extra codes in the static header */
         uint32_t code_list_len;

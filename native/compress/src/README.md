@@ -73,7 +73,8 @@ back after decoding. This is a performance hint, not an acceptance or allocation
 rule. Other platforms and the explicit Rust archive retain their original ABI.
 
 The optional Linux x86_64 ISA-L 2.31.1 build uses local NASM >=2.11.01 or
-Yasm >=1.3.0 and keeps upstream files under `vendor/isa-l/` unchanged. Its
+Yasm >=1.3.0. The reviewed `vendor/isa-l/` selection widens three Huffman-table
+loop counters to match their bounds and records the original source hash. Its
 manifest, owned support C, and patch bytes are pinned in `hatch_build.py`. The
 verified sources are copied to a private build directory before the owned
 bounded-read and error-acceptance patch is applied. The patch also pins each

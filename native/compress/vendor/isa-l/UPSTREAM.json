@@ -5,7 +5,7 @@
   "upstream": "https://github.com/intel/isa-l/tree/v2.31.1",
   "archive_url": "https://codeload.github.com/intel/isa-l/tar.gz/refs/tags/v2.31.1",
   "archive_sha256": "e1d5573a4019738243b568ab1e1422e6ab7557c5cae33cc8686944d327ad6bb4",
-  "selection": "Unmodified decoder-only x86_64 C, static tables, NASM/Yasm assembly and include closure. Gzip/zlib checksum and header link support are project-owned in native/compress/src; compression, RAID, erasure-code, command-line, test, and upstream build tooling omitted. Project-owned bounded-read corrections apply only to a verified private build snapshot.",
+  "selection": "Decoder-only x86_64 C, static tables, NASM/Yasm assembly and include closure. The source_changes entry records the retained Huffman-loop counter widening; all other selected upstream bytes are unchanged. Gzip/zlib checksum and header link support are project-owned in native/compress/src; compression, RAID, erasure-code, command-line, test, and upstream build tooling omitted. Project-owned bounded-read corrections apply only to a verified private build snapshot.",
   "files": {
     "LICENSE": "bc8fd4a3d031e65e05e9c9e2add2c3f336ce527fa85c1e31031c808b58216217",
     "igzip/bitbuf2.h": "74e5f791f6981d483cff901d186acfe6503b4dfb8781d7cec9423006841657b5",
@@ -15,7 +15,7 @@
     "igzip/igzip_decode_block_stateless.asm": "4cfc2c6ac1cae68c2b9608227fa0b4895b0b809f939c475534f1d1cd3d2c19fe",
     "igzip/igzip_decode_block_stateless_01.asm": "e96f534cf263d188d88162e94ec961e977c28b165cb1d84b6a6a4a2345b48ec8",
     "igzip/igzip_decode_block_stateless_04.asm": "bacd3698f2e1ea57cda3d83b608bb2d3a664e2d31459f3d4b47eb774106245d3",
-    "igzip/igzip_inflate.c": "973bc6c6b54e5513c9d141e5396d50ef4a0c324301b5394c7ae2190d24acab22",
+    "igzip/igzip_inflate.c": "ab11839e7739600369c7f9b28e5bd1b0131deb72be62464ed6ee1819a7626dbe",
     "igzip/igzip_inflate_multibinary.asm": "3e7cefd7f465bb52d0699cebb227c6e14b83436505e515fc868daf7f3f51b519",
     "igzip/igzip_wrapper.h": "8b0f2cb23462af582baa90d11028c5d01836168b963ca8e5b736abc2d41a5758",
     "igzip/inflate_data_structs.asm": "2104707e16eb12aeb0a10d211bca4565c004de647ce6ab39e4b2096a2ae56220",
@@ -27,5 +27,11 @@
     "include/multibinary.asm": "a66ce22c01177cd9d6116afe3403600dba138d306a7cff8f9c54f3fed4d9f793",
     "include/reg_sizes.asm": "2dbe16ff9c233d69bfa1d3348467fb54cae44d3ba9fafb26bc9084dadb761dd0",
     "include/unaligned.h": "91a2132e8104d5ba53597ae16682e0bbcfe31076bfc4313ebc696ea8584dabb2"
+  },
+  "source_changes": {
+    "igzip/igzip_inflate.c": {
+      "upstream_sha256": "973bc6c6b54e5513c9d141e5396d50ef4a0c324301b5394c7ae2190d24acab22",
+      "description": "Widen the three Huffman lookup-table loop counters from uint16_t to uint32_t so their arithmetic matches the table bounds without implicit narrowing. No other retained source changes."
+    }
   }
 }

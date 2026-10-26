@@ -7,6 +7,7 @@ import re
 import shlex
 import shutil
 import subprocess
+import sys
 import tomllib
 from typing import TYPE_CHECKING
 
@@ -501,6 +502,10 @@ def test_linux_container_frontend_uses_the_authenticated_locked_tool(workflows):
     assert "--no-hashes" not in export
     assert export[export.index("--project") + 1] == "{package}"
     assert export[export.index("--only-group") + 1] == "release-uv"
+    python = workflows["release"]["jobs"]["wheels"]["strategy"]["matrix"]["python"][0]
+    assert export[export.index("--python") + 1] == (
+        f"/opt/python/cp{python}-cp{python}/bin/python"
+    )
     assert install[:4] == ["python", "-m", "pip", "install"]
     assert {"--no-deps", "--require-hashes"} <= set(install)
     assert install[install.index("--only-binary") + 1] == ":all:"
@@ -524,7 +529,52 @@ def test_linux_container_frontend_uses_the_authenticated_locked_tool(workflows):
         assert dependencies == [f"uv=={setup['with']['version']}"]
 
 
-def test_windows_arm_source_backend_uses_the_authenticated_build_closure(workflows):
+def test_linux_bootstrap_export_ignores_the_development_pin(workflows, tmp_path):
+    uv = shutil.which("uv")
+    assert uv is not None
+    for name in ("pyproject.toml", "uv.lock"):
+        shutil.copyfile(REPO_ROOT / name, tmp_path / name)
+    # The bootstrap frontend cannot provision the project's future development
+    # runtime. It must export the lock using the already installed build target.
+    (tmp_path / ".python-version").write_text("3.99.99\n", encoding="utf-8")
+    export, _, _ = _linux_frontend_commands(workflows)
+    selected = export.index("--python")
+    command = [
+        uv,
+        *(
+            str(tmp_path) if argument == "{package}" else argument
+            for argument in export[1:]
+        ),
+        "--offline",
+        "--no-python-downloads",
+    ]
+    command[selected + 1] = sys.executable
+    environment = {**os.environ, "UV_PYTHON_PREFERENCE": "only-managed"}
+    result = subprocess.run(  # noqa: S603 — real locked export in an isolated project
+        command,
+        cwd=tmp_path,
+        env=environment,
+        text=True,
+        capture_output=True,
+        timeout=30,
+    )
+    assert result.returncode == 0, result.stderr
+    constraints = tmp_path / export[export.index("--output-file") + 1]
+    assert "--hash=sha256:" in constraints.read_text(encoding="utf-8")
+    command = command[:selected] + command[selected + 2 :]
+    result = subprocess.run(  # noqa: S603 — negative control for the poisoned pin
+        command,
+        cwd=tmp_path,
+        env=environment,
+        text=True,
+        capture_output=True,
+        timeout=30,
+    )
+    assert result.returncode != 0
+    assert "3.99.99" in result.stderr
+
+
+def test_source_backends_use_the_authenticated_build_closure(workflows):
     _, (export, tools, _, install) = _wheel_setup_commands(workflows)
     assert export[:2] == ["uv", "export"]
     assert {"--locked", "--no-emit-project"} <= set(export)
@@ -538,7 +588,8 @@ def test_windows_arm_source_backend_uses_the_authenticated_build_closure(workflo
     assert "--require-build-hashes" in install
     with (REPO_ROOT / "pyproject.toml").open("rb") as stream:
         build = tomllib.load(stream)["dependency-groups"]["backend-build"]
-    for package in ("setuptools-scm", "wheel", "cmake", "maturin"):
+    assert "wheel>=0.45" in build
+    for package in ("setuptools-scm", "cmake", "maturin"):
         assert any(
             requirement.startswith(package)
             and "sys_platform == 'win32'" in requirement
@@ -619,6 +670,8 @@ def test_real_offline_wheel_export_keeps_every_transitive_locked_hash(
     executable = shutil.which("uv")
     assert executable is not None, "wheel test export requires uv on PATH"
     export[0] = executable
+    if purpose == "frontend":
+        export[export.index("--python") + 1] = sys.executable
     if "--project" in export:
         export[export.index("--project") + 1] = str(snapshot)
     else:
