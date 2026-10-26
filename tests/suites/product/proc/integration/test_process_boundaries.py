@@ -11,7 +11,6 @@ import json
 import os
 from pathlib import Path
 import subprocess
-import sys
 from types import SimpleNamespace
 from typing import Any
 
@@ -57,15 +56,23 @@ print(json.dumps({
 """
     code = f"""
 import json
+import subprocess
 import sys
 from unstd import proc
 payloads = json.loads(sys.argv[1])
 environment = json.loads(sys.argv[2])
-result = proc.run([sys.executable, '-c', {child!r}, *payloads],
+argv = [sys.executable, '-c', {child!r}, *payloads]
+result = proc.run(argv,
                   cwd=sys.argv[3], env=environment,
                   stdin_text=json.loads(sys.argv[4]), timeout=5)
 assert result.returncode == 0
 assert result.stderr == ''
+oracle = subprocess.run(argv, cwd=sys.argv[3], env=environment,
+                        input=json.loads(sys.argv[4]), capture_output=True,
+                        text=True, encoding='utf-8', errors='replace',
+                        timeout=5, check=True)
+assert oracle.stderr == ''
+assert json.loads(result.stdout) == json.loads(oracle.stdout)
 print(result.stdout, end='')
 """
     environment = isolated_environment(**expected_env)
@@ -86,13 +93,9 @@ print(result.stdout, end='')
     assert observed["argv"] == _HOSTILE_ARGUMENTS
     assert Path(observed["cwd"]).resolve() == cwd.resolve()
     assert observed["stdin"] == stdin
-    # CPython may add LC_CTYPE to the provided environment during locale coercion.
+    # The stdlib oracle includes environment entries synthesized at child startup.
     actual_env = observed["env"]
-    actual_env.pop("LC_CTYPE", None)
-    if sys.platform == "darwin":
-        # The macOS runtime can synthesize this at interpreter startup.
-        actual_env.pop("__CF_USER_TEXT_ENCODING", None)
-    assert actual_env == environment
+    assert {name: actual_env[name] for name in environment} == environment
     assert list(cwd.iterdir()) == []
     assert list(tmp_path.iterdir()) == [cwd]
 
