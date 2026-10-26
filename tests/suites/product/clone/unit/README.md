@@ -23,6 +23,8 @@ the controls verify exhaustion before changing allocator or attribute behavior.
 
 `test_native_admission_boundaries.py` covers 60 combinations of Python, native and native-helper fallback dispatch. It fixes the source type before memo-key equality can change it, retains a selected dataclass handler after admission writes the memo, and requires custom keep-alive appends to run once in preorder. Atomic siblings ignore hook-written memo overrides. Ordinary and custom-new outer records check state continuations when the general native walker is disabled; an isolated low-limit worker also checks recursion reservations and recovery. A graph with 40 distinct dataclass types exercises recipe-cache overflow on both backends, retaining shared aliases and mutable-field isolation when memo equality changes the 33rd record's class.
 
+`test_native_callables.py` checks both graph entrypoints with Python functions, callable instances and builtin methods. Callback validation must reject noncallables before copying and must not resolve a descriptor-backed `__call__` while checking callability.
+
 Run from the repository root:
 
 ```console

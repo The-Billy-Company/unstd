@@ -88,7 +88,7 @@ _VENDORS = (
         "e1d5573a4019738243b568ab1e1422e6ab7557c5cae33cc8686944d327ad6bb4",
         "bc8fd4a3d031e65e05e9c9e2add2c3f336ce527fa85c1e31031c808b58216217",
         "https://codeload.github.com/intel/isa-l/tar.gz/refs/tags/v2.31.1",
-        "179611c79b1589d8f5e601610e1e07249d15ff992660fc3b25cbe1b609decaa7",
+        "d56422c5389656436bc62c8d7d02f322eea59fcbdbf92bd3add3356750ef3ae3",
     ),
 )
 _NATIVE_MODULES = (

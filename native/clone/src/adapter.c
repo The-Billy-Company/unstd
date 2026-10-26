@@ -937,15 +937,24 @@ clone_sequence_impl(PyObject *source, PyObject **result, unsigned int depth,
     /* No partially initialized list/tuple may appear in gc.get_objects() or
      * gc.get_referrers() during allocations further down the tree. A completed
      * result is tracked again before it can be published to its parent. */
-    if (PyObject_GC_IsTracked(output)) {
+    int retain_tracking = 0;
+#if !defined(Py_DEBUG) && !defined(Py_GIL_DISABLED)
+    retain_tracking = direct_graph && !tuple;
+#endif
+    int tracked = PyObject_GC_IsTracked(output);
+    if (!retain_tracking && tracked) {
         PyObject_GC_UnTrack(output);
     }
     if (direct_graph && !tuple) {
         /* Reserve capacity without exposing NULL slots: foreign hooks see the
          * same initialized prefix that Python's append-based walker exposes.
          * Unused reserved slots own no references and lie outside ob_size. */
+        /* No callback/allocation occurs before this initialized prefix.
+         * Retaining the allocator's tracking also retains its GC-list place. */
         Py_SET_SIZE(output, 0);
-        PyObject_GC_Track(output);
+        if (!retain_tracking || !tracked) {
+            PyObject_GC_Track(output);
+        }
         if (memo_store(source, output, context) < 0) {
             Py_DECREF(output);
             return -1;
@@ -1417,7 +1426,13 @@ clone_value_impl(PyObject *source, PyObject **result, unsigned int depth,
     }
     if (context->walk != NULL || context->direct_graph
         || context->entries != NULL) {
-        if (record && !record_current(context)) {
+        int recheck_record = record;
+#if !defined(Py_GIL_DISABLED)
+        /* The pinned admission path already checked this class and has not
+         * allocated or called Python since. Concurrent builds retain checks. */
+        recheck_record = record && !pinned;
+#endif
+        if (recheck_record && !record_current(context)) {
             return recipe != NULL
                 ? python_recipe(source, result, context, recipe)
                 : python_value(source, result, context);
@@ -1537,11 +1552,20 @@ clone_record_impl(PyObject *source, PyObject **result, unsigned int depth,
     if (twin == NULL) {
         return -1;
     }
-    if (PyObject_GC_IsTracked(twin)) {
+    int retain_tracking = 0;
+#if !defined(Py_DEBUG) && !defined(Py_GIL_DISABLED)
+    /* A custom is_gc slot may run callbacks during IsTracked and move the
+     * object away from the allocation tail. Preserve its original roundtrip. */
+    retain_tracking = context->direct_graph && Py_TYPE(twin)->tp_is_gc == NULL;
+#endif
+    int tracked = PyObject_GC_IsTracked(twin);
+    if (!retain_tracking && tracked) {
         PyObject_GC_UnTrack(twin);
     }
     if (context->direct_graph) {
-        PyObject_GC_Track(twin);
+        if (!retain_tracking || !tracked) {
+            PyObject_GC_Track(twin);
+        }
         if (memo_store(source, twin, context) < 0) {
             Py_DECREF(twin);
             return -1;
@@ -1931,7 +1955,8 @@ clone_record_graph(PyObject *module, PyObject *const *args, Py_ssize_t count)
 static PyObject *
 clone_walk_graph(PyObject *module, PyObject *const *args, Py_ssize_t count)
 {
-    if (count != 4 || !PyCallable_Check(args[1]) || !PyCallable_Check(args[2])
+    if (count != 4 || (!PyFunction_Check(args[1]) && !PyCallable_Check(args[1]))
+        || (!PyFunction_Check(args[2]) && !PyCallable_Check(args[2]))
         || !PyDict_CheckExact(args[3])) {
         PyErr_SetString(PyExc_TypeError,
                         "clone_walk_graph requires source, walker, admission and memo");
@@ -1943,7 +1968,8 @@ clone_walk_graph(PyObject *module, PyObject *const *args, Py_ssize_t count)
 static PyObject *
 clone_walk_canonical_graph(PyObject *module, PyObject *const *args, Py_ssize_t count)
 {
-    if (count != 4 || !PyCallable_Check(args[1]) || !PyCallable_Check(args[2])
+    if (count != 4 || (!PyFunction_Check(args[1]) && !PyCallable_Check(args[1]))
+        || (!PyFunction_Check(args[2]) && !PyCallable_Check(args[2]))
         || !PyDict_CheckExact(args[3])) {
         PyErr_SetString(PyExc_TypeError,
                         "clone_walk_canonical_graph requires source, walker, admission and memo");

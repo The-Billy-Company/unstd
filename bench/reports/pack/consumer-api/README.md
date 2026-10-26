@@ -146,4 +146,4 @@ python -m pytest tests/suites/product/pack tests/suites/assurance/gates/bench/te
 
 [Receipt](receipt.json) binds the implementation, harness, provenance, evidence,
 source archives, and built artifact hashes. Release notes live in
-[`pack-array-ranges.md`](../../../../changelog.d/pack-array-ranges.md).
+[the 4.0.0 changelog](../../../../CHANGELOG.md#400---2026-10-25).

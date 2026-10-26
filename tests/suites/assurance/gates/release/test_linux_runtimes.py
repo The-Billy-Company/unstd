@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 import platform
+import shutil
 import struct
 import subprocess
 import sys
@@ -151,6 +153,52 @@ def test_native_abi_comparison_rejects_a_different_libc_or_threading_abi():
         if invalid != report["soabi"]:
             with pytest.raises(RuntimeError, match="admitted native build"):
                 wheels._validate_runtime(report, minor, target, invalid)
+
+
+@pytest.mark.skipif(
+    sys.platform == "win32" or sys.version_info < (3, 13),
+    reason="the POSIX sysconfig-data path hook starts at CPython 3.13",
+)
+def test_test_dependency_source_build_uses_original_compiler_with_managed_sdk(tmp_path):
+    compiler = shutil.which("gcc" if sys.platform == "linux" else "cc")
+    assert compiler is not None
+    original = {name: sysconfig.get_config_var(name) for name in wheels._COMPILER_KEYS}
+    original["CC"] = compiler
+    foreign_flag = (
+        "--rtlib=compiler-rt" if sys.platform == "linux" else "-funstd-managed-only"
+    )
+    foreign = original | {"CFLAGS": f"{original['CFLAGS'] or ''} {foreign_flag}"}
+    python = Path(sys.executable)
+    poisoned = wheels._compiler_sysconfig(python, foreign, tmp_path / "foreign")
+    restored = wheels._compiler_sysconfig(python, original, tmp_path / "restored")
+    probe = """
+import json, sysconfig
+from setuptools._distutils.ccompiler import new_compiler
+from setuptools._distutils.sysconfig import customize_compiler
+compiler = new_compiler()
+customize_compiler(compiler)
+compiler.compile(["probe.c"])
+print(json.dumps({name: sysconfig.get_config_var(name) for name in ("SOABI", "INCLUDEPY", "EXT_SUFFIX")}))
+"""
+    (tmp_path / "probe.c").write_text(
+        "int wheel_compiler_probe(void) { return 42; }\n", encoding="utf-8"
+    )
+    failed, built = [
+        subprocess.run(  # noqa: S603 — actual compiler, isolated source and sysconfig
+            [python, "-I", "-c", probe],
+            cwd=tmp_path,
+            env={**os.environ, "_PYTHON_SYSCONFIGDATA_PATH": str(overlay.parent)},
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+        for overlay in (poisoned, restored)
+    ]
+    assert failed.returncode != 0
+    assert foreign_flag in failed.stderr
+    assert built.returncode == 0, built.stderr
+    observed = json.loads(built.stdout.splitlines()[-1])
+    assert observed == {name: sysconfig.get_config_var(name) for name in observed}
 
 
 def test_container_cli_does_not_load_the_host_only_builder():

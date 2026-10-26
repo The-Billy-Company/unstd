@@ -163,10 +163,10 @@ def _compiler_commands() -> dict[str, list[str] | None] | None:
 
 _ISAL_VERSION = "2.31.1"
 _ISAL_MANIFEST_SHA256 = (
-    "179611c79b1589d8f5e601610e1e07249d15ff992660fc3b25cbe1b609decaa7"
+    "d56422c5389656436bc62c8d7d02f322eea59fcbdbf92bd3add3356750ef3ae3"
 )
 _ISAL_HELPER_SHA256 = "5ef06292f0a03eacf7dc62d7693e1228b5e6d75669685f2908925aa6a6cd1e57"
-_ISAL_PATCH_SHA256 = "9b537e1df67e96f78bd683db3d2d2c6de9709398687b7e4c3f6a043686baf905"
+_ISAL_PATCH_SHA256 = "0b413b7891b50a85e4384681fd0deb0a023b4858d860f8506fd4546f727b4531"
 _ISAL_C_SOURCES = ("igzip/igzip_inflate.c", "igzip/hufftables_c.c")
 _ISAL_ASM_SOURCES = (
     "igzip/igzip_decode_block_stateless_01.asm",
@@ -226,7 +226,7 @@ def _checked_bytes(path: Path, expected: str) -> bytes:
 
 
 def _stage_isal(config: _IsalConfig) -> Path:
-    """Copy authenticated originals, then apply authenticated exact edits.
+    """Copy authenticated sources, then apply authenticated exact edits.
 
     Owned patch JSON uses {"schema":1,"files":{relative:{"before_sha256":...,
     "after_sha256":...,"replacements":[{"old":...,"new":...}]}}}. Every old

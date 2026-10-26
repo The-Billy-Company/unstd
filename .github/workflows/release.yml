@@ -94,13 +94,17 @@ jobs:
           CIBW_CACHE_PATH: ${{ env.UV_CACHE_DIR }}/cibuildwheel
           # Use uv's fast isolated builder and authenticate the build closure
           # exported from the same lock embedded in the published sdist.
+          # The image's bootstrap uv predates our development Python pin.
+          # cibuildwheel has already ensured this target interpreter exists.
           CIBW_BEFORE_ALL_LINUX: >-
-            uv export --project "{package}" --locked --only-group release-uv
+            uv export --python /opt/python/cp${{ matrix.python }}-cp${{ matrix.python }}/bin/python
+            --project "{package}" --locked --only-group release-uv
             --no-emit-project --no-header --output-file release-uv.txt &&
             python -m pip install --prefix /usr/local --no-deps --only-binary :all:
             --require-hashes --requirement release-uv.txt &&
             python "{package}/tests/tooling/release/wheels.py" --linux-runtime cp${{ matrix.python }}
           CIBW_ENVIRONMENT_LINUX: "UNSTD_WHEEL_COMPILER_CONFIG=/tmp/unstd-wheel-compiler.json"
+          CIBW_TEST_ENVIRONMENT_LINUX: "_PYTHON_SYSCONFIGDATA_PATH=/tmp/unstd-wheel-compiler.sysconfig"
           CIBW_BEFORE_BUILD: >-
             uv export --project "{package}" --locked --only-group build
             --no-emit-project --no-header --output-file build-constraints.txt

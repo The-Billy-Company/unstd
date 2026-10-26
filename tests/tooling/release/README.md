@@ -2,9 +2,9 @@
 doc_radar:
   sentinels:
     - file: wheels.py
-      contains: ['def _managed_python(', 'if version("cibuildwheel") != "4.3.1":', 'if not free_threading:', 'def _linux_runtime(', 'replacement.replace(link)']
+      contains: ['def _managed_python(', 'if version("cibuildwheel") != "4.3.1":', 'if not free_threading:', 'def _linux_runtime(', 'replacement.replace(link)', 'def _compiler_sysconfig(']
     - file: ../../../.github/workflows/release.yml
-      contains: ['UV_MANAGED_PYTHON: "1"', 'python -m tests.tooling.release.wheels', '--linux-runtime cp${{ matrix.python }}']
+      contains: ['UV_MANAGED_PYTHON: "1"', 'python -m tests.tooling.release.wheels', '--linux-runtime cp${{ matrix.python }}', 'CIBW_TEST_ENVIRONMENT_LINUX:']
     - file: ../../../pyproject.toml
       contains: ['select = "cp3{12,13}-macosx_x86_64"', 'sysconfig.get_config_var("CFLAGS")']
     - file: ../../../hatch_build.py
@@ -74,6 +74,14 @@ The retained interpreter and locked Setuptools provide the original compiler
 commands, including caller overrides. The build hook keeps the managed SDK
 paths, rejects old Python SDK paths in those commands, and records the compiler
 profile and its SHA256 in the build log. Ordinary builds skip this opt-in input.
+
+For third-party wheel-test source builds, CPython 3.13+ reads a private
+sysconfig-data overlay containing only the original compiler/toolchain settings
+on top of the admitted runtime's configuration. Its SDK paths, SOABI and tags
+remain unchanged. The override enters only the test environment after provider
+admission; CPython 3.12 ignores the newer path hook and keeps its existing build
+behavior. This avoids passing Clang-only managed-runtime flags to a container's
+GCC without changing cached interpreters or adding an older stdlib to `sys.path`.
 
 ```console
 python -m tests.tooling.release verify --help

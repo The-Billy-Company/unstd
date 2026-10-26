@@ -29,7 +29,7 @@ LDFLAGS = "$LDFLAGS -mmacosx-version-min=$MACOSX_DEPLOYMENT_TARGET"
 
 [project]
 name = "unstd"
-version = "3.1.6"
+version = "4.0.2"
 description = "stdlib-faithful accelerated replacements behind optional extras"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -166,10 +166,11 @@ supply-chain = [
 build = ["hatchling", "setuptools>=77"]
 backend-build = [
   "setuptools>=77",
+  # Immutables needs wheel when CPython 3.14 installs its source distribution.
+  "wheel>=0.45",
   # zlib-ng has no Windows ARM wheel. Authenticate its source-build backend
   # and provide CMake from a hashed wheel in the release test interpreter.
   "setuptools-scm>=8 ; sys_platform == 'win32' and platform_machine == 'ARM64'",
-  "wheel>=0.45 ; sys_platform == 'win32' and platform_machine == 'ARM64'",
   # VS 2026 ARM runners require CMake 4.2 and a native Maturin backend.
   "cmake>=4.2,<5 ; sys_platform == 'win32' and platform_machine == 'ARM64'",
   "maturin>=1.15,<2 ; sys_platform == 'win32' and platform_machine == 'ARM64'",

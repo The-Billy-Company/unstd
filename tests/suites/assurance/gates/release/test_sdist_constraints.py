@@ -93,6 +93,14 @@ def test_sdist_constraints_survive_real_builder_directory_changes(
         assert package != checkout
         selected = options.build_options(identifier)
         assert selected.dependency_constraints.base_file_path == constraints.resolve()
+        environment = selected.test_environment.as_dictionary(prev_environment={})
+        if platform == "linux":
+            assert (
+                environment["_PYTHON_SYSCONFIGDATA_PATH"]
+                == "/tmp/unstd-wheel-compiler.sysconfig"  # noqa: S108 — disposable build container
+            )
+        else:
+            assert "_PYTHON_SYSCONFIGDATA_PATH" not in environment
 
         def export(command):
             tokens = shlex.split(

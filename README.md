@@ -1,3 +1,12 @@
+---
+doc_radar:
+  sentinels:
+    - file: pyproject.toml
+      contains: ['version = "4.0.2"', 'requires-python = ">=3.12"']
+    - file: CHANGELOG.md
+      contains: ['## [4.0.2] - 2026-10-25']
+---
+
 # unstd
 
 **An accelerated Python standard library for hot-path operations.**
@@ -84,7 +93,7 @@ both gains and regressions.
 See the [test guide](tests/README.md), [architecture](docs/architecture.md),
 [API inventory](docs/api.md), and [security policy](SECURITY.md).
 
-[October 25 updates](docs/updates-2026-10-25.md) distinguish published releases
-from unreleased work.
+[October 25 updates](docs/updates-2026-10-25.md) cover version 4.0.2; the
+[changelog](CHANGELOG.md) records its compatibility changes.
 
 First-party code is Apache-2.0; bundled licenses are listed in [NOTICE](NOTICE).
