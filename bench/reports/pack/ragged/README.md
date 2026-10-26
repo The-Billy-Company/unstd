@@ -5,7 +5,14 @@ operating system.** The new generic `unstd.pack.ragged.RaggedDecoder` removes
 duplicate scans and payload copies, but every floating value still requires
 fresh finite-value validation. No Billy application files were changed.
 
-## Measured result
+The current shipped validator is now **kernel version 2**. The
+[continued qualification](alternatives/native2.md) records its medium-frame
+improvement, installed-wheel results on both systems, broader current project
+and maximum-capacity replays, and the additional backend experiments. It still
+fails the 100× target. The original version-1 measurements below are retained
+as historical evidence.
+
+## Initial version-1 measured result
 
 The table uses the installed release wheels. These are complete calls,
 including numeric validation, NumPy array creation,

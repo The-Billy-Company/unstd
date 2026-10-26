@@ -1097,8 +1097,7 @@ native_delitem(PyObject *self, PyTypeObject *cls, PyObject *const *args, size_t 
     if (admitted < 0) {
         goto done;
     }
-    if (!admitted || argument == NULL || !Py_IS_TYPE(argument, &PySlice_Type) ||
-        !bulk_helpers(&c, cls)) {
+    if (!admitted || argument == NULL || !Py_IS_TYPE(argument, &PySlice_Type)) {
         goto slow;
     }
     PySliceObject *slice = (PySliceObject *)argument;
@@ -1130,7 +1129,7 @@ native_delitem(PyObject *self, PyTypeObject *cls, PyObject *const *args, size_t 
     } else {
         goto slow;
     }
-    if (!bulk_plan(&b) || !bulk_validate(&b, 0)) {
+    if (!bulk_plan(&b) || !bulk_validate(&b, 0) || !bulk_helpers(&c, cls)) {
         goto slow;
     }
     Py_CLEAR(c.dict);

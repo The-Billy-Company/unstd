@@ -251,6 +251,13 @@ application-specific admission and result construction. The
 [complete-decoder qualification](../../../bench/reports/pack/ragged/README.md)
 records those costs and the requested 100× target separately.
 
+Kernel version 2 uses an exact NEON magnitude-bit maximum for float32 chunks
+of at least 64 KiB and retains the smaller-frame classifier. The
+[continued qualification](../../../bench/reports/pack/ragged/alternatives/native2.md)
+includes installed Linux/macOS wheels, current project assembly, maximum recipe
+capacity, and rejected backend alternatives. The complete 100× target remains
+unmet.
+
 ## Source ownership
 
 The package is one binary packing code leaf. [`binpack.py`](binpack.py) owns

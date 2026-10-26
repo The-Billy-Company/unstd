@@ -90,9 +90,10 @@ and includes a direct same-compiler comparison without a validator proxy.
 The unsigned maximum provides a practical medium-frame improvement. Kernel
 version 2 adopts it only for NEON float32 chunks of at least 64 KiB, retaining
 the existing small-frame path and every other architecture/type path. It adds
-no thread pool, dependency, or public API. The full installed-wheel and current
-workflow measurements for this version are recorded separately below when
-qualification completes; the exploratory results are not a 100× claim.
+no thread pool, dependency, or public API. The
+[installed-wheel and current-workflow qualification](native2.md) records this
+version on both operating systems, including the maximum recipe capacity.
+The exploratory results are not a 100× claim.
 
 ## Complete current project CPU pipeline
 
@@ -107,6 +108,10 @@ The proposed ownership seam remains a private prototype. The current tuple
 return cannot certify arbitrary external arrays for unchecked composition;
 shipping that feature would require a generic admitted-frame contract. Its
 measured gain does not establish the requested 100× target.
+
+The [kernel-2 follow-up](native2.md#complete-current-project-cpu-pipeline) runs
+the broader replay on both operating systems through their actual installed
+wheels. Its source and binary fingerprints are kept with each result.
 
 ## Scope of a scheduling comparison
 

@@ -1,0 +1,383 @@
+{
+  "schema": 1,
+  "generated_at": "2026-10-26T00:13:51.757029+00:00",
+  "native_kernel_version": 2,
+  "native_source_sha256": "f1c09efc2f32feee2b6ea5ddab6620665cf38a0a98cf0e9344d2c9ca7c621467",
+  "target_speedup": 100,
+  "target_met": false,
+  "scope": "generic immutable numeric decoder; complete single-frame and captured synchronous project CPU workflow, including captured maximum capacity; no transport or inference",
+  "private_captures_excluded": true,
+  "same_sdist_built_both_platform_wheels": {
+    "path": "/tmp/unstd-pack-native2-artifacts/packaging-artifacts0/source/unstd-3.1.6.tar.gz",
+    "sha256": "aa6fef4cc59294060e0a718f82e717e5a8def78e00aaeb37f9db942a537fc48d"
+  },
+  "artifacts": [
+    {
+      "route": "macos-source",
+      "path": "/tmp/unstd-pack-native2-artifacts/packaging-artifacts0/source/unstd-3.1.6-cp314-cp314-macosx_11_0_arm64.whl",
+      "sha256": "a6428a33151b5817f5070d3c13f3e12f2058b22e578ec9b2ae08a95219c4c575",
+      "native_member_sha256": "95f85c964d424316eb16a45363f678546c13122bd4a74838ed1d388fd451b2b4"
+    },
+    {
+      "route": "macos-from-sdist",
+      "path": "/tmp/unstd-pack-native2-artifacts/packaging-artifacts0/from-sdist/unstd-3.1.6-cp314-cp314-macosx_11_0_arm64.whl",
+      "sha256": "77aedb0cb9fcbdcc2851d287e0c08a668a02c7830417280e8187af3587910a9b",
+      "native_member_sha256": "d6a0ad52bc732705b134a0fc3cddddb9e15c19f3c8159f3aac79fc7be722b1be"
+    },
+    {
+      "route": "linux-from-sdist",
+      "path": ".local/pack-ragged-next-production/artifacts/unstd-3.1.6-cp314-cp314-linux_aarch64.whl",
+      "sha256": "2001d3821a2953d470cc033e18f59d39d6fbe60810e817957169078cf0b833d9",
+      "native_member_sha256": "f37f85b9aca0b226744c86effaa16640006158225e0f9b2cec1029915d36fbe3"
+    }
+  ],
+  "measured_python_sha256": {
+    "unstd/pack/__init__.py": "d44fc4095d269ee7ef3f961cdc1e096b28af896900b387b8a907cea77228edd1",
+    "unstd/pack/ragged.py": "4bfbd36b3891cba10e00b9694a438f741371df89a22c811c73c10c7998d486f1",
+    "unstd/pack/dtypes.py": "284df185b9aea56a436d6052ddb749849a9cf956a70258fe7aef32b35120b763",
+    "unstd/pack/binpack.py": "29fd70e184bf2e18c288d4483fa630108cff1829af5b16ae129059afd9a7741e",
+    "unstd/pack/buffers.py": "25f72e707c06616aeb6e867ba8f1e12680e52a9e9ae88992994f8553a69342ed",
+    "unstd/__init__.py": "aeba32cf5a5534235845bdcd924e5c2630676c4f1082c133a7a9f27815239704"
+  },
+  "measurements": {
+    "native2-macos-wheel-performance.json": {
+      "file_sha256": "ffb25387d0227be9bbc199e8a01d4b982951a37e653317909cd38a02e70e6dd6",
+      "target_met": false,
+      "results": {
+        "complete-decoder/1x128": {
+          "baseline_median_wall_ns": 3623.2621855904504,
+          "candidate_median_wall_ns": 1060.0707848210436,
+          "median_wall_speedup": 3.4179436293040686,
+          "observed_conservative_wall_speedup": 2.416483704323545,
+          "target_met": false
+        },
+        "complete-decoder/32x128": {
+          "baseline_median_wall_ns": 4170.2122381930185,
+          "candidate_median_wall_ns": 1190.3638841486538,
+          "median_wall_speedup": 3.503308772825838,
+          "observed_conservative_wall_speedup": 3.3888967958540626,
+          "target_met": false
+        },
+        "complete-decoder/128x128": {
+          "baseline_median_wall_ns": 6542.572079104866,
+          "candidate_median_wall_ns": 1518.990583055615,
+          "median_wall_speedup": 4.30718409454769,
+          "observed_conservative_wall_speedup": 4.170879715858239,
+          "target_met": false
+        },
+        "complete-decoder/512x128": {
+          "baseline_median_wall_ns": 13732.923777961889,
+          "candidate_median_wall_ns": 3134.7641200282724,
+          "median_wall_speedup": 4.380847570067898,
+          "observed_conservative_wall_speedup": 3.313121404439599,
+          "target_met": false
+        },
+        "complete-decoder/8192x128": {
+          "baseline_median_wall_ns": 175111.89752650177,
+          "candidate_median_wall_ns": 39669.03741231489,
+          "median_wall_speedup": 4.414321822493729,
+          "observed_conservative_wall_speedup": 3.9610108540386846,
+          "target_met": false
+        },
+        "complete-decoder/65536x128": {
+          "baseline_median_wall_ns": 1491451.84375,
+          "candidate_median_wall_ns": 343658.5683453237,
+          "median_wall_speedup": 4.33992334581142,
+          "observed_conservative_wall_speedup": 3.940581331143883,
+          "target_met": false
+        }
+      }
+    },
+    "native2-linux-wheel-performance.json": {
+      "file_sha256": "f6ba3b5578c56c25d1fe4c900b430fa79f23c15675caaa34f13eae54ec2a7fbe",
+      "target_met": false,
+      "results": {
+        "complete-decoder/1x128": {
+          "baseline_median_wall_ns": 3613.7503253796094,
+          "candidate_median_wall_ns": 1138.169489540141,
+          "median_wall_speedup": 3.175054645718615,
+          "observed_conservative_wall_speedup": 2.2792648633080708,
+          "target_met": false
+        },
+        "complete-decoder/32x128": {
+          "baseline_median_wall_ns": 4426.107099990767,
+          "candidate_median_wall_ns": 1347.2492794619982,
+          "median_wall_speedup": 3.2852918665195054,
+          "observed_conservative_wall_speedup": 1.9111895008890112,
+          "target_met": false
+        },
+        "complete-decoder/128x128": {
+          "baseline_median_wall_ns": 8511.444893517799,
+          "candidate_median_wall_ns": 2155.8900805270864,
+          "median_wall_speedup": 3.947995758409382,
+          "observed_conservative_wall_speedup": 2.025234348196784,
+          "target_met": false
+        },
+        "complete-decoder/512x128": {
+          "baseline_median_wall_ns": 90626.8115942029,
+          "candidate_median_wall_ns": 3569.0095846645368,
+          "median_wall_speedup": 25.392706139992395,
+          "observed_conservative_wall_speedup": 17.64890127685053,
+          "target_met": false
+        },
+        "complete-decoder/8192x128": {
+          "baseline_median_wall_ns": 1291065.3243243243,
+          "candidate_median_wall_ns": 51313.97134083931,
+          "median_wall_speedup": 25.160113134662073,
+          "observed_conservative_wall_speedup": 20.447237276339,
+          "target_met": false
+        },
+        "complete-decoder/65536x128": {
+          "baseline_median_wall_ns": 3941947.9166666665,
+          "candidate_median_wall_ns": 444708.3333333333,
+          "median_wall_speedup": 8.864119741403542,
+          "observed_conservative_wall_speedup": 7.60780121840801,
+          "target_met": false
+        }
+      }
+    },
+    "native2-project-macos.json": {
+      "file_sha256": "84a40fcc945d50cd1deace1c7b994a6d119583b7cfd9249f4da363c500d98cf1",
+      "target_met": false,
+      "results": {
+        "1docs/1rows": {
+          "baseline_median_wall_ns": 10096.169273967107,
+          "candidate_median_wall_ns": 1693.037457761162,
+          "median_wall_speedup": 5.963346662936846,
+          "observed_conservative_wall_speedup": 5.499750636681347,
+          "target_met": false
+        },
+        "1docs/512rows": {
+          "baseline_median_wall_ns": 48771.604288499024,
+          "candidate_median_wall_ns": 3919.5783858998143,
+          "median_wall_speedup": 12.443074097956218,
+          "observed_conservative_wall_speedup": 11.29534105331917,
+          "target_met": false
+        },
+        "32docs/1rows": {
+          "baseline_median_wall_ns": 229647.52252252251,
+          "candidate_median_wall_ns": 40842.16581196581,
+          "median_wall_speedup": 5.622804715592264,
+          "observed_conservative_wall_speedup": 4.767342234192546,
+          "target_met": false
+        },
+        "32docs/32rows": {
+          "baseline_median_wall_ns": 310383.0361445783,
+          "candidate_median_wall_ns": 55486.3834422658,
+          "median_wall_speedup": 5.593859554164948,
+          "observed_conservative_wall_speedup": 4.7744473680010255,
+          "target_met": false
+        },
+        "32docs/128rows": {
+          "baseline_median_wall_ns": 551087.9629629629,
+          "candidate_median_wall_ns": 100504.80769230769,
+          "median_wall_speedup": 5.483200014173465,
+          "observed_conservative_wall_speedup": 4.811032917139614,
+          "target_met": false
+        },
+        "256docs/1rows": {
+          "baseline_median_wall_ns": 1857663.1666666667,
+          "candidate_median_wall_ns": 329736.30263157893,
+          "median_wall_speedup": 5.633784184031055,
+          "observed_conservative_wall_speedup": 5.123876044022112,
+          "target_met": false
+        },
+        "256docs/32rows": {
+          "baseline_median_wall_ns": 2645412.111111111,
+          "candidate_median_wall_ns": 474928.6923076923,
+          "median_wall_speedup": 5.570124850231677,
+          "observed_conservative_wall_speedup": 4.502989183836869,
+          "target_met": false
+        },
+        "256docs/512rows": {
+          "baseline_median_wall_ns": 10830167.0,
+          "candidate_median_wall_ns": 2376358.4,
+          "median_wall_speedup": 4.557463638481468,
+          "observed_conservative_wall_speedup": 4.0348672194786985,
+          "target_met": false
+        }
+      }
+    },
+    "native2-project-linux.json": {
+      "file_sha256": "f027261eb123fa31eaf44e158088155e7677469798e96e574b17990cb70a0145",
+      "target_met": false,
+      "results": {
+        "1docs/1rows": {
+          "baseline_median_wall_ns": 11128.97091722595,
+          "candidate_median_wall_ns": 1974.0168998140211,
+          "median_wall_speedup": 5.637728288078207,
+          "observed_conservative_wall_speedup": 5.012736915943055,
+          "target_met": false
+        },
+        "1docs/512rows": {
+          "baseline_median_wall_ns": 54170.33261802575,
+          "candidate_median_wall_ns": 4424.275691873788,
+          "median_wall_speedup": 12.243887223737476,
+          "observed_conservative_wall_speedup": 6.538917832359571,
+          "target_met": false
+        },
+        "32docs/1rows": {
+          "baseline_median_wall_ns": 244467.40594059406,
+          "candidate_median_wall_ns": 47167.838649155725,
+          "median_wall_speedup": 5.182925759202025,
+          "observed_conservative_wall_speedup": 4.898871173039333,
+          "target_met": false
+        },
+        "32docs/32rows": {
+          "baseline_median_wall_ns": 331356.9864864865,
+          "candidate_median_wall_ns": 63644.832911392405,
+          "median_wall_speedup": 5.206345453806255,
+          "observed_conservative_wall_speedup": 4.77631897545457,
+          "target_met": false
+        },
+        "32docs/128rows": {
+          "baseline_median_wall_ns": 611226.05,
+          "candidate_median_wall_ns": 115121.16129032258,
+          "median_wall_speedup": 5.3094152556240894,
+          "observed_conservative_wall_speedup": 3.0389050054784894,
+          "target_met": false
+        },
+        "256docs/1rows": {
+          "baseline_median_wall_ns": 1973312.5,
+          "candidate_median_wall_ns": 373645.2121212121,
+          "median_wall_speedup": 5.281246583616999,
+          "observed_conservative_wall_speedup": 4.925086869803523,
+          "target_met": false
+        },
+        "256docs/32rows": {
+          "baseline_median_wall_ns": 2763062.5,
+          "candidate_median_wall_ns": 528611.1041666666,
+          "median_wall_speedup": 5.227023190055481,
+          "observed_conservative_wall_speedup": 5.084194086041785,
+          "target_met": false
+        },
+        "256docs/512rows": {
+          "baseline_median_wall_ns": 17340125.0,
+          "candidate_median_wall_ns": 3061916.714285714,
+          "median_wall_speedup": 5.66316024178506,
+          "observed_conservative_wall_speedup": 3.9834024836378576,
+          "target_met": false
+        }
+      }
+    },
+    "native2-capacity-macos.json": {
+      "file_sha256": "93ec65bf8b3b8d728be4c9cdb1658b8e6dc1579fb4b8617f128fcf8effe49db1",
+      "target_met": false,
+      "results": {
+        "2048docs/512rows": {
+          "baseline_median_wall_ns": 84532042.0,
+          "candidate_median_wall_ns": 18601375.0,
+          "median_wall_speedup": 4.544397497496825,
+          "observed_conservative_wall_speedup": 2.6933174998176175,
+          "target_met": false
+        }
+      }
+    },
+    "native2-capacity-linux.json": {
+      "file_sha256": "8ab7f0f68fff388b521ff755822231c7af0c3bef6a90639c57b9ae349039add1",
+      "target_met": false,
+      "results": {
+        "2048docs/512rows": {
+          "baseline_median_wall_ns": 263861625.0,
+          "candidate_median_wall_ns": 30205792.0,
+          "median_wall_speedup": 8.735464542694329,
+          "observed_conservative_wall_speedup": 5.037056921913473,
+          "target_met": false
+        }
+      }
+    }
+  },
+  "source_archive": {
+    "path": "bench/reports/pack/ragged/alternatives/native2-source.tar.gz",
+    "sha256": "7f4b2ec23ca7e6b547790c5f9c5ba62d98796b9d23817149ae89a2d013098a35",
+    "members": {
+      "bench/profiles/pack_consumers.py": "53d0fe72a3cb6d75787343584b69335a473836dcebbbd1815bfaeed0f67e374e",
+      "bench/profiles/ragged.py": "34d9a036334e9a3952244e5dbc14aa97d03f387a8f0c0c4b89fa403f120afa6f",
+      "bench/reports/pack/ragged/alternatives/native2_capacity_probe.py.txt": "2d470ec9c0aeed808c492aadf323591c28dcd45ab2a4e2c3805366fb2d129cf3",
+      "bench/reports/pack/ragged/alternatives/native2_project_probe.py.txt": "d39feb61fa53bed70f701f953464d832dc889020be2cb42f6ada7d01564c9fe4",
+      "changelog.d/pack-ragged-decoder.md": "1f136960b6ea6f30c95aae10b765c6c2294802fbc40723cafb653e1e99b07662",
+      "hatch_build.py": "41debcb3a8c7bfa9ef45cf7d6922cf328a1767a364eb93d1da051381cf960871",
+      "native/pack/README.md": "4823b9e6109d8a3c45b363aa6480718e6c41e8b17de777cd3c9e40d6fee35f5a",
+      "native/pack/src/README.md": "d0358c5debc52bea66f9f9e6d4a0809d137d5c08d99a00938ee0d5d8359204e3",
+      "native/pack/src/adapter.c": "f1c09efc2f32feee2b6ea5ddab6620665cf38a0a98cf0e9344d2c9ca7c621467",
+      "pyproject.toml": "6125a0622416c35c31cc3ec7b4ffb591fbe98a7c2a8093681d61698cdf70307a",
+      "src/unstd/__init__.py": "aeba32cf5a5534235845bdcd924e5c2630676c4f1082c133a7a9f27815239704",
+      "src/unstd/pack/README.md": "1f155e91d45501a1dba9176baa4e85fc11609f296eff8c58d91cddb21977f0b0",
+      "src/unstd/pack/__init__.py": "d44fc4095d269ee7ef3f961cdc1e096b28af896900b387b8a907cea77228edd1",
+      "src/unstd/pack/_pack_native.pyi": "4fce662154903203681b1199f098ab0c651a7e07146c32defe546bcd0177cd1c",
+      "src/unstd/pack/binpack.py": "29fd70e184bf2e18c288d4483fa630108cff1829af5b16ae129059afd9a7741e",
+      "src/unstd/pack/buffers.py": "25f72e707c06616aeb6e867ba8f1e12680e52a9e9ae88992994f8553a69342ed",
+      "src/unstd/pack/dtypes.py": "284df185b9aea56a436d6052ddb749849a9cf956a70258fe7aef32b35120b763",
+      "src/unstd/pack/ragged.py": "4bfbd36b3891cba10e00b9694a438f741371df89a22c811c73c10c7998d486f1",
+      "tests/suites/product/pack/unit/test_native_ragged.py": "8542d6f7cc6fc9034aa30522b61fc7df38c0312ffde77f188f13b07094231ae3",
+      "tests/suites/product/pack/unit/test_ragged.py": "4725b2b969c9e4268978ccb0a9a034b77ec798acbda9f0cc87395da8c3961122"
+    }
+  },
+  "discarded_control": {
+    "path": "native2-linux-direct.json",
+    "reason": "identical reused kernel-2 binaries; no valid before/after kernel comparison",
+    "replacement": "native2-linux-direct-forced.json"
+  },
+  "evidence_sha256": {
+    "alternatives-results.json": "2409e2f4b3edbf86a7a0877910406d3bc11fdd7a3dee62044589ae7274cfed94",
+    "alternatives-results.txt": "34acefe75b0683123d7e8c93b066bdab050bdff14775ea8fec36296d21fa90f6",
+    "alternatives.c": "91d326b08ad9cc97e5ee0bf4509703dbf0404be1933113303341178de9e0351b",
+    "build-and-source-metadata.json": "c021920fd5f6ca12d7479076b27024ff9b3084ae445839a6ad224d56e4523d3c",
+    "compare_direct_max.py.txt": "07cabdf5cf78cb968f03db0b6758086c1c3f341c1deb63d2c1d3b6230bc250bd",
+    "direct-comparison-metadata.json": "c45276e7b2c99463228f0fb74f6a9bec4bf67bbf1e45be2e65b2dd492a575909",
+    "direct-max-build.json": "75441d91235e3db2d1bc10d11076ee75f099147807b59f49d783b9fea1d24817",
+    "direct-max-results.json": "817a9207af14de79869acac2b284b8a71d2ca5776ce2484ddd20f9ab1a7a4f5f",
+    "direct-max-results.txt": "122c7587ca068e7e253e7adbca36ab89714ae9ea13f2cc4ac18598bb3ea52fdc",
+    "direct-reference-build.json": "260916d45f1e978b1e2e13534b006e3bde5e4d13a1bfc0f3033c5c475922e1be",
+    "frontends-macos.json": "2944c89e05e512efde230e892fd00f6b61c718de86653a77820c478645cf1b8a",
+    "frontends-validation.json": "ce91f902ca08249e5f5a9be07c46a0f61f434bc26d6e36b41cb6f8effaa6d4e6",
+    "frontends_probe.py.txt": "55c3d6f1b380554e7094637718d74229ee81c9d4e6031182df36faf254b2e012",
+    "max-adapter.c": "be5d71c666dbfb6b38072e07f2f90fcce5ebbc24c3b57d31b4408f456e4bd051",
+    "measure_alternatives.py.txt": "ec862ad95670dc20dbd75bde356f53dacad1b74c8b30f2292101a4695904ee68",
+    "native-mechanisms.md": "eb40f2443ea9ed50df82612a1a067d15c7a3c067063fc301bf11f57b87aa046e",
+    "native2-capacity-linux.json": "8ab7f0f68fff388b521ff755822231c7af0c3bef6a90639c57b9ae349039add1",
+    "native2-capacity-macos.json": "93ec65bf8b3b8d728be4c9cdb1658b8e6dc1579fb4b8617f128fcf8effe49db1",
+    "native2-linux-base-tests.txt": "a7c3722ca19ed686c57be5ebc1510f9ae6c6848fb25ba568a8f95a4d03dd7af6",
+    "native2-linux-direct-forced-builds.json": "9a63ab1f61489b8db06c0fb5f7de36d8bc991134a5b695b228221495c716ab7e",
+    "native2-linux-direct-forced.json": "f4a6021e63b207868485cefa4be251af53406b70dd5c7532ffd36fc42ecd6ddd",
+    "native2-linux-direct-forced.txt": "3fa62a12fb94d754923b0b09f9095cc78ba1453eea939e6f4b48681517b46ca6",
+    "native2-linux-direct.json": "c29c26e832abe005a1c2f0c9180099bef1a0b1df62e8de4c27a19fbfd9a0868c",
+    "native2-linux-max-assembly.txt": "d1d00f8c1c71903864a3a90dd65b6dc3cebff6d4e34d4fbb67097c94cf70f0db",
+    "native2-linux-optimized.txt": "cf7b1af05f5773c581303560a5c027c987e9b9ceb5bafb0d835f1332576e4e7b",
+    "native2-linux-receipt.json": "ccec92397bca569acfd84e6442f2bd3c4d08480a5001fd6a8d8c3757f4ad8d24",
+    "native2-linux-sanitizers.txt": "28fc82b4547495d0c34521c73d9e4f2a825b47196422ff4e831fd0bde455676d",
+    "native2-linux-wheel-performance.json": "f6ba3b5578c56c25d1fe4c900b430fa79f23c15675caaa34f13eae54ec2a7fbe",
+    "native2-linux-wheel-performance.txt": "43d0e6a2f45af2c20c905c06e9f4f0c293a5091b48ae038185c7b9238b0c99c1",
+    "native2-linux-wheel.json": "3999274d9a9bf08b678eda9d0edd878c0153f5a61c44a6da0ab223288499c139",
+    "native2-linux-wheel.txt": "d64e8f292915dd5b87f848b3aea116f8a9056100c429110c1296a43f0e93d6f7",
+    "native2-macos-base-tests.txt": "a7c3722ca19ed686c57be5ebc1510f9ae6c6848fb25ba568a8f95a4d03dd7af6",
+    "native2-macos-installed-tests.txt": "6553986e30dc3a1e7d73111e5e9f4689b71f788f8989f284351b283bb2b95787",
+    "native2-macos-tests.txt": "3e77566b66fb8ef9a97fa4380247e48ec0e1df61784b20e3976d333cb21b5706",
+    "native2-macos-threshold.txt": "29efd4cbd4bf0cd47d27482b56feabee02baa5a6bc2ff27ca2fce4d9b121be09",
+    "native2-macos-wheel-performance.json": "ffb25387d0227be9bbc199e8a01d4b982951a37e653317909cd38a02e70e6dd6",
+    "native2-macos-wheel-performance.txt": "3dbf589e9d77bc0da39f3c9d21d0cbdf89adc155aa3306ecbd849ccf1eb6929c",
+    "native2-packaging-tests.txt": "8a667232e7fe055689d26f1ca86f5b83c350f9d7b6ef55e50ec51d168bce96b6",
+    "native2-project-linux.json": "f027261eb123fa31eaf44e158088155e7677469798e96e574b17990cb70a0145",
+    "native2-project-macos.json": "84a40fcc945d50cd1deace1c7b994a6d119583b7cfd9249f4da363c500d98cf1",
+    "native2-python-floor-checks.json": "a7f0c866c16b36ecb2cf46b54faf01e3950d2bc397424f21b720615650cde22b",
+    "native2-python-floor-checks.txt": "eccc8e78f09559bbebd40cc5d53079fd6e98f570561f0e1d000c30134c229c72",
+    "native2-python-floor-smoke.py.txt": "ab44f06044f9627e1dfe8853af725f991c9bc7f80a03dd27142c04a648c49059",
+    "native2-static-checks.txt": "050c52a2b0c61e8b681ef5c485e0bc03340b8d55148e0acef27d744c8be42033",
+    "native2_capacity_probe.py.txt": "2d470ec9c0aeed808c492aadf323591c28dcd45ab2a4e2c3805366fb2d129cf3",
+    "native2_project_probe.py.txt": "d39feb61fa53bed70f701f953464d832dc889020be2cb42f6ada7d01564c9fe4",
+    "numexpr-macos.json": "946c5c64631ad7357333f10afd7d7eed4eb3cc131625d6d8331c18870ad59892",
+    "numexpr_probe.py.txt": "e3ad2e9d59c19bb72422013c874d06808d331fd97dab8bba91d5655185081d66",
+    "production-v2-adapter.c": "f1c09efc2f32feee2b6ea5ddab6620665cf38a0a98cf0e9344d2c9ca7c621467",
+    "production-v2-build.json": "82d0e4ceee69c678011efd81a720571e485caf24f964b7e644e6b0791797c49e",
+    "production-v2-live-import.json": "f988222a3058eb34c525af1a1ed21db08a4d2483915e2f114cd43fc30d1c0093",
+    "production-v2-public-tests.txt": "f969903f73b9eeaed7888a80ea64f6d9375bf7210d16c63c46f2df3287a399ae",
+    "production-v2-quality.json": "148b9118be7fedbbc82c7a10dfbae3341a6e7f190a016ff8fd8f0714eb8fe281",
+    "production-v2-quality.py.txt": "e2891aead086269d5702d3ba7012843ceb9403255f8a47ee6bff92cd0e19df84",
+    "project-macos.json": "5c994b93ebbac2f467f0b374d62ca0e0dbd884d345a0e539260f4c10d2c3d0c3",
+    "project-validation.json": "a787a6de47e300da045ccb1b802993a34b326ea86213648947b8facc9b15bfca",
+    "project.md": "eb5c2ee1f4c3db94fd40fee738fa5489263e41284789874f436587741f1d2f50",
+    "project_probe.py.txt": "60f521f013aee4c12011e252928abcbc613dd952bcc0536c6ae82287f1b8cee2",
+    "reference-adapter.c": "627bb499f3614c5c5c53d05e2514e6bac268c991792f491eee6322a4bda1778e",
+    "sme-check.c": "8d6d0b9e3051d3f903b0a72df633aa8836ac5042054d8604ae043de1ee23f298"
+  }
+}

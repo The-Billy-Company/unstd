@@ -32,6 +32,10 @@ shapes before the full function verification. Both installations use the same
 worker, interpreter, dependencies and committed synthetic fixtures; a case above
 130% of the comparison revision's wall time fails after saving its raw evidence.
 The Linux/macOS and Python 3.13/3.14 jobs retain that evidence independently.
+Performance uses CI's managed Python policy for both revision builds, rather
+than a Python installation already on the worker's PATH. Its retained runtime
+receipt records the actual provider, compiler, build flags and ABI before
+building either revision, and rejects a provider outside setup-uv's managed root.
 No application checkout is required. Manual `gzip_diagnostic` runs keep their
 separate check name and do not satisfy the normal performance checks.
 

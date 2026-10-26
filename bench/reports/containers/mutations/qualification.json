@@ -1,0 +1,224 @@
+{
+  "schema": 1,
+  "complete": true,
+  "kernel_version": 3,
+  "capsule_abi": 3,
+  "c_source_sha256": "7b6d3bf39c2fb5f7a395b8eb9737b845413e51dfed20bb5e87018cfd9ebd8aa1",
+  "platform_scope": "ARM64 macOS and ARM64 Debian Linux on Docker Linux VM; no x86_64/server timing claim",
+  "builds": {
+    "macos-build": {
+      "python": "3.14.9 (main, Oct 21 2026, 17:47:42) [Clang 23.1.3 ]",
+      "executable": "/Users/griffinstrier/Billy-Company/unstd/.venv/bin/python",
+      "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+      "machine": "arm64",
+      "compiler_configuration": {
+        "CC": "cc",
+        "CFLAGS": "-fno-strict-overflow -Wsign-compare -Wunreachable-code -DNDEBUG -g -O3 -Wall -O3 -arch arm64 -mmacosx-version-min=11.0 -Wno-nullability-completeness -Wno-expansion-to-defined -Wno-undef-prefix -fPIC",
+        "LDSHARED": "cc -bundle -undefined dynamic_lookup -arch arm64 -mmacosx-version-min=11.0 -Wl,-headerpad,40",
+        "SOABI": "cpython-314-darwin"
+      },
+      "compiler_version": "Apple clang version 21.0.0 (clang-2100.3.34.2)",
+      "source_sha256": "7b6d3bf39c2fb5f7a395b8eb9737b845413e51dfed20bb5e87018cfd9ebd8aa1",
+      "binary_sha256": {
+        "_sorted_native.cpython-314-darwin.so": "b1a89fceff8448ab6056c0a084b8e7514b0759ce3e47da61f0379178ca3e990e"
+      }
+    },
+    "macos-testing-build": {
+      "python": "3.14.9 (main, Oct 21 2026, 17:47:42) [Clang 23.1.3 ]",
+      "executable": "/Users/griffinstrier/Billy-Company/unstd/.venv/bin/python",
+      "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+      "machine": "arm64",
+      "compiler_configuration": {
+        "CC": "cc",
+        "CFLAGS": "-fno-strict-overflow -Wsign-compare -Wunreachable-code -DNDEBUG -g -O3 -Wall -O3 -arch arm64 -mmacosx-version-min=11.0 -Wno-nullability-completeness -Wno-expansion-to-defined -Wno-undef-prefix -fPIC",
+        "LDSHARED": "cc -bundle -undefined dynamic_lookup -arch arm64 -mmacosx-version-min=11.0 -Wl,-headerpad,40",
+        "SOABI": "cpython-314-darwin"
+      },
+      "compiler_version": "Apple clang version 21.0.0 (clang-2100.3.34.2)",
+      "source_sha256": "7b6d3bf39c2fb5f7a395b8eb9737b845413e51dfed20bb5e87018cfd9ebd8aa1",
+      "binary_sha256": {
+        "_sorted_native.cpython-314-darwin.so": "b1500f150803a1e7d3a369c3240bec989ecd0c8889d1e5cb305257140c0aa9fe"
+      }
+    },
+    "linux-build": {
+      "python": "3.14.8 (main, Oct  6 2026, 02:02:59) [GCC 14.2.0]",
+      "executable": "/usr/local/bin/python",
+      "platform": "Linux-7.0.14-linuxkit-aarch64-with-glibc2.41",
+      "machine": "aarch64",
+      "compiler_configuration": {
+        "CC": "gcc",
+        "CFLAGS": "-fno-strict-overflow -Wsign-compare -DNDEBUG -g -O3 -Wall",
+        "LDSHARED": "gcc -shared",
+        "SOABI": "cpython-314-aarch64-linux-gnu"
+      },
+      "compiler_version": "cc (Debian 14.2.0-19) 14.2.0",
+      "source_sha256": "7b6d3bf39c2fb5f7a395b8eb9737b845413e51dfed20bb5e87018cfd9ebd8aa1",
+      "binary_sha256": {
+        "_sorted_native.cpython-314-aarch64-linux-gnu.so": "0ab8b7e56b4b1e9f811b3a9440c45722ca6eed309fd5a40efdcc80d5b5a2cbd4"
+      }
+    },
+    "linux-sanitized-build": {
+      "python": "3.14.8 (main, Oct  6 2026, 02:02:59) [GCC 14.2.0]",
+      "executable": "/usr/local/bin/python",
+      "platform": "Linux-7.0.14-linuxkit-aarch64-with-glibc2.41",
+      "machine": "aarch64",
+      "compiler_configuration": {
+        "CC": "gcc",
+        "CFLAGS": "-fno-strict-overflow -Wsign-compare -DNDEBUG -g -O3 -Wall",
+        "LDSHARED": "gcc -shared",
+        "SOABI": "cpython-314-aarch64-linux-gnu"
+      },
+      "compiler_version": "cc (Debian 14.2.0-19) 14.2.0",
+      "source_sha256": "7b6d3bf39c2fb5f7a395b8eb9737b845413e51dfed20bb5e87018cfd9ebd8aa1",
+      "binary_sha256": {
+        "_sorted_native.cpython-314-aarch64-linux-gnu.so": "393a8c698ffe330fce233a04f462b306e56c4c18e00b4afd8b6bdf047db1cfb1"
+      }
+    }
+  },
+  "testing_compile_flags": "-O1 -g -fsanitize=address,undefined -fno-omit-frame-pointer -DUNSTD_CONTAINERS_TESTING=1",
+  "testing_link_flags": "-fsanitize=address,undefined",
+  "sanitizer_environment": {
+    "ASAN_OPTIONS": "detect_leaks=0:abort_on_error=1",
+    "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1",
+    "PYTHONMALLOC": "malloc",
+    "UNSTD_CONTAINERS_REQUIRE_TEST_HOOKS": "1"
+  },
+  "test_results": {
+    "macos_314_production": {
+      "passed": 303,
+      "skipped": 41
+    },
+    "macos_314_testing": {
+      "passed": 340,
+      "skipped": 4
+    },
+    "macos_312_production": {
+      "passed": 303,
+      "skipped": 41
+    },
+    "macos_313_production": {
+      "passed": 303,
+      "skipped": 41
+    },
+    "linux_314_production": {
+      "passed": 303,
+      "skipped": 41
+    },
+    "linux_sanitizer_main": {
+      "passed": 78,
+      "skipped": 4,
+      "deselected": 262
+    },
+    "linux_sanitizer_children": {
+      "passed": 262,
+      "deselected": 82,
+      "instrumented_owned_workers": 264
+    },
+    "api_workflow_release_bench_gates": {
+      "passed": 385
+    },
+    "installed_wheel": {
+      "passed": 303,
+      "skipped": 41
+    }
+  },
+  "native_staging_commit_injection_points": {
+    "prefix": 10,
+    "suffix": 10,
+    "append": 1070
+  },
+  "profiles": {
+    "macos-128.json": {
+      "sha256": "d2ce7e10866a0113ef101710c2653a0c3d69e17be2558da28a4578831260fd46",
+      "cases": 40,
+      "rounds": 7
+    },
+    "macos-4096.json": {
+      "sha256": "f1b7ff08e15d2988bd8b2aba7e7a7c63f8574c4f94a2c0374f43892db15075b6",
+      "cases": 40,
+      "rounds": 7
+    },
+    "macos-65536.json": {
+      "sha256": "3650e279d8f9d6ecc41c545f906d761095d3419dab736d570ff12f708ccf2c1d",
+      "cases": 52,
+      "rounds": 7
+    },
+    "macos-1000000.json": {
+      "sha256": "1a8cfafd05c62a8be073afa39f8cc7152f3dbe59fd4a10b249df0f275f124923",
+      "cases": 34,
+      "rounds": 7
+    },
+    "macos-query-controls.json": {
+      "sha256": "975f0d7eaf9bd76d6c31147ed86baff517d3506312a57f64a79235c2b9482d7b",
+      "cases": 38,
+      "rounds": 7
+    },
+    "linux-128.json": {
+      "sha256": "086842c1c97940a672fc3f2ca908363a1d8c0e6b8b4c77ad7501ff6bfb13101b",
+      "cases": 40,
+      "rounds": 7
+    },
+    "linux-4096.json": {
+      "sha256": "cf705ab2aa816bfaf8bf27cdcddcfe1621bab7762fa0784b2cd5b978a82cc974",
+      "cases": 40,
+      "rounds": 7
+    },
+    "linux-65536.json": {
+      "sha256": "2cf69d98c811de96d636c16284d7697bbed55d93ba59d442f2002a0b56dd9c16",
+      "cases": 52,
+      "rounds": 7
+    },
+    "linux-1000000.json": {
+      "sha256": "200d4edd715bce5dfb72fdd2db49f60316910ebc09dffd63cb1b374a07c5aa0e",
+      "cases": 34,
+      "rounds": 7
+    },
+    "linux-query-controls.json": {
+      "sha256": "ba5a3d0c586cb9db5bd127b3c79f20909f2e7f8a96a68083bbd96623b02a36ee",
+      "cases": 38,
+      "rounds": 7
+    }
+  },
+  "source_archive_note": "After archive preserves the exact benchmark/qualification runtime bytes. The live root-package docstring and native-stub spacing later received unrelated nonsemantic edits; runtime ASTs were checked equivalent.",
+  "owned_linux_container_removed": true,
+  "evidence_sha256": {
+    "README.md": "0730409710ed5ab12fe98a78bd21f2cc95a662425f1e1daa2fa7923c077a5755",
+    "after-source.tar.gz": "17d5a47e7580aded4536c250bf71770da4be802b20146496933ff27345a0c093",
+    "artifact-build.log": "2b5fe52e0fef96448dae63267fbf0c095798d6131dfad3db8b172f7cf3541f09",
+    "artifact-qualification-summary.json": "5ec333ca8f28ff0d0cf7d2dc3c4983a0237146fbaa7e177cfa8c8eb497169e00",
+    "artifact-source-receipt.json": "ee9c4e0ee7950fcb790e9f37c2858cb394f39e9bf78fe617a21140277c758f4c",
+    "artifact-wheel-receipt.json": "31eb9eb096a1b5b8fb8fd76acd923f2c59e45db380d3647036d99f7ec5ac984c",
+    "artifact-wheel-tests.txt": "80929c0c8cb51a24ae7c8bcef1f7e33976a16f9d6982635d6efbc1eedbe6b09b",
+    "artifact-wheel-tests.xml": "c887eea22b6ce7a9a10f9b6a7d2f14a1f6155a8782a2aa71a3ec64d985e6c09c",
+    "before-manifest.json": "14068ff8f0b20f6013139c3c57482540568bb942e687f378123c1d8b8e3c459d",
+    "before-source.tar.gz": "4d685343fa46b81ac4120d56f04b536a324713b9c806d9cc016ebce26c82ba82",
+    "editable-smoke.json": "bc3c91f985df7531ceca35dd9ede46c365c38b65b491ab6de82ba6ef5ecc8672",
+    "failpoint-counts.json": "3e3d1143eb7ff9674da2a825eb2981e86bacc6373020309ce2f77238a685779a",
+    "gates-tests.txt": "733394d18091e8e575644dc96fd6ce43e78219b1fc42862c3401bbad809652f0",
+    "linux-1000000.json": "200d4edd715bce5dfb72fdd2db49f60316910ebc09dffd63cb1b374a07c5aa0e",
+    "linux-128.json": "086842c1c97940a672fc3f2ca908363a1d8c0e6b8b4c77ad7501ff6bfb13101b",
+    "linux-4096.json": "cf705ab2aa816bfaf8bf27cdcddcfe1621bab7762fa0784b2cd5b978a82cc974",
+    "linux-65536.json": "2cf69d98c811de96d636c16284d7697bbed55d93ba59d442f2002a0b56dd9c16",
+    "linux-asan-children.txt": "5eea0149153c86970c4bbcb2edbc4845a3481a66993e508b0f79860fc6fd3926",
+    "linux-asan-main.txt": "ad82b1b75428dc8a4f2a8d721a0fb6c9ca909aa94fa50bbf42424e8c0629f873",
+    "linux-query-controls.json": "ba5a3d0c586cb9db5bd127b3c79f20909f2e7f8a96a68083bbd96623b02a36ee",
+    "linux-tests.txt": "07aae74d86501529c2572d9a7627973bfc62f40b35c4e153291d6cf41534ff85",
+    "macos-1000000.json": "1a8cfafd05c62a8be073afa39f8cc7152f3dbe59fd4a10b249df0f275f124923",
+    "macos-128.json": "d2ce7e10866a0113ef101710c2653a0c3d69e17be2558da28a4578831260fd46",
+    "macos-4096.json": "f1b7ff08e15d2988bd8b2aba7e7a7c63f8574c4f94a2c0374f43892db15075b6",
+    "macos-65536.json": "3650e279d8f9d6ecc41c545f906d761095d3419dab736d570ff12f708ccf2c1d",
+    "macos-hook-tests.txt": "2786bc2dc59b2feb509ab3052c0ca1787114c492ba258729e5f173b0e74455be",
+    "macos-py312-receipt.json": "ee0b1cafa08e6b6d57f8706de9f87e3bef28417d81fdc0d7908056062e5aa0fc",
+    "macos-py312-tests.txt": "f98d4c81e3020d8c99ffa5421517a24e05b2b17d68c2678ed3df6af71abc638d",
+    "macos-py313-receipt.json": "49c9e4c00149ca2d7d2c7ac1e6b2f4239f9f5f670c248055f73ee109f1fd5416",
+    "macos-py313-tests.txt": "6defba7397ef72a5f8a36186f7bc06bc465fd51dd468af8a5708edd4bf2513b8",
+    "macos-query-controls.json": "975f0d7eaf9bd76d6c31147ed86baff517d3506312a57f64a79235c2b9482d7b",
+    "macos-tests.txt": "8dab14c31edd73bc8594e7a6b1278cf3117d61ec65ee3638608c238b005b6c98",
+    "source-manifest.json": "2dddbc67c104a9b3a25a298d7f65aff7303dd9204309c06b07491a29bd2d93a6",
+    "typing-tests.txt": "8228fcc5ce46d42d01caf3cd941f4e9c5f2bcc372bb5b147a2f0572d2dd675a8"
+  },
+  "retained_linux_binary_archive": {
+    "local_path": "/tmp/unstd-containers-mutations/retained-linux-binaries.tar.gz",
+    "sha256": "caf584bf7a693616972a56931e41daae193d8650abf041ff70aa06b3759252a7"
+  }
+}

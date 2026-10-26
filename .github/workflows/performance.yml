@@ -27,6 +27,10 @@ on:
 permissions:
   contents: read
 
+env:
+  # Match CI's interpreter and SDK provider for every matrix request.
+  UV_MANAGED_PYTHON: "1"
+
 concurrency:
   group: performance-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
@@ -90,6 +94,46 @@ jobs:
           mkdir -p .local/performance/evidence
           git rev-parse HEAD > .local/performance/evidence/current-revision.txt
           git -C .local/performance/source-before rev-parse HEAD > .local/performance/evidence/before-revision.txt
+      - name: Verify and record the shared managed interpreter
+        env:
+          PERF_PYTHON_VERSION: ${{ matrix.python }}
+        run: |
+          .venv/bin/python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          import platform
+          import sys
+          import sysconfig
+          expected = os.environ["PERF_PYTHON_VERSION"]
+          actual = ".".join(map(str, sys.version_info[:2]))
+          provider = Path(sys._base_executable).resolve()
+          managed = Path(os.environ["UV_PYTHON_INSTALL_DIR"]).resolve()
+          if os.environ.get("UV_MANAGED_PYTHON") != "1":
+              raise RuntimeError("performance requires CI's managed Python policy")
+          if actual != expected or not provider.is_relative_to(managed):
+              raise RuntimeError(f"wrong performance interpreter: {actual}, {provider}")
+          report = {
+              "requested_python": expected,
+              "version": sys.version,
+              "executable": sys.executable,
+              "provider": str(provider),
+              "managed_install_dir": str(managed),
+              "implementation": sys.implementation.name,
+              "compiler": platform.python_compiler(),
+              "build": platform.python_build(),
+              "platform": platform.platform(),
+              "machine": platform.machine(),
+              "sdk": {key: sysconfig.get_config_var(key) for key in (
+                  "CC", "CFLAGS", "LDSHARED", "SOABI", "EXT_SUFFIX",
+                  "INCLUDEPY", "CONFIG_ARGS", "Py_TAIL_CALL_INTERP",
+              )},
+              "builds": ["installed-before", "installed-current"],
+          }
+          Path(".local/performance/evidence/runtime.json").write_text(
+              json.dumps(report, indent=2, sort_keys=True) + "\n"
+          )
+          PY
       # Build each revision's own native modules. Neither measurement may load
       # the other revision's Python source or compiled kernels.
       - name: Provide Yasm for native gzip builds

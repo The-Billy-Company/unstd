@@ -97,7 +97,94 @@ def test_temporal_registry_override_keeps_python_policy(
     result = _native([value, value], {})
     assert result == reference
     assert result[0] is result[1] is reference[0] is value
-    assert _fallback_calls(value) == [value]
+    assert _fallback_calls(value) == []
+
+
+@pytest.mark.parametrize("kind", [dt.datetime, dt.time])
+@pytest.mark.parametrize("zone", [None, dt.UTC])
+@pytest.mark.parametrize("table", ["dispatch_table", "_deepcopy_dispatch"])
+@pytest.mark.parametrize("error_type", [RuntimeError, KeyError])
+def test_irrelevant_temporal_registry_keys_are_not_compared(
+    monkeypatch: pytest.MonkeyPatch,
+    kind: Any,
+    zone: Any,
+    table: str,
+    error_type: type[Exception],
+) -> None:
+    """The immutable structural branch never probes copy's foreign keys."""
+    value = _value(kind, zone)
+    comparisons: list[object] = []
+    sentinel = error_type("unrelated copy registry key compared")
+
+    class Meta(type):
+        def __hash__(cls):
+            return hash(kind)
+
+        def __eq__(cls, other):
+            comparisons.append(other)
+            raise sentinel
+
+    class Foreign(metaclass=Meta):
+        pass
+
+    monkeypatch.setitem(getattr(copy, table), Foreign, object())
+    source = [value, value]
+    reference = structural._walk(source, {})
+    assert comparisons == []
+    actual = _native(source, {})
+    assert actual == reference
+    assert actual[0] is actual[1] is value
+    assert comparisons == []
+
+
+@pytest.mark.parametrize("kind", [dt.datetime, dt.time])
+@pytest.mark.parametrize("zone", [None, dt.UTC])
+def test_rebound_timezone_policy_can_select_copy_registry(
+    monkeypatch: pytest.MonkeyPatch, kind: Any, zone: Any
+) -> None:
+    value = _value(kind, zone)
+    sentinel = object()
+    monkeypatch.setattr(structural, "_TIMEZONES", frozenset())
+    monkeypatch.setitem(copy._deepcopy_dispatch, kind, lambda obj, memo: sentinel)
+    source = [value, value]
+    reference = structural._walk(source, {})
+    actual = _native(source, {})
+    assert actual == reference == [sentinel, sentinel]
+
+
+@pytest.mark.parametrize("kind", [dt.datetime, dt.time])
+@pytest.mark.parametrize("zone", [None, dt.UTC])
+@pytest.mark.parametrize("error_type", [RuntimeError, KeyError])
+def test_timezone_policy_foreign_keys_keep_python_exception(
+    monkeypatch: pytest.MonkeyPatch,
+    kind: Any,
+    zone: Any,
+    error_type: type[Exception],
+) -> None:
+    value = _value(kind, zone)
+    comparisons: list[object] = []
+    sentinel = error_type("timezone policy key compared")
+
+    class Meta(type):
+        def __hash__(cls):
+            return hash(type(zone))
+
+        def __eq__(cls, other):
+            comparisons.append(other)
+            raise sentinel
+
+    class Foreign(metaclass=Meta):
+        pass
+
+    monkeypatch.setattr(structural, "_TIMEZONES", frozenset({Foreign}))
+    with pytest.raises(error_type) as reference:
+        structural._walk([value], {})
+    expected_comparisons = comparisons.copy()
+    comparisons.clear()
+    with pytest.raises(error_type) as actual:
+        _native([value], {})
+    assert actual.value is reference.value is sentinel
+    assert comparisons == expected_comparisons == [type(zone)]
 
 
 @pytest.mark.parametrize("canonical", [False, True])
@@ -172,7 +259,8 @@ def test_replaced_deepcopy_keeps_python_temporal_policy(
         pytest.fail("Python's immutable temporal policy must remain authoritative")
 
     monkeypatch.setattr(copy, "deepcopy", refuse)
-    assert _fallback_calls(value) == [value]
+    assert structural._walk([value], {})[0] is value
+    assert _fallback_calls(value) == []
 
 
 def test_canonical_temporal_keepalive_order_matches_python() -> None:

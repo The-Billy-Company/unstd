@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 from pathlib import Path
 import re
@@ -16,6 +17,7 @@ import pytest
 
 from tests.support.environment.anchors import REPO_ROOT
 from tests.support.environment.backends import require_backend
+from tests.support.environment.process import run_python
 
 
 @pytest.fixture(scope="module")
@@ -77,6 +79,63 @@ def test_each_platform_finishes_its_own_worker_comparison(
         step for step in job["steps"] if "python-version" in step.get("with", {})
     )
     assert setup["with"]["python-version"] == "${{ matrix.python }}"
+
+
+def test_performance_uses_the_same_managed_sdk_policy_as_ci(workflow):
+    yaml = require_backend("ruamel.yaml").YAML(typ="safe", pure=True)
+    ci = yaml.load((REPO_ROOT / ".github/workflows/ci.yml").read_text())
+    assert workflow["env"]["UV_MANAGED_PYTHON"] == ci["env"]["UV_MANAGED_PYTHON"] == "1"
+    job = workflow["jobs"]["compare"]
+    assert job["env"].get("UV_MANAGED_PYTHON", "1") == "1"
+    for step in job["steps"]:
+        assert step.get("env", {}).get("UV_MANAGED_PYTHON", "1") == "1"
+    recorder = next(
+        step for step in job["steps"] if "runtime.json" in step.get("run", "")
+    )
+    assert recorder["env"]["PERF_PYTHON_VERSION"] == "${{ matrix.python }}"
+    builder = next(
+        step for step in job["steps"] if "uv pip install" in step.get("run", "")
+    )
+    assert job["steps"].index(recorder) < job["steps"].index(builder)
+
+
+@pytest.mark.parametrize("failure", [None, "policy", "provider", "minor"])
+def test_actual_runtime_receipt_rejects_host_provider_drift(
+    workflow, tmp_path, failure
+):
+    step = next(
+        step
+        for step in workflow["jobs"]["compare"]["steps"]
+        if "runtime.json" in step.get("run", "")
+    )
+    script = step["run"].split("<<'PY'\n", 1)[1].rsplit("\nPY", 1)[0]
+    evidence = tmp_path / ".local/performance/evidence"
+    evidence.mkdir(parents=True)
+    provider = Path(sys._base_executable).resolve()
+    environment = {
+        **os.environ,
+        "UV_MANAGED_PYTHON": "0" if failure == "policy" else "1",
+        "UV_PYTHON_INSTALL_DIR": str(
+            tmp_path / "wrong-provider" if failure == "provider" else provider.parent
+        ),
+        "PERF_PYTHON_VERSION": (
+            "0.0" if failure == "minor" else ".".join(map(str, sys.version_info[:2]))
+        ),
+    }
+    result = run_python(script, cwd=tmp_path, env=environment, timeout=10)
+    receipt = evidence / "runtime.json"
+    if failure is not None:
+        assert result.returncode != 0
+        assert not receipt.exists()
+        assert "performance" in result.stderr
+    else:
+        assert result.returncode == 0, result.stdout + result.stderr
+        recorded = json.loads(receipt.read_text())
+        assert recorded["provider"] == str(provider)
+        assert recorded["version"] == sys.version
+        assert recorded["builds"] == ["installed-before", "installed-current"]
+        assert recorded["sdk"]["SOABI"] == sysconfig.get_config_var("SOABI")
+        assert recorded["sdk"]["CFLAGS"] == sysconfig.get_config_var("CFLAGS")
 
 
 def test_comparison_uses_read_only_permissions_pinned_tools_and_hard_failures(
