@@ -497,9 +497,9 @@ def deep[T](obj: T) -> T:
         return obj
     try:
         if (
-            _native_clone is not None
+            (kind is dict or kind is list or kind is tuple)
+            and _native_clone is not None
             and _native_graph is not None
-            and (kind is dict or kind is list or kind is tuple)
         ):
             cloned = _native_graph(obj)
             if cloned is not NotImplemented:

@@ -679,6 +679,89 @@ def recheck_regressions(
     return best, history
 
 
+def paired_revision_recheck(
+    names: list[str],
+    baseline: dict[str, Any],
+    reference_report: Path,
+    baseline_path: Path,
+    current_environment: dict[str, Any],
+    current_provenance: dict[str, Any],
+    *,
+    rounds: int,
+) -> dict[str, Any]:
+    """Confirm persistent failures against the exact frozen installed revision."""
+    before = json.loads(reference_report.read_text())
+    digest = hashlib.sha256(baseline_path.read_bytes()).hexdigest()
+    if before.get("baseline_sha256") != digest:
+        _invalid("paired reference report does not match the frozen baseline")
+    if before.get("environment") != baseline["environment"]:
+        _invalid("paired reference report uses another baseline environment")
+    request = {
+        "names": names,
+        "baseline": baseline,
+        "rounds": rounds,
+        "before": before,
+        "current": {
+            "environment": current_environment,
+            "provenance": current_provenance,
+        },
+    }
+    result = subprocess.run(
+        [sys.executable, "-m", "bench.profiles.speeds_recheck"],
+        input=json.dumps(request),
+        text=True,
+        capture_output=True,
+        timeout=120 + 10 * len(names),
+        check=False,
+    )
+    if result.returncode:
+        _invalid(f"paired revision worker failed: {result.stderr}")
+    evidence: dict[str, Any] = json.loads(result.stdout)
+    if set(evidence.get("cases", {})) != set(names) or set(
+        evidence.get("products", {})
+    ) != {"before", "current"}:
+        _invalid(
+            "paired revision worker did not retain both products and every failed case"
+        )
+    for name, row in evidence["cases"].items():
+        original = baseline["cases"][name]
+        limit = original["ceiling_ns"] / original["measured_ns"]
+        if not math.isfinite(limit) or limit <= 0:
+            _invalid("paired revision limit must be finite and positive")
+        if (
+            row["paired_limit"] != original["ceiling_ns"] / original["measured_ns"]
+            or len(row["pairs"]) != rounds
+        ):
+            _invalid("paired revision worker changed a frozen limit or dropped rounds")
+        ratios = []
+        for pair in row["pairs"]:
+            values = (pair["before_ns"], pair["current_ns"])
+            if any(
+                isinstance(value, bool)
+                or not isinstance(value, int | float)
+                or not math.isfinite(value)
+                or value <= 0
+                for value in values
+            ):
+                _invalid("paired revision worker retained invalid wall samples")
+            ratio = values[1] / values[0]
+            if not math.isfinite(ratio) or ratio <= 0:
+                _invalid("paired revision ratio must be finite and positive")
+            ratios.append(ratio)
+        from statistics import median
+
+        observed = median(ratios)
+        if (
+            not math.isfinite(observed)
+            or row["paired_current_over_before"] != observed
+            or row["failed"] != (observed > row["paired_limit"])
+        ):
+            _invalid("paired revision worker changed its measured verdict")
+    if hashlib.sha256(baseline_path.read_bytes()).hexdigest() != digest:
+        _invalid("paired revision recheck modified the frozen baseline")
+    return evidence
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("verb", choices=("list", "check", "run", "freeze", "verify"))
@@ -686,6 +769,11 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--baseline", type=Path, default=BASELINE)
     parser.add_argument("--output", type=Path, help="retain measurements as JSON")
     parser.add_argument("--rounds", type=int, default=7)
+    parser.add_argument(
+        "--reference-report",
+        type=Path,
+        help="confirm persistent revision failures against this original freeze report",
+    )
     parser.add_argument(
         "--comparison-source",
         type=Path,
@@ -713,6 +801,10 @@ def main(argv: list[str] | None = None) -> int:
             _invalid("--comparison-source requires freeze")
         if args.revision_baseline and args.verb != "verify":
             _invalid("--revision-baseline requires verify")
+        if args.reference_report is not None and not (
+            args.verb == "verify" and args.revision_baseline
+        ):
+            _invalid("--reference-report requires verify --revision-baseline")
         if (
             args.comparison_source is not None or args.revision_baseline
         ) and args.group:
@@ -794,6 +886,39 @@ def main(argv: list[str] | None = None) -> int:
                 )
                 measured.update(checked)
                 attempts.update(history)
+            paired_evidence: dict[str, Any] | None = None
+            paired_error: str | None = None
+            absolute_failed = (
+                regressions(
+                    {case.name: measured[case.name] for case in comparable}, baseline
+                )
+                if baseline
+                else []
+            )
+            if absolute_failed and args.reference_report is not None:
+                assert baseline is not None
+                try:
+                    paired_evidence = paired_revision_recheck(
+                        absolute_failed,
+                        baseline,
+                        args.reference_report,
+                        args.baseline,
+                        current_environment,
+                        current_provenance,
+                        rounds=args.rounds,
+                    )
+                except (
+                    RegistryError,
+                    OSError,
+                    ValueError,
+                    KeyError,
+                    TypeError,
+                    subprocess.SubprocessError,
+                ) as error:
+                    paired_error = str(error)
+                    print(
+                        f"speeds: paired verification failed: {error}", file=sys.stderr
+                    )
             if added:
                 additions = [case for case in selected if case.name in added]
                 fresh = timings(additions, rounds=args.rounds)
@@ -810,6 +935,10 @@ def main(argv: list[str] | None = None) -> int:
                 if baseline
                 else []
             )
+            if paired_evidence is not None:
+                failed = [
+                    name for name in failed if paired_evidence["cases"][name]["failed"]
+                ]
             rows = {}
             for case in selected:
                 result = measured[case.name]
@@ -821,6 +950,8 @@ def main(argv: list[str] | None = None) -> int:
                 verdict = (
                     "FAIL"
                     if case.name in failed
+                    else "paired-ok"
+                    if paired_evidence and case.name in absolute_failed
                     else "added"
                     if case.name in added
                     else "ok"
@@ -834,6 +965,10 @@ def main(argv: list[str] | None = None) -> int:
                     "rounds": result.rounds,
                     "iterations": result.iters,
                     "failed": case.name in failed,
+                    "absolute_failed": case.name in absolute_failed,
+                    "paired_recheck": paired_evidence["cases"].get(case.name)
+                    if paired_evidence
+                    else None,
                     "samples_ns": result.samples_ns,
                     "cpu_samples_ns": result.cpu_samples_ns,
                     "attempts_ns": [
@@ -862,6 +997,9 @@ def main(argv: list[str] | None = None) -> int:
                     "cases": rows,
                     "failed": failed,
                     "added": added,
+                    "absolute_failed": absolute_failed,
+                    "paired_rechecks": paired_evidence,
+                    "paired_error": paired_error,
                     "baseline_environment": baseline["environment"]
                     if baseline
                     else None,
@@ -872,7 +1010,7 @@ def main(argv: list[str] | None = None) -> int:
             print(
                 f"{len(measured)} measured; {len(added)} added; {len(failed)} regressions"
             )
-            return 1 if failed else 0
+            return 2 if paired_error is not None else 1 if failed else 0
     except (RegistryError, ImportError, OSError) as error:
         print(f"speeds: {error}", file=sys.stderr)
         return 2

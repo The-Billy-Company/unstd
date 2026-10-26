@@ -206,7 +206,7 @@ def test_paired_batches_stay_bounded_when_one_codec_is_much_faster(monkeypatch):
         assert count * per_op <= profile.timing._MAX_BATCH_NS
         return count * per_op
 
-    monkeypatch.setattr(profile.timing, "_calibrate", calibrate)
+    monkeypatch.setattr(profile, "_calibrate", calibrate)
     monkeypatch.setattr(profile.timing, "_batch", batch)
     cases = {
         "before": profile.Workload("test", slow, control, 4),

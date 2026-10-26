@@ -37,7 +37,7 @@ def test_batches_alternate_adjacent_revisions_with_equal_iteration_budgets(
         observed.append(function.label)
         return 24 if function.label == "after" else 20
 
-    monkeypatch.setattr(profile.timing, "_calibrate", lambda _: (2, 100))
+    monkeypatch.setattr(profile, "_calibrate", lambda _: (2, 100))
     monkeypatch.setattr(profile.timing, "_batch", batch)
     clock = iter(range(100))
     monkeypatch.setattr(profile.time, "thread_time_ns", lambda: next(clock))
@@ -56,6 +56,34 @@ def test_batches_alternate_adjacent_revisions_with_equal_iteration_budgets(
             assert measured[metric]["rounds"] == 3
             assert len(measured[metric]["samples_ns"]) == 3
             assert len(measured[metric]["cpu_samples_ns"]) == 3
+
+
+@pytest.mark.parametrize("spikes", [1, 2])
+def test_calibration_ignores_cold_spikes_without_shortening_measured_batches(
+    monkeypatch, spikes
+):
+    probes = []
+
+    def batch(_call, count):
+        probes.append(count)
+        if len(probes) <= spikes:
+            return profile.BATCH_TARGET_NS * 10
+        return count * 1_000
+
+    monkeypatch.setattr(profile.timing, "_batch", batch)
+    count, elapsed = profile._calibrate(lambda: None)
+    assert count > 1
+    assert elapsed >= profile.BATCH_TARGET_NS
+    assert elapsed == count * 1_000
+    assert probes[:3] == [1, 1, 1]
+    assert probes[-3:] == [count] * 3
+
+
+def test_calibration_remains_bounded_for_an_unresolved_clock(monkeypatch):
+    monkeypatch.setattr(profile.timing, "_batch", lambda *_: 0)
+    count, elapsed = profile._calibrate(lambda: None)
+    assert count == profile.timing._MAX_ITERS
+    assert elapsed == 0
 
 
 def _namespace():

@@ -20,6 +20,7 @@
 #define INLINE_MEMO_SIZE 16
 #define RECORD_CACHE_SIZE 32
 #define MAX_RECORD_TYPES 32
+#define TEMPORAL_DEFERRED 2
 
 typedef struct {
     PyObject *source;
@@ -498,6 +499,15 @@ temporal_value(PyObject *source, PyObject **result, CopyContext *context)
     if (type != api->DateTimeType && type != api->TimeType) {
         return 0;
     }
+    /* Admission can modify the memo, but most admitted graphs contain no
+     * temporal nodes. Certify only at the first temporal boundary; foreign
+     * Python continuations still disable this specialization permanently. */
+    if (context->temporal_graph == TEMPORAL_DEFERRED) {
+        context->temporal_graph = temporal_memo_safe(context);
+        if (!context->temporal_graph) {
+            return 0;
+        }
+    }
     if (!PyFunction_Check(context->walk)) {
         return 0;
     }
@@ -670,7 +680,7 @@ record_recipe(PyTypeObject *type, CopyContext *context)
     context->temporal_graph = 0;
     PyObject *pair = PyObject_CallOneArg(context->admit, (PyObject *)type);
     if (pair != NULL && temporal) {
-        context->temporal_graph = temporal_memo_safe(context);
+        context->temporal_graph = TEMPORAL_DEFERRED;
     }
 #if PY_VERSION_HEX >= 0x030C0000 && PY_VERSION_HEX < 0x030F0000
     --state->py_recursion_remaining;
@@ -1279,7 +1289,15 @@ clone_value(PyObject *source, PyObject **result, unsigned int depth,
     /* Python container loops return every graph atom before calling _walk.
      * Keep rare immutable types off the primitive closed-walker hot path. */
     PyTypeObject *selected_type = Py_TYPE(source);
-    if (graph_atom_kind(source, selected_type)) {
+    int builtin_container = selected_type == &PyList_Type
+        || selected_type == &PyTuple_Type || selected_type == &PyDict_Type;
+    int candidate = context->admit != NULL
+        && Py_TYPE(selected_type) == &PyType_Type
+        && selected_type->tp_base == &PyBaseObject_Type
+        && (selected_type->tp_flags & Py_TPFLAGS_HEAPTYPE);
+    /* Exact containers and ordinary heap records are disjoint from every
+     * static graph atom. Retain the captured type across later memo hooks. */
+    if (!builtin_container && !candidate && graph_atom_kind(source, selected_type)) {
         *result = Py_NewRef(source);
         return 1;
     }
@@ -1300,12 +1318,7 @@ clone_value(PyObject *source, PyObject **result, unsigned int depth,
         /* Python captures type(o) before a memo lookup. Even an exact memo can
          * contain foreign keys whose equality hook changes source.__class__. */
         Py_INCREF(selected_type);
-        int candidate = context->admit != NULL
-            && Py_TYPE(selected_type) == &PyType_Type
-            && selected_type->tp_base == &PyBaseObject_Type
-            && (selected_type->tp_flags & Py_TPFLAGS_HEAPTYPE);
-        int delegate = selected_type != &PyList_Type
-            && selected_type != &PyTuple_Type && selected_type != &PyDict_Type
+        int delegate = !builtin_container
             && selected_type != context->record_type && !candidate;
         if (candidate && context->recipe_count == MAX_RECORD_TYPES) {
             delegate = 1;

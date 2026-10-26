@@ -278,6 +278,46 @@ def test_canonical_temporal_keepalive_order_matches_python() -> None:
     assert actual[0] is actual[1]
 
 
+def test_later_record_admission_cannot_restart_temporal_shortcut() -> None:
+    import dataclasses
+
+    value = _value(dt.datetime, dt.UTC)
+    sentinel = object()
+    calls: list[Any] = []
+
+    class Foreign:
+        def __deepcopy__(self, memo: dict[int, Any]) -> Any:
+            return sentinel
+
+    @dataclasses.dataclass
+    class Child:
+        stamp: Any
+
+    @dataclasses.dataclass
+    class Root:
+        values: Any
+
+    source = Root([Foreign(), Child(value), value])
+
+    def profile(frame: Any, event: str, argument: Any) -> None:
+        if (
+            event == "call"
+            and frame.f_code is structural._walk.__code__
+            and frame.f_locals.get("o") is value
+        ):
+            calls.append(value)
+
+    previous = sys.getprofile()
+    sys.setprofile(profile)
+    try:
+        actual = _native(source, {})
+    finally:
+        sys.setprofile(previous)
+    assert actual.values[0] is sentinel
+    assert actual.values[1].stamp is actual.values[2] is value
+    assert calls == [value, value]
+
+
 def test_changed_timezone_binding_and_offset_memo_keep_python_policy(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

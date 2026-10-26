@@ -227,6 +227,7 @@ jobs:
         run: >-
           .venv/bin/python -m bench.speeds verify --rounds 9
           --revision-baseline
+          --reference-report .local/performance/evidence/before.json
           --baseline .local/performance/evidence/baseline.json
           --output .local/performance/evidence/current.json
       - name: Guard native clone graphs and dataclass latency

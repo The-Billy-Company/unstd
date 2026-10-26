@@ -50,6 +50,10 @@ if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
 
 
+BATCH_TARGET_NS = 50_000_000
+CALIBRATION_PROBES = 3
+
+
 @dataclass(frozen=True)
 class Workload:
     """A public operation and an independent stdlib reference."""
@@ -363,6 +367,19 @@ def _retained_workloads(
     return jsonx, {case.name: case for case in cases}, metadata["proof"]
 
 
+def _calibrate(call: Callable[[], Any]) -> tuple[int, int]:
+    """Size steady batches without accepting a cold or preempted probe."""
+    count = 1
+    while True:
+        # Calibration chooses counts only. Retain every later measured round,
+        # including scheduler delays, in the unchanged wall-clock comparison.
+        elapsed = min(timing._batch(call, count) for _ in range(CALIBRATION_PROBES))
+        if elapsed >= BATCH_TARGET_NS or count == timing._MAX_ITERS:
+            return count, elapsed
+        scale = max(2, int(BATCH_TARGET_NS / max(elapsed, 1)))
+        count = min(count * min(scale, 64), timing._MAX_ITERS)
+
+
 def _paired_measure(
     cases: dict[str, Workload], rounds: int, repetition: int
 ) -> tuple[dict[str, dict[str, Any]], list[dict[str, Any]]]:
@@ -388,7 +405,7 @@ def _paired_measure(
         for metric in ("candidate", "stdlib"):
             for label in labels:
                 calls[label][metric]()
-                calibrations[label][metric] = timing._calibrate(calls[label][metric])
+                calibrations[label][metric] = _calibrate(calls[label][metric])
             requested = max(calibrations[label][metric][0] for label in labels)
             slowest = max(
                 elapsed / count
@@ -775,6 +792,19 @@ def main(argv: Sequence[str] | None = None) -> None:
             }
     report = {
         "driver_sha256": sha256(Path(__file__).read_bytes()).hexdigest(),
+        "calibration": {
+            "target_batch_ns": BATCH_TARGET_NS,
+            "count_probe_estimator": "minimum of three calibration probes",
+            "max_batch_ns": timing._MAX_BATCH_NS,
+            "measured_rounds": "all retained",
+        }
+        if args.compare_source
+        else {
+            "target_batch_ns": timing._MIN_BATCH_NS,
+            "count_probe_estimator": "minimum of two confirming calibration probes",
+            "max_batch_ns": timing._MAX_BATCH_NS,
+            "measured_rounds": "all retained, including accepted calibration",
+        },
         "estimator": "median of adjacent before/after wall-clock batch mean ratios on one thread; independent latency medians retained",
         "comparisons": comparisons,
         "runs": runs,

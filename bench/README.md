@@ -129,6 +129,14 @@ may change and both route inventories remain in the reports. Ordinary committed
 baseline verification retains strict API and native-environment equality. The
 local committed snapshot remains separate from ephemeral CI worker baselines.
 
+Revision verification can supply `--reference-report before.json` from the
+original freeze. A fresh worker confirms persistent ceiling failures with
+adjacent, alternating before/current batches and independent prepared cohorts.
+Each case retains its original `ceiling_ns / measured_ns` limit. Reports keep
+the absolute failure, all original samples and bounded retries, and every paired
+wall/CPU sample. Missing cases, changed workloads, wrong products, native binary
+drift and worker errors remain failures. Frozen rows are never rewritten.
+
 Before the full function verification, each normal performance job also runs
 the gzip consumer comparison against the separately installed revisions with
 the same interpreter and dependencies. Its 14 committed synthetic fixtures

@@ -142,7 +142,9 @@ comparison and retains the report before failing; measurements compare wall
 latency on one host, rather than assuming different machines have equal speed.
 Each fresh comparison worker retains both independent installations, checks
 their native bindings before and after timing, and alternates adjacent batches
-on one thread. All seven rounds and three repetitions retain their wall/CPU
+on one thread. Count calibration targets 50 ms using the fastest of three
+probes, with the slower codec's estimated batch still bounded at 250 ms.
+All seven rounds and three repetitions retain their wall/CPU
 samples and both stdlib controls; the 15% limit uses matched wall-time ratios.
 
 The JSON profile separately labels shared-row and equal-valued independent-row
