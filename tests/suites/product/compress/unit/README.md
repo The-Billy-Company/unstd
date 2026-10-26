@@ -12,6 +12,40 @@ private symbols, and the qualification-only option cannot enter release wheels.
 `test_native_buffers.py` compares native IEEE CRC32 and incremental updates with
 stdlib across short, block-boundary and large inputs.
 
+`test_module_ports.py` proves package and qualified imports keep the original
+codec/archive modules, classes and exceptions. It covers lazy base imports,
+missing optional backends, versioned stdlib Zstandard, native dictionaries and
+frame boundaries, bounded BZ2/LZMA state, borrowed text streams, stock zlib bytes
+and compressor copies, and ZIP metadata/stream ownership.
+
+Qualified package-child tests also preserve canonical module metadata and native
+exception identity, exercise a nested ZIP package, keep optional CFFI loading
+lazy, and refuse filesystem replay for a missing canonical child.
+
+`test_zlibx.py` compares window modes, checksums, compressor copies, dictionaries,
+argument callbacks and interpreter-specific incremental decoder state.
+`test_flush_modes.py` checks native C-integer overflow, stream continuation,
+coercion timing and closed/read-handle behavior for gzip flushes.
+
+`test_libarchive_port.py` checks original package/submodule, FFI and exception
+identity, lazy native loading, missing binding/DSO errors, real compressed
+archive blocks and headers, and shared warning/diagnostic callbacks. These
+checks preserve upstream behavior; application archive policy remains separate.
+
+`test_native_threads.py` checks shared bounded inflaters, concurrent
+reinitialization, Python-thread progress during large inflation, and reentrant
+codec-error translation. Native crash and deadlock probes run in bounded
+subprocesses.
+
+`test_native_adaptive.py` checks the Darwin ARM64 structural codec choice with
+independently packed RFC 1951 traces and real period 1–16 streams. It covers
+ordinary and nonfinal streams, distance limits, truncated and malformed dynamic
+headers, actual long-match usage and complete-body/token/input caps, the first
+output budget, one-time selection, EOF and legacy input tails, mutable/aliased
+buffers, late provider binding, GC type traversal, and reentrant reset callbacks.
+The optional provider uses the shared required-backend policy; these native
+selection checks skip explicitly on other operating systems and architectures.
+
 Run from the repository root:
 
 ```console
@@ -19,3 +53,24 @@ uv run --no-sync pytest tests/suites/product/compress/unit -q
 ```
 
 See [the module test overview](../README.md) for related evidence.
+
+`test_native_encoder.py` qualifies the complete-buffer compression kernels with
+frozen Billy request bytes, gzip headers/trailers and decoder consumption,
+observed request quality, unsupported workload and capability fallbacks, all
+other levels/timestamps, 37 differential argument/callback histories, failure
+propagation without replay, independent concurrent encoders and Python-thread
+progress during large native calls. Stateful writers and compressor copies
+retain their existing provider and tests.
+
+`test_stream_histories.py` compares 91 bounded native read and source-error
+histories with the running stdlib. It covers short sources, complete and later
+members, truncated dynamic bodies, malformed blocks, `read`, `read1` and
+`readinto` budgets, and repeated body errors across reset. Delivered bytes,
+exception details and identity, source calls/position/ownership, and destination
+buffer mutation must retain their order.
+
+
+`test_native_isal.py` compares 33 raw Linux decoder histories with the native
+reference, using bodies produced independently by zlib and zlib-ng. Exact
+output budgets, partial headers and symbols, trailing bytes, and persistent
+errors retain their observable input and output state.

@@ -5,6 +5,8 @@ marker, imports, and dependency metadata against the checkout and
 `pyproject.toml`. It prevents the package's advertised surface from drifting away
 from what ships. `test_startup.py` uses fresh interpreters and import blockers to
 check lazy distribution metadata lookup, version caching/reload, and codec reuse.
+`test_source_inventory.py` requires every registered native adapter in the frozen
+build source, including Linux-only adapters when the builder runs on another OS.
 
 Run from the repository root:
 

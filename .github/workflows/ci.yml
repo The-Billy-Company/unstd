@@ -77,10 +77,16 @@ jobs:
         uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           enable-cache: false
-          version: "0.13.4"
-          python-version: "3.13"
+          version: "0.13.5"
+          python-version: "3.14"
+      - name: Provide Yasm for native gzip builds
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends yasm
+          yasm --version
       - name: Build experimental Rust text extension
-        run: uv sync --locked --group dev --python 3.13 --reinstall-package unstd
+        run: uv sync --locked --group dev --python 3.14 --reinstall-package unstd
       - name: Rust text extension must import
         run: >-
           uv run --no-sync python -c
@@ -123,10 +129,10 @@ jobs:
           cache-dependency-glob: |
             uv.lock
             pyproject.toml
-          version: "0.13.4"
-          python-version: "3.13"
+          version: "0.13.5"
+          python-version: "3.14"
       - name: Install quality tools & backends
-        run: uv sync --locked --all-extras --group dev --reinstall-package unstd --python 3.13
+        run: uv sync --locked --all-extras --group dev --reinstall-package unstd --python 3.14
       - name: Validate test ownership & CI groups
         run: uv run --no-sync python -m tests.tooling.ci check
       - name: Validate fuzz targets & corpus
@@ -175,8 +181,8 @@ jobs:
           - {id: py313, name: Python 3.13, python: "3.13", sync: "--locked --all-extras", pytest: "--require-extras"}
           - {id: py314, name: Python 3.14, python: "3.14", sync: "--locked --all-extras", pytest: "--require-extras"}
           # Floors remain unlocked; --no-sync below preserves lowest-direct.
-          - {id: floors, name: Dependency floors (3.13), python: "3.13", sync: "--all-extras --resolution lowest-direct", pytest: "--require-extras"}
-          - {id: fallback, name: Base install (3.13), python: "3.13", sync: "--locked", pytest: ""}
+          - {id: floors, name: Dependency floors (3.14), python: "3.14", sync: "--all-extras --resolution lowest-direct", pytest: "--require-extras"}
+          - {id: fallback, name: Base install (3.14), python: "3.14", sync: "--locked", pytest: ""}
     steps:
       - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -190,8 +196,20 @@ jobs:
           cache-dependency-glob: |
             uv.lock
             pyproject.toml
-          version: "0.13.4"
+          version: "0.13.5"
           python-version: ${{ matrix.environment.python }}
+      - name: Provide native libarchive for required archive consumers
+        if: matrix.environment.id != 'fallback'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends libarchive-dev
+      - name: Provide Yasm for native gzip builds
+        # Base-install packaging also exercises strict native release builds.
+        if: matrix.environment.id != 'fallback' || matrix.group.id == 'packaging'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends yasm
+          yasm --version
       - name: Install test environment & rebuild local extensions
         run: uv sync ${{ matrix.environment.sync }} --group dev ${{ matrix.group.dependencies }} --reinstall-package unstd --python ${{ matrix.environment.python }}
       - name: Check the test interpreter's TLS security fixes
@@ -256,10 +274,10 @@ jobs:
           cache-dependency-glob: |
             uv.lock
             pyproject.toml
-          version: "0.13.4"
-          python-version: "3.13"
+          version: "0.13.5"
+          python-version: "3.14"
       - name: Install test environment & rebuild local extensions
-        run: uv sync --locked --all-extras --group dev --reinstall-package unstd --python 3.13
+        run: uv sync --locked --all-extras --group dev --reinstall-package unstd --python 3.14
       - name: Run ${{ matrix.group.name }}
         run: uv run --no-sync python -m tests.tooling.ci run ${{ matrix.group.shard }} ${{ matrix.group.id }} -- --require-extras -q
       - name: Retain platform test results
@@ -299,6 +317,8 @@ jobs:
           - {id: toml, name: toml, sync: "--extra toml", pytest: "--require-extra toml"}
           - {id: yaml, name: yaml, sync: "--extra yaml", pytest: "--require-extra yaml"}
           - {id: compress, name: compress, sync: "--extra compress", pytest: "--require-extra compress"}
+          - {id: zstd, name: zstd, sync: "--extra zstd", pytest: "--require-extra zstd"}
+          - {id: archives, name: archives, sync: "--extra archives", pytest: "--require-extra archives"}
     steps:
       - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -312,10 +332,20 @@ jobs:
           cache-dependency-glob: |
             uv.lock
             pyproject.toml
-          version: "0.13.4"
-          python-version: "3.13"
+          version: "0.13.5"
+          python-version: "3.14"
+      - name: Provide native libarchive for the archives extra
+        if: matrix.install.id == 'archives'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends libarchive-dev
+      - name: Provide Yasm for native gzip builds
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends yasm
+          yasm --version
       - name: Install one partial environment & rebuild local extensions
-        run: uv sync --locked ${{ matrix.install.sync }} --group dev --reinstall-package unstd --python 3.13
+        run: uv sync --locked ${{ matrix.install.sync }} --group dev --reinstall-package unstd --python 3.14
       - name: Show resolved backend versions
         run: uv pip list
       - name: Run API & regressions
@@ -352,12 +382,18 @@ jobs:
         uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           enable-cache: auto
-          version: "0.13.4"
-          python-version: "3.13"
+          version: "0.13.5"
+          python-version: "3.14"
           cache-suffix: resources
           cache-dependency-glob: "uv.lock\npyproject.toml\n"
+      - name: Provide Yasm for native gzip builds
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends yasm
+          yasm --version
       - name: Install test environment
-        run: uv sync --locked --all-extras --group dev --python 3.13 --reinstall-package unstd
+        run: uv sync --locked --all-extras --group dev --python 3.14 --reinstall-package unstd
       # The suite owns both installed and import-blocked stdlib worker policies.
       - name: Check memory, cleanup, cache lifetime & depth
         id: tests
@@ -402,22 +438,42 @@ jobs:
         uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           enable-cache: auto
-          version: "0.13.4"
+          version: "0.13.5"
           python-version: ${{ matrix.python-version }}
           cache-suffix: native
           cache-dependency-glob: "uv.lock\npyproject.toml\n"
+      - name: Provide Yasm for native gzip builds
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends yasm
+          yasm --version
       - name: Install test environment
-        run: uv sync --locked --extra serde --extra crypto --extra compress --group dev --python ${{ matrix.python-version }} --reinstall-package unstd
+        run: uv sync --locked --extra serde --extra crypto --extra compress --extra containers --extra rand --group dev --python ${{ matrix.python-version }} --reinstall-package unstd
       - name: Check the native-test interpreter's TLS security fixes
         run: uv run --no-sync python -m tests.tooling.runtime --json
       - name: Every native module must import
         run: >-
           uv run --no-sync python -c
-          "import unstd.serde._json_native, unstd.clone._clone_native, unstd.crypto._stream_native, unstd.text._text_native, unstd.compress._gzip_native, unstd.fs._fs_native"
+          "import unstd.serde._json_native, unstd.clone._clone_native, unstd.crypto._stream_native, unstd.text._text_native, unstd.compress._gzip_native, unstd.containers._sorted_native, unstd.proc._proc_native, unstd.fs._fs_native, unstd.rand._rand_native, unstd.pack._pack_native"
+      - name: Require active ISA-L in the strict Linux x86 build
+        run: |
+          uv run --no-sync python - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+          from unstd.compress import _gzip_native as native
+          if getattr(native, "ISAL_STREAMING", False) is not True:
+              raise RuntimeError("strict Linux x86 native tests require active ISA-L streaming")
+          version = json.loads(Path("native/compress/vendor/isa-l/UPSTREAM.json").read_text())["version"]
+          patch = hashlib.sha256(Path("native/compress/src/isal_patch.json").read_bytes()).hexdigest()
+          if native.ISAL_RUNTIME_VERSION != version or native.ISAL_PATCH_SHA256 != patch:
+              raise RuntimeError("native ISA-L build provenance differs from reviewed inputs")
+          print(json.dumps({"isal_streaming": True, "version": version, "patch_sha256": patch}))
+          PY
       - name: Native compatibility with the debug allocator
         id: tests
         run: >
-          uv run --no-sync python -m pytest tests/suites/product/clone tests/suites/product/text tests/suites/product/serde tests/suites/product/crypto tests/suites/product/compress tests/suites/product/fs -q --junitxml=.local/native.xml
+          uv run --no-sync python -m pytest tests/suites/product/clone tests/suites/product/text tests/suites/product/serde tests/suites/product/crypto tests/suites/product/compress tests/suites/product/containers tests/suites/product/proc tests/suites/product/fs tests/suites/product/rand tests/suites/product/pack -q --junitxml=.local/native.xml
 
       - name: Summarize native safety
         if: always() && steps.tests.outcome != 'skipped'
@@ -458,18 +514,23 @@ jobs:
         uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           enable-cache: auto
-          version: "0.13.4"
-          python-version: "3.13"
+          version: "0.13.5"
+          python-version: "3.14"
           cache-suffix: native-sanitizers
           cache-dependency-glob: "uv.lock\npyproject.toml\n"
       - name: Install test environment
-        run: uv sync --locked --extra serde --extra crypto --extra compress --group dev --no-install-project --python 3.13
+        run: uv sync --locked --extra serde --extra crypto --extra compress --extra containers --extra rand --group dev --group build --no-install-project --python 3.14
       # Stable Rust kernels retain their bounds checks and unit tests. These
       # sanitizer flags instrument our C modules and the text CPython shim.
+      - name: Provide Yasm for native gzip builds
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends yasm
+          yasm --version
       - name: Build C boundaries with address and undefined behavior checks
         env:
           CC: gcc
-          CFLAGS: -O1 -g -fsanitize=address,undefined -fno-omit-frame-pointer
+          CFLAGS: -O1 -g -fsanitize=address,undefined -fno-omit-frame-pointer -DUNSTD_CONTAINERS_TESTING=1
           LDFLAGS: -fsanitize=address,undefined
           CIBUILDWHEEL: "1"
         run: uv pip install --python .venv/bin/python --no-deps --reinstall --editable .
@@ -482,11 +543,15 @@ jobs:
           UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
           PYTHONMALLOC: malloc
           UNSTD_NATIVE_SANITIZERS: "1"
+          UNSTD_CONTAINERS_REQUIRE_TEST_HOOKS: "1"
         run: |
           LD_PRELOAD="$(gcc -print-file-name=libasan.so)"
           export LD_PRELOAD
-          .venv/bin/python -c "import unstd.serde._json_native, unstd.clone._clone_native, unstd.crypto._stream_native, unstd.text._text_native, unstd.compress._gzip_native, unstd.fs._fs_native"
-          .venv/bin/python -m pytest tests/suites/product/clone tests/suites/product/text tests/suites/product/serde tests/suites/product/crypto tests/suites/product/compress tests/suites/product/fs -p tests.tooling.ci.sharding --ci-shard ${{ matrix.shard }}/3 -q --junitxml=.local/native-sanitizers-${{ matrix.shard }}.xml
+          .venv/bin/python -c "import unstd.serde._json_native, unstd.clone._clone_native, unstd.crypto._stream_native, unstd.text._text_native, unstd.compress._gzip_native, unstd.containers._sorted_native, unstd.proc._proc_native, unstd.fs._fs_native, unstd.rand._rand_native, unstd.pack._pack_native"
+          .venv/bin/python -m pytest tests/suites/product/clone tests/suites/product/text tests/suites/product/serde tests/suites/product/crypto tests/suites/product/compress tests/suites/product/containers tests/suites/product/fs tests/suites/product/rand tests/suites/product/pack -p tests.tooling.ci.sharding --ci-shard ${{ matrix.shard }}/3 -q --junitxml=.local/native-sanitizers-${{ matrix.shard }}.xml
+          if [ "${{ matrix.shard }}" = "1" ]; then
+            env -u LD_PRELOAD CC=gcc .venv/bin/python -m tests.tooling.runtime.proc_memory --sanitize --output .local/proc-memory --tests tests/suites/product/proc
+          fi
 
       - name: Summarize sanitizer checks
         if: always() && steps.tests.outcome != 'skipped'
@@ -498,7 +563,11 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: native-sanitizers-${{ matrix.rust-text }}-${{ matrix.shard }}-${{ github.run_attempt }}
-          path: .local/native-sanitizers-${{ matrix.shard }}.xml
+          path: |
+            .local/native-sanitizers-${{ matrix.shard }}.xml
+            .local/proc-memory/manifest.json
+            .local/proc-memory/tests.txt
+            .local/proc-memory/tests.xml
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 14

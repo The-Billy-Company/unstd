@@ -100,6 +100,11 @@ def test_common_workloads_cover_distinct_shapes_and_protocol_controls():
         "dataclasses-flat-500",
         "mixed-keys-1000",
         "foreign-last",
+        "scalar-list-1000",
+        "scalar-tuple-1000",
+        "scalar-list-100000",
+        "repeated-aliases-10000",
+        "repeated-aliases-100000",
     } <= names
     assert "cycle" not in names
     for case in cases:
@@ -174,6 +179,64 @@ def test_native_route_proofs_exercise_and_restore_public_bindings():
     }
 
 
+def _historical_wrapper():
+    native = pytest.importorskip("unstd.clone._clone_native")
+    wrapper = SimpleNamespace(_native_clone=native.clone)
+    wrapper.deep = lambda source: wrapper._native_clone(source)
+    return wrapper
+
+
+def test_historical_native_tree_proof_keeps_its_structural_alias_contract():
+    historical = _historical_wrapper()
+    original = historical._native_clone
+    assert base._copy_contract(historical) == "structural"
+    assert profile._native_routes(historical, "before", structural_baseline=True) == {
+        "builtin-tree": ["_native_clone"]
+    }
+    assert historical._native_clone is original
+    with pytest.raises(RuntimeError, match="before/builtin-graph"):
+        profile._native_routes(historical, "before")
+
+
+def test_historical_tree_proof_rejects_python_fallback_and_restores_bindings():
+    historical = _historical_wrapper()
+    original = historical._native_clone
+
+    def python_tree(source):
+        if isinstance(source, list):
+            return [python_tree(value) for value in source]
+        if isinstance(source, dict):
+            return {key: python_tree(value) for key, value in source.items()}
+        return source
+
+    historical.deep = python_tree
+    assert base._copy_contract(historical) == "structural"
+    with pytest.raises(RuntimeError, match="before/builtin-tree"):
+        profile._native_routes(historical, "before", structural_baseline=True)
+    assert historical._native_clone is original
+
+
+def test_historical_tree_proof_rejects_source_reuse_even_after_native_success():
+    historical = _historical_wrapper()
+    original = historical._native_clone
+
+    def reused(source):
+        result = historical._native_clone(source)
+        if isinstance(source, dict):
+            result["left"] = source["left"]
+        return result
+
+    historical.deep = reused
+    with pytest.raises(RuntimeError, match="before/builtin-tree"):
+        profile._native_routes(historical, "before", structural_baseline=True)
+    assert historical._native_clone is original
+
+
+def test_current_shared_graph_cannot_use_historical_tree_qualification():
+    with pytest.raises(RuntimeError, match="historical structural copy contract"):
+        profile._native_routes(structural, "current", structural_baseline=True)
+
+
 @pytest.mark.parametrize("route", ["mixed-dataclass", "asdict-tree"])
 def test_native_requirement_rejects_public_python_fallback(route, monkeypatch):
     pytest.importorskip("unstd.clone._clone_native")
@@ -235,6 +298,7 @@ def test_regression_gate_checks_each_metric_and_retains_evidence(
     saved = json.loads(output.read_text())
     assert saved["performance_gate"] == {
         "max_slowdown": 1.3,
+        "comparison": "median of matched current/before batch ratios",
         "passed": False,
         "regressions": [
             {
@@ -259,3 +323,67 @@ def test_gate_accepts_an_exact_slowdown_limit():
         }
     }
     assert profile._regressions(workloads, 1.3) == []
+
+
+def _sampled_timing(samples):
+    return {
+        "median_wall_ns": sorted(samples)[len(samples) // 2],
+        "median_cpu_ns": sorted(samples)[len(samples) // 2],
+        "samples": [{"wall_ns": value, "cpu_ns": value} for value in samples],
+    }
+
+
+def test_common_worker_drift_cannot_create_a_clone_regression():
+    current = _sampled_timing([100, 120, 120])
+    before = _sampled_timing([100, 100, 120])
+    assert current["median_cpu_ns"] / before["median_cpu_ns"] == 1.2
+    workloads = {"drift": {"timings": {"current": current, "before": before}}}
+    assert profile._regressions(workloads, 1.10) == []
+
+
+def test_persistent_clone_slowdown_still_fails_during_worker_drift():
+    current = _sampled_timing([120, 240, 360])
+    before = _sampled_timing([100, 200, 300])
+    workloads = {"slow": {"timings": {"current": current, "before": before}}}
+    failures = profile._regressions(workloads, 1.10)
+    assert {row["metric"] for row in failures} == {"median_wall_ns", "median_cpu_ns"}
+    assert all(row["slowdown"] == 1.2 for row in failures)
+
+
+@pytest.mark.parametrize(
+    "samples", [[], [100], [100, 0, 100], [100, float("nan"), 100]]
+)
+def test_clone_guard_rejects_missing_or_invalid_paired_rounds(samples):
+    before = _sampled_timing([100, 100, 100])
+    current = _sampled_timing(samples) if samples else {"samples": []}
+    with pytest.raises(ValueError, match=r"matched timing rounds|finite and positive"):
+        profile._matched_slowdown(current, before, "median_cpu_ns")
+
+
+def test_invalid_timing_pairs_save_evidence_before_failing(tmp_path, monkeypatch):
+    case = profile._case("invalid-pair", [1, 2])
+    monkeypatch.setattr(profile, "_workloads", lambda: [case])
+    monkeypatch.setattr(base, "_snapshot", lambda directory, label: structural)
+    monkeypatch.setattr(base, "_profile", lambda call: [])
+    timings = {
+        label: _sampled_timing([100, 100, 100])
+        for label in ("current", "before", "stdlib")
+    }
+    timings["current"]["samples"] = []
+    monkeypatch.setattr(base, "_timings", lambda calls, rounds, gc_enabled: timings)
+    output = tmp_path / "invalid.json"
+    with pytest.raises(SystemExit) as error:
+        profile.main(
+            [
+                "--compare-dir",
+                str(tmp_path),
+                "--max-slowdown",
+                "1.10",
+                "--output",
+                str(output),
+            ]
+        )
+    assert error.value.code == 1
+    saved = json.loads(output.read_text())
+    assert "matched timing rounds" in saved["timing_error"]
+    assert saved["workloads"][case.name]["timings"] == timings

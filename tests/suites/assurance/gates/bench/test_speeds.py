@@ -134,6 +134,22 @@ def test_partial_freeze_adds_cases_and_preserves_other_packages(store: Path) -> 
     assert after["cases"][other.name]["ceiling_ns"] == 260
 
 
+def test_freeze_preserves_additive_capture_metadata_and_original_row(
+    store: Path,
+) -> None:
+    raw = _freeze(store)
+    raw["addition_provenance"] = {"source": "historical capture"}
+    raw["cases"][_case().name].update(
+        captured_environment={"python": "fixture"},
+        captured_provenance={"evidence": "addition_provenance"},
+    )
+    store.write_text(json.dumps(raw))
+    other = _case("unstd.other.function")
+    after = speeds.freeze([other], {other.name: _measurement(200)}, store)
+    assert after["addition_provenance"] == raw["addition_provenance"]
+    assert after["cases"][_case().name] == raw["cases"][_case().name]
+
+
 @pytest.mark.parametrize("tolerance", [-0.01, 1.01, float("nan"), float("inf")])
 def test_invalid_tolerance_is_never_persisted(store: Path, tolerance: float) -> None:
     with pytest.raises(speeds.RegistryError, match="tolerance"):
@@ -158,6 +174,54 @@ def test_malformed_speed_cannot_become_a_pass(
 def test_missing_baseline_is_an_error(store: Path) -> None:
     with pytest.raises(speeds.RegistryError, match="invalid speed baseline"):
         speeds.load_baseline(store)
+
+
+@pytest.mark.parametrize("field", ["captured_environment", "captured_provenance"])
+@pytest.mark.parametrize("value", [None, {}, "unrecorded"])
+def test_additive_capture_requires_complete_environment_and_provenance(
+    store: Path, field: str, value: object
+) -> None:
+    raw = _freeze(store)
+    row = raw["cases"][_case().name]
+    row.update(
+        captured_environment={"python": "fixture"},
+        captured_provenance={"source": "a" * 64},
+    )
+    row[field] = value
+    store.write_text(json.dumps(raw))
+    with pytest.raises(speeds.RegistryError, match="captured measurement metadata"):
+        speeds.load_baseline(store)
+
+
+def test_only_selected_captured_rows_must_match_the_verification_runtime(
+    store: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    shared = _case()
+    added = _case("unstd.other.added")
+    measured = {case.name: _measurement() for case in (shared, added)}
+    raw = speeds.freeze([shared, added], measured, store)
+    raw["cases"][added.name].update(
+        captured_environment={"python": "another-runtime"},
+        captured_provenance={"source": "a" * 64},
+    )
+    store.write_text(json.dumps(raw))
+
+    @contextmanager
+    def toy_registry() -> Iterator[list[speeds.Case]]:
+        yield [shared, added]
+
+    monkeypatch.setattr(speeds, "registry", toy_registry)
+    monkeypatch.setattr(speeds, "check_coverage", lambda cases: {})
+    monkeypatch.setattr(
+        speeds,
+        "timings",
+        lambda cases, **kw: {case.name: measured[case.name] for case in cases},
+    )
+    common = ["verify", "--baseline", str(store)]
+    assert speeds.main([*common, "--group", "demo"]) == 0
+    assert speeds.main(common) == 2
+    assert f"captured environment differs for {added.name}" in capsys.readouterr().err
+    assert speeds.main([*common, "--revision-baseline"]) == 2
 
 
 @pytest.mark.parametrize(
@@ -332,6 +396,61 @@ def test_revision_cli_audits_additions_and_keeps_shared_slowdowns(
     assert report["baseline_environment"] == {"python": "fixture"}
     added = replace(added, run=lambda: None)
     assert speeds.main(["verify", "--revision-baseline", "--baseline", str(store)]) == 2
+
+
+@pytest.mark.parametrize("slow", [False, True])
+def test_added_workloads_cannot_precondition_shared_measurements_or_rechecks(
+    store: Path, monkeypatch: pytest.MonkeyPatch, tmp_path: Path, slow: bool
+) -> None:
+    _freeze(store)
+    state = {"added": False}
+    measured = []
+
+    def shared_run() -> list[object]:
+        assert not state["added"], "added API changed the shared workload history"
+        return [1, True]
+
+    def added_run() -> list[object]:
+        state["added"] = True
+        return [1, True]
+
+    shared = replace(_case(), run=shared_run)
+    added = replace(_case("unstd.demo.added"), run=added_run)
+
+    @contextmanager
+    def toy_registry() -> Iterator[list[speeds.Case]]:
+        # The addition sorts before the shared case in a complete registry.
+        yield [added, shared]
+
+    def measure(run: Any, *, rounds: int) -> Measurement:
+        assert rounds == 9
+        assert run() == [1, True]
+        measured.append("shared" if run is shared_run else "added")
+        return _measurement(1_000 if slow and run is shared_run else 100)
+
+    monkeypatch.setattr(speeds, "registry", toy_registry)
+    monkeypatch.setattr(speeds, "check_coverage", lambda cases: {})
+    monkeypatch.setattr(speeds, "measure", measure)
+    output = tmp_path / "revision.json"
+    assert speeds.main(
+        [
+            "verify",
+            "--revision-baseline",
+            "--rounds",
+            "9",
+            "--baseline",
+            str(store),
+            "--output",
+            str(output),
+        ]
+    ) == int(slow)
+    assert measured == ["shared"] * (3 if slow else 1) + ["added"]
+    report = json.loads(output.read_text())
+    assert report["added"] == [added.name]
+    assert report["cases"][added.name]["ns"] == 100
+    assert report["cases"][added.name]["ceiling_ns"] is None
+    assert report["cases"][shared.name]["ceiling_ns"] == 130
+    assert report["failed"] == ([shared.name] if slow else [])
 
 
 def test_changing_a_workload_cannot_reuse_its_old_speed(store: Path) -> None:

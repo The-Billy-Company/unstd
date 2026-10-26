@@ -1,0 +1,193 @@
+"""Private frontend comparison; no production source mutation."""
+from __future__ import annotations
+
+import argparse
+import ast
+from datetime import UTC, datetime
+from functools import partial
+from hashlib import sha256
+import importlib.util
+import inspect
+import json
+import os
+from pathlib import Path
+import platform
+from statistics import median
+import sys
+import struct
+import textwrap
+import warnings
+
+ROOT = Path(os.environ.get('PACK_FRONTEND_ROOT', '/Users/griffinstrier/Billy-Company/unstd'))
+SOURCE = Path(os.environ.get('PACK_FRONTEND_SOURCE', str(ROOT / 'src')))
+sys.path.insert(0, str(SOURCE))
+sys.path.insert(0, str(ROOT))
+from unstd.pack import ragged
+
+Base = ragged.RaggedDecoder
+
+def compiled_post(self):
+    Base.__post_init__(self)
+    if ragged.binpack._HAVE_NUMPY:
+        backend = vars(ragged.binpack)['np']
+        object.__setattr__(self, '_value_dtype', backend.dtype(self._value_dtype))
+        object.__setattr__(self, '_index_dtype', backend.dtype(self._index_dtype))
+
+
+def make_variant(name, *, direct=False, inplace=False):
+    namespace = {'__slots__': (), '__module__': ragged.__name__, '__post_init__': compiled_post}
+    if direct or inplace:
+        tree = ast.parse(textwrap.dedent(inspect.getsource(Base.unpack)))
+        branch = next(node for node in ast.walk(tree) if isinstance(node, ast.If) and ast.unparse(node.test) == 'binpack._HAVE_NUMPY')
+        assert len(branch.body) == 4
+        if direct:
+            replacement = ast.parse('''
+backend = vars(binpack)['np']
+values = backend.ndarray(shape=(rows, self.columns), dtype=self._value_dtype, buffer=data, offset=table_bytes)
+boundaries = backend.ndarray(shape=(count,), dtype=self._index_dtype, buffer=data)
+return values, boundaries
+''').body
+        else:
+            replacement = ast.parse('''
+backend = vars(binpack)['np']
+values = backend.frombuffer(data, dtype=self._value_dtype, offset=table_bytes)
+values.shape = (rows, self.columns)
+boundaries = backend.frombuffer(data, dtype=self._index_dtype, count=count)
+return values, boundaries
+''').body
+        branch.body = replacement
+        ast.fix_missing_locations(tree)
+        local = {}
+        exec(compile(tree, str(Path(__file__).resolve()), 'exec'), ragged.__dict__, local)
+        namespace['unpack'] = local['unpack']
+    return type(name, (Base,), namespace)
+
+VARIANTS = {
+    'current_strings_reshape': Base,
+    'compiled_dtype_reshape': make_variant('CompiledReshapeDecoder'),
+    'compiled_dtype_direct_ndarray': make_variant('CompiledDirectDecoder', direct=True),
+    'deprecated_compiled_dtype_shape_setter': make_variant('CompiledShapeSetterDecoder', inplace=True),
+}
+
+
+def load_profile():
+    spec = importlib.util.spec_from_file_location('_private_frontend_ragged_profile', ROOT / 'bench/profiles/ragged.py')
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def warning_evidence():
+    import numpy as np
+    result = {}
+    for name, cls in VARIANTS.items():
+        decoder = cls('<f4', columns=2)
+        with warnings.catch_warnings(record=True) as captured:
+            warnings.simplefilter('always')
+            values, boundaries = decoder.unpack(struct.pack('<2q2f', 0, 1, 0.0, 0.0), index_count=2)
+        assert values.shape == (1, 2) and tuple(boundaries) == (0, 1)
+        result[name] = [{'category': type(item.message).__name__, 'message': str(item.message)} for item in captured]
+    return {'numpy_version': np.__version__, 'warnings': result}
+
+
+def differential():
+    import struct
+    import numpy as np
+    checks = 0
+    # Independent struct oracle spans every portable dtype/order and integer extrema.
+    kinds = [('i1','b',[-128,127]),('u1','B',[0,255]),('i2','h',[-32768,32767]),('u2','H',[0,65535]),('i4','i',[-2**31,2**31-1]),('u4','I',[0,2**32-1]),('i8','q',[-2**63,2**63-1]),('u8','Q',[0,2**64-1]),('f2','e',[-0.0,2**-24]),('f4','f',[-0.0,2**-149]),('f8','d',[-0.0,5e-324])]
+    for name, cls in VARIANTS.items():
+        for kind,char,scalars in kinds:
+            for order in '<>=':
+                body = struct.pack('>3B',0,1,2) + struct.pack(order+'2'+char,*scalars)
+                decoder = cls(order+kind,columns=1,index_dtype='u1',finite=True,allow_empty=False)
+                for source in (body, bytearray(body), memoryview(bytearray(body)).toreadonly()):
+                    with warnings.catch_warnings():
+                        warnings.simplefilter('ignore',DeprecationWarning)
+                        values, boundaries = decoder.unpack(source,index_count=3)
+                    assert values.shape == (2,1) and boundaries.shape == (3,)
+                    assert values.tobytes() == body[3:] and boundaries.tobytes() == body[:3]
+                    assert not values.flags.writeable and not boundaries.flags.writeable
+                    assert values.flags.c_contiguous and boundaries.flags.c_contiguous
+                    expected = struct.unpack(order+'2'+char,body[3:])
+                    assert values.tolist() == [[expected[0]],[expected[1]]]
+                    for item in (values,boundaries):
+                        owner = item
+                        while isinstance(owner,np.ndarray):
+                            owner = owner.base
+                        assert type(owner) is bytes
+                        assert (owner is source) == (type(source) is bytes)
+                    checks += 1
+    return checks
+
+
+def validate():
+    import pytest
+    outcomes = {}
+    try:
+        for name,cls in VARIANTS.items():
+            if name == 'current_strings_reshape':
+                continue
+            ragged.RaggedDecoder = cls
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore',DeprecationWarning)
+                result = pytest.main(['-q','--disable-warnings', str(ROOT / 'tests/suites/product/pack/unit/test_ragged.py')])
+            outcomes[name] = int(result)
+            if result:
+                raise AssertionError(outcomes)
+    finally:
+        ragged.RaggedDecoder = Base
+    return {'public_tests_per_variant':91,'public_test_exit_codes':outcomes,'independent_dtype_exporter_cases':differential()}
+
+
+def run_benchmark(args):
+    profile = load_profile()
+    helper = profile.profile
+    capture = helper._read_capture(ROOT / '.local/pack-consumer-capture.json')
+    baseline = helper._compile_consumers(capture,ragged.binpack)['baseline']
+    assert ragged._native is not None
+    modules = {'captured_original':baseline}
+    for name,cls in VARIANTS.items():
+        decoder = cls('<f4',columns=capture['dimension'],index_dtype='<i8',finite=True,allow_empty=False)
+        modules[name] = profile._candidate(capture,baseline,decoder)
+    results={}
+    for rows in args.rows:
+        fixture = helper._fixture(rows,capture)
+        for name,module in modules.items():
+            profile._check(module._remote_index(fixture.body,len(fixture.tokens)),fixture,baseline.TokenIndex,shared=name!='captured_original')
+        samples={name:[] for name in modules}
+        names=list(modules)
+        for round_index in range(args.rounds):
+            order=names[round_index % len(names):]+names[:round_index % len(names)]
+            if round_index % 2:
+                order.reverse()
+            for name in order:
+                with warnings.catch_warnings():
+                    warnings.simplefilter('ignore',DeprecationWarning)
+                    samples[name].append(helper._measure(partial(modules[name]._remote_index,fixture.body,len(fixture.tokens)),partial(profile._check,fixture=fixture,cls=baseline.TokenIndex,shared=name!='captured_original'),int(args.batch_ms*1e6)))
+        medians={name:median(sample['wall_ns_per_call'] for sample in runs) for name,runs in samples.items()}
+        results[str(rows)]={'wire_bytes':len(fixture.body),'median_wall_ns':medians,'speedup_over_current_frontend':{name:medians['current_strings_reshape']/value for name,value in medians.items()},'speedup_over_captured_original':{name:medians['captured_original']/value for name,value in medians.items()},'samples':samples}
+        print(rows,json.dumps(medians),flush=True)
+    return {'generated_at':datetime.now(UTC).isoformat(),'platform':platform.platform(),'python':sys.version,'numpy_version':ragged.binpack.np.__version__,'capture_sha256':capture['capture_sha256'],'ragged_source_sha256':sha256(Path(ragged.__file__).read_bytes()).hexdigest(),'native_sha256':sha256(Path(ragged._native.__file__).read_bytes()).hexdigest(),'prototype_sha256':sha256(Path(__file__).read_bytes()).hexdigest(),'rounds':args.rounds,'batch_ms':args.batch_ms,'scope':'complete captured synchronous decoder; immutable snapshot and validation retained per call; dtype setup excluded for every compiled decoder; private unshippable shape-setter variant suppresses NumPy 2.5 deprecation warnings during timing','warning_evidence':warning_evidence(),'results':results}
+
+
+def main():
+    parser=argparse.ArgumentParser()
+    parser.add_argument('--validate',action='store_true')
+    parser.add_argument('--benchmark',action='store_true')
+    parser.add_argument('--rows',type=int,nargs='+',default=[1,32,128,512,8192,65536])
+    parser.add_argument('--rounds',type=int,default=9)
+    parser.add_argument('--batch-ms',type=float,default=25)
+    parser.add_argument('--output',type=Path,required=True)
+    args=parser.parse_args()
+    result={'warning_evidence':warning_evidence()}
+    if args.validate:
+        result['validation']=validate()
+    if args.benchmark:
+        result['benchmark']=run_benchmark(args)
+    args.output.write_text(json.dumps(result,indent=2)+'\n')
+    print(json.dumps({k:v for k,v in result.items() if k!='benchmark'},indent=2))
+
+if __name__=='__main__':
+    main()

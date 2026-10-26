@@ -1,0 +1,70 @@
+* Getting build dependencies for sdist...
+* Building sdist...
+* Building wheel from sdist
+* Getting build dependencies for wheel...
+* Building wheel...
+In file included from /private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/build-via-sdist-egx_giqz/unstd-3.1.6/native/compress/src/fast.c:6:
+/private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/build-via-sdist-egx_giqz/unstd-3.1.6/native/compress/src/../vendor/libdeflate/lib/deflate_compress.c:1836:30: warning: comparison of integers of different signs: 'long' and 'size_t' (aka 'unsigned long') [-Wsign-compare]
+ 1836 |                         ASSERT(os->end - out_next >=
+      |                         ~~~~~~~~~~~~~~~~~~~~~~~~~~^~
+ 1837 |                                DIV_ROUND_UP(bitcount + 3, 8) + 4 + len);
+      |                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/build-via-sdist-egx_giqz/unstd-3.1.6/native/compress/src/../vendor/libdeflate/lib/lib_common.h:99:29: note: expanded from macro 'ASSERT'
+   99 | #define ASSERT(expr) (void)(expr)
+      |                             ^~~~
+In file included from /private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/build-via-sdist-egx_giqz/unstd-3.1.6/native/compress/src/fast.c:6:
+/private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/build-via-sdist-egx_giqz/unstd-3.1.6/native/compress/src/../vendor/libdeflate/lib/deflate_compress.c:2384:30: warning: comparison of integers of different signs: 'long' and 'size_t' (aka 'unsigned long') [-Wsign-compare]
+ 2384 |         if (in_end - in_block_begin < soft_max_len + MIN_BLOCK_LENGTH)
+      |             ~~~~~~~~~~~~~~~~~~~~~~~ ^ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/build-via-sdist-egx_giqz/unstd-3.1.6/native/compress/src/../vendor/libdeflate/lib/deflate_compress.c:2424:26: warning: comparison of integers of different signs: 'long' and 'size_t' (aka 'unsigned long') [-Wsign-compare]
+ 2424 |                 if (out_end - out_next < 5 + len)
+      |                     ~~~~~~~~~~~~~~~~~~ ^ ~~~~~~~
+/private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/build-via-sdist-egx_giqz/unstd-3.1.6/native/compress/src/../vendor/libdeflate/lib/deflate_compress.c:3602:13: warning: comparison of integers of different signs: 'long' and 'unsigned long' [-Wsign-compare]
+ 3602 |                 in_next + MIN(in_end - in_next, MATCHFINDER_WINDOW_SIZE);
+      |                           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/build-via-sdist-egx_giqz/unstd-3.1.6/native/compress/src/../vendor/libdeflate/lib/../common_defs.h:308:25: note: expanded from macro 'MIN'
+  308 | #define MIN(a, b)               ((a) <= (b) ? (a) : (b))
+      |                                   ~  ^   ~
+4 warnings generated.
+In file included from /private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/build-via-sdist-egx_giqz/unstd-3.1.6/native/compress/vendor/libdeflate/lib/deflate_decompress.c:1082:
+/private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/build-via-sdist-egx_giqz/unstd-3.1.6/native/compress/vendor/libdeflate/lib/decompress_template.h:77:2: warning: comparison of integers of different signs: 'long' and 'unsigned long' [-Wsign-compare]
+   77 |         REFILL_BITS();
+      |         ^~~~~~~~~~~~~
+/private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/build-via-sdist-egx_giqz/unstd-3.1.6/native/compress/vendor/libdeflate/lib/deflate_decompress.c:239:30: note: expanded from macro 'REFILL_BITS'
+  239 |             likely(in_end - in_next >= sizeof(bitbuf_t))) {             \
+      |                    ~~~~~~~~~~~~~~~~ ^  ~~~~~~~~~~~~~~~~
+/private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/build-via-sdist-egx_giqz/unstd-3.1.6/native/compress/vendor/libdeflate/lib/../common_defs.h:231:45: note: expanded from macro 'likely'
+  231 | #  define likely(expr)          __builtin_expect(!!(expr), 1)
+      |                                                     ^~~~
+In file included from /private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/build-via-sdist-egx_giqz/unstd-3.1.6/native/compress/vendor/libdeflate/lib/deflate_decompress.c:1082:
+/private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/build-via-sdist-egx_giqz/unstd-3.1.6/native/compress/vendor/libdeflate/lib/decompress_template.h:123:4: warning: comparison of integers of different signs: 'long' and 'unsigned long' [-Wsign-compare]
+  123 |                         REFILL_BITS();
+      |                         ^~~~~~~~~~~~~
+/private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/build-via-sdist-egx_giqz/unstd-3.1.6/native/compress/vendor/libdeflate/lib/deflate_decompress.c:239:30: note: expanded from macro 'REFILL_BITS'
+  239 |             likely(in_end - in_next >= sizeof(bitbuf_t))) {             \
+      |                    ~~~~~~~~~~~~~~~~ ^  ~~~~~~~~~~~~~~~~
+/private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/build-via-sdist-egx_giqz/unstd-3.1.6/native/compress/vendor/libdeflate/lib/../common_defs.h:231:45: note: expanded from macro 'likely'
+  231 | #  define likely(expr)          __builtin_expect(!!(expr), 1)
+      |                                                     ^~~~
+In file included from /private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/build-via-sdist-egx_giqz/unstd-3.1.6/native/compress/vendor/libdeflate/lib/deflate_decompress.c:1082:
+/private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/build-via-sdist-egx_giqz/unstd-3.1.6/native/compress/vendor/libdeflate/lib/decompress_template.h:158:5: warning: comparison of integers of different signs: 'long' and 'unsigned long' [-Wsign-compare]
+  158 |                                 REFILL_BITS();
+      |                                 ^~~~~~~~~~~~~
+/private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/build-via-sdist-egx_giqz/unstd-3.1.6/native/compress/vendor/libdeflate/lib/deflate_decompress.c:239:30: note: expanded from macro 'REFILL_BITS'
+  239 |             likely(in_end - in_next >= sizeof(bitbuf_t))) {             \
+      |                    ~~~~~~~~~~~~~~~~ ^  ~~~~~~~~~~~~~~~~
+/private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/build-via-sdist-egx_giqz/unstd-3.1.6/native/compress/vendor/libdeflate/lib/../common_defs.h:231:45: note: expanded from macro 'likely'
+  231 | #  define likely(expr)          __builtin_expect(!!(expr), 1)
+      |                                                     ^~~~
+In file included from /private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/build-via-sdist-egx_giqz/unstd-3.1.6/native/compress/vendor/libdeflate/lib/deflate_decompress.c:1082:
+/private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/build-via-sdist-egx_giqz/unstd-3.1.6/native/compress/vendor/libdeflate/lib/decompress_template.h:686:3: warning: comparison of integers of different signs: 'long' and 'unsigned long' [-Wsign-compare]
+  686 |                 REFILL_BITS();
+      |                 ^~~~~~~~~~~~~
+/private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/build-via-sdist-egx_giqz/unstd-3.1.6/native/compress/vendor/libdeflate/lib/deflate_decompress.c:239:30: note: expanded from macro 'REFILL_BITS'
+  239 |             likely(in_end - in_next >= sizeof(bitbuf_t))) {             \
+      |                    ~~~~~~~~~~~~~~~~ ^  ~~~~~~~~~~~~~~~~
+/private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/build-via-sdist-egx_giqz/unstd-3.1.6/native/compress/vendor/libdeflate/lib/../common_defs.h:231:45: note: expanded from macro 'likely'
+  231 | #  define likely(expr)          __builtin_expect(!!(expr), 1)
+      |                                                     ^~~~
+4 warnings generated.
+Successfully built unstd-3.1.6.tar.gz and unstd-3.1.6-cp314-cp314-macosx_11_0_arm64.whl

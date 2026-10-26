@@ -241,6 +241,7 @@ def test_small_thread_stack_keeps_discarded_source_recursion_limits() -> None:
         """
         from functools import partial
         import json
+        import os
         import sys
         import threading
         from unstd.serde import jsonx
@@ -264,19 +265,40 @@ def test_small_thread_stack_keeps_discarded_source_recursion_limits() -> None:
             # consume different machine-stack space at the exact boundary.
             reference = partial(json.loads)
             candidate = partial(jsonx.loads)
-            lower, upper = 0, 6000
-            while lower + 1 < upper:
-                middle = (lower + upper) // 2
-                if parse(reference, document_at(middle))[0] == "value":
-                    lower = middle
-                else:
-                    upper = middle
-            depths = (1, 128, 512, 1024, 2048, 6000, *range(lower - 3, upper + 4))
+            limits = []
+            for function in (reference, candidate):
+                lower, upper = 0, 6000
+                while lower + 1 < upper:
+                    middle = (lower + upper) // 2
+                    result = parse(function, document_at(middle))
+                    if result[0] == "value":
+                        lower = middle
+                    else:
+                        if result[1] is not RecursionError:
+                            failures.append(("cutoff error", middle, result))
+                            return
+                        upper = middle
+                limits.append((lower, upper))
+            # ASan expands the native dispatch frame. Its machine-stack cost
+            # can move CPython's soft boundary by one or two JSON containers;
+            # Python's recursion limit and discarded-source rejection remain.
+            slack = 2 if os.environ.get("UNSTD_NATIVE_SANITIZERS") == "1" else 0
+            first, last = sorted(limit[0] for limit in limits)
+            if last - first > slack:
+                failures.append(("stack cutoffs", limits))
+                return
+            depths = (1, 128, 512, 1024, 2048, 6000, *range(first - 3, last + 5))
             for depth in depths:
                 document = document_at(depth)
                 expected = parse(reference, document)
                 actual = parse(candidate, document)
                 if actual != expected:
+                    if first < depth <= last:
+                        value = actual if actual[0] == "value" else expected
+                        error = expected if expected[0] == "error" else actual
+                        if (value == ("value", {"discarded": 0, "padding": "x" * 2049})
+                                and error[:2] == ("error", RecursionError)):
+                            continue
                     failures.append((depth, expected, actual))
             for depth in (1, 128, 512, 1024, 2048, 6000):
                 document = document_at(depth)
@@ -329,3 +351,21 @@ def test_large_dense_objects_reparse_inexact_native_numbers(number: str) -> None
     actual = jsonx.loads(document)
     assert type(actual["number"]) is type(expected["number"])
     assert actual == expected
+
+
+@pytest.mark.parametrize("binary", [False, True])
+@pytest.mark.parametrize(
+    "prefix",
+    [
+        '"value":0.84551240822557006',
+        '"nested":{"value":1.00000000000000011102230246251565404236316680908203126}',
+        '"escaped\\"1.5":"1.5\\"", "value":-0.0',
+    ],
+)
+def test_large_object_numeric_prefix_preserves_exact_values(
+    binary: bool, prefix: str
+) -> None:
+    _ready()
+    document = "{" + prefix + ',"padding":"' + "x" * 3000 + '"}'
+    source = document.encode() if binary else document
+    assert json.dumps(jsonx.loads(source)) == json.dumps(json.loads(source))

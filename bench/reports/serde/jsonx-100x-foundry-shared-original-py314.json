@@ -1,0 +1,5318 @@
+{
+  "driver_sha256": "7710f97986c836d2a6b69d450ec63910e919817d045c89d5ea3706bbb0047593",
+  "protocol": "Two persistent installed-root workers alternate per case; case order reverses each repetition; variant order alternates per case/repetition. Correctness and fixture creation are outside timing. No control normalization.",
+  "estimator": "median across repetitions of minimum raw wall-clock batch means",
+  "rounds": 9,
+  "repetitions": 5,
+  "provenance": {
+    "before": {
+      "provenance": {
+        "source": "/qualification/installed-original",
+        "imported_jsonx": "/qualification/installed-original/unstd/serde/jsonx.py",
+        "native_module": "/qualification/installed-original/unstd/serde/_json_native.cpython-314-x86_64-linux-gnu.so",
+        "dispatch": {
+          "loads": {
+            "bound": true,
+            "ready": true
+          },
+          "dumpb": {
+            "bound": true,
+            "ready": true
+          }
+        },
+        "sha256": {
+          "unstd/serde/__init__.py": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d",
+          "unstd/serde/_internal/__init__.py": "6aed7cdb4acd19aa8dfa7668c884fd937f2add4574c73531bd6cdde569f53f05",
+          "unstd/serde/_internal/json_common.py": "cb4ee6fce1510e202b4126e67b53ac73b9e7b73a9d67d010b451b7fa45ea0b8f",
+          "unstd/serde/_internal/json_encode.py": "8c27e3ed7bc6052315bc3d3ce17987ef078c751a4348396cc29fe103578f5553",
+          "unstd/serde/_json_common.py": "fb088bf068ac0dd5f2dd1675cb60cb682da6aec80320b85d98aa39c16a7f6781",
+          "unstd/serde/_json_encode.py": "d010007e07fbe5e46a1bcfb6984b2730f30564e4a2dc15306baedda9f2ab8ec1",
+          "unstd/serde/_json_native.cpython-314-x86_64-linux-gnu.so": "3b4ba2029e40207ddf1e28401178509c64a6d16745a919f93564fde28216f650",
+          "unstd/serde/_json_native.pyi": "8e1a78292638c68ef25a9c149dd07de835af34bab57c9ffe8ab48a4a99a6c7a1",
+          "unstd/serde/b64.py": "c9fa198b3a6a4dffab239697c2d35c717ab2adea1977e7c1bd2226c30c4dbe32",
+          "unstd/serde/jsonx.py": "934c8005f7de765ac3600761dd7ddee7f9e08d81d2a55f6bcfb79b6ea6e4d663",
+          "unstd/serde/ndjson.py": "98c1f5bb1b78d2548390683b9b4bc062c4dc900b1fc27837e7941c7ee4553550",
+          "unstd/serde/structs.py": "ebe5eb0c8cba8e8bc01137c9e4f768d86cb900d15c67600cbaf38f0accfa6c65"
+        },
+        "native_source_sha256": {},
+        "native_qualification": {
+          "dispatch": {
+            "loads": {
+              "bound": true,
+              "ready": true
+            },
+            "dumpb": {
+              "bound": true,
+              "ready": true
+            }
+          },
+          "probes": {
+            "native_integer_encoding": true,
+            "native_compact_bytes": true,
+            "native_ndjson_encoding": true,
+            "native_ndjson_decode": true,
+            "public_text": true,
+            "public_compact_bytes": true,
+            "public_decode": true
+          }
+        }
+      },
+      "cases": [
+        "dumps/shared-floats-256x256",
+        "dumpb/shared-floats-256x256",
+        "dumps/independent-floats-256x256",
+        "dumpb/independent-floats-256x256",
+        "dumps/shared-varied-floats-256x128",
+        "dumpb/shared-varied-floats-256x128",
+        "dumps/independent-varied-floats-256x128",
+        "dumpb/independent-varied-floats-256x128"
+      ]
+    },
+    "after": {
+      "provenance": {
+        "source": "/qualification/installed-combined",
+        "imported_jsonx": "/qualification/installed-combined/unstd/serde/jsonx.py",
+        "native_module": "/qualification/installed-combined/unstd/serde/_json_native.cpython-314-x86_64-linux-gnu.so",
+        "dispatch": {
+          "loads": {
+            "bound": true,
+            "ready": true
+          },
+          "dumpb": {
+            "bound": true,
+            "ready": true
+          }
+        },
+        "sha256": {
+          "unstd/serde/__init__.py": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d",
+          "unstd/serde/_internal/__init__.py": "6aed7cdb4acd19aa8dfa7668c884fd937f2add4574c73531bd6cdde569f53f05",
+          "unstd/serde/_internal/json_common.py": "cb4ee6fce1510e202b4126e67b53ac73b9e7b73a9d67d010b451b7fa45ea0b8f",
+          "unstd/serde/_internal/json_encode.py": "a01fe8460bd4a70573fed3ebff35c1a1f318bf477bb17c41b165a0a5aacc46a4",
+          "unstd/serde/_json_common.py": "fb088bf068ac0dd5f2dd1675cb60cb682da6aec80320b85d98aa39c16a7f6781",
+          "unstd/serde/_json_encode.py": "d010007e07fbe5e46a1bcfb6984b2730f30564e4a2dc15306baedda9f2ab8ec1",
+          "unstd/serde/_json_native.cpython-314-x86_64-linux-gnu.so": "4e8196301d190b17a0881f46a51708498ad29a104aa19b5244635ff43082d002",
+          "unstd/serde/_json_native.pyi": "275cb98230bf6a337bbc224ebfcd13025859b7ccef2800fb6d4ef7ac3796d47e",
+          "unstd/serde/b64.py": "c9fa198b3a6a4dffab239697c2d35c717ab2adea1977e7c1bd2226c30c4dbe32",
+          "unstd/serde/jsonx.py": "a15639db6e2b4495c9f50aec12c6830c931e48563a506ad56d51598c393d7ca4",
+          "unstd/serde/ndjson.py": "98c1f5bb1b78d2548390683b9b4bc062c4dc900b1fc27837e7941c7ee4553550",
+          "unstd/serde/structs.py": "ebe5eb0c8cba8e8bc01137c9e4f768d86cb900d15c67600cbaf38f0accfa6c65"
+        },
+        "native_source_sha256": {},
+        "native_qualification": {
+          "dispatch": {
+            "loads": {
+              "bound": true,
+              "ready": true
+            },
+            "dumpb": {
+              "bound": true,
+              "ready": true
+            }
+          },
+          "probes": {
+            "native_integer_encoding": true,
+            "native_compact_bytes": true,
+            "native_ndjson_encoding": true,
+            "native_ndjson_decode": true,
+            "public_text": true,
+            "public_compact_bytes": true,
+            "public_decode": true
+          }
+        }
+      },
+      "cases": [
+        "dumps/shared-floats-256x256",
+        "dumpb/shared-floats-256x256",
+        "dumps/independent-floats-256x256",
+        "dumpb/independent-floats-256x256",
+        "dumps/shared-varied-floats-256x128",
+        "dumpb/shared-varied-floats-256x128",
+        "dumps/independent-varied-floats-256x128",
+        "dumpb/independent-varied-floats-256x128"
+      ]
+    }
+  },
+  "comparisons": {
+    "dumps/shared-floats-256x256": {
+      "before_ns": 6689716.0,
+      "after_ns": 27477.6328125,
+      "before_over_after": 243.46041908518205,
+      "before_stdlib_ns": 6849631.0,
+      "after_stdlib_ns": 6698483.0
+    },
+    "dumpb/shared-floats-256x256": {
+      "before_ns": 6724873.0,
+      "after_ns": 13985.2921875,
+      "before_over_after": 480.8532356592925,
+      "before_stdlib_ns": 6793344.0,
+      "after_stdlib_ns": 7067678.0
+    },
+    "dumps/independent-floats-256x256": {
+      "before_ns": 6845234.0,
+      "after_ns": 418803.75,
+      "before_over_after": 16.344729482484336,
+      "before_stdlib_ns": 6939363.0,
+      "after_stdlib_ns": 6287507.0
+    },
+    "dumpb/independent-floats-256x256": {
+      "before_ns": 6289080.0,
+      "after_ns": 370835.6923076923,
+      "before_over_after": 16.95920897166981,
+      "before_stdlib_ns": 6328996.0,
+      "after_stdlib_ns": 6359494.0
+    },
+    "dumps/shared-varied-floats-256x128": {
+      "before_ns": 7387409.0,
+      "after_ns": 78813.39655172414,
+      "before_over_after": 93.73290992669939,
+      "before_stdlib_ns": 7447504.0,
+      "after_stdlib_ns": 7398811.0
+    },
+    "dumpb/shared-varied-floats-256x128": {
+      "before_ns": 7370768.0,
+      "after_ns": 46135.6015625,
+      "before_over_after": 159.76312761446937,
+      "before_stdlib_ns": 7359946.0,
+      "after_stdlib_ns": 7373934.0
+    },
+    "dumps/independent-varied-floats-256x128": {
+      "before_ns": 7538008.0,
+      "after_ns": 6768607.0,
+      "before_over_after": 1.113671985978799,
+      "before_stdlib_ns": 7540753.0,
+      "after_stdlib_ns": 7555080.0
+    },
+    "dumpb/independent-varied-floats-256x128": {
+      "before_ns": 7401195.0,
+      "after_ns": 6776732.0,
+      "before_over_after": 1.0921481032450449,
+      "before_stdlib_ns": 7451051.0,
+      "after_stdlib_ns": 7430512.0
+    }
+  },
+  "samples": [
+    {
+      "label": "before",
+      "repetition": 0,
+      "case": "dumps/shared-floats-256x256",
+      "identical_output": true,
+      "started_unix_ns": 1792960923289809556,
+      "finished_unix_ns": 1792960923483264550,
+      "candidate": {
+        "per_op_ns": 7056537.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.09552816062609748,
+        "samples_ns": [
+          7407879.0,
+          7730635.0,
+          7056537.0,
+          7123936.0,
+          7563175.0,
+          7313578.0,
+          7072147.0,
+          7166657.0,
+          7481730.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7738197.0,
+          7060073.0,
+          7125646.0,
+          7560293.0,
+          7315654.0,
+          7073138.0,
+          7167475.0,
+          7485031.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7048602.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.04985556001033964,
+        "samples_ns": [
+          7048602.0,
+          7194490.0,
+          7067448.0,
+          7400014.0,
+          7314971.0,
+          7136790.0,
+          7115790.0,
+          7055014.0,
+          7115420.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7199375.0,
+          7068689.0,
+          7404130.0,
+          7317728.0,
+          7138381.0,
+          7116880.0,
+          7055945.0,
+          7117691.0
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 0,
+      "case": "dumps/shared-floats-256x256",
+      "identical_output": true,
+      "started_unix_ns": 1792960923491102851,
+      "finished_unix_ns": 1792960923675580757,
+      "candidate": {
+        "per_op_ns": 27597.27734375,
+        "iters": 256,
+        "rounds": 9,
+        "spread": 0.0662109585934867,
+        "samples_ns": [
+          27597.27734375,
+          28936.0859375,
+          29424.51953125,
+          29397.04296875,
+          29132.203125,
+          27872.41015625,
+          29034.203125,
+          28601.1484375,
+          29406.984375
+        ],
+        "cpu_samples_ns": [
+          null,
+          28956.1171875,
+          29443.125,
+          29408.05859375,
+          29142.171875,
+          27880.34375,
+          28976.78515625,
+          28608.82421875,
+          29417.609375
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7107534.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.063778379392909,
+        "samples_ns": [
+          7481889.0,
+          7531194.0,
+          7107534.0,
+          7264865.0,
+          7531074.0,
+          7545421.0,
+          7560841.0,
+          7422477.0,
+          7370497.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7535637.0,
+          7108985.0,
+          7266090.0,
+          7532581.0,
+          7546427.0,
+          7562628.0,
+          7423255.0,
+          7372110.0
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 0,
+      "case": "dumpb/shared-floats-256x256",
+      "identical_output": true,
+      "started_unix_ns": 1792960923683049792,
+      "finished_unix_ns": 1792960923884945208,
+      "candidate": {
+        "per_op_ns": 14378.621875,
+        "iters": 640,
+        "rounds": 9,
+        "spread": 0.04842062619440015,
+        "samples_ns": [
+          14378.621875,
+          14595.459375,
+          15045.81875,
+          14771.4046875,
+          15074.84375,
+          15025.0453125,
+          14994.4390625,
+          14896.51875,
+          14866.853125
+        ],
+        "cpu_samples_ns": [
+          null,
+          14606.3359375,
+          15058.9828125,
+          14778.1421875,
+          15078.9265625,
+          15029.0828125,
+          14996.44375,
+          14899.95,
+          14874.6984375
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7067678.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.08590657355923685,
+        "samples_ns": [
+          7244906.0,
+          7637657.0,
+          7613762.0,
+          7674838.0,
+          7340119.0,
+          7327054.0,
+          7067678.0,
+          7197076.0,
+          7342544.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7643930.0,
+          7616609.0,
+          7677012.0,
+          7341522.0,
+          7328187.0,
+          7068619.0,
+          7199174.0,
+          7344738.0
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 0,
+      "case": "dumpb/shared-floats-256x256",
+      "identical_output": true,
+      "started_unix_ns": 1792960923899791372,
+      "finished_unix_ns": 1792960924089129928,
+      "candidate": {
+        "per_op_ns": 7104629.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.047853308033396255,
+        "samples_ns": [
+          7307195.0,
+          7348234.0,
+          7444609.0,
+          7301455.0,
+          7301455.0,
+          7191255.0,
+          7297337.0,
+          7136520.0,
+          7104629.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7351461.0,
+          7446951.0,
+          7303470.0,
+          7302608.0,
+          7192191.0,
+          7300415.0,
+          7138079.0,
+          7106260.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7198638.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.06363231489067793,
+        "samples_ns": [
+          7494354.0,
+          7539340.0,
+          7656704.0,
+          7618000.0,
+          7536655.0,
+          7198638.0,
+          7455730.0,
+          7639431.0,
+          7524101.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7542390.0,
+          7659580.0,
+          7620827.0,
+          7539384.0,
+          7199676.0,
+          7457199.0,
+          7643509.0,
+          7528484.0
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 0,
+      "case": "dumps/independent-floats-256x256",
+      "identical_output": true,
+      "started_unix_ns": 1792960924107572337,
+      "finished_unix_ns": 1792960924314417432,
+      "candidate": {
+        "per_op_ns": 6949943.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.05095538193622595,
+        "samples_ns": [
+          7133694.0,
+          7020619.0,
+          7022171.0,
+          7021841.0,
+          6949943.0,
+          7264083.0,
+          7304080.0,
+          7232002.0,
+          7241040.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7023855.0,
+          7024957.0,
+          7024025.0,
+          6951168.0,
+          7265760.0,
+          7307569.0,
+          7234852.0,
+          7243708.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7149574.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.18964934134537245,
+        "samples_ns": [
+          7149574.0,
+          7557835.0,
+          8264555.0,
+          8505486.0,
+          8134898.0,
+          7737920.0,
+          7238906.0,
+          7300223.0,
+          7759380.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7564091.0,
+          8272192.0,
+          8513505.0,
+          8143129.0,
+          7741353.0,
+          7241805.0,
+          7302359.0,
+          7764737.0
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 0,
+      "case": "dumps/independent-floats-256x256",
+      "identical_output": true,
+      "started_unix_ns": 1792960924323180781,
+      "finished_unix_ns": 1792960924505599942,
+      "candidate": {
+        "per_op_ns": 421850.0,
+        "iters": 16,
+        "rounds": 9,
+        "spread": 0.10281142586227332,
+        "samples_ns": [
+          421850.0,
+          465221.0,
+          461153.25,
+          452779.75,
+          431289.9375,
+          426627.875,
+          436151.75,
+          443758.8125,
+          455427.25
+        ],
+        "cpu_samples_ns": [
+          null,
+          465527.0625,
+          461342.9375,
+          452910.25,
+          431433.625,
+          426755.375,
+          436298.375,
+          443917.0625,
+          455609.0625
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7203849.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.038881159224742216,
+        "samples_ns": [
+          7203849.0,
+          7406505.0,
+          7350179.0,
+          7254826.0,
+          7403470.0,
+          7453515.0,
+          7353113.0,
+          7483943.0,
+          7322696.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7408448.0,
+          7351981.0,
+          7255941.0,
+          7406184.0,
+          7457149.0,
+          7355839.0,
+          7487827.0,
+          7326233.0
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 0,
+      "case": "dumpb/independent-floats-256x256",
+      "identical_output": true,
+      "started_unix_ns": 1792960924512582518,
+      "finished_unix_ns": 1792960924711663224,
+      "candidate": {
+        "per_op_ns": 370835.6923076923,
+        "iters": 26,
+        "rounds": 9,
+        "spread": 0.04601011353981361,
+        "samples_ns": [
+          374622.1538461539,
+          373646.46153846156,
+          372671.5,
+          370835.6923076923,
+          387897.8846153846,
+          372864.96153846156,
+          371244.92307692306,
+          377732.73076923075,
+          386586.92307692306
+        ],
+        "cpu_samples_ns": [
+          null,
+          373817.0,
+          372803.57692307694,
+          370946.96153846156,
+          388138.53846153844,
+          373067.8846153846,
+          371364.3076923077,
+          377876.92307692306,
+          386748.23076923075
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 6372780.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.10070754050822404,
+        "samples_ns": [
+          7014567.0,
+          6853228.0,
+          6758577.0,
+          6773065.0,
+          6656052.0,
+          6438716.0,
+          6441501.0,
+          6742276.0,
+          6372780.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          6857733.0,
+          6761130.0,
+          6774947.0,
+          6657796.0,
+          6440157.0,
+          6443103.0,
+          6744440.0,
+          6374875.0
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 0,
+      "case": "dumpb/independent-floats-256x256",
+      "identical_output": true,
+      "started_unix_ns": 1792960924725776387,
+      "finished_unix_ns": 1792960924892624198,
+      "candidate": {
+        "per_op_ns": 6289080.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.26909086861671344,
+        "samples_ns": [
+          6434508.0,
+          7981414.0,
+          6345418.0,
+          6329968.0,
+          6367400.0,
+          6289080.0,
+          6304038.0,
+          6331442.0,
+          6356730.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7986895.0,
+          6348025.0,
+          6331724.0,
+          6356019.0,
+          6290316.0,
+          6305364.0,
+          6332906.0,
+          6358644.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 6328996.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.031070646908293195,
+        "samples_ns": [
+          6445859.0,
+          6487499.0,
+          6340839.0,
+          6525642.0,
+          6383290.0,
+          6446681.0,
+          6477911.0,
+          6328996.0,
+          6335899.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          6482478.0,
+          6342283.0,
+          6528363.0,
+          6384383.0,
+          6448634.0,
+          6479762.0,
+          6331032.0,
+          6337123.0
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 0,
+      "case": "dumps/shared-varied-floats-256x128",
+      "identical_output": true,
+      "started_unix_ns": 1792960924908385812,
+      "finished_unix_ns": 1792960925108405362,
+      "candidate": {
+        "per_op_ns": 7622509.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.05158419622725273,
+        "samples_ns": [
+          7886403.0,
+          7661132.0,
+          7747637.0,
+          7667024.0,
+          7626376.0,
+          7622509.0,
+          7865123.0,
+          7862938.0,
+          8015710.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7663508.0,
+          7749740.0,
+          7668637.0,
+          7627490.0,
+          7623582.0,
+          7866529.0,
+          7864525.0,
+          8018424.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7698754.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.04957412589102081,
+        "samples_ns": [
+          8005791.0,
+          8007134.0,
+          7944665.0,
+          7913364.0,
+          8080413.0,
+          7960294.0,
+          7698754.0,
+          7788196.0,
+          8043594.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          8009849.0,
+          7946339.0,
+          7916934.0,
+          8083147.0,
+          7962660.0,
+          7701308.0,
+          7789715.0,
+          8047179.0
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 0,
+      "case": "dumps/shared-varied-floats-256x128",
+      "identical_output": true,
+      "started_unix_ns": 1792960925116674968,
+      "finished_unix_ns": 1792960925322727448,
+      "candidate": {
+        "per_op_ns": 78813.39655172414,
+        "iters": 116,
+        "rounds": 9,
+        "spread": 0.042467290153061235,
+        "samples_ns": [
+          81393.1551724138,
+          81274.56034482758,
+          81190.87068965517,
+          80139.12068965517,
+          81678.08620689655,
+          81594.91379310345,
+          78813.39655172414,
+          82160.38793103448,
+          81889.69827586207
+        ],
+        "cpu_samples_ns": [
+          null,
+          81308.63793103448,
+          81135.29310344828,
+          80165.02586206897,
+          81702.6551724138,
+          81616.45689655172,
+          78826.99137931035,
+          82188.13793103448,
+          81904.75862068965
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7398811.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.06537320658684213,
+        "samples_ns": [
+          7716398.0,
+          7398811.0,
+          7878558.0,
+          7791942.0,
+          7614493.0,
+          7882495.0,
+          7683686.0,
+          7729793.0,
+          7491699.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7403008.0,
+          7881147.0,
+          7793692.0,
+          7598215.0,
+          7885335.0,
+          7686310.0,
+          7731354.0,
+          7493408.0
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 0,
+      "case": "dumpb/shared-varied-floats-256x128",
+      "identical_output": true,
+      "started_unix_ns": 1792960925330515924,
+      "finished_unix_ns": 1792960925497270005,
+      "candidate": {
+        "per_op_ns": 47139.3203125,
+        "iters": 128,
+        "rounds": 9,
+        "spread": 0.06864641431077062,
+        "samples_ns": [
+          48329.328125,
+          49319.4140625,
+          49357.0703125,
+          50193.7421875,
+          47139.3203125,
+          47683.328125,
+          48493.46875,
+          50375.265625,
+          50101.0703125
+        ],
+        "cpu_samples_ns": [
+          null,
+          49347.6171875,
+          49393.015625,
+          50216.046875,
+          47157.09375,
+          47701.78125,
+          48531.1640625,
+          50415.09375,
+          50123.921875
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7373934.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.05578379193521396,
+        "samples_ns": [
+          7453396.0,
+          7373934.0,
+          7482200.0,
+          7614774.0,
+          7555902.0,
+          7785280.0,
+          7549509.0,
+          7521636.0,
+          7736115.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7376427.0,
+          7483809.0,
+          7617270.0,
+          7557217.0,
+          7786679.0,
+          7550635.0,
+          7523093.0,
+          7731505.0
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 0,
+      "case": "dumpb/shared-varied-floats-256x128",
+      "identical_output": true,
+      "started_unix_ns": 1792960925513667826,
+      "finished_unix_ns": 1792960925713022355,
+      "candidate": {
+        "per_op_ns": 7714003.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.03403589550068881,
+        "samples_ns": [
+          7879870.0,
+          7864170.0,
+          7809737.0,
+          7794838.0,
+          7932011.0,
+          7922863.0,
+          7714003.0,
+          7921760.0,
+          7976556.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7868092.0,
+          7811475.0,
+          7796337.0,
+          7934256.0,
+          7925050.0,
+          7716397.0,
+          7923255.0,
+          7978570.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7583865.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.049449192463209724,
+        "samples_ns": [
+          7952920.0,
+          7926750.0,
+          7715326.0,
+          7858801.0,
+          7850905.0,
+          7583865.0,
+          7751174.0,
+          7951408.0,
+          7958881.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7929537.0,
+          7716858.0,
+          7861059.0,
+          7852793.0,
+          7585060.0,
+          7752525.0,
+          7954514.0,
+          7962840.0
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 0,
+      "case": "dumps/independent-varied-floats-256x128",
+      "identical_output": true,
+      "started_unix_ns": 1792960925728909560,
+      "finished_unix_ns": 1792960925930648245,
+      "candidate": {
+        "per_op_ns": 7692562.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.055014051235466155,
+        "samples_ns": [
+          8010450.0,
+          7953251.0,
+          7974892.0,
+          7731036.0,
+          7692562.0,
+          8115761.0,
+          8064644.0,
+          7967367.0,
+          8088279.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7959344.0,
+          7979481.0,
+          7734561.0,
+          7694707.0,
+          8108394.0,
+          8069561.0,
+          7970514.0,
+          8092825.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7680039.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.052177469411288147,
+        "samples_ns": [
+          7759260.0,
+          7683285.0,
+          7680039.0,
+          7752898.0,
+          7685189.0,
+          8080764.0,
+          7818233.0,
+          7881934.0,
+          7785611.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7686451.0,
+          7681922.0,
+          7755510.0,
+          7688244.0,
+          8086413.0,
+          7822186.0,
+          7886196.0,
+          7788793.0
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 0,
+      "case": "dumps/independent-varied-floats-256x128",
+      "identical_output": true,
+      "started_unix_ns": 1792960925946002371,
+      "finished_unix_ns": 1792960926141051011,
+      "candidate": {
+        "per_op_ns": 6761563.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.06547687272898293,
+        "samples_ns": [
+          7204289.0,
+          6942709.0,
+          7028523.0,
+          6839402.0,
+          6884528.0,
+          6893395.0,
+          6761563.0,
+          7191024.0,
+          7141860.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          6946981.0,
+          7032521.0,
+          6842414.0,
+          6889622.0,
+          6895984.0,
+          6764117.0,
+          7192451.0,
+          7145263.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7727189.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.02685659688147915,
+        "samples_ns": [
+          7739913.0,
+          7840135.0,
+          7889268.0,
+          7850935.0,
+          7828823.0,
+          7853250.0,
+          7788265.0,
+          7727189.0,
+          7934715.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7843566.0,
+          7891997.0,
+          7852943.0,
+          7830251.0,
+          7854336.0,
+          7789514.0,
+          7729401.0,
+          7937323.0
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 0,
+      "case": "dumpb/independent-varied-floats-256x128",
+      "identical_output": true,
+      "started_unix_ns": 1792960926156120953,
+      "finished_unix_ns": 1792960926340333141,
+      "candidate": {
+        "per_op_ns": 6776732.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.029153875348766928,
+        "samples_ns": [
+          6903274.0,
+          6846495.0,
+          6921789.0,
+          6942359.0,
+          6813803.0,
+          6974300.0,
+          6781501.0,
+          6847488.0,
+          6776732.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          6849847.0,
+          6924117.0,
+          6943874.0,
+          6815242.0,
+          6977328.0,
+          6784044.0,
+          6849316.0,
+          6778624.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7408220.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.06922985548485332,
+        "samples_ns": [
+          7712941.0,
+          7587542.0,
+          7656113.0,
+          7838822.0,
+          7663527.0,
+          7921090.0,
+          7541624.0,
+          7408220.0,
+          7807152.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7590861.0,
+          7659610.0,
+          7842144.0,
+          7665982.0,
+          7924548.0,
+          7543773.0,
+          7409690.0,
+          7808981.0
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 0,
+      "case": "dumpb/independent-varied-floats-256x128",
+      "identical_output": true,
+      "started_unix_ns": 1792960926355599439,
+      "finished_unix_ns": 1792960926550986245,
+      "candidate": {
+        "per_op_ns": 7575519.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.10034190396723974,
+        "samples_ns": [
+          7734303.0,
+          8024978.0,
+          7792954.0,
+          8110782.0,
+          8335661.0,
+          7939765.0,
+          7704335.0,
+          7655281.0,
+          7575519.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          8031339.0,
+          7796467.0,
+          8113042.0,
+          8340270.0,
+          7942843.0,
+          7706078.0,
+          7657255.0,
+          7577205.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7523901.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.04056432959444841,
+        "samples_ns": [
+          7523901.0,
+          7573124.0,
+          7604063.0,
+          7671583.0,
+          7750754.0,
+          7710857.0,
+          7776523.0,
+          7719193.0,
+          7829103.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7575452.0,
+          7605127.0,
+          7672675.0,
+          7754078.0,
+          7712158.0,
+          7778142.0,
+          7720334.0,
+          7831614.0
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 1,
+      "case": "dumpb/independent-varied-floats-256x128",
+      "identical_output": true,
+      "started_unix_ns": 1792960926566601640,
+      "finished_unix_ns": 1792960926759274649,
+      "candidate": {
+        "per_op_ns": 6963840.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.060442801672640385,
+        "samples_ns": [
+          6963840.0,
+          7225661.0,
+          7121151.0,
+          7159633.0,
+          7378823.0,
+          6973378.0,
+          7384754.0,
+          6971223.0,
+          7326593.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7228680.0,
+          7122801.0,
+          7161203.0,
+          7380265.0,
+          6974292.0,
+          7387719.0,
+          6972618.0,
+          7327886.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7508982.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.10758622140790855,
+        "samples_ns": [
+          7701139.0,
+          8144706.0,
+          8316845.0,
+          8039185.0,
+          7836437.0,
+          7912683.0,
+          7508982.0,
+          7681201.0,
+          7859973.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          8149511.0,
+          8321504.0,
+          8042771.0,
+          7838736.0,
+          7914950.0,
+          7510650.0,
+          7683635.0,
+          7863593.0
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 1,
+      "case": "dumpb/independent-varied-floats-256x128",
+      "identical_output": true,
+      "started_unix_ns": 1792960926775211449,
+      "finished_unix_ns": 1792960926964306058,
+      "candidate": {
+        "per_op_ns": 7339548.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.03469368958415423,
+        "samples_ns": [
+          7465709.0,
+          7339548.0,
+          7373272.0,
+          7344628.0,
+          7437184.0,
+          7594184.0,
+          7476780.0,
+          7393080.0,
+          7354566.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7341723.0,
+          7374353.0,
+          7338887.0,
+          7439216.0,
+          7597554.0,
+          7479061.0,
+          7394832.0,
+          7356550.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7451051.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.03188999780031032,
+        "samples_ns": [
+          7576361.0,
+          7688665.0,
+          7608852.0,
+          7682794.0,
+          7451051.0,
+          7622699.0,
+          7453886.0,
+          7665722.0,
+          7482290.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7692562.0,
+          7611951.0,
+          7687753.0,
+          7453723.0,
+          7625526.0,
+          7455907.0,
+          7668317.0,
+          7484571.0
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 1,
+      "case": "dumps/independent-varied-floats-256x128",
+      "identical_output": true,
+      "started_unix_ns": 1792960926979688468,
+      "finished_unix_ns": 1792960927171774505,
+      "candidate": {
+        "per_op_ns": 7347333.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.06273705030110927,
+        "samples_ns": [
+          7646564.0,
+          7808283.0,
+          7541254.0,
+          7450559.0,
+          7465909.0,
+          7548547.0,
+          7467221.0,
+          7369475.0,
+          7347333.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7811987.0,
+          7542951.0,
+          7451639.0,
+          7468250.0,
+          7551507.0,
+          7469101.0,
+          7370997.0,
+          7349437.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7299281.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.038906982756246815,
+        "samples_ns": [
+          7400074.0,
+          7553426.0,
+          7583274.0,
+          7550371.0,
+          7474927.0,
+          7522598.0,
+          7430291.0,
+          7346902.0,
+          7299281.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7556255.0,
+          7584929.0,
+          7552118.0,
+          7476416.0,
+          7524857.0,
+          7432352.0,
+          7348154.0,
+          7300906.0
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 1,
+      "case": "dumps/independent-varied-floats-256x128",
+      "identical_output": true,
+      "started_unix_ns": 1792960927186216097,
+      "finished_unix_ns": 1792960927367284847,
+      "candidate": {
+        "per_op_ns": 6768607.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.027137046071665855,
+        "samples_ns": [
+          6841706.0,
+          6952287.0,
+          6899146.0,
+          6872205.0,
+          6828672.0,
+          6790378.0,
+          6816739.0,
+          6800988.0,
+          6768607.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          6956538.0,
+          6900813.0,
+          6873332.0,
+          6829509.0,
+          6791107.0,
+          6817427.0,
+          6802218.0,
+          6770258.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7422106.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.021132681209349476,
+        "samples_ns": [
+          7467321.0,
+          7422106.0,
+          7426174.0,
+          7501217.0,
+          7578955.0,
+          7560289.0,
+          7542165.0,
+          7514512.0,
+          7455520.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7424878.0,
+          7428285.0,
+          7505540.0,
+          7582305.0,
+          7553200.0,
+          7546517.0,
+          7513165.0,
+          7458452.0
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 1,
+      "case": "dumpb/shared-varied-floats-256x128",
+      "identical_output": true,
+      "started_unix_ns": 1792960927375000774,
+      "finished_unix_ns": 1792960927538771113,
+      "candidate": {
+        "per_op_ns": 45449.4453125,
+        "iters": 128,
+        "rounds": 9,
+        "spread": 0.029872132996672643,
+        "samples_ns": [
+          46284.3203125,
+          46549.984375,
+          45679.4140625,
+          45467.5234375,
+          45449.4453125,
+          45945.15625,
+          46807.1171875,
+          46726.890625,
+          46464.6640625
+        ],
+        "cpu_samples_ns": [
+          null,
+          46582.109375,
+          45701.703125,
+          45484.8125,
+          45465.2421875,
+          45959.0625,
+          46823.421875,
+          46743.265625,
+          46481.84375
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7478523.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.055508821728568594,
+        "samples_ns": [
+          7478523.0,
+          7645092.0,
+          7893647.0,
+          7796632.0,
+          7774519.0,
+          7709425.0,
+          7685870.0,
+          7799837.0,
+          7891924.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7648059.0,
+          7899772.0,
+          7798882.0,
+          7777141.0,
+          7711157.0,
+          7687693.0,
+          7802288.0,
+          7893860.0
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 1,
+      "case": "dumpb/shared-varied-floats-256x128",
+      "identical_output": true,
+      "started_unix_ns": 1792960927553891843,
+      "finished_unix_ns": 1792960927744664850,
+      "candidate": {
+        "per_op_ns": 7321042.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.03393437710096459,
+        "samples_ns": [
+          7321042.0,
+          7373653.0,
+          7416716.0,
+          7488443.0,
+          7406075.0,
+          7364225.0,
+          7569477.0,
+          7525734.0,
+          7483312.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7376548.0,
+          7418667.0,
+          7490362.0,
+          7407476.0,
+          7365598.0,
+          7571985.0,
+          7528133.0,
+          7485603.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7359946.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.026050055258557605,
+        "samples_ns": [
+          7394212.0,
+          7359946.0,
+          7398330.0,
+          7445380.0,
+          7514632.0,
+          7551673.0,
+          7394563.0,
+          7406997.0,
+          7417487.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7362582.0,
+          7400142.0,
+          7446700.0,
+          7517353.0,
+          7555073.0,
+          7395653.0,
+          7408108.0,
+          7418948.0
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 1,
+      "case": "dumps/shared-varied-floats-256x128",
+      "identical_output": true,
+      "started_unix_ns": 1792960927759635483,
+      "finished_unix_ns": 1792960927944107147,
+      "candidate": {
+        "per_op_ns": 7337715.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.06849271196823534,
+        "samples_ns": [
+          7409501.0,
+          7409782.0,
+          7495516.0,
+          7393511.0,
+          7378331.0,
+          7365788.0,
+          7840295.0,
+          7373783.0,
+          7337715.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7412455.0,
+          7498617.0,
+          7395443.0,
+          7379844.0,
+          7367461.0,
+          7842835.0,
+          7375656.0,
+          7333987.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7276407.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.030685062009313112,
+        "samples_ns": [
+          7276407.0,
+          7309470.0,
+          7286176.0,
+          7391687.0,
+          7363804.0,
+          7404392.0,
+          7397659.0,
+          7437205.0,
+          7499684.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7311946.0,
+          7287731.0,
+          7393510.0,
+          7366488.0,
+          7405863.0,
+          7398799.0,
+          7439055.0,
+          7501764.0
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 1,
+      "case": "dumps/shared-varied-floats-256x128",
+      "identical_output": true,
+      "started_unix_ns": 1792960927952183984,
+      "finished_unix_ns": 1792960928152256636,
+      "candidate": {
+        "per_op_ns": 81244.14035087719,
+        "iters": 114,
+        "rounds": 9,
+        "spread": 0.02337377745569127,
+        "samples_ns": [
+          82535.90350877192,
+          83143.12280701754,
+          82606.48245614035,
+          83003.20175438597,
+          81644.81578947368,
+          81495.5,
+          81244.14035087719,
+          82063.78070175438,
+          81473.9649122807
+        ],
+        "cpu_samples_ns": [
+          null,
+          83173.64912280702,
+          82632.80701754386,
+          83028.8947368421,
+          81663.88596491228,
+          81512.45614035087,
+          81257.58771929824,
+          82077.11403508772,
+          81496.19298245614
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7515715.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.019957648740006773,
+        "samples_ns": [
+          7515715.0,
+          7534380.0,
+          7657315.0,
+          7665711.0,
+          7633370.0,
+          7618200.0,
+          7633540.0,
+          7642297.0,
+          7600717.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7537801.0,
+          7659129.0,
+          7667024.0,
+          7634473.0,
+          7619494.0,
+          7635444.0,
+          7643801.0,
+          7602132.0
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 1,
+      "case": "dumpb/independent-floats-256x256",
+      "identical_output": true,
+      "started_unix_ns": 1792960928159851311,
+      "finished_unix_ns": 1792960928301235774,
+      "candidate": {
+        "per_op_ns": 405897.5,
+        "iters": 12,
+        "rounds": 9,
+        "spread": 0.03362343120286936,
+        "samples_ns": [
+          419545.1666666667,
+          406465.25,
+          405915.8333333333,
+          405897.5,
+          411099.0,
+          406953.6666666667,
+          407941.4166666667,
+          406641.3333333333,
+          409281.4166666667
+        ],
+        "cpu_samples_ns": [
+          null,
+          406705.4166666667,
+          406104.3333333333,
+          406085.1666666667,
+          411272.3333333333,
+          407075.25,
+          408033.75,
+          406733.0,
+          409401.3333333333
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 6782212.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.05031735958710816,
+        "samples_ns": [
+          6782212.0,
+          6843911.0,
+          6959091.0,
+          7012513.0,
+          7098999.0,
+          7123475.0,
+          7015238.0,
+          6977245.0,
+          6945204.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          6846352.0,
+          6961197.0,
+          7013876.0,
+          7100950.0,
+          7125666.0,
+          7016792.0,
+          6978510.0,
+          6946709.0
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 1,
+      "case": "dumpb/independent-floats-256x256",
+      "identical_output": true,
+      "started_unix_ns": 1792960928314046729,
+      "finished_unix_ns": 1792960928472933414,
+      "candidate": {
+        "per_op_ns": 6181144.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.029374335883454585,
+        "samples_ns": [
+          6320992.0,
+          6233875.0,
+          6306844.0,
+          6281435.0,
+          6305532.0,
+          6204158.0,
+          6181144.0,
+          6181775.0,
+          6362711.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          6236625.0,
+          6309151.0,
+          6282762.0,
+          6306817.0,
+          6205206.0,
+          6182333.0,
+          6182914.0,
+          6364345.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 6164472.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.013538710209081978,
+        "samples_ns": [
+          6233083.0,
+          6217133.0,
+          6164472.0,
+          6194880.0,
+          6247931.0,
+          6240627.0,
+          6193698.0,
+          6209318.0,
+          6177688.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          6219032.0,
+          6165401.0,
+          6196229.0,
+          6249069.0,
+          6241764.0,
+          6194556.0,
+          6210055.0,
+          6178585.0
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 1,
+      "case": "dumps/independent-floats-256x256",
+      "identical_output": true,
+      "started_unix_ns": 1792960928487139465,
+      "finished_unix_ns": 1792960928657887200,
+      "candidate": {
+        "per_op_ns": 6669687.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.03552685455854225,
+        "samples_ns": [
+          6807521.0,
+          6669687.0,
+          6750632.0,
+          6906640.0,
+          6874530.0,
+          6881943.0,
+          6819002.0,
+          6869569.0,
+          6765059.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          6671663.0,
+          6751613.0,
+          6907667.0,
+          6875977.0,
+          6882610.0,
+          6819851.0,
+          6871669.0,
+          6766651.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 6768446.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.025650200947159807,
+        "samples_ns": [
+          6768446.0,
+          6826036.0,
+          6843249.0,
+          6796490.0,
+          6769508.0,
+          6814834.0,
+          6942058.0,
+          6834152.0,
+          6828421.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          6828348.0,
+          6844508.0,
+          6797139.0,
+          6770769.0,
+          6816074.0,
+          6943895.0,
+          6835701.0,
+          6830140.0
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 1,
+      "case": "dumps/independent-floats-256x256",
+      "identical_output": true,
+      "started_unix_ns": 1792960928664750186,
+      "finished_unix_ns": 1792960928854416840,
+      "candidate": {
+        "per_op_ns": 413235.2083333333,
+        "iters": 24,
+        "rounds": 9,
+        "spread": 0.029225083172466852,
+        "samples_ns": [
+          413235.2083333333,
+          416154.125,
+          418580.0416666667,
+          415342.9583333333,
+          419010.0,
+          423623.4166666667,
+          423142.0833333333,
+          425312.0416666667,
+          421143.6666666667
+        ],
+        "cpu_samples_ns": [
+          null,
+          416279.6666666667,
+          418674.625,
+          415411.0,
+          419091.25,
+          423736.625,
+          423224.8333333333,
+          425394.3333333333,
+          421253.2083333333
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 6150094.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.02854037678123294,
+        "samples_ns": [
+          6325620.0,
+          6233264.0,
+          6320710.0,
+          6166926.0,
+          6251117.0,
+          6246489.0,
+          6242531.0,
+          6184330.0,
+          6150094.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          6227879.0,
+          6322957.0,
+          6168397.0,
+          6252655.0,
+          6247645.0,
+          6244560.0,
+          6185489.0,
+          6151615.0
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 1,
+      "case": "dumpb/shared-floats-256x256",
+      "identical_output": true,
+      "started_unix_ns": 1792960928860886896,
+      "finished_unix_ns": 1792960929038416882,
+      "candidate": {
+        "per_op_ns": 13399.9859375,
+        "iters": 640,
+        "rounds": 9,
+        "spread": 0.038486514269896036,
+        "samples_ns": [
+          13572.05,
+          13399.9859375,
+          13421.9953125,
+          13555.846875,
+          13555.4859375,
+          13732.8875,
+          13915.7046875,
+          13899.003125,
+          13898.7984375
+        ],
+        "cpu_samples_ns": [
+          null,
+          13403.85625,
+          13424.471875,
+          13559.6953125,
+          13558.44375,
+          13736.45,
+          13917.68125,
+          13900.2578125,
+          13901.3375
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 6224566.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.03488371719409835,
+        "samples_ns": [
+          6373452.0,
+          6441702.0,
+          6363732.0,
+          6338375.0,
+          6277998.0,
+          6235207.0,
+          6307846.0,
+          6224566.0,
+          6347532.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          6444646.0,
+          6365126.0,
+          6339178.0,
+          6278934.0,
+          6236304.0,
+          6310433.0,
+          6225654.0,
+          6348465.0
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 1,
+      "case": "dumpb/shared-floats-256x256",
+      "identical_output": true,
+      "started_unix_ns": 1792960929052852412,
+      "finished_unix_ns": 1792960929225539603,
+      "candidate": {
+        "per_op_ns": 6666952.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.04647581083529625,
+        "samples_ns": [
+          6976804.0,
+          6804806.0,
+          6907342.0,
+          6750973.0,
+          6732238.0,
+          6885370.0,
+          6666952.0,
+          6755432.0,
+          6798874.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          6807848.0,
+          6909650.0,
+          6752284.0,
+          6733399.0,
+          6886807.0,
+          6668407.0,
+          6756893.0,
+          6800445.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 6793344.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.05862664985020632,
+        "samples_ns": [
+          6793344.0,
+          6793434.0,
+          6963048.0,
+          7002353.0,
+          7156598.0,
+          6965663.0,
+          7076284.0,
+          7015309.0,
+          7191615.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          6795265.0,
+          6964202.0,
+          7003326.0,
+          7158378.0,
+          6966988.0,
+          7077246.0,
+          7016140.0,
+          7193473.0
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 1,
+      "case": "dumps/shared-floats-256x256",
+      "identical_output": true,
+      "started_unix_ns": 1792960929239566803,
+      "finished_unix_ns": 1792960929412279112,
+      "candidate": {
+        "per_op_ns": 6689716.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.03913021120777026,
+        "samples_ns": [
+          6951486.0,
+          6819694.0,
+          6804275.0,
+          6756553.0,
+          6732438.0,
+          6705095.0,
+          6723380.0,
+          6689716.0,
+          6773687.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          6822977.0,
+          6805895.0,
+          6757895.0,
+          6733268.0,
+          6706088.0,
+          6724212.0,
+          6690448.0,
+          6774666.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 6849631.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.03356239190111117,
+        "samples_ns": [
+          7079521.0,
+          6986574.0,
+          6951066.0,
+          6946557.0,
+          6930787.0,
+          7043262.0,
+          6872175.0,
+          6849631.0,
+          6873176.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          6988268.0,
+          6952561.0,
+          6947661.0,
+          6931832.0,
+          7036438.0,
+          6873402.0,
+          6850870.0,
+          6875255.0
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 1,
+      "case": "dumps/shared-floats-256x256",
+      "identical_output": true,
+      "started_unix_ns": 1792960929419532024,
+      "finished_unix_ns": 1792960929584416201,
+      "candidate": {
+        "per_op_ns": 26791.59375,
+        "iters": 256,
+        "rounds": 9,
+        "spread": 0.03123064487345028,
+        "samples_ns": [
+          27379.4765625,
+          27628.3125,
+          27201.55859375,
+          27113.421875,
+          27628.0390625,
+          26819.23046875,
+          26791.59375,
+          26813.5546875,
+          27118.390625
+        ],
+        "cpu_samples_ns": [
+          null,
+          27637.46484375,
+          27206.5390625,
+          27119.734375,
+          27637.6640625,
+          26824.609375,
+          26796.74609375,
+          26817.6015625,
+          27129.28515625
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 6698483.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.05236708072559115,
+        "samples_ns": [
+          7049263.0,
+          6867595.0,
+          6793854.0,
+          6806720.0,
+          6785169.0,
+          6715836.0,
+          6776371.0,
+          6698483.0,
+          6726536.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          6869725.0,
+          6794684.0,
+          6807438.0,
+          6785938.0,
+          6716568.0,
+          6777031.0,
+          6699064.0,
+          6728009.0
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 2,
+      "case": "dumps/shared-floats-256x256",
+      "identical_output": true,
+      "started_unix_ns": 1792960929598749276,
+      "finished_unix_ns": 1792960929770925430,
+      "candidate": {
+        "per_op_ns": 6661401.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.0332443580562107,
+        "samples_ns": [
+          6877375.0,
+          6882855.0,
+          6823381.0,
+          6770511.0,
+          6790629.0,
+          6704654.0,
+          6780319.0,
+          6688193.0,
+          6661401.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          6886056.0,
+          6824410.0,
+          6771199.0,
+          6791398.0,
+          6705686.0,
+          6782241.0,
+          6689235.0,
+          6662907.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 6743949.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.02248845594769474,
+        "samples_ns": [
+          6757976.0,
+          6767034.0,
+          6757826.0,
+          6743949.0,
+          6799616.0,
+          6756253.0,
+          6751784.0,
+          6895610.0,
+          6806569.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          6768465.0,
+          6758696.0,
+          6745191.0,
+          6800865.0,
+          6757113.0,
+          6752465.0,
+          6897858.0,
+          6807919.0
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 2,
+      "case": "dumps/shared-floats-256x256",
+      "identical_output": true,
+      "started_unix_ns": 1792960929778104912,
+      "finished_unix_ns": 1792960929946104243,
+      "candidate": {
+        "per_op_ns": 27336.73828125,
+        "iters": 256,
+        "rounds": 9,
+        "spread": 0.04175342105582789,
+        "samples_ns": [
+          27654.30078125,
+          27965.83203125,
+          28478.140625,
+          28151.6953125,
+          27434.9375,
+          27470.78515625,
+          27634.96484375,
+          27742.6328125,
+          27336.73828125
+        ],
+        "cpu_samples_ns": [
+          null,
+          27974.23046875,
+          28483.8203125,
+          28161.421875,
+          27413.60546875,
+          27475.24609375,
+          27642.8671875,
+          27749.00390625,
+          27345.0390625
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 6777093.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.02767676347366046,
+        "samples_ns": [
+          6842949.0,
+          6838000.0,
+          6834492.0,
+          6777093.0,
+          6881201.0,
+          6941567.0,
+          6950604.0,
+          6928412.0,
+          6964661.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          6839318.0,
+          6835661.0,
+          6778053.0,
+          6881868.0,
+          6943794.0,
+          6951508.0,
+          6929277.0,
+          6965856.0
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 2,
+      "case": "dumpb/shared-floats-256x256",
+      "identical_output": true,
+      "started_unix_ns": 1792960929953253497,
+      "finished_unix_ns": 1792960930137621012,
+      "candidate": {
+        "per_op_ns": 13795.9296875,
+        "iters": 640,
+        "rounds": 9,
+        "spread": 0.020129352011094757,
+        "samples_ns": [
+          13948.89375,
+          13935.775,
+          14073.6328125,
+          13970.2171875,
+          13892.3328125,
+          13847.5453125,
+          13874.2203125,
+          13795.9296875,
+          13807.90625
+        ],
+        "cpu_samples_ns": [
+          null,
+          13940.8640625,
+          14076.8875,
+          13975.65,
+          13897.0953125,
+          13850.80625,
+          13876.009375,
+          13797.8625,
+          13811.85625
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 6724332.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.030699703702910565,
+        "samples_ns": [
+          6930767.0,
+          6812410.0,
+          6764899.0,
+          6726225.0,
+          6789387.0,
+          6753568.0,
+          6760691.0,
+          6731666.0,
+          6724332.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          6813800.0,
+          6765659.0,
+          6726837.0,
+          6790166.0,
+          6754228.0,
+          6761762.0,
+          6732657.0,
+          6725244.0
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 2,
+      "case": "dumpb/shared-floats-256x256",
+      "identical_output": true,
+      "started_unix_ns": 1792960930151634185,
+      "finished_unix_ns": 1792960930325938426,
+      "candidate": {
+        "per_op_ns": 6724873.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.04207216998744809,
+        "samples_ns": [
+          7007803.0,
+          6830906.0,
+          6805527.0,
+          6724873.0,
+          6741585.0,
+          6750432.0,
+          6898204.0,
+          6898455.0,
+          6843430.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          6832836.0,
+          6806446.0,
+          6725554.0,
+          6742246.0,
+          6751172.0,
+          6899521.0,
+          6899411.0,
+          6844498.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 6791210.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.023861727144352772,
+        "samples_ns": [
+          6837749.0,
+          6883767.0,
+          6834552.0,
+          6791210.0,
+          6825785.0,
+          6915147.0,
+          6953260.0,
+          6914585.0,
+          6899186.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          6885615.0,
+          6835821.0,
+          6792169.0,
+          6826684.0,
+          6916152.0,
+          6953943.0,
+          6915511.0,
+          6900283.0
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 2,
+      "case": "dumps/independent-floats-256x256",
+      "identical_output": true,
+      "started_unix_ns": 1792960930340219121,
+      "finished_unix_ns": 1792960930514707374,
+      "candidate": {
+        "per_op_ns": 6757396.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.032748117766074385,
+        "samples_ns": [
+          6978688.0,
+          6813713.0,
+          6757396.0,
+          6823001.0,
+          6786331.0,
+          6943842.0,
+          6939373.0,
+          6906270.0,
+          6921288.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          6816205.0,
+          6758376.0,
+          6824290.0,
+          6786980.0,
+          6946639.0,
+          6941901.0,
+          6908839.0,
+          6923987.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 6831527.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.02040480847107828,
+        "samples_ns": [
+          6867075.0,
+          6880611.0,
+          6881342.0,
+          6944773.0,
+          6890459.0,
+          6970923.0,
+          6855814.0,
+          6831527.0,
+          6909096.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          6882990.0,
+          6882579.0,
+          6946699.0,
+          6892067.0,
+          6974592.0,
+          6858664.0,
+          6832506.0,
+          6910542.0
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 2,
+      "case": "dumps/independent-floats-256x256",
+      "identical_output": true,
+      "started_unix_ns": 1792960930522383294,
+      "finished_unix_ns": 1792960930665134720,
+      "candidate": {
+        "per_op_ns": 420089.5833333333,
+        "iters": 12,
+        "rounds": 9,
+        "spread": 0.02049106589368339,
+        "samples_ns": [
+          425099.1666666667,
+          423563.75,
+          428697.6666666667,
+          424714.25,
+          425208.5,
+          421964.8333333333,
+          422824.0,
+          425178.5,
+          420089.5833333333
+        ],
+        "cpu_samples_ns": [
+          null,
+          423769.1666666667,
+          428842.9166666667,
+          424802.75,
+          425298.75,
+          422040.0833333333,
+          422943.4166666667,
+          425280.4166666667,
+          420225.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 6913955.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.032071947242931144,
+        "samples_ns": [
+          7082166.0,
+          7135699.0,
+          7049924.0,
+          6973909.0,
+          6968158.0,
+          6934073.0,
+          6938421.0,
+          7056677.0,
+          6913955.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7138320.0,
+          7050956.0,
+          6974903.0,
+          6968952.0,
+          6935158.0,
+          6939266.0,
+          7058740.0,
+          6915281.0
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 2,
+      "case": "dumpb/independent-floats-256x256",
+      "identical_output": true,
+      "started_unix_ns": 1792960930671955126,
+      "finished_unix_ns": 1792960930809821034,
+      "candidate": {
+        "per_op_ns": 358929.5714285714,
+        "iters": 14,
+        "rounds": 9,
+        "spread": 0.061835449612677694,
+        "samples_ns": [
+          358929.5714285714,
+          365421.28571428574,
+          366967.85714285716,
+          367491.71428571426,
+          381124.14285714284,
+          366071.0714285714,
+          364192.5,
+          364431.5714285714,
+          369656.5
+        ],
+        "cpu_samples_ns": [
+          null,
+          365663.9285714286,
+          367070.78571428574,
+          367644.71428571426,
+          381213.14285714284,
+          366157.64285714284,
+          364295.5714285714,
+          364590.4285714286,
+          369781.64285714284
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 6220559.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.09139644845423056,
+        "samples_ns": [
+          6338234.0,
+          6337763.0,
+          6342893.0,
+          6281736.0,
+          6789096.0,
+          6703132.0,
+          6283519.0,
+          6230358.0,
+          6220559.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          6341252.0,
+          6345118.0,
+          6282861.0,
+          6791588.0,
+          6707801.0,
+          6276780.0,
+          6231585.0,
+          6221747.0
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 2,
+      "case": "dumpb/independent-floats-256x256",
+      "identical_output": true,
+      "started_unix_ns": 1792960930822877769,
+      "finished_unix_ns": 1792960930979895712,
+      "candidate": {
+        "per_op_ns": 6081994.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.02951055196700293,
+        "samples_ns": [
+          6176134.0,
+          6081994.0,
+          6096652.0,
+          6162578.0,
+          6261477.0,
+          6209238.0,
+          6173900.0,
+          6152219.0,
+          6177127.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          6083608.0,
+          6097493.0,
+          6163958.0,
+          6262454.0,
+          6210054.0,
+          6174608.0,
+          6152937.0,
+          6178325.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 6196072.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.058144740732515694,
+        "samples_ns": [
+          6282017.0,
+          6556341.0,
+          6289661.0,
+          6255626.0,
+          6237021.0,
+          6196072.0,
+          6265555.0,
+          6285303.0,
+          6387979.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          6559712.0,
+          6291348.0,
+          6256983.0,
+          6237707.0,
+          6197551.0,
+          6267243.0,
+          6286329.0,
+          6389542.0
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 2,
+      "case": "dumps/shared-varied-floats-256x128",
+      "identical_output": true,
+      "started_unix_ns": 1792960930994776162,
+      "finished_unix_ns": 1792960931184647968,
+      "candidate": {
+        "per_op_ns": 7345890.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.02549017205539424,
+        "samples_ns": [
+          7425532.0,
+          7442775.0,
+          7455860.0,
+          7521516.0,
+          7450329.0,
+          7366359.0,
+          7405745.0,
+          7533138.0,
+          7345890.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7446750.0,
+          7459223.0,
+          7525939.0,
+          7452260.0,
+          7367651.0,
+          7406935.0,
+          7535126.0,
+          7348465.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7267841.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.012599890393859744,
+        "samples_ns": [
+          7310813.0,
+          7298590.0,
+          7359415.0,
+          7301726.0,
+          7289672.0,
+          7303629.0,
+          7267841.0,
+          7339177.0,
+          7344968.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7300816.0,
+          7362221.0,
+          7304051.0,
+          7291688.0,
+          7304683.0,
+          7268635.0,
+          7339909.0,
+          7346271.0
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 2,
+      "case": "dumps/shared-varied-floats-256x128",
+      "identical_output": true,
+      "started_unix_ns": 1792960931192379374,
+      "finished_unix_ns": 1792960931392322098,
+      "candidate": {
+        "per_op_ns": 75424.546875,
+        "iters": 128,
+        "rounds": 9,
+        "spread": 0.06350210091997983,
+        "samples_ns": [
+          75424.546875,
+          80214.1640625,
+          77750.0078125,
+          77319.109375,
+          77749.4609375,
+          77411.78125,
+          78647.109375,
+          77554.9453125,
+          78130.109375
+        ],
+        "cpu_samples_ns": [
+          null,
+          80245.7890625,
+          77765.9609375,
+          77341.0234375,
+          77766.203125,
+          77444.8125,
+          78669.7734375,
+          77571.9296875,
+          78154.2734375
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7328186.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.027876066464470196,
+        "samples_ns": [
+          7393400.0,
+          7361750.0,
+          7338616.0,
+          7328186.0,
+          7368323.0,
+          7532467.0,
+          7346141.0,
+          7361210.0,
+          7364996.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7364195.0,
+          7340600.0,
+          7325884.0,
+          7372160.0,
+          7537190.0,
+          7348214.0,
+          7362401.0,
+          7367050.0
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 2,
+      "case": "dumpb/shared-varied-floats-256x128",
+      "identical_output": true,
+      "started_unix_ns": 1792960931400174917,
+      "finished_unix_ns": 1792960931564793677,
+      "candidate": {
+        "per_op_ns": 46596.6328125,
+        "iters": 128,
+        "rounds": 9,
+        "spread": 0.01937019657905136,
+        "samples_ns": [
+          47162.25,
+          47330.1484375,
+          47499.21875,
+          47292.8125,
+          47118.8046875,
+          46699.4140625,
+          46854.9453125,
+          46596.6328125,
+          47268.234375
+        ],
+        "cpu_samples_ns": [
+          null,
+          47347.8359375,
+          47451.78125,
+          47312.3046875,
+          47134.5546875,
+          46717.28125,
+          46871.4765625,
+          46614.1953125,
+          47293.8359375
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7584566.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.03950166693783138,
+        "samples_ns": [
+          7585728.0,
+          7584566.0,
+          7593534.0,
+          7653608.0,
+          7737258.0,
+          7856787.0,
+          7884169.0,
+          7693043.0,
+          7611628.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7587625.0,
+          7595600.0,
+          7655392.0,
+          7738959.0,
+          7860638.0,
+          7886898.0,
+          7695347.0,
+          7613394.0
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 2,
+      "case": "dumpb/shared-varied-floats-256x128",
+      "identical_output": true,
+      "started_unix_ns": 1792960931579662896,
+      "finished_unix_ns": 1792960931762220241,
+      "candidate": {
+        "per_op_ns": 7232143.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.025607071099119583,
+        "samples_ns": [
+          7232143.0,
+          7350780.0,
+          7417337.0,
+          7402278.0,
+          7376568.0,
+          7311694.0,
+          7333386.0,
+          7301956.0,
+          7287469.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7353404.0,
+          7418777.0,
+          7404720.0,
+          7378392.0,
+          7313550.0,
+          7335200.0,
+          7303520.0,
+          7289534.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7270967.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.02194536160045837,
+        "samples_ns": [
+          7321353.0,
+          7275735.0,
+          7270967.0,
+          7286627.0,
+          7404692.0,
+          7430531.0,
+          7371408.0,
+          7311003.0,
+          7322145.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7278574.0,
+          7272963.0,
+          7287601.0,
+          7406043.0,
+          7433445.0,
+          7372670.0,
+          7312507.0,
+          7323518.0
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 2,
+      "case": "dumps/independent-varied-floats-256x128",
+      "identical_output": true,
+      "started_unix_ns": 1792960931777830296,
+      "finished_unix_ns": 1792960931970768743,
+      "candidate": {
+        "per_op_ns": 7538008.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.05168527282008722,
+        "samples_ns": [
+          7679869.0,
+          7879850.0,
+          7927612.0,
+          7689056.0,
+          7706419.0,
+          7647306.0,
+          7573795.0,
+          7538008.0,
+          7549449.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7875336.0,
+          7930589.0,
+          7691460.0,
+          7708372.0,
+          7648910.0,
+          7574711.0,
+          7538953.0,
+          7550886.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7540753.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.0236302661020723,
+        "samples_ns": [
+          7566372.0,
+          7598072.0,
+          7649169.0,
+          7540753.0,
+          7549189.0,
+          7660111.0,
+          7718943.0,
+          7672654.0,
+          7680309.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7601240.0,
+          7652577.0,
+          7543422.0,
+          7550795.0,
+          7666733.0,
+          7721376.0,
+          7674368.0,
+          7682082.0
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 2,
+      "case": "dumps/independent-varied-floats-256x128",
+      "identical_output": true,
+      "started_unix_ns": 1792960931985534333,
+      "finished_unix_ns": 1792960932167945049,
+      "candidate": {
+        "per_op_ns": 6822580.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.03589814996672813,
+        "samples_ns": [
+          6822580.0,
+          6951186.0,
+          7010830.0,
+          7067498.0,
+          6943370.0,
+          6879719.0,
+          6857105.0,
+          6859280.0,
+          6978327.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          6954895.0,
+          7013234.0,
+          7070132.0,
+          6945318.0,
+          6881026.0,
+          6858655.0,
+          6860387.0,
+          6980424.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7555080.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.04861920720892433,
+        "samples_ns": [
+          7633019.0,
+          7727459.0,
+          7636936.0,
+          7555080.0,
+          7648648.0,
+          7922402.0,
+          7841106.0,
+          7761785.0,
+          7773567.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7731836.0,
+          7640253.0,
+          7557618.0,
+          7650623.0,
+          7926221.0,
+          7843155.0,
+          7764207.0,
+          7776139.0
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 2,
+      "case": "dumpb/independent-varied-floats-256x128",
+      "identical_output": true,
+      "started_unix_ns": 1792960932182772157,
+      "finished_unix_ns": 1792960932367382166,
+      "candidate": {
+        "per_op_ns": 6821547.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.027296740753966806,
+        "samples_ns": [
+          7007753.0,
+          6973548.0,
+          6877865.0,
+          6854872.0,
+          6821547.0,
+          6837859.0,
+          6852898.0,
+          6854812.0,
+          6850763.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          6977618.0,
+          6880516.0,
+          6855919.0,
+          6822907.0,
+          6839418.0,
+          6853916.0,
+          6855969.0,
+          6853435.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7521907.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.02091357949519982,
+        "samples_ns": [
+          7669639.0,
+          7574267.0,
+          7679217.0,
+          7629041.0,
+          7618841.0,
+          7658718.0,
+          7552655.0,
+          7521907.0,
+          7623550.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7577295.0,
+          7681751.0,
+          7631657.0,
+          7620818.0,
+          7660862.0,
+          7554783.0,
+          7523595.0,
+          7625266.0
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 2,
+      "case": "dumpb/independent-varied-floats-256x128",
+      "identical_output": true,
+      "started_unix_ns": 1792960932382966582,
+      "finished_unix_ns": 1792960932579935131,
+      "candidate": {
+        "per_op_ns": 7572473.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.030001295481674215,
+        "samples_ns": [
+          7648980.0,
+          7572473.0,
+          7658637.0,
+          7670821.0,
+          7722009.0,
+          7601399.0,
+          7658328.0,
+          7799657.0,
+          7757226.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7575742.0,
+          7661393.0,
+          7673005.0,
+          7724222.0,
+          7603805.0,
+          7661043.0,
+          7802348.0,
+          7759668.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7574036.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.02883363638620149,
+        "samples_ns": [
+          7574036.0,
+          7762226.0,
+          7731336.0,
+          7792423.0,
+          7706820.0,
+          7682083.0,
+          7711850.0,
+          7632758.0,
+          7634381.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7766601.0,
+          7735683.0,
+          7795044.0,
+          7710255.0,
+          7686240.0,
+          7714273.0,
+          7635434.0,
+          7637489.0
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 3,
+      "case": "dumpb/independent-varied-floats-256x128",
+      "identical_output": true,
+      "started_unix_ns": 1792960932594536228,
+      "finished_unix_ns": 1792960932774361221,
+      "candidate": {
+        "per_op_ns": 6608691.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.012430146908063941,
+        "samples_ns": [
+          6612378.0,
+          6666762.0,
+          6608691.0,
+          6646203.0,
+          6678083.0,
+          6619652.0,
+          6626334.0,
+          6690838.0,
+          6688383.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          6672604.0,
+          6610999.0,
+          6648669.0,
+          6682333.0,
+          6621969.0,
+          6627911.0,
+          6692051.0,
+          6691751.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7283921.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.036967040142253056,
+        "samples_ns": [
+          7283921.0,
+          7324359.0,
+          7446392.0,
+          7523098.0,
+          7553186.0,
+          7509392.0,
+          7455279.0,
+          7432005.0,
+          7327144.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7326774.0,
+          7448383.0,
+          7526199.0,
+          7556626.0,
+          7511742.0,
+          7457150.0,
+          7433695.0,
+          7328247.0
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 3,
+      "case": "dumpb/independent-varied-floats-256x128",
+      "identical_output": true,
+      "started_unix_ns": 1792960932789569237,
+      "finished_unix_ns": 1792960932978686020,
+      "candidate": {
+        "per_op_ns": 7245719.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.047291925066373676,
+        "samples_ns": [
+          7245719.0,
+          7324649.0,
+          7331523.0,
+          7533780.0,
+          7558657.0,
+          7491598.0,
+          7511857.0,
+          7588383.0,
+          7576291.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7327305.0,
+          7332996.0,
+          7522973.0,
+          7560795.0,
+          7494540.0,
+          7514067.0,
+          7590100.0,
+          7580301.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7328587.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.03550575301896532,
+        "samples_ns": [
+          7519983.0,
+          7479515.0,
+          7474235.0,
+          7343425.0,
+          7328587.0,
+          7394072.0,
+          7410934.0,
+          7477131.0,
+          7588794.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7483289.0,
+          7476696.0,
+          7345679.0,
+          7331002.0,
+          7395784.0,
+          7413006.0,
+          7479631.0,
+          7591201.0
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 3,
+      "case": "dumps/independent-varied-floats-256x128",
+      "identical_output": true,
+      "started_unix_ns": 1792960932994359335,
+      "finished_unix_ns": 1792960933188366625,
+      "candidate": {
+        "per_op_ns": 7645903.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.030977766785689014,
+        "samples_ns": [
+          7645903.0,
+          7747107.0,
+          7882756.0,
+          7726778.0,
+          7707220.0,
+          7684857.0,
+          7700448.0,
+          7683986.0,
+          7715106.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7749619.0,
+          7885134.0,
+          7729331.0,
+          7708963.0,
+          7686591.0,
+          7702982.0,
+          7685709.0,
+          7716858.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7606939.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.02812944865207937,
+        "samples_ns": [
+          7606939.0,
+          7751866.0,
+          7820918.0,
+          7765482.0,
+          7722921.0,
+          7668396.0,
+          7773006.0,
+          7798215.0,
+          7736587.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7757274.0,
+          7824581.0,
+          7767403.0,
+          7724272.0,
+          7669598.0,
+          7774025.0,
+          7799283.0,
+          7738228.0
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 3,
+      "case": "dumps/independent-varied-floats-256x128",
+      "identical_output": true,
+      "started_unix_ns": 1792960933203337558,
+      "finished_unix_ns": 1792960933389465027,
+      "candidate": {
+        "per_op_ns": 6872014.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.022088284453436795,
+        "samples_ns": [
+          6921419.0,
+          7004057.0,
+          6943581.0,
+          7023805.0,
+          7018193.0,
+          7003054.0,
+          6931067.0,
+          6872014.0,
+          6933111.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7008396.0,
+          6945928.0,
+          7025898.0,
+          7020037.0,
+          7005140.0,
+          6932734.0,
+          6873552.0,
+          6936030.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7639802.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.030113345869434836,
+        "samples_ns": [
+          7639802.0,
+          7659951.0,
+          7759741.0,
+          7869862.0,
+          7828572.0,
+          7707091.0,
+          7826498.0,
+          7775591.0,
+          7668787.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7662185.0,
+          7764457.0,
+          7874304.0,
+          7832274.0,
+          7708472.0,
+          7829810.0,
+          7778233.0,
+          7670901.0
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 3,
+      "case": "dumpb/shared-varied-floats-256x128",
+      "identical_output": true,
+      "started_unix_ns": 1792960933397267359,
+      "finished_unix_ns": 1792960933557586352,
+      "candidate": {
+        "per_op_ns": 46135.6015625,
+        "iters": 128,
+        "rounds": 9,
+        "spread": 0.02379500511146066,
+        "samples_ns": [
+          46772.7578125,
+          46826.6875,
+          47233.3984375,
+          46567.5234375,
+          47124.671875,
+          46438.3671875,
+          46135.6015625,
+          46381.9296875,
+          46324.5546875
+        ],
+        "cpu_samples_ns": [
+          null,
+          46857.0703125,
+          47252.9765625,
+          46575.609375,
+          47159.046875,
+          46470.40625,
+          46151.6875,
+          46396.203125,
+          46347.4453125
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7360579.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.011141243100576735,
+        "samples_ns": [
+          7389504.0,
+          7375176.0,
+          7425402.0,
+          7360579.0,
+          7442585.0,
+          7418228.0,
+          7432655.0,
+          7442554.0,
+          7429400.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7377660.0,
+          7426793.0,
+          7361700.0,
+          7443414.0,
+          7420250.0,
+          7433936.0,
+          7444766.0,
+          7434587.0
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 3,
+      "case": "dumpb/shared-varied-floats-256x128",
+      "identical_output": true,
+      "started_unix_ns": 1792960933572810178,
+      "finished_unix_ns": 1792960933762209831,
+      "candidate": {
+        "per_op_ns": 7370768.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.028976356330846394,
+        "samples_ns": [
+          7370768.0,
+          7500486.0,
+          7471229.0,
+          7417608.0,
+          7509442.0,
+          7408299.0,
+          7460068.0,
+          7464737.0,
+          7584346.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7506132.0,
+          7472849.0,
+          7419719.0,
+          7512523.0,
+          7409841.0,
+          7462479.0,
+          7467850.0,
+          7586883.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7364806.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.026363355667481263,
+        "samples_ns": [
+          7558967.0,
+          7417817.0,
+          7436382.0,
+          7494374.0,
+          7444037.0,
+          7437284.0,
+          7428308.0,
+          7364806.0,
+          7374846.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7420761.0,
+          7438214.0,
+          7496914.0,
+          7445858.0,
+          7438835.0,
+          7430519.0,
+          7367291.0,
+          7377470.0
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 3,
+      "case": "dumps/shared-varied-floats-256x128",
+      "identical_output": true,
+      "started_unix_ns": 1792960933777559939,
+      "finished_unix_ns": 1792960933974976365,
+      "candidate": {
+        "per_op_ns": 7788926.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.0479751637132,
+        "samples_ns": [
+          7788926.0,
+          7969572.0,
+          7907924.0,
+          7888287.0,
+          8162601.0,
+          7945656.0,
+          7822601.0,
+          7845975.0,
+          7907574.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7971928.0,
+          7909480.0,
+          7889512.0,
+          8165622.0,
+          7948052.0,
+          7824129.0,
+          7846933.0,
+          7909300.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7834313.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.023444557295579076,
+        "samples_ns": [
+          8017985.0,
+          7980443.0,
+          7952259.0,
+          7957800.0,
+          7940656.0,
+          7914106.0,
+          7900500.0,
+          7857657.0,
+          7834313.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7985663.0,
+          7954875.0,
+          7959885.0,
+          7942131.0,
+          7915582.0,
+          7902567.0,
+          7858995.0,
+          7835501.0
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 3,
+      "case": "dumps/shared-varied-floats-256x128",
+      "identical_output": true,
+      "started_unix_ns": 1792960933983228617,
+      "finished_unix_ns": 1792960934185258690,
+      "candidate": {
+        "per_op_ns": 84197.95370370371,
+        "iters": 108,
+        "rounds": 9,
+        "spread": 0.10928060955119104,
+        "samples_ns": [
+          84197.95370370371,
+          84842.3425925926,
+          85265.27777777778,
+          89469.70370370371,
+          92828.25925925926,
+          91484.94444444444,
+          92508.00925925926,
+          92178.68518518518,
+          93399.1574074074
+        ],
+        "cpu_samples_ns": [
+          null,
+          84864.36111111111,
+          85287.46296296296,
+          89499.27777777778,
+          92852.62037037036,
+          91511.94444444444,
+          92536.28703703704,
+          92208.25925925926,
+          93422.94444444444
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7478924.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.02654125112115058,
+        "samples_ns": [
+          7600547.0,
+          7531024.0,
+          7509713.0,
+          7528118.0,
+          7677424.0,
+          7561472.0,
+          7512428.0,
+          7478924.0,
+          7666783.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7533322.0,
+          7510700.0,
+          7529275.0,
+          7679107.0,
+          7562858.0,
+          7513756.0,
+          7480704.0,
+          7669749.0
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 3,
+      "case": "dumpb/independent-floats-256x256",
+      "identical_output": true,
+      "started_unix_ns": 1792960934192361134,
+      "finished_unix_ns": 1792960934398187343,
+      "candidate": {
+        "per_op_ns": 416259.3333333333,
+        "iters": 24,
+        "rounds": 9,
+        "spread": 0.0447701673155677,
+        "samples_ns": [
+          418930.2916666667,
+          424059.6666666667,
+          434269.5833333333,
+          434895.3333333333,
+          425322.4583333333,
+          421059.3333333333,
+          421963.1666666667,
+          420062.8333333333,
+          416259.3333333333
+        ],
+        "cpu_samples_ns": [
+          null,
+          424230.0416666667,
+          434415.0416666667,
+          435053.75,
+          425471.5416666667,
+          421183.5,
+          422093.125,
+          420314.7916666667,
+          416491.3333333333
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 6359494.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.09080659561908541,
+        "samples_ns": [
+          6534109.0,
+          6368993.0,
+          6377550.0,
+          6936978.0,
+          6435019.0,
+          6399491.0,
+          6391535.0,
+          6359494.0,
+          6566651.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          6370957.0,
+          6378752.0,
+          6939186.0,
+          6436080.0,
+          6400423.0,
+          6392598.0,
+          6360298.0,
+          6569341.0
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 3,
+      "case": "dumpb/independent-floats-256x256",
+      "identical_output": true,
+      "started_unix_ns": 1792960934412455944,
+      "finished_unix_ns": 1792960934588739859,
+      "candidate": {
+        "per_op_ns": 6911199.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.05405776913673011,
+        "samples_ns": [
+          7284803.0,
+          6984469.0,
+          7110881.0,
+          7039274.0,
+          7003205.0,
+          6976855.0,
+          6911199.0,
+          6964781.0,
+          6977776.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          6988708.0,
+          7114095.0,
+          7041778.0,
+          7006001.0,
+          6979151.0,
+          6913578.0,
+          6968531.0,
+          6981476.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 6806749.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.023336250536048854,
+        "samples_ns": [
+          6944944.0,
+          6840654.0,
+          6806749.0,
+          6916489.0,
+          6926188.0,
+          6937319.0,
+          6927019.0,
+          6965593.0,
+          6937400.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          6842875.0,
+          6808620.0,
+          6919819.0,
+          6928125.0,
+          6939346.0,
+          6929929.0,
+          6968751.0,
+          6940959.0
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 3,
+      "case": "dumps/independent-floats-256x256",
+      "identical_output": true,
+      "started_unix_ns": 1792960934602913499,
+      "finished_unix_ns": 1792960934777368018,
+      "candidate": {
+        "per_op_ns": 6863127.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.022287654009608155,
+        "samples_ns": [
+          6934714.0,
+          6885931.0,
+          6912291.0,
+          6994188.0,
+          7016090.0,
+          6926668.0,
+          6920728.0,
+          6920417.0,
+          6863127.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          6888931.0,
+          6914539.0,
+          6995862.0,
+          7020648.0,
+          6930950.0,
+          6923586.0,
+          6922504.0,
+          6864776.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 6989639.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.013157331873648983,
+        "samples_ns": [
+          6999829.0,
+          7013765.0,
+          7005390.0,
+          6989639.0,
+          7036929.0,
+          7081604.0,
+          7033453.0,
+          7014647.0,
+          7019045.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7016952.0,
+          7006392.0,
+          6990752.0,
+          7038873.0,
+          7083286.0,
+          7035276.0,
+          7016581.0,
+          7022563.0
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 3,
+      "case": "dumps/independent-floats-256x256",
+      "identical_output": true,
+      "started_unix_ns": 1792960934784373888,
+      "finished_unix_ns": 1792960934978891974,
+      "candidate": {
+        "per_op_ns": 410283.3333333333,
+        "iters": 24,
+        "rounds": 9,
+        "spread": 0.06325811431124832,
+        "samples_ns": [
+          410283.3333333333,
+          412513.0,
+          420655.625,
+          423040.2083333333,
+          430334.1666666667,
+          428005.5416666667,
+          424940.5,
+          432980.875,
+          436237.0833333333
+        ],
+        "cpu_samples_ns": [
+          null,
+          412344.7916666667,
+          420753.5,
+          423384.2916666667,
+          430443.7916666667,
+          428110.2916666667,
+          425066.625,
+          433097.5416666667,
+          436346.1666666667
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 6287507.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.017388290780431734,
+        "samples_ns": [
+          6396836.0,
+          6333184.0,
+          6306944.0,
+          6297556.0,
+          6287507.0,
+          6376377.0,
+          6388130.0,
+          6304169.0,
+          6314389.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          6336452.0,
+          6308449.0,
+          6298531.0,
+          6288322.0,
+          6378722.0,
+          6389792.0,
+          6306396.0,
+          6316756.0
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 3,
+      "case": "dumpb/shared-floats-256x256",
+      "identical_output": true,
+      "started_unix_ns": 1792960934986177127,
+      "finished_unix_ns": 1792960935176851156,
+      "candidate": {
+        "per_op_ns": 13985.2921875,
+        "iters": 640,
+        "rounds": 9,
+        "spread": 0.016141511165692263,
+        "samples_ns": [
+          14188.6640625,
+          14146.896875,
+          14211.0359375,
+          14104.975,
+          13985.2921875,
+          14066.4625,
+          14060.3578125,
+          14178.1453125,
+          14183.4515625
+        ],
+        "cpu_samples_ns": [
+          null,
+          14151.2765625,
+          14212.71875,
+          14107.7109375,
+          13987.2171875,
+          14071.4859375,
+          14062.9859375,
+          14180.0640625,
+          14186.1234375
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7135188.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.030838710907126764,
+        "samples_ns": [
+          7198097.0,
+          7137823.0,
+          7135188.0,
+          7187197.0,
+          7226481.0,
+          7309631.0,
+          7355228.0,
+          7281326.0,
+          7221182.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7139733.0,
+          7136386.0,
+          7189977.0,
+          7228098.0,
+          7310825.0,
+          7357111.0,
+          7282701.0,
+          7222158.0
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 3,
+      "case": "dumpb/shared-floats-256x256",
+      "identical_output": true,
+      "started_unix_ns": 1792960935192002905,
+      "finished_unix_ns": 1792960935371678893,
+      "candidate": {
+        "per_op_ns": 7004889.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.030689993802899662,
+        "samples_ns": [
+          7219869.0,
+          7171707.0,
+          7164082.0,
+          7107484.0,
+          7036329.0,
+          7020148.0,
+          7138203.0,
+          7102194.0,
+          7004889.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7174167.0,
+          7166754.0,
+          7108594.0,
+          7037671.0,
+          7021089.0,
+          7140705.0,
+          7103495.0,
+          7006442.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 6999939.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.017245864571105548,
+        "samples_ns": [
+          7059252.0,
+          7015799.0,
+          7019206.0,
+          7001752.0,
+          6999939.0,
+          7085913.0,
+          7120659.0,
+          7092996.0,
+          7096684.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7018665.0,
+          7022964.0,
+          7002995.0,
+          7001242.0,
+          7087113.0,
+          7118313.0,
+          7094107.0,
+          7098456.0
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 3,
+      "case": "dumps/shared-floats-256x256",
+      "identical_output": true,
+      "started_unix_ns": 1792960935384895304,
+      "finished_unix_ns": 1792960935553568142,
+      "candidate": {
+        "per_op_ns": 6388230.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.06095960853006232,
+        "samples_ns": [
+          6777654.0,
+          6422445.0,
+          6486858.0,
+          6616175.0,
+          6429689.0,
+          6388230.0,
+          6454676.0,
+          6499843.0,
+          6542193.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          6424398.0,
+          6488008.0,
+          6618032.0,
+          6430790.0,
+          6389101.0,
+          6455777.0,
+          6500772.0,
+          6543882.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 6481168.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.038784675848550755,
+        "samples_ns": [
+          6638518.0,
+          6610214.0,
+          6732538.0,
+          6572823.0,
+          6584405.0,
+          6586849.0,
+          6544488.0,
+          6521635.0,
+          6481168.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          6612672.0,
+          6736745.0,
+          6575101.0,
+          6587063.0,
+          6577405.0,
+          6545235.0,
+          6523273.0,
+          6482366.0
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 3,
+      "case": "dumps/shared-floats-256x256",
+      "identical_output": true,
+      "started_unix_ns": 1792960935560381745,
+      "finished_unix_ns": 1792960935729276568,
+      "candidate": {
+        "per_op_ns": 27721.96875,
+        "iters": 256,
+        "rounds": 9,
+        "spread": 0.045930827649100496,
+        "samples_ns": [
+          27721.96875,
+          28166.9609375,
+          28070.015625,
+          28489.09765625,
+          28995.26171875,
+          28049.0,
+          27887.83203125,
+          28068.4921875,
+          27976.16796875
+        ],
+        "cpu_samples_ns": [
+          null,
+          28179.4609375,
+          28076.53125,
+          28499.90625,
+          29007.54296875,
+          28056.84765625,
+          27892.00390625,
+          28073.640625,
+          27985.85546875
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 6336701.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.05279545302831868,
+        "samples_ns": [
+          6336701.0,
+          6462041.0,
+          6489403.0,
+          6442052.0,
+          6511836.0,
+          6671250.0,
+          6482670.0,
+          6555289.0,
+          6593151.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          6464152.0,
+          6490742.0,
+          6442832.0,
+          6512694.0,
+          6673295.0,
+          6483800.0,
+          6556356.0,
+          6594408.0
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 4,
+      "case": "dumps/shared-floats-256x256",
+      "identical_output": true,
+      "started_unix_ns": 1792960935744308057,
+      "finished_unix_ns": 1792960935926670480,
+      "candidate": {
+        "per_op_ns": 7171547.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.031175560865737896,
+        "samples_ns": [
+          7306875.0,
+          7261238.0,
+          7171547.0,
+          7241511.0,
+          7239146.0,
+          7395124.0,
+          7193098.0,
+          7227062.0,
+          7301745.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7263395.0,
+          7172815.0,
+          7242897.0,
+          7241694.0,
+          7397919.0,
+          7195177.0,
+          7228219.0,
+          7303751.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 6960794.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.050555008523452925,
+        "samples_ns": [
+          7312697.0,
+          7163711.0,
+          7101022.0,
+          7059362.0,
+          7058972.0,
+          7021670.0,
+          6960794.0,
+          7089711.0,
+          7135458.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7165240.0,
+          7102072.0,
+          7060835.0,
+          7061796.0,
+          7022773.0,
+          6962059.0,
+          7091883.0,
+          7137238.0
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 4,
+      "case": "dumps/shared-floats-256x256",
+      "identical_output": true,
+      "started_unix_ns": 1792960935933377579,
+      "finished_unix_ns": 1792960936126470581,
+      "candidate": {
+        "per_op_ns": 27477.6328125,
+        "iters": 256,
+        "rounds": 9,
+        "spread": 0.0535607512587653,
+        "samples_ns": [
+          27477.6328125,
+          28209.4609375,
+          28415.67578125,
+          28223.98046875,
+          28121.875,
+          27953.23046875,
+          28949.35546875,
+          28624.23828125,
+          28916.4765625
+        ],
+        "cpu_samples_ns": [
+          null,
+          28223.0625,
+          28428.015625,
+          28232.1796875,
+          28126.94140625,
+          27958.890625,
+          28961.05078125,
+          28650.30859375,
+          28940.85546875
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 6408579.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.42238115501111867,
+        "samples_ns": [
+          6408579.0,
+          9109561.0,
+          9073963.0,
+          9021592.0,
+          8931931.0,
+          9074734.0,
+          9007756.0,
+          9115442.0,
+          9017134.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          9114565.0,
+          9080761.0,
+          9025358.0,
+          8935909.0,
+          9078387.0,
+          9011843.0,
+          9118683.0,
+          9022252.0
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 4,
+      "case": "dumpb/shared-floats-256x256",
+      "identical_output": true,
+      "started_unix_ns": 1792960936136049859,
+      "finished_unix_ns": 1792960936351976533,
+      "candidate": {
+        "per_op_ns": 17840.66015625,
+        "iters": 512,
+        "rounds": 9,
+        "spread": 0.033641661680032596,
+        "samples_ns": [
+          17930.08984375,
+          17840.66015625,
+          18046.365234375,
+          18440.849609375,
+          18377.390625,
+          18134.640625,
+          17962.73046875,
+          18033.939453125,
+          18102.900390625
+        ],
+        "cpu_samples_ns": [
+          null,
+          17852.9375,
+          18058.03125,
+          18451.40625,
+          18386.482421875,
+          18143.818359375,
+          17970.580078125,
+          18042.123046875,
+          18113.115234375
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7339317.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.27152662843150116,
+        "samples_ns": [
+          9247464.0,
+          9252063.0,
+          9270829.0,
+          9147333.0,
+          9200705.0,
+          9271791.0,
+          9332137.0,
+          9195144.0,
+          7339317.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          9258696.0,
+          9274766.0,
+          9152106.0,
+          9205346.0,
+          9277241.0,
+          9336943.0,
+          9198353.0,
+          7342634.0
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 4,
+      "case": "dumpb/shared-floats-256x256",
+      "identical_output": true,
+      "started_unix_ns": 1792960936364997168,
+      "finished_unix_ns": 1792960936540988605,
+      "candidate": {
+        "per_op_ns": 6216481.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.026116222345085587,
+        "samples_ns": [
+          6310421.0,
+          6216481.0,
+          6292587.0,
+          6378832.0,
+          6358052.0,
+          6260936.0,
+          6238634.0,
+          6226881.0,
+          6219226.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          6218360.0,
+          6294123.0,
+          6380506.0,
+          6360818.0,
+          6262424.0,
+          6239581.0,
+          6227587.0,
+          6220144.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 6391376.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.35011193207847574,
+        "samples_ns": [
+          6391376.0,
+          8389765.0,
+          8146170.0,
+          8036460.0,
+          8443808.0,
+          8171939.0,
+          8010009.0,
+          8508272.0,
+          8629073.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          8392167.0,
+          8147688.0,
+          8037640.0,
+          8445157.0,
+          8173376.0,
+          8010890.0,
+          8508957.0,
+          8631587.0
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 4,
+      "case": "dumps/independent-floats-256x256",
+      "identical_output": true,
+      "started_unix_ns": 1792960936555342910,
+      "finished_unix_ns": 1792960936730513227,
+      "candidate": {
+        "per_op_ns": 6845234.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.02133279884953531,
+        "samples_ns": [
+          6991262.0,
+          6914164.0,
+          6897904.0,
+          6886893.0,
+          6845234.0,
+          6876543.0,
+          6916540.0,
+          6868728.0,
+          6861084.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          6917324.0,
+          6901886.0,
+          6890043.0,
+          6847203.0,
+          6878311.0,
+          6917696.0,
+          6870055.0,
+          6862973.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 6939363.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.018555881858320425,
+        "samples_ns": [
+          6978618.0,
+          7004167.0,
+          6939363.0,
+          6960112.0,
+          7068129.0,
+          7000380.0,
+          7025567.0,
+          6960534.0,
+          6958169.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7006803.0,
+          6941570.0,
+          6963031.0,
+          7071074.0,
+          7002395.0,
+          7028494.0,
+          6961928.0,
+          6959925.0
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 4,
+      "case": "dumps/independent-floats-256x256",
+      "identical_output": true,
+      "started_unix_ns": 1792960936737662270,
+      "finished_unix_ns": 1792960936882754350,
+      "candidate": {
+        "per_op_ns": 418803.75,
+        "iters": 12,
+        "rounds": 9,
+        "spread": 0.14031194005943515,
+        "samples_ns": [
+          436063.5,
+          436640.4166666667,
+          434859.5,
+          435829.6666666667,
+          420462.8333333333,
+          477566.9166666667,
+          422384.75,
+          418803.75,
+          420804.25
+        ],
+        "cpu_samples_ns": [
+          null,
+          436869.6666666667,
+          435063.75,
+          436036.4166666667,
+          420618.25,
+          477906.75,
+          422661.25,
+          419017.75,
+          421096.6666666667
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 6259534.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.04182579725583406,
+        "samples_ns": [
+          6403278.0,
+          6278921.0,
+          6282017.0,
+          6521344.0,
+          6305070.0,
+          6259534.0,
+          6263090.0,
+          6356169.0,
+          6290452.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          6283243.0,
+          6284796.0,
+          6524646.0,
+          6306706.0,
+          6261692.0,
+          6264207.0,
+          6358354.0,
+          6293412.0
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 4,
+      "case": "dumpb/independent-floats-256x256",
+      "identical_output": true,
+      "started_unix_ns": 1792960936889777112,
+      "finished_unix_ns": 1792960937027654342,
+      "candidate": {
+        "per_op_ns": 358581.71428571426,
+        "iters": 14,
+        "rounds": 9,
+        "spread": 0.06916415146657148,
+        "samples_ns": [
+          362594.4285714286,
+          375435.4285714286,
+          383382.71428571426,
+          370058.71428571426,
+          360198.4285714286,
+          360703.0,
+          358581.71428571426,
+          359501.4285714286,
+          359011.85714285716
+        ],
+        "cpu_samples_ns": [
+          null,
+          375641.9285714286,
+          383495.9285714286,
+          370160.14285714284,
+          360283.0,
+          360853.4285714286,
+          358727.28571428574,
+          359593.9285714286,
+          359164.5
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 6240286.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.02562654980877479,
+        "samples_ns": [
+          6400203.0,
+          6299880.0,
+          6240286.0,
+          6292898.0,
+          6257039.0,
+          6364184.0,
+          6270294.0,
+          6310512.0,
+          6289180.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          6302930.0,
+          6242416.0,
+          6294243.0,
+          6258155.0,
+          6365717.0,
+          6271500.0,
+          6311326.0,
+          6290877.0
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 4,
+      "case": "dumpb/independent-floats-256x256",
+      "identical_output": true,
+      "started_unix_ns": 1792960937041891153,
+      "finished_unix_ns": 1792960937217958905,
+      "candidate": {
+        "per_op_ns": 6877936.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.018265654114839103,
+        "samples_ns": [
+          6962176.0,
+          6938271.0,
+          6877936.0,
+          7003566.0,
+          6921198.0,
+          6881642.0,
+          6912782.0,
+          6924254.0,
+          6940606.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          6944425.0,
+          6880866.0,
+          7005781.0,
+          6922755.0,
+          6882890.0,
+          6914399.0,
+          6925430.0,
+          6943123.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 6902302.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.016425969191148113,
+        "samples_ns": [
+          6913895.0,
+          6926889.0,
+          7015679.0,
+          6968819.0,
+          6902302.0,
+          6976714.0,
+          6968438.0,
+          6995651.0,
+          6947158.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          6930890.0,
+          7019897.0,
+          6971266.0,
+          6904080.0,
+          6977988.0,
+          6969403.0,
+          6996614.0,
+          6948062.0
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 4,
+      "case": "dumps/shared-varied-floats-256x128",
+      "identical_output": true,
+      "started_unix_ns": 1792960937233049056,
+      "finished_unix_ns": 1792960937421237855,
+      "candidate": {
+        "per_op_ns": 7387409.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.03016849344607832,
+        "samples_ns": [
+          7387409.0,
+          7440090.0,
+          7552885.0,
+          7489305.0,
+          7478734.0,
+          7403169.0,
+          7504704.0,
+          7527577.0,
+          7610276.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7443504.0,
+          7555023.0,
+          7491324.0,
+          7480604.0,
+          7405973.0,
+          7507023.0,
+          7529085.0,
+          7612902.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7447504.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.015099689775258933,
+        "samples_ns": [
+          7493372.0,
+          7506086.0,
+          7500576.0,
+          7559959.0,
+          7534160.0,
+          7520313.0,
+          7468234.0,
+          7447504.0,
+          7460990.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7509177.0,
+          7502435.0,
+          7562778.0,
+          7536649.0,
+          7522672.0,
+          7469433.0,
+          7448674.0,
+          7462189.0
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 4,
+      "case": "dumps/shared-varied-floats-256x128",
+      "identical_output": true,
+      "started_unix_ns": 1792960937429171909,
+      "finished_unix_ns": 1792960937624540651,
+      "candidate": {
+        "per_op_ns": 78700.06140350878,
+        "iters": 114,
+        "rounds": 9,
+        "spread": 0.03353348996473063,
+        "samples_ns": [
+          80245.38596491228,
+          79912.12280701754,
+          79901.74561403508,
+          79804.80701754386,
+          79213.41228070176,
+          78857.29824561403,
+          78700.06140350878,
+          81339.14912280702,
+          80388.82456140351
+        ],
+        "cpu_samples_ns": [
+          null,
+          79947.57894736843,
+          79932.90350877192,
+          79840.8947368421,
+          79240.4649122807,
+          78891.73684210527,
+          78729.14912280702,
+          81373.33333333333,
+          80428.13157894737
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7386307.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.01658393023739739,
+        "samples_ns": [
+          7386307.0,
+          7508801.0,
+          7495917.0,
+          7487351.0,
+          7420463.0,
+          7411144.0,
+          7481509.0,
+          7418328.0,
+          7435992.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7511752.0,
+          7487548.0,
+          7488769.0,
+          7421583.0,
+          7412185.0,
+          7482907.0,
+          7419328.0,
+          7440238.0
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 4,
+      "case": "dumpb/shared-varied-floats-256x128",
+      "identical_output": true,
+      "started_unix_ns": 1792960937632392568,
+      "finished_unix_ns": 1792960937792884230,
+      "candidate": {
+        "per_op_ns": 45806.765625,
+        "iters": 128,
+        "rounds": 9,
+        "spread": 0.030643842527355913,
+        "samples_ns": [
+          46305.140625,
+          47210.4609375,
+          46094.8984375,
+          45850.9921875,
+          45873.609375,
+          45806.765625,
+          45848.25,
+          46027.265625,
+          46213.953125
+        ],
+        "cpu_samples_ns": [
+          null,
+          47254.859375,
+          46115.5234375,
+          45873.8984375,
+          45899.4140625,
+          45824.2734375,
+          45867.7890625,
+          46046.1015625,
+          46233.71875
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7237182.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.03400785001676067,
+        "samples_ns": [
+          7483303.0,
+          7310913.0,
+          7267300.0,
+          7279212.0,
+          7324589.0,
+          7262351.0,
+          7252201.0,
+          7307948.0,
+          7237182.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7313369.0,
+          7268675.0,
+          7281099.0,
+          7326474.0,
+          7263906.0,
+          7254388.0,
+          7310924.0,
+          7239881.0
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 4,
+      "case": "dumpb/shared-varied-floats-256x128",
+      "identical_output": true,
+      "started_unix_ns": 1792960937808165146,
+      "finished_unix_ns": 1792960938000666968,
+      "candidate": {
+        "per_op_ns": 7382220.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.0274628770207336,
+        "samples_ns": [
+          7584957.0,
+          7495165.0,
+          7577483.0,
+          7466971.0,
+          7473433.0,
+          7475878.0,
+          7476079.0,
+          7430001.0,
+          7382220.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7500301.0,
+          7581002.0,
+          7469172.0,
+          7475063.0,
+          7478470.0,
+          7478420.0,
+          7432664.0,
+          7385174.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7261970.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.05549045231528084,
+        "samples_ns": [
+          7435331.0,
+          7426444.0,
+          7664940.0,
+          7450881.0,
+          7436453.0,
+          7408940.0,
+          7393711.0,
+          7335811.0,
+          7261970.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7429487.0,
+          7667835.0,
+          7453262.0,
+          7438595.0,
+          7411343.0,
+          7395323.0,
+          7336773.0,
+          7263055.0
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 4,
+      "case": "dumps/independent-varied-floats-256x128",
+      "identical_output": true,
+      "started_unix_ns": 1792960938015692756,
+      "finished_unix_ns": 1792960938207554615,
+      "candidate": {
+        "per_op_ns": 7431223.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.024407422573646358,
+        "samples_ns": [
+          7445239.0,
+          7527207.0,
+          7612600.0,
+          7534631.0,
+          7512027.0,
+          7484295.0,
+          7441453.0,
+          7431223.0,
+          7474075.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7530397.0,
+          7614936.0,
+          7536699.0,
+          7513085.0,
+          7486073.0,
+          7442773.0,
+          7432423.0,
+          7475744.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7409752.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.09433460121202437,
+        "samples_ns": [
+          7462764.0,
+          7524822.0,
+          7452804.0,
+          7487341.0,
+          7409752.0,
+          7490476.0,
+          7594195.0,
+          8108748.0,
+          7518290.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7527802.0,
+          7453953.0,
+          7489180.0,
+          7411143.0,
+          7493538.0,
+          7597985.0,
+          8112682.0,
+          7523073.0
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 4,
+      "case": "dumps/independent-varied-floats-256x128",
+      "identical_output": true,
+      "started_unix_ns": 1792960938222536009,
+      "finished_unix_ns": 1792960938406272948,
+      "candidate": {
+        "per_op_ns": 6616987.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.035036036794389956,
+        "samples_ns": [
+          6700526.0,
+          6848820.0,
+          6699555.0,
+          6711748.0,
+          6712670.0,
+          6656593.0,
+          6616987.0,
+          6633007.0,
+          6687922.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          6853325.0,
+          6701599.0,
+          6714123.0,
+          6715405.0,
+          6658719.0,
+          6618764.0,
+          6634753.0,
+          6690478.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7336743.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.03419214766007205,
+        "samples_ns": [
+          7336743.0,
+          7433387.0,
+          7414732.0,
+          7403169.0,
+          7435040.0,
+          7587602.0,
+          7411936.0,
+          7411094.0,
+          7417076.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7435879.0,
+          7415962.0,
+          7405082.0,
+          7436931.0,
+          7589809.0,
+          7413928.0,
+          7413838.0,
+          7419538.0
+        ]
+      }
+    },
+    {
+      "label": "after",
+      "repetition": 4,
+      "case": "dumpb/independent-varied-floats-256x128",
+      "identical_output": true,
+      "started_unix_ns": 1792960938420923530,
+      "finished_unix_ns": 1792960938603466038,
+      "candidate": {
+        "per_op_ns": 6651152.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.022277945234148912,
+        "samples_ns": [
+          6731516.0,
+          6674527.0,
+          6751204.0,
+          6675649.0,
+          6651152.0,
+          6725925.0,
+          6799326.0,
+          6782653.0,
+          6721427.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          6677524.0,
+          6752986.0,
+          6677324.0,
+          6652917.0,
+          6728840.0,
+          6802208.0,
+          6784735.0,
+          6724953.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7430512.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.04084375343179582,
+        "samples_ns": [
+          7487331.0,
+          7572152.0,
+          7514041.0,
+          7734002.0,
+          7513100.0,
+          7491137.0,
+          7467522.0,
+          7430512.0,
+          7456300.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7575121.0,
+          7516962.0,
+          7737967.0,
+          7516050.0,
+          7493468.0,
+          7469222.0,
+          7432603.0,
+          7458623.0
+        ]
+      }
+    },
+    {
+      "label": "before",
+      "repetition": 4,
+      "case": "dumpb/independent-varied-floats-256x128",
+      "identical_output": true,
+      "started_unix_ns": 1792960938618565086,
+      "finished_unix_ns": 1792960938804647018,
+      "candidate": {
+        "per_op_ns": 7401195.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.016510036554907688,
+        "samples_ns": [
+          7426775.0,
+          7401195.0,
+          7484244.0,
+          7492560.0,
+          7453315.0,
+          7424810.0,
+          7447424.0,
+          7446632.0,
+          7523389.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7405342.0,
+          7487216.0,
+          7496163.0,
+          7456168.0,
+          7427503.0,
+          7450507.0,
+          7449184.0,
+          7525178.0
+        ]
+      },
+      "stdlib": {
+        "per_op_ns": 7262280.0,
+        "iters": 1,
+        "rounds": 9,
+        "spread": 0.04005436309258249,
+        "samples_ns": [
+          7553166.0,
+          7473314.0,
+          7430441.0,
+          7443918.0,
+          7392979.0,
+          7363884.0,
+          7324199.0,
+          7285615.0,
+          7262280.0
+        ],
+        "cpu_samples_ns": [
+          null,
+          7477909.0,
+          7435097.0,
+          7445477.0,
+          7394071.0,
+          7364776.0,
+          7325261.0,
+          7286489.0,
+          7255811.0
+        ]
+      }
+    }
+  ],
+  "max_slowdown": 1.15,
+  "regressions": [],
+  "passed": true
+}

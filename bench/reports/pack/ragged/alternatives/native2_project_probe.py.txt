@@ -1,0 +1,429 @@
+"""Private CPU replay of the captured three-stage remote project decoder.
+
+No Billy imports or edits. Transport, asyncio scheduling, before_each, breaker
+state and logging are excluded. Every fresh response is admitted before the next
+response, then reused by the caller and copied once into immutable final storage.
+The error-only legacy codec fallback is disclosed and counted; valid frames use
+RaggedDecoder once each. This is a proof of a proposed ownership seam, not a
+public API or an end-to-end network/inference speedup claim.
+"""
+
+from __future__ import annotations
+
+import argparse
+import ast
+import copy
+from dataclasses import FrozenInstanceError, dataclass
+from functools import partial
+from hashlib import sha256
+from importlib import import_module, util
+import json
+from pathlib import Path
+import platform
+import struct
+import sys
+from types import ModuleType, SimpleNamespace
+from typing import Any
+
+
+ROOT = Path(__file__).resolve().parents[1]
+LOCAL = Path(__file__).resolve().parent
+CAPTURE = LOCAL / "pack-project-capture.json"
+
+
+def load(name: str, path: Path) -> ModuleType:
+    spec = util.spec_from_file_location(name, path)
+    assert spec and spec.loader
+    module = util.module_from_spec(spec)
+    sys.modules[name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+profile = load("_private_project_consumers", ROOT / "bench/profiles/pack_consumers.py")
+single = load("_private_project_ragged", ROOT / "bench/profiles/ragged.py")
+
+
+def dump(node: ast.AST) -> str:
+    return ast.dump(node, include_attributes=False)
+
+
+def capture(billy: Path) -> dict[str, Any]:
+    colbert_path = billy / profile._CONSUMER
+    remote_path = colbert_path.with_name("remote.py")
+    source = colbert_path.read_text()
+    remote = remote_path.read_text()
+    colbert_tree = ast.parse(source)
+    remote_tree = ast.parse(remote)
+    project = next(n for n in colbert_tree.body if isinstance(n, ast.AsyncFunctionDef) and n.name == "project")
+    validate = next(n for n in remote_tree.body if isinstance(n, ast.FunctionDef) and n.name == "_validate")
+    remote_branch = next(n for n in ast.walk(project) if isinstance(n, ast.If) and dump(n.test) == dump(ast.parse("remote.configured()", mode="eval").body))
+    recipes = json.loads(colbert_path.with_suffix(".json").read_text())["recipe"]
+    data = {
+        "schema": 1,
+        "consumer": profile._capture(billy),
+        "project": profile._node_source(source, project),
+        "validate": profile._node_source(remote, validate),
+        "project_remote_ast": dump(ast.Module(body=remote_branch.body, type_ignores=[])),
+        "remote_source_sha256": sha256(remote.encode()).hexdigest(),
+        "recipe": {name: recipes[name] for name in ("capacity", "dimension", "document_maximum")},
+        "scope": "three synchronous numeric admission/assembly stages only; no network, inference, callbacks, offload scheduling, breaker or logging",
+    }
+    data["capture_sha256"] = sha256(profile._canonical(data).encode()).hexdigest()
+    if CAPTURE.exists():
+        if json.loads(CAPTURE.read_text()) != data:
+            raise ValueError("current Billy source differs from the pinned private project capture")
+    else:
+        CAPTURE.write_text(json.dumps(data, indent=2) + "\n")
+    return data
+
+
+def compile_nodes(module: ModuleType, nodes: list[ast.stmt]) -> None:
+    tree = ast.Module(body=[ast.ImportFrom(module="__future__", names=[ast.alias(name="annotations")], level=0), *nodes], type_ignores=[])
+    ast.fix_missing_locations(tree)
+    exec(compile(tree, str(CAPTURE), "exec"), vars(module))
+
+
+def make_modules(data: dict[str, Any], codec: Any, ragged: Any) -> dict[str, ModuleType]:
+    baseline = profile._compile_consumers(data["consumer"], codec)["baseline"]
+    decoder = ragged.RaggedDecoder("<f4", columns=data["consumer"]["dimension"], index_dtype="<i8", finite=True, allow_empty=False)
+    # Reuse the reviewed admission/snapshot AST gate from the one-frame profile.
+    candidate = single._candidate(data["consumer"], baseline, decoder)
+    modules = {"baseline": baseline, "candidate": candidate}
+    original = ast.parse(data["validate"]).body[0]
+    assert isinstance(original, ast.FunctionDef)
+    relative_import = ast.parse("from . import colbert, encoder").body[0]
+    if dump(original.body[0]) != dump(relative_import):
+        raise ValueError("captured validator dependency binding changed")
+    original.body.pop(0)  # Only bind the original relative dependencies explicitly.
+    baseline.__dict__.update(colbert=baseline, encoder=None, math=__import__("math"))
+    compile_nodes(baseline, [original])
+
+    rewritten = copy.deepcopy(original)
+    project_branch = rewritten.body[-1]
+    while isinstance(project_branch, ast.If) and len(project_branch.orelse) == 1 and isinstance(project_branch.orelse[0], ast.If):
+        project_branch = project_branch.orelse[0]
+    assert isinstance(project_branch, ast.If)
+    body = project_branch.orelse
+    expected = ast.parse("""
+boundary_bytes = (len(request.texts) + 1) * 8
+if len(response.content) > request.max_bytes:
+    message = 'Recall projection exceeds its publication allowance'
+    raise ValueError(message)
+colbert.TokenIndex(np.frombuffer(response.content[boundary_bytes:], dtype='<f4').reshape(-1, colbert._DIMENSION), np.frombuffer(response.content[:boundary_bytes], dtype='<i8'), colbert._IDENTITY)
+""").body
+    if dump(ast.Module(body=body, type_ignores=[])) != dump(ast.Module(body=expected, type_ignores=[])):
+        raise ValueError("captured first project admission differs from the reviewed seam")
+    body[-1] = ast.Return(value=ast.Call(func=ast.Name(id="_first_frame", ctx=ast.Load()), args=[ast.Name(id="response", ctx=ast.Load()), ast.Name(id="request", ctx=ast.Load())], keywords=[]))
+    candidate.__dict__.update(colbert=baseline, encoder=None, math=__import__("math"), _fallback_calls=0)
+
+    def first_frame(response: Any, request: Any) -> None:
+        body_bytes = response.content
+        # Legacy first admission slices whatever header is present. In particular
+        # eight zero bytes is valid here but rejected by the second caller guard.
+        count = min(len(body_bytes), (len(request.texts) + 1) * 8) // 8
+        try:
+            result = decoder.unpack(body_bytes, index_count=count)
+            if not baseline._IDENTITY:
+                raise ValueError("empty identity")
+            response.extensions["_private_validated_frame"] = result
+            return
+        except ValueError:
+            candidate._fallback_calls += 1
+            baseline._validate(response, request)
+            raise AssertionError("generic admission rejected a frame the original accepted") from None
+
+    candidate._first_frame = first_frame
+    compile_nodes(candidate, [rewritten])
+
+    remote_index = copy.deepcopy(ast.parse(data["consumer"]["definitions"]["_remote_index"]).body[0])
+    assert isinstance(remote_index, ast.FunctionDef)
+    remote_index.name = "_reuse"
+    remote_index.args.args.append(ast.arg(arg="frame"))
+    remote_index.body[-1] = ast.Return(value=ast.Name(id="frame", ctx=ast.Load()))
+    compile_nodes(candidate, [remote_index])
+
+    project = ast.parse(data["project"]).body[0]
+    branch = next(n for n in ast.walk(project) if isinstance(n, ast.If) and dump(n.test) == dump(ast.parse("remote.configured()", mode="eval").body))
+    expected_loop = ast.parse("""
+for text in texts:
+    if before_each is not None:
+        await before_each()
+    response = await remote.infer(remote.request('project', [text], max_bytes=remaining + 16))
+    index = await offload(_remote_index, response.content, remaining)
+    remaining -= index.tokens.nbytes
+    remote_offsets.append(remote_offsets[-1] + len(index.tokens))
+    remote_values.append(index.tokens)
+""").body[0]
+    loop = branch.body[-2]
+    final = branch.body[-1]
+    if len(branch.body) != 5 or dump(loop) != dump(expected_loop):
+        raise ValueError("captured project bookkeeping or per-response order changed")
+    expected_prefix = ast.parse("""
+remote_values, remote_offsets = [], [0]
+remaining = max_bytes - (len(texts) + 1) * 8
+if remaining < 0:
+    return None
+""").body
+    if dump(ast.Module(body=branch.body[:3], type_ignores=[])) != dump(ast.Module(body=expected_prefix, type_ignores=[])):
+        raise ValueError("captured project publication bookkeeping changed")
+    expected_final = ast.parse("""
+return await offload(lambda: TokenIndex(np.concatenate(remote_values) if remote_values else np.empty((0, _DIMENSION), dtype=np.float32), np.asarray(remote_offsets, dtype=np.int64), _IDENTITY))
+""").body[0]
+    if dump(final) != dump(expected_final):
+        raise ValueError("captured project final assembly changed")
+    assert isinstance(final, ast.Return) and isinstance(final.value, ast.Await)
+    assembly_expr = final.value.value.args[0].body
+    assemble = ast.parse("def _assemble(remote_values, remote_offsets):\n    pass").body[0]
+    assemble.body = [ast.Return(value=copy.deepcopy(assembly_expr))]
+    compile_nodes(baseline, [assemble])
+
+    def join_immutable(values: list[Any], offsets: list[int]) -> Any:
+        # Previous full admission proved immutable finite rows and strict per-doc
+        # boundaries; concatenating their immutable bytes preserves those facts.
+        if not baseline._IDENTITY:
+            raise ValueError("invalid ColBERT token index")
+        if len(values) == 1:
+            tokens = values[0]
+        else:
+            payload = b"".join(memoryview(array) for array in values)
+            tokens = codec.np.frombuffer(payload, dtype="<f4").reshape(-1, baseline._DIMENSION)
+        boundaries = struct.pack(f"<{len(offsets)}q", *offsets)
+        indices = codec.np.frombuffer(boundaries, dtype="<i8")
+        result = object.__new__(baseline.TokenIndex)
+        object.__setattr__(result, "tokens", tokens)
+        object.__setattr__(result, "offsets", indices)
+        object.__setattr__(result, "identity", baseline._IDENTITY)
+        object.__setattr__(result, "_device", None)
+        return result
+
+    candidate._assemble = join_immutable
+    for side, module in modules.items():
+        decode = ast.parse("def _decode(responses, texts, max_bytes):\n    pass").body[0]
+        copied_loop = copy.deepcopy(loop)
+        copied_loop.target = ast.Tuple(elts=[ast.Name(id="response", ctx=ast.Store()), ast.Name(id="request", ctx=ast.Store())], ctx=ast.Store())
+        copied_loop.iter = ast.Name(id="responses", ctx=ast.Load())
+        if side == "baseline":
+            copied_loop.body = [*ast.parse("_validate(response, request)\nindex = _remote_index(response.content, remaining)").body, *copied_loop.body[3:]]
+        else:
+            copied_loop.body = [*ast.parse("_validate(response, request)\nframe = response.extensions.pop('_private_validated_frame')\nindex = _reuse(response.content, remaining, frame)").body, *copied_loop.body[3:]]
+
+            class NumericTuple(ast.NodeTransformer):
+                def visit_Attribute(self, node: ast.Attribute) -> ast.AST:
+                    if isinstance(node.value, ast.Name) and node.value.id == "index" and node.attr == "tokens":
+                        return ast.copy_location(ast.Subscript(value=ast.Name(id="index", ctx=ast.Load()), slice=ast.Constant(0), ctx=ast.Load()), node)
+                    return self.generic_visit(node)
+
+            copied_loop = NumericTuple().visit(copied_loop)
+        decode.body = [*copy.deepcopy(branch.body[:3]), copied_loop, *ast.parse("return _assemble(remote_values, remote_offsets)").body]
+        compile_nodes(module, [decode])
+    return modules
+
+
+@dataclass(frozen=True)
+class Fixture:
+    responses: tuple[tuple[Any, Any], ...]
+    texts: tuple[str, ...]
+    max_bytes: int
+    tokens: bytes
+    offsets: tuple[int, ...]
+    rows: int
+    documents: int
+
+
+def fixture(documents: int, rows: int, data: dict[str, Any]) -> Fixture:
+    dimension = data["consumer"]["dimension"]
+    identity = data["consumer"]["identity"]
+    parts = [struct.pack("<f", (index % 7 + 1) / 8) * (rows * dimension) for index in range(documents)]
+    maximum = sum(map(len, parts)) + (documents + 1) * 8
+    remaining = maximum - (documents + 1) * 8
+    responses = []
+    for index, part in enumerate(parts):
+        request = SimpleNamespace(operation="project", texts=[str(index)], identity=identity, max_bytes=remaining + 16)
+        response = SimpleNamespace(content=struct.pack("<2q", 0, rows) + part, headers={"x-recall-identity": identity}, extensions={})
+        responses.append((response, request))
+        remaining -= len(part)
+    return Fixture(tuple(responses), tuple(str(n) for n in range(documents)), maximum, b"".join(parts), tuple(rows * n for n in range(documents + 1)), documents * rows, documents)
+
+
+def owner(array: Any, np: Any) -> Any:
+    while isinstance(array, np.ndarray):
+        array = array.base
+    return array
+
+
+def check(result: Any, expected: Fixture, module: ModuleType, codec: Any) -> None:
+    np = codec.np
+    assert type(result) is module.TokenIndex
+    assert result.tokens.dtype == np.dtype("<f4") and result.tokens.shape == (expected.rows, module._DIMENSION)
+    assert result.offsets.dtype == np.dtype("<i8") and result.offsets.shape == (expected.documents + 1,)
+    assert result.tokens.tobytes() == expected.tokens and tuple(result.offsets) == expected.offsets
+    assert result.tokens.flags.c_contiguous and not result.tokens.flags.writeable
+    assert result.offsets.flags.c_contiguous and not result.offsets.flags.writeable
+    assert type(owner(result.tokens, np)) is bytes and type(owner(result.offsets, np)) is bytes
+    assert result._device is None and result.device_nbytes == 0
+    assert result.nbytes == len(expected.tokens) + 8 * (expected.documents + 1)
+    assert result.identity == module._IDENTITY
+    try:
+        result.identity = "changed"
+    except FrozenInstanceError:
+        pass
+    else:
+        raise AssertionError("result class lost frozen ownership")
+
+
+def native_proof(modules: dict[str, ModuleType], data: dict[str, Any], ragged: Any) -> dict[str, Any]:
+    sample = fixture(3, 2, data)
+    calls = []
+    original = ragged._native.validate
+
+    def recorded(*args: Any) -> Any:
+        calls.append({"bytes": len(args[0]), "index_count": args[1], "columns": args[2], "finite": args[7], "allow_empty": args[8]})
+        return original(*args)
+
+    ragged._native.validate = recorded
+    try:
+        for _ in range(2):
+            call(modules["candidate"], sample)
+        responses = list(sample.responses)
+        response, request = responses[1]
+        responses[1] = (SimpleNamespace(content=response.content[:-4] + struct.pack("<f", float("nan")), headers=response.headers, extensions={}), request)
+        try:
+            modules["candidate"]._decode(tuple(responses), sample.texts, sample.max_bytes)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError("native proof admitted a late invalid frame")
+    finally:
+        ragged._native.validate = original
+    assert len(calls) == 8 and all(item["finite"] is True and item["allow_empty"] is False and item["columns"] == data["consumer"]["dimension"] for item in calls)
+    return {"KERNEL_VERSION": ragged._native.KERNEL_VERSION, "calls": calls, "repeated_results_cached": False}
+
+
+def call(module: ModuleType, sample: Fixture) -> Any:
+    return module._decode(sample.responses, sample.texts, sample.max_bytes)
+
+
+def semantic_oracles(modules: dict[str, ModuleType], data: dict[str, Any], codec: Any) -> dict[str, Any]:
+    results = {}
+    for documents, rows in ((0, 1), (1, 1), (1, 512), (32, 1), (32, 32), (32, 128), (256, 1), (256, 32), (256, 512)):
+        sample = fixture(documents, rows, data)
+        for side, module in modules.items():
+            result = call(module, sample)
+            check(result, sample, modules["baseline"], codec)
+            for response, _ in sample.responses:
+                source = codec.np.frombuffer(response.content, dtype="<f4", offset=16)
+                assert codec.np.shares_memory(result.tokens, source) == (side == "candidate" and documents == 1)
+        results[f"{documents}docs/{rows}rows"] = "identical complete immutable result"
+    small = fixture(3, 2, data)
+    altered = {
+        "header-identity": (small.responses[0][0].content, {"x-recall-identity": "wrong"}),
+        "short-header": (struct.pack("<q", 0), None),
+        "partial-header": (b"\0" * 12, None),
+        "partial-row": (small.responses[0][0].content + b"\0", None),
+        "first-boundary": (struct.pack("<2q", 1, 2) + small.responses[0][0].content[16:], None),
+        "terminal-boundary": (struct.pack("<2q", 0, 1) + small.responses[0][0].content[16:], None),
+        "negative-boundary": (struct.pack("<2q", 0, -1) + small.responses[0][0].content[16:], None),
+        **{name: (small.responses[0][0].content[:-4] + struct.pack("<f", value), None) for name, value in (("late-nan", float("nan")), ("late-positive-infinity", float("inf")), ("late-negative-infinity", -float("inf")))},
+    }
+    cases = {}
+    for name, (body, headers) in altered.items():
+        for position in range(3):
+            responses = list(small.responses)
+            response, request = responses[position]
+            responses[position] = (SimpleNamespace(content=body, headers=headers or response.headers, extensions={}), request)
+            cases[f"{name}@{position}"] = Fixture(tuple(responses), small.texts, small.max_bytes, small.tokens, small.offsets, small.rows, small.documents)
+    response, request = small.responses[0]
+    bad_request = SimpleNamespace(**{**vars(request), "max_bytes": len(response.content) - 1})
+    cases["response-publication-budget"] = Fixture(((response, bad_request), *small.responses[1:]), small.texts, small.max_bytes, small.tokens, small.offsets, small.rows, small.documents)
+    outcomes = {}
+    for name, sample in cases.items():
+        pair = {}
+        for side, module in modules.items():
+            events = []
+            originals = {stage: vars(module)[stage] for stage in ("_validate", "_remote_index" if side == "baseline" else "_reuse", "_assemble")}
+            for stage, function in originals.items():
+                def observed(*args: Any, stage: str = stage, function: Any = function) -> Any:
+                    events.append("caller" if stage in ("_remote_index", "_reuse") else stage)
+                    return function(*args)
+                vars(module)[stage] = observed
+            try:
+                call(module, sample)
+            except ValueError as error:
+                pair[side] = {"type": type(error).__name__, "message": str(error), "events": events}
+            else:
+                raise AssertionError(f"{side} admitted {name}")
+            finally:
+                vars(module).update(originals)
+        if pair["baseline"] != pair["candidate"]:
+            raise AssertionError((name, pair))
+        outcomes[name] = pair["candidate"]
+    identity = modules["baseline"]._IDENTITY
+    try:
+        modules["baseline"]._IDENTITY = ""
+        for count in (0, 1):
+            sample = fixture(count, 1, {**data, "consumer": {**data["consumer"], "identity": ""}})
+            pair = {}
+            for side, module in modules.items():
+                try:
+                    call(module, sample)
+                except ValueError as error:
+                    pair[side] = (type(error).__name__, str(error))
+                else:
+                    raise AssertionError(f"{side} admitted empty identity")
+            assert pair["baseline"] == pair["candidate"]
+            outcomes[f"empty-identity/{count}docs"] = pair["candidate"]
+    finally:
+        modules["baseline"]._IDENTITY = identity
+    return {"valid": results, "invalid_order_and_error_parity": outcomes, "candidate_legacy_error_fallback_calls": modules["candidate"]._fallback_calls}
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--billy-root", type=Path, default=ROOT.parent / "billy")
+    parser.add_argument("--source", type=Path, default=ROOT / "src")
+    parser.add_argument("--output", type=Path, default=LOCAL / "pack-project-oracles.json")
+    parser.add_argument("--run-timings", action="store_true")
+    parser.add_argument("--rounds", type=int, default=9)
+    parser.add_argument("--batch-ms", type=float, default=50)
+    args = parser.parse_args()
+    source = args.source.resolve()
+    if any(name == "unstd" or name.startswith("unstd.") for name in sys.modules):
+        raise RuntimeError("product was imported before source selection")
+    sys.path.insert(0, str(source))
+    codec = import_module("unstd.pack.binpack")
+    ragged = import_module("unstd.pack.ragged")
+    if ragged._native is None:
+        raise RuntimeError("this scratch comparison requires the built native validator")
+    for module, relative in ((codec, "unstd/pack/binpack.py"), (ragged, "unstd/pack/ragged.py")):
+        if Path(module.__file__).resolve() != source / relative:
+            raise RuntimeError("wrong selected product source")
+    if Path(ragged._native.__file__).resolve().parent != source / "unstd/pack":
+        raise RuntimeError("wrong selected native binary")
+    data = capture(args.billy_root)
+    modules = make_modules(data, codec, ragged)
+    fingerprints = single._fingerprints(source, ragged._native)
+    harness_digest = sha256(Path(__file__).read_bytes()).hexdigest()
+    result = {"capture_sha256": data["capture_sha256"], "harness_sha256": harness_digest, "scope": data["scope"], "recipe": data["recipe"], "python": sys.version, "platform": platform.platform(), "fingerprints": fingerprints, "oracles": semantic_oracles(modules, data, codec), "native_execution_proof": native_proof(modules, data, ragged)}
+    result.update(selected_source=str(source), rounds=args.rounds, batch_ms=args.batch_ms, target_speedup=100)
+    if args.run_timings:
+        results = {}
+        for documents, rows in ((1, 1), (1, 512), (32, 1), (32, 32), (32, 128), (256, 1), (256, 32), (256, 512)):
+            sample = fixture(documents, rows, data)
+            samples = {side: [] for side in modules}
+            for round_index in range(args.rounds):
+                for side in (("baseline", "candidate") if round_index % 2 == 0 else ("candidate", "baseline")):
+                    samples[side].append(profile._measure(partial(call, modules[side], sample), partial(check, expected=sample, module=modules["baseline"], codec=codec), int(args.batch_ms * 1_000_000)))
+            results[f"{documents}docs/{rows}rows"] = {"wire_bytes": sum(len(response.content) for response, _ in sample.responses), **single._summary(samples, 100)}
+        result["results"] = results
+        result["all_targets_met"] = all(row["target_met"] for row in results.values())
+    if fingerprints != single._fingerprints(source, ragged._native):
+        raise RuntimeError("product inputs changed during replay")
+    if harness_digest != sha256(Path(__file__).read_bytes()).hexdigest():
+        raise RuntimeError("private harness changed during replay")
+    args.output.write_text(json.dumps(result, indent=2) + "\n")
+    print(json.dumps({"output": str(args.output), "valid_cases": len(result["oracles"]["valid"]), "invalid_cases": len(result["oracles"]["invalid_order_and_error_parity"]), "timings_run": args.run_timings}))
+
+
+if __name__ == "__main__":
+    main()

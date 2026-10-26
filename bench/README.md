@@ -36,7 +36,7 @@ runtime backends from available source and unqualified replacement candidates.
 ## Frozen function speeds
 
 [`speeds.json`](baselines/speeds.json) freezes representative latency for every public
-operation across all 18 packages. The shared registry currently has 224
+operation across all 18 packages. The shared registry currently has 268
 workloads, including constructors, locally declared public methods/properties,
 stdlib aliases, generator consumption and complete stream lifecycles. Nine
 imported typing/enum/result vocabulary names have explicit exclusions. Private
@@ -86,6 +86,10 @@ Workload source fingerprints also detect fixture edits, including changed inputs
 without a note change. Review those edits and run `freeze` to acknowledge the
 new source snapshot; existing speed ceilings remain unchanged. A deliberately
 different input should normally receive a new `#variant` ID.
+Additive historical captures keep their recording environment and provenance;
+verification rejects a selected row recorded under another environment. The
+committed mixed historical artifact is not a substitute for a fresh worker
+baseline when comparing complete revisions.
 
 Absolute speeds belong to a machine and runtime. Verification requires the
 recorded CPU, OS, Python configuration, backend versions, thread settings and
@@ -108,16 +112,49 @@ uv run --no-sync python -m bench.speeds verify --baseline /tmp/worker-speeds.jso
 The [performance workflow](../.github/workflows/performance.yml) automates this
 for pull requests and manual reference comparisons: it builds each revision's
 own wheel/native kernels, runs the current harness against both installations
-on one worker, and retains baseline, measurements and Git identities even on
-regression. The freeze pass uses `--comparison-source` with the older revision's
+on the same worker independently on Linux and macOS with Python 3.13 and 3.14,
+and retains separate platform/interpreter baselines, measurements and Git
+identities even on regression.
+Native source changes also trigger both comparisons. The freeze pass uses
+`--comparison-source` with the older revision's
 source inventory; `--revision-baseline` checks every shared workload against its
 unchanged ceiling. New APIs still receive correctness checks and measurements;
 the report identifies them as additions with no fabricated comparison ceiling.
+Shared workloads and their bounded rechecks complete before added APIs run,
+keeping the comparison's preceding workload history the same on both revisions.
+The additions are then checked and timed with the same round budget.
 Removed workloads, changed notes, coverage gaps and runtime errors still fail.
 The runtime and dependency environment must match; revision-owned native routes
 may change and both route inventories remain in the reports. Ordinary committed
 baseline verification retains strict API and native-environment equality. The
 local committed snapshot remains separate from ephemeral CI worker baselines.
+
+Revision verification can supply `--reference-report before.json` from the
+original freeze. A fresh worker confirms persistent ceiling failures with
+independent prepared cohorts. Each of the nine rounds contains four opposing
+ABBA/BAAB crossovers (16 raw batches), counterbalancing source order, first-arm
+penalties and linear time drift within the round. Its ratio compares the two
+revisions' means; every raw wall/CPU batch remains in the report. Each case
+retains its original `ceiling_ns / measured_ns` limit. Reports keep
+the absolute failure, all original samples and bounded retries, and every paired
+wall/CPU sample. Missing cases, changed workloads, wrong products, native binary
+drift and worker errors remain failures. The fresh worker has an eight-minute
+cap; its time budget follows from the case count, round count and 250 ms
+estimated batch ceiling. A timeout preserves the original failures and report.
+Frozen rows are never rewritten.
+
+Before the full function verification, each normal performance job also runs
+the gzip consumer comparison against the separately installed revisions with
+the same interpreter and dependencies. Its 14 committed synthetic fixtures
+freeze ijson query, upload, bounded HTTP, and journal consumption patterns
+without requiring an external checkout. Seven rounds in each of three
+alternating repetitions must keep every case within **30% of the comparison
+revision's wall time**. Independent output checks run around timing; raw wall/CPU
+samples, fixture hashes and import provenance are saved to a dedicated gzip
+report before a slowdown can fail the job. Existing artifact retention keeps
+this evidence even when later function verification fails. This comparison
+does not rewrite the committed function ceilings, and the focused
+`gzip_diagnostic` option remains a separate measurement mode.
 
 We initialize backend metadata and native routes before both timing phases.
 Reports retain hashes of installed product modules, native libraries, workloads
@@ -155,6 +192,13 @@ descheduling. Neither finding waives an absolute ceiling: diagnosis still exits
 nonzero when the original candidate exceeds it.
 
 ## Stdlib speedup comparisons
+
+The [process backend report](reports/proc/README.md) records paired Linux/macOS
+exit-latency measurements against the previous `proc` source. Its direct
+`profiles/proc_backend.py` driver checks exact output and public signatures,
+retains all wall and parent CPU samples, and separately profiles kernel wait
+routes. Kernel exit notifications target the polling tail after pipe EOF;
+ordinary command and large-output cases remain part of the comparison.
 
 The [parallel hashing report](reports/crypto/crypto-hash-results.md) compares saved and current
 BLAKE3 wrappers with `crypto_hash.py`, including all modes, tiny-call overhead,

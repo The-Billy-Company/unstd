@@ -1,6 +1,6 @@
 # Native clone qualification on the Foundry
 
-Measured 2026-10-25 on Billy’s Linux x86_64 Foundry, using separately compiled CPython 3.13.16 and 3.14.8 native extensions. Native graph, mixed dataclass and `asdict` execution remains active through the public Python APIs. Ordinary 200-dataclass workloads retain **2.33–2.47×** the historical baseline’s CPU speed; the 20,000-record case retains **2.57–6.28×**.
+Measured 2026-10-25 on the Linux x86_64 Foundry host, using separately compiled CPython 3.13.16 and 3.14.8 native extensions. Native graph, mixed dataclass and `asdict` execution remains active through the public Python APIs. Ordinary 200-dataclass workloads retain **2.33–2.47×** the historical baseline’s CPU speed; the 20,000-record case retains **2.57–6.28×**.
 
 The full installed-wheel clone suites pass: **446 tests on 3.13** and **444 on 3.14**. A separate forced-GC/allocation-failure audit passes **69 tests**. The ordinary suites skip instrumented-audit cases; the forced-GC campaign skips its source-marker-only case. No clone runtime source changes were needed.
 

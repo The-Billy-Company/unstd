@@ -1,0 +1,1685 @@
+{
+  "capture_sha256": "4e4b6696cd7639e11e99c837e6f921cf8a7c9ec37c2409dc6cab769999ddd6c2",
+  "harness_sha256": "d39feb61fa53bed70f701f953464d832dc889020be2cb42f6ada7d01564c9fe4",
+  "scope": "three synchronous numeric admission/assembly stages only; no network, inference, callbacks, offload scheduling, breaker or logging",
+  "recipe": {
+    "capacity": 2048,
+    "dimension": 128,
+    "document_maximum": 512
+  },
+  "python": "3.14.8 (main, Oct  6 2026, 02:02:59) [GCC 14.2.0]",
+  "platform": "Linux-7.0.14-linuxkit-aarch64-with-glibc2.41",
+  "fingerprints": {
+    "unstd/__init__.py": "aeba32cf5a5534235845bdcd924e5c2630676c4f1082c133a7a9f27815239704",
+    "unstd/pack/__init__.py": "d44fc4095d269ee7ef3f961cdc1e096b28af896900b387b8a907cea77228edd1",
+    "unstd/pack/binpack.py": "29fd70e184bf2e18c288d4483fa630108cff1829af5b16ae129059afd9a7741e",
+    "unstd/pack/buffers.py": "25f72e707c06616aeb6e867ba8f1e12680e52a9e9ae88992994f8553a69342ed",
+    "unstd/pack/dtypes.py": "284df185b9aea56a436d6052ddb749849a9cf956a70258fe7aef32b35120b763",
+    "unstd/pack/ragged.py": "4bfbd36b3891cba10e00b9694a438f741371df89a22c811c73c10c7998d486f1",
+    "/tmp/pack-project-replay/bench/profiles/ragged.py": "34d9a036334e9a3952244e5dbc14aa97d03f387a8f0c0c4b89fa403f120afa6f",
+    "/tmp/pack-project-replay/bench/profiles/pack_consumers.py": "53d0fe72a3cb6d75787343584b69335a473836dcebbbd1815bfaeed0f67e374e",
+    "/tmp/pack-project-replay/native/pack/src/adapter.c": "f1c09efc2f32feee2b6ea5ddab6620665cf38a0a98cf0e9344d2c9ca7c621467",
+    "/tmp/pack-native2-wheel/consumer/lib/python3.14/site-packages/unstd/pack/_pack_native.cpython-314-aarch64-linux-gnu.so": "f37f85b9aca0b226744c86effaa16640006158225e0f9b2cec1029915d36fbe3"
+  },
+  "oracles": {
+    "valid": {
+      "0docs/1rows": "identical complete immutable result",
+      "1docs/1rows": "identical complete immutable result",
+      "1docs/512rows": "identical complete immutable result",
+      "32docs/1rows": "identical complete immutable result",
+      "32docs/32rows": "identical complete immutable result",
+      "32docs/128rows": "identical complete immutable result",
+      "256docs/1rows": "identical complete immutable result",
+      "256docs/32rows": "identical complete immutable result",
+      "256docs/512rows": "identical complete immutable result"
+    },
+    "invalid_order_and_error_parity": {
+      "header-identity@0": {
+        "type": "ValueError",
+        "message": "Recall inference implementation differs",
+        "events": [
+          "_validate"
+        ]
+      },
+      "header-identity@1": {
+        "type": "ValueError",
+        "message": "Recall inference implementation differs",
+        "events": [
+          "_validate",
+          "caller",
+          "_validate"
+        ]
+      },
+      "header-identity@2": {
+        "type": "ValueError",
+        "message": "Recall inference implementation differs",
+        "events": [
+          "_validate",
+          "caller",
+          "_validate",
+          "caller",
+          "_validate"
+        ]
+      },
+      "short-header@0": {
+        "type": "ValueError",
+        "message": "Recall projection shape differs",
+        "events": [
+          "_validate",
+          "caller"
+        ]
+      },
+      "short-header@1": {
+        "type": "ValueError",
+        "message": "Recall projection shape differs",
+        "events": [
+          "_validate",
+          "caller",
+          "_validate",
+          "caller"
+        ]
+      },
+      "short-header@2": {
+        "type": "ValueError",
+        "message": "Recall projection shape differs",
+        "events": [
+          "_validate",
+          "caller",
+          "_validate",
+          "caller",
+          "_validate",
+          "caller"
+        ]
+      },
+      "partial-header@0": {
+        "type": "ValueError",
+        "message": "buffer size must be a multiple of element size",
+        "events": [
+          "_validate"
+        ]
+      },
+      "partial-header@1": {
+        "type": "ValueError",
+        "message": "buffer size must be a multiple of element size",
+        "events": [
+          "_validate",
+          "caller",
+          "_validate"
+        ]
+      },
+      "partial-header@2": {
+        "type": "ValueError",
+        "message": "buffer size must be a multiple of element size",
+        "events": [
+          "_validate",
+          "caller",
+          "_validate",
+          "caller",
+          "_validate"
+        ]
+      },
+      "partial-row@0": {
+        "type": "ValueError",
+        "message": "buffer size must be a multiple of element size",
+        "events": [
+          "_validate"
+        ]
+      },
+      "partial-row@1": {
+        "type": "ValueError",
+        "message": "buffer size must be a multiple of element size",
+        "events": [
+          "_validate",
+          "caller",
+          "_validate"
+        ]
+      },
+      "partial-row@2": {
+        "type": "ValueError",
+        "message": "Recall projection exceeds its publication allowance",
+        "events": [
+          "_validate",
+          "caller",
+          "_validate",
+          "caller",
+          "_validate"
+        ]
+      },
+      "first-boundary@0": {
+        "type": "ValueError",
+        "message": "invalid ColBERT token index",
+        "events": [
+          "_validate"
+        ]
+      },
+      "first-boundary@1": {
+        "type": "ValueError",
+        "message": "invalid ColBERT token index",
+        "events": [
+          "_validate",
+          "caller",
+          "_validate"
+        ]
+      },
+      "first-boundary@2": {
+        "type": "ValueError",
+        "message": "invalid ColBERT token index",
+        "events": [
+          "_validate",
+          "caller",
+          "_validate",
+          "caller",
+          "_validate"
+        ]
+      },
+      "terminal-boundary@0": {
+        "type": "ValueError",
+        "message": "invalid ColBERT token index",
+        "events": [
+          "_validate"
+        ]
+      },
+      "terminal-boundary@1": {
+        "type": "ValueError",
+        "message": "invalid ColBERT token index",
+        "events": [
+          "_validate",
+          "caller",
+          "_validate"
+        ]
+      },
+      "terminal-boundary@2": {
+        "type": "ValueError",
+        "message": "invalid ColBERT token index",
+        "events": [
+          "_validate",
+          "caller",
+          "_validate",
+          "caller",
+          "_validate"
+        ]
+      },
+      "negative-boundary@0": {
+        "type": "ValueError",
+        "message": "invalid ColBERT token index",
+        "events": [
+          "_validate"
+        ]
+      },
+      "negative-boundary@1": {
+        "type": "ValueError",
+        "message": "invalid ColBERT token index",
+        "events": [
+          "_validate",
+          "caller",
+          "_validate"
+        ]
+      },
+      "negative-boundary@2": {
+        "type": "ValueError",
+        "message": "invalid ColBERT token index",
+        "events": [
+          "_validate",
+          "caller",
+          "_validate",
+          "caller",
+          "_validate"
+        ]
+      },
+      "late-nan@0": {
+        "type": "ValueError",
+        "message": "invalid ColBERT token index",
+        "events": [
+          "_validate"
+        ]
+      },
+      "late-nan@1": {
+        "type": "ValueError",
+        "message": "invalid ColBERT token index",
+        "events": [
+          "_validate",
+          "caller",
+          "_validate"
+        ]
+      },
+      "late-nan@2": {
+        "type": "ValueError",
+        "message": "invalid ColBERT token index",
+        "events": [
+          "_validate",
+          "caller",
+          "_validate",
+          "caller",
+          "_validate"
+        ]
+      },
+      "late-positive-infinity@0": {
+        "type": "ValueError",
+        "message": "invalid ColBERT token index",
+        "events": [
+          "_validate"
+        ]
+      },
+      "late-positive-infinity@1": {
+        "type": "ValueError",
+        "message": "invalid ColBERT token index",
+        "events": [
+          "_validate",
+          "caller",
+          "_validate"
+        ]
+      },
+      "late-positive-infinity@2": {
+        "type": "ValueError",
+        "message": "invalid ColBERT token index",
+        "events": [
+          "_validate",
+          "caller",
+          "_validate",
+          "caller",
+          "_validate"
+        ]
+      },
+      "late-negative-infinity@0": {
+        "type": "ValueError",
+        "message": "invalid ColBERT token index",
+        "events": [
+          "_validate"
+        ]
+      },
+      "late-negative-infinity@1": {
+        "type": "ValueError",
+        "message": "invalid ColBERT token index",
+        "events": [
+          "_validate",
+          "caller",
+          "_validate"
+        ]
+      },
+      "late-negative-infinity@2": {
+        "type": "ValueError",
+        "message": "invalid ColBERT token index",
+        "events": [
+          "_validate",
+          "caller",
+          "_validate",
+          "caller",
+          "_validate"
+        ]
+      },
+      "response-publication-budget": {
+        "type": "ValueError",
+        "message": "Recall projection exceeds its publication allowance",
+        "events": [
+          "_validate"
+        ]
+      },
+      "empty-identity/0docs": [
+        "ValueError",
+        "invalid ColBERT token index"
+      ],
+      "empty-identity/1docs": [
+        "ValueError",
+        "invalid ColBERT token index"
+      ]
+    },
+    "candidate_legacy_error_fallback_calls": 24
+  },
+  "native_execution_proof": {
+    "KERNEL_VERSION": 2,
+    "calls": [
+      {
+        "bytes": 1040,
+        "index_count": 2,
+        "columns": 128,
+        "finite": true,
+        "allow_empty": false
+      },
+      {
+        "bytes": 1040,
+        "index_count": 2,
+        "columns": 128,
+        "finite": true,
+        "allow_empty": false
+      },
+      {
+        "bytes": 1040,
+        "index_count": 2,
+        "columns": 128,
+        "finite": true,
+        "allow_empty": false
+      },
+      {
+        "bytes": 1040,
+        "index_count": 2,
+        "columns": 128,
+        "finite": true,
+        "allow_empty": false
+      },
+      {
+        "bytes": 1040,
+        "index_count": 2,
+        "columns": 128,
+        "finite": true,
+        "allow_empty": false
+      },
+      {
+        "bytes": 1040,
+        "index_count": 2,
+        "columns": 128,
+        "finite": true,
+        "allow_empty": false
+      },
+      {
+        "bytes": 1040,
+        "index_count": 2,
+        "columns": 128,
+        "finite": true,
+        "allow_empty": false
+      },
+      {
+        "bytes": 1040,
+        "index_count": 2,
+        "columns": 128,
+        "finite": true,
+        "allow_empty": false
+      }
+    ],
+    "repeated_results_cached": false
+  },
+  "selected_source": "/tmp/pack-native2-wheel/consumer/lib/python3.14/site-packages",
+  "rounds": 9,
+  "batch_ms": 25.0,
+  "target_speedup": 100,
+  "results": {
+    "1docs/1rows": {
+      "wire_bytes": 528,
+      "baseline_median_wall_ns": 11128.97091722595,
+      "candidate_median_wall_ns": 1974.0168998140211,
+      "median_wall_speedup": 5.637728288078207,
+      "observed_conservative_wall_speedup": 5.012736915943055,
+      "median_cpu_speedup": 5.637885968972824,
+      "target_speedup": 100,
+      "median_target_met": false,
+      "target_met": false,
+      "samples": {
+        "baseline": [
+          {
+            "iterations": 2248,
+            "wall_ns": 26372667,
+            "cpu_ns": 26365500,
+            "wall_ns_per_call": 11731.6134341637,
+            "cpu_ns_per_call": 11728.425266903914,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 2274,
+            "wall_ns": 24891417,
+            "cpu_ns": 24893750,
+            "wall_ns_per_call": 10946.093667546174,
+            "cpu_ns_per_call": 10947.11961301671,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 2335,
+            "wall_ns": 25468166,
+            "cpu_ns": 25470375,
+            "wall_ns_per_call": 10907.137473233404,
+            "cpu_ns_per_call": 10908.083511777302,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 2247,
+            "wall_ns": 24581166,
+            "cpu_ns": 24576499,
+            "wall_ns_per_call": 10939.54873164219,
+            "cpu_ns_per_call": 10937.471740097908,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 2308,
+            "wall_ns": 25854250,
+            "cpu_ns": 25858125,
+            "wall_ns_per_call": 11202.01473136915,
+            "cpu_ns_per_call": 11203.693674176777,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 1634,
+            "wall_ns": 26200667,
+            "cpu_ns": 23916336,
+            "wall_ns_per_call": 16034.679926560588,
+            "cpu_ns_per_call": 14636.68053855569,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 2283,
+            "wall_ns": 25478333,
+            "cpu_ns": 25482000,
+            "wall_ns_per_call": 11160.023215067893,
+            "cpu_ns_per_call": 11161.629434954008,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 2222,
+            "wall_ns": 24435791,
+            "cpu_ns": 24438875,
+            "wall_ns_per_call": 10997.205670567057,
+            "cpu_ns_per_call": 10998.593609360936,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 2235,
+            "wall_ns": 24873250,
+            "cpu_ns": 24876875,
+            "wall_ns_per_call": 11128.97091722595,
+            "cpu_ns_per_call": 11130.59284116331,
+            "oracle_passed": true
+          }
+        ],
+        "candidate": [
+          {
+            "iterations": 11759,
+            "wall_ns": 23281791,
+            "cpu_ns": 23284500,
+            "wall_ns_per_call": 1979.912492558891,
+            "cpu_ns_per_call": 1980.1428692916065,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 12725,
+            "wall_ns": 25047791,
+            "cpu_ns": 25051083,
+            "wall_ns_per_call": 1968.3922200392926,
+            "cpu_ns_per_call": 1968.6509233791749,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 12702,
+            "wall_ns": 25046334,
+            "cpu_ns": 25048250,
+            "wall_ns_per_call": 1971.84175720359,
+            "cpu_ns_per_call": 1971.9925995906156,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 12424,
+            "wall_ns": 24521916,
+            "cpu_ns": 24523917,
+            "wall_ns_per_call": 1973.7537025112686,
+            "cpu_ns_per_call": 1973.9147617514489,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 11964,
+            "wall_ns": 24995125,
+            "cpu_ns": 24998250,
+            "wall_ns_per_call": 2089.1946673353395,
+            "cpu_ns_per_call": 2089.455867602808,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 12019,
+            "wall_ns": 26151958,
+            "cpu_ns": 26154584,
+            "wall_ns_per_call": 2175.8846825859055,
+            "cpu_ns_per_call": 2176.1031699808636,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 12756,
+            "wall_ns": 25109875,
+            "cpu_ns": 25098291,
+            "wall_ns_per_call": 1968.4756193164,
+            "cpu_ns_per_call": 1967.5674976481655,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 12367,
+            "wall_ns": 24412667,
+            "cpu_ns": 24415542,
+            "wall_ns_per_call": 1974.0168998140211,
+            "cpu_ns_per_call": 1974.2493733322551,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 12528,
+            "wall_ns": 25149291,
+            "cpu_ns": 25153667,
+            "wall_ns_per_call": 2007.4465996168583,
+            "cpu_ns_per_call": 2007.7958971902938,
+            "oracle_passed": true
+          }
+        ]
+      }
+    },
+    "1docs/512rows": {
+      "wire_bytes": 262160,
+      "baseline_median_wall_ns": 54170.33261802575,
+      "candidate_median_wall_ns": 4424.275691873788,
+      "median_wall_speedup": 12.243887223737476,
+      "observed_conservative_wall_speedup": 6.538917832359571,
+      "median_cpu_speedup": 12.246885096919462,
+      "target_speedup": 100,
+      "median_target_met": false,
+      "target_met": false,
+      "samples": {
+        "baseline": [
+          {
+            "iterations": 460,
+            "wall_ns": 26030625,
+            "cpu_ns": 26035875,
+            "wall_ns_per_call": 56588.315217391304,
+            "cpu_ns_per_call": 56599.72826086957,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 460,
+            "wall_ns": 24770417,
+            "cpu_ns": 24774583,
+            "wall_ns_per_call": 53848.73260869565,
+            "cpu_ns_per_call": 53857.78913043478,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 462,
+            "wall_ns": 24761959,
+            "cpu_ns": 24764250,
+            "wall_ns_per_call": 53597.31385281385,
+            "cpu_ns_per_call": 53602.27272727273,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 469,
+            "wall_ns": 25725625,
+            "cpu_ns": 25730250,
+            "wall_ns_per_call": 54852.078891257996,
+            "cpu_ns_per_call": 54861.94029850746,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 467,
+            "wall_ns": 25248583,
+            "cpu_ns": 25252083,
+            "wall_ns_per_call": 54065.48822269807,
+            "cpu_ns_per_call": 54072.98286937901,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 460,
+            "wall_ns": 24952291,
+            "cpu_ns": 24955083,
+            "wall_ns_per_call": 54244.110869565215,
+            "cpu_ns_per_call": 54250.18043478261,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 466,
+            "wall_ns": 25249333,
+            "cpu_ns": 25252458,
+            "wall_ns_per_call": 54183.11802575107,
+            "cpu_ns_per_call": 54189.824034334764,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 466,
+            "wall_ns": 25243375,
+            "cpu_ns": 25247083,
+            "wall_ns_per_call": 54170.33261802575,
+            "cpu_ns_per_call": 54178.289699570814,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 457,
+            "wall_ns": 24646750,
+            "cpu_ns": 24651834,
+            "wall_ns_per_call": 53931.619256017504,
+            "cpu_ns_per_call": 53942.74398249453,
+            "oracle_passed": true
+          }
+        ],
+        "candidate": [
+          {
+            "iterations": 5585,
+            "wall_ns": 24739791,
+            "cpu_ns": 24741750,
+            "wall_ns_per_call": 4429.685049239033,
+            "cpu_ns_per_call": 4430.035810205909,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 5742,
+            "wall_ns": 25335292,
+            "cpu_ns": 25323376,
+            "wall_ns_per_call": 4412.2765586903515,
+            "cpu_ns_per_call": 4410.201323580634,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 5701,
+            "wall_ns": 25095500,
+            "cpu_ns": 25098083,
+            "wall_ns_per_call": 4401.947026837397,
+            "cpu_ns_per_call": 4402.400105244694,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 5762,
+            "wall_ns": 25373583,
+            "cpu_ns": 25376000,
+            "wall_ns_per_call": 4403.606907323846,
+            "cpu_ns_per_call": 4404.026379729261,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 5644,
+            "wall_ns": 24766416,
+            "cpu_ns": 24768542,
+            "wall_ns_per_call": 4388.096385542169,
+            "cpu_ns_per_call": 4388.47306874557,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 5673,
+            "wall_ns": 25098916,
+            "cpu_ns": 25096458,
+            "wall_ns_per_call": 4424.275691873788,
+            "cpu_ns_per_call": 4423.842411422528,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 4092,
+            "wall_ns": 33540750,
+            "cpu_ns": 33544167,
+            "wall_ns_per_call": 8196.6642228739,
+            "cpu_ns_per_call": 8197.49926686217,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 5393,
+            "wall_ns": 23915292,
+            "cpu_ns": 23918666,
+            "wall_ns_per_call": 4434.50621175598,
+            "cpu_ns_per_call": 4435.131837567217,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 5562,
+            "wall_ns": 25045458,
+            "cpu_ns": 24983166,
+            "wall_ns_per_call": 4502.959007551241,
+            "cpu_ns_per_call": 4491.759439050701,
+            "oracle_passed": true
+          }
+        ]
+      }
+    },
+    "32docs/1rows": {
+      "wire_bytes": 16896,
+      "baseline_median_wall_ns": 244467.40594059406,
+      "candidate_median_wall_ns": 47167.838649155725,
+      "median_wall_speedup": 5.182925759202025,
+      "observed_conservative_wall_speedup": 4.898871173039333,
+      "median_cpu_speedup": 5.184739016823419,
+      "target_speedup": 100,
+      "median_target_met": false,
+      "target_met": false,
+      "samples": {
+        "baseline": [
+          {
+            "iterations": 101,
+            "wall_ns": 25008000,
+            "cpu_ns": 25011875,
+            "wall_ns_per_call": 247603.9603960396,
+            "cpu_ns_per_call": 247642.32673267327,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 102,
+            "wall_ns": 24868584,
+            "cpu_ns": 24872375,
+            "wall_ns_per_call": 243809.64705882352,
+            "cpu_ns_per_call": 243846.8137254902,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 100,
+            "wall_ns": 24087958,
+            "cpu_ns": 24088958,
+            "wall_ns_per_call": 240879.58,
+            "cpu_ns_per_call": 240889.58,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 104,
+            "wall_ns": 25382542,
+            "cpu_ns": 25385667,
+            "wall_ns_per_call": 244062.90384615384,
+            "cpu_ns_per_call": 244092.95192307694,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 85,
+            "wall_ns": 22679791,
+            "cpu_ns": 22670417,
+            "wall_ns_per_call": 266821.0705882353,
+            "cpu_ns_per_call": 266710.7882352941,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 101,
+            "wall_ns": 24737084,
+            "cpu_ns": 24727459,
+            "wall_ns_per_call": 244921.62376237623,
+            "cpu_ns_per_call": 244826.32673267327,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 100,
+            "wall_ns": 24150042,
+            "cpu_ns": 24151458,
+            "wall_ns_per_call": 241500.42,
+            "cpu_ns_per_call": 241514.58,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 101,
+            "wall_ns": 24691208,
+            "cpu_ns": 24693583,
+            "wall_ns_per_call": 244467.40594059406,
+            "cpu_ns_per_call": 244490.9207920792,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 100,
+            "wall_ns": 24574458,
+            "cpu_ns": 24577375,
+            "wall_ns_per_call": 245744.58,
+            "cpu_ns_per_call": 245773.75,
+            "oracle_passed": true
+          }
+        ],
+        "candidate": [
+          {
+            "iterations": 523,
+            "wall_ns": 25073458,
+            "cpu_ns": 25071416,
+            "wall_ns_per_call": 47941.602294455064,
+            "cpu_ns_per_call": 47937.69789674952,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 520,
+            "wall_ns": 25193000,
+            "cpu_ns": 25186083,
+            "wall_ns_per_call": 48448.07692307692,
+            "cpu_ns_per_call": 48434.775,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 533,
+            "wall_ns": 25108833,
+            "cpu_ns": 25104124,
+            "wall_ns_per_call": 47108.50469043152,
+            "cpu_ns_per_call": 47099.66979362101,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 530,
+            "wall_ns": 24752875,
+            "cpu_ns": 24755459,
+            "wall_ns_per_call": 46703.53773584906,
+            "cpu_ns_per_call": 46708.41320754717,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 531,
+            "wall_ns": 24872791,
+            "cpu_ns": 24876000,
+            "wall_ns_per_call": 46841.4143126177,
+            "cpu_ns_per_call": 46847.457627118645,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 540,
+            "wall_ns": 25475792,
+            "cpu_ns": 25480083,
+            "wall_ns_per_call": 47177.392592592594,
+            "cpu_ns_per_call": 47185.33888888889,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 526,
+            "wall_ns": 24616333,
+            "cpu_ns": 24618084,
+            "wall_ns_per_call": 46799.11216730038,
+            "cpu_ns_per_call": 46802.441064638784,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 510,
+            "wall_ns": 25076917,
+            "cpu_ns": 25054084,
+            "wall_ns_per_call": 49170.42549019608,
+            "cpu_ns_per_call": 49125.654901960785,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 533,
+            "wall_ns": 25140458,
+            "cpu_ns": 25134083,
+            "wall_ns_per_call": 47167.838649155725,
+            "cpu_ns_per_call": 47155.87804878049,
+            "oracle_passed": true
+          }
+        ]
+      }
+    },
+    "32docs/32rows": {
+      "wire_bytes": 524800,
+      "baseline_median_wall_ns": 331356.9864864865,
+      "candidate_median_wall_ns": 63644.832911392405,
+      "median_wall_speedup": 5.206345453806255,
+      "observed_conservative_wall_speedup": 4.77631897545457,
+      "median_cpu_speedup": 5.204074888580951,
+      "target_speedup": 100,
+      "median_target_met": false,
+      "target_met": false,
+      "samples": {
+        "baseline": [
+          {
+            "iterations": 71,
+            "wall_ns": 24507875,
+            "cpu_ns": 24504167,
+            "wall_ns_per_call": 345181.338028169,
+            "cpu_ns_per_call": 345129.11267605633,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 74,
+            "wall_ns": 24520417,
+            "cpu_ns": 24513458,
+            "wall_ns_per_call": 331356.9864864865,
+            "cpu_ns_per_call": 331262.9459459459,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 43,
+            "wall_ns": 15392209,
+            "cpu_ns": 15349542,
+            "wall_ns_per_call": 357958.3488372093,
+            "cpu_ns_per_call": 356966.0930232558,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 75,
+            "wall_ns": 24705166,
+            "cpu_ns": 24708666,
+            "wall_ns_per_call": 329402.2133333333,
+            "cpu_ns_per_call": 329448.88,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 76,
+            "wall_ns": 25329458,
+            "cpu_ns": 25327500,
+            "wall_ns_per_call": 333282.34210526315,
+            "cpu_ns_per_call": 333256.5789473684,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 67,
+            "wall_ns": 22213625,
+            "cpu_ns": 22216167,
+            "wall_ns_per_call": 331546.6417910448,
+            "cpu_ns_per_call": 331584.58208955225,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 76,
+            "wall_ns": 24962541,
+            "cpu_ns": 24935833,
+            "wall_ns_per_call": 328454.4868421053,
+            "cpu_ns_per_call": 328103.0657894737,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 76,
+            "wall_ns": 24611333,
+            "cpu_ns": 24612958,
+            "wall_ns_per_call": 323833.3289473684,
+            "cpu_ns_per_call": 323854.7105263158,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 75,
+            "wall_ns": 24401334,
+            "cpu_ns": 24404625,
+            "wall_ns_per_call": 325351.12,
+            "cpu_ns_per_call": 325395.0,
+            "oracle_passed": true
+          }
+        ],
+        "candidate": [
+          {
+            "iterations": 391,
+            "wall_ns": 25211125,
+            "cpu_ns": 25214250,
+            "wall_ns_per_call": 64478.580562659845,
+            "cpu_ns_per_call": 64486.57289002558,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 391,
+            "wall_ns": 25187375,
+            "cpu_ns": 25173084,
+            "wall_ns_per_call": 64417.83887468031,
+            "cpu_ns_per_call": 64381.28900255755,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 388,
+            "wall_ns": 24701708,
+            "cpu_ns": 24697958,
+            "wall_ns_per_call": 63664.19587628866,
+            "cpu_ns_per_call": 63654.530927835054,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 389,
+            "wall_ns": 24742167,
+            "cpu_ns": 24745708,
+            "wall_ns_per_call": 63604.542416452445,
+            "cpu_ns_per_call": 63613.645244215935,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 395,
+            "wall_ns": 25029459,
+            "cpu_ns": 25033333,
+            "wall_ns_per_call": 63365.718987341774,
+            "cpu_ns_per_call": 63375.52658227848,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 396,
+            "wall_ns": 26848709,
+            "cpu_ns": 26857000,
+            "wall_ns_per_call": 67799.7702020202,
+            "cpu_ns_per_call": 67820.70707070707,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 395,
+            "wall_ns": 25139709,
+            "cpu_ns": 25147333,
+            "wall_ns_per_call": 63644.832911392405,
+            "cpu_ns_per_call": 63664.134177215186,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 396,
+            "wall_ns": 25200416,
+            "cpu_ns": 25203208,
+            "wall_ns_per_call": 63637.41414141414,
+            "cpu_ns_per_call": 63644.46464646464,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 396,
+            "wall_ns": 25088666,
+            "cpu_ns": 25092541,
+            "wall_ns_per_call": 63355.21717171717,
+            "cpu_ns_per_call": 63365.00252525252,
+            "oracle_passed": true
+          }
+        ]
+      }
+    },
+    "32docs/128rows": {
+      "wire_bytes": 2097664,
+      "baseline_median_wall_ns": 611226.05,
+      "candidate_median_wall_ns": 115121.16129032258,
+      "median_wall_speedup": 5.3094152556240894,
+      "observed_conservative_wall_speedup": 3.0389050054784894,
+      "median_cpu_speedup": 5.308315938983115,
+      "target_speedup": 100,
+      "median_target_met": false,
+      "target_met": false,
+      "samples": {
+        "baseline": [
+          {
+            "iterations": 40,
+            "wall_ns": 25048417,
+            "cpu_ns": 25052167,
+            "wall_ns_per_call": 626210.425,
+            "cpu_ns_per_call": 626304.175,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 40,
+            "wall_ns": 24264291,
+            "cpu_ns": 24268958,
+            "wall_ns_per_call": 606607.275,
+            "cpu_ns_per_call": 606723.95,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 41,
+            "wall_ns": 24488584,
+            "cpu_ns": 24492250,
+            "wall_ns_per_call": 597282.5365853659,
+            "cpu_ns_per_call": 597371.9512195121,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 41,
+            "wall_ns": 24722083,
+            "cpu_ns": 24726499,
+            "wall_ns_per_call": 602977.6341463415,
+            "cpu_ns_per_call": 603085.3414634146,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 40,
+            "wall_ns": 24520958,
+            "cpu_ns": 24523583,
+            "wall_ns_per_call": 613023.95,
+            "cpu_ns_per_call": 613089.575,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 41,
+            "wall_ns": 25083334,
+            "cpu_ns": 25087625,
+            "wall_ns_per_call": 611788.6341463415,
+            "cpu_ns_per_call": 611893.2926829269,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 40,
+            "wall_ns": 24439125,
+            "cpu_ns": 24443666,
+            "wall_ns_per_call": 610978.125,
+            "cpu_ns_per_call": 611091.65,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 41,
+            "wall_ns": 25592459,
+            "cpu_ns": 25596292,
+            "wall_ns_per_call": 624206.3170731707,
+            "cpu_ns_per_call": 624299.8048780488,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 40,
+            "wall_ns": 24449042,
+            "cpu_ns": 24446792,
+            "wall_ns_per_call": 611226.05,
+            "cpu_ns_per_call": 611169.8,
+            "oracle_passed": true
+          }
+        ],
+        "candidate": [
+          {
+            "iterations": 212,
+            "wall_ns": 24578292,
+            "cpu_ns": 24580750,
+            "wall_ns_per_call": 115935.3396226415,
+            "cpu_ns_per_call": 115946.93396226416,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 167,
+            "wall_ns": 21127208,
+            "cpu_ns": 21130958,
+            "wall_ns_per_call": 126510.22754491017,
+            "cpu_ns_per_call": 126532.68263473053,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 223,
+            "wall_ns": 25370292,
+            "cpu_ns": 25373417,
+            "wall_ns_per_call": 113768.12556053812,
+            "cpu_ns_per_call": 113782.13901345292,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 224,
+            "wall_ns": 25227833,
+            "cpu_ns": 25229875,
+            "wall_ns_per_call": 112624.25446428571,
+            "cpu_ns_per_call": 112633.37053571429,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 224,
+            "wall_ns": 25405875,
+            "cpu_ns": 25403333,
+            "wall_ns_per_call": 113419.08482142857,
+            "cpu_ns_per_call": 113407.73660714286,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 224,
+            "wall_ns": 25460958,
+            "cpu_ns": 25464625,
+            "wall_ns_per_call": 113664.99107142857,
+            "cpu_ns_per_call": 113681.36160714286,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 217,
+            "wall_ns": 42650333,
+            "cpu_ns": 42647833,
+            "wall_ns_per_call": 196545.3133640553,
+            "cpu_ns_per_call": 196533.7926267281,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 213,
+            "wall_ns": 24603083,
+            "cpu_ns": 24609583,
+            "wall_ns_per_call": 115507.43192488264,
+            "cpu_ns_per_call": 115537.94835680751,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 217,
+            "wall_ns": 24981292,
+            "cpu_ns": 24984166,
+            "wall_ns_per_call": 115121.16129032258,
+            "cpu_ns_per_call": 115134.40552995392,
+            "oracle_passed": true
+          }
+        ]
+      }
+    },
+    "256docs/1rows": {
+      "wire_bytes": 135168,
+      "baseline_median_wall_ns": 1973312.5,
+      "candidate_median_wall_ns": 373645.2121212121,
+      "median_wall_speedup": 5.281246583616999,
+      "observed_conservative_wall_speedup": 4.925086869803523,
+      "median_cpu_speedup": 5.281285874716459,
+      "target_speedup": 100,
+      "median_target_met": false,
+      "target_met": false,
+      "samples": {
+        "baseline": [
+          {
+            "iterations": 12,
+            "wall_ns": 24412041,
+            "cpu_ns": 24414750,
+            "wall_ns_per_call": 2034336.75,
+            "cpu_ns_per_call": 2034562.5,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 12,
+            "wall_ns": 24154000,
+            "cpu_ns": 24157417,
+            "wall_ns_per_call": 2012833.3333333333,
+            "cpu_ns_per_call": 2013118.0833333333,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 12,
+            "wall_ns": 23809958,
+            "cpu_ns": 23800833,
+            "wall_ns_per_call": 1984163.1666666667,
+            "cpu_ns_per_call": 1983402.75,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 12,
+            "wall_ns": 23679750,
+            "cpu_ns": 23683166,
+            "wall_ns_per_call": 1973312.5,
+            "cpu_ns_per_call": 1973597.1666666667,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 12,
+            "wall_ns": 23379333,
+            "cpu_ns": 23368750,
+            "wall_ns_per_call": 1948277.75,
+            "cpu_ns_per_call": 1947395.8333333333,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 12,
+            "wall_ns": 23781333,
+            "cpu_ns": 23751625,
+            "wall_ns_per_call": 1981777.75,
+            "cpu_ns_per_call": 1979302.0833333333,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 12,
+            "wall_ns": 23516708,
+            "cpu_ns": 23521125,
+            "wall_ns_per_call": 1959725.6666666667,
+            "cpu_ns_per_call": 1960093.75,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 12,
+            "wall_ns": 23560959,
+            "cpu_ns": 23557251,
+            "wall_ns_per_call": 1963413.25,
+            "cpu_ns_per_call": 1963104.25,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 12,
+            "wall_ns": 23189166,
+            "cpu_ns": 23192167,
+            "wall_ns_per_call": 1932430.5,
+            "cpu_ns_per_call": 1932680.5833333333,
+            "oracle_passed": true
+          }
+        ],
+        "candidate": [
+          {
+            "iterations": 57,
+            "wall_ns": 22364791,
+            "cpu_ns": 22363542,
+            "wall_ns_per_call": 392364.7543859649,
+            "cpu_ns_per_call": 392342.84210526315,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 66,
+            "wall_ns": 24660584,
+            "cpu_ns": 24663958,
+            "wall_ns_per_call": 373645.2121212121,
+            "cpu_ns_per_call": 373696.3333333333,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 65,
+            "wall_ns": 24320042,
+            "cpu_ns": 24323708,
+            "wall_ns_per_call": 374154.4923076923,
+            "cpu_ns_per_call": 374210.8923076923,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 67,
+            "wall_ns": 24749375,
+            "cpu_ns": 24752750,
+            "wall_ns_per_call": 369393.6567164179,
+            "cpu_ns_per_call": 369444.0298507463,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 66,
+            "wall_ns": 24768083,
+            "cpu_ns": 24771542,
+            "wall_ns_per_call": 375273.98484848486,
+            "cpu_ns_per_call": 375326.3939393939,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 67,
+            "wall_ns": 24732250,
+            "cpu_ns": 24735291,
+            "wall_ns_per_call": 369138.05970149254,
+            "cpu_ns_per_call": 369183.447761194,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 67,
+            "wall_ns": 25223291,
+            "cpu_ns": 25225959,
+            "wall_ns_per_call": 376467.0298507463,
+            "cpu_ns_per_call": 376506.85074626864,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 66,
+            "wall_ns": 24526167,
+            "cpu_ns": 24531542,
+            "wall_ns_per_call": 371608.5909090909,
+            "cpu_ns_per_call": 371690.0303030303,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 63,
+            "wall_ns": 23508708,
+            "cpu_ns": 23511916,
+            "wall_ns_per_call": 373154.09523809527,
+            "cpu_ns_per_call": 373205.01587301586,
+            "oracle_passed": true
+          }
+        ]
+      }
+    },
+    "256docs/32rows": {
+      "wire_bytes": 4198400,
+      "baseline_median_wall_ns": 2763062.5,
+      "candidate_median_wall_ns": 528611.1041666666,
+      "median_wall_speedup": 5.227023190055481,
+      "observed_conservative_wall_speedup": 5.084194086041785,
+      "median_cpu_speedup": 5.226909630638183,
+      "target_speedup": 100,
+      "median_target_met": false,
+      "target_met": false,
+      "samples": {
+        "baseline": [
+          {
+            "iterations": 9,
+            "wall_ns": 24889833,
+            "cpu_ns": 24886792,
+            "wall_ns_per_call": 2765537.0,
+            "cpu_ns_per_call": 2765199.111111111,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 9,
+            "wall_ns": 24646625,
+            "cpu_ns": 24639500,
+            "wall_ns_per_call": 2738513.888888889,
+            "cpu_ns_per_call": 2737722.222222222,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 9,
+            "wall_ns": 24913375,
+            "cpu_ns": 24886665,
+            "wall_ns_per_call": 2768152.777777778,
+            "cpu_ns_per_call": 2765185.0,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 9,
+            "wall_ns": 25204625,
+            "cpu_ns": 25208125,
+            "wall_ns_per_call": 2800513.888888889,
+            "cpu_ns_per_call": 2800902.777777778,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 9,
+            "wall_ns": 24755083,
+            "cpu_ns": 24746917,
+            "wall_ns_per_call": 2750564.777777778,
+            "cpu_ns_per_call": 2749657.4444444445,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 9,
+            "wall_ns": 24724042,
+            "cpu_ns": 24712875,
+            "wall_ns_per_call": 2747115.777777778,
+            "cpu_ns_per_call": 2745875.0,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 9,
+            "wall_ns": 24528667,
+            "cpu_ns": 24531375,
+            "wall_ns_per_call": 2725407.4444444445,
+            "cpu_ns_per_call": 2725708.3333333335,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 9,
+            "wall_ns": 25099000,
+            "cpu_ns": 25063915,
+            "wall_ns_per_call": 2788777.777777778,
+            "cpu_ns_per_call": 2784879.4444444445,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 8,
+            "wall_ns": 22104500,
+            "cpu_ns": 22107250,
+            "wall_ns_per_call": 2763062.5,
+            "cpu_ns_per_call": 2763406.25,
+            "oracle_passed": true
+          }
+        ],
+        "candidate": [
+          {
+            "iterations": 47,
+            "wall_ns": 24590750,
+            "cpu_ns": 24594167,
+            "wall_ns_per_call": 523207.44680851063,
+            "cpu_ns_per_call": 523280.1489361702,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 47,
+            "wall_ns": 24508584,
+            "cpu_ns": 24512041,
+            "wall_ns_per_call": 521459.2340425532,
+            "cpu_ns_per_call": 521532.78723404254,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 48,
+            "wall_ns": 25373333,
+            "cpu_ns": 25377041,
+            "wall_ns_per_call": 528611.1041666666,
+            "cpu_ns_per_call": 528688.3541666666,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 47,
+            "wall_ns": 24599042,
+            "cpu_ns": 24602458,
+            "wall_ns_per_call": 523383.87234042556,
+            "cpu_ns_per_call": 523456.55319148937,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 46,
+            "wall_ns": 24425667,
+            "cpu_ns": 24429292,
+            "wall_ns_per_call": 530992.7608695652,
+            "cpu_ns_per_call": 531071.5652173914,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 47,
+            "wall_ns": 24745709,
+            "cpu_ns": 24749500,
+            "wall_ns_per_call": 526504.4468085107,
+            "cpu_ns_per_call": 526585.1063829787,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 48,
+            "wall_ns": 25601250,
+            "cpu_ns": 25605291,
+            "wall_ns_per_call": 533359.375,
+            "cpu_ns_per_call": 533443.5625,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 47,
+            "wall_ns": 24960917,
+            "cpu_ns": 24964458,
+            "wall_ns_per_call": 531083.340425532,
+            "cpu_ns_per_call": 531158.6808510638,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 47,
+            "wall_ns": 25194583,
+            "cpu_ns": 25199125,
+            "wall_ns_per_call": 536054.9574468085,
+            "cpu_ns_per_call": 536151.5957446808,
+            "oracle_passed": true
+          }
+        ]
+      }
+    },
+    "256docs/512rows": {
+      "wire_bytes": 67112960,
+      "baseline_median_wall_ns": 17340125.0,
+      "candidate_median_wall_ns": 3061916.714285714,
+      "median_wall_speedup": 5.66316024178506,
+      "observed_conservative_wall_speedup": 3.9834024836378576,
+      "median_cpu_speedup": 5.662922089423256,
+      "target_speedup": 100,
+      "median_target_met": false,
+      "target_met": false,
+      "samples": {
+        "baseline": [
+          {
+            "iterations": 1,
+            "wall_ns": 16559834,
+            "cpu_ns": 16562375,
+            "wall_ns_per_call": 16559834.0,
+            "cpu_ns_per_call": 16562375.0,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 17931916,
+            "cpu_ns": 17934250,
+            "wall_ns_per_call": 17931916.0,
+            "cpu_ns_per_call": 17934250.0,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 17091000,
+            "cpu_ns": 17093625,
+            "wall_ns_per_call": 17091000.0,
+            "cpu_ns_per_call": 17093625.0,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 17340125,
+            "cpu_ns": 17342834,
+            "wall_ns_per_call": 17340125.0,
+            "cpu_ns_per_call": 17342834.0,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 17514583,
+            "cpu_ns": 17516292,
+            "wall_ns_per_call": 17514583.0,
+            "cpu_ns_per_call": 17516292.0,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 17409833,
+            "cpu_ns": 17412375,
+            "wall_ns_per_call": 17409833.0,
+            "cpu_ns_per_call": 17412375.0,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 16720708,
+            "cpu_ns": 16722459,
+            "wall_ns_per_call": 16720708.0,
+            "cpu_ns_per_call": 16722459.0,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 17409500,
+            "cpu_ns": 17411459,
+            "wall_ns_per_call": 17409500.0,
+            "cpu_ns_per_call": 17411459.0,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 1,
+            "wall_ns": 17125417,
+            "cpu_ns": 17127583,
+            "wall_ns_per_call": 17125417.0,
+            "cpu_ns_per_call": 17127583.0,
+            "oracle_passed": true
+          }
+        ],
+        "candidate": [
+          {
+            "iterations": 8,
+            "wall_ns": 25004916,
+            "cpu_ns": 25008833,
+            "wall_ns_per_call": 3125614.5,
+            "cpu_ns_per_call": 3126104.125,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 8,
+            "wall_ns": 23734083,
+            "cpu_ns": 23738583,
+            "wall_ns_per_call": 2966760.375,
+            "cpu_ns_per_call": 2967322.875,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 7,
+            "wall_ns": 22756625,
+            "cpu_ns": 22762416,
+            "wall_ns_per_call": 3250946.4285714286,
+            "cpu_ns_per_call": 3251773.714285714,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 3,
+            "wall_ns": 12471625,
+            "cpu_ns": 12475334,
+            "wall_ns_per_call": 4157208.3333333335,
+            "cpu_ns_per_call": 4158444.6666666665,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 7,
+            "wall_ns": 21433417,
+            "cpu_ns": 21437667,
+            "wall_ns_per_call": 3061916.714285714,
+            "cpu_ns_per_call": 3062523.8571428573,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 6,
+            "wall_ns": 22660542,
+            "cpu_ns": 22639542,
+            "wall_ns_per_call": 3776757.0,
+            "cpu_ns_per_call": 3773257.0,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 8,
+            "wall_ns": 23361667,
+            "cpu_ns": 23365333,
+            "wall_ns_per_call": 2920208.375,
+            "cpu_ns_per_call": 2920666.625,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 7,
+            "wall_ns": 20681084,
+            "cpu_ns": 20684875,
+            "wall_ns_per_call": 2954440.5714285714,
+            "cpu_ns_per_call": 2954982.1428571427,
+            "oracle_passed": true
+          },
+          {
+            "iterations": 8,
+            "wall_ns": 23687959,
+            "cpu_ns": 23691291,
+            "wall_ns_per_call": 2960994.875,
+            "cpu_ns_per_call": 2961411.375,
+            "oracle_passed": true
+          }
+        ]
+      }
+    }
+  },
+  "all_targets_met": false
+}

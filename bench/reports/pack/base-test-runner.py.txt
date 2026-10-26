@@ -1,0 +1,11 @@
+import importlib.abc
+import sys
+
+class WithoutNumpy(importlib.abc.MetaPathFinder):
+    def find_spec(self, fullname, path=None, target=None):
+        if fullname.partition('.')[0] == 'numpy':
+            raise ModuleNotFoundError(fullname)
+
+sys.meta_path.insert(0, WithoutNumpy())
+import pytest
+raise SystemExit(pytest.main(['tests/suites/product/pack', '-q', '-o', 'cache_dir=/tmp/unstd-pack-base-pytest-cache']))

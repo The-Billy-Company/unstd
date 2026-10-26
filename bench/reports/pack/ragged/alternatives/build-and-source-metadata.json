@@ -1,0 +1,51 @@
+{
+  "scope": "Exploratory actual complete captured caller and finite scan mechanisms; no validation cache; private application capture is not retained here. Accelerate classifications passed the tested oracle but the SDK does not guarantee IEEE NaN behavior.",
+  "hardware": [
+    "Apple M5 Max",
+    "18",
+    "137438953472",
+    "128"
+  ],
+  "compiler": "Apple clang version 21.0.0 (clang-2100.3.34.2)\nTarget: arm64-apple-darwin25.6.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin\n",
+  "build_command": [
+    "clang",
+    "-O3",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-bundle",
+    "-undefined",
+    "dynamic_lookup",
+    "-fPIC",
+    "-framework",
+    "Accelerate",
+    "-I/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/include/python3.14",
+    "/Users/griffinstrier/Billy-Company/unstd/.local/pack-ragged-next-native/alternatives.c",
+    "-o",
+    "/Users/griffinstrier/Billy-Company/unstd/.local/pack-ragged-next-native/_scan_alternatives.cpython-314-darwin.so"
+  ],
+  "sources": {
+    "reference-adapter.c": "627bb499f3614c5c5c53d05e2514e6bac268c991792f491eee6322a4bda1778e",
+    "project.md": "eb5c2ee1f4c3db94fd40fee738fa5489263e41284789874f436587741f1d2f50",
+    "numexpr-macos.json": "946c5c64631ad7357333f10afd7d7eed4eb3cc131625d6d8331c18870ad59892",
+    "project-validation.json": "a787a6de47e300da045ccb1b802993a34b326ea86213648947b8facc9b15bfca",
+    "frontends_probe.py.txt": "55c3d6f1b380554e7094637718d74229ee81c9d4e6031182df36faf254b2e012",
+    "alternatives.c": "91d326b08ad9cc97e5ee0bf4509703dbf0404be1933113303341178de9e0351b",
+    "project_probe.py.txt": "60f521f013aee4c12011e252928abcbc613dd952bcc0536c6ae82287f1b8cee2",
+    "frontends-macos.json": "2944c89e05e512efde230e892fd00f6b61c718de86653a77820c478645cf1b8a",
+    "measure_alternatives.py.txt": "ec862ad95670dc20dbd75bde356f53dacad1b74c8b30f2292101a4695904ee68",
+    "project-macos.json": "5c994b93ebbac2f467f0b374d62ca0e0dbd884d345a0e539260f4c10d2c3d0c3",
+    "alternatives-results.txt": "34acefe75b0683123d7e8c93b066bdab050bdff14775ea8fec36296d21fa90f6",
+    "frontends-validation.json": "ce91f902ca08249e5f5a9be07c46a0f61f434bc26d6e36b41cb6f8effaa6d4e6",
+    "sme-check.c": "8d6d0b9e3051d3f903b0a72df633aa8836ac5042054d8604ae043de1ee23f298",
+    "numexpr_probe.py.txt": "e3ad2e9d59c19bb72422013c874d06808d331fd97dab8bba91d5655185081d66",
+    "alternatives-results.json": "2409e2f4b3edbf86a7a0877910406d3bc11fdd7a3dee62044589ae7274cfed94"
+  },
+  "notes": [
+    "The measured alternatives.c includes ../../native/pack/src/adapter.c from its original .local/pack-ragged-next-native location. reference-adapter.c here freezes that exact included source.",
+    "SME requires a supported CPU and compiler; foreign-order or unaligned SME requests fall back to the exact NEON max scan.",
+    "Parallel dispatch results include synchronous task scheduling and joins. No custom persistent spin pool is used.",
+    "No production source was edited by these experiments.",
+    "measure_alternatives.py.txt retains the exact measured driver bytes. The original path in alternatives-results.json is .local/pack-ragged-next-native/measure_alternatives.py; restore that path when replaying so __file__ and its recorded hash retain their original meaning."
+  ]
+}

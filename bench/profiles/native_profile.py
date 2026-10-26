@@ -349,7 +349,21 @@ def _native_modules(source: Path) -> dict[str, Any]:
     return modules
 
 
-def _assert_native_execution(profile: dict[str, Any]) -> dict[str, int]:
+def _walk_entrypoint(clone: Any) -> str:
+    """Name the actual selected clone C continuation, including legacy wheels."""
+    walk = getattr(clone, "_native_walk_graph", None)
+    if (
+        inspect.isbuiltin(walk)
+        and walk.__module__ == _NATIVE_NAMES[0]
+        and walk.__name__ in {"clone_walk_graph", "clone_walk_canonical_graph"}
+    ):
+        return str(walk.__name__)
+    return ""
+
+
+def _assert_native_execution(
+    profile: dict[str, Any], *, walk_entrypoint: str = "clone_walk_graph"
+) -> dict[str, int]:
     calls = {
         row["function"]: row["calls"]
         for row in profile["c"]
@@ -357,7 +371,7 @@ def _assert_native_execution(profile: dict[str, Any]) -> dict[str, int]:
     }
     for module, function in (
         (_NATIVE_NAMES[0], "clone_graph"),
-        (_NATIVE_NAMES[0], "clone_walk_graph"),
+        (_NATIVE_NAMES[0], walk_entrypoint),
         (_NATIVE_NAMES[1], "distance"),
         (_NATIVE_NAMES[1], "jaro"),
     ):
@@ -412,8 +426,11 @@ def _routes(
     cases: list[Workload], source: Path, clone: Any, fuzz: Any
 ) -> dict[str, Any]:
     """Prove per-workload native execution and the declared Python fallbacks."""
+    walk_entrypoint = _walk_entrypoint(clone)
     with _native_results(clone, fuzz) as (outcomes, recursion_errors):
-        return _checked_routes(cases, source, outcomes, recursion_errors)
+        return _checked_routes(
+            cases, source, outcomes, recursion_errors, walk_entrypoint
+        )
 
 
 def _checked_routes(
@@ -421,6 +438,7 @@ def _checked_routes(
     source: Path,
     outcomes: dict[str, list[bool]],
     recursion_errors: dict[str, int],
+    walk_entrypoint: str,
 ) -> dict[str, Any]:
     """A C call that refuses its input is not evidence of acceleration."""
     routes = {}
@@ -447,13 +465,13 @@ def _checked_routes(
                 )
             elif case.name.startswith("clone.deep/dataclass-"):
                 valid = (
-                    any("_clone_native.clone_walk_graph>" in name for name in c_calls)
+                    any(f"_clone_native.{walk_entrypoint}>" in name for name in c_calls)
                     and completed.get("walk", False)
                     and not python_calls.get("_walk")
                 )
             elif fallback:
                 valid = (
-                    any("_clone_native.clone_walk_graph>" in name for name in c_calls)
+                    any(f"_clone_native.{walk_entrypoint}>" in name for name in c_calls)
                     and completed.get("walk", False)
                     and bool(python_calls.get("_foreign"))
                     and bool(python_calls.get("deepcopy"))
@@ -513,7 +531,11 @@ def _bundle(source: Path, label: str, *, require_native: bool) -> dict[str, Any]
     ):
         msg = "comparison source executes bundled kernels; use a Python-only baseline"
         raise AssertionError(msg)
-    execution = _assert_native_execution(profile) if require_native else {}
+    execution = (
+        _assert_native_execution(profile, walk_entrypoint=_walk_entrypoint(clone))
+        if require_native
+        else {}
+    )
     routes = _routes(cases, source, clone, fuzz) if require_native else {}
     if clone.copy is not copy.copy or clone.deepcopy is not copy.deepcopy:
         msg = "clone stdlib aliases changed"

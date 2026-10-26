@@ -13,12 +13,14 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 #include <stdint.h>
+#include <datetime.h>
 
 #define MAX_DEPTH 128
 #define MAX_CONTAINERS 65536
 #define INLINE_MEMO_SIZE 16
 #define RECORD_CACHE_SIZE 32
 #define MAX_RECORD_TYPES 32
+#define TEMPORAL_DEFERRED 2
 
 typedef struct {
     PyObject *source;
@@ -34,6 +36,13 @@ typedef struct {
     PyObject *dict_name;
     PyObject *update_name;
     RecordEntry records[RECORD_CACHE_SIZE];
+    PyObject *datetime_module;
+    PyObject *datetime_capsule;
+    PyDateTime_CAPI *datetime_api;
+    PyObject *copy_module;
+    PyObject *deepcopy;
+    PyObject *tz_keywords;
+    PyObject *temporal_names;
 } ModuleState;
 
 typedef struct {
@@ -51,6 +60,7 @@ typedef struct {
 
 typedef struct {
     Py_ssize_t remaining;
+    ModuleState *module_state;
     PyTypeObject *record_type;
     unsigned int record_version;
     PyObject *walk;
@@ -60,6 +70,7 @@ typedef struct {
     RecordRecipe recipes[MAX_RECORD_TYPES];
     unsigned int recipe_count;
     int direct_graph;
+    int temporal_graph;
     PyObject *dict_name;
     PyObject *update_name;
     PyObject *memo;
@@ -68,8 +79,26 @@ typedef struct {
     Py_ssize_t used;
     MemoEntry inline_entries[INLINE_MEMO_SIZE];
     unsigned int count;
+    uint64_t ancestor_filter[4];
     PyObject *ancestors[MAX_DEPTH];
 } CopyContext;
+
+/* Canonical admission may run descriptors. Before resuming temporal leaves,
+ * verify that its memo still has only identity keys and an ordinary pin list.
+ * This scan happens at admission boundaries, never once per temporal value. */
+static int
+temporal_memo_safe(CopyContext *context)
+{
+    Py_ssize_t position = 0;
+    PyObject *key, *value;
+    while (PyDict_Next(context->memo, &position, &key, &value)) {
+        if (!PyLong_CheckExact(key)) {
+            return 0;
+        }
+    }
+    PyObject *alive = PyDict_GetItemWithError(context->memo, context->memo_identity);
+    return alive != NULL && PyList_CheckExact(alive);
+}
 
 static int clone_value(PyObject *, PyObject **, unsigned int, CopyContext *);
 static int clone_closed_value(PyObject *, PyObject **, unsigned int, CopyContext *);
@@ -77,6 +106,8 @@ static int clone_value_impl(PyObject *, PyObject **, unsigned int, CopyContext *
 static int atom(PyObject *);
 static int eligible(PyObject *, unsigned int, Proof *);
 static int record_current(CopyContext *);
+static int record_cached(PyTypeObject *, ModuleState *);
+static int record_cache_store(PyTypeObject *, unsigned int, ModuleState *);
 static int clone_record(PyObject *, PyObject **, unsigned int, CopyContext *);
 static int clone_record_impl(PyObject *, PyObject **, unsigned int, CopyContext *);
 static int clone_budget(unsigned int *, int *);
@@ -91,7 +122,9 @@ static size_t
 memo_hash(PyObject *source)
 {
     uintptr_t address = (uintptr_t)source >> 4;
-    return (size_t)(address ^ (address >> 16));
+    /* Fold nearby allocator bits into the low table-index bits so aligned
+     * small containers do not cluster at the same initial slot. */
+    return (size_t)(address ^ (address >> 4));
 }
 
 static MemoEntry *
@@ -349,6 +382,7 @@ memo_pin(PyObject *source, CopyContext *context)
     } else {
         /* Match Python's append semantics for a caller-modified reserved memo
          * entry, including errors or an overridden append on a list subclass. */
+        context->temporal_graph = 0;
         PyObject *returned = PyObject_CallMethod(alive, "append", "O", source);
         status = returned == NULL ? -1 : 0;
         Py_XDECREF(returned);
@@ -391,24 +425,50 @@ record_admissible(PyTypeObject *type)
     return dictionary;
 }
 
+static unsigned int
+record_version(PyTypeObject *type)
+{
+#if PY_VERSION_HEX >= 0x030C0000 && PY_VERSION_HEX < 0x030D0000
+    /* Failed base assignment in 3.12 may leave a nonzero invalid tag. */
+    if (!(PyType_GetFlags(type) & Py_TPFLAGS_VALID_VERSION_TAG)) {
+        return 0;
+    }
+    return type->tp_version_tag;
+#elif PY_VERSION_HEX >= 0x030D0000 && PY_VERSION_HEX < 0x030F0000
+    return type->tp_version_tag;
+#else
+    /* Other interpreter versions retain uncached allocation admission. */
+    (void)type;
+    return 0;
+#endif
+}
+
 static int
 record_current(CopyContext *context)
 {
     PyTypeObject *type = context->record_type;
     if (context->record_version != 0
-        && context->record_version == type->tp_version_tag) {
+        && context->record_version == record_version(type)) {
+        return 1;
+    }
+    if (context->module_state != NULL
+        && record_cached(type, context->module_state)) {
+        context->record_version = record_version(type);
         return 1;
     }
     if (!record_admissible(type)) {
         return 0;
     }
-    context->record_version = type->tp_version_tag;
+    context->record_version = record_version(type);
     return 1;
 }
 
 static int
 python_value(PyObject *source, PyObject **result, CopyContext *context)
 {
+    /* Arbitrary copy hooks may inject foreign memo keys. Retain the general
+     * walk from this boundary onward instead of adding observable lookups. */
+    context->temporal_graph = 0;
 #if PY_VERSION_HEX >= 0x030C0000 && PY_VERSION_HEX < 0x030F0000
     PyThreadState *state = NULL;
     if (context->direct_graph) {
@@ -425,6 +485,177 @@ python_value(PyObject *source, PyObject **result, CopyContext *context)
         --state->py_recursion_remaining;
     }
 #endif
+    return *result == NULL ? -1 : 1;
+}
+
+/* Only the canonical structural continuation opts into this specialization.
+ * The generic custom-walker API continues to delegate every temporal node. */
+static int
+temporal_value(PyObject *source, PyObject **result, CopyContext *context)
+{
+    ModuleState *state = context->module_state;
+    PyDateTime_CAPI *api = state->datetime_api;
+    PyTypeObject *type = Py_TYPE(source);
+    if (type != api->DateTimeType && type != api->TimeType) {
+        return 0;
+    }
+    /* Admission can modify the memo, but most admitted graphs contain no
+     * temporal nodes. Certify only at the first temporal boundary; foreign
+     * Python continuations still disable this specialization permanently. */
+    if (context->temporal_graph == TEMPORAL_DEFERRED) {
+        context->temporal_graph = temporal_memo_safe(context);
+        if (!context->temporal_graph) {
+            return 0;
+        }
+    }
+    if (!PyFunction_Check(context->walk)) {
+        return 0;
+    }
+    PyObject *globals = PyFunction_GetGlobals(context->walk);
+    if (PyDict_GetItemWithError(globals, PyTuple_GET_ITEM(state->temporal_names, 9)) != context->walk
+        || PyDict_GetItemWithError(globals, PyTuple_GET_ITEM(state->temporal_names, 0)) != context->walk
+        || PyDict_GetItemWithError(globals, PyTuple_GET_ITEM(state->temporal_names, 1))
+            != PyFunction_GetCode(context->walk)) {
+        return PyErr_Occurred() ? -1 : 0;
+    }
+    if (PyDict_GetItemWithError(globals, PyTuple_GET_ITEM(state->temporal_names, 3)) != state->datetime_module) {
+        return PyErr_Occurred() ? -1 : 0;
+    }
+    PyObject *datetime_namespace = PyModule_GetDict(state->datetime_module);
+    if (PyDict_GetItemWithError(datetime_namespace, PyTuple_GET_ITEM(state->temporal_names, 4)) != (PyObject *)api->DateTimeType
+        || PyDict_GetItemWithError(datetime_namespace, PyTuple_GET_ITEM(state->temporal_names, 5)) != (PyObject *)api->TimeType
+        || PyDict_GetItemWithError(datetime_namespace, PyTuple_GET_ITEM(state->temporal_names, 10))
+            != (PyObject *)Py_TYPE(api->TimeZone_UTC)) {
+        return PyErr_Occurred() ? -1 : 0;
+    }
+    /* Exact None/UTC temporal values use the structural walk's immutable
+     * branch. That branch never consults copy's namespace or dispatch tables;
+     * probing them here would add foreign-key callbacks absent in Python. */
+    PyObject *zone = type == api->DateTimeType
+        ? PyDateTime_DATE_GET_TZINFO(source) : PyDateTime_TIME_GET_TZINFO(source);
+    if (zone != Py_None && zone != api->TimeZone_UTC) {
+        return 0;
+    }
+    /* A rebound policy can route even None/UTC through deepcopy. Inspect
+     * only an exact, small frozenset of ordinary classes: membership in a
+     * foreign-key set can itself invoke equality hooks owned by Python. */
+    PyObject *zones = PyDict_GetItemWithError(globals,
+        PyTuple_GET_ITEM(state->temporal_names, 11));
+    if (zones == NULL) {
+        return PyErr_Occurred() ? -1 : 0;
+    }
+    if (!PyFrozenSet_CheckExact(zones) || PySet_GET_SIZE(zones) > 8) {
+        return 0;
+    }
+    PySetObject *policy = (PySetObject *)zones;
+    if (policy->mask >= 32) {
+        return 0;
+    }
+    int admitted_zone = 0;
+    for (Py_ssize_t i = 0; i <= policy->mask; i++) {
+        setentry entry = policy->table[i];
+        if (entry.key == NULL || entry.hash == -1) {
+            continue;
+        }
+        if (Py_TYPE(entry.key) != &PyType_Type) {
+            return 0;
+        }
+        admitted_zone |= entry.key == (PyObject *)Py_TYPE(zone);
+    }
+    if (!admitted_zone) {
+        return 0;
+    }
+    PyObject *identity = PyLong_FromVoidPtr(source);
+    if (identity == NULL) {
+        return -1;
+    }
+    int found = PyDict_Contains(context->memo, identity);
+    if (found != 0) {
+        if (found > 0) {
+            *result = PyObject_GetItem(context->memo, identity);
+        }
+        Py_DECREF(identity);
+        return *result != NULL ? 1 : -1;
+    }
+    if (memo_pin(source, context) < 0) {
+        Py_DECREF(identity);
+        return -1;
+    }
+    /* Mirror the canonical timezone branch with the same shared memo. UTC's
+     * offset still uses the Python continuation; source pins, memo overrides
+     * and recursive frame accounting keep their established order. */
+    PyObject *copied_zone = NULL;
+#if PY_VERSION_HEX >= 0x030C0000 && PY_VERSION_HEX < 0x030F0000
+    PyThreadState *thread = PyThreadState_Get();
+    if (thread->py_recursion_remaining <= 0) {
+        Py_DECREF(identity);
+        PyErr_SetString(PyExc_RecursionError,
+                        "maximum recursion depth while cloning a timezone");
+        return -1;
+    }
+    --thread->py_recursion_remaining;
+#endif
+    if (zone == Py_None) {
+        /* _walk returns graph atoms before consulting caller memo entries. */
+        copied_zone = Py_NewRef(zone);
+    } else {
+        PyObject *zone_identity = PyLong_FromVoidPtr(zone);
+        if (zone_identity != NULL) {
+            int zone_found = PyDict_Contains(context->memo, zone_identity);
+            if (zone_found > 0) {
+                copied_zone = PyObject_GetItem(context->memo, zone_identity);
+            } else if (zone_found == 0 && memo_pin(zone, context) == 0) {
+                PyObject *offset = PyObject_CallMethod(zone, "utcoffset", "O", Py_None);
+                if (offset != NULL) {
+                    /* The first timezone still walks its offset with the same
+                     * Python continuation; subsequent references use its memo. */
+                    PyObject *copied_offset = PyObject_CallFunctionObjArgs(
+                        context->walk, offset, context->memo, NULL);
+                    if (copied_offset == offset) {
+                        copied_zone = Py_NewRef(zone);
+                    } else if (copied_offset != NULL) {
+                        PyObject *name = PyObject_CallMethod(zone, "tzname", "O", Py_None);
+                        PyObject *zone_type = PyObject_GetAttrString(state->datetime_module, "timezone");
+                        if (name != NULL && zone_type != NULL) {
+                            copied_zone = PyObject_CallFunctionObjArgs(
+                                zone_type, copied_offset, name, NULL);
+                        }
+                        Py_XDECREF(name);
+                        Py_XDECREF(zone_type);
+                    }
+                    Py_XDECREF(copied_offset);
+                    Py_DECREF(offset);
+                }
+                if (copied_zone != NULL
+                    && PyDict_SetItem(context->memo, zone_identity, copied_zone) < 0) {
+                    Py_CLEAR(copied_zone);
+                }
+            }
+            Py_DECREF(zone_identity);
+        }
+    }
+#if PY_VERSION_HEX >= 0x030C0000 && PY_VERSION_HEX < 0x030F0000
+    ++thread->py_recursion_remaining;
+#endif
+    if (copied_zone == NULL) {
+        Py_DECREF(identity);
+        return -1;
+    }
+    if (copied_zone == zone) {
+        *result = Py_NewRef(source);
+    } else {
+        PyObject *replace = PyObject_GetAttrString(source, "replace");
+        if (replace != NULL) {
+            PyObject *arguments[] = {copied_zone};
+            *result = PyObject_Vectorcall(replace, arguments, 0, state->tz_keywords);
+            Py_DECREF(replace);
+        }
+    }
+    Py_DECREF(copied_zone);
+    if (*result != NULL && PyDict_SetItem(context->memo, identity, *result) < 0) {
+        Py_CLEAR(*result);
+    }
+    Py_DECREF(identity);
     return *result == NULL ? -1 : 1;
 }
 
@@ -445,7 +676,12 @@ record_recipe(PyTypeObject *type, CopyContext *context)
      * currently reserved virtual _walk frame represents. */
     ++state->py_recursion_remaining;
 #endif
+    int temporal = context->temporal_graph;
+    context->temporal_graph = 0;
     PyObject *pair = PyObject_CallOneArg(context->admit, (PyObject *)type);
+    if (pair != NULL && temporal) {
+        context->temporal_graph = TEMPORAL_DEFERRED;
+    }
 #if PY_VERSION_HEX >= 0x030C0000 && PY_VERSION_HEX < 0x030F0000
     --state->py_recursion_remaining;
 #endif
@@ -463,11 +699,12 @@ record_recipe(PyTypeObject *type, CopyContext *context)
                         "record admission must return (bool, callable)");
         return NULL;
     }
-    RecordRecipe *recipe = &context->recipes[context->recipe_count++];
+    RecordRecipe *recipe = &context->recipes[context->recipe_count];
     recipe->type = type;
     recipe->handler = Py_NewRef(PyTuple_GET_ITEM(pair, 1));
     recipe->native = PyTuple_GET_ITEM(pair, 0) == Py_True;
     recipe->version = 0;
+    ++context->recipe_count;
     Py_DECREF(pair);
     return recipe;
 }
@@ -476,6 +713,7 @@ static int
 python_recipe(PyObject *source, PyObject **result, CopyContext *context,
               RecordRecipe *recipe)
 {
+    context->temporal_graph = 0;
     *result = PyObject_CallFunctionObjArgs(recipe->handler, source,
                                           context->memo, NULL);
     if (*result == NULL) {
@@ -623,6 +861,44 @@ clone_child(PyObject *source, PyObject **result, unsigned int depth,
         : clone_closed_value(source, result, depth, context);
 }
 
+/* Copy a first repeated non-atomic run into private reserved slots. */
+static int
+clone_initial_run(PyObject *source, PyObject *output, Py_ssize_t *written,
+                  Py_ssize_t size, int tuple, PyObject *first,
+                  unsigned int depth, CopyContext *context)
+{
+    Py_INCREF(first);
+    PyObject *copied = NULL;
+    int status = clone_closed_value(first, &copied, depth - 1, context);
+    Py_DECREF(first);
+    if (status != 1) {
+        return status;
+    }
+    /* The private memo owns source/result even if a callback replaced source
+     * slots. No allocation occurs while reusing the completed child. */
+    if (tuple) {
+        PyTuple_SET_ITEM(output, *written, copied);
+    } else {
+        PyList_SET_ITEM(output, *written, copied);
+    }
+    ++*written;
+    while (*written < size && *written < Py_SIZE(source)) {
+        PyObject *next = tuple
+            ? PyTuple_GET_ITEM(source, *written)
+            : PyList_GET_ITEM(source, *written);
+        if (next != first) {
+            break;
+        }
+        if (tuple) {
+            PyTuple_SET_ITEM(output, *written, Py_NewRef(copied));
+        } else {
+            PyList_SET_ITEM(output, *written, Py_NewRef(copied));
+        }
+        ++*written;
+    }
+    return 1;
+}
+
 /* 1: owned result; 0: unsupported (no exception); -1: real failure. */
 static inline Py_ALWAYS_INLINE int
 clone_sequence_impl(PyObject *source, PyObject **result, unsigned int depth,
@@ -633,6 +909,30 @@ clone_sequence_impl(PyObject *source, PyObject **result, unsigned int depth,
     PyObject *output = tuple ? PyTuple_New(size) : PyList_New(size);
     if (output == NULL) {
         return -1;
+    }
+    /* Atom-only prefixes cannot invoke callbacks or allocate. Complete a
+     * scalar sequence while its storage is private before recursive work
+     * requires hiding any incomplete slots from collector callbacks. */
+    Py_ssize_t written = 0;
+    if (!direct_graph && context->walk == NULL) {
+        while (written < size && written < Py_SIZE(source)) {
+            PyObject *item = tuple
+                ? PyTuple_GET_ITEM(source, written)
+                : PyList_GET_ITEM(source, written);
+            if (!atom(item)) {
+                break;
+            }
+            if (tuple) {
+                PyTuple_SET_ITEM(output, written, Py_NewRef(item));
+            } else {
+                PyList_SET_ITEM(output, written, Py_NewRef(item));
+            }
+            ++written;
+        }
+        if (written == size && written == Py_SIZE(source)) {
+            *result = output;
+            return 1;
+        }
     }
     /* No partially initialized list/tuple may appear in gc.get_objects() or
      * gc.get_referrers() during allocations further down the tree. A completed
@@ -651,7 +951,24 @@ clone_sequence_impl(PyObject *source, PyObject **result, unsigned int depth,
             return -1;
         }
     }
-    Py_ssize_t written = 0;
+    if (written < size - 1 && written < Py_SIZE(source) - 1
+        && !direct_graph && context->entries != NULL
+        && context->memo == NULL && context->walk == NULL) {
+        PyObject *first = tuple
+            ? PyTuple_GET_ITEM(source, written)
+            : PyList_GET_ITEM(source, written);
+        PyObject *next = tuple
+            ? PyTuple_GET_ITEM(source, written + 1)
+            : PyList_GET_ITEM(source, written + 1);
+        if (first == next && !atom(first)) {
+            int run_status = clone_initial_run(source, output, &written,
+                                              size, tuple, first, depth, context);
+            if (run_status != 1) {
+                Py_DECREF(output);
+                return run_status;
+            }
+        }
+    }
     PyObject *held = NULL;
     int status = 1;
     while (written < Py_SIZE(source)) {
@@ -883,14 +1200,27 @@ clone_closed_value(PyObject *source, PyObject **result, unsigned int depth,
         return context->walk != NULL
             ? python_value(source, result, context) : 0;
     }
+    int filtered = context->walk == NULL && context->entries != NULL;
+    size_t filter_word = 0;
+    uint64_t filter_before = 0, filter_bit = 0;
     if (context->walk != NULL || context->entries != NULL) {
         if (record && !record_current(context)) {
             return python_value(source, result, context);
         }
-        for (unsigned int i = 0; i < context->count; i++) {
-            if (context->ancestors[i] == source) {
-                PyErr_SetString(PyExc_RecursionError, "cyclic clone graph");
-                return -1;
+        if (filtered) {
+            size_t hash = memo_hash(source);
+            filter_word = (hash >> 6) & 3;
+            filter_bit = UINT64_C(1) << (hash & 63);
+            filter_before = context->ancestor_filter[filter_word];
+        }
+        /* A missing bit proves this address is not active. Collisions still
+         * run the original exact scan; no hash match alone proves a cycle. */
+        if (!filtered || (filter_before & filter_bit)) {
+            for (unsigned int i = 0; i < context->count; i++) {
+                if (context->ancestors[i] == source) {
+                    PyErr_SetString(PyExc_RecursionError, "cyclic clone graph");
+                    return -1;
+                }
             }
         }
     }
@@ -904,6 +1234,9 @@ clone_closed_value(PyObject *source, PyObject **result, unsigned int depth,
     }
     if (context->walk != NULL || context->entries != NULL) {
         context->ancestors[context->count++] = source;
+        if (filtered) {
+            context->ancestor_filter[filter_word] = filter_before | filter_bit;
+        }
     }
     int status;
     if (record) {
@@ -929,6 +1262,11 @@ clone_closed_value(PyObject *source, PyObject **result, unsigned int depth,
     }
     if (context->walk != NULL || context->entries != NULL) {
         --context->count;
+        if (filtered) {
+            /* Restore the whole prior word so nested hash collisions cannot
+             * clear an ancestor's bit while unwinding this frame. */
+            context->ancestor_filter[filter_word] = filter_before;
+        }
     }
     Py_LeaveRecursiveCall();
     if (status == 1 && context->entries != NULL
@@ -951,7 +1289,15 @@ clone_value(PyObject *source, PyObject **result, unsigned int depth,
     /* Python container loops return every graph atom before calling _walk.
      * Keep rare immutable types off the primitive closed-walker hot path. */
     PyTypeObject *selected_type = Py_TYPE(source);
-    if (graph_atom_kind(source, selected_type)) {
+    int builtin_container = selected_type == &PyList_Type
+        || selected_type == &PyTuple_Type || selected_type == &PyDict_Type;
+    int candidate = context->admit != NULL
+        && Py_TYPE(selected_type) == &PyType_Type
+        && selected_type->tp_base == &PyBaseObject_Type
+        && (selected_type->tp_flags & Py_TPFLAGS_HEAPTYPE);
+    /* Exact containers and ordinary heap records are disjoint from every
+     * static graph atom. Retain the captured type across later memo hooks. */
+    if (!builtin_container && !candidate && graph_atom_kind(source, selected_type)) {
         *result = Py_NewRef(source);
         return 1;
     }
@@ -972,12 +1318,7 @@ clone_value(PyObject *source, PyObject **result, unsigned int depth,
         /* Python captures type(o) before a memo lookup. Even an exact memo can
          * contain foreign keys whose equality hook changes source.__class__. */
         Py_INCREF(selected_type);
-        int candidate = context->admit != NULL
-            && Py_TYPE(selected_type) == &PyType_Type
-            && selected_type->tp_base == &PyBaseObject_Type
-            && (selected_type->tp_flags & Py_TPFLAGS_HEAPTYPE);
-        int delegate = selected_type != &PyList_Type
-            && selected_type != &PyTuple_Type && selected_type != &PyDict_Type
+        int delegate = !builtin_container
             && selected_type != context->record_type && !candidate;
         if (candidate && context->recipe_count == MAX_RECORD_TYPES) {
             delegate = 1;
@@ -988,7 +1329,11 @@ clone_value(PyObject *source, PyObject **result, unsigned int depth,
                 }
             }
         }
-        if (delegate) {
+        int temporal = delegate && context->temporal_graph
+            ? temporal_value(source, result, context) : 0;
+        if (temporal != 0) {
+            status = temporal;
+        } else if (delegate) {
             /* Python owns unsupported-node dispatch from its first lookup.
              * Repeating a memo lookup could invoke foreign key equality
              * twice or select a class changed by that first comparison. */
@@ -1448,7 +1793,7 @@ clone_records(PyObject *module, PyObject *const *args, Py_ssize_t count)
     CopyContext context = {0};
     context.remaining = MAX_CONTAINERS;
     context.record_type = type;
-    context.record_version = type->tp_version_tag;
+    context.record_version = record_version(type);
     context.walk = args[2];
     context.dict_name = dict_name;
     context.update_name = update_name;
@@ -1472,7 +1817,7 @@ clone_builtin(PyObject *module, PyObject *source)
 
 static PyObject *
 clone_direct_graph(PyObject *module, PyObject *source, PyTypeObject *type, PyObject *walk,
-                   PyObject *admit, PyObject *memo)
+                   PyObject *admit, PyObject *memo, int temporal)
 {
 #if PY_VERSION_HEX < 0x030C0000 || PY_VERSION_HEX >= 0x030F0000
     /* The versioned frame-budget ABI is validated on supported wheel targets;
@@ -1527,10 +1872,22 @@ clone_direct_graph(PyObject *module, PyObject *source, PyTypeObject *type, PyObj
         }
         return NULL;
     }
-    CopyContext context = {0};
+    /* Direct mode uses only the initialized ancestor/recipe prefixes. Its
+     * private inline memo arrays belong to the separate closed mode. */
+    CopyContext context;
+    context.identity = NULL;
+    context.recipe_count = 0;
+    context.entries = NULL;
+    context.capacity = 0;
+    context.used = 0;
+    context.count = 0;
+    for (size_t i = 0; i < 4; i++) {
+        context.ancestor_filter[i] = 0;
+    }
     context.remaining = MAX_CONTAINERS;
+    context.module_state = state;
     context.record_type = type;
-    context.record_version = type != NULL ? type->tp_version_tag : 0;
+    context.record_version = type != NULL ? record_version(type) : 0;
     context.walk = walk;
     context.admit = admit;
     context.dict_name = dict_name;
@@ -1538,6 +1895,7 @@ clone_direct_graph(PyObject *module, PyObject *source, PyTypeObject *type, PyObj
     context.memo = memo;
     context.memo_identity = memo_identity;
     context.direct_graph = 1;
+    context.temporal_graph = temporal && PyDict_Size(memo) == 0;
     PyObject *result = NULL;
     int status = clone_value(source, &result, budget, &context);
     Py_LeaveRecursiveCall();
@@ -1545,6 +1903,12 @@ clone_direct_graph(PyObject *module, PyObject *source, PyTypeObject *type, PyObj
     Py_DECREF(update_name);
     Py_DECREF(memo_identity);
     for (unsigned int i = 0; i < context.recipe_count; i++) {
+        if (status == 1 && context.recipes[i].native
+            && record_cache_store(context.recipes[i].type,
+                                  context.recipes[i].version, state) < 0) {
+            Py_CLEAR(result);
+            status = -1;
+        }
         Py_DECREF(context.recipes[i].handler);
         Py_DECREF(context.recipes[i].type);
     }
@@ -1561,7 +1925,7 @@ clone_record_graph(PyObject *module, PyObject *const *args, Py_ssize_t count)
         return NULL;
     }
     return clone_direct_graph(module, args[0], (PyTypeObject *)args[1], args[2],
-                              NULL, args[3]);
+                              NULL, args[3], 0);
 }
 
 static PyObject *
@@ -1573,7 +1937,19 @@ clone_walk_graph(PyObject *module, PyObject *const *args, Py_ssize_t count)
                         "clone_walk_graph requires source, walker, admission and memo");
         return NULL;
     }
-    return clone_direct_graph(module, args[0], NULL, args[1], args[2], args[3]);
+    return clone_direct_graph(module, args[0], NULL, args[1], args[2], args[3], 0);
+}
+
+static PyObject *
+clone_walk_canonical_graph(PyObject *module, PyObject *const *args, Py_ssize_t count)
+{
+    if (count != 4 || !PyCallable_Check(args[1]) || !PyCallable_Check(args[2])
+        || !PyDict_CheckExact(args[3])) {
+        PyErr_SetString(PyExc_TypeError,
+                        "clone_walk_canonical_graph requires source, walker, admission and memo");
+        return NULL;
+    }
+    return clone_direct_graph(module, args[0], NULL, args[1], args[2], args[3], 1);
 }
 
 static PyObject *
@@ -1695,7 +2071,7 @@ record_ref_status(PyObject *reference, PyTypeObject *type)
 static int
 record_cached(PyTypeObject *type, ModuleState *state)
 {
-    unsigned int version = type->tp_version_tag;
+    unsigned int version = record_version(type);
     if (version == 0) {
         return 0;
     }
@@ -1714,10 +2090,20 @@ record_cached(PyTypeObject *type, ModuleState *state)
 static int
 record_cache_store(PyTypeObject *type, unsigned int version, ModuleState *state)
 {
-    if (version == 0 || type->tp_version_tag != version) {
+    if (version == 0 || record_version(type) != version) {
         return 0;
     }
     size_t index = memo_hash((PyObject *)type);
+    /* Population is optional. An unchanged version entry needs no rewrite,
+     * including when earlier probe slots belong to other live classes.
+     * Retrieval still validates both the live version and weakref identity. */
+    for (size_t offset = 0; offset < 4; offset++) {
+        RecordEntry *entry = &state->records[
+            (index + offset) & (RECORD_CACHE_SIZE - 1)];
+        if (entry->version == version) {
+            return 0;
+        }
+    }
     RecordEntry *available = NULL;
     for (size_t offset = 0; offset < 4; offset++) {
         RecordEntry *entry = &state->records[
@@ -1742,7 +2128,7 @@ record_cache_store(PyTypeObject *type, unsigned int version, ModuleState *state)
         Py_DECREF(type);
         return -1;
     }
-    if (type->tp_version_tag == version) {
+    if (record_version(type) == version) {
         Py_XSETREF(available->reference, reference);
         available->version = version;
     } else {
@@ -1806,7 +2192,7 @@ clone_state_graph(PyObject *module, PyObject *source, PyObject *memo, PyObject *
     }
     --thread->py_recursion_remaining;
 #endif
-    PyObject *copied = clone_direct_graph(module, source, NULL, walk, NULL, memo);
+    PyObject *copied = clone_direct_graph(module, source, NULL, walk, NULL, memo, 0);
     if (copied == Py_NotImplemented) {
         Py_DECREF(copied);
         PyObject *values[] = {source, memo};
@@ -1857,7 +2243,7 @@ clone_dataclass(PyObject *module, PyObject *const *args, Py_ssize_t count)
         Py_DECREF(identity);
         Py_RETURN_NOTIMPLEMENTED;
     }
-    unsigned int version = type->tp_version_tag;
+    unsigned int version = record_version(type);
     /* Keep the selected class through every callback and cache check, even
      * when both source and twin move to another class during reconstruction. */
     Py_INCREF(type);
@@ -1962,7 +2348,25 @@ module_exec(PyObject *module)
         return -1;
     }
     state->update_name = PyUnicode_InternFromString("update");
-    return state->update_name == NULL ? -1 : 0;
+    state->datetime_module = PyImport_ImportModule("datetime");
+    if (state->update_name == NULL || state->datetime_module == NULL) {
+        return -1;
+    }
+    state->datetime_capsule = PyObject_GetAttrString(state->datetime_module, "datetime_CAPI");
+    if (state->datetime_capsule == NULL) {
+        return -1;
+    }
+    state->datetime_api = PyCapsule_GetPointer(state->datetime_capsule, PyDateTime_CAPSULE_NAME);
+    state->copy_module = PyImport_ImportModule("copy");
+    if (state->datetime_api == NULL || state->copy_module == NULL) {
+        return -1;
+    }
+    state->deepcopy = PyObject_GetAttrString(state->copy_module, "deepcopy");
+    state->tz_keywords = Py_BuildValue("(s)", "tzinfo");
+    state->temporal_names = Py_BuildValue("(ssssssssssss)", "_TEMPORAL_WALK", "_TEMPORAL_WALK_CODE",
+        "_stdlib", "_dt", "datetime", "time", "deepcopy", "dispatch_table", "_deepcopy_dispatch", "_walk", "timezone", "_TIMEZONES");
+    return state->deepcopy == NULL || state->tz_keywords == NULL
+        || state->temporal_names == NULL ? -1 : 0;
 }
 
 static int
@@ -1971,6 +2375,12 @@ module_traverse(PyObject *module, visitproc visit, void *arg)
     ModuleState *state = PyModule_GetState(module);
     Py_VISIT(state->dict_name);
     Py_VISIT(state->update_name);
+    Py_VISIT(state->datetime_module);
+    Py_VISIT(state->datetime_capsule);
+    Py_VISIT(state->copy_module);
+    Py_VISIT(state->deepcopy);
+    Py_VISIT(state->tz_keywords);
+    Py_VISIT(state->temporal_names);
     for (unsigned int i = 0; i < RECORD_CACHE_SIZE; i++) {
         Py_VISIT(state->records[i].reference);
     }
@@ -1983,6 +2393,13 @@ module_clear(PyObject *module)
     ModuleState *state = PyModule_GetState(module);
     Py_CLEAR(state->dict_name);
     Py_CLEAR(state->update_name);
+    state->datetime_api = NULL;
+    Py_CLEAR(state->datetime_module);
+    Py_CLEAR(state->datetime_capsule);
+    Py_CLEAR(state->copy_module);
+    Py_CLEAR(state->deepcopy);
+    Py_CLEAR(state->tz_keywords);
+    Py_CLEAR(state->temporal_names);
     for (unsigned int i = 0; i < RECORD_CACHE_SIZE; i++) {
         Py_CLEAR(state->records[i].reference);
         state->records[i].version = 0;
@@ -2004,6 +2421,8 @@ static PyMethodDef methods[] = {
      "Clone builtin data, raising RecursionError for a proved builtin cycle."},
     {"clone_graph", (PyCFunction)(void(*)(void))clone_graph, METH_FASTCALL,
      "Clone builtin data while preserving identities in a shared copy memo."},
+    {"clone_walk_canonical_graph", (PyCFunction)(void(*)(void))clone_walk_canonical_graph, METH_FASTCALL,
+     "Clone canonical structural graphs with guarded immutable temporal leaves."},
     {"clone_walk_graph", (PyCFunction)(void(*)(void))clone_walk_graph, METH_FASTCALL,
      "Clone builtin and admitted record graphs with a shared Python memo."},
     {"clone_record_graph", (PyCFunction)(void(*)(void))clone_record_graph, METH_FASTCALL,

@@ -23,6 +23,7 @@ import json
 import math
 from pathlib import Path
 import platform
+import statistics
 import sys
 from typing import TYPE_CHECKING, Any
 
@@ -182,6 +183,16 @@ def _workloads() -> list[base.Workload]:
             ),
         )
     )
+    shared = {"values": [1, 2, 3]}
+    cases.extend(
+        (
+            _case("scalar-list-1000", list(range(1000))),
+            _case("scalar-tuple-1000", tuple(range(1000))),
+            _case("scalar-list-100000", list(range(100000))),
+            _case("repeated-aliases-10000", [shared] * 10000),
+            _case("repeated-aliases-100000", [shared] * 100000),
+        )
+    )
     return cases
 
 
@@ -290,8 +301,13 @@ def _snapshot(directory: Path, label: str, *, infer_native_bindings: bool) -> An
     return module
 
 
-def _native_routes(module: Any, label: str) -> dict[str, list[str]]:
-    """Prove successful native execution through representative public calls."""
+def _native_routes(
+    module: Any, label: str, *, structural_baseline: bool = False
+) -> dict[str, list[str]]:
+    """Prove public native routes under the revision's actual copy contract."""
+    if structural_baseline and base._copy_contract(module) != "structural":
+        message = f"{label} does not have the historical structural copy contract"
+        raise RuntimeError(message)
     bindings = {
         name: getattr(module, name, None)
         for name in _NATIVE_BINDINGS
@@ -310,7 +326,7 @@ def _native_routes(module: Any, label: str) -> dict[str, list[str]]:
 
     shared = [1, {"values": [2, 3]}]
     record = base.Record("row", shared)
-    probes = (
+    probes: tuple[tuple[base.Workload, set[str]], ...] = (
         (
             _case("builtin-graph", {"left": shared, "right": shared}),
             {"_native_graph", "_native_root_graph", "_native_walk_graph"},
@@ -328,6 +344,16 @@ def _native_routes(module: Any, label: str) -> dict[str, list[str]]:
             {"_native_clone", "_native_records"},
         ),
     )
+    if structural_baseline:
+        # Older releases accelerate exact builtin trees and intentionally copy
+        # shared branches independently. Their mixed-record and asdict paths
+        # remain measured and checked below, but did not have native kernels.
+        probes = (
+            (
+                _case("builtin-tree", {"left": shared, "right": shared}),
+                {"_native_clone"},
+            ),
+        )
     routes: dict[str, list[str]] = {}
     try:
         for name, call in bindings.items():
@@ -338,8 +364,12 @@ def _native_routes(module: Any, label: str) -> dict[str, list[str]]:
         for case, accepted in probes:
             successful.clear()
             result = getattr(module, case.operation)(case.source)
-            valid = _check(case, "current", result, shared_aliases=True)
-            if case.name == "builtin-graph":
+            valid = _check(
+                case, "current", result, shared_aliases=not structural_baseline
+            )
+            if case.name == "builtin-tree":
+                valid = valid and result["left"] is not result["right"]
+            elif case.name == "builtin-graph":
                 valid = valid and result["left"] is result["right"]
             elif case.name == "mixed-dataclass":
                 valid = (
@@ -363,17 +393,49 @@ def _native_routes(module: Any, label: str) -> dict[str, list[str]]:
     return routes
 
 
+def _matched_slowdown(
+    current: dict[str, Any], before: dict[str, Any], metric: str
+) -> float:
+    """Pair rounds before taking the median so common worker drift cancels."""
+    current_samples = current.get("samples")
+    before_samples = before.get("samples")
+    if current_samples is None and before_samples is None:
+        return float(current[metric] / before[metric])
+    if (
+        not isinstance(current_samples, list)
+        or not isinstance(before_samples, list)
+        or not current_samples
+        or len(current_samples) != len(before_samples)
+    ):
+        message = "clone comparisons require nonempty matched timing rounds"
+        raise ValueError(message)
+    sample_metric = metric.removeprefix("median_")
+    ratios = []
+    for after, prior in zip(current_samples, before_samples, strict=True):
+        current_ns, before_ns = after[sample_metric], prior[sample_metric]
+        if (
+            not math.isfinite(current_ns)
+            or not math.isfinite(before_ns)
+            or current_ns <= 0
+            or before_ns <= 0
+        ):
+            message = "clone timing samples must be finite and positive"
+            raise ValueError(message)
+        ratios.append(current_ns / before_ns)
+    return float(statistics.median(ratios))
+
+
 def _regressions(
     workloads: dict[str, Any], max_slowdown: float
 ) -> list[dict[str, Any]]:
-    """Compare both median latency measures against the same-worker baseline."""
+    """Compare matched wall and CPU rounds against the same-worker baseline."""
     failures = []
     for name, workload in workloads.items():
         timings = workload["timings"]
         for metric in ("median_wall_ns", "median_cpu_ns"):
             before = timings["before"][metric]
             current = timings["current"][metric]
-            slowdown = current / before
+            slowdown = _matched_slowdown(timings["current"], timings["before"], metric)
             if not math.isfinite(slowdown) or slowdown > max_slowdown:
                 failures.append(
                     {
@@ -445,6 +507,11 @@ def main(argv: Sequence[str] | None = None) -> None:
             Path(base.__file__).read_bytes()
         ).hexdigest(),
         "gc_enabled_during_batches": args.gc_enabled,
+        "calibration": {
+            "batch_target_ns": base.BATCH_TARGET_NS,
+            "probes_per_count": base.CALIBRATION_PROBES,
+            "count_selection": "fastest calibration probe",
+        },
         "gc_threshold": gc.get_threshold(),
         "rounds": args.rounds,
         "infer_native_bindings": args.infer_native_bindings,
@@ -463,7 +530,13 @@ def main(argv: Sequence[str] | None = None) -> None:
         output["native_routes"] = {}
         try:
             for label in ("current", "before"):
-                output["native_routes"][label] = _native_routes(modules[label], label)
+                output["native_routes"][label] = _native_routes(
+                    modules[label],
+                    label,
+                    structural_baseline=(
+                        label == "before" and contracts[label] == "structural"
+                    ),
+                )
         except RuntimeError as error:
             output["native_error"] = str(error)
             _write_output(output, args.output)
@@ -504,9 +577,15 @@ def main(argv: Sequence[str] | None = None) -> None:
         }
     failures: list[dict[str, Any]] = []
     if args.max_slowdown is not None:
-        failures = _regressions(output["workloads"], args.max_slowdown)
+        try:
+            failures = _regressions(output["workloads"], args.max_slowdown)
+        except ValueError as error:
+            output["timing_error"] = str(error)
+            _write_output(output, args.output)
+            raise SystemExit(1) from error
         output["performance_gate"] = {
             "max_slowdown": args.max_slowdown,
+            "comparison": "median of matched current/before batch ratios",
             "passed": not failures,
             "regressions": failures,
         }

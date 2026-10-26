@@ -1,0 +1,1223 @@
+{
+  "scope": "Only the unstd.serde._json_native C extension and adjacent headers are instrumented. CPython, orjson, msgspec and other third-party libraries are not rebuilt with sanitizers.",
+  "toolchain": "Apple clang version 21.0.0 (clang-2100.3.34.2)\nTarget: arm64-apple-darwin25.6.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin",
+  "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+  "campaign": "ASan and UBSan, existing complete serde contracts, focused native guarantee tests, deterministic bounded stress and repeated-call allocation checks",
+  "runtime_options": {
+    "ASAN_OPTIONS": "detect_leaks=0:abort_on_error=1:strict_string_checks=1:detect_stack_use_after_return=0:quarantine_size_mb=64",
+    "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1:report_error_type=1",
+    "PYTHONMALLOC": "malloc",
+    "UNSTD_NATIVE_SANITIZERS": "1",
+    "PYTHONHASHSEED": "0"
+  },
+  "leak_scope": "Process-lifetime leak detection is disabled, matching CI. Address/undefined-behavior diagnostics are fatal. Operation-local retention is measured separately with tracemalloc after warmup.",
+  "audit_scripts": {
+    "/tmp/jsonx_safety_prepare.py": "053433cbbeaaa2eefb128e4ee25434f58d2d3d4d10e6a3ee9470eeb2d7d8034b",
+    "/tmp/jsonx_safety_stress.py": "b17673473b5e54099e66316cb75745b8c339a6bfc210b564d208bb20f75c4b60",
+    "/tmp/jsonx_safety_run.py": "c63ed17047eba0c1cd166024ac6798811abb58d1ba247b539a5f0565e63ff63d"
+  },
+  "builds": [
+    {
+      "version": "312",
+      "tree": "/tmp/jsonx-safety-audit/py312-tree",
+      "python": "/tmp/jsonx-safety-audit/py312-venv/bin/python",
+      "runtime": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/21/lib/darwin/libclang_rt.asan_osx_dynamic.dylib",
+      "command": [
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang",
+        "-isysroot",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk",
+        "-bundle",
+        "-undefined",
+        "dynamic_lookup",
+        "-fPIC",
+        "-O1",
+        "-g",
+        "-Wall",
+        "-Wextra",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-fno-sanitize-recover=all",
+        "-I/Users/griffinstrier/.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/include/python3.12",
+        "/tmp/jsonx-safety-audit/py312-tree/native/serde/src/_json_native.c",
+        "-o",
+        "/tmp/jsonx-safety-audit/py312-tree/src/unstd/serde/_json_native.cpython-312-darwin.so"
+      ],
+      "runner": "/tmp/jsonx-safety-audit/py312-tree/run_audit_tests.py",
+      "python_version": "Python 3.12.13",
+      "source_sha256": {
+        "native/serde/src/_json_decode_native.h": "d46206a3c04858ac3739d2590b4c1a02d23a2801cbec3387fa4893d28e56624f",
+        "native/serde/src/_json_encode_native.h": "d9cd56b16da3dfd72b36fa8ae00f7b82e4be7cc37629ef129dc0b3a9c9ac6c1e",
+        "native/serde/src/_json_lines_native.h": "b2f9b71876976199b3a02b53572672f581438e237353a92205211fbd27ea74d0",
+        "native/serde/src/_json_native.c": "ee7e575108f071027ad8d3af08d3322ee1a77997a62822aca1a29e37c749e19b",
+        "native/serde/src/_json_text_native.h": "937fe2288c702b38b752e4c7b4a09a91239bba86d2907b0f89c24f99a13d3e92",
+        "src/unstd/serde/_internal/json_encode.py": "70c0e9b9a2d3ed721573b097204c76b335d2d73e7655b2e64b2ea04e7d10de6d",
+        "src/unstd/serde/jsonx.py": "ddb3b64c6555402da2a979bce6fc75019ccf6d701653aea06ec5f985cd6fec71"
+      },
+      "loaded_library_sha256": "a1e46cfdea5f73352193087a61c3cd78bd6e2ef19a4ac3a5c50e82da24561d19",
+      "instrumented_address": true,
+      "instrumented_undefined": true,
+      "retained_test_sha256": {
+        "tests/suites/product/serde/parity/test_jsonx_native_memory.py": "3947a43856acf3f5c67b8ddd35cfde2a30fa00d9d965726b708744281cbefc3b",
+        "tests/suites/product/serde/parity/test_jsonx_encode_guarantees.py": "bd59f0a0bbf74f8caeaa00f3e3fa07020d504fef18fcb2064b65d95b7f83b5ec"
+      }
+    },
+    {
+      "version": "313",
+      "tree": "/tmp/jsonx-safety-audit/py313-tree",
+      "python": "/tmp/jsonx-safety-audit/py313-venv/bin/python",
+      "runtime": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/21/lib/darwin/libclang_rt.asan_osx_dynamic.dylib",
+      "command": [
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang",
+        "-isysroot",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk",
+        "-bundle",
+        "-undefined",
+        "dynamic_lookup",
+        "-fPIC",
+        "-O1",
+        "-g",
+        "-Wall",
+        "-Wextra",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-fno-sanitize-recover=all",
+        "-I/Users/griffinstrier/.local/share/uv/python/cpython-3.13.16-macos-aarch64-none/include/python3.13",
+        "/tmp/jsonx-safety-audit/py313-tree/native/serde/src/_json_native.c",
+        "-o",
+        "/tmp/jsonx-safety-audit/py313-tree/src/unstd/serde/_json_native.cpython-313-darwin.so"
+      ],
+      "runner": "/tmp/jsonx-safety-audit/py313-tree/run_audit_tests.py",
+      "python_version": "Python 3.13.16",
+      "source_sha256": {
+        "native/serde/src/_json_decode_native.h": "d46206a3c04858ac3739d2590b4c1a02d23a2801cbec3387fa4893d28e56624f",
+        "native/serde/src/_json_encode_native.h": "d9cd56b16da3dfd72b36fa8ae00f7b82e4be7cc37629ef129dc0b3a9c9ac6c1e",
+        "native/serde/src/_json_lines_native.h": "b2f9b71876976199b3a02b53572672f581438e237353a92205211fbd27ea74d0",
+        "native/serde/src/_json_native.c": "ee7e575108f071027ad8d3af08d3322ee1a77997a62822aca1a29e37c749e19b",
+        "native/serde/src/_json_text_native.h": "937fe2288c702b38b752e4c7b4a09a91239bba86d2907b0f89c24f99a13d3e92",
+        "src/unstd/serde/_internal/json_encode.py": "70c0e9b9a2d3ed721573b097204c76b335d2d73e7655b2e64b2ea04e7d10de6d",
+        "src/unstd/serde/jsonx.py": "ddb3b64c6555402da2a979bce6fc75019ccf6d701653aea06ec5f985cd6fec71"
+      },
+      "loaded_library_sha256": "7443d8f0b2fe08664cace88b1ad371715ebad8ffd7cdbc9d5a76715378cfcc03",
+      "instrumented_address": true,
+      "instrumented_undefined": true,
+      "retained_test_sha256": {
+        "tests/suites/product/serde/parity/test_jsonx_native_memory.py": "3947a43856acf3f5c67b8ddd35cfde2a30fa00d9d965726b708744281cbefc3b",
+        "tests/suites/product/serde/parity/test_jsonx_encode_guarantees.py": "bd59f0a0bbf74f8caeaa00f3e3fa07020d504fef18fcb2064b65d95b7f83b5ec"
+      }
+    },
+    {
+      "version": "314",
+      "tree": "/tmp/jsonx-safety-audit/py314-tree",
+      "python": "/tmp/jsonx-safety-audit/py314-venv/bin/python",
+      "runtime": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/21/lib/darwin/libclang_rt.asan_osx_dynamic.dylib",
+      "command": [
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang",
+        "-isysroot",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk",
+        "-bundle",
+        "-undefined",
+        "dynamic_lookup",
+        "-fPIC",
+        "-O1",
+        "-g",
+        "-Wall",
+        "-Wextra",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-fno-sanitize-recover=all",
+        "-I/Users/griffinstrier/.local/share/uv/python/cpython-3.14.8-macos-aarch64-none/include/python3.14",
+        "/tmp/jsonx-safety-audit/py314-tree/native/serde/src/_json_native.c",
+        "-o",
+        "/tmp/jsonx-safety-audit/py314-tree/src/unstd/serde/_json_native.cpython-314-darwin.so"
+      ],
+      "runner": "/tmp/jsonx-safety-audit/py314-tree/run_audit_tests.py",
+      "python_version": "Python 3.14.8",
+      "source_sha256": {
+        "native/serde/src/_json_decode_native.h": "d46206a3c04858ac3739d2590b4c1a02d23a2801cbec3387fa4893d28e56624f",
+        "native/serde/src/_json_encode_native.h": "d9cd56b16da3dfd72b36fa8ae00f7b82e4be7cc37629ef129dc0b3a9c9ac6c1e",
+        "native/serde/src/_json_lines_native.h": "b2f9b71876976199b3a02b53572672f581438e237353a92205211fbd27ea74d0",
+        "native/serde/src/_json_native.c": "ee7e575108f071027ad8d3af08d3322ee1a77997a62822aca1a29e37c749e19b",
+        "native/serde/src/_json_text_native.h": "937fe2288c702b38b752e4c7b4a09a91239bba86d2907b0f89c24f99a13d3e92",
+        "src/unstd/serde/_internal/json_encode.py": "70c0e9b9a2d3ed721573b097204c76b335d2d73e7655b2e64b2ea04e7d10de6d",
+        "src/unstd/serde/jsonx.py": "ddb3b64c6555402da2a979bce6fc75019ccf6d701653aea06ec5f985cd6fec71"
+      },
+      "loaded_library_sha256": "29f75c2c638f05d48179fe51dee62a8305cf07aefb9e2156630c3914ff78d22e",
+      "instrumented_address": true,
+      "instrumented_undefined": true,
+      "retained_test_sha256": {
+        "tests/suites/product/serde/parity/test_jsonx_native_memory.py": "3947a43856acf3f5c67b8ddd35cfde2a30fa00d9d965726b708744281cbefc3b",
+        "tests/suites/product/serde/parity/test_jsonx_encode_guarantees.py": "bd59f0a0bbf74f8caeaa00f3e3fa07020d504fef18fcb2064b65d95b7f83b5ec"
+      }
+    }
+  ],
+  "runs": [
+    {
+      "python_abi": "312",
+      "label": "pytest",
+      "command": [
+        "/tmp/jsonx-safety-audit/py312-venv/bin/python",
+        "/tmp/jsonx-safety-audit/py312-tree/run_audit_tests.py",
+        "tests/suites/product/serde",
+        "-q",
+        "--junitxml=/tmp/jsonx-safety-audit/py312-pytest.xml"
+      ],
+      "cwd": "/tmp/jsonx-safety-audit/py312-tree",
+      "environment_overrides": {},
+      "exit_code": 0,
+      "elapsed_seconds": 59.675,
+      "stdout": "........................................................................ [  2%]\n........................................................................ [  4%]\n........................................................................ [  7%]\n........................................................................ [  9%]\n........................................................................ [ 12%]\n........................................................................ [ 14%]\n........................................................................ [ 16%]\n........................................................................ [ 19%]\n........................................................................ [ 21%]\n........................................................................ [ 24%]\n........................................................................ [ 26%]\n........................................................................ [ 28%]\n........................................................................ [ 31%]\n........................................................................ [ 33%]\n........................................................................ [ 36%]\n........................................................................ [ 38%]\n........................................................................ [ 41%]\n........................................................................ [ 43%]\n........................................................................ [ 45%]\n........................................................................ [ 48%]\n........................................................................ [ 50%]\n........................................................................ [ 53%]\n........................................................................ [ 55%]\n........................................................................ [ 57%]\n........................................................................ [ 60%]\n........................................................................ [ 62%]\n........................................................................ [ 65%]\n........................................................................ [ 67%]\n........................................................................ [ 70%]\n........................................................................ [ 72%]\n........................................................................ [ 74%]\n..........................................ssssssssssssssssssssssssssssss [ 77%]\nsssssssssssss..........................s................................ [ 79%]\n........................................................................ [ 82%]\n........................................................................ [ 84%]\n........................................................................ [ 86%]\n........................................................................ [ 89%]\n........................................................................ [ 91%]\n........................................................................ [ 94%]\n........................................................................ [ 96%]\n........................................................................ [ 99%]\n.............................                                            [100%]\n=============================== warnings summary ===============================\n../../../../Users/griffinstrier/Billy-Company/unstd/.local/deep-validation/py312/lib/python3.12/site-packages/_pytest/pathlib.py:95\n  /Users/griffinstrier/Billy-Company/unstd/.local/deep-validation/py312/lib/python3.12/site-packages/_pytest/pathlib.py:95: PytestWarning: (rm_rf) error removing /private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/pytest-of-griffinstrier/garbage-3ace8ef1-b594-4cf8-91c0-a9d8cfd7cb8c/test_failed_attach_keeps_a_for0/pool\n  <class 'OSError'>: [Errno 66] Directory not empty: '/private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/pytest-of-griffinstrier/garbage-3ace8ef1-b594-4cf8-91c0-a9d8cfd7cb8c/test_failed_attach_keeps_a_for0/pool'\n    warnings.warn(\n\n../../../../Users/griffinstrier/Billy-Company/unstd/.local/deep-validation/py312/lib/python3.12/site-packages/_pytest/pathlib.py:95\n  /Users/griffinstrier/Billy-Company/unstd/.local/deep-validation/py312/lib/python3.12/site-packages/_pytest/pathlib.py:95: PytestWarning: (rm_rf) error removing /private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/pytest-of-griffinstrier/garbage-3ace8ef1-b594-4cf8-91c0-a9d8cfd7cb8c/test_failed_attach_keeps_a_for0\n  <class 'OSError'>: [Errno 66] Directory not empty: '/private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/pytest-of-griffinstrier/garbage-3ace8ef1-b594-4cf8-91c0-a9d8cfd7cb8c/test_failed_attach_keeps_a_for0'\n    warnings.warn(\n\n../../../../Users/griffinstrier/Billy-Company/unstd/.local/deep-validation/py312/lib/python3.12/site-packages/_pytest/pathlib.py:95\n  /Users/griffinstrier/Billy-Company/unstd/.local/deep-validation/py312/lib/python3.12/site-packages/_pytest/pathlib.py:95: PytestWarning: (rm_rf) error removing /private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/pytest-of-griffinstrier/garbage-3ace8ef1-b594-4cf8-91c0-a9d8cfd7cb8c\n  <class 'OSError'>: [Errno 66] Directory not empty: '/private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/pytest-of-griffinstrier/garbage-3ace8ef1-b594-4cf8-91c0-a9d8cfd7cb8c'\n    warnings.warn(\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n2937 passed, 44 skipped, 3 warnings in 51.70s\n",
+      "stderr": "",
+      "junit_counts": {
+        "tests": 2981,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 44
+      }
+    },
+    {
+      "python_abi": "312",
+      "label": "stress",
+      "command": [
+        "/tmp/jsonx-safety-audit/py312-venv/bin/python",
+        "/tmp/jsonx_safety_stress.py",
+        "/tmp/jsonx-safety-audit/py312-tree"
+      ],
+      "cwd": "/tmp/jsonx-safety-audit/py312-tree",
+      "environment_overrides": {},
+      "exit_code": 0,
+      "elapsed_seconds": 2.198,
+      "stdout": "{\"python\": \"3.12.13\", \"counts\": {\"encoding\": 552, \"unicode\": 138, \"decoding\": 56, \"floats\": 187641, \"wide\": 9}, \"native\": \"/private/tmp/jsonx-safety-audit/py312-tree/src/unstd/serde/_json_native.cpython-312-darwin.so\", \"allocator\": \"malloc\", \"max_float_token_length\": 24, \"retention\": {\"ascii\": {\"initial\": 0, \"final\": 400, \"peak\": 383311, \"samples\": [128, 192, 192, 192, 192, 224, 224, 224, 224, 288, 320, 352], \"rss_start\": 379633664, \"rss_end\": 379633664}, \"floats\": {\"initial\": 0, \"final\": 400, \"peak\": 151236, \"samples\": [128, 192, 192, 192, 192, 224, 224, 224, 224, 288, 320, 352], \"rss_start\": 379633664, \"rss_end\": 398295040}}}\n",
+      "stderr": "",
+      "evidence": {
+        "python": "3.12.13",
+        "counts": {
+          "encoding": 552,
+          "unicode": 138,
+          "decoding": 56,
+          "floats": 187641,
+          "wide": 9
+        },
+        "native": "/private/tmp/jsonx-safety-audit/py312-tree/src/unstd/serde/_json_native.cpython-312-darwin.so",
+        "allocator": "malloc",
+        "max_float_token_length": 24,
+        "retention": {
+          "ascii": {
+            "initial": 0,
+            "final": 400,
+            "peak": 383311,
+            "samples": [
+              128,
+              192,
+              192,
+              192,
+              192,
+              224,
+              224,
+              224,
+              224,
+              288,
+              320,
+              352
+            ],
+            "rss_start": 379633664,
+            "rss_end": 379633664
+          },
+          "floats": {
+            "initial": 0,
+            "final": 400,
+            "peak": 151236,
+            "samples": [
+              128,
+              192,
+              192,
+              192,
+              192,
+              224,
+              224,
+              224,
+              224,
+              288,
+              320,
+              352
+            ],
+            "rss_start": 379633664,
+            "rss_end": 398295040
+          }
+        }
+      }
+    },
+    {
+      "python_abi": "313",
+      "label": "pytest",
+      "command": [
+        "/tmp/jsonx-safety-audit/py313-venv/bin/python",
+        "/tmp/jsonx-safety-audit/py313-tree/run_audit_tests.py",
+        "tests/suites/product/serde",
+        "-q",
+        "--junitxml=/tmp/jsonx-safety-audit/py313-pytest.xml"
+      ],
+      "cwd": "/tmp/jsonx-safety-audit/py313-tree",
+      "environment_overrides": {},
+      "exit_code": 0,
+      "elapsed_seconds": 79.804,
+      "stdout": "........................................................................ [  2%]\n........................................................................ [  4%]\n........................................................................ [  7%]\n........................................................................ [  9%]\n........................................................................ [ 12%]\n........................................................................ [ 14%]\n........................................................................ [ 16%]\n........................................................................ [ 19%]\n........................................................................ [ 21%]\n........................................................................ [ 24%]\n........................................................................ [ 26%]\n........................................................................ [ 28%]\n........................................................................ [ 31%]\n........................................................................ [ 33%]\n........................................................................ [ 36%]\n........................................................................ [ 38%]\n........................................................................ [ 41%]\n........................................................................ [ 43%]\n........................................................................ [ 45%]\n........................................................................ [ 48%]\n........................................................................ [ 50%]\n........................................................................ [ 53%]\n........................................................................ [ 55%]\n.................................................s...................... [ 57%]\n........................................................................ [ 60%]\n........................................................................ [ 62%]\n........................................................................ [ 65%]\n........................................................................ [ 67%]\n........................................................................ [ 70%]\n........................................................................ [ 72%]\n........................................................................ [ 74%]\n..........................................ssssssssssssssssssssssssssssss [ 77%]\nsssssssssssss...............sssssssssss................................. [ 79%]\n........................................................................ [ 82%]\n........................................................................ [ 84%]\n........................................................................ [ 86%]\n........................................................................ [ 89%]\n........................................................................ [ 91%]\n........................................................................ [ 94%]\n........................................................................ [ 96%]\n........................................................................ [ 99%]\n.............................                                            [100%]\n=============================== warnings summary ===============================\n../../../../Users/griffinstrier/Billy-Company/unstd/.local/deep-validation/py313/lib/python3.13/site-packages/_pytest/pathlib.py:95\n  /Users/griffinstrier/Billy-Company/unstd/.local/deep-validation/py313/lib/python3.13/site-packages/_pytest/pathlib.py:95: PytestWarning: (rm_rf) error removing /private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/pytest-of-griffinstrier/garbage-878a9faa-1ede-4783-8eaa-495a4c06384a/test_failed_attach_keeps_a_for0/pool\n  <class 'OSError'>: [Errno 66] Directory not empty: '/private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/pytest-of-griffinstrier/garbage-878a9faa-1ede-4783-8eaa-495a4c06384a/test_failed_attach_keeps_a_for0/pool'\n    warnings.warn(\n\n../../../../Users/griffinstrier/Billy-Company/unstd/.local/deep-validation/py313/lib/python3.13/site-packages/_pytest/pathlib.py:95\n  /Users/griffinstrier/Billy-Company/unstd/.local/deep-validation/py313/lib/python3.13/site-packages/_pytest/pathlib.py:95: PytestWarning: (rm_rf) error removing /private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/pytest-of-griffinstrier/garbage-878a9faa-1ede-4783-8eaa-495a4c06384a/test_failed_attach_keeps_a_for0\n  <class 'OSError'>: [Errno 66] Directory not empty: '/private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/pytest-of-griffinstrier/garbage-878a9faa-1ede-4783-8eaa-495a4c06384a/test_failed_attach_keeps_a_for0'\n    warnings.warn(\n\n../../../../Users/griffinstrier/Billy-Company/unstd/.local/deep-validation/py313/lib/python3.13/site-packages/_pytest/pathlib.py:95\n  /Users/griffinstrier/Billy-Company/unstd/.local/deep-validation/py313/lib/python3.13/site-packages/_pytest/pathlib.py:95: PytestWarning: (rm_rf) error removing /private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/pytest-of-griffinstrier/garbage-878a9faa-1ede-4783-8eaa-495a4c06384a\n  <class 'OSError'>: [Errno 66] Directory not empty: '/private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/pytest-of-griffinstrier/garbage-878a9faa-1ede-4783-8eaa-495a4c06384a'\n    warnings.warn(\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n2926 passed, 55 skipped, 3 warnings in 66.63s (0:01:06)\n",
+      "stderr": "",
+      "junit_counts": {
+        "tests": 2981,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 55
+      }
+    },
+    {
+      "python_abi": "313",
+      "label": "stress",
+      "command": [
+        "/tmp/jsonx-safety-audit/py313-venv/bin/python",
+        "/tmp/jsonx_safety_stress.py",
+        "/tmp/jsonx-safety-audit/py313-tree"
+      ],
+      "cwd": "/tmp/jsonx-safety-audit/py313-tree",
+      "environment_overrides": {},
+      "exit_code": 0,
+      "elapsed_seconds": 3.504,
+      "stdout": "{\"python\": \"3.13.16\", \"counts\": {\"encoding\": 552, \"unicode\": 138, \"decoding\": 56, \"floats\": 187641, \"wide\": 9}, \"native\": \"/private/tmp/jsonx-safety-audit/py313-tree/src/unstd/serde/_json_native.cpython-313-darwin.so\", \"allocator\": \"malloc\", \"max_float_token_length\": 24, \"retention\": {\"ascii\": {\"initial\": 0, \"final\": 400, \"peak\": 383311, \"samples\": [128, 192, 192, 192, 192, 224, 224, 224, 224, 288, 320, 352], \"rss_start\": 368263168, \"rss_end\": 368263168}, \"floats\": {\"initial\": 0, \"final\": 400, \"peak\": 21536, \"samples\": [128, 192, 192, 192, 192, 224, 224, 224, 224, 288, 320, 352], \"rss_start\": 368263168, \"rss_end\": 394657792}}}\n",
+      "stderr": "",
+      "evidence": {
+        "python": "3.13.16",
+        "counts": {
+          "encoding": 552,
+          "unicode": 138,
+          "decoding": 56,
+          "floats": 187641,
+          "wide": 9
+        },
+        "native": "/private/tmp/jsonx-safety-audit/py313-tree/src/unstd/serde/_json_native.cpython-313-darwin.so",
+        "allocator": "malloc",
+        "max_float_token_length": 24,
+        "retention": {
+          "ascii": {
+            "initial": 0,
+            "final": 400,
+            "peak": 383311,
+            "samples": [
+              128,
+              192,
+              192,
+              192,
+              192,
+              224,
+              224,
+              224,
+              224,
+              288,
+              320,
+              352
+            ],
+            "rss_start": 368263168,
+            "rss_end": 368263168
+          },
+          "floats": {
+            "initial": 0,
+            "final": 400,
+            "peak": 21536,
+            "samples": [
+              128,
+              192,
+              192,
+              192,
+              192,
+              224,
+              224,
+              224,
+              224,
+              288,
+              320,
+              352
+            ],
+            "rss_start": 368263168,
+            "rss_end": 394657792
+          }
+        }
+      }
+    },
+    {
+      "python_abi": "314",
+      "label": "pytest",
+      "command": [
+        "/tmp/jsonx-safety-audit/py314-venv/bin/python",
+        "/tmp/jsonx-safety-audit/py314-tree/run_audit_tests.py",
+        "tests/suites/product/serde",
+        "-q",
+        "--junitxml=/tmp/jsonx-safety-audit/py314-pytest.xml"
+      ],
+      "cwd": "/tmp/jsonx-safety-audit/py314-tree",
+      "environment_overrides": {},
+      "exit_code": 0,
+      "elapsed_seconds": 103.247,
+      "stdout": "........................................................................ [  2%]\n........................................................................ [  4%]\n........................................................................ [  7%]\n........................................................................ [  9%]\n........................................................................ [ 12%]\n........................................................................ [ 14%]\n........................................................................ [ 16%]\n........................................................................ [ 19%]\n........................................................................ [ 21%]\n........................................................................ [ 24%]\n........................................................................ [ 26%]\n........................................................................ [ 28%]\n........................................................................ [ 31%]\n........................................................................ [ 33%]\n........................................................................ [ 36%]\n........................................................................ [ 38%]\n........................................................................ [ 41%]\n........................................................................ [ 43%]\n........................................................................ [ 45%]\n........................................................................ [ 48%]\n........................................................................ [ 50%]\n........................................................................ [ 53%]\n........................................................................ [ 55%]\n.................................................s...................... [ 57%]\n........................................................................ [ 60%]\n........................................................................ [ 62%]\n........................................................................ [ 65%]\n........................................................................ [ 67%]\n........................................................................ [ 70%]\n........................................................................ [ 72%]\n........................................................................ [ 74%]\n........................................................................ [ 77%]\n............................sssssssssss................................. [ 79%]\n........................................................................ [ 82%]\n........................................................................ [ 84%]\n........................................................................ [ 86%]\n........................................................................ [ 89%]\n........................................................................ [ 91%]\n........................................................................ [ 94%]\n........................................................................ [ 96%]\n........................................................................ [ 99%]\n.............................                                            [100%]\n=============================== warnings summary ===============================\n../../../../Users/griffinstrier/Billy-Company/unstd/.local/deep-validation/py314/lib/python3.14/site-packages/_pytest/pathlib.py:95\n  /Users/griffinstrier/Billy-Company/unstd/.local/deep-validation/py314/lib/python3.14/site-packages/_pytest/pathlib.py:95: PytestWarning: (rm_rf) error removing /private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/pytest-of-griffinstrier/garbage-2cdc6fa2-30f5-4e89-9b1b-52cb747e34fc/test_failed_attach_keeps_a_for0/pool\n  <class 'OSError'>: [Errno 66] Directory not empty: '/private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/pytest-of-griffinstrier/garbage-2cdc6fa2-30f5-4e89-9b1b-52cb747e34fc/test_failed_attach_keeps_a_for0/pool'\n    warnings.warn(\n\n../../../../Users/griffinstrier/Billy-Company/unstd/.local/deep-validation/py314/lib/python3.14/site-packages/_pytest/pathlib.py:95\n  /Users/griffinstrier/Billy-Company/unstd/.local/deep-validation/py314/lib/python3.14/site-packages/_pytest/pathlib.py:95: PytestWarning: (rm_rf) error removing /private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/pytest-of-griffinstrier/garbage-2cdc6fa2-30f5-4e89-9b1b-52cb747e34fc/test_failed_attach_keeps_a_for0\n  <class 'OSError'>: [Errno 66] Directory not empty: '/private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/pytest-of-griffinstrier/garbage-2cdc6fa2-30f5-4e89-9b1b-52cb747e34fc/test_failed_attach_keeps_a_for0'\n    warnings.warn(\n\n../../../../Users/griffinstrier/Billy-Company/unstd/.local/deep-validation/py314/lib/python3.14/site-packages/_pytest/pathlib.py:95\n  /Users/griffinstrier/Billy-Company/unstd/.local/deep-validation/py314/lib/python3.14/site-packages/_pytest/pathlib.py:95: PytestWarning: (rm_rf) error removing /private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/pytest-of-griffinstrier/garbage-2cdc6fa2-30f5-4e89-9b1b-52cb747e34fc\n  <class 'OSError'>: [Errno 66] Directory not empty: '/private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/pytest-of-griffinstrier/garbage-2cdc6fa2-30f5-4e89-9b1b-52cb747e34fc'\n    warnings.warn(\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n2969 passed, 12 skipped, 3 warnings in 80.64s (0:01:20)\n",
+      "stderr": "",
+      "junit_counts": {
+        "tests": 2981,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 12
+      }
+    },
+    {
+      "python_abi": "314",
+      "label": "stress",
+      "command": [
+        "/tmp/jsonx-safety-audit/py314-venv/bin/python",
+        "/tmp/jsonx_safety_stress.py",
+        "/tmp/jsonx-safety-audit/py314-tree"
+      ],
+      "cwd": "/tmp/jsonx-safety-audit/py314-tree",
+      "environment_overrides": {},
+      "exit_code": 0,
+      "elapsed_seconds": 8.053,
+      "stdout": "{\"python\": \"3.14.8\", \"counts\": {\"encoding\": 552, \"unicode\": 138, \"decoding\": 56, \"floats\": 187641, \"wide\": 9}, \"native\": \"/private/tmp/jsonx-safety-audit/py314-tree/src/unstd/serde/_json_native.cpython-314-darwin.so\", \"allocator\": \"malloc\", \"max_float_token_length\": 24, \"retention\": {\"ascii\": {\"initial\": 0, \"final\": 480, \"peak\": 383399, \"samples\": [128, 192, 192, 192, 192, 224, 224, 224, 224, 288, 320, 352], \"rss_start\": 361218048, \"rss_end\": 361218048}, \"floats\": {\"initial\": 0, \"final\": 480, \"peak\": 21840, \"samples\": [128, 192, 192, 192, 192, 224, 224, 224, 224, 288, 320, 352], \"rss_start\": 361218048, \"rss_end\": 385466368}}}\n",
+      "stderr": "",
+      "evidence": {
+        "python": "3.14.8",
+        "counts": {
+          "encoding": 552,
+          "unicode": 138,
+          "decoding": 56,
+          "floats": 187641,
+          "wide": 9
+        },
+        "native": "/private/tmp/jsonx-safety-audit/py314-tree/src/unstd/serde/_json_native.cpython-314-darwin.so",
+        "allocator": "malloc",
+        "max_float_token_length": 24,
+        "retention": {
+          "ascii": {
+            "initial": 0,
+            "final": 480,
+            "peak": 383399,
+            "samples": [
+              128,
+              192,
+              192,
+              192,
+              192,
+              224,
+              224,
+              224,
+              224,
+              288,
+              320,
+              352
+            ],
+            "rss_start": 361218048,
+            "rss_end": 361218048
+          },
+          "floats": {
+            "initial": 0,
+            "final": 480,
+            "peak": 21840,
+            "samples": [
+              128,
+              192,
+              192,
+              192,
+              192,
+              224,
+              224,
+              224,
+              224,
+              288,
+              320,
+              352
+            ],
+            "rss_start": 361218048,
+            "rss_end": 385466368
+          }
+        }
+      }
+    },
+    {
+      "python_abi": "314",
+      "label": "stress-stack-after-return",
+      "command": [
+        "/tmp/jsonx-safety-audit/py314-venv/bin/python",
+        "/tmp/jsonx_safety_stress.py",
+        "/tmp/jsonx-safety-audit/py314-tree"
+      ],
+      "cwd": "/tmp/jsonx-safety-audit/py314-tree",
+      "environment_overrides": {
+        "ASAN_OPTIONS": "detect_leaks=0:abort_on_error=1:strict_string_checks=1:detect_stack_use_after_return=1:quarantine_size_mb=64"
+      },
+      "exit_code": 0,
+      "elapsed_seconds": 11.938,
+      "stdout": "{\"python\": \"3.14.8\", \"counts\": {\"encoding\": 552, \"unicode\": 138, \"decoding\": 56, \"floats\": 187641, \"wide\": 9}, \"native\": \"/private/tmp/jsonx-safety-audit/py314-tree/src/unstd/serde/_json_native.cpython-314-darwin.so\", \"allocator\": \"malloc\", \"max_float_token_length\": 24, \"retention\": {\"ascii\": {\"initial\": 0, \"final\": 480, \"peak\": 383399, \"samples\": [128, 192, 192, 192, 192, 224, 224, 224, 224, 288, 320, 352], \"rss_start\": 361431040, \"rss_end\": 361431040}, \"floats\": {\"initial\": 0, \"final\": 480, \"peak\": 21840, \"samples\": [128, 192, 192, 192, 192, 224, 224, 224, 224, 288, 320, 352], \"rss_start\": 361431040, \"rss_end\": 386154496}}}\n",
+      "stderr": "",
+      "evidence": {
+        "python": "3.14.8",
+        "counts": {
+          "encoding": 552,
+          "unicode": 138,
+          "decoding": 56,
+          "floats": 187641,
+          "wide": 9
+        },
+        "native": "/private/tmp/jsonx-safety-audit/py314-tree/src/unstd/serde/_json_native.cpython-314-darwin.so",
+        "allocator": "malloc",
+        "max_float_token_length": 24,
+        "retention": {
+          "ascii": {
+            "initial": 0,
+            "final": 480,
+            "peak": 383399,
+            "samples": [
+              128,
+              192,
+              192,
+              192,
+              192,
+              224,
+              224,
+              224,
+              224,
+              288,
+              320,
+              352
+            ],
+            "rss_start": 361431040,
+            "rss_end": 361431040
+          },
+          "floats": {
+            "initial": 0,
+            "final": 480,
+            "peak": 21840,
+            "samples": [
+              128,
+              192,
+              192,
+              192,
+              192,
+              224,
+              224,
+              224,
+              224,
+              288,
+              320,
+              352
+            ],
+            "rss_start": 361431040,
+            "rss_end": 386154496
+          }
+        }
+      }
+    },
+    {
+      "python_abi": "312",
+      "label": "retained-memory",
+      "command": [
+        "/tmp/jsonx-safety-audit/py312-venv/bin/python",
+        "/tmp/jsonx-safety-audit/py312-tree/run_audit_tests.py",
+        "tests/suites/product/serde/parity/test_jsonx_native_memory.py",
+        "-q",
+        "--junitxml=/tmp/jsonx-safety-audit/py312-retained-memory.xml"
+      ],
+      "cwd": "/tmp/jsonx-safety-audit/py312-tree",
+      "environment_overrides": {},
+      "exit_code": 0,
+      "elapsed_seconds": 12.432,
+      "stdout": "........................................................................ [ 63%]\n.........................................                                [100%]\n113 passed, 3 deselected in 8.16s\n",
+      "stderr": "",
+      "junit_counts": {
+        "tests": 113,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "retention": {}
+    },
+    {
+      "python_abi": "312",
+      "label": "retained-resources",
+      "command": [
+        "/tmp/jsonx-safety-audit/py312-venv/bin/python",
+        "/tmp/jsonx-safety-audit/py312-tree/run_audit_tests.py",
+        "tests/suites/product/serde/parity/test_jsonx_native_memory.py",
+        "-q",
+        "-m",
+        "resources",
+        "--junitxml=/tmp/jsonx-safety-audit/py312-retained-resources.xml"
+      ],
+      "cwd": "/tmp/jsonx-safety-audit/py312-tree",
+      "environment_overrides": {},
+      "exit_code": 0,
+      "elapsed_seconds": 7.395,
+      "stdout": "...                                                                      [100%]\n3 passed, 113 deselected in 3.77s\n",
+      "stderr": "",
+      "junit_counts": {
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "retention": {
+        "ascii_retention": {
+          "initial": 0,
+          "final": 272,
+          "peak": 123414,
+          "samples": [
+            96,
+            160,
+            160,
+            160,
+            160,
+            192,
+            192,
+            192,
+            192,
+            256,
+            256,
+            256
+          ]
+        },
+        "float_retention": {
+          "initial": 0,
+          "final": 272,
+          "peak": 146731,
+          "samples": [
+            96,
+            160,
+            160,
+            160,
+            160,
+            192,
+            192,
+            192,
+            192,
+            256,
+            256,
+            256
+          ]
+        },
+        "declined_wide_retention": {
+          "initial": 0,
+          "final": 272,
+          "peak": 400,
+          "samples": [
+            96,
+            128,
+            160,
+            160,
+            160,
+            192,
+            192,
+            192,
+            192,
+            256,
+            256,
+            256
+          ]
+        }
+      }
+    },
+    {
+      "python_abi": "313",
+      "label": "retained-memory",
+      "command": [
+        "/tmp/jsonx-safety-audit/py313-venv/bin/python",
+        "/tmp/jsonx-safety-audit/py313-tree/run_audit_tests.py",
+        "tests/suites/product/serde/parity/test_jsonx_native_memory.py",
+        "-q",
+        "--junitxml=/tmp/jsonx-safety-audit/py313-retained-memory.xml"
+      ],
+      "cwd": "/tmp/jsonx-safety-audit/py313-tree",
+      "environment_overrides": {},
+      "exit_code": 0,
+      "elapsed_seconds": 6.297,
+      "stdout": "........................................................................ [ 63%]\n.........................................                                [100%]\n113 passed, 3 deselected in 4.45s\n",
+      "stderr": "",
+      "junit_counts": {
+        "tests": 113,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "retention": {}
+    },
+    {
+      "python_abi": "313",
+      "label": "retained-resources",
+      "command": [
+        "/tmp/jsonx-safety-audit/py313-venv/bin/python",
+        "/tmp/jsonx-safety-audit/py313-tree/run_audit_tests.py",
+        "tests/suites/product/serde/parity/test_jsonx_native_memory.py",
+        "-q",
+        "-m",
+        "resources",
+        "--junitxml=/tmp/jsonx-safety-audit/py313-retained-resources.xml"
+      ],
+      "cwd": "/tmp/jsonx-safety-audit/py313-tree",
+      "environment_overrides": {},
+      "exit_code": 0,
+      "elapsed_seconds": 7.15,
+      "stdout": ".s.                                                                      [100%]\n2 passed, 1 skipped, 113 deselected in 3.25s\n",
+      "stderr": "",
+      "junit_counts": {
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 1
+      },
+      "retention": {
+        "ascii_retention": {
+          "initial": 0,
+          "final": 272,
+          "peak": 123414,
+          "samples": [
+            96,
+            160,
+            160,
+            160,
+            160,
+            192,
+            192,
+            192,
+            192,
+            256,
+            256,
+            256
+          ]
+        },
+        "declined_wide_retention": {
+          "initial": 0,
+          "final": 272,
+          "peak": 400,
+          "samples": [
+            96,
+            128,
+            160,
+            160,
+            160,
+            192,
+            192,
+            192,
+            192,
+            256,
+            256,
+            256
+          ]
+        }
+      }
+    },
+    {
+      "python_abi": "314",
+      "label": "retained-memory",
+      "command": [
+        "/tmp/jsonx-safety-audit/py314-venv/bin/python",
+        "/tmp/jsonx-safety-audit/py314-tree/run_audit_tests.py",
+        "tests/suites/product/serde/parity/test_jsonx_native_memory.py",
+        "-q",
+        "--junitxml=/tmp/jsonx-safety-audit/py314-retained-memory.xml"
+      ],
+      "cwd": "/tmp/jsonx-safety-audit/py314-tree",
+      "environment_overrides": {},
+      "exit_code": 0,
+      "elapsed_seconds": 7.439,
+      "stdout": "........................................................................ [ 63%]\n.........................................                                [100%]\n113 passed, 3 deselected in 3.81s\n",
+      "stderr": "",
+      "junit_counts": {
+        "tests": 113,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "retention": {}
+    },
+    {
+      "python_abi": "314",
+      "label": "retained-resources",
+      "command": [
+        "/tmp/jsonx-safety-audit/py314-venv/bin/python",
+        "/tmp/jsonx-safety-audit/py314-tree/run_audit_tests.py",
+        "tests/suites/product/serde/parity/test_jsonx_native_memory.py",
+        "-q",
+        "-m",
+        "resources",
+        "--junitxml=/tmp/jsonx-safety-audit/py314-retained-resources.xml"
+      ],
+      "cwd": "/tmp/jsonx-safety-audit/py314-tree",
+      "environment_overrides": {},
+      "exit_code": 0,
+      "elapsed_seconds": 6.25,
+      "stdout": ".s.                                                                      [100%]\n2 passed, 1 skipped, 113 deselected in 2.36s\n",
+      "stderr": "",
+      "junit_counts": {
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 1
+      },
+      "retention": {
+        "ascii_retention": {
+          "initial": 0,
+          "final": 352,
+          "peak": 123502,
+          "samples": [
+            96,
+            160,
+            160,
+            160,
+            160,
+            192,
+            192,
+            192,
+            192,
+            256,
+            256,
+            256
+          ]
+        },
+        "declined_wide_retention": {
+          "initial": 0,
+          "final": 352,
+          "peak": 486,
+          "samples": [
+            96,
+            160,
+            160,
+            160,
+            160,
+            192,
+            192,
+            192,
+            192,
+            256,
+            256,
+            256
+          ]
+        }
+      }
+    },
+    {
+      "python_abi": "312",
+      "label": "retained-resources-strict",
+      "command": [
+        "/tmp/jsonx-safety-audit/py312-venv/bin/python",
+        "/tmp/jsonx-safety-audit/py312-tree/run_audit_tests.py",
+        "tests/suites/product/serde/parity/test_jsonx_native_memory.py",
+        "-q",
+        "-m",
+        "resources",
+        "--junitxml=/tmp/jsonx-safety-audit/py312-retained-resources-strict.xml"
+      ],
+      "cwd": "/tmp/jsonx-safety-audit/py312-tree",
+      "environment_overrides": {},
+      "exit_code": 0,
+      "elapsed_seconds": 8.165,
+      "stdout": "...                                                                      [100%]\n3 passed, 113 deselected in 5.22s\n",
+      "stderr": "",
+      "junit_counts": {
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "retention": {
+        "ascii_retention": {
+          "initial": 0,
+          "final": 272,
+          "peak": 123414,
+          "samples": [
+            96,
+            160,
+            160,
+            160,
+            160,
+            192,
+            192,
+            192,
+            192,
+            256,
+            256,
+            256
+          ]
+        },
+        "float_retention": {
+          "initial": 0,
+          "final": 272,
+          "peak": 146731,
+          "samples": [
+            96,
+            160,
+            160,
+            160,
+            160,
+            192,
+            192,
+            192,
+            192,
+            256,
+            256,
+            256
+          ]
+        },
+        "declined_wide_retention": {
+          "initial": 0,
+          "final": 272,
+          "peak": 400,
+          "samples": [
+            96,
+            128,
+            160,
+            160,
+            160,
+            192,
+            192,
+            192,
+            192,
+            256,
+            256,
+            256
+          ]
+        }
+      }
+    },
+    {
+      "python_abi": "313",
+      "label": "retained-resources-strict",
+      "command": [
+        "/tmp/jsonx-safety-audit/py313-venv/bin/python",
+        "/tmp/jsonx-safety-audit/py313-tree/run_audit_tests.py",
+        "tests/suites/product/serde/parity/test_jsonx_native_memory.py",
+        "-q",
+        "-m",
+        "resources",
+        "--junitxml=/tmp/jsonx-safety-audit/py313-retained-resources-strict.xml"
+      ],
+      "cwd": "/tmp/jsonx-safety-audit/py313-tree",
+      "environment_overrides": {},
+      "exit_code": 0,
+      "elapsed_seconds": 4.221,
+      "stdout": ".s.                                                                      [100%]\n2 passed, 1 skipped, 113 deselected in 1.79s\n",
+      "stderr": "",
+      "junit_counts": {
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 1
+      },
+      "retention": {
+        "ascii_retention": {
+          "initial": 0,
+          "final": 272,
+          "peak": 123414,
+          "samples": [
+            96,
+            160,
+            160,
+            160,
+            160,
+            192,
+            192,
+            192,
+            192,
+            256,
+            256,
+            256
+          ]
+        },
+        "declined_wide_retention": {
+          "initial": 0,
+          "final": 272,
+          "peak": 400,
+          "samples": [
+            96,
+            128,
+            160,
+            160,
+            160,
+            192,
+            192,
+            192,
+            192,
+            256,
+            256,
+            256
+          ]
+        }
+      }
+    },
+    {
+      "python_abi": "314",
+      "label": "retained-resources-strict",
+      "command": [
+        "/tmp/jsonx-safety-audit/py314-venv/bin/python",
+        "/tmp/jsonx-safety-audit/py314-tree/run_audit_tests.py",
+        "tests/suites/product/serde/parity/test_jsonx_native_memory.py",
+        "-q",
+        "-m",
+        "resources",
+        "--junitxml=/tmp/jsonx-safety-audit/py314-retained-resources-strict.xml"
+      ],
+      "cwd": "/tmp/jsonx-safety-audit/py314-tree",
+      "environment_overrides": {},
+      "exit_code": 0,
+      "elapsed_seconds": 4.703,
+      "stdout": ".s.                                                                      [100%]\n2 passed, 1 skipped, 113 deselected in 2.61s\n",
+      "stderr": "",
+      "junit_counts": {
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 1
+      },
+      "retention": {
+        "ascii_retention": {
+          "initial": 0,
+          "final": 352,
+          "peak": 123502,
+          "samples": [
+            96,
+            160,
+            160,
+            160,
+            160,
+            192,
+            192,
+            192,
+            192,
+            256,
+            256,
+            256
+          ]
+        },
+        "declined_wide_retention": {
+          "initial": 0,
+          "final": 352,
+          "peak": 486,
+          "samples": [
+            96,
+            160,
+            160,
+            160,
+            160,
+            192,
+            192,
+            192,
+            192,
+            256,
+            256,
+            256
+          ]
+        }
+      }
+    },
+    {
+      "python_abi": "312",
+      "label": "focused-stack-after-return",
+      "command": [
+        "/tmp/jsonx-safety-audit/py312-venv/bin/python",
+        "/tmp/jsonx-safety-audit/py312-tree/run_audit_tests.py",
+        "tests/suites/product/serde/parity/test_jsonx_encode_guarantees.py::test_indented_float_bit_patterns_cache_collisions_and_call_isolation",
+        "tests/suites/product/serde/parity/test_jsonx_native_indent.py::test_indented_float_tokens_use_the_stdlib_number_spelling",
+        "tests/suites/product/serde/parity/test_jsonx_native_indent.py::test_indented_float_extremes_and_notation_boundaries",
+        "tests/suites/product/serde/parity/test_jsonx_native_memory.py",
+        "-m",
+        "not perf and not chaos and not concurrency",
+        "-q",
+        "--junitxml=/tmp/jsonx-safety-audit/py312-focused-stack-after-return.xml"
+      ],
+      "cwd": "/tmp/jsonx-safety-audit/py312-tree",
+      "environment_overrides": {
+        "ASAN_OPTIONS": "detect_leaks=0:abort_on_error=1:strict_string_checks=1:detect_stack_use_after_return=1:quarantine_size_mb=64"
+      },
+      "exit_code": 0,
+      "stdout": "........................................................................ [ 56%]\n........................................................                 [100%]\n128 passed in 2.66s\n",
+      "stderr": "",
+      "junit_counts": {
+        "tests": 128,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "properties": {
+        "hypothesis-statistics-tests/suites/product/serde/parity/test_jsonx_native_indent.py::test_indented_float_tokens_use_the_stdlib_number_spelling[False]": "dGVzdHMvc3VpdGVzL3Byb2R1Y3Qvc2VyZGUvcGFyaXR5L3Rlc3RfanNvbnhfbmF0aXZlX2luZGVudC5weTo6dGVzdF9pbmRlbnRlZF9mbG9hdF90b2tlbnNfdXNlX3RoZV9zdGRsaWJfbnVtYmVyX3NwZWxsaW5nW0ZhbHNlXToKCiAgLSBkdXJpbmcgZ2VuZXJhdGUgcGhhc2UgKDAuMTAgc2Vjb25kcyk6CiAgICAtIFR5cGljYWwgcnVudGltZXM6IH4gMC0yIG1zLCBvZiB3aGljaCA8IDFtcyBpbiBkYXRhIGdlbmVyYXRpb24KICAgIC0gMjUgcGFzc2luZywgMCBmYWlsaW5nLCBhbmQgNSBpbnZhbGlkIHRlc3QgY2FzZXMKCiAgLSBTdG9wcGVkIGJlY2F1c2Ugc2V0dGluZ3MubWF4X2V4YW1wbGVzPTI1",
+        "hypothesis-statistics-tests/suites/product/serde/parity/test_jsonx_native_indent.py::test_indented_float_tokens_use_the_stdlib_number_spelling[True]": "dGVzdHMvc3VpdGVzL3Byb2R1Y3Qvc2VyZGUvcGFyaXR5L3Rlc3RfanNvbnhfbmF0aXZlX2luZGVudC5weTo6dGVzdF9pbmRlbnRlZF9mbG9hdF90b2tlbnNfdXNlX3RoZV9zdGRsaWJfbnVtYmVyX3NwZWxsaW5nW1RydWVdOgoKICAtIGR1cmluZyBnZW5lcmF0ZSBwaGFzZSAoMC4wNCBzZWNvbmRzKToKICAgIC0gVHlwaWNhbCBydW50aW1lczogfiAwLTEgbXMsIG9mIHdoaWNoIDwgMW1zIGluIGRhdGEgZ2VuZXJhdGlvbgogICAgLSAyNSBwYXNzaW5nLCAwIGZhaWxpbmcsIGFuZCAxIGludmFsaWQgdGVzdCBjYXNlcwoKICAtIFN0b3BwZWQgYmVjYXVzZSBzZXR0aW5ncy5tYXhfZXhhbXBsZXM9MjU=",
+        "ascii_retention": {
+          "initial": 0,
+          "final": 936,
+          "peak": 124046,
+          "samples": [
+            328,
+            472,
+            504,
+            536,
+            568,
+            632,
+            664,
+            696,
+            728,
+            824,
+            856,
+            888
+          ]
+        },
+        "float_retention": {
+          "initial": 0,
+          "final": 936,
+          "peak": 147363,
+          "samples": [
+            328,
+            472,
+            504,
+            536,
+            568,
+            632,
+            664,
+            696,
+            728,
+            824,
+            856,
+            888
+          ]
+        },
+        "declined_wide_retention": {
+          "initial": 0,
+          "final": 936,
+          "peak": 1145,
+          "samples": [
+            328,
+            472,
+            504,
+            536,
+            568,
+            632,
+            664,
+            696,
+            728,
+            824,
+            856,
+            888
+          ]
+        }
+      },
+      "pytest_duration_seconds": 2.65,
+      "retention": {
+        "ascii_retention": {
+          "initial": 0,
+          "final": 936,
+          "peak": 124046,
+          "samples": [
+            328,
+            472,
+            504,
+            536,
+            568,
+            632,
+            664,
+            696,
+            728,
+            824,
+            856,
+            888
+          ]
+        },
+        "float_retention": {
+          "initial": 0,
+          "final": 936,
+          "peak": 147363,
+          "samples": [
+            328,
+            472,
+            504,
+            536,
+            568,
+            632,
+            664,
+            696,
+            728,
+            824,
+            856,
+            888
+          ]
+        },
+        "declined_wide_retention": {
+          "initial": 0,
+          "final": 936,
+          "peak": 1145,
+          "samples": [
+            328,
+            472,
+            504,
+            536,
+            568,
+            632,
+            664,
+            696,
+            728,
+            824,
+            856,
+            888
+          ]
+        }
+      }
+    }
+  ],
+  "findings": [
+    {
+      "kind": "CPU bound in native eligibility proof",
+      "description": "Review found that a PY_SSIZE_T_MAX visit budget could traverse an exponentially expanded alias DAG for an impractical duration before reaching the backend.",
+      "resolution": "The final kernel uses MAX_WIDE_VALUES=262144 for wide, indented and transport proofs; the original compact helper retains MAX_VALUES=65536. Direct-helper cap and alias-DAG regressions are included in test_jsonx_encode_guarantees.py.",
+      "status": "fixed before sanitizer campaign"
+    }
+  ],
+  "completed": true,
+  "all_runs_passed": true,
+  "retained_memory_tests": {
+    "path": "tests/suites/product/serde/parity/test_jsonx_native_memory.py",
+    "sha256": "3947a43856acf3f5c67b8ddd35cfde2a30fa00d9d965726b708744281cbefc3b",
+    "rerun": [
+      "python -m pytest tests/suites/product/serde/parity/test_jsonx_native_memory.py -q",
+      "python -m pytest tests/suites/product/serde/parity/test_jsonx_native_memory.py -m resources -q"
+    ],
+    "note": "These repository-owned cases retain the meaningful stress/allocation coverage explored by the initial temporary worker; they run below on every instrumented ABI."
+  },
+  "initial_retained_memory_tests": {
+    "path": "tests/suites/product/serde/parity/test_jsonx_native_memory.py",
+    "sha256": "4b68386260d83d6fb61c96039fe2aec21b346d1a044f2c3adca1723b04f7d6d2",
+    "rerun": [
+      "python -m pytest tests/suites/product/serde/parity/test_jsonx_native_memory.py -q",
+      "python -m pytest tests/suites/product/serde/parity/test_jsonx_native_memory.py -m resources -q"
+    ],
+    "note": "These repository-owned cases retain the meaningful stress/allocation coverage explored by the initial temporary worker; they run below on every instrumented ABI."
+  },
+  "summary": {
+    "final_pytest_counts": {
+      "tests": 9291,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 113
+    },
+    "final_passed": 9178,
+    "address_or_undefined_behavior_diagnostics": 0,
+    "fatal_sanitizer_run_failures": 0,
+    "exploratory_stress_workers_passed": 4,
+    "strict_retention_bound_bytes": 4096,
+    "maximum_observed_retained_traced_bytes": 936,
+    "retention_soak_per_case": {
+      "warmup_calls": 100,
+      "measured_calls": 300,
+      "batches": 12,
+      "calls_per_batch": 25
+    },
+    "note": "Final counts include complete serde suites, the retained native memory file and its stricter explicit resources lane on all three ABIs. Earlier exploratory and initial-resource runs remain recorded separately.",
+    "python312_float_stack_after_return": {
+      "tests": 128,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "total_passed_including_focused_stack_check": 9306
+  },
+  "reporting_notes": [
+    "Focused Python3.12 sanitizer worker passed; an evidence-only parser initially assumed every JUnit property was JSON. The parser was corrected to preserve scalar string properties as strings; no test rerun or product change was necessary."
+  ]
+}

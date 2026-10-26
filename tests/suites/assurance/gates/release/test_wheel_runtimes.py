@@ -8,9 +8,12 @@ import os
 from pathlib import Path
 import platform
 import shlex
+import shutil
 import struct
+import subprocess
 import sys
 import sysconfig
+import tomllib
 
 from cibuildwheel.options import CommandLineArguments, compute_options
 import pytest
@@ -39,6 +42,103 @@ def test_installer_contract_rejects_new_arguments_and_changed_defaults():
     for installer in (added, changed, positional):
         with pytest.raises(RuntimeError, match="installer contract changed"):
             wheels._contract(installer, ("configuration", "arch"), (None,))
+
+
+def test_existing_provider_is_refreshed_before_real_tls_and_abi_admission(
+    monkeypatch, tmp_path, capsys
+):
+    uv = str(tmp_path / "uv")
+    stale = tmp_path / "stale-python"
+    current = Path(sys.executable).resolve()
+    selected = {"python": stale}
+    original_output = subprocess.check_output
+    original_run = subprocess.run
+
+    def install(command, *, check, timeout):
+        assert command[:4] == [uv, "python", "install", "--managed-python"]
+        assert check is True
+        assert timeout > 0
+        # A provider with an existing minor installation leaves it selected
+        # unless the caller requests the latest audited patch release.
+        if "--upgrade" in command:
+            selected["python"] = current
+
+    def output(command, **options):
+        if command[:3] == [uv, "python", "find"]:
+            return str(selected["python"]) + "\n"
+        return original_output(command, **options)
+
+    monkeypatch.setattr(wheels.shutil, "which", lambda _name: uv)
+    monkeypatch.setattr(wheels.subprocess, "check_output", output)
+
+    # check_output internally calls subprocess.run; let the real runtime probe
+    # execute through its original implementation after provider installation.
+    def run(command, **options):
+        if command[0] == uv:
+            return install(command, **options)
+        return original_run(command, **options)
+
+    monkeypatch.setattr(wheels.subprocess, "run", run)
+    minor = f"{sys.version_info.major}.{sys.version_info.minor}"
+    executable = wheels._managed_python.__wrapped__(
+        minor, sysconfig.get_platform().replace("-", "_")
+    )
+    assert executable == current
+    report = json.loads(capsys.readouterr().out)
+    assert report["errors"] == []
+    assert Path(report["executable"]).resolve() == current
+
+
+def test_pinned_provider_catalog_contains_the_development_python_on_release_hosts():
+    uv = shutil.which("uv")
+    if uv is None:
+        pytest.skip("the managed runtime catalog requires uv on PATH")
+    project = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text())
+    (requirement,) = project["dependency-groups"]["release-uv"]
+    pinned = requirement.removeprefix("uv==")
+    installed = subprocess.check_output(  # noqa: S603 — installed tool, fixed version query
+        [uv, "--version"], text=True, timeout=15
+    ).split()[1]
+    if installed != pinned and not os.environ.get("CI"):
+        pytest.skip(f"catalog qualification requires audited uv {pinned}")
+    assert installed == pinned
+    version = (REPO_ROOT / ".python-version").read_text().strip()
+    catalog = subprocess.check_output(  # noqa: S603 — offline bundled provider catalog
+        [
+            uv,
+            "python",
+            "list",
+            version,
+            "--only-downloads",
+            "--all-versions",
+            "--all-platforms",
+            "--all-arches",
+            "--output-format",
+            "json",
+            "--offline",
+            "--no-config",
+        ],
+        text=True,
+        timeout=30,
+    )
+    platforms = {
+        (item["os"], item["arch"], item["libc"])
+        for item in json.loads(catalog)
+        if item["version"] == version
+        and item["implementation"] == "cpython"
+        and item["variant"] == "default"
+    }
+    required = {
+        (system, architecture, libc)
+        for system, libcs in (
+            ("linux", ("gnu", "musl")),
+            ("macos", ("none",)),
+            ("windows", ("none",)),
+        )
+        for architecture in ("aarch64", "x86_64")
+        for libc in libcs
+    }
+    assert required <= platforms, (pinned, version, required - platforms)
 
 
 def _native_provider_configurations():

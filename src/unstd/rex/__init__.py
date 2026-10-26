@@ -66,8 +66,7 @@ subject length, including capture projection. Compilation and process resource
 limits remain the caller's responsibility.
 
 Prior art: Thompson's finite automata, explained by Russ Cox at
-https://swtch.com/~rsc/regexp/regexp1.html, and the engine we publish at
-https://github.com/The-Billy-Company/irregex. The previous backend was RE2;
+https://swtch.com/~rsc/regexp/regexp1.html. The previous backend was RE2;
 irregex supplied the existing re-shaped API without that extra dependency.
 """
 

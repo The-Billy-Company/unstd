@@ -1,0 +1,2510 @@
+{
+  "purpose": "Existing public JSONX three-source qualification",
+  "reports": {
+    "312": {
+      "path": "/Users/griffinstrier/Billy-Company/unstd/bench/reports/serde/jsonx-second-pass-312.json",
+      "sha256": "6a089ccbcbd836042c6619fff6d70a5ca9f471c759e956aa4a9b7c97f1d6e8c0",
+      "environment": {
+        "python": "3.12.15 (main, Oct  9 2026, 15:10:57) [Clang 22.1.3 ]",
+        "platform": "macOS-26.6-arm64-arm-64bit",
+        "backends": {
+          "orjson": "3.12.0",
+          "msgspec": "0.22.0",
+          "pybase64": "1.5.0"
+        },
+        "runtime_fingerprint": {
+          "executable": "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-python/cpython-3.12.15-macos-aarch64-none/bin/python3.12",
+          "executable_sha256": "83deb939c9034c3e85a377eeb04e7d9992f8881652a22289cd0eeeb83b98a565",
+          "library": "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-python/cpython-3.12.15-macos-aarch64-none/lib/libpython3.12.dylib",
+          "library_sha256": "15e07fb4c7d9929a50117758980e05f7ba073cd4f9ec2d461b3d0d77a09b4735",
+          "compiler_configuration": {
+            "CC": "cc",
+            "CFLAGS": "-fno-strict-overflow -Wsign-compare -Wunreachable-code -DNDEBUG -g -O3 -Wall -O3 -arch arm64 -mmacosx-version-min=11.0 -Wno-nullability-completeness -Wno-expansion-to-defined -Wno-undef-prefix -fPIC",
+            "PY_CFLAGS": "-fno-strict-overflow -Wsign-compare -Wunreachable-code -DNDEBUG -g -O3 -Wall -O3 -arch arm64 -mmacosx-version-min=11.0 -Wno-nullability-completeness -Wno-expansion-to-defined -Wno-undef-prefix -fPIC -Werror=unguarded-availability-new",
+            "CONFIG_ARGS": "'--build=aarch64-apple-darwin' '--host=aarch64-apple-darwin' '--prefix=/install' '--with-openssl=/tmp/tmpfzf90dyr/tools/deps' '--with-system-expat' '--with-system-libmpdec' '--without-ensurepip' 'MODULE_BUILDTYPE=static' '--enable-loadable-sqlite-extensions' '--enable-static-libpython-for-interpreter' '--enable-shared' '--enable-optimizations' '--with-lto=full' '--with-build-python=/tmp/tmpfzf90dyr/tools/host/bin/python3.12' 'ac_cv_lib_intl_textdomain=no' 'ac_cv_func_ptsname_r=no' '--with-dbmliborder=ndbm' 'build_alias=aarch64-apple-darwin' 'host_alias=aarch64-apple-darwin' 'PKG_CONFIG=pkg-config --static --define-prefix' 'PKG_CONFIG_PATH=/tmp/tmpfzf90dyr/tools/deps/share/pkgconfig:/tmp/tmpfzf90dyr/tools/deps/lib/pkgconfig' 'CC=clang' 'CFLAGS=-O3 -arch arm64 -mmacosx-version-min=11.0 -Wno-nullability-completeness -Wno-expansion-to-defined -Wno-undef-prefix -fPIC -Werror=unguarded-availability-new' 'LDFLAGS=-arch arm64 -mmacosx-version-min=11.0 -Wl,-headerpad,40' 'CPPFLAGS=-O3 -arch arm64 -mmacosx-version-min=11.0 -Wno-nullability-completeness -Wno-expansion-to-defined -Wno-undef-prefix -fPIC -Werror=unguarded-availability-new' 'PROFILE_TASK=-m test --pgo -j 12' 'BOLT_COMMON_FLAGS=' 'BOLT_APPLY_FLAGS='",
+            "SOABI": "cpython-312-darwin"
+          }
+        },
+        "backend_fingerprints": {
+          "orjson": {
+            "version": "3.12.0",
+            "code_files": 2,
+            "code_sha256": "7927dbf0b48c72c12a65977b16813e320de6881b1734ddab8577689fbd3d9c4a",
+            "native_sha256": {
+              "orjson/orjson.cpython-312-darwin.so": "41a19c8a160b8c9f534100f8cb5b4ce5baf91cec75680cb7647efb8e0c55abf7"
+            }
+          },
+          "msgspec": {
+            "version": "0.22.0",
+            "code_files": 12,
+            "code_sha256": "bac735ece4b91c5bce3f0b64aad15eb4e2ba3eac2ccba9777f72492cdd1dd4d4",
+            "native_sha256": {
+              "msgspec/_core.cpython-312-darwin.so": "07818f25153e88a71dca3390c1149b3e7cb149239954b68e7879b8a47eaea050"
+            }
+          },
+          "pybase64": {
+            "version": "1.5.0",
+            "code_files": 8,
+            "code_sha256": "6cd16fabd53f7fefe58af8c268cf2a9c4b9374ce2026841afb2c4e61abb13341",
+            "native_sha256": {
+              "pybase64/_pybase64.cpython-312-darwin.so": "bbad75bd0d49ad696875ec4dcfdfc7261b1688928528b6b7abd8bf72a4d1002e"
+            }
+          },
+          "numpy": null,
+          "blake3": {
+            "version": "1.0.10",
+            "code_files": 2,
+            "code_sha256": "32859d8a15af0ad31a6e0bbbf5028f9c8f7d492566338195ba29d1b87364346a",
+            "native_sha256": {
+              "blake3/blake3.cpython-312-darwin.so": "715893ce5cc0047a469c872b6b0f66a63eba8a27c904044e7c180ff532eba5c1"
+            }
+          }
+        },
+        "thread_environment": {
+          "PYTHONHASHSEED": null,
+          "OMP_NUM_THREADS": null,
+          "OPENBLAS_NUM_THREADS": null,
+          "MKL_NUM_THREADS": null,
+          "VECLIB_MAXIMUM_THREADS": null
+        }
+      },
+      "configuration": {
+        "rounds": 5,
+        "profile_rounds": 3,
+        "repetitions": 3
+      },
+      "sources": {
+        "original": {
+          "source": "/private/tmp/jsonx-throughput-baseline/src",
+          "jsonx": "/private/tmp/jsonx-throughput-baseline/src/unstd/serde/jsonx.py",
+          "native_binary": "/private/tmp/jsonx-throughput-baseline/src/unstd/serde/_json_native.cpython-312-darwin.so",
+          "python_sha256": {
+            "unstd/serde/__init__.py": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d",
+            "unstd/serde/_internal/__init__.py": "6aed7cdb4acd19aa8dfa7668c884fd937f2add4574c73531bd6cdde569f53f05",
+            "unstd/serde/_internal/json_common.py": "cb4ee6fce1510e202b4126e67b53ac73b9e7b73a9d67d010b451b7fa45ea0b8f",
+            "unstd/serde/_internal/json_encode.py": "8c27e3ed7bc6052315bc3d3ce17987ef078c751a4348396cc29fe103578f5553",
+            "unstd/serde/_json_common.py": "fb088bf068ac0dd5f2dd1675cb60cb682da6aec80320b85d98aa39c16a7f6781",
+            "unstd/serde/_json_encode.py": "d010007e07fbe5e46a1bcfb6984b2730f30564e4a2dc15306baedda9f2ab8ec1",
+            "unstd/serde/_json_native.cpython-312-darwin.so": "06c5e476e9124d032accce354be8395d49a9abd10c2fb6c7034196eabd8de46e",
+            "unstd/serde/_json_native.cpython-313-darwin.so": "470d74d6b8c61cf86cc05dff09fb8481412c11fd6d232900aadba8ca6a16c393",
+            "unstd/serde/_json_native.cpython-314-darwin.so": "664980386fba9d736659cc4adfa900e42968b4505cffa27bcc7e13096faf846b",
+            "unstd/serde/_json_native.pyi": "8e1a78292638c68ef25a9c149dd07de835af34bab57c9ffe8ab48a4a99a6c7a1",
+            "unstd/serde/b64.py": "c9fa198b3a6a4dffab239697c2d35c717ab2adea1977e7c1bd2226c30c4dbe32",
+            "unstd/serde/jsonx.py": "934c8005f7de765ac3600761dd7ddee7f9e08d81d2a55f6bcfb79b6ea6e4d663",
+            "unstd/serde/ndjson.py": "98c1f5bb1b78d2548390683b9b4bc062c4dc900b1fc27837e7941c7ee4553550",
+            "unstd/serde/structs.py": "ebe5eb0c8cba8e8bc01137c9e4f768d86cb900d15c67600cbaf38f0accfa6c65"
+          },
+          "native_source_root": "/private/tmp/jsonx-throughput-baseline/native-serde",
+          "native_source_sha256": {
+            "src/_json_decode_native.h": "acb1c5a574ba8bdc664c708222bebd06b571e8c102404ffa714a6c2ebfbf6eec",
+            "src/_json_encode_native.h": "d9cd56b16da3dfd72b36fa8ae00f7b82e4be7cc37629ef129dc0b3a9c9ac6c1e",
+            "src/_json_lines_native.h": "b2f9b71876976199b3a02b53572672f581438e237353a92205211fbd27ea74d0",
+            "src/_json_native.c": "01cfd935049f43ec617b02f41d931902c353b37e11ffb973219fbfd5ad4852b3"
+          }
+        },
+        "first_pass": {
+          "source": "/private/tmp/jsonx-second-baseline/src",
+          "jsonx": "/private/tmp/jsonx-second-baseline/src/unstd/serde/jsonx.py",
+          "native_binary": "/private/tmp/jsonx-second-baseline/src/unstd/serde/_json_native.cpython-312-darwin.so",
+          "python_sha256": {
+            "unstd/serde/__init__.py": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d",
+            "unstd/serde/_internal/__init__.py": "6aed7cdb4acd19aa8dfa7668c884fd937f2add4574c73531bd6cdde569f53f05",
+            "unstd/serde/_internal/json_common.py": "cb4ee6fce1510e202b4126e67b53ac73b9e7b73a9d67d010b451b7fa45ea0b8f",
+            "unstd/serde/_internal/json_encode.py": "70c0e9b9a2d3ed721573b097204c76b335d2d73e7655b2e64b2ea04e7d10de6d",
+            "unstd/serde/_json_common.py": "fb088bf068ac0dd5f2dd1675cb60cb682da6aec80320b85d98aa39c16a7f6781",
+            "unstd/serde/_json_encode.py": "d010007e07fbe5e46a1bcfb6984b2730f30564e4a2dc15306baedda9f2ab8ec1",
+            "unstd/serde/_json_native.cpython-312-darwin.so": "1e501e6bc0c4deb2d81e6c7b893d51a32aa4059b1d08fe3fb1e55eac0ed2d5aa",
+            "unstd/serde/_json_native.cpython-313-darwin.so": "d918fbbd21164169e81ab2629dd62bf2c0cb509dfa2e035e84fc1014bdf78c61",
+            "unstd/serde/_json_native.cpython-314-darwin.so": "4a53b697d271eaf47f5ac08b7db1d289cb33091de867063c4f47586765ecd29c",
+            "unstd/serde/_json_native.pyi": "2701aa6fa8f926d09d401e06942e3c65669cf5c2aea38fc5eaf498fd693729f8",
+            "unstd/serde/b64.py": "c9fa198b3a6a4dffab239697c2d35c717ab2adea1977e7c1bd2226c30c4dbe32",
+            "unstd/serde/jsonx.py": "ddb3b64c6555402da2a979bce6fc75019ccf6d701653aea06ec5f985cd6fec71",
+            "unstd/serde/ndjson.py": "98c1f5bb1b78d2548390683b9b4bc062c4dc900b1fc27837e7941c7ee4553550",
+            "unstd/serde/structs.py": "ebe5eb0c8cba8e8bc01137c9e4f768d86cb900d15c67600cbaf38f0accfa6c65"
+          },
+          "native_source_root": "/private/tmp/jsonx-second-baseline/native-serde",
+          "native_source_sha256": {
+            "src/_json_decode_native.h": "d46206a3c04858ac3739d2590b4c1a02d23a2801cbec3387fa4893d28e56624f",
+            "src/_json_encode_native.h": "d9cd56b16da3dfd72b36fa8ae00f7b82e4be7cc37629ef129dc0b3a9c9ac6c1e",
+            "src/_json_lines_native.h": "b2f9b71876976199b3a02b53572672f581438e237353a92205211fbd27ea74d0",
+            "src/_json_native.c": "ee7e575108f071027ad8d3af08d3322ee1a77997a62822aca1a29e37c749e19b",
+            "src/_json_text_native.h": "937fe2288c702b38b752e4c7b4a09a91239bba86d2907b0f89c24f99a13d3e92"
+          }
+        },
+        "candidate": {
+          "source": "/private/tmp/jsonx-second-final-v2/src",
+          "jsonx": "/private/tmp/jsonx-second-final-v2/src/unstd/serde/jsonx.py",
+          "native_binary": "/private/tmp/jsonx-second-final-v2/src/unstd/serde/_json_native.cpython-312-darwin.so",
+          "python_sha256": {
+            "unstd/serde/__init__.py": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d",
+            "unstd/serde/_internal/__init__.py": "6aed7cdb4acd19aa8dfa7668c884fd937f2add4574c73531bd6cdde569f53f05",
+            "unstd/serde/_internal/json_common.py": "cb4ee6fce1510e202b4126e67b53ac73b9e7b73a9d67d010b451b7fa45ea0b8f",
+            "unstd/serde/_internal/json_encode.py": "a01fe8460bd4a70573fed3ebff35c1a1f318bf477bb17c41b165a0a5aacc46a4",
+            "unstd/serde/_json_common.py": "fb088bf068ac0dd5f2dd1675cb60cb682da6aec80320b85d98aa39c16a7f6781",
+            "unstd/serde/_json_encode.py": "d010007e07fbe5e46a1bcfb6984b2730f30564e4a2dc15306baedda9f2ab8ec1",
+            "unstd/serde/_json_native.cpython-312-darwin.so": "11435aa161024fa9d34b028d5d25ba1ee721d867133077eabb7ba6703fcca0f1",
+            "unstd/serde/_json_native.cpython-313-darwin.so": "916d15b9a2543ab5fb94d8a47445ef4ba2f097b129d0885c771b4b8232e8f9c8",
+            "unstd/serde/_json_native.cpython-314-darwin.so": "1cc583b8883b88b4e2d5bf9337c93d9286bf5e3f06a6aa3ce1fd75f1e5f85808",
+            "unstd/serde/_json_native.pyi": "275cb98230bf6a337bbc224ebfcd13025859b7ccef2800fb6d4ef7ac3796d47e",
+            "unstd/serde/b64.py": "c9fa198b3a6a4dffab239697c2d35c717ab2adea1977e7c1bd2226c30c4dbe32",
+            "unstd/serde/jsonx.py": "a15639db6e2b4495c9f50aec12c6830c931e48563a506ad56d51598c393d7ca4",
+            "unstd/serde/ndjson.py": "98c1f5bb1b78d2548390683b9b4bc062c4dc900b1fc27837e7941c7ee4553550",
+            "unstd/serde/structs.py": "ebe5eb0c8cba8e8bc01137c9e4f768d86cb900d15c67600cbaf38f0accfa6c65"
+          },
+          "native_source_root": "/private/tmp/jsonx-second-final-v2/native-serde",
+          "native_source_sha256": {
+            "src/adapter.c": "4255c7f31b58ce2b370b3269a7568ec9c7eb73f52cf431c88da8c449d73578ab",
+            "src/decode.h": "d46206a3c04858ac3739d2590b4c1a02d23a2801cbec3387fa4893d28e56624f",
+            "src/encode.h": "d9cd56b16da3dfd72b36fa8ae00f7b82e4be7cc37629ef129dc0b3a9c9ac6c1e",
+            "src/escape.h": "937fe2288c702b38b752e4c7b4a09a91239bba86d2907b0f89c24f99a13d3e92",
+            "src/identity.h": "e9dd9fb8b4f8188de9f3180699749fab34d16307177b5f0814a0cf1681d592bf",
+            "src/lines.h": "b2f9b71876976199b3a02b53572672f581438e237353a92205211fbd27ea74d0",
+            "src/repeat.h": "6d8ef0ca60b10a5a2888bbb921e009957f59fa0dff5f8db16ce67fa65a1e917d"
+          }
+        }
+      }
+    },
+    "313": {
+      "path": "/Users/griffinstrier/Billy-Company/unstd/bench/reports/serde/jsonx-second-pass-313.json",
+      "sha256": "2d00638af2d8e7b91b3fb108e842335c1df6e039ac7ae886bd28f42b7b846ffd",
+      "environment": {
+        "python": "3.13.16 (main, Oct  9 2026, 15:11:24) [Clang 22.1.3 ]",
+        "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+        "backends": {
+          "orjson": "3.12.0",
+          "msgspec": "0.22.0",
+          "pybase64": "1.5.0"
+        },
+        "runtime_fingerprint": {
+          "executable": "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-python/cpython-3.13.16-macos-aarch64-none/bin/python3.13",
+          "executable_sha256": "08c31a4b53dc231eba8fe8785ea11a1b13095bf7f3fce292cffc50f74bbcc895",
+          "library": "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-python/cpython-3.13.16-macos-aarch64-none/lib/libpython3.13.dylib",
+          "library_sha256": "42ae8fd8467ff7edcfc06b796084221c8d2b8bb35e9faa17130c208c53105080",
+          "compiler_configuration": {
+            "CC": "cc",
+            "CFLAGS": "-fno-strict-overflow -Wsign-compare -Wunreachable-code -DNDEBUG -g -O3 -Wall -O3 -arch arm64 -mmacosx-version-min=11.0 -Wno-nullability-completeness -Wno-expansion-to-defined -Wno-undef-prefix -fPIC",
+            "PY_CFLAGS": "-fno-strict-overflow -Wsign-compare -Wunreachable-code -DNDEBUG -g -O3 -Wall -O3 -arch arm64 -mmacosx-version-min=11.0 -Wno-nullability-completeness -Wno-expansion-to-defined -Wno-undef-prefix -fPIC -Werror=unguarded-availability-new",
+            "CONFIG_ARGS": "'--build=aarch64-apple-darwin' '--host=aarch64-apple-darwin' '--prefix=/install' '--with-openssl=/tmp/tmphlydbzwu/tools/deps' '--with-system-expat' '--with-system-libmpdec' '--without-ensurepip' 'MODULE_BUILDTYPE=static' '--enable-loadable-sqlite-extensions' '--enable-static-libpython-for-interpreter' '--enable-shared' '--with-mimalloc' '--enable-optimizations' '--enable-experimental-jit=yes-off' '--with-lto=full' '--with-build-python=/tmp/tmphlydbzwu/tools/host/bin/python3.13' 'ac_cv_lib_intl_textdomain=no' 'ac_cv_func_ptsname_r=no' '--with-dbmliborder=ndbm' 'build_alias=aarch64-apple-darwin' 'host_alias=aarch64-apple-darwin' 'PKG_CONFIG=pkg-config --static --define-prefix' 'PKG_CONFIG_PATH=/tmp/tmphlydbzwu/tools/deps/share/pkgconfig:/tmp/tmphlydbzwu/tools/deps/lib/pkgconfig' 'CC=clang' 'CFLAGS=-O3 -arch arm64 -mmacosx-version-min=11.0 -Wno-nullability-completeness -Wno-expansion-to-defined -Wno-undef-prefix -fPIC -Werror=unguarded-availability-new' 'LDFLAGS=-arch arm64 -mmacosx-version-min=11.0 -Wl,-headerpad,40' 'CPPFLAGS=-O3 -arch arm64 -mmacosx-version-min=11.0 -Wno-nullability-completeness -Wno-expansion-to-defined -Wno-undef-prefix -fPIC -Werror=unguarded-availability-new' 'PROFILE_TASK=-m test --pgo -j 12' 'BOLT_COMMON_FLAGS=' 'BOLT_APPLY_FLAGS='",
+            "SOABI": "cpython-313-darwin"
+          }
+        },
+        "backend_fingerprints": {
+          "orjson": {
+            "version": "3.12.0",
+            "code_files": 2,
+            "code_sha256": "7996fd5baeb28fb094110f4773df15b376f83cb1bd328fbf716841f1c71422c7",
+            "native_sha256": {
+              "orjson/orjson.cpython-313-darwin.so": "9a4577c3e52b8b46e2e75a160c5b32393f1ffc545ddce4b919a0d61a7ffe02e7"
+            }
+          },
+          "msgspec": {
+            "version": "0.22.0",
+            "code_files": 12,
+            "code_sha256": "353afae678992f2ff30856d630369955a00855958042dcf72fe469cdeb2e1baa",
+            "native_sha256": {
+              "msgspec/_core.cpython-313-darwin.so": "a473497f77e4cdf09e70dc0c098f918e6c9ad6e7041420171ae1a8edafb05815"
+            }
+          },
+          "pybase64": {
+            "version": "1.5.0",
+            "code_files": 8,
+            "code_sha256": "81eb7cc53a97ab43481b519a4e3d3744042e33addef1bdc8621278a0fed00f6c",
+            "native_sha256": {
+              "pybase64/_pybase64.cpython-313-darwin.so": "61a43355785d1849b31e9b9404e49ca9642b7a8972394f63af4fff0c83ef0401"
+            }
+          },
+          "numpy": {
+            "version": "2.5.0",
+            "code_files": 426,
+            "code_sha256": "b1d06745ef087c1df36809ddf6c7e6ea7a52e13fc3428713687f80856e5eda59",
+            "native_sha256": {
+              "numpy/_core/_multiarray_tests.cpython-313-darwin.so": "8c234a23efcfd7387f695722fafaef783d327384df28882fea54274f96ebbc5e",
+              "numpy/_core/_multiarray_umath.cpython-313-darwin.so": "2ebd7c0f54b1424a28be862e409f0d77b3a03fa7dd4af3aea38a2724479dad88",
+              "numpy/_core/_operand_flag_tests.cpython-313-darwin.so": "60dbfe9e2060bb1aefe801aa22ef48b35294c541e89ef3403bde4150eae3b63e",
+              "numpy/_core/_rational_tests.cpython-313-darwin.so": "d74306071921e815b10abcc1823d044ff3d0f685c43eb5c2c530adb02ffb97ae",
+              "numpy/_core/_simd.cpython-313-darwin.so": "1a71e46e05358b9a3d5e2c989a504df0eec7e2f66b1caa28c46cfd8d64d9f356",
+              "numpy/_core/_struct_ufunc_tests.cpython-313-darwin.so": "16d2cd0d42ef6bdee647d95f4863ff672e37abddee489c731d067780d2a1e405",
+              "numpy/_core/_umath_tests.cpython-313-darwin.so": "e253d72246ba5ae89f33b8f2cb1b0af55ad55caca033dc8463e2eae6453e3e6f",
+              "numpy/fft/_pocketfft_umath.cpython-313-darwin.so": "68b0b903cf3c88a7508c67d36d9ba4273853cf99a5ebd747c061e0316b36b69e",
+              "numpy/linalg/_umath_linalg.cpython-313-darwin.so": "5d8fb8134d1d8f5e729bb5b00a356f458d064b5925245b8d1fec93ec2686b84f",
+              "numpy/linalg/lapack_lite.cpython-313-darwin.so": "add1ebeb67640e301edf82d3c68bd9ecbea4b2171cca775a774e37d62c2db540",
+              "numpy/random/_bounded_integers.cpython-313-darwin.so": "d223df7086c6a925467aa9636bca72ff036bab11e0df3e75b41746f4235621d7",
+              "numpy/random/_common.cpython-313-darwin.so": "78a1d9afb618ab21c616faca3313534a5257ae5fd68c6f794075fdc7cd0ed976",
+              "numpy/random/_generator.cpython-313-darwin.so": "f548c0a4fd10dc2de85c37395cba449ba20b574c64d55403ac60e38be950b32f",
+              "numpy/random/_mt19937.cpython-313-darwin.so": "e75d32cc81980d80934dd5e11a35825d2b16d453572d5035027ed31ba6ebca9e",
+              "numpy/random/_pcg64.cpython-313-darwin.so": "a75af9a10e9696c32911a9be82f7139a7cf3c489658367334ab2dc930af2f8a1",
+              "numpy/random/_philox.cpython-313-darwin.so": "1215bfaae7ae6bc90adfc0062530414d83fadc7003e7527773c7c3824c780560",
+              "numpy/random/_sfc64.cpython-313-darwin.so": "6dca4abf988fb2722349ad18bb47aef4818447c92dd237e39ae42c9c0f764c90",
+              "numpy/random/bit_generator.cpython-313-darwin.so": "413e351e9b85e2d5a484715deb78216eae1a3ce2972f97141df402dec39692b9",
+              "numpy/random/mtrand.cpython-313-darwin.so": "e8e49601d22dc0576b35dcca15fb12e9a974b61888e953e4effe40661afe3ba1"
+            }
+          },
+          "blake3": {
+            "version": "1.0.10",
+            "code_files": 2,
+            "code_sha256": "cb0896e43b68469acb19f1cc034e08ac4f17f0cf7829912f351e1dfaded7fec4",
+            "native_sha256": {
+              "blake3/blake3.cpython-313-darwin.so": "f9e5094aa7e3529f07d3be3b39cfc5c4770ba00cff6876db0b0e9252651824eb"
+            }
+          }
+        },
+        "thread_environment": {
+          "PYTHONHASHSEED": null,
+          "OMP_NUM_THREADS": null,
+          "OPENBLAS_NUM_THREADS": null,
+          "MKL_NUM_THREADS": null,
+          "VECLIB_MAXIMUM_THREADS": null
+        }
+      },
+      "configuration": {
+        "rounds": 5,
+        "profile_rounds": 3,
+        "repetitions": 3
+      },
+      "sources": {
+        "original": {
+          "source": "/private/tmp/jsonx-throughput-baseline/src",
+          "jsonx": "/private/tmp/jsonx-throughput-baseline/src/unstd/serde/jsonx.py",
+          "native_binary": "/private/tmp/jsonx-throughput-baseline/src/unstd/serde/_json_native.cpython-313-darwin.so",
+          "python_sha256": {
+            "unstd/serde/__init__.py": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d",
+            "unstd/serde/_internal/__init__.py": "6aed7cdb4acd19aa8dfa7668c884fd937f2add4574c73531bd6cdde569f53f05",
+            "unstd/serde/_internal/json_common.py": "cb4ee6fce1510e202b4126e67b53ac73b9e7b73a9d67d010b451b7fa45ea0b8f",
+            "unstd/serde/_internal/json_encode.py": "8c27e3ed7bc6052315bc3d3ce17987ef078c751a4348396cc29fe103578f5553",
+            "unstd/serde/_json_common.py": "fb088bf068ac0dd5f2dd1675cb60cb682da6aec80320b85d98aa39c16a7f6781",
+            "unstd/serde/_json_encode.py": "d010007e07fbe5e46a1bcfb6984b2730f30564e4a2dc15306baedda9f2ab8ec1",
+            "unstd/serde/_json_native.cpython-312-darwin.so": "06c5e476e9124d032accce354be8395d49a9abd10c2fb6c7034196eabd8de46e",
+            "unstd/serde/_json_native.cpython-313-darwin.so": "470d74d6b8c61cf86cc05dff09fb8481412c11fd6d232900aadba8ca6a16c393",
+            "unstd/serde/_json_native.cpython-314-darwin.so": "664980386fba9d736659cc4adfa900e42968b4505cffa27bcc7e13096faf846b",
+            "unstd/serde/_json_native.pyi": "8e1a78292638c68ef25a9c149dd07de835af34bab57c9ffe8ab48a4a99a6c7a1",
+            "unstd/serde/b64.py": "c9fa198b3a6a4dffab239697c2d35c717ab2adea1977e7c1bd2226c30c4dbe32",
+            "unstd/serde/jsonx.py": "934c8005f7de765ac3600761dd7ddee7f9e08d81d2a55f6bcfb79b6ea6e4d663",
+            "unstd/serde/ndjson.py": "98c1f5bb1b78d2548390683b9b4bc062c4dc900b1fc27837e7941c7ee4553550",
+            "unstd/serde/structs.py": "ebe5eb0c8cba8e8bc01137c9e4f768d86cb900d15c67600cbaf38f0accfa6c65"
+          },
+          "native_source_root": "/private/tmp/jsonx-throughput-baseline/native-serde",
+          "native_source_sha256": {
+            "src/_json_decode_native.h": "acb1c5a574ba8bdc664c708222bebd06b571e8c102404ffa714a6c2ebfbf6eec",
+            "src/_json_encode_native.h": "d9cd56b16da3dfd72b36fa8ae00f7b82e4be7cc37629ef129dc0b3a9c9ac6c1e",
+            "src/_json_lines_native.h": "b2f9b71876976199b3a02b53572672f581438e237353a92205211fbd27ea74d0",
+            "src/_json_native.c": "01cfd935049f43ec617b02f41d931902c353b37e11ffb973219fbfd5ad4852b3"
+          }
+        },
+        "first_pass": {
+          "source": "/private/tmp/jsonx-second-baseline/src",
+          "jsonx": "/private/tmp/jsonx-second-baseline/src/unstd/serde/jsonx.py",
+          "native_binary": "/private/tmp/jsonx-second-baseline/src/unstd/serde/_json_native.cpython-313-darwin.so",
+          "python_sha256": {
+            "unstd/serde/__init__.py": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d",
+            "unstd/serde/_internal/__init__.py": "6aed7cdb4acd19aa8dfa7668c884fd937f2add4574c73531bd6cdde569f53f05",
+            "unstd/serde/_internal/json_common.py": "cb4ee6fce1510e202b4126e67b53ac73b9e7b73a9d67d010b451b7fa45ea0b8f",
+            "unstd/serde/_internal/json_encode.py": "70c0e9b9a2d3ed721573b097204c76b335d2d73e7655b2e64b2ea04e7d10de6d",
+            "unstd/serde/_json_common.py": "fb088bf068ac0dd5f2dd1675cb60cb682da6aec80320b85d98aa39c16a7f6781",
+            "unstd/serde/_json_encode.py": "d010007e07fbe5e46a1bcfb6984b2730f30564e4a2dc15306baedda9f2ab8ec1",
+            "unstd/serde/_json_native.cpython-312-darwin.so": "1e501e6bc0c4deb2d81e6c7b893d51a32aa4059b1d08fe3fb1e55eac0ed2d5aa",
+            "unstd/serde/_json_native.cpython-313-darwin.so": "d918fbbd21164169e81ab2629dd62bf2c0cb509dfa2e035e84fc1014bdf78c61",
+            "unstd/serde/_json_native.cpython-314-darwin.so": "4a53b697d271eaf47f5ac08b7db1d289cb33091de867063c4f47586765ecd29c",
+            "unstd/serde/_json_native.pyi": "2701aa6fa8f926d09d401e06942e3c65669cf5c2aea38fc5eaf498fd693729f8",
+            "unstd/serde/b64.py": "c9fa198b3a6a4dffab239697c2d35c717ab2adea1977e7c1bd2226c30c4dbe32",
+            "unstd/serde/jsonx.py": "ddb3b64c6555402da2a979bce6fc75019ccf6d701653aea06ec5f985cd6fec71",
+            "unstd/serde/ndjson.py": "98c1f5bb1b78d2548390683b9b4bc062c4dc900b1fc27837e7941c7ee4553550",
+            "unstd/serde/structs.py": "ebe5eb0c8cba8e8bc01137c9e4f768d86cb900d15c67600cbaf38f0accfa6c65"
+          },
+          "native_source_root": "/private/tmp/jsonx-second-baseline/native-serde",
+          "native_source_sha256": {
+            "src/_json_decode_native.h": "d46206a3c04858ac3739d2590b4c1a02d23a2801cbec3387fa4893d28e56624f",
+            "src/_json_encode_native.h": "d9cd56b16da3dfd72b36fa8ae00f7b82e4be7cc37629ef129dc0b3a9c9ac6c1e",
+            "src/_json_lines_native.h": "b2f9b71876976199b3a02b53572672f581438e237353a92205211fbd27ea74d0",
+            "src/_json_native.c": "ee7e575108f071027ad8d3af08d3322ee1a77997a62822aca1a29e37c749e19b",
+            "src/_json_text_native.h": "937fe2288c702b38b752e4c7b4a09a91239bba86d2907b0f89c24f99a13d3e92"
+          }
+        },
+        "candidate": {
+          "source": "/private/tmp/jsonx-second-final-v2/src",
+          "jsonx": "/private/tmp/jsonx-second-final-v2/src/unstd/serde/jsonx.py",
+          "native_binary": "/private/tmp/jsonx-second-final-v2/src/unstd/serde/_json_native.cpython-313-darwin.so",
+          "python_sha256": {
+            "unstd/serde/__init__.py": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d",
+            "unstd/serde/_internal/__init__.py": "6aed7cdb4acd19aa8dfa7668c884fd937f2add4574c73531bd6cdde569f53f05",
+            "unstd/serde/_internal/json_common.py": "cb4ee6fce1510e202b4126e67b53ac73b9e7b73a9d67d010b451b7fa45ea0b8f",
+            "unstd/serde/_internal/json_encode.py": "a01fe8460bd4a70573fed3ebff35c1a1f318bf477bb17c41b165a0a5aacc46a4",
+            "unstd/serde/_json_common.py": "fb088bf068ac0dd5f2dd1675cb60cb682da6aec80320b85d98aa39c16a7f6781",
+            "unstd/serde/_json_encode.py": "d010007e07fbe5e46a1bcfb6984b2730f30564e4a2dc15306baedda9f2ab8ec1",
+            "unstd/serde/_json_native.cpython-312-darwin.so": "11435aa161024fa9d34b028d5d25ba1ee721d867133077eabb7ba6703fcca0f1",
+            "unstd/serde/_json_native.cpython-313-darwin.so": "916d15b9a2543ab5fb94d8a47445ef4ba2f097b129d0885c771b4b8232e8f9c8",
+            "unstd/serde/_json_native.cpython-314-darwin.so": "1cc583b8883b88b4e2d5bf9337c93d9286bf5e3f06a6aa3ce1fd75f1e5f85808",
+            "unstd/serde/_json_native.pyi": "275cb98230bf6a337bbc224ebfcd13025859b7ccef2800fb6d4ef7ac3796d47e",
+            "unstd/serde/b64.py": "c9fa198b3a6a4dffab239697c2d35c717ab2adea1977e7c1bd2226c30c4dbe32",
+            "unstd/serde/jsonx.py": "a15639db6e2b4495c9f50aec12c6830c931e48563a506ad56d51598c393d7ca4",
+            "unstd/serde/ndjson.py": "98c1f5bb1b78d2548390683b9b4bc062c4dc900b1fc27837e7941c7ee4553550",
+            "unstd/serde/structs.py": "ebe5eb0c8cba8e8bc01137c9e4f768d86cb900d15c67600cbaf38f0accfa6c65"
+          },
+          "native_source_root": "/private/tmp/jsonx-second-final-v2/native-serde",
+          "native_source_sha256": {
+            "src/adapter.c": "4255c7f31b58ce2b370b3269a7568ec9c7eb73f52cf431c88da8c449d73578ab",
+            "src/decode.h": "d46206a3c04858ac3739d2590b4c1a02d23a2801cbec3387fa4893d28e56624f",
+            "src/encode.h": "d9cd56b16da3dfd72b36fa8ae00f7b82e4be7cc37629ef129dc0b3a9c9ac6c1e",
+            "src/escape.h": "937fe2288c702b38b752e4c7b4a09a91239bba86d2907b0f89c24f99a13d3e92",
+            "src/identity.h": "e9dd9fb8b4f8188de9f3180699749fab34d16307177b5f0814a0cf1681d592bf",
+            "src/lines.h": "b2f9b71876976199b3a02b53572672f581438e237353a92205211fbd27ea74d0",
+            "src/repeat.h": "6d8ef0ca60b10a5a2888bbb921e009957f59fa0dff5f8db16ce67fa65a1e917d"
+          }
+        }
+      }
+    },
+    "314": {
+      "path": "/Users/griffinstrier/Billy-Company/unstd/bench/reports/serde/jsonx-second-pass-314.json",
+      "sha256": "9f50f67260e45edc16aacc1a8443a7ff8c417840a96a0bc0ac983fdc98211594",
+      "environment": {
+        "python": "3.14.8 (main, Oct  9 2026, 15:11:09) [Clang 22.1.3 ]",
+        "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+        "backends": {
+          "orjson": "3.12.0",
+          "msgspec": "0.22.0",
+          "pybase64": "1.5.0"
+        },
+        "runtime_fingerprint": {
+          "executable": "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-python/cpython-3.14.8-macos-aarch64-none/bin/python3.14",
+          "executable_sha256": "a99820a3a31b57e615c6e0b050c92046281617beec6e8fdcb52da34bc8b56d99",
+          "library": "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-python/cpython-3.14.8-macos-aarch64-none/lib/libpython3.14.dylib",
+          "library_sha256": "cc7de9b191f1b90f4efdc771bb885440c56dc29c1337b194d71e892345135bb8",
+          "compiler_configuration": {
+            "CC": "cc",
+            "CFLAGS": "-fno-strict-overflow -Wsign-compare -Wunreachable-code -DNDEBUG -g -O3 -Wall -O3 -arch arm64 -mmacosx-version-min=11.0 -Wno-nullability-completeness -Wno-expansion-to-defined -Wno-undef-prefix -fPIC",
+            "PY_CFLAGS": "-fno-strict-overflow -Wsign-compare -Wunreachable-code -DNDEBUG -g -O3 -Wall -O3 -arch arm64 -mmacosx-version-min=11.0 -Wno-nullability-completeness -Wno-expansion-to-defined -Wno-undef-prefix -fPIC -Werror=unguarded-availability-new",
+            "CONFIG_ARGS": "'--build=aarch64-apple-darwin' '--host=aarch64-apple-darwin' '--prefix=/install' '--with-openssl=/tmp/tmp5tu62n7g/tools/deps' '--with-system-expat' '--with-system-libmpdec' '--without-ensurepip' '--with-tail-call-interp' 'MODULE_BUILDTYPE=static' '--enable-loadable-sqlite-extensions' '--enable-static-libpython-for-interpreter' '--enable-shared' '--with-mimalloc' '--enable-optimizations' '--enable-experimental-jit=yes-off' '--with-lto=full' '--with-build-python=/tmp/tmp5tu62n7g/tools/host/bin/python3.14' 'ac_cv_lib_intl_textdomain=no' 'ac_cv_func_ptsname_r=no' 'ac_cv_func_explicit_bzero=no' '--with-dbmliborder=ndbm' 'build_alias=aarch64-apple-darwin' 'host_alias=aarch64-apple-darwin' 'PKG_CONFIG=pkg-config --static --define-prefix' 'PKG_CONFIG_PATH=/tmp/tmp5tu62n7g/tools/deps/share/pkgconfig:/tmp/tmp5tu62n7g/tools/deps/lib/pkgconfig' 'CC=clang' 'CFLAGS=-O3 -arch arm64 -mmacosx-version-min=11.0 -Wno-nullability-completeness -Wno-expansion-to-defined -Wno-undef-prefix -fPIC -Werror=unguarded-availability-new' 'LDFLAGS=-arch arm64 -mmacosx-version-min=11.0 -Wl,-headerpad,40' 'CPPFLAGS=-O3 -arch arm64 -mmacosx-version-min=11.0 -Wno-nullability-completeness -Wno-expansion-to-defined -Wno-undef-prefix -fPIC -Werror=unguarded-availability-new' 'PROFILE_TASK=-m test --pgo -j 12' 'BOLT_COMMON_FLAGS=' 'BOLT_APPLY_FLAGS='",
+            "SOABI": "cpython-314-darwin"
+          }
+        },
+        "backend_fingerprints": {
+          "orjson": {
+            "version": "3.12.0",
+            "code_files": 2,
+            "code_sha256": "4ae0aea176dbaad5c8c2ad7a061c125ef747c440fac7d32ecfceec6430861e21",
+            "native_sha256": {
+              "orjson/orjson.cpython-314-darwin.so": "aaebbe8aad399489acc642c23615bd373192904c319f159496ea5ab0d3c3bc45"
+            }
+          },
+          "msgspec": {
+            "version": "0.22.0",
+            "code_files": 12,
+            "code_sha256": "e608dfc42ce82cc0b5b72a674efc34f88bdb0a809d7c655c4f8c09a987c58dd4",
+            "native_sha256": {
+              "msgspec/_core.cpython-314-darwin.so": "5b7f13df7855615e38ceba6e7121724221005eaeb4eb1eb4e68d00122d9b5469"
+            }
+          },
+          "pybase64": {
+            "version": "1.5.0",
+            "code_files": 8,
+            "code_sha256": "2e2cdec1fcb51bc48d4f84342797e3ce2e8707c7694094d856299f14912fee68",
+            "native_sha256": {
+              "pybase64/_pybase64.cpython-314-darwin.so": "db979304a53bfdd7d6a38bfe172608884872060ff2bce949834bfe374f79a3c1"
+            }
+          },
+          "numpy": null,
+          "blake3": {
+            "version": "1.0.10",
+            "code_files": 2,
+            "code_sha256": "ee989e52c3fdde1a84bd8057a35b8c5a7f93e89c8073f0f44753103e75c9c535",
+            "native_sha256": {
+              "blake3/blake3.cpython-314-darwin.so": "a4cb673ee70bc2bdcc474c9ed298b63cb3c01f5f9679ca81c9bd850dfec2b45f"
+            }
+          }
+        },
+        "thread_environment": {
+          "PYTHONHASHSEED": null,
+          "OMP_NUM_THREADS": null,
+          "OPENBLAS_NUM_THREADS": null,
+          "MKL_NUM_THREADS": null,
+          "VECLIB_MAXIMUM_THREADS": null
+        }
+      },
+      "configuration": {
+        "rounds": 5,
+        "profile_rounds": 3,
+        "repetitions": 3
+      },
+      "sources": {
+        "original": {
+          "source": "/private/tmp/jsonx-throughput-baseline/src",
+          "jsonx": "/private/tmp/jsonx-throughput-baseline/src/unstd/serde/jsonx.py",
+          "native_binary": "/private/tmp/jsonx-throughput-baseline/src/unstd/serde/_json_native.cpython-314-darwin.so",
+          "python_sha256": {
+            "unstd/serde/__init__.py": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d",
+            "unstd/serde/_internal/__init__.py": "6aed7cdb4acd19aa8dfa7668c884fd937f2add4574c73531bd6cdde569f53f05",
+            "unstd/serde/_internal/json_common.py": "cb4ee6fce1510e202b4126e67b53ac73b9e7b73a9d67d010b451b7fa45ea0b8f",
+            "unstd/serde/_internal/json_encode.py": "8c27e3ed7bc6052315bc3d3ce17987ef078c751a4348396cc29fe103578f5553",
+            "unstd/serde/_json_common.py": "fb088bf068ac0dd5f2dd1675cb60cb682da6aec80320b85d98aa39c16a7f6781",
+            "unstd/serde/_json_encode.py": "d010007e07fbe5e46a1bcfb6984b2730f30564e4a2dc15306baedda9f2ab8ec1",
+            "unstd/serde/_json_native.cpython-312-darwin.so": "06c5e476e9124d032accce354be8395d49a9abd10c2fb6c7034196eabd8de46e",
+            "unstd/serde/_json_native.cpython-313-darwin.so": "470d74d6b8c61cf86cc05dff09fb8481412c11fd6d232900aadba8ca6a16c393",
+            "unstd/serde/_json_native.cpython-314-darwin.so": "664980386fba9d736659cc4adfa900e42968b4505cffa27bcc7e13096faf846b",
+            "unstd/serde/_json_native.pyi": "8e1a78292638c68ef25a9c149dd07de835af34bab57c9ffe8ab48a4a99a6c7a1",
+            "unstd/serde/b64.py": "c9fa198b3a6a4dffab239697c2d35c717ab2adea1977e7c1bd2226c30c4dbe32",
+            "unstd/serde/jsonx.py": "934c8005f7de765ac3600761dd7ddee7f9e08d81d2a55f6bcfb79b6ea6e4d663",
+            "unstd/serde/ndjson.py": "98c1f5bb1b78d2548390683b9b4bc062c4dc900b1fc27837e7941c7ee4553550",
+            "unstd/serde/structs.py": "ebe5eb0c8cba8e8bc01137c9e4f768d86cb900d15c67600cbaf38f0accfa6c65"
+          },
+          "native_source_root": "/private/tmp/jsonx-throughput-baseline/native-serde",
+          "native_source_sha256": {
+            "src/_json_decode_native.h": "acb1c5a574ba8bdc664c708222bebd06b571e8c102404ffa714a6c2ebfbf6eec",
+            "src/_json_encode_native.h": "d9cd56b16da3dfd72b36fa8ae00f7b82e4be7cc37629ef129dc0b3a9c9ac6c1e",
+            "src/_json_lines_native.h": "b2f9b71876976199b3a02b53572672f581438e237353a92205211fbd27ea74d0",
+            "src/_json_native.c": "01cfd935049f43ec617b02f41d931902c353b37e11ffb973219fbfd5ad4852b3"
+          }
+        },
+        "first_pass": {
+          "source": "/private/tmp/jsonx-second-baseline/src",
+          "jsonx": "/private/tmp/jsonx-second-baseline/src/unstd/serde/jsonx.py",
+          "native_binary": "/private/tmp/jsonx-second-baseline/src/unstd/serde/_json_native.cpython-314-darwin.so",
+          "python_sha256": {
+            "unstd/serde/__init__.py": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d",
+            "unstd/serde/_internal/__init__.py": "6aed7cdb4acd19aa8dfa7668c884fd937f2add4574c73531bd6cdde569f53f05",
+            "unstd/serde/_internal/json_common.py": "cb4ee6fce1510e202b4126e67b53ac73b9e7b73a9d67d010b451b7fa45ea0b8f",
+            "unstd/serde/_internal/json_encode.py": "70c0e9b9a2d3ed721573b097204c76b335d2d73e7655b2e64b2ea04e7d10de6d",
+            "unstd/serde/_json_common.py": "fb088bf068ac0dd5f2dd1675cb60cb682da6aec80320b85d98aa39c16a7f6781",
+            "unstd/serde/_json_encode.py": "d010007e07fbe5e46a1bcfb6984b2730f30564e4a2dc15306baedda9f2ab8ec1",
+            "unstd/serde/_json_native.cpython-312-darwin.so": "1e501e6bc0c4deb2d81e6c7b893d51a32aa4059b1d08fe3fb1e55eac0ed2d5aa",
+            "unstd/serde/_json_native.cpython-313-darwin.so": "d918fbbd21164169e81ab2629dd62bf2c0cb509dfa2e035e84fc1014bdf78c61",
+            "unstd/serde/_json_native.cpython-314-darwin.so": "4a53b697d271eaf47f5ac08b7db1d289cb33091de867063c4f47586765ecd29c",
+            "unstd/serde/_json_native.pyi": "2701aa6fa8f926d09d401e06942e3c65669cf5c2aea38fc5eaf498fd693729f8",
+            "unstd/serde/b64.py": "c9fa198b3a6a4dffab239697c2d35c717ab2adea1977e7c1bd2226c30c4dbe32",
+            "unstd/serde/jsonx.py": "ddb3b64c6555402da2a979bce6fc75019ccf6d701653aea06ec5f985cd6fec71",
+            "unstd/serde/ndjson.py": "98c1f5bb1b78d2548390683b9b4bc062c4dc900b1fc27837e7941c7ee4553550",
+            "unstd/serde/structs.py": "ebe5eb0c8cba8e8bc01137c9e4f768d86cb900d15c67600cbaf38f0accfa6c65"
+          },
+          "native_source_root": "/private/tmp/jsonx-second-baseline/native-serde",
+          "native_source_sha256": {
+            "src/_json_decode_native.h": "d46206a3c04858ac3739d2590b4c1a02d23a2801cbec3387fa4893d28e56624f",
+            "src/_json_encode_native.h": "d9cd56b16da3dfd72b36fa8ae00f7b82e4be7cc37629ef129dc0b3a9c9ac6c1e",
+            "src/_json_lines_native.h": "b2f9b71876976199b3a02b53572672f581438e237353a92205211fbd27ea74d0",
+            "src/_json_native.c": "ee7e575108f071027ad8d3af08d3322ee1a77997a62822aca1a29e37c749e19b",
+            "src/_json_text_native.h": "937fe2288c702b38b752e4c7b4a09a91239bba86d2907b0f89c24f99a13d3e92"
+          }
+        },
+        "candidate": {
+          "source": "/private/tmp/jsonx-second-final-v2/src",
+          "jsonx": "/private/tmp/jsonx-second-final-v2/src/unstd/serde/jsonx.py",
+          "native_binary": "/private/tmp/jsonx-second-final-v2/src/unstd/serde/_json_native.cpython-314-darwin.so",
+          "python_sha256": {
+            "unstd/serde/__init__.py": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d",
+            "unstd/serde/_internal/__init__.py": "6aed7cdb4acd19aa8dfa7668c884fd937f2add4574c73531bd6cdde569f53f05",
+            "unstd/serde/_internal/json_common.py": "cb4ee6fce1510e202b4126e67b53ac73b9e7b73a9d67d010b451b7fa45ea0b8f",
+            "unstd/serde/_internal/json_encode.py": "a01fe8460bd4a70573fed3ebff35c1a1f318bf477bb17c41b165a0a5aacc46a4",
+            "unstd/serde/_json_common.py": "fb088bf068ac0dd5f2dd1675cb60cb682da6aec80320b85d98aa39c16a7f6781",
+            "unstd/serde/_json_encode.py": "d010007e07fbe5e46a1bcfb6984b2730f30564e4a2dc15306baedda9f2ab8ec1",
+            "unstd/serde/_json_native.cpython-312-darwin.so": "11435aa161024fa9d34b028d5d25ba1ee721d867133077eabb7ba6703fcca0f1",
+            "unstd/serde/_json_native.cpython-313-darwin.so": "916d15b9a2543ab5fb94d8a47445ef4ba2f097b129d0885c771b4b8232e8f9c8",
+            "unstd/serde/_json_native.cpython-314-darwin.so": "1cc583b8883b88b4e2d5bf9337c93d9286bf5e3f06a6aa3ce1fd75f1e5f85808",
+            "unstd/serde/_json_native.pyi": "275cb98230bf6a337bbc224ebfcd13025859b7ccef2800fb6d4ef7ac3796d47e",
+            "unstd/serde/b64.py": "c9fa198b3a6a4dffab239697c2d35c717ab2adea1977e7c1bd2226c30c4dbe32",
+            "unstd/serde/jsonx.py": "a15639db6e2b4495c9f50aec12c6830c931e48563a506ad56d51598c393d7ca4",
+            "unstd/serde/ndjson.py": "98c1f5bb1b78d2548390683b9b4bc062c4dc900b1fc27837e7941c7ee4553550",
+            "unstd/serde/structs.py": "ebe5eb0c8cba8e8bc01137c9e4f768d86cb900d15c67600cbaf38f0accfa6c65"
+          },
+          "native_source_root": "/private/tmp/jsonx-second-final-v2/native-serde",
+          "native_source_sha256": {
+            "src/adapter.c": "4255c7f31b58ce2b370b3269a7568ec9c7eb73f52cf431c88da8c449d73578ab",
+            "src/decode.h": "d46206a3c04858ac3739d2590b4c1a02d23a2801cbec3387fa4893d28e56624f",
+            "src/encode.h": "d9cd56b16da3dfd72b36fa8ae00f7b82e4be7cc37629ef129dc0b3a9c9ac6c1e",
+            "src/escape.h": "937fe2288c702b38b752e4c7b4a09a91239bba86d2907b0f89c24f99a13d3e92",
+            "src/identity.h": "e9dd9fb8b4f8188de9f3180699749fab34d16307177b5f0814a0cf1681d592bf",
+            "src/lines.h": "b2f9b71876976199b3a02b53572672f581438e237353a92205211fbd27ea74d0",
+            "src/repeat.h": "6d8ef0ca60b10a5a2888bbb921e009957f59fa0dff5f8db16ce67fa65a1e917d"
+          }
+        }
+      }
+    }
+  },
+  "observations": {
+    "312": {
+      "losses": {
+        "public_registry": {
+          "final_over_original_speedup": {},
+          "final_over_first_pass_speedup": {
+            "unstd.serde.jsonx.JSONEncoder": 0.9844129360090141,
+            "unstd.serde.jsonx.dump": 0.9933669261954745,
+            "unstd.serde.jsonx.dumps": 0.98938486182313,
+            "unstd.serde.jsonx.loads": 0.986165278802572
+          }
+        },
+        "core_registry": {
+          "final_over_original_speedup": {
+            "jsonx.loads \u00b7 1000 integers": 0.9823823693245606
+          },
+          "final_over_first_pass_speedup": {
+            "jsonx.loads \u00b7 1000 integers": 0.9768126634356341
+          }
+        },
+        "existing_serde_profile": {
+          "final_over_original_speedup": {
+            "jsonx.canonical/custom": 0.9317831363711012,
+            "jsonx.canonical/default": 0.9902343922201357,
+            "jsonx.dump/stream": 0.9953668092773731,
+            "jsonx.dumpb/string": 0.9872664276681384,
+            "jsonx.dumps/class": 0.9969048716172028,
+            "jsonx.dumps/custom": 0.9781568497746463,
+            "jsonx.loads/integers": 0.9923599281788402,
+            "jsonx.loads/integers/bytes": 0.9945711538337938,
+            "jsonx.loads/records/bytes": 0.9961605709492868
+          },
+          "final_over_first_pass_speedup": {
+            "jsonx.canonical/custom": 0.9307273028061884,
+            "jsonx.dump/stream": 0.9863876779627224,
+            "jsonx.dumps/class": 0.9985167544798489,
+            "jsonx.dumps/indent": 0.9820120513282485,
+            "jsonx.dumps/sorted": 0.9342454514743497,
+            "jsonx.load/stream": 0.9991086386906922,
+            "jsonx.loads/error": 0.9447068887317304,
+            "jsonx.loads/float": 0.9981219156025657,
+            "jsonx.loads/float/bytes": 0.9697004196680238,
+            "jsonx.loads/hook": 0.9564839261960533,
+            "jsonx.loads/integers/bytes": 0.9894966778206661,
+            "jsonx.loads/records": 0.9907441560681143,
+            "jsonx.loads/records/bytes": 0.9828081663270752,
+            "jsonx.loads/small/bytes": 0.9707352977691335,
+            "jsonx.loads/string": 0.9733564458140729,
+            "jsonx.loads/string/bytes": 0.9640347104637653
+          }
+        }
+      },
+      "core_floor_failures": [],
+      "registry_profile_python_function_counts": {
+        "original": {
+          "_check_headroom": 20,
+          "_recursion_result": 20,
+          "_exact_encode": 10,
+          "dumps": 10,
+          "dumpb": 10,
+          "canonical": 10,
+          "_identity_snapshot": 1290,
+          "canonical_strict": 10,
+          "loads": 20,
+          "dump": 10,
+          "load": 10
+        },
+        "first_pass": {
+          "_check_headroom": 20,
+          "_recursion_result": 20,
+          "_exact_encode": 10,
+          "dumps": 10,
+          "dumpb": 10,
+          "canonical": 10,
+          "_identity_snapshot": 1290,
+          "canonical_strict": 10,
+          "loads": 20,
+          "dump": 10,
+          "load": 10
+        },
+        "candidate": {
+          "_check_headroom": 20,
+          "_recursion_result": 20,
+          "_exact_encode": 10,
+          "dumps": 10,
+          "dumpb": 10,
+          "canonical": 10,
+          "canonical_strict": 10,
+          "loads": 20,
+          "dump": 10,
+          "load": 10
+        }
+      }
+    },
+    "313": {
+      "losses": {
+        "public_registry": {
+          "final_over_original_speedup": {
+            "unstd.serde.jsonx.JSONDecoder": 0.9966734456711214,
+            "unstd.serde.jsonx.JSONEncoder": 0.9788535692036275,
+            "unstd.serde.jsonx.dump": 0.963424047997841,
+            "unstd.serde.jsonx.dumpb": 0.8999428862533456,
+            "unstd.serde.jsonx.load": 0.9959786324139946,
+            "unstd.serde.jsonx.loads": 0.9961898995422924
+          },
+          "final_over_first_pass_speedup": {
+            "unstd.serde.jsonx.canonical": 0.9715881379356278,
+            "unstd.serde.jsonx.dump": 0.9737835948150884,
+            "unstd.serde.jsonx.dumpb": 0.9030742471181638,
+            "unstd.serde.jsonx.dumps": 0.9464507969920366,
+            "unstd.serde.jsonx.load": 0.9664912443705947,
+            "unstd.serde.jsonx.loads": 0.9483387634570284
+          }
+        },
+        "core_registry": {
+          "final_over_original_speedup": {
+            "jsonx.loads \u00b7 1000 integers": 0.9923523749396148,
+            "jsonx.loads \u00b7 500 records": 0.9178001800371636
+          },
+          "final_over_first_pass_speedup": {
+            "jsonx.dumps \u00b7 text payload": 0.9985259087636686,
+            "jsonx.loads \u00b7 500 records": 0.9402167632024433
+          }
+        },
+        "existing_serde_profile": {
+          "final_over_original_speedup": {
+            "jsonx.dumpb/int": 0.9636562486835356,
+            "jsonx.dumpb/integers15": 0.9339852840974452,
+            "jsonx.dumpb/small": 0.9935607904822541,
+            "jsonx.dumpb/string": 0.7618111537820446,
+            "jsonx.dumpb/text": 0.9571523888183988,
+            "jsonx.dumps/numpy": 0.974088454493743,
+            "jsonx.dumps/string": 0.9084935684227735,
+            "jsonx.loads/error": 0.9780276687826517,
+            "jsonx.loads/integers": 0.9978445687318184,
+            "jsonx.loads/records": 0.9975065752171925,
+            "jsonx.loads/records/bytes": 0.979538847259452,
+            "jsonx.loads/string": 0.952693830576856,
+            "jsonx.loads/string/bytes": 0.9886160125309655
+          },
+          "final_over_first_pass_speedup": {
+            "jsonx.dumpb/int": 0.9852319026798505,
+            "jsonx.dumpb/null": 0.9820802150814398,
+            "jsonx.dumpb/string": 0.7982328264617743,
+            "jsonx.dumps/indent": 0.9999949104018662,
+            "jsonx.dumps/indent4": 0.9620473147213813,
+            "jsonx.dumps/int": 0.9109197058083863,
+            "jsonx.dumps/numpy-error": 0.9896590445006096,
+            "jsonx.dumps/sorted": 0.9830104333532993
+          }
+        }
+      },
+      "core_floor_failures": [
+        {
+          "label": "original",
+          "repetition": 3,
+          "case": "jsonx.dumps \u00b7 text payload"
+        }
+      ],
+      "registry_profile_python_function_counts": {
+        "original": {
+          "_check_headroom": 20,
+          "_recursion_result": 20,
+          "_exact_encode": 10,
+          "dumps": 10,
+          "dumpb": 10,
+          "canonical": 10,
+          "_identity_snapshot": 1290,
+          "canonical_strict": 10,
+          "loads": 20,
+          "dump": 10,
+          "load": 10
+        },
+        "first_pass": {
+          "_check_headroom": 20,
+          "_recursion_result": 20,
+          "_exact_encode": 10,
+          "dumps": 10,
+          "dumpb": 10,
+          "canonical": 10,
+          "_identity_snapshot": 1290,
+          "canonical_strict": 10,
+          "loads": 20,
+          "dump": 10,
+          "load": 10
+        },
+        "candidate": {
+          "_check_headroom": 20,
+          "_recursion_result": 20,
+          "_exact_encode": 10,
+          "dumps": 10,
+          "dumpb": 10,
+          "canonical": 10,
+          "canonical_strict": 10,
+          "loads": 20,
+          "dump": 10,
+          "load": 10
+        }
+      }
+    },
+    "314": {
+      "losses": {
+        "public_registry": {
+          "final_over_original_speedup": {
+            "unstd.serde.jsonx.canonical": 0.9740376755064263,
+            "unstd.serde.jsonx.loads": 0.99170269093021
+          },
+          "final_over_first_pass_speedup": {
+            "unstd.serde.jsonx.JSONDecoder": 0.9664813104203941,
+            "unstd.serde.jsonx.JSONEncoder": 0.998379907021403,
+            "unstd.serde.jsonx.canonical": 0.980666571269562,
+            "unstd.serde.jsonx.dump": 0.9825095804264518,
+            "unstd.serde.jsonx.load": 0.9646357382892613,
+            "unstd.serde.jsonx.loads": 0.97519194656858
+          }
+        },
+        "core_registry": {
+          "final_over_original_speedup": {
+            "jsonx.loads \u00b7 20 nested records": 0.9628965849937176
+          },
+          "final_over_first_pass_speedup": {
+            "jsonx.dumps \u00b7 text payload": 0.9676890838373552,
+            "jsonx.loads \u00b7 20 nested records": 0.9501409264230732,
+            "jsonx.loads \u00b7 500 records": 0.9956222129774938
+          }
+        },
+        "existing_serde_profile": {
+          "final_over_original_speedup": {
+            "jsonx.dumpb/int": 0.9313126233073841,
+            "jsonx.dumpb/string": 0.9485359397888569,
+            "jsonx.dumpb/wide": 0.9276053834890656,
+            "jsonx.dumps/string": 0.9040412505800604,
+            "jsonx.loads/float": 0.8989248103720604,
+            "jsonx.loads/float/bytes": 0.8331646190139523
+          },
+          "final_over_first_pass_speedup": {
+            "jsonx.canonical/default": 0.9862886818893744,
+            "jsonx.dump/stream": 0.9884125694536251,
+            "jsonx.dumpb/int": 0.859765605464138,
+            "jsonx.dumpb/null": 0.9890749826305382,
+            "jsonx.dumpb/small": 0.9587301428857519,
+            "jsonx.dumpb/string": 0.9801043736785515,
+            "jsonx.dumpb/text": 0.9643681287456949,
+            "jsonx.dumpb/wide": 0.8634055983298161,
+            "jsonx.dumps/custom": 0.965079690438649,
+            "jsonx.dumps/indent4": 0.9705407954837301,
+            "jsonx.dumps/int": 0.9828115306958348,
+            "jsonx.dumps/sorted": 0.9437827135657129,
+            "jsonx.dumps/text": 0.9912309389343752,
+            "jsonx.dumps/wide": 0.971898851674052,
+            "jsonx.loads/float": 0.8515234884314324,
+            "jsonx.loads/float/bytes": 0.9761044810288523
+          }
+        }
+      },
+      "core_floor_failures": [],
+      "registry_profile_python_function_counts": {
+        "original": {
+          "_check_headroom": 20,
+          "_recursion_result": 20,
+          "_exact_encode": 10,
+          "dumps": 10,
+          "dumpb": 10,
+          "canonical": 10,
+          "_identity_snapshot": 1290,
+          "canonical_strict": 10,
+          "loads": 20,
+          "dump": 10,
+          "load": 10
+        },
+        "first_pass": {
+          "_check_headroom": 20,
+          "_recursion_result": 20,
+          "_exact_encode": 10,
+          "dumps": 10,
+          "dumpb": 10,
+          "canonical": 10,
+          "_identity_snapshot": 1290,
+          "canonical_strict": 10,
+          "loads": 20,
+          "dump": 10,
+          "load": 10
+        },
+        "candidate": {
+          "_check_headroom": 20,
+          "_recursion_result": 20,
+          "_exact_encode": 10,
+          "dumps": 10,
+          "dumpb": 10,
+          "canonical": 10,
+          "_identity_snapshot": 1290,
+          "canonical_strict": 10,
+          "loads": 20,
+          "dump": 10,
+          "load": 10
+        }
+      }
+    }
+  },
+  "preflight": {
+    "original_commit": "94589856d2e604310b55020e40c51010f2af4755",
+    "harness_root": "/tmp/jsonx-second-harness",
+    "harness_sha256": {
+      "bench/__init__.py": "d3ce1c8fb2b19ac17342c879a03486448de07de9934b8c22ec3295826fb8d17a",
+      "bench/__main__.py": "3f97a4739aed06f17ea9a9b3bc9ad5d47a15032a18a5b1ae0a9f419f7d3bed05",
+      "bench/audits/__init__.py": "744fdccd68f663d43d625c7828f28ef9aada7f7b792098c8035668688a75b9d4",
+      "bench/audits/crypto/__init__.py": "f3289f4251a7f24b0d452d11eb591b8cf32e62fea0a909843bde4a3824514d82",
+      "bench/audits/math/__init__.py": "df1f393f24180b0dc8867443c9225ec9f931f00fa5ea094b83b35c5aabff1559",
+      "bench/audits/math/probe_numeric.py": "c97340288e0df2399897da14e11b79d00522c3fdec4a05d5073adec66a9a420c",
+      "bench/audits/math/probe_random.py": "962a8c7b76b3ea4344ba3cee020b6ae8493d009a42beb59e6055e1f32d3a0885",
+      "bench/audits/math/probe_text.py": "3a91ebd831c81cfad4797303fa51c0d53336a956e2d890df38f084d914dba703",
+      "bench/audits/math/qualify_audio.py": "4119d50434306914bdf7824a44c1f5475093d1070a36449ddc04bfa8ebab324b",
+      "bench/audits/math/qualify_sndfile.py": "91170161391ae8c7d38c618f4519ef21930da9774f76c683cbe64bb6ed23334b",
+      "bench/baselines/baseline.json": "365c1e07adf70a6c28befa769874cce8e9775f60a4faa5ecb9b3d05c44f282b0",
+      "bench/baselines/speeds.json": "0ee80a28e3cae55c31aa57da1f7ce21862db09ff710d854740d23c64f751dc8d",
+      "bench/baselines/time-native.json": "8bf26ca4ad041e406ef63010e3f6efafd907755bca6b07047e2229399ed09639",
+      "bench/billy_serde.py": "a5115feca4003ec43853c736c090faba72d87108f5afe43b26023516435a64aa",
+      "bench/cases.py": "fc96d85fb11054f50a0c30741bea63c9900ddbafda409ea0d80b2c860100ddcc",
+      "bench/clone_ids_profile.py": "d1a0afb1f6fc74e4ee6eb5f12368c91dc0fdba3c02e1f9dc2bd637947a9f8673",
+      "bench/core/__init__.py": "7d448fab00178bc6758de1b89205f4d4a0be0def7afc723ec6f4d26a1e8ec83a",
+      "bench/core/cases.py": "379e6cb223147ab0793fb54ec4801b2b4e6859c5a65f40d428ab2b91379e9622",
+      "bench/core/report.py": "3b5222c32930817f7333450dabd44088df1c403ed468029a74939b0b89afa4ab",
+      "bench/core/timing.py": "d585627571b5daeca0a078b75484c84e769dce70a5b4448825fd811a8e3b61bc",
+      "bench/crypto_backends.py": "47ab3c0bb80c541e42e716210442fd1bf91f3c3801247bf36dddb22d16a56a0b",
+      "bench/crypto_fixes.py": "ba1de3bb1adc5c7e5a039bfe7e83ca4031127a64a47fddd31a77ae9ab6dd53b3",
+      "bench/crypto_hash.py": "872d9e06409b5bc26107d9ba4aedf6e8e2cf77cfaafdb3a94cc25ecdab07b8de",
+      "bench/crypto_rng.py": "feb6101460ac3c1c516e53cc1c4ab233a3d528b66df09d9a22a991ff7d65b014",
+      "bench/crypto_tls_reuse.py": "eb60848dbdac4136c4f879f9f6a88e904382f17d99488ad1bd08db4eee016243",
+      "bench/diagnostics/__init__.py": "ad76f607bceaccbdb68bdc2cd1c46fb902634162e07698542203e2ca6be86964",
+      "bench/diagnostics/clone_algorithms.py": "4c7e096289e16446dd7c1fff846ef3f45690d53a7d88a29ba4f0027edd7bee48",
+      "bench/diagnostics/clone_allocations.py": "ee601bbdfb40404517db64cb004995920b5f679a5fa66c77763d980afc95686b",
+      "bench/diagnostics/clone_cold.py": "31c17caaab775ab450db1174ca6dddc0afd141cc8e3d4d8d2ed679f11de9a14d",
+      "bench/diagnostics/crypto_backends.py": "3156f8b34ee2b1002ef34e0645ba85a8ee665c1a8cf474ee6f1af8156e688506",
+      "bench/diagnostics/crypto_fixes.py": "b757f3825cc05671c71adc40910df3e171e61fe56d75dc69a84bb2ad46bc85cc",
+      "bench/diagnostics/crypto_rng.py": "a59e1502a4ad1153ad7b7e1786aebbf99f863bd2e116a1380755c6a100e46dc4",
+      "bench/diagnostics/crypto_tls_reuse.py": "237f333f53558f761f568960b1298d4c19f8ca844a2946b7e0dc62848f2e41bd",
+      "bench/diagnostics/gzip_reads.py": "2cb2c7d75e20e010dd3b920f7691ff8b8076a7d2063fcdcc0f2e387953ddeede",
+      "bench/diagnostics/rand_diagnose.py": "fd892bf0e5709e126755a9ef3171190a828f2962274d0621ecc28d8d37d4bd6f",
+      "bench/gzip_reads.py": "0d094bc29c634f4a6028838fbf8143084808019695fb3ebd75c48cbd170c6351",
+      "bench/math-audit/probe_numeric.py": "3bb2bf2fb2c29378cbbc31c48b6e334b30a1f511d3b77c31447989ed7cf75b7d",
+      "bench/math-audit/probe_random.py": "3a05484f2ccc0204cbc20dc01a06eb48d93a4e93109e12ca54d17d29ee0a1a5a",
+      "bench/math-audit/probe_text.py": "ace209963989b1c96158ba3a5af7eb4e46e0a016e5dd83d76acbb38846463d70",
+      "bench/math-audit/qualify_audio.py": "ae55c97b5aae8e5c85b4010461ef0c9ce4ec6df8416be536d9d4e44f42b99232",
+      "bench/math-audit/qualify_sndfile.py": "e39bbaaa4c7511b95f2ddc7b2a80cd6b5c6cf64ff5b6593db363fc4662eabbd6",
+      "bench/native_profile.py": "2fcc37ffaf7d298fc6ff9e6c9ab15fe46d812794879e5cf10cb526fae4b1a926",
+      "bench/profiles/__init__.py": "75f32d76ac6c0671fe17c653bcffbc558a9fa9c6006eaf5523424178452a0c7e",
+      "bench/profiles/billy_gzip.py": "92f34672ffeaf3a32e7cbfee405e319a6bd3f80c1150bda6eb722bb8d841d4d9",
+      "bench/profiles/billy_serde.py": "17f14e760b96b15d98d60ab010be0a018d007dfbac5bc5708fdc497bf8ed14f0",
+      "bench/profiles/clone_common_cpu.py": "f1bc80e4bbc42068e898e0a3e4f613313b311bd430f12f62dc03991e48a357ba",
+      "bench/profiles/clone_cpu.py": "efc3f715ea09f403299354929164a5e2516d8783588ee87411cf54d67cd681cd",
+      "bench/profiles/clone_ids_profile.py": "65be3721bd793d6f63ff304cf3373cf1b827015916f2d053655a1b57d3b6cd70",
+      "bench/profiles/crypto_hash.py": "260a07b78502a12db4fecefda6a8cf60acd48653b493aa35df29424373b9fcac",
+      "bench/profiles/gzip_reads.py": "2bcbfbfa4db0711abaefdcc666e67616c54ddc06fa7890a91aaa8cb3a976df05",
+      "bench/profiles/jsonx_throughput.py": "e902ee3178e172216e269245e86837d001c813ba3fbe7c352c2b711bad22bf80",
+      "bench/profiles/native_profile.py": "606dbcdbdfa8e8cc20e7673ab4c13fd4f0b1afd74d0b7b3bbaad6d9f838071fb",
+      "bench/profiles/serde_profile.py": "15d25ba574ad67597bf85f4646a033247b290d6d7d710c75bbb23268a3e2c1ec",
+      "bench/profiles/text_native_compare.py": "daed408f2b6fd61e07dc08a85f06f6c8bd5f2d2441e3f3b22d9141934464e465",
+      "bench/rand_diagnose.py": "4a3099e0559536be632da445ab9e5523c99cb818485d7c0cb35ef19082aa8ca7",
+      "bench/report.py": "5ac8edc9921fa8c5831a78e9bb2280c8d50044c3d5001e83a42097b74d4a4927",
+      "bench/serde_profile.py": "b1e0fcc098839039f8d32989a90a0a7c549bbeede394ec0a3aa40452b667a369",
+      "bench/speed_cases_codecs.py": "29f1a501eddb8e8fe553d3ad7a42dfe0459297d67e0a055688811b1b96434e2f",
+      "bench/speed_cases_operations.py": "ebcd3554ad6eacd7145dcc02105a0216d1a49aac048a58fc76245dbabd1aaad3",
+      "bench/speed_cases_runtime.py": "9aab2d513586ab43d666f152f4ce77d67c06ac1bb65e59c86dd0d9712a849432",
+      "bench/speeds.py": "d1f6903e051f41644914a2e57879efa4123544851a04573828233d26d82b99ae",
+      "bench/text_native_compare.py": "355296d253e3f9a0e47129ed522ebcddbadc746bafec18047383cf1c06451f43",
+      "bench/timing.py": "8581207f1126f2a328b5a4224ee137bb4fbd066a76dfdfab674beffb25acfa3f",
+      "bench/workloads/__init__.py": "f62e623ffb84a575736ca61764f795f113699392ea58c77f46220f979d53ca67",
+      "bench/workloads/speed_cases_codecs.py": "8dda94b94688b43d9aecce530132dc6e278ab3a42aee0790c2e0f40b7fae5092",
+      "bench/workloads/speed_cases_operations.py": "54572576bc9cea79179d60a84d428a7f2f232e1d6de46233c3ee00ab196cf497",
+      "bench/workloads/speed_cases_runtime.py": "9a071379371c171c3e8b307453c27b798d41ba3926fd05bbb31e2bdeabcca8e3"
+    },
+    "existing_fixture_verification": {
+      "bench/workloads/speed_cases_codecs.py": {
+        "sha256": "8dda94b94688b43d9aecce530132dc6e278ab3a42aee0790c2e0f40b7fae5092",
+        "identical_to_original_commit": true
+      },
+      "bench/core/cases.py": {
+        "sha256": "379e6cb223147ab0793fb54ec4801b2b4e6859c5a65f40d428ab2b91379e9622",
+        "identical_to_original_commit": true
+      },
+      "bench/core/timing.py": {
+        "sha256": "d585627571b5daeca0a078b75484c84e769dce70a5b4448825fd811a8e3b61bc",
+        "identical_to_original_commit": true
+      },
+      "bench/core/report.py": {
+        "sha256": "3b5222c32930817f7333450dabd44088df1c403ed468029a74939b0b89afa4ab",
+        "identical_to_original_commit": true
+      },
+      "bench/speeds.py": {
+        "sha256": "d1f6903e051f41644914a2e57879efa4123544851a04573828233d26d82b99ae",
+        "identical_to_original_commit": false,
+        "unchanged_timed_functions": {
+          "audit": true,
+          "timings": true
+        }
+      },
+      "bench/profiles/serde_profile.py": {
+        "sha256": "15d25ba574ad67597bf85f4646a033247b290d6d7d710c75bbb23268a3e2c1ec",
+        "identical_to_original_commit": true
+      }
+    },
+    "unchanged_jsonx_baselines": {
+      "baseline.json": {
+        "unchanged_jsonx_rows": {
+          "jsonx.dumps \u00b7 500 records": {
+            "floor": 0.74,
+            "measured": 1.06,
+            "group": "serde"
+          },
+          "jsonx.dumps \u00b7 text payload": {
+            "floor": 4.19,
+            "measured": 5.98,
+            "group": "serde"
+          },
+          "jsonx.loads \u00b7 1000 integers": {
+            "floor": 1.34,
+            "measured": 1.91,
+            "group": "serde"
+          },
+          "jsonx.loads \u00b7 500 records": {
+            "floor": 0.67,
+            "measured": 0.96,
+            "group": "serde"
+          },
+          "jsonx.dumps \u00b7 32-int record": {
+            "floor": 0.45,
+            "measured": 0.65,
+            "group": "serde"
+          },
+          "jsonx.dumpb \u00b7 500 records": {
+            "floor": 0.69,
+            "measured": 0.99,
+            "group": "serde"
+          },
+          "jsonx.loads \u00b7 20 nested records": {
+            "floor": 0.59,
+            "measured": 0.84,
+            "group": "serde"
+          }
+        }
+      },
+      "speeds.json": {
+        "unchanged_jsonx_rows": {
+          "unstd.serde.jsonx.JSONDecoder": {
+            "ceiling_ns": 602.7066284179688,
+            "iterations": 16384,
+            "measured_ns": 463.6204833984375,
+            "note": "default constructor",
+            "rounds": 11,
+            "spread": 0.16917997703515475
+          },
+          "unstd.serde.jsonx.JSONEncoder": {
+            "ceiling_ns": 144.3761189778646,
+            "iterations": 73728,
+            "measured_ns": 111.05855305989583,
+            "note": "default constructor",
+            "rounds": 11,
+            "spread": 0.08822227310892299
+          },
+          "unstd.serde.jsonx.canonical": {
+            "ceiling_ns": 12437.386067708334,
+            "iterations": 768,
+            "measured_ns": 9567.220052083334,
+            "note": "32 Unicode records; sorted ASCII format",
+            "rounds": 11,
+            "spread": 0.29173249859648526
+          },
+          "unstd.serde.jsonx.canonical_strict": {
+            "ceiling_ns": 35124.547656250004,
+            "iterations": 256,
+            "measured_ns": 27018.8828125,
+            "note": "32 exact builtin Unicode records; validated sorted ASCII format",
+            "rounds": 11,
+            "spread": 0.17043549115100926
+          },
+          "unstd.serde.jsonx.dump": {
+            "ceiling_ns": 55623.2421875,
+            "iterations": 128,
+            "measured_ns": 42787.109375,
+            "note": "32 records; new StringIO included",
+            "rounds": 11,
+            "spread": 0.2863924772903638
+          },
+          "unstd.serde.jsonx.dumpb": {
+            "ceiling_ns": 2022.3705866228072,
+            "iterations": 3648,
+            "measured_ns": 1555.669682017544,
+            "note": "32 Unicode records",
+            "rounds": 11,
+            "spread": 0.15477747197706182
+          },
+          "unstd.serde.jsonx.dumps": {
+            "ceiling_ns": 14064.03578125,
+            "iterations": 640,
+            "measured_ns": 10818.4890625,
+            "note": "32 Unicode records",
+            "rounds": 11,
+            "spread": 0.22749927677342882
+          },
+          "unstd.serde.jsonx.load": {
+            "ceiling_ns": 6020.4345703125,
+            "iterations": 1024,
+            "measured_ns": 4631.103515625,
+            "note": "32 records; new StringIO included",
+            "rounds": 11,
+            "spread": 0.22555221677473772
+          },
+          "unstd.serde.jsonx.loads": {
+            "ceiling_ns": 5208.91337890625,
+            "iterations": 2048,
+            "measured_ns": 4006.8564453125,
+            "note": "32 Unicode records",
+            "rounds": 11,
+            "spread": 0.1271622787209717
+          }
+        }
+      }
+    },
+    "driver": {
+      "path": "/Users/griffinstrier/Billy-Company/unstd/bench/profiles/jsonx_existing.py",
+      "sha256": "861b01c43757ee083ce93d4e8059b690ddce6aa014d638a11bc8c079b7e96cc3"
+    },
+    "correctness_gate": {
+      "path": "tests/suites/assurance/gates/bench/test_jsonx_existing.py",
+      "sha256": "b2de79e62e499f1038c36b710c269d4400be8ac351cb28e8aee9bfdbcafb403c",
+      "cases": 14,
+      "python_313": "14 passed",
+      "python_314": "14 passed",
+      "ruff": "passed",
+      "mypy": "passed",
+      "mypy_scope": "Only bench/profiles/jsonx_existing.py is a checked root; imported Python modules are followed silently. This is not the joint product/harness type gate.",
+      "mypy_command": "MYPYPATH=src /tmp/jsonx-second-env-313/bin/mypy --no-incremental --cache-dir /tmp/jsonx-driver-mypy-cache --follow-imports=silent bench/profiles/jsonx_existing.py",
+      "mypy_output": "Success: no issues found in 1 source file\n"
+    },
+    "runtime_fingerprints": {
+      "312": {
+        "python": "3.12.15 (main, Oct  9 2026, 15:10:57) [Clang 22.1.3 ]",
+        "platform": "macOS-26.6-arm64-arm-64bit",
+        "backends": {
+          "orjson": "3.12.0",
+          "msgspec": "0.22.0",
+          "pybase64": "1.5.0"
+        },
+        "runtime_fingerprint": {
+          "executable": "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-python/cpython-3.12.15-macos-aarch64-none/bin/python3.12",
+          "executable_sha256": "83deb939c9034c3e85a377eeb04e7d9992f8881652a22289cd0eeeb83b98a565",
+          "library": "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-python/cpython-3.12.15-macos-aarch64-none/lib/libpython3.12.dylib",
+          "library_sha256": "15e07fb4c7d9929a50117758980e05f7ba073cd4f9ec2d461b3d0d77a09b4735",
+          "compiler_configuration": {
+            "CC": "cc",
+            "CFLAGS": "-fno-strict-overflow -Wsign-compare -Wunreachable-code -DNDEBUG -g -O3 -Wall -O3 -arch arm64 -mmacosx-version-min=11.0 -Wno-nullability-completeness -Wno-expansion-to-defined -Wno-undef-prefix -fPIC",
+            "PY_CFLAGS": "-fno-strict-overflow -Wsign-compare -Wunreachable-code -DNDEBUG -g -O3 -Wall -O3 -arch arm64 -mmacosx-version-min=11.0 -Wno-nullability-completeness -Wno-expansion-to-defined -Wno-undef-prefix -fPIC -Werror=unguarded-availability-new",
+            "CONFIG_ARGS": "'--build=aarch64-apple-darwin' '--host=aarch64-apple-darwin' '--prefix=/install' '--with-openssl=/tmp/tmpfzf90dyr/tools/deps' '--with-system-expat' '--with-system-libmpdec' '--without-ensurepip' 'MODULE_BUILDTYPE=static' '--enable-loadable-sqlite-extensions' '--enable-static-libpython-for-interpreter' '--enable-shared' '--enable-optimizations' '--with-lto=full' '--with-build-python=/tmp/tmpfzf90dyr/tools/host/bin/python3.12' 'ac_cv_lib_intl_textdomain=no' 'ac_cv_func_ptsname_r=no' '--with-dbmliborder=ndbm' 'build_alias=aarch64-apple-darwin' 'host_alias=aarch64-apple-darwin' 'PKG_CONFIG=pkg-config --static --define-prefix' 'PKG_CONFIG_PATH=/tmp/tmpfzf90dyr/tools/deps/share/pkgconfig:/tmp/tmpfzf90dyr/tools/deps/lib/pkgconfig' 'CC=clang' 'CFLAGS=-O3 -arch arm64 -mmacosx-version-min=11.0 -Wno-nullability-completeness -Wno-expansion-to-defined -Wno-undef-prefix -fPIC -Werror=unguarded-availability-new' 'LDFLAGS=-arch arm64 -mmacosx-version-min=11.0 -Wl,-headerpad,40' 'CPPFLAGS=-O3 -arch arm64 -mmacosx-version-min=11.0 -Wno-nullability-completeness -Wno-expansion-to-defined -Wno-undef-prefix -fPIC -Werror=unguarded-availability-new' 'PROFILE_TASK=-m test --pgo -j 12' 'BOLT_COMMON_FLAGS=' 'BOLT_APPLY_FLAGS='",
+            "SOABI": "cpython-312-darwin"
+          }
+        },
+        "backend_fingerprints": {
+          "orjson": {
+            "version": "3.12.0",
+            "code_files": 2,
+            "code_sha256": "7927dbf0b48c72c12a65977b16813e320de6881b1734ddab8577689fbd3d9c4a",
+            "native_sha256": {
+              "orjson/orjson.cpython-312-darwin.so": "41a19c8a160b8c9f534100f8cb5b4ce5baf91cec75680cb7647efb8e0c55abf7"
+            }
+          },
+          "msgspec": {
+            "version": "0.22.0",
+            "code_files": 12,
+            "code_sha256": "bac735ece4b91c5bce3f0b64aad15eb4e2ba3eac2ccba9777f72492cdd1dd4d4",
+            "native_sha256": {
+              "msgspec/_core.cpython-312-darwin.so": "07818f25153e88a71dca3390c1149b3e7cb149239954b68e7879b8a47eaea050"
+            }
+          },
+          "pybase64": {
+            "version": "1.5.0",
+            "code_files": 8,
+            "code_sha256": "6cd16fabd53f7fefe58af8c268cf2a9c4b9374ce2026841afb2c4e61abb13341",
+            "native_sha256": {
+              "pybase64/_pybase64.cpython-312-darwin.so": "bbad75bd0d49ad696875ec4dcfdfc7261b1688928528b6b7abd8bf72a4d1002e"
+            }
+          },
+          "numpy": null,
+          "blake3": {
+            "version": "1.0.10",
+            "code_files": 2,
+            "code_sha256": "32859d8a15af0ad31a6e0bbbf5028f9c8f7d492566338195ba29d1b87364346a",
+            "native_sha256": {
+              "blake3/blake3.cpython-312-darwin.so": "715893ce5cc0047a469c872b6b0f66a63eba8a27c904044e7c180ff532eba5c1"
+            }
+          }
+        },
+        "thread_environment": {
+          "PYTHONHASHSEED": null,
+          "OMP_NUM_THREADS": null,
+          "OPENBLAS_NUM_THREADS": null,
+          "MKL_NUM_THREADS": null,
+          "VECLIB_MAXIMUM_THREADS": null
+        }
+      },
+      "313": {
+        "python": "3.13.16 (main, Oct  9 2026, 15:11:24) [Clang 22.1.3 ]",
+        "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+        "backends": {
+          "orjson": "3.12.0",
+          "msgspec": "0.22.0",
+          "pybase64": "1.5.0"
+        },
+        "runtime_fingerprint": {
+          "executable": "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-python/cpython-3.13.16-macos-aarch64-none/bin/python3.13",
+          "executable_sha256": "08c31a4b53dc231eba8fe8785ea11a1b13095bf7f3fce292cffc50f74bbcc895",
+          "library": "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-python/cpython-3.13.16-macos-aarch64-none/lib/libpython3.13.dylib",
+          "library_sha256": "42ae8fd8467ff7edcfc06b796084221c8d2b8bb35e9faa17130c208c53105080",
+          "compiler_configuration": {
+            "CC": "cc",
+            "CFLAGS": "-fno-strict-overflow -Wsign-compare -Wunreachable-code -DNDEBUG -g -O3 -Wall -O3 -arch arm64 -mmacosx-version-min=11.0 -Wno-nullability-completeness -Wno-expansion-to-defined -Wno-undef-prefix -fPIC",
+            "PY_CFLAGS": "-fno-strict-overflow -Wsign-compare -Wunreachable-code -DNDEBUG -g -O3 -Wall -O3 -arch arm64 -mmacosx-version-min=11.0 -Wno-nullability-completeness -Wno-expansion-to-defined -Wno-undef-prefix -fPIC -Werror=unguarded-availability-new",
+            "CONFIG_ARGS": "'--build=aarch64-apple-darwin' '--host=aarch64-apple-darwin' '--prefix=/install' '--with-openssl=/tmp/tmphlydbzwu/tools/deps' '--with-system-expat' '--with-system-libmpdec' '--without-ensurepip' 'MODULE_BUILDTYPE=static' '--enable-loadable-sqlite-extensions' '--enable-static-libpython-for-interpreter' '--enable-shared' '--with-mimalloc' '--enable-optimizations' '--enable-experimental-jit=yes-off' '--with-lto=full' '--with-build-python=/tmp/tmphlydbzwu/tools/host/bin/python3.13' 'ac_cv_lib_intl_textdomain=no' 'ac_cv_func_ptsname_r=no' '--with-dbmliborder=ndbm' 'build_alias=aarch64-apple-darwin' 'host_alias=aarch64-apple-darwin' 'PKG_CONFIG=pkg-config --static --define-prefix' 'PKG_CONFIG_PATH=/tmp/tmphlydbzwu/tools/deps/share/pkgconfig:/tmp/tmphlydbzwu/tools/deps/lib/pkgconfig' 'CC=clang' 'CFLAGS=-O3 -arch arm64 -mmacosx-version-min=11.0 -Wno-nullability-completeness -Wno-expansion-to-defined -Wno-undef-prefix -fPIC -Werror=unguarded-availability-new' 'LDFLAGS=-arch arm64 -mmacosx-version-min=11.0 -Wl,-headerpad,40' 'CPPFLAGS=-O3 -arch arm64 -mmacosx-version-min=11.0 -Wno-nullability-completeness -Wno-expansion-to-defined -Wno-undef-prefix -fPIC -Werror=unguarded-availability-new' 'PROFILE_TASK=-m test --pgo -j 12' 'BOLT_COMMON_FLAGS=' 'BOLT_APPLY_FLAGS='",
+            "SOABI": "cpython-313-darwin"
+          }
+        },
+        "backend_fingerprints": {
+          "orjson": {
+            "version": "3.12.0",
+            "code_files": 2,
+            "code_sha256": "7996fd5baeb28fb094110f4773df15b376f83cb1bd328fbf716841f1c71422c7",
+            "native_sha256": {
+              "orjson/orjson.cpython-313-darwin.so": "9a4577c3e52b8b46e2e75a160c5b32393f1ffc545ddce4b919a0d61a7ffe02e7"
+            }
+          },
+          "msgspec": {
+            "version": "0.22.0",
+            "code_files": 12,
+            "code_sha256": "353afae678992f2ff30856d630369955a00855958042dcf72fe469cdeb2e1baa",
+            "native_sha256": {
+              "msgspec/_core.cpython-313-darwin.so": "a473497f77e4cdf09e70dc0c098f918e6c9ad6e7041420171ae1a8edafb05815"
+            }
+          },
+          "pybase64": {
+            "version": "1.5.0",
+            "code_files": 8,
+            "code_sha256": "81eb7cc53a97ab43481b519a4e3d3744042e33addef1bdc8621278a0fed00f6c",
+            "native_sha256": {
+              "pybase64/_pybase64.cpython-313-darwin.so": "61a43355785d1849b31e9b9404e49ca9642b7a8972394f63af4fff0c83ef0401"
+            }
+          },
+          "numpy": {
+            "version": "2.5.0",
+            "code_files": 426,
+            "code_sha256": "b1d06745ef087c1df36809ddf6c7e6ea7a52e13fc3428713687f80856e5eda59",
+            "native_sha256": {
+              "numpy/_core/_multiarray_tests.cpython-313-darwin.so": "8c234a23efcfd7387f695722fafaef783d327384df28882fea54274f96ebbc5e",
+              "numpy/_core/_multiarray_umath.cpython-313-darwin.so": "2ebd7c0f54b1424a28be862e409f0d77b3a03fa7dd4af3aea38a2724479dad88",
+              "numpy/_core/_operand_flag_tests.cpython-313-darwin.so": "60dbfe9e2060bb1aefe801aa22ef48b35294c541e89ef3403bde4150eae3b63e",
+              "numpy/_core/_rational_tests.cpython-313-darwin.so": "d74306071921e815b10abcc1823d044ff3d0f685c43eb5c2c530adb02ffb97ae",
+              "numpy/_core/_simd.cpython-313-darwin.so": "1a71e46e05358b9a3d5e2c989a504df0eec7e2f66b1caa28c46cfd8d64d9f356",
+              "numpy/_core/_struct_ufunc_tests.cpython-313-darwin.so": "16d2cd0d42ef6bdee647d95f4863ff672e37abddee489c731d067780d2a1e405",
+              "numpy/_core/_umath_tests.cpython-313-darwin.so": "e253d72246ba5ae89f33b8f2cb1b0af55ad55caca033dc8463e2eae6453e3e6f",
+              "numpy/fft/_pocketfft_umath.cpython-313-darwin.so": "68b0b903cf3c88a7508c67d36d9ba4273853cf99a5ebd747c061e0316b36b69e",
+              "numpy/linalg/_umath_linalg.cpython-313-darwin.so": "5d8fb8134d1d8f5e729bb5b00a356f458d064b5925245b8d1fec93ec2686b84f",
+              "numpy/linalg/lapack_lite.cpython-313-darwin.so": "add1ebeb67640e301edf82d3c68bd9ecbea4b2171cca775a774e37d62c2db540",
+              "numpy/random/_bounded_integers.cpython-313-darwin.so": "d223df7086c6a925467aa9636bca72ff036bab11e0df3e75b41746f4235621d7",
+              "numpy/random/_common.cpython-313-darwin.so": "78a1d9afb618ab21c616faca3313534a5257ae5fd68c6f794075fdc7cd0ed976",
+              "numpy/random/_generator.cpython-313-darwin.so": "f548c0a4fd10dc2de85c37395cba449ba20b574c64d55403ac60e38be950b32f",
+              "numpy/random/_mt19937.cpython-313-darwin.so": "e75d32cc81980d80934dd5e11a35825d2b16d453572d5035027ed31ba6ebca9e",
+              "numpy/random/_pcg64.cpython-313-darwin.so": "a75af9a10e9696c32911a9be82f7139a7cf3c489658367334ab2dc930af2f8a1",
+              "numpy/random/_philox.cpython-313-darwin.so": "1215bfaae7ae6bc90adfc0062530414d83fadc7003e7527773c7c3824c780560",
+              "numpy/random/_sfc64.cpython-313-darwin.so": "6dca4abf988fb2722349ad18bb47aef4818447c92dd237e39ae42c9c0f764c90",
+              "numpy/random/bit_generator.cpython-313-darwin.so": "413e351e9b85e2d5a484715deb78216eae1a3ce2972f97141df402dec39692b9",
+              "numpy/random/mtrand.cpython-313-darwin.so": "e8e49601d22dc0576b35dcca15fb12e9a974b61888e953e4effe40661afe3ba1"
+            }
+          },
+          "blake3": {
+            "version": "1.0.10",
+            "code_files": 2,
+            "code_sha256": "cb0896e43b68469acb19f1cc034e08ac4f17f0cf7829912f351e1dfaded7fec4",
+            "native_sha256": {
+              "blake3/blake3.cpython-313-darwin.so": "f9e5094aa7e3529f07d3be3b39cfc5c4770ba00cff6876db0b0e9252651824eb"
+            }
+          }
+        },
+        "thread_environment": {
+          "PYTHONHASHSEED": null,
+          "OMP_NUM_THREADS": null,
+          "OPENBLAS_NUM_THREADS": null,
+          "MKL_NUM_THREADS": null,
+          "VECLIB_MAXIMUM_THREADS": null
+        }
+      },
+      "314": {
+        "python": "3.14.8 (main, Oct  9 2026, 15:11:09) [Clang 22.1.3 ]",
+        "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+        "backends": {
+          "orjson": "3.12.0",
+          "msgspec": "0.22.0",
+          "pybase64": "1.5.0"
+        },
+        "runtime_fingerprint": {
+          "executable": "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-python/cpython-3.14.8-macos-aarch64-none/bin/python3.14",
+          "executable_sha256": "a99820a3a31b57e615c6e0b050c92046281617beec6e8fdcb52da34bc8b56d99",
+          "library": "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-python/cpython-3.14.8-macos-aarch64-none/lib/libpython3.14.dylib",
+          "library_sha256": "cc7de9b191f1b90f4efdc771bb885440c56dc29c1337b194d71e892345135bb8",
+          "compiler_configuration": {
+            "CC": "cc",
+            "CFLAGS": "-fno-strict-overflow -Wsign-compare -Wunreachable-code -DNDEBUG -g -O3 -Wall -O3 -arch arm64 -mmacosx-version-min=11.0 -Wno-nullability-completeness -Wno-expansion-to-defined -Wno-undef-prefix -fPIC",
+            "PY_CFLAGS": "-fno-strict-overflow -Wsign-compare -Wunreachable-code -DNDEBUG -g -O3 -Wall -O3 -arch arm64 -mmacosx-version-min=11.0 -Wno-nullability-completeness -Wno-expansion-to-defined -Wno-undef-prefix -fPIC -Werror=unguarded-availability-new",
+            "CONFIG_ARGS": "'--build=aarch64-apple-darwin' '--host=aarch64-apple-darwin' '--prefix=/install' '--with-openssl=/tmp/tmp5tu62n7g/tools/deps' '--with-system-expat' '--with-system-libmpdec' '--without-ensurepip' '--with-tail-call-interp' 'MODULE_BUILDTYPE=static' '--enable-loadable-sqlite-extensions' '--enable-static-libpython-for-interpreter' '--enable-shared' '--with-mimalloc' '--enable-optimizations' '--enable-experimental-jit=yes-off' '--with-lto=full' '--with-build-python=/tmp/tmp5tu62n7g/tools/host/bin/python3.14' 'ac_cv_lib_intl_textdomain=no' 'ac_cv_func_ptsname_r=no' 'ac_cv_func_explicit_bzero=no' '--with-dbmliborder=ndbm' 'build_alias=aarch64-apple-darwin' 'host_alias=aarch64-apple-darwin' 'PKG_CONFIG=pkg-config --static --define-prefix' 'PKG_CONFIG_PATH=/tmp/tmp5tu62n7g/tools/deps/share/pkgconfig:/tmp/tmp5tu62n7g/tools/deps/lib/pkgconfig' 'CC=clang' 'CFLAGS=-O3 -arch arm64 -mmacosx-version-min=11.0 -Wno-nullability-completeness -Wno-expansion-to-defined -Wno-undef-prefix -fPIC -Werror=unguarded-availability-new' 'LDFLAGS=-arch arm64 -mmacosx-version-min=11.0 -Wl,-headerpad,40' 'CPPFLAGS=-O3 -arch arm64 -mmacosx-version-min=11.0 -Wno-nullability-completeness -Wno-expansion-to-defined -Wno-undef-prefix -fPIC -Werror=unguarded-availability-new' 'PROFILE_TASK=-m test --pgo -j 12' 'BOLT_COMMON_FLAGS=' 'BOLT_APPLY_FLAGS='",
+            "SOABI": "cpython-314-darwin"
+          }
+        },
+        "backend_fingerprints": {
+          "orjson": {
+            "version": "3.12.0",
+            "code_files": 2,
+            "code_sha256": "4ae0aea176dbaad5c8c2ad7a061c125ef747c440fac7d32ecfceec6430861e21",
+            "native_sha256": {
+              "orjson/orjson.cpython-314-darwin.so": "aaebbe8aad399489acc642c23615bd373192904c319f159496ea5ab0d3c3bc45"
+            }
+          },
+          "msgspec": {
+            "version": "0.22.0",
+            "code_files": 12,
+            "code_sha256": "e608dfc42ce82cc0b5b72a674efc34f88bdb0a809d7c655c4f8c09a987c58dd4",
+            "native_sha256": {
+              "msgspec/_core.cpython-314-darwin.so": "5b7f13df7855615e38ceba6e7121724221005eaeb4eb1eb4e68d00122d9b5469"
+            }
+          },
+          "pybase64": {
+            "version": "1.5.0",
+            "code_files": 8,
+            "code_sha256": "2e2cdec1fcb51bc48d4f84342797e3ce2e8707c7694094d856299f14912fee68",
+            "native_sha256": {
+              "pybase64/_pybase64.cpython-314-darwin.so": "db979304a53bfdd7d6a38bfe172608884872060ff2bce949834bfe374f79a3c1"
+            }
+          },
+          "numpy": null,
+          "blake3": {
+            "version": "1.0.10",
+            "code_files": 2,
+            "code_sha256": "ee989e52c3fdde1a84bd8057a35b8c5a7f93e89c8073f0f44753103e75c9c535",
+            "native_sha256": {
+              "blake3/blake3.cpython-314-darwin.so": "a4cb673ee70bc2bdcc474c9ed298b63cb3c01f5f9679ca81c9bd850dfec2b45f"
+            }
+          }
+        },
+        "thread_environment": {
+          "PYTHONHASHSEED": null,
+          "OMP_NUM_THREADS": null,
+          "OPENBLAS_NUM_THREADS": null,
+          "MKL_NUM_THREADS": null,
+          "VECLIB_MAXIMUM_THREADS": null
+        }
+      }
+    },
+    "timing_status": "Not started; integrated candidate and safety freeze pending"
+  },
+  "followups": {
+    "313": {
+      "file": "jsonx-second-followup-313.json",
+      "sha256": "2cefd593c9abcedee26490ad6d5032a8a16557136b9124aa323a853c38f178d5",
+      "driver_sha256": "2dc8b62c5cecf694e94255b38c46a730b585c95f1adf6588ee8e90a2d37556c5",
+      "command": [
+        "/tmp/jsonx-second-env-313/bin/python",
+        "/tmp/jsonx-existing-followup.py",
+        "--abi",
+        "313",
+        "--original",
+        "/tmp/jsonx-throughput-baseline/src",
+        "--first-pass",
+        "/tmp/jsonx-second-baseline/src",
+        "--candidate",
+        "/tmp/jsonx-second-final-v2/src",
+        "--harness",
+        "/tmp/jsonx-second-harness",
+        "--driver",
+        "bench/profiles/jsonx_existing.py",
+        "--output",
+        "bench/reports/serde/jsonx-second-followup-313.json"
+      ],
+      "comparisons": {
+        "core:jsonx.loads \u00b7 500 records": {
+          "wall_ns": {
+            "original": 116103.00593709885,
+            "first_pass": 115932.78947368421,
+            "candidate": 116544.12507817385
+          },
+          "thread_cpu_min_ns_diagnostic": {
+            "original": 116066.20603337613,
+            "first_pass": 115891.76907894737,
+            "candidate": 116857.10256410256
+          },
+          "per_repetition_wall_ns": {
+            "original": [
+              115787.82894736843,
+              115081.80487804877,
+              115315.5487804878,
+              116418.18292682926,
+              116862.80487804877,
+              116425.0
+            ],
+            "first_pass": [
+              116259.32894736843,
+              115269.7875,
+              114341.9756097561,
+              116431.7625,
+              117132.62195121951,
+              115606.25
+            ],
+            "candidate": [
+              117452.0875,
+              114976.10975609756,
+              117428.85365853658,
+              116767.6282051282,
+              114256.95238095238,
+              116320.62195121951
+            ]
+          },
+          "final_over_original_speedup": 0.996215003194892,
+          "final_over_first_pass_speedup": 0.9947544708574578,
+          "maximum_spread": 0.6295024927392465
+        },
+        "profile:jsonx.dumpb/int": {
+          "wall_ns": {
+            "original": 64.41790113262101,
+            "first_pass": 66.58003065321181,
+            "candidate": 63.20136033442982
+          },
+          "thread_cpu_min_ns_diagnostic": {
+            "original": 64.40907018324907,
+            "first_pass": 66.93253580729166,
+            "candidate": 63.25318774842379
+          },
+          "per_repetition_wall_ns": {
+            "original": [
+              64.77073160807292,
+              64.79079182942708,
+              64.06507065716912,
+              64.01570209703948,
+              62.94812654194079,
+              65.7578986672794
+            ],
+            "first_pass": [
+              66.11491563585069,
+              66.84536404079861,
+              66.314697265625,
+              65.85454245174633,
+              90.76083608774039,
+              89.50223214285714
+            ],
+            "candidate": [
+              63.60532740542763,
+              63.246877569901315,
+              63.140299479166664,
+              63.155843098958336,
+              64.22370990953948,
+              62.36668636924342
+            ]
+          },
+          "final_over_original_speedup": 1.0192486489492294,
+          "final_over_first_pass_speedup": 1.0534588227358361,
+          "maximum_spread": 0.7333941753747163
+        },
+        "profile:jsonx.dumpb/small": {
+          "wall_ns": {
+            "original": 106.73430841619319,
+            "first_pass": 108.53976004464286,
+            "candidate": 104.45523681640626
+          },
+          "thread_cpu_min_ns_diagnostic": {
+            "original": 107.60149098405934,
+            "first_pass": 108.51062883649553,
+            "candidate": 104.38548583984375
+          },
+          "per_repetition_wall_ns": {
+            "original": [
+              108.79007975260417,
+              106.99462890625,
+              110.63232421875,
+              105.40309836647727,
+              103.46661931818181,
+              106.47398792613636
+            ],
+            "first_pass": [
+              105.5783358487216,
+              103.98911354758523,
+              106.6436767578125,
+              110.43584333147321,
+              143.9908447265625,
+              139.96086774553572
+            ],
+            "candidate": [
+              104.86949573863636,
+              105.6541748046875,
+              104.4376220703125,
+              104.14817116477273,
+              104.4728515625,
+              103.38060413707386
+            ]
+          },
+          "final_over_original_speedup": 1.021818643748735,
+          "final_over_first_pass_speedup": 1.0391030967209014,
+          "maximum_spread": 0.9239225146882354
+        },
+        "profile:jsonx.dumpb/string": {
+          "wall_ns": {
+            "original": 65.16590711805556,
+            "first_pass": 65.74828423394098,
+            "candidate": 63.77033131024991
+          },
+          "thread_cpu_min_ns_diagnostic": {
+            "original": 65.14570448133681,
+            "first_pass": 66.43268161349826,
+            "candidate": 63.83852221394143
+          },
+          "per_repetition_wall_ns": {
+            "original": [
+              66.41868082682292,
+              63.720987955729164,
+              64.95496961805556,
+              65.37684461805556,
+              63.48994526110197,
+              67.33554256663604
+            ],
+            "first_pass": [
+              65.10670979817708,
+              64.86680772569444,
+              66.38985866970486,
+              66.50679837740384,
+              97.70162259615384,
+              65.10049099392361
+            ],
+            "candidate": [
+              62.21318901909722,
+              63.62781404194079,
+              64.68285454644098,
+              65.57040744357639,
+              63.91284857855903,
+              63.48726613898026
+            ]
+          },
+          "final_over_original_speedup": 1.0218844057907746,
+          "final_over_first_pass_speedup": 1.0310168205661048,
+          "maximum_spread": 1.86936772888636
+        },
+        "profile:jsonx.dumps/string": {
+          "wall_ns": {
+            "original": 161.46742466517856,
+            "first_pass": 159.1379132952009,
+            "candidate": 160.33535330636158
+          },
+          "thread_cpu_min_ns_diagnostic": {
+            "original": 161.40638078962053,
+            "first_pass": 159.93716866629464,
+            "candidate": 160.07849993024553
+          },
+          "per_repetition_wall_ns": {
+            "original": [
+              162.69574846540178,
+              161.7904052734375,
+              161.14444405691964,
+              158.64998953683036,
+              157.257080078125,
+              168.47809709821428
+            ],
+            "first_pass": [
+              160.36551339285714,
+              156.88214983258928,
+              157.91031319754464,
+              155.11286272321428,
+              196.9434814453125,
+              200.4725138346354
+            ],
+            "candidate": [
+              157.87179129464286,
+              168.28193010602678,
+              157.48958914620536,
+              160.34589494977678,
+              166.8868408203125,
+              160.32481166294642
+            ]
+          },
+          "final_over_original_speedup": 1.0070606471715184,
+          "final_over_first_pass_speedup": 0.9925316532725463,
+          "maximum_spread": 0.2859196836087315
+        },
+        "profile:jsonx.loads/records": {
+          "wall_ns": {
+            "original": 51575.1953125,
+            "first_pass": 52558.91796875,
+            "candidate": 52148.109375
+          },
+          "thread_cpu_min_ns_diagnostic": {
+            "original": 51557.77734375,
+            "first_pass": 52562.984375,
+            "candidate": 52179.36328125
+          },
+          "per_repetition_wall_ns": {
+            "original": [
+              51704.75,
+              51519.53125,
+              51256.5078125,
+              51565.4296875,
+              51584.9609375,
+              51730.46875
+            ],
+            "first_pass": [
+              52793.6171875,
+              50703.78125,
+              51718.421875,
+              53028.96875,
+              52324.21875,
+              70763.9921875
+            ],
+            "candidate": [
+              52609.264150943396,
+              52426.7578125,
+              51625.0,
+              52269.53125,
+              52026.6875,
+              51677.4140625
+            ]
+          },
+          "final_over_original_speedup": 0.9890137136443405,
+          "final_over_first_pass_speedup": 1.0078777274703452,
+          "maximum_spread": 1.830033880968665
+        },
+        "profile:jsonx.loads/small": {
+          "wall_ns": {
+            "original": 164.2096383231027,
+            "first_pass": 158.89775739397322,
+            "candidate": 162.34734235491072
+          },
+          "thread_cpu_min_ns_diagnostic": {
+            "original": 167.12407575334822,
+            "first_pass": 159.6646990094866,
+            "candidate": 163.08340018136158
+          },
+          "per_repetition_wall_ns": {
+            "original": [
+              173.73076520647322,
+              156.585693359375,
+              158.24598911830358,
+              163.10991559709822,
+              165.31154087611608,
+              165.30936104910714
+            ],
+            "first_pass": [
+              157.11103166852678,
+              156.58787318638392,
+              159.32791573660714,
+              161.06234305245536,
+              163.06631905691964,
+              158.46759905133928
+            ],
+            "candidate": [
+              159.79657854352678,
+              162.7662353515625,
+              164.1998291015625,
+              163.79582868303572,
+              161.92844935825892,
+              156.73536900111608
+            ]
+          },
+          "final_over_original_speedup": 1.0114710591573515,
+          "final_over_first_pass_speedup": 0.9787518236461408,
+          "maximum_spread": 1.3143354044594322
+        },
+        "registry:unstd.serde.jsonx.dumpb": {
+          "wall_ns": {
+            "original": 1091.1840209960938,
+            "first_pass": 1102.165283203125,
+            "candidate": 1111.9130249023438
+          },
+          "thread_cpu_min_ns_diagnostic": {
+            "original": 1090.9525756835938,
+            "first_pass": 1102.0330200195312,
+            "candidate": 1136.1337890625
+          },
+          "per_repetition_wall_ns": {
+            "original": [
+              1124.455810546875,
+              1070.3634033203125,
+              1112.004638671875,
+              1066.497802734375,
+              1063.3087158203125,
+              1124.3846435546875
+            ],
+            "first_pass": [
+              1112.248779296875,
+              1116.39404296875,
+              1068.1304931640625,
+              1066.899658203125,
+              1092.081787109375,
+              1116.0125732421875
+            ],
+            "candidate": [
+              1137.7969970703125,
+              1135.53369140625,
+              1076.604248046875,
+              1098.383544921875,
+              1075.7650146484375,
+              1125.4425048828125
+            ]
+          },
+          "final_over_original_speedup": 0.9813573513017616,
+          "final_over_first_pass_speedup": 0.9912333595515936,
+          "maximum_spread": 0.9049471893593536
+        },
+        "registry:unstd.serde.jsonx.dumps": {
+          "wall_ns": {
+            "original": 7482.91015625,
+            "first_pass": 3368.2398825698756,
+            "candidate": 3375.51171875
+          },
+          "thread_cpu_min_ns_diagnostic": {
+            "original": 7587.814539930556,
+            "first_pass": 3389.2781039725674,
+            "candidate": 3377.371651785714
+          },
+          "per_repetition_wall_ns": {
+            "original": [
+              7761.067708333333,
+              7362.883680555556,
+              7395.01953125,
+              7319.04296875,
+              7570.80078125,
+              7803.28828125
+            ],
+            "first_pass": [
+              3318.0930397727275,
+              3521.9875710227275,
+              3339.370028409091,
+              3359.6540178571427,
+              3414.462002840909,
+              3376.8257472826085
+            ],
+            "candidate": [
+              3360.3071732954545,
+              3417.9378720238096,
+              3337.4616477272725,
+              3378.7823660714284,
+              3389.6335227272725,
+              3372.2410714285716
+            ]
+          },
+          "final_over_original_speedup": 2.2168224493739954,
+          "final_over_first_pass_speedup": 0.9978457085070298,
+          "maximum_spread": 0.12458783618187681
+        },
+        "registry:unstd.serde.jsonx.loads": {
+          "wall_ns": {
+            "original": 2916.1454807692307,
+            "first_pass": 2988.5823317307695,
+            "candidate": 2906.5770717592595
+          },
+          "thread_cpu_min_ns_diagnostic": {
+            "original": 2924.06890625,
+            "first_pass": 2988.5353605769233,
+            "candidate": 2910.499209846866
+          },
+          "per_repetition_wall_ns": {
+            "original": [
+              2917.565,
+              2844.7139423076924,
+              3000.474609375,
+              2898.07421875,
+              2914.7259615384614,
+              2932.0703125
+            ],
+            "first_pass": [
+              3044.818181818182,
+              3009.140625,
+              2936.1736111111113,
+              3067.8030598958335,
+              2926.044170673077,
+              2968.0240384615386
+            ],
+            "candidate": [
+              2888.046875,
+              2908.653846153846,
+              2907.1903935185187,
+              2905.96375,
+              2927.1084735576924,
+              2874.4456018518517
+            ]
+          },
+          "final_over_original_speedup": 1.0032919853056501,
+          "final_over_first_pass_speedup": 1.0282136884544661,
+          "maximum_spread": 0.546624399615754
+        },
+        "stdlib:jsonx.loads \u00b7 500 records": {
+          "wall_ns": {
+            "original": 201330.16304347827,
+            "first_pass": 201460.59782608697,
+            "candidate": 201297.09782608697
+          },
+          "thread_cpu_min_ns_diagnostic": {
+            "original": 201204.71739130435,
+            "first_pass": 201824.72826086957,
+            "candidate": 201305.25
+          },
+          "per_repetition_wall_ns": {
+            "original": [
+              211478.16666666666,
+              200942.9347826087,
+              198985.5,
+              201717.39130434784,
+              202403.0652173913,
+              199028.4090909091
+            ],
+            "first_pass": [
+              200138.55,
+              203327.6590909091,
+              199365.04347826086,
+              201009.0652173913,
+              204957.38636363635,
+              201912.13043478262
+            ],
+            "candidate": [
+              202869.43333333332,
+              197997.1590909091,
+              201531.69565217392,
+              205498.11363636365,
+              199246.04761904763,
+              201062.5
+            ]
+          },
+          "final_over_original_speedup": 1.0001642607754826,
+          "final_over_first_pass_speedup": 1.0008122322764,
+          "maximum_spread": 1.6576477926398225
+        }
+      }
+    },
+    "314": {
+      "file": "jsonx-second-followup-314.json",
+      "sha256": "ad0b36122ee1203ef08c07e6674e5fc295853c3710b52a40ec0eaab1c10f6057",
+      "driver_sha256": "2dc8b62c5cecf694e94255b38c46a730b585c95f1adf6588ee8e90a2d37556c5",
+      "command": [
+        "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-py314/bin/python",
+        "/tmp/jsonx-existing-followup.py",
+        "--abi",
+        "314",
+        "--original",
+        "/tmp/jsonx-throughput-baseline/src",
+        "--first-pass",
+        "/tmp/jsonx-second-baseline/src",
+        "--candidate",
+        "/tmp/jsonx-second-final-v2/src",
+        "--harness",
+        "/tmp/jsonx-second-harness",
+        "--driver",
+        "bench/profiles/jsonx_existing.py",
+        "--output",
+        "bench/reports/serde/jsonx-second-followup-314.json"
+      ],
+      "comparisons": {
+        "core:jsonx.loads \u00b7 20 nested records": {
+          "wall_ns": {
+            "original": 2043.6129836309524,
+            "first_pass": 2070.0720251501502,
+            "candidate": 2050.099345439189
+          },
+          "thread_cpu_min_ns_diagnostic": {
+            "original": 2043.7506820436508,
+            "first_pass": 2084.521812828453,
+            "candidate": 2048.722550675676
+          },
+          "per_repetition_wall_ns": {
+            "original": [
+              2092.9813368055557,
+              2009.5105574324325,
+              2019.9497767857142,
+              2053.8691964285713,
+              2033.3567708333333,
+              2147.9779411764707
+            ],
+            "first_pass": [
+              2382.543103448276,
+              2023.1735641891892,
+              2126.46484375,
+              2116.9704861111113,
+              2020.2080592105262,
+              2010.6807432432433
+            ],
+            "candidate": [
+              2061.796241554054,
+              2036.6844618055557,
+              2050.7548564189187,
+              2080.6410472972975,
+              1981.2824835526317,
+              2049.4438344594596
+            ]
+          },
+          "final_over_original_speedup": 0.9968360743967521,
+          "final_over_first_pass_speedup": 1.0097422984673372,
+          "maximum_spread": 3.7993272274988694
+        },
+        "profile:jsonx.dumpb/int": {
+          "wall_ns": {
+            "original": 48.47417957652699,
+            "first_pass": 49.0995648149131,
+            "candidate": 48.62970860799153
+          },
+          "thread_cpu_min_ns_diagnostic": {
+            "original": 48.476620538884944,
+            "first_pass": 48.54831894584324,
+            "candidate": 48.578350423177085
+          },
+          "per_repetition_wall_ns": {
+            "original": [
+              46.18156941731771,
+              50.88170369466146,
+              47.703037109375,
+              48.181962890625,
+              48.76639626242898,
+              49.696818033854164
+            ],
+            "first_pass": [
+              75.228515625,
+              47.2975819905599,
+              45.95120747884115,
+              51.03579434481534,
+              50.901547639266305,
+              46.056111653645836
+            ],
+            "candidate": [
+              49.03496805826823,
+              49.46344549005682,
+              47.92425537109375,
+              48.224449157714844,
+              49.2226123046875,
+              45.968576531661185
+            ]
+          },
+          "final_over_original_speedup": 0.996801769208237,
+          "final_over_first_pass_speedup": 1.00966191697156,
+          "maximum_spread": 1.0389789405657543
+        },
+        "profile:jsonx.dumpb/string": {
+          "wall_ns": {
+            "original": 49.593930562337235,
+            "first_pass": 48.46901448567708,
+            "candidate": 49.214021102241844
+          },
+          "thread_cpu_min_ns_diagnostic": {
+            "original": 49.72228473165761,
+            "first_pass": 49.14559427897135,
+            "candidate": 49.062156282349896
+          },
+          "per_repetition_wall_ns": {
+            "original": [
+              47.472964079483695,
+              49.774169921875,
+              48.12458984375,
+              49.656982421875,
+              49.53087870279948,
+              52.163330078125
+            ],
+            "first_pass": [
+              73.50078381990132,
+              48.328399658203125,
+              48.248291015625,
+              50.66072944972826,
+              47.611494140625,
+              48.60962931315104
+            ],
+            "candidate": [
+              48.17390441894531,
+              50.11346944173177,
+              50.07360309103261,
+              50.774466378348215,
+              48.354439113451086,
+              48.300638834635414
+            ]
+          },
+          "final_over_original_speedup": 1.007719537066604,
+          "final_over_first_pass_speedup": 0.9848619031755804,
+          "maximum_spread": 1.5785042992503817
+        },
+        "profile:jsonx.dumpb/wide": {
+          "wall_ns": {
+            "original": 248.74788818359374,
+            "first_pass": 257.00250244140625,
+            "candidate": 251.74203491210938
+          },
+          "thread_cpu_min_ns_diagnostic": {
+            "original": 249.37642822265624,
+            "first_pass": 275.0110626220703,
+            "candidate": 260.90306091308594
+          },
+          "per_repetition_wall_ns": {
+            "original": [
+              242.20785522460938,
+              250.921875,
+              263.5459899902344,
+              270.7112731933594,
+              230.6884765625,
+              246.5739013671875
+            ],
+            "first_pass": [
+              349.08551025390625,
+              237.6492919921875,
+              237.97354125976562,
+              289.7313232421875,
+              272.4825439453125,
+              241.5224609375
+            ],
+            "candidate": [
+              245.70590209960938,
+              266.1590576171875,
+              239.1357421875,
+              294.823974609375,
+              257.7781677246094,
+              233.4075927734375
+            ]
+          },
+          "final_over_original_speedup": 0.9881062901173379,
+          "final_over_first_pass_speedup": 1.0208962620451267,
+          "maximum_spread": 1.5955557063799153
+        },
+        "profile:jsonx.loads/float": {
+          "wall_ns": {
+            "original": 30.5328369140625,
+            "first_pass": 29.8875004695012,
+            "candidate": 29.200746154785158
+          },
+          "thread_cpu_min_ns_diagnostic": {
+            "original": 30.50339066354852,
+            "first_pass": 29.848184556227466,
+            "candidate": 29.130491638183592
+          },
+          "per_repetition_wall_ns": {
+            "original": [
+              30.764329176682693,
+              29.41733912417763,
+              30.5040572317023,
+              31.031927490234374,
+              29.832839965820312,
+              30.5616165964227
+            ],
+            "first_pass": [
+              29.311611077724358,
+              29.537494365985577,
+              30.93564181857639,
+              32.6084234775641,
+              30.09796142578125,
+              29.677039513221153
+            ],
+            "candidate": [
+              29.909771728515626,
+              30.3231826410061,
+              28.491720581054686,
+              36.278404235839844,
+              28.474935913085936,
+              27.7740478515625
+            ]
+          },
+          "final_over_original_speedup": 1.0456183808528827,
+          "final_over_first_pass_speedup": 1.0235183824096736,
+          "maximum_spread": 0.26905873520559576
+        },
+        "profile:jsonx.loads/float/bytes": {
+          "wall_ns": {
+            "original": 31.986139979090417,
+            "first_pass": 32.660910823630545,
+            "candidate": 31.448044606801624
+          },
+          "thread_cpu_min_ns_diagnostic": {
+            "original": 31.984573593368758,
+            "first_pass": 32.662744470544766,
+            "candidate": 31.533518704501066
+          },
+          "per_repetition_wall_ns": {
+            "original": [
+              32.295294684332774,
+              32.19274572423986,
+              31.77953423394097,
+              32.813819679054056,
+              31.723960474917764,
+              31.14978687183277
+            ],
+            "first_pass": [
+              36.82639382102273,
+              32.63923933699324,
+              31.95891509184966,
+              32.682582310267854,
+              31.877884714226973,
+              38.05828094482422
+            ],
+            "candidate": [
+              32.64176218133224,
+              30.61192932128906,
+              32.284159892314186,
+              33.73626154119318,
+              29.4921875,
+              30.3137451171875
+            ]
+          },
+          "final_over_original_speedup": 1.0171106146349211,
+          "final_over_first_pass_speedup": 1.0385673014647976,
+          "maximum_spread": 0.9268178572307996
+        },
+        "profile:jsonx.loads/string": {
+          "wall_ns": {
+            "original": 35.52060953776042,
+            "first_pass": 34.744636086856616,
+            "candidate": 33.499370381579425
+          },
+          "thread_cpu_min_ns_diagnostic": {
+            "original": 35.14615515506629,
+            "first_pass": 34.99463755561706,
+            "candidate": 33.632672586748676
+          },
+          "per_repetition_wall_ns": {
+            "original": [
+              34.46112615411932,
+              36.580092921401516,
+              36.836351667131694,
+              42.80531005859375,
+              34.12097516741071,
+              33.8583553538603
+            ],
+            "first_pass": [
+              34.66108613855698,
+              35.450942530776516,
+              34.451729910714285,
+              36.3524169921875,
+              34.451652975643384,
+              34.82818603515625
+            ],
+            "candidate": [
+              33.53767247353831,
+              33.461068289620535,
+              33.991060965401786,
+              37.31791334885817,
+              33.41801834106445,
+              33.02162039620536
+            ]
+          },
+          "final_over_original_speedup": 1.0603366312010578,
+          "final_over_first_pass_speedup": 1.0371728092526162,
+          "maximum_spread": 2.965462189371257
+        },
+        "profile:jsonx.loads/string/bytes": {
+          "wall_ns": {
+            "original": 37.1235237121582,
+            "first_pass": 37.557682037353516,
+            "candidate": 35.264602198745266
+          },
+          "thread_cpu_min_ns_diagnostic": {
+            "original": 37.04435256431843,
+            "first_pass": 37.57540321350098,
+            "candidate": 35.21343254320549
+          },
+          "per_repetition_wall_ns": {
+            "original": [
+              37.24845504760742,
+              37.887219659213365,
+              38.11371788611779,
+              36.998592376708984,
+              35.73817354090073,
+              35.68492216222427
+            ],
+            "first_pass": [
+              43.47605613425926,
+              36.527793884277344,
+              37.04945373535156,
+              38.06591033935547,
+              35.770416259765625,
+              42.29790823800223
+            ],
+            "candidate": [
+              35.43121522845644,
+              35.70279208096591,
+              34.343679717092805,
+              38.64144234035326,
+              34.758921903722424,
+              35.09798916903409
+            ]
+          },
+          "final_over_original_speedup": 1.0527135256747369,
+          "final_over_first_pass_speedup": 1.0650249739295186,
+          "maximum_spread": 0.9438238205131234
+        },
+        "registry:unstd.serde.jsonx.dumpb": {
+          "wall_ns": {
+            "original": 1108.8765258789062,
+            "first_pass": 1122.9934692382812,
+            "candidate": 1115.704833984375
+          },
+          "thread_cpu_min_ns_diagnostic": {
+            "original": 1107.8338623046875,
+            "first_pass": 1122.9501953125,
+            "candidate": 1120.3028564453125
+          },
+          "per_repetition_wall_ns": {
+            "original": [
+              1124.27783203125,
+              1059.687255859375,
+              1096.369384765625,
+              1097.3917236328125,
+              1120.361328125,
+              1122.33984375
+            ],
+            "first_pass": [
+              1331.9742324561403,
+              1141.7947998046875,
+              1126.973388671875,
+              1096.883056640625,
+              1119.0135498046875,
+              1116.032958984375
+            ],
+            "candidate": [
+              1122.1923828125,
+              1118.98291015625,
+              1112.4267578125,
+              1154.592041015625,
+              1063.9444580078125,
+              1111.602783203125
+            ]
+          },
+          "final_over_original_speedup": 0.9938798256514819,
+          "final_over_first_pass_speedup": 1.0065327629959953,
+          "maximum_spread": 5.7563729640534085
+        },
+        "registry:unstd.serde.jsonx.loads": {
+          "wall_ns": {
+            "original": 2699.050223214286,
+            "first_pass": 2746.009403935185,
+            "candidate": 2701.015190972222
+          },
+          "thread_cpu_min_ns_diagnostic": {
+            "original": 2697.7830636160716,
+            "first_pass": 2745.819346271495,
+            "candidate": 2701.23828125
+          },
+          "per_repetition_wall_ns": {
+            "original": [
+              2671.731875,
+              2701.0672433035716,
+              2774.3638822115386,
+              2624.783203125,
+              2709.357928240741,
+              2697.033203125
+            ],
+            "first_pass": [
+              3549.3011363636365,
+              2699.044363839286,
+              2736.6657986111113,
+              2851.631167763158,
+              2730.0872844827586,
+              2755.353009259259
+            ],
+            "candidate": [
+              2697.6394675925926,
+              2773.3873197115386,
+              2704.3909143518517,
+              2963.140625,
+              2648.6702008928573,
+              2684.732979910714
+            ]
+          },
+          "final_over_original_speedup": 0.9992725076984003,
+          "final_over_first_pass_speedup": 1.016658259869604,
+          "maximum_spread": 1.580625267138057
+        },
+        "stdlib:jsonx.loads \u00b7 20 nested records": {
+          "wall_ns": {
+            "original": 3564.2825520833335,
+            "first_pass": 3587.0306038533836,
+            "candidate": 3579.7696397569443
+          },
+          "thread_cpu_min_ns_diagnostic": {
+            "original": 3556.485863095238,
+            "first_pass": 3588.2967770989976,
+            "candidate": 3578.4865451388887
+          },
+          "per_repetition_wall_ns": {
+            "original": [
+              3580.6052827380954,
+              3544.43359375,
+              3600.634765625,
+              3547.9598214285716,
+              3490.404761904762,
+              3760.6052631578946
+            ],
+            "first_pass": [
+              3697.3423713235293,
+              3601.949776785714,
+              3709.5324835526317,
+              3522.104910714286,
+              3522.290550595238,
+              3572.1114309210525
+            ],
+            "candidate": [
+              3575.2131076388887,
+              3538.76953125,
+              3659.065625,
+              4227.5595703125,
+              3453.7916666666665,
+              3584.326171875
+            ]
+          },
+          "final_over_original_speedup": 0.9956737194757977,
+          "final_over_first_pass_speedup": 1.0020283327775616,
+          "maximum_spread": 0.5926352486515287
+        }
+      }
+    }
+  },
+  "matrix_commands": {
+    "source_freeze": "914a990687481d7e415d1c2d61f1445591fb2f4db39fad58b7d174ad93471a85",
+    "runs": [
+      {
+        "abi": "312",
+        "command": [
+          "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-py312/bin/python",
+          "/Users/griffinstrier/Billy-Company/unstd/bench/profiles/jsonx_existing.py",
+          "--original",
+          "/tmp/jsonx-throughput-baseline/src",
+          "--first-pass",
+          "/tmp/jsonx-second-baseline/src",
+          "--candidate",
+          "/tmp/jsonx-second-final-v2/src",
+          "--harness",
+          "/tmp/jsonx-second-harness",
+          "--rounds",
+          "5",
+          "--profile-rounds",
+          "3",
+          "--repetitions",
+          "3",
+          "--output",
+          "/Users/griffinstrier/Billy-Company/unstd/bench/reports/serde/jsonx-second-pass-312.json"
+        ],
+        "output": "/Users/griffinstrier/Billy-Company/unstd/bench/reports/serde/jsonx-second-pass-312.json",
+        "started_monotonic": 975253.272972166,
+        "returncode": 0,
+        "elapsed_seconds": 61.8246402090881,
+        "sha256": "6a089ccbcbd836042c6619fff6d70a5ca9f471c759e956aa4a9b7c97f1d6e8c0"
+      },
+      {
+        "abi": "313",
+        "command": [
+          "/tmp/jsonx-second-env-313/bin/python",
+          "/Users/griffinstrier/Billy-Company/unstd/bench/profiles/jsonx_existing.py",
+          "--original",
+          "/tmp/jsonx-throughput-baseline/src",
+          "--first-pass",
+          "/tmp/jsonx-second-baseline/src",
+          "--candidate",
+          "/tmp/jsonx-second-final-v2/src",
+          "--harness",
+          "/tmp/jsonx-second-harness",
+          "--rounds",
+          "5",
+          "--profile-rounds",
+          "3",
+          "--repetitions",
+          "3",
+          "--output",
+          "/Users/griffinstrier/Billy-Company/unstd/bench/reports/serde/jsonx-second-pass-313.json"
+        ],
+        "output": "/Users/griffinstrier/Billy-Company/unstd/bench/reports/serde/jsonx-second-pass-313.json",
+        "started_monotonic": 975315.099297708,
+        "returncode": 0,
+        "elapsed_seconds": 65.2698852919275,
+        "sha256": "2d00638af2d8e7b91b3fb108e842335c1df6e039ac7ae886bd28f42b7b846ffd"
+      },
+      {
+        "abi": "314",
+        "command": [
+          "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-py314/bin/python",
+          "/Users/griffinstrier/Billy-Company/unstd/bench/profiles/jsonx_existing.py",
+          "--original",
+          "/tmp/jsonx-throughput-baseline/src",
+          "--first-pass",
+          "/tmp/jsonx-second-baseline/src",
+          "--candidate",
+          "/tmp/jsonx-second-final-v2/src",
+          "--harness",
+          "/tmp/jsonx-second-harness",
+          "--rounds",
+          "5",
+          "--profile-rounds",
+          "3",
+          "--repetitions",
+          "3",
+          "--output",
+          "/Users/griffinstrier/Billy-Company/unstd/bench/reports/serde/jsonx-second-pass-314.json"
+        ],
+        "output": "/Users/griffinstrier/Billy-Company/unstd/bench/reports/serde/jsonx-second-pass-314.json",
+        "started_monotonic": 975380.370729208,
+        "returncode": 0,
+        "elapsed_seconds": 61.83612204203382,
+        "sha256": "9f50f67260e45edc16aacc1a8443a7ff8c417840a96a0bc0ac983fdc98211594"
+      }
+    ],
+    "started_monotonic": 975253.2729145,
+    "complete": true,
+    "elapsed_seconds": 188.9427540000761
+  },
+  "source_freeze": {
+    "closure_sha256": "914a990687481d7e415d1c2d61f1445591fb2f4db39fad58b7d174ad93471a85",
+    "closure_encoding": "UTF-8 JSON of native/python maps, sorted keys, separators comma/colon",
+    "native": {
+      "native/serde/src/adapter.c": "4255c7f31b58ce2b370b3269a7568ec9c7eb73f52cf431c88da8c449d73578ab",
+      "native/serde/src/decode.h": "d46206a3c04858ac3739d2590b4c1a02d23a2801cbec3387fa4893d28e56624f",
+      "native/serde/src/encode.h": "d9cd56b16da3dfd72b36fa8ae00f7b82e4be7cc37629ef129dc0b3a9c9ac6c1e",
+      "native/serde/src/escape.h": "937fe2288c702b38b752e4c7b4a09a91239bba86d2907b0f89c24f99a13d3e92",
+      "native/serde/src/identity.h": "e9dd9fb8b4f8188de9f3180699749fab34d16307177b5f0814a0cf1681d592bf",
+      "native/serde/src/lines.h": "b2f9b71876976199b3a02b53572672f581438e237353a92205211fbd27ea74d0",
+      "native/serde/src/repeat.h": "6d8ef0ca60b10a5a2888bbb921e009957f59fa0dff5f8db16ce67fa65a1e917d"
+    },
+    "python": {
+      "src/unstd/serde/__init__.py": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d",
+      "src/unstd/serde/_internal/__init__.py": "6aed7cdb4acd19aa8dfa7668c884fd937f2add4574c73531bd6cdde569f53f05",
+      "src/unstd/serde/_internal/json_common.py": "cb4ee6fce1510e202b4126e67b53ac73b9e7b73a9d67d010b451b7fa45ea0b8f",
+      "src/unstd/serde/_internal/json_encode.py": "a01fe8460bd4a70573fed3ebff35c1a1f318bf477bb17c41b165a0a5aacc46a4",
+      "src/unstd/serde/_json_common.py": "fb088bf068ac0dd5f2dd1675cb60cb682da6aec80320b85d98aa39c16a7f6781",
+      "src/unstd/serde/_json_encode.py": "d010007e07fbe5e46a1bcfb6984b2730f30564e4a2dc15306baedda9f2ab8ec1",
+      "src/unstd/serde/_json_native.pyi": "275cb98230bf6a337bbc224ebfcd13025859b7ccef2800fb6d4ef7ac3796d47e",
+      "src/unstd/serde/b64.py": "c9fa198b3a6a4dffab239697c2d35c717ab2adea1977e7c1bd2226c30c4dbe32",
+      "src/unstd/serde/jsonx.py": "a15639db6e2b4495c9f50aec12c6830c931e48563a506ad56d51598c393d7ca4",
+      "src/unstd/serde/ndjson.py": "98c1f5bb1b78d2548390683b9b4bc062c4dc900b1fc27837e7941c7ee4553550",
+      "src/unstd/serde/structs.py": "ebe5eb0c8cba8e8bc01137c9e4f768d86cb900d15c67600cbaf38f0accfa6c65",
+      "src/unstd/__init__.py": "35bf25962f426429a3c3ab55c69f1644d46838ee925cf0365db07ff809c442fb"
+    },
+    "before_cache_fix_closure_sha256": "22637bdc18cf896ce1dab11afb50ca241a19e30db34bcd0c4baf272b59f16929",
+    "change": "Use an owned interned items key with public PyObject_GetAttr to stabilize CPython type-cache metadata;4KiB retention bound unchanged."
+  },
+  "reproduction": {
+    "purpose": "Retained textual first-pass JSONX closure and byte-identical existing harness for reproducing the three-source comparison. Archives contain no compiled extensions. Restore the original full source at94589856d2e604310b55020e40c51010f2af4755, then overlay the first-pass archive for that comparison source; build the saved native-serde closure for each chosen interpreter. Final source is the reviewed working tree identified by jsonx-second-source-manifest.json.",
+    "archives": [
+      {
+        "file": "jsonx-first-pass-source.tar.gz",
+        "sha256": "19d13569d4d55546fb9f2218c9d99ac206c37fed13e4ccf8b190d6f4071861aa",
+        "files": {
+          "native-serde/src/_json_decode_native.h": "d46206a3c04858ac3739d2590b4c1a02d23a2801cbec3387fa4893d28e56624f",
+          "native-serde/src/_json_encode_native.h": "d9cd56b16da3dfd72b36fa8ae00f7b82e4be7cc37629ef129dc0b3a9c9ac6c1e",
+          "native-serde/src/_json_lines_native.h": "b2f9b71876976199b3a02b53572672f581438e237353a92205211fbd27ea74d0",
+          "native-serde/src/_json_native.c": "ee7e575108f071027ad8d3af08d3322ee1a77997a62822aca1a29e37c749e19b",
+          "native-serde/src/_json_text_native.h": "937fe2288c702b38b752e4c7b4a09a91239bba86d2907b0f89c24f99a13d3e92",
+          "src/unstd/__init__.py": "35bf25962f426429a3c3ab55c69f1644d46838ee925cf0365db07ff809c442fb",
+          "src/unstd/serde/__init__.py": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d",
+          "src/unstd/serde/_internal/__init__.py": "6aed7cdb4acd19aa8dfa7668c884fd937f2add4574c73531bd6cdde569f53f05",
+          "src/unstd/serde/_internal/json_common.py": "cb4ee6fce1510e202b4126e67b53ac73b9e7b73a9d67d010b451b7fa45ea0b8f",
+          "src/unstd/serde/_internal/json_encode.py": "70c0e9b9a2d3ed721573b097204c76b335d2d73e7655b2e64b2ea04e7d10de6d",
+          "src/unstd/serde/_json_common.py": "fb088bf068ac0dd5f2dd1675cb60cb682da6aec80320b85d98aa39c16a7f6781",
+          "src/unstd/serde/_json_encode.py": "d010007e07fbe5e46a1bcfb6984b2730f30564e4a2dc15306baedda9f2ab8ec1",
+          "src/unstd/serde/_json_native.pyi": "2701aa6fa8f926d09d401e06942e3c65669cf5c2aea38fc5eaf498fd693729f8",
+          "src/unstd/serde/b64.py": "c9fa198b3a6a4dffab239697c2d35c717ab2adea1977e7c1bd2226c30c4dbe32",
+          "src/unstd/serde/jsonx.py": "ddb3b64c6555402da2a979bce6fc75019ccf6d701653aea06ec5f985cd6fec71",
+          "src/unstd/serde/ndjson.py": "98c1f5bb1b78d2548390683b9b4bc062c4dc900b1fc27837e7941c7ee4553550",
+          "src/unstd/serde/structs.py": "ebe5eb0c8cba8e8bc01137c9e4f768d86cb900d15c67600cbaf38f0accfa6c65"
+        }
+      },
+      {
+        "file": "jsonx-existing-harness.tar.gz",
+        "sha256": "e5457f1a947dd47bccdee56e003b56d60f518c24515344a44185cd716b3ed1d4",
+        "files": {
+          "bench/__init__.py": "d3ce1c8fb2b19ac17342c879a03486448de07de9934b8c22ec3295826fb8d17a",
+          "bench/__main__.py": "3f97a4739aed06f17ea9a9b3bc9ad5d47a15032a18a5b1ae0a9f419f7d3bed05",
+          "bench/audits/__init__.py": "744fdccd68f663d43d625c7828f28ef9aada7f7b792098c8035668688a75b9d4",
+          "bench/audits/crypto/__init__.py": "f3289f4251a7f24b0d452d11eb591b8cf32e62fea0a909843bde4a3824514d82",
+          "bench/audits/math/__init__.py": "df1f393f24180b0dc8867443c9225ec9f931f00fa5ea094b83b35c5aabff1559",
+          "bench/audits/math/probe_numeric.py": "c97340288e0df2399897da14e11b79d00522c3fdec4a05d5073adec66a9a420c",
+          "bench/audits/math/probe_random.py": "962a8c7b76b3ea4344ba3cee020b6ae8493d009a42beb59e6055e1f32d3a0885",
+          "bench/audits/math/probe_text.py": "3a91ebd831c81cfad4797303fa51c0d53336a956e2d890df38f084d914dba703",
+          "bench/audits/math/qualify_audio.py": "4119d50434306914bdf7824a44c1f5475093d1070a36449ddc04bfa8ebab324b",
+          "bench/audits/math/qualify_sndfile.py": "91170161391ae8c7d38c618f4519ef21930da9774f76c683cbe64bb6ed23334b",
+          "bench/baselines/baseline.json": "365c1e07adf70a6c28befa769874cce8e9775f60a4faa5ecb9b3d05c44f282b0",
+          "bench/baselines/speeds.json": "0ee80a28e3cae55c31aa57da1f7ce21862db09ff710d854740d23c64f751dc8d",
+          "bench/baselines/time-native.json": "8bf26ca4ad041e406ef63010e3f6efafd907755bca6b07047e2229399ed09639",
+          "bench/billy_serde.py": "a5115feca4003ec43853c736c090faba72d87108f5afe43b26023516435a64aa",
+          "bench/cases.py": "fc96d85fb11054f50a0c30741bea63c9900ddbafda409ea0d80b2c860100ddcc",
+          "bench/clone_ids_profile.py": "d1a0afb1f6fc74e4ee6eb5f12368c91dc0fdba3c02e1f9dc2bd637947a9f8673",
+          "bench/core/__init__.py": "7d448fab00178bc6758de1b89205f4d4a0be0def7afc723ec6f4d26a1e8ec83a",
+          "bench/core/cases.py": "379e6cb223147ab0793fb54ec4801b2b4e6859c5a65f40d428ab2b91379e9622",
+          "bench/core/report.py": "3b5222c32930817f7333450dabd44088df1c403ed468029a74939b0b89afa4ab",
+          "bench/core/timing.py": "d585627571b5daeca0a078b75484c84e769dce70a5b4448825fd811a8e3b61bc",
+          "bench/crypto_backends.py": "47ab3c0bb80c541e42e716210442fd1bf91f3c3801247bf36dddb22d16a56a0b",
+          "bench/crypto_fixes.py": "ba1de3bb1adc5c7e5a039bfe7e83ca4031127a64a47fddd31a77ae9ab6dd53b3",
+          "bench/crypto_hash.py": "872d9e06409b5bc26107d9ba4aedf6e8e2cf77cfaafdb3a94cc25ecdab07b8de",
+          "bench/crypto_rng.py": "feb6101460ac3c1c516e53cc1c4ab233a3d528b66df09d9a22a991ff7d65b014",
+          "bench/crypto_tls_reuse.py": "eb60848dbdac4136c4f879f9f6a88e904382f17d99488ad1bd08db4eee016243",
+          "bench/diagnostics/__init__.py": "ad76f607bceaccbdb68bdc2cd1c46fb902634162e07698542203e2ca6be86964",
+          "bench/diagnostics/clone_algorithms.py": "4c7e096289e16446dd7c1fff846ef3f45690d53a7d88a29ba4f0027edd7bee48",
+          "bench/diagnostics/clone_allocations.py": "ee601bbdfb40404517db64cb004995920b5f679a5fa66c77763d980afc95686b",
+          "bench/diagnostics/clone_cold.py": "31c17caaab775ab450db1174ca6dddc0afd141cc8e3d4d8d2ed679f11de9a14d",
+          "bench/diagnostics/crypto_backends.py": "3156f8b34ee2b1002ef34e0645ba85a8ee665c1a8cf474ee6f1af8156e688506",
+          "bench/diagnostics/crypto_fixes.py": "b757f3825cc05671c71adc40910df3e171e61fe56d75dc69a84bb2ad46bc85cc",
+          "bench/diagnostics/crypto_rng.py": "a59e1502a4ad1153ad7b7e1786aebbf99f863bd2e116a1380755c6a100e46dc4",
+          "bench/diagnostics/crypto_tls_reuse.py": "237f333f53558f761f568960b1298d4c19f8ca844a2946b7e0dc62848f2e41bd",
+          "bench/diagnostics/gzip_reads.py": "2cb2c7d75e20e010dd3b920f7691ff8b8076a7d2063fcdcc0f2e387953ddeede",
+          "bench/diagnostics/rand_diagnose.py": "fd892bf0e5709e126755a9ef3171190a828f2962274d0621ecc28d8d37d4bd6f",
+          "bench/gzip_reads.py": "0d094bc29c634f4a6028838fbf8143084808019695fb3ebd75c48cbd170c6351",
+          "bench/math-audit/probe_numeric.py": "3bb2bf2fb2c29378cbbc31c48b6e334b30a1f511d3b77c31447989ed7cf75b7d",
+          "bench/math-audit/probe_random.py": "3a05484f2ccc0204cbc20dc01a06eb48d93a4e93109e12ca54d17d29ee0a1a5a",
+          "bench/math-audit/probe_text.py": "ace209963989b1c96158ba3a5af7eb4e46e0a016e5dd83d76acbb38846463d70",
+          "bench/math-audit/qualify_audio.py": "ae55c97b5aae8e5c85b4010461ef0c9ce4ec6df8416be536d9d4e44f42b99232",
+          "bench/math-audit/qualify_sndfile.py": "e39bbaaa4c7511b95f2ddc7b2a80cd6b5c6cf64ff5b6593db363fc4662eabbd6",
+          "bench/native_profile.py": "2fcc37ffaf7d298fc6ff9e6c9ab15fe46d812794879e5cf10cb526fae4b1a926",
+          "bench/profiles/__init__.py": "75f32d76ac6c0671fe17c653bcffbc558a9fa9c6006eaf5523424178452a0c7e",
+          "bench/profiles/billy_gzip.py": "92f34672ffeaf3a32e7cbfee405e319a6bd3f80c1150bda6eb722bb8d841d4d9",
+          "bench/profiles/billy_serde.py": "17f14e760b96b15d98d60ab010be0a018d007dfbac5bc5708fdc497bf8ed14f0",
+          "bench/profiles/clone_common_cpu.py": "f1bc80e4bbc42068e898e0a3e4f613313b311bd430f12f62dc03991e48a357ba",
+          "bench/profiles/clone_cpu.py": "efc3f715ea09f403299354929164a5e2516d8783588ee87411cf54d67cd681cd",
+          "bench/profiles/clone_ids_profile.py": "65be3721bd793d6f63ff304cf3373cf1b827015916f2d053655a1b57d3b6cd70",
+          "bench/profiles/crypto_hash.py": "260a07b78502a12db4fecefda6a8cf60acd48653b493aa35df29424373b9fcac",
+          "bench/profiles/gzip_reads.py": "2bcbfbfa4db0711abaefdcc666e67616c54ddc06fa7890a91aaa8cb3a976df05",
+          "bench/profiles/jsonx_throughput.py": "e902ee3178e172216e269245e86837d001c813ba3fbe7c352c2b711bad22bf80",
+          "bench/profiles/native_profile.py": "606dbcdbdfa8e8cc20e7673ab4c13fd4f0b1afd74d0b7b3bbaad6d9f838071fb",
+          "bench/profiles/serde_profile.py": "15d25ba574ad67597bf85f4646a033247b290d6d7d710c75bbb23268a3e2c1ec",
+          "bench/profiles/text_native_compare.py": "daed408f2b6fd61e07dc08a85f06f6c8bd5f2d2441e3f3b22d9141934464e465",
+          "bench/rand_diagnose.py": "4a3099e0559536be632da445ab9e5523c99cb818485d7c0cb35ef19082aa8ca7",
+          "bench/report.py": "5ac8edc9921fa8c5831a78e9bb2280c8d50044c3d5001e83a42097b74d4a4927",
+          "bench/serde_profile.py": "b1e0fcc098839039f8d32989a90a0a7c549bbeede394ec0a3aa40452b667a369",
+          "bench/speed_cases_codecs.py": "29f1a501eddb8e8fe553d3ad7a42dfe0459297d67e0a055688811b1b96434e2f",
+          "bench/speed_cases_operations.py": "ebcd3554ad6eacd7145dcc02105a0216d1a49aac048a58fc76245dbabd1aaad3",
+          "bench/speed_cases_runtime.py": "9aab2d513586ab43d666f152f4ce77d67c06ac1bb65e59c86dd0d9712a849432",
+          "bench/speeds.py": "d1f6903e051f41644914a2e57879efa4123544851a04573828233d26d82b99ae",
+          "bench/text_native_compare.py": "355296d253e3f9a0e47129ed522ebcddbadc746bafec18047383cf1c06451f43",
+          "bench/timing.py": "8581207f1126f2a328b5a4224ee137bb4fbd066a76dfdfab674beffb25acfa3f",
+          "bench/workloads/__init__.py": "f62e623ffb84a575736ca61764f795f113699392ea58c77f46220f979d53ca67",
+          "bench/workloads/speed_cases_codecs.py": "8dda94b94688b43d9aecce530132dc6e278ab3a42aee0790c2e0f40b7fae5092",
+          "bench/workloads/speed_cases_operations.py": "54572576bc9cea79179d60a84d428a7f2f232e1d6de46233c3ee00ab196cf497",
+          "bench/workloads/speed_cases_runtime.py": "9a071379371c171c3e8b307453c27b798d41ba3926fd05bbb31e2bdeabcca8e3"
+        }
+      }
+    ]
+  },
+  "report": {
+    "file": "jsonx-second-pass.md",
+    "sha256": "c11ff77e7ade00bcb651c37705a74a233716400c93927f4cba72ac07c0983f8f"
+  },
+  "rendering": {
+    "base_renderer_sha256": "be9a073ed263f865ae3c7bccdf0598502e4603497b74e2dfa36948827f0409cb",
+    "base_renderer_source": "\"\"\"Render retained JSONX comparisons; this program performs no measurements.\"\"\"\nfrom __future__ import annotations\n\nimport argparse\nfrom collections import Counter\nfrom hashlib import sha256\nimport json\nfrom pathlib import Path\nfrom statistics import median\n\nLABELS = ('original', 'first_pass', 'candidate')\nABIS = ('312', '313', '314')\nPROFILE_ROWS = (\n    'jsonx.dumps/small', 'jsonx.dumps/indent', 'jsonx.dumps/records',\n    'jsonx.dumpb/records', 'jsonx.loads/records', 'jsonx.loads/records/bytes',\n    'jsonx.canonical/default', 'jsonx.canonical/custom', 'jsonx.dump/stream',\n)\n\n\ndef digest(path):\n    return sha256(path.read_bytes()).hexdigest()\n\n\ndef rows(report, group, name, label, stdlib=False):\n    key = 'measurement' if group == 'public_registry' else 'stdlib' if stdlib else 'accel'\n    return [run[group][name][key] for run in report['runs'] if run['label'] == label]\n\n\ndef median_ns(report, group, name, label, stdlib=False):\n    return median(row['per_op_ns'] for row in rows(report, group, name, label, stdlib))\n\n\ndef table(lines, headers, body):\n    lines.append('| ' + ' | '.join(headers) + ' |')\n    lines.append('|' + '|'.join('---' for _ in headers) + '|')\n    lines.extend('| ' + ' | '.join(map(str, row)) + ' |' for row in body)\n    lines.append('')\n\n\ndef ratio_cell(entry):\n    return f\"{entry['final_over_original_speedup']:.2f}\u00d7 / {entry['final_over_first_pass_speedup']:.2f}\u00d7\"\n\n\ndef main():\n    parser = argparse.ArgumentParser(description=__doc__)\n    for abi in ABIS:\n        parser.add_argument('--report-' + abi, type=Path, required=True)\n    parser.add_argument('--output', type=Path, required=True)\n    parser.add_argument('--manifest', type=Path, required=True)\n    parser.add_argument('--preflight', type=Path, required=True)\n    args = parser.parse_args()\n    preflight = json.loads(args.preflight.read_text())\n    reports = {}\n    artifacts = {}\n    for abi in ABIS:\n        path = getattr(args, 'report_' + abi)\n        report = json.loads(path.read_text())\n        if not report.get('complete') or report.get('smoke') or 'failure' in report:\n            raise ValueError(f'{path}: not a complete timing report')\n        if report['configuration']['repetitions'] != 3:\n            raise ValueError(f'{path}: balanced report requires three repetitions')\n        first = report['runs'][0]\n        for run in report['runs']:\n            if run['environment'] != first['environment']:\n                raise ValueError(f'{path}: runtime or dependency drift')\n            if run['harness_sha256'] != report['harness_sha256']:\n                raise ValueError(f'{path}: harness drift')\n            if not run['provenance']['native_source_sha256']:\n                raise ValueError(f'{path}: absent native source closure')\n        if len(first['public_case_names']) != 9 or len(first['core_case_names']) != 7:\n            raise ValueError(f'{path}: unexpected existing fixture inventory')\n        if report['harness_sha256'] != preflight['harness_sha256']:\n            raise ValueError(f'{path}: frozen harness differs from preparation receipt')\n        reports[abi] = report\n        artifacts[abi] = {'path': str(path.resolve()), 'sha256': digest(path),\n                          'environment': first['environment'],\n                          'configuration': report['configuration'],\n                          'sources': {label: next(run['provenance'] for run in report['runs'] if run['label'] == label) for label in LABELS}}\n    maximum_gain = max(entry['final_over_original_speedup'] for report in reports.values() for group in ('public_registry_comparisons', 'core_registry_comparisons', 'existing_serde_profile_comparisons') for entry in report[group].values())\n    if maximum_gain >= 100:\n        raise ValueError('A row reached 100\u00d7; qualify the headline before publication')\n    names = reports['312']['public_registry_comparisons']\n    lines = [\n        '# JSONX second-pass public Python qualification', '',\n        '**The 100\u00d7 target was not achieved.**', '',\n        'The tables use the unchanged existing public registry, core cases, and Serde profile. Every throughput value measures the public Python call, including dispatch, proofs, formatting/parsing and result allocation. C component probes provide no gain claim here. Python function profiling ran separately after timing. Profiling can change native dispatch observability, so its call counts describe the profiled routes rather than proving a timed native route.', '',\n        'Each cell below is **final/original / final/first-pass**. Ratios below 1 retain measured losses. The estimator is the median across three cyclically rotated source repetitions of the existing minimum calibrated wall-clock batch means; profiler times and CPU diagnostics never replace wall time.', '',\n    ]\n    runtime_rows = []\n    for abi, report in reports.items():\n        env = report['runs'][0]['environment']\n        runtime_rows.append([env['python'].split()[0],\n                             ', '.join(f'{k} {v}' for k, v in env['backends'].items()),\n                             len(report['runs'][0]['existing_profile_case_names'])])\n    table(lines, ['CPython', 'Serde providers', 'Existing profile fixtures'], runtime_rows)\n    lines.extend(['## Existing public-function registry', ''])\n    table(lines, ['Workload', 'Python 3.12', 'Python 3.13', 'Python 3.14'],\n          [[name.removeprefix('unstd.serde.jsonx.'), *[ratio_cell(reports[abi]['public_registry_comparisons'][name]) for abi in ABIS]] for name in names])\n    lines.extend(['## Existing Serde profile workloads', '',\n                  'The unchanged full Serde profile runs its own timing pass followed by cProfile. Its original timer retains ns/spread/iterations/rounds summaries. Registry/core evidence additionally retains every raw wall and thread-CPU sample. All existing JSONX profile rows appear below; optional NumPy fixtures run only where NumPy is installed.', ''])\n    table(lines, ['Workload', 'Python 3.12', 'Python 3.13', 'Python 3.14'],\n          [[name, *[ratio_cell(reports[abi]['existing_serde_profile_comparisons'][name]) if name in reports[abi]['existing_serde_profile_comparisons'] else '\u2014 (optional fixture absent)' for abi in ABIS]] for name in sorted(set().union(*(report['existing_serde_profile_comparisons'] for report in reports.values())))])\n    lines.extend(['## Existing core cases and stdlib controls', '',\n                  'Each cell gives final/original / final/first-pass, followed by the same ratios for the unchanged stdlib control. Control movement is evidence of host drift; it does not erase a public-call regression.', ''])\n    core_rows = []\n    for name in reports['312']['core_registry_comparisons']:\n        row = [name]\n        for abi in ABIS:\n            report = reports[abi]\n            control = {label: median_ns(report, 'core_registry', name, label, True) for label in LABELS}\n            row.append(ratio_cell(report['core_registry_comparisons'][name]) + f\" (stdlib {control['original']/control['candidate']:.2f}\u00d7 / {control['first_pass']/control['candidate']:.2f}\u00d7)\")\n        core_rows.append(row)\n    table(lines, ['Workload', 'Python 3.12', 'Python 3.13', 'Python 3.14'], core_rows)\n    lines.extend(['## Losses, spread and profile evidence', ''])\n    losses = []\n    noise_rows = []\n    observations = {}\n    for abi, report in reports.items():\n        spreads = []\n        floor_failures = []\n        for run in report['runs']:\n            for row in run['public_registry'].values():\n                spreads.append(row['measurement']['spread'])\n            for name, row in run['core_registry'].items():\n                spreads.extend((row['accel']['spread'], row['stdlib']['spread']))\n                if row['floor_failed']:\n                    floor_failures.append({'label': run['label'], 'repetition': run['repetition'], 'case': name})\n        profile_spreads = [row['spread'] for run in report['runs'] for name, row in run['existing_serde_profile']['timings'].items() if name.startswith('jsonx.')]\n        noise_rows.append([abi, f'{sum(value > .25 for value in spreads)}/{len(spreads)}', f'{max(spreads):.0%}', f'{sum(value > .25 for value in profile_spreads)}/{len(profile_spreads)}', f'{max(profile_spreads):.0%}'])\n        per_group = {}\n        for group in ('public_registry', 'core_registry', 'existing_serde_profile'):\n            comparisons = report[group + '_comparisons']\n            per_group[group] = {direction: {name: entry[direction] for name, entry in comparisons.items() if entry[direction] < 1} for direction in ('final_over_original_speedup', 'final_over_first_pass_speedup')}\n            for direction, label in (('final_over_original_speedup', 'original'), ('final_over_first_pass_speedup', 'first pass')):\n                worst = min(comparisons, key=lambda name: comparisons[name][direction])\n                losses.append([abi, group, label, worst, f\"{comparisons[worst][direction]:.2f}\u00d7\"])\n        observations[abi] = {'losses': per_group, 'core_floor_failures': floor_failures,\n                             'registry_profile_python_function_counts': {label: dict(sum((Counter({entry['function']: entry['total_calls']}) for entry in next(run for run in report['runs'] if run['label'] == label)['existing_public_registry_python_profile']), Counter())) for label in LABELS}}\n    table(lines, ['CPython', 'Registry/core >25% spread', 'Maximum', 'JSONX profile >25% spread', 'Maximum'], noise_rows)\n    table(lines, ['CPython', 'Group', 'Compared with', 'Slowest ratio workload', 'Ratio'], losses)\n    lines.extend(['All losses, profile call counts/self/cumulative times, native source/binary hashes, interpreter and installed backend code fingerprints remain in the raw evidence. Spread above 25% marks noisy observations; it is not a confidence interval. Small ratios around parity and any matching control movement need cautious interpretation.', '',\n                  '## Reproduce and correctness gates', '',\n                  'The original source was saved before edits at `94589856d2e604310b55020e40c51010f2af4755`. The first-pass source and final source are separate immutable snapshots. Freeze the same existing harness and build each source\u2019s native extension for the selected interpreter before running the retained driver.', '',\n                  '```console',\n                  'python bench/profiles/jsonx_existing.py --original /saved/original/src --first-pass /saved/first-pass/src --candidate /saved/final/src --harness /saved/harness --rounds 5 --profile-rounds 3 --repetitions 3 --output /results/jsonx-existing.json',\n                  'python bench/profiles/jsonx_existing.py --original /saved/original/src --first-pass /saved/first-pass/src --candidate /saved/final/src --harness /saved/harness --smoke --rounds 1 --profile-rounds 1 --repetitions 1 --output /results/jsonx-smoke.json',\n                  'PYTHONPATH=src:. python -m pytest tests/suites/assurance/gates/bench/test_jsonx_existing.py -q',\n                  'ruff check bench/profiles/jsonx_existing.py tests/suites/assurance/gates/bench/test_jsonx_existing.py',\n                  'ruff format --check bench/profiles/jsonx_existing.py tests/suites/assurance/gates/bench/test_jsonx_existing.py',\n                  'MYPYPATH=src mypy --follow-imports=silent bench/profiles/jsonx_existing.py',\n                  '```', '',\n                  'The driver runs the unchanged `bench.speeds.timings`, `bench.core.report.run`, and full `bench.profiles.serde_profile._worker` with independent audits. Its separate ten-pass registry Python profile also covers `canonical_strict`. The correctness gates reject corrupted outputs, mismatched imports/native closures, fixture/runtime drift and CPU-based concealment of wall-time losses; they run no performance threshold.', '',\n                  'No existing JSONX fixture, floor or latency ceiling was changed.', '',\n                  '## Raw evidence', ''])\n    for abi in ABIS:\n        path = getattr(args, 'report_' + abi)\n        lines.append(f'- Python {abi}: [{path.name}]({path.name})')\n    lines.extend(['', 'Safety qualification: [JSONX safety](jsonx-safety.md), [native safety results](jsonx-native-safety.json).', ''])\n    args.output.write_text('\\n'.join(lines))\n    args.manifest.write_text(json.dumps({'purpose': 'Existing public JSONX three-source qualification', 'reports': artifacts, 'observations': observations, 'preflight': preflight}, indent=2) + '\\n')\n\n\nif __name__ == '__main__':\n    main()\n",
+    "finalizer_sha256": "32fb9d3557e41bc44a191c556a856d60082225e49c2db3899f608e45c27fb6fd",
+    "finalizer_source": "\"\"\"Consolidate existing-only JSONX evidence after timing; no workloads run here.\"\"\"\nfrom hashlib import sha256\nimport json\nfrom pathlib import Path\nimport shutil\nfrom statistics import median\nimport subprocess\nimport sys\n\nROOT=Path('/Users/griffinstrier/Billy-Company/unstd')\nOUT=ROOT/'bench/reports/serde'\nREPORT=OUT/'jsonx-second-pass.md'\nMANIFEST=OUT/'jsonx-second-pass-evidence.json'\nRENDER=Path('/tmp/jsonx-second-report.py')\nsubprocess.run([sys.executable,str(RENDER),'--report-312',str(OUT/'jsonx-second-pass-312.json'),'--report-313',str(OUT/'jsonx-second-pass-313.json'),'--report-314',str(OUT/'jsonx-second-pass-314.json'),'--preflight','/tmp/jsonx-second-preflight.json','--output',str(REPORT),'--manifest',str(MANIFEST)],check=True)\ntext=REPORT.read_text()\nreports={abi:json.loads((OUT/f'jsonx-second-pass-{abi}.json').read_text()) for abi in ('312','313','314')}\nmanifest=json.loads(MANIFEST.read_text())\nheadline=('On the existing 500-record profile, default text serialization improves **3.64\u20134.27\u00d7** and compact bytes **4.14\u20134.50\u00d7** versus the original source. The core fixture with varied float scores improves **1.55\u20131.67\u00d7** for text and **1.69\u20131.95\u00d7** for bytes. Validated canonical encoding improves **1.52\u20131.72\u00d7** on the 32-record registry. Many operations remain near parity; all measured losses remain below.\\n\\n')\ntext=text.replace('**The 100\u00d7 target was not achieved.**\\n\\n','**The 100\u00d7 target was not achieved.**\\n\\n'+headline,1)\nchanges=('The final Python/C source closure is `914a990687481d7e415d1c2d61f1445591fb2f4db39fad58b7d174ad93471a85`, verified against the [source manifest](jsonx-second-source-manifest.json). A bounded native writer now handles finite floats with CPython-compatible spelling and operation-local caches. `canonical_strict` creates an owned native snapshot, then calls the existing encoder resolved before copying. Legacy canonical encoding reuses its stateless encoder. Encoder hooks, custom behavior, observer-sensitive routes and unsupported inputs retain their existing fallbacks. There is no cross-call result cache.\\n\\n')\ntext=text.replace('## Existing public-function registry\\n',changes+'## Existing public-function registry\\n',1)\ntext=text.replace('Control movement is evidence of host drift; it does not erase a public-call regression.','Control movement records variation in the run context; it does not erase a public-call regression.')\nfloors=('Every candidate core measurement met its unchanged floor. One original-source measurement on Python 3.13, repetition 3, missed the existing 4.19\u00d7 stdlib-relative floor for `jsonx.dumps \u00b7 text payload`; that baseline exception remains in the raw report. No floor was edited.\\n\\n')\ntext=text.replace('## Losses, spread and profile evidence\\n',floors+'## Losses, spread and profile evidence\\n',1)\nfollowups={}\nfollow_lines=['## Separate regression follow-up','',\n'The primary Python 3.13 `jsonx.dumpb/string` loss remains **0.762\u00d7 / 0.798\u00d7** versus original/first pass. Its candidate repetitions were 87.58, 63.19 and 117.93 ns with 73%, 6% and 155% spread; the original repetitions were 66.47\u201367.21 ns. The existing full profile retains summary statistics rather than CPU samples, so it cannot establish whether those slow repetitions were descheduled.', '',\n'A separate experiment reuses the same existing `Workload.call`, registry `Case.run`, and core partials. Six cyclic source repetitions balance each source position twice; each measurement retains seven wall-clock samples and the available thread-CPU samples. Case order rotates identically for all sources within a repetition. The primary matrix above is unchanged.', '',\n'Cells below give **primary wall ratio \u2192 follow-up wall ratio**, each as final/original / final/first-pass. CPU ratios are separate diagnostics and never substitute for wall time.', '',\n'| CPython | Existing call | Primary wall | Follow-up wall | Follow-up thread CPU diagnostic |',\n'|---|---|---|---|---|']\nfor abi in ('313','314'):\n    path=OUT/f'jsonx-second-followup-{abi}.json'\n    follow=json.loads(path.read_text());assert follow['complete'];assert len(follow['runs'])==18\n    primary=reports[abi];first=primary['runs'][0]\n    for run in follow['runs']:\n        assert run['environment']==first['environment']\n        assert run['harness_sha256']==primary['harness_sha256']\n        assert run['provenance']==next(row['provenance'] for row in primary['runs'] if row['label']==run['label'])\n        assert all(len(row['samples_ns'])==7 and len(row['cpu_samples_ns'])==7 for row in run['measurements'].values())\n    followups[abi]={'file':path.name,'sha256':sha256(path.read_bytes()).hexdigest(),'driver_sha256':follow['driver_sha256'],'command':follow['command'],'comparisons':follow['comparisons']}\n    for name,row in follow['comparisons'].items():\n        category,case=name.split(':',1)\n        if category=='stdlib':\n            std={label:median(run['core_registry'][case]['stdlib']['per_op_ns'] for run in primary['runs'] if run['label']==label) for label in ('original','first_pass','candidate')}\n            original={'final_over_original_speedup':std['original']/std['candidate'],'final_over_first_pass_speedup':std['first_pass']/std['candidate']}\n        else:\n            group={'core':'core_registry_comparisons','registry':'public_registry_comparisons','profile':'existing_serde_profile_comparisons'}[category]\n            original=primary[group][case]\n        pair=lambda item:f\"{item['final_over_original_speedup']:.3f}\u00d7 / {item['final_over_first_pass_speedup']:.3f}\u00d7\"\n        cpu=row['thread_cpu_min_ns_diagnostic']\n        follow_lines.append(f\"| {abi} | {name} | {pair(original)} | {pair(row)} | {cpu['original']/cpu['candidate']:.3f}\u00d7 / {cpu['first_pass']/cpu['candidate']:.3f}\u00d7 |\")\nfollow_lines.extend(['',\n'The Python 3.13 string fixture measures 65.17 / 65.75 / 63.77 ns for original / first pass / final in the follow-up, with matching CPU diagnostics. Its primary material slowdown did not reproduce. The 3.13 core 500-record decode measures 116.10 / 115.93 / 116.54 \u00b5s; its stdlib control is 201.33 / 201.46 / 201.30 \u00b5s. Python 3.14 float decode also returns near parity in the follow-up.', '',\n'No sustained material slowdown reproduced in these selected calls. This narrower experiment changes order and context; it does not establish the cause of the primary losses or replace those results. Follow-up batches also contain large outliers, retained in the raw evidence. Unrepeated losses elsewhere remain unresolved, including the 3.12 custom canonical row.', '',\n'The [Python 3.13 follow-up](jsonx-second-followup-313.json) and [Python 3.14 follow-up](jsonx-second-followup-314.json) include the complete focused driver source, exact commands, unchanged harness/source identities and every wall/CPU sample.', ''])\ntext=text.replace('## Reproduce and correctness gates\\n','\\n'.join(follow_lines)+'\\n## Reproduce and correctness gates\\n',1)\nreproduction=('The [first-pass text source archive](jsonx-first-pass-source.tar.gz) and [byte-identical frozen harness](jsonx-existing-harness.tar.gz) preserve the inputs after temporary directories are removed. The [reproduction manifest](jsonx-second-reproduction.json) records every archived file hash and overlay instructions. The original source comes from the commit above; the final source is the reviewed tree identified by its source manifest. Archives contain no compiled extensions.\\n\\n'\n'The retained [comparison driver](../../profiles/jsonx_existing.py) selects product and harness paths before worker imports. Keep one interpreter and dependency installation fixed across all three sources. The report records actual executable/libpython hashes and installed provider code/binary fingerprints; workers reject changes within or between repetitions. Source-only archives must be rebuilt for the selected interpreter.\\n\\n')\ntext=text.replace('```console\\npython bench/profiles/jsonx_existing.py',reproduction+'```console\\npython bench/profiles/jsonx_existing.py',1)\ntext=text.replace('MYPYPATH=src mypy --follow-imports=silent bench/profiles/jsonx_existing.py','MYPYPATH=src mypy --no-incremental --cache-dir /tmp/jsonx-driver-mypy-cache --follow-imports=silent bench/profiles/jsonx_existing.py')\ngate=('The [14 driver correctness gates](../../../tests/suites/assurance/gates/bench/test_jsonx_existing.py) passed on the three stable runtimes. Ruff and formatting passed. The focused mypy check uses only the driver as a checked root, with imported Python modules followed silently; this does not claim the complete product/harness type gate passes in the minimal environment. Exact validation commands and scope remain in the [evidence manifest](jsonx-second-pass-evidence.json).\\n\\n')\ntext=text.replace('No existing JSONX fixture, floor or latency ceiling was changed.',gate+'No existing JSONX fixture, floor or latency ceiling was changed.',1)\ntext=text.replace('Safety qualification: [JSONX safety](jsonx-safety.md), [native safety results](jsonx-native-safety.json).','The [evidence manifest](jsonx-second-pass-evidence.json) indexes source identities, interpreter/backend fingerprints, validation scope, losses, floor exceptions and follow-up reports.\\n\\nSafety qualification: [second-pass JSONX safety](jsonx-second-safety.md), [native safety results](jsonx-second-native-safety.json).')\nREPORT.write_text(text)\nmanifest['followups']=followups\nmanifest['matrix_commands']=json.loads(Path('/tmp/jsonx-second-final-matrix.json').read_text())\nmanifest['source_freeze']=json.loads((OUT/'jsonx-second-source-manifest.json').read_text())\nmanifest['reproduction']=json.loads((OUT/'jsonx-second-reproduction.json').read_text())\nmanifest['report']={'file':REPORT.name,'sha256':sha256(REPORT.read_bytes()).hexdigest()}\nmanifest['rendering']={'base_renderer_sha256':sha256(RENDER.read_bytes()).hexdigest(),'base_renderer_source':RENDER.read_text(),'finalizer_sha256':sha256(Path(__file__).read_bytes()).hexdigest(),'finalizer_source':Path(__file__).read_text()}\nmanifest['scoped_mypy_log']=Path('/tmp/jsonx-second-mypy-driver.log').read_text()\nMANIFEST.write_text(json.dumps(manifest,indent=2)+'\\n')\nprint(json.dumps({'report':str(REPORT),'raws':len(manifest['reports']),'followups':len(followups),'report_lines':len(text.splitlines())},indent=2))\n"
+  },
+  "scoped_mypy_log": "Success: no issues found in 1 source file\n",
+  "validation": {
+    "status": "passed",
+    "primary_workers": 27,
+    "followup_workers": 36,
+    "primary_case_counts": {
+      "312": {
+        "workers": 9,
+        "public_cases": 9,
+        "core_cases": 7,
+        "profile_cases": 118,
+        "jsonx_profile_comparisons": 42
+      },
+      "313": {
+        "workers": 9,
+        "public_cases": 9,
+        "core_cases": 7,
+        "profile_cases": 122,
+        "jsonx_profile_comparisons": 46
+      },
+      "314": {
+        "workers": 9,
+        "public_cases": 9,
+        "core_cases": 7,
+        "profile_cases": 118,
+        "jsonx_profile_comparisons": 42
+      }
+    },
+    "all_medians_and_speedups_recomputed": true,
+    "all_raw_wall_sample_minima_verified": true,
+    "source_freeze_sha256": "914a990687481d7e415d1c2d61f1445591fb2f4db39fad58b7d174ad93471a85",
+    "source_freeze_files_matched_to_snapshot_and_current_tree": 19,
+    "runtime_backend_fingerprints_unchanged_from_preflight": true,
+    "candidate_core_floors_all_passed": true,
+    "archives_matched_every_recorded_text_file": true,
+    "markdown_file_links_checked": 15,
+    "artifact_sha256": {
+      "jsonx-second-pass-312.json": "6a089ccbcbd836042c6619fff6d70a5ca9f471c759e956aa4a9b7c97f1d6e8c0",
+      "jsonx-second-pass-313.json": "2d00638af2d8e7b91b3fb108e842335c1df6e039ac7ae886bd28f42b7b846ffd",
+      "jsonx-second-pass-314.json": "9f50f67260e45edc16aacc1a8443a7ff8c417840a96a0bc0ac983fdc98211594",
+      "jsonx-second-followup-313.json": "2cefd593c9abcedee26490ad6d5032a8a16557136b9124aa323a853c38f178d5",
+      "jsonx-second-followup-314.json": "ad0b36122ee1203ef08c07e6674e5fc295853c3710b52a40ec0eaab1c10f6057",
+      "jsonx-first-pass-source.tar.gz": "19d13569d4d55546fb9f2218c9d99ac206c37fed13e4ccf8b190d6f4071861aa",
+      "jsonx-existing-harness.tar.gz": "e5457f1a947dd47bccdee56e003b56d60f518c24515344a44185cd716b3ed1d4",
+      "jsonx-second-pass.md": "c11ff77e7ade00bcb651c37705a74a233716400c93927f4cba72ac07c0983f8f",
+      "jsonx-second-source-manifest.json": "406c7c5a2c0615837d0530625aa41c7b0d2caf29f4668ffe618d08e80f1cd39a",
+      "jsonx-second-reproduction.json": "ca098b9b41a8bac65b31be1ab28f0914b3086a091b19439ac989b2f197d1715d"
+    },
+    "validation_source_sha256": "dd9b535687ec3bc406ce31cc0127f4d076c81f378e6fd941f14ec500efae14a4"
+  }
+}

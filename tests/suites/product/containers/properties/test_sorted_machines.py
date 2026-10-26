@@ -415,7 +415,9 @@ def test_sorted_histories_match_their_reference_model(
 
 def test_key_function_list_is_the_documented_key_variant() -> None:
     backend = require_backend("sortedcontainers")
-    assert type(SortedList([3, 1, 2], key=lambda v: -v)) is backend.SortedKeyList
+    keyed = SortedList([3, 1, 2], key=lambda v: -v)
+    assert isinstance(keyed, backend.SortedKeyList)
+    assert isinstance(keyed, SortedList)
     assert type(SortedList([3, 1, 2])) is SortedList
     assert list(SortedList(["bb", "a", "ccc", "dd"], key=len)) in (
         ["a", "bb", "dd", "ccc"],

@@ -1,4 +1,4 @@
-# Billy serde optimization measurements
+# Serde optimization measurements
 
 **Status: the strict comparison with 2.1.1 still fails.** Source decoding is
 0.30% slower in the original workload and 0.55% slower through a warmed direct
@@ -8,8 +8,8 @@ zero-regression target remains unmet.
 The 3.1.0 release discloses these remaining costs; it does not claim to pass
 the strict legacy performance gate.
 
-Measured on 2026-10-19 using Billy's existing fixtures and public calls, without
-Billy code changes. The implementation retains the 3.0 JSON values, output
+Measured on 2026-10-19 using existing consumer fixtures and public calls, without
+consumer code changes. The implementation retains the 3.0 JSON values, output
 format and call signatures. These results do not establish zero slowdown.
 
 ## Compared with 2.1.1
@@ -19,7 +19,7 @@ interpreter. Times are microseconds per complete public call. The ratio is the
 median of neighboring batch ratios; times are separately summarized medians,
 so dividing displayed times need not reproduce the paired ratio exactly.
 
-| Saved Billy operation | 2.1.1 µs | Current µs | Paired current / old | Faster pairs |
+| Saved consumer operation | 2.1.1 µs | Current µs | Paired current / old | Faster pairs |
 | --- | ---: | ---: | ---: | ---: |
 | Compact source encoding | 1.897 | 1.883 | 0.98866 | 94 / 105 |
 | Small request encoding | 0.108 | 0.081 | 0.75117 | 105 / 105 |
@@ -37,9 +37,9 @@ Across the original and direct call forms, compact encoding saves 0.9–1.1%,
 small request encoding and decoding 19–25%, and NDJSON 11–13%.
 
 All thirteen current cases match their independent references and required
-native probes. The remaining failures are performance failures. The report retains
-every batch sample, per-repetition result and failure:
-[`billy-serde-optimized-legacy-results.json`](billy-serde-optimized-legacy-results.json).
+native probes. The remaining failures are performance failures. The legacy-comparison raw
+report in this directory retains every batch sample, per-repetition result
+and failure.
 
 2.1.1 returned cached orjson results without checking precision; the current
 route walks the 103-value tree (seven containers and 96 strings, excluding keys)
@@ -66,7 +66,7 @@ This separate run used the same frozen source, native binary, comparison runner,
 original benchmark and fixture hashes as the legacy comparison. Each row has its
 own 105 neighboring batch pairs; absolute times are not mixed between runs.
 
-| Saved Billy operation | 3.0.0 µs | Current µs | Paired speedup |
+| Saved consumer operation | 3.0.0 µs | Current µs | Paired speedup |
 | --- | ---: | ---: | ---: |
 | Default source encoding | 21.658 | 5.338 | 4.05× |
 | Compact source encoding | 33.672 | 1.869 | 18.03× |
@@ -77,12 +77,11 @@ own 105 neighboring batch pairs; absolute times are not mixed between runs.
 | NDJSON reading | 26.523 | 7.712 | 3.42× |
 
 All thirteen selected cases pass the strict 1.0 ratio gate, exact output checks
-and required native probes. The complete report is
-[`billy-serde-optimized-results.json`](billy-serde-optimized-results.json).
+and required native probes. The complete current-comparison raw report is retained in this directory.
 
 ## Method and native evidence
 
-[`billy_serde.py`](../../profiles/billy_serde.py) imports Billy's original workload construction,
+The serde fixture profiler in the [profile directory](../../profiles/) imports the original workload construction,
 fixtures, independent references and CPU batch timer. Old and current module
 graphs stay distinct while their retained callables alternate within the same
 process. Fifteen batches across seven repetitions produce 105 neighboring pairs
@@ -119,29 +118,20 @@ compiler/SDK, and select its matching extension in `src` before measuring.
 The measured extension was extracted atomically so existing macOS processes
 could retain their earlier loaded mappings.
 
-```console
-mkdir -p .local/billy-serde-v2 .local/billy-serde-v3
-git archive v2.1.1 src/unstd | tar -x -C .local/billy-serde-v2
-git archive v3.0.0 src/unstd | tar -x -C .local/billy-serde-v3
-../billy/.venv/bin/python bench/billy_serde.py --paired --baseline-source .local/billy-serde-v2/src --runs 15 --repetitions 7 --select json- --select ndjson- --max-regression 1.0 --check --output bench/billy-serde-optimized-legacy-results.json
-../billy/.venv/bin/python bench/billy_serde.py --paired --baseline-source .local/billy-serde-v3/src --runs 15 --repetitions 7 --select json- --select ndjson- --max-regression 1.0 --check --output bench/billy-serde-optimized-results.json
-```
-
-The legacy command exits unsuccessfully for both source-decoding cases.
-The 3.0.0 command succeeds. Both runs were performed once after the final freeze;
+The legacy comparison exits unsuccessfully for both source-decoding cases.
+The 3.0.0 comparison succeeds. Both runs were performed once after the final freeze;
 no favorable rerun was selected.
 
 ## Validation and remaining limits
 
-The measured implementation is
-[code commit 0653735](https://github.com/The-Billy-Company/unstd/commit/0653735).
+The measured implementation is code commit `0653735`.
 Its actual Hatch native artifacts passed the serde suite on CPython 3.12
 (2,706 tests, 38 skips), 3.13 (2,707 tests, 37 skips) and 3.14 (2,744 tests).
 The final full all-extras repository run on Python 3.14 passed 6,085 tests with
 six skips and 250 deselections in 85.58 seconds. The five runner assurance tests,
 Ruff, formatting, mypy and suite inventory checks also passed.
 All 56 remote checks for that code commit passed in
-[CI run 39369221682](https://github.com/The-Billy-Company/unstd/actions/runs/39369221682).
+CI run 39369221682.
 
 Near C-stack exhaustion, failure depth can depend on the invocation context:
 a 256 KiB stack probe found a difference of a few caller levels. Identical
@@ -157,6 +147,6 @@ than querying the requested thread stack; see its
 The remaining installed-wheel serde tests still run on musllinux.
 
 Earlier reports, including the
-[original release regression reproduction](billy-serde-release-results.json),
+original release regression reproduction in this directory,
 describe their own recorded source revisions and must not be combined with this
 revision's timings.

@@ -1,7 +1,7 @@
-"""Checked PCM wrapping and normalization ports of Billy's audio consumers.
+"""Checked PCM wrapping and normalization ports for audio consumers.
 
 Run with ``--baseline /path/to/saved/wavx.py --output /path/to/report.json``.
-``--billy-root ../billy`` adds hashes and source locations for the production
+Consumer source paths add hashes and source locations for the production
 consumers. Fixtures are deterministic PCM16 bytes; no provider or network time is
 included. Every timed call allocates its complete output, and allocation peaks
 are measured separately from wall and current-thread CPU time.

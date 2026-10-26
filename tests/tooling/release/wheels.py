@@ -81,7 +81,9 @@ def _managed_python(
             raise RuntimeError(msg)
         request = f"cpython-{minor}-linux-{platform.machine()}-{libc}"
     subprocess.run(  # noqa: S603 - fixed provider and validated builder version
-        [uv, "python", "install", "--managed-python", request], check=True, timeout=300
+        [uv, "python", "install", "--managed-python", "--upgrade", request],
+        check=True,
+        timeout=300,
     )
     python = Path(
         subprocess.check_output(  # noqa: S603

@@ -1,4 +1,4 @@
-"""Paired gzip read workloads, including Billy's streaming consumption shapes.
+"""Paired gzip read workloads, including streaming consumption shapes.
 
 Run ``python bench/gzip_reads.py --baseline-source /saved/src --output reads.json``.
 Repeat ``--fixture`` for captured payloads; their original bytes are never rewritten.
@@ -44,6 +44,7 @@ class _Case:
     operation: str = "decompress"
     limit: int = 0
     fixture: str | None = None
+    chunk_bytes: int = 64 * 1024
 
 
 def _hash(raw: bytes) -> str:
@@ -95,6 +96,21 @@ def _cases(fixtures: list[Path]) -> list[_Case]:
             for i in range(0, count, 100)
         )
         cases.append(_Case(f"journal-{count}-members", raw, packed, "lines"))
+    for period in (1, 16, 32):
+        raw = (bytes(range(period)) * ((1024 * 1024 + period - 1) // period))[
+            : 1024 * 1024
+        ]
+        packed = gzip.compress(raw, mtime=0)
+        cases.extend(
+            _Case(
+                f"period-{period}-stream-{chunk_bytes}",
+                raw,
+                packed,
+                "stream-count",
+                chunk_bytes=chunk_bytes,
+            )
+            for chunk_bytes in (8192, 64 * 1024, 256 * 1024)
+        )
     return cases
 
 
@@ -127,10 +143,61 @@ def _operation(codec: ModuleType, case: _Case) -> Callable[[], object]:
                 return b"".join(source)
             if case.operation == "stream":
                 return b"".join(iter(lambda: source.read(64 * 1024), b""))
+            if case.operation == "stream-count":
+                count = 0
+                while chunk := source.read(case.chunk_bytes):
+                    count += len(chunk)
+                return count
             message = f"unknown gzip benchmark operation: {case.operation}"
             raise ValueError(message)
 
     return consume
+
+
+def _validate_stream_bytes(codec: ModuleType, case: _Case) -> None:
+    """A length-only timer still needs independent byte checks at its read size."""
+    with codec.GzipFile(fileobj=io.BytesIO(case.packed), mode="rb") as source:
+        position = 0
+        while chunk := source.read(case.chunk_bytes):
+            if chunk != case.raw[position : position + len(chunk)]:
+                message = f"{case.name}: decoded bytes differ from the source"
+                raise AssertionError(message)
+            position += len(chunk)
+        if position != len(case.raw):
+            message = f"{case.name}: decoded bytes differ from the source"
+            raise AssertionError(message)
+
+
+def _native_backends(
+    codec: ModuleType, function: Callable[[], object]
+) -> dict[str, int] | None:
+    """Observe selected engines outside timing, retaining each completed state."""
+    if codec is gzip:
+        return None
+    reader = sys.modules.get("unstd.compress.engines.reader") or sys.modules.get(
+        "unstd.compress._reader"
+    )
+    factory = getattr(reader, "_factory", None)
+    if not callable(factory) or not hasattr(factory, "_selected_backend"):
+        return None
+    instances: list[Any] = []
+
+    def observe(*args: Any, **kwargs: Any) -> Any:
+        stream = factory(*args, **kwargs)
+        instances.append(stream)
+        return stream
+
+    assert reader is not None
+    vars(reader)["_factory"] = observe
+    try:
+        function()
+    finally:
+        vars(reader)["_factory"] = factory
+    selected: dict[str, int] = {}
+    for stream in instances:
+        name = str(stream._selected_backend)
+        selected[name] = selected.get(name, 0) + 1
+    return selected
 
 
 def _validate_upload_bytes(codec: ModuleType, case: _Case) -> None:
@@ -183,6 +250,7 @@ def _metadata(codec: ModuleType, cases: list[_Case]) -> dict[str, object]:
         dict.fromkeys((Path(codec.__file__).resolve(), Path(gzip.__file__).resolve()))
     )
     kernels: dict[str, str] = {}
+    streaming: dict[str, object] = {}
     if codec is not gzip:
         paths.extend(
             path
@@ -201,13 +269,37 @@ def _metadata(codec: ModuleType, cases: list[_Case]) -> dict[str, object]:
             backend = sys.modules.get(name)
             if backend is not None and backend.__file__ is not None:
                 paths.append(Path(backend.__file__).resolve())
+        reader = sys.modules.get("unstd.compress.engines.reader") or sys.modules.get(
+            "unstd.compress._reader"
+        )
+        if reader is not None:
+            factory = getattr(reader, "_factory", None)
+            owner = getattr(factory, "__module__", "")
+            streaming = {
+                "factory": f"{owner}.{getattr(factory, '__qualname__', '')}",
+                "runtime_version": (
+                    getattr(
+                        sys.modules.get("zlib_ng.zlib_ng"),
+                        "ZLIBNG_RUNTIME_VERSION",
+                        None,
+                    )
+                    if owner.startswith("zlib_ng")
+                    else kernels.get("ZLIB_RUNTIME_VERSION")
+                ),
+                "crc32": getattr(getattr(reader, "_crc32", None), "__module__", None),
+                "adaptive_ng_version": getattr(reader, "_adaptive_ng_version", None),
+                "isal_runtime_version": getattr(native, "ISAL_RUNTIME_VERSION", None),
+                "isal_patch_sha256": getattr(native, "ISAL_PATCH_SHA256", None),
+                "isal_streaming": bool(getattr(native, "ISAL_STREAMING", False)),
+            }
     packed = codec.compress(cases[0].raw, mtime=0)
     if gzip.decompress(packed) != cases[0].raw:
         message = "compression changed the source bytes"
         raise AssertionError(message)
     native_calls = _native_calls(lambda: codec.compress(cases[0].raw, mtime=0))
     if getattr(codec, "_backend", None) is not None and not any(
-        name.startswith("zlib_ng") for name in native_calls
+        name.startswith(("zlib_ng", "unstd.compress._gzip_native"))
+        for name in native_calls
     ):
         message = "installed native gzip backend did not execute compression"
         raise AssertionError(message)
@@ -219,6 +311,7 @@ def _metadata(codec: ModuleType, cases: list[_Case]) -> dict[str, object]:
         "zlib_runtime_version": zlib.ZLIB_RUNTIME_VERSION,
         "versions": versions,
         "native_kernel_versions": kernels,
+        "streaming_codec": streaming,
         "sources": {str(path): _hash(path.read_bytes()) for path in paths},
         "compression_native_calls": native_calls,
         "compression_output_sha256": _hash(packed),
@@ -257,6 +350,9 @@ def _worker(args: argparse.Namespace) -> None:
             upload_summary = digest, len(case.raw), len(case.raw)
             identical = actual == upload_summary
             _validate_upload_bytes(codec, case)
+        elif case.operation == "stream-count":
+            identical = actual == len(case.raw)
+            _validate_stream_bytes(codec, case)
         else:
             identical = actual == expected
         if not identical:
@@ -275,6 +371,10 @@ def _worker(args: argparse.Namespace) -> None:
             "output_sha256": _hash(expected),
             "identical_output": True,
             "native_calls": calls,
+            "selected_native_backends": _native_backends(codec, function),
+            "read_chunk_bytes": case.chunk_bytes
+            if case.operation == "stream-count"
+            else None,
             "native_decode_executed": any(
                 name.startswith(("zlib_ng", "unstd.compress._gzip_native"))
                 and "decompress" in name
@@ -319,6 +419,8 @@ def _worker(args: argparse.Namespace) -> None:
                 "cpu_ns": elapsed_cpu / iterations,
                 "iters": iterations,
             }
+            if cases[index].operation == "stream-count":
+                _validate_stream_bytes(codec, cases[index])
         print(json.dumps(result), flush=True)
 
 

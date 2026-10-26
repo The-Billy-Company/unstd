@@ -1,0 +1,68 @@
+from pathlib import Path
+from hashlib import sha256
+import json, os, platform, shutil, subprocess, sys, tempfile, time
+import xml.etree.ElementTree as ET
+REPO=Path('/Users/griffinstrier/Billy-Company/unstd')
+AUDIT=Path(tempfile.mkdtemp(prefix='jsonx-shared-dfs-final-safety-')).resolve()
+TREE=AUDIT/'tree'
+COMPILER='/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang'
+TESTS=['test_jsonx_shared_encode.py','test_jsonx_decode_walk.py','test_jsonx_native_memory.py','test_jsonx_repeated_float_native.py']
+def digest(p):return sha256(Path(p).read_bytes()).hexdigest()
+def run(cmd,**kw):return subprocess.run([str(v)for v in cmd],text=True,capture_output=True,check=False,**kw)
+def save():(AUDIT/'results.json').write_text(json.dumps(evidence,indent=2)+'\n')
+paths=[*sorted((REPO/'native/serde/src').glob('*.c')),*sorted((REPO/'native/serde/src').glob('*.h')),*sorted((REPO/'src/unstd/serde').rglob('*.py')),*sorted((REPO/'src/unstd/serde').rglob('*.pyi'))]
+expected={str(p.relative_to(REPO)):digest(p)for p in paths}
+for folder in ('src','tests'):
+ shutil.copytree(REPO/folder,TREE/folder,ignore=shutil.ignore_patterns('*.so','*.pyd','*.dSYM','__pycache__','.pytest_cache','.hypothesis'))
+shutil.copy2(REPO/'pyproject.toml',TREE/'pyproject.toml')
+shutil.copytree(REPO/'native/serde/src',TREE/'native/serde/src')
+assert expected=={p:digest(TREE/p)for p in expected}
+assert expected=={p:digest(REPO/p)for p in expected},'sources changed during snapshot'
+shutil.copy2('/tmp/jsonx-final-alias-stress.py',TREE/'alias_stress.py')
+sdk=subprocess.check_output(['xcrun','--show-sdk-path'],text=True).strip()
+resource=subprocess.check_output([COMPILER,'-print-resource-dir'],text=True).strip()
+runtime=str(Path(resource)/'lib/darwin/libclang_rt.asan_osx_dynamic.dylib')
+evidence=dict(audit=str(AUDIT),scope='Only copied JSON C extension instrumented; CPython and backend binaries not instrumented. No shared production binaries overwritten.',started=time.time(),host=platform.platform(),compiler=COMPILER,compiler_version=subprocess.check_output([COMPILER,'--version'],text=True),compiler_sha256=digest(COMPILER),sanitizer_runtime=runtime,sanitizer_runtime_sha256=digest(runtime),source_hashes=expected,test_hashes={name:digest(TREE/'tests/suites/product/serde/parity'/name)for name in TESTS},stress_sha256=digest(TREE/'alias_stress.py'),runner_sha256=digest(__file__),builds=[])
+save();print('AUDIT='+str(AUDIT),flush=True)
+for abi in ('314','312','313'):
+ base=REPO/'.venv/bin/python' if abi=='314' else Path('/private/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/jsonx-shared-dfs-safety-axej_l6b')/('py'+abi+'/bin/python')
+ cfg=json.loads(subprocess.check_output([str(base),'-c','import json,sys,sysconfig;print(json.dumps(dict(version=sys.version,include=sysconfig.get_path("include"),suffix=sysconfig.get_config_var("EXT_SUFFIX"),purelib=sysconfig.get_path("purelib"))))'],text=True))
+ venv=AUDIT/('py'+abi)
+ created=run([base,'-m','venv','--without-pip',venv]);assert created.returncode==0,created.stderr
+ py=venv/'bin/python';site=venv/('lib/python3.'+abi[1:]+'/site-packages')
+ (site/'audit.pth').write_text(str(TREE/'src')+'\n'+str(TREE)+'\n'+cfg['purelib']+'\n')
+ build=dict(abi=abi,python=str(py),python_configuration=cfg,build_commands=[],runs=[]);evidence['builds'].append(build);save()
+ output=TREE/'src/unstd/serde'/('_json_native'+cfg['suffix']);obj=AUDIT/(abi+'-adapter.o')
+ common=[COMPILER,'-isysroot',sdk,'-fPIC','-O1','-Wall','-Wextra','-fsanitize=address,undefined','-fno-omit-frame-pointer','-fno-sanitize-recover=all']
+ commands=[[*common,'-g','-I'+cfg['include'],'-c',TREE/'native/serde/src/adapter.c','-o',obj],[*common,'-bundle','-undefined','dynamic_lookup',obj,'-o',output]]
+ for index,cmd in enumerate(commands):
+  compiled=run(cmd,timeout=60);log=AUDIT/(abi+'-build-'+str(index)+'.log');log.write_text(compiled.stdout+compiled.stderr)
+  build['build_commands'].append(dict(command=list(map(str,cmd)),exit_code=compiled.returncode,log=str(log),log_sha256=digest(log)));save();assert compiled.returncode==0,compiled.stderr
+ build.update(extension=str(output),extension_sha256=digest(output))
+ runner=TREE/('run_'+abi+'.py')
+ runner.write_text('import os,sys\nfrom pathlib import Path\n'+f'os.environ["DYLD_INSERT_LIBRARIES"]={runtime!r}\n'+'from unstd.serde import jsonx,_json_native as native\n'+f'assert Path(native.__file__).resolve()==Path({str(output)!r}).resolve(),native.__file__\n'+f'assert Path(jsonx.__file__).resolve()==Path({str(TREE/"src/unstd/serde/jsonx.py")!r}).resolve()\n'+'import pytest\nraise SystemExit(pytest.main(sys.argv[1:]))\n')
+ for allocator in ('malloc','debug'):
+  env=os.environ.copy()
+  for key in ('PYTHONPATH','PYTHONHOME','UNSTD_JSONX_IDENTITY_GC_STRESS'):env.pop(key,None)
+  env.update(DYLD_INSERT_LIBRARIES=runtime,ASAN_OPTIONS='detect_leaks=0:abort_on_error=1:detect_stack_use_after_return=0',UBSAN_OPTIONS='halt_on_error=1:print_stacktrace=1',PYTHONMALLOC=allocator,UNSTD_NATIVE_SANITIZERS='1',PYTEST_DISABLE_PLUGIN_AUTOLOAD='1',HYPOTHESIS_PROFILE='dev')
+  xml=AUDIT/(abi+'-'+allocator+'.xml')
+  cmd=[str(py),'-I',str(runner),'-q','-ra','-m','not perf and not concurrency and not chaos',*[str(TREE/'tests/suites/product/serde/parity'/name)for name in TESTS],'--junitxml='+str(xml)]
+  print('RUN '+abi+' '+allocator,flush=True)
+  completed=run(cmd,cwd=TREE,env=env,timeout=180)
+  log=AUDIT/(abi+'-'+allocator+'.log');log.write_text(completed.stdout+completed.stderr)
+  record=dict(lane='pytest-'+allocator,command=cmd,environment={k:env[k]for k in ('DYLD_INSERT_LIBRARIES','ASAN_OPTIONS','UBSAN_OPTIONS','PYTHONMALLOC','UNSTD_NATIVE_SANITIZERS')},exit_code=completed.returncode,log=str(log),log_sha256=digest(log),stdout_tail=completed.stdout[-2500:],stderr=completed.stderr)
+  if xml.exists():
+   suites=ET.parse(xml).getroot().iter('testsuite');totals=dict(tests=0,failures=0,errors=0,skipped=0)
+   for suite in suites:
+    for k in totals:totals[k]+=int(suite.attrib.get(k,0))
+   record['counts']=totals
+  build['runs'].append(record);save();print(abi,allocator,completed.returncode,record.get('counts'),flush=True)
+  # Fake-stack detection is separately enabled for alias buffer/lifetime stress.
+  env['ASAN_OPTIONS']='detect_leaks=0:abort_on_error=1:detect_stack_use_after_return=1'
+  cmd=[str(py),'-I',str(TREE/'alias_stress.py'),str(TREE/'src')]
+  completed=run(cmd,cwd=TREE,env=env,timeout=180)
+  log=AUDIT/(abi+'-'+allocator+'-alias.log');log.write_text(completed.stdout+completed.stderr)
+  record=dict(lane='alias-'+allocator,command=cmd,environment={k:env[k]for k in ('DYLD_INSERT_LIBRARIES','ASAN_OPTIONS','UBSAN_OPTIONS','PYTHONMALLOC')},exit_code=completed.returncode,log=str(log),log_sha256=digest(log),stdout=completed.stdout,stderr=completed.stderr)
+  build['runs'].append(record);save();print(abi,'alias',allocator,completed.returncode,completed.stdout[-900:],completed.stderr[-1500:],flush=True)
+evidence.update(completed=time.time(),all_qualified_runs_passed=all(run['exit_code']==0 for build in evidence['builds']for run in build['runs']),source_unchanged_at_end=expected=={p:digest(REPO/p)for p in expected})
+save();print('RESULT='+str(AUDIT/'results.json'),flush=True)

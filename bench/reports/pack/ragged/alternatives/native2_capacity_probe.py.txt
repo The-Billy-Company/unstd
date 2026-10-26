@@ -1,0 +1,62 @@
+"""Private replay at the captured recipe's maximum document/row capacity."""
+from __future__ import annotations
+
+import argparse
+from functools import partial
+from hashlib import sha256
+import importlib.util
+import json
+from pathlib import Path
+import platform
+import sys
+
+ROOT = Path(__file__).resolve().parents[1]
+parser = argparse.ArgumentParser()
+parser.add_argument('--source', type=Path, required=True)
+parser.add_argument('--billy-root', type=Path, default=ROOT.parent/'billy')
+parser.add_argument('--output', type=Path, required=True)
+args = parser.parse_args()
+path = ROOT/'.local/pack-project-native2-replay.py'
+spec = importlib.util.spec_from_file_location('_capacity_project', path)
+p = importlib.util.module_from_spec(spec)
+sys.modules[spec.name] = p
+spec.loader.exec_module(p)
+source = args.source.resolve()
+assert not any(n == 'unstd' or n.startswith('unstd.') for n in sys.modules)
+sys.path.insert(0,str(source))
+from unstd.pack import binpack, ragged
+assert Path(ragged.__file__).resolve() == source/'unstd/pack/ragged.py'
+assert Path(ragged._native.__file__).resolve().parent == source/'unstd/pack'
+assert ragged._native.KERNEL_VERSION == 2
+data = p.capture(args.billy_root)
+modules = p.make_modules(data,binpack,ragged)
+documents = data['recipe']['capacity']
+rows = data['recipe']['document_maximum']
+fixture = p.fixture(documents,rows,data)
+fingerprints = p.single._fingerprints(source,ragged._native)
+for module in modules.values():
+    value=p.call(module,fixture)
+    p.check(value,fixture,modules['baseline'],binpack)
+    del value
+calls=[]
+original=ragged._native.validate
+def observed(*a):
+    calls.append((a[1],a[2],a[7],a[8]))
+    return original(*a)
+ragged._native.validate=observed
+try:
+    value=p.call(modules['candidate'],fixture)
+    p.check(value,fixture,modules['baseline'],binpack)
+    del value
+finally:
+    ragged._native.validate=original
+assert calls == [(2,data['recipe']['dimension'],True,False)]*documents
+samples={side:[] for side in modules}
+for i in range(9):
+    for side in (('baseline','candidate') if i%2==0 else ('candidate','baseline')):
+        samples[side].append(p.profile._measure(partial(p.call,modules[side],fixture),partial(p.check,expected=fixture,module=modules['baseline'],codec=binpack),25_000_000))
+assert fingerprints == p.single._fingerprints(source,ragged._native)
+result={'python':sys.version,'platform':platform.platform(),'numpy_version':binpack.np.__version__,'scope':data['scope'],'capture_sha256':data['capture_sha256'],'recipe':data['recipe'],'documents':documents,'rows_per_document':rows,'numeric_bytes':len(fixture.tokens),'native_version':ragged._native.KERNEL_VERSION,'native_validation_calls_before_timing':len(calls),'selected_source':str(source),'fingerprints':fingerprints,'harness_sha256':sha256(Path(__file__).read_bytes()).hexdigest(),'workflow_probe_sha256':sha256(path.read_bytes()).hexdigest(),'rounds':9,'batch_ms':25,'measurement':'complete captured synchronous numeric pipeline at captured capacity; immutable fixture reused; no validation/result cache; all arrays/class allocation and cleanup included; setup/oracles/network/inference/callbacks/offload excluded','results':{f'{documents}docs/{rows}rows':p.single._summary(samples,100)}}
+args.output.write_text(json.dumps(result,indent=2)+'\n')
+v=next(iter(result['results'].values()))
+print(json.dumps({'case':f'{documents}x{rows}','baseline_us':v['baseline_median_wall_ns']/1000,'candidate_us':v['candidate_median_wall_ns']/1000,'speedup':v['median_wall_speedup'],'target_met':v['target_met']}),flush=True)

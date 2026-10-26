@@ -1,8 +1,9 @@
 """Exact-output JSON proofs and reusable stdlib encoders.
 
-The optional native guard validates exact builtins and calls its trusted orjson
-backend while holding the GIL, without running Python code between them. The
-portable path uses a small private snapshot instead. Failed proofs use stdlib.
+The optional native guard validates exact builtins and uses trusted orjson or
+an operation-local finite-float writer while holding the GIL. Neither invokes
+Python callbacks during encoding. The portable path uses a small private
+snapshot instead. Failed proofs use stdlib.
 """
 
 from __future__ import annotations
@@ -21,6 +22,9 @@ if TYPE_CHECKING:
 
 
 _native_encode: Callable[..., bytes | NotImplementedType] | None
+_native_encode_indent: Callable[..., bytes | NotImplementedType] | None
+_native_encode_text: Callable[[object, bool, bool], str | NotImplementedType] | None
+_native_ascii_text: Callable[[bytes], str] | None
 _native_backend: Callable[..., bytes] | None
 _native: ModuleType | None
 try:
@@ -29,14 +33,21 @@ try:
     from unstd.serde import _json_native as _native_module
 
     _configure_native = _native_module.configure
-    _native_encode = _native_module.encode
+    _native_encode = getattr(_native_module, "encode_wide", _native_module.encode)
+    _native_encode_indent = getattr(_native_module, "encode_indent", None)
+    _native_encode_text = getattr(_native_module, "encode_text", None)
+    _native_ascii_text = getattr(_native_module, "ascii_text", None)
     _native = _native_module
 except (ImportError, AttributeError):
     _native = None
     _native_encode = None
+    _native_encode_indent = None
+    _native_encode_text = None
+    _native_ascii_text = None
     _native_backend = None
 
 
+_native_encode_reference = _native_encode
 _UNSAFE = object()
 _COMPACT = (",", ":")
 _SPACED = (", ", ": ")
@@ -135,13 +146,28 @@ def _exact_encode(
     option: int,
     encode: Callable[..., bytes],
 ) -> str | None:
-    """Serialize only after a bounded proof; the caller owns error fallback."""
+    """Serialize only after an exact proof; the caller owns error fallback."""
     native_spacing = False
     scalar_string = type(obj) is str
-    # Python 3.12's indented encoder recurses in Python for each container.
-    # The recursive snapshot retains that headroom across supported versions.
-    if _native_encode is not None and encode is _native_backend and style != 2:
-        result = _native_encode(obj, option, style == 1)
+    native_encoder = _native_encode_indent if style == 2 else _native_encode
+    # The indented native guard reserves Python recursion frames for every
+    # container before bypassing stdlib's recursive generator encoder.
+    if native_encoder is not None and encode is _native_backend:
+        if (
+            style != 2
+            and option == 0
+            and _native_encode_text is not None
+            and native_encoder is _native_encode_reference
+        ):
+            # The text guard shares its visit budget with the finite-float
+            # writer and keeps spelling caches within this encoding call.
+            text = _native_encode_text(obj, ensure_ascii, style == 1)
+            return None if text is NotImplemented else text
+        result = (
+            native_encoder(obj, option)
+            if style == 2
+            else native_encoder(obj, option, style == 1)
+        )
         if result is NotImplemented:
             return None
         raw = result
@@ -151,12 +177,15 @@ def _exact_encode(
         if snapshot is _UNSAFE:
             return None
         raw = encode(snapshot, option=option)
-    # DEL is ASCII but stdlib's ASCII encoder escapes it. All other ASCII
-    # escapes match; non-ASCII and surrogate cases belong to stdlib.
-    if ensure_ascii and (not raw.isascii() or b"\x7f" in raw):
-        return None
+    # DEL and non-ASCII need stdlib's Unicode escape spelling. The native
+    # conversion handles these without serializing the original tree twice.
     if style == 1 and not scalar_string and not native_spacing:
         raw = raw.replace(b",", b", ").replace(b":", b": ")
+    if ensure_ascii:
+        if _native_ascii_text is not None:
+            return _native_ascii_text(raw)
+        if not raw.isascii() or b"\x7f" in raw:
+            return None
     return raw.decode()
 
 

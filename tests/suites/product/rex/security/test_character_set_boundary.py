@@ -8,7 +8,7 @@ import warnings
 import pytest
 
 from unstd import rex
-from unstd.rex._faithful import _faithful_classes, native_profile
+from unstd.rex.profile import _faithful_classes, native_profile
 
 
 @pytest.mark.parametrize(

@@ -1,0 +1,125 @@
+"""Exploratory exact scans and complete captured callers; no validation cache."""
+from pathlib import Path
+import gc,hashlib,importlib.util,json,platform,shlex,statistics,struct,subprocess,sys,sysconfig,time
+root=Path.cwd(); folder=root/'.local/pack-ragged-next-native'
+sys.path[:0]=[str(folder),str(root/'src')]
+import numpy as np
+import _scan_alternatives as alt
+from unstd.pack import binpack,ragged
+native=ragged._native
+assert native is not None
+
+def load(name,path):
+ spec=importlib.util.spec_from_file_location(name,path);module=importlib.util.module_from_spec(spec);sys.modules[name]=module;spec.loader.exec_module(module);return module
+p=load('_next_consumer_profile',root/'bench/profiles/pack_consumers.py')
+r=load('_next_ragged_profile',root/'bench/profiles/ragged.py')
+capture=p._read_capture(root/'.local/pack-consumer-capture.json')
+baseline=p._compile_consumers(capture,binpack)['baseline']
+decoder=ragged.RaggedDecoder('<f4',columns=capture['dimension'],index_dtype='<i8',finite=True,allow_empty=False)
+candidate=r._candidate(capture,baseline,decoder)
+methods={'max':('max',1),'sme':('sme',1),'scaled_dot':('scaled_dot',1),'max_control':('max_control',1)}
+for workers in (2,4,6,8,18):
+ methods[f'parallel_max_{workers}']=('parallel',workers)
+ methods[f'parallel_sme_{workers}']=('parallel_sme',workers)
+quality={}
+for name,(method,workers) in methods.items():
+ failed=[];checks=0
+ lengths=(0,1,3,4,15,16,17,63,64,65)
+ for order in '<>':
+  endian='little' if order=='<' else 'big'
+  for offset in (3,16):
+   for n in lengths:
+    prefix=bytes(offset);payload=struct.pack(order+str(n)+'f',*[(-1.0 if i%2 else 1.0) for i in range(n)])
+    if not alt.scan(prefix+payload,offset,order=='<',method,workers):failed.append({'case':'finite','n':n,'offset':offset,'order':order})
+    checks+=1
+    positions=range(n) if method not in ('parallel','parallel_sme') else sorted({i for i in (0,1,3,7,15,16,31,32,n-1) if 0<=i<n})
+    for position in positions:
+     for bits in (0x7f800000,0xff800000,0x7f800001,0x7fc00001):
+      changed=bytearray(payload);changed[position*4:position*4+4]=bits.to_bytes(4,endian)
+      if alt.scan(prefix+changed,offset,order=='<',method,workers):
+       if len(failed)<12:failed.append({'case':'nonfinite','n':n,'position':position,'bits':hex(bits),'offset':offset,'order':order})
+      checks+=1
+ # Finite high magnitudes must remain valid, not overflow an arithmetic reduction.
+ extremes=struct.pack('<65f',*[(-1.0 if i%2 else 1.0)*float.fromhex('0x1.fffffep127') for i in range(65)])
+ if not alt.scan(bytes(16)+extremes,16,True,method,workers):failed.append({'case':'finite-extremes'})
+ checks+=1
+ quality[name]={'checks':checks,'passed':not failed,'failures':failed,'vendor_nan_contract_guaranteed':name not in ('scaled_dot','max_control')}
+
+eligible={name:params for name,params in methods.items() if quality[name]['passed']}
+class Validator:
+ def __init__(self,method,workers):self.method=method;self.workers=workers
+ def validate(self,data,index_count,columns,value_char,value_order,index_char,index_order,finite,allow_empty):
+  rows=native.validate(data,index_count,columns,value_char,value_order,index_char,index_order,False,allow_empty)
+  if finite and value_char=='f':
+   offset=index_count*{'b':1,'B':1,'h':2,'H':2,'i':4,'I':4,'q':8,'Q':8}[index_char]
+   little=sys.byteorder=='little' if value_order=='=' else value_order=='<'
+   if not alt.scan(data,offset,little,self.method,self.workers):raise ValueError('nonfinite')
+  elif finite:
+   native.validate(data,index_count,columns,value_char,value_order,index_char,index_order,True,allow_empty)
+  return rows
+proxies={name:Validator(*params) for name,params in eligible.items()}
+
+def measure(fn,n):
+ started=time.perf_counter_ns()
+ for _ in range(n):fn()
+ return (time.perf_counter_ns()-started)/n
+
+def calibrate(fn,target=3_000_000):
+ n=1
+ while n<100000:
+  elapsed=measure(fn,n)
+  if elapsed*n>=target/8:break
+  n*=2
+ return max(1,min(100000,int(target/max(1,elapsed))))
+
+results={}
+gc.disable()
+try:
+ for rows in (128,8192,65536):
+  fixtures=[]
+  for slot in range(4):
+   token=struct.pack('<128f',*[((i%31)-15+slot/4)/32 for i in range(128)])*rows
+   fixtures.append(p.Fixture(rows,128,struct.pack('<2q',0,rows)+token,token,capture['identity']))
+  for scope in ('validation-only','complete-decoder'):
+   functions={}
+   setups={}
+   for name in ('baseline' if scope=='complete-decoder' else 'numpy_isfinite','current_native',*eligible):
+    counter=[0]
+    def next_fixture(counter=counter):
+     fixture=fixtures[counter[0]%len(fixtures)];counter[0]+=1;return fixture
+    if scope=='validation-only':
+     if name=='numpy_isfinite':fn=lambda pick=next_fixture:np.isfinite(np.frombuffer(pick().body,dtype='<f4',offset=16)).all()
+     elif name=='current_native':fn=lambda pick=next_fixture:native.validate(pick().body,2,128,'f','<','q','<',True,False)
+     else:
+      method,workers=eligible[name];fn=lambda pick=next_fixture,method=method,workers=workers:alt.scan(pick().body,16,True,method,workers)
+     setups[name]=lambda:None
+    else:
+     if name=='baseline':
+      fn=lambda pick=next_fixture:baseline._remote_index((f:=pick()).body,len(f.tokens));setups[name]=lambda:None
+     else:
+      fn=lambda pick=next_fixture:candidate._remote_index((f:=pick()).body,len(f.tokens))
+      backend=native if name=='current_native' else proxies[name]
+      setups[name]=lambda backend=backend:setattr(ragged,'_native',backend)
+    functions[name]=fn
+   # All output construction and admission stays inside candidate calls; fixture/oracle outside clocks.
+   for name,fn in functions.items():
+    setups[name]()
+    value=fn()
+    if scope=='complete-decoder':
+     # Each generator starts at slot0; check every complete value through captured oracle.
+     p._check_index(value,fixtures[0])
+    else:assert value is not False
+   counts={}
+   for name,fn in functions.items():setups[name]();counts[name]=calibrate(fn)
+   samples={name:[] for name in functions}
+   for cycle in range(5):
+    names=list(functions)
+    if cycle%2:names.reverse()
+    for name in names:setups[name]();samples[name].append(measure(functions[name],counts[name]))
+   results[f'{scope}/{rows}x128']={'payload_bytes':len(fixtures[0].tokens),'input_pool':4,'iterations':counts,'medians_ns':{name:statistics.median(values) for name,values in samples.items()},'samples_ns':samples}
+   print(scope,rows,{k:round(v/1000,3) for k,v in results[f'{scope}/{rows}x128']['medians_ns'].items()},flush=True)
+finally:
+ ragged._native=native;gc.enable()
+sha=lambda path:hashlib.sha256(path.read_bytes()).hexdigest()
+payload={'generated_at':time.time(),'python':sys.version,'platform':platform.platform(),'numpy_version':np.__version__,'hardware':subprocess.check_output(['sysctl','-n','machdep.cpu.brand_string','hw.physicalcpu','hw.memsize'],text=True).splitlines(),'sme':alt.metadata(),'scope':'exploratory5x3ms paired/reversed batches; four distinct finite immutable inputs; no validation cache; complete candidates retain actual class/geometry/budget/identity through current harness; proxies include full native metadata+mechanism overhead','mechanisms':{'max':'exact unsigned maximum of sign-cleared bits','sme':'guarded512-bit streaming SVE unsigned max; foreign/unaligned falls back to exact NEON','parallel':'synchronous GCD chunks, fresh full scan each call','accelerate':'scaled positive-normal dotproduct and max magnitude control; SDK explicitly does not guarantee IEEE NaN behavior; not production-qualified even when oracle passes'},'quality':quality,'results':results,'hashes':{str(path.relative_to(root)):sha(path) for path in [Path(__file__),folder/'alternatives.c',folder/'sme-check.c',Path(alt.__file__),root/'native/pack/src/adapter.c',Path(native.__file__),root/'src/unstd/pack/ragged.py',root/'bench/profiles/ragged.py',root/'bench/profiles/pack_consumers.py']},'primary_sources':['https://www.apple.com/macbook-pro/specs/','https://developer.apple.com/newsroom/2026/03/apple-debuts-m5-pro-and-m5-max-to-supercharge-the-most-demanding-pro-workflows/','https://developer.apple.com/documentation/metal/mtldevice/makebuffer(bytesnocopy:length:options:deallocator:)?language=objc','https://developer.apple.com/documentation/kernel/1532187-vdsp_maxmgv','https://github.com/apple-oss-distributions/libdispatch/blob/main/src/apply.c','https://arm-software.github.io/acle/main/acle.html#sme']}
+(folder/'alternatives-results.json').write_text(json.dumps(payload,indent=2)+'\n')

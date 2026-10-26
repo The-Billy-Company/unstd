@@ -1,0 +1,1407 @@
+{
+  "date": "2026-10-25",
+  "baseline_commit": "94589856d2e604310b55020e40c51010f2af4755",
+  "baseline_source": "/private/tmp/jsonx-throughput-baseline/src",
+  "final_source": "/private/tmp/jsonx-throughput-final-bounded/src",
+  "wide_proof_value_budget": 262144,
+  "legacy_private_proof_value_budget": 65536,
+  "scope": "All gain claims use final bounded-source public Python JSONX calls. cProfile runs separately from wall-clock timing. C component probes are diagnostic only.",
+  "commands": [
+    {
+      "harness": "existing serde_profile",
+      "abi": "312",
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-py312/bin/python",
+        "-m",
+        "bench.profiles.serde_profile",
+        "--source",
+        "/private/tmp/jsonx-throughput-final-bounded/src",
+        "--compare-source",
+        "/private/tmp/jsonx-throughput-baseline/src",
+        "--rounds",
+        "3",
+        "--repetitions",
+        "3",
+        "--output",
+        "bench/reports/serde/jsonx-existing-profile-312.json"
+      ]
+    },
+    {
+      "harness": "existing core registry",
+      "abi": "312",
+      "label": "before",
+      "repetition": 1,
+      "env": {
+        "PYTHONPATH": "/private/tmp/jsonx-throughput-baseline/src:/Users/griffinstrier/Billy-Company/unstd"
+      },
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-py312/bin/python",
+        "-m",
+        "bench",
+        "--group",
+        "serde",
+        "--rounds",
+        "5",
+        "--json"
+      ],
+      "stdout": "jsonx-existing-core-before-312.json"
+    },
+    {
+      "harness": "existing speeds registry",
+      "abi": "312",
+      "label": "before",
+      "repetition": 1,
+      "env": {
+        "PYTHONPATH": "/private/tmp/jsonx-throughput-baseline/src:/Users/griffinstrier/Billy-Company/unstd"
+      },
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-py312/bin/python",
+        "-m",
+        "bench.speeds",
+        "run",
+        "--group",
+        "serde",
+        "--rounds",
+        "5",
+        "--output",
+        "bench/reports/serde/jsonx-existing-speeds-before-312.json"
+      ],
+      "expected_scope": "setup fails because NumPy is unavailable; isolated unchanged JSONX cases follow"
+    },
+    {
+      "harness": "existing speeds isolated JSONX cases",
+      "abi": "312",
+      "label": "before",
+      "repetition": 1,
+      "env": {
+        "PYTHONPATH": "/private/tmp/jsonx-throughput-baseline/src:/Users/griffinstrier/Billy-Company/unstd"
+      },
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-py312/bin/python",
+        "/tmp/jsonx-existing-speeds-312.py",
+        "bench/reports/serde/jsonx-existing-speeds-isolated-before-312.json"
+      ]
+    },
+    {
+      "harness": "existing core registry",
+      "abi": "312",
+      "label": "after",
+      "repetition": 1,
+      "env": {
+        "PYTHONPATH": "/private/tmp/jsonx-throughput-final-bounded/src:/Users/griffinstrier/Billy-Company/unstd"
+      },
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-py312/bin/python",
+        "-m",
+        "bench",
+        "--group",
+        "serde",
+        "--rounds",
+        "5",
+        "--json"
+      ],
+      "stdout": "jsonx-existing-core-after-312.json"
+    },
+    {
+      "harness": "existing speeds registry",
+      "abi": "312",
+      "label": "after",
+      "repetition": 1,
+      "env": {
+        "PYTHONPATH": "/private/tmp/jsonx-throughput-final-bounded/src:/Users/griffinstrier/Billy-Company/unstd"
+      },
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-py312/bin/python",
+        "-m",
+        "bench.speeds",
+        "run",
+        "--group",
+        "serde",
+        "--rounds",
+        "5",
+        "--output",
+        "bench/reports/serde/jsonx-existing-speeds-after-312.json"
+      ],
+      "expected_scope": "setup fails because NumPy is unavailable; isolated unchanged JSONX cases follow"
+    },
+    {
+      "harness": "existing speeds isolated JSONX cases",
+      "abi": "312",
+      "label": "after",
+      "repetition": 1,
+      "env": {
+        "PYTHONPATH": "/private/tmp/jsonx-throughput-final-bounded/src:/Users/griffinstrier/Billy-Company/unstd"
+      },
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-py312/bin/python",
+        "/tmp/jsonx-existing-speeds-312.py",
+        "bench/reports/serde/jsonx-existing-speeds-isolated-after-312.json"
+      ]
+    },
+    {
+      "harness": "existing core registry",
+      "abi": "312",
+      "label": "after",
+      "repetition": 2,
+      "env": {
+        "PYTHONPATH": "/private/tmp/jsonx-throughput-final-bounded/src:/Users/griffinstrier/Billy-Company/unstd"
+      },
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-py312/bin/python",
+        "-m",
+        "bench",
+        "--group",
+        "serde",
+        "--rounds",
+        "5",
+        "--json"
+      ],
+      "stdout": "jsonx-existing-core-after-312-r2.json"
+    },
+    {
+      "harness": "existing speeds registry",
+      "abi": "312",
+      "label": "after",
+      "repetition": 2,
+      "env": {
+        "PYTHONPATH": "/private/tmp/jsonx-throughput-final-bounded/src:/Users/griffinstrier/Billy-Company/unstd"
+      },
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-py312/bin/python",
+        "-m",
+        "bench.speeds",
+        "run",
+        "--group",
+        "serde",
+        "--rounds",
+        "5",
+        "--output",
+        "bench/reports/serde/jsonx-existing-speeds-after-312-r2.json"
+      ],
+      "expected_scope": "setup fails because NumPy is unavailable; isolated unchanged JSONX cases follow"
+    },
+    {
+      "harness": "existing speeds isolated JSONX cases",
+      "abi": "312",
+      "label": "after",
+      "repetition": 2,
+      "env": {
+        "PYTHONPATH": "/private/tmp/jsonx-throughput-final-bounded/src:/Users/griffinstrier/Billy-Company/unstd"
+      },
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-py312/bin/python",
+        "/tmp/jsonx-existing-speeds-312.py",
+        "bench/reports/serde/jsonx-existing-speeds-isolated-after-312-r2.json"
+      ]
+    },
+    {
+      "harness": "existing core registry",
+      "abi": "312",
+      "label": "before",
+      "repetition": 2,
+      "env": {
+        "PYTHONPATH": "/private/tmp/jsonx-throughput-baseline/src:/Users/griffinstrier/Billy-Company/unstd"
+      },
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-py312/bin/python",
+        "-m",
+        "bench",
+        "--group",
+        "serde",
+        "--rounds",
+        "5",
+        "--json"
+      ],
+      "stdout": "jsonx-existing-core-before-312-r2.json"
+    },
+    {
+      "harness": "existing speeds registry",
+      "abi": "312",
+      "label": "before",
+      "repetition": 2,
+      "env": {
+        "PYTHONPATH": "/private/tmp/jsonx-throughput-baseline/src:/Users/griffinstrier/Billy-Company/unstd"
+      },
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-py312/bin/python",
+        "-m",
+        "bench.speeds",
+        "run",
+        "--group",
+        "serde",
+        "--rounds",
+        "5",
+        "--output",
+        "bench/reports/serde/jsonx-existing-speeds-before-312-r2.json"
+      ],
+      "expected_scope": "setup fails because NumPy is unavailable; isolated unchanged JSONX cases follow"
+    },
+    {
+      "harness": "existing speeds isolated JSONX cases",
+      "abi": "312",
+      "label": "before",
+      "repetition": 2,
+      "env": {
+        "PYTHONPATH": "/private/tmp/jsonx-throughput-baseline/src:/Users/griffinstrier/Billy-Company/unstd"
+      },
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-py312/bin/python",
+        "/tmp/jsonx-existing-speeds-312.py",
+        "bench/reports/serde/jsonx-existing-speeds-isolated-before-312-r2.json"
+      ]
+    },
+    {
+      "harness": "existing core registry",
+      "abi": "312",
+      "label": "before",
+      "repetition": 3,
+      "env": {
+        "PYTHONPATH": "/private/tmp/jsonx-throughput-baseline/src:/Users/griffinstrier/Billy-Company/unstd"
+      },
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-py312/bin/python",
+        "-m",
+        "bench",
+        "--group",
+        "serde",
+        "--rounds",
+        "5",
+        "--json"
+      ],
+      "stdout": "jsonx-existing-core-before-312-r3.json"
+    },
+    {
+      "harness": "existing speeds registry",
+      "abi": "312",
+      "label": "before",
+      "repetition": 3,
+      "env": {
+        "PYTHONPATH": "/private/tmp/jsonx-throughput-baseline/src:/Users/griffinstrier/Billy-Company/unstd"
+      },
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-py312/bin/python",
+        "-m",
+        "bench.speeds",
+        "run",
+        "--group",
+        "serde",
+        "--rounds",
+        "5",
+        "--output",
+        "bench/reports/serde/jsonx-existing-speeds-before-312-r3.json"
+      ],
+      "expected_scope": "setup fails because NumPy is unavailable; isolated unchanged JSONX cases follow"
+    },
+    {
+      "harness": "existing speeds isolated JSONX cases",
+      "abi": "312",
+      "label": "before",
+      "repetition": 3,
+      "env": {
+        "PYTHONPATH": "/private/tmp/jsonx-throughput-baseline/src:/Users/griffinstrier/Billy-Company/unstd"
+      },
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-py312/bin/python",
+        "/tmp/jsonx-existing-speeds-312.py",
+        "bench/reports/serde/jsonx-existing-speeds-isolated-before-312-r3.json"
+      ]
+    },
+    {
+      "harness": "existing core registry",
+      "abi": "312",
+      "label": "after",
+      "repetition": 3,
+      "env": {
+        "PYTHONPATH": "/private/tmp/jsonx-throughput-final-bounded/src:/Users/griffinstrier/Billy-Company/unstd"
+      },
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-py312/bin/python",
+        "-m",
+        "bench",
+        "--group",
+        "serde",
+        "--rounds",
+        "5",
+        "--json"
+      ],
+      "stdout": "jsonx-existing-core-after-312-r3.json"
+    },
+    {
+      "harness": "existing speeds registry",
+      "abi": "312",
+      "label": "after",
+      "repetition": 3,
+      "env": {
+        "PYTHONPATH": "/private/tmp/jsonx-throughput-final-bounded/src:/Users/griffinstrier/Billy-Company/unstd"
+      },
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-py312/bin/python",
+        "-m",
+        "bench.speeds",
+        "run",
+        "--group",
+        "serde",
+        "--rounds",
+        "5",
+        "--output",
+        "bench/reports/serde/jsonx-existing-speeds-after-312-r3.json"
+      ],
+      "expected_scope": "setup fails because NumPy is unavailable; isolated unchanged JSONX cases follow"
+    },
+    {
+      "harness": "existing speeds isolated JSONX cases",
+      "abi": "312",
+      "label": "after",
+      "repetition": 3,
+      "env": {
+        "PYTHONPATH": "/private/tmp/jsonx-throughput-final-bounded/src:/Users/griffinstrier/Billy-Company/unstd"
+      },
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-py312/bin/python",
+        "/tmp/jsonx-existing-speeds-312.py",
+        "bench/reports/serde/jsonx-existing-speeds-isolated-after-312-r3.json"
+      ]
+    },
+    {
+      "harness": "additional public-call coverage",
+      "abi": "312",
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-py312/bin/python",
+        "-m",
+        "bench.profiles.jsonx_throughput",
+        "--source",
+        "/private/tmp/jsonx-throughput-final-bounded/src",
+        "--compare-source",
+        "/private/tmp/jsonx-throughput-baseline/src",
+        "--rounds",
+        "5",
+        "--repetitions",
+        "3",
+        "--output",
+        "bench/reports/serde/jsonx-throughput-312.json"
+      ]
+    },
+    {
+      "harness": "existing serde_profile",
+      "abi": "313",
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.venv/bin/python",
+        "-m",
+        "bench.profiles.serde_profile",
+        "--source",
+        "/private/tmp/jsonx-throughput-final-bounded/src",
+        "--compare-source",
+        "/private/tmp/jsonx-throughput-baseline/src",
+        "--rounds",
+        "3",
+        "--repetitions",
+        "3",
+        "--output",
+        "bench/reports/serde/jsonx-existing-profile-313.json"
+      ]
+    },
+    {
+      "harness": "existing core registry",
+      "abi": "313",
+      "label": "before",
+      "repetition": 1,
+      "env": {
+        "PYTHONPATH": "/private/tmp/jsonx-throughput-baseline/src:/Users/griffinstrier/Billy-Company/unstd"
+      },
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.venv/bin/python",
+        "-m",
+        "bench",
+        "--group",
+        "serde",
+        "--rounds",
+        "5",
+        "--json"
+      ],
+      "stdout": "jsonx-existing-core-before-313.json"
+    },
+    {
+      "harness": "existing speeds registry",
+      "abi": "313",
+      "label": "before",
+      "repetition": 1,
+      "env": {
+        "PYTHONPATH": "/private/tmp/jsonx-throughput-baseline/src:/Users/griffinstrier/Billy-Company/unstd"
+      },
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.venv/bin/python",
+        "-m",
+        "bench.speeds",
+        "run",
+        "--group",
+        "serde",
+        "--rounds",
+        "5",
+        "--output",
+        "bench/reports/serde/jsonx-existing-speeds-before-313.json"
+      ],
+      "expected_scope": "full Serde registry"
+    },
+    {
+      "harness": "existing core registry",
+      "abi": "313",
+      "label": "after",
+      "repetition": 1,
+      "env": {
+        "PYTHONPATH": "/private/tmp/jsonx-throughput-final-bounded/src:/Users/griffinstrier/Billy-Company/unstd"
+      },
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.venv/bin/python",
+        "-m",
+        "bench",
+        "--group",
+        "serde",
+        "--rounds",
+        "5",
+        "--json"
+      ],
+      "stdout": "jsonx-existing-core-after-313.json"
+    },
+    {
+      "harness": "existing speeds registry",
+      "abi": "313",
+      "label": "after",
+      "repetition": 1,
+      "env": {
+        "PYTHONPATH": "/private/tmp/jsonx-throughput-final-bounded/src:/Users/griffinstrier/Billy-Company/unstd"
+      },
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.venv/bin/python",
+        "-m",
+        "bench.speeds",
+        "run",
+        "--group",
+        "serde",
+        "--rounds",
+        "5",
+        "--output",
+        "bench/reports/serde/jsonx-existing-speeds-after-313.json"
+      ],
+      "expected_scope": "full Serde registry"
+    },
+    {
+      "harness": "existing core registry",
+      "abi": "313",
+      "label": "after",
+      "repetition": 2,
+      "env": {
+        "PYTHONPATH": "/private/tmp/jsonx-throughput-final-bounded/src:/Users/griffinstrier/Billy-Company/unstd"
+      },
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.venv/bin/python",
+        "-m",
+        "bench",
+        "--group",
+        "serde",
+        "--rounds",
+        "5",
+        "--json"
+      ],
+      "stdout": "jsonx-existing-core-after-313-r2.json"
+    },
+    {
+      "harness": "existing speeds registry",
+      "abi": "313",
+      "label": "after",
+      "repetition": 2,
+      "env": {
+        "PYTHONPATH": "/private/tmp/jsonx-throughput-final-bounded/src:/Users/griffinstrier/Billy-Company/unstd"
+      },
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.venv/bin/python",
+        "-m",
+        "bench.speeds",
+        "run",
+        "--group",
+        "serde",
+        "--rounds",
+        "5",
+        "--output",
+        "bench/reports/serde/jsonx-existing-speeds-after-313-r2.json"
+      ],
+      "expected_scope": "full Serde registry"
+    },
+    {
+      "harness": "existing core registry",
+      "abi": "313",
+      "label": "before",
+      "repetition": 2,
+      "env": {
+        "PYTHONPATH": "/private/tmp/jsonx-throughput-baseline/src:/Users/griffinstrier/Billy-Company/unstd"
+      },
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.venv/bin/python",
+        "-m",
+        "bench",
+        "--group",
+        "serde",
+        "--rounds",
+        "5",
+        "--json"
+      ],
+      "stdout": "jsonx-existing-core-before-313-r2.json"
+    },
+    {
+      "harness": "existing speeds registry",
+      "abi": "313",
+      "label": "before",
+      "repetition": 2,
+      "env": {
+        "PYTHONPATH": "/private/tmp/jsonx-throughput-baseline/src:/Users/griffinstrier/Billy-Company/unstd"
+      },
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.venv/bin/python",
+        "-m",
+        "bench.speeds",
+        "run",
+        "--group",
+        "serde",
+        "--rounds",
+        "5",
+        "--output",
+        "bench/reports/serde/jsonx-existing-speeds-before-313-r2.json"
+      ],
+      "expected_scope": "full Serde registry"
+    },
+    {
+      "harness": "existing core registry",
+      "abi": "313",
+      "label": "before",
+      "repetition": 3,
+      "env": {
+        "PYTHONPATH": "/private/tmp/jsonx-throughput-baseline/src:/Users/griffinstrier/Billy-Company/unstd"
+      },
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.venv/bin/python",
+        "-m",
+        "bench",
+        "--group",
+        "serde",
+        "--rounds",
+        "5",
+        "--json"
+      ],
+      "stdout": "jsonx-existing-core-before-313-r3.json"
+    },
+    {
+      "harness": "existing speeds registry",
+      "abi": "313",
+      "label": "before",
+      "repetition": 3,
+      "env": {
+        "PYTHONPATH": "/private/tmp/jsonx-throughput-baseline/src:/Users/griffinstrier/Billy-Company/unstd"
+      },
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.venv/bin/python",
+        "-m",
+        "bench.speeds",
+        "run",
+        "--group",
+        "serde",
+        "--rounds",
+        "5",
+        "--output",
+        "bench/reports/serde/jsonx-existing-speeds-before-313-r3.json"
+      ],
+      "expected_scope": "full Serde registry"
+    },
+    {
+      "harness": "existing core registry",
+      "abi": "313",
+      "label": "after",
+      "repetition": 3,
+      "env": {
+        "PYTHONPATH": "/private/tmp/jsonx-throughput-final-bounded/src:/Users/griffinstrier/Billy-Company/unstd"
+      },
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.venv/bin/python",
+        "-m",
+        "bench",
+        "--group",
+        "serde",
+        "--rounds",
+        "5",
+        "--json"
+      ],
+      "stdout": "jsonx-existing-core-after-313-r3.json"
+    },
+    {
+      "harness": "existing speeds registry",
+      "abi": "313",
+      "label": "after",
+      "repetition": 3,
+      "env": {
+        "PYTHONPATH": "/private/tmp/jsonx-throughput-final-bounded/src:/Users/griffinstrier/Billy-Company/unstd"
+      },
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.venv/bin/python",
+        "-m",
+        "bench.speeds",
+        "run",
+        "--group",
+        "serde",
+        "--rounds",
+        "5",
+        "--output",
+        "bench/reports/serde/jsonx-existing-speeds-after-313-r3.json"
+      ],
+      "expected_scope": "full Serde registry"
+    },
+    {
+      "harness": "additional public-call coverage",
+      "abi": "313",
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.venv/bin/python",
+        "-m",
+        "bench.profiles.jsonx_throughput",
+        "--source",
+        "/private/tmp/jsonx-throughput-final-bounded/src",
+        "--compare-source",
+        "/private/tmp/jsonx-throughput-baseline/src",
+        "--rounds",
+        "5",
+        "--repetitions",
+        "3",
+        "--output",
+        "bench/reports/serde/jsonx-throughput-313.json"
+      ]
+    },
+    {
+      "harness": "existing serde_profile",
+      "abi": "314",
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.local/deep-validation/py314/bin/python",
+        "-m",
+        "bench.profiles.serde_profile",
+        "--source",
+        "/private/tmp/jsonx-throughput-final-bounded/src",
+        "--compare-source",
+        "/private/tmp/jsonx-throughput-baseline/src",
+        "--rounds",
+        "3",
+        "--repetitions",
+        "3",
+        "--output",
+        "bench/reports/serde/jsonx-existing-profile-314.json"
+      ]
+    },
+    {
+      "harness": "existing core registry",
+      "abi": "314",
+      "label": "before",
+      "repetition": 1,
+      "env": {
+        "PYTHONPATH": "/private/tmp/jsonx-throughput-baseline/src:/Users/griffinstrier/Billy-Company/unstd"
+      },
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.local/deep-validation/py314/bin/python",
+        "-m",
+        "bench",
+        "--group",
+        "serde",
+        "--rounds",
+        "5",
+        "--json"
+      ],
+      "stdout": "jsonx-existing-core-before-314.json"
+    },
+    {
+      "harness": "existing speeds registry",
+      "abi": "314",
+      "label": "before",
+      "repetition": 1,
+      "env": {
+        "PYTHONPATH": "/private/tmp/jsonx-throughput-baseline/src:/Users/griffinstrier/Billy-Company/unstd"
+      },
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.local/deep-validation/py314/bin/python",
+        "-m",
+        "bench.speeds",
+        "run",
+        "--group",
+        "serde",
+        "--rounds",
+        "5",
+        "--output",
+        "bench/reports/serde/jsonx-existing-speeds-before-314.json"
+      ],
+      "expected_scope": "full Serde registry"
+    },
+    {
+      "harness": "existing core registry",
+      "abi": "314",
+      "label": "after",
+      "repetition": 1,
+      "env": {
+        "PYTHONPATH": "/private/tmp/jsonx-throughput-final-bounded/src:/Users/griffinstrier/Billy-Company/unstd"
+      },
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.local/deep-validation/py314/bin/python",
+        "-m",
+        "bench",
+        "--group",
+        "serde",
+        "--rounds",
+        "5",
+        "--json"
+      ],
+      "stdout": "jsonx-existing-core-after-314.json"
+    },
+    {
+      "harness": "existing speeds registry",
+      "abi": "314",
+      "label": "after",
+      "repetition": 1,
+      "env": {
+        "PYTHONPATH": "/private/tmp/jsonx-throughput-final-bounded/src:/Users/griffinstrier/Billy-Company/unstd"
+      },
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.local/deep-validation/py314/bin/python",
+        "-m",
+        "bench.speeds",
+        "run",
+        "--group",
+        "serde",
+        "--rounds",
+        "5",
+        "--output",
+        "bench/reports/serde/jsonx-existing-speeds-after-314.json"
+      ],
+      "expected_scope": "full Serde registry"
+    },
+    {
+      "harness": "existing core registry",
+      "abi": "314",
+      "label": "after",
+      "repetition": 2,
+      "env": {
+        "PYTHONPATH": "/private/tmp/jsonx-throughput-final-bounded/src:/Users/griffinstrier/Billy-Company/unstd"
+      },
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.local/deep-validation/py314/bin/python",
+        "-m",
+        "bench",
+        "--group",
+        "serde",
+        "--rounds",
+        "5",
+        "--json"
+      ],
+      "stdout": "jsonx-existing-core-after-314-r2.json"
+    },
+    {
+      "harness": "existing speeds registry",
+      "abi": "314",
+      "label": "after",
+      "repetition": 2,
+      "env": {
+        "PYTHONPATH": "/private/tmp/jsonx-throughput-final-bounded/src:/Users/griffinstrier/Billy-Company/unstd"
+      },
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.local/deep-validation/py314/bin/python",
+        "-m",
+        "bench.speeds",
+        "run",
+        "--group",
+        "serde",
+        "--rounds",
+        "5",
+        "--output",
+        "bench/reports/serde/jsonx-existing-speeds-after-314-r2.json"
+      ],
+      "expected_scope": "full Serde registry"
+    },
+    {
+      "harness": "existing core registry",
+      "abi": "314",
+      "label": "before",
+      "repetition": 2,
+      "env": {
+        "PYTHONPATH": "/private/tmp/jsonx-throughput-baseline/src:/Users/griffinstrier/Billy-Company/unstd"
+      },
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.local/deep-validation/py314/bin/python",
+        "-m",
+        "bench",
+        "--group",
+        "serde",
+        "--rounds",
+        "5",
+        "--json"
+      ],
+      "stdout": "jsonx-existing-core-before-314-r2.json"
+    },
+    {
+      "harness": "existing speeds registry",
+      "abi": "314",
+      "label": "before",
+      "repetition": 2,
+      "env": {
+        "PYTHONPATH": "/private/tmp/jsonx-throughput-baseline/src:/Users/griffinstrier/Billy-Company/unstd"
+      },
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.local/deep-validation/py314/bin/python",
+        "-m",
+        "bench.speeds",
+        "run",
+        "--group",
+        "serde",
+        "--rounds",
+        "5",
+        "--output",
+        "bench/reports/serde/jsonx-existing-speeds-before-314-r2.json"
+      ],
+      "expected_scope": "full Serde registry"
+    },
+    {
+      "harness": "existing core registry",
+      "abi": "314",
+      "label": "before",
+      "repetition": 3,
+      "env": {
+        "PYTHONPATH": "/private/tmp/jsonx-throughput-baseline/src:/Users/griffinstrier/Billy-Company/unstd"
+      },
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.local/deep-validation/py314/bin/python",
+        "-m",
+        "bench",
+        "--group",
+        "serde",
+        "--rounds",
+        "5",
+        "--json"
+      ],
+      "stdout": "jsonx-existing-core-before-314-r3.json"
+    },
+    {
+      "harness": "existing speeds registry",
+      "abi": "314",
+      "label": "before",
+      "repetition": 3,
+      "env": {
+        "PYTHONPATH": "/private/tmp/jsonx-throughput-baseline/src:/Users/griffinstrier/Billy-Company/unstd"
+      },
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.local/deep-validation/py314/bin/python",
+        "-m",
+        "bench.speeds",
+        "run",
+        "--group",
+        "serde",
+        "--rounds",
+        "5",
+        "--output",
+        "bench/reports/serde/jsonx-existing-speeds-before-314-r3.json"
+      ],
+      "expected_scope": "full Serde registry"
+    },
+    {
+      "harness": "existing core registry",
+      "abi": "314",
+      "label": "after",
+      "repetition": 3,
+      "env": {
+        "PYTHONPATH": "/private/tmp/jsonx-throughput-final-bounded/src:/Users/griffinstrier/Billy-Company/unstd"
+      },
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.local/deep-validation/py314/bin/python",
+        "-m",
+        "bench",
+        "--group",
+        "serde",
+        "--rounds",
+        "5",
+        "--json"
+      ],
+      "stdout": "jsonx-existing-core-after-314-r3.json"
+    },
+    {
+      "harness": "existing speeds registry",
+      "abi": "314",
+      "label": "after",
+      "repetition": 3,
+      "env": {
+        "PYTHONPATH": "/private/tmp/jsonx-throughput-final-bounded/src:/Users/griffinstrier/Billy-Company/unstd"
+      },
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.local/deep-validation/py314/bin/python",
+        "-m",
+        "bench.speeds",
+        "run",
+        "--group",
+        "serde",
+        "--rounds",
+        "5",
+        "--output",
+        "bench/reports/serde/jsonx-existing-speeds-after-314-r3.json"
+      ],
+      "expected_scope": "full Serde registry"
+    },
+    {
+      "harness": "additional public-call coverage",
+      "abi": "314",
+      "argv": [
+        "/Users/griffinstrier/Billy-Company/unstd/.local/deep-validation/py314/bin/python",
+        "-m",
+        "bench.profiles.jsonx_throughput",
+        "--source",
+        "/private/tmp/jsonx-throughput-final-bounded/src",
+        "--compare-source",
+        "/private/tmp/jsonx-throughput-baseline/src",
+        "--rounds",
+        "5",
+        "--repetitions",
+        "3",
+        "--output",
+        "bench/reports/serde/jsonx-throughput-314.json"
+      ]
+    }
+  ],
+  "isolated_312_registry_runner": "from dataclasses import asdict\nfrom hashlib import sha256\nimport json\nfrom pathlib import Path\nimport sys\nfrom bench.speeds import environment, provenance, timings\nfrom bench.workloads.speed_cases_codecs import _serde_cases\nfrom unstd.serde import jsonx\ncases=[case for case in _serde_cases() if '.jsonx.' in case.name]\nmeasured=timings(cases,rounds=5)\nfixture=Path('bench/workloads/speed_cases_codecs.py')\nreport={'scope':'unchanged JSONX cases only; full registry requires missing NumPy on Python 3.12','source':jsonx.__file__,'fixture_sha256':sha256(fixture.read_bytes()).hexdigest(),'environment':environment(),'provenance':provenance(),'cases':{case.name:{'note':case.note,**asdict(measured[case.name])} for case in cases}}\nPath(sys.argv[1]).write_text(json.dumps(report,indent=2)+'\\n')\nprint(f'{len(cases)} unchanged JSONX registry cases measured and audited')\n",
+  "harness_sha256": {
+    "bench/profiles/serde_profile.py": "15d25ba574ad67597bf85f4646a033247b290d6d7d710c75bbb23268a3e2c1ec",
+    "bench/core/cases.py": "379e6cb223147ab0793fb54ec4801b2b4e6859c5a65f40d428ab2b91379e9622",
+    "bench/core/report.py": "3b5222c32930817f7333450dabd44088df1c403ed468029a74939b0b89afa4ab",
+    "bench/core/timing.py": "d585627571b5daeca0a078b75484c84e769dce70a5b4448825fd811a8e3b61bc",
+    "bench/speeds.py": "d1f6903e051f41644914a2e57879efa4123544851a04573828233d26d82b99ae",
+    "bench/workloads/speed_cases_codecs.py": "8dda94b94688b43d9aecce530132dc6e278ab3a42aee0790c2e0f40b7fae5092",
+    "bench/profiles/jsonx_throughput.py": "e902ee3178e172216e269245e86837d001c813ba3fbe7c352c2b711bad22bf80"
+  },
+  "source_provenance": {
+    "312": {
+      "before": {
+        "source": "/private/tmp/jsonx-throughput-baseline/src",
+        "imported_jsonx": "/private/tmp/jsonx-throughput-baseline/src/unstd/serde/jsonx.py",
+        "native_module": "/private/tmp/jsonx-throughput-baseline/src/unstd/serde/_json_native.cpython-312-darwin.so",
+        "dispatch": {
+          "loads": {
+            "bound": false,
+            "ready": true
+          },
+          "dumpb": {
+            "bound": false,
+            "ready": false
+          }
+        },
+        "sha256": {
+          "unstd/serde/__init__.py": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d",
+          "unstd/serde/_internal/__init__.py": "6aed7cdb4acd19aa8dfa7668c884fd937f2add4574c73531bd6cdde569f53f05",
+          "unstd/serde/_internal/json_common.py": "cb4ee6fce1510e202b4126e67b53ac73b9e7b73a9d67d010b451b7fa45ea0b8f",
+          "unstd/serde/_internal/json_encode.py": "8c27e3ed7bc6052315bc3d3ce17987ef078c751a4348396cc29fe103578f5553",
+          "unstd/serde/_json_common.py": "fb088bf068ac0dd5f2dd1675cb60cb682da6aec80320b85d98aa39c16a7f6781",
+          "unstd/serde/_json_encode.py": "d010007e07fbe5e46a1bcfb6984b2730f30564e4a2dc15306baedda9f2ab8ec1",
+          "unstd/serde/_json_native.cpython-312-darwin.so": "06c5e476e9124d032accce354be8395d49a9abd10c2fb6c7034196eabd8de46e",
+          "unstd/serde/_json_native.cpython-313-darwin.so": "470d74d6b8c61cf86cc05dff09fb8481412c11fd6d232900aadba8ca6a16c393",
+          "unstd/serde/_json_native.cpython-314-darwin.so": "664980386fba9d736659cc4adfa900e42968b4505cffa27bcc7e13096faf846b",
+          "unstd/serde/_json_native.pyi": "8e1a78292638c68ef25a9c149dd07de835af34bab57c9ffe8ab48a4a99a6c7a1",
+          "unstd/serde/b64.py": "c9fa198b3a6a4dffab239697c2d35c717ab2adea1977e7c1bd2226c30c4dbe32",
+          "unstd/serde/jsonx.py": "934c8005f7de765ac3600761dd7ddee7f9e08d81d2a55f6bcfb79b6ea6e4d663",
+          "unstd/serde/ndjson.py": "98c1f5bb1b78d2548390683b9b4bc062c4dc900b1fc27837e7941c7ee4553550",
+          "unstd/serde/structs.py": "ebe5eb0c8cba8e8bc01137c9e4f768d86cb900d15c67600cbaf38f0accfa6c65"
+        },
+        "native_source_sha256": {
+          "src/_json_decode_native.h": "acb1c5a574ba8bdc664c708222bebd06b571e8c102404ffa714a6c2ebfbf6eec",
+          "src/_json_encode_native.h": "d9cd56b16da3dfd72b36fa8ae00f7b82e4be7cc37629ef129dc0b3a9c9ac6c1e",
+          "src/_json_lines_native.h": "b2f9b71876976199b3a02b53572672f581438e237353a92205211fbd27ea74d0",
+          "src/_json_native.c": "01cfd935049f43ec617b02f41d931902c353b37e11ffb973219fbfd5ad4852b3"
+        }
+      },
+      "after": {
+        "source": "/private/tmp/jsonx-throughput-final-bounded/src",
+        "imported_jsonx": "/private/tmp/jsonx-throughput-final-bounded/src/unstd/serde/jsonx.py",
+        "native_module": "/private/tmp/jsonx-throughput-final-bounded/src/unstd/serde/_json_native.cpython-312-darwin.so",
+        "dispatch": {
+          "loads": {
+            "bound": false,
+            "ready": true
+          },
+          "dumpb": {
+            "bound": false,
+            "ready": false
+          }
+        },
+        "sha256": {
+          "unstd/serde/__init__.py": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d",
+          "unstd/serde/_internal/__init__.py": "6aed7cdb4acd19aa8dfa7668c884fd937f2add4574c73531bd6cdde569f53f05",
+          "unstd/serde/_internal/json_common.py": "cb4ee6fce1510e202b4126e67b53ac73b9e7b73a9d67d010b451b7fa45ea0b8f",
+          "unstd/serde/_internal/json_encode.py": "70c0e9b9a2d3ed721573b097204c76b335d2d73e7655b2e64b2ea04e7d10de6d",
+          "unstd/serde/_json_common.py": "fb088bf068ac0dd5f2dd1675cb60cb682da6aec80320b85d98aa39c16a7f6781",
+          "unstd/serde/_json_encode.py": "d010007e07fbe5e46a1bcfb6984b2730f30564e4a2dc15306baedda9f2ab8ec1",
+          "unstd/serde/_json_native.cpython-312-darwin.so": "7bd98afbb7ad198f9171d09d425f0bfa4072c993abb971181b97e63753fa4d76",
+          "unstd/serde/_json_native.cpython-313-darwin.so": "356b19c0903f320dfa49de557bc036fa6f4e8a32206f0367854adf3fba3ba531",
+          "unstd/serde/_json_native.cpython-314-darwin.so": "4a53b697d271eaf47f5ac08b7db1d289cb33091de867063c4f47586765ecd29c",
+          "unstd/serde/_json_native.pyi": "2701aa6fa8f926d09d401e06942e3c65669cf5c2aea38fc5eaf498fd693729f8",
+          "unstd/serde/b64.py": "c9fa198b3a6a4dffab239697c2d35c717ab2adea1977e7c1bd2226c30c4dbe32",
+          "unstd/serde/jsonx.py": "ddb3b64c6555402da2a979bce6fc75019ccf6d701653aea06ec5f985cd6fec71",
+          "unstd/serde/ndjson.py": "98c1f5bb1b78d2548390683b9b4bc062c4dc900b1fc27837e7941c7ee4553550",
+          "unstd/serde/structs.py": "ebe5eb0c8cba8e8bc01137c9e4f768d86cb900d15c67600cbaf38f0accfa6c65"
+        },
+        "native_source_sha256": {
+          "src/_json_decode_native.h": "d46206a3c04858ac3739d2590b4c1a02d23a2801cbec3387fa4893d28e56624f",
+          "src/_json_encode_native.h": "d9cd56b16da3dfd72b36fa8ae00f7b82e4be7cc37629ef129dc0b3a9c9ac6c1e",
+          "src/_json_lines_native.h": "b2f9b71876976199b3a02b53572672f581438e237353a92205211fbd27ea74d0",
+          "src/_json_native.c": "ee7e575108f071027ad8d3af08d3322ee1a77997a62822aca1a29e37c749e19b",
+          "src/_json_text_native.h": "937fe2288c702b38b752e4c7b4a09a91239bba86d2907b0f89c24f99a13d3e92"
+        }
+      }
+    },
+    "313": {
+      "before": {
+        "source": "/private/tmp/jsonx-throughput-baseline/src",
+        "imported_jsonx": "/private/tmp/jsonx-throughput-baseline/src/unstd/serde/jsonx.py",
+        "native_module": "/private/tmp/jsonx-throughput-baseline/src/unstd/serde/_json_native.cpython-313-darwin.so",
+        "dispatch": {
+          "loads": {
+            "bound": false,
+            "ready": true
+          },
+          "dumpb": {
+            "bound": false,
+            "ready": false
+          }
+        },
+        "sha256": {
+          "unstd/serde/__init__.py": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d",
+          "unstd/serde/_internal/__init__.py": "6aed7cdb4acd19aa8dfa7668c884fd937f2add4574c73531bd6cdde569f53f05",
+          "unstd/serde/_internal/json_common.py": "cb4ee6fce1510e202b4126e67b53ac73b9e7b73a9d67d010b451b7fa45ea0b8f",
+          "unstd/serde/_internal/json_encode.py": "8c27e3ed7bc6052315bc3d3ce17987ef078c751a4348396cc29fe103578f5553",
+          "unstd/serde/_json_common.py": "fb088bf068ac0dd5f2dd1675cb60cb682da6aec80320b85d98aa39c16a7f6781",
+          "unstd/serde/_json_encode.py": "d010007e07fbe5e46a1bcfb6984b2730f30564e4a2dc15306baedda9f2ab8ec1",
+          "unstd/serde/_json_native.cpython-312-darwin.so": "06c5e476e9124d032accce354be8395d49a9abd10c2fb6c7034196eabd8de46e",
+          "unstd/serde/_json_native.cpython-313-darwin.so": "470d74d6b8c61cf86cc05dff09fb8481412c11fd6d232900aadba8ca6a16c393",
+          "unstd/serde/_json_native.cpython-314-darwin.so": "664980386fba9d736659cc4adfa900e42968b4505cffa27bcc7e13096faf846b",
+          "unstd/serde/_json_native.pyi": "8e1a78292638c68ef25a9c149dd07de835af34bab57c9ffe8ab48a4a99a6c7a1",
+          "unstd/serde/b64.py": "c9fa198b3a6a4dffab239697c2d35c717ab2adea1977e7c1bd2226c30c4dbe32",
+          "unstd/serde/jsonx.py": "934c8005f7de765ac3600761dd7ddee7f9e08d81d2a55f6bcfb79b6ea6e4d663",
+          "unstd/serde/ndjson.py": "98c1f5bb1b78d2548390683b9b4bc062c4dc900b1fc27837e7941c7ee4553550",
+          "unstd/serde/structs.py": "ebe5eb0c8cba8e8bc01137c9e4f768d86cb900d15c67600cbaf38f0accfa6c65"
+        },
+        "native_source_sha256": {
+          "src/_json_decode_native.h": "acb1c5a574ba8bdc664c708222bebd06b571e8c102404ffa714a6c2ebfbf6eec",
+          "src/_json_encode_native.h": "d9cd56b16da3dfd72b36fa8ae00f7b82e4be7cc37629ef129dc0b3a9c9ac6c1e",
+          "src/_json_lines_native.h": "b2f9b71876976199b3a02b53572672f581438e237353a92205211fbd27ea74d0",
+          "src/_json_native.c": "01cfd935049f43ec617b02f41d931902c353b37e11ffb973219fbfd5ad4852b3"
+        }
+      },
+      "after": {
+        "source": "/private/tmp/jsonx-throughput-final-bounded/src",
+        "imported_jsonx": "/private/tmp/jsonx-throughput-final-bounded/src/unstd/serde/jsonx.py",
+        "native_module": "/private/tmp/jsonx-throughput-final-bounded/src/unstd/serde/_json_native.cpython-313-darwin.so",
+        "dispatch": {
+          "loads": {
+            "bound": false,
+            "ready": true
+          },
+          "dumpb": {
+            "bound": false,
+            "ready": false
+          }
+        },
+        "sha256": {
+          "unstd/serde/__init__.py": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d",
+          "unstd/serde/_internal/__init__.py": "6aed7cdb4acd19aa8dfa7668c884fd937f2add4574c73531bd6cdde569f53f05",
+          "unstd/serde/_internal/json_common.py": "cb4ee6fce1510e202b4126e67b53ac73b9e7b73a9d67d010b451b7fa45ea0b8f",
+          "unstd/serde/_internal/json_encode.py": "70c0e9b9a2d3ed721573b097204c76b335d2d73e7655b2e64b2ea04e7d10de6d",
+          "unstd/serde/_json_common.py": "fb088bf068ac0dd5f2dd1675cb60cb682da6aec80320b85d98aa39c16a7f6781",
+          "unstd/serde/_json_encode.py": "d010007e07fbe5e46a1bcfb6984b2730f30564e4a2dc15306baedda9f2ab8ec1",
+          "unstd/serde/_json_native.cpython-312-darwin.so": "7bd98afbb7ad198f9171d09d425f0bfa4072c993abb971181b97e63753fa4d76",
+          "unstd/serde/_json_native.cpython-313-darwin.so": "356b19c0903f320dfa49de557bc036fa6f4e8a32206f0367854adf3fba3ba531",
+          "unstd/serde/_json_native.cpython-314-darwin.so": "4a53b697d271eaf47f5ac08b7db1d289cb33091de867063c4f47586765ecd29c",
+          "unstd/serde/_json_native.pyi": "2701aa6fa8f926d09d401e06942e3c65669cf5c2aea38fc5eaf498fd693729f8",
+          "unstd/serde/b64.py": "c9fa198b3a6a4dffab239697c2d35c717ab2adea1977e7c1bd2226c30c4dbe32",
+          "unstd/serde/jsonx.py": "ddb3b64c6555402da2a979bce6fc75019ccf6d701653aea06ec5f985cd6fec71",
+          "unstd/serde/ndjson.py": "98c1f5bb1b78d2548390683b9b4bc062c4dc900b1fc27837e7941c7ee4553550",
+          "unstd/serde/structs.py": "ebe5eb0c8cba8e8bc01137c9e4f768d86cb900d15c67600cbaf38f0accfa6c65"
+        },
+        "native_source_sha256": {
+          "src/_json_decode_native.h": "d46206a3c04858ac3739d2590b4c1a02d23a2801cbec3387fa4893d28e56624f",
+          "src/_json_encode_native.h": "d9cd56b16da3dfd72b36fa8ae00f7b82e4be7cc37629ef129dc0b3a9c9ac6c1e",
+          "src/_json_lines_native.h": "b2f9b71876976199b3a02b53572672f581438e237353a92205211fbd27ea74d0",
+          "src/_json_native.c": "ee7e575108f071027ad8d3af08d3322ee1a77997a62822aca1a29e37c749e19b",
+          "src/_json_text_native.h": "937fe2288c702b38b752e4c7b4a09a91239bba86d2907b0f89c24f99a13d3e92"
+        }
+      }
+    },
+    "314": {
+      "before": {
+        "source": "/private/tmp/jsonx-throughput-baseline/src",
+        "imported_jsonx": "/private/tmp/jsonx-throughput-baseline/src/unstd/serde/jsonx.py",
+        "native_module": "/private/tmp/jsonx-throughput-baseline/src/unstd/serde/_json_native.cpython-314-darwin.so",
+        "dispatch": {
+          "loads": {
+            "bound": true,
+            "ready": true
+          },
+          "dumpb": {
+            "bound": true,
+            "ready": true
+          }
+        },
+        "sha256": {
+          "unstd/serde/__init__.py": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d",
+          "unstd/serde/_internal/__init__.py": "6aed7cdb4acd19aa8dfa7668c884fd937f2add4574c73531bd6cdde569f53f05",
+          "unstd/serde/_internal/json_common.py": "cb4ee6fce1510e202b4126e67b53ac73b9e7b73a9d67d010b451b7fa45ea0b8f",
+          "unstd/serde/_internal/json_encode.py": "8c27e3ed7bc6052315bc3d3ce17987ef078c751a4348396cc29fe103578f5553",
+          "unstd/serde/_json_common.py": "fb088bf068ac0dd5f2dd1675cb60cb682da6aec80320b85d98aa39c16a7f6781",
+          "unstd/serde/_json_encode.py": "d010007e07fbe5e46a1bcfb6984b2730f30564e4a2dc15306baedda9f2ab8ec1",
+          "unstd/serde/_json_native.cpython-312-darwin.so": "06c5e476e9124d032accce354be8395d49a9abd10c2fb6c7034196eabd8de46e",
+          "unstd/serde/_json_native.cpython-313-darwin.so": "470d74d6b8c61cf86cc05dff09fb8481412c11fd6d232900aadba8ca6a16c393",
+          "unstd/serde/_json_native.cpython-314-darwin.so": "664980386fba9d736659cc4adfa900e42968b4505cffa27bcc7e13096faf846b",
+          "unstd/serde/_json_native.pyi": "8e1a78292638c68ef25a9c149dd07de835af34bab57c9ffe8ab48a4a99a6c7a1",
+          "unstd/serde/b64.py": "c9fa198b3a6a4dffab239697c2d35c717ab2adea1977e7c1bd2226c30c4dbe32",
+          "unstd/serde/jsonx.py": "934c8005f7de765ac3600761dd7ddee7f9e08d81d2a55f6bcfb79b6ea6e4d663",
+          "unstd/serde/ndjson.py": "98c1f5bb1b78d2548390683b9b4bc062c4dc900b1fc27837e7941c7ee4553550",
+          "unstd/serde/structs.py": "ebe5eb0c8cba8e8bc01137c9e4f768d86cb900d15c67600cbaf38f0accfa6c65"
+        },
+        "native_source_sha256": {
+          "src/_json_decode_native.h": "acb1c5a574ba8bdc664c708222bebd06b571e8c102404ffa714a6c2ebfbf6eec",
+          "src/_json_encode_native.h": "d9cd56b16da3dfd72b36fa8ae00f7b82e4be7cc37629ef129dc0b3a9c9ac6c1e",
+          "src/_json_lines_native.h": "b2f9b71876976199b3a02b53572672f581438e237353a92205211fbd27ea74d0",
+          "src/_json_native.c": "01cfd935049f43ec617b02f41d931902c353b37e11ffb973219fbfd5ad4852b3"
+        }
+      },
+      "after": {
+        "source": "/private/tmp/jsonx-throughput-final-bounded/src",
+        "imported_jsonx": "/private/tmp/jsonx-throughput-final-bounded/src/unstd/serde/jsonx.py",
+        "native_module": "/private/tmp/jsonx-throughput-final-bounded/src/unstd/serde/_json_native.cpython-314-darwin.so",
+        "dispatch": {
+          "loads": {
+            "bound": true,
+            "ready": true
+          },
+          "dumpb": {
+            "bound": true,
+            "ready": true
+          }
+        },
+        "sha256": {
+          "unstd/serde/__init__.py": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d",
+          "unstd/serde/_internal/__init__.py": "6aed7cdb4acd19aa8dfa7668c884fd937f2add4574c73531bd6cdde569f53f05",
+          "unstd/serde/_internal/json_common.py": "cb4ee6fce1510e202b4126e67b53ac73b9e7b73a9d67d010b451b7fa45ea0b8f",
+          "unstd/serde/_internal/json_encode.py": "70c0e9b9a2d3ed721573b097204c76b335d2d73e7655b2e64b2ea04e7d10de6d",
+          "unstd/serde/_json_common.py": "fb088bf068ac0dd5f2dd1675cb60cb682da6aec80320b85d98aa39c16a7f6781",
+          "unstd/serde/_json_encode.py": "d010007e07fbe5e46a1bcfb6984b2730f30564e4a2dc15306baedda9f2ab8ec1",
+          "unstd/serde/_json_native.cpython-312-darwin.so": "7bd98afbb7ad198f9171d09d425f0bfa4072c993abb971181b97e63753fa4d76",
+          "unstd/serde/_json_native.cpython-313-darwin.so": "356b19c0903f320dfa49de557bc036fa6f4e8a32206f0367854adf3fba3ba531",
+          "unstd/serde/_json_native.cpython-314-darwin.so": "4a53b697d271eaf47f5ac08b7db1d289cb33091de867063c4f47586765ecd29c",
+          "unstd/serde/_json_native.pyi": "2701aa6fa8f926d09d401e06942e3c65669cf5c2aea38fc5eaf498fd693729f8",
+          "unstd/serde/b64.py": "c9fa198b3a6a4dffab239697c2d35c717ab2adea1977e7c1bd2226c30c4dbe32",
+          "unstd/serde/jsonx.py": "ddb3b64c6555402da2a979bce6fc75019ccf6d701653aea06ec5f985cd6fec71",
+          "unstd/serde/ndjson.py": "98c1f5bb1b78d2548390683b9b4bc062c4dc900b1fc27837e7941c7ee4553550",
+          "unstd/serde/structs.py": "ebe5eb0c8cba8e8bc01137c9e4f768d86cb900d15c67600cbaf38f0accfa6c65"
+        },
+        "native_source_sha256": {
+          "src/_json_decode_native.h": "d46206a3c04858ac3739d2590b4c1a02d23a2801cbec3387fa4893d28e56624f",
+          "src/_json_encode_native.h": "d9cd56b16da3dfd72b36fa8ae00f7b82e4be7cc37629ef129dc0b3a9c9ac6c1e",
+          "src/_json_lines_native.h": "b2f9b71876976199b3a02b53572672f581438e237353a92205211fbd27ea74d0",
+          "src/_json_native.c": "ee7e575108f071027ad8d3af08d3322ee1a77997a62822aca1a29e37c749e19b",
+          "src/_json_text_native.h": "937fe2288c702b38b752e4c7b4a09a91239bba86d2907b0f89c24f99a13d3e92"
+        }
+      }
+    }
+  },
+  "report_sha256": "605d25585ac0dd227de32c8358eeb816646e88731656199df2be4bed22aab755",
+  "files": {
+    "jsonx-existing-core-after-312-r2.json": {
+      "sha256": "29b237fbb2a47f5d1b3321c9a27f22ae077744e143ffc3d82d585ec5dced3827",
+      "bytes": 3030
+    },
+    "jsonx-existing-core-after-312-r3.json": {
+      "sha256": "c64054490984b2d6f861247fa7e8048c9cecc3612550373598eb1bc8b97789e6",
+      "bytes": 3031
+    },
+    "jsonx-existing-core-after-312.json": {
+      "sha256": "8f9a5e97b316b2ae1c36cbf59242e6be5cdd6f397bf490967f805b3b67f25054",
+      "bytes": 3038
+    },
+    "jsonx-existing-core-after-313-r2.json": {
+      "sha256": "994bfcb6a45ce2d2e698a9ec4c3acd8d0c21a008fc2a63d9f9da8d11ea747677",
+      "bytes": 3030
+    },
+    "jsonx-existing-core-after-313-r3.json": {
+      "sha256": "642d6ad2ec0687b3cf8443c199ea120f16b6beb188feec49a3a30f91669de0cc",
+      "bytes": 3027
+    },
+    "jsonx-existing-core-after-313.json": {
+      "sha256": "af146f32e69fe69d81fc212bd60aba3c94dc93b315d5a15057dbbbc9259bd78d",
+      "bytes": 3066
+    },
+    "jsonx-existing-core-after-314-r2.json": {
+      "sha256": "f71260aed782eda8fc57caad42ac2a8c4b4158fa1106dcf9dbc6eb6b8d635231",
+      "bytes": 3010
+    },
+    "jsonx-existing-core-after-314-r3.json": {
+      "sha256": "bebe4d51b5543240260e3ec42c0356dcb7ad51c626e497711f631a6866bac80e",
+      "bytes": 3038
+    },
+    "jsonx-existing-core-after-314.json": {
+      "sha256": "3a23b11ba9be0844f5097147f071d949559f7ae23f78bfa41d022b1e3d8b5673",
+      "bytes": 3066
+    },
+    "jsonx-existing-core-before-312-r2.json": {
+      "sha256": "37f06e0357c592d0080ecc2c5c548dffdf95e92dc6ad16119d81b7b21dab3f2c",
+      "bytes": 3057
+    },
+    "jsonx-existing-core-before-312-r3.json": {
+      "sha256": "9da58d45b20c4462d4e87d80a883eb1085f6947784654ddd02505e6f30e9fc7c",
+      "bytes": 3057
+    },
+    "jsonx-existing-core-before-312.json": {
+      "sha256": "1772b8f11a5a0ca287574d1fa1d5197750260ee6f345d062e5bc5db4977b53bc",
+      "bytes": 3058
+    },
+    "jsonx-existing-core-before-313-r2.json": {
+      "sha256": "872b57f5484d1eca8054f10ac924dcc1e47bd9a25f50b5cc2efae745071876e8",
+      "bytes": 3037
+    },
+    "jsonx-existing-core-before-313-r3.json": {
+      "sha256": "4f5644111b975b7f803c956ed0a6cdc9db3eb7048f68ddccb4ac800a17e7fc55",
+      "bytes": 3025
+    },
+    "jsonx-existing-core-before-313.json": {
+      "sha256": "3767d2e00b95bf73c218cd6227500d3da40313adaaab7e88b9bffc6ed4837dfa",
+      "bytes": 3036
+    },
+    "jsonx-existing-core-before-314-r2.json": {
+      "sha256": "773efcecae681c9975bb596947ee9e3c86f4c01ec20764ee733be48cb20f7bbd",
+      "bytes": 3043
+    },
+    "jsonx-existing-core-before-314-r3.json": {
+      "sha256": "25c190888f78382ee7840f6cc942ef5ecb1940e33460b1d881538db9620ef388",
+      "bytes": 3022
+    },
+    "jsonx-existing-core-before-314.json": {
+      "sha256": "2193fb64247c4461b2d28e8b89703f9f68dbfbfee776ad5cdc61e3903c5d578f",
+      "bytes": 3054
+    },
+    "jsonx-existing-profile-312.json": {
+      "sha256": "ec55f7f26808886513b1bd06efdab6f641db2655806a0927230bf45acc17567f",
+      "bytes": 192211
+    },
+    "jsonx-existing-profile-313.json": {
+      "sha256": "3172b4b98b915d136f01ab093557183f5f35018f321352cff0f854b9da88bb81",
+      "bytes": 196521
+    },
+    "jsonx-existing-profile-314.json": {
+      "sha256": "2749ee1a940680535797b517ee3399b4904113fd9033e0944ec12ed7b4c6568a",
+      "bytes": 196545
+    },
+    "jsonx-existing-speeds-after-312-r2.error.json": {
+      "sha256": "c50d341e86ff8589547419661ab52e0f31e15cdbfbe7c4187c5235d323199e14",
+      "bytes": 87
+    },
+    "jsonx-existing-speeds-after-312-r3.error.json": {
+      "sha256": "c50d341e86ff8589547419661ab52e0f31e15cdbfbe7c4187c5235d323199e14",
+      "bytes": 87
+    },
+    "jsonx-existing-speeds-after-312.error.json": {
+      "sha256": "c50d341e86ff8589547419661ab52e0f31e15cdbfbe7c4187c5235d323199e14",
+      "bytes": 87
+    },
+    "jsonx-existing-speeds-after-313-r2.json": {
+      "sha256": "1b870ddf5ef0ca8c0ba24cc98457e55432a825df147e2753b9b8e11df0863027",
+      "bytes": 60299
+    },
+    "jsonx-existing-speeds-after-313-r3.json": {
+      "sha256": "0a86dd5ec036aeed8f8bad0d077ad55b7664569325368a113477290049a3b3bd",
+      "bytes": 59991
+    },
+    "jsonx-existing-speeds-after-313.json": {
+      "sha256": "e1a00e0477eaa6ab4eb72edb7a2fd5347e3589a1844167b2f98e159d1e783432",
+      "bytes": 60090
+    },
+    "jsonx-existing-speeds-after-314-r2.json": {
+      "sha256": "9599d9ef06e451493ae8fb2e226ff6ec8f0470a5fa1f65e6792e46c36f275596",
+      "bytes": 59501
+    },
+    "jsonx-existing-speeds-after-314-r3.json": {
+      "sha256": "11d8c146cf05b4b49ab6115e8399bfa04fb18f5a34e5c8c19e729f607ef3ee4b",
+      "bytes": 59927
+    },
+    "jsonx-existing-speeds-after-314.json": {
+      "sha256": "9647dd16ec32b32adad0d44aec6656ef15ed107adad0ad7cf76dac604ab617cf",
+      "bytes": 59859
+    },
+    "jsonx-existing-speeds-before-312-r2.error.json": {
+      "sha256": "c50d341e86ff8589547419661ab52e0f31e15cdbfbe7c4187c5235d323199e14",
+      "bytes": 87
+    },
+    "jsonx-existing-speeds-before-312-r3.error.json": {
+      "sha256": "c50d341e86ff8589547419661ab52e0f31e15cdbfbe7c4187c5235d323199e14",
+      "bytes": 87
+    },
+    "jsonx-existing-speeds-before-312.error.json": {
+      "sha256": "c50d341e86ff8589547419661ab52e0f31e15cdbfbe7c4187c5235d323199e14",
+      "bytes": 87
+    },
+    "jsonx-existing-speeds-before-313-r2.json": {
+      "sha256": "793d0ae4a99b43ebcaf0e3cc21a0baae8c89908bee8d92aa85f2fa53dd7a4549",
+      "bytes": 59722
+    },
+    "jsonx-existing-speeds-before-313-r3.json": {
+      "sha256": "32eebe7c1f8b9dc99606095a06e336e31d8807ca51ede9c4386032012807b59a",
+      "bytes": 59610
+    },
+    "jsonx-existing-speeds-before-313.json": {
+      "sha256": "f273bff8f77ae68f18aa783a28c580837395f2e56a8fa9a704647eee10fa9b37",
+      "bytes": 59483
+    },
+    "jsonx-existing-speeds-before-314-r2.json": {
+      "sha256": "32405b8ba1330c0611ef439e2bdb725da05488dc991f6f8208d78c49740db228",
+      "bytes": 60623
+    },
+    "jsonx-existing-speeds-before-314-r3.json": {
+      "sha256": "a4751e2eca45acfa91f0cceeefd9e38df30d4250f5a42de8a36b7ff5d26dd76f",
+      "bytes": 60599
+    },
+    "jsonx-existing-speeds-before-314.json": {
+      "sha256": "d5173f71dfc74dc2ad6c869b87bc9a6f7fa9c3c46514be8788785e5741d8a245",
+      "bytes": 60646
+    },
+    "jsonx-existing-speeds-isolated-after-312-r2.json": {
+      "sha256": "b7037d8919b619285fca5549b31d323e38f9d4781309e559595bef70dbcdda44",
+      "bytes": 16103
+    },
+    "jsonx-existing-speeds-isolated-after-312-r3.json": {
+      "sha256": "cbbe6b09db138580da01946615e757096231600530ecb629a53a9beeb77fa7b1",
+      "bytes": 16195
+    },
+    "jsonx-existing-speeds-isolated-after-312.json": {
+      "sha256": "0a2a05c3c9c76b115863e98f1f5bae4f00f80b7ef6b0a1e48e0ea3b53434f5d7",
+      "bytes": 16069
+    },
+    "jsonx-existing-speeds-isolated-before-312-r2.json": {
+      "sha256": "6e40e2413d23d818f65f8055560a528b6ce73a305c64df86781e7336f5eaf2bf",
+      "bytes": 15958
+    },
+    "jsonx-existing-speeds-isolated-before-312-r3.json": {
+      "sha256": "d1ccf19e6e78ed1c53ff848e779d97a95b40afa2ed3057a807e794fded033428",
+      "bytes": 15952
+    },
+    "jsonx-existing-speeds-isolated-before-312.json": {
+      "sha256": "9367e28d0ae3ee2f3ec64d8110bf04452fa1eaa0b2628f799299c948cf38e93e",
+      "bytes": 15856
+    },
+    "jsonx-native-safety.json": {
+      "sha256": "f8f99a131e401850941e10acb6345b21dc9c91a11efd56843a96ff76307ec0c3",
+      "bytes": 58835
+    },
+    "jsonx-throughput-312.json": {
+      "sha256": "b13d1375a12568bf9a1454bd69baf55cba51d1a211ce8bf97dc70a3034cf7f1a",
+      "bytes": 419461
+    },
+    "jsonx-throughput-313.json": {
+      "sha256": "afcb5cea9f7db8f7fee1f80dd22afe0424ac765d89d367fde9c5843c301dd11d",
+      "bytes": 421216
+    },
+    "jsonx-throughput-314.json": {
+      "sha256": "d00b5fd32849d5642e0319fc28203954267f918c29228d0326d1b1488c828d2c",
+      "bytes": 419331
+    }
+  }
+}

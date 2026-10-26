@@ -34,6 +34,10 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
 
+BATCH_TARGET_NS = 50_000_000
+CALIBRATION_PROBES = 3
+
+
 @dataclass
 class Record:
     """A default-protocol record containing mutable data."""
@@ -354,12 +358,17 @@ def _batch(call: Callable[[], Any], count: int) -> dict[str, float]:
 
 
 def _calibrate(call: Callable[[], Any]) -> int:
+    """Size a steady batch without letting one cold probe end calibration."""
     count = 1
     while count < 1 << 20:
-        elapsed = _batch(call, count)["wall_ns"] * count
-        if elapsed >= 5_000_000:
+        # Calibration chooses only the iteration count. Every later measured
+        # round is retained, including collector and scheduling costs.
+        elapsed = min(
+            _batch(call, count)["wall_ns"] * count for _ in range(CALIBRATION_PROBES)
+        )
+        if elapsed >= BATCH_TARGET_NS:
             return count
-        count *= min(64, max(2, int(5_000_000 / max(elapsed, 1))))
+        count *= min(64, max(2, int(BATCH_TARGET_NS / max(elapsed, 1))))
     return count
 
 
@@ -599,6 +608,11 @@ def main() -> None:
         "machine": platform.machine(),
         "harness_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
         "gc_enabled_during_batches": args.gc_enabled,
+        "calibration": {
+            "batch_target_ns": BATCH_TARGET_NS,
+            "probes_per_count": CALIBRATION_PROBES,
+            "count_selection": "fastest calibration probe",
+        },
         "gc_threshold": gc.get_threshold(),
         "rounds": args.rounds,
         "includes_output_destruction": True,

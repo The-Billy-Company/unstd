@@ -24,17 +24,22 @@ groups. [`extras.py`](extras.py) provides deferred `ImportError` placeholders fo
 capabilities without a fallback. [`py.typed`](py.typed) marks the package's inline
 type information for consumers.
 
-Public modules retain their existing import paths. Small domains are cohesive
-code leaves with descriptive names such as `audio/pcm.py`, `fs/traversal.py`,
-`proc/results.py`, and `serde/encoding.py`. Their guides map owned files and the
-current test command; shallow helper packages are removed.
+Public modules retain their existing import paths. Code lives in cohesive domain
+leaves, with descriptive names such as `audio/pcm.py`, `fs/traversal.py`,
+`proc/backend.py`, and `serde/encoding.py`. Small modules stay together instead
+of growing a helper package. Each domain README maps its owned files, describes
+relationships, and gives its test command.
 
-Compression engine integration lives in
-[`compress/engines/`](compress/engines/README.md). Its public `gzipx.py` and the
-shared `extras.py` module stay on their respective package-root import shelves,
-as allowed by the restructure rule for language package roots. Supporting
-modules declare an empty `__all__`; naming clarity does not expand the supported
-[public API](../../docs/api.md).
+Compression spans distinct engine and archive concerns, so its guide indexes
+[`engines/`](compress/engines/README.md) and
+[`libarchive/`](compress/libarchive/README.md). Its public format modules and
+typing stubs stay on the package's import shelf. The shared `extras.py` module
+similarly lives beside the domain packages: these are the restructure rule's
+language-package-root cases, preserving meaningful imports without one-file
+wrapper packages. The [public API inventory](../../docs/api.md) lists supported
+exports; support modules do not become public APIs merely through renaming.
+Supporting modules declare an empty `__all__`; their named internal imports
+remain available while public API discovery follows the existing facades.
 
 All C and Rust source lives under [`native/`](../../native/README.md), outside
 the installable Python tree. Private native extension names and `.pyi` stubs

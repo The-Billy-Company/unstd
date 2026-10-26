@@ -22,7 +22,7 @@ alone cannot establish that they are fixed. Do not add an unverified bypass.
 Refresh the policy when upgrading to a new OpenSSL branch or reviewing a new
 upstream advisory, and retain the preflight output with release evidence.
 
-For development on CPython 3.13, use the project's pinned patched interpreter.
+For development on CPython 3.14, use the project's pinned patched interpreter.
 The package still supports Python 3.12 and later. Validate every deployed
 interpreter separately, including container and wheel-test interpreters; a
 Python patch number alone does not identify the linked TLS library.
@@ -37,3 +37,46 @@ forced collection, allocation failures or ASan/UBSan. See the
 [clone memory audit instructions](../../suites/product/clone/support/README.md).
 It records compiler/source provenance and preserves instrumentation in child
 processes without overwriting production extensions.
+
+`proc_memory` builds and tests an isolated native process backend, keeping its
+loader and source selection in fixture-owned children:
+
+```console
+python -m tests.tooling.runtime.proc_memory --sanitize --output /tmp/proc-memory
+```
+
+It records source/binary/bootstrap hashes, native dispatch proof, loader options,
+test output and JUnit results in the selected directory. Omit `--sanitize` for
+debug-allocator qualification. Sanitizer controllers force stdlib fallback
+launches through fork to avoid uninstrumented CPython vfork failures; admitted
+native proc launches still execute the C spawn kernel. Exact environment
+isolation runs in ordinary installed tests, and address-space allocation limits
+run without ASan's independent virtual reservations.
+
+`json_identity_gc` builds an isolated JSONX native extension with ASan/UBSan,
+explicit collection at strict-snapshot allocation and ownership boundaries,
+and audit-only deterministic allocation/insertion failures:
+
+```console
+python -m tests.tooling.runtime.json_identity_gc --result /tmp/jsonx-identity-gc.json
+```
+
+Run it with each supported interpreter. It retains source and compiler hashes,
+checks output privacy, live-source mutation, reference cleanup and exception
+preservation through the parity tests, and leaves the production extension
+untouched. Ordinary parity tests also cover
+the bounded native float writer and its per-operation cache cleanup.
+
+`json_acceleration.py` checks the installed JSON extension with the actual
+deployment interpreter, including public bindings, CPython 3.14 dispatch,
+repeated floats, ASCII escapes, exact decoding, strict identity and NDJSON:
+
+```console
+python /path/to/unstd/tests/tooling/runtime/json_acceleration.py --json
+```
+
+Run outside the source checkout with the `serde` extra installed. Missing native
+code or a declined native fixture fails even when a portable fallback produces
+correct output. The report retains interpreter/backend versions and the loaded
+binary hash. Every release wheel runs this check before its full contracts;
+the performance workflow retains it alongside paired installed-wheel timings.

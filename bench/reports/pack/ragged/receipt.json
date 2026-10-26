@@ -1,0 +1,196 @@
+{
+  "schema": 1,
+  "generated_at": "2026-10-25T23:01:05.141638+00:00",
+  "scope": "generic pack implementation and exact captured complete numeric decoder; no transport or inference",
+  "target_speedup": 100,
+  "target_met": false,
+  "capture_sha256": "0c53b36a47a5a3458c0bb36f85f39bd7890a2d1d1fa25cfebbe994145ec017b4",
+  "capture_private_not_archived": true,
+  "source_archive": {
+    "path": "bench/reports/pack/ragged/source.tar.gz",
+    "sha256": "95457d2604f88ca057da66a687f1c3efd44f8ba71bf05eaaec83fa994307bd83",
+    "members": {
+      ".github/workflows/ci.yml": "7716083f10d5e5a43ecccf14aaae731822a404d7b2525976e1471f32b1d2c11e",
+      "bench/profiles/pack_backend.py": "34081141cf0e07eb6acad1bfea98b0d264922739f29ea351c7ec04c7af189453",
+      "bench/profiles/pack_consumers.py": "53d0fe72a3cb6d75787343584b69335a473836dcebbbd1815bfaeed0f67e374e",
+      "bench/profiles/ragged.py": "34d9a036334e9a3952244e5dbc14aa97d03f387a8f0c0c4b89fa403f120afa6f",
+      "bench/workloads/speed_cases_codecs.py": "3923505d06f0e7e3ebfedfe920fcdfd198ea733ed4250271892f66d57f6fd03c",
+      "changelog.d/pack-ragged-decoder.md": "a16290a6b017aa574509ecdb2d891bf250c6e9193ca4b71b75e92e92b8385ef5",
+      "docs/api.md": "3f34876f24a970aaa56c2da74ffbd50b0da108d894269c5d0c6bb29951f06de7",
+      "docs/architecture.md": "e753d13778b0dff5e40f1e4f4aa4275f2b293d10984058736060a13fc3a8bfc0",
+      "hatch_build.py": "41debcb3a8c7bfa9ef45cf7d6922cf328a1767a364eb93d1da051381cf960871",
+      "native/pack/README.md": "ef873f16df6c49b6fb171d218de83202e173ce85c7c87a327c51366184223196",
+      "native/pack/src/README.md": "e15c79b060335116738c2ae26cdebbe0a30b4a9233985a6bb23623316a0f882f",
+      "native/pack/src/adapter.c": "627bb499f3614c5c5c53d05e2514e6bac268c991792f491eee6322a4bda1778e",
+      "pyproject.toml": "6125a0622416c35c31cc3ec7b4ffb591fbe98a7c2a8093681d61698cdf70307a",
+      "src/unstd/__init__.py": "aeba32cf5a5534235845bdcd924e5c2630676c4f1082c133a7a9f27815239704",
+      "src/unstd/pack/README.md": "a7495b6aaaa1584b5c73155910fe56721b1d5d15575c6663ac65cbbf66bbd2aa",
+      "src/unstd/pack/__init__.py": "d44fc4095d269ee7ef3f961cdc1e096b28af896900b387b8a907cea77228edd1",
+      "src/unstd/pack/_pack_native.pyi": "4fce662154903203681b1199f098ab0c651a7e07146c32defe546bcd0177cd1c",
+      "src/unstd/pack/binpack.py": "0c6d1efab26b1b0fe22ef811077435f3a1f025b25e2cb15972eb73fa7ea1094b",
+      "src/unstd/pack/buffers.py": "25f72e707c06616aeb6e867ba8f1e12680e52a9e9ae88992994f8553a69342ed",
+      "src/unstd/pack/dtypes.py": "284df185b9aea56a436d6052ddb749849a9cf956a70258fe7aef32b35120b763",
+      "src/unstd/pack/ragged.py": "4bfbd36b3891cba10e00b9694a438f741371df89a22c811c73c10c7998d486f1",
+      "tests/suites/assurance/gates/bench/test_ragged_profile.py": "85aec9a9d69354051f18fde41943513bdb92ef2b1db323e4118b21dce7ac59b1",
+      "tests/suites/product/pack/unit/test_native_ragged.py": "6048b41c4cc99a80b47a7d3aeb0763ddbcd4ae91ae59d9a56da5f6cb2d208006",
+      "tests/suites/product/pack/unit/test_ragged.py": "4725b2b969c9e4268978ccb0a9a034b77ec798acbda9f0cc87395da8c3961122",
+      "tests/support/packaging/public_api.json": "87240f9b8c9743a5f9c25b60e36c8db8fc027a9c5a166f1740eceb1ff598f7e5",
+      "tests/tooling/release/verify.py": "36808936fa6f1ae1a8d91d091f6df3f216726c69b49ee507fbae2270edd7a19c",
+      "tests/tooling/release/wheel_tests.py": "dc64aa4316c56912f8c9e7287a5de787b080fa6727ef8164165682242240c04f"
+    }
+  },
+  "measurements": {
+    "macos": {
+      "evidence": "bench/reports/pack/ragged/macos-py314.json",
+      "installed_release_wheel": false,
+      "target_met": false,
+      "results": {
+        "complete-decoder/128x128": {
+          "wire_bytes": 65552,
+          "baseline_median_wall_ns": 7057.720050090441,
+          "candidate_median_wall_ns": 1921.112148848112,
+          "median_wall_speedup": 3.6737678507328217,
+          "observed_conservative_wall_speedup": 3.2272054269081005,
+          "target_met": false
+        },
+        "complete-decoder/8192x128": {
+          "wire_bytes": 4194320,
+          "baseline_median_wall_ns": 203084.81102362205,
+          "candidate_median_wall_ns": 57329.5704845815,
+          "median_wall_speedup": 3.5424094286253323,
+          "observed_conservative_wall_speedup": 2.5245031513709617,
+          "target_met": false
+        },
+        "complete-decoder/65536x128": {
+          "wire_bytes": 33554448,
+          "baseline_median_wall_ns": 1713262.9310344828,
+          "candidate_median_wall_ns": 449280.07826086954,
+          "median_wall_speedup": 3.813351657314517,
+          "observed_conservative_wall_speedup": 3.365625985980792,
+          "target_met": false
+        }
+      }
+    },
+    "linux": {
+      "evidence": "bench/reports/pack/ragged/linux-py314.json",
+      "installed_release_wheel": false,
+      "target_met": false,
+      "results": {
+        "complete-decoder/128x128": {
+          "wire_bytes": 65552,
+          "baseline_median_wall_ns": 7185.623014727115,
+          "candidate_median_wall_ns": 1934.7586578078021,
+          "median_wall_speedup": 3.713963488794441,
+          "observed_conservative_wall_speedup": 3.162447724665627,
+          "target_met": false
+        },
+        "complete-decoder/8192x128": {
+          "wire_bytes": 4194320,
+          "baseline_median_wall_ns": 1565869.4333333333,
+          "candidate_median_wall_ns": 54548.99768518518,
+          "median_wall_speedup": 28.705741622794356,
+          "observed_conservative_wall_speedup": 22.440281071616972,
+          "target_met": false
+        },
+        "complete-decoder/65536x128": {
+          "wire_bytes": 33554448,
+          "baseline_median_wall_ns": 3444345.285714286,
+          "candidate_median_wall_ns": 433811.4224137931,
+          "median_wall_speedup": 7.939729356478034,
+          "observed_conservative_wall_speedup": 7.113989255332807,
+          "target_met": false
+        }
+      }
+    },
+    "macos-wheel": {
+      "evidence": "bench/reports/pack/ragged/macos-wheel-py314.json",
+      "installed_release_wheel": true,
+      "target_met": false,
+      "results": {
+        "complete-decoder/128x128": {
+          "wire_bytes": 65552,
+          "baseline_median_wall_ns": 6336.31938102486,
+          "candidate_median_wall_ns": 1722.1839092210182,
+          "median_wall_speedup": 3.679235038196889,
+          "observed_conservative_wall_speedup": 2.8954635896498835,
+          "target_met": false
+        },
+        "complete-decoder/8192x128": {
+          "wire_bytes": 4194320,
+          "baseline_median_wall_ns": 172839.22413793104,
+          "candidate_median_wall_ns": 47423.98648648649,
+          "median_wall_speedup": 3.6445528295513867,
+          "observed_conservative_wall_speedup": 2.0378341310465764,
+          "target_met": false
+        },
+        "complete-decoder/65536x128": {
+          "wire_bytes": 33554448,
+          "baseline_median_wall_ns": 1523687.5,
+          "candidate_median_wall_ns": 388357.14285714284,
+          "median_wall_speedup": 3.923418245355895,
+          "observed_conservative_wall_speedup": 3.5259961102804462,
+          "target_met": false
+        }
+      }
+    },
+    "linux-wheel": {
+      "evidence": "bench/reports/pack/ragged/linux-wheel-py314.json",
+      "installed_release_wheel": true,
+      "target_met": false,
+      "results": {
+        "complete-decoder/128x128": {
+          "wire_bytes": 65552,
+          "baseline_median_wall_ns": 7165.907641952469,
+          "candidate_median_wall_ns": 1872.3749111983548,
+          "median_wall_speedup": 3.8271756361903795,
+          "observed_conservative_wall_speedup": 2.2970340184540543,
+          "target_met": false
+        },
+        "complete-decoder/8192x128": {
+          "wire_bytes": 4194320,
+          "baseline_median_wall_ns": 1579951.6129032257,
+          "candidate_median_wall_ns": 51286.04563894523,
+          "median_wall_speedup": 30.806656922354986,
+          "observed_conservative_wall_speedup": 19.070699944848055,
+          "target_met": false
+        },
+        "complete-decoder/65536x128": {
+          "wire_bytes": 33554448,
+          "baseline_median_wall_ns": 3551157.714285714,
+          "candidate_median_wall_ns": 423181.75,
+          "median_wall_speedup": 8.391566305223972,
+          "observed_conservative_wall_speedup": 6.8584480136430805,
+          "target_met": false
+        }
+      }
+    }
+  },
+  "evidence": {
+    "bench/reports/pack/ragged/benchmark-registry-tests.txt": "36ced33d19856c56531d696861e7305af6d8606449fac01c5ec9cb3b87b7c59e",
+    "bench/reports/pack/ragged/linux-base-tests.txt": "209ca879a5b093b8484a8b323480fb4003344ac1bd67eaa5515500b29c6d437f",
+    "bench/reports/pack/ragged/linux-py314.json": "420c52b219add1538e6df3c28ee5032033c9f43d9bfcac95da47d705b9aae073",
+    "bench/reports/pack/ragged/linux-sanitizers.txt": "778df32c52530b943afeeb343f2a6d6e581446e53286b78e229baa0f7a84f912",
+    "bench/reports/pack/ragged/linux-tests.txt": "42f2a71ebcc007bef91de8dc6bcb0412b2fb6e4377197cfd2df5f4e7a3ad1e71",
+    "bench/reports/pack/ragged/linux-wheel-py314.json": "b8df024aa3406459240fc7e8bcee7bcaaad4db7e2492434e79ad2d52d3303062",
+    "bench/reports/pack/ragged/linux-wheel-tests.json": "47101fb42a92596a3090956160bbc7dec5562bfb33c1c22a6c59134e435d0ff6",
+    "bench/reports/pack/ragged/linux-wheel-tests.txt": "a806b1cf9b4653e0362bd25a8009896c80e573e02087a0f9059dc894455260e0",
+    "bench/reports/pack/ragged/mac-initial-probe.json": "862a5f9627dcb8cac8f5658c78649ccba8a2152c96194ce410218bb9e3d9639c",
+    "bench/reports/pack/ragged/macos-artifact-receipt.json": "12364dc3182325e14efde2163d515e011f5f1e60d35453d64d88c30c2269aa68",
+    "bench/reports/pack/ragged/macos-base-tests.txt": "bb5019bd6883e5e60285e65cfd6171b78987a47dd76af3a1abcdbf22a94c4102",
+    "bench/reports/pack/ragged/macos-py314.json": "5c673136d45a28086549a991fa042045276ea4a26455443c2887718c5d337c20",
+    "bench/reports/pack/ragged/macos-tests.txt": "daaa9385fbf6d39cc916f437d041d20d34dcd1cd0380d694cbf97cb307d8460a",
+    "bench/reports/pack/ragged/macos-wheel-py314.json": "a3dea8c17ff3ec029a9949ffa439b3abce1f57dc9863c2828689caa702495479",
+    "bench/reports/pack/ragged/packaging-tests.txt": "a197344f566c8b791e6468f0460b101b1c40a0b36e7c0cf32a5e928fda6338a8",
+    "bench/reports/pack/ragged/python-floor-checks.json": "9aa66bfa8d953b9c881b434816a40c3b4cfb23dae0ded80a2102097acb2b7439",
+    "bench/reports/pack/ragged/python-floor-checks.txt": "899a2322f867c8eb9f69c9546301ca536e5b8c9e7a112bb91f84dbc648e166fd",
+    "bench/reports/pack/ragged/python-floor-smoke.py.txt": "a0e0d6b637fa5bc36f8b9177d3c858754b412e66db408f97f47ad5f2dad419ee",
+    "bench/reports/pack/ragged/static-checks.txt": "050c52a2b0c61e8b681ef5c485e0bc03340b8d55148e0acef27d744c8be42033"
+  },
+  "artifact_local_copies": {
+    ".local/pack-ragged-final/artifacts/unstd-3.1.6-cp314-cp314-linux_aarch64.whl": "62a38e86def79cdb9be10d41667d64cc5900b161b6b401e6e8a95986014fdc6b",
+    ".local/pack-ragged-final/artifacts/unstd-3.1.6-cp314-cp314-macosx_11_0_arm64.whl": "be8ce47160d84166f928fb7c3e9aa15f3310a80cb3ae5517ccbbb21457aa9897",
+    ".local/pack-ragged-final/artifacts/unstd-3.1.6.tar.gz": "3ac4924b11c0b94c21fca4720a9bdd7bed4bcfb8be0f5266e8e9d2ac97aea2e6"
+  },
+  "installed_binaries_match_wheel_members": true,
+  "same_sdist_built_both_platform_wheels": true
+}

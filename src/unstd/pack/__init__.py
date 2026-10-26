@@ -6,6 +6,9 @@
   / :func:`~unstd.pack.binpack.unpack_array` for homogeneous numeric arrays. The
   array path prefers NumPy (the ``pack`` extra — ``tobytes`` / zero-copy
   ``frombuffer``) and falls back to stdlib ``struct`` when it is absent.
+- ``ragged`` — numeric boundary-table/matrix layouts with complete validation
+  and immutable NumPy views or tuple results. Its optional native validator
+  fuses geometry, boundary, and finite-value checks.
 
 Import the module, not its members::
 

@@ -46,12 +46,18 @@ jobs:
           cache-dependency-glob: |
             uv.lock
             pyproject.toml
-          version: "0.13.4"
-          python-version: "3.13"
+          version: "0.13.5"
+          python-version: "3.14"
       # Both lanes install extras; the stdlib worker blocks acceleration imports
       # before product loading, and propagates that policy into nested workers.
+      - name: Provide Yasm for native gzip builds
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends yasm
+          yasm --version
       - name: Install locked dependencies and rebuild unstd
-        run: uv sync --locked --all-extras --group dev --python 3.13 --reinstall-package unstd
+        run: uv sync --locked --all-extras --group dev --python 3.14 --reinstall-package unstd
       - name: Run all concurrency groups
         run: >-
           uv run --no-sync python -m tests.tooling.concurrency run

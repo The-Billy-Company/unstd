@@ -1,0 +1,127 @@
+{
+  "host": "Darwin arm64",
+  "python": "3.13.16",
+  "cases": [
+    {
+      "name": "jsonx.dumps \u00b7 500 records",
+      "group": "serde",
+      "skipped": false,
+      "accel_ns": 331114.60714285716,
+      "base_ns": 336857.3461538461,
+      "ratio": 1.017,
+      "floor": 0.74,
+      "failed": false,
+      "equivalent": true
+    },
+    {
+      "name": "jsonx.loads \u00b7 500 records",
+      "group": "serde",
+      "skipped": false,
+      "accel_ns": 157390.98333333334,
+      "base_ns": 272813.73529411765,
+      "ratio": 1.733,
+      "floor": 0.67,
+      "failed": false,
+      "equivalent": true
+    },
+    {
+      "name": "jsonx.dumps \u00b7 text payload",
+      "group": "serde",
+      "skipped": false,
+      "accel_ns": 13956.54296875,
+      "base_ns": 136779.16666666666,
+      "ratio": 9.8,
+      "floor": 4.19,
+      "failed": false,
+      "equivalent": true
+    },
+    {
+      "name": "jsonx.loads \u00b7 1000 integers",
+      "group": "serde",
+      "skipped": false,
+      "accel_ns": 12023.34375,
+      "base_ns": 31705.890625,
+      "ratio": 2.637,
+      "floor": 1.34,
+      "failed": false,
+      "equivalent": true
+    },
+    {
+      "name": "b64.encode \u00b7 128 KiB",
+      "group": "serde",
+      "skipped": false,
+      "accel_ns": 5965.006510416667,
+      "base_ns": 84416.66279069768,
+      "ratio": 14.152,
+      "floor": 11.77,
+      "failed": false,
+      "equivalent": true
+    },
+    {
+      "name": "b64.decode \u00b7 128 KiB",
+      "group": "serde",
+      "skipped": false,
+      "accel_ns": 11550.455729166666,
+      "base_ns": 122089.70833333333,
+      "ratio": 10.57,
+      "floor": 6.42,
+      "failed": false,
+      "equivalent": true
+    },
+    {
+      "name": "b64.decode URL \u00b7 128 KiB",
+      "group": "serde",
+      "skipped": false,
+      "accel_ns": 22541.828125,
+      "base_ns": 122551.05,
+      "ratio": 5.437,
+      "floor": 4.19,
+      "failed": false,
+      "equivalent": true
+    },
+    {
+      "name": "jsonx.dumps \u00b7 32-int record",
+      "group": "serde",
+      "skipped": false,
+      "accel_ns": 721.0948486328125,
+      "base_ns": 1544.7336805555556,
+      "ratio": 2.142,
+      "floor": 0.45,
+      "failed": false,
+      "equivalent": true
+    },
+    {
+      "name": "jsonx.dumpb \u00b7 500 records",
+      "group": "serde",
+      "skipped": false,
+      "accel_ns": 326752.8,
+      "base_ns": 335175.0,
+      "ratio": 1.026,
+      "floor": 0.69,
+      "failed": false,
+      "equivalent": true
+    },
+    {
+      "name": "jsonx.loads \u00b7 20 nested records",
+      "group": "serde",
+      "skipped": false,
+      "accel_ns": 2339.4609375,
+      "base_ns": 3884.153033088235,
+      "ratio": 1.66,
+      "floor": 0.59,
+      "failed": false,
+      "equivalent": true
+    },
+    {
+      "name": "ndjson.loads \u00b7 1k typed trace rows",
+      "group": "serde",
+      "skipped": false,
+      "accel_ns": 649056.5714285715,
+      "base_ns": 1143578.125,
+      "ratio": 1.762,
+      "floor": 2.71,
+      "failed": true,
+      "equivalent": true
+    }
+  ]
+}

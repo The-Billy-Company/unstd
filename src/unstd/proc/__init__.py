@@ -8,9 +8,12 @@ you needed to debug the failure. This module is not a drop-in of every
 ``subprocess`` API; it is a **curated safe surface** that closes those three
 holes and nothing more.
 
-Backend: PURE STDLIB — no optional extra, no third-party backend.
-Its value is *safety* guardrails, not speed, so there is nothing to accelerate;
-depending on it costs zero closure and it works in a base ``unstd`` install.
+Backend: stdlib with optional bundled C acceleration, no third-party dependency.
+macOS uses native spawning with descriptor isolation; Linux retains its optimized
+stdlib launch path. Both use a native pipe loop for captured output without
+stdin. Other shapes retain stdlib execution. Bounded waits use kernel exit
+notifications where available. The
+package works in a base ``unstd`` install with zero dependency closure.
 
 The guarantees, versus a raw ``subprocess.run``:
 
@@ -49,6 +52,7 @@ import subprocess  # nosec B404 # the public API is a subprocess wrapper
 import time
 from typing import TYPE_CHECKING, TypedDict, Unpack
 
+from unstd.proc.backend import Popen as _Popen
 from unstd.proc.results import CompletedProcess, ProcessError
 
 
@@ -143,7 +147,7 @@ def run(
     # Own the child explicitly. subprocess.run delegates exceptional reaping to
     # Popen.__exit__, whose KeyboardInterrupt path may skip wait() after
     # communicate() has already consumed its short SIGINT grace period.
-    with subprocess.Popen(  # noqa: S603  # nosec B603 # shell=False + explicit argv
+    with _Popen(  # nosec B603 # shell=False + explicit argv
         cmd,
         stdin=subprocess.PIPE if stdin_text is not None else None,
         stdout=subprocess.PIPE,

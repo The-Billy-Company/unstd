@@ -1,10 +1,13 @@
 """Exact stdlib JSON semantics with guarded native acceleration.
 
-``dumps`` uses orjson only for bounded exact builtin trees whose output matches
+``dumps`` uses orjson only for exact builtin trees whose output matches
 stdlib byte-for-byte. The optional native guard proves eligibility and encodes
 without releasing the GIL or invoking Python callbacks. Its portable fallback
-uses private snapshots. Floats, unsupported types, large integers, complex
-formatting and user callbacks take stdlib paths.
+uses private snapshots. Wide trees and two-space indentation use native proofs
+with bounded depth. Unicode output retains stdlib ASCII escaping. Indented
+finite floats on Python 3.12 and eligible finite-float trees use CPython's exact
+number spellings. Unsupported values, complex formatting and user callbacks
+retain their stdlib paths.
 Common builtin option configurations reuse stateless stdlib JSONEncoder
 instances, retaining CPython's native ``_json`` implementation for all values.
 
@@ -135,6 +138,9 @@ _native_dumpb: (
 _native_line: Callable[[object], bytes | NotImplementedType] | None = (
     _native.line if _native else None
 )
+_native_identity_snapshot: Callable[[object], Json | NotImplementedType] | None = (
+    getattr(_native, "identity_snapshot", None) if _native else None
+)
 
 
 def _numpy_default(
@@ -255,9 +261,9 @@ def dumpb(
 ) -> bytes:
     """Serialize bytes identical to compact, unescaped stdlib JSON's UTF-8.
 
-    This extension uses ``ensure_ascii=False`` and compact separators. orjson
-    handles proven exact builtin trees; other values, ``default`` and ``numpy=True``
-    use stdlib. For the package's identity format use :func:`canonical`.
+    This extension uses ``ensure_ascii=False`` and compact separators. Native
+    encoding handles proven exact builtin trees and eligible finite-float trees;
+    other values, ``default`` and ``numpy=True`` use stdlib. For the package's identity format use :func:`canonical`.
     """
     if _native_dumpb is not None:
         native = _native_dumpb(obj, sort_keys, default, numpy)
@@ -375,7 +381,15 @@ def canonical_strict(obj: object) -> bytes:
     incompatible formats require a separate API; existing canonical bytes stay
     unchanged. Interpreter integer-conversion and recursion limits still apply.
     """
-    return _IDENTITY.encode(_identity_snapshot(obj, set())).encode()
+    # Resolve the codec before copying, matching the original call's evaluation
+    # order even when a property or allocation-triggered finalizer changes it.
+    encoder = _IDENTITY.encode
+    snapshot: Json | NotImplementedType = NotImplemented
+    if _HAVE_ORJSON is True and _native_identity_snapshot is not None:
+        snapshot = _native_identity_snapshot(obj)
+    if snapshot is NotImplemented:
+        snapshot = _identity_snapshot(obj, set())
+    return encoder(snapshot).encode()
 
 
 _IDENTITY = _stdlib.JSONEncoder(

@@ -68,7 +68,7 @@ _VENDORS = (
         "fed5cd22f00f30cc4c2e5329f94e2b8a901df9fa45ee255cb70e2b0b42344477",
         "4ad69099cb4374836fd27583d9991e2838cd86b6e4666ab26b2d32582c91e73a",
         "https://github.com/ebiggers/libdeflate/releases/download/v1.25/libdeflate-1.25.tar.gz",
-        "3471af922c51d680593fe7665590020fab9678dee751a4c3b494bfb8f8f1c54e",
+        "cd7440b5f87c3a78612a526a1e6a54cf610db4c7b0c2be3b4f437f3124aa8f9c",
     ),
     _Vendor(
         "zlib",
@@ -80,6 +80,16 @@ _VENDORS = (
         "https://zlib.net/zlib-1.3.2.tar.gz",
         "d82745c9e55db5936464cb2f7d353d949a47600e3b308597d98993484e1aa77c",
     ),
+    _Vendor(
+        "isa-l",
+        "2.31.1",
+        "BSD-3-Clause",
+        "LICENSE",
+        "e1d5573a4019738243b568ab1e1422e6ab7557c5cae33cc8686944d327ad6bb4",
+        "bc8fd4a3d031e65e05e9c9e2add2c3f336ce527fa85c1e31031c808b58216217",
+        "https://codeload.github.com/intel/isa-l/tar.gz/refs/tags/v2.31.1",
+        "179611c79b1589d8f5e601610e1e07249d15ff992660fc3b25cbe1b609decaa7",
+    ),
 )
 _NATIVE_MODULES = (
     "unstd/serde/_json_native",
@@ -87,7 +97,10 @@ _NATIVE_MODULES = (
     "unstd/crypto/_stream_native",
     "unstd/text/_text_native",
     "unstd/compress/_gzip_native",
+    "unstd/containers/_sorted_native",
+    "unstd/proc/_proc_native",
     "unstd/rand/_rand_native",
+    "unstd/pack/_pack_native",
     "unstd/fs/_fs_native",
 )
 _MACHO_ORDERS = {
@@ -180,12 +193,31 @@ def _source_dependencies(
             _require(
                 isinstance(requirement, str)
                 and bool(requirement)
-                and not any(
-                    token in requirement for token in (";", "@", "://", "\n", "\r")
-                ),
+                and not any(token in requirement for token in ("@", "://", "\n", "\r")),
                 f"source extra {extra!r} must use simple registry requirements",
             )
-            expected_requirements.append(f"{requirement}; extra == '{name}'")
+            dependency, separator, marker = requirement.partition(";")
+            if separator:
+                # These are the source manifest's reviewed platform/runtime
+                # selectors. Keep the publication verifier stdlib-only and
+                # fail closed on other expressions instead of evaluating them.
+                selector = re.fullmatch(
+                    r"\s*(sys_platform|python_version)\s*"
+                    r"(==|!=|<=|>=|<|>)\s*(['\"])([A-Za-z0-9._-]+)\3\s*",
+                    marker,
+                )
+                _require(
+                    selector is not None,
+                    f"source extra {extra!r} has an unsupported environment selector",
+                )
+                assert selector is not None
+                variable, operator, _, value = selector.groups()
+                expected_requirements.append(
+                    f"{dependency.strip()}; ({variable} {operator} '{value}') "
+                    f"and extra == '{name}'"
+                )
+            else:
+                expected_requirements.append(f"{requirement}; extra == '{name}'")
     _require(
         metadata["Provides-Extra"] == tuple(sorted(expected_extras)),
         "sdist metadata extras differ from source project",
@@ -457,11 +489,11 @@ def _sdist(
             len(licenses) == len(_VENDORS),
             "sdist omits a reviewed native gzip source dependency",
         )
-        expression = "Apache-2.0 AND MIT AND Zlib"
+        expression = "Apache-2.0 AND MIT AND Zlib AND BSD-3-Clause"
         _require(
             project.get("license") == expression
             and dependencies["License-Expression"] == (expression,),
-            "sdist license expression must include both vendored gzip dependencies",
+            "sdist license expression must include all vendored gzip dependencies",
         )
     for license_file, _ in licenses:
         _require(

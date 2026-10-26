@@ -66,17 +66,19 @@ def test_one_blocked_backend_guards_only_its_own_names(
             assert (outcome, detail) == ("ImportError", _MESSAGE.format(name=name))
         else:
             assert outcome == "built"
-            assert detail.split(".")[0] in {"sortedcontainers", "immutables"}
+            assert detail.split(".")[0] in {"sortedcontainers", "immutables", "unstd"}
             assert detail.split(".")[0] != blocked
     assert set(report["names"]) == {"Map", "SortedDict", "SortedList", "SortedSet"}
 
 
-def test_present_backends_are_re_exported_verbatim() -> None:
+def test_present_backends_keep_upstream_types_or_compatible_subclasses() -> None:
     sortedcontainers = require_backend("sortedcontainers")
     immutables = require_backend("immutables")
     import unstd.containers as containers
+    from unstd.containers import sorted as sorted_
 
-    assert containers.SortedDict is sortedcontainers.SortedDict
-    assert containers.SortedList is sortedcontainers.SortedList
-    assert containers.SortedSet is sortedcontainers.SortedSet
+    for name in ("SortedDict", "SortedList", "SortedSet"):
+        actual, upstream = getattr(containers, name), getattr(sortedcontainers, name)
+        assert issubclass(actual, upstream)
+        assert (actual is upstream) is not sorted_._HAVE_NATIVE
     assert containers.Map is immutables.Map

@@ -21,6 +21,7 @@ def parser_case(target: str, raw: bytes, **options: str) -> dict[str, object]:
     origin = Path(package.origin).resolve()
     source = Path(__file__).resolve().parents[3] / "src/unstd"
     envelope["source"] = origin.is_relative_to(source)
+    envelope["package_root"] = str(origin.parent.parent)
     worker = Path(__file__).with_name("worker.py")
     environment = {**os.environ, "OPENBLAS_NUM_THREADS": "1", "OMP_NUM_THREADS": "1"}
     if environment.get("UNSTD_NATIVE_SANITIZERS") == "1":

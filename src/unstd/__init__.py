@@ -35,16 +35,22 @@ failing loud where no faithful substitute exists:
   lie), so the placeholders raise on construction.
 - ``rand`` (``random``) — numpy PCG64 bulk draws; security-sensitive draws stay
   on ``secrets`` regardless of the extra.
-- ``pack`` (``struct``) — numpy bulk pack/unpack.
-- ``clone`` (``copy``) — an exact-type structural deep clone, pure stdlib.
+- ``pack`` (``struct``) — NumPy bulk pack/unpack and validated immutable numeric
+  frames, with optional native geometry, boundary and finite-value scans.
+- ``clone`` (``copy``) — an exact-type structural deep clone with optional
+  bundled C acceleration and no third-party runtime dependency.
 - ``text`` (``difflib``) — rapidfuzz similarity and fuzzy matching.
 - ``audio`` (``wave``) — soundfile read/write plus a streaming writer.
 - ``toml`` (``tomllib``) — reading is stdlib; writing needs tomlkit.
 - ``yaml`` — safe YAML 1.2 and comment-preserving edits; requires the ``yaml`` extra.
-- ``compress`` (``gzip``) — native compression, bounded inflation and CRC behind
-  ``gzipx``; the ``compress`` extra retains stdlib framing and a base fallback.
-- ``proc`` (``subprocess``) · ``fs`` (``os``) · ``iters`` (``itertools``) —
-  pure stdlib, no extra, always present in the base install.
+- ``compress`` (``gzip`` / ``zlib`` / archive modules) — native compression,
+  bounded inflation and CRC behind ``gzipx``; the ``compress`` extra retains
+  stdlib framing and a base fallback. ``zstd`` adds the original ``zstandard``
+  provider; ``archives`` adds the original ``libarchive`` binding and requires
+  a separately installed native libarchive library.
+- ``proc`` (``subprocess``) · ``fs`` (``os``) — operating-system helpers with
+  optional bundled CPython acceleration and no third-party runtime dependency.
+- ``iters`` (``itertools``) — pure stdlib combinators, always in the base install.
 
 Import the module, not its members::
 

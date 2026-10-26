@@ -9,19 +9,23 @@ import pytest
 from tests.support.environment import process as process_support
 
 
-@pytest.mark.parametrize("parent", ["checkout", "installed"])
+@pytest.mark.parametrize("parent", ["checkout", "installed", "extracted"])
 def test_worker_preserves_parent_product_origin(parent, tmp_path, monkeypatch):
     repo = tmp_path / "checkout"
     source = repo / "src"
     installed = tmp_path / "installed"
-    for directory, marker in ((source, "checkout"), (installed, "installed")):
+    extracted = tmp_path / "extracted wheel"
+    for directory, marker in (
+        (source, "checkout"),
+        (installed, "installed"),
+        (extracted, "extracted"),
+    ):
         package = directory / "unstd"
         package.mkdir(parents=True)
         (package / "__init__.py").write_text(f"origin = {marker!r}\n")
     (repo / "support_probe.py").write_text("available = True\n")
-    parent_origin = (
-        source if parent == "checkout" else installed
-    ) / "unstd/__init__.py"
+    selected = {"checkout": source, "installed": installed, "extracted": extracted}
+    parent_origin = selected[parent] / "unstd/__init__.py"
     monkeypatch.setattr(process_support, "REPO_ROOT", repo)
     monkeypatch.setattr(
         process_support,
@@ -31,7 +35,7 @@ def test_worker_preserves_parent_product_origin(parent, tmp_path, monkeypatch):
     elsewhere = tmp_path / "elsewhere"
     elsewhere.mkdir()
     command = process_support.python_argv(
-        f"import sys; sys.path.append({str(installed)!r})\n"
+        f"import sys; sys.path.append({str(source if parent == 'installed' else installed)!r})\n"
         "import json, unstd, support_probe\n"
         "print(json.dumps([unstd.origin, unstd.__file__, support_probe.available, sys.argv[1:]]))",
         ["retained"],

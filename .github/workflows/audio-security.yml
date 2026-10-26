@@ -28,8 +28,8 @@ jobs:
       - name: Set up pinned Python and uv
         uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
-          version: "0.13.4"
-          python-version: "3.13"
+          version: "0.13.5"
+          python-version: "3.14"
           enable-cache: false
       - name: Check dependency trust before installing
         run: |
@@ -46,7 +46,7 @@ jobs:
           uv export --locked --extra audio --no-default-groups --group dev --no-emit-project --no-header --output-file .local/audio-security/test-requirements.txt
       - name: Install the isolated locked environment
         run: |
-          uv venv --python 3.13 "$UV_PROJECT_ENVIRONMENT"
+          uv venv --python 3.14 "$UV_PROJECT_ENVIRONMENT"
           uv pip install --python "$UV_PROJECT_ENVIRONMENT/bin/python" --no-deps --only-binary :all: --require-hashes --requirements .local/audio-security/build-requirements.txt --requirements .local/audio-security/test-requirements.txt
           uv pip install --python "$UV_PROJECT_ENVIRONMENT/bin/python" --no-deps --no-index --no-build-isolation .
       - name: Check the isolated interpreter's TLS security fixes

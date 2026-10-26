@@ -17,13 +17,14 @@ concurrency:
 
 jobs:
   campaign:
-    name: Parser fuzzing / ${{ matrix.backend }}
+    name: Parser fuzzing / Python ${{ matrix.python }} / ${{ matrix.backend }}
     runs-on: ubuntu-latest
     # Eleven installed targets × replay/mutation × (30s + 120s), plus overhead.
     timeout-minutes: 65
     strategy:
       fail-fast: false
       matrix:
+        python: ["3.12", "3.14"]
         backend: [installed, stdlib]
     env:
       UNSTD_CAMPAIGN_REPORTING: "1"
@@ -42,13 +43,18 @@ jobs:
           cache-dependency-glob: |
             uv.lock
             pyproject.toml
-          version: "0.13.4"
-          python-version: "3.12"
-      # Atheris has a tested binary wheel here; it is a development group,
-      # never a runtime dependency or a silently substituted mutation engine.
+          version: "0.13.5"
+          python-version: ${{ matrix.python }}
+      # The fuzz group installs Atheris only on its supported Python 3.12 lane.
+      # Python 3.14 exercises the deployed runtime with deterministic mutation.
+      - name: Provide Yasm for native gzip builds
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends yasm
+          yasm --version
       - name: Install locked dependencies and rebuild unstd
         id: dependencies
-        run: uv sync --locked --all-extras --group dev --group fuzz --python 3.12 --reinstall-package unstd
+        run: uv sync --locked --all-extras --group dev --group fuzz --python ${{ matrix.python }} --reinstall-package unstd
       - name: All parsers / replay and deterministic mutation
         run: >-
           uv run --no-sync python -m tests.tooling.fuzz campaign
@@ -57,7 +63,7 @@ jobs:
           --wall-seconds 30 --cpu-seconds 20
           --artifact-dir .local/fuzz/deterministic
       - name: All parsers / instrumented coverage
-        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' && matrix.python == '3.12' }}
         run: >-
           uv run --no-sync python -m tests.tooling.fuzz campaign
           --target all --backend ${{ matrix.backend }}
@@ -68,7 +74,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: fuzz-${{ matrix.backend }}-${{ github.run_attempt }}
+          name: fuzz-${{ matrix.python }}-${{ matrix.backend }}-${{ github.run_attempt }}
           path: .local/fuzz/
           include-hidden-files: true
           if-no-files-found: error

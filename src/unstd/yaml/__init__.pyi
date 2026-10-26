@@ -1,4 +1,5 @@
 import ruamel.yaml as _ruamel
+import yaml as _pyyaml
 
 from unstd.yaml.codec import (
     YAMLError as YAMLError,
@@ -30,7 +31,6 @@ from unstd.yaml.codec import (
 from unstd.yaml.codec import (
     parse as parse,
 )
-import yaml as _pyyaml
 
 pyyaml = _pyyaml
 ruamel = _ruamel

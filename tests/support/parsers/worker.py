@@ -62,7 +62,9 @@ def _limits() -> None:
 def main() -> None:
     """Decode a test-owned envelope and execute exactly one public parser call."""
     envelope = json.loads(sys.stdin.buffer.read(MAX_INPUT + 1))
-    if envelope.get("source", True):
+    if "package_root" in envelope:
+        sys.path.insert(0, envelope["package_root"])
+    elif envelope.get("source", True):
         sys.path.insert(0, str(_SOURCE))
     _limits()
     target = envelope["target"]

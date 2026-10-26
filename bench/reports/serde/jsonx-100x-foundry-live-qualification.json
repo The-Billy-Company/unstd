@@ -1,0 +1,503 @@
+{
+  "recorded_utc": "2026-10-25T21:53:31.374558+00:00",
+  "scope": "Current helper/module layout follow-up to final15a7 kernel qualification; same unchanged58caseharness and per-caseblock controller.",
+  "native_header_sha256": "15a7ba8b7c3d07646a4d4ad0d5770f514ca21142d70162e9c1f18959b180d663",
+  "source_sha256": {
+    "src/unstd/serde/__init__.py": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d",
+    "src/unstd/serde/_json_native.pyi": "275cb98230bf6a337bbc224ebfcd13025859b7ccef2800fb6d4ef7ac3796d47e",
+    "src/unstd/serde/b64.py": "c9fa198b3a6a4dffab239697c2d35c717ab2adea1977e7c1bd2226c30c4dbe32",
+    "src/unstd/serde/encoding.py": "45591b272872b828ded3ec06fb6635b77e470c1c6456e5d56edf3a659dffacd7",
+    "src/unstd/serde/jsonx.py": "3e000110ba46328816a6eecb6f9cddfc0587fbde16e193c952551c0d762a6d2d",
+    "src/unstd/serde/ndjson.py": "aed41e482feaaf75afded30bfa67a5ea52819e460ad2cab2f549c602332c204e",
+    "src/unstd/serde/recursion.py": "5e3741e4dfdd23b540c7208d4ee8fe55ae3785625d9fb336d46b8e06af5a3091",
+    "src/unstd/serde/structs.py": "ebe5eb0c8cba8e8bc01137c9e4f768d86cb900d15c67600cbaf38f0accfa6c65",
+    "native/serde/src/adapter.c": "4255c7f31b58ce2b370b3269a7568ec9c7eb73f52cf431c88da8c449d73578ab",
+    "native/serde/src/decode.h": "15c77c222b6036aa86b26b78419f2d0f570bd8195f08606716a61dc5785b76d1",
+    "native/serde/src/encode.h": "d9cd56b16da3dfd72b36fa8ae00f7b82e4be7cc37629ef129dc0b3a9c9ac6c1e",
+    "native/serde/src/escape.h": "937fe2288c702b38b752e4c7b4a09a91239bba86d2907b0f89c24f99a13d3e92",
+    "native/serde/src/identity.h": "e9dd9fb8b4f8188de9f3180699749fab34d16307177b5f0814a0cf1681d592bf",
+    "native/serde/src/lines.h": "b2f9b71876976199b3a02b53572672f581438e237353a92205211fbd27ea74d0",
+    "native/serde/src/repeat.h": "15a7ba8b7c3d07646a4d4ad0d5770f514ca21142d70162e9c1f18959b180d663"
+  },
+  "extras_sha256": "f4dccfa432d9e580f731d81507781fbf1193d5e8367aa3e3ac44607ec58d268b",
+  "layout_equivalence": {
+    "src/unstd/serde/_internal/json_encode.py -> src/unstd/serde/encoding.py": {
+      "byte_equal": false,
+      "AST_equal_except_empty_all_declaration": true,
+      "sha256": "45591b272872b828ded3ec06fb6635b77e470c1c6456e5d56edf3a659dffacd7"
+    },
+    "src/unstd/serde/_internal/json_common.py -> src/unstd/serde/recursion.py": {
+      "byte_equal": false,
+      "AST_equal_except_empty_all_declaration": true,
+      "sha256": "5e3741e4dfdd23b540c7208d4ee8fe55ae3785625d9fb336d46b8e06af5a3091"
+    },
+    "src/unstd/_extra.py -> src/unstd/extras.py": {
+      "byte_equal": false,
+      "AST_equal_except_empty_all_declaration": true,
+      "sha256": "f4dccfa432d9e580f731d81507781fbf1193d5e8367aa3e3ac44607ec58d268b"
+    },
+    "src/unstd/serde/jsonx.py": {
+      "all_function_class_AST_equal": true,
+      "old_sha256": "a15639db6e2b4495c9f50aec12c6830c931e48563a506ad56d51598c393d7ca4",
+      "live_sha256": "3e000110ba46328816a6eecb6f9cddfc0587fbde16e193c952551c0d762a6d2d"
+    },
+    "src/unstd/serde/ndjson.py": {
+      "all_function_class_AST_equal": true,
+      "old_sha256": "98c1f5bb1b78d2548390683b9b4bc062c4dc900b1fc27837e7941c7ee4553550",
+      "live_sha256": "aed41e482feaaf75afded30bfa67a5ea52819e460ad2cab2f549c602332c204e"
+    }
+  },
+  "build_inputs_sha256": {
+    "pyproject.toml": "ac7738e3024b48276dcd461dfdc172b3c3ee5f4cbe68ab9a4a084720c66fca3c",
+    "hatch_build.py": "7d0339cff5ad4a83b82e18c7d68dae932ef8f64285ca16df8ca2c1d1963cdb57",
+    "uv.lock": "4ea1c0cc2d2087513e14e6be2f10fff33c47d79c0ea1d3d6bb74034edcdc0b16",
+    "tests/tooling/runtime/json_acceleration.py": "feadfc96a3ac4ebd4a7145bfeae7ec92cad2bfb23d443809c8a5786b8b75c614"
+  },
+  "artifacts": {
+    "wheel": {
+      "filename": "unstd-3.1.6-cp314-cp314-linux_x86_64.whl",
+      "sha256": "a61d7225e92ec40568b83c49df869b95506262e36916791431538302f688cd14",
+      "native_member": "unstd/serde/_json_native.cpython-314-x86_64-linux-gnu.so",
+      "native_sha256": "a0dd687aa76c5032add82bd6cbce59e8dc2df8692b0c0f126543d51270c743b3",
+      "native_elf_sections_sha256": {
+        ".text": "d1523f8afb5d30d8f04f65d4af3b841ee64d00c8de30f0f6ee19e68fed5ccf25",
+        ".rodata": "757b2dcbfd08b852b154463f866fe14ca71f6ccc12f1e59481850a90f699af97"
+      },
+      "serde_python_sha256": {
+        "unstd/serde/__init__.py": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d",
+        "unstd/serde/_json_native.pyi": "275cb98230bf6a337bbc224ebfcd13025859b7ccef2800fb6d4ef7ac3796d47e",
+        "unstd/serde/b64.py": "c9fa198b3a6a4dffab239697c2d35c717ab2adea1977e7c1bd2226c30c4dbe32",
+        "unstd/serde/encoding.py": "45591b272872b828ded3ec06fb6635b77e470c1c6456e5d56edf3a659dffacd7",
+        "unstd/serde/jsonx.py": "3e000110ba46328816a6eecb6f9cddfc0587fbde16e193c952551c0d762a6d2d",
+        "unstd/serde/ndjson.py": "aed41e482feaaf75afded30bfa67a5ea52819e460ad2cab2f549c602332c204e",
+        "unstd/serde/recursion.py": "5e3741e4dfdd23b540c7208d4ee8fe55ae3785625d9fb336d46b8e06af5a3091",
+        "unstd/serde/structs.py": "ebe5eb0c8cba8e8bc01137c9e4f768d86cb900d15c67600cbaf38f0accfa6c65"
+      }
+    },
+    "sdist_wheel": {
+      "filename": "unstd-3.1.6-cp314-cp314-linux_x86_64.whl",
+      "sha256": "85a6e941e46578fce118ac0ef65732390326fc076d89caca42dcd5b1203c2125",
+      "native_member": "unstd/serde/_json_native.cpython-314-x86_64-linux-gnu.so",
+      "native_sha256": "e135902862c6d3f3135f6fb64a3dde1e17aa68c6b01ef19124c361b99821a074",
+      "native_elf_sections_sha256": {
+        ".text": "d1523f8afb5d30d8f04f65d4af3b841ee64d00c8de30f0f6ee19e68fed5ccf25",
+        ".rodata": "757b2dcbfd08b852b154463f866fe14ca71f6ccc12f1e59481850a90f699af97"
+      },
+      "serde_python_sha256": {
+        "unstd/serde/__init__.py": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d",
+        "unstd/serde/_json_native.pyi": "275cb98230bf6a337bbc224ebfcd13025859b7ccef2800fb6d4ef7ac3796d47e",
+        "unstd/serde/b64.py": "c9fa198b3a6a4dffab239697c2d35c717ab2adea1977e7c1bd2226c30c4dbe32",
+        "unstd/serde/encoding.py": "45591b272872b828ded3ec06fb6635b77e470c1c6456e5d56edf3a659dffacd7",
+        "unstd/serde/jsonx.py": "3e000110ba46328816a6eecb6f9cddfc0587fbde16e193c952551c0d762a6d2d",
+        "unstd/serde/ndjson.py": "aed41e482feaaf75afded30bfa67a5ea52819e460ad2cab2f549c602332c204e",
+        "unstd/serde/recursion.py": "5e3741e4dfdd23b540c7208d4ee8fe55ae3785625d9fb336d46b8e06af5a3091",
+        "unstd/serde/structs.py": "ebe5eb0c8cba8e8bc01137c9e4f768d86cb900d15c67600cbaf38f0accfa6c65"
+      }
+    }
+  },
+  "sdist_sha256": "36a1f0ab90c913c5899feb342f0136d6c5fdefeaeda93b3f5ca1e656efba655a",
+  "tests": {
+    "wheel": {
+      "summary": {
+        "name": "pytest",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "25",
+        "tests": "3216",
+        "time": "10.680",
+        "timestamp": "2026-10-25T21:50:07.357027+00:00",
+        "hostname": "1eee39001263"
+      },
+      "log_sha256": "fd97258ecfba1b803156e325e2fae9f76ec9f439915e68a9efd3cfd36f8ef1fd"
+    },
+    "sdist_wheel": {
+      "summary": {
+        "name": "pytest",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "25",
+        "tests": "3216",
+        "time": "10.175",
+        "timestamp": "2026-10-25T21:50:19.231136+00:00",
+        "hostname": "1eee39001263"
+      },
+      "log_sha256": "2d958cded1726971449650b9a1f427260bdb6ad789ae613b111927f17278c0f2"
+    }
+  },
+  "preflight": {
+    "smoke-live": {
+      "backends": {
+        "msgspec": "0.22.0",
+        "orjson": "3.12.0"
+      },
+      "checks": [
+        "bindings",
+        "encoding",
+        "repeated_floats",
+        "ascii",
+        "decoding",
+        "strict_identity",
+        "ndjson"
+      ],
+      "errors": [],
+      "executable": "/qualification/env/bin/python",
+      "jsonx": "/qualification/installed-live/unstd/serde/jsonx.py",
+      "native": "/qualification/installed-live/unstd/serde/_json_native.cpython-314-x86_64-linux-gnu.so",
+      "native_sha256": "a0dd687aa76c5032add82bd6cbce59e8dc2df8692b0c0f126543d51270c743b3",
+      "platform": "Linux-6.8.0-147-generic-x86_64-with-glibc2.41",
+      "python": "3.14.9",
+      "schema": 1
+    },
+    "smoke-live-rebuilt": {
+      "backends": {
+        "msgspec": "0.22.0",
+        "orjson": "3.12.0"
+      },
+      "checks": [
+        "bindings",
+        "encoding",
+        "repeated_floats",
+        "ascii",
+        "decoding",
+        "strict_identity",
+        "ndjson"
+      ],
+      "errors": [],
+      "executable": "/qualification/env/bin/python",
+      "jsonx": "/qualification/installed-live-rebuilt/unstd/serde/jsonx.py",
+      "native": "/qualification/installed-live-rebuilt/unstd/serde/_json_native.cpython-314-x86_64-linux-gnu.so",
+      "native_sha256": "e135902862c6d3f3135f6fb64a3dde1e17aa68c6b01ef19124c361b99821a074",
+      "platform": "Linux-6.8.0-147-generic-x86_64-with-glibc2.41",
+      "python": "3.14.9",
+      "schema": 1
+    }
+  },
+  "benchmark_allocator": "unset/default",
+  "benchmark_hash_seed": "0 (explicitcommand)",
+  "controller_sha256": "7710f97986c836d2a6b69d450ec63910e919817d045c89d5ea3706bbb0047593",
+  "frozen_harness_sha256": "28ac9dcc10aa4db361d8e2b2263e15a8f98205a56c0f04dde66b16d70686ba26",
+  "commands": "#!/bin/sh\nset -eu\ncd /qualification\nCIBUILDWHEEL=1 uv build --python env/bin/python --no-build-isolation live --wheel --sdist --out-dir wheel-live > build-live.log 2>&1\nCIBUILDWHEEL=1 uv build --python env/bin/python --no-build-isolation wheel-live/*.tar.gz --wheel --out-dir wheel-live-rebuilt > build-live-rebuilt.log 2>&1\nuv pip install --python env/bin/python --no-deps --target installed-live wheel-live/*.whl > install-live.log 2>&1\nuv pip install --python env/bin/python --no-deps --target installed-live-rebuilt wheel-live-rebuilt/*.whl > install-live-rebuilt.log 2>&1\nuv pip install --python env/bin/python --no-deps --reinstall wheel-live/*.whl > install-env-live.log 2>&1\nuv pip install --python env-rebuilt/bin/python --no-deps --reinstall wheel-live-rebuilt/*.whl > install-env-live-rebuilt.log 2>&1\nPYTHONPATH=/qualification/installed-live env/bin/python live/tests/tooling/runtime/json_acceleration.py --json > smoke-live.json\nPYTHONPATH=/qualification/installed-live-rebuilt env/bin/python live/tests/tooling/runtime/json_acceleration.py --json > smoke-live-rebuilt.json\nPYTHONPATH=/qualification/live env/bin/python -m pytest live/tests/suites/product/serde -c live/pyproject.toml --require-extra serde -q --junitxml=serde-live.xml > serde-live.log 2>&1\nPYTHONPATH=/qualification/live env-rebuilt/bin/python -m pytest live/tests/suites/product/serde -c live/pyproject.toml --require-extra serde -q --junitxml=serde-live-rebuilt.xml > serde-live-rebuilt.log 2>&1\nPYTHONHASHSEED=0 env/bin/python interleaved.py --compare-source installed-prework --source installed-live --harness combined --include floats-256 --rounds 9 --repetitions 5 --output prework-live-shared.json > prework-live-shared.log 2>&1\n",
+  "initial_retry_reason": "First live snapshot mixed refreshed build hook with stale compression native files; adding complete current native closure resolved missingnative/compress/src/fast.c. No product edit was made to repair the snapshot.",
+  "matched_target_estimator": "Median of after/before wall-time ratios within each matched case/repetition block; reciprocal reported as speedup. Raw batch minima retain the unchanged timer. No control normalization.",
+  "matched_target_result": {
+    "raw_sha256": "f0574d2f85aa9ce3e7d043cf2f77ae59abbded72248afd1e953480e65f24be57",
+    "final_source": false,
+    "cases": 8,
+    "comparisons": {
+      "dumps/shared-floats-256x256": {
+        "paired_after_over_before": 0.0734796127790282,
+        "paired_before_over_after": 13.609217062796088,
+        "pairs": [
+          {
+            "repetition": 0,
+            "before_ns": 387474.4583333333,
+            "after_ns": 28611.33984375,
+            "after_over_before": 0.07384058285239661
+          },
+          {
+            "repetition": 1,
+            "before_ns": 385463.5833333333,
+            "after_ns": 28323.71484375,
+            "after_over_before": 0.0734796127790282
+          },
+          {
+            "repetition": 2,
+            "before_ns": 384002.8333333333,
+            "after_ns": 31667.921875,
+            "after_over_before": 0.08246793806208895
+          },
+          {
+            "repetition": 3,
+            "before_ns": 479536.71428571426,
+            "after_ns": 29960.44140625,
+            "after_over_before": 0.06247788858226854
+          },
+          {
+            "repetition": 4,
+            "before_ns": 488672.0,
+            "after_ns": 31612.93359375,
+            "after_over_before": 0.06469151822439183
+          }
+        ]
+      },
+      "dumpb/shared-floats-256x256": {
+        "paired_after_over_before": 0.03822044847430688,
+        "paired_before_over_after": 26.1640048695984,
+        "pairs": [
+          {
+            "repetition": 0,
+            "before_ns": 386711.75,
+            "after_ns": 15140.8515625,
+            "after_over_before": 0.03915280971550515
+          },
+          {
+            "repetition": 1,
+            "before_ns": 388615.72222222225,
+            "after_ns": 14853.0671875,
+            "after_over_before": 0.03822044847430688
+          },
+          {
+            "repetition": 2,
+            "before_ns": 391129.375,
+            "after_ns": 15394.5875,
+            "after_over_before": 0.03935932324183015
+          },
+          {
+            "repetition": 3,
+            "before_ns": 463971.9166666667,
+            "after_ns": 17325.2109375,
+            "after_over_before": 0.03734107672285481
+          },
+          {
+            "repetition": 4,
+            "before_ns": 387752.5416666667,
+            "after_ns": 14764.9921875,
+            "after_over_before": 0.03807838918098645
+          }
+        ]
+      },
+      "dumps/independent-floats-256x256": {
+        "paired_after_over_before": 1.0909732245569868,
+        "paired_before_over_after": 0.9166127797554992,
+        "pairs": [
+          {
+            "repetition": 0,
+            "before_ns": 384141.0,
+            "after_ns": 419087.54545454547,
+            "after_over_before": 1.0909732245569868
+          },
+          {
+            "repetition": 1,
+            "before_ns": 387254.875,
+            "after_ns": 418878.25,
+            "after_over_before": 1.081660366444709
+          },
+          {
+            "repetition": 2,
+            "before_ns": 390197.5833333333,
+            "after_ns": 426212.0909090909,
+            "after_over_before": 1.0922981307779949
+          },
+          {
+            "repetition": 3,
+            "before_ns": 388204.6666666667,
+            "after_ns": 424800.2727272727,
+            "after_over_before": 1.0942688463145884
+          },
+          {
+            "repetition": 4,
+            "before_ns": 400934.375,
+            "after_ns": 419018.5833333333,
+            "after_over_before": 1.04510515800331
+          }
+        ]
+      },
+      "dumpb/independent-floats-256x256": {
+        "paired_after_over_before": 0.9483817164550069,
+        "paired_before_over_after": 1.0544277506086253,
+        "pairs": [
+          {
+            "repetition": 0,
+            "before_ns": 388578.6666666667,
+            "after_ns": 374953.3461538461,
+            "after_over_before": 0.9649354900779751
+          },
+          {
+            "repetition": 1,
+            "before_ns": 390822.5416666667,
+            "after_ns": 411884.0416666667,
+            "after_over_before": 1.0538901873729776
+          },
+          {
+            "repetition": 2,
+            "before_ns": 388152.875,
+            "after_ns": 361797.8076923077,
+            "after_over_before": 0.9321013213989661
+          },
+          {
+            "repetition": 3,
+            "before_ns": 389573.5,
+            "after_ns": 369464.3846153846,
+            "after_over_before": 0.9483817164550069
+          },
+          {
+            "repetition": 4,
+            "before_ns": 390527.8333333333,
+            "after_ns": 362445.96153846156,
+            "after_over_before": 0.9280925214595329
+          }
+        ]
+      },
+      "dumps/shared-varied-floats-256x128": {
+        "paired_after_over_before": 0.012062314223332463,
+        "paired_before_over_after": 82.90283120511592,
+        "pairs": [
+          {
+            "repetition": 0,
+            "before_ns": 6861627.0,
+            "after_ns": 83343.03,
+            "after_over_before": 0.012146248987302866
+          },
+          {
+            "repetition": 1,
+            "before_ns": 7078392.0,
+            "after_ns": 74075.39516129032,
+            "after_over_before": 0.01046500323255484
+          },
+          {
+            "repetition": 2,
+            "before_ns": 6803706.0,
+            "after_ns": 82068.43965517242,
+            "after_over_before": 0.012062314223332463
+          },
+          {
+            "repetition": 3,
+            "before_ns": 7061951.0,
+            "after_ns": 73994.27083333333,
+            "after_over_before": 0.01047787938960966
+          },
+          {
+            "repetition": 4,
+            "before_ns": 6875233.0,
+            "after_ns": 83632.14150943396,
+            "after_over_before": 0.01216426287071783
+          }
+        ]
+      },
+      "dumpb/shared-varied-floats-256x128": {
+        "paired_after_over_before": 0.007719401778909967,
+        "paired_before_over_after": 129.54371707041875,
+        "pairs": [
+          {
+            "repetition": 0,
+            "before_ns": 6669871.0,
+            "after_ns": 51487.4140625,
+            "after_over_before": 0.007719401778909967
+          },
+          {
+            "repetition": 1,
+            "before_ns": 6701562.0,
+            "after_ns": 51634.7265625,
+            "after_over_before": 0.00770487933447456
+          },
+          {
+            "repetition": 2,
+            "before_ns": 6692033.0,
+            "after_ns": 52534.4140625,
+            "after_over_before": 0.007850292140295782
+          },
+          {
+            "repetition": 3,
+            "before_ns": 6704426.0,
+            "after_ns": 52711.7890625,
+            "after_over_before": 0.00786223743277948
+          },
+          {
+            "repetition": 4,
+            "before_ns": 6672866.0,
+            "after_ns": 51402.09375,
+            "after_over_before": 0.007703150902475787
+          }
+        ]
+      },
+      "dumps/independent-varied-floats-256x128": {
+        "paired_after_over_before": 0.9877515806993195,
+        "paired_before_over_after": 1.01240030341638,
+        "pairs": [
+          {
+            "repetition": 0,
+            "before_ns": 6904239.0,
+            "after_ns": 6822843.0,
+            "after_over_before": 0.9882107209788074
+          },
+          {
+            "repetition": 1,
+            "before_ns": 6789710.0,
+            "after_ns": 6826150.0,
+            "after_over_before": 1.0053669449799771
+          },
+          {
+            "repetition": 2,
+            "before_ns": 6959705.0,
+            "after_ns": 6871987.0,
+            "after_over_before": 0.9873963048721174
+          },
+          {
+            "repetition": 3,
+            "before_ns": 6967109.0,
+            "after_ns": 6805540.0,
+            "after_over_before": 0.9768097499264042
+          },
+          {
+            "repetition": 4,
+            "before_ns": 6873540.0,
+            "after_ns": 6789350.0,
+            "after_over_before": 0.9877515806993195
+          }
+        ]
+      },
+      "dumpb/independent-varied-floats-256x128": {
+        "paired_after_over_before": 1.0113359072802517,
+        "paired_before_over_after": 0.988791155145735,
+        "pairs": [
+          {
+            "repetition": 0,
+            "before_ns": 6659811.0,
+            "after_ns": 6735306.0,
+            "after_over_before": 1.0113359072802517
+          },
+          {
+            "repetition": 1,
+            "before_ns": 6646827.0,
+            "after_ns": 6917675.0,
+            "after_over_before": 1.040748465395594
+          },
+          {
+            "repetition": 2,
+            "before_ns": 6660142.0,
+            "after_ns": 6742950.0,
+            "after_over_before": 1.012433368537788
+          },
+          {
+            "repetition": 3,
+            "before_ns": 6659100.0,
+            "after_ns": 6722481.0,
+            "after_over_before": 1.0095179528765148
+          },
+          {
+            "repetition": 4,
+            "before_ns": 6881155.0,
+            "after_ns": 6713404.0,
+            "after_over_before": 0.9756216797906747
+          }
+        ]
+      }
+    },
+    "regressions_above_15_percent": []
+  },
+  "raw_report_unchanged": true,
+  "controller_artifact": {
+    "path": "jsonx-100x-foundry-controller.py.txt",
+    "sha256": "7710f97986c836d2a6b69d450ec63910e919817d045c89d5ea3706bbb0047593"
+  },
+  "harness_artifact": {
+    "path": "jsonx-100x-foundry-harness.py.txt",
+    "sha256": "28ac9dcc10aa4db361d8e2b2263e15a8f98205a56c0f04dde66b16d70686ba26"
+  },
+  "current_workspace_source_check": {
+    "matches": true,
+    "differences": [],
+    "verified_utc": "2026-10-25T21:54:55.386829+00:00"
+  },
+  "benchmark_environment_explicit": {
+    "PYTHONMALLOC": "unset/default",
+    "PYTHONHASHSEED": "0",
+    "safety_instrumentation": "None in benchmark; separate safety/test phases."
+  },
+  "cleanup": {
+    "owned_remote_container_removed": true,
+    "owned_remote_temporary_directory_removed": true,
+    "shared_services_images_and_configuration_unchanged": true,
+    "verified_utc": "2026-10-25T21:55:48.747590+00:00"
+  }
+}

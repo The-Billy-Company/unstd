@@ -41,6 +41,7 @@ _PROVIDERS = ("codecs", "runtime", "operations")
 _NATIVE = (
     "clone._clone_native",
     "compress._gzip_native",
+    "containers._sorted_native",
     "crypto._stream_native",
     "serde._json_native",
     "text._text_native",
@@ -194,8 +195,14 @@ def public_apis(root: Path = ROOT / "src/unstd") -> set[str]:
                 continue
             relative = path.relative_to(root.parent).with_suffix("")
             module_name = ".".join(relative.parts).removesuffix(".__init__")
+            exports = _exports(path)
+            if not exports:
+                # Provider module aliases own no callables here. In particular,
+                # do not load an API absent from the running interpreter merely
+                # to discover that its namespace has no package-owned exports.
+                continue
             module = importlib.import_module(module_name)
-            for name in sorted(_exports(path)):
+            for name in sorted(exports):
                 value = getattr(module, name, None)
                 if not callable(value) or (
                     inspect.isclass(value) and issubclass(value, BaseException)
@@ -210,11 +217,22 @@ def public_apis(root: Path = ROOT / "src/unstd") -> set[str]:
                 qualified = f"{module_name}.{name}"
                 names.add(qualified)
                 if inspect.isclass(value) and value.__module__.startswith("unstd."):
+                    backend_type = getattr(value, "__unstd_backend__", None)
                     for method, member in vars(value).items():
                         if method.startswith("_") and method not in {
                             "__enter__",
                             "__exit__",
                         }:
+                            continue
+                        # Compatible backend subclasses retain the provider's
+                        # method vocabulary. Their focused paired profile
+                        # measures overridden kernels; only additional public
+                        # methods expand this package's API inventory.
+                        if (
+                            inspect.isclass(backend_type)
+                            and issubclass(value, backend_type)
+                            and hasattr(backend_type, method)
+                        ):
                             continue
                         if callable(member) or isinstance(
                             member, property | staticmethod | classmethod
@@ -456,6 +474,12 @@ def _validate_document(raw: Any) -> None:
                 _invalid(f"invalid {key} for {name}")
         if row["ceiling_ns"] < row["measured_ns"]:
             _invalid(f"ceiling below measurement for {name}")
+        capture_fields = ("captured_environment", "captured_provenance")
+        if any(field in row for field in capture_fields) and any(
+            not isinstance(row.get(field), dict) or not row[field]
+            for field in capture_fields
+        ):
+            _invalid(f"invalid captured measurement metadata for {name}")
 
 
 def load_baseline(path: Path = BASELINE) -> dict[str, Any]:
@@ -510,6 +534,24 @@ def comparable_environment(
     return {key: value for key, value in before.items() if key not in ignored} == {
         key: value for key, value in current.items() if key not in ignored
     }
+
+
+def _check_captured_environments(
+    cases: Sequence[Case],
+    baseline: dict[str, Any],
+    current: dict[str, object],
+    *,
+    revision: bool,
+) -> None:
+    """Reject selected historical additions captured under another runtime."""
+    for case in cases:
+        captured = baseline["cases"][case.name].get("captured_environment")
+        if captured is not None and not comparable_environment(
+            captured, current, revision=revision
+        ):
+            _invalid(
+                f"captured environment differs for {case.name}; freeze a separate --baseline file on this worker before comparing revisions"
+            )
 
 
 def audit(cases: Sequence[Case]) -> None:
@@ -575,6 +617,7 @@ def freeze(
                 "spread": result.spread,
             }
     raw = {
+        **(prior or {}),
         "schema": _SCHEMA,
         "recorded": prior["recorded"] if prior else datetime.now(UTC).isoformat(),
         "environment": current_environment,
@@ -636,6 +679,97 @@ def recheck_regressions(
     return best, history
 
 
+def paired_revision_recheck(
+    names: list[str],
+    baseline: dict[str, Any],
+    reference_report: Path,
+    baseline_path: Path,
+    current_environment: dict[str, Any],
+    current_provenance: dict[str, Any],
+    *,
+    rounds: int,
+) -> dict[str, Any]:
+    """Confirm persistent failures against the exact frozen installed revision."""
+    before = json.loads(reference_report.read_text())
+    digest = hashlib.sha256(baseline_path.read_bytes()).hexdigest()
+    if before.get("baseline_sha256") != digest:
+        _invalid("paired reference report does not match the frozen baseline")
+    if before.get("environment") != baseline["environment"]:
+        _invalid("paired reference report uses another baseline environment")
+    request = {
+        "names": names,
+        "baseline": baseline,
+        "rounds": rounds,
+        "before": before,
+        "current": {
+            "environment": current_environment,
+            "provenance": current_provenance,
+        },
+    }
+    from bench.profiles.speeds_recheck import round_measurements, timeout_seconds
+
+    budget = timeout_seconds(len(names), rounds)
+    result = subprocess.run(
+        [sys.executable, "-m", "bench.profiles.speeds_recheck"],
+        input=json.dumps(request),
+        text=True,
+        capture_output=True,
+        timeout=budget,
+        check=False,
+    )
+    if result.returncode:
+        _invalid(f"paired revision worker failed: {result.stderr}")
+    evidence: dict[str, Any] = json.loads(result.stdout)
+    if set(evidence.get("cases", {})) != set(names) or set(
+        evidence.get("products", {})
+    ) != {"before", "current"}:
+        _invalid(
+            "paired revision worker did not retain both products and every failed case"
+        )
+    for name, row in evidence["cases"].items():
+        original = baseline["cases"][name]
+        limit = original["ceiling_ns"] / original["measured_ns"]
+        if not math.isfinite(limit) or limit <= 0:
+            _invalid("paired revision limit must be finite and positive")
+        if (
+            row["paired_limit"] != original["ceiling_ns"] / original["measured_ns"]
+            or len(row["pairs"]) != rounds
+        ):
+            _invalid("paired revision worker changed a frozen limit or dropped rounds")
+        ratios = []
+        for index, pair in enumerate(row["pairs"]):
+            if type(pair["round"]) is not int or pair["round"] != index:
+                _invalid("paired revision worker changed round order")
+            derived = round_measurements(pair)
+            if any(pair[key] != value for key, value in derived.items()):
+                _invalid("paired revision worker changed its raw batch means")
+            values = (derived["before_ns"], derived["current_ns"])
+            if any(
+                isinstance(value, bool)
+                or not isinstance(value, int | float)
+                or not math.isfinite(value)
+                or value <= 0
+                for value in values
+            ):
+                _invalid("paired revision worker retained invalid wall samples")
+            ratio = values[1] / values[0]
+            if not math.isfinite(ratio) or ratio <= 0:
+                _invalid("paired revision ratio must be finite and positive")
+            ratios.append(ratio)
+        from statistics import median
+
+        observed = median(ratios)
+        if (
+            not math.isfinite(observed)
+            or row["paired_current_over_before"] != observed
+            or row["failed"] != (observed > row["paired_limit"])
+        ):
+            _invalid("paired revision worker changed its measured verdict")
+    if hashlib.sha256(baseline_path.read_bytes()).hexdigest() != digest:
+        _invalid("paired revision recheck modified the frozen baseline")
+    return evidence
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("verb", choices=("list", "check", "run", "freeze", "verify"))
@@ -643,6 +777,11 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--baseline", type=Path, default=BASELINE)
     parser.add_argument("--output", type=Path, help="retain measurements as JSON")
     parser.add_argument("--rounds", type=int, default=7)
+    parser.add_argument(
+        "--reference-report",
+        type=Path,
+        help="confirm persistent revision failures against this original freeze report",
+    )
     parser.add_argument(
         "--comparison-source",
         type=Path,
@@ -670,6 +809,10 @@ def main(argv: list[str] | None = None) -> int:
             _invalid("--comparison-source requires freeze")
         if args.revision_baseline and args.verb != "verify":
             _invalid("--revision-baseline requires verify")
+        if args.reference_report is not None and not (
+            args.verb == "verify" and args.revision_baseline
+        ):
+            _invalid("--reference-report requires verify --revision-baseline")
         if (
             args.comparison_source is not None or args.revision_baseline
         ) and args.group:
@@ -730,8 +873,16 @@ def main(argv: list[str] | None = None) -> int:
                 ):
                     msg = "baseline environment differs; freeze a separate --baseline file on this worker before comparing revisions"
                     _invalid(msg)
+                _check_captured_environments(
+                    comparable,
+                    baseline,
+                    current_environment,
+                    revision=args.revision_baseline,
+                )
             current_provenance = provenance()
-            measured = timings(selected, rounds=args.rounds)
+            # Compare the same workload history as the older revision. Added
+            # APIs must not precondition shared allocation/caches in this pass.
+            measured = timings(comparable, rounds=args.rounds)
             attempts = {name: [result] for name, result in measured.items()}
             if args.verb == "verify":
                 assert baseline is not None
@@ -743,6 +894,44 @@ def main(argv: list[str] | None = None) -> int:
                 )
                 measured.update(checked)
                 attempts.update(history)
+            paired_evidence: dict[str, Any] | None = None
+            paired_error: str | None = None
+            absolute_failed = (
+                regressions(
+                    {case.name: measured[case.name] for case in comparable}, baseline
+                )
+                if baseline
+                else []
+            )
+            if absolute_failed and args.reference_report is not None:
+                assert baseline is not None
+                try:
+                    paired_evidence = paired_revision_recheck(
+                        absolute_failed,
+                        baseline,
+                        args.reference_report,
+                        args.baseline,
+                        current_environment,
+                        current_provenance,
+                        rounds=args.rounds,
+                    )
+                except (
+                    RegistryError,
+                    OSError,
+                    ValueError,
+                    KeyError,
+                    TypeError,
+                    subprocess.SubprocessError,
+                ) as error:
+                    paired_error = str(error)
+                    print(
+                        f"speeds: paired verification failed: {error}", file=sys.stderr
+                    )
+            if added:
+                additions = [case for case in selected if case.name in added]
+                fresh = timings(additions, rounds=args.rounds)
+                measured.update(fresh)
+                attempts.update({name: [result] for name, result in fresh.items()})
             if args.verb == "freeze":
                 baseline = freeze(
                     selected, measured, args.baseline, tolerance=args.tolerance
@@ -754,6 +943,10 @@ def main(argv: list[str] | None = None) -> int:
                 if baseline
                 else []
             )
+            if paired_evidence is not None:
+                failed = [
+                    name for name in failed if paired_evidence["cases"][name]["failed"]
+                ]
             rows = {}
             for case in selected:
                 result = measured[case.name]
@@ -765,6 +958,8 @@ def main(argv: list[str] | None = None) -> int:
                 verdict = (
                     "FAIL"
                     if case.name in failed
+                    else "paired-ok"
+                    if paired_evidence and case.name in absolute_failed
                     else "added"
                     if case.name in added
                     else "ok"
@@ -778,6 +973,10 @@ def main(argv: list[str] | None = None) -> int:
                     "rounds": result.rounds,
                     "iterations": result.iters,
                     "failed": case.name in failed,
+                    "absolute_failed": case.name in absolute_failed,
+                    "paired_recheck": paired_evidence["cases"].get(case.name)
+                    if paired_evidence
+                    else None,
                     "samples_ns": result.samples_ns,
                     "cpu_samples_ns": result.cpu_samples_ns,
                     "attempts_ns": [
@@ -806,6 +1005,9 @@ def main(argv: list[str] | None = None) -> int:
                     "cases": rows,
                     "failed": failed,
                     "added": added,
+                    "absolute_failed": absolute_failed,
+                    "paired_rechecks": paired_evidence,
+                    "paired_error": paired_error,
                     "baseline_environment": baseline["environment"]
                     if baseline
                     else None,
@@ -816,7 +1018,7 @@ def main(argv: list[str] | None = None) -> int:
             print(
                 f"{len(measured)} measured; {len(added)} added; {len(failed)} regressions"
             )
-            return 1 if failed else 0
+            return 2 if paired_error is not None else 1 if failed else 0
     except (RegistryError, ImportError, OSError) as error:
         print(f"speeds: {error}", file=sys.stderr)
         return 2

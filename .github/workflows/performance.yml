@@ -4,10 +4,12 @@ on:
   pull_request:
     paths:
       - "src/unstd/**"
+      - "native/**"
       - "bench/**"
       - "hatch_build.py"
       - "pyproject.toml"
       - "uv.lock"
+      - "tests/tooling/runtime/json_acceleration.py"
       - ".github/workflows/performance.yml"
   workflow_dispatch:
     inputs:
@@ -25,14 +27,39 @@ on:
 permissions:
   contents: read
 
+env:
+  # Match CI's interpreter and SDK provider for every matrix request.
+  UV_MANAGED_PYTHON: "1"
+
 concurrency:
   group: performance-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   compare:
-    name: ${{ inputs.gzip_diagnostic && 'Gzip read diagnosis / Python 3.13' || 'Function latency / Python 3.13' }}
-    runs-on: ubuntu-latest
+    # Keep the existing Linux 3.13 context; exercise 3.14's distinct C fast paths.
+    name: ${{ inputs.gzip_diagnostic && 'Gzip read diagnosis' || 'Function latency' }} / Python ${{ matrix.python }}${{ matrix.check_suffix }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+            python: "3.13"
+            check_suffix: ""
+          - os: macos-latest
+            platform: macos
+            python: "3.13"
+            check_suffix: " / macOS"
+          - os: ubuntu-latest
+            platform: linux
+            python: "3.14"
+            check_suffix: ""
+          - os: macos-latest
+            platform: macos
+            python: "3.14"
+            check_suffix: " / macOS"
     timeout-minutes: 20
     env:
       PYTHONHASHSEED: "0"
@@ -56,19 +83,65 @@ jobs:
           cache-dependency-glob: |
             uv.lock
             pyproject.toml
-          version: "0.13.4"
-          python-version: "3.13"
+          version: "0.13.5"
+          python-version: ${{ matrix.python }}
       - name: Install one shared dependency environment
         run: >-
-          uv sync --locked --all-extras --group dev --group build
-          --no-install-project --python 3.13
+          uv sync --locked --all-extras --group dev --group build --group bench
+          --no-install-project --python "${{ matrix.python }}"
       - name: Record revision identities
         run: |
           mkdir -p .local/performance/evidence
           git rev-parse HEAD > .local/performance/evidence/current-revision.txt
           git -C .local/performance/source-before rev-parse HEAD > .local/performance/evidence/before-revision.txt
+      - name: Verify and record the shared managed interpreter
+        env:
+          PERF_PYTHON_VERSION: ${{ matrix.python }}
+        run: |
+          .venv/bin/python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          import platform
+          import sys
+          import sysconfig
+          expected = os.environ["PERF_PYTHON_VERSION"]
+          actual = ".".join(map(str, sys.version_info[:2]))
+          provider = Path(sys._base_executable).resolve()
+          managed = Path(os.environ["UV_PYTHON_INSTALL_DIR"]).resolve()
+          if os.environ.get("UV_MANAGED_PYTHON") != "1":
+              raise RuntimeError("performance requires CI's managed Python policy")
+          if actual != expected or not provider.is_relative_to(managed):
+              raise RuntimeError(f"wrong performance interpreter: {actual}, {provider}")
+          report = {
+              "requested_python": expected,
+              "version": sys.version,
+              "executable": sys.executable,
+              "provider": str(provider),
+              "managed_install_dir": str(managed),
+              "implementation": sys.implementation.name,
+              "compiler": platform.python_compiler(),
+              "build": platform.python_build(),
+              "platform": platform.platform(),
+              "machine": platform.machine(),
+              "sdk": {key: sysconfig.get_config_var(key) for key in (
+                  "CC", "CFLAGS", "LDSHARED", "SOABI", "EXT_SUFFIX",
+                  "INCLUDEPY", "CONFIG_ARGS", "Py_TAIL_CALL_INTERP",
+              )},
+              "builds": ["installed-before", "installed-current"],
+          }
+          Path(".local/performance/evidence/runtime.json").write_text(
+              json.dumps(report, indent=2, sort_keys=True) + "\n"
+          )
+          PY
       # Build each revision's own native modules. Neither measurement may load
       # the other revision's Python source or compiled kernels.
+      - name: Provide Yasm for native gzip builds
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends yasm
+          yasm --version
       - name: Build separate before and current installations
         run: |
           uv pip install --python .venv/bin/python --no-deps --no-build-isolation --no-cache --target .local/performance/installed-before .local/performance/source-before
@@ -95,6 +168,35 @@ jobs:
                   raise RuntimeError(f"wrong native module import: {spec.origin}")
           PY
           done
+      - name: Verify installed JSON accelerations
+        if: ${{ !inputs.gzip_diagnostic }}
+        env:
+          PYTHONPATH: ${{ github.workspace }}/.local/performance/installed-current:${{ github.workspace }}
+        run: >-
+          .venv/bin/python tests/tooling/runtime/json_acceleration.py --json
+          > .local/performance/evidence/json-native.json
+      - name: Guard installed JSON record latency
+        if: ${{ !inputs.gzip_diagnostic }}
+        env:
+          PYTHONPATH: ${{ github.workspace }}/.local/performance/installed-current:${{ github.workspace }}
+        run: >-
+          .venv/bin/python -m bench.profiles.jsonx_throughput
+          --compare-source .local/performance/installed-before
+          --source .local/performance/installed-current
+          --require-native --include records-1k
+          --rounds 7 --repetitions 3 --max-slowdown 1.15
+          --output .local/performance/evidence/json-records.json
+      - name: Guard shared and independent JSON rows
+        if: ${{ !inputs.gzip_diagnostic }}
+        env:
+          PYTHONPATH: ${{ github.workspace }}/.local/performance/installed-current:${{ github.workspace }}
+        run: >-
+          .venv/bin/python -m bench.profiles.jsonx_throughput
+          --compare-source .local/performance/installed-before
+          --source .local/performance/installed-current
+          --require-native --include floats-256
+          --rounds 7 --repetitions 3 --max-slowdown 1.15
+          --output .local/performance/evidence/json-shared.json
       # The committed laptop snapshot has a different environment. Record the
       # old revision on THIS worker, then compare current against that file.
       # Both passes use exactly the current workload definitions and backends.
@@ -109,6 +211,15 @@ jobs:
           --comparison-source .local/performance/source-before/src/unstd
           --baseline .local/performance/evidence/baseline.json
           --output .local/performance/evidence/before.json
+      - name: Guard Billy gzip consumer latency with frozen transport fixtures
+        if: ${{ !inputs.gzip_diagnostic }}
+        run: >-
+          .venv/bin/python bench/profiles/billy_gzip.py run
+          --fixtures bench/workloads/billy_gzip.json.gz
+          --baseline-source .local/performance/installed-before
+          --source .local/performance/installed-current
+          --rounds 7 --repetitions 3 --max-slowdown 1.30
+          --output .local/performance/evidence/billy-gzip.json
       - name: Verify current revision against the frozen worker baseline
         if: ${{ !inputs.gzip_diagnostic }}
         env:
@@ -116,6 +227,7 @@ jobs:
         run: >-
           .venv/bin/python -m bench.speeds verify --rounds 9
           --revision-baseline
+          --reference-report .local/performance/evidence/before.json
           --baseline .local/performance/evidence/baseline.json
           --output .local/performance/evidence/current.json
       - name: Guard native clone graphs and dataclass latency
@@ -126,7 +238,7 @@ jobs:
           .venv/bin/python -m bench.profiles.clone_common_cpu
           --compare-dir .local/performance/installed-before/unstd/clone
           --infer-native-bindings --require-native --gc-enabled
-          --rounds 9 --max-slowdown 1.30
+          --rounds 9 --max-slowdown 1.10
           --output .local/performance/evidence/clone-common.json
       - name: Retain both native gzip builds for diagnosis
         if: ${{ inputs.gzip_diagnostic }}
@@ -158,7 +270,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: function-speeds-${{ github.run_id }}-${{ github.run_attempt }}
+          name: function-speeds-${{ matrix.platform }}-${{ matrix.python }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: .local/performance/evidence/
           include-hidden-files: true
           if-no-files-found: error

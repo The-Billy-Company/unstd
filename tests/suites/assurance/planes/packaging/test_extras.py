@@ -16,6 +16,7 @@ from tests.support.packaging.artifacts import (
     create_consumer,
     install_extra_closure,
 )
+from tests.support.packaging.surfaces import EXTRA_MODULES
 
 
 if TYPE_CHECKING:
@@ -50,6 +51,8 @@ _BACKEND_MODULES = {
     "ruamel-yaml": "ruamel.yaml",
     "pyyaml": "yaml",
     "zlib-ng": "zlib_ng",
+    "zstandard": "zstandard",
+    "libarchive-c": "libarchive",
 }
 
 
@@ -198,9 +201,9 @@ assert rex.compile_faithful('a$').search('a\\n').span() == (0, 1)
     "containers": """
 import immutables, sortedcontainers
 from unstd import containers
-assert containers.SortedList is sortedcontainers.SortedList
-assert containers.SortedDict is sortedcontainers.SortedDict
-assert containers.SortedSet is sortedcontainers.SortedSet
+assert issubclass(containers.SortedList, sortedcontainers.SortedList)
+assert issubclass(containers.SortedDict, sortedcontainers.SortedDict)
+assert issubclass(containers.SortedSet, sortedcontainers.SortedSet)
 assert containers.Map is immutables.Map
 values = containers.SortedList([3, 1]); values.add(2)
 assert list(values) == [1, 2, 3]
@@ -239,6 +242,23 @@ assert isinstance(values, numpy.ndarray)
 assert values.tolist() == [1, -2, 300]
 assert values.base is wire
 assert binpack.unpack_array_portable('>i2', wire) == [1, -2, 300]
+framed = b'HDR' + wire + b'tail'
+selected = binpack.unpack_array('>i2', framed, count=3, offset=3)
+assert selected.tolist() == [1, -2, 300]
+assert selected.base is framed
+assert not selected.flags.writeable
+assert binpack.unpack_array_portable('>i2', framed, count=3, offset=3) == [1, -2, 300]
+from unstd.pack import ragged
+import struct
+frame = bytearray(struct.pack('<3i6f', 0, 1, 3, 1.5, -2.0, 3.0, 4.0, 5.5, 6.0))
+rows, boundaries = ragged.RaggedDecoder('<f4', columns=2, index_dtype='<i4', finite=True, allow_empty=False).unpack(frame, index_count=3)
+assert type(rows) is type(boundaries) is numpy.ndarray
+assert rows.dtype == numpy.dtype('<f4') and boundaries.dtype == numpy.dtype('<i4')
+assert rows.shape == (3, 2) and boundaries.tolist() == [0, 1, 3]
+assert rows.tolist() == [[1.5, -2.0], [3.0, 4.0], [5.5, 6.0]]
+assert not rows.flags.writeable and not boundaries.flags.writeable
+frame[:] = bytes(len(frame))
+assert rows[0].tolist() == [1.5, -2.0] and boundaries.tolist() == [0, 1, 3]
 try:
     binpack.pack_array_portable('u1', [1.9])
 except struct.error:
@@ -305,8 +325,8 @@ assert toml.loads(toml.dumps(document)) == {'value': 7}
 import ruamel.yaml
 import yaml as pyyaml
 from unstd import yaml
-from unstd.yaml import codec as _codec
-assert _codec._YAML is ruamel.yaml.YAML
+from unstd.yaml import codec
+assert codec._YAML is ruamel.yaml.YAML
 assert yaml.ruamel is ruamel.yaml
 assert yaml.pyyaml is pyyaml
 assert yaml.loads('enabled: true\\nvalue: 7\\n') == {'enabled': True, 'value': 7}
@@ -342,6 +362,112 @@ stream = io.BytesIO()
 with gzipx.GzipFile(fileobj=stream, mode='wb', mtime=0) as writer:
     writer.write(payload)
 assert gzip.decompress(stream.getvalue()) == payload
+from unstd.compress import zlibx
+import zlib
+assert zlibx.crc32 is zlib_ng.crc32
+encoder = zlibx.compressobj(level=6, wbits=31)
+prefix = encoder.compress(payload[:20])
+copied = encoder.copy()
+wire = prefix + copied.compress(memoryview(payload)[20:]) + copied.flush()
+assert gzip.decompress(wire) == payload
+decoder = zlibx.decompressobj(31)
+head = decoder.decompress(wire, 7)
+assert len(head) == 7
+assert head + decoder.decompress(decoder.unconsumed_tail) == payload
+assert decoder.eof
+assert zlibx.error is zlib.error
+from unstd.compress import _gzip_native
+from unstd.compress.engines import reader as _reader
+assert Path(_gzip_native.__file__).resolve().is_relative_to(Path(sys.prefix).resolve())
+expanded = b'A' * 1_000_000
+raw_wire = zlib.compress(expanded, wbits=-15)
+inflater = _gzip_native.Inflater()
+storage = bytearray(32768)
+view = inflater.decompress_into(raw_wire + b'following member', storage)
+assert view.obj is storage
+first = bytes(view)
+view.release()
+assert first == expanded[:len(storage)]
+assert inflater._selected_backend in {'apple', 'ng', 'zlib'}
+assert not inflater.needs_input
+assert first + inflater.decompress(b'', max_length=len(expanded)) == expanded
+assert inflater.eof and inflater.unused_data == b'following member'
+with gzipx.GzipFile(fileobj=io.BytesIO(gzip.compress(expanded, mtime=0)), mode='rb') as reader:
+    assert reader.read(17) == expanded[:17]
+    state = reader._buffer.raw._decompressor
+    if _reader._bundled_inflater:
+        assert type(state) is _gzip_native.Inflater
+        assert state._selected_backend in {'apple', 'ng', 'zlib'}
+    else:
+        assert type(state).__module__.startswith('zlib_ng')
+    assert reader.read() == expanded[17:]
+""",
+    "zstd": """
+import importlib, io, zstandard
+from unstd.compress import zstandard as native
+from unstd.compress.zstandard import ZstdCompressor, ZstdError
+assert native is zstandard
+assert ZstdCompressor is zstandard.ZstdCompressor
+assert ZstdError is zstandard.ZstdError
+canonical_backend = importlib.import_module('zstandard.backend_c')
+canonical_metadata = (canonical_backend.__spec__, canonical_backend.__loader__, canonical_backend.__package__, canonical_backend.__name__)
+ported_backend = importlib.import_module('unstd.compress.zstandard.backend_c')
+from unstd.compress.zstandard.backend_c import ZstdError as PortedError
+assert ported_backend is canonical_backend
+assert PortedError is canonical_backend.ZstdError is zstandard.ZstdError
+assert (canonical_backend.__spec__, canonical_backend.__loader__, canonical_backend.__package__, canonical_backend.__name__) == canonical_metadata
+try:
+    native.ZstdDecompressor().decompress(b'not a Zstandard frame')
+except PortedError:
+    pass
+else:
+    raise AssertionError('nested native Zstandard backend lost the canonical error contract')
+payload = b'installed dictionary source' * 256
+dictionary = native.ZstdCompressionDict(b'installed dictionary source', dict_type=native.DICT_TYPE_RAWCONTENT)
+wire = native.ZstdCompressor(dict_data=dictionary).compress(payload)
+frame = native.get_frame_parameters(wire)
+assert frame.content_size == len(payload)
+decoder = native.ZstdDecompressor(dict_data=dictionary)
+assert decoder.decompress(wire, max_output_size=len(payload), allow_extra_data=False) == payload
+source = io.BytesIO(wire)
+with decoder.stream_reader(source, closefd=False) as reader:
+    assert reader.read(7) + reader.read() == payload
+assert not source.closed
+""",
+    "archives": """
+import sys
+if sys.platform == 'win32':
+    try:
+        from unstd.compress import libarchive
+    except ImportError:
+        pass
+    else:
+        raise AssertionError('Unix archive extra installed a Windows native provider')
+else:
+    import gzip, libarchive
+    from libarchive import ffi
+    from libarchive.exception import ArchiveError
+    from libarchive.read import ArchiveRead, new_archive_read
+    from unstd.compress import libarchive as native
+    from unstd.compress.libarchive import ffi as ported_ffi
+    from unstd.compress.libarchive.exception import ArchiveError as PortedError
+    from unstd.compress.libarchive.read import ArchiveRead as PortedRead
+    from unstd.compress.libarchive.read import new_archive_read as ported_new_archive_read
+    assert native is libarchive
+    assert ported_ffi is ffi
+    assert PortedRead is ArchiveRead
+    assert PortedError is ArchiveError
+    assert ported_new_archive_read is new_archive_read
+    assert ported_ffi.libarchive is ffi.libarchive
+    payload = b'installed native archive payload' * 128
+    packed = gzip.compress(payload, mtime=0)
+    with ported_new_archive_read() as pointer:
+        ported_ffi.get_read_format_function('raw')(pointer)
+        ported_ffi.read_open_memory(pointer, packed, len(packed))
+        archive = PortedRead(pointer)
+        assert [b''.join(entry.get_blocks(8192)) for entry in archive] == [payload]
+        assert b'gzip' in archive.filter_names
+        assert ported_ffi.error_string(archive._pointer) is None
 """,
 }
 
@@ -351,6 +477,7 @@ def test_every_declared_extra_has_an_isolated_backend_probe(
 ) -> None:
     extras = artifacts.project["optional-dependencies"]
     assert isinstance(extras, dict)
+    assert EXTRA_MODULES.keys() <= _EXTRA_CASES.keys()
     assert extras.keys() == _EXTRA_CASES.keys(), (
         f"add isolated runtime probes for extras {sorted(extras.keys() - _EXTRA_CASES.keys())}; "
         f"remove stale probes {sorted(_EXTRA_CASES.keys() - extras.keys())}"
@@ -400,6 +527,7 @@ for distribution, module in {_BACKEND_MODULES!r}.items():
         assert specification is None, (distribution, module)
 """
         + _EXTRA_CASES[extra]
+        + f"\nassert set({EXTRA_MODULES.get(extra, ())!r}) <= sys.modules.keys()\n"
         + """
 for name, module in tuple(sys.modules.items()):
     if name.startswith('unstd.') and getattr(module, '__file__', None):

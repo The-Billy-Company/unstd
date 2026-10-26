@@ -7,6 +7,8 @@ Empty/missing header bytes mean zero. Arbitrary decode always exercises an
 aligned prefix and, for multi-byte kinds, a partial trailing element refusal.
 Both sized and iterator encode paths and bytes/bytearray/memoryview decode paths
 are checked. No optional backend is required.
+Selected windows also decode inside framed bytes with unaligned offsets and
+explicit counts, checked against the same independent scalar values.
 """
 
 from __future__ import annotations
@@ -74,6 +76,18 @@ def fuzz(data: bytes) -> None:
         expected = struct.unpack(f"{order}{len(values)}{char}", raw)
     for buffer in (raw, bytearray(raw), memoryview(raw)):
         _equal(binpack.unpack_array(dtype, buffer), expected)
+    start = selector % (len(expected) + 1)
+    framed = b"\xa5" + raw + b"\xff"
+    count, offset = len(expected) - start, 1 + start * size
+    for decode in (binpack.unpack_array, binpack.unpack_array_portable):
+        _equal(decode(dtype, framed, count=count, offset=offset), expected[start:])
+        try:
+            decode(dtype, framed, count=0, offset=len(framed) + 1)
+        except (ValueError, struct.error):
+            pass
+        else:
+            msg = "numeric window outside the buffer was accepted"
+            raise AssertionError(msg)
     if size > 1:
         try:
             binpack.unpack_array(dtype, raw + b"\xff")

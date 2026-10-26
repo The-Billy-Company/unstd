@@ -110,7 +110,7 @@ def test_action_pins_match_ci_and_no_publishing_capabilities_are_requested(
     setup = next(
         step for step in uses if step["uses"].startswith("astral-sh/setup-uv@")
     )
-    assert setup["with"]["version"] == "0.13.4"
+    assert setup["with"]["version"] == "0.13.5"
     assert setup["with"]["enable-cache"] is False
     assert "id-token" not in workflow["permissions"]
     assert all("pypi" not in step.get("uses", "").lower() for step in _steps(workflow))

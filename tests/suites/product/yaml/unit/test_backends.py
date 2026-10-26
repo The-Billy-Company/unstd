@@ -99,8 +99,8 @@ assert "unstd.yaml.codec" not in sys.modules
 def test_native_exports_bind_the_actual_codec_functions_once():
     require_backend("ruamel.yaml")
     from unstd import yaml
-    from unstd.yaml import codec as _codec
+    from unstd.yaml import codec
 
-    assert yaml.loads is _codec.loads
-    assert yaml.dumps is _codec.dumps
-    assert yaml.__dict__["loads"] is _codec.loads
+    assert yaml.loads is codec.loads
+    assert yaml.dumps is codec.dumps
+    assert yaml.__dict__["loads"] is codec.loads

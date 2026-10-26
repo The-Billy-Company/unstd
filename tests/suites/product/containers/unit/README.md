@@ -4,7 +4,47 @@
 
 Operations run when sortedcontainers or immutables is installed. Missing-backend construction cases and the explicit error-message contract cover the unavailable capability.
 
-`test_missing_backends.py` blocks one backend at a time in a fresh interpreter, so the real import guards take their placeholder branch even where the extra is installed. Only the blocked family's flag and constructors degrade, with the exact actionable message; the other family still builds. With both backends present, the public names are the upstream classes themselves.
+`test_missing_backends.py` blocks one backend at a time in a fresh interpreter, so the real import guards take their placeholder branch even where the extra is installed. Only the blocked family's flag and constructors degrade, with the exact actionable message; the other family still builds. Map remains the upstream class; accelerated sorted types remain subclasses of their upstream types.
+
+`test_accelerated_sorted.py` compares accelerated collections with the upstream
+implementations across block splits, positional indexes, keys, user subclasses,
+copying, pickling and comparison failures. Blocking the native module or using
+an unqualified backend version retains the original upstream implementations.
+
+`test_native_integer_queries.py` compares signed-integer boundaries and arbitrary
+precision queries with stdlib bisect. Exact-integer queries meeting stored int
+subclasses must preserve callbacks that clear storage or replace dictionaries,
+including finalizers that replace the live dictionary again.
+Plain keywords must retain native queries; string subclass keywords preserve
+the upstream binder's equality calls, exception identity and finalizer order.
+
+`test_native_memory.py` probes descriptor/capsule reclamation, reinstallation
+from active comparisons, corrupted state and overflow rejection, and 24,000
+mixed operations across keyed/keyless collections and small block loads. Unsafe
+state probes run in bounded owned interpreters. The native qualification driver
+also runs them under ASan/UBSan; ordinary runs support Python's debug allocator.
+
+`test_native_mutations.py` compares scalar controls, slice expiration and batch
+ingestion with upstream, including object identity, iterators, storage aliases,
+helper overrides, callbacks and finalizer timing. Testing builds add exhaustive
+allocation/commit failpoints and deterministic staging reentry. Set
+`UNSTD_CONTAINERS_REQUIRE_TEST_HOOKS=1` to require their presence; production
+builds omit those hooks.
+
+`test_native_type_metadata.py` and `test_native_metadata_keys.py` exercise
+foreign namespace keys, colliding capsule lookups and class/base metadata
+changes. Owned workers reset interpreter caches when comparing strict callback
+traces, and repeat the upstream oracle independently.
+
+`test_native_metadata_keys.py` retains exact callback counts and replaced-dictionary
+finalizer traces by resetting upstream bytecode caches before each side and
+checking the oracle against itself. Foreign class/base keys must keep descriptor
+errors and upstream partial-update state while declining the native layout path.
+
+`test_lazy_exports.py` checks fresh-process package discovery, imports of each
+family, cached class identity, star imports and reloads. Loading one family must
+leave the other backend unloaded, and `dir()` must discover all public names
+without loading either backend.
 
 Run from the repository root:
 

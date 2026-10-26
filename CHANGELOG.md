@@ -8,7 +8,7 @@ doc_radar:
   - file: pyproject.toml
     contains: ['"msgspec>=0.22"', exclude-newer = "P2D", '"blake3>=1.0.10"', '"pyyaml>=6.0.3"', 'select = "cp3{12,13}-macosx_x86_64"', sysconfig.get_config_var("CFLAGS")]
   - file: .github/workflows/ci.yml
-    contains: [github.sha || github.ref, 'version: "0.13.4"', uv sync --locked]
+    contains: [github.sha || github.ref, 'version: "0.13.5"', uv sync --locked]
   - file: .github/workflows/release.yml
     contains: ['TAG: ${{ github.ref_name }}', Build and test CPython wheels, 'UV_MANAGED_PYTHON: "1"', python -m tests.tooling.release.wheels]
   - file: src/unstd/serde/structs.py
@@ -37,18 +37,328 @@ doc_radar:
     contains: ['current_environment = environment()', '"provenance": current_provenance']
   - file: tests/tooling/release/verify.py
     contains: [def _macos_floors(, def _macos_payload(, Mach-O deployment version]
+  - file: src/unstd/iters/consecutive.py
+    contains: ['yield from batched(iterable, n)', 'previous, view = tee(view)', 'window.extend(islice(it, step - 1))']
+  - file: src/unstd/iters/distinct.py
+    contains: ['candidate = key(element)']
 ---
 
 # Changelog
 
 <!-- towncrier release notes start -->
 
-## Unreleased
+## [4.0.0] - 2026-10-25
 
-The [October 25 change index](docs/updates-2026-10-25.md) covers today's native
-backends, API additions, source organization, qualification and runtime updates.
-Caller-facing details remain in [per-change fragments](changelog.d/README.md)
-until release; published version notes below remain historical records.
+This major release changes `clone.deep` to preserve shared references instead
+of duplicating them. Callers relying on the previous alias-duplication behavior must review their
+usage. `clone.asdict`, `copy` and `deepcopy` retain their existing contracts.
+The [October 25 change index](docs/updates-2026-10-25.md) links each module
+guide and explains the scope of the retained performance evidence.
+
+### Cloning and compatibility
+
+- `clone.deep` now preserves shared-reference identity throughout each call,
+  including aliases crossing builtin containers, dataclasses, models and custom
+  `__deepcopy__` implementations. Repeated references to one source object reach
+  one cloned object, keeping graph relationships intact while avoiding duplicate
+  work and allocations. The native builtin path uses the same identity memo as
+  the Python walker. Separate calls still produce independent clones.
+
+  Native builtin graphs now track identities in a pointer table and export them
+  to the Python memo only at boundaries that require it. This reduces the cost
+  of preserving identity on distinct trees while retaining aliases across custom
+  copy hooks and object state.
+
+  Plain dataclasses also use native reconstruction with the enclosing memo,
+  reducing Python calls for allocation and state copying. The native layout cache
+  uses weak class references and invalidates on class changes; custom allocators
+  and attribute access keep the Python recipe.
+
+  This changes the previous deliberate alias-duplication behavior. `clone.asdict`
+  continues to match `dataclasses.asdict`, including copying repeated structural
+  positions separately; the stdlib `copy` and `deepcopy` re-exports are unchanged.
+
+- `clone.deep` detects builtin cycles in the native traversal, avoiding the
+  repeated Python recursion that preceded whole-graph `deepcopy`.
+  The native copier fills lists and tuples directly, presizes dictionaries, and
+  budgets container visits rather than scalar leaves so large scalar arrays stay
+  native. Dataclass/model state and `clone.asdict` fields now reuse native copying
+  at their structural boundaries.
+
+  Copy hooks, mutable isolation and cyclic alias preservation retain their
+  existing contracts. Shared-reference preservation is described above. `clone.deepcopy` remains the
+  stdlib re-export. Paired CPU and elapsed-time profiles for Python 3.13 and 3.14,
+  including collector-enabled runs, are recorded in
+  `bench/reports/clone/clone-cpu-results.md`; gains depend on the data shape.
+
+- Accelerate mixed builtin/dataclass graphs with a native continuation that uses
+  the same memo as Python copy hooks. Per-call class recipes reduce repeated
+  dispatch while keeping shared references, live-source iteration, construction
+  order and fallback protocols. Memo-visible mutable results remain tracked and
+  contain only initialized items, including during reentrant inspection or
+  mutation. Native recursion follows Python's frame headroom on CPython 3.12–3.14.
+
+  Preserve ordinary mapping contents and types when Pydantic creates a filtered
+  private-state view, and restore completed mutable-container memo entries after
+  descendant overrides. CPU measurements use public Python APIs, including wrapper
+  and output-destruction costs, against the finished shared-identity implementation.
+
+- Copy scalar sequence prefixes in an allocation-free native loop and fill initial
+  adjacent runs from a completed private-memo child. Live source mutation,
+  shared identity, positional `asdict` copying and caller memo precedence remain
+  covered by ordinary, forced-GC and sanitizer tests. Tighten common clone latency
+  guards to 10% using matched wall/CPU batch ratios, retaining raw measurements and
+  rejecting malformed pairs so worker drift cannot disguise a real slowdown.
+  Keep Linux audit launchers free of inherited ASan preloads while restoring
+  instrumentation at every actual Python exec.
+
+- Qualify native cloning on the Linux server with independently built
+  Python 3.13/3.14 wheels, shared-identity graph/dataclass route checks and a
+  forced-GC/allocation-failure audit. Extend the performance workflow to all
+  25 common clone shapes with GC enabled, preserving each baseline's own native
+  entrypoints and retaining evidence before a CPU or wall latency guard fails.
+
+
+### Serialization
+
+- JSONX keeps wide builtin trees and two-space indented documents on its native
+  encoding paths, preserves ASCII Unicode escapes without serializing a tree
+  twice, and avoids reparsing large objects with early floating-point values.
+  Python 3.12 indented floats retain stdlib's exact numeric spellings. Other
+  formatting, callbacks, unsupported values and interpreter limits retain their
+  existing stdlib fallbacks. Speedups depend on the payload and Python version;
+  the focused JSONX throughput benchmark records both gains and unchanged cases.
+
+  Float-record encoding adds a bounded native writer with operation-local float
+  and string spelling caches. Strict canonical snapshots use owned native copies
+  when the original Python walker, builtins and observers permit acceleration;
+  the original identity encoder still runs. Partial snapshots remain private
+  across collection, shared branches remain independent, and unsupported trees
+  retain their Python validation and error behavior. The retained safety tests
+  cover live-source mutation, forced collection, metadata changes, private-output
+  discard and cache cleanup. Existing public Python benchmarks qualify these
+  changes; they do not establish a universal 100× improvement. Separately
+  qualified shared-branch cases exceeding 100× are recorded in the
+  [shared-branch evidence](bench/reports/serde/jsonx-100x.md).
+
+- JSON encoding can reuse completed flat branches within a single call for
+  eligible shared-row lists, retaining exact output, recursion and logical visit
+  limits, fresh output allocation and visibility of mutations between calls.
+  Safe ASCII strings use bulk copies. Wide JSON record decoding now proves each
+  child before its siblings, avoiding a redundant parse caused by the previous
+  64-entry sibling queue. Benchmarks label shared and independent inputs
+  separately and retain the existing workloads.
+
+- JSON release wheels now require active native JSON, float, ASCII, identity and
+  NDJSON paths during installed-wheel qualification. Performance CI retains paired
+  installed JSON record timings on Linux and macOS and rejects wall-time
+  regressions above 15%. The JSON throughput driver can require native dispatch
+  and enforce an explicit slowdown limit while preserving raw evidence.
+
+
+### Compression
+
+- Optimize gzip streaming for dataset, upload, HTTP and journal use cases:
+  Linux selects zlib-ng's SIMD inflater; macOS retains platform libz and releases
+  the GIL safely during large native reads. Per-decoder locking protects state,
+  and oversized flush modes cannot silently finish a stream. Interpreter framing,
+  bounded reads, member checks, error delivery and caller-owned buffers remain
+  covered by compatibility tests.
+
+  Add `zlibx` for accelerated zlib wire operations, with the interpreter's exact
+  incremental decoder. Add original-module ports for bz2, lzma, stock zlib,
+  zipfile, tarfile, optional python-zstandard and libarchive-c, and Python 3.14's
+  compression.zstd. Original modules retain class, exception, context and qualified
+  import identity. Stock zlib remains available for compressed-byte hash contracts.
+
+  Retain paired Mac/Linux throughput evidence, an external-codec guarantee
+  matrix, frozen consumer fixtures and a four-platform/interpreter regression
+  guard. Four independent upload streams measured 1.83× faster on Mac and 4.58×
+  on the Linux server; gains depend on workload and hardware.
+
+- Eligible whole-buffer `gzipx.compress` calls use the bundled native encoder for
+  exact bytes, public levels 6 or 9, and integer `mtime=0`. Conservative input
+  guards retain the existing provider for unsuitable payloads. Level 6 maps to
+  native level 1 with an owned three-candidate hash-table matchfinder; level 9 maps
+  to native level 6. Compressed bytes can change while the recovered payload
+  remains the contract. Stream writers and compressor copies keep their existing
+  providers, and native failures are not replayed.
+
+  Linux x86_64 builds can include reviewed ISA-L 2.31.1 source using a local NASM
+  or Yasm assembler. Verified vendored sources are copied and patched only in the
+  private build directory. Supported CPUs and admitted stream shapes can select
+  ISA-L before decoding; other builds and streams retain their existing routes.
+  No mandatory runtime dependency or universal speedup is claimed.
+
+- Accelerate Billy-shaped gzip request encoding and dataset materialization in C
+  on both Linux and Mac. Add a private, runtime-dispatched Linux x86_64 streaming
+  decoder with verified source and local assembly builds, strict read budgets,
+  code-tree validation, input accounting and persistent error semantics. Preserve
+  framing, CRC/ISIZE checks, concatenated members, seeking, source ownership and
+  staged public readinto behavior. Stateful writers and compressor checkpoints
+  retain their existing providers. Qualify both machines, packaged artifacts,
+  malformed and partial histories, sanitizer runs and a member exceeding 4 GiB.
+
+- Accelerate highly repetitive gzip streams on Mac ARM with bounded C selection
+  of the already imported zlib-ng provider. Preserve Apple libz for ordinary
+  dataset streams and zlib-ng's SIMD path on Linux. Selection occurs before any
+  body decoding and preserves gzip framing, source read budgets, bounded output,
+  CRC/size checks, concatenated members, seeking and staged public `readinto`.
+
+
+### Numeric data and containers
+
+- `unpack_array` and `unpack_array_portable` accept keyword-only element `count`
+  and byte `offset` arguments. Callers can decode headers, body regions, and
+  selected records without copying slices of the input. NumPy retains its
+  zero-copy views and backend-specific dtype behavior; portable decoding returns
+  owned Python lists with explicit range validation.
+
+- Portable array packing and the base-install fallback avoid scalar boxing for
+  matching one-dimensional integer and float64 arrays. Exact stdlib arrays need
+  no extra; exact NumPy arrays also support logical one-dimensional strides and
+  byte-order conversion. Struct validation remains authoritative for other
+  inputs, including float16/float32 NaN conversion and custom iterators.
+
+- Add `unstd.pack.ragged.RaggedDecoder` for immutable numeric frames containing an
+  integer boundary table and contiguous rows. It validates geometry, monotonic
+  boundaries, and optional float finiteness, sharing exact immutable bytes or
+  snapshotting other exporters before validation. The optional CPython validator
+  uses NEON/SSE2 or portable integer-bit scans without a NumPy C ABI; base installs
+  retain a stdlib implementation and immutable tuple results. No input validity
+  or decoded-result cache is used.
+
+  Large NEON float32 scans use an exact unsigned maximum of magnitude bits,
+  reducing inner-loop work while retaining strict NaN/infinity rejection. Smaller
+  frames retain the existing classifier. Complete installed-wheel and current
+  consumer-pipeline qualification on Linux and macOS is documented separately;
+  the requested 100× complete-decoder target remains unmet.
+
+- Accelerate sorted collection rank and positional queries with bundled CPython kernels
+  and compatible subclasses of the upstream types. Retain the original classes
+  when native acceleration is unavailable or the backend version is unqualified;
+  Map keeps its existing native backend. Load each container family on demand,
+  preserving missing-extra errors. Add a paired startup/operation profile with
+  Linux and macOS evidence and include containers in native wheel/sanitizer checks.
+
+- Accelerate existing SortedList prefix/suffix slice deletion and increasing
+  integer list/tuple updates on Linux and macOS. Stage replacement blocks before
+  commit, reject storage aliases and callback-bearing layouts, revalidate after
+  allocation, and retain upstream behavior for unsupported cases. Add paired
+  mutation benchmarks, deterministic allocation-failure and reentry tests, and
+  test-only sanitizer hooks. Keep scalar mutation algorithms upstream. Tighten
+  read-query fallback ownership so comparator, metadata and keyword callbacks
+  retain upstream finalizer timing.
+
+- Accelerate ordinary `rand.Generator.shuffle` lists with an optional CPython
+  kernel that preserves stdlib permutations and engine states. Hoist invariant
+  work in fallback bulk draws and use NumPy's direct unit-float generator.
+
+  Extend `rand.ints` and `Generator.ints` with explicit `seeds=` batches using
+  stateless SplitMix64-v1. This opt-in changes the seeded stream, preserves normal
+  RNG states, and has matching native/Python implementations. Captured-consumer
+  benchmarks retain separate count-phase, full-workflow and compatibility results
+  on macOS and Linux.
+
+
+### Processes, files, audio and iteration
+
+- `proc` now uses an optional bundled C backend for isolated macOS process creation
+  and Linux/macOS captured text output without stdin. Linux retains its optimized
+  stdlib launch path. Current Git, metadata and
+  log shapes have paired native/Python/stdlib profiles; stdin and unsupported
+  platform shapes retain stdlib behavior. Captured output, timeout bytes, audit
+  events, descriptor isolation and kill/reap contracts remain covered by native,
+  fallback, debug-allocator and sanitizer qualification.
+
+- `proc` uses Linux pidfds and macOS kqueue exit notifications to avoid polling
+  sleeps after captured pipes close. Bounded waits fall back to stdlib when the
+  kernel facility is unavailable or restricted. Process creation, captured I/O,
+  timeouts, cancellation cleanup and the public API retain their existing
+  contracts; no optional dependency is added. Paired performance evidence lives
+  in `bench/reports/proc/`.
+
+- Filesystem traversal reduces path construction and directory ownership overhead
+  while retaining descriptor-relative symlink protection and cleanup on early
+  exit or failure. Existing-directory checks avoid a failed mkdir, and strict
+  atomic writes skip redundant parent creation after verifying the directory.
+  File syncing, permissions, and directory-sync acknowledgments are preserved.
+
+- Linux CPython builds accelerate ordinary byte and default UTF-8 atomic writes
+  through a bundled native backend. Missing parents, other codecs, subclasses,
+  custom bindings, unavailable native capabilities, and optional compiler failure
+  retain the Python implementation. Native errors never retry the write.
+  The backend needs no extra or third-party runtime dependency; other platforms,
+  interpreters and free-threaded builds keep the complete Python path.
+  Release verification accepts the typing stub on every platform while restricting
+  the compiled filesystem binary to Linux wheels.
+
+  Both paths retain atomic replacement, private scratch creation, mode preservation,
+  and file/directory syncing. Native cancellation releases acquired resources
+  before commit and reports committed state afterward. The Python writer now also
+  identifies a successful rename interrupted before its call returns.
+  Cleanup failures retain the primary exception and add notes. Linux close is
+  never retried, and unavailable native entropy declines before scratch creation.
+
+  Installed direct wheels and sdist rebuilds exercise native and forced-Python
+  routes against 13 consumer workload shapes. Linux CPython 3.12–3.14, compiler
+  failure fallback and sanitizer checks retain their evidence in
+  [`bench/reports/fs/production/`](../bench/reports/fs/production/README.md).
+
+- Audio adds `wavx.decode_pcm` for interleaved little-endian PCM voice frames,
+  with owned writable NumPy output or dependency-free PCM16 lists. Floating
+  NumPy decoding converts directly and scales in place to avoid temporary arrays.
+  `wrap_pcm` accepts contiguous buffers, including bytearrays and typed memoryviews,
+  so accumulated narration can be wrapped without an intermediate bytes copy.
+
+- We prepare wide sliding windows in linear time, move strided window advances
+  into `deque.extend`, and reduce Python overhead in non-strict chunks and keyed
+  deduplication. The iterator API, lazy reads, mixed-key equality, and bounded
+  retention stay the same; no extra or native backend is required.
+
+- Large one-shot BLAKE3 hashes, MACs, and key derivation now honor process CPU
+  affinity on Python 3.12 where the operating system exposes it. CPU-constrained
+  Linux workers avoid creating hashing pools sized for the whole host. Python
+  3.13+ retains its process CPU count and CPU-count override; platforms without
+  affinity support retain the host-count fallback. Digest values and public APIs
+  are unchanged.
+
+
+### Build and verification
+
+- Organize Python source by technical concern. Remove shallow private helper
+  packages, use descriptive source names, and group compression engine integration
+  under `compress/engines`. Preserve public imports, native extension names, and
+  historical regex pickle identities. Update package guides, source provenance
+  collection, and saved-revision benchmark loaders for the resulting layout.
+
+- Development now uses Python 3.14.9. Default CI, platform contracts, dependency
+  floors, base and partial-extra installs, sanitizer checks, and scheduled chaos
+  and concurrency campaigns run on Python 3.14 to match the consuming application.
+  Deterministic fuzzing also covers 3.14 while retaining Python 3.12 for Atheris.
+  The existing Python 3.12–3.14 compatibility matrices remain required.
+
+- Performance regression comparisons now run independently on Linux and macOS
+  with Python 3.13 and 3.14, including for native-source changes. Python 3.14
+  exercises its distinct native JSON and clone fast paths. Each platform and
+  interpreter measures both revisions on the same worker and retains its own
+  evidence; a failure in one comparison does not cancel the others. These
+  comparisons detect regressions without promising identical elapsed time across
+  different hardware and operating systems.
+
+- Fix clean-runner compatibility across supported Python versions and platforms:
+  align the audited uv frontend with the pinned Python download, use a compatible
+  RapidFuzz floor on Python 3.14, refresh cached wheel runtimes before security
+  admission, and retain platform/runtime dependency markers in artifact verification.
+  Document the new optional extras, guard Unix-only benchmark metadata, and qualify
+  zipfile's version-specific internal child module against its actual stdlib API.
+  Retain a recursive YAML merge finding as a fuzz regression while preserving safe
+  parser and product parity checks.
+  Avoid whole-block gzip engine selection for small buffered reads, compare shared
+  performance workloads before timing added APIs, and bound sanitizer-only stack
+  boundary differences without dropping discarded-source recursion checks.
+  Reuse the bounded weak type/version cache for native record layouts during
+  general graph copying, retaining Python admission and mutation invalidation.
 
 ## [3.1.6] - 2026-10-25
 
@@ -568,7 +878,7 @@ records the remaining one-time namespace cost.
 - Whole-blob NDJSON reads batch native parsing over strict physical newline
   boundaries. Streaming reads, callbacks and error diagnostics keep their
   existing behavior.
-- Added an output-checked Billy fixture comparison with source and fixture
+- Added an output-checked consumer fixture comparison with source and fixture
   fingerprints, alternating before/after CPU batches, direct-call companions and
   an optional release-regression gate. The measurement report retains residual
   costs relative to the permissive 2.1.1 codec; no universal speedup or
@@ -666,7 +976,7 @@ records the remaining one-time namespace cost.
   the authority across Python 3.12–3.14 and optional-backend/base configurations;
   generated cases include large integers, non-finite values, lone surrogates,
   mixed keys, formatting options, binary encodings and malformed input.
-- The test suite follows Billy's Python organization: module-owned contracts
+- The test suite organizes Python coverage into module-owned contracts
   under `tests/suites/product`, cross-cutting assurance under
   `tests/suites/assurance`, shared support, and standalone tooling. A validated
   inventory distinguishes active coverage from planned lanes and provides
@@ -1123,7 +1433,7 @@ and each old name fails at import rather than changing meaning in place.
   modes — plain hash, keyed hash (the MAC), and `derive_key` — are checked
   against the authors' answers across 35 input lengths spanning the chunk and
   subtree boundaries, where the previous fixture carried seven hand-picked rows.
-- `rex` is now backed by [irregex](https://github.com/The-Billy-Company/irregex)
+- `rex` is now backed by `irregex`
   (`import irgx`) instead of `google-re2`; the extra installs `irregex>=2.3.0`.
   The surface, the stdlib-`re` fidelity contract, and the degrade-to-`re`
   fallback for backreference/lookaround patterns are unchanged.

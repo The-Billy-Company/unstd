@@ -477,13 +477,14 @@ def test_every_workflow_uses_the_audited_uv_frontend_version():
 
 def test_wheel_test_dependencies_use_only_the_authenticated_locked_closure(workflows):
     _, export, install = _wheel_test_commands(workflows)
+    project = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text())
     assert export[:2] == ["uv", "export"]
     assert {"--locked", "--no-emit-project", "--no-default-groups"} <= set(export)
     assert "--no-hashes" not in export
     assert export[export.index("--project") + 1] == "{package}"
     assert {
         export[index + 1] for index, option in enumerate(export) if option == "--extra"
-    } == {"serde", "crypto", "compress"}
+    } == set(project["tool"]["cibuildwheel"]["test-extras"])
     assert export[export.index("--group") + 1] == "supply-chain"
     assert install[:3] == ["uv", "pip", "install"]
     assert {"--require-hashes", "--require-build-hashes", "--no-deps"} <= set(install)

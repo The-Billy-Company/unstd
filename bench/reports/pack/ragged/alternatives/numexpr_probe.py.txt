@@ -1,0 +1,96 @@
+"""Private complete-decoder NumExpr backend experiment; no result cache."""
+from __future__ import annotations
+
+from functools import partial
+from hashlib import sha256
+import importlib.util
+import json
+from pathlib import Path
+import platform
+from statistics import median
+import sys
+from types import ModuleType, SimpleNamespace
+
+import numpy as np
+import numexpr as ne
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "src"))
+from unstd.pack import ragged
+
+spec = importlib.util.spec_from_file_location("_numexpr_complete_profile", ROOT / "bench/profiles/ragged.py")
+profile = importlib.util.module_from_spec(spec)
+sys.modules[spec.name] = profile
+spec.loader.exec_module(profile)
+capture = profile.profile._read_capture(ROOT / ".local/pack-consumer-capture.json")
+baseline = profile.profile._compile_consumers(capture, ragged.binpack)["baseline"]
+native = ragged._native
+assert native is not None
+compiled = ne.NumExpr("sum(where(isfinite(a), 0, 1))", signature=[("a", float)])
+compiled_mask = ne.NumExpr("isfinite(a)", signature=[("a", float)])
+
+
+def ne_validate(data, count, columns, vc, vo, ic, io, finite, empty):
+    rows = native.validate(data, count, columns, vc, vo, ic, io, False, empty)
+    assert (vc, vo, ic, io) == ("f", "<", "q", "<")
+    if finite:
+        values = np.frombuffer(data, dtype="<f4", offset=count * 8)
+        if int(compiled(values)):
+            raise ValueError("nonfinite numeric values")
+    return rows
+
+
+def mask_validate(data, count, columns, vc, vo, ic, io, finite, empty):
+    rows = native.validate(data, count, columns, vc, vo, ic, io, False, empty)
+    assert (vc, vo, ic, io) == ("f", "<", "q", "<")
+    if finite:
+        values = np.frombuffer(data, dtype="<f4", offset=count * 8)
+        if not compiled_mask(values).all():
+            raise ValueError("nonfinite numeric values")
+    return rows
+
+
+def candidate(validator, name):
+    name = "unstd.pack._ragged_probe_" + name
+    spec = importlib.util.spec_from_file_location(name, ROOT / "src/unstd/pack/ragged.py")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[name] = module
+    spec.loader.exec_module(module)
+    module._native = SimpleNamespace(validate=validator)
+    decoder = module.RaggedDecoder("<f4", columns=128, index_dtype="<i8", finite=True, allow_empty=False)
+    return profile._candidate(capture, baseline, decoder)
+
+
+modules = {"baseline": baseline, "native": candidate(native.validate, "native"), "numexpr": candidate(ne_validate, "numexpr"), "numexpr_mask": candidate(mask_validate, "numexpr_mask")}
+for side in ("native", "numexpr", "numexpr_mask"):
+    profile._admission({"baseline": baseline, "candidate": modules[side]}, profile.profile._fixture(128, capture))
+output = {
+    "python": sys.version, "platform": platform.platform(), "numpy": np.__version__, "numexpr": ne.__version__,
+    "vml": bool(ne.use_vml), "expressions": ["sum(where(isfinite(a), 0, 1))", "isfinite(a) followed by numpy.all"],
+    "measurement": "exact captured complete decoder class, guards, validation, arrays, result allocation and cleanup; expression compilation/setup/oracles excluded; no payload/result cache",
+    "source_sha256": {str(p.relative_to(ROOT)): sha256(p.read_bytes()).hexdigest() for p in [Path(__file__), ROOT / "src/unstd/pack/ragged.py", ROOT / "native/pack/src/adapter.c"]},
+    "native_sha256": sha256(Path(native.__file__).read_bytes()).hexdigest(),
+    "capture_sha256": capture["capture_sha256"], "cases": {},
+}
+for threads in (1, 2, 4, 8, 16):
+    ne.set_num_threads(threads)
+    for rows in (128, 8192, 65536):
+        fixture = profile.profile._fixture(rows, capture)
+        samples = {name: [] for name in modules}
+        for round_index in range(7):
+            names = list(modules)
+            if round_index % 2:
+                names.reverse()
+            for side in names:
+                samples[side].append(profile.profile._measure(
+                    partial(modules[side]._remote_index, fixture.body, len(fixture.tokens)),
+                    partial(profile._check, fixture=fixture, cls=baseline.TokenIndex, shared=side != "baseline"),
+                    25_000_000,
+                ))
+        times = {k: median(s["wall_ns_per_call"] for s in v) for k, v in samples.items()}
+        key = f"threads={threads}/rows={rows}"
+        output["cases"][key] = {"medians_wall_ns": times, "samples": samples, "native_vs_numexpr": times["native"] / times["numexpr"], "complete_speedup": times["baseline"] / times["numexpr"]}
+        print(key, {k: round(v / 1000, 3) for k, v in times.items()}, flush=True)
+path = ROOT / "bench/reports/pack/ragged/alternatives"
+path.mkdir(parents=True, exist_ok=True)
+(path / "numexpr-macos.json").write_text(json.dumps(output, indent=2) + "\n")

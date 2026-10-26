@@ -1,0 +1,64 @@
+{
+  "environment": {
+    "python": "3.12.15 (main, Oct 21 2026, 17:38:27) [Clang 23.1.3 ]",
+    "executable": "/Users/griffinstrier/.local/share/uv/python/cpython-3.12.15-macos-aarch64-none/bin/python3.12",
+    "binary": "/private/tmp/unstd-containers-mutations/compat312/src/unstd/containers/_sorted_native.cpython-312-darwin.so",
+    "kernel_version": 3
+  },
+  "pythonmalloc": "debug",
+  "cwd": "/tmp/unstd-containers-mutations/compat312",
+  "results": [
+    {
+      "phase": "build",
+      "argv": [
+        "/tmp/unstd-containers-qualification/cp312/bin/python",
+        "/tmp/unstd-containers-qualification/tools/build_sorted.py",
+        "/tmp/unstd-containers-mutations/compat312"
+      ],
+      "returncode": 0,
+      "output": "/tmp/unstd-containers-mutations/compat312/build-receipt.txt"
+    },
+    {
+      "phase": "tests",
+      "argv": [
+        "/tmp/unstd-containers-qualification/cp312/bin/python",
+        "-m",
+        "pytest",
+        "tests/suites/product/containers",
+        "--require-extra",
+        "containers",
+        "--basetemp",
+        "/tmp/unstd-containers-mutations/compat312/pytest-tmp",
+        "-q"
+      ],
+      "returncode": 0,
+      "output": "/tmp/unstd-containers-mutations/compat312/tests-receipt.txt"
+    }
+  ],
+  "hashes": {
+    "c_source": {
+      "path": "/tmp/unstd-containers-mutations/compat312/native/containers/src/adapter.c",
+      "sha256": "7b6d3bf39c2fb5f7a395b8eb9737b845413e51dfed20bb5e87018cfd9ebd8aa1"
+    },
+    "mutation_tests": {
+      "path": "/tmp/unstd-containers-mutations/compat312/tests/suites/product/containers/unit/test_native_mutations.py",
+      "sha256": "06c2797c26cc9640a3758f0f147166b250f031b7f98564f3e21d0c32d3faacff"
+    },
+    "metadata_tests": {
+      "path": "/tmp/unstd-containers-mutations/compat312/tests/suites/product/containers/unit/test_native_type_metadata.py",
+      "sha256": "80041725e660eb4134cbce420b054922b2e10cb64ddccac6cdc2f2e60788a936"
+    },
+    "metadata_key_tests": {
+      "path": "/tmp/unstd-containers-mutations/compat312/tests/suites/product/containers/unit/test_native_metadata_keys.py",
+      "sha256": "db7a6b00754945952e985ed157bed1a6fcff9c9b815a314dd61149d20e67f824"
+    },
+    "binary": {
+      "path": "/private/tmp/unstd-containers-mutations/compat312/src/unstd/containers/_sorted_native.cpython-312-darwin.so",
+      "sha256": "96d97a68af283c3c1b65cb4b49d7dae986cb7a704e9c10d3914875bea344fa0b"
+    },
+    "executable": {
+      "path": "/Users/griffinstrier/.local/share/uv/python/cpython-3.12.15-macos-aarch64-none/bin/python3.12",
+      "sha256": "4cb961ae6e7ae44b264ee819c3452b15c5d6778247f4fdb4f0b9368ad01b40bf"
+    }
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "source_sha256": {
+    "native/compress/src/inflate.c": "595463f7486c0866d4f339a41db3d0acd4610637d18e54805a41209de30e6c46",
+    "native/compress/src/stream.h": "f05e1b2f22e9c6ebbebd52018e8ece041c270610c9dc12478e60a628c363fdf5",
+    "native/compress/src/shape.h": "1e8b10ed5a718c9f91ecc10165d8d0111f98b5771e7532d1ede442759167ec95",
+    "native/compress/src/README.md": "ac74f1e96d9334fe559b102db0a36ee19e433df34303e40c1d35d1b2899b64bc",
+    "native/compress/src/adapter.c": "1e576fb2fdbd0e71a22989b07a31633c1e7a9145ab5e598ecf4a8f63f9ef5e7f",
+    "native/compress/src/module.h": "31b41633706af8707fba617b832cb0b7d833bc959ff99c75f6c8461c76da0e25",
+    "native/compress/src/stream.c": "48d39485ac23a4177dc3c7326babd8987a79366ea733029b24f7c7a598835018",
+    "src/unstd/compress/_reader.py": "01e04cfabb32998b59330c1b1c1be9a7b35a9480c13a3a9ebcd977fe27528af5",
+    "src/unstd/compress/_gzip_native.pyi": "cde9abcd583a06da57f12781a4163e59d521739c703f9196a16a501840796207",
+    "tests/suites/product/compress/unit/test_native_adaptive.py": "80049c7420238eabcd2e5b8bd94c53319bc8b8286ebd26e2ccc5317604b488fa",
+    "hatch_build.py": "86866a83039ceebab8508e24989fff24a5de6d5ab30d6efb7f757614b9ab8358",
+    "src/unstd/compress/gzipx.py": "def93facf3eed14dae3a9c81eb2ea9cd323c3fbd47484fb170170b2100d7e468",
+    "bench/profiles/gzip_reads.py": "5b2d25a6c5177e1ca14c8c659946ae3cf3de8c07c100a1e6e33b66385fccf2ac",
+    "bench/profiles/billy_gzip.py": "94af7370eb60336831e4de3fe0601c79cf691b94bf77d371934f6a46c0a11756",
+    "tests/suites/assurance/gates/bench/test_gzip_reads.py": "73a9e130eec89959cf94038b054a5f804532fcd86e92cf7f168a768c5029c1a8"
+  },
+  "baseline_source_sha256": {
+    "native/compress/src/inflate.c": "ff7ff19905baf85ad17b48356c1e96578ed68576117ee336e2a04dc7dfe0e139",
+    "native/compress/src/stream.h": "119c3213224d70ccca3ad64eadcc9802f597c157237b2d059f2aa3813d5d39e1",
+    "native/compress/src/adapter.c": "2ffb3d8f9a56aa1669adf51fab40494cb35389326849e082d5f52a58a8f77e1a",
+    "native/compress/src/stream.c": "417fea4fd9131c26f450fd1a72b7fcbe3bc0d65f93d6a0376664cd0500bedc1c",
+    "src/unstd/compress/_reader.py": "be0dd7f18e403df9a5663efe935618fd9037639d99d91e919772f6f7b0b26f4a"
+  },
+  "method": "Same-machine paired comparison against the immediately preceding implementation; compiler and dependencies shared per platform. No production deployment.",
+  "mac": {
+    "cpu": "Apple M5 Max",
+    "python": "3.14.9 (main, Oct 21 2026, 17:47:42) [Clang 23.1.3 ]",
+    "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+    "compiler": "Apple clang version 21.0.0 (clang-2100.3.34.2)",
+    "cflags": "-fno-strict-overflow -Wsign-compare -Wunreachable-code -DNDEBUG -g -O3 -Wall -O3 -arch arm64 -mmacosx-version-min=11.0 -Wno-nullability-completeness -Wno-expansion-to-defined -Wno-undef-prefix -fPIC",
+    "product_checks_passed": 761,
+    "binary_sha256": "09156c65d8e4ac87d77aad17ee5a07199a965346f068de3228748c1a5206d704"
+  },
+  "linux": {
+    "product_checks_passed": 698,
+    "darwin_specific_skips": 62,
+    "optional_mypy_skip": 1,
+    "same_runtime_source_as_mac": true,
+    "owned_remote_temporary_directory_removed": true
+  },
+  "native_cross_version": {
+    "312": 370,
+    "313": 370,
+    "debug_oom_and_gc": true
+  },
+  "packaging": {
+    "312": 155,
+    "314": 155,
+    "deselected_per_version": 42
+  },
+  "shape": {
+    "group_oracle": 302848,
+    "body_differential": 12085,
+    "truncated_prefixes": 7397,
+    "sanitizer_guard_calls": 152030,
+    "sanitizer_group_calls": 130944
+  },
+  "bench_checks_passed": 103,
+  "strict_typing": "3 changed source/stub/benchmark files passed",
+  "evidence_sha256": {
+    "tests-linux16.txt": "d769bf9d96229f2af96845f6cbe18ba43466a59a01c16a03e6ee797b9d1098de",
+    "ownership-oom-final16.json": "adbaf66a07242041f0ad340614a664925309f5ac66180ad95a7d37ddeb9022d2",
+    "billy-linux-interleaved.json": "25ea292037084ba2e8c73a652f2fb9c9dd867715b7db6582a81d94a57bf98ae4",
+    "shape-oracle.log.gz": "9e9a87707afae349af3e2dd3e66e893eb76397d070394627ccba212a529d4a95",
+    "native-python-versions.json": "2406b1d590e4c0cd6820d4dce0bb1960de3292478931a17c8b098d49847f07d6",
+    "linux-host-selection.json": "90bad822fd185e8a4f364aaae4ef34dfa3cbe987f4b50f098b0c3d41ceb614e9",
+    "gc-cycle-final16.json": "a274d7cde9a381dbdcd02254133081aff0117daa37a160f2485bbc5109e9595f",
+    "tests-macos16.txt": "57782b9f5f5c3f70d8d3ef0a98ed3b9ef51391cb2b392131b20bc4f08b41263d",
+    "public-traces-final16.json": "b09875c76271e23dca928ba6cae5d8fc2a9b60dc55fbf622cf009a888d2d29af",
+    "metadata-linux16.json": "f159e661a152b96f765828330149cd0d13e556461fa12e7f9e0c62df04395cfe",
+    "reads-linux16.json": "901fabfd2f3c6b1fee2ba53d53aa13c06c6673c66e3a72c842ce16f65fb693cd",
+    "shape-oracle.json.gz": "d1e02050cd24698da7863ef53e2e075b1ff0e304acf9e3b3dacb5abc4e971072",
+    "edges-final16.json": "674d0072ec41ddfc636caf5fa274f5aee8f9e0b5569edce56deef811cc5f3faa",
+    "reads-macos16.json": "8b830a852717f3020c6b7aedf776482c2e7bfdf015fbe254e949edb29f2b787e",
+    "bench-gates.txt": "18f05404380dc6a956cd42c8a94d36967d5d6bb8d0d3f682157dc0b41cd48187",
+    "shape-sanitizer.log.gz": "27ae328671705b049d5b2e84587230c60868d89275f09b0069e2103e4c11f30f",
+    "reproduction-sources.tar.gz": "6a8c67de7dfce9e00650e2f79ec806747da1557455e6c7eed94858438bc6fd94",
+    "busy-billy-linux-repeat.json.gz": "af0666537ca34c1a351b5aece79c774275a88f46d50931f6da41f143332a2204",
+    "busy-billy-linux.json.gz": "e07fd4dadfd16bf7896e3b3918e180f0f4da05129f11fde96ceb4adbb6f5c3f6",
+    "packaging-receipt.json": "d14149d2c9d2aa78321cbbc48604c34b641f13da97a39efe51873dd4b9c5a425",
+    "billy-macos16.json": "c0d935f611fcdb6327c0a747ad59178d0bcf7cb07eee12a3c4609626aa62b70b",
+    "editable-smoke.txt": "8747ddbdf0e85ce30caba7730db0dc022fd780ee2d8373e89f2adb907b8e713b"
+  },
+  "editable_smoke": {
+    "passed": 143,
+    "native_sha256": "d7d2ac9544d11862985b35083b6c86f47e18d4047ee9aa2387e6b5c6465d1774",
+    "provider": "zlib-ng 2.2.5",
+    "concurrently_rebuilt_editable_binary": true
+  }
+}

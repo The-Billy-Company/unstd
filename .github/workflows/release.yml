@@ -73,8 +73,8 @@ jobs:
           cache-suffix: release-${{ matrix.os }}-${{ matrix.python }}-${{ steps.dependencies.outputs.key }}
           cache-dependency-glob: ""
           prune-cache: false
-          version: "0.13.4"
-          python-version: "3.13"
+          version: "0.13.5"
+          python-version: "3.14"
       - name: Download the shared source distribution
         uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
@@ -117,7 +117,7 @@ jobs:
             --no-emit-project --no-header --output-file test-build-constraints.txt &&
             uv pip install --no-deps --only-binary :all: --require-hashes
             --requirements test-build-constraints.txt &&
-            uv export --project "{package}" --locked --extra serde --extra crypto --extra compress
+            uv export --project "{package}" --locked --extra serde --extra crypto --extra compress --extra containers --extra rand
             --no-default-groups --group supply-chain
             --no-emit-project --no-header --output-file test-requirements.txt &&
             uv pip install --no-deps --require-hashes --require-build-hashes
@@ -139,8 +139,8 @@ jobs:
       - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           enable-cache: false
-          version: "0.13.4"
-          python-version: "3.13"
+          version: "0.13.5"
+          python-version: "3.14"
       - name: Export authenticated build requirements
         run: uv export --locked --only-group build --no-emit-project --no-header --output-file "$RUNNER_TEMP/build-constraints.txt"
       - name: Build the source distribution with audited tools

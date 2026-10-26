@@ -2,7 +2,7 @@
 
 The executable chaos lane runs repeated faults against real unstd operations,
 then checks committed state, exception identity, handle ownership and recovery.
-It occupies Billy's `assurance/adversarial/chaos` leaf and remains an explicit
+It occupies the `assurance/adversarial/chaos` leaf and remains an explicit
 lane, excluded from the ordinary pytest correctness run.
 
 ```console

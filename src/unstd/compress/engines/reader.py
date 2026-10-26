@@ -9,6 +9,8 @@ from __future__ import annotations
 
 import gzip
 import io
+import platform
+import sys
 from types import FunctionType, SimpleNamespace
 from typing import TYPE_CHECKING, cast, override
 import zlib
@@ -51,6 +53,37 @@ if TYPE_CHECKING:
         @property
         def _decompressor(self) -> object: ...
 
+    class _BufferedInflation(_Inflation, Protocol):
+        @property
+        def needs_input(self) -> bool: ...
+
+    class _BufferedFactory(Protocol):
+        def __call__(self, *, wbits: int) -> _BufferedInflation: ...
+
+    class _CompressedInput(Protocol):
+        def read(self, size: int = -1) -> bytes: ...
+
+        def prepend(self, data: bytes) -> None: ...
+
+    class _FramedReader(Protocol):
+        _decompressor: _BufferedInflation
+        _decomp_factory: _BufferedFactory
+        _decomp_args: dict[str, int]
+        _fp: _CompressedInput
+        _new_member: bool
+        _size: int
+        _pos: int
+        _crc: int
+        _stream_size: int
+
+        def readall(self) -> bytes: ...
+
+        def _read_eof(self) -> None: ...
+
+        def _init_read(self) -> None: ...
+
+        def _read_gzip_header(self) -> bool: ...
+
 
 def _load_native() -> _NativeSurface | None:
     """Use the bundled read kernels when built; retain the portable backend."""
@@ -79,12 +112,44 @@ with gzip._GzipReader(io.BytesIO()) as _probe:
     _modern = hasattr(cast("_RawReader", _probe)._decompressor, "needs_input")
 
 _factory: _InflaterFactory
-if _accelerated is not None:
+# Apple libz wins the qualified macOS dataset/upload workloads. Linux retains
+# zlib-ng for small or fragmented reads and admits private ISA-L on supported
+# CPUs for large reads. All routes retain this interpreter's framing and budgets.
+_isal_streaming = bool(getattr(_accelerated, "ISAL_STREAMING", False))
+if _accelerated is not None and (
+    sys.platform != "linux" or (_modern and _isal_streaming)
+):
     _factory = _accelerated.Inflater if _modern else _legacy_inflater
-    _crc32 = _accelerated.crc32
+    _bundled_inflater = True
 else:
     _factory = _native._ZlibDecompressor if _modern else _native.decompressobj
-    _crc32 = _native.crc32
+    _bundled_inflater = False
+_crc32 = _accelerated.crc32 if _accelerated is not None else _native.crc32
+
+# Bind the already imported provider once. The C bridge selects an engine only
+# before a member's first native decode; framing and per-read budgets stay here.
+_adaptive_ng_version: str | None = None
+if (
+    _bundled_inflater
+    and _modern
+    and (
+        sys.platform == "linux"
+        or (sys.platform == "darwin" and platform.machine() in {"arm64", "aarch64"})
+    )
+):
+    _configure_ng = getattr(_accelerated, "_configure_ng", None)
+    _ng_version = getattr(_accelerated, "_ng_runtime_version", None)
+    _ng_path = getattr(_native, "__file__", None)
+    if (
+        callable(_configure_ng)
+        and callable(_ng_version)
+        and isinstance(_ng_path, str)
+        and _configure_ng(_ng_path)
+    ):
+        _adaptive_ng_version = _ng_version()
+    elif sys.platform == "linux":
+        _factory = _native._ZlibDecompressor if _modern else _native.decompressobj
+        _bundled_inflater = False
 
 # Clone the running interpreter's read implementation with a private CRC binding.
 # Its framing, input budgets and error-delivery order stay version faithful;
@@ -102,12 +167,59 @@ _read_impl = FunctionType(
 )
 _read_impl.__kwdefaults__ = gzip._GzipReader.read.__kwdefaults__
 _read_impl.__annotations__ = gzip._GzipReader.read.__annotations__.copy()
-_read = cast("Callable[[gzip._GzipReader, int], bytes]", _read_impl)
+_read_buffer_size = cast(
+    "int", _read_globals.get("READ_BUFFER_SIZE", io.DEFAULT_BUFFER_SIZE)
+)
+
+
+def _read_buffered(self: _FramedReader, size: int = -1) -> bytes:
+    """Retain gzip framing while draining buffered input before source EOF."""
+    if size < 0:
+        return self.readall()
+    if not size:
+        return b""
+    while True:
+        if self._decompressor.eof:
+            self._read_eof()
+            self._new_member = True
+            self._decompressor = self._decomp_factory(**self._decomp_args)
+        if self._new_member:
+            self._init_read()
+            if not self._read_gzip_header():
+                self._size = self._pos
+                return b""
+            self._new_member = False
+        needs_input = self._decompressor.needs_input
+        incoming = self._fp.read(_read_buffer_size) if needs_input else b""
+        uncompress = self._decompressor.decompress(incoming, size)
+        if self._decompressor.unused_data != b"":
+            self._fp.prepend(self._decompressor.unused_data)
+        if uncompress != b"":
+            break
+        # A buffered drain can finish without output and then request input.
+        # Only an actual empty source read establishes a truncated member.
+        if needs_input and incoming == b"":
+            message = (
+                "Compressed file ended before the end-of-stream marker was reached"
+            )
+            raise EOFError(message)
+    self._crc = _crc32(uncompress, self._crc)
+    self._stream_size += len(uncompress)
+    self._pos += len(uncompress)
+    return uncompress
+
+
+_read = cast(
+    "Callable[[gzip._GzipReader, int], bytes]",
+    # ISA-L can expose an empty drain that the 3.12 needs_input backport
+    # leaves uninitialized, and newer stdlib readers mistake for source EOF.
+    _read_buffered if _modern and _isal_streaming else _read_impl,
+)
 
 
 def _native_crc_read[**P](fallback: Callable[P, bytes]) -> Callable[P, bytes]:
     """Bind the native implementation directly, retaining fallback translation."""
-    return cast("Callable[P, bytes]", _read) if _accelerated is not None else fallback
+    return cast("Callable[P, bytes]", _read) if _bundled_inflater else fallback
 
 
 class _Reader(gzip._GzipReader):

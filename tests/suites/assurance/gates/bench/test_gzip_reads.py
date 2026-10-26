@@ -7,7 +7,7 @@ import gzip
 import io
 import sys
 import tracemalloc
-from types import SimpleNamespace
+from types import ModuleType, SimpleNamespace
 from typing import TYPE_CHECKING
 
 import pytest
@@ -83,6 +83,54 @@ def test_upload_validation_rejects_same_length_corruption_after_rewind() -> None
     )
     with pytest.raises(AssertionError, match="decoded bytes differ"):
         gzip_reads._validate_upload_bytes(codec, case)
+
+
+def test_counted_stream_checks_bytes_and_does_not_retain_expanded_output() -> None:
+    raw = bytes(range(16)) * (512 * 1024)
+    case = gzip_reads._Case(
+        "counted", raw, gzip.compress(raw, mtime=0), "stream-count", chunk_bytes=8192
+    )
+    tracemalloc.start()
+    try:
+        assert gzip_reads._operation(gzip, case)() == len(raw)
+        _, peak = tracemalloc.get_traced_memory()
+    finally:
+        tracemalloc.stop()
+    assert peak < 2 * 1024 * 1024
+    gzip_reads._validate_stream_bytes(gzip, case)
+
+
+def test_counted_stream_oracle_rejects_same_length_corruption() -> None:
+    case = gzip_reads._Case("counted", b"original", b"packed", "stream-count")
+    codec = SimpleNamespace(GzipFile=lambda **_options: io.BytesIO(b"changed!"))
+    assert gzip_reads._operation(codec, case)() == len(case.raw)
+    with pytest.raises(AssertionError, match="decoded bytes differ"):
+        gzip_reads._validate_stream_bytes(codec, case)
+
+
+@pytest.mark.parametrize("fails", [False, True])
+def test_backend_proof_restores_the_factory_outside_timing(monkeypatch, fails):
+    class Stream:
+        _selected_backend = "pending"
+
+    reader = ModuleType("unstd.compress.engines.reader")
+    reader._factory = Stream
+    monkeypatch.setitem(sys.modules, reader.__name__, reader)
+
+    def operation():
+        stream = reader._factory()
+        stream._selected_backend = "ng"
+        if fails:
+            message = "source callback failed"
+            raise OSError(message)
+
+    codec = ModuleType("codec_probe")
+    if fails:
+        with pytest.raises(OSError, match="source callback failed"):
+            gzip_reads._native_backends(codec, operation)
+    else:
+        assert gzip_reads._native_backends(codec, operation) == {"ng": 1}
+    assert reader._factory is Stream
 
 
 @pytest.mark.parametrize(("executed", "accepted"), [(False, True), (True, False)])

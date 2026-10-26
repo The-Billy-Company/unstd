@@ -1,0 +1,74 @@
+{
+  "generated_at": "2026-10-25T23:52:01.623457+00:00",
+  "container": "unstd-pack-next-qualification",
+  "adapter_sha256": "f1c09efc2f32feee2b6ea5ddab6620665cf38a0a98cf0e9344d2c9ca7c621467",
+  "test_sha256": "8542d6f7cc6fc9034aa30522b61fc7df38c0312ffde77f188f13b07094231ae3",
+  "stages": [
+    {
+      "stage": "isolated setuptools optimized build",
+      "exit_code": 0,
+      "wall_seconds": 0.5002980830613524
+    },
+    {
+      "stage": "full product/pack optimized tests",
+      "exit_code": 0,
+      "wall_seconds": 2.146790415979922
+    },
+    {
+      "stage": "isolated setuptools sanitizer build",
+      "exit_code": 0,
+      "wall_seconds": 0.44932337501086295
+    },
+    {
+      "stage": "full product/pack ASan+UBSan tests",
+      "exit_code": 0,
+      "wall_seconds": 8.03815012506675
+    }
+  ],
+  "scope": "source qualification on Linux aarch64/glibc Docker Desktop, not a release wheel or x86_64 portability qualification; no performance measurements",
+  "linux_optimized": {
+    "log": "bench/reports/pack/ragged/alternatives/native2-linux-optimized.txt",
+    "log_sha256": "cf7b1af05f5773c581303560a5c027c987e9b9ceb5bafb0d835f1332576e4e7b",
+    "kernel_version": 2,
+    "ragged": "/tmp/pack-native2-source/src/unstd/pack/ragged.py",
+    "native": "/tmp/pack-native2-source/src/unstd/pack/_pack_native.cpython-314-aarch64-linux-gnu.so",
+    "ragged_sha256": "4bfbd36b3891cba10e00b9694a438f741371df89a22c811c73c10c7998d486f1",
+    "native_sha256": "f4145874925ed813bf5fb0946768a973e0d36d6bb0e2c2baf2facca0e125cdbb",
+    "test_sha256": "8542d6f7cc6fc9034aa30522b61fc7df38c0312ffde77f188f13b07094231ae3",
+    "sanitizer_env": {
+      "LD_PRELOAD": null,
+      "ASAN_OPTIONS": null,
+      "UBSAN_OPTIONS": null,
+      "PYTHONMALLOC": null
+    }
+  },
+  "linux_sanitizers": {
+    "log": "bench/reports/pack/ragged/alternatives/native2-linux-sanitizers.txt",
+    "log_sha256": "28fc82b4547495d0c34521c73d9e4f2a825b47196422ff4e831fd0bde455676d",
+    "kernel_version": 2,
+    "ragged": "/tmp/pack-native2-asan/src/unstd/pack/ragged.py",
+    "native": "/tmp/pack-native2-asan/src/unstd/pack/_pack_native.cpython-314-aarch64-linux-gnu.so",
+    "ragged_sha256": "4bfbd36b3891cba10e00b9694a438f741371df89a22c811c73c10c7998d486f1",
+    "native_sha256": "bbb094ef88d1a64d7b68f793856c10512740272d702de226bfcd1f6ccb22eea9",
+    "test_sha256": "8542d6f7cc6fc9034aa30522b61fc7df38c0312ffde77f188f13b07094231ae3",
+    "sanitizer_env": {
+      "LD_PRELOAD": "/usr/lib/gcc/aarch64-linux-gnu/14/libasan.so",
+      "ASAN_OPTIONS": "detect_leaks=0:abort_on_error=1",
+      "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1",
+      "PYTHONMALLOC": "malloc"
+    }
+  },
+  "macos_threshold": {
+    "log": "bench/reports/pack/ragged/alternatives/native2-macos-threshold.txt",
+    "log_sha256": "29efd4cbd4bf0cd47d27482b56feabee02baa5a6bc2ff27ca2fce4d9b121be09",
+    "python": "3.14.9 (main, Oct 21 2026, 17:47:42) [Clang 23.1.3 ]",
+    "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+    "numpy": "2.5.3",
+    "pytest": "9.1.1",
+    "kernel_version": 2,
+    "native": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/pack/_pack_native.cpython-314-darwin.so",
+    "native_sha256": "5d033149960b258d7715607fafa47cffc9024010265d1d28678415ac69afbe22",
+    "adapter_sha256": "f1c09efc2f32feee2b6ea5ddab6620665cf38a0a98cf0e9344d2c9ca7c621467",
+    "test_sha256": "8542d6f7cc6fc9034aa30522b61fc7df38c0312ffde77f188f13b07094231ae3"
+  }
+}

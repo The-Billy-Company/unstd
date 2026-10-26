@@ -2,7 +2,7 @@
 
 [`src/adapter.c`](src/adapter.c) is the complete C implementation and CPython
 binding for `unstd.clone._clone_native`; its filename is independent of the
-installed module name. [`src/README.md`](src/README.md) maps its five entrypoints.
+installed module name. [`src/README.md`](src/README.md) maps its native entrypoints.
 
 The [Python walker](../../src/unstd/clone/structural.py) admits copy protocols
 and chooses graph-preserving `deep` or positional `asdict` semantics. Native
@@ -15,3 +15,8 @@ builds. When changing admission or reconstruction, check both native paths and
 [product tests](../../tests/suites/product/clone/README.md): GC/finalizers can
 mutate a source during allocation, and a dataclass twin cannot be recreated
 after observable state callbacks have begun.
+
+Record layout caches retain weak class references and accept only valid,
+nonzero CPython versions. Python 3.12 also requires `VALID_VERSION_TAG`, since a
+failed assignment can leave a nonzero invalid tag. Python 3.13 and 3.14 use
+nonzero tags; other interpreter versions retain uncached layout checks.

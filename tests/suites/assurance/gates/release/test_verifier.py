@@ -315,10 +315,11 @@ def _vendored_release(dist: Path, *, native: bool = True) -> list[tuple[str, byt
     license_names = (
         "native/compress/vendor/libdeflate/COPYING",
         "native/compress/vendor/zlib/LICENSE",
+        "native/compress/vendor/isa-l/LICENSE",
     )
     metadata = (
         METADATA.rstrip(b"\n")
-        + b"\nLicense-Expression: Apache-2.0 AND MIT AND Zlib\n"
+        + b"\nLicense-Expression: Apache-2.0 AND MIT AND Zlib AND BSD-3-Clause\n"
         + "".join(f"License-File: {name}\n" for name in license_names).encode()
         + b"\n"
     )
@@ -326,11 +327,11 @@ def _vendored_release(dist: Path, *, native: bool = True) -> list[tuple[str, byt
         ("unstd-3.1.0/PKG-INFO", metadata),
         (
             "unstd-3.1.0/pyproject.toml",
-            b'[project]\nname = "unstd"\nversion = "3.1.0"\nlicense = "Apache-2.0 AND MIT AND Zlib"\n',
+            b'[project]\nname = "unstd"\nversion = "3.1.0"\nlicense = "Apache-2.0 AND MIT AND Zlib AND BSD-3-Clause"\n',
         ),
         *[
             (f"unstd-3.1.0/{path.relative_to(REPO_ROOT).as_posix()}", path.read_bytes())
-            for project in ("libdeflate", "zlib")
+            for project in ("libdeflate", "zlib", "isa-l")
             for path in sorted(
                 (REPO_ROOT / "native/compress/vendor" / project).rglob("*")
             )
@@ -425,7 +426,9 @@ def test_non_linux_release_accepts_fs_stub_and_rejects_fs_binaries(
 
 
 @pytest.mark.parametrize("mutation", ["missing", "changed"])
-@pytest.mark.parametrize("license_path", ["libdeflate/COPYING", "zlib/LICENSE"])
+@pytest.mark.parametrize(
+    "license_path", ["libdeflate/COPYING", "zlib/LICENSE", "isa-l/LICENSE"]
+)
 def test_rehashed_native_wheel_must_retain_the_upstream_license(
     dist: Path, mutation: str, license_path: str
 ) -> None:
@@ -452,6 +455,8 @@ def test_rehashed_native_wheel_must_retain_the_upstream_license(
     [
         ("libdeflate", "lib/deflate_decompress.c", "COPYING"),
         ("zlib", "inflate.c", "LICENSE"),
+        ("isa-l", "igzip/igzip_inflate.c", "LICENSE"),
+        ("isa-l", "igzip/igzip_decode_block_stateless.asm", "LICENSE"),
     ],
 )
 def test_vendored_source_and_license_inventory_is_authenticated(
@@ -482,7 +487,7 @@ def test_vendored_source_and_license_inventory_is_authenticated(
         release.verify(dist)
 
 
-@pytest.mark.parametrize("project", ["libdeflate", "zlib"])
+@pytest.mark.parametrize("project", ["libdeflate", "zlib", "isa-l"])
 def test_native_gzip_source_dependencies_cannot_be_omitted(
     dist: Path, project: str
 ) -> None:
@@ -506,7 +511,14 @@ def test_native_gzip_requires_vendored_provenance(dist: Path) -> None:
         release.verify(dist)
 
 
-@pytest.mark.parametrize("expression", ["Apache-2.0", "Apache-2.0 OR MIT OR Zlib"])
+@pytest.mark.parametrize(
+    "expression",
+    [
+        "Apache-2.0",
+        "Apache-2.0 AND MIT AND Zlib",
+        "Apache-2.0 OR MIT OR Zlib OR BSD-3-Clause",
+    ],
+)
 def test_vendored_license_terms_cannot_be_omitted_or_presented_as_alternatives(
     dist: Path, expression: str
 ) -> None:
@@ -514,7 +526,12 @@ def test_vendored_license_terms_cannot_be_omitted_or_presented_as_alternatives(
     _write_sdist(
         dist / SDIST,
         [
-            (name, data.replace(b"Apache-2.0 AND MIT AND Zlib", expression.encode()))
+            (
+                name,
+                data.replace(
+                    b"Apache-2.0 AND MIT AND Zlib AND BSD-3-Clause", expression.encode()
+                ),
+            )
             if name.endswith(("/PKG-INFO", "/pyproject.toml"))
             else (name, data)
             for name, data in members
@@ -761,6 +778,82 @@ def test_source_extra_cannot_introduce_a_direct_url_dependency(dist: Path) -> No
         project=_EXTRA_PROJECT.replace(b"backend>=1", source_requirement),
     )
     with pytest.raises(release.ReleaseError, match="simple registry requirements"):
+        release.verify(dist)
+
+
+@pytest.mark.parametrize(
+    ("source_marker", "metadata_marker"),
+    [
+        (b"sys_platform != 'win32'", b"sys_platform != 'win32'"),
+        (b'python_version >= "3.14"', b"python_version >= '3.14'"),
+        (b"python_version < '3.14'", b"python_version < '3.14'"),
+    ],
+)
+def test_source_extra_selectors_remain_bound_to_their_extra(
+    dist: Path, source_marker: bytes, metadata_marker: bytes
+) -> None:
+    _matching_dependency_metadata(
+        dist,
+        _extra_metadata(
+            [
+                header.replace(
+                    b"backend>=1; extra",
+                    b"backend>=1; (" + metadata_marker + b") and extra",
+                )
+                for header in _EXTRA_HEADERS
+            ]
+        ),
+        project=_EXTRA_PROJECT.replace(
+            b'"backend>=1"', b"'''backend>=1 ; " + source_marker + b"'''"
+        ),
+    )
+    assert release.verify(dist)["name"] == "unstd"
+
+
+@pytest.mark.parametrize(
+    "requirement",
+    [
+        b"backend>=1; extra == 'fast'",
+        b"backend>=1; (sys_platform != 'win32') or extra == 'fast'",
+        b"backend>=1; sys_platform != 'win32'; extra == 'fast'",
+    ],
+)
+def test_source_extra_rejects_unreviewed_marker_expressions(
+    dist: Path, requirement: bytes
+) -> None:
+    _matching_dependency_metadata(
+        dist,
+        _extra_metadata(_EXTRA_HEADERS),
+        project=_EXTRA_PROJECT.replace(b'"backend>=1"', b"'''" + requirement + b"'''"),
+    )
+    with pytest.raises(release.ReleaseError, match="unsupported environment selector"):
+        release.verify(dist)
+
+
+@pytest.mark.parametrize(
+    "dependency",
+    [
+        b"backend>=1; extra == 'fast'",
+        b"backend>=1; (sys_platform != 'win32') or extra == 'fast'",
+        b"backend>=1; (sys_platform == 'win32') and extra == 'fast'",
+    ],
+)
+def test_matching_archives_cannot_remove_or_change_source_selectors(
+    dist: Path, dependency: bytes
+) -> None:
+    _matching_dependency_metadata(
+        dist,
+        _extra_metadata(
+            [
+                header.replace(b"backend>=1; extra == 'fast'", dependency)
+                for header in _EXTRA_HEADERS
+            ]
+        ),
+        project=_EXTRA_PROJECT.replace(
+            b'"backend>=1"', b"\"backend>=1; sys_platform != 'win32'\""
+        ),
+    )
+    with pytest.raises(release.ReleaseError, match="dependencies differ from source"):
         release.verify(dist)
 
 

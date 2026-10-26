@@ -1,10 +1,36 @@
 """Hostile parser workers retain enforced memory limits under native sanitizers."""
 
+from importlib.machinery import ModuleSpec
 from types import SimpleNamespace
 
 import pytest
 
-from tests.support.parsers import worker
+from tests.support.parsers import cases, worker
+
+
+def test_isolated_parser_worker_preserves_extracted_parent_product(
+    tmp_path, monkeypatch
+):
+    package = tmp_path / "extracted wheel/unstd"
+    package.mkdir(parents=True)
+    origin = package / "__init__.py"
+    origin.write_text("")
+    serde = package / "serde"
+    serde.mkdir()
+    (serde / "__init__.py").write_text("")
+    (serde / "jsonx.py").write_text(
+        "def loads(raw):\n    return {'selected': 'extracted fixture'}\n"
+    )
+    monkeypatch.setattr(
+        cases,
+        "find_spec",
+        lambda name: ModuleSpec(name, loader=None, origin=str(origin)),
+    )
+    assert cases.parser_case("json", b"{}", inspect="value") == {
+        "kind": "value",
+        "type": "dict",
+        "value": {"selected": "extracted fixture"},
+    }
 
 
 @pytest.mark.parametrize("sanitized", [False, True])

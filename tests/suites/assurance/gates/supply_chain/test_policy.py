@@ -519,6 +519,22 @@ def test_sbom_contains_every_locked_component_hash_and_dependency_deterministica
             "https://zlib.net/zlib-1.3.2.tar.gz",
             "inflate.c",
         ),
+        (
+            "isa-l",
+            "2.31.1",
+            "BSD-3-Clause",
+            "e1d5573a4019738243b568ab1e1422e6ab7557c5cae33cc8686944d327ad6bb4",
+            "https://codeload.github.com/intel/isa-l/tar.gz/refs/tags/v2.31.1",
+            "igzip/igzip_inflate.c",
+        ),
+        (
+            "isa-l",
+            "2.31.1",
+            "BSD-3-Clause",
+            "e1d5573a4019738243b568ab1e1422e6ab7557c5cae33cc8686944d327ad6bb4",
+            "https://codeload.github.com/intel/isa-l/tar.gz/refs/tags/v2.31.1",
+            "igzip/igzip_decode_block_stateless.asm",
+        ),
     ],
 )
 def test_sbom_includes_authenticated_vendored_c_source_and_license(
@@ -553,7 +569,12 @@ def test_sbom_includes_authenticated_vendored_c_source_and_license(
 
 @pytest.mark.parametrize(
     ("project", "source_file"),
-    [("libdeflate", "lib/deflate_decompress.c"), ("zlib", "inflate.c")],
+    [
+        ("libdeflate", "lib/deflate_decompress.c"),
+        ("zlib", "inflate.c"),
+        ("isa-l", "igzip/igzip_inflate.c"),
+        ("isa-l", "igzip/igzip_decode_block_stateless.asm"),
+    ],
 )
 def test_vendored_c_cannot_escape_the_source_checkout(
     repo, tmp_path, project, source_file

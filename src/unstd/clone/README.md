@@ -63,6 +63,10 @@ from the cyclic collector. When a foreign hook can reach a destination through
 the memo, mutable containers remain tracked and expose only initialized items;
 hooks can safely inspect, append to or clear those destinations. Dataclass/model
 state and `asdict` fields also use native copying when their contents qualify.
+Scalar prefixes fill those reserved slots without allocating. A private builtin
+graph can copy the first repeated child once and fill its adjacent run from the
+completed memo result. Caller memos, foreign hooks and `asdict` positions retain
+their normal memo and separate-copy semantics.
 Builtin graphs track identities in a native pointer table. A successful root
 copy needs no Python memo export. Mixed graphs publish mutable twins in the
 enclosing memo before traversing their children. Their per-call class recipes
@@ -86,7 +90,9 @@ against the previous Python implementation.
   fields-set with the same memo. A `msgspec.Struct` is re-built
   through its own reducer, so `__post_init__` runs as under `deepcopy`.
   Each shape is admitted once per class, and only when the class leaves the
-  default copy protocol alone.
+  default copy protocol alone. The weak metadata cache reuses the complete
+  admission result for ordinary metaclasses; custom metaclasses retain their
+  mapping hash and equality callbacks.
   Plain dataclasses also use native reconstruction for allocation, memo
   publication, state cloning and dictionary update. A bounded weak cache
   rechecks native layout admission when the class changes; custom allocators,
@@ -184,6 +190,9 @@ The [Foundry qualification](../../../bench/reports/clone/clone-foundry-results.m
 checks Linux wheels on CPython 3.13 and 3.14, confirms successful native routes,
 and retains common-shape timings and their existing regressions. CI guards both
 CPU and wall latency with the same-worker native baseline.
+The [sequence follow-up](../../../bench/reports/clone/clone-sequence-results.md)
+recovers the repeated-alias regression and records scalar-array and large-alias
+scaling, with matched-round latency guards.
 
 The [cloning contract tests](../../../tests/suites/product/clone/unit/README.md)
 cover shared fields, copy-hook boundaries, cyclic backreferences, source

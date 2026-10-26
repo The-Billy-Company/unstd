@@ -1,0 +1,68 @@
+{
+  "generated_at": "2026-10-25T21:16:46.964604+00:00",
+  "status": "typed-array subset exceeds 100x on both measured operating systems; 100x current Billy workflows not achieved",
+  "criterion": "Matching-order 51,200-element signed int32 ndarray to owned portable bytes; original implementation vs current implementation",
+  "primary_evidence": {
+    "macos-py314.json": {
+      "median_wall_speedup": 321.66446948557746,
+      "observed_conservative_wall_speedup": 150.473060726454,
+      "median_cpu_speedup": 331.9366382201397,
+      "observed_conservative_cpu_speedup": 260.6354276810062
+    },
+    "linux-py314.json": {
+      "median_wall_speedup": 259.66850732095634,
+      "observed_conservative_wall_speedup": 189.95384204381295,
+      "median_cpu_speedup": 259.74637624157214,
+      "observed_conservative_cpu_speedup": 193.67640924605604
+    }
+  },
+  "source_and_harness_hashes_verified_for_all_four_runs": true,
+  "application_edits_by_this_work": false,
+  "linux_image_id": "sha256:27d6dd95c50ac1ee9bac3c5683a1f468cbd529de5b39eaa5cde05635606f2abc",
+  "checks": {
+    "macos_product_harness_public_api": {
+      "passed": 1106,
+      "log": "macos-tests.txt"
+    },
+    "linux_product_harness": {
+      "passed": 1048,
+      "log": "linux-tests.txt"
+    },
+    "linux_pack_public_api": {
+      "passed": 2,
+      "log": "linux-public-api-tests.txt"
+    },
+    "base_import_block_each_platform": {
+      "passed": 350,
+      "skipped": 689
+    },
+    "ruff_check": "passed for changed Python files",
+    "ruff_format_check": "passed for changed Python files",
+    "mypy": "passed for src/unstd/pack and bench/profiles/pack_backend.py"
+  },
+  "artifacts": {
+    "README.md": "05836840a16fff43ecaa4bc3769602a66d076c9e1f3ede2025e278e4bf104828",
+    "base-test-runner.py.txt": "7195c6a41a2cc1ae558fb3a026d512769797f15575bfdc2c8600c331af2752ea",
+    "before-source.tar.gz": "034f621306617225977103a503a30717ce9c6697216fafdbfd101a9705a623e1",
+    "candidate-source.tar.gz": "7d11374eb975672058eb0dc8b28ca59000f0805012819a978a2a2a8bc47edfab",
+    "consumer-capture.json": "44437bcb2e1a4343a3da078a3356a893cebba669ee8ab22320c0c32d48fea00b",
+    "linux-base-tests.txt": "5a24cd2821859104dd0a8a2e2fa73f3ea8f86bdbf2b051b591664c9955a5109d",
+    "linux-focused-py314.json": "7fade76c760cab0f8b4a133134cb10489e72e528a6ebf9c883ff7110601a6f0c",
+    "linux-public-api-tests.txt": "bff40f31d21d4dfa6697a90f74510b2dad1aa84797e6fa1ad81ca65beae6f85d",
+    "linux-py314.json": "8ab45f715a7246531b7e4c89fa232ec2e60121a9dcb01bfbeda79db5610f5d44",
+    "linux-tests.txt": "ddbce7aa49980397fa6b3e8d0e78c7ebb5f4a0b71a905954509c7cf633da669d",
+    "macos-base-tests.txt": "479e562f7c32a89e21e325ee0b1f7dfae5bc2ce0f672bb39c430511575afc8a1",
+    "macos-focused-py314.json": "d1bbaf375d239b4a8b39f8a1d9aa03050d45efd80f32a5ecffb7eb1c162ed7d3",
+    "macos-py314.json": "67c2b27631be3e055cdcf930b54e87225250141de4be93d0b839d9ab8ca1437a",
+    "macos-tests.txt": "0f556bd55282379c5a0f423c3d50744a2eaf78f61b990ac27121257884c634a1"
+  },
+  "harness": {
+    "path": "bench/profiles/pack_backend.py",
+    "sha256": "34081141cf0e07eb6acad1bfea98b0d264922739f29ea351c7ec04c7af189453"
+  },
+  "additional_files": {
+    "tests/suites/product/pack/unit/test_buffer_packing.py": "6741988c0a3055657600fbbc944e3a9eee61c5d55b691db07e72ac0024a3d77e",
+    "tests/suites/assurance/gates/bench/test_pack_backend.py": "5913e53e6ce84109c35bc78c5c09668215295c0e4bb7efb93419eed3744b3721",
+    "changelog.d/pack-buffer-packing.md": "b15d9583538359fc5f6ab6778223173607ed8f10182cd0630625d7ca46815500"
+  }
+}

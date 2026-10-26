@@ -13,6 +13,7 @@ from tests.support.packaging.artifacts import (
     Consumer,
     clean_environment,
 )
+from tests.support.packaging.surfaces import EXTRA_MODULES
 
 
 if TYPE_CHECKING:
@@ -20,6 +21,87 @@ if TYPE_CHECKING:
 
 
 _STDLIB_CASES = {
+    "compress.stdlib_ports": """
+import bz2, importlib, io, lzma, tarfile, zipfile, zlib
+from unstd import compress
+providers = {'bz2': bz2, 'lzma': lzma, 'tarfile': tarfile, 'zipfile': zipfile, 'zlib': zlib}
+for name, provider in providers.items():
+    assert getattr(compress, name) is provider
+    assert importlib.import_module('unstd.compress.' + name) is provider
+payload = b'installed original codec payload' * 64
+assert compress.bz2.decompress(bz2.compress(payload)) == payload
+assert compress.lzma.decompress(lzma.compress(payload)) == payload
+assert compress.zlib.compress(payload, level=9) == zlib.compress(payload, level=9)
+assert compress.zipfile.ZipFile is zipfile.ZipFile
+assert compress.tarfile.TarFile is tarfile.TarFile
+assert compress.zipfile.BadZipFile is zipfile.BadZipFile
+assert compress.tarfile.TarError is tarfile.TarError
+canonical_path = importlib.import_module('zipfile._path')
+canonical_metadata = (canonical_path.__spec__, canonical_path.__loader__, canonical_path.__package__, canonical_path.__name__)
+ported_path = importlib.import_module('unstd.compress.zipfile._path')
+from unstd.compress.zipfile._path import Path as PortedPath
+assert ported_path is canonical_path
+assert PortedPath is canonical_path.Path is zipfile.Path
+assert (canonical_path.__spec__, canonical_path.__loader__, canonical_path.__package__, canonical_path.__name__) == canonical_metadata
+try:
+    PortedPath(io.BytesIO(b'not a ZIP archive'))
+except zipfile.BadZipFile:
+    pass
+else:
+    raise AssertionError('nested ZIP path lost the canonical error contract')
+""",
+    "compress.zstd": """
+import importlib, io, sys
+if sys.version_info >= (3, 14):
+    from compression import zstd
+    from unstd.compress import zstd as port
+    assert port is zstd
+    assert importlib.import_module('unstd.compress.zstd') is zstd
+    canonical_file = importlib.import_module('compression.zstd._zstdfile')
+    canonical_metadata = (canonical_file.__spec__, canonical_file.__loader__, canonical_file.__package__, canonical_file.__name__)
+    ported_file = importlib.import_module('unstd.compress.zstd._zstdfile')
+    from unstd.compress.zstd._zstdfile import ZstdFile as PortedFile
+    assert ported_file is canonical_file
+    assert PortedFile is canonical_file.ZstdFile is zstd.ZstdFile
+    assert (canonical_file.__spec__, canonical_file.__loader__, canonical_file.__package__, canonical_file.__name__) == canonical_metadata
+    try:
+        with PortedFile(io.BytesIO(b'not a Zstandard frame'), 'rb') as reader:
+            reader.read()
+    except zstd.ZstdError:
+        pass
+    else:
+        raise AssertionError('nested stdlib Zstandard file lost the canonical error contract')
+    payload = 'installed streaming text café\\n'
+    stream = io.BytesIO()
+    with port.open(stream, 'wt', encoding='utf-8', newline='') as writer:
+        writer.write(payload)
+    with port.open(io.BytesIO(stream.getvalue()), 'rt', encoding='utf-8', newline='') as reader:
+        assert reader.read() == payload
+else:
+    try:
+        importlib.import_module('unstd.compress.zstd')
+    except ImportError as error:
+        assert 'requires Python 3.14 or later' in str(error)
+    else:
+        raise AssertionError('stdlib zstd imported on an older interpreter')
+""",
+    "compress.zlibx": """
+import gzip, zlib
+from unstd.compress import zlibx
+for name in ('compress', 'decompress', 'compressobj', 'decompressobj', 'crc32', 'adler32', 'error'):
+    assert getattr(zlibx, name) is getattr(zlib, name), name
+payload = b'installed original incremental state' * 128
+encoder = zlibx.compressobj(level=9, wbits=31)
+prefix = encoder.compress(payload[:20])
+branch = encoder.copy()
+wire = prefix + branch.compress(memoryview(payload)[20:]) + branch.flush()
+assert gzip.decompress(wire) == payload
+decoder = zlibx.decompressobj(31)
+head = decoder.decompress(wire, 7)
+assert len(head) == 7
+assert head + decoder.decompress(decoder.unconsumed_tail) == payload
+assert decoder.eof
+""",
     "compress.gzipx": """
 import gzip, io, sys
 from unstd.compress import gzipx
@@ -150,6 +232,28 @@ assert binpack.unpack('>H', b'\\x12\\x34') == (0x1234,)
 assert binpack.Struct is struct.Struct
 assert binpack.pack_array_portable('<f4', [1.0, -2.5]) == expected
 assert binpack.unpack_array_portable('<f4', expected) == [1.0, -2.5]
+framed = b'HDR' + expected + b'tail'
+assert binpack.unpack_array('<f4', framed, count=2, offset=3) == [1.0, -2.5]
+assert binpack.unpack_array_portable('<f4', framed, count=2, offset=3) == [1.0, -2.5]
+""",
+    "pack.ragged": """
+import struct
+from unstd.pack import ragged
+frame = struct.pack('<3i6f', 0, 1, 3, 1.5, -2.0, 3.0, 4.0, 5.5, 6.0)
+decoder = ragged.RaggedDecoder('<f4', columns=2, index_dtype='<i4', finite=True, allow_empty=False)
+source = bytearray(frame)
+values, offsets = decoder.unpack(source, index_count=3)
+assert values == ((1.5, -2.0), (3.0, 4.0), (5.5, 6.0))
+assert offsets == (0, 1, 3)
+source[:] = bytes(len(source))
+assert values[0] == (1.5, -2.0) and offsets == (0, 1, 3)
+invalid = struct.pack('<3i6f', 0, 1, 2, 1.5, -2.0, 3.0, 4.0, 5.5, 6.0)
+try:
+    decoder.unpack(invalid, index_count=3)
+except ValueError:
+    pass
+else:
+    raise AssertionError('ragged decoder accepted an incomplete boundary table')
 """,
     "rand": """
 import random
@@ -231,6 +335,14 @@ with wave.open(io.BytesIO(output.getvalue()), 'rb') as reference:
 
 
 _MISSING_EXTRA_CASES = {
+    "compress.zstandard": (
+        "zstd",
+        "importlib.import_module('unstd.compress.zstandard')",
+    ),
+    "compress.libarchive": (
+        "archives",
+        "importlib.import_module('unstd.compress.libarchive')",
+    ),
     "crypto.digest": ("crypto", "importlib.import_module('unstd.crypto.digest')"),
     "crypto.token": ("crypto", "importlib.import_module('unstd.crypto.token')"),
     "serde.structs": ("serde", "importlib.import_module('unstd.serde.structs')"),
@@ -275,8 +387,26 @@ _MISSING_EXTRA_CASES = {
 # is intentionally not generated from the package: a new module must make an
 # author choose and implement its installed/fallback/missing-extra contract.
 _PROBE_MODULES = {
+    "compress.stdlib_ports": (
+        "unstd.compress.bz2",
+        "unstd.compress.lzma",
+        "unstd.compress.tarfile",
+        "unstd.compress.zipfile",
+        "unstd.compress.zlib",
+        "unstd.compress.engines",
+        "unstd.compress.engines.imports",
+    ),
+    "compress.zstd": ("unstd.compress.zstd",),
+    "compress.zlibx": ("unstd.compress.zlibx", "unstd.compress.engines.flush"),
+    "compress.zstandard": ("unstd.compress.zstandard",),
+    "compress.libarchive": ("unstd.compress.libarchive",),
     "compress.gzipx": ("unstd.compress", "unstd.compress.gzipx"),
-    "serde.jsonx": ("unstd.serde", "unstd.serde.jsonx"),
+    "serde.jsonx": (
+        "unstd.serde",
+        "unstd.serde.jsonx",
+        "unstd.serde.encoding",
+        "unstd.serde.recursion",
+    ),
     "serde.b64": ("unstd.serde.b64",),
     "serde.ndjson": ("unstd.serde.ndjson",),
     "serde.structs": ("unstd.serde.structs",),
@@ -284,7 +414,7 @@ _PROBE_MODULES = {
     "crypto.digest": ("unstd.crypto.digest",),
     "crypto.token": ("unstd.crypto.token",),
     "fs": ("unstd.fs", "unstd.fs.durability", "unstd.fs.traversal"),
-    "proc": ("unstd.proc",),
+    "proc": ("unstd.proc", "unstd.proc.backend", "unstd.proc.results"),
     "clone": ("unstd.clone", "unstd.clone.structural"),
     "ids.uid": ("unstd.ids", "unstd.ids.uid"),
     "iters": (
@@ -294,18 +424,36 @@ _PROBE_MODULES = {
         "unstd.iters.reshape",
         "unstd.iters.select",
     ),
-    "pack.binpack": ("unstd.pack", "unstd.pack.binpack"),
+    "pack.binpack": (
+        "unstd.pack",
+        "unstd.pack.binpack",
+        "unstd.pack.buffers",
+        "unstd.pack.dtypes",
+    ),
+    "pack.ragged": ("unstd.pack.ragged",),
     "rand": ("unstd.rand", "unstd.rand.crypto", "unstd.rand.draw", "unstd.rand.keyed"),
-    "rex": ("unstd.rex",),
+    "rex": ("unstd.rex", "unstd.rex.patterns", "unstd.rex.profile"),
     "text.fuzz": ("unstd.text", "unstd.text.fuzz"),
     "time.timeutil": ("unstd.time", "unstd.time.timeutil"),
     "time.zoned": ("unstd.time.zoned",),
-    "toml": ("unstd.toml",),
-    "audio.wavx": ("unstd.audio", "unstd.audio.wavx"),
+    "toml": ("unstd.toml", "unstd.extras"),
+    "audio.wavx": ("unstd.audio", "unstd.audio.wavx", "unstd.audio.pcm"),
     "containers.SortedList": ("unstd.containers", "unstd.containers.sorted"),
     "containers.Map": ("unstd.containers.persistent",),
     "model": ("unstd.model", "unstd.model.base", "unstd.model.settings"),
     "yaml.loads": ("unstd.yaml",),
+}
+
+
+# These public modules intentionally are the original stdlib module objects.
+# Only an exact declared provider identity can use the base interpreter's origin.
+_STDLIB_ALIASES = {
+    "unstd.compress.bz2": "bz2",
+    "unstd.compress.lzma": "lzma",
+    "unstd.compress.tarfile": "tarfile",
+    "unstd.compress.zipfile": "zipfile",
+    "unstd.compress.zlib": "zlib",
+    "unstd.compress.zstd": "compression.zstd",
 }
 
 
@@ -315,13 +463,16 @@ def test_every_public_module_has_an_installed_behavior_probe(
     modules = set()
     for name in artifacts.package_files:
         parts = name.removesuffix(".py").split("/")
-        if not name.endswith(".py") or len(parts) < 3:
+        if not name.endswith(".py"):
             continue
         if parts[-1] == "__init__":
             parts.pop()
+        if len(parts) < 2:
+            continue
         if not any(part.startswith("_") for part in parts):
             modules.add(".".join(parts))
     covered = {module for targets in _PROBE_MODULES.values() for module in targets}
+    covered.update(module for targets in EXTRA_MODULES.values() for module in targets)
     assert _PROBE_MODULES.keys() <= _STDLIB_CASES.keys() | _MISSING_EXTRA_CASES.keys()
     assert modules == covered, (
         f"installed consumer probes must cover every public module; "
@@ -403,8 +554,22 @@ def test_base_install_executes_each_stdlib_surface(
         + _STDLIB_CASES[surface]
         + f"""
 for module in {_PROBE_MODULES[surface]!r}:
+    if module == 'unstd.compress.zstd' and sys.version_info < (3, 14):
+        assert module not in sys.modules
+        continue
     assert module in sys.modules, module
-    assert Path(sys.modules[module].__file__).resolve().is_relative_to(Path(sys.prefix).resolve()), module
+    loaded = sys.modules[module]
+    if module in {_STDLIB_ALIASES!r}:
+        provider = importlib.import_module({_STDLIB_ALIASES!r}[module])
+        assert loaded is provider, module
+        origin = getattr(loaded, '__file__', None)
+        if origin is None:
+            assert provider.__name__ in sys.builtin_module_names, module
+            assert provider.__spec__.origin == 'built-in', module
+        else:
+            assert Path(origin).resolve().is_relative_to(Path(sys.base_prefix).resolve()), module
+    else:
+        assert Path(loaded.__file__).resolve().is_relative_to(Path(sys.prefix).resolve()), module
 """
     )
 
@@ -416,7 +581,9 @@ for module in {_PROBE_MODULES[surface]!r}:
         "unstd.crypto._stream_native",
         "unstd.text._text_native",
         "unstd.compress._gzip_native",
+        "unstd.proc._proc_native",
         "unstd.rand._rand_native",
+        "unstd.pack._pack_native",
         "unstd.fs._fs_native",
     ],
 )
@@ -470,6 +637,24 @@ payload = b'installed native gzip payload' * 128
 assert native.decompress(gzip.compress(payload, mtime=0)) == payload
 assert native.decompress(b'not a gzip frame') is None
 """,
+        "unstd.proc._proc_native": """
+from unstd import proc
+from unstd.proc import backend
+assert backend._native is native
+calls = []
+communicate = native.communicate
+def observe(*arguments):
+    outcome = communicate(*arguments)
+    calls.append(outcome is not NotImplemented)
+    return outcome
+native.communicate = observe
+result = proc.run([sys.executable, '-c', "import sys; print('installed proc'); print('detail', file=sys.stderr)"], timeout=5)
+assert result.stdout == 'installed proc\\n'
+assert result.stderr == 'detail\\n'
+assert result.returncode == 0
+if os.name == 'posix':
+    assert calls == [True]
+""",
         "unstd.rand._rand_native": """
 import random
 from unstd import rand
@@ -491,6 +676,16 @@ assert calls == [subject._py]
 assert actual == expected
 assert subject._py.getstate() == reference.getstate()
 assert rand.shuffle.__func__ is random.Random.shuffle
+""",
+        "unstd.pack._pack_native": """
+import struct
+from unstd.pack import ragged
+assert ragged._native is native
+frame = struct.pack('<2q4f', 0, 2, 1.0, -2.0, 3.0, 4.0)
+assert native.validate(frame, 2, 2, 'f', '<', 'q', '<', True, False) == 2
+values, offsets = ragged.RaggedDecoder('<f4', columns=2, index_dtype='<i8', finite=True, allow_empty=False).unpack(frame, index_count=2)
+assert values == ((1.0, -2.0), (3.0, 4.0))
+assert offsets == (0, 2)
 """,
         "unstd.fs._fs_native": """
 import tempfile

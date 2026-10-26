@@ -102,12 +102,32 @@ Import `from unstd.compress import gzipx`.
 | Module | Exported API |
 | --- | --- |
 | [`unstd.compress.gzipx`](../src/unstd/compress/gzipx.py) | `BadGzipFile`, `GzipFile`, `compress`, `decompress`, `open` |
+| [`unstd.compress.zlibx`](../src/unstd/compress/zlibx.py) | zlib constants, complete-buffer codecs, compressor objects, checksums; original stdlib incremental decompressor |
+| `unstd.compress.bz2`, `.lzma`, `.zlib`, `.zipfile`, `.tarfile` | Complete original stdlib modules, including qualified imports |
+| `unstd.compress.zstandard` | Complete original `zstandard` module with `unstd[zstd]` |
+| `unstd.compress.zstd` | Complete original `compression.zstd` module on Python 3.14+ |
+| `unstd.compress.libarchive` | Original `libarchive-c` package and qualified child modules with `unstd[archives]` and a native libarchive library |
 
 These preserve the running interpreter's gzip API and defaults. `BadGzipFile`
 is the stdlib exception. `GzipFile` exposes the stdlib binary file interface,
 including reading, iteration, seeking, writing, flushing, closing, and context
 management. `open` also supports the stdlib text modes. The `compress` extra
 enables native codecs; a base install uses stdlib gzip.
+
+Linux streaming selects zlib-ng; macOS retains platform libz. The interpreter
+still supplies framing, member checks, output budgets and error-delivery order.
+`zlibx` accelerates compression, complete-buffer decoding and checksums while
+retaining the interpreter's exact incremental decompressor state. Both accelerated
+interfaces preserve recovered bytes; compressed output can differ by engine.
+Use `from unstd.compress import zlib` where persisted compressed bytes must match
+the running interpreter's stock codec.
+
+Original-module ports preserve module, class, exception and native callback
+identity and add no per-operation adapter. Their upstream version-specific
+contracts remain in force. Archive policies, cumulative expansion limits and
+Zstandard frame/window checks remain caller responsibilities. See the
+[port contract matrix](../bench/reports/compress/port-contracts.md) for
+consumer operation mapping and verification.
 
 ## Containers
 
@@ -119,11 +139,14 @@ Import `from unstd.containers import Map, SortedDict, SortedList, SortedSet`.
 | [`unstd.containers.persistent`](../src/unstd/containers/persistent.py) | `Map` |
 | [`unstd.containers.sorted`](../src/unstd/containers/sorted.py) | `SortedDict`, `SortedList`, `SortedSet` |
 
-With the `containers` extra, these names are the actual `immutables.Map` and
-`sortedcontainers` classes. Their constructors, methods, generic typing,
-iteration, and class identities are retained. For example, `Map.set` and
+With the `containers` extra, `Map` is the actual `immutables.Map`. Sorted
+collections use compatible subclasses of `sortedcontainers` when the optional
+CPython kernels are available, and the original classes otherwise. Constructors,
+methods, generic typing and iteration retain the backend API; accelerated sorted
+class identities differ from the upstream classes. For example, `Map.set` and
 `Map.delete` return new persistent mappings. Missing backends leave importable
 placeholders that raise an actionable `ImportError` on construction.
+Each family loads on first access to its types or submodule.
 
 ## Cryptography and TLS
 
@@ -241,11 +264,12 @@ required. The same class objects remain available at the existing submodule path
 
 ## Binary packing
 
-Import `from unstd.pack import binpack`.
+Import `from unstd.pack import binpack, ragged`.
 
 | Module | Exported API |
 | --- | --- |
 | [`unstd.pack.binpack`](../src/unstd/pack/binpack.py) | `Struct`, `calcsize`, `error`, `iter_unpack`, `pack`, `pack_array`, `pack_array_portable`, `pack_into`, `unpack`, `unpack_array`, `unpack_array_portable`, `unpack_from` |
+| [`unstd.pack.ragged`](../src/unstd/pack/ragged.py) | `RaggedDecoder` |
 
 The scalar functions, `Struct`, and `error` are the exact stdlib `struct`
 objects. Compiled `Struct` instances keep their stdlib `format`, `size`,
@@ -255,6 +279,29 @@ objects. Compiled `Struct` instances keep their stdlib `format`, `size`,
 array/view return behavior. The `pack` extra provides NumPy. The explicit
 `pack_array_portable` and `unpack_array_portable` functions always use the
 portable dtype subset and stdlib validation, returning bytes and an owned list.
+
+`RaggedDecoder(dtype, *, columns, index_dtype="=i8", finite=False,
+allow_empty=True)` compiles an integer-boundary table followed by numeric rows.
+`unpack(buf, *, index_count)` validates geometry, boundaries, and the configured
+finite-value constraint on every call. Exact bytes back immutable NumPy views;
+other contiguous exporters snapshot before validation. Without NumPy, results
+are tuple rows and integer boundaries. The optional native validator and stdlib
+fallback enforce the same contract. Identity, publication limits, and
+normalization remain with the caller.
+
+`unpack_array` and `unpack_array_portable` accept keyword-only `offset=0` in
+bytes and `count=-1` in elements.
+The default count consumes the whole remainder; an explicit nonnegative count
+selects a region without slicing and permits unrelated trailing bytes. Portable
+decoding validates bounds and always returns independent Python scalars; NumPy
+decoding retains views over the original buffer.
+
+Portable packing can copy matching primitive storage from exact one-dimensional
+`array.array` and NumPy arrays, including admitted strides and byte orders,
+without boxing every scalar. Integer width/signedness and float64 must match;
+float16/float32 conversions, subclasses and other iterables retain stdlib
+validation. Output remains owned bytes. The
+[packing guide](../src/unstd/pack/README.md) documents admission and fallback.
 
 ## Processes
 
@@ -269,6 +316,14 @@ are the original stdlib exception classes. `run` returns `CompletedProcess`,
 `run_ok` returns a boolean, and `capture` returns stripped stdout. Execution
 continues to use explicit argument sequences, captured output, and finite
 positive timeouts.
+
+An optional bundled C backend handles admitted macOS process creation and
+captured output without stdin on Linux/macOS. Linux keeps stdlib creation;
+bounded waits use kernel exit notifications. Unsupported shapes retain stdlib
+execution. The public
+signatures, captured output, timeout exceptions and direct-child cleanup
+contracts are unchanged. See the
+[backend details and measurements](../src/unstd/proc/README.md#backend).
 
 `CompletedProcess(argv, returncode, stdout, stderr, duration)` is a frozen,
 slotted dataclass with these public instance members:
@@ -537,8 +592,10 @@ compatibility diagnostics rather than the supported capability API for new code:
 Supporting modules have descriptive concern names; their location does not
 add them to the supported API. The bundled extension
 modules `unstd.serde._json_native`, `unstd.clone._clone_native`,
-`unstd.crypto._stream_native`, `unstd.text._text_native`, and
-`unstd.compress._gzip_native` retain their private import names for build/runtime
+`unstd.crypto._stream_native`, `unstd.text._text_native`,
+`unstd.compress._gzip_native`, `unstd.containers._sorted_native`,
+`unstd.proc._proc_native`, and `unstd.pack._pack_native` retain their private
+import names for build/runtime
 compatibility. They are not user APIs, and users do not need to import them to
 enable acceleration. Their presence may differ between builds.
 

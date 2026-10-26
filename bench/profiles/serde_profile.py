@@ -380,6 +380,30 @@ def _functions(path: Path) -> Iterator[tuple[int, str]]:
     yield from walk(ast.parse(path.read_text()))
 
 
+def _clear_encoder_cache() -> None:
+    """Resolve the encoder owned by the selected current or saved source tree."""
+    layouts = (
+        "unstd.serde.encoding",
+        "unstd.serde._internal.json_encode",
+        "unstd.serde._json_encode",
+    )
+    for name in layouts:
+        try:
+            module = importlib.import_module(name)
+        except ModuleNotFoundError as error:
+            # Only an absent layout permits the next historical location. A
+            # missing dependency inside an existing layout is a broken source.
+            if (
+                error.name is None
+                or (error.name != name and not name.startswith(f"{error.name}."))
+                or name == layouts[-1]
+            ):
+                raise
+        else:
+            module._encoder.cache_clear()
+            return
+
+
 def _worker(source: Path, rounds: int, fallback: bool) -> dict[str, Any]:
     sys.path.insert(0, str(source))
     from unstd.serde import b64, jsonx
@@ -407,20 +431,7 @@ def _worker(source: Path, rounds: int, fallback: bool) -> dict[str, Any]:
             "iters": measurement.iters,
             "rounds": measurement.rounds,
         }
-    try:
-        from unstd.serde.encoding import _encoder
-    except ModuleNotFoundError:
-        # Saved comparison revisions retain the earlier private layouts.
-        try:
-            from unstd.serde._internal.json_encode import _encoder as _grouped_encoder
-
-            _encoder = _grouped_encoder
-        except ModuleNotFoundError:
-            from unstd.serde._json_encode import _encoder as _legacy_encoder
-
-            _encoder = _legacy_encoder
-
-    _encoder.cache_clear()
+    _clear_encoder_cache()
     profile = cProfile.Profile()
     profile.enable()
     for _ in range(10):

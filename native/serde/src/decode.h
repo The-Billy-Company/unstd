@@ -95,98 +95,111 @@ dense_entries(PyObject *dict)
 }
 
 static int
-exact_decoded_tree(PyObject *value)
+exact_decoded_tree_visit(PyObject *container, Py_ssize_t *remaining, int depth)
 {
-    PyObject *pending[64];
-    Py_ssize_t queued = 1, remaining = MAX_VALUES;
-    pending[0] = value;
-    while (queued) {
-        PyObject *container = pending[--queued];
-        if (PyList_CheckExact(container)) {
-            Py_ssize_t size = PyList_GET_SIZE(container);
-            if ((remaining -= size) < 0) {
-                return 0;
-            }
-            PyObject **items = ((PyListObject *)container)->ob_item;
-            Py_ssize_t index = 0;
-            while (index + 4 <= size
-                   && (PyUnicode_CheckExact(items[index])
-                       & PyUnicode_CheckExact(items[index + 1])
-                       & PyUnicode_CheckExact(items[index + 2])
-                       & PyUnicode_CheckExact(items[index + 3]))) {
-                index += 4;
-            }
-            for (; index < size; index++) {
-                PyObject *item = items[index];
-                if (PyUnicode_CheckExact(item)) {
-                    continue;
-                }
-                if (PyFloat_CheckExact(item)) {
-                    return 0;
-                }
-                if (PyList_CheckExact(item) || PyDict_CheckExact(item)) {
-                    if (queued == 64) {
-                        return 0;
-                    }
-                    pending[queued++] = item;
-                }
-            }
-        } else if (PyDict_CheckExact(container)) {
-            if ((remaining -= PyDict_GET_SIZE(container)) < 0) {
-                return 0;
-            }
-            Py_ssize_t position = 0;
-            NativeDictEntry *entries = dense_entries(container);
-            PyObject *item;
-            for (Py_ssize_t index = 0; index < PyDict_GET_SIZE(container); index++) {
-                if (entries != NULL) {
-                    item = entries[index].me_value;
-                } else if (!PyDict_Next(container, &position, NULL, &item)) {
-                    return 0;
-                }
-                if (PyUnicode_CheckExact(item)) {
-                    continue;
-                }
-                if (PyFloat_CheckExact(item)) {
-                    return 0;
-                }
-                if (PyList_CheckExact(item) || PyDict_CheckExact(item)) {
-                    if (queued == 64) {
-                        return 0;
-                    }
-                    pending[queued++] = item;
-                }
-            }
-        } else if (PyFloat_CheckExact(container)) {
+    /* Finish each child before its next sibling. Queuing all children made a
+     * shallow list of 65 records discard a complete parse and parse it again.
+     * The depth cap bounds this allocation-free C walk; the existing source
+     * stack guard runs before orjson, and refused proofs use the precise parser.
+     * The owned root and uninterrupted GIL span keep child references alive. */
+    if (depth >= 64) {
+        return 0;
+    }
+    if (PyList_CheckExact(container)) {
+        Py_ssize_t size = PyList_GET_SIZE(container);
+        if ((*remaining -= size) < 0) {
             return 0;
         }
+        PyObject **items = ((PyListObject *)container)->ob_item;
+        Py_ssize_t index = 0;
+        while (index + 4 <= size
+               && (PyUnicode_CheckExact(items[index])
+                   & PyUnicode_CheckExact(items[index + 1])
+                   & PyUnicode_CheckExact(items[index + 2])
+                   & PyUnicode_CheckExact(items[index + 3]))) {
+            index += 4;
+        }
+        for (; index < size; index++) {
+            PyObject *item = items[index];
+            if (PyUnicode_CheckExact(item)) {
+                continue;
+            }
+            if (PyFloat_CheckExact(item)) {
+                return 0;
+            }
+            if ((PyList_CheckExact(item) || PyDict_CheckExact(item))
+                && !exact_decoded_tree_visit(item, remaining, depth + 1)) {
+                return 0;
+            }
+        }
+    } else if (PyDict_CheckExact(container)) {
+        Py_ssize_t size = PyDict_GET_SIZE(container);
+        if ((*remaining -= size) < 0) {
+            return 0;
+        }
+        Py_ssize_t position = 0;
+        NativeDictEntry *entries = dense_entries(container);
+        for (Py_ssize_t index = 0; index < size; index++) {
+            PyObject *item;
+            if (entries != NULL) {
+                item = entries[index].me_value;
+            } else if (!PyDict_Next(container, &position, NULL, &item)) {
+                return 0;
+            }
+            if (PyUnicode_CheckExact(item)) {
+                continue;
+            }
+            if (PyFloat_CheckExact(item)) {
+                return 0;
+            }
+            if ((PyList_CheckExact(item) || PyDict_CheckExact(item))
+                && !exact_decoded_tree_visit(item, remaining, depth + 1)) {
+                return 0;
+            }
+        }
+    } else if (PyFloat_CheckExact(container)) {
+        return 0;
     }
     return 1;
 }
 
 static int
-array_float_prefix(PyObject *document)
+exact_decoded_tree(PyObject *value)
 {
-    /* Object documents dominate larger string payloads. Avoid even the
-     * cached UTF-8 conversion when the first character rules out an array. */
-    if (PyBytes_CheckExact(document)) {
-        if (PyBytes_GET_SIZE(document) != 0
-            && PyBytes_AS_STRING(document)[0] == '{') {
-            return 0;
-        }
-    } else if (PyUnicode_GET_LENGTH(document) != 0
-               && PyUnicode_READ_CHAR(document, 0) == '{') {
-        return 0;
-    }
+    Py_ssize_t remaining = MAX_VALUES;
+    return exact_decoded_tree_visit(value, &remaining, 0);
+}
+
+static int
+document_float_prefix(PyObject *document)
+{
+    /* A float near the start predicts that orjson's result will fail the
+     * exact-value proof. Choose the precise parser before allocating a second
+     * copy of the tree, for object documents as well as arrays. This bounded
+     * hint never decides correctness; both parsers still validate the source. */
+    char prefix[128];
     Py_ssize_t size;
     const char *source;
     if (PyBytes_CheckExact(document)) {
         source = PyBytes_AS_STRING(document);
         size = PyBytes_GET_SIZE(document);
     } else {
-        source = PyUnicode_AsUTF8AndSize(document, &size);
-        if (source == NULL) {
-            return -1;
+        size = PyUnicode_GET_LENGTH(document);
+        if (size > 128) {
+            size = 128;
+        }
+        int kind = PyUnicode_KIND(document);
+        const void *data = PyUnicode_DATA(document);
+        if (kind == PyUnicode_1BYTE_KIND) {
+            source = data;
+        } else {
+            /* The hint recognizes only ASCII JSON syntax. A non-ASCII marker
+             * preserves string boundaries without encoding the whole input. */
+            for (Py_ssize_t index = 0; index < size; index++) {
+                Py_UCS4 character = PyUnicode_READ(kind, data, index);
+                prefix[index] = character < 128 ? (char)character : (char)128;
+            }
+            source = prefix;
         }
     }
     const char *end = source + (size < 128 ? size : 128);
@@ -194,9 +207,10 @@ array_float_prefix(PyObject *document)
                             || *source == '\r' || *source == '\t')) {
         source++;
     }
-    if (source == end || *source++ != '[') {
+    if (source == end || (*source != '[' && *source != '{')) {
         return 0;
     }
+    source++;
     while (source < end) {
         char current = *source++;
         if (current == '\"') {
@@ -254,12 +268,12 @@ decode_document(NativeState *state, PyObject *document)
     if (!precise) {
         precise = !orjson_stack_room();
         if (!precise) {
-            precise = array_float_prefix(document);
+            precise = document_float_prefix(document);
         }
     }
     PyObject *value;
-    if (precise != 0) {
-        value = precise < 0 ? NULL : precise_document(state, document);
+    if (precise) {
+        value = precise_document(state, document);
     } else {
         value = state->decoder_fast(state->decoder_self, document);
         if (value != NULL && !exact_decoded_tree(value)) {

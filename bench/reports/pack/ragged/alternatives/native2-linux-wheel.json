@@ -1,0 +1,320 @@
+{
+  "generated_at": "2026-10-25T23:53:42.028005+00:00",
+  "sdist": "/tmp/unstd-pack-native2-artifacts/packaging-artifacts0/source/unstd-3.1.6.tar.gz",
+  "sdist_sha256": "aa6fef4cc59294060e0a718f82e717e5a8def78e00aaeb37f9db942a537fc48d",
+  "builder_versions": {
+    "hatchling": "1.32.4",
+    "setuptools": "84.2.0"
+  },
+  "stages": [
+    {
+      "name": "copy-sdist",
+      "command": [
+        "docker",
+        "cp",
+        "/tmp/unstd-pack-native2-artifacts/packaging-artifacts0/source/unstd-3.1.6.tar.gz",
+        "unstd-pack-next-qualification:/tmp/pack-native2-wheel.tar.gz"
+      ],
+      "exit_code": 0,
+      "seconds": 0.22015404200647026
+    },
+    {
+      "name": "safe-extract-and-match-final-sources",
+      "command": [
+        "docker",
+        "exec",
+        "-i",
+        "unstd-pack-next-qualification",
+        "python",
+        "-"
+      ],
+      "exit_code": 0,
+      "seconds": 0.6017853750381619,
+      "evidence": {
+        "source": "/tmp/pack-native2-wheel/source/unstd-3.1.6",
+        "source_sha256": {
+          "native/pack/src/adapter.c": "f1c09efc2f32feee2b6ea5ddab6620665cf38a0a98cf0e9344d2c9ca7c621467",
+          "src/unstd/pack/__init__.py": "d44fc4095d269ee7ef3f961cdc1e096b28af896900b387b8a907cea77228edd1",
+          "src/unstd/pack/binpack.py": "29fd70e184bf2e18c288d4483fa630108cff1829af5b16ae129059afd9a7741e",
+          "src/unstd/pack/buffers.py": "25f72e707c06616aeb6e867ba8f1e12680e52a9e9ae88992994f8553a69342ed",
+          "src/unstd/pack/dtypes.py": "284df185b9aea56a436d6052ddb749849a9cf956a70258fe7aef32b35120b763",
+          "src/unstd/pack/ragged.py": "4bfbd36b3891cba10e00b9694a438f741371df89a22c811c73c10c7998d486f1",
+          "src/unstd/pack/_pack_native.pyi": "4fce662154903203681b1199f098ab0c651a7e07146c32defe546bcd0177cd1c"
+        }
+      }
+    },
+    {
+      "name": "install-exact-build-backends",
+      "command": [
+        "docker",
+        "exec",
+        "unstd-pack-next-qualification",
+        "python",
+        "-m",
+        "pip",
+        "install",
+        "--disable-pip-version-check",
+        "hatchling==1.32.4",
+        "setuptools==84.2.0"
+      ],
+      "exit_code": 0,
+      "seconds": 1.2286290409974754
+    },
+    {
+      "name": "actual-project-wheel-build-from-sdist",
+      "command": [
+        "docker",
+        "exec",
+        "unstd-pack-next-qualification",
+        "python",
+        "-m",
+        "pip",
+        "wheel",
+        "--disable-pip-version-check",
+        "--no-build-isolation",
+        "--no-deps",
+        "--wheel-dir",
+        "/tmp/pack-native2-wheel/wheels",
+        "-v",
+        "/tmp/pack-native2-wheel/source/unstd-3.1.6"
+      ],
+      "exit_code": 0,
+      "seconds": 7.317077749990858
+    },
+    {
+      "name": "verify-wheel-native-and-python-members",
+      "command": [
+        "docker",
+        "exec",
+        "-i",
+        "unstd-pack-next-qualification",
+        "python",
+        "-"
+      ],
+      "exit_code": 0,
+      "seconds": 0.06687191699165851,
+      "evidence": {
+        "wheel": "/tmp/pack-native2-wheel/wheels/unstd-3.1.6-cp314-cp314-linux_aarch64.whl",
+        "wheel_sha256": "2001d3821a2953d470cc033e18f59d39d6fbe60810e817957169078cf0b833d9",
+        "native_member": "unstd/pack/_pack_native.cpython-314-aarch64-linux-gnu.so",
+        "native_sha256": "f37f85b9aca0b226744c86effaa16640006158225e0f9b2cec1029915d36fbe3",
+        "python_sources": {
+          "unstd/pack/__init__.py": "d44fc4095d269ee7ef3f961cdc1e096b28af896900b387b8a907cea77228edd1",
+          "unstd/pack/_pack_native.pyi": "4fce662154903203681b1199f098ab0c651a7e07146c32defe546bcd0177cd1c",
+          "unstd/pack/binpack.py": "29fd70e184bf2e18c288d4483fa630108cff1829af5b16ae129059afd9a7741e",
+          "unstd/pack/buffers.py": "25f72e707c06616aeb6e867ba8f1e12680e52a9e9ae88992994f8553a69342ed",
+          "unstd/pack/dtypes.py": "284df185b9aea56a436d6052ddb749849a9cf956a70258fe7aef32b35120b763",
+          "unstd/pack/ragged.py": "4bfbd36b3891cba10e00b9694a438f741371df89a22c811c73c10c7998d486f1"
+        }
+      }
+    },
+    {
+      "name": "create-pristine-consumer",
+      "command": [
+        "docker",
+        "exec",
+        "unstd-pack-next-qualification",
+        "python",
+        "-m",
+        "venv",
+        "--without-pip",
+        "/tmp/pack-native2-wheel/consumer"
+      ],
+      "exit_code": 0,
+      "seconds": 0.07520095899235457
+    },
+    {
+      "name": "install-wheel-without-dependencies",
+      "command": [
+        "docker",
+        "exec",
+        "unstd-pack-next-qualification",
+        "python",
+        "-m",
+        "pip",
+        "--python",
+        "/tmp/pack-native2-wheel/consumer/bin/python",
+        "install",
+        "--disable-pip-version-check",
+        "--no-index",
+        "--no-deps",
+        "/tmp/pack-native2-wheel/wheels/unstd-3.1.6-cp314-cp314-linux_aarch64.whl"
+      ],
+      "exit_code": 0,
+      "seconds": 0.4902901250170544
+    },
+    {
+      "name": "pristine-base-tuple-native-and-snapshot-checks",
+      "command": [
+        "docker",
+        "exec",
+        "-i",
+        "-w",
+        "/tmp/pack-native2-wheel/run",
+        "-e",
+        "HYPOTHESIS_STORAGE_DIRECTORY=/tmp/pack-native2-wheel/hypothesis",
+        "unstd-pack-next-qualification",
+        "/tmp/pack-native2-wheel/consumer/bin/python",
+        "-I",
+        "-"
+      ],
+      "exit_code": 0,
+      "seconds": 0.07936008309479803,
+      "evidence": {
+        "mode": "pristine-base",
+        "python": "3.14.8 (main, Oct  6 2026, 02:02:59) [GCC 14.2.0]",
+        "prefix": "/tmp/pack-native2-wheel/consumer",
+        "ragged": "/tmp/pack-native2-wheel/consumer/lib/python3.14/site-packages/unstd/pack/ragged.py",
+        "native": "/tmp/pack-native2-wheel/consumer/lib/python3.14/site-packages/unstd/pack/_pack_native.cpython-314-aarch64-linux-gnu.so",
+        "kernel_version": 2,
+        "checks": "tuple and immutable mutable-source snapshot passed"
+      }
+    },
+    {
+      "name": "install-only-numpy-runtime-extra",
+      "command": [
+        "docker",
+        "exec",
+        "unstd-pack-next-qualification",
+        "python",
+        "-m",
+        "pip",
+        "--python",
+        "/tmp/pack-native2-wheel/consumer/bin/python",
+        "install",
+        "--disable-pip-version-check",
+        "numpy==2.5.3"
+      ],
+      "exit_code": 0,
+      "seconds": 1.7145975830499083
+    },
+    {
+      "name": "numpy-immutable-ownership-and-adverse-checks",
+      "command": [
+        "docker",
+        "exec",
+        "-i",
+        "-w",
+        "/tmp/pack-native2-wheel/run",
+        "-e",
+        "HYPOTHESIS_STORAGE_DIRECTORY=/tmp/pack-native2-wheel/hypothesis",
+        "unstd-pack-next-qualification",
+        "/tmp/pack-native2-wheel/consumer/bin/python",
+        "-I",
+        "-"
+      ],
+      "exit_code": 0,
+      "seconds": 0.12582591699901968,
+      "evidence": {
+        "mode": "numpy-only",
+        "numpy": "2.5.3",
+        "prefix": "/tmp/pack-native2-wheel/consumer",
+        "checks": "immutable exact bytes views, mutable snapshot, late NaN and partial row passed"
+      }
+    },
+    {
+      "name": "install-exact-test-tools",
+      "command": [
+        "docker",
+        "exec",
+        "unstd-pack-next-qualification",
+        "python",
+        "-m",
+        "pip",
+        "--python",
+        "/tmp/pack-native2-wheel/consumer/bin/python",
+        "install",
+        "--disable-pip-version-check",
+        "pytest==9.1.1",
+        "hypothesis==6.168.3",
+        "packaging==26.3"
+      ],
+      "exit_code": 0,
+      "seconds": 1.8609163749497384
+    },
+    {
+      "name": "installed-wheel-full-product-pack-suite",
+      "command": [
+        "docker",
+        "exec",
+        "-i",
+        "-w",
+        "/tmp/pack-native2-wheel/run",
+        "-e",
+        "HYPOTHESIS_STORAGE_DIRECTORY=/tmp/pack-native2-wheel/hypothesis",
+        "unstd-pack-next-qualification",
+        "/tmp/pack-native2-wheel/consumer/bin/python",
+        "-I",
+        "-"
+      ],
+      "exit_code": 0,
+      "seconds": 2.9796761670149863,
+      "evidence": {
+        "pytest_exit_code": 0,
+        "kernel_version": 2,
+        "installed_product_origins": {
+          "unstd": "/tmp/pack-native2-wheel/consumer/lib/python3.14/site-packages/unstd/__init__.py",
+          "unstd.pack": "/tmp/pack-native2-wheel/consumer/lib/python3.14/site-packages/unstd/pack/__init__.py",
+          "unstd.pack.buffers": "/tmp/pack-native2-wheel/consumer/lib/python3.14/site-packages/unstd/pack/buffers.py",
+          "unstd.pack.dtypes": "/tmp/pack-native2-wheel/consumer/lib/python3.14/site-packages/unstd/pack/dtypes.py",
+          "unstd.pack.binpack": "/tmp/pack-native2-wheel/consumer/lib/python3.14/site-packages/unstd/pack/binpack.py",
+          "unstd.pack._pack_native": "/tmp/pack-native2-wheel/consumer/lib/python3.14/site-packages/unstd/pack/_pack_native.cpython-314-aarch64-linux-gnu.so",
+          "unstd.pack.ragged": "/tmp/pack-native2-wheel/consumer/lib/python3.14/site-packages/unstd/pack/ragged.py"
+        },
+        "native_sha256": "f37f85b9aca0b226744c86effaa16640006158225e0f9b2cec1029915d36fbe3",
+        "test_source": "/workspace/tests/suites/product/pack",
+        "workspace_source_imported": false
+      }
+    },
+    {
+      "name": "copy-qualified-linux-wheel-to-stable-host-artifacts",
+      "command": [
+        "docker",
+        "cp",
+        "unstd-pack-next-qualification:/tmp/pack-native2-wheel/wheels/unstd-3.1.6-cp314-cp314-linux_aarch64.whl",
+        "/Users/griffinstrier/Billy-Company/unstd/.local/pack-ragged-next-production/artifacts/unstd-3.1.6-cp314-cp314-linux_aarch64.whl"
+      ],
+      "exit_code": 0,
+      "seconds": 0.03006891591940075
+    }
+  ],
+  "limits": [
+    "Linux aarch64/glibc Docker Desktop container; not bare-metal or x86-64",
+    "Pack product suite only",
+    "Local linux_aarch64 wheel; no auditwheel/manylinux portability qualification"
+  ],
+  "status": "passed",
+  "wheel": {
+    "wheel": "/tmp/pack-native2-wheel/wheels/unstd-3.1.6-cp314-cp314-linux_aarch64.whl",
+    "wheel_sha256": "2001d3821a2953d470cc033e18f59d39d6fbe60810e817957169078cf0b833d9",
+    "native_member": "unstd/pack/_pack_native.cpython-314-aarch64-linux-gnu.so",
+    "native_sha256": "f37f85b9aca0b226744c86effaa16640006158225e0f9b2cec1029915d36fbe3",
+    "python_sources": {
+      "unstd/pack/__init__.py": "d44fc4095d269ee7ef3f961cdc1e096b28af896900b387b8a907cea77228edd1",
+      "unstd/pack/_pack_native.pyi": "4fce662154903203681b1199f098ab0c651a7e07146c32defe546bcd0177cd1c",
+      "unstd/pack/binpack.py": "29fd70e184bf2e18c288d4483fa630108cff1829af5b16ae129059afd9a7741e",
+      "unstd/pack/buffers.py": "25f72e707c06616aeb6e867ba8f1e12680e52a9e9ae88992994f8553a69342ed",
+      "unstd/pack/dtypes.py": "284df185b9aea56a436d6052ddb749849a9cf956a70258fe7aef32b35120b763",
+      "unstd/pack/ragged.py": "4bfbd36b3891cba10e00b9694a438f741371df89a22c811c73c10c7998d486f1"
+    }
+  },
+  "host_wheel": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-ragged-next-production/artifacts/unstd-3.1.6-cp314-cp314-linux_aarch64.whl",
+  "host_wheel_sha256": "2001d3821a2953d470cc033e18f59d39d6fbe60810e817957169078cf0b833d9",
+  "installed_suite": {
+    "pytest_exit_code": 0,
+    "kernel_version": 2,
+    "installed_product_origins": {
+      "unstd": "/tmp/pack-native2-wheel/consumer/lib/python3.14/site-packages/unstd/__init__.py",
+      "unstd.pack": "/tmp/pack-native2-wheel/consumer/lib/python3.14/site-packages/unstd/pack/__init__.py",
+      "unstd.pack.buffers": "/tmp/pack-native2-wheel/consumer/lib/python3.14/site-packages/unstd/pack/buffers.py",
+      "unstd.pack.dtypes": "/tmp/pack-native2-wheel/consumer/lib/python3.14/site-packages/unstd/pack/dtypes.py",
+      "unstd.pack.binpack": "/tmp/pack-native2-wheel/consumer/lib/python3.14/site-packages/unstd/pack/binpack.py",
+      "unstd.pack._pack_native": "/tmp/pack-native2-wheel/consumer/lib/python3.14/site-packages/unstd/pack/_pack_native.cpython-314-aarch64-linux-gnu.so",
+      "unstd.pack.ragged": "/tmp/pack-native2-wheel/consumer/lib/python3.14/site-packages/unstd/pack/ragged.py"
+    },
+    "native_sha256": "f37f85b9aca0b226744c86effaa16640006158225e0f9b2cec1029915d36fbe3",
+    "test_source": "/workspace/tests/suites/product/pack",
+    "workspace_source_imported": false
+  },
+  "log_sha256": "d64e8f292915dd5b87f848b3aea116f8a9056100c429110c1296a43f0e93d6f7"
+}

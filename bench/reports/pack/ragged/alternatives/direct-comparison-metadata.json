@@ -1,0 +1,106 @@
+{
+  "scope": "Direct full decoder comparison, single process, no validator proxy. Four distinct immutable payload contents; nine alternating 25ms batches per arm. The same captured actual decoder result class and caller guards are used. Private application definitions are intentionally not included. All public ragged Python source copies have the identical hash.",
+  "oracle_checks": 7440,
+  "decision_inputs": {
+    "1": {
+      "paired_reference_over_max": [
+        0.94965835776117,
+        0.9997330279193475,
+        0.835072777964283,
+        1.0053777946181108,
+        0.5891307525463099,
+        0.8602635362413491,
+        1.0044305033349505,
+        0.959146361380324,
+        0.9549625973709227
+      ],
+      "wins": 2,
+      "conservative_reference_over_max": 0.5530263937901491
+    },
+    "32": {
+      "paired_reference_over_max": [
+        1.1566611789730252,
+        0.9796828508023365,
+        1.0489474400419367,
+        1.0931933868555097,
+        1.048171041811925,
+        1.0473411671262574,
+        1.041397452607819,
+        1.0124854903647067,
+        1.0643018543905747
+      ],
+      "wins": 8,
+      "conservative_reference_over_max": 0.8663667439920621
+    },
+    "128": {
+      "paired_reference_over_max": [
+        1.1279620304104254,
+        1.1200188793214454,
+        1.1153821191391444,
+        1.1218155455724739,
+        1.1320005820964207,
+        1.1087406839352407,
+        0.9856072445960287,
+        1.138555090217527,
+        1.279974574246969
+      ],
+      "wins": 8,
+      "conservative_reference_over_max": 0.9546972534492397
+    },
+    "512": {
+      "paired_reference_over_max": [
+        1.050895439699288,
+        1.1901225787061727,
+        1.1838600323501678,
+        1.1733592083073021,
+        1.209298279084272,
+        1.1927634175437756,
+        1.2088582490198365,
+        1.245431948261654,
+        1.2314459217847338
+      ],
+      "wins": 9,
+      "conservative_reference_over_max": 0.9402855593756748
+    },
+    "8192": {
+      "paired_reference_over_max": [
+        1.183320278326371,
+        1.1489197951016512,
+        1.213643347076945,
+        1.1351541807327203,
+        1.1802452269151575,
+        1.140809080276124,
+        1.2189552039250262,
+        1.2135312830267664,
+        1.1230040586941268
+      ],
+      "wins": 9,
+      "conservative_reference_over_max": 1.0892986455336955
+    },
+    "65536": {
+      "paired_reference_over_max": [
+        1.017586581309724,
+        1.0459558778576574,
+        1.0730604643240473,
+        0.9409755489975743,
+        1.0545719151366872,
+        1.0558222334897245,
+        1.3947958605949125,
+        1.0746827880531866,
+        1.140007231326469
+      ],
+      "wins": 8,
+      "conservative_reference_over_max": 0.9409755489975743
+    }
+  },
+  "note": "No production source was changed. Both isolated adapters retain KERNEL_VERSION=1; adoption would require an intentional production version change and requalification.",
+  "artifacts": {
+    "compare_direct_max.py.txt": "07cabdf5cf78cb968f03db0b6758086c1c3f341c1deb63d2c1d3b6230bc250bd",
+    "direct-max-results.json": "817a9207af14de79869acac2b284b8a71d2ca5776ce2484ddd20f9ab1a7a4f5f",
+    "direct-max-results.txt": "122c7587ca068e7e253e7adbca36ab89714ae9ea13f2cc4ac18598bb3ea52fdc",
+    "max-adapter.c": "be5d71c666dbfb6b38072e07f2f90fcce5ebbc24c3b57d31b4408f456e4bd051",
+    "direct-max-build.json": "75441d91235e3db2d1bc10d11076ee75f099147807b59f49d783b9fea1d24817",
+    "direct-reference-build.json": "260916d45f1e978b1e2e13534b006e3bde5e4d13a1bfc0f3033c5c475922e1be",
+    "reference-adapter.c": "627bb499f3614c5c5c53d05e2514e6bac268c991792f491eee6322a4bda1778e"
+  }
+}

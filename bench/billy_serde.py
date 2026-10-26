@@ -1,4 +1,4 @@
-"""Compatibility entry point for ``bench.profiles.billy_serde``."""
+"""Compatibility entry point for the serde fixture profiler."""
 
 from __future__ import annotations
 

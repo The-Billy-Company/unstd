@@ -1,16 +1,16 @@
-# Billy audio consumers and release changes
+# Audio consumers and release changes
 
 The production-source audit found five `wavx.wrap_pcm` calls in two modules,
-and no Billy production calls to `read`, `write`, `blocks` or `Writer`.
+and no production calls to `read`, `write`, `blocks` or `Writer`.
 This release expands the existing wrapper's input type and adds one operation,
 `decode_pcm`. No audio dependency, codec, resampler or streaming state machine
-is added. Billy's source is unchanged; the adoption examples below apply when
+is added. The consumer source is unchanged; the adoption examples below apply when
 its dependency is updated to a release containing this API.
 
 ## Existing uses
 
-Paths below are relative to the sibling Billy repository. The
-[measurement artifact](billy-audio.json) retains source text, line locations,
+Paths below are relative to the consumer repository. The
+measurement artifact in this directory retains source text, line locations,
 file hashes and symbol hashes for eight relevant consumer functions.
 
 | Consumer | Production source | Input and operation |
@@ -102,7 +102,7 @@ The decoder is primarily a memory, validation and portability improvement.
 Validation/dispatch adds ~0.3–0.4 µs for a 20 ms live chunk; long-buffer throughput
 is approximately unchanged. This is not evidence of faster model inference,
 network transcription or end-to-end voice latency. The two decode controls
-retain Billy's divide and reciprocal-multiply spellings, which are identical
+retain the existing divide and reciprocal-multiply spellings, which are identical
 for PCM16 values. Fixtures and observations are bounded source-based ports;
 provider calls and deployed traffic are not measured.
 
@@ -121,7 +121,7 @@ capabilities retained. Only the new row and the reviewed workload hash are
 added to the baseline; prior ceilings and evidence are preserved. The
 revision-comparison registry omits this operation for releases predating it.
 
-See [README.md](README.md) for the paired benchmark command. Re-run on the
+See [README.md](README.md) for paired benchmark requirements. Re-run on the
 deployment worker before making absolute throughput claims.
 
 Local validation on this change: the Python 3.14 audio/API/benchmark selection

@@ -15,12 +15,10 @@ visibly planned until it contains meaningful tests and its runner is verified.
 
 ## Organization and evidence
 
-The organization follows Billy's [test architecture](../../billy/services/ai/tests/README.md),
-[product and assurance split](../../billy/services/ai/tests/suites/README.md),
-[support boundary](../../billy/services/ai/tests/support/README.md), and
-[standalone tooling boundary](../../billy/services/ai/tests/tooling/README.md).
-Billy's service-specific evals, provider infrastructure, and browser machinery do
-not become unstd requirements merely because the directory organization matches.
+The [test architecture](README.md) separates
+[product contracts from cross-module assurance](suites/README.md), keeps reusable
+fixtures and helpers in [support](support/README.md), and places standalone
+campaigns in [tooling](tooling/README.md).
 
 ```text
 tests/

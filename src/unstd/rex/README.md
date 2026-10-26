@@ -13,8 +13,8 @@ doc_radar:
 
 # `unstd.rex`
 
-We put our [irregex](https://github.com/The-Billy-Company/irregex) engine behind
-Python's `re` surface. Install `pip install 'unstd[rex]'`, then swap the import:
+The `irregex` engine runs behind Python's `re` surface.
+Install `pip install 'unstd[rex]'`, then swap the import:
 
 ```python
 from unstd import rex

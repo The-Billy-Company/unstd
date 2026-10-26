@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from bisect import bisect_left, bisect_right
 from datetime import UTC, date, datetime
 from functools import partial
 import hashlib
@@ -901,6 +902,48 @@ def _types() -> list[Case]:
     sorted_dict = containers.SortedDict(pairs)
     sorted_set = containers.SortedSet(items)
     immutable = containers.Map(pairs)
+    ordered = sorted(items)
+    with_duplicate = [*ordered, 64]
+    with_duplicate.sort()
+
+    def sorted_add() -> Any:
+        value = containers.SortedList(items)
+        value.add(64)
+        return value
+
+    def added(value: Any) -> None:
+        assert isinstance(value, containers.SortedList)
+        expect(with_duplicate)(list(value))
+        # Each timed call owns a fresh list; the prepared query fixture stays
+        # unchanged across all batches and repeated correctness checks.
+        expect(ordered)(list(sorted_list))
+
+    operations = [
+        Case(
+            "unstd.containers.SortedList#add-duplicate",
+            sorted_add,
+            added,
+            "construct a fresh 128-integer sorted list and insert a duplicate middle integer",
+        ),
+        Case(
+            "unstd.containers.SortedList#bisect-left",
+            partial(sorted_list.bisect_left, 64),
+            expect(bisect_left(ordered, 64)),
+            "bisect_left on a prepared 128-integer sorted list; stdlib bisect oracle",
+        ),
+        Case(
+            "unstd.containers.SortedList#bisect-right",
+            partial(sorted_list.bisect_right, 64),
+            expect(bisect_right(ordered, 64)),
+            "bisect_right on a prepared 128-integer sorted list; stdlib bisect oracle",
+        ),
+        Case(
+            "unstd.containers.SortedList#bisect-right-alias",
+            partial(sorted_list.bisect, 64),
+            expect(bisect_right(ordered, 64)),
+            "bisect alias on a prepared 128-integer sorted list; stdlib right-bisect oracle",
+        ),
+    ]
 
     def persistent_set(value: Any) -> None:
         assert isinstance(value, containers.Map)
@@ -957,6 +1000,7 @@ def _types() -> list[Case]:
             expect(64),
             "bisect a prepared 128-integer sorted list",
         ),
+        *operations,
         Case(
             "unstd.containers.SortedSet#contains",
             partial(sorted_set.__contains__, 64),

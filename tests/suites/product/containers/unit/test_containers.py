@@ -31,10 +31,10 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from unstd.extras import missing
 from unstd.containers import Map, SortedDict, SortedList, SortedSet
 from unstd.containers.persistent import HAVE_IMMUTABLES
 from unstd.containers.sorted import HAVE_SORTEDCONTAINERS
+from unstd.extras import missing
 
 
 if TYPE_CHECKING:

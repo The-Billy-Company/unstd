@@ -2,9 +2,9 @@
 doc_radar:
   sentinels:
     - file: __init__.py
-      contains: ["from unstd.toml.dialect import"]
+      contains: ['from unstd.toml.dialect import']
     - file: dialect.py
-      contains: ["def _common_mapping("]
+      contains: ['def _common_mapping(']
 ---
 
 # `unstd.toml`
@@ -87,16 +87,17 @@ Read such a document back with `tomlkit.parse` (or this module's `parse`) — no
 
 ## Source ownership
 
-The package keeps its cohesive modules together as one code leaf.
+This package is one TOML code leaf. [`__init__.py`](__init__.py) keeps stdlib
+read aliases, optional writing imports, style-preserving builders and public
+write calls. [`dialect.py`](dialect.py) validates values and normalizes plain
+data to the common TOML dialect; it loads only when the writing backend is
+available. Keeping these two cohesive modules together avoids a separate
+package for one normalization module.
 
 | File | Responsibility |
 | --- | --- |
-| [`__init__.py`](__init__.py) | Public read/write API and style-preserving document builders |
+| [`__init__.py`](__init__.py) | Public read/write API and document builders |
 | [`dialect.py`](dialect.py) | Common-dialect value validation and normalization |
-
-`dialect.py` validates values and normalizes plain data to the common TOML
-dialect. It loads only when the optional writing backend is available.
-The public module retains stdlib read aliases, builders, and write entrypoints.
 
 Run the contracts from the repository root with
 `uv run --no-sync python -m pytest tests/suites/product/toml -q`.
