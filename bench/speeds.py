@@ -706,12 +706,15 @@ def paired_revision_recheck(
             "provenance": current_provenance,
         },
     }
+    from bench.profiles.speeds_recheck import round_measurements, timeout_seconds
+
+    budget = timeout_seconds(len(names), rounds)
     result = subprocess.run(
         [sys.executable, "-m", "bench.profiles.speeds_recheck"],
         input=json.dumps(request),
         text=True,
         capture_output=True,
-        timeout=120 + 10 * len(names),
+        timeout=budget,
         check=False,
     )
     if result.returncode:
@@ -734,8 +737,13 @@ def paired_revision_recheck(
         ):
             _invalid("paired revision worker changed a frozen limit or dropped rounds")
         ratios = []
-        for pair in row["pairs"]:
-            values = (pair["before_ns"], pair["current_ns"])
+        for index, pair in enumerate(row["pairs"]):
+            if type(pair["round"]) is not int or pair["round"] != index:
+                _invalid("paired revision worker changed round order")
+            derived = round_measurements(pair)
+            if any(pair[key] != value for key, value in derived.items()):
+                _invalid("paired revision worker changed its raw batch means")
+            values = (derived["before_ns"], derived["current_ns"])
             if any(
                 isinstance(value, bool)
                 or not isinstance(value, int | float)

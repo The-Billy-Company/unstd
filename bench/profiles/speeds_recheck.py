@@ -1,4 +1,4 @@
-"""Adjacent revision checks for persistent frozen function-latency failures."""
+"""Balanced revision checks for persistent frozen function-latency failures."""
 
 from __future__ import annotations
 
@@ -163,28 +163,77 @@ def _pair(cohorts: dict[str, Cohort], name: str, rounds: int) -> list[dict[str, 
         gc.collect()
 
 
+def balanced_order(index: int) -> list[str]:
+    """Counterbalance linear drift and first-arm effects within every round."""
+    if type(index) is not int or index < 0:
+        speeds._invalid("paired recheck requires an exact nonnegative round index")
+    a, b = ("before", "current") if index % 2 == 0 else ("current", "before")
+    return [a, b, b, a, b, a, a, b, b, a, a, b, a, b, b, a]
+
+
+def round_measurements(pair: dict[str, Any]) -> dict[str, float]:
+    """Validate and average every raw batch in a fully balanced round."""
+    order = balanced_order(pair["round"])
+    batches = pair["batches"]
+    if pair["order"] != order or len(batches) != len(order):
+        speeds._invalid("paired recheck lost its balanced batch order")
+    values: dict[str, list[float]] = {
+        name: []
+        for name in ("before_ns", "current_ns", "before_cpu_ns", "current_cpu_ns")
+    }
+    count = pair["iterations"]
+    if isinstance(count, bool) or not isinstance(count, int) or count < 1:
+        speeds._invalid("paired recheck requires positive equal iteration counts")
+    for position, (label, batch) in enumerate(zip(order, batches, strict=True)):
+        if (
+            type(batch["position"]) is not int
+            or type(batch["iterations"]) is not int
+            or batch["position"] != position
+            or batch["label"] != label
+            or batch["iterations"] != count
+        ):
+            speeds._invalid("paired recheck changed source order or iteration counts")
+        values[label + "_ns"].append(_positive(batch["ns"]))
+        values[label + "_cpu_ns"].append(_positive(batch["cpu_ns"]))
+    return {
+        name: _positive(sum(samples) / len(samples)) for name, samples in values.items()
+    }
+
+
 def _pair_measured(
     cohorts: dict[str, Cohort], name: str, rounds: int
 ) -> list[dict[str, Any]]:
     calibrations = {}
     for label, cohort in cohorts.items():
         with _bound(cohort):
-            case = cohort.cases[name]
-            calibrations[label] = _calibrate(case.run)
+            calibrations[label] = _calibrate(cohort.cases[name].run)
     count = max(item[0] for item in calibrations.values())
     slowest = max(elapsed / iterations for iterations, elapsed in calibrations.values())
     count = min(count, max(1, int(timing._MAX_BATCH_NS / max(slowest, 1))))
     pairs = []
     for index in range(rounds):
-        order = ["before", "current"][:: 1 if index % 2 == 0 else -1]
-        pair: dict[str, Any] = {"round": index, "order": order, "iterations": count}
-        for label in order:
+        order = balanced_order(index)
+        pair: dict[str, Any] = {
+            "round": index,
+            "order": order,
+            "iterations": count,
+            "batches": [],
+        }
+        for position, label in enumerate(order):
             with _bound(cohorts[label]):
                 started = time.thread_time_ns()
                 elapsed = timing._batch(cohorts[label].cases[name].run, count)
                 cpu = time.thread_time_ns() - started
-            pair[label + "_ns"] = elapsed / count
-            pair[label + "_cpu_ns"] = cpu / count
+            pair["batches"].append(
+                {
+                    "position": position,
+                    "label": label,
+                    "iterations": count,
+                    "ns": elapsed / count,
+                    "cpu_ns": cpu / count,
+                }
+            )
+        pair.update(round_measurements(pair))
         pair["current_over_before"] = pair["current_ns"] / pair["before_ns"]
         pairs.append(pair)
     return pairs
@@ -223,6 +272,23 @@ def decision(pairs: list[dict[str, Any]], row: dict[str, Any]) -> dict[str, Any]
     }
 
 
+def timeout_seconds(case_count: int, rounds: int) -> int:
+    """Bound the complete worker while allowing every planned measured batch."""
+    if (
+        type(case_count) is not int
+        or case_count < 1
+        or type(rounds) is not int
+        or rounds < 3
+    ):
+        speeds._invalid(
+            "paired recheck requires positive cases and at least three rounds"
+        )
+    setup_seconds, maximum_seconds = 120, 8 * 60
+    batch_ns = 16 * rounds * timing._MAX_BATCH_NS
+    per_case_seconds = (batch_ns + 999_999_999) // 1_000_000_000 + 10
+    return min(maximum_seconds, setup_seconds + per_case_seconds * case_count)
+
+
 def worker(request: dict[str, Any]) -> dict[str, Any]:
     """Keep both original installed products and all fixture resources alive."""
     baseline, names = request["baseline"], request["names"]
@@ -230,6 +296,9 @@ def worker(request: dict[str, Any]) -> dict[str, Any]:
         speeds._invalid("paired recheck workload source differs from original freeze")
     if not names or any(name not in baseline["cases"] for name in names):
         speeds._invalid("paired recheck requires original frozen cases")
+    budget = timeout_seconds(len(names), request["rounds"])
+    if len(names) != len(set(names)):
+        speeds._invalid("paired recheck repeats a frozen case")
     with speeds._pin_cpu(), ExitStack() as resources:
         cohorts = {}
         for label in ("before", "current"):
@@ -258,7 +327,13 @@ def worker(request: dict[str, Any]) -> dict[str, Any]:
                     )
         if baseline["workload_sources"] != speeds.workload_sources():
             speeds._invalid("paired recheck workload changed during timing")
-        return {"cases": results, "products": initial, "rounds": request["rounds"]}
+        return {
+            "cases": results,
+            "products": initial,
+            "rounds": request["rounds"],
+            "protocol": "four counterbalanced ABBA/BAAB crossovers; all sixteen raw batches retained per round",
+            "worker_timeout_seconds": budget,
+        }
 
 
 def main() -> None:

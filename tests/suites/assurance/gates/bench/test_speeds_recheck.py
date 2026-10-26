@@ -96,7 +96,7 @@ def test_product_drift_fails_before_any_timing(tmp_path):
 
 @pytest.mark.parametrize(
     ("ratio", "worker_error", "status"),
-    [(1.0, False, 0), (1.4, False, 1), (1.0, True, 2)],
+    [(1.0, False, 0), (1.4, False, 1), (1.0, True, 2), (1.0, "timeout", 2)],
 )
 def test_cli_preserves_original_failure_all_retries_and_frozen_rows(
     tmp_path, monkeypatch, ratio, worker_error, status
@@ -122,6 +122,9 @@ def test_cli_preserves_original_failure_all_retries_and_frozen_rows(
     monkeypatch.setattr(speeds, "timings", lambda *_a, **_k: {case.name: measurement})
 
     def paired(*_args, **_kwargs):
+        if worker_error == "timeout":
+            command = "recheck"
+            raise speeds.subprocess.TimeoutExpired(command, 480)
         if worker_error:
             message = "wrong native cohort"
             raise speeds.RegistryError(message)
@@ -160,7 +163,9 @@ def test_cli_preserves_original_failure_all_retries_and_frozen_rows(
     assert row["failed"] is (status != 0)
     assert result["absolute_failed"] == [case.name]
     assert baseline_path.read_bytes() == original
-    if worker_error:
+    if worker_error == "timeout":
+        assert "timed out" in result["paired_error"]
+    elif worker_error:
         assert result["paired_error"] == "wrong native cohort"
 
 
@@ -216,3 +221,160 @@ def test_pair_preserves_gc_policy_and_restores_caller_state(
 def test_derived_ratio_underflow_and_limit_overflow_fail(pair, row):
     with pytest.raises(speeds.RegistryError, match="finite positive"):
         recheck.decision([pair], row)
+
+
+@pytest.mark.parametrize("product", [1.0, 1.4])
+@pytest.mark.parametrize("slope", [-0.03, 0.0, 0.03])
+@pytest.mark.parametrize("penalty_kind", ["crossover", "pair", "both"])
+def test_every_round_cancels_first_arm_penalties_and_linear_drift(
+    tmp_path, monkeypatch, product, slope, penalty_kind
+):
+    from contextlib import nullcontext
+
+    monkeypatch.setattr(recheck, "_bound", lambda _: nullcontext())
+    monkeypatch.setattr(recheck, "_calibrate", lambda _: (2, 100))
+    calls = []
+
+    def operation(label):
+        def call():
+            calls.append(label)
+            return label
+
+        return call
+
+    cohorts = {
+        label: recheck.Cohort(
+            tmp_path,
+            {"one": speeds.Case("one", operation(label), lambda _: None, "one")},
+            {},
+            {},
+            {},
+        )
+        for label in ("before", "current")
+    }
+    position = 0
+
+    def batch(call, count):
+        nonlocal position
+        slot = position % 16 + 1
+        round_index = position // 16
+        position += 1
+        labels = [call() for _ in range(count)]
+        assert len(set(labels)) == 1
+        penalty = 1.0
+        if penalty_kind in ("crossover", "both") and (slot - 1) % 4 == 0:
+            penalty *= 1.30
+        if penalty_kind in ("pair", "both") and (slot - 1) % 2 == 0:
+            penalty *= 1.30
+        host = (1 + slope * slot) * (1 + round_index * 0.02) * penalty
+        return count * 1_000_000 * host * (product if labels[0] == "current" else 1)
+
+    monkeypatch.setattr(recheck.timing, "_batch", batch)
+    pairs = recheck._pair_measured(cohorts, "one", 9)
+    result = recheck.decision(pairs, {"measured_ns": 100, "ceiling_ns": 130})
+    assert result["failed"] is (product > 1.3)
+    assert result["paired_current_over_before"] == pytest.approx(product)
+    assert len(pairs) == 9
+    assert position == 144
+    assert len(calls) == 288
+    for pair in pairs:
+        assert pair["current_over_before"] == pytest.approx(product)
+        assert len(pair["batches"]) == 16
+        assert sum(batch["label"] == "before" for batch in pair["batches"]) == 8
+        assert sum(batch["label"] == "current" for batch in pair["batches"]) == 8
+
+
+def _balanced_round(index=0):
+    order = recheck.balanced_order(index)
+    pair = {
+        "round": index,
+        "order": order,
+        "iterations": 2,
+        "batches": [
+            {
+                "position": position,
+                "label": label,
+                "iterations": 2,
+                "ns": 100.0,
+                "cpu_ns": 95.0,
+            }
+            for position, label in enumerate(order)
+        ],
+    }
+    pair.update(recheck.round_measurements(pair))
+    pair["current_over_before"] = 1.0
+    return pair
+
+
+@pytest.mark.parametrize(
+    "kind",
+    ["missing_batch", "position_bool", "count_bool", "wrong_label", "round_bool"],
+)
+def test_balanced_round_rejects_missing_or_forged_raw_batches(kind):
+    pair = _balanced_round(1)
+    if kind == "missing_batch":
+        pair["batches"].pop()
+    elif kind == "position_bool":
+        pair["batches"][1]["position"] = True
+    elif kind == "count_bool":
+        pair["iterations"] = 1
+        for batch in pair["batches"]:
+            batch["iterations"] = True
+    elif kind == "wrong_label":
+        pair["batches"][0]["label"] = "before"
+    else:
+        pair["round"] = True
+    with pytest.raises(speeds.RegistryError):
+        recheck.round_measurements(pair)
+
+
+def test_balanced_budget_allows_complete_sampling_and_is_bounded():
+    assert recheck.timeout_seconds(4, 9) == 304
+    assert recheck.timeout_seconds(7, 9) == 442
+    assert recheck.timeout_seconds(8, 9) == 480
+    assert recheck.timeout_seconds(270, 9) == 480
+    assert recheck.timeout_seconds(1, 10_000) == 480
+    with pytest.raises(speeds.RegistryError, match="at least three rounds"):
+        recheck.timeout_seconds(1, 2)
+
+
+@pytest.mark.parametrize("corruption", ["raw_mean", "round_order", "missing_batch"])
+def test_parent_recomputes_every_raw_batch_before_accepting_a_verdict(
+    tmp_path, monkeypatch, corruption
+):
+    from hashlib import sha256
+    from types import SimpleNamespace
+
+    case = speeds.Case("unstd.demo.operation", lambda: 1, speeds.expect(1), "one")
+    monkeypatch.setattr(speeds, "environment", lambda: {"python": "fixture"})
+    baseline_path = tmp_path / "baseline.json"
+    baseline = speeds.freeze(
+        [case], {case.name: Measurement(100, 2, 3, 0)}, baseline_path
+    )
+    before_path = tmp_path / "before.json"
+    before_path.write_text(
+        json.dumps(
+            {
+                "baseline_sha256": sha256(baseline_path.read_bytes()).hexdigest(),
+                "environment": baseline["environment"],
+            }
+        )
+    )
+    pairs = [_balanced_round(index) for index in range(3)]
+    row = recheck.decision(pairs, baseline["cases"][case.name])
+    if corruption == "raw_mean":
+        pairs[0]["before_ns"] += 1
+    elif corruption == "round_order":
+        pairs[1]["round"] = 0
+    else:
+        pairs[0]["batches"].pop()
+    response = {"cases": {case.name: row}, "products": {"before": {}, "current": {}}}
+    monkeypatch.setattr(
+        speeds.subprocess,
+        "run",
+        lambda *_a, **_k: SimpleNamespace(returncode=0, stdout=json.dumps(response)),
+    )
+    with pytest.raises(speeds.RegistryError):
+        speeds.paired_revision_recheck(
+            [case.name], baseline, before_path, baseline_path, {}, {}, rounds=3
+        )

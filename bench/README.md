@@ -131,11 +131,17 @@ local committed snapshot remains separate from ephemeral CI worker baselines.
 
 Revision verification can supply `--reference-report before.json` from the
 original freeze. A fresh worker confirms persistent ceiling failures with
-adjacent, alternating before/current batches and independent prepared cohorts.
-Each case retains its original `ceiling_ns / measured_ns` limit. Reports keep
+independent prepared cohorts. Each of the nine rounds contains four opposing
+ABBA/BAAB crossovers (16 raw batches), counterbalancing source order, first-arm
+penalties and linear time drift within the round. Its ratio compares the two
+revisions' means; every raw wall/CPU batch remains in the report. Each case
+retains its original `ceiling_ns / measured_ns` limit. Reports keep
 the absolute failure, all original samples and bounded retries, and every paired
 wall/CPU sample. Missing cases, changed workloads, wrong products, native binary
-drift and worker errors remain failures. Frozen rows are never rewritten.
+drift and worker errors remain failures. The fresh worker has an eight-minute
+cap; its time budget follows from the case count, round count and 250 ms
+estimated batch ceiling. A timeout preserves the original failures and report.
+Frozen rows are never rewritten.
 
 Before the full function verification, each normal performance job also runs
 the gzip consumer comparison against the separately installed revisions with
