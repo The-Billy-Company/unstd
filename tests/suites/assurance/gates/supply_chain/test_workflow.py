@@ -550,6 +550,8 @@ def test_linux_bootstrap_export_ignores_the_development_pin(workflows, tmp_path)
     ]
     command[selected + 1] = sys.executable
     environment = {**os.environ, "UV_PYTHON_PREFERENCE": "only-managed"}
+    # setup-uv exports an explicit runtime too; isolate the file-pin control.
+    environment.pop("UV_PYTHON", None)
     result = subprocess.run(  # noqa: S603 — real locked export in an isolated project
         command,
         cwd=tmp_path,
