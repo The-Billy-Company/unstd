@@ -251,11 +251,22 @@ else:
             signal.setitimer(signal.ITIMER_REAL, 0.00001)
             return 1
     signal.signal(signal.SIGALRM, inspect)
-    try:
-        result = _rand_native.seeded_ints([0] * 250000 + [ArmTimer()], 0, 4)
-    finally:
-        signal.setitimer(signal.ITIMER_REAL, 0)
-    assert observed and len(result) == 250001 and gc.is_tracked(result)
+    attempts = []
+    # A short native batch can finish before macOS delivers its timer. Increase
+    # only when no signal was observed; every delivered signal still scans live
+    # GC objects while the native call services its cancellation checkpoints.
+    for count in (250000, 1000000, 4000000):
+        try:
+            result = _rand_native.seeded_ints([0] * count + [ArmTimer()], 0, 4)
+        finally:
+            signal.setitimer(signal.ITIMER_REAL, 0)
+        assert len(result) == count + 1, ('incomplete native output', count, len(result))
+        assert gc.is_tracked(result), ('published output is not tracked', count)
+        attempts.append(count)
+        if observed:
+            break
+        del result
+    assert observed, ('signal was not delivered during any bounded batch', attempts)
     print('INSPECTED')
 """
     result = run_python(code, cwd=tmp_path, timeout=10)

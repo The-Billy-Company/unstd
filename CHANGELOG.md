@@ -57,6 +57,10 @@ doc_radar:
   with the admitted runtime's headers and ABI. A private CPython 3.13+ sysconfig
   overlay prevents Clang-only managed-runtime flags from reaching GCC in musl
   builds; Python 3.12 retains its existing path.
+- Process environment qualification compares complete child results with the
+  running stdlib, including Windows ARM startup entries. Native random GC-signal
+  qualification increases bounded work only when a platform has not delivered
+  its timer, while retaining live collector checks and output invariants.
 
 The 4.0.1 tag failed its qualification test and was not published to PyPI.
 This release includes the 4.0.1 build fixes and the 4.0.0 feature updates below.
