@@ -53,6 +53,10 @@ doc_radar:
 
 - Isolate the release bootstrap regression from setup-uv's inherited interpreter
   selection so both its positive and missing-runtime controls run in CI.
+- Source builds of wheel-test dependencies use the container's compiler flags
+  with the admitted runtime's headers and ABI. A private CPython 3.13+ sysconfig
+  overlay prevents Clang-only managed-runtime flags from reaching GCC in musl
+  builds; Python 3.12 retains its existing path.
 
 The 4.0.1 tag failed its qualification test and was not published to PyPI.
 This release includes the 4.0.1 build fixes and the 4.0.0 feature updates below.

@@ -62,6 +62,29 @@ print(json.dumps(dict(schema=1, executable=str(pathlib.Path(sys.executable).reso
 """
 
 
+_SYSCONFIG_PROBE = """
+import importlib, json, sysconfig
+name = sysconfig._get_sysconfigdata_name()
+print(json.dumps((name, importlib.import_module(name).build_time_vars)))
+"""
+
+
+def _compiler_sysconfig(
+    python: Path, compiler: dict[str, object], directory: Path
+) -> Path:
+    """Use container toolchain flags with the admitted interpreter's SDK and ABI."""
+    name, values = json.loads(
+        subprocess.check_output(  # noqa: S603 - admitted interpreter, fixed metadata probe
+            [python, "-I", "-S", "-c", _SYSCONFIG_PROBE], text=True, timeout=30
+        )
+    )
+    values.update((key, compiler[key]) for key in _COMPILER_KEYS)
+    directory.mkdir(parents=True, exist_ok=True)
+    target = directory / f"{name}.py"
+    target.write_text(f"build_time_vars = {values!r}\n", encoding="utf-8")
+    return target
+
+
 @cache
 def _managed_python(
     minor: str, platform_tag: str | None = None, soabi: str | None = None
@@ -197,6 +220,20 @@ def _linux_runtime(identifier: str, directory: Path = Path("/opt/python")) -> No
         raise RuntimeError(msg)
     payload = json.dumps(profile, sort_keys=True, separators=(",", ":")).encode()
     profile_path.write_bytes(payload)
+    # CPython 3.13+ reads this private override without putting an old stdlib
+    # on sys.path. Test dependency source builds need the same compiler as ours.
+    overlay = _compiler_sysconfig(
+        python, profile["compiler"], profile_path.with_suffix(".sysconfig")
+    )
+    print(
+        json.dumps(
+            {
+                "compiler_sysconfig": str(overlay),
+                "sha256": hashlib.sha256(overlay.read_bytes()).hexdigest(),
+            }
+        ),
+        flush=True,
+    )
     print(
         json.dumps(
             {
