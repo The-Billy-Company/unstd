@@ -47,6 +47,17 @@ doc_radar:
 
 <!-- towncrier release notes start -->
 
+## [4.0.2] - 2026-10-25
+
+### Fixed
+
+- Isolate the release bootstrap regression from setup-uv's inherited interpreter
+  selection so both its positive and missing-runtime controls run in CI.
+
+The 4.0.1 tag failed its qualification test and was not published to PyPI.
+This release includes the 4.0.1 build fixes and the 4.0.0 feature updates below.
+Their tags and qualification evidence remain unchanged.
+
 ## [4.0.1] - 2026-10-25
 
 ### Fixed
