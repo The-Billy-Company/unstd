@@ -2081,6 +2081,16 @@ record_cache_store(PyTypeObject *type, unsigned int version, ModuleState *state)
         return 0;
     }
     size_t index = memo_hash((PyObject *)type);
+    /* Population is optional. An unchanged version entry needs no rewrite,
+     * including when earlier probe slots belong to other live classes.
+     * Retrieval still validates both the live version and weakref identity. */
+    for (size_t offset = 0; offset < 4; offset++) {
+        RecordEntry *entry = &state->records[
+            (index + offset) & (RECORD_CACHE_SIZE - 1)];
+        if (entry->version == version) {
+            return 0;
+        }
+    }
     RecordEntry *available = NULL;
     for (size_t offset = 0; offset < 4; offset++) {
         RecordEntry *entry = &state->records[
