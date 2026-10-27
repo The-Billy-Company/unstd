@@ -4,7 +4,7 @@ doc_radar:
     - file: src/unstd/clone/__init__.py
       contains: ['from unstd.clone.structural import asdict, copy, deep, deepcopy']
     - file: src/unstd/clone/structural.py
-      contains: ['def deep[T](', 'def asdict(']
+      contains: ['def deep[T](', 'def asdict(', 'def _model_private(', '_NATIVE_MODEL_CONTINUATION', '_NATIVE_CLOSED_TEMPORALS']
 ---
 
 # `unstd.clone`
@@ -12,8 +12,8 @@ doc_radar:
 Part of [`unstd`](../README.md). A fast **structural deep clone** for data, and
 `dataclasses.asdict` on the same walker, behind a stdlib-`copy`-faithful surface.
 No extra or third-party runtime dependency is needed. CPython builds optionally
-include a bounded C walker for exact builtin graphs and admitted plain
-dataclasses. Other shapes and builds without a compiler use the Python walker;
+include a bounded C walker for exact builtin graphs, admitted plain dataclasses
+and model state. Other shapes and builds without a compiler use the Python walker;
 qualifying object state can still use native copying.
 
 ```python
@@ -46,16 +46,16 @@ with exact-type dispatch and shares one identity memo across the entire call.
 
 The bundled C path copies exact `dict` (exact string keys), `list`, and `tuple`
 graphs containing exact scalar builtins with a private pointer memo. A second
-native walk handles mixtures of builtin containers and admitted dataclasses,
+native walk handles mixtures of builtin containers, sets and admitted records,
 sharing the actual Python memo with foreign copy hooks. It preserves dictionary
 order, atomic identity, shared references and independence from the source.
-Subclasses, sets and other foreign nodes use the Python walker at that node.
+Subclasses and other foreign nodes use the Python walker at that node.
 Cycles follow the handling described below.
 Native work is bounded by 128 container levels and 65,536 container visits;
 scalar values do not consume that budget, so wide scalar arrays remain native.
 Exceeding either bound selects Python rather than limiting the public API.
-The graph copier detects builtin cycles during copying and discards its
-staged memo before selecting whole-graph `deepcopy`. The tree copier used by
+The closed graph copier detects builtin cycles during copying and discards its
+staged memo before continuing in the shared-memo walk. The tree copier used by
 `asdict` retains its eligibility pass.
 Private lists and tuples use presized storage, and dictionary cursors retain
 owned items with live mutation checks. Incomplete sequence storage stays hidden
@@ -84,6 +84,10 @@ against the previous Python implementation.
   exact `datetime.timezone` and `zoneinfo.ZoneInfo`. Values with custom `tzinfo` use
   `deepcopy` with the same memo, preserving timezone copy hooks and isolating
   mutable timezone state.
+  A flat root list or tuple beginning with an exact date, naive timestamp or
+  UTC timestamp can retain approved immutable leaves without a per-leaf memo.
+  This path validates policy after allocation and every leaf before filling;
+  nested data, custom timezones and larger sequences retain the general walk.
 - **Data classes are rebuilt the way `deepcopy` rebuilds them**, with the walker
   in place of the recursion. A plain dataclass is `cls.__new__` plus its walked
   `__dict__`. A pydantic model reconstructs its fields, extras, private state and
@@ -99,6 +103,9 @@ against the previous Python implementation.
   attribute access and inherited layouts retain the Python recipe. Pydantic's
   filtered private-state dictionary is treated as a separate view when needed,
   preserving the contents and type of ordinary aliases to the source mapping.
+  Canonical models stay in the same native traversal across their state phases;
+  allocation, attribute order and private-state projection retain the Python
+  recipe's behavior. Model setup is resolved only when a model is encountered.
 - **Everything else goes to `copy.deepcopy`, one node at a time.** A custom
   `__deepcopy__`, an `OrderedDict` or `defaultdict`, an lxml element, a lock: that
   node is copied by `deepcopy` with the same memo, so references crossing between
@@ -158,10 +165,10 @@ assert twin["left"] is twin["right"]
 assert twin["left"] is not shared
 ```
 
-The native graph copier detects builtin cycles while copying and selects
-whole-graph `deepcopy`. Python reconstruction publishes mutable twins before
-walking their children so backreferences reuse the same clone, with a
-recursion-error fallback for remaining shapes. Immutable temporal values use
+The closed native graph copier defers builtin cycles to the shared-memo walk.
+Mutable twins are published before their children so backreferences reuse the
+same clone. Remaining recursion errors select whole-graph `deepcopy`.
+Immutable temporal values use
 the memo to agree with foreign copy protocols. `deepcopy` remains the original
 stdlib function for callers requiring its exact protocol.
 

@@ -1,3 +1,12 @@
+---
+doc_radar:
+  sentinels:
+    - file: tests/suites/product/clone/unit/test_native_model_protocols.py
+      contains: ['test_model_state_root_honors_atom_memo_override', 'test_model_state_memo_hit_keeps_membership_and_getitem']
+    - file: tests/suites/product/clone/unit/test_native_temporal_sequence.py
+      contains: ['CLOSED_TEMPORALS']
+---
+
 # Cloning API and ownership contracts
 
 `test_clone.py` compares structural cloning and dataclass conversion with stdlib copying, including mutation isolation, custom hooks, cycles, temporal values, and supported object types. `test_class_lifetime.py` uses weak references to detect class retention by acceleration metadata and requires native cache references to be released during direct module deallocation as well as cyclic collection.
@@ -10,7 +19,11 @@
 
 `test_shared_identity.py` checks repeated builtin containers, dataclasses and optional models/structs, references crossing custom-copy boundaries in both visitation orders, dict-key and set aliases, mixed cycles, one hook call per shared object and independent clone calls. It also pins `asdict`'s separate copies.
 
+`test_native_model_protocols.py` compares native and Python model allocation, state phases, failures and live handler replacement. `test_native_sets.py` checks shared set members, cycles, hash failures, live source mutation and signal interruption. `test_slotted.py` checks default and frozen slotted dataclasses, inherited slots, custom state and warmed protocol changes.
+
 `test_temporal_graph.py` compares the canonical native temporal shortcut with the unchanged Python policy. It covers datetime/time identity, explicit source/timezone/timedelta memo entries, source pin order, naive `None` behavior, class/registry/function replacements, custom walkers and timezones, and the legacy extension import. Exact None/UTC temporal values must never compare foreign keys in copy registries that the Python branch does not consult; rebound timezone policies retain their own registry selection, foreign-key lookups and exact exceptions. Foreign memo-key equality and admitted-record state-key equality must preserve lookup counts and policy when callbacks mutate the memo or temporal bindings.
+
+`test_native_temporal_sequence.py` checks the bounded flat-sequence path through the public API, including allocation-time source and policy changes, unsupported later leaves, caller memos and live-prefix behavior in the general fallback. Foreign type-policy keys keep their equality callbacks and exact errors.
 
 `test_scalar_prefix.py` checks source shrink, clear and growth at sequence allocation and at a later native child, initialized-only collector visibility, empty-sequence GC state and aliases after scalar prefixes. `test_repeat_cache.py` checks adjacent runs, caller memo precedence, foreign-hook overrides, separate `asdict` positions and mutation/collection of a completed child. Allocation-boundary cases require the forced-GC audit wrapper; ordinary native builds retain the positive ownership and alias checks.
 

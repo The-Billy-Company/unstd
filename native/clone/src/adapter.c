@@ -43,6 +43,8 @@ typedef struct {
     PyObject *deepcopy;
     PyObject *tz_keywords;
     PyObject *temporal_names;
+    PyObject *model_names;
+    PyObject *closed_names;
 } ModuleState;
 
 typedef struct {
@@ -67,10 +69,22 @@ typedef struct {
     PyObject *admit;
     PyObject *memo_identity;
     PyObject *identity;
+    PyObject *model_handler;
+    PyObject *model_code;
+    PyObject *model_data_walk;
+    PyObject *model_data_code;
+    PyObject *model_data_body;
+    PyObject *model_body_code;
+    PyObject *model_native_walk;
+    PyObject *model_feature;
+    PyObject *model_walk_code;
+    PyObject *model_admit_code;
     RecordRecipe recipes[MAX_RECORD_TYPES];
     unsigned int recipe_count;
     int direct_graph;
     int temporal_graph;
+    int refuse_cycles;
+    PyObject *cycle_walk;
     PyObject *dict_name;
     PyObject *update_name;
     PyObject *memo;
@@ -112,12 +126,340 @@ static int clone_record(PyObject *, PyObject **, unsigned int, CopyContext *);
 static int clone_record_impl(PyObject *, PyObject **, unsigned int, CopyContext *);
 static int clone_budget(unsigned int *, int *);
 static PyObject *clone_graph(PyObject *, PyObject *const *, Py_ssize_t);
+static int clone_model(PyObject *, PyObject **, unsigned int, CopyContext *);
+static PyObject *clone_walk_canonical_graph(PyObject *, PyObject *const *, Py_ssize_t);
+
+enum {
+    MODEL_NEW, MODEL_EXTRA, MODEL_FIELDS, MODEL_PRIVATE,
+    MODEL_DATA_WALK, MODEL_ADMIT, MODEL_WALK, MODEL_NATIVE, MODEL_PROJECT,
+    MODEL_CANONICAL, MODEL_CODE, MODEL_UNDEFINED, MODEL_CANONICAL_DATA, MODEL_DATA_CODE,
+    MODEL_DATA_BODY, MODEL_CANONICAL_BODY, MODEL_BODY_CODE, MODEL_NATIVE_WALK,
+    MODEL_HANDLER, MODEL_FEATURE
+};
+
+static int
+recipe_candidate(PyTypeObject *type, CopyContext *context)
+{
+    if (context->admit == NULL || !(type->tp_flags & Py_TPFLAGS_HEAPTYPE)) {
+        return 0;
+    }
+    PyTypeObject *meta = Py_TYPE(type);
+    return (meta == &PyType_Type && type->tp_base == &PyBaseObject_Type)
+        || (context->model_handler != NULL
+            && meta->tp_hash == PyType_Type.tp_hash
+            && meta->tp_richcompare == PyType_Type.tp_richcompare);
+}
+
+static int
+model_current(CopyContext *context)
+{
+    if (PyFunction_GetCode(context->model_handler) != context->model_code) {
+        return 0;
+    }
+    if (context->model_data_walk != NULL) {
+        return 1;
+    }
+    /* Non-model graphs do not pay for model-global resolution. Hold the entry
+     * code across callbacks; resolve the state continuation only on first use. */
+    PyObject *globals = PyFunction_GetGlobals(context->model_handler);
+    PyObject *names = context->module_state->model_names;
+    PyObject *data_walk = PyDict_GetItem(globals,
+        PyTuple_GET_ITEM(names, MODEL_DATA_WALK));
+    PyObject *canonical = PyDict_GetItem(globals, PyTuple_GET_ITEM(names, MODEL_CANONICAL));
+    PyObject *code = PyDict_GetItem(globals, PyTuple_GET_ITEM(names, MODEL_CODE));
+    PyObject *undefined = PyDict_GetItem(globals, PyTuple_GET_ITEM(names, MODEL_UNDEFINED));
+    PyObject *canonical_data = PyDict_GetItem(globals, PyTuple_GET_ITEM(names, MODEL_CANONICAL_DATA));
+    PyObject *data_code = PyDict_GetItem(globals, PyTuple_GET_ITEM(names, MODEL_DATA_CODE));
+    PyObject *body = PyDict_GetItem(globals, PyTuple_GET_ITEM(names, MODEL_DATA_BODY));
+    PyObject *canonical_body = PyDict_GetItem(globals, PyTuple_GET_ITEM(names, MODEL_CANONICAL_BODY));
+    PyObject *body_code = PyDict_GetItem(globals, PyTuple_GET_ITEM(names, MODEL_BODY_CODE));
+    PyObject *native_walk = PyDict_GetItem(globals, PyTuple_GET_ITEM(names, MODEL_NATIVE_WALK));
+    PyObject *feature = PyDict_GetItem(globals, PyTuple_GET_ITEM(names, MODEL_FEATURE));
+    int feature_overflow = 0;
+    int canonical_feature = feature != NULL && PyLong_CheckExact(feature)
+        && PyLong_AsLongAndOverflow(feature, &feature_overflow) == 1 && !feature_overflow;
+    if (context->model_handler == canonical && context->model_code == code
+        && undefined != NULL && undefined != Py_None
+        && data_walk != NULL && data_walk == canonical_data
+        && PyFunction_Check(data_walk) && PyFunction_GetCode(data_walk) == data_code
+        && body != NULL && body == canonical_body && PyFunction_Check(body)
+        && PyFunction_GetCode(body) == body_code
+        && native_walk != NULL && PyCFunction_Check(native_walk)
+        && PyCFunction_GET_FUNCTION(native_walk)
+            == (PyCFunction)(void(*)(void))clone_walk_canonical_graph
+        && canonical_feature
+        && PyFunction_Check(context->walk) && PyFunction_Check(context->admit)) {
+        context->model_data_walk = Py_NewRef(data_walk);
+        context->model_data_code = Py_NewRef(PyFunction_GetCode(data_walk));
+        context->model_data_body = Py_NewRef(body);
+        context->model_body_code = Py_NewRef(body_code);
+        context->model_native_walk = Py_NewRef(native_walk);
+        context->model_feature = Py_NewRef(feature);
+        context->model_walk_code = Py_NewRef(PyFunction_GetCode(context->walk));
+        context->model_admit_code = Py_NewRef(PyFunction_GetCode(context->admit));
+        return 1;
+    }
+    context->model_handler = NULL;
+    return 0;
+}
 
 /* Only completed containers enter this private pointer-key table. Owning both
  * references keeps source addresses stable and never exposes NULL sequence
  * slots to Python, even if allocation-triggered GC mutates the source graph.
  * The inline table handles small graphs without allocating any Python memo
  * objects. Optional caller memos are exported only after the whole walk succeeds. */
+/* A policy probe must not add foreign-key equality callbacks to the Python
+ * branch. These bounded namespace scans allocate and invoke no Python code. */
+static int
+ordinary_namespace(PyObject *dictionary)
+{
+    if (dictionary == NULL || !PyDict_CheckExact(dictionary)
+        || PyDict_GET_SIZE(dictionary) > 4096) {
+        return 0;
+    }
+    Py_ssize_t position = 0;
+    PyObject *key, *value;
+    while (PyDict_Next(dictionary, &position, &key, &value)) {
+        if (!PyUnicode_CheckExact(key)) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+static int
+closed_temporal_policy(ModuleState *state, PyObject *walk)
+{
+    PyDateTime_CAPI *api = state->datetime_api;
+    if (!PyFunction_Check(walk)) {
+        return 0;
+    }
+    PyObject *globals = PyFunction_GetGlobals(walk);
+    if (!ordinary_namespace(globals)) {
+        return 0;
+    }
+    if (PyDict_GetItemWithError(globals, PyTuple_GET_ITEM(state->temporal_names, 9)) != walk
+        || PyDict_GetItemWithError(globals, PyTuple_GET_ITEM(state->temporal_names, 0)) != walk
+        || PyDict_GetItemWithError(globals, PyTuple_GET_ITEM(state->temporal_names, 1))
+            != PyFunction_GetCode(walk)
+        || PyDict_GetItemWithError(globals, PyTuple_GET_ITEM(state->temporal_names, 3))
+            != state->datetime_module) {
+        return 0;
+    }
+    PyObject *namespace = PyModule_GetDict(state->datetime_module);
+    if (!ordinary_namespace(namespace)) {
+        return 0;
+    }
+    if (PyDict_GetItemWithError(namespace, PyTuple_GET_ITEM(state->temporal_names, 4))
+            != (PyObject *)api->DateTimeType
+        || PyDict_GetItemWithError(namespace, PyTuple_GET_ITEM(state->temporal_names, 5))
+            != (PyObject *)api->TimeType
+        || PyDict_GetItemWithError(namespace, PyTuple_GET_ITEM(state->temporal_names, 10))
+            != (PyObject *)Py_TYPE(api->TimeZone_UTC)
+        || PyDict_GetItemWithError(namespace, PyTuple_GET_ITEM(state->closed_names, 1))
+            != (PyObject *)api->DateType
+        || PyDict_GetItemWithError(namespace, PyTuple_GET_ITEM(state->closed_names, 2))
+            != (PyObject *)api->DeltaType) {
+        return 0;
+    }
+    PyObject *graph_atoms = PyDict_GetItemWithError(globals,
+        PyTuple_GET_ITEM(state->closed_names, 3));
+    if (graph_atoms == NULL || !PyFrozenSet_CheckExact(graph_atoms)
+        || PySet_GET_SIZE(graph_atoms) > 64 || ((PySetObject *)graph_atoms)->mask >= 128) {
+        return 0;
+    }
+    unsigned int primitive_types = 0;
+    PySetObject *graph_policy = (PySetObject *)graph_atoms;
+    for (Py_ssize_t i = 0; i <= graph_policy->mask; i++) {
+        setentry entry = graph_policy->table[i];
+        if (entry.key != NULL && entry.hash != -1
+            && Py_TYPE(entry.key) != &PyType_Type) {
+            return 0;
+        }
+        primitive_types |= (entry.key == (PyObject *)&PyLong_Type)
+            | ((entry.key == (PyObject *)&PyUnicode_Type) << 1)
+            | ((entry.key == (PyObject *)&PyFloat_Type) << 2)
+            | ((entry.key == (PyObject *)&PyBool_Type) << 3)
+            | ((entry.key == (PyObject *)Py_TYPE(Py_None)) << 4)
+            | ((entry.key == (PyObject *)&PyBytes_Type) << 5)
+            | ((entry.key == (PyObject *)&PyComplex_Type) << 6)
+            | ((entry.key == (PyObject *)Py_TYPE(Py_Ellipsis)) << 7)
+            | ((entry.key == (PyObject *)Py_TYPE(Py_NotImplemented)) << 8);
+    }
+    if (primitive_types != 511) {
+        return 0;
+    }
+    PyObject *atoms = PyDict_GetItemWithError(globals,
+        PyTuple_GET_ITEM(state->closed_names, 0));
+    if (atoms == NULL || !PyFrozenSet_CheckExact(atoms)
+        || PySet_GET_SIZE(atoms) > 64 || ((PySetObject *)atoms)->mask >= 128) {
+        return 0;
+    }
+    int flags = 0, none_atom = 0, delta_atom = 0;
+    PySetObject *atom_policy = (PySetObject *)atoms;
+    for (Py_ssize_t i = 0; i <= atom_policy->mask; i++) {
+        setentry entry = atom_policy->table[i];
+        if (entry.key == NULL || entry.hash == -1) {
+            continue;
+        }
+        if (Py_TYPE(entry.key) != &PyType_Type) {
+            return 0;
+        }
+        flags |= entry.key == (PyObject *)api->DateType;
+        none_atom |= entry.key == (PyObject *)Py_TYPE(Py_None);
+        delta_atom |= entry.key == (PyObject *)api->DeltaType;
+    }
+    PyObject *zones = PyDict_GetItemWithError(globals,
+        PyTuple_GET_ITEM(state->temporal_names, 11));
+    if (zones == NULL || !PyFrozenSet_CheckExact(zones)
+        || PySet_GET_SIZE(zones) > 8 || ((PySetObject *)zones)->mask >= 32) {
+        return 0;
+    }
+    PySetObject *zone_policy = (PySetObject *)zones;
+    for (Py_ssize_t i = 0; i <= zone_policy->mask; i++) {
+        setentry entry = zone_policy->table[i];
+        if (entry.key == NULL || entry.hash == -1) {
+            continue;
+        }
+        if (Py_TYPE(entry.key) != &PyType_Type) {
+            return 0;
+        }
+        if (none_atom && entry.key == (PyObject *)Py_TYPE(Py_None)) {
+            flags |= 2;
+        }
+        if (delta_atom && entry.key == (PyObject *)Py_TYPE(api->TimeZone_UTC)) {
+            flags |= 4;
+        }
+    }
+    return flags;
+}
+
+static inline int
+closed_temporal_atom(PyObject *value, int flags, PyDateTime_CAPI *api)
+{
+    if (flags == 0) {
+        return 0;
+    }
+    PyTypeObject *type = Py_TYPE(value);
+    if (type != api->DateType && type != api->DateTimeType && type != api->TimeType) {
+        return 0;
+    }
+    if (type == api->DateType) {
+        return flags & 1;
+    }
+    PyObject *zone = type == api->DateTimeType
+        ? PyDateTime_DATE_GET_TZINFO(value) : PyDateTime_TIME_GET_TZINFO(value);
+    return (zone == Py_None && (flags & 2))
+        || (zone == api->TimeZone_UTC && (flags & 4));
+}
+
+
+/* The temporal branch follows two type memberships before timezone work.
+ * Foreign metaclass equality belongs to Python, as do policies that turn the
+ * source/zone into an earlier graph atom. Never add set membership callbacks
+ * while deciding whether to retain the native continuation. */
+static int
+temporal_memberships_safe(ModuleState *state, PyObject *globals, PyTypeObject *kind)
+{
+    if (!ordinary_namespace(globals)) {
+        return 0;
+    }
+    int none_graph_atom = 0;
+    for (int graph = 0; graph < 2; graph++) {
+        PyObject *set = PyDict_GetItemWithError(globals,
+            PyTuple_GET_ITEM(state->closed_names, graph ? 3 : 0));
+        if (set == NULL || !PyFrozenSet_CheckExact(set)
+            || PySet_GET_SIZE(set) > 64 || ((PySetObject *)set)->mask >= 128) {
+            return 0;
+        }
+        PySetObject *policy = (PySetObject *)set;
+        for (Py_ssize_t i = 0; i <= policy->mask; i++) {
+            setentry entry = policy->table[i];
+            if (entry.key == NULL || entry.hash == -1) {
+                continue;
+            }
+            if (Py_TYPE(entry.key) != &PyType_Type || entry.key == (PyObject *)kind
+                || (graph && entry.key == (PyObject *)Py_TYPE(state->datetime_api->TimeZone_UTC))) {
+                return 0;
+            }
+            none_graph_atom |= graph && entry.key == (PyObject *)Py_TYPE(Py_None);
+        }
+    }
+    return none_graph_atom;
+}
+
+
+/* Only a complete root sequence can return immutable temporal atoms without
+ * recording each leaf in a Python memo. A later allocating child could change
+ * policy; refusing and replaying an earlier temporal prefix would then change
+ * its copy protocol. Validate all leaves after the sole output allocation and
+ * before filling any slot. No allocation/callback follows that validation.
+ *
+ * Bound the allocation-free scan/fill to the existing 65536-node work budget.
+ * Larger sequences keep the ordinary walker and its interruption behavior;
+ * the bounded native section takes under a millisecond on qualification runs. */
+static int
+clone_temporal_sequence(PyObject *source, PyObject *walk, ModuleState *state,
+                        int recursion_limit, PyObject **result)
+{
+    int tuple = PyTuple_CheckExact(source);
+    if (!tuple && !PyList_CheckExact(source)) {
+        return 0;
+    }
+    Py_ssize_t size = Py_SIZE(source);
+    if (size == 0 || size > MAX_CONTAINERS) {
+        return 0;
+    }
+    PyDateTime_CAPI *api = state->datetime_api;
+    PyObject *first = tuple ? PyTuple_GET_ITEM(source, 0) : PyList_GET_ITEM(source, 0);
+    PyTypeObject *kind = Py_TYPE(first);
+    if (kind != api->DateType && kind != api->DateTimeType && kind != api->TimeType) {
+        return 0;
+    }
+    if (PyErr_CheckSignals() < 0) {
+        return -1;
+    }
+    /* Reject nested/foreign shapes without adding an allocating attempt to
+     * their existing closed-graph/canonical continuation. */
+    if (Py_SIZE(source) != size) {
+        return 0;
+    }
+    for (Py_ssize_t i = 0; i < size; i++) {
+        PyObject *item = tuple ? PyTuple_GET_ITEM(source, i) : PyList_GET_ITEM(source, i);
+        kind = Py_TYPE(item);
+        if (!atom(item) && kind != api->DateType && kind != api->DateTimeType
+            && kind != api->TimeType) {
+            return 0;
+        }
+    }
+    PyObject *output = tuple ? PyTuple_New(size) : PyList_New(size);
+    if (output == NULL) {
+        return -1;
+    }
+    int flags = closed_temporal_policy(state, walk);
+    if (Py_SIZE(source) != size || Py_GetRecursionLimit() != recursion_limit) {
+        Py_DECREF(output);
+        return 0;
+    }
+    for (Py_ssize_t i = 0; i < size; i++) {
+        PyObject *item = tuple ? PyTuple_GET_ITEM(source, i) : PyList_GET_ITEM(source, i);
+        if (!atom(item) && !closed_temporal_atom(item, flags, api)) {
+            Py_DECREF(output);
+            return 0;
+        }
+    }
+    for (Py_ssize_t i = 0; i < size; i++) {
+        PyObject *item = tuple ? PyTuple_GET_ITEM(source, i) : PyList_GET_ITEM(source, i);
+        if (tuple) {
+            PyTuple_SET_ITEM(output, i, Py_NewRef(item));
+        } else {
+            PyList_SET_ITEM(output, i, Py_NewRef(item));
+        }
+    }
+    *result = output;
+    return 1;
+}
+
 static size_t
 memo_hash(PyObject *source)
 {
@@ -512,6 +854,9 @@ temporal_value(PyObject *source, PyObject **result, CopyContext *context)
         return 0;
     }
     PyObject *globals = PyFunction_GetGlobals(context->walk);
+    if (!temporal_memberships_safe(state, globals, type)) {
+        return 0;
+    }
     if (PyDict_GetItemWithError(globals, PyTuple_GET_ITEM(state->temporal_names, 9)) != context->walk
         || PyDict_GetItemWithError(globals, PyTuple_GET_ITEM(state->temporal_names, 0)) != context->walk
         || PyDict_GetItemWithError(globals, PyTuple_GET_ITEM(state->temporal_names, 1))
@@ -1287,6 +1632,18 @@ clone_closed_value(PyObject *source, PyObject **result, unsigned int depth,
         if (!filtered || (filter_before & filter_bit)) {
             for (unsigned int i = 0; i < context->count; i++) {
                 if (context->ancestors[i] == source) {
+                    if (context->refuse_cycles && PyFunction_Check(context->cycle_walk)) {
+                        PyObject *walk = context->cycle_walk;
+                        PyObject *globals = PyFunction_GetGlobals(walk);
+                        PyObject *names = context->module_state->temporal_names;
+                        if (ordinary_namespace(globals)
+                            && PyDict_GetItem(globals, PyTuple_GET_ITEM(names, 0)) == walk
+                            && PyDict_GetItem(globals, PyTuple_GET_ITEM(names, 1))
+                                == PyFunction_GetCode(walk)
+                            && PyDict_GetItem(globals, PyTuple_GET_ITEM(names, 9)) == walk) {
+                            return 0;
+                        }
+                    }
                     PyErr_SetString(PyExc_RecursionError, "cyclic clone graph");
                     return -1;
                 }
@@ -1361,10 +1718,7 @@ clone_value(PyObject *source, PyObject **result, unsigned int depth,
     int builtin_container = selected_type == &PyList_Type
         || selected_type == &PyTuple_Type || selected_type == &PyDict_Type
         || selected_type == &PySet_Type;
-    int candidate = context->admit != NULL
-        && Py_TYPE(selected_type) == &PyType_Type
-        && selected_type->tp_base == &PyBaseObject_Type
-        && (selected_type->tp_flags & Py_TPFLAGS_HEAPTYPE);
+    int candidate = recipe_candidate(selected_type, context);
     /* Exact containers and ordinary heap records are disjoint from every
      * static graph atom. Retain the captured type across later memo hooks. */
     if (!builtin_container && !candidate && graph_atom_kind(source, selected_type)) {
@@ -1446,9 +1800,7 @@ clone_value_impl(PyObject *source, PyObject **result, unsigned int depth,
     }
     int pinned = 0;
     RecordRecipe *recipe = NULL;
-    if (context->admit != NULL && Py_TYPE(source_type) == &PyType_Type
-        && source_type->tp_base == &PyBaseObject_Type
-        && (source_type->tp_flags & Py_TPFLAGS_HEAPTYPE)) {
+    if (recipe_candidate(source_type, context)) {
         /* Pin the old class as Python's local `t` does: source.__class__ can
          * change during a keep-alive list allocation before admission runs. */
         Py_INCREF(source_type);
@@ -1463,6 +1815,11 @@ clone_value_impl(PyObject *source, PyObject **result, unsigned int depth,
             return -1;
         }
         if (!recipe->native || Py_TYPE(source) != recipe->type) {
+            if (recipe->handler == context->model_handler
+                && Py_TYPE(source) == recipe->type
+                && model_current(context)) {
+                return clone_model(source, result, depth, context);
+            }
             return python_recipe(source, result, context, recipe);
         }
         context->record_type = recipe->type;
@@ -1575,6 +1932,195 @@ clone_value_impl(PyObject *source, PyObject **result, unsigned int depth,
 }
 
 static int
+clone_model_state(PyObject *source, PyObject **result, unsigned int depth,
+                  CopyContext *context)
+{
+    PyObject *globals = PyFunction_GetGlobals(context->model_handler);
+    PyObject *names = context->module_state->model_names;
+    PyObject *walk = PyDict_GetItem(globals, PyTuple_GET_ITEM(names, MODEL_DATA_WALK));
+    if (walk == NULL) {
+        PyErr_SetString(PyExc_NameError, "model state walker is unavailable");
+        return -1;
+    }
+    if (walk != context->model_data_walk || !PyFunction_Check(walk)
+        || PyFunction_GetCode(walk) != context->model_data_code) {
+        Py_INCREF(walk);
+        *result = PyObject_CallFunctionObjArgs(walk, source, context->memo, NULL);
+        Py_DECREF(walk);
+        return *result == NULL ? -1 : 1;
+    }
+#if PY_VERSION_HEX >= 0x030C0000 && PY_VERSION_HEX < 0x030F0000
+    PyThreadState *thread = PyThreadState_Get();
+    if (thread->py_recursion_remaining <= 0) {
+        PyErr_SetString(PyExc_RecursionError, "maximum recursion depth while cloning model state");
+        return -1;
+    }
+    --thread->py_recursion_remaining;
+#endif
+    /* _walk_data tests membership before its native dispatch, including atoms.
+     * Keep its two lookups on a hit: foreign memo keys may observe each one. */
+    PyObject *identity = PyLong_FromVoidPtr(source);
+    int present = identity == NULL ? -1 : PyDict_Contains(context->memo, identity);
+    Py_XDECREF(identity);
+    int status = -1;
+    if (present > 0) {
+        identity = PyLong_FromVoidPtr(source);
+        if (identity != NULL) {
+            PyObject *copied = PyDict_GetItemWithError(context->memo, identity);
+            if (copied != NULL) {
+                *result = Py_NewRef(copied);
+                status = 1;
+            } else if (!PyErr_Occurred()) {
+                PyErr_SetObject(PyExc_KeyError, identity);
+            }
+            Py_DECREF(identity);
+        }
+    } else if (present == 0) {
+        /* Equality during membership can replace dispatch globals. The Python
+         * wrapper has already completed that lookup: continue at its shared
+         * body rather than replaying the wrapper and its observable probes. */
+        PyObject *body = PyDict_GetItem(globals, PyTuple_GET_ITEM(names, MODEL_DATA_BODY));
+        PyObject *native = PyDict_GetItem(globals, PyTuple_GET_ITEM(names, MODEL_NATIVE));
+        PyObject *undefined = PyDict_GetItem(globals, PyTuple_GET_ITEM(names, MODEL_UNDEFINED));
+        int current = body != NULL && body == context->model_data_body
+            && PyFunction_Check(body) && PyFunction_GetCode(body) == context->model_body_code
+            && PyDict_GetItem(globals, PyTuple_GET_ITEM(names, MODEL_WALK)) == context->walk
+            && PyFunction_GetCode(context->walk) == context->model_walk_code
+            && PyDict_GetItem(globals, PyTuple_GET_ITEM(names, MODEL_ADMIT)) == context->admit
+            && PyFunction_GetCode(context->admit) == context->model_admit_code
+            && PyDict_GetItem(globals, PyTuple_GET_ITEM(names, MODEL_NATIVE_WALK))
+                == context->model_native_walk
+            && native != NULL && native != Py_None
+            && PyDict_GetItem(globals, PyTuple_GET_ITEM(names, MODEL_HANDLER))
+                == context->model_handler
+            && PyFunction_GetCode(context->model_handler) == context->model_code
+            && PyDict_GetItem(globals, PyTuple_GET_ITEM(names, MODEL_CANONICAL))
+                == context->model_handler
+            && PyDict_GetItem(globals, PyTuple_GET_ITEM(names, MODEL_CODE)) == context->model_code
+            && PyDict_GetItem(globals, PyTuple_GET_ITEM(names, MODEL_FEATURE))
+                == context->model_feature
+            && undefined != NULL && undefined != Py_None;
+        if (current) {
+#if PY_VERSION_HEX >= 0x030C0000 && PY_VERSION_HEX < 0x030F0000
+            if (thread->py_recursion_remaining <= 0) {
+                PyErr_SetString(PyExc_RecursionError,
+                                "maximum recursion depth while dispatching model state");
+            } else {
+                --thread->py_recursion_remaining;
+#endif
+                status = clone_child(source, result, depth, context);
+#if PY_VERSION_HEX >= 0x030C0000 && PY_VERSION_HEX < 0x030F0000
+                ++thread->py_recursion_remaining;
+            }
+#endif
+        } else if (body == NULL) {
+            PyErr_Format(PyExc_NameError, "name '%U' is not defined",
+                         PyTuple_GET_ITEM(names, MODEL_DATA_BODY));
+        } else {
+            Py_INCREF(body);
+            *result = PyObject_CallFunctionObjArgs(body, source, context->memo, NULL);
+            Py_DECREF(body);
+            status = *result == NULL ? -1 : 1;
+        }
+    }
+#if PY_VERSION_HEX >= 0x030C0000 && PY_VERSION_HEX < 0x030F0000
+    ++thread->py_recursion_remaining;
+#endif
+    return status;
+}
+
+static int
+clone_model_impl(PyObject *source, PyObject **result, unsigned int depth,
+                 CopyContext *context)
+{
+    context->temporal_graph = 0;
+    PyObject *names = context->module_state->model_names;
+    PyTypeObject *type = Py_TYPE(source);
+    PyObject *allocate = PyObject_GetAttr((PyObject *)type,
+                                         PyTuple_GET_ITEM(names, MODEL_NEW));
+    if (allocate == NULL) {
+        return -1;
+    }
+    PyObject *twin = PyObject_CallOneArg(allocate, (PyObject *)type);
+    Py_DECREF(allocate);
+    if (twin == NULL) {
+        return -1;
+    }
+    if (memo_store(source, twin, context) < 0) {
+        Py_DECREF(twin);
+        return -1;
+    }
+    for (int phase = 0; phase < 4; phase++) {
+        PyObject *name = phase == 0 ? context->dict_name
+            : PyTuple_GET_ITEM(names, phase == 1 ? MODEL_EXTRA
+                : phase == 2 ? MODEL_FIELDS : MODEL_PRIVATE);
+        PyObject *state = PyObject_GetAttr(source, name);
+        if (state == NULL && phase == 3 && PyErr_ExceptionMatches(PyExc_AttributeError)) {
+            PyErr_Clear();
+            state = Py_NewRef(Py_None);
+        }
+        if (state == NULL) {
+            Py_DECREF(twin);
+            return -1;
+        }
+        PyObject *copied = NULL;
+        int status;
+        if ((phase == 1 || phase == 3) && state == Py_None) {
+            copied = Py_NewRef(Py_None);
+            status = 1;
+        } else if (phase == 3) {
+            PyObject *globals = PyFunction_GetGlobals(context->model_handler);
+            PyObject *project = PyDict_GetItem(globals, PyTuple_GET_ITEM(names, MODEL_PROJECT));
+            if (project == NULL) {
+                PyErr_SetString(PyExc_NameError, "model private-state projection is unavailable");
+            } else {
+                copied = PyObject_CallFunctionObjArgs(project, state, context->memo, NULL);
+            }
+            status = copied == NULL ? -1 : 1;
+        } else {
+            status = clone_model_state(state, &copied, depth - 1, context);
+        }
+        Py_DECREF(state);
+        if (status != 1) {
+            Py_XDECREF(copied);
+            Py_DECREF(twin);
+            return status;
+        }
+        int applied = PyObject_GenericSetAttr(twin, name, copied);
+        Py_DECREF(copied);
+        if (applied < 0) {
+            Py_DECREF(twin);
+            return -1;
+        }
+    }
+    if (memo_store(source, twin, context) < 0) {
+        Py_DECREF(twin);
+        return -1;
+    }
+    *result = twin;
+    return 1;
+}
+
+static int
+clone_model(PyObject *source, PyObject **result, unsigned int depth,
+            CopyContext *context)
+{
+#if PY_VERSION_HEX >= 0x030C0000 && PY_VERSION_HEX < 0x030F0000
+    PyThreadState *thread = PyThreadState_Get();
+    if (thread->py_recursion_remaining <= 0) {
+        PyErr_SetString(PyExc_RecursionError, "maximum recursion depth while cloning a model");
+        return -1;
+    }
+    --thread->py_recursion_remaining;
+#endif
+    int status = clone_model_impl(source, result, depth, context);
+#if PY_VERSION_HEX >= 0x030C0000 && PY_VERSION_HEX < 0x030F0000
+    ++thread->py_recursion_remaining;
+#endif
+    return status;
+}
+
+static int
 clone_record(PyObject *source, PyObject **result, unsigned int depth,
              CopyContext *context)
 {
@@ -1656,17 +2202,17 @@ clone_record_impl(PyObject *source, PyObject **result, unsigned int depth,
         int status;
 #if PY_VERSION_HEX >= 0x030C0000 && PY_VERSION_HEX < 0x030F0000
         PyThreadState *thread = PyThreadState_Get();
-        if (context->direct_graph && thread->py_recursion_remaining <= 0) {
+        if (context->direct_graph && thread->py_recursion_remaining < 2) {
             PyErr_SetString(PyExc_RecursionError,
                             "maximum recursion depth while cloning record state");
             status = -1;
         } else {
             if (context->direct_graph) {
-                --thread->py_recursion_remaining;
+                thread->py_recursion_remaining -= 2;
             }
             status = clone_child(state, &copied, depth - 1, context);
             if (context->direct_graph) {
-                ++thread->py_recursion_remaining;
+                thread->py_recursion_remaining += 2;
             }
         }
 #else
@@ -1889,7 +2435,7 @@ clone_builtin(PyObject *module, PyObject *source)
 
 static PyObject *
 clone_direct_graph(PyObject *module, PyObject *source, PyTypeObject *type, PyObject *walk,
-                   PyObject *admit, PyObject *memo, int temporal)
+                   PyObject *admit, PyObject *memo, int temporal, PyObject *model)
 {
 #if PY_VERSION_HEX < 0x030C0000 || PY_VERSION_HEX >= 0x030F0000
     /* The versioned frame-budget ABI is validated on supported wheel targets;
@@ -1948,6 +2494,20 @@ clone_direct_graph(PyObject *module, PyObject *source, PyTypeObject *type, PyObj
      * private inline memo arrays belong to the separate closed mode. */
     CopyContext context;
     context.identity = NULL;
+    context.model_handler = NULL;
+    context.model_code = NULL;
+    context.model_data_walk = NULL;
+    context.model_data_code = NULL;
+    context.model_data_body = NULL;
+    context.model_body_code = NULL;
+    context.model_native_walk = NULL;
+    context.model_feature = NULL;
+    context.model_walk_code = NULL;
+    context.model_admit_code = NULL;
+    if (model != NULL) {
+        context.model_handler = model;
+        context.model_code = Py_NewRef(PyFunction_GetCode(model));
+    }
     context.recipe_count = 0;
     context.entries = NULL;
     context.capacity = 0;
@@ -1968,12 +2528,23 @@ clone_direct_graph(PyObject *module, PyObject *source, PyTypeObject *type, PyObj
     context.memo_identity = memo_identity;
     context.direct_graph = 1;
     context.temporal_graph = temporal && PyDict_Size(memo) == 0;
+    context.refuse_cycles = 0;
+    context.cycle_walk = NULL;
     PyObject *result = NULL;
     int status = clone_value(source, &result, budget, &context);
     Py_LeaveRecursiveCall();
     Py_DECREF(dict_name);
     Py_DECREF(update_name);
     Py_DECREF(memo_identity);
+    Py_XDECREF(context.model_code);
+    Py_XDECREF(context.model_data_walk);
+    Py_XDECREF(context.model_data_code);
+    Py_XDECREF(context.model_data_body);
+    Py_XDECREF(context.model_body_code);
+    Py_XDECREF(context.model_native_walk);
+    Py_XDECREF(context.model_feature);
+    Py_XDECREF(context.model_walk_code);
+    Py_XDECREF(context.model_admit_code);
     for (unsigned int i = 0; i < context.recipe_count; i++) {
         if (status == 1 && context.recipes[i].native
             && record_cache_store(context.recipes[i].type,
@@ -1997,31 +2568,37 @@ clone_record_graph(PyObject *module, PyObject *const *args, Py_ssize_t count)
         return NULL;
     }
     return clone_direct_graph(module, args[0], (PyTypeObject *)args[1], args[2],
-                              NULL, args[3], 0);
+                              NULL, args[3], 0, NULL);
 }
 
 static PyObject *
 clone_walk_graph(PyObject *module, PyObject *const *args, Py_ssize_t count)
 {
-    if (count != 4 || !PyCallable_Check(args[1]) || !PyCallable_Check(args[2])
-        || !PyDict_CheckExact(args[3])) {
+    if ((count != 4 && count != 5) || !PyCallable_Check(args[1])
+        || !PyCallable_Check(args[2])
+        || !PyDict_CheckExact(args[3])
+        || (count == 5 && args[4] != Py_None && !PyFunction_Check(args[4]))) {
         PyErr_SetString(PyExc_TypeError,
                         "clone_walk_graph requires source, walker, admission and memo");
         return NULL;
     }
-    return clone_direct_graph(module, args[0], NULL, args[1], args[2], args[3], 0);
+    return clone_direct_graph(module, args[0], NULL, args[1], args[2], args[3], 0,
+                              count == 5 && args[4] != Py_None ? args[4] : NULL);
 }
 
 static PyObject *
 clone_walk_canonical_graph(PyObject *module, PyObject *const *args, Py_ssize_t count)
 {
-    if (count != 4 || !PyCallable_Check(args[1]) || !PyCallable_Check(args[2])
-        || !PyDict_CheckExact(args[3])) {
+    if ((count != 4 && count != 5) || !PyCallable_Check(args[1])
+        || !PyCallable_Check(args[2])
+        || !PyDict_CheckExact(args[3])
+        || (count == 5 && args[4] != Py_None && !PyFunction_Check(args[4]))) {
         PyErr_SetString(PyExc_TypeError,
                         "clone_walk_canonical_graph requires source, walker, admission and memo");
         return NULL;
     }
-    return clone_direct_graph(module, args[0], NULL, args[1], args[2], args[3], 1);
+    return clone_direct_graph(module, args[0], NULL, args[1], args[2], args[3], 1,
+                              count == 5 && args[4] != Py_None ? args[4] : NULL);
 }
 
 static PyObject *
@@ -2034,15 +2611,15 @@ clone_checked(PyObject *module, PyObject *source)
 static PyObject *
 clone_graph(PyObject *module, PyObject *const *args, Py_ssize_t count)
 {
-    (void)module;
-    if (count < 1 || count > 2
-        || (count == 2 && !PyDict_CheckExact(args[1]))) {
+    if (count < 1 || count > 3
+        || (count >= 2 && !PyDict_CheckExact(args[1]) && !(count == 3 && args[1] == Py_None))
+        || (count == 3 && !PyFunction_Check(args[2]))) {
         PyErr_SetString(PyExc_TypeError,
-                        "clone_graph requires source and optional exact memo dict");
+                        "clone_graph requires source, optional exact memo dict and optional canonical walker");
         return NULL;
     }
     PyObject *source = args[0];
-    PyObject *memo = count == 2 ? args[1] : NULL;
+    PyObject *memo = count >= 2 && args[1] != Py_None ? args[1] : NULL;
     if (memo != NULL && PyDict_GET_SIZE(memo) != 0) {
         PyObject *source_id = PyLong_FromVoidPtr(source);
         if (source_id == NULL) {
@@ -2069,6 +2646,14 @@ clone_graph(PyObject *module, PyObject *const *args, Py_ssize_t count)
     if (allowance == 0) {
         Py_RETURN_NOTIMPLEMENTED;
     }
+    if (count == 3 && memo == NULL) {
+        PyObject *copied = NULL;
+        int status = clone_temporal_sequence(source, args[2], PyModule_GetState(module),
+                                             recursion_limit, &copied);
+        if (status != 0) {
+            return copied;
+        }
+    }
     /* A closed scalar dictionary contains no child identity to remember.
      * Avoid creating a table for this common root shape, and revalidate the
      * copied values because dictionary allocation may run mutating finalizers. */
@@ -2092,6 +2677,13 @@ clone_graph(PyObject *module, PyObject *const *args, Py_ssize_t count)
     context.memo = memo;
     context.entries = context.inline_entries;
     context.capacity = INLINE_MEMO_SIZE;
+    /* The canonical public caller can continue in its shared-memo walk.
+     * Legacy direct calls retain their explicit proved-cycle error. */
+    context.refuse_cycles = count == 3;
+    if (context.refuse_cycles) {
+        context.cycle_walk = args[2];
+        context.module_state = PyModule_GetState(module);
+    }
     PyObject *result = NULL;
     int status = clone_closed_value(source, &result, budget, &context);
     if (status == 1 && Py_GetRecursionLimit() != recursion_limit) {
@@ -2251,20 +2843,20 @@ memo_pin_source(PyObject *source, PyObject *memo)
     return status;
 }
 
-/* Retain _walk_data's frame budget around the complete state continuation. */
+/* Retain the wrapper and after-memo body's frames during state continuation. */
 static PyObject *
 clone_state_graph(PyObject *module, PyObject *source, PyObject *memo, PyObject *walk)
 {
 #if PY_VERSION_HEX >= 0x030C0000 && PY_VERSION_HEX < 0x030F0000
     PyThreadState *thread = PyThreadState_Get();
-    if (thread->py_recursion_remaining <= 0) {
+    if (thread->py_recursion_remaining < 2) {
         PyErr_SetString(PyExc_RecursionError,
                         "maximum recursion depth while cloning record state");
         return NULL;
     }
-    --thread->py_recursion_remaining;
+    thread->py_recursion_remaining -= 2;
 #endif
-    PyObject *copied = clone_direct_graph(module, source, NULL, walk, NULL, memo, 0);
+    PyObject *copied = clone_direct_graph(module, source, NULL, walk, NULL, memo, 0, NULL);
     if (copied == Py_NotImplemented) {
         Py_DECREF(copied);
         PyObject *values[] = {source, memo};
@@ -2272,7 +2864,7 @@ clone_state_graph(PyObject *module, PyObject *source, PyObject *memo, PyObject *
     }
 #if PY_VERSION_HEX >= 0x030C0000 && PY_VERSION_HEX < 0x030F0000
     /* Add rather than restore a saved value: hooks may change the limit. */
-    ++thread->py_recursion_remaining;
+    thread->py_recursion_remaining += 2;
 #endif
     return copied;
 }
@@ -2435,8 +3027,21 @@ module_exec(PyObject *module)
     }
     state->deepcopy = PyObject_GetAttrString(state->copy_module, "deepcopy");
     state->tz_keywords = Py_BuildValue("(s)", "tzinfo");
+    state->closed_names = Py_BuildValue("(ssss)", "_ATOMS", "date", "timedelta", "_GRAPH_ATOMS");
+    if (state->closed_names == NULL || PyModule_AddIntConstant(module, "CLOSED_TEMPORALS", 1) < 0) {
+        return -1;
+    }
     state->temporal_names = Py_BuildValue("(ssssssssssss)", "_TEMPORAL_WALK", "_TEMPORAL_WALK_CODE",
         "_stdlib", "_dt", "datetime", "time", "deepcopy", "dispatch_table", "_deepcopy_dispatch", "_walk", "timezone", "_TIMEZONES");
+    state->model_names = Py_BuildValue("(ssssssssssssssssssss)", "__new__", "__pydantic_extra__",
+        "__pydantic_fields_set__", "__pydantic_private__", "_walk_data", "_record_admit",
+        "_walk", "_native_clone", "_model_private", "_MODEL_WALK", "_MODEL_WALK_CODE",
+        "_PYDANTIC_UNDEFINED", "_MODEL_DATA_WALK", "_MODEL_DATA_WALK_CODE",
+        "_walk_data_after_memo", "_MODEL_DATA_AFTER_MEMO", "_MODEL_DATA_AFTER_MEMO_CODE",
+        "_native_walk_graph", "_model", "_NATIVE_MODEL_CONTINUATION");
+    if (state->model_names == NULL || PyModule_AddIntConstant(module, "MODEL_CONTINUATION", 1) < 0) {
+        return -1;
+    }
     return state->deepcopy == NULL || state->tz_keywords == NULL
         || state->temporal_names == NULL ? -1 : 0;
 }
@@ -2453,6 +3058,8 @@ module_traverse(PyObject *module, visitproc visit, void *arg)
     Py_VISIT(state->deepcopy);
     Py_VISIT(state->tz_keywords);
     Py_VISIT(state->temporal_names);
+    Py_VISIT(state->model_names);
+    Py_VISIT(state->closed_names);
     for (unsigned int i = 0; i < RECORD_CACHE_SIZE; i++) {
         Py_VISIT(state->records[i].reference);
     }
@@ -2472,6 +3079,8 @@ module_clear(PyObject *module)
     Py_CLEAR(state->deepcopy);
     Py_CLEAR(state->tz_keywords);
     Py_CLEAR(state->temporal_names);
+    Py_CLEAR(state->model_names);
+    Py_CLEAR(state->closed_names);
     for (unsigned int i = 0; i < RECORD_CACHE_SIZE; i++) {
         Py_CLEAR(state->records[i].reference);
         state->records[i].version = 0;

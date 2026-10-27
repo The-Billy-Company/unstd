@@ -1,0 +1,1 @@
+Clone bounded flat temporal lists and tuples in the native graph path while preserving current copy policies, caller memo aliases and foreign protocols. Keep foreign type-membership callbacks on the canonical Python temporal path.

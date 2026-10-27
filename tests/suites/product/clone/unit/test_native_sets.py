@@ -2,10 +2,19 @@
 
 from __future__ import annotations
 
+import signal
+from textwrap import dedent
+from typing import TYPE_CHECKING
+
 import pytest
 
+from tests.support.environment.process import isolated_environment, run_python
 from unstd import clone
 from unstd.clone import structural
+
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 native = pytest.importorskip("unstd.clone._clone_native")
@@ -136,3 +145,55 @@ def test_set_subclasses_keep_their_copy_protocol() -> None:
     source = ForeignSet({1, 2})
     assert clone.deep([source, source]) == [sentinel, sentinel]
     assert len(calls) == 1
+
+
+@pytest.mark.skipif(
+    not hasattr(signal, "setitimer"), reason="interval timers are unavailable"
+)
+def test_large_native_set_remains_interruptible(tmp_path: Path) -> None:
+    worker = dedent(
+        """
+        import signal
+        import sys
+        from unstd.clone import _clone_native as native
+
+        class Interrupted(Exception):
+            pass
+
+        active = 0
+        seen = []
+
+        def profile(frame, event, target):
+            global active
+            if getattr(target, '__module__', None) == 'unstd.clone._clone_native':
+                if event == 'c_call':
+                    active += 1
+                elif event in ('c_return', 'c_exception'):
+                    active -= 1
+
+        def interrupt(signum, frame):
+            seen.append(active > 0)
+            raise Interrupted
+
+        def refuse(*args):
+            raise AssertionError('exact scalar sets must remain native')
+
+        source = set(range(200000))
+        signal.signal(signal.SIGALRM, interrupt)
+        sys.setprofile(profile)
+        try:
+            signal.setitimer(signal.ITIMER_REAL, .001)
+            native.clone_walk_graph(source, refuse, refuse, {})
+        except Interrupted:
+            assert seen == [True], seen
+            print('native set interrupted')
+        else:
+            raise AssertionError('native scalar-set loop ignored the signal')
+        finally:
+            signal.setitimer(signal.ITIMER_REAL, 0)
+            sys.setprofile(None)
+        """
+    )
+    result = run_python(worker, cwd=tmp_path, env=isolated_environment(), timeout=10)
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == "native set interrupted"

@@ -83,7 +83,7 @@ def main() -> None:
     original = (_ROOT / "native/clone/src/adapter.c").read_bytes()
     injected = original.decode()
     if arguments.force_gc:
-        if injected.count(_SEQUENCE_ALLOCATION) != 1:
+        if injected.count(_SEQUENCE_ALLOCATION) != 2:
             message = "review clone sequence allocation source-marker injection"
             raise RuntimeError(message)
         injected = injected.replace(

@@ -25,9 +25,9 @@ use exact-type dispatch and a shared memo instead:
 
 A per-call memo preserves shared references across structural nodes and foreign
 copy hooks: an object reached twice reuses the same clone. Immutable leaves stay
-shared with the source. The native walk detects builtin cycles and hands the
-whole graph to ``deepcopy``; the Python walker also
-memoizes mutable outputs before visiting their children.
+shared with the source. Closed native graphs defer builtin cycles to the shared-memo
+walk, which publishes mutable outputs before their children. Remaining recursion
+errors select a whole-graph ``deepcopy`` fallback.
 
 :func:`asdict` is the same walker in ``dataclasses.asdict``'s shape — dataclasses
 become ``dict``, ``dict``/``list``/``tuple`` are rebuilt, and every other leaf is
@@ -53,13 +53,36 @@ import datetime as _dt
 import enum
 import sys
 import types
-from typing import Any
+from typing import Any, Protocol, overload
 import weakref
 from zoneinfo import ZoneInfo
 
 
 type _Clone = Callable[[Any, dict[int, Any]], Any]
 type _RecordAdmission = Callable[[type], tuple[bool, _Clone]]
+
+
+class _GraphWalker(Protocol):
+    @overload
+    def __call__(
+        self,
+        source: Any,
+        walk: _Clone,
+        admit: _RecordAdmission,
+        memo: dict[int, Any],
+        /,
+    ) -> Any: ...
+
+    @overload
+    def __call__(
+        self,
+        source: Any,
+        walk: _Clone,
+        admit: _RecordAdmission,
+        memo: dict[int, Any],
+        model: _Clone,
+        /,
+    ) -> Any: ...
 
 
 _native_clone: Callable[[Any], Any] | None
@@ -74,6 +97,12 @@ try:
 except ImportError:
     _native_graph = None
 
+try:
+    from unstd.clone._clone_native import CLOSED_TEMPORALS as _NATIVE_CLOSED_TEMPORALS
+except ImportError:
+    _NATIVE_CLOSED_TEMPORALS = 0
+
+
 _native_record_graph: (
     Callable[[Any, type, Callable[[Any, dict[int, Any]], Any], dict[int, Any]], Any]
     | None
@@ -83,9 +112,7 @@ try:
 except ImportError:
     _native_record_graph = None
 
-_native_walk_graph: (
-    Callable[[Any, _Clone, _RecordAdmission, dict[int, Any]], Any] | None
-)
+_native_walk_graph: _GraphWalker | None
 try:
     from unstd.clone._clone_native import (
         clone_walk_canonical_graph as _native_walk_graph,
@@ -97,6 +124,13 @@ except ImportError:
         _native_walk_graph = None
     else:
         _native_walk_graph = _legacy_walk_graph
+
+try:
+    from unstd.clone._clone_native import (
+        MODEL_CONTINUATION as _NATIVE_MODEL_CONTINUATION,
+    )
+except ImportError:
+    _NATIVE_MODEL_CONTINUATION = 0
 
 _native_records: Callable[[Any, type, Callable[[Any], Any]], Any] | None
 try:
@@ -365,9 +399,21 @@ def _walk_data(o: Any, memo: dict[int, Any]) -> Any:
     """Try native cloning at a state boundary with the enclosing graph's memo."""
     if id(o) in memo:
         return memo[id(o)]
+    return _walk_data_after_memo(o, memo)
+
+
+def _walk_data_after_memo(o: Any, memo: dict[int, Any]) -> Any:
+    """Dispatch a state node after its caller has completed the memo lookup."""
     if _native_clone is not None:
         if _native_walk_graph is not None:
-            result = _native_walk_graph(o, _walk, _record_admit, memo)
+            result = (
+                _native_walk_graph(o, _walk, _record_admit, memo, _model)
+                if _NATIVE_MODEL_CONTINUATION
+                and _PYDANTIC_UNDEFINED is not None
+                and _model is _MODEL_WALK
+                and _model.__code__ is _MODEL_WALK_CODE
+                else _native_walk_graph(o, _walk, _record_admit, memo)
+            )
             if result is not NotImplemented:
                 return result
         elif _native_graph is not None and not _NATIVE_SELECTED_MEMO:
@@ -466,6 +512,16 @@ def _model(o: Any, memo: dict[int, Any]) -> Any:
         twin, "__pydantic_fields_set__", _walk_data(o.__pydantic_fields_set__, memo)
     )
     private = getattr(o, "__pydantic_private__", None)
+    setattr_(
+        twin,
+        "__pydantic_private__",
+        None if private is None else _model_private(private, memo),
+    )
+    return twin
+
+
+def _model_private(private: Any, memo: dict[int, Any]) -> Any:
+    """Project private state without merging its filtered view into ordinary aliases."""
     if private is None:
         copied_private = None
     else:
@@ -514,8 +570,15 @@ def _model(o: Any, memo: dict[int, Any]) -> Any:
                 }
             )
             memo[id(private)] = copied_private
-    setattr_(twin, "__pydantic_private__", copied_private)
-    return twin
+    return copied_private
+
+
+_MODEL_WALK = _model
+_MODEL_WALK_CODE = _model.__code__
+_MODEL_DATA_WALK = _walk_data
+_MODEL_DATA_WALK_CODE = _walk_data.__code__
+_MODEL_DATA_AFTER_MEMO = _walk_data_after_memo
+_MODEL_DATA_AFTER_MEMO_CODE = _walk_data_after_memo.__code__
 
 
 # ── the surface ────────────────────────────────────────────────────────────────
@@ -558,12 +621,23 @@ def deep[T](obj: T) -> T:
             and _native_clone is not None
             and _native_graph is not None
         ):
-            cloned = _native_graph(obj)
+            cloned = (
+                _native_graph(obj, None, _walk)
+                if _NATIVE_CLOSED_TEMPORALS
+                else _native_graph(obj)
+            )
             if cloned is not NotImplemented:
                 return cloned  # type: ignore[no-any-return]
         memo: dict[int, Any] = {}
         if _native_clone is not None and _native_walk_graph is not None:
-            cloned = _native_walk_graph(obj, _walk, _record_admit, memo)
+            cloned = (
+                _native_walk_graph(obj, _walk, _record_admit, memo, _model)
+                if _NATIVE_MODEL_CONTINUATION
+                and _PYDANTIC_UNDEFINED is not None
+                and _model is _MODEL_WALK
+                and _model.__code__ is _MODEL_WALK_CODE
+                else _native_walk_graph(obj, _walk, _record_admit, memo)
+            )
             if cloned is not NotImplemented:
                 return cloned  # type: ignore[no-any-return]
         return _walk(obj, memo)  # type: ignore[no-any-return]
