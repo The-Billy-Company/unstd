@@ -25,6 +25,11 @@ calls with empty output-node allocation using the separately built
 control excludes traversal, payload references and populated hash tables; it
 is not a formal lower bound or a runtime clone implementation. Reproduction and
 measurements are in the [common-clone report](../reports/clone/clone-common-cpu-results.md).
+Add `--consumer-cases --include 'consumer-*' --gc-enabled` to the allocation
+driver for model and slotted-record controls. It reports exact record allocation,
+fresh shallow state, and empty C node allocation separately; none copies a full
+payload or qualifies as a clone, and beating those measured controls is not a
+formal impossibility proof.
 [`clone_cold.py`](clone_cold.py) complements warm batches with public-operation
 latency after clearing class-admission and field caches outside each timer;
 imports, interpreter and allocator remain warm.

@@ -338,6 +338,10 @@ def _snapshot(directory: Path, label: str) -> Any:
         if backend is not None and walk_graph_entrypoint is not None
         else None
     )
+    if hasattr(module, "_NATIVE_MODEL_CONTINUATION"):
+        module._NATIVE_MODEL_CONTINUATION = bool(
+            backend is not None and getattr(backend, "MODEL_CONTINUATION", False)
+        )
     declared_contract = manifest.get("copy_contract")
     if declared_contract is not None and hasattr(module, "deep"):
         observed_contract = _copy_contract(module)
@@ -505,6 +509,9 @@ def _metadata(module: Any) -> dict[str, Any]:
         "native_entrypoint": getattr(native, "__name__", None),
         "native_graph_entrypoint": getattr(graph, "__name__", None),
         "native_dataclass_entrypoint": getattr(native_dataclass, "__name__", None),
+        "native_model_continuation": bool(
+            getattr(module, "_NATIVE_MODEL_CONTINUATION", False)
+        ),
         "native_dataclass": {
             "entrypoint": native_dataclass.__name__,
             "module": native_dataclass.__module__,

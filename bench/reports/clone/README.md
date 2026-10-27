@@ -14,3 +14,5 @@ See the [evidence index](../README.md) and [benchmark guide](../../README.md).
 - [clone-shared-identity-optimized-results](clone-shared-identity-optimized-results.md) — pointer-keyed memo savings against the exact first identity-preserving implementation, with GC on and off
 
 - [clone-dataclass-identity-results](clone-dataclass-identity-results.md) — shared-memo dataclass allocation/state copying and weak admission cache, compared with the exact pre-change implementation
+
+- [clone-consumer-model-v2-results](clone-consumer-model-v2-results.md) — local model, slotted-record and graph consumers, with matched stdlib controls, allocation diagnostics and explicit 100× target gaps

@@ -1,0 +1,72 @@
+{
+  "recorded_utc": "2026-10-27T04:39:20.867934+00:00",
+  "qualification": "local exploratory rung; not final release or 100x qualification",
+  "python": "3.14.9 (main, Oct 21 2026, 17:47:42) [Clang 23.1.3 ]",
+  "pydantic": "2.13.5",
+  "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+  "clock_method": "seven alternating-order prepared-input rounds; process CPU and wall; output destruction included",
+  "gc_enabled": true,
+  "target_speedup": 100,
+  "target_enforced": false,
+  "source_archive_sha256": "d9f25727eb7d596706f73ca23d8f13346cf6684c5dde058fd4c7fa0759ed09d2",
+  "source_archive_members": {
+    "allocation-control/build.json": "f847ee6f1c15ebb2cf676be21e9f9f8d9f5b4e3374202f0775e939b2cd1e9957",
+    "allocation-control/clone_alloc_floor.c": "5b5175832af8d8e57601418ca9f68119ef05d79985a0fcbbbb349d4b99517190",
+    "allocation-set-candidate/adapter.c": "ed75b5ac43789bbc2fc6fa88db553501d9b5073ddc62e5177b3fb966ba8e5a27",
+    "allocation-set-candidate/manifest.json": "1df23f6f057c79eb071e015d75ed5dce94ce6bda28d80389c47e5dab1e1211c8",
+    "allocation-set-candidate/structural.py": "1cbb432eeae8ff572f8ff1bc462c6ed34f1e81e260e06811845965a5206c17ea",
+    "before/adapter.c": "5b9df74e5e5f98777799b2b55fdf820e81e6e3fc0f2fc88b44493199469d9b84",
+    "before/structural.py": "17a79a76fa4aab536a3124d67cf44bb93407f08cbb1c777f97ea3a5411d96460",
+    "current/_clone_native.pyi": "f681f4aef50e793a021be5920971f2788a216dc03065ce77fbfbdacbf8e2d0a0",
+    "current/adapter.c": "51f87478e50ca6bfbeff8393310291fbfcb67fdae1f94c0b5580549ccae3d0ee",
+    "current/structural.py": "81df3d949ada1ff6ba540d988dac741796cd4a97bde0125d8fc737c7c75572d9",
+    "harness/bench/diagnostics/clone_alloc_floor.c": "f774af2472fcfe463820dab518485efb2c467380120f8d8dbd683184615b8f22",
+    "harness/bench/diagnostics/clone_allocations.py": "04ab3409d325bfaf692e383fb4ee25f4cfd2d2b5f6ad6f51dec5ac80ed2f998b",
+    "harness/bench/profiles/clone_common_cpu.py": "a037a5963dbf44848d50cd72e9c2067d32ab27188c3be669c757238bc22563b4",
+    "harness/bench/profiles/clone_cpu.py": "5f35327de7b902f3d12c7fcf01e749bd2d5108e0978dd797dcc9f4981ea07d26",
+    "harness/bench/workloads/clone_consumers.py": "6deee0f55edfec14ed4d2894c90f54f44b3ba8d6d865416f871f8b490b26fc7e",
+    "harness/manifest.json": "0b9f526b2b9251720d19c2caa6474382718a0d9bb8c6f259c41c6b00ba31db9c",
+    "harness/tests/suites/assurance/gates/bench/test_clone_consumers.py": "9b8244efba114f6ffb4fb620206de0d402e80798aa98859abb527d7553c79887",
+    "hatch_build.py": "1e4f40663ee754d6c08c13a8c9f648caf0bd8fc9f9d7fb35cdec43e8b39271bc",
+    "published-4.0.2/structural.py": "17a79a76fa4aab536a3124d67cf44bb93407f08cbb1c777f97ea3a5411d96460",
+    "pyproject.toml": "b5ca2e69190ad3b78fe995403f1bc525196a7833a8adffc4554caf406a38b71f",
+    "uv.lock": "019af9daff1cbdf66fbf78a57e7a5b22a8dea5668c29d6dd59d2265fa64f15f1"
+  },
+  "result_sha256": {
+    "clone-consumer-model-v2-py314-gc.json": "e6d72fe5f78dc8240a940e7d417f0a67397f02dfe4a4d85e424e45618d0f9dce",
+    "clone-consumer-allocation-controls-py314-gc.json": "e0729fd58c6337cd136b29625b4c8d262ce0e15285923b4f8fbb6d5d5428764d"
+  },
+  "native_binary_sha256": {
+    "current": "2800d66a93bab71908894ef5ac59339a8d5725a8f347f9a1b25f24b01befe987",
+    "before": "3a219863ebbf627098a52825b69666e2e6ee45e682bb8c1606891470a60295b6",
+    "original": "edbec08a31f9461e7cdc1b66c738f7f710de0da296d5b935f9739c21ed60310a"
+  },
+  "native_model_continuation": {
+    "current": true,
+    "before": false,
+    "original": false
+  },
+  "compiler_configuration": {
+    "CC": "cc",
+    "CFLAGS": "-fno-strict-overflow -Wsign-compare -Wunreachable-code -DNDEBUG -g -O3 -Wall -O3 -arch arm64 -mmacosx-version-min=11.0 -Wno-nullability-completeness -Wno-expansion-to-defined -Wno-undef-prefix -fPIC",
+    "LDSHARED": "cc -bundle -undefined dynamic_lookup -arch arm64 -mmacosx-version-min=11.0 -Wl,-headerpad,40",
+    "SOABI": "cpython-314-darwin",
+    "Py_GIL_DISABLED": 0
+  },
+  "baseline_provenance": {
+    "before": "Frozen pre-task source and fresh local O3 native build. Includes pre-existing unrelated callable safety edits; exact C is archived.",
+    "original": "Copied installed unstd4.0.2 Python and native binary; measured under this same source interpreter. Matching C source/build flags were not recovered, and no rebuild is represented."
+  },
+  "checks": {
+    "bench_gate_tests_passed": 96,
+    "ruff": "passed",
+    "mypy_strict": "passed five changed Python files"
+  },
+  "limits": [
+    "One local arm64 machine; wall timings show background scheduling noise. No cross-machine or cross-interpreter numerical claim.",
+    "All thirteen cases miss100x; dataclass alias and foreign hook regressions remain visible.",
+    "The separate allocation report predates fused models and includes substantial wall scheduling noise. Its setup helper hashes differ from the frozen final harness; timing helpers and fixtures retain the same semantics.",
+    "Allocation controls omit required clone work and add call/list aggregation overhead. They are diagnostic controls, not formal lower bounds.",
+    "Native binaries are fingerprinted in reports and retained locally; source archive omits binaries. Published4.0.2 matching C source is unavailable."
+  ]
+}

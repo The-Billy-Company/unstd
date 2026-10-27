@@ -12,6 +12,10 @@ verifies decoded bytes before measuring either installation.
 
 See the [benchmark guide](../README.md).
 
+We keep application-shaped clone records in [`clone_consumers.py`](clone_consumers.py).
+The optional `clone_common_cpu --consumer-cases` profile checks small and nested
+models, prepared images, slotted rows, shared state and copy-hook boundaries.
+
 The process consumer receipts freeze 16 current process callsites across 14
 source files, with hashes, excerpts and argument/I/O contracts. The process
 consumer profile creates disposable Git repositories and synthetic text scaling

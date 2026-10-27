@@ -16,6 +16,7 @@ import ast
 import copy
 import dataclasses
 import datetime as dt
+from fnmatch import fnmatchcase
 import gc
 import hashlib
 import inspect
@@ -196,19 +197,27 @@ def _workloads() -> list[base.Workload]:
     return cases
 
 
-def _atomic_identity(actual: Any, source: Any) -> bool:
+def _atomic_identity(
+    actual: Any, source: Any, seen: set[tuple[int, int]] | None = None
+) -> bool:
     """Public cloning must retain exact builtin atom identities."""
+    if seen is None:
+        seen = set()
+    pair = (id(actual), id(source))
+    if pair in seen:
+        return True
+    seen.add(pair)
     kind = type(source)
     if kind is dict:
         return all(
-            _atomic_identity(key, old_key) and _atomic_identity(value, old)
+            _atomic_identity(key, old_key, seen) and _atomic_identity(value, old, seen)
             for (key, value), (old_key, old) in zip(
                 actual.items(), source.items(), strict=True
             )
         )
     if kind in (list, tuple):
         return all(
-            _atomic_identity(value, old)
+            _atomic_identity(value, old, seen)
             for value, old in zip(actual, source, strict=True)
         )
     if dataclasses.is_dataclass(source) and not isinstance(source, type):
@@ -218,8 +227,15 @@ def _atomic_identity(actual: Any, source: Any) -> bool:
                 if type(actual) is dict
                 else getattr(actual, field.name),
                 getattr(source, field.name),
+                seen,
             )
             for field in dataclasses.fields(source)
+        )
+    model_base = getattr(sys.modules.get("pydantic"), "BaseModel", None)
+    if isinstance(model_base, type) and isinstance(source, model_base):
+        return all(
+            _atomic_identity(getattr(actual, name), getattr(source, name), seen)
+            for name in ("__dict__", "__pydantic_extra__", "__pydantic_private__")
         )
     if kind in (type(None), bool, int, float, complex, bytes, str):
         return actual is source
@@ -245,6 +261,7 @@ def _node_counts(
     """Count structural output nodes with each operation's alias semantics."""
     counts = {"lists": 0, "dicts": 0, "tuples": 0, "records": 0}
     seen: set[int] = set()
+    model_base = getattr(sys.modules.get("pydantic"), "BaseModel", None)
 
     def visit(value: Any) -> None:
         kind = type(value)
@@ -267,6 +284,10 @@ def _node_counts(
             counts["records"] += not plain
             for field in dataclasses.fields(value):
                 visit(getattr(value, field.name))
+        elif isinstance(model_base, type) and isinstance(value, model_base):
+            counts["records"] += 1
+            for name in ("__dict__", "__pydantic_extra__", "__pydantic_private__"):
+                visit(getattr(value, name))
 
     visit(source)
     return counts
@@ -298,11 +319,19 @@ def _snapshot(directory: Path, label: str, *, infer_native_bindings: bool) -> An
             )
     if hasattr(module, "_NATIVE_SELECTED_MEMO"):
         module._NATIVE_SELECTED_MEMO = module._native_walk_graph is not None
+    if hasattr(module, "_NATIVE_MODEL_CONTINUATION"):
+        module._NATIVE_MODEL_CONTINUATION = bool(
+            backend is not None and getattr(backend, "MODEL_CONTINUATION", False)
+        )
     return module
 
 
 def _native_routes(
-    module: Any, label: str, *, structural_baseline: bool = False
+    module: Any,
+    label: str,
+    *,
+    structural_baseline: bool = False,
+    require_models: bool = False,
 ) -> dict[str, list[str]]:
     """Prove public native routes under the revision's actual copy contract."""
     if structural_baseline and base._copy_contract(module) != "structural":
@@ -387,6 +416,51 @@ def _native_routes(
                 )
                 raise RuntimeError(message)
             routes[case.name] = sorted(set(successful))
+        if require_models:
+            from bench.workloads import clone_consumers
+
+            model = getattr(module, "_model", None)
+            code = getattr(model, "__code__", None)
+            if (
+                not getattr(module, "_NATIVE_MODEL_CONTINUATION", False)
+                or not inspect.iscode(code)
+                or model is not getattr(module, "_MODEL_WALK", None)
+                or code is not getattr(module, "_MODEL_WALK_CODE", None)
+            ):
+                message = f"native model continuation unavailable: {label}"
+                raise RuntimeError(message)
+            case = next(
+                case
+                for case in clone_consumers.workloads()
+                if case.name == "consumer-question-private-alias"
+            )
+            if module._record_admit(type(case.source))[1] is not model:
+                message = f"native model admission does not select its canonical handler: {label}"
+                raise RuntimeError(message)
+            # Warm the optional Undefined marker before profiling.
+            module.deep(case.source)
+            python_models = 0
+
+            def observe(frame: Any, event: str, _target: Any) -> None:
+                nonlocal python_models
+                if event == "call" and frame.f_code is code:
+                    python_models += 1
+
+            previous_profile = sys.getprofile()
+            successful.clear()
+            sys.setprofile(observe)
+            try:
+                result = module.deep(case.source)
+            finally:
+                sys.setprofile(previous_profile)
+            if (
+                not case.check(result, False)
+                or python_models
+                or "_native_walk_graph" not in successful
+            ):
+                message = f"native model route unavailable or used Python model reconstruction: {label}"
+                raise RuntimeError(message)
+            routes["pydantic-model"] = sorted(set(successful))
     finally:
         for name, call in bindings.items():
             setattr(module, name, call)
@@ -458,10 +532,31 @@ def _write_output(output: dict[str, Any], path: Path | None) -> None:
         print(rendered)
 
 
+def _target_result(timings: dict[str, Any], target: float) -> dict[str, Any]:
+    """Keep the requested stdlib speed target independent of regression limits."""
+    cpu_speedup = 1 / _matched_slowdown(
+        timings["current"], timings["stdlib"], "median_cpu_ns"
+    )
+    wall_speedup = 1 / _matched_slowdown(
+        timings["current"], timings["stdlib"], "median_wall_ns"
+    )
+    return {
+        "required_speedup": target,
+        "matched_cpu_speedup": cpu_speedup,
+        "matched_wall_speedup": wall_speedup,
+        "cpu_target_ns": timings["stdlib"]["median_cpu_ns"] / target,
+        "wall_target_ns": timings["stdlib"]["median_wall_ns"] / target,
+        "further_cpu_speedup_needed": target / cpu_speedup,
+        "further_wall_speedup_needed": target / wall_speedup,
+        "met": min(cpu_speedup, wall_speedup) >= target,
+    }
+
+
 def main(argv: Sequence[str] | None = None) -> None:
     """Compare public Python entrypoints with prepared, checked common inputs."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--compare-dir", type=Path, required=True)
+    parser.add_argument("--source-dir", type=Path)
     parser.add_argument("--original-dir", type=Path)
     parser.add_argument("--output", type=Path)
     parser.add_argument("--rounds", type=int, default=9)
@@ -469,6 +564,10 @@ def main(argv: Sequence[str] | None = None) -> None:
     parser.add_argument("--infer-native-bindings", action="store_true")
     parser.add_argument("--require-native", action="store_true")
     parser.add_argument("--max-slowdown", type=float)
+    parser.add_argument("--consumer-cases", action="store_true")
+    parser.add_argument("--include", action="append", default=[])
+    parser.add_argument("--target-speedup", type=float)
+    parser.add_argument("--enforce-target", action="store_true")
     args = parser.parse_args(argv)
     if args.rounds < 1:
         parser.error("rounds must be positive")
@@ -476,7 +575,20 @@ def main(argv: Sequence[str] | None = None) -> None:
         not math.isfinite(args.max_slowdown) or args.max_slowdown < 1
     ):
         parser.error("max-slowdown must be finite and at least 1")
+    if args.target_speedup is not None and (
+        not math.isfinite(args.target_speedup) or args.target_speedup < 1
+    ):
+        parser.error("target-speedup must be finite and at least 1")
+    if args.enforce_target and args.target_speedup is None:
+        parser.error("enforce-target requires target-speedup")
     from unstd.clone import structural as current
+
+    if args.source_dir is not None:
+        current = _snapshot(
+            args.source_dir.resolve(),
+            "common_current",
+            infer_native_bindings=args.infer_native_bindings,
+        )
 
     modules = {
         "current": current,
@@ -536,12 +648,37 @@ def main(argv: Sequence[str] | None = None) -> None:
                     structural_baseline=(
                         label == "before" and contracts[label] == "structural"
                     ),
+                    require_models=args.consumer_cases
+                    and bool(
+                        getattr(modules[label], "_NATIVE_MODEL_CONTINUATION", False)
+                    ),
                 )
         except RuntimeError as error:
             output["native_error"] = str(error)
             _write_output(output, args.output)
             raise SystemExit(1) from error
-    for case in _workloads():
+    cases = _workloads()
+    if args.consumer_cases:
+        if any(contract != "shared" for contract in contracts.values()):
+            message = "consumer clone comparisons require shared-reference baselines"
+            raise ValueError(message)
+        from bench.workloads import clone_consumers
+
+        cases.extend(clone_consumers.workloads())
+        output["consumer_workloads_sha256"] = hashlib.sha256(
+            Path(clone_consumers.__file__).read_bytes()
+        ).hexdigest()
+    selected = [
+        case
+        for case in cases
+        if not args.include
+        or any(fnmatchcase(case.name, pattern) for pattern in args.include)
+    ]
+    if not selected:
+        parser.error("include patterns selected no clone workloads")
+    output["selection_patterns"] = args.include
+    output["consumer_cases_enabled"] = args.consumer_cases
+    for case in selected:
         calls = base._callables(case, modules)
         for label, call in calls.items():
             if not _check(
@@ -589,8 +726,30 @@ def main(argv: Sequence[str] | None = None) -> None:
             "passed": not failures,
             "regressions": failures,
         }
+    target_misses: list[str] = []
+    if args.target_speedup is not None:
+        try:
+            for name, row in output["workloads"].items():
+                row["stdlib_target"] = _target_result(
+                    row["timings"], args.target_speedup
+                )
+                if not row["stdlib_target"]["met"]:
+                    target_misses.append(name)
+        except ValueError as error:
+            output["target_error"] = str(error)
+            _write_output(output, args.output)
+            raise SystemExit(1) from error
+        output["stdlib_target"] = {
+            "required_speedup": args.target_speedup,
+            "comparison": "median of matched stdlib/current wall and CPU batch ratios",
+            "enforced": args.enforce_target,
+            "passed": not target_misses,
+            "misses": target_misses,
+        }
     _write_output(output, args.output)
-    if args.max_slowdown is not None and failures:
+    if (args.max_slowdown is not None and failures) or (
+        args.enforce_target and target_misses
+    ):
         raise SystemExit(1)
 
 

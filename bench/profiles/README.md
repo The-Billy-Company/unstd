@@ -1,3 +1,12 @@
+---
+doc_radar:
+  sentinels:
+    - file: bench/profiles/clone_common_cpu.py
+      contains: ['"--consumer-cases"', '"--include"', '"--source-dir"', '"consumer_workloads_sha256"']
+    - file: bench/workloads/clone_consumers.py
+      contains: ['"consumer-attachment-images-10"', '"consumer-change-slots-1000"', '"consumer-question-private-alias"']
+---
+
 # Focused performance profiles
 
 These drivers compare saved and current implementations, check outputs and import provenance, and retain timings separately from profiling. Run `python -m bench.profiles.NAME --help`. The earlier `python -m bench.NAME` and `python bench/NAME.py` entry points forward here.
@@ -81,6 +90,17 @@ a failed guard exits. Calibration targets 50 ms batches using the fastest of
 three probes, so one cold call cannot select a tiny steady-state batch. This
 chooses iteration counts only; all nine measured rounds retain collector and
 scheduling costs with GC enabled.
+
+Add `--consumer-cases --include 'consumer-*'` to measure the synthetic question,
+prepared-image, material and slotted-comparison records. These optional cases
+need Pydantic; their checks include private model state, graph aliases, cyclic
+fallback and foreign copy hooks, while the original common cases stay unchanged.
+These consumer comparisons require baselines that preserve shared references.
+Use `--source-dir PATH` to measure a frozen candidate snapshot through the same
+isolated loader as `--compare-dir`, without timing an editable source file.
+`--target-speedup 100` records the remaining gap to a 100× stdlib comparison for
+both matched clocks. `--enforce-target` fails after saving the report when any
+selected workload misses that target; existing regression limits stay separate.
 
 Run the gzip consumer comparison through its direct file entry point so neither
 product installation loads before a worker selects its source. Select the two
