@@ -276,3 +276,58 @@ def test_admitted_slot_reducer_retains_iterable_reduction_and_factory_args(
     expected: object = copy.deepcopy(source)
     assert actual == expected == [1]
     assert actual is not expected
+
+
+def test_warmed_mutable_slots_keep_live_slotnames_state(backend: None) -> None:
+    calls: list[str] = []
+
+    class Hook:
+        def __init__(self, name: str) -> None:
+            self.name = name
+
+        def __deepcopy__(self, _memo: dict[int, object]) -> str:
+            calls.append(self.name)
+            return self.name
+
+    @dataclasses.dataclass(slots=True)
+    class Local:
+        first: object
+        second: object
+
+    source = Local(Hook("first"), Hook("second"))
+    clone.deep(source)
+    slotnames = vars(Local).get("__slotnames__")
+    assert isinstance(slotnames, list)
+    assert type(slotnames) is list
+    # Default object state uses this live cache. In-place changes leave the
+    # class version untouched, so a layout-version check alone cannot suffice.
+    slotnames[:] = ["second", "first"]
+    calls.clear()
+    expected = copy.deepcopy(source)
+    expected_calls = calls.copy()
+    calls.clear()
+    actual = clone.deep(source)
+    assert calls == expected_calls == ["second", "first"]
+    assert actual == expected == Local("first", "second")
+
+
+@pytest.mark.parametrize("record", [Row, Frozen])
+def test_slot_state_is_snapshotted_before_child_copy_hooks(
+    backend: None, record: type[Row | Frozen]
+) -> None:
+    source: Row | Frozen
+
+    class Hook:
+        def __deepcopy__(self, _memo: dict[int, object]) -> str:
+            object.__setattr__(source, "second", [99])
+            return "copied"
+
+    original = [2]
+    source = record(Hook(), original)
+    expected = copy.deepcopy(source)
+    object.__setattr__(source, "second", original)
+    actual = clone.deep(source)
+    assert actual.first == expected.first == "copied"
+    assert actual.second == expected.second == [2]
+    assert actual.second is not original
+    assert source.second == [99]
