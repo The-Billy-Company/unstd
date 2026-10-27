@@ -53,6 +53,7 @@ _NATIVE_MODULES = (
     "unstd.proc._proc_native",
     "unstd.rand._rand_native",
     "unstd.pack._pack_native",
+    "unstd.math._math_native",
 ) + (("unstd.fs._fs_native",) if sys.platform == "linux" else ())
 
 _FS_FALLBACK = """
@@ -319,6 +320,7 @@ def test_sdist_contains_all_sources_and_rebuild_inputs_without_local_caches(
         "native/proc/src/pipes.h",
         "native/rand/src/adapter.c",
         "native/pack/src/adapter.c",
+        "native/math/src/adapter.c",
         "native/fs/src/adapter.c",
         "native/crypto/src/adapter.c",
         "native/serde/src/adapter.c",

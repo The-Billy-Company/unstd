@@ -212,6 +212,22 @@ assert list(containers.SortedSet([2, 1, 2])) == [1, 2]
 old = containers.Map({'a': 1}); new = old.set('a', 2)
 assert old['a'] == 1 and new['a'] == 2
 """,
+    "math": """
+import numpy
+from unstd import math as numeric
+values = numpy.array([[3.0, 4.0], [0.0, 2.0]])
+result = numeric.mean_square(values)
+assert isinstance(result, numpy.ndarray)
+numpy.testing.assert_array_equal(result, [12.5, 2.0])
+assert result.dtype == numpy.float64
+numpy.testing.assert_array_equal(values, [[3.0, 4.0], [0.0, 2.0]])
+if importlib.util.find_spec('unstd.math._math_native') is not None:
+    from unstd.math import _math_native
+    assert numeric._native is _math_native
+    native_result = _math_native.mean_square(values, 'float64')
+    assert native_result is not NotImplemented
+    numpy.testing.assert_array_equal(native_result, result)
+""",
     "rand": """
 import numpy, random
 from unstd import rand

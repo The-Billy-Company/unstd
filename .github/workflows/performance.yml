@@ -163,7 +163,12 @@ jobs:
           if Path(bench.speeds.__file__).resolve() != harness.resolve():
               raise RuntimeError(f"wrong benchmark harness: {bench.speeds.__file__}")
           for name in bench.speeds._NATIVE:
-              spec = importlib.util.find_spec(f"unstd.{name}")
+              try:
+                  spec = importlib.util.find_spec(f"unstd.{name}")
+              except ModuleNotFoundError as error:
+                  if error.name is None or not f"unstd.{name}".startswith(f"{error.name}."):
+                      raise
+                  spec = None
               if spec and spec.origin and not Path(spec.origin).resolve().is_relative_to(expected.resolve()):
                   raise RuntimeError(f"wrong native module import: {spec.origin}")
           PY
@@ -175,6 +180,18 @@ jobs:
         run: >-
           .venv/bin/python tests/tooling/runtime/json_acceleration.py --json
           > .local/performance/evidence/json-native.json
+      - name: Guard math edge cases and complete workflows
+        if: ${{ !inputs.gzip_diagnostic }}
+        env:
+          PYTHONPATH: ${{ github.workspace }}/.local/performance/installed-current:${{ github.workspace }}
+          OPENBLAS_NUM_THREADS: "1"
+          OMP_NUM_THREADS: "1"
+          MKL_NUM_THREADS: "1"
+          VECLIB_MAXIMUM_THREADS: "1"
+        run: >-
+          .venv/bin/python -m bench.profiles.math_workflows
+          --require-native --strict --rounds 9
+          --output .local/performance/evidence/math-workflows.json
       - name: Guard installed JSON record latency
         if: ${{ !inputs.gzip_diagnostic }}
         env:

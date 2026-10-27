@@ -27,6 +27,7 @@ MODULES = (
     "fs",
     "rand",
     "pack",
+    "math",
 )
 
 

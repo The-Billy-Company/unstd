@@ -1,0 +1,1334 @@
+{
+  "recorded_at": "2026-10-27T21:23:09.339797+00:00",
+  "provenance": {
+    "python": "3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]",
+    "numpy": "2.5.3",
+    "platform": "Linux-7.0.14-linuxkit-aarch64-with-glibc2.43",
+    "machine": "aarch64",
+    "processor": "",
+    "thread_settings": {
+      "OPENBLAS_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": null
+    },
+    "source": "src/unstd/math/__init__.py",
+    "source_sha256": "835298f6f3996a54382aed2bfb0c96f75dfd0dccb9db9d742b910fe2108b65b4",
+    "benchmark_sha256": "baee594500d430d2f0235e9faf4cb98d8b49940157e285590417e0cb6f6f79a4"
+  },
+  "method": {
+    "clock": "perf_counter_ns",
+    "rounds": 3,
+    "paired_order": "alternating",
+    "fixture_seed": 20261027,
+    "allocations": "separate tracemalloc pass including outputs and temporaries",
+    "scope": "synthetic production-shaped expressions; not production deployment measurements"
+  },
+  "results": {
+    "topk/float32/64": {
+      "shape": "64 scores; k=16; repeated ties",
+      "verified": true,
+      "baseline_dtype": "int64",
+      "max_absolute_error": 0.0,
+      "comparison": "exact",
+      "before": {
+        "median_ns": 1990.6995708154507,
+        "samples_ns_per_call": [
+          2559.725321888412,
+          1990.6995708154507,
+          1913.62660944206
+        ],
+        "iterations_per_batch": 233,
+        "peak_traced_bytes": 6840
+      },
+      "after": {
+        "median_ns": 711.42578125,
+        "samples_ns_per_call": [
+          760.7421875,
+          700.51953125,
+          711.42578125
+        ],
+        "iterations_per_batch": 256,
+        "peak_traced_bytes": 744
+      },
+      "speedup": 2.7981830617913817,
+      "allocation_reduction": 9.193548387096774
+    },
+    "topk/float32/100000": {
+      "shape": "100000 scores; k=16; repeated ties",
+      "verified": true,
+      "baseline_dtype": "int64",
+      "max_absolute_error": 0.0,
+      "comparison": "exact",
+      "before": {
+        "median_ns": 7636126.0,
+        "samples_ns_per_call": [
+          7199625.0,
+          7636126.0,
+          7750875.0
+        ],
+        "iterations_per_batch": 1,
+        "peak_traced_bytes": 1605912
+      },
+      "after": {
+        "median_ns": 152340.9090909091,
+        "samples_ns_per_call": [
+          152340.9090909091,
+          164632.54545454544,
+          151522.72727272726
+        ],
+        "iterations_per_batch": 11,
+        "peak_traced_bytes": 744
+      },
+      "speedup": 50.12524899298821,
+      "allocation_reduction": 2158.483870967742
+    },
+    "normalize_rows/float32/8x64": {
+      "shape": "8x64; additive eps=1e-09",
+      "verified": true,
+      "baseline_dtype": "float32",
+      "max_absolute_error": 2.275210153612761e-08,
+      "comparison": "float32 baseline: rtol=4e-6, atol=2e-7; float64: rtol=atol=1e-12",
+      "before": {
+        "median_ns": 4890.6035242290745,
+        "samples_ns_per_call": [
+          3848.2026431718064,
+          5488.98678414097,
+          4890.6035242290745
+        ],
+        "iterations_per_batch": 227,
+        "peak_traced_bytes": 5752
+      },
+      "after": {
+        "median_ns": 1039.875,
+        "samples_ns_per_call": [
+          1039.875,
+          1530.6015625,
+          997.234375
+        ],
+        "iterations_per_batch": 256,
+        "peak_traced_bytes": 4680
+      },
+      "speedup": 4.703068661357446,
+      "allocation_reduction": 1.2290598290598291
+    },
+    "cosine_rows/float32/8x64": {
+      "shape": "8x64; zero row; additive eps=1e-09",
+      "verified": true,
+      "baseline_dtype": "float32",
+      "max_absolute_error": 2.0420398802456496e-08,
+      "comparison": "float32 baseline: rtol=4e-6, atol=2e-7; float64: rtol=atol=1e-12",
+      "before": {
+        "median_ns": 5967.105263157895,
+        "samples_ns_per_call": [
+          6018.0921052631575,
+          5967.105263157895,
+          5875.546052631579
+        ],
+        "iterations_per_batch": 152,
+        "peak_traced_bytes": 5752
+      },
+      "after": {
+        "median_ns": 1683.7578125,
+        "samples_ns_per_call": [
+          1683.7578125,
+          1704.265625,
+          1683.43359375
+        ],
+        "iterations_per_batch": 256,
+        "peak_traced_bytes": 584
+      },
+      "speedup": 3.5439213519063597,
+      "allocation_reduction": 9.849315068493151
+    },
+    "mean_square/float32/8x64": {
+      "shape": "8x64; row mean-square used before dB conversion",
+      "verified": true,
+      "baseline_dtype": "float32",
+      "max_absolute_error": 4.473018688777586e-08,
+      "comparison": "float32 baseline: rtol=4e-6, atol=2e-7; float64: rtol=atol=1e-12",
+      "before": {
+        "median_ns": 4040.358744394619,
+        "samples_ns_per_call": [
+          4151.905829596412,
+          3996.0762331838564,
+          4040.358744394619
+        ],
+        "iterations_per_batch": 223,
+        "peak_traced_bytes": 4296
+      },
+      "after": {
+        "median_ns": 896.8125,
+        "samples_ns_per_call": [
+          846.51953125,
+          923.5,
+          896.8125
+        ],
+        "iterations_per_batch": 256,
+        "peak_traced_bytes": 296
+      },
+      "speedup": 4.505243564730218,
+      "allocation_reduction": 14.513513513513514
+    },
+    "normalize_rows/float32/8x64/compute32": {
+      "shape": "8x64; additive eps=1e-09; explicit dtype=float32",
+      "verified": true,
+      "baseline_dtype": "float32",
+      "max_absolute_error": 2.9802322387695312e-08,
+      "comparison": "float32 baseline: rtol=4e-6, atol=2e-7; float64: rtol=atol=1e-12",
+      "before": {
+        "median_ns": 3694.01171875,
+        "samples_ns_per_call": [
+          3832.35546875,
+          3694.01171875,
+          3675.29296875
+        ],
+        "iterations_per_batch": 256,
+        "peak_traced_bytes": 5752
+      },
+      "after": {
+        "median_ns": 1249.1875,
+        "samples_ns_per_call": [
+          1345.5390625,
+          1249.1875,
+          1239.09375
+        ],
+        "iterations_per_batch": 256,
+        "peak_traced_bytes": 2648
+      },
+      "speedup": 2.957131510481813,
+      "allocation_reduction": 2.1722054380664653
+    },
+    "cosine_rows/float32/8x64/compute32": {
+      "shape": "8x64; zero row; explicit dtype=float32",
+      "verified": true,
+      "baseline_dtype": "float32",
+      "max_absolute_error": 2.2351741790771484e-08,
+      "comparison": "float32 baseline: rtol=4e-6, atol=2e-7; float64: rtol=atol=1e-12",
+      "before": {
+        "median_ns": 6547.619047619048,
+        "samples_ns_per_call": [
+          6547.619047619048,
+          6424.851190476191,
+          9376.488095238095
+        ],
+        "iterations_per_batch": 168,
+        "peak_traced_bytes": 5752
+      },
+      "after": {
+        "median_ns": 1839.84375,
+        "samples_ns_per_call": [
+          1898.92578125,
+          1828.28515625,
+          1839.84375
+        ],
+        "iterations_per_batch": 256,
+        "peak_traced_bytes": 568
+      },
+      "speedup": 3.558790819937317,
+      "allocation_reduction": 10.126760563380282
+    },
+    "mean_square/float32/8x64/compute32": {
+      "shape": "8x64; explicit dtype=float32",
+      "verified": true,
+      "baseline_dtype": "float32",
+      "max_absolute_error": 1.1920928955078125e-07,
+      "comparison": "float32 baseline: rtol=4e-6, atol=2e-7; float64: rtol=atol=1e-12",
+      "before": {
+        "median_ns": 3776.69140625,
+        "samples_ns_per_call": [
+          3824.0546875,
+          3776.69140625,
+          3675.78125
+        ],
+        "iterations_per_batch": 256,
+        "peak_traced_bytes": 4296
+      },
+      "after": {
+        "median_ns": 945.80078125,
+        "samples_ns_per_call": [
+          922.36328125,
+          945.80078125,
+          947.4296875
+        ],
+        "iterations_per_batch": 256,
+        "peak_traced_bytes": 528
+      },
+      "speedup": 3.993115126484254,
+      "allocation_reduction": 8.136363636363637
+    },
+    "normalize_rows/float32/4096x128": {
+      "shape": "4096x128; additive eps=1e-09",
+      "verified": true,
+      "baseline_dtype": "float32",
+      "max_absolute_error": 4.079838455961493e-08,
+      "comparison": "float32 baseline: rtol=4e-6, atol=2e-7; float64: rtol=atol=1e-12",
+      "before": {
+        "median_ns": 589527.6666666666,
+        "samples_ns_per_call": [
+          589527.6666666666,
+          787500.0,
+          521513.6666666667
+        ],
+        "iterations_per_batch": 3,
+        "peak_traced_bytes": 2147928
+      },
+      "after": {
+        "median_ns": 558625.0,
+        "samples_ns_per_call": [
+          505375.0,
+          687361.3333333334,
+          558625.0
+        ],
+        "iterations_per_batch": 3,
+        "peak_traced_bytes": 4194920
+      },
+      "speedup": 1.0553191616319832,
+      "allocation_reduction": 0.5120307419450192
+    },
+    "cosine_rows/float32/4096x128": {
+      "shape": "4096x128; zero row; additive eps=1e-09",
+      "verified": true,
+      "baseline_dtype": "float32",
+      "max_absolute_error": 4.7192440566501404e-08,
+      "comparison": "float32 baseline: rtol=4e-6, atol=2e-7; float64: rtol=atol=1e-12",
+      "before": {
+        "median_ns": 440958.25,
+        "samples_ns_per_call": [
+          447791.5,
+          438510.5,
+          440958.25
+        ],
+        "iterations_per_batch": 4,
+        "peak_traced_bytes": 2147928
+      },
+      "after": {
+        "median_ns": 1275125.0,
+        "samples_ns_per_call": [
+          1254333.0,
+          1283417.0,
+          1275125.0
+        ],
+        "iterations_per_batch": 1,
+        "peak_traced_bytes": 33320
+      },
+      "speedup": 0.34581570434271147,
+      "allocation_reduction": 64.46362545018007
+    },
+    "mean_square/float32/4096x128": {
+      "shape": "4096x128; row mean-square used before dB conversion",
+      "verified": true,
+      "baseline_dtype": "float32",
+      "max_absolute_error": 1.7072830038600273e-07,
+      "comparison": "float32 baseline: rtol=4e-6, atol=2e-7; float64: rtol=atol=1e-12",
+      "before": {
+        "median_ns": 271339.28571428574,
+        "samples_ns_per_call": [
+          267476.28571428574,
+          300006.0,
+          271339.28571428574
+        ],
+        "iterations_per_batch": 7,
+        "peak_traced_bytes": 2181192
+      },
+      "after": {
+        "median_ns": 509031.25,
+        "samples_ns_per_call": [
+          457104.0,
+          509031.25,
+          695666.5
+        ],
+        "iterations_per_batch": 4,
+        "peak_traced_bytes": 33032
+      },
+      "speedup": 0.5330503494908923,
+      "allocation_reduction": 66.03269556793413
+    },
+    "normalize_rows/float32/4096x128/compute32": {
+      "shape": "4096x128; additive eps=1e-09; explicit dtype=float32",
+      "verified": true,
+      "baseline_dtype": "float32",
+      "max_absolute_error": 5.960464477539063e-08,
+      "comparison": "float32 baseline: rtol=4e-6, atol=2e-7; float64: rtol=atol=1e-12",
+      "before": {
+        "median_ns": 364458.25,
+        "samples_ns_per_call": [
+          386770.75,
+          364458.25,
+          361364.5
+        ],
+        "iterations_per_batch": 4,
+        "peak_traced_bytes": 2147928
+      },
+      "after": {
+        "median_ns": 656208.5,
+        "samples_ns_per_call": [
+          827500.0,
+          656208.5,
+          645812.5
+        ],
+        "iterations_per_batch": 2,
+        "peak_traced_bytes": 2097784
+      },
+      "speedup": 0.5554000748237793,
+      "allocation_reduction": 1.0239033189308338
+    },
+    "cosine_rows/float32/4096x128/compute32": {
+      "shape": "4096x128; zero row; explicit dtype=float32",
+      "verified": true,
+      "baseline_dtype": "float32",
+      "max_absolute_error": 7.450580596923828e-08,
+      "comparison": "float32 baseline: rtol=4e-6, atol=2e-7; float64: rtol=atol=1e-12",
+      "before": {
+        "median_ns": 464319.3333333333,
+        "samples_ns_per_call": [
+          464319.3333333333,
+          458180.6666666667,
+          467194.3333333333
+        ],
+        "iterations_per_batch": 3,
+        "peak_traced_bytes": 2147928
+      },
+      "after": {
+        "median_ns": 1221417.0,
+        "samples_ns_per_call": [
+          1221417.0,
+          1216416.0,
+          1447875.0
+        ],
+        "iterations_per_batch": 1,
+        "peak_traced_bytes": 16952
+      },
+      "speedup": 0.38014808483370816,
+      "allocation_reduction": 126.70646531382728
+    },
+    "mean_square/float32/4096x128/compute32": {
+      "shape": "4096x128; explicit dtype=float32",
+      "verified": true,
+      "baseline_dtype": "float32",
+      "max_absolute_error": 3.5762786865234375e-07,
+      "comparison": "float32 baseline: rtol=4e-6, atol=2e-7; float64: rtol=atol=1e-12",
+      "before": {
+        "median_ns": 247703.125,
+        "samples_ns_per_call": [
+          269395.75,
+          235020.875,
+          247703.125
+        ],
+        "iterations_per_batch": 8,
+        "peak_traced_bytes": 2181192
+      },
+      "after": {
+        "median_ns": 613458.3333333334,
+        "samples_ns_per_call": [
+          585361.0,
+          613458.3333333334,
+          635875.0
+        ],
+        "iterations_per_batch": 3,
+        "peak_traced_bytes": 16912
+      },
+      "speedup": 0.40378149833593696,
+      "allocation_reduction": 128.97303689687794
+    },
+    "pearson/float32/50": {
+      "shape": "two 50-element correlated series",
+      "verified": true,
+      "baseline_dtype": "float64",
+      "max_absolute_error": 0.0,
+      "comparison": "float32 baseline: rtol=4e-6, atol=2e-7; float64: rtol=atol=1e-12",
+      "before": {
+        "median_ns": 19341.94827586207,
+        "samples_ns_per_call": [
+          24679.603448275862,
+          18743.53448275862,
+          19341.94827586207
+        ],
+        "iterations_per_batch": 58,
+        "peak_traced_bytes": 4856
+      },
+      "after": {
+        "median_ns": 13259.41935483871,
+        "samples_ns_per_call": [
+          14461.032258064517,
+          12126.354838709678,
+          13259.41935483871
+        ],
+        "iterations_per_batch": 31,
+        "peak_traced_bytes": 3400
+      },
+      "speedup": 1.458732675862136,
+      "allocation_reduction": 1.428235294117647
+    },
+    "pearson/float32/4096": {
+      "shape": "two 4096-element correlated series",
+      "verified": true,
+      "baseline_dtype": "float64",
+      "max_absolute_error": 3.3306690738754696e-16,
+      "comparison": "float32 baseline: rtol=4e-6, atol=2e-7; float64: rtol=atol=1e-12",
+      "before": {
+        "median_ns": 47259.61538461538,
+        "samples_ns_per_call": [
+          38317.307692307695,
+          47259.61538461538,
+          62387.846153846156
+        ],
+        "iterations_per_batch": 13,
+        "peak_traced_bytes": 166760
+      },
+      "after": {
+        "median_ns": 31272.279069767443,
+        "samples_ns_per_call": [
+          43659.88372093023,
+          31272.279069767443,
+          27742.232558139534
+        ],
+        "iterations_per_batch": 43,
+        "peak_traced_bytes": 98848
+      },
+      "speedup": 1.5112302905452049,
+      "allocation_reduction": 1.687034639041761
+    },
+    "weighted_mean/float32/64x64/list": {
+      "shape": "64x64; Python lists",
+      "verified": true,
+      "baseline_dtype": "float64",
+      "max_absolute_error": 0.0,
+      "comparison": "float32 baseline: rtol=4e-6, atol=2e-7; float64: rtol=atol=1e-12",
+      "before": {
+        "median_ns": 97317.30769230769,
+        "samples_ns_per_call": [
+          172282.07692307694,
+          95253.23076923077,
+          97317.30769230769
+        ],
+        "iterations_per_batch": 13,
+        "peak_traced_bytes": 102216
+      },
+      "after": {
+        "median_ns": 106122.78947368421,
+        "samples_ns_per_call": [
+          155925.47368421053,
+          106122.78947368421,
+          85855.26315789473
+        ],
+        "iterations_per_batch": 19,
+        "peak_traced_bytes": 36048
+      },
+      "speedup": 0.9170255340530785,
+      "allocation_reduction": 2.8355525965379496
+    },
+    "weighted_mean/float32/4096x128/array": {
+      "shape": "4096x128; ndarray",
+      "verified": true,
+      "baseline_dtype": "float32",
+      "max_absolute_error": 8.674385138657259e-08,
+      "comparison": "float32 baseline: rtol=4e-6, atol=2e-7; float64: rtol=atol=1e-12",
+      "before": {
+        "median_ns": 250805.33333333334,
+        "samples_ns_per_call": [
+          307125.0,
+          250805.33333333334,
+          244319.33333333334
+        ],
+        "iterations_per_batch": 3,
+        "peak_traced_bytes": 2133188
+      },
+      "after": {
+        "median_ns": 669312.5,
+        "samples_ns_per_call": [
+          669312.5,
+          688062.5,
+          650041.5
+        ],
+        "iterations_per_batch": 2,
+        "peak_traced_bytes": 1264
+      },
+      "speedup": 0.3747208267189591,
+      "allocation_reduction": 1687.6487341772151
+    },
+    "weighted_mean/float32/4096x128/array/compute32": {
+      "shape": "4096x128; ndarray; explicit dtype=float32",
+      "verified": true,
+      "baseline_dtype": "float32",
+      "max_absolute_error": 1.862645149230957e-08,
+      "comparison": "float32 baseline: rtol=4e-6, atol=2e-7; float64: rtol=atol=1e-12",
+      "before": {
+        "median_ns": 262464.28571428574,
+        "samples_ns_per_call": [
+          264339.28571428574,
+          240434.57142857142,
+          262464.28571428574
+        ],
+        "iterations_per_batch": 7,
+        "peak_traced_bytes": 2133188
+      },
+      "after": {
+        "median_ns": 644020.5,
+        "samples_ns_per_call": [
+          644020.5,
+          634042.0,
+          670354.5
+        ],
+        "iterations_per_batch": 2,
+        "peak_traced_bytes": 1024
+      },
+      "speedup": 0.40754026574353724,
+      "allocation_reduction": 2083.19140625
+    },
+    "grouped_mean/float32/2000x16/4": {
+      "shape": "2000x16; 4 dense groups",
+      "verified": true,
+      "baseline_dtype": "float32",
+      "max_absolute_error": 5.205967337773565e-08,
+      "comparison": "float32 baseline: rtol=4e-6, atol=2e-7; float64: rtol=atol=1e-12",
+      "before": {
+        "median_ns": 206467.39130434784,
+        "samples_ns_per_call": [
+          111356.91304347826,
+          218681.13043478262,
+          206467.39130434784
+        ],
+        "iterations_per_batch": 23,
+        "peak_traced_bytes": 76944
+      },
+      "after": {
+        "median_ns": 23571.554347826088,
+        "samples_ns_per_call": [
+          21863.228260869564,
+          23571.554347826088,
+          48174.815217391304
+        ],
+        "iterations_per_batch": 92,
+        "peak_traced_bytes": 864
+      },
+      "speedup": 8.75917592271082,
+      "allocation_reduction": 89.05555555555556
+    },
+    "grouped_mean/float32/20000x32/128": {
+      "shape": "20000x32; 128 dense groups",
+      "verified": true,
+      "baseline_dtype": "float32",
+      "max_absolute_error": 9.668513520355582e-08,
+      "comparison": "float32 baseline: rtol=4e-6, atol=2e-7; float64: rtol=atol=1e-12",
+      "before": {
+        "median_ns": 5600083.0,
+        "samples_ns_per_call": [
+          5796958.0,
+          5600083.0,
+          5187625.0
+        ],
+        "iterations_per_batch": 1,
+        "peak_traced_bytes": 88008
+      },
+      "after": {
+        "median_ns": 336257.0,
+        "samples_ns_per_call": [
+          336257.0,
+          335382.0,
+          383652.8333333333
+        ],
+        "iterations_per_batch": 6,
+        "peak_traced_bytes": 34112
+      },
+      "speedup": 16.654175229065864,
+      "allocation_reduction": 2.579971857410882
+    },
+    "frame/float32/3200": {
+      "shape": "3200 samples; length=400; hop=160; copy vs read-only view",
+      "verified": true,
+      "baseline_dtype": "float32",
+      "max_absolute_error": 0.0,
+      "comparison": "exact",
+      "before": {
+        "median_ns": 13773.373983739837,
+        "samples_ns_per_call": [
+          14803.18699186992,
+          13555.552845528455,
+          13773.373983739837
+        ],
+        "iterations_per_batch": 123,
+        "peak_traced_bytes": 177784
+      },
+      "after": {
+        "median_ns": 6801.4112903225805,
+        "samples_ns_per_call": [
+          7450.2661290322585,
+          6577.620967741936,
+          6801.4112903225805
+        ],
+        "iterations_per_batch": 124,
+        "peak_traced_bytes": 2345
+      },
+      "speedup": 2.0250758843737837,
+      "allocation_reduction": 75.8140724946695
+    },
+    "frame_energy/float32/3200": {
+      "shape": "3200 samples; framing plus downstream row mean-square",
+      "verified": true,
+      "baseline_dtype": "float32",
+      "max_absolute_error": 9.970145242732542e-08,
+      "comparison": "float32 baseline: rtol=4e-6, atol=2e-7; float64: rtol=atol=1e-12",
+      "before": {
+        "median_ns": 29571.96103896104,
+        "samples_ns_per_call": [
+          40261.36363636364,
+          29535.714285714286,
+          29571.96103896104
+        ],
+        "iterations_per_batch": 77,
+        "peak_traced_bytes": 177784
+      },
+      "after": {
+        "median_ns": 21427.870967741936,
+        "samples_ns_per_call": [
+          28610.666666666668,
+          21427.870967741936,
+          17499.548387096773
+        ],
+        "iterations_per_batch": 93,
+        "peak_traced_bytes": 2769
+      },
+      "speedup": 1.380069960449147,
+      "allocation_reduction": 64.2051282051282
+    },
+    "frame_energy/float32/3200/compute32": {
+      "shape": "3200 samples; framing plus energy; explicit dtype=float32",
+      "verified": true,
+      "baseline_dtype": "float32",
+      "max_absolute_error": 1.7881393432617188e-07,
+      "comparison": "float32 baseline: rtol=4e-6, atol=2e-7; float64: rtol=atol=1e-12",
+      "before": {
+        "median_ns": 21172.9125,
+        "samples_ns_per_call": [
+          22657.2875,
+          21172.9125,
+          20703.125
+        ],
+        "iterations_per_batch": 80,
+        "peak_traced_bytes": 177784
+      },
+      "after": {
+        "median_ns": 15550.970873786408,
+        "samples_ns_per_call": [
+          15550.970873786408,
+          15398.873786407767,
+          19791.26213592233
+        ],
+        "iterations_per_batch": 103,
+        "peak_traced_bytes": 2697
+      },
+      "speedup": 1.361517082878102,
+      "allocation_reduction": 65.9191694475343
+    },
+    "frame/float32/160000": {
+      "shape": "160000 samples; length=400; hop=160; copy vs read-only view",
+      "verified": true,
+      "baseline_dtype": "float32",
+      "max_absolute_error": 0.0,
+      "comparison": "exact",
+      "before": {
+        "median_ns": 603111.0,
+        "samples_ns_per_call": [
+          603111.0,
+          600055.3333333334,
+          647416.6666666666
+        ],
+        "iterations_per_batch": 3,
+        "peak_traced_bytes": 4790744
+      },
+      "after": {
+        "median_ns": 6993.79104477612,
+        "samples_ns_per_call": [
+          6993.79104477612,
+          6541.044776119403,
+          8965.179104477613
+        ],
+        "iterations_per_batch": 67,
+        "peak_traced_bytes": 2345
+      },
+      "speedup": 86.23520436037082,
+      "allocation_reduction": 2042.9611940298507
+    },
+    "frame_energy/float32/160000": {
+      "shape": "160000 samples; framing plus downstream row mean-square",
+      "verified": true,
+      "baseline_dtype": "float32",
+      "max_absolute_error": 1.470360828648154e-07,
+      "comparison": "float32 baseline: rtol=4e-6, atol=2e-7; float64: rtol=atol=1e-12",
+      "before": {
+        "median_ns": 807229.0,
+        "samples_ns_per_call": [
+          807229.0,
+          873771.0,
+          790812.5
+        ],
+        "iterations_per_batch": 2,
+        "peak_traced_bytes": 4790744
+      },
+      "after": {
+        "median_ns": 378983.2,
+        "samples_ns_per_call": [
+          369225.0,
+          378983.2,
+          410641.6
+        ],
+        "iterations_per_batch": 5,
+        "peak_traced_bytes": 10609
+      },
+      "speedup": 2.1299862368569373,
+      "allocation_reduction": 451.57356961070786
+    },
+    "frame_energy/float32/160000/compute32": {
+      "shape": "160000 samples; framing plus energy; explicit dtype=float32",
+      "verified": true,
+      "baseline_dtype": "float32",
+      "max_absolute_error": 2.980232238769531e-07,
+      "comparison": "float32 baseline: rtol=4e-6, atol=2e-7; float64: rtol=atol=1e-12",
+      "before": {
+        "median_ns": 768750.0,
+        "samples_ns_per_call": [
+          815479.5,
+          768750.0,
+          753833.0
+        ],
+        "iterations_per_batch": 2,
+        "peak_traced_bytes": 4790744
+      },
+      "after": {
+        "median_ns": 421271.0,
+        "samples_ns_per_call": [
+          529666.75,
+          413677.0,
+          421271.0
+        ],
+        "iterations_per_batch": 4,
+        "peak_traced_bytes": 6617
+      },
+      "speedup": 1.824834845028497,
+      "allocation_reduction": 724.0054405319631
+    },
+    "topk/float64/64": {
+      "shape": "64 scores; k=16; repeated ties",
+      "verified": true,
+      "baseline_dtype": "int64",
+      "max_absolute_error": 0.0,
+      "comparison": "exact",
+      "before": {
+        "median_ns": 2059.08203125,
+        "samples_ns_per_call": [
+          2059.08203125,
+          1982.58203125,
+          2130.69921875
+        ],
+        "iterations_per_batch": 256,
+        "peak_traced_bytes": 7096
+      },
+      "after": {
+        "median_ns": 808.7578125,
+        "samples_ns_per_call": [
+          777.83203125,
+          886.87890625,
+          808.7578125
+        ],
+        "iterations_per_batch": 256,
+        "peak_traced_bytes": 744
+      },
+      "speedup": 2.5459810086842283,
+      "allocation_reduction": 9.53763440860215
+    },
+    "topk/float64/100000": {
+      "shape": "100000 scores; k=16; repeated ties",
+      "verified": true,
+      "baseline_dtype": "int64",
+      "max_absolute_error": 0.0,
+      "comparison": "exact",
+      "before": {
+        "median_ns": 8028084.0,
+        "samples_ns_per_call": [
+          7065042.0,
+          8028084.0,
+          8756708.0
+        ],
+        "iterations_per_batch": 1,
+        "peak_traced_bytes": 2005912
+      },
+      "after": {
+        "median_ns": 176133.4,
+        "samples_ns_per_call": [
+          176133.4,
+          239675.0,
+          170245.8
+        ],
+        "iterations_per_batch": 10,
+        "peak_traced_bytes": 744
+      },
+      "speedup": 45.57956639683331,
+      "allocation_reduction": 2696.1182795698924
+    },
+    "normalize_rows/float64/8x64": {
+      "shape": "8x64; additive eps=1e-09",
+      "verified": true,
+      "baseline_dtype": "float64",
+      "max_absolute_error": 5.551115123125783e-17,
+      "comparison": "float32 baseline: rtol=4e-6, atol=2e-7; float64: rtol=atol=1e-12",
+      "before": {
+        "median_ns": 3941.73046875,
+        "samples_ns_per_call": [
+          3857.09765625,
+          4458.8203125,
+          3941.73046875
+        ],
+        "iterations_per_batch": 256,
+        "peak_traced_bytes": 9880
+      },
+      "after": {
+        "median_ns": 1553.3828125,
+        "samples_ns_per_call": [
+          968.9140625,
+          1553.3828125,
+          1625.32421875
+        ],
+        "iterations_per_batch": 256,
+        "peak_traced_bytes": 4680
+      },
+      "speedup": 2.537513893568975,
+      "allocation_reduction": 2.111111111111111
+    },
+    "cosine_rows/float64/8x64": {
+      "shape": "8x64; zero row; additive eps=1e-09",
+      "verified": true,
+      "baseline_dtype": "float64",
+      "max_absolute_error": 5.551115123125783e-17,
+      "comparison": "float32 baseline: rtol=4e-6, atol=2e-7; float64: rtol=atol=1e-12",
+      "before": {
+        "median_ns": 7458.8373493975905,
+        "samples_ns_per_call": [
+          7019.578313253012,
+          7458.8373493975905,
+          9206.325301204819
+        ],
+        "iterations_per_batch": 166,
+        "peak_traced_bytes": 9880
+      },
+      "after": {
+        "median_ns": 1963.05078125,
+        "samples_ns_per_call": [
+          1963.05078125,
+          1904.4609375,
+          2330.890625
+        ],
+        "iterations_per_batch": 256,
+        "peak_traced_bytes": 584
+      },
+      "speedup": 3.7996150790597847,
+      "allocation_reduction": 16.91780821917808
+    },
+    "mean_square/float64/8x64": {
+      "shape": "8x64; row mean-square used before dB conversion",
+      "verified": true,
+      "baseline_dtype": "float64",
+      "max_absolute_error": 1.1102230246251565e-16,
+      "comparison": "float32 baseline: rtol=4e-6, atol=2e-7; float64: rtol=atol=1e-12",
+      "before": {
+        "median_ns": 3391.11328125,
+        "samples_ns_per_call": [
+          3391.11328125,
+          3401.6953125,
+          3337.7265625
+        ],
+        "iterations_per_batch": 256,
+        "peak_traced_bytes": 5824
+      },
+      "after": {
+        "median_ns": 828.44921875,
+        "samples_ns_per_call": [
+          828.44921875,
+          801.7578125,
+          3728.515625
+        ],
+        "iterations_per_batch": 256,
+        "peak_traced_bytes": 296
+      },
+      "speedup": 4.093326669275708,
+      "allocation_reduction": 19.675675675675677
+    },
+    "normalize_rows/float64/4096x128": {
+      "shape": "4096x128; additive eps=1e-09",
+      "verified": true,
+      "baseline_dtype": "float64",
+      "max_absolute_error": 1.1102230246251565e-16,
+      "comparison": "float32 baseline: rtol=4e-6, atol=2e-7; float64: rtol=atol=1e-12",
+      "before": {
+        "median_ns": 615062.5,
+        "samples_ns_per_call": [
+          615062.5,
+          701833.5,
+          599291.5
+        ],
+        "iterations_per_batch": 2,
+        "peak_traced_bytes": 4294232
+      },
+      "after": {
+        "median_ns": 493843.75,
+        "samples_ns_per_call": [
+          465312.5,
+          565229.25,
+          493843.75
+        ],
+        "iterations_per_batch": 4,
+        "peak_traced_bytes": 4194920
+      },
+      "speedup": 1.245459722837436,
+      "allocation_reduction": 1.023674348974474
+    },
+    "cosine_rows/float64/4096x128": {
+      "shape": "4096x128; zero row; additive eps=1e-09",
+      "verified": true,
+      "baseline_dtype": "float64",
+      "max_absolute_error": 2.7755575615628914e-16,
+      "comparison": "float32 baseline: rtol=4e-6, atol=2e-7; float64: rtol=atol=1e-12",
+      "before": {
+        "median_ns": 896729.5,
+        "samples_ns_per_call": [
+          892500.0,
+          896729.5,
+          1104979.0
+        ],
+        "iterations_per_batch": 2,
+        "peak_traced_bytes": 4294232
+      },
+      "after": {
+        "median_ns": 1273750.0,
+        "samples_ns_per_call": [
+          1506334.0,
+          1273750.0,
+          1271958.0
+        ],
+        "iterations_per_batch": 1,
+        "peak_traced_bytes": 33320
+      },
+      "speedup": 0.7040074582924436,
+      "allocation_reduction": 128.87851140456183
+    },
+    "mean_square/float64/4096x128": {
+      "shape": "4096x128; row mean-square used before dB conversion",
+      "verified": true,
+      "baseline_dtype": "float64",
+      "max_absolute_error": 4.440892098500626e-16,
+      "comparison": "float32 baseline: rtol=4e-6, atol=2e-7; float64: rtol=atol=1e-12",
+      "before": {
+        "median_ns": 429416.75,
+        "samples_ns_per_call": [
+          581750.0,
+          429416.75,
+          336354.25
+        ],
+        "iterations_per_batch": 4,
+        "peak_traced_bytes": 4228768
+      },
+      "after": {
+        "median_ns": 494333.3333333333,
+        "samples_ns_per_call": [
+          494333.3333333333,
+          571194.3333333334,
+          492069.3333333333
+        ],
+        "iterations_per_batch": 3,
+        "peak_traced_bytes": 33032
+      },
+      "speedup": 0.8686785232636548,
+      "allocation_reduction": 128.02034390893678
+    },
+    "pearson/float64/50": {
+      "shape": "two 50-element correlated series",
+      "verified": true,
+      "baseline_dtype": "float64",
+      "max_absolute_error": 5.551115123125783e-17,
+      "comparison": "float32 baseline: rtol=4e-6, atol=2e-7; float64: rtol=atol=1e-12",
+      "before": {
+        "median_ns": 21187.5,
+        "samples_ns_per_call": [
+          25227.678571428572,
+          21187.5,
+          16622.0
+        ],
+        "iterations_per_batch": 28,
+        "peak_traced_bytes": 4360
+      },
+      "after": {
+        "median_ns": 14035.0,
+        "samples_ns_per_call": [
+          14035.0,
+          14477.5,
+          12265.0
+        ],
+        "iterations_per_batch": 50,
+        "peak_traced_bytes": 3400
+      },
+      "speedup": 1.5096188101175632,
+      "allocation_reduction": 1.2823529411764707
+    },
+    "pearson/float64/4096": {
+      "shape": "two 4096-element correlated series",
+      "verified": true,
+      "baseline_dtype": "float64",
+      "max_absolute_error": 9.992007221626409e-16,
+      "comparison": "float32 baseline: rtol=4e-6, atol=2e-7; float64: rtol=atol=1e-12",
+      "before": {
+        "median_ns": 50409.73333333333,
+        "samples_ns_per_call": [
+          50409.73333333333,
+          36395.833333333336,
+          52088.86666666667
+        ],
+        "iterations_per_batch": 30,
+        "peak_traced_bytes": 133896
+      },
+      "after": {
+        "median_ns": 28556.03448275862,
+        "samples_ns_per_call": [
+          28556.03448275862,
+          35941.81034482759,
+          26166.655172413793
+        ],
+        "iterations_per_batch": 58,
+        "peak_traced_bytes": 68200
+      },
+      "speedup": 1.7652917937106918,
+      "allocation_reduction": 1.963284457478006
+    },
+    "weighted_mean/float64/64x64/list": {
+      "shape": "64x64; Python lists",
+      "verified": true,
+      "baseline_dtype": "float64",
+      "max_absolute_error": 1.1102230246251565e-16,
+      "comparison": "float32 baseline: rtol=4e-6, atol=2e-7; float64: rtol=atol=1e-12",
+      "before": {
+        "median_ns": 113420.08333333333,
+        "samples_ns_per_call": [
+          113420.08333333333,
+          105590.25,
+          120486.08333333333
+        ],
+        "iterations_per_batch": 12,
+        "peak_traced_bytes": 102216
+      },
+      "after": {
+        "median_ns": 109201.92307692308,
+        "samples_ns_per_call": [
+          124743.61538461539,
+          109201.92307692308,
+          91560.92307692308
+        ],
+        "iterations_per_batch": 13,
+        "peak_traced_bytes": 36048
+      },
+      "speedup": 1.038627160928649,
+      "allocation_reduction": 2.8355525965379496
+    },
+    "weighted_mean/float64/4096x128/array": {
+      "shape": "4096x128; ndarray",
+      "verified": true,
+      "baseline_dtype": "float64",
+      "max_absolute_error": 6.938893903907228e-18,
+      "comparison": "float32 baseline: rtol=4e-6, atol=2e-7; float64: rtol=atol=1e-12",
+      "before": {
+        "median_ns": 522114.5,
+        "samples_ns_per_call": [
+          594135.5,
+          522114.5,
+          508468.75
+        ],
+        "iterations_per_batch": 4,
+        "peak_traced_bytes": 4263112
+      },
+      "after": {
+        "median_ns": 749916.6666666666,
+        "samples_ns_per_call": [
+          749916.6666666666,
+          736097.3333333334,
+          1008805.6666666666
+        ],
+        "iterations_per_batch": 3,
+        "peak_traced_bytes": 1264
+      },
+      "speedup": 0.6962300255583954,
+      "allocation_reduction": 3372.715189873418
+    },
+    "grouped_mean/float64/2000x16/4": {
+      "shape": "2000x16; 4 dense groups",
+      "verified": true,
+      "baseline_dtype": "float64",
+      "max_absolute_error": 0.0,
+      "comparison": "float32 baseline: rtol=4e-6, atol=2e-7; float64: rtol=atol=1e-12",
+      "before": {
+        "median_ns": 94439.40909090909,
+        "samples_ns_per_call": [
+          89996.18181818182,
+          94943.18181818182,
+          94439.40909090909
+        ],
+        "iterations_per_batch": 22,
+        "peak_traced_bytes": 140696
+      },
+      "after": {
+        "median_ns": 23616.011363636364,
+        "samples_ns_per_call": [
+          23313.44318181818,
+          23707.386363636364,
+          23616.011363636364
+        ],
+        "iterations_per_batch": 88,
+        "peak_traced_bytes": 864
+      },
+      "speedup": 3.998956794047182,
+      "allocation_reduction": 162.84259259259258
+    },
+    "grouped_mean/float64/20000x32/128": {
+      "shape": "20000x32; 128 dense groups",
+      "verified": true,
+      "baseline_dtype": "float64",
+      "max_absolute_error": 0.0,
+      "comparison": "float32 baseline: rtol=4e-6, atol=2e-7; float64: rtol=atol=1e-12",
+      "before": {
+        "median_ns": 6967750.0,
+        "samples_ns_per_call": [
+          6967750.0,
+          7883000.0,
+          6626375.0
+        ],
+        "iterations_per_batch": 1,
+        "peak_traced_bytes": 150560
+      },
+      "after": {
+        "median_ns": 434375.0,
+        "samples_ns_per_call": [
+          434375.0,
+          589781.25,
+          392364.5
+        ],
+        "iterations_per_batch": 4,
+        "peak_traced_bytes": 34112
+      },
+      "speedup": 16.040863309352517,
+      "allocation_reduction": 4.413696060037523
+    },
+    "frame/float64/3200": {
+      "shape": "3200 samples; length=400; hop=160; copy vs read-only view",
+      "verified": true,
+      "baseline_dtype": "float64",
+      "max_absolute_error": 0.0,
+      "comparison": "exact",
+      "before": {
+        "median_ns": 14803.739130434782,
+        "samples_ns_per_call": [
+          14461.95652173913,
+          14803.739130434782,
+          14854.478260869566
+        ],
+        "iterations_per_batch": 69,
+        "peak_traced_bytes": 177784
+      },
+      "after": {
+        "median_ns": 8445.027777777777,
+        "samples_ns_per_call": [
+          10627.305555555555,
+          8445.027777777777,
+          7487.277777777777
+        ],
+        "iterations_per_batch": 72,
+        "peak_traced_bytes": 2345
+      },
+      "speedup": 1.7529532785421145,
+      "allocation_reduction": 75.8140724946695
+    },
+    "frame_energy/float64/3200": {
+      "shape": "3200 samples; framing plus downstream row mean-square",
+      "verified": true,
+      "baseline_dtype": "float64",
+      "max_absolute_error": 2.220446049250313e-16,
+      "comparison": "float32 baseline: rtol=4e-6, atol=2e-7; float64: rtol=atol=1e-12",
+      "before": {
+        "median_ns": 21344.8,
+        "samples_ns_per_call": [
+          36409.375,
+          21344.8,
+          20904.175
+        ],
+        "iterations_per_batch": 40,
+        "peak_traced_bytes": 177784
+      },
+      "after": {
+        "median_ns": 14357.3,
+        "samples_ns_per_call": [
+          28433.325,
+          13991.675,
+          14357.3
+        ],
+        "iterations_per_batch": 40,
+        "peak_traced_bytes": 2769
+      },
+      "speedup": 1.486686215374757,
+      "allocation_reduction": 64.2051282051282
+    },
+    "frame/float64/160000": {
+      "shape": "160000 samples; length=400; hop=160; copy vs read-only view",
+      "verified": true,
+      "baseline_dtype": "float64",
+      "max_absolute_error": 0.0,
+      "comparison": "exact",
+      "before": {
+        "median_ns": 680527.6666666666,
+        "samples_ns_per_call": [
+          734680.6666666666,
+          609875.0,
+          680527.6666666666
+        ],
+        "iterations_per_batch": 3,
+        "peak_traced_bytes": 6387544
+      },
+      "after": {
+        "median_ns": 10086.693548387097,
+        "samples_ns_per_call": [
+          10086.693548387097,
+          12770.822580645161,
+          7889.112903225807
+        ],
+        "iterations_per_batch": 62,
+        "peak_traced_bytes": 2345
+      },
+      "speedup": 67.46786381504431,
+      "allocation_reduction": 2723.8993603411514
+    },
+    "frame_energy/float64/160000": {
+      "shape": "160000 samples; framing plus downstream row mean-square",
+      "verified": true,
+      "baseline_dtype": "float64",
+      "max_absolute_error": 6.661338147750939e-16,
+      "comparison": "float32 baseline: rtol=4e-6, atol=2e-7; float64: rtol=atol=1e-12",
+      "before": {
+        "median_ns": 820250.0,
+        "samples_ns_per_call": [
+          798854.0,
+          839312.5,
+          820250.0
+        ],
+        "iterations_per_batch": 2,
+        "peak_traced_bytes": 6387544
+      },
+      "after": {
+        "median_ns": 383366.6,
+        "samples_ns_per_call": [
+          364091.8,
+          485208.4,
+          383366.6
+        ],
+        "iterations_per_batch": 5,
+        "peak_traced_bytes": 10609
+      },
+      "speedup": 2.139596928892606,
+      "allocation_reduction": 602.0872843811858
+    }
+  }
+}

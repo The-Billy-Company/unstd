@@ -1,0 +1,41 @@
+{
+  "status": "Final Linux qualification: every initial regression guard passed, with no confirmation reruns needed.",
+  "report": "workflows.json",
+  "cases": 141,
+  "all_outputs_verified": true,
+  "all_input_nonmutation_verified": true,
+  "initial_rounds": 9,
+  "initial_material_regressions": {},
+  "bounded_rechecks": {},
+  "persistent_material_regressions": {},
+  "all_regression_guards_passed": true,
+  "method": {
+    "clock": "perf_counter_ns",
+    "target_batch_ns": 5000000,
+    "native_required": true,
+    "rounds": 9,
+    "paired_order": "cyclic rotation across all three lanes",
+    "seed": 20261027,
+    "precision": "NumPy and candidate compute at the same selected precision",
+    "relative_regression_margin": 0.15,
+    "absolute_regression_margin_ns": 300,
+    "maximum_regression_rechecks": 2,
+    "regression_recheck_rounds": 21,
+    "regression_confirmation": "same reference must fail the initial measurement and every bounded confirmation; all attempts retained",
+    "scope": "isolated synthetic expressions and complete production-shaped workflows",
+    "guard": "candidate <= reference_median * (1 + relative_margin) + absolute_margin_ns; both references checked"
+  },
+  "same_product_and_benchmark_sources_as_macos": true,
+  "files_sha256": {
+    "candidate": "fa1784e68fb66aa036b973558cc5d0ae3d27130a43a7141da29a5881b8e68984",
+    "previous": "53c981c52cf0206ddeb3878178522c6ea8cd14a38df3ba041f4fa4cc8d947adc",
+    "benchmark": "be011409d0e02a66d48569e5db3564c72f3d712ce96a4e1ccd857b83b25d9a13",
+    "unstd.math._math_native": "40887067bce9a2718af5122946e05578b75263d87b2d0cdee3e5acd66365c93d",
+    "native/math/src/adapter.c": "b154fefb23e7aec0df922f698658ff071dcbf4b8cac5e08942697570a2fd1678"
+  },
+  "release_tests": "172 passed",
+  "ubsan_tests": "172 passed",
+  "fallback_tests": "85 passed; 87 native-specific tests skipped",
+  "scope": "Native aarch64 Linux in a local Docker Desktop VM, not bare-metal x86 or production deployment latency.",
+  "historical_files": "native-first.json, dispatch-exploration.json, workflows-first.json, workflows-strided-before.json, workflows-noisy-first.json, workflows-profile-before-confirmations.json, workflows-pre-format.json, recheck-*.json, confirmation-exploratory.json and confirmation-pre-format.json are retained exploratory/earlier-format captures, not this final certificate."
+}

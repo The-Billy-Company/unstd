@@ -335,6 +335,10 @@ with wave.open(io.BytesIO(output.getvalue()), 'rb') as reference:
 
 
 _MISSING_EXTRA_CASES = {
+    "math.mean_square": (
+        "math",
+        "importlib.import_module('unstd.math').mean_square([[3.0, 4.0]])",
+    ),
     "compress.zstandard": (
         "zstd",
         "importlib.import_module('unstd.compress.zstandard')",
@@ -387,6 +391,7 @@ _MISSING_EXTRA_CASES = {
 # is intentionally not generated from the package: a new module must make an
 # author choose and implement its installed/fallback/missing-extra contract.
 _PROBE_MODULES = {
+    "math.mean_square": ("unstd.math",),
     "compress.stdlib_ports": (
         "unstd.compress.bz2",
         "unstd.compress.lzma",
@@ -584,6 +589,7 @@ for module in {_PROBE_MODULES[surface]!r}:
         "unstd.proc._proc_native",
         "unstd.rand._rand_native",
         "unstd.pack._pack_native",
+        "unstd.math._math_native",
         "unstd.fs._fs_native",
     ],
 )
@@ -676,6 +682,10 @@ assert calls == [subject._py]
 assert actual == expected
 assert subject._py.getstate() == reference.getstate()
 assert rand.shuffle.__func__ is random.Random.shuffle
+""",
+        "unstd.math._math_native": """
+assert native.KERNEL_VERSION == 1
+assert 'numpy' not in sys.modules
 """,
         "unstd.pack._pack_native": """
 import struct

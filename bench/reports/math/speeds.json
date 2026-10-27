@@ -1,0 +1,134 @@
+{
+  "cases": {
+    "unstd.math.cosine_rows": {
+      "ceiling_ns": 9393.504017857143,
+      "iterations": 896,
+      "measured_ns": 7225.772321428572,
+      "note": "Compare 64 eight-dimensional embedding rows to one query without materializing normalized rows.",
+      "rounds": 7,
+      "spread": 0.0747379018431668
+    },
+    "unstd.math.frame": {
+      "ceiling_ns": 4773.275000000001,
+      "iterations": 1664,
+      "measured_ns": 3671.75,
+      "note": "Create 31 overlapping 64-sample read-only float32 frame views without copying samples.",
+      "rounds": 7,
+      "spread": 0.3173456641404486
+    },
+    "unstd.math.grouped_mean": {
+      "ceiling_ns": 9289.16015625,
+      "iterations": 1024,
+      "measured_ns": 7145.5078125,
+      "note": "Aggregate 64 eight-dimensional rows into five label groups, including an empty group.",
+      "rounds": 7,
+      "spread": 0.15622290556238896
+    },
+    "unstd.math.mean_square": {
+      "ceiling_ns": 2684.7846737132354,
+      "iterations": 4352,
+      "measured_ns": 2065.2189797794117,
+      "note": "Compute mean square for 64 eight-sample frames, checked against scalar sums of squares.",
+      "rounds": 7,
+      "spread": 0.18577436852687404
+    },
+    "unstd.math.normalize_rows": {
+      "ceiling_ns": 4840.344736842106,
+      "iterations": 1216,
+      "measured_ns": 3723.342105263158,
+      "note": "Normalize 64 eight-dimensional feature rows, checked against scalar Euclidean norms.",
+      "rounds": 7,
+      "spread": 0.7009992525815093
+    },
+    "unstd.math.pearson": {
+      "ceiling_ns": 8536.593457031251,
+      "iterations": 1024,
+      "measured_ns": 6566.6103515625,
+      "note": "Compute scalar Pearson correlation for two strided 64-value feature columns.",
+      "rounds": 7,
+      "spread": 0.30463910327593924
+    },
+    "unstd.math.topk": {
+      "ceiling_ns": 5013.852068014706,
+      "iterations": 2176,
+      "measured_ns": 3856.809283088235,
+      "note": "Select eight descending positions from 64 tied scores, retaining input order for ties.",
+      "rounds": 7,
+      "spread": 0.18103140013180946
+    },
+    "unstd.math.weighted_mean": {
+      "ceiling_ns": 3523.30703125,
+      "iterations": 1664,
+      "measured_ns": 2710.2361778846152,
+      "note": "Aggregate 64 eight-dimensional rows with positive per-row weights and scalar reference sums.",
+      "rounds": 7,
+      "spread": 0.30075038255296815
+    }
+  },
+  "environment": {
+    "backends": {
+      "blake3": "1.0.10",
+      "immutables": "0.21",
+      "irregex": "2.6.0",
+      "libarchive-c": "5.3",
+      "msgspec": "0.22.0",
+      "numpy": "2.5.3",
+      "orjson": "3.12.0",
+      "protobuf": "7.36.2",
+      "pybase64": "1.5.0",
+      "pydantic": "2.13.5",
+      "pydantic-settings": "2.15.0",
+      "pyyaml": "6.0.3",
+      "rapidfuzz": "3.14.6",
+      "ruamel-yaml": "0.19.1",
+      "sortedcontainers": "2.4.0",
+      "soundfile": "0.14.0",
+      "tomlkit": "0.15.1",
+      "uuid-utils": "1.0.0",
+      "whenever": "0.10.5",
+      "zlib-ng": "1.0.0",
+      "zstandard": "0.25.0"
+    },
+    "cpu": "Apple M5 Max",
+    "cpu_count": 18,
+    "implementation": "CPython",
+    "machine": "arm64",
+    "native": {
+      "clone._clone_native": true,
+      "compress._gzip_native": true,
+      "containers._sorted_native": true,
+      "crypto._stream_native": true,
+      "dataset._dataset_native": true,
+      "serde._json_native": true,
+      "text._text_native": true
+    },
+    "native_implementations": {
+      "clone._clone_native": "c",
+      "compress._gzip_native": "c",
+      "containers._sorted_native": "c",
+      "crypto._stream_native": "c",
+      "dataset._dataset_native": "c",
+      "serde._json_native": "c",
+      "text._text_native": "c"
+    },
+    "python": "3.14.9",
+    "python_debug": 0,
+    "python_free_threaded": 0,
+    "system": "Darwin",
+    "system_release": "25.6.0",
+    "thread_settings": {
+      "MKL_NUM_THREADS": null,
+      "OMP_NUM_THREADS": null,
+      "OPENBLAS_NUM_THREADS": null
+    }
+  },
+  "recorded": "2026-10-27T21:16:57.173120+00:00",
+  "schema": 1,
+  "tolerance": 0.3,
+  "workload_sources": {
+    "speed_cases_codecs.py": "974a57ffd2cc18833530b387357008b1f011c7e8c2c9b20f79b436e2d6f06919",
+    "speed_cases_math.py": "4a256cf060c79d470e236de3e9e03361b2ae882dea51a876475bccf698bec965",
+    "speed_cases_operations.py": "3f515e7c54651abe2e82378c03aabc3d0c712e79ee3c834d608aabe84b2d32fa",
+    "speed_cases_runtime.py": "b1e5bf41dd71aa289732d15574bb5a110c2650b989d7271b2927b6d4a4a075cd"
+  }
+}

@@ -37,12 +37,13 @@ if TYPE_CHECKING:
 
 ROOT = Path(__file__).resolve().parents[1]
 BASELINE = ROOT / "bench/baselines/speeds.json"
-_PROVIDERS = ("codecs", "runtime", "operations")
+_PROVIDERS = ("codecs", "runtime", "operations", "math")
 _NATIVE = (
     "clone._clone_native",
     "compress._gzip_native",
     "containers._sorted_native",
     "crypto._stream_native",
+    "math._math_native",
     "serde._json_native",
     "text._text_native",
 )
@@ -294,6 +295,17 @@ def _pin_cpu() -> Iterator[None]:
         set_affinity(0, allowed)
 
 
+def _has_native(name: str) -> bool:
+    """An optional kernel may have a parent absent from an older revision."""
+    qualified = f"unstd.{name}"
+    try:
+        return importlib.util.find_spec(qualified) is not None
+    except ModuleNotFoundError as error:
+        if error.name is not None and qualified.startswith(f"{error.name}."):
+            return False
+        raise
+
+
 def environment() -> dict[str, object]:
     """Record the interpreter, CPU, optional backend versions and native routes."""
     cpu = platform.processor()
@@ -327,9 +339,7 @@ def environment() -> dict[str, object]:
             versions[distribution] = metadata.version(distribution)
         except metadata.PackageNotFoundError:
             versions[distribution] = None
-    native = {
-        name: importlib.util.find_spec(f"unstd.{name}") is not None for name in _NATIVE
-    }
+    native = {name: _has_native(name) for name in _NATIVE}
     implementations = {
         name: "rust"
         if "Rust text kernels"

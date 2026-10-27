@@ -48,6 +48,25 @@ def test_missing_backend_for_owned_exports_still_fails_discovery(
         speeds.public_apis(root)
 
 
+def test_native_discovery_accepts_a_parent_absent_from_an_older_revision(monkeypatch):
+    def absent(_name):
+        message = "old revision has no math package"
+        raise ModuleNotFoundError(message, name="unstd.math")
+
+    monkeypatch.setattr(speeds.importlib.util, "find_spec", absent)
+    assert speeds._has_native("math._math_native") is False
+
+
+def test_native_discovery_preserves_missing_dependency_errors(monkeypatch):
+    def broken(_name):
+        message = "broken dependency"
+        raise ModuleNotFoundError(message, name="numerical_dependency")
+
+    monkeypatch.setattr(speeds.importlib.util, "find_spec", broken)
+    with pytest.raises(ModuleNotFoundError, match="broken dependency"):
+        speeds._has_native("math._math_native")
+
+
 def test_backend_subclasses_retain_provider_vocabulary_and_count_new_methods(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

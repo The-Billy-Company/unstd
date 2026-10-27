@@ -28,6 +28,8 @@ failing loud where no faithful substitute exists:
 - ``model`` — the strict Pydantic wire-shape spine: ``StrictModel`` ·
   ``FrozenModel`` · ``StrictSettings``. Behind the ``model`` extra (pydantic has
   no stdlib equivalent, so there is no fallback).
+- ``math`` — focused NumPy operations for production numeric and dataframe
+  calculations, behind the ``math`` extra.
 - ``rex`` (``re``) — irregex linear-time matching, falls back to ``re``; the
   flag and type vocabulary is re-exported verbatim.
 - ``containers`` (``collections``) — always-sorted collections and a persistent

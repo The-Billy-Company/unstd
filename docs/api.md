@@ -29,6 +29,7 @@ from unstd.audio import wavx
 from unstd.compress import gzipx
 from unstd.crypto import digest, tls, token
 from unstd.ids import uid
+from unstd import math as numeric
 from unstd.model import FrozenModel, StrictModel, StrictSettings
 from unstd.pack import binpack
 from unstd.rand import crypto
@@ -46,6 +47,27 @@ Python module attributes can include imported dependencies and private helper
 names. Those incidental attributes are outside the supported API listed here.
 Existing backend availability flags are retained for compatibility and are
 listed separately at the end of this document.
+
+## Numeric calculations
+
+Import `from unstd import math as numeric`. The optional `math` extra supplies
+NumPy for the focused array operations. The [math guide](../src/unstd/math/README.md)
+defines input shapes, numeric policies, production use cases, and measured
+comparisons. These helpers accept numeric arrays extracted from dataframe
+columns without adding a dataframe dependency.
+
+| Module | Exported API |
+| --- | --- |
+| [`unstd.math`](../src/unstd/math/__init__.py) | `cosine_rows`, `frame`, `grouped_mean`, `mean_square`, `normalize_rows`, `pearson`, `topk`, `weighted_mean` |
+
+`topk(values, k)` returns descending indices with stable ties. `normalize_rows`
+and `cosine_rows` accept an additive `eps` norm floor. `mean_square` reduces each
+matrix row, `pearson` correlates two vectors, and `weighted_mean` pools rows.
+Normalization, cosine, mean-square and weighted pooling accept
+`dtype="float32"` or `dtype="float64"` (the default) for calculation and output.
+`grouped_mean(values, labels, groups)` produces dense means including zero rows
+for absent labels. `frame(values, length, hop)` creates complete read-only frame
+views. Calculations default to float64; framing preserves the input numeric dtype.
 
 ## Audio
 

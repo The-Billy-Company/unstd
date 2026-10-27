@@ -66,6 +66,7 @@ responsibility without an extra helper package.
 | `fs` | Package functions | `durability.py` and `traversal.py`; public orchestration owns Linux native admission and injectable sync/cleanup hooks. |
 | `ids` | `uid.py` | UUID generation and fallback state stay together. |
 | `iters` | Package functions | `consecutive.py`, `distinct.py`, `reshape.py`, `select.py` own focused combinators. |
+| `math` | Package functions | Shape/layout dispatch between checked portable C buffer kernels and NumPy reductions; the optional `math` extra supplies NumPy without adding a C ABI dependency. |
 | `model` | Package classes, `base.py`, `settings.py` | Strict model and settings configuration. |
 | `pack` | `binpack.py`, `ragged.py` | `dtypes.py` owns portable dtype grammar and caches; `buffers.py` owns bounded buffer admission; ragged layouts own immutable frames and optional fused native validation. |
 | `proc` | Package functions and classes | `backend.py` owns spawning/capture; `results.py` owns results and errors. |
@@ -220,7 +221,7 @@ subclasses when their bundled CPython accelerator is available. Exported process
 their historical `unstd.proc` identity for pickling and inspection.
 
 The [public API contract](../tests/support/packaging/public_api.json) captures the
-45 public modules and 324 declared exports. Its
+public modules and their declared exports. Its
 [gate](../tests/suites/assurance/gates/packaging/test_public_api.py) checks export
 lists, package-owned callable signatures, module identity and process-result
 pickling. It preserves legacy availability flags, including wildcard imports;

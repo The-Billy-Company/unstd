@@ -1,0 +1,151 @@
+{
+  "recorded_at": "2026-10-27T21:39:22.651778+00:00",
+  "provenance": {
+    "python": "3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]",
+    "numpy": "2.5.3",
+    "platform": "Linux-7.0.14-linuxkit-aarch64-with-glibc2.43",
+    "machine": "aarch64",
+    "native_enabled": true,
+    "native_kernel_version": 1,
+    "numpy_configuration": "{\n  \"Compilers\": {\n    \"c\": {\n      \"name\": \"gcc\",\n      \"linker\": \"ld.bfd\",\n      \"version\": \"14.2.1\",\n      \"commands\": \"cc\"\n    },\n    \"cython\": {\n      \"name\": \"cython\",\n      \"linker\": \"cython\",\n      \"version\": \"3.3.0\",\n      \"commands\": \"cython\"\n    },\n    \"c++\": {\n      \"name\": \"gcc\",\n      \"linker\": \"ld.bfd\",\n      \"version\": \"14.2.1\",\n      \"commands\": \"c++\"\n    }\n  },\n  \"Machine Information\": {\n    \"host\": {\n      \"cpu\": \"aarch64\",\n      \"family\": \"aarch64\",\n      \"endian\": \"little\",\n      \"system\": \"linux\"\n    },\n    \"build\": {\n      \"cpu\": \"aarch64\",\n      \"family\": \"aarch64\",\n      \"endian\": \"little\",\n      \"system\": \"linux\"\n    }\n  },\n  \"Build Dependencies\": {\n    \"blas\": {\n      \"name\": \"scipy-openblas\",\n      \"found\": true,\n      \"version\": \"0.3.34.106.0\",\n      \"detection method\": \"pkgconfig\",\n      \"include directory\": \"/opt/_internal/cpython-3.14.6/lib/python3.14/site-packages/scipy_openblas64/include\",\n      \"lib directory\": \"/opt/_internal/cpython-3.14.6/lib/python3.14/site-packages/scipy_openblas64/lib\",\n      \"openblas configuration\": \"OpenBLAS 0.3.34.106.0  USE64BITINT DYNAMIC_ARCH NO_AFFINITY neoversev2 MAX_THREADS=64\",\n      \"pc file directory\": \"/project/.openblas\"\n    },\n    \"lapack\": {\n      \"name\": \"scipy-openblas\",\n      \"found\": true,\n      \"version\": \"0.3.34.106.0\",\n      \"detection method\": \"pkgconfig\",\n      \"include directory\": \"/opt/_internal/cpython-3.14.6/lib/python3.14/site-packages/scipy_openblas64/include\",\n      \"lib directory\": \"/opt/_internal/cpython-3.14.6/lib/python3.14/site-packages/scipy_openblas64/lib\",\n      \"openblas configuration\": \"OpenBLAS 0.3.34.106.0  USE64BITINT DYNAMIC_ARCH NO_AFFINITY neoversev2 MAX_THREADS=64\",\n      \"pc file directory\": \"/project/.openblas\"\n    }\n  },\n  \"Python Information\": {\n    \"path\": \"/tmp/build-env-bfvdg0gk/bin/python\",\n    \"version\": \"3.14\"\n  },\n  \"SIMD Extensions\": {\n    \"baseline\": [\n      \"NEON\",\n      \"NEON_FP16\",\n      \"NEON_VFPV4\",\n      \"ASIMD\"\n    ],\n    \"found\": [\n      \"ASIMDHP\",\n      \"ASIMDDP\",\n      \"ASIMDFHM\"\n    ],\n    \"not found\": [\n      \"SVE\"\n    ]\n  }\n}\n",
+    "files_sha256": {
+      "candidate": "4c1622ce583907e2a5ecfbba503cec43084dad64006a1dcf5162085b8b7b93f0",
+      "previous": "53c981c52cf0206ddeb3878178522c6ea8cd14a38df3ba041f4fa4cc8d947adc",
+      "benchmark": "7ae6cd9814a653e3d26b8169acad27fb7ba91ffe25663077a5735732d431d039",
+      "unstd.math._math_native": "40887067bce9a2718af5122946e05578b75263d87b2d0cdee3e5acd66365c93d",
+      "native/math/src/adapter.c": "b154fefb23e7aec0df922f698658ff071dcbf4b8cac5e08942697570a2fd1678"
+    },
+    "thread_settings": {
+      "OPENBLAS_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": null
+    }
+  },
+  "method": {
+    "clock": "perf_counter_ns",
+    "target_batch_ns": 5000000,
+    "native_required": true,
+    "rounds": 21,
+    "paired_order": "cyclic rotation across all three lanes",
+    "seed": 20261027,
+    "precision": "NumPy and candidate compute at the same selected precision",
+    "relative_regression_margin": 0.15,
+    "absolute_regression_margin_ns": 300,
+    "scope": "isolated synthetic expressions and complete production-shaped workflows",
+    "guard": "candidate <= reference_median * (1 + relative_margin) + absolute_margin_ns; both references checked"
+  },
+  "results": {
+    "weighted_mean/float32/4096x128/contiguous": {
+      "shape": "4096x128; contiguous; matching float32 calculation",
+      "verified": true,
+      "exact": false,
+      "input_sha256": "b2a910ac37ab9b72459d01aad74b9fc92e763c84e37c743c04815df862244591",
+      "input_nonmutation_verified": true,
+      "lanes": {
+        "numpy": {
+          "median_ns": 243559.52380952382,
+          "samples_ns_per_call": [
+            226714.2857142857,
+            235075.38095238095,
+            227339.2857142857,
+            243559.52380952382,
+            249986.14285714287,
+            257738.09523809524,
+            243164.7142857143,
+            275664.6666666667,
+            287502.0,
+            277470.2380952381,
+            336898.8095238095,
+            216865.09523809524,
+            215630.95238095237,
+            221583.33333333334,
+            216502.0,
+            326363.09523809527,
+            220333.33333333334,
+            275718.2380952381,
+            295734.14285714284,
+            217472.2380952381,
+            288710.3333333333
+          ],
+          "iterations_per_batch": 21,
+          "peak_traced_bytes": 2133188,
+          "max_absolute_error": 0.0
+        },
+        "previous": {
+          "median_ns": 84978.54545454546,
+          "samples_ns_per_call": [
+            74789.15151515152,
+            76691.28787878787,
+            89094.07575757576,
+            99749.36363636363,
+            97236.10606060606,
+            80071.9696969697,
+            101671.71212121213,
+            75086.48484848485,
+            105092.80303030302,
+            78761.98484848485,
+            89029.04545454546,
+            74524.62121212122,
+            70212.74242424243,
+            70166.0303030303,
+            83260.74242424243,
+            109934.9696969697,
+            84978.54545454546,
+            98010.10606060606,
+            109440.0303030303,
+            75328.27272727272,
+            112443.18181818182
+          ],
+          "iterations_per_batch": 66,
+          "peak_traced_bytes": 50592,
+          "max_absolute_error": 1.3969838619232178e-08
+        },
+        "candidate": {
+          "median_ns": 78533.92857142857,
+          "samples_ns_per_call": [
+            105439.88571428572,
+            76503.57142857143,
+            71432.14285714286,
+            87220.82857142857,
+            75248.21428571429,
+            99107.14285714286,
+            99230.94285714286,
+            84778.57142857143,
+            78533.92857142857,
+            77969.64285714286,
+            116305.95714285714,
+            89876.78571428571,
+            83606.54285714286,
+            74795.22857142857,
+            70257.74285714286,
+            75236.9,
+            69542.25714285714,
+            84762.5,
+            83983.92857142857,
+            68875.58571428571,
+            73782.14285714286
+          ],
+          "iterations_per_batch": 70,
+          "peak_traced_bytes": 50664,
+          "max_absolute_error": 1.3969838619232178e-08
+        }
+      },
+      "speedup_vs_numpy": 3.1013286644383307,
+      "speedup_vs_previous": 1.082061562439925,
+      "regression_threshold_ns": {
+        "numpy": 280393.45238095237,
+        "previous": 98025.32727272727
+      },
+      "material_regression_vs": []
+    }
+  },
+  "first_candidate_call_after_import": {
+    "workflow": "weighted_mean/float32/4096x128/contiguous",
+    "elapsed_ns": 164291,
+    "scope": "first public call after module imports, before calibration; excludes process/import startup"
+  },
+  "material_regressions": {},
+  "all_outputs_verified": true,
+  "all_regression_guards_passed": true
+}

@@ -1,0 +1,69 @@
+{
+  "initial_report": "workflows-profile-before-confirmations.json",
+  "initial_cases": 141,
+  "initial_rounds": 9,
+  "initial_all_guards_passed": false,
+  "initial_material_regressions": {
+    "weighted_mean/float32/4096x128/contiguous": [
+      "previous"
+    ],
+    "mean_square/float64/4096x128/strided": [
+      "previous"
+    ],
+    "weighted_mean/float64/4096x128/strided": [
+      "previous"
+    ],
+    "workflow/clustering/float64/128x64": [
+      "numpy"
+    ]
+  },
+  "recheck_policy": "One bounded 21-round recheck of each initially failing case, same fixtures and unchanged regression guard. Initial failed report retained.",
+  "rechecks": {
+    "workflow/clustering/float64/128x64": {
+      "report": "recheck-clustering64.json",
+      "input_sha256": "293e689fa092eee8943c1ce5d470a6a5c902981642c3cb739ec9b1f2b0f701c9",
+      "speedup_vs_numpy": 1.067574933969498,
+      "speedup_vs_previous": 0.90871807105734,
+      "rounds": 21,
+      "material_regression_vs": []
+    },
+    "mean_square/float64/4096x128/strided": {
+      "report": "recheck-square64.json",
+      "input_sha256": "b580ab72421fa17631dca7c188647d5ace525882523b759c1d41af574e8d0f9d",
+      "speedup_vs_numpy": 1.053062392115777,
+      "speedup_vs_previous": 0.8853962907809554,
+      "rounds": 21,
+      "material_regression_vs": []
+    },
+    "weighted_mean/float32/4096x128/contiguous": {
+      "report": "recheck-weighted32.json",
+      "input_sha256": "b2a910ac37ab9b72459d01aad74b9fc92e763c84e37c743c04815df862244591",
+      "speedup_vs_numpy": 3.1013286644383307,
+      "speedup_vs_previous": 1.082061562439925,
+      "rounds": 21,
+      "material_regression_vs": []
+    },
+    "weighted_mean/float64/4096x128/strided": {
+      "report": "recheck-weighted64.json",
+      "input_sha256": "83128f259e1dfa6307b4a3cf3ecec176b93fd9024eff99d52c51c33d8674a4df",
+      "speedup_vs_numpy": 2.0246946793074803,
+      "speedup_vs_previous": 1.0072465327559372,
+      "rounds": 21,
+      "material_regression_vs": []
+    }
+  },
+  "all_outputs_verified": true,
+  "no_persistent_material_regressions": true,
+  "guard": "candidate <= reference_median * (1 + relative_margin) + absolute_margin_ns; both references checked",
+  "relative_margin": 0.15,
+  "absolute_margin_ns": 300,
+  "files_sha256": {
+    "candidate": "4c1622ce583907e2a5ecfbba503cec43084dad64006a1dcf5162085b8b7b93f0",
+    "previous": "53c981c52cf0206ddeb3878178522c6ea8cd14a38df3ba041f4fa4cc8d947adc",
+    "benchmark": "7ae6cd9814a653e3d26b8169acad27fb7ba91ffe25663077a5735732d431d039",
+    "unstd.math._math_native": "40887067bce9a2718af5122946e05578b75263d87b2d0cdee3e5acd66365c93d",
+    "native/math/src/adapter.c": "b154fefb23e7aec0df922f698658ff071dcbf4b8cac5e08942697570a2fd1678"
+  },
+  "status": "Exploratory confirmation under profile 7ae6cd98; final CI-style bounded confirmation profile rerun pending.",
+  "same_product_and_benchmark_sources_as_macos": true
+}

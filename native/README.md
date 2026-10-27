@@ -16,6 +16,7 @@ headers. Python module names remain independent of source filenames.
 | [`proc/`](proc/README.md) | [`adapter.c`](proc/src/adapter.c), [`pipes.c`](proc/src/pipes.c) | POSIX spawning and captured-output exchange |
 | [`rand/`](rand/README.md) | [`adapter.c`](rand/src/adapter.c), [`keyed.h`](rand/src/keyed.h) | Seed-faithful list shuffling and explicit SplitMix64-v1 integer batches |
 | [`pack/`](pack/README.md) | [`adapter.c`](pack/src/adapter.c) | Immutable numeric frame geometry, integer boundaries, and finite-value scans |
+| [`math/`](math/README.md) | [`adapter.c`](math/src/adapter.c) | Stable score selection and fused ndarray reductions through checked buffers |
 | [`fs/`](fs/README.md) | [`adapter.c`](fs/src/adapter.c) | Linux atomic writes with signal-aware rollback and durable commit reporting |
 | [`crypto/`](crypto/README.md) | [`adapter.c`](crypto/src/adapter.c) | Hash-stream batching and bearer-envelope parsing |
 | [`serde/`](serde/README.md) | [`adapter.c`](serde/src/adapter.c) | JSON proofs, codec dispatch and implementation headers |

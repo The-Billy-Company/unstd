@@ -35,6 +35,7 @@ _NATIVE_MODULES = (
     "unstd.fs._fs_native",
     "unstd.rand._rand_native",
     "unstd.pack._pack_native",
+    "unstd.math._math_native",
 )
 
 _COMPILER_KEYS = {
@@ -476,6 +477,8 @@ class CustomBuildHook(BuildHookInterface):
             if gzip_buffers and sys.platform == "darwin" and zlib_rs is None
             else ["dl"]
             if proc_pipes and sys.platform == "linux"
+            else ["m"]
+            if module == "unstd.math._math_native" and os.name != "nt"
             else [],
             # Supply the same checked Python RAW allocators for zlib's default
             # ABI hooks too; do not compile its unused unchecked malloc hook.
@@ -499,7 +502,7 @@ class CustomBuildHook(BuildHookInterface):
                 if os.name == "nt"
                 else ["-fno-fast-math", "-ffp-contract=off"]
             )
-            if module == "unstd.text._text_native"
+            if module in {"unstd.text._text_native", "unstd.math._math_native"}
             else [],
         )
         distribution = Distribution(

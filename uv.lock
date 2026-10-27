@@ -1902,6 +1902,9 @@ crypto = [
 ids = [
     { name = "uuid-utils" },
 ]
+math = [
+    { name = "numpy" },
+]
 model = [
     { name = "pydantic" },
     { name = "pydantic-settings" },
@@ -1996,6 +1999,7 @@ requires-dist = [
     { name = "libarchive-c", marker = "sys_platform != 'win32' and extra == 'archives'", specifier = ">=5.3" },
     { name = "msgspec", marker = "extra == 'serde'", specifier = ">=0.22" },
     { name = "numpy", marker = "extra == 'audio'", specifier = ">=2.5" },
+    { name = "numpy", marker = "extra == 'math'", specifier = ">=2.5" },
     { name = "numpy", marker = "extra == 'pack'", specifier = ">=2.5" },
     { name = "numpy", marker = "extra == 'rand'", specifier = ">=2.5" },
     { name = "orjson", marker = "extra == 'serde'", specifier = ">=3.12" },
@@ -2015,7 +2019,7 @@ requires-dist = [
     { name = "zlib-ng", marker = "extra == 'compress'", specifier = ">=1.0" },
     { name = "zstandard", marker = "extra == 'zstd'", specifier = ">=0.25" },
 ]
-provides-extras = ["serde", "ids", "crypto", "time", "proto", "model", "rex", "containers", "rand", "pack", "clone", "text", "audio", "toml", "yaml", "compress", "zstd", "archives"]
+provides-extras = ["serde", "ids", "crypto", "time", "proto", "model", "rex", "containers", "math", "rand", "pack", "clone", "text", "audio", "toml", "yaml", "compress", "zstd", "archives"]
 
 [package.metadata.requires-dev]
 backend-build = [

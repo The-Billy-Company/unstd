@@ -69,6 +69,7 @@ write a generator with bounded memory. See the
 | Sorted collections and persistent mappings | [`containers`](src/unstd/containers/README.md) | `containers` |
 | Regex and fuzzy matching | [`rex`](src/unstd/rex/README.md), [`text`](src/unstd/text/README.md) | `rex`, `text` |
 | Numeric frames, bulk packing and random draws | [`pack`](src/unstd/pack/README.md), [`rand`](src/unstd/rand/README.md) | `pack`, `rand` |
+| Array reductions, vector scoring and grouping | [`math`](src/unstd/math/README.md) | `math` |
 | TOML writing and YAML parsing/editing | [`toml`](src/unstd/toml/README.md), [`yaml`](src/unstd/yaml/README.md) | `toml`, `yaml` |
 | Audio decoding, encoding, and streaming | [`audio`](src/unstd/audio/README.md) | `audio` |
 | Atomic files, subprocesses, iteration | [`fs`](src/unstd/fs/README.md), [`proc`](src/unstd/proc/README.md), [`iters`](src/unstd/iters/README.md) | None |

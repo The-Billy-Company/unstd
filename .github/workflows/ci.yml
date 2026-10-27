@@ -309,6 +309,7 @@ jobs:
           - {id: model, name: model without msgspec, sync: "--extra model", pytest: "--require-extra model"}
           - {id: rex, name: rex, sync: "--extra rex", pytest: "--require-extra rex"}
           - {id: containers, name: containers, sync: "--extra containers", pytest: "--require-extra containers"}
+          - {id: math, name: math, sync: "--extra math", pytest: "--require-extra math"}
           - {id: rand, name: rand, sync: "--extra rand", pytest: "--require-extra rand"}
           - {id: pack, name: pack (audio without soundfile), sync: "--extra pack", pytest: "--require-extra pack"}
           - {id: text, name: text without NumPy, sync: "--extra text", pytest: "--require-extra text"}
@@ -454,7 +455,7 @@ jobs:
       - name: Every native module must import
         run: >-
           uv run --no-sync python -c
-          "import unstd.serde._json_native, unstd.clone._clone_native, unstd.crypto._stream_native, unstd.text._text_native, unstd.compress._gzip_native, unstd.containers._sorted_native, unstd.proc._proc_native, unstd.fs._fs_native, unstd.rand._rand_native, unstd.pack._pack_native"
+          "import unstd.serde._json_native, unstd.clone._clone_native, unstd.crypto._stream_native, unstd.text._text_native, unstd.compress._gzip_native, unstd.containers._sorted_native, unstd.proc._proc_native, unstd.fs._fs_native, unstd.rand._rand_native, unstd.pack._pack_native, unstd.math._math_native"
       - name: Require active ISA-L in the strict Linux x86 build
         run: |
           uv run --no-sync python - <<'PY'
@@ -473,7 +474,7 @@ jobs:
       - name: Native compatibility with the debug allocator
         id: tests
         run: >
-          uv run --no-sync python -m pytest tests/suites/product/clone tests/suites/product/text tests/suites/product/serde tests/suites/product/crypto tests/suites/product/compress tests/suites/product/containers tests/suites/product/proc tests/suites/product/fs tests/suites/product/rand tests/suites/product/pack -q --junitxml=.local/native.xml
+          uv run --no-sync python -m pytest tests/suites/product/clone tests/suites/product/text tests/suites/product/serde tests/suites/product/crypto tests/suites/product/compress tests/suites/product/containers tests/suites/product/proc tests/suites/product/fs tests/suites/product/rand tests/suites/product/pack tests/suites/product/math -q --junitxml=.local/native.xml
 
       - name: Summarize native safety
         if: always() && steps.tests.outcome != 'skipped'
@@ -547,8 +548,8 @@ jobs:
         run: |
           LD_PRELOAD="$(gcc -print-file-name=libasan.so)"
           export LD_PRELOAD
-          .venv/bin/python -c "import unstd.serde._json_native, unstd.clone._clone_native, unstd.crypto._stream_native, unstd.text._text_native, unstd.compress._gzip_native, unstd.containers._sorted_native, unstd.proc._proc_native, unstd.fs._fs_native, unstd.rand._rand_native, unstd.pack._pack_native"
-          .venv/bin/python -m pytest tests/suites/product/clone tests/suites/product/text tests/suites/product/serde tests/suites/product/crypto tests/suites/product/compress tests/suites/product/containers tests/suites/product/fs tests/suites/product/rand tests/suites/product/pack -p tests.tooling.ci.sharding --ci-shard ${{ matrix.shard }}/3 -q --junitxml=.local/native-sanitizers-${{ matrix.shard }}.xml
+          .venv/bin/python -c "import unstd.serde._json_native, unstd.clone._clone_native, unstd.crypto._stream_native, unstd.text._text_native, unstd.compress._gzip_native, unstd.containers._sorted_native, unstd.proc._proc_native, unstd.fs._fs_native, unstd.rand._rand_native, unstd.pack._pack_native, unstd.math._math_native"
+          .venv/bin/python -m pytest tests/suites/product/clone tests/suites/product/text tests/suites/product/serde tests/suites/product/crypto tests/suites/product/compress tests/suites/product/containers tests/suites/product/fs tests/suites/product/rand tests/suites/product/pack tests/suites/product/math -p tests.tooling.ci.sharding --ci-shard ${{ matrix.shard }}/3 -q --junitxml=.local/native-sanitizers-${{ matrix.shard }}.xml
           if [ "${{ matrix.shard }}" = "1" ]; then
             env -u LD_PRELOAD CC=gcc .venv/bin/python -m tests.tooling.runtime.proc_memory --sanitize --output .local/proc-memory --tests tests/suites/product/proc
           fi

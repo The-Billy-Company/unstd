@@ -1,0 +1,56 @@
+{
+  "files": {
+    "python_candidate": {
+      "path": "/tmp/math-run/src/unstd/math/__init__.py",
+      "sha256": "fa1784e68fb66aa036b973558cc5d0ae3d27130a43a7141da29a5881b8e68984"
+    },
+    "native_source": {
+      "path": "/tmp/math-run/native/math/src/adapter.c",
+      "sha256": "b154fefb23e7aec0df922f698658ff071dcbf4b8cac5e08942697570a2fd1678"
+    },
+    "release_extension": {
+      "path": "/tmp/math-run/src/unstd/math/_math_native.cpython-314-aarch64-linux-gnu.so",
+      "sha256": "40887067bce9a2718af5122946e05578b75263d87b2d0cdee3e5acd66365c93d"
+    },
+    "ubsan_python_candidate": {
+      "path": "/tmp/math-ubsan/src/unstd/math/__init__.py",
+      "sha256": "fa1784e68fb66aa036b973558cc5d0ae3d27130a43a7141da29a5881b8e68984"
+    },
+    "ubsan_native_source": {
+      "path": "/tmp/math-ubsan/native/math/src/adapter.c",
+      "sha256": "b154fefb23e7aec0df922f698658ff071dcbf4b8cac5e08942697570a2fd1678"
+    },
+    "ubsan_extension": {
+      "path": "/tmp/math-ubsan/src/unstd/math/_math_native.cpython-314-aarch64-linux-gnu.so",
+      "sha256": "8e249f8a23041c8bb93b5ff0e3d190a8d4d94a23fc9e5dd9bce8abf07bc3275e"
+    },
+    "benchmark": {
+      "path": "/tmp/math-run/bench/profiles/math_workflows.py",
+      "sha256": "be011409d0e02a66d48569e5db3564c72f3d712ce96a4e1ccd857b83b25d9a13"
+    }
+  },
+  "release_compile_flags": [
+    "-O3",
+    "-fno-fast-math",
+    "-ffp-contract=off",
+    "-Wall",
+    "-Wextra",
+    "-Werror"
+  ],
+  "ubsan_compile_flags": [
+    "-O2",
+    "-fno-fast-math",
+    "-ffp-contract=off",
+    "-fsanitize=undefined",
+    "-fno-sanitize-recover=undefined",
+    "-Wall",
+    "-Wextra",
+    "-Werror"
+  ],
+  "libraries": [
+    "m"
+  ],
+  "native_tests": "172 passed",
+  "ubsan_tests": "172 passed",
+  "fallback_tests": "85 passed; 87 native-specific tests skipped"
+}

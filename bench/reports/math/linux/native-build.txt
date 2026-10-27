@@ -1,0 +1,4 @@
+running build_ext
+building 'unstd.math._math_native' extension
+aarch64-linux-gnu-gcc -fno-strict-overflow -Wsign-compare -DNDEBUG -g -O2 -Wall -fPIC -I/tmp/math-env/include -I/usr/include/python3.14 -c /tmp/math-run/native/math/src/adapter.c -o /tmp/math-build/tmp/math-run/native/math/src/adapter.o -O3 -fno-fast-math -ffp-contract=off -Wall -Wextra -Werror
+aarch64-linux-gnu-gcc -shared -Wl,-O1 -Wl,-Bsymbolic-functions -Wl,-Bsymbolic-functions -Wl,--package-metadata=%7B%22type%22:%22deb%22%2C%22os%22:%22ubuntu%22%2C%22name%22:%22python3.14%22%2C%22version%22:%223.14.4-1ubuntu0.2%22%2C%22architecture%22:%22arm64%22%7D -Wl,-z,relro -g -fwrapv -O2 /tmp/math-build/tmp/math-run/native/math/src/adapter.o -L/usr/lib/aarch64-linux-gnu -lm -o /tmp/math-run/src/unstd/math/_math_native.cpython-314-aarch64-linux-gnu.so

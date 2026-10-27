@@ -244,6 +244,7 @@ def test_sanitizer_shards_retain_both_engines_every_module_and_failure_evidence(
         "tests/suites/product/containers",
         "tests/suites/product/fs",
         "tests/suites/product/pack",
+        "tests/suites/product/math",
         "tests/suites/product/rand",
     }
     for shard in matrix["shard"]:
