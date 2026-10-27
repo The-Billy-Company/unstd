@@ -1,0 +1,973 @@
+{
+  "recorded_utc": "2026-10-27T06:19:57.060190+00:00",
+  "scope": "Targeted follow-up; no full57 rerun on final C. Original means first frozen efb candidate, not published4.0.2, in these four follow-up files.",
+  "python": "3.14.9 (main, Oct 21 2026, 17:47:42) [Clang 23.1.3 ]",
+  "pydantic": "2.13.5",
+  "rounds": 9,
+  "batch_target_ns": 200000000,
+  "gc_enabled": true,
+  "public_entrypoints_only": true,
+  "includes_output_destruction": true,
+  "raw_stages": {
+    "clone-guard-three-long-gc.json": {
+      "sha256": "6dc4a48c954c6d199bb6d8dfb1d807e78f304cb2b6ead2c6735a2d8e398a0719",
+      "bytes": 62520,
+      "cases": 3,
+      "C": "0b9466c96b95afb3ee05c0e3141cfba22afb5ab98e655b4a3c633c6660d21a1d",
+      "Python": "32a555b2637bcc8bb95a83dca490b22f9befa30f789853d50f8a7d52b1a97033",
+      "rounds": 9,
+      "batch_target_ns": 200000000,
+      "model_warmup_recorded": false,
+      "gate_passed": false
+    },
+    "clone-parent-three-long-gc.json": {
+      "sha256": "8449cebaad86c02a6ff54517d1266e1e961d8db6d669bf0dc6664d2d6c055ca6",
+      "bytes": 63814,
+      "cases": 3,
+      "C": "0bd26032bb52bbce9647d09670e8cb5cc886402c56051b3461cc3069cac96bd5",
+      "Python": "32a555b2637bcc8bb95a83dca490b22f9befa30f789853d50f8a7d52b1a97033",
+      "rounds": 9,
+      "batch_target_ns": 200000000,
+      "model_warmup_recorded": true,
+      "gate_passed": false
+    },
+    "clone-parent-temporal14-long-gc.json": {
+      "sha256": "5b77ea969a5bf0610423ebf112363fed16477dc0bc27a0101156f309a6a1e345",
+      "bytes": 194940,
+      "cases": 14,
+      "C": "0bd26032bb52bbce9647d09670e8cb5cc886402c56051b3461cc3069cac96bd5",
+      "Python": "32a555b2637bcc8bb95a83dca490b22f9befa30f789853d50f8a7d52b1a97033",
+      "rounds": 9,
+      "batch_target_ns": 200000000,
+      "model_warmup_recorded": true,
+      "gate_passed": true
+    },
+    "clone-final-four-long-gc.json": {
+      "sha256": "ac99cf2e6240656986e7b16cd528780e90b749f7e1cec286b4bc402af900ca25",
+      "bytes": 77326,
+      "cases": 4,
+      "C": "727ca6c91703ce1319d32df63541ef6675e6dceb62fcd1dcace3f2441bbcabab",
+      "Python": "32a555b2637bcc8bb95a83dca490b22f9befa30f789853d50f8a7d52b1a97033",
+      "rounds": 9,
+      "batch_target_ns": 200000000,
+      "model_warmup_recorded": true,
+      "gate_passed": false
+    }
+  },
+  "final_four_performance_gate": {
+    "max_slowdown": 1.1,
+    "comparison": "median of matched current/before batch ratios",
+    "passed": false,
+    "regressions": [
+      {
+        "workload": "dataclass-small",
+        "metric": "median_wall_ns",
+        "before_ns": 3436.3751502403848,
+        "current_ns": 4465.716682434082,
+        "slowdown": 1.2995428284719412
+      },
+      {
+        "workload": "consumer-copy-hook-alias",
+        "metric": "median_wall_ns",
+        "before_ns": 7722.395155164931,
+        "current_ns": 8986.565566644436,
+        "slowdown": 1.2206185275394876
+      }
+    ]
+  },
+  "temporal14_performance_gate": {
+    "max_slowdown": 1.1,
+    "comparison": "median of matched current/before batch ratios",
+    "passed": true,
+    "regressions": []
+  },
+  "final_four_stdlib_target": {
+    "required_speedup": 100.0,
+    "comparison": "median of matched stdlib/current wall and CPU batch ratios",
+    "enforced": false,
+    "passed": false,
+    "misses": [
+      "dataclass-small",
+      "dataclasses-datetime-200",
+      "consumer-copy-hook-alias"
+    ]
+  },
+  "temporal14_stdlib_target": {
+    "required_speedup": 100.0,
+    "comparison": "median of matched stdlib/current wall and CPU batch ratios",
+    "enforced": false,
+    "passed": false,
+    "misses": [
+      "temporal-datetime-utc-1000",
+      "temporal-mixed-scalars-1000",
+      "temporal-nested-date-1000",
+      "temporal-scalar-first-1000"
+    ]
+  },
+  "model_warmup": {
+    "fixture": "consumer-question-private-alias",
+    "surface": "public deep; strict private/public alias check",
+    "labels": [
+      "current",
+      "before",
+      "original",
+      "stdlib"
+    ],
+    "implementations": {
+      "current": {
+        "native_model_capability": 1,
+        "marker_initialized_before": true,
+        "marker_initialized_after": true,
+        "checked": true
+      },
+      "before": {
+        "native_model_capability": 0,
+        "marker_initialized_before": false,
+        "marker_initialized_after": true,
+        "checked": true
+      },
+      "original": {
+        "native_model_capability": 1,
+        "marker_initialized_before": false,
+        "marker_initialized_after": true,
+        "checked": true
+      },
+      "stdlib": {
+        "native_model_capability": null,
+        "marker_initialized_before": null,
+        "marker_initialized_after": null,
+        "checked": true
+      }
+    }
+  },
+  "flat_function_continuity": {
+    "parent_C": "0bd26032bb52bbce9647d09670e8cb5cc886402c56051b3461cc3069cac96bd5",
+    "final_C": "727ca6c91703ce1319d32df63541ef6675e6dceb62fcd1dcace3f2441bbcabab",
+    "function": "clone_temporal_sequence",
+    "definition_sha256": "12258d25de17b2f0ab584b6a7ad68b8344ea5b6141f846d9e57d1fa8df38eb03",
+    "comparison": "Exact complete function definition bytes identical in both saved C sources",
+    "scope": "Only this function definition is identical; no claim of whole-module binary or all-entrypoint performance equivalence. Four-case final retarget separately measures final source."
+  },
+  "normal_unit": {
+    "python314": "644 passed,43 skipped",
+    "python312": "646 passed,41 skipped",
+    "python313": "646 passed,41 skipped"
+  },
+  "overlap": {
+    "recorded_utc": "2026-10-27T06:05:56.577361+00:00",
+    "benchmark_started_utc": "2026-10-27T06:03:44Z",
+    "reported_overlap": "Root started the full normal Python3.14 unit suite on installed C727 immediately before the final four-case benchmark start notification, in the same06:03:44 window.",
+    "expected_duration_reported_seconds": 20,
+    "actual_end_not_yet_recorded": false,
+    "scope": "The observed stdout-file interval overlaps benchmark startup/first calibration or rounds. It is not a measurement of exact CPU activity or CPU duration. No probes or rounds are removed. Root reports no qualification CPU jobs after06:04:09.337027Z.",
+    "updated_utc": "2026-10-27T06:07:36.140641+00:00",
+    "observed_unit_stdout_interval": {
+      "evidence": "unit stdout creation and final write times; final summary 644 passed,43 skipped in25.64s",
+      "start_utc": "2026-10-27T06:03:41.227358+00:00",
+      "last_output_utc": "2026-10-27T06:04:09.337027+00:00",
+      "observed_log_interval_seconds": 28.109668493270874,
+      "process_result": "exit0 confirmed by exec session76277"
+    },
+    "observed_unit_stdout_interval_sha256": "962444464c37c14a3acbd63f75c794f795be29662421425ba25b3904d65bba90"
+  },
+  "limits": [
+    "Three original CPU regressions are within1.10 in the final focused run, but two final wall metrics fail the formal combined gate.",
+    "Temporal14 passes its regression gate on C0bd26032; final C727 is separately retested on four cases. No whole57 qualification claim.",
+    "UTCdatetime1k wall60.705x from temporal14 and every earlier result remain retained; final focused result is a separate run, not a replacement.",
+    "The earliest three-case original control was model-cold; its current/before comparisons remain usable, while original dc/hook contrasts do not represent equal warm activation.",
+    "Final timing startup overlapped the observed normal-unit stdout interval; this interval does not measure exact CPU duration.",
+    "All10 homogeneous temporal cases exceed100xCPU in temporal14, but only9 homogeneous cases meet both clocks in that run.",
+    "Native binaries are fingerprinted, not included in the source/evidence archive.",
+    "Working C727 has a completed focused40-case ASan+UBSan+forced-GC run; owned C9c4 has separate82-case forced-GC qualification without sanitizers. The earlier broad interrupted sanitizer stress remains incomplete.",
+    "The release-owner artifact e22bba71 passed the full normal suite but was not timed. Numerical results apply to retained manual-O3 assertion-enabled source/control binaries; published4.0.2 also differs in compiler assertion setting."
+  ],
+  "archive": {
+    "file": "clone-followup-727ca6c9-evidence.tar.gz",
+    "sha256": "276f0b5a0cb91cc1f39e1a6daa237a438db1be814390def79c4794547ff13471",
+    "bytes": 586132,
+    "members": {
+      "evidence/build_temporal_final_probe.py": {
+        "sha256": "398222a8944f8e5c00ab2fbe38784d49362513aca571c160495e1f1ae5fbeeab",
+        "bytes": 6860
+      },
+      "evidence/build_temporal_guard_probe.py": {
+        "sha256": "29fa490553b0bc4874bb1891c1ca45f43e3d3c54bc60e4a92380f36f3c0bacdf",
+        "bytes": 7131
+      },
+      "evidence/build_temporal_parent_probe.py": {
+        "sha256": "f676d7ffc56fdaa7626845d3f40b7bf00fddba5a6165b109191bee3e155c58b0",
+        "bytes": 7108
+      },
+      "evidence/clone-followup-raw-manifest.json": {
+        "sha256": "4372948727f12671f439bf45ff8665929f043f2bf727028a0b03120076adcc5e",
+        "bytes": 1735
+      },
+      "evidence/final-four-load.json": {
+        "sha256": "612111f704eff52346cc8357cfa81f634daf910cbc0bd2a99b0274a8c6436e97",
+        "bytes": 278
+      },
+      "evidence/final-four-overlap.json": {
+        "sha256": "e40fa791d1ff04100900818d9f45be8578e7b0c4889fffb3fe62dc3b5f6d7292",
+        "bytes": 1188
+      },
+      "evidence/flat-sequence-continuity.json": {
+        "sha256": "e5cd0550662bdb1ee500d2e9a3e264e7b27bb385aef720d7de9d77d80a3c3c80",
+        "bytes": 584
+      },
+      "evidence/guard-three-load.json": {
+        "sha256": "1d3e81ea0c8bc02a056713c7acced571f815c31c655b0f09097e340a1c959f58",
+        "bytes": 256
+      },
+      "evidence/long-common-batch.py": {
+        "sha256": "38aa2794e35c13f6df0ac83e0fcc55c34a56ee93a887b948d3301d44c3ff55e5",
+        "bytes": 230
+      },
+      "evidence/parent-temporal14-load.json": {
+        "sha256": "752227ebe5c22f9a96622de6b41cadb3bd551fc0e84afadcb7c47af95e2dd32b",
+        "bytes": 302
+      },
+      "evidence/probe-final-unit-interval.json": {
+        "sha256": "962444464c37c14a3acbd63f75c794f795be29662421425ba25b3904d65bba90",
+        "bytes": 332
+      },
+      "evidence/probe-final-unit.log": {
+        "sha256": "d3979f92eb4fdaa3cebe678974e0a5f5b086a59794637c1e9948bf73585a2454",
+        "bytes": 845
+      },
+      "evidence/temporal-final-owned.patch": {
+        "sha256": "f7c17730e4ab1c843038ee420768d4f3a6aa65a0493098a08b45c39412bedfcc",
+        "bytes": 16989
+      },
+      "evidence/temporal-final-qualified-runs.json": {
+        "sha256": "b4462c5f2aa68afe75c472a87d72bac08634a9e55c89a8e50117c2fe4e0acded",
+        "bytes": 2551
+      },
+      "evidence/temporal-guard-parent-owned.patch": {
+        "sha256": "d6e2026ca352c3833d30709c9e149e28f721183a71a4641c6d187070b5cc3791",
+        "bytes": 14912
+      },
+      "evidence/temporal-guard-proof-0bd-retained.json": {
+        "sha256": "3cc7b505ebc6567d7ecc6ca6f7242c86eca2385be1f58a4083419fb523dd2c85",
+        "bytes": 4570
+      },
+      "evidence/temporal-guard-proof.json": {
+        "sha256": "3cc7b505ebc6567d7ecc6ca6f7242c86eca2385be1f58a4083419fb523dd2c85",
+        "bytes": 4570
+      },
+      "evidence/test_temporal_guard_probe.py": {
+        "sha256": "86b07d212b653eaf38d8b16e5e378faf0ab805921ba813f43ce8234d29030e80",
+        "bytes": 3912
+      },
+      "evidence/test_temporal_policy_probes-qualified.py": {
+        "sha256": "3d85fe869d6b6cc1c06e6df855640344d109e38484f79f4fcde254239a9db0d7",
+        "bytes": 10033
+      },
+      "harness/cold/bench/diagnostics/clone_allocations.py": {
+        "sha256": "04ab3409d325bfaf692e383fb4ee25f4cfd2d2b5f6ad6f51dec5ac80ed2f998b",
+        "bytes": 10035
+      },
+      "harness/cold/bench/profiles/clone_common_cpu.py": {
+        "sha256": "9eff21036064ceb7497d427d263b298837ae7ae733d0b941650ed3a454c1c61d",
+        "bytes": 32610
+      },
+      "harness/cold/bench/profiles/clone_cpu.py": {
+        "sha256": "ad54ae80f6acd231936844edf10592185d9719cda5831398535bf8d5b98807cf",
+        "bytes": 26170
+      },
+      "harness/cold/bench/workloads/clone_consumers.py": {
+        "sha256": "6deee0f55edfec14ed4d2894c90f54f44b3ba8d6d865416f871f8b490b26fc7e",
+        "bytes": 8747
+      },
+      "harness/cold/bench/workloads/clone_temporals.py": {
+        "sha256": "e412f70e35960c4e17095630f6aa7de72153d0b47cdc1f760d70b671b4c737e1",
+        "bytes": 3127
+      },
+      "harness/cold/tests/suites/assurance/gates/bench/test_clone_consumers.py": {
+        "sha256": "7e1f074be094f9a4d7f4feb9ea88bfabb4ff5c484ab67d37a946a4bdff2e917b",
+        "bytes": 9895
+      },
+      "harness/cold/tests/suites/assurance/gates/bench/test_clone_temporals.py": {
+        "sha256": "735fe7cef56b3b3afab8ecb24fa43932908b3eed11e2cb795e4b771e3d6d6989",
+        "bytes": 5174
+      },
+      "harness/warm/bench/__init__.py": {
+        "sha256": "d3ce1c8fb2b19ac17342c879a03486448de07de9934b8c22ec3295826fb8d17a",
+        "bytes": 1260
+      },
+      "harness/warm/bench/core/__init__.py": {
+        "sha256": "7d448fab00178bc6758de1b89205f4d4a0be0def7afc723ec6f4d26a1e8ec83a",
+        "bytes": 30
+      },
+      "harness/warm/bench/core/cases.py": {
+        "sha256": "379e6cb223147ab0793fb54ec4801b2b4e6859c5a65f40d428ab2b91379e9622",
+        "bytes": 24632
+      },
+      "harness/warm/bench/core/report.py": {
+        "sha256": "3b5222c32930817f7333450dabd44088df1c403ed468029a74939b0b89afa4ab",
+        "bytes": 7960
+      },
+      "harness/warm/bench/core/timing.py": {
+        "sha256": "d585627571b5daeca0a078b75484c84e769dce70a5b4448825fd811a8e3b61bc",
+        "bytes": 5577
+      },
+      "harness/warm/bench/profiles/__init__.py": {
+        "sha256": "75f32d76ac6c0671fe17c653bcffbc558a9fa9c6006eaf5523424178452a0c7e",
+        "bytes": 34
+      },
+      "harness/warm/bench/profiles/clone_common_cpu.py": {
+        "sha256": "2b01fc14ce7558f0e816e5af0abc22b1cc90c0a7cc97d8c5284b28e7ac6be5a5",
+        "bytes": 34087
+      },
+      "harness/warm/bench/profiles/clone_cpu.py": {
+        "sha256": "ad54ae80f6acd231936844edf10592185d9719cda5831398535bf8d5b98807cf",
+        "bytes": 26170
+      },
+      "harness/warm/bench/workloads/__init__.py": {
+        "sha256": "f62e623ffb84a575736ca61764f795f113699392ea58c77f46220f979d53ca67",
+        "bytes": 35
+      },
+      "harness/warm/bench/workloads/clone_consumers.py": {
+        "sha256": "6deee0f55edfec14ed4d2894c90f54f44b3ba8d6d865416f871f8b490b26fc7e",
+        "bytes": 8747
+      },
+      "harness/warm/bench/workloads/clone_temporals.py": {
+        "sha256": "e412f70e35960c4e17095630f6aa7de72153d0b47cdc1f760d70b671b4c737e1",
+        "bytes": 3127
+      },
+      "hatch_build.py": {
+        "sha256": "1e4f40663ee754d6c08c13a8c9f648caf0bd8fc9f9d7fb35cdec43e8b39271bc",
+        "bytes": 30169
+      },
+      "pyproject.toml": {
+        "sha256": "b5ca2e69190ad3b78fe995403f1bc525196a7833a8adffc4554caf406a38b71f",
+        "bytes": 16960
+      },
+      "qualification/312/manifest.json": {
+        "sha256": "742ffb3c93becd0d22bf4c82123d379ce74e1db5ff6541dcf794aed28a9e6a83",
+        "bytes": 1339
+      },
+      "qualification/313/manifest.json": {
+        "sha256": "05190bdde12c0504049e777d8ba63b15722098008b40e23c57dad975b58a1c96",
+        "bytes": 1339
+      },
+      "qualification/native-test-types-qualified-runs.json": {
+        "sha256": "053e61cae93ed808500f481bfb3d9a8ec1a2548ebfaaef52449a0939f6d56c69",
+        "bytes": 2790
+      },
+      "qualification/owned-builder/clone_memory_owned727.py": {
+        "sha256": "474a64c273296158753d57e035313619078547ec29bce9dc22d37fbadad713cd",
+        "bytes": 7992
+      },
+      "qualification/owned-forced-gc/sample.txt": {
+        "sha256": "a144292e88160ac3b95d6e16c56fc7fb709a768da99ab5cad7bd436cecce357e",
+        "bytes": 132782
+      },
+      "qualification/owned-forced_gc/manifest.json": {
+        "sha256": "548cefcf2aacc215b8584f0eb2816e1916e4ae39b73518824861740f05c47658",
+        "bytes": 1507
+      },
+      "qualification/owned-only-qualification-727.json": {
+        "sha256": "10c8bd1488ecd7aa13470266f604b4e04df7c9cd93303d416c405143ed5fa335",
+        "bytes": 6445
+      },
+      "qualification/owned-ordinary/manifest.json": {
+        "sha256": "d413f52e6cd0dcdcf26be08d410370ae89b9d6eaec5e9a0b0d5145deed839dd8",
+        "bytes": 1327
+      },
+      "qualification/portable-qualification-727.json": {
+        "sha256": "d6fe52d3d9d9252d757e570648665e9ce5aa7afaaf43f2f746d2b31bd2983090",
+        "bytes": 7139
+      },
+      "qualification/qualification-owned727-build.stdout": {
+        "sha256": "d413f52e6cd0dcdcf26be08d410370ae89b9d6eaec5e9a0b0d5145deed839dd8",
+        "bytes": 1327
+      },
+      "qualification/qualification-owned727-gc-build.stdout": {
+        "sha256": "548cefcf2aacc215b8584f0eb2816e1916e4ae39b73518824861740f05c47658",
+        "bytes": 1507
+      },
+      "qualification/qualification-owned727-gc-unit.stdout": {
+        "sha256": "4fbee71ab223294b8b1ef746356e7ad50482f80fb5d42857899fe65b345b6bcf",
+        "bytes": 191
+      },
+      "qualification/qualification-owned727-unit.stdout": {
+        "sha256": "1afdb760bda748b33c64c92965127ab2e827dff5ccbba4a5d0b3faa7a8351763",
+        "bytes": 1608
+      },
+      "qualification/qualification312-727-build.stdout": {
+        "sha256": "742ffb3c93becd0d22bf4c82123d379ce74e1db5ff6541dcf794aed28a9e6a83",
+        "bytes": 1339
+      },
+      "qualification/qualification312-727-unit.stdout": {
+        "sha256": "05b0ca868e86c2125a4174a0e3ecc29820724ab36a4bc796ed41a43c99883897",
+        "bytes": 2296
+      },
+      "qualification/qualification313-727-build.stdout": {
+        "sha256": "05190bdde12c0504049e777d8ba63b15722098008b40e23c57dad975b58a1c96",
+        "bytes": 1339
+      },
+      "qualification/qualification313-727-unit.stdout": {
+        "sha256": "47b067415004608aa7812887127237a524a07755da8f3eae4e994ff0197e5e49",
+        "bytes": 2296
+      },
+      "qualification/qualified-tests/test_admission.py": {
+        "sha256": "b1dfcf02d10cee5c63a333612f43120a68767ee47b70609a2a6c534519abf117",
+        "bytes": 8882
+      },
+      "qualification/qualified-tests/test_class_lifetime.py": {
+        "sha256": "bfa4b6c7a04c19704a6139f9ff0eef9252d00243aace06bb6283980da473ac44",
+        "bytes": 2982
+      },
+      "qualification/qualified-tests/test_clone.py": {
+        "sha256": "e58e823c58d6e42b016f312c45ef800a477f2da04b7d6113b7802dc8276c9673",
+        "bytes": 22535
+      },
+      "qualification/qualified-tests/test_closed_ancestors.py": {
+        "sha256": "a1f77584d9ceb68a144f159366b4511f68a899b04866a186ccd52022b41d4ddb",
+        "bytes": 2432
+      },
+      "qualification/qualified-tests/test_dataclass_recipes.py": {
+        "sha256": "3bc332aa998f4c3fef1f69b3399b670035200d1a7a5af04b71833dafe698c34c",
+        "bytes": 21113
+      },
+      "qualification/qualified-tests/test_depth_limits.py": {
+        "sha256": "af9a0c5106093084f3ab9d1f49f1c7657f199812dfa4ce6ceec58a347a09054a",
+        "bytes": 6356
+      },
+      "qualification/qualified-tests/test_graph_record_cache.py": {
+        "sha256": "194b0d20d74c53326ae6851d5e639ea390b5d1e2ea41d9e55bbf98b307d9b4f0",
+        "bytes": 6404
+      },
+      "qualification/qualified-tests/test_hook_failures.py": {
+        "sha256": "f3fa72d65eebe8866cb3b56a416bf0147b91493eb9c5228aeaa074b3eccc45c3",
+        "bytes": 10265
+      },
+      "qualification/qualified-tests/test_memo_safety.py": {
+        "sha256": "bd72ac8f65f83b05b0d5505a0a16c4c1466c2e8f71ba93fdb03255ef1dcc1b2f",
+        "bytes": 15674
+      },
+      "qualification/qualified-tests/test_native.py": {
+        "sha256": "ce2531f45f27b418681266fc4ccb6d46bda685fd200be83d44d9d47be7a4c17f",
+        "bytes": 21644
+      },
+      "qualification/qualified-tests/test_native_admission_boundaries.py": {
+        "sha256": "77342f1692cf0ac9fea0e6dfa775a10aace83792c66405287c0989a69c5669f3",
+        "bytes": 11822
+      },
+      "qualification/qualified-tests/test_native_callables.py": {
+        "sha256": "5818e56d517b13e4c98533cd77a13d0d8fbd834950bff164e0474a28b1bfe6c2",
+        "bytes": 2992
+      },
+      "qualification/qualified-tests/test_native_model_protocols.py": {
+        "sha256": "31654ee00a1fa70577c7174b37464a64eee7169063b9eb671ae835121449b5a8",
+        "bytes": 14893
+      },
+      "qualification/qualified-tests/test_native_sets.py": {
+        "sha256": "22ff4bac0687aa614287b02274b4c10d4409d12aff4c154eba7e8bf1d56422da",
+        "bytes": 6130
+      },
+      "qualification/qualified-tests/test_native_temporal_sequence.py": {
+        "sha256": "ab83d8af87208f4d81e48dca0e8950d02ca31c092a6f7df689b38def0198b02f",
+        "bytes": 9291
+      },
+      "qualification/qualified-tests/test_reentrant_safety.py": {
+        "sha256": "eab85e42e949d79d60b090f48f4778c1a725ca779dde22984ff8b3b2b7abbcf3",
+        "bytes": 21989
+      },
+      "qualification/qualified-tests/test_repeat_cache.py": {
+        "sha256": "29d692e97a78e91ad37f61b4142efda0cf60c7a2b96d1435a449a28741c63c2a",
+        "bytes": 3753
+      },
+      "qualification/qualified-tests/test_scalar_prefix.py": {
+        "sha256": "60e3a56e71db92e5950967ff54425fe40fa11081e0bddedf62f774596c6dabfa",
+        "bytes": 6354
+      },
+      "qualification/qualified-tests/test_shared_identity.py": {
+        "sha256": "d41a7a28e1c560c4829e0d8dc580ebf5cb623b0ec80bdedc10761ede3eade8fc",
+        "bytes": 12158
+      },
+      "qualification/qualified-tests/test_slotted.py": {
+        "sha256": "54d05c32cd725246ad2d96d22900f1f07e433b63b43ea63709e9bba00042218a",
+        "bytes": 10628
+      },
+      "qualification/qualified-tests/test_temporal_graph.py": {
+        "sha256": "78bc5fddde6cdca15b1cdcee5720e659faddefbeed0f18c9e51a46f99cc41c9d",
+        "bytes": 15783
+      },
+      "qualification/qualified-tests/test_temporal_policy_probes.py": {
+        "sha256": "3d85fe869d6b6cc1c06e6df855640344d109e38484f79f4fcde254239a9db0d7",
+        "bytes": 10033
+      },
+      "qualification/release-build/hatch_build.py": {
+        "sha256": "1e4f40663ee754d6c08c13a8c9f648caf0bd8fc9f9d7fb35cdec43e8b39271bc",
+        "bytes": 30169
+      },
+      "qualification/release-build/manifest.json": {
+        "sha256": "039e6cb22f6e57a156116ac41e1fb2d0bdf35cf6b088cee5dc0f449982296b71",
+        "bytes": 1429
+      },
+      "qualification/release-build/performance-build-assertions.json": {
+        "sha256": "5961db86abbf23c4ec7f5191bb178aa7c54a52b9bbe66368bb27ef901396111c",
+        "bytes": 2357
+      },
+      "qualification/release-build/pytest.log": {
+        "sha256": "ff1ad0f2e126bbbfea7f511e85f969d639735bcf3ed76fc9443606b7bd143539",
+        "bytes": 845
+      },
+      "qualification/type-repaired-tests/test_temporal_policy_probes.py": {
+        "sha256": "66fc41c95ff44249e41f0cce2aef4da314b4d5d2d5d14292be0c76d163e752df",
+        "bytes": 11370
+      },
+      "qualification/type-repairs-after/test_native_model_protocols.py": {
+        "sha256": "91e7fb6a52636802e212b6c161d7745eb1dd42b315ebd5fb79878d5fa503fb5c",
+        "bytes": 15314
+      },
+      "qualification/type-repairs-after/test_native_sets.py": {
+        "sha256": "a2ba62a62a6e7f82ec4a00f111db30564445e28d9048e9ca1567484dcfb016ef",
+        "bytes": 6158
+      },
+      "qualification/type-repairs-after/test_native_temporal_sequence.py": {
+        "sha256": "43a6a179c5f2ce41d880dbc6a633832e4d3b9c45f7a6ab87cfc0a152cbbdd3ac",
+        "bytes": 9746
+      },
+      "qualification/type-repairs-after/test_temporal_policy_probes.py": {
+        "sha256": "66fc41c95ff44249e41f0cce2aef4da314b4d5d2d5d14292be0c76d163e752df",
+        "bytes": 11370
+      },
+      "qualification/type-repairs-before/manifest.json": {
+        "sha256": "c0c14394c8eb83ca31eade180b1c7ea0c3376cc8d3d821265f58d6a4867234eb",
+        "bytes": 410
+      },
+      "qualification/type-repairs-before/test_native_model_protocols.py": {
+        "sha256": "31654ee00a1fa70577c7174b37464a64eee7169063b9eb671ae835121449b5a8",
+        "bytes": 14893
+      },
+      "qualification/type-repairs-before/test_native_sets.py": {
+        "sha256": "22ff4bac0687aa614287b02274b4c10d4409d12aff4c154eba7e8bf1d56422da",
+        "bytes": 6130
+      },
+      "qualification/type-repairs-before/test_native_temporal_sequence.py": {
+        "sha256": "ab83d8af87208f4d81e48dca0e8950d02ca31c092a6f7df689b38def0198b02f",
+        "bytes": 9291
+      },
+      "qualification/type-repairs-before/test_temporal_policy_probes.py": {
+        "sha256": "66fc41c95ff44249e41f0cce2aef4da314b4d5d2d5d14292be0c76d163e752df",
+        "bytes": 11370
+      },
+      "qualification/working-sanitizer/clone_memory.py": {
+        "sha256": "0b7d8932e5dea74b9fb181733a41f0d13df36e609146af666dfce15756b2e576",
+        "bytes": 7963
+      },
+      "qualification/working-sanitizer/force_gc.h": {
+        "sha256": "f529a7e1908a071b0de3734d23a46e14dba2670ec1a510be464ad346bb542946",
+        "bytes": 5612
+      },
+      "qualification/working-sanitizer/instrumented-adapter.c": {
+        "sha256": "305cd74e28559faa55445d6a83772a1ab6104f7e7b6b1d1aeb3e4cc57a573af7",
+        "bytes": 124112
+      },
+      "qualification/working-sanitizer/manifest.json": {
+        "sha256": "17ab7a9450e5b7eee4fe1e874205ac9758a1a4bb73597df4effffe04a49dc20e",
+        "bytes": 1552
+      },
+      "qualification/working-sanitizer/pytest.log": {
+        "sha256": "fbc4ddd82963ab7d29ae80b2405aa5d2d1c2a90ac92a86cd058185db0671eee1",
+        "bytes": 112
+      },
+      "sources/before/adapter.c": {
+        "sha256": "5b9df74e5e5f98777799b2b55fdf820e81e6e3fc0f2fc88b44493199469d9b84",
+        "bytes": 89188
+      },
+      "sources/before/structural.py": {
+        "sha256": "17a79a76fa4aab536a3124d67cf44bb93407f08cbb1c777f97ea3a5411d96460",
+        "bytes": 21544
+      },
+      "sources/final/adapter.c": {
+        "sha256": "727ca6c91703ce1319d32df63541ef6675e6dceb62fcd1dcace3f2441bbcabab",
+        "bytes": 124040
+      },
+      "sources/final/manifest.json": {
+        "sha256": "1df23f6f057c79eb071e015d75ed5dce94ce6bda28d80389c47e5dab1e1211c8",
+        "bytes": 309
+      },
+      "sources/final/structural.py": {
+        "sha256": "32a555b2637bcc8bb95a83dca490b22f9befa30f789853d50f8a7d52b1a97033",
+        "bytes": 25892
+      },
+      "sources/first-frozen/adapter.c": {
+        "sha256": "efb2ae10c5414d195240d7857b557668d2cabba5698f13a3c1dd1f132d7378d3",
+        "bytes": 117566
+      },
+      "sources/first-frozen/manifest.json": {
+        "sha256": "1df23f6f057c79eb071e015d75ed5dce94ce6bda28d80389c47e5dab1e1211c8",
+        "bytes": 309
+      },
+      "sources/first-frozen/structural.py": {
+        "sha256": "a5422f111da176a6c44b54e48340ec1e796d0e17bbe8e06af00d33f05f34c064",
+        "bytes": 26004
+      },
+      "sources/guard/adapter.c": {
+        "sha256": "0b9466c96b95afb3ee05c0e3141cfba22afb5ab98e655b4a3c633c6660d21a1d",
+        "bytes": 118712
+      },
+      "sources/guard/build-command.json": {
+        "sha256": "ae6c4a0716dbdb2cbbffad4c3e5d3dc83e1c144f25fa573cda2dc7b6c1fc7c7c",
+        "bytes": 464
+      },
+      "sources/guard/manifest.json": {
+        "sha256": "1df23f6f057c79eb071e015d75ed5dce94ce6bda28d80389c47e5dab1e1211c8",
+        "bytes": 309
+      },
+      "sources/guard/policy_probe.c": {
+        "sha256": "2a7805e311fb68151046292e748e17287bc99082fab52bb9971264cffdf600f8",
+        "bytes": 3824
+      },
+      "sources/guard/structural.py": {
+        "sha256": "32a555b2637bcc8bb95a83dca490b22f9befa30f789853d50f8a7d52b1a97033",
+        "bytes": 25892
+      },
+      "sources/owned-only/adapter.c": {
+        "sha256": "9c4dbd6a57a683d3edc54c151f0681dfe990c360b45257ba46830333a5a1383b",
+        "bytes": 122807
+      },
+      "sources/parent/adapter.c": {
+        "sha256": "0bd26032bb52bbce9647d09670e8cb5cc886402c56051b3461cc3069cac96bd5",
+        "bytes": 122959
+      },
+      "sources/parent/manifest.json": {
+        "sha256": "1df23f6f057c79eb071e015d75ed5dce94ce6bda28d80389c47e5dab1e1211c8",
+        "bytes": 309
+      },
+      "sources/parent/structural.py": {
+        "sha256": "32a555b2637bcc8bb95a83dca490b22f9befa30f789853d50f8a7d52b1a97033",
+        "bytes": 25892
+      },
+      "timings/clone-final-four-long-gc.json": {
+        "sha256": "ac99cf2e6240656986e7b16cd528780e90b749f7e1cec286b4bc402af900ca25",
+        "bytes": 77326
+      },
+      "timings/clone-guard-three-long-gc.json": {
+        "sha256": "6dc4a48c954c6d199bb6d8dfb1d807e78f304cb2b6ead2c6735a2d8e398a0719",
+        "bytes": 62520
+      },
+      "timings/clone-parent-temporal14-long-gc.json": {
+        "sha256": "5b77ea969a5bf0610423ebf112363fed16477dc0bc27a0101156f309a6a1e345",
+        "bytes": 194940
+      },
+      "timings/clone-parent-three-long-gc.json": {
+        "sha256": "8449cebaad86c02a6ff54517d1266e1e961d8db6d669bf0dc6664d2d6c055ca6",
+        "bytes": 63814
+      },
+      "uv.lock": {
+        "sha256": "019af9daff1cbdf66fbf78a57e7a5b22a8dea5668c29d6dd59d2265fa64f15f1",
+        "bytes": 485053
+      }
+    }
+  },
+  "direct_raw_files": {
+    "clone-followup-727ca6c9-temporal14-long.json": {
+      "sha256": "5b77ea969a5bf0610423ebf112363fed16477dc0bc27a0101156f309a6a1e345",
+      "bytes": 194940
+    },
+    "clone-followup-727ca6c9-final-four-long.json": {
+      "sha256": "ac99cf2e6240656986e7b16cd528780e90b749f7e1cec286b4bc402af900ca25",
+      "bytes": 77326
+    }
+  },
+  "focused_correctness_recorded_run": {
+    "kind": "Recorded completed tool-run receipt; not a raw pytest/JUnit log",
+    "qualified_run": {
+      "command": "PYTHONPATH=.local/clone-iteration/temporal-final-runtime/src .venv/bin/python -m pytest tests/suites/product/clone/unit/test_temporal_policy_probes.py tests/suites/product/clone/unit/test_temporal_graph.py tests/suites/product/clone/unit/test_native_temporal_sequence.py tests/suites/product/clone/unit/test_native_callables.py -q --tb=short",
+      "result": "110 passed,6 skipped,6 unrelated pytest cleanup warnings",
+      "elapsed_seconds": 3.53,
+      "runtime_scope": "isolated temporal-final-runtime using matching727ca6c9 native snapshot",
+      "test_sha256": "3d85fe869d6b6cc1c06e6df855640344d109e38484f79f4fcde254239a9db0d7",
+      "snapshot_hashes": {
+        "adapter.c": "727ca6c91703ce1319d32df63541ef6675e6dceb62fcd1dcace3f2441bbcabab",
+        "structural.py": "32a555b2637bcc8bb95a83dca490b22f9befa30f789853d50f8a7d52b1a97033",
+        "_clone_native.cpython-314-darwin.so": "ef0fa7aab1aed9209bbeb92de5e15c8c4d8e5e087c0ef65ec5afb2119c0d19a1"
+      },
+      "new_cases": [
+        "12 prior-Hook pointer/code+GraphAtomTrue variants over list/tuple/dict",
+        "exact foreign namespace LookupError identity on next temporal child",
+        "120 generated policy membership traces",
+        "8 list/tuple/dict/set live walker+weakref policy lifetime cases"
+      ]
+    },
+    "type_only_revision": {
+      "old_path": ".local/clone-iteration/test_temporal_policy_probes-qualified.py",
+      "old_sha256": "3d85fe869d6b6cc1c06e6df855640344d109e38484f79f4fcde254239a9db0d7",
+      "new_path": "tests/suites/product/clone/unit/test_temporal_policy_probes.py",
+      "new_sha256": "66fc41c95ff44249e41f0cce2aef4da314b4d5d2d5d14292be0c76d163e752df",
+      "mypy_command": ".venv/bin/python -m mypy --strict src/unstd/clone/structural.py tests/suites/product/clone/unit/test_temporal_policy_probes.py",
+      "mypy_result": "Success:no issues found in2sourcefiles",
+      "ruff_result": "check+formatpassed",
+      "pytest_command": ".venv/bin/python -m pytest tests/suites/product/clone/unit/test_temporal_policy_probes.py -q --tb=short",
+      "pytest_result": "23passed",
+      "pytest_seconds": 0.74,
+      "runtime_c_sha256": "727ca6c91703ce1319d32df63541ef6675e6dceb62fcd1dcace3f2441bbcabab",
+      "runtime_python_sha256": "32a555b2637bcc8bb95a83dca490b22f9befa30f789853d50f8a7d52b1a97033",
+      "runtime_edits": "none; only test typing, matching fake-walker keyword signature and native Hypothesis annotated inference changed; original bounds and assertions retained"
+    }
+  },
+  "owned_source_qualification": {
+    "status": "passed",
+    "revision_label": "owned-only-final727",
+    "actual_timed_working_c_sha256": "727ca6c91703ce1319d32df63541ef6675e6dceb62fcd1dcace3f2441bbcabab",
+    "owned_only_c_sha256": "9c4dbd6a57a683d3edc54c151f0681dfe990c360b45257ba46830333a5a1383b",
+    "structural_sha256": "32a555b2637bcc8bb95a83dca490b22f9befa30f789853d50f8a7d52b1a97033",
+    "source_scope": "owned-727-adapter.c excludes the initial40 unrelated C changes; the actual timed working C and production binaries were never replaced by this qualification",
+    "production_runtime_edited": false,
+    "production_binary_replaced": false,
+    "builds": {
+      "ordinary": {
+        "manifest": "/Users/griffinstrier/Billy-Company/unstd/.local/clone-iteration/qualification-owned727/manifest.json",
+        "manifest_sha256": "d413f52e6cd0dcdcf26be08d410370ae89b9d6eaec5e9a0b0d5145deed839dd8",
+        "python": "3.14.9 (main, Oct 21 2026, 17:47:42) [Clang 23.1.3 ]",
+        "compiled_c_sha256": "9c4dbd6a57a683d3edc54c151f0681dfe990c360b45257ba46830333a5a1383b",
+        "instrumented_source_sha256": "9c4dbd6a57a683d3edc54c151f0681dfe990c360b45257ba46830333a5a1383b",
+        "structural_sha256": "32a555b2637bcc8bb95a83dca490b22f9befa30f789853d50f8a7d52b1a97033",
+        "extension_sha256": "a607a78faa615e559a20bd56ec3be3b2d24ac18ffc1edb98dabf30034342f1d8",
+        "build_exit_code": 0,
+        "public_native_route_verified": true,
+        "clean_environment_child_origin_verified": true,
+        "force_gc": false,
+        "sanitize": false,
+        "unit_exit_code": 0,
+        "passed": 210,
+        "failed": 0,
+        "skipped": 33,
+        "unit_seconds": 14.72,
+        "selected_files": [
+          "test_native_model_protocols.py",
+          "test_native_temporal_sequence.py",
+          "test_temporal_policy_probes.py",
+          "test_native_callables.py",
+          "test_native.py",
+          "test_memo_safety.py",
+          "test_reentrant_safety.py",
+          "test_slotted.py"
+        ],
+        "test_source_sha256": {
+          "test_native_model_protocols.py": "31654ee00a1fa70577c7174b37464a64eee7169063b9eb671ae835121449b5a8",
+          "test_native_temporal_sequence.py": "ab83d8af87208f4d81e48dca0e8950d02ca31c092a6f7df689b38def0198b02f",
+          "test_temporal_policy_probes.py": "66fc41c95ff44249e41f0cce2aef4da314b4d5d2d5d14292be0c76d163e752df",
+          "test_native_callables.py": "5818e56d517b13e4c98533cd77a13d0d8fbd834950bff164e0474a28b1bfe6c2",
+          "test_native.py": "ce2531f45f27b418681266fc4ccb6d46bda685fd200be83d44d9d47be7a4c17f",
+          "test_memo_safety.py": "bd72ac8f65f83b05b0d5505a0a16c4c1466c2e8f71ba93fdb03255ef1dcc1b2f",
+          "test_reentrant_safety.py": "eab85e42e949d79d60b090f48f4778c1a725ca779dde22984ff8b3b2b7abbcf3",
+          "test_slotted.py": "54d05c32cd725246ad2d96d22900f1f07e433b63b43ea63709e9bba00042218a"
+        },
+        "logs": {
+          "qualification-owned727-build.stdout": {
+            "path": "/Users/griffinstrier/Billy-Company/unstd/.local/clone-iteration/qualification-owned727-build.stdout",
+            "sha256": "d413f52e6cd0dcdcf26be08d410370ae89b9d6eaec5e9a0b0d5145deed839dd8"
+          },
+          "qualification-owned727-unit.stdout": {
+            "path": "/Users/griffinstrier/Billy-Company/unstd/.local/clone-iteration/qualification-owned727-unit.stdout",
+            "sha256": "1afdb760bda748b33c64c92965127ab2e827dff5ccbba4a5d0b3faa7a8351763"
+          }
+        }
+      },
+      "forced_gc": {
+        "manifest": "/Users/griffinstrier/Billy-Company/unstd/.local/clone-iteration/qualification-owned727-gc/manifest.json",
+        "manifest_sha256": "548cefcf2aacc215b8584f0eb2816e1916e4ae39b73518824861740f05c47658",
+        "python": "3.14.9 (main, Oct 21 2026, 17:47:42) [Clang 23.1.3 ]",
+        "compiled_c_sha256": "9c4dbd6a57a683d3edc54c151f0681dfe990c360b45257ba46830333a5a1383b",
+        "instrumented_source_sha256": "ee98ca6f27733b9c6cd76dae0007d7ee52bc83055b1bf1f435c79856520fee7c",
+        "structural_sha256": "32a555b2637bcc8bb95a83dca490b22f9befa30f789853d50f8a7d52b1a97033",
+        "extension_sha256": "905abe823aa39987daf9fe4b185ce5182a2af502f28f36324e39f5eb62b5921b",
+        "build_exit_code": 0,
+        "public_native_route_verified": true,
+        "clean_environment_child_origin_verified": true,
+        "force_gc": true,
+        "sanitize": false,
+        "unit_exit_code": 0,
+        "passed": 82,
+        "failed": 0,
+        "skipped": 0,
+        "unit_seconds": 206.22,
+        "selected_files": [
+          "test_native_temporal_sequence.py",
+          "test_temporal_policy_probes.py",
+          "test_native_model_protocols.py"
+        ],
+        "test_source_sha256": {
+          "test_native_temporal_sequence.py": "ab83d8af87208f4d81e48dca0e8950d02ca31c092a6f7df689b38def0198b02f",
+          "test_temporal_policy_probes.py": "66fc41c95ff44249e41f0cce2aef4da314b4d5d2d5d14292be0c76d163e752df",
+          "test_native_model_protocols.py": "31654ee00a1fa70577c7174b37464a64eee7169063b9eb671ae835121449b5a8"
+        },
+        "logs": {
+          "qualification-owned727-gc-build.stdout": {
+            "path": "/Users/griffinstrier/Billy-Company/unstd/.local/clone-iteration/qualification-owned727-gc-build.stdout",
+            "sha256": "548cefcf2aacc215b8584f0eb2816e1916e4ae39b73518824861740f05c47658"
+          },
+          "qualification-owned727-gc-unit.stdout": {
+            "path": "/Users/griffinstrier/Billy-Company/unstd/.local/clone-iteration/qualification-owned727-gc-unit.stdout",
+            "sha256": "4fbee71ab223294b8b1ef746356e7ad50482f80fb5d42857899fe65b345b6bcf"
+          }
+        }
+      }
+    },
+    "forced_gc_scope": "Complete selected temporal roots,policy probes,and model protocol files passed with forced collection/API-boundary injection; covers root mutation, same-size temporal prefix revalidation, prior-hook policy changes, namespace equality exceptions, and live parent dispatch.",
+    "instrumentation_runtime": "Full collection at every wrapped API boundary dominates the forced run; unit_seconds is test elapsed time, not a performance measurement.",
+    "diagnostic_sample": "/Users/griffinstrier/Billy-Company/unstd/.local/clone-iteration/qualification-owned727-gc.sample",
+    "builder_copy": "/Users/griffinstrier/Billy-Company/unstd/.local/clone-iteration/clone_memory_owned727.py",
+    "builder_change": "Private copy preserves the production clone_memory builder except ROOT resolution and reading owned-727-adapter.c as its source.",
+    "previous_receipt_retained": "/Users/griffinstrier/Billy-Company/unstd/.local/clone-iteration/owned-only-qualification-final.json"
+  },
+  "owned_source_commit": "d4fc30e1531392ca3556881c685bc6d1566cce85",
+  "working_source_sanitizer_qualification": {
+    "manifest": {
+      "python": "3.14.9 (main, Oct 21 2026, 17:47:42) [Clang 23.1.3 ]",
+      "source_sha256": "727ca6c91703ce1319d32df63541ef6675e6dceb62fcd1dcace3f2441bbcabab",
+      "structural_sha256": "32a555b2637bcc8bb95a83dca490b22f9befa30f789853d50f8a7d52b1a97033",
+      "instrumented_source_sha256": "305cd74e28559faa55445d6a83772a1ab6104f7e7b6b1d1aeb3e4cc57a573af7",
+      "extension_sha256": "e827fd88dbb7b513e94b1a268236d013217b71876472f4457b61b716664de805",
+      "builder_sha256": "0b7d8932e5dea74b9fb181733a41f0d13df36e609146af666dfce15756b2e576",
+      "fault_header_sha256": "f529a7e1908a071b0de3734d23a46e14dba2670ec1a510be464ad346bb542946",
+      "force_gc": true,
+      "sanitize": true,
+      "compiler_argv": [
+        "/usr/bin/cc",
+        "-shared",
+        "-fPIC",
+        "-O1",
+        "-g",
+        "-undefined",
+        "dynamic_lookup",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-include",
+        "/Users/griffinstrier/Billy-Company/unstd/tests/suites/product/clone/support/force_gc.h",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-I/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/include/python3.14",
+        "/Users/griffinstrier/Billy-Company/unstd/.local/clone-iteration/probe-final-memory/adapter.c",
+        "-o",
+        "/Users/griffinstrier/Billy-Company/unstd/.local/clone-iteration/probe-final-memory/src/unstd/clone/_clone_native.cpython-314-darwin.so"
+      ],
+      "wrapper": "/Users/griffinstrier/Billy-Company/unstd/.local/clone-iteration/probe-final-memory/python",
+      "public_native_route_verified": true,
+      "clean_environment_child_origin_verified": true
+    },
+    "result": "40 passed,0 skipped in55.94s",
+    "scope": "Focused ASan+UBSan with forced GC on actual timed working C727; no full broad sanitizer completion claim."
+  },
+  "native_test_type_repair": {
+    "kind": "Recorded completed strict-type and focused pytest receipt; not raw pytest/JUnit output",
+    "before_manifest": ".local/clone-iteration/qualified-native-test-types-before/manifest.json",
+    "before_hashes": {
+      "test_native_sets.py": "22ff4bac0687aa614287b02274b4c10d4409d12aff4c154eba7e8bf1d56422da",
+      "test_native_model_protocols.py": "31654ee00a1fa70577c7174b37464a64eee7169063b9eb671ae835121449b5a8",
+      "test_native_temporal_sequence.py": "ab83d8af87208f4d81e48dca0e8950d02ca31c092a6f7df689b38def0198b02f",
+      "test_temporal_policy_probes.py": "66fc41c95ff44249e41f0cce2aef4da314b4d5d2d5d14292be0c76d163e752df"
+    },
+    "after_hashes": {
+      "test_native_sets.py": "a2ba62a62a6e7f82ec4a00f111db30564445e28d9048e9ca1567484dcfb016ef",
+      "test_native_model_protocols.py": "91e7fb6a52636802e212b6c161d7745eb1dd42b315ebd5fb79878d5fa503fb5c",
+      "test_native_temporal_sequence.py": "43a6a179c5f2ce41d880dbc6a633832e4d3b9c45f7a6ab87cfc0a152cbbdd3ac",
+      "test_temporal_policy_probes.py": "66fc41c95ff44249e41f0cce2aef4da314b4d5d2d5d14292be0c76d163e752df"
+    },
+    "mypy_command": ".venv/bin/python -m mypy --strict src/unstd/clone/structural.py tests/suites/product/clone/unit/test_native_sets.py tests/suites/product/clone/unit/test_native_model_protocols.py tests/suites/product/clone/unit/test_native_temporal_sequence.py tests/suites/product/clone/unit/test_temporal_policy_probes.py",
+    "mypy_result": "Success:no issues found in5sourcefiles",
+    "ruff_result": "check+formatpassed4files",
+    "pytest_command": ".venv/bin/python -m pytest tests/suites/product/clone/unit/test_native_sets.py tests/suites/product/clone/unit/test_native_model_protocols.py tests/suites/product/clone/unit/test_native_temporal_sequence.py tests/suites/product/clone/unit/test_temporal_policy_probes.py -q --tb=short",
+    "pytest_result": "85passed6forcedGCskipped6unrelatedpytestcleanupwarnings",
+    "pytest_seconds": 1.32,
+    "runtime_hashes": {
+      "adapter.c": "727ca6c91703ce1319d32df63541ef6675e6dceb62fcd1dcace3f2441bbcabab",
+      "structural.py": "32a555b2637bcc8bb95a83dca490b22f9befa30f789853d50f8a7d52b1a97033"
+    },
+    "runtime_edits": "none",
+    "test_changes": [
+      "@override markers for inherited methods",
+      "Precise Literal/native temporal argument and container/result types",
+      "Runtime-only optional backend import keeps TYPE_CHECKING bound to authoritative pydantic types",
+      "Typed model_validate extra-field fixtures preserve validated input states",
+      "Constructor mutation uses owned pytest monkeypatch",
+      "Explicit foreign-metaclass subclass retains dispatch exclusion",
+      "Fake timezone explicitly forwards inherited tzname behavior",
+      "Existing callback/error/type/alias assertions retained; type-narrowing assertions only strengthen shape checks"
+    ]
+  },
+  "qualification_source_ownership": "Timed/working C727 preserves pre-existing unrelated C edits. Commitd4fc30e contains owned-only C9c4; its ordinary/forced-GC tests are correctness evidence, not a separate numerical benchmark.",
+  "owned_source_commit_C_sha256": "9c4dbd6a57a683d3edc54c151f0681dfe990c360b45257ba46830333a5a1383b",
+  "release_owner_build_qualification": {
+    "manifest": {
+      "owner": "hatch_build.CustomBuildHook._build_module",
+      "source_sha256": "727ca6c91703ce1319d32df63541ef6675e6dceb62fcd1dcace3f2441bbcabab",
+      "structural_sha256": "32a555b2637bcc8bb95a83dca490b22f9befa30f789853d50f8a7d52b1a97033",
+      "extension_sha256": "e22bba71dc540982a8f0ca9f2d5c67983e14b00ecb30c3e749686f359a2b7772",
+      "binary": "/Users/griffinstrier/Billy-Company/unstd/.local/clone-iteration/release-build/clone/lib/unstd/clone/_clone_native.cpython-314-darwin.so",
+      "build_data": {
+        "force_include": {
+          "/Users/griffinstrier/Billy-Company/unstd/.local/clone-iteration/release-build/clone/lib/unstd/clone/_clone_native.cpython-314-darwin.so": "unstd/clone/_clone_native.cpython-314-darwin.so"
+        },
+        "pure_python": false,
+        "tag": "cp314-cp314-macosx_11_0_arm64"
+      },
+      "compiler_config": {
+        "CC": "cc",
+        "CFLAGS": "-fno-strict-overflow -Wsign-compare -Wunreachable-code -DNDEBUG -g -O3 -Wall -O3 -arch arm64 -mmacosx-version-min=11.0 -Wno-nullability-completeness -Wno-expansion-to-defined -Wno-undef-prefix -fPIC",
+        "CPPFLAGS": "-I. -I./Include -O3 -arch arm64 -mmacosx-version-min=11.0 -Wno-nullability-completeness -Wno-expansion-to-defined -Wno-undef-prefix -fPIC",
+        "LDSHARED": "cc -bundle -undefined dynamic_lookup -arch arm64 -mmacosx-version-min=11.0 -Wl,-headerpad,40",
+        "LDFLAGS": "-arch arm64 -mmacosx-version-min=11.0 -Wl,-headerpad,40"
+      },
+      "assert_rtn_imported": false
+    },
+    "owner_source_sha256": "1e4f40663ee754d6c08c13a8c9f648caf0bd8fc9f9d7fb35cdec43e8b39271bc",
+    "test_result": {
+      "passed": 644,
+      "skipped": 43,
+      "seconds": 36.56
+    },
+    "scope": "Clone-only normal owner build with real WheelBuilder configuration/metadata and interpreter compiler flags, without a custom compiler wrapper. Qualification only; no performance measurements on this artifact.",
+    "installed_release_binary_sha256": "e22bba71dc540982a8f0ca9f2d5c67983e14b00ecb30c3e749686f359a2b7772",
+    "retained_timed_binary_sha256": "ef0fa7aab1aed9209bbeb92de5e15c8c4d8e5e087c0ef65ec5afb2119c0d19a1",
+    "source_control_build_scope": "Performance source/control extensions used matched manual-O3 builds with assertions enabled. Release owner build uses normal CFLAGS including-DNDEBUG. Timings are not transferred to the release binary.",
+    "published_control_confound": "Installed published4.0.2 lacks the assert_rtn import present in source/control binaries, so that historical comparison includes a compiler-setting difference."
+  },
+  "compiler_assertion_symbol_evidence": {
+    "evidence": "nm -u symbol inspection; presence/absence of imported assert_rtn is recorded, not a timing measurement",
+    "source_control_build_scope": "Matched manual -O3 source/control builds with assertions enabled; canonical owner build uses interpreter -DNDEBUG configuration. Published installed artifact has a different assertion setting.",
+    "binaries": {
+      "before": {
+        "path": "/Users/griffinstrier/Billy-Company/unstd/.local/clone-iteration/before/_clone_native.cpython-314-darwin.so",
+        "sha256": "3a219863ebbf627098a52825b69666e2e6ee45e682bb8c1606891470a60295b6",
+        "assert_rtn_imported": true
+      },
+      "first_frozen": {
+        "path": "/Users/griffinstrier/Billy-Company/unstd/.local/clone-iteration/final-documented/_clone_native.cpython-314-darwin.so",
+        "sha256": "4903b7756871ad8c7a528489cf6056ec43db8d9bce356d3c98256697e0613c1d",
+        "assert_rtn_imported": true
+      },
+      "guard": {
+        "path": "/Users/griffinstrier/Billy-Company/unstd/.local/clone-iteration/temporal-guard-candidate/_clone_native.cpython-314-darwin.so",
+        "sha256": "804fc322a649a8f12c71f8852d9cd3d790c19d70429f413cf23685fdd2270d49",
+        "assert_rtn_imported": true
+      },
+      "parent": {
+        "path": "/Users/griffinstrier/Billy-Company/unstd/.local/clone-iteration/temporal-parent-candidate/_clone_native.cpython-314-darwin.so",
+        "sha256": "4b21fbef6fe6681a418a7229d9c6a7da4873b8888f0436235d9d42ab9011418d",
+        "assert_rtn_imported": true
+      },
+      "final_timed": {
+        "path": "/Users/griffinstrier/Billy-Company/unstd/.local/clone-iteration/temporal-final-candidate/_clone_native.cpython-314-darwin.so",
+        "sha256": "ef0fa7aab1aed9209bbeb92de5e15c8c4d8e5e087c0ef65ec5afb2119c0d19a1",
+        "assert_rtn_imported": true
+      },
+      "published_4_0_2": {
+        "path": "/Users/griffinstrier/Billy-Company/unstd/.local/clone-iteration/published-4.0.2/_clone_native.cpython-314-darwin.so",
+        "sha256": "edbec08a31f9461e7cdc1b66c738f7f710de0da296d5b935f9739c21ed60310a",
+        "assert_rtn_imported": false
+      },
+      "release_owner": {
+        "path": "/Users/griffinstrier/Billy-Company/unstd/.local/clone-iteration/release-build/clone/lib/unstd/clone/_clone_native.cpython-314-darwin.so",
+        "sha256": "e22bba71dc540982a8f0ca9f2d5c67983e14b00ecb30c3e749686f359a2b7772",
+        "assert_rtn_imported": false
+      }
+    }
+  }
+}
