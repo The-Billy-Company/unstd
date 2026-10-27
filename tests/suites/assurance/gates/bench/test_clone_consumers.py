@@ -169,17 +169,18 @@ def test_snapshot_without_a_native_backend_disables_model_continuation(
         "_native_clone = None\n_NATIVE_MODEL_CONTINUATION = True\n"
     )
     snapshot = base._snapshot(tmp_path, "consumer_missing_backend")
-    assert snapshot._NATIVE_MODEL_CONTINUATION is False
+    assert type(snapshot._NATIVE_MODEL_CONTINUATION) is int
+    assert snapshot._NATIVE_MODEL_CONTINUATION == 0
 
 
-@pytest.mark.parametrize("capability", [False, True])
+@pytest.mark.parametrize("capability", [0, 1, True])
 def test_snapshot_inference_uses_its_own_model_capability(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capability: bool
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capability: int
 ) -> None:
     @dataclasses.dataclass
     class Snapshot:
         _native_clone: Callable[[object], object]
-        _NATIVE_MODEL_CONTINUATION: bool
+        _NATIVE_MODEL_CONTINUATION: int
 
     def native(value: object) -> object:
         return value
@@ -188,7 +189,7 @@ def test_snapshot_inference_uses_its_own_model_capability(
     backend = ModuleType(native.__module__)
     backend.__dict__.update(clone_checked=native, MODEL_CONTINUATION=capability)
     monkeypatch.setitem(sys.modules, native.__module__, backend)
-    wrapper = Snapshot(native, not capability)
+    wrapper = Snapshot(native, int(not capability))
 
     def snapshot(_directory: Path, _label: str) -> Snapshot:
         return wrapper
@@ -198,7 +199,10 @@ def test_snapshot_inference_uses_its_own_model_capability(
         "from unstd.clone._clone_native import clone_checked as _native_clone\n"
     )
     actual = profile._snapshot(tmp_path, "consumer_backend", infer_native_bindings=True)
-    assert actual._NATIVE_MODEL_CONTINUATION is capability
+    expected = capability if type(capability) is int else 0
+    observed = actual._NATIVE_MODEL_CONTINUATION
+    assert type(observed) is int
+    assert observed == expected
 
 
 def test_fused_model_route_proof_exercises_the_public_copier() -> None:
@@ -216,6 +220,19 @@ def test_fused_model_proof_requires_the_unmodified_model_handler(
     monkeypatch.setattr(structural, "_MODEL_WALK", object())
     with pytest.raises(RuntimeError, match="native model continuation unavailable"):
         profile._native_routes(structural, "changed_handler", require_models=True)
+
+
+@pytest.mark.parametrize("feature", [0, True])
+def test_fused_model_proof_requires_the_exact_integer_feature(
+    monkeypatch: pytest.MonkeyPatch, feature: int
+) -> None:
+    if not getattr(structural, "_NATIVE_MODEL_CONTINUATION", False):
+        pytest.skip("native model continuation is not built")
+    native = structural._native_walk_graph
+    monkeypatch.setattr(structural, "_NATIVE_MODEL_CONTINUATION", feature)
+    with pytest.raises(RuntimeError, match="native model continuation unavailable"):
+        profile._native_routes(structural, "changed_feature", require_models=True)
+    assert structural._native_walk_graph is native
 
 
 def test_fused_model_proof_rejects_python_reconstruction_and_restores_profile(

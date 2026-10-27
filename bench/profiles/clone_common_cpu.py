@@ -331,9 +331,10 @@ def _snapshot(directory: Path, label: str, *, infer_native_bindings: bool) -> An
     if hasattr(module, "_NATIVE_SELECTED_MEMO"):
         module._NATIVE_SELECTED_MEMO = module._native_walk_graph is not None
     if hasattr(module, "_NATIVE_MODEL_CONTINUATION"):
-        module._NATIVE_MODEL_CONTINUATION = bool(
-            backend is not None and getattr(backend, "MODEL_CONTINUATION", False)
+        capability = (
+            getattr(backend, "MODEL_CONTINUATION", 0) if backend is not None else 0
         )
+        module._NATIVE_MODEL_CONTINUATION = capability if type(capability) is int else 0
     if hasattr(module, "_NATIVE_CLOSED_TEMPORALS"):
         module._NATIVE_CLOSED_TEMPORALS = bool(
             backend is not None and getattr(backend, "CLOSED_TEMPORALS", False)
@@ -491,10 +492,18 @@ def _native_routes(
         if require_models:
             from bench.workloads import clone_consumers
 
+            # The model guard verifies its actual C continuation. Observe it
+            # without replacing the binding or changing call arguments.
+            for name, call in bindings.items():
+                setattr(module, name, call)
+            native_walk = bindings.get("_native_walk_graph")
             model = getattr(module, "_model", None)
             code = getattr(model, "__code__", None)
+            feature = getattr(module, "_NATIVE_MODEL_CONTINUATION", 0)
             if (
-                not getattr(module, "_NATIVE_MODEL_CONTINUATION", False)
+                type(feature) is not int
+                or feature != 1
+                or not inspect.isbuiltin(native_walk)
                 or not inspect.iscode(code)
                 or model is not getattr(module, "_MODEL_WALK", None)
                 or code is not getattr(module, "_MODEL_WALK_CODE", None)
@@ -512,11 +521,15 @@ def _native_routes(
             # Warm the optional Undefined marker before profiling.
             module.deep(case.source)
             python_models = 0
+            native_calls = native_returns = 0
 
-            def observe(frame: Any, event: str, _target: Any) -> None:
-                nonlocal python_models
+            def observe(frame: Any, event: str, target: Any) -> None:
+                nonlocal python_models, native_calls, native_returns
                 if event == "call" and frame.f_code is code:
                     python_models += 1
+                elif target is native_walk:
+                    native_calls += event == "c_call"
+                    native_returns += event == "c_return"
 
             previous_profile = sys.getprofile()
             successful.clear()
@@ -528,11 +541,12 @@ def _native_routes(
             if (
                 not case.check(result, False)
                 or python_models
-                or "_native_walk_graph" not in successful
+                or not native_calls
+                or native_returns != native_calls
             ):
                 message = f"native model route unavailable or used Python model reconstruction: {label}"
                 raise RuntimeError(message)
-            routes["pydantic-model"] = sorted(set(successful))
+            routes["pydantic-model"] = ["_native_walk_graph"]
     finally:
         for name, call in bindings.items():
             setattr(module, name, call)

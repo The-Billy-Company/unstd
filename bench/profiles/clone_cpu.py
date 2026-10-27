@@ -339,9 +339,10 @@ def _snapshot(directory: Path, label: str) -> Any:
         else None
     )
     if hasattr(module, "_NATIVE_MODEL_CONTINUATION"):
-        module._NATIVE_MODEL_CONTINUATION = bool(
-            backend is not None and getattr(backend, "MODEL_CONTINUATION", False)
+        capability = (
+            getattr(backend, "MODEL_CONTINUATION", 0) if backend is not None else 0
         )
+        module._NATIVE_MODEL_CONTINUATION = capability if type(capability) is int else 0
     if hasattr(module, "_NATIVE_CLOSED_TEMPORALS"):
         module._NATIVE_CLOSED_TEMPORALS = bool(
             backend is not None and getattr(backend, "CLOSED_TEMPORALS", False)
