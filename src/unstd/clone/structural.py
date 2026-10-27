@@ -462,7 +462,9 @@ def _model(o: Any, memo: dict[int, Any]) -> Any:
     setattr_(
         twin, "__pydantic_extra__", None if extra is None else _walk_data(extra, memo)
     )
-    setattr_(twin, "__pydantic_fields_set__", _walk(o.__pydantic_fields_set__, memo))
+    setattr_(
+        twin, "__pydantic_fields_set__", _walk_data(o.__pydantic_fields_set__, memo)
+    )
     private = getattr(o, "__pydantic_private__", None)
     if private is None:
         copied_private = None

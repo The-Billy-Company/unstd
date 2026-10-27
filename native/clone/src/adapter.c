@@ -1173,6 +1173,75 @@ clone_dict_direct(PyObject *source, PyObject **result, unsigned int depth,
 }
 
 static int
+clone_set_direct(PyObject *source, PyObject **result, unsigned int depth,
+                 CopyContext *context)
+{
+    PyObject *output = PySet_New(NULL);
+    if (output == NULL) {
+        return -1;
+    }
+    if (memo_store(source, output, context) < 0) {
+        Py_DECREF(output);
+        return -1;
+    }
+    /* Publish the empty twin before acquiring the live iterator. Copy/hash
+     * hooks can inspect or mutate it, and source mutations retain setiter's
+     * normal size-change errors rather than reading a stale table cursor. */
+    PyObject *iterator = PyObject_GetIter(source);
+    if (iterator == NULL) {
+        Py_DECREF(output);
+        return -1;
+    }
+    PyObject *held = NULL;
+    unsigned long iterations = 0;
+    int status = 1;
+    for (;;) {
+        PyObject *item = PyIter_Next(iterator);
+        if (item == NULL) {
+            if (PyErr_Occurred()) {
+                status = -1;
+            }
+            break;
+        }
+        PyObject *previous = held;
+        held = item;
+        Py_XDECREF(previous);
+        PyObject *copied = NULL;
+        if (atom(item)) {
+            copied = Py_NewRef(item);
+        } else {
+            status = clone_value(item, &copied, depth - 1, context);
+        }
+        if (status != 1) {
+            break;
+        }
+        int inserted = PySet_Add(output, copied);
+        Py_DECREF(copied);
+        if (inserted < 0) {
+            status = -1;
+            break;
+        }
+        if ((++iterations & 1023UL) == 0 && PyErr_CheckSignals() < 0) {
+            status = -1;
+            break;
+        }
+    }
+    Py_DECREF(iterator);
+    /* Keep the last loop variable alive through the final memo write, as in
+     * Python's set branch; a descendant may have overwritten that entry. */
+    if (status == 1 && memo_store(source, output, context) < 0) {
+        status = -1;
+    }
+    Py_XDECREF(held);
+    if (status != 1) {
+        Py_DECREF(output);
+        return status;
+    }
+    *result = output;
+    return 1;
+}
+
+static int
 clone_closed_value(PyObject *source, PyObject **result, unsigned int depth,
             CopyContext *context)
 {
@@ -1290,7 +1359,8 @@ clone_value(PyObject *source, PyObject **result, unsigned int depth,
      * Keep rare immutable types off the primitive closed-walker hot path. */
     PyTypeObject *selected_type = Py_TYPE(source);
     int builtin_container = selected_type == &PyList_Type
-        || selected_type == &PyTuple_Type || selected_type == &PyDict_Type;
+        || selected_type == &PyTuple_Type || selected_type == &PyDict_Type
+        || selected_type == &PySet_Type;
     int candidate = context->admit != NULL
         && Py_TYPE(selected_type) == &PyType_Type
         && selected_type->tp_base == &PyBaseObject_Type
@@ -1404,7 +1474,7 @@ clone_value_impl(PyObject *source, PyObject **result, unsigned int depth,
     }
     int record = Py_TYPE(source) == context->record_type;
     if (!PyList_CheckExact(source) && !PyTuple_CheckExact(source)
-        && !PyDict_CheckExact(source) && !record) {
+        && !PyDict_CheckExact(source) && !PySet_CheckExact(source) && !record) {
         return context->walk != NULL
             ? python_value(source, result, context) : 0;
     }
@@ -1447,6 +1517,8 @@ clone_value_impl(PyObject *source, PyObject **result, unsigned int depth,
     int status;
     if (record) {
         status = clone_record(source, result, depth, context);
+    } else if (PySet_CheckExact(source)) {
+        status = clone_set_direct(source, result, depth, context);
     } else if (!context->direct_graph && PyDict_CheckExact(source)
                && shallow_atoms(source)) {
         PyObject *copied = PyDict_Copy(source);
