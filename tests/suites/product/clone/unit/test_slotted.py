@@ -5,7 +5,7 @@ from __future__ import annotations
 import copy
 import copyreg
 import dataclasses
-from typing import ClassVar, Self, SupportsIndex
+from typing import ClassVar, Self, SupportsIndex, override
 
 import pytest
 
@@ -91,7 +91,9 @@ def test_dictionary_bearing_slot_subclasses_keep_instance_protocols(
         source.__dict__[protocol] = lambda _memo: ["private hook"]
     else:
         source.__dict__[protocol] = lambda _version: (list, (["private hook"],))
-    assert clone.deep(source) == copy.deepcopy(source) == ["private hook"]
+    actual: object = clone.deep(source)
+    expected: object = copy.deepcopy(source)
+    assert actual == expected == ["private hook"]
 
 
 def test_slot_getattr_keeps_protocol_lookup_observations(backend: None) -> None:
@@ -189,7 +191,8 @@ def test_later_copyreg_takes_precedence_over_warmed_slot_admission(
     source = Row([1], [2])
     clone.deep(source)
     monkeypatch.setitem(copyreg.dispatch_table, Row, lambda _value: (list, ([9],)))
-    assert clone.deep(source) == [9]
+    actual: object = clone.deep(source)
+    assert actual == [9]
 
 
 def test_allocator_and_setstate_changes_keep_default_reconstruction_order(
@@ -232,6 +235,7 @@ def test_custom_slot_reducers_remain_foreign(backend: None) -> None:
     class Custom:
         value: object
 
+        @override
         def __reduce_ex__(
             self, _protocol: SupportsIndex
         ) -> tuple[type[Self], tuple[object]]:
@@ -239,3 +243,36 @@ def test_custom_slot_reducers_remain_foreign(backend: None) -> None:
 
     source = Custom([1])
     assert clone.deep(source) == copy.deepcopy(source) == Custom(["foreign"])
+
+
+@pytest.mark.parametrize("shape", ["iterator", "list_args"])
+def test_admitted_slot_reducer_retains_iterable_reduction_and_factory_args(
+    backend: None, monkeypatch: pytest.MonkeyPatch, shape: str
+) -> None:
+    @dataclasses.dataclass(slots=True)
+    class Local:
+        value: object
+
+    class Reducer:
+        def __get__(
+            self, source: Local | None, owner: type[Local] | None = None
+        ) -> object:
+            # Ordinary class admission sees the default reducer; instance
+            # lookup can still supply a different reconstruction recipe.
+            if source is None:
+                return object.__reduce_ex__
+
+            def reduce(protocol: SupportsIndex) -> object:
+                assert protocol == 4
+                if shape == "iterator":
+                    return iter((list, ([1],), None, None, None))
+                return (list, [[1]], None, None, None)
+
+            return reduce
+
+    monkeypatch.setattr(Local, "__reduce_ex__", Reducer())
+    source = Local(None)
+    actual: object = clone.deep(source)
+    expected: object = copy.deepcopy(source)
+    assert actual == expected == [1]
+    assert actual is not expected
