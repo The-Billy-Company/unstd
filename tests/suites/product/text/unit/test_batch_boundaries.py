@@ -28,6 +28,7 @@ def backend(request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatch) -> 
         monkeypatch.setattr(fuzz, "_HAVE_RAPIDFUZZ", False)
         monkeypatch.setattr(fuzz, "ratio", fuzz._difflib_ratio)
         monkeypatch.setattr(fuzz, "indel_ratio", fuzz._indel_ratio)
+        monkeypatch.setattr(fuzz, "jaro_winkler", fuzz._jaro_winkler)
     return request.param
 
 
@@ -72,7 +73,9 @@ def _once(items: list[str]) -> Iterator[str]:
 
 
 @pytest.mark.usefixtures("backend")
-@pytest.mark.parametrize("scorer_name", ["indel_ratio", "difflib_ratio", None])
+@pytest.mark.parametrize(
+    "scorer_name", ["indel_ratio", "difflib_ratio", "jaro_winkler", None]
+)
 def test_one_shot_iterators_are_scored_once_like_lists(scorer_name: str | None) -> None:
     scorer = None if scorer_name is None else getattr(fuzz, scorer_name)
     score = fuzz.ratio if scorer is None else scorer
@@ -94,9 +97,10 @@ def test_batch_kernel_workers_do_not_change_the_matrix(workers: int) -> None:
     require_backend("rapidfuzz")
     require_backend("numpy")
     queries, choices = _corpus(40, "q"), _corpus(30, "c")
-    for scorer in (None, fuzz.indel_ratio):
+    for scorer in (None, fuzz.indel_ratio, fuzz.jaro_winkler):
+        score = fuzz.ratio if scorer is None else scorer
         assert fuzz.cdist(queries, choices, workers=workers, scorer=scorer) == [
-            [fuzz.indel_ratio(q, c) for c in choices] for q in queries
+            [score(q, c) for c in choices] for q in queries
         ]
 
 

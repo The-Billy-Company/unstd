@@ -240,6 +240,16 @@ jobs:
           --infer-native-bindings --require-native --gc-enabled
           --rounds 9 --max-slowdown 1.10
           --output .local/performance/evidence/clone-common.json
+      - name: Guard ordinary Jaro contact matching and path scoring
+        if: ${{ !inputs.gzip_diagnostic }}
+        run: >-
+          .venv/bin/python bench/profiles/text_jaro_normal.py
+          --baseline-source .local/performance/installed-before
+          --candidate-source .local/performance/installed-current
+          --baseline-native .local/performance/installed-before/unstd/text/_text_native*.so
+          --candidate-native .local/performance/installed-current/unstd/text/_text_native*.so
+          --rounds 7 --minimum-speedup 0.80 --max-slowdown 1.30
+          --output .local/performance/evidence/text-jaro-normal.json
       - name: Retain both native gzip builds for diagnosis
         if: ${{ inputs.gzip_diagnostic }}
         run: |

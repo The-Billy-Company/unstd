@@ -30,12 +30,13 @@ def backend(request: pytest.FixtureRequest) -> Iterator[str]:
         patch.setattr(fuzz, "_HAVE_RAPIDFUZZ", False)
         patch.setattr(fuzz, "ratio", fuzz._difflib_ratio)
         patch.setattr(fuzz, "indel_ratio", fuzz._indel_ratio)
+        patch.setattr(fuzz, "jaro_winkler", fuzz._jaro_winkler)
     yield request.param
     patch.undo()
 
 
 scorer_names = pytest.mark.parametrize(
-    "scorer_name", ["indel_ratio", "difflib_ratio", None]
+    "scorer_name", ["indel_ratio", "difflib_ratio", "jaro_winkler", None]
 )
 
 

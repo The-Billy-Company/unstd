@@ -44,6 +44,8 @@ These drivers compare saved and current implementations, check outputs and impor
 - [`gzip_concurrency.py`](gzip_concurrency.py) — independent consumer streams on 1, 2 and 4 warmed executor workers, with isolated installations and aggregate wall throughput
 - [`text_native_compare.py`](text_native_compare.py)
 - [`text_affixes.py`](text_affixes.py) — saved/current edit distance on near-identical strings and unrelated controls, through isolated native and source-only wrappers; retains dispatch, exact outputs, paired timings and allocation peaks
+- [`text_jaro.py`](text_jaro.py) — saved/current public Jaro–Winkler and batch matching, with independent oracle checks, scaling controls, paired timings and index allocation costs
+- [`text_jaro_normal.py`](text_jaro_normal.py) — ordinary public contact/path matching through installed RapidFuzz and base native scorers, with dispatch checks and Linux/macOS regression guards
 
 Run `pack_backend.py`, `pack_consumers.py`, and `ragged.py` directly so product
 source selection happens before imports. The ragged driver includes complete

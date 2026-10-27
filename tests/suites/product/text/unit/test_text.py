@@ -367,6 +367,99 @@ def test_jaro_winkler_fallback_scores_names() -> None:
         assert fuzz.jaro_winkler(a, b) == pytest.approx(score, abs=5e-5)
 
 
+@pytest.mark.parametrize("native", ["absent", "declined"])
+@pytest.mark.parametrize("char", ["a", "\x00", "\ud800", "😀"])
+def test_portable_jaro_long_repetitions_have_closed_form_score(
+    monkeypatch: pytest.MonkeyPatch, native: str, char: str
+) -> None:
+    calls = []
+
+    def decline(a: str, b: str) -> object:
+        calls.append((a, b))
+        return NotImplemented
+
+    monkeypatch.setattr(fuzz, "_native_jaro", decline if native == "declined" else None)
+    n = 12_000
+    a, b = char * n + "X", char * (2 * n) + "Y"
+    # All repeated characters match in order; the distinct tails never match.
+    expected = (n / len(a) + n / len(b) + 1.0) / 3
+    assert fuzz._jaro(a, b) == expected
+    assert fuzz._jaro(b, a) == expected
+    assert calls == ([(a, b), (b, a)] if native == "declined" else [])
+
+
+def test_portable_jaro_preserves_string_subclass_iteration(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class Letters(str):
+        def __iter__(self):
+            return iter("xy")
+
+    def forbidden(*args):
+        msg = "string subclasses must retain their Python matching hooks"
+        raise AssertionError(msg)
+
+    monkeypatch.setattr(fuzz, "_native_jaro", forbidden)
+    monkeypatch.setattr(fuzz, "_JARO_SCAN_LENGTH", 0)
+    assert fuzz._jaro(Letters("ab"), "xy") == 1.0
+
+
+@pytest.mark.parametrize(
+    ("a", "b", "expected"),
+    [
+        ("a", "b" * 100_000, 0.0),
+        ("ab", "a" * 100_000 + "c", (1 / 2 + 1 / 100_001 + 1) / 3),
+        ("\ud800", "\x00" * 100_000, 0.0),
+    ],
+)
+def test_portable_jaro_tiny_input_and_large_choice(
+    monkeypatch: pytest.MonkeyPatch, a: str, b: str, expected: float
+) -> None:
+    monkeypatch.setattr(fuzz, "_native_jaro", None)
+    assert fuzz._jaro(a, b) == expected
+    assert fuzz._jaro(b, a) == expected
+
+
+def test_portable_jaro_foreign_values_need_no_hashing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(fuzz, "_native_jaro", None)
+    monkeypatch.setattr(fuzz, "_JARO_SCAN_LENGTH", 0)
+    assert fuzz._jaro([["x"], ["y"]], [["x"], ["z"]]) == 2 / 3
+
+
+@pytest.mark.usefixtures("force_fallback")
+def test_portable_jaro_long_matching_helpers_preserve_inclusive_cutoffs(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(fuzz, "_native_jaro", None)
+    n = 4_000
+    query, choice, disjoint = "a" * n + "X", "a" * n + "Y", "b" * (n + 1)
+    plain = (n / (n + 1) + n / (n + 1) + 1.0) / 3
+    score = plain + 4 * 0.1 * (1.0 - plain)
+    scorer = fuzz.jaro_winkler
+    assert scorer(query, choice) == score
+    assert fuzz.best_match(query, [choice], scorer=scorer, score_cutoff=score) == (
+        choice,
+        score,
+    )
+    assert (
+        fuzz.best_match(
+            query,
+            [choice],
+            scorer=scorer,
+            score_cutoff=math.nextafter(score, math.inf),
+        )
+        is None
+    )
+    assert fuzz.extract(
+        query, [choice, disjoint, query, choice], scorer=scorer, score_cutoff=score
+    ) == [(query, 1.0), (choice, score), (choice, score)]
+    assert fuzz.cdist(
+        [query, choice], [choice, query, disjoint], scorer=scorer, score_cutoff=score
+    ) == [[score, 1.0, 0.0], [1.0, score, 0.0]]
+
+
 @pytest.mark.usefixtures("force_fallback")
 def test_best_match_fallback() -> None:
     """Test best match fallback."""

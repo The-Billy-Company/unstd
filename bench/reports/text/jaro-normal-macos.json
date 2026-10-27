@@ -1,0 +1,2230 @@
+{
+  "utc": "2026-10-27T21:23:50.199097+00:00",
+  "environment": {
+    "python": "3.14.9 (main, Oct 21 2026, 17:47:42) [Clang 23.1.3 ]",
+    "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+    "machine": "arm64",
+    "rapidfuzz": "3.14.6",
+    "numpy": "2.5.3",
+    "gc_enabled": true,
+    "rapidfuzz_backends": {
+      "scalar": {
+        "module": "rapidfuzz.distance.metrics_cpp",
+        "file": {
+          "path": "/Users/griffinstrier/Billy-Company/unstd/.venv/lib/python3.14/site-packages/rapidfuzz/distance/metrics_cpp.cpython-314-darwin.so",
+          "sha256": "0929987e145ee0585e71451f01d1b3525dd7d16dc935760e3a0cc09f6d162a3b"
+        }
+      },
+      "process_wrapper": {
+        "module": "rapidfuzz.process_cpp",
+        "file": {
+          "path": "/Users/griffinstrier/Billy-Company/unstd/.venv/lib/python3.14/site-packages/rapidfuzz/process_cpp.py",
+          "sha256": "b805db1ddfd4546d3239a16f55b64a819cd02e90d6b5e209c42b18e8c79444a5"
+        }
+      },
+      "process_implementation": {
+        "module": "rapidfuzz.process_cpp_impl",
+        "file": {
+          "path": "/Users/griffinstrier/Billy-Company/unstd/.venv/lib/python3.14/site-packages/rapidfuzz/process_cpp_impl.cpython-314-darwin.so",
+          "sha256": "10bb2080726a5a1198b175ecdf45c37363c3b7e01b3e6e3b6762adff648f4d76"
+        }
+      }
+    }
+  },
+  "implementations": {
+    "baseline": {
+      "wrapper": {
+        "path": "/Users/griffinstrier/Billy-Company/unstd/.local/jaro-normal-before/unstd/text/fuzz.py",
+        "sha256": "5127d7a5aa914e8e45d8a95e7a9bbcf2584ab97168d641cd46b729ac7827aae4"
+      },
+      "native": {
+        "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/text/_text_native.cpython-314-darwin.so",
+        "sha256": "355914ad0497767fdf4b061bc5c32a7eecd694caffc77f431b9d64444ff1d12b"
+      }
+    },
+    "candidate": {
+      "wrapper": {
+        "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/text/fuzz.py",
+        "sha256": "becb6f8adf74043e4d11d400391a43d83c97fe0d7fee121b76f1305d561e017b"
+      },
+      "native": {
+        "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/text/_text_native.cpython-314-darwin.so",
+        "sha256": "355914ad0497767fdf4b061bc5c32a7eecd694caffc77f431b9d64444ff1d12b"
+      }
+    }
+  },
+  "harness": [
+    {
+      "path": "/Users/griffinstrier/Billy-Company/unstd/bench/profiles/text_jaro_normal.py",
+      "sha256": "dc764f66de6bb5835e96e20ea725af30338fbbb0d74a343588f5250222b757b1"
+    },
+    {
+      "path": "/Users/griffinstrier/Billy-Company/unstd/bench/profiles/text_affixes.py",
+      "sha256": "239bd924628a725b7ac368d531e749059373e20effa62c440b4a08e431af88ce"
+    },
+    {
+      "path": "/Users/griffinstrier/Billy-Company/unstd/bench/profiles/text_native_compare.py",
+      "sha256": "daed408f2b6fd61e07dc08a85f06f6c8bd5f2d2441e3f3b22d9141934464e465"
+    },
+    {
+      "path": "/Users/griffinstrier/Billy-Company/unstd/bench/core/timing.py",
+      "sha256": "d585627571b5daeca0a078b75484c84e769dce70a5b4448825fd811a8e3b61bc"
+    }
+  ],
+  "fixtures": {
+    "sha256": "09d7fc74aef0159d31f5f7a5ccece5b2c03aeb1d9aad50088f4e638604bef0c9",
+    "contacts": "24 fixed given names x 26 fixed surnames; 24 deletion-typo queries",
+    "paths": "77 fixed committed module paths; 24 deletion-typo queries",
+    "matching_cutoff": 0.75,
+    "extract_limit": 5
+  },
+  "method": "public APIs; complete outputs exactly equal exhaustive selected scalar scorer; checks before/after timings; independent >=5ms calibration; alternating paired wall/process-CPU batch means",
+  "limitations": "synthetic contact names and frozen repository paths on the recorded host; excludes import startup, allocation profiling, I/O, and application-specific preprocessing; base and RapidFuzz scalar scores can differ by one float epsilon",
+  "rows": {
+    "extra/contacts-scalar": {
+      "operation": "scalar",
+      "query_count": 1,
+      "choice_count": 624,
+      "maximum_string_length": 20,
+      "exact_output_check": true,
+      "expected_sha256": "c8e33efb2110245ba7a4425a14ee04bf1f40010e7f22458b8398323e5d96f4d1",
+      "output_sha256": {
+        "baseline": "c8e33efb2110245ba7a4425a14ee04bf1f40010e7f22458b8398323e5d96f4d1",
+        "candidate": "c8e33efb2110245ba7a4425a14ee04bf1f40010e7f22458b8398323e5d96f4d1"
+      },
+      "routes": {
+        "baseline": {
+          "scalar": "RapidFuzz JaroWinkler.similarity",
+          "batch": [],
+          "public_scalar_is_backend": true,
+          "public_scalar_module": "rapidfuzz.distance.metrics_cpp"
+        },
+        "candidate": {
+          "scalar": "RapidFuzz JaroWinkler.similarity",
+          "batch": [],
+          "public_scalar_is_backend": true,
+          "public_scalar_module": "rapidfuzz.distance.metrics_cpp"
+        }
+      },
+      "iterations": {
+        "baseline": 49152,
+        "candidate": 24576
+      },
+      "order": [
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ]
+      ],
+      "samples": {
+        "baseline": [
+          {
+            "wall_ns": 241.51017252604166,
+            "cpu_ns": 205.74951171875
+          },
+          {
+            "wall_ns": 187.6178181966146,
+            "cpu_ns": 187.64241536458334
+          },
+          {
+            "wall_ns": 182.4612019856771,
+            "cpu_ns": 182.47477213541666
+          },
+          {
+            "wall_ns": 177.2893269856771,
+            "cpu_ns": 177.30712890625
+          },
+          {
+            "wall_ns": 231.8852742513021,
+            "cpu_ns": 189.02587890625
+          },
+          {
+            "wall_ns": 320.3930257161458,
+            "cpu_ns": 199.11702473958334
+          },
+          {
+            "wall_ns": 214.57588704427084,
+            "cpu_ns": 198.40494791666666
+          }
+        ],
+        "candidate": [
+          {
+            "wall_ns": 355.8095296223958,
+            "cpu_ns": 205.48502604166666
+          },
+          {
+            "wall_ns": 200.10205078125,
+            "cpu_ns": 180.09440104166666
+          },
+          {
+            "wall_ns": 177.57161458333334,
+            "cpu_ns": 177.6123046875
+          },
+          {
+            "wall_ns": 177.20540364583334,
+            "cpu_ns": 177.28678385416666
+          },
+          {
+            "wall_ns": 265.7708333333333,
+            "cpu_ns": 210.00162760416666
+          },
+          {
+            "wall_ns": 188.80375162760416,
+            "cpu_ns": 182.16959635416666
+          },
+          {
+            "wall_ns": 262.3205973307292,
+            "cpu_ns": 194.74283854166666
+          }
+        ]
+      },
+      "median_wall_ns": {
+        "baseline": 214.57588704427084,
+        "candidate": 200.10205078125
+      },
+      "median_cpu_ns": {
+        "baseline": 189.02587890625,
+        "candidate": 182.16959635416666
+      },
+      "paired_speedup": 0.937610671475411
+    },
+    "extra/contacts-best_match": {
+      "operation": "best_match",
+      "query_count": 1,
+      "choice_count": 624,
+      "maximum_string_length": 20,
+      "exact_output_check": true,
+      "expected_sha256": "0a50238e0e74c83db4ad0991c5a51e2f225cfaa11cb7e887075ea3b6fcc87550",
+      "output_sha256": {
+        "baseline": "0a50238e0e74c83db4ad0991c5a51e2f225cfaa11cb7e887075ea3b6fcc87550",
+        "candidate": "0a50238e0e74c83db4ad0991c5a51e2f225cfaa11cb7e887075ea3b6fcc87550"
+      },
+      "routes": {
+        "baseline": {
+          "scalar": "RapidFuzz JaroWinkler.similarity",
+          "batch": [],
+          "public_scalar_is_backend": true,
+          "public_scalar_module": "rapidfuzz.distance.metrics_cpp"
+        },
+        "candidate": {
+          "scalar": "RapidFuzz JaroWinkler.similarity",
+          "batch": [
+            "extractOne"
+          ],
+          "public_scalar_is_backend": true,
+          "public_scalar_module": "rapidfuzz.distance.metrics_cpp"
+        }
+      },
+      "iterations": {
+        "baseline": 37,
+        "candidate": 128
+      },
+      "order": [
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ]
+      ],
+      "samples": {
+        "baseline": [
+          {
+            "wall_ns": 171856.97297297296,
+            "cpu_ns": 136972.97297297296
+          },
+          {
+            "wall_ns": 148310.8108108108,
+            "cpu_ns": 132702.7027027027
+          },
+          {
+            "wall_ns": 123953.81081081081,
+            "cpu_ns": 124000.0
+          },
+          {
+            "wall_ns": 121440.2972972973,
+            "cpu_ns": 121486.48648648648
+          },
+          {
+            "wall_ns": 120171.16216216216,
+            "cpu_ns": 120216.21621621621
+          },
+          {
+            "wall_ns": 128210.5945945946,
+            "cpu_ns": 128216.21621621621
+          },
+          {
+            "wall_ns": 188456.0810810811,
+            "cpu_ns": 135054.05405405405
+          }
+        ],
+        "candidate": [
+          {
+            "wall_ns": 53827.8046875,
+            "cpu_ns": 42687.5
+          },
+          {
+            "wall_ns": 78560.546875,
+            "cpu_ns": 41992.1875
+          },
+          {
+            "wall_ns": 39595.703125,
+            "cpu_ns": 39609.375
+          },
+          {
+            "wall_ns": 39514.6484375,
+            "cpu_ns": 39515.625
+          },
+          {
+            "wall_ns": 37811.8515625,
+            "cpu_ns": 37812.5
+          },
+          {
+            "wall_ns": 39355.46875,
+            "cpu_ns": 39367.1875
+          },
+          {
+            "wall_ns": 44427.40625,
+            "cpu_ns": 41367.1875
+          }
+        ]
+      },
+      "median_wall_ns": {
+        "baseline": 128210.5945945946,
+        "candidate": 39595.703125
+      },
+      "median_cpu_ns": {
+        "baseline": 128216.21621621621,
+        "candidate": 39609.375
+      },
+      "paired_speedup": 3.178134822716331
+    },
+    "extra/contacts-extract": {
+      "operation": "extract",
+      "query_count": 1,
+      "choice_count": 624,
+      "maximum_string_length": 20,
+      "exact_output_check": true,
+      "expected_sha256": "e4ecc7824495a62d331eccb887a9020bd019c7d1a60b403baa0d6a5daf3f9e51",
+      "output_sha256": {
+        "baseline": "e4ecc7824495a62d331eccb887a9020bd019c7d1a60b403baa0d6a5daf3f9e51",
+        "candidate": "e4ecc7824495a62d331eccb887a9020bd019c7d1a60b403baa0d6a5daf3f9e51"
+      },
+      "routes": {
+        "baseline": {
+          "scalar": "RapidFuzz JaroWinkler.similarity",
+          "batch": [],
+          "public_scalar_is_backend": true,
+          "public_scalar_module": "rapidfuzz.distance.metrics_cpp"
+        },
+        "candidate": {
+          "scalar": "RapidFuzz JaroWinkler.similarity",
+          "batch": [
+            "extract"
+          ],
+          "public_scalar_is_backend": true,
+          "public_scalar_module": "rapidfuzz.distance.metrics_cpp"
+        }
+      },
+      "iterations": {
+        "baseline": 37,
+        "candidate": 124
+      },
+      "order": [
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ]
+      ],
+      "samples": {
+        "baseline": [
+          {
+            "wall_ns": 170613.75675675675,
+            "cpu_ns": 130864.86486486487
+          },
+          {
+            "wall_ns": 131065.2972972973,
+            "cpu_ns": 128162.16216216216
+          },
+          {
+            "wall_ns": 359640.7837837838,
+            "cpu_ns": 144756.75675675675
+          },
+          {
+            "wall_ns": 120344.5945945946,
+            "cpu_ns": 120378.37837837837
+          },
+          {
+            "wall_ns": 121996.62162162163,
+            "cpu_ns": 122027.02702702703
+          },
+          {
+            "wall_ns": 136453.83783783784,
+            "cpu_ns": 129945.94594594595
+          },
+          {
+            "wall_ns": 256290.54054054053,
+            "cpu_ns": 126729.72972972973
+          }
+        ],
+        "candidate": [
+          {
+            "wall_ns": 62492.9435483871,
+            "cpu_ns": 47467.74193548387
+          },
+          {
+            "wall_ns": 74726.14516129032,
+            "cpu_ns": 44669.354838709674
+          },
+          {
+            "wall_ns": 64733.532258064515,
+            "cpu_ns": 47024.1935483871
+          },
+          {
+            "wall_ns": 45710.354838709674,
+            "cpu_ns": 44096.77419354839
+          },
+          {
+            "wall_ns": 43354.83870967742,
+            "cpu_ns": 43370.967741935485
+          },
+          {
+            "wall_ns": 68954.9758064516,
+            "cpu_ns": 43056.45161290323
+          },
+          {
+            "wall_ns": 236408.26612903227,
+            "cpu_ns": 57000.0
+          }
+        ]
+      },
+      "median_wall_ns": {
+        "baseline": 136453.83783783784,
+        "candidate": 64733.532258064515
+      },
+      "median_cpu_ns": {
+        "baseline": 128162.16216216216,
+        "candidate": 44669.354838709674
+      },
+      "paired_speedup": 2.6327643926465685
+    },
+    "extra/contacts-cdist": {
+      "operation": "cdist",
+      "query_count": 24,
+      "choice_count": 624,
+      "maximum_string_length": 20,
+      "exact_output_check": true,
+      "expected_sha256": "bc607a57829a36ff7640b54bee7c9dde23e6078a18b1ea9faf825a6f9ce5906c",
+      "output_sha256": {
+        "baseline": "bc607a57829a36ff7640b54bee7c9dde23e6078a18b1ea9faf825a6f9ce5906c",
+        "candidate": "bc607a57829a36ff7640b54bee7c9dde23e6078a18b1ea9faf825a6f9ce5906c"
+      },
+      "routes": {
+        "baseline": {
+          "scalar": "RapidFuzz JaroWinkler.similarity",
+          "batch": [],
+          "public_scalar_is_backend": true,
+          "public_scalar_module": "rapidfuzz.distance.metrics_cpp"
+        },
+        "candidate": {
+          "scalar": "RapidFuzz JaroWinkler.similarity",
+          "batch": [
+            "cdist"
+          ],
+          "public_scalar_is_backend": true,
+          "public_scalar_module": "rapidfuzz.distance.metrics_cpp"
+        }
+      },
+      "iterations": {
+        "baseline": 2,
+        "candidate": 5
+      },
+      "order": [
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ]
+      ],
+      "samples": {
+        "baseline": [
+          {
+            "wall_ns": 4126187.5,
+            "cpu_ns": 3433500.0
+          },
+          {
+            "wall_ns": 5282417.0,
+            "cpu_ns": 3325500.0
+          },
+          {
+            "wall_ns": 5077562.5,
+            "cpu_ns": 3419000.0
+          },
+          {
+            "wall_ns": 3889229.0,
+            "cpu_ns": 3322000.0
+          },
+          {
+            "wall_ns": 3089375.0,
+            "cpu_ns": 3090000.0
+          },
+          {
+            "wall_ns": 3635208.5,
+            "cpu_ns": 3442000.0
+          },
+          {
+            "wall_ns": 3400375.0,
+            "cpu_ns": 3243000.0
+          }
+        ],
+        "candidate": [
+          {
+            "wall_ns": 1214766.6,
+            "cpu_ns": 940000.0
+          },
+          {
+            "wall_ns": 891950.0,
+            "cpu_ns": 892200.0
+          },
+          {
+            "wall_ns": 1000508.4,
+            "cpu_ns": 985800.0
+          },
+          {
+            "wall_ns": 1411183.2,
+            "cpu_ns": 1016400.0
+          },
+          {
+            "wall_ns": 977600.0,
+            "cpu_ns": 954600.0
+          },
+          {
+            "wall_ns": 1101658.2,
+            "cpu_ns": 1041400.0
+          },
+          {
+            "wall_ns": 1242600.0,
+            "cpu_ns": 1054400.0
+          }
+        ]
+      },
+      "median_wall_ns": {
+        "baseline": 3889229.0,
+        "candidate": 1101658.2
+      },
+      "median_cpu_ns": {
+        "baseline": 3325500.0,
+        "candidate": 985800.0
+      },
+      "paired_speedup": 3.299760760642457
+    },
+    "extra/paths-scalar": {
+      "operation": "scalar",
+      "query_count": 1,
+      "choice_count": 77,
+      "maximum_string_length": 41,
+      "exact_output_check": true,
+      "expected_sha256": "abf34c541e1dd13e13245688e67446818df36f62f6f5bd810d717b994fd00f37",
+      "output_sha256": {
+        "baseline": "abf34c541e1dd13e13245688e67446818df36f62f6f5bd810d717b994fd00f37",
+        "candidate": "abf34c541e1dd13e13245688e67446818df36f62f6f5bd810d717b994fd00f37"
+      },
+      "routes": {
+        "baseline": {
+          "scalar": "RapidFuzz JaroWinkler.similarity",
+          "batch": [],
+          "public_scalar_is_backend": true,
+          "public_scalar_module": "rapidfuzz.distance.metrics_cpp"
+        },
+        "candidate": {
+          "scalar": "RapidFuzz JaroWinkler.similarity",
+          "batch": [],
+          "public_scalar_is_backend": true,
+          "public_scalar_module": "rapidfuzz.distance.metrics_cpp"
+        }
+      },
+      "iterations": {
+        "baseline": 40960,
+        "candidate": 20480
+      },
+      "order": [
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ]
+      ],
+      "samples": {
+        "baseline": [
+          {
+            "wall_ns": 215.284228515625,
+            "cpu_ns": 215.380859375
+          },
+          {
+            "wall_ns": 216.5822265625,
+            "cpu_ns": 213.4765625
+          },
+          {
+            "wall_ns": 222.479248046875,
+            "cpu_ns": 222.5341796875
+          },
+          {
+            "wall_ns": 218.4163330078125,
+            "cpu_ns": 218.408203125
+          },
+          {
+            "wall_ns": 212.8489013671875,
+            "cpu_ns": 212.8662109375
+          },
+          {
+            "wall_ns": 215.4154541015625,
+            "cpu_ns": 215.4541015625
+          },
+          {
+            "wall_ns": 217.3471923828125,
+            "cpu_ns": 217.333984375
+          }
+        ],
+        "candidate": [
+          {
+            "wall_ns": 217.323828125,
+            "cpu_ns": 217.3828125
+          },
+          {
+            "wall_ns": 206.16455078125,
+            "cpu_ns": 206.25
+          },
+          {
+            "wall_ns": 371.565771484375,
+            "cpu_ns": 240.576171875
+          },
+          {
+            "wall_ns": 240.83046875,
+            "cpu_ns": 233.837890625
+          },
+          {
+            "wall_ns": 212.90693359375,
+            "cpu_ns": 212.98828125
+          },
+          {
+            "wall_ns": 212.331103515625,
+            "cpu_ns": 212.353515625
+          },
+          {
+            "wall_ns": 239.6830078125,
+            "cpu_ns": 229.6875
+          }
+        ]
+      },
+      "median_wall_ns": {
+        "baseline": 216.5822265625,
+        "candidate": 217.323828125
+      },
+      "median_cpu_ns": {
+        "baseline": 215.4541015625,
+        "candidate": 217.3828125
+      },
+      "paired_speedup": 0.9906149287587467
+    },
+    "extra/paths-best_match": {
+      "operation": "best_match",
+      "query_count": 1,
+      "choice_count": 77,
+      "maximum_string_length": 41,
+      "exact_output_check": true,
+      "expected_sha256": "dabcbf67fa4ec2e3ca62fa4652018e81202947b326a16b8f047004d6cd4d803f",
+      "output_sha256": {
+        "baseline": "dabcbf67fa4ec2e3ca62fa4652018e81202947b326a16b8f047004d6cd4d803f",
+        "candidate": "dabcbf67fa4ec2e3ca62fa4652018e81202947b326a16b8f047004d6cd4d803f"
+      },
+      "routes": {
+        "baseline": {
+          "scalar": "RapidFuzz JaroWinkler.similarity",
+          "batch": [],
+          "public_scalar_is_backend": true,
+          "public_scalar_module": "rapidfuzz.distance.metrics_cpp"
+        },
+        "candidate": {
+          "scalar": "RapidFuzz JaroWinkler.similarity",
+          "batch": [
+            "extractOne"
+          ],
+          "public_scalar_is_backend": true,
+          "public_scalar_module": "rapidfuzz.distance.metrics_cpp"
+        }
+      },
+      "iterations": {
+        "baseline": 192,
+        "candidate": 1152
+      },
+      "order": [
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ]
+      ],
+      "samples": {
+        "baseline": [
+          {
+            "wall_ns": 18466.359375,
+            "cpu_ns": 18489.583333333332
+          },
+          {
+            "wall_ns": 18613.713541666668,
+            "cpu_ns": 18619.791666666668
+          },
+          {
+            "wall_ns": 18355.036458333332,
+            "cpu_ns": 18359.375
+          },
+          {
+            "wall_ns": 110144.74479166667,
+            "cpu_ns": 19677.083333333332
+          },
+          {
+            "wall_ns": 19142.140625,
+            "cpu_ns": 19145.833333333332
+          },
+          {
+            "wall_ns": 26673.177083333332,
+            "cpu_ns": 21609.375
+          },
+          {
+            "wall_ns": 23732.421875,
+            "cpu_ns": 21161.458333333332
+          }
+        ],
+        "candidate": [
+          {
+            "wall_ns": 7676.684895833333,
+            "cpu_ns": 7678.819444444444
+          },
+          {
+            "wall_ns": 7560.8359375,
+            "cpu_ns": 7561.631944444444
+          },
+          {
+            "wall_ns": 7701.569444444444,
+            "cpu_ns": 7703.125
+          },
+          {
+            "wall_ns": 7491.138020833333,
+            "cpu_ns": 7492.1875
+          },
+          {
+            "wall_ns": 8695.746527777777,
+            "cpu_ns": 8006.076388888889
+          },
+          {
+            "wall_ns": 10804.3984375,
+            "cpu_ns": 8267.361111111111
+          },
+          {
+            "wall_ns": 8890.697916666666,
+            "cpu_ns": 7682.291666666667
+          }
+        ]
+      },
+      "median_wall_ns": {
+        "baseline": 19142.140625,
+        "candidate": 7701.569444444444
+      },
+      "median_cpu_ns": {
+        "baseline": 19145.833333333332,
+        "candidate": 7682.291666666667
+      },
+      "paired_speedup": 2.461859203867518
+    },
+    "extra/paths-extract": {
+      "operation": "extract",
+      "query_count": 1,
+      "choice_count": 77,
+      "maximum_string_length": 41,
+      "exact_output_check": true,
+      "expected_sha256": "bef8b1bd42f2cf6feaaa9fe68dd8d4e048ca5661355b68d12c857740431ae5d6",
+      "output_sha256": {
+        "baseline": "bef8b1bd42f2cf6feaaa9fe68dd8d4e048ca5661355b68d12c857740431ae5d6",
+        "candidate": "bef8b1bd42f2cf6feaaa9fe68dd8d4e048ca5661355b68d12c857740431ae5d6"
+      },
+      "routes": {
+        "baseline": {
+          "scalar": "RapidFuzz JaroWinkler.similarity",
+          "batch": [],
+          "public_scalar_is_backend": true,
+          "public_scalar_module": "rapidfuzz.distance.metrics_cpp"
+        },
+        "candidate": {
+          "scalar": "RapidFuzz JaroWinkler.similarity",
+          "batch": [
+            "extract"
+          ],
+          "public_scalar_is_backend": true,
+          "public_scalar_module": "rapidfuzz.distance.metrics_cpp"
+        }
+      },
+      "iterations": {
+        "baseline": 512,
+        "candidate": 448
+      },
+      "order": [
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ]
+      ],
+      "samples": {
+        "baseline": [
+          {
+            "wall_ns": 27109.048828125,
+            "cpu_ns": 21347.65625
+          },
+          {
+            "wall_ns": 19247.232421875,
+            "cpu_ns": 18966.796875
+          },
+          {
+            "wall_ns": 27281.005859375,
+            "cpu_ns": 21869.140625
+          },
+          {
+            "wall_ns": 20453.61328125,
+            "cpu_ns": 19451.171875
+          },
+          {
+            "wall_ns": 26135.498046875,
+            "cpu_ns": 20966.796875
+          },
+          {
+            "wall_ns": 18968.017578125,
+            "cpu_ns": 18968.75
+          },
+          {
+            "wall_ns": 25926.3515625,
+            "cpu_ns": 20859.375
+          }
+        ],
+        "candidate": [
+          {
+            "wall_ns": 13083.05580357143,
+            "cpu_ns": 10082.589285714286
+          },
+          {
+            "wall_ns": 95007.53348214286,
+            "cpu_ns": 9841.517857142857
+          },
+          {
+            "wall_ns": 11505.488839285714,
+            "cpu_ns": 10292.410714285714
+          },
+          {
+            "wall_ns": 16792.131696428572,
+            "cpu_ns": 10564.732142857143
+          },
+          {
+            "wall_ns": 16926.24776785714,
+            "cpu_ns": 10587.05357142857
+          },
+          {
+            "wall_ns": 9222.935267857143,
+            "cpu_ns": 9033.482142857143
+          },
+          {
+            "wall_ns": 8887.46205357143,
+            "cpu_ns": 8888.392857142857
+          }
+        ]
+      },
+      "median_wall_ns": {
+        "baseline": 25926.3515625,
+        "candidate": 13083.05580357143
+      },
+      "median_cpu_ns": {
+        "baseline": 20859.375,
+        "candidate": 10082.589285714286
+      },
+      "paired_speedup": 2.0566139767054907
+    },
+    "extra/paths-cdist": {
+      "operation": "cdist",
+      "query_count": 24,
+      "choice_count": 77,
+      "maximum_string_length": 41,
+      "exact_output_check": true,
+      "expected_sha256": "3612f850b4430c6eb7b56926189f9e6dcf75949e6962405ef6ad2c24729ca9c1",
+      "output_sha256": {
+        "baseline": "3612f850b4430c6eb7b56926189f9e6dcf75949e6962405ef6ad2c24729ca9c1",
+        "candidate": "3612f850b4430c6eb7b56926189f9e6dcf75949e6962405ef6ad2c24729ca9c1"
+      },
+      "routes": {
+        "baseline": {
+          "scalar": "RapidFuzz JaroWinkler.similarity",
+          "batch": [],
+          "public_scalar_is_backend": true,
+          "public_scalar_module": "rapidfuzz.distance.metrics_cpp"
+        },
+        "candidate": {
+          "scalar": "RapidFuzz JaroWinkler.similarity",
+          "batch": [
+            "cdist"
+          ],
+          "public_scalar_is_backend": true,
+          "public_scalar_module": "rapidfuzz.distance.metrics_cpp"
+        }
+      },
+      "iterations": {
+        "baseline": 24,
+        "candidate": 36
+      },
+      "order": [
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ]
+      ],
+      "samples": {
+        "baseline": [
+          {
+            "wall_ns": 626930.5416666666,
+            "cpu_ns": 419541.6666666667
+          },
+          {
+            "wall_ns": 1588572.9166666667,
+            "cpu_ns": 490416.6666666667
+          },
+          {
+            "wall_ns": 1514805.5416666667,
+            "cpu_ns": 452291.6666666667
+          },
+          {
+            "wall_ns": 437145.8333333333,
+            "cpu_ns": 418083.3333333333
+          },
+          {
+            "wall_ns": 1043442.7083333334,
+            "cpu_ns": 478833.3333333333
+          },
+          {
+            "wall_ns": 610829.8333333334,
+            "cpu_ns": 453875.0
+          },
+          {
+            "wall_ns": 745548.5833333334,
+            "cpu_ns": 425125.0
+          }
+        ],
+        "candidate": [
+          {
+            "wall_ns": 288880.80555555556,
+            "cpu_ns": 214694.44444444444
+          },
+          {
+            "wall_ns": 243868.05555555556,
+            "cpu_ns": 198222.22222222222
+          },
+          {
+            "wall_ns": 247401.61111111112,
+            "cpu_ns": 218111.11111111112
+          },
+          {
+            "wall_ns": 242400.44444444444,
+            "cpu_ns": 200472.22222222222
+          },
+          {
+            "wall_ns": 331567.1388888889,
+            "cpu_ns": 221916.66666666666
+          },
+          {
+            "wall_ns": 411414.3333333333,
+            "cpu_ns": 221444.44444444444
+          },
+          {
+            "wall_ns": 285652.77777777775,
+            "cpu_ns": 229000.0
+          }
+        ]
+      },
+      "median_wall_ns": {
+        "baseline": 745548.5833333334,
+        "candidate": 285652.77777777775
+      },
+      "median_cpu_ns": {
+        "baseline": 452291.6666666667,
+        "candidate": 218111.11111111112
+      },
+      "paired_speedup": 2.609981912772889
+    },
+    "base/contacts-scalar": {
+      "operation": "scalar",
+      "query_count": 1,
+      "choice_count": 624,
+      "maximum_string_length": 20,
+      "exact_output_check": true,
+      "expected_sha256": "c8e33efb2110245ba7a4425a14ee04bf1f40010e7f22458b8398323e5d96f4d1",
+      "output_sha256": {
+        "baseline": "c8e33efb2110245ba7a4425a14ee04bf1f40010e7f22458b8398323e5d96f4d1",
+        "candidate": "c8e33efb2110245ba7a4425a14ee04bf1f40010e7f22458b8398323e5d96f4d1"
+      },
+      "routes": {
+        "baseline": {
+          "scalar": "public base scorer",
+          "batch": [],
+          "native_calls": 1,
+          "native_accepted": 1,
+          "native_declined": 0,
+          "public_scalar_module": "_normal_jaro_base_baseline"
+        },
+        "candidate": {
+          "scalar": "public base scorer",
+          "batch": [],
+          "native_calls": 1,
+          "native_accepted": 1,
+          "native_declined": 0,
+          "public_scalar_module": "_normal_jaro_base_candidate"
+        }
+      },
+      "iterations": {
+        "baseline": 32768,
+        "candidate": 24576
+      },
+      "order": [
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ]
+      ],
+      "samples": {
+        "baseline": [
+          {
+            "wall_ns": 257.90277099609375,
+            "cpu_ns": 258.026123046875
+          },
+          {
+            "wall_ns": 254.24575805664062,
+            "cpu_ns": 254.302978515625
+          },
+          {
+            "wall_ns": 345.1169128417969,
+            "cpu_ns": 262.176513671875
+          },
+          {
+            "wall_ns": 290.28955078125,
+            "cpu_ns": 262.786865234375
+          },
+          {
+            "wall_ns": 316.94158935546875,
+            "cpu_ns": 276.3671875
+          },
+          {
+            "wall_ns": 273.291259765625,
+            "cpu_ns": 260.6201171875
+          },
+          {
+            "wall_ns": 340.1311340332031,
+            "cpu_ns": 277.374267578125
+          }
+        ],
+        "candidate": [
+          {
+            "wall_ns": 255.32023111979166,
+            "cpu_ns": 255.33040364583334
+          },
+          {
+            "wall_ns": 255.28633626302084,
+            "cpu_ns": 255.28971354166666
+          },
+          {
+            "wall_ns": 274.7480875651042,
+            "cpu_ns": 262.4104817708333
+          },
+          {
+            "wall_ns": 257.71923828125,
+            "cpu_ns": 257.7718098958333
+          },
+          {
+            "wall_ns": 276.7707112630208,
+            "cpu_ns": 261.9222005208333
+          },
+          {
+            "wall_ns": 256.5985921223958,
+            "cpu_ns": 256.6324869791667
+          },
+          {
+            "wall_ns": 324.7901204427083,
+            "cpu_ns": 285.5224609375
+          }
+        ]
+      },
+      "median_wall_ns": {
+        "baseline": 290.28955078125,
+        "candidate": 257.71923828125
+      },
+      "median_cpu_ns": {
+        "baseline": 262.176513671875,
+        "candidate": 257.7718098958333
+      },
+      "paired_speedup": 1.0650536213202093
+    },
+    "base/contacts-best_match": {
+      "operation": "best_match",
+      "query_count": 1,
+      "choice_count": 624,
+      "maximum_string_length": 20,
+      "exact_output_check": true,
+      "expected_sha256": "0a50238e0e74c83db4ad0991c5a51e2f225cfaa11cb7e887075ea3b6fcc87550",
+      "output_sha256": {
+        "baseline": "0a50238e0e74c83db4ad0991c5a51e2f225cfaa11cb7e887075ea3b6fcc87550",
+        "candidate": "0a50238e0e74c83db4ad0991c5a51e2f225cfaa11cb7e887075ea3b6fcc87550"
+      },
+      "routes": {
+        "baseline": {
+          "scalar": "public base scorer",
+          "batch": [],
+          "native_calls": 624,
+          "native_accepted": 624,
+          "native_declined": 0,
+          "public_scalar_module": "_normal_jaro_base_baseline"
+        },
+        "candidate": {
+          "scalar": "public base scorer",
+          "batch": [],
+          "native_calls": 624,
+          "native_accepted": 624,
+          "native_declined": 0,
+          "public_scalar_module": "_normal_jaro_base_candidate"
+        }
+      },
+      "iterations": {
+        "baseline": 26,
+        "candidate": 21
+      },
+      "order": [
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ]
+      ],
+      "samples": {
+        "baseline": [
+          {
+            "wall_ns": 359750.0,
+            "cpu_ns": 239653.84615384616
+          },
+          {
+            "wall_ns": 342524.03846153844,
+            "cpu_ns": 243576.92307692306
+          },
+          {
+            "wall_ns": 262141.03846153847,
+            "cpu_ns": 242846.15384615384
+          },
+          {
+            "wall_ns": 208368.57692307694,
+            "cpu_ns": 208423.07692307694
+          },
+          {
+            "wall_ns": 257014.42307692306,
+            "cpu_ns": 244192.3076923077
+          },
+          {
+            "wall_ns": 339410.23076923075,
+            "cpu_ns": 232730.76923076922
+          },
+          {
+            "wall_ns": 238826.92307692306,
+            "cpu_ns": 234692.3076923077
+          }
+        ],
+        "candidate": [
+          {
+            "wall_ns": 233877.0,
+            "cpu_ns": 231523.80952380953
+          },
+          {
+            "wall_ns": 390450.4285714286,
+            "cpu_ns": 257952.38095238095
+          },
+          {
+            "wall_ns": 441839.28571428574,
+            "cpu_ns": 250857.14285714287
+          },
+          {
+            "wall_ns": 207702.38095238095,
+            "cpu_ns": 207809.52380952382
+          },
+          {
+            "wall_ns": 397130.95238095237,
+            "cpu_ns": 245000.0
+          },
+          {
+            "wall_ns": 269470.2380952381,
+            "cpu_ns": 247333.33333333334
+          },
+          {
+            "wall_ns": 285301.5714285714,
+            "cpu_ns": 245428.57142857142
+          }
+        ]
+      },
+      "median_wall_ns": {
+        "baseline": 262141.03846153847,
+        "candidate": 285301.5714285714
+      },
+      "median_cpu_ns": {
+        "baseline": 239653.84615384616,
+        "candidate": 245428.57142857142
+      },
+      "paired_speedup": 0.8772535855953798
+    },
+    "base/contacts-extract": {
+      "operation": "extract",
+      "query_count": 1,
+      "choice_count": 624,
+      "maximum_string_length": 20,
+      "exact_output_check": true,
+      "expected_sha256": "e4ecc7824495a62d331eccb887a9020bd019c7d1a60b403baa0d6a5daf3f9e51",
+      "output_sha256": {
+        "baseline": "e4ecc7824495a62d331eccb887a9020bd019c7d1a60b403baa0d6a5daf3f9e51",
+        "candidate": "e4ecc7824495a62d331eccb887a9020bd019c7d1a60b403baa0d6a5daf3f9e51"
+      },
+      "routes": {
+        "baseline": {
+          "scalar": "public base scorer",
+          "batch": [],
+          "native_calls": 624,
+          "native_accepted": 624,
+          "native_declined": 0,
+          "public_scalar_module": "_normal_jaro_base_baseline"
+        },
+        "candidate": {
+          "scalar": "public base scorer",
+          "batch": [],
+          "native_calls": 624,
+          "native_accepted": 624,
+          "native_declined": 0,
+          "public_scalar_module": "_normal_jaro_base_candidate"
+        }
+      },
+      "iterations": {
+        "baseline": 42,
+        "candidate": 46
+      },
+      "order": [
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ]
+      ],
+      "samples": {
+        "baseline": [
+          {
+            "wall_ns": 211576.38095238095,
+            "cpu_ns": 211690.47619047618
+          },
+          {
+            "wall_ns": 205331.35714285713,
+            "cpu_ns": 205357.14285714287
+          },
+          {
+            "wall_ns": 204865.09523809524,
+            "cpu_ns": 204880.95238095237
+          },
+          {
+            "wall_ns": 237050.59523809524,
+            "cpu_ns": 228214.2857142857
+          },
+          {
+            "wall_ns": 204019.83333333334,
+            "cpu_ns": 204071.42857142858
+          },
+          {
+            "wall_ns": 255600.19047619047,
+            "cpu_ns": 232976.19047619047
+          },
+          {
+            "wall_ns": 297706.35714285716,
+            "cpu_ns": 239166.66666666666
+          }
+        ],
+        "candidate": [
+          {
+            "wall_ns": 552712.8695652174,
+            "cpu_ns": 248086.95652173914
+          },
+          {
+            "wall_ns": 238360.5,
+            "cpu_ns": 225978.26086956522
+          },
+          {
+            "wall_ns": 205247.28260869565,
+            "cpu_ns": 205260.86956521738
+          },
+          {
+            "wall_ns": 209340.5652173913,
+            "cpu_ns": 209239.13043478262
+          },
+          {
+            "wall_ns": 204569.73913043478,
+            "cpu_ns": 204586.95652173914
+          },
+          {
+            "wall_ns": 218189.30434782608,
+            "cpu_ns": 217673.91304347827
+          },
+          {
+            "wall_ns": 267039.8695652174,
+            "cpu_ns": 218065.21739130435
+          }
+        ]
+      },
+      "median_wall_ns": {
+        "baseline": 211576.38095238095,
+        "candidate": 218189.30434782608
+      },
+      "median_cpu_ns": {
+        "baseline": 211690.47619047618,
+        "candidate": 217673.91304347827
+      },
+      "paired_speedup": 0.9981379175122671
+    },
+    "base/contacts-cdist": {
+      "operation": "cdist",
+      "query_count": 24,
+      "choice_count": 624,
+      "maximum_string_length": 20,
+      "exact_output_check": true,
+      "expected_sha256": "85c374012d7de0cfa7aabdd59c165c77a1334e9a5c086e1c2bfa7b00a8605a02",
+      "output_sha256": {
+        "baseline": "85c374012d7de0cfa7aabdd59c165c77a1334e9a5c086e1c2bfa7b00a8605a02",
+        "candidate": "85c374012d7de0cfa7aabdd59c165c77a1334e9a5c086e1c2bfa7b00a8605a02"
+      },
+      "routes": {
+        "baseline": {
+          "scalar": "public base scorer",
+          "batch": [],
+          "native_calls": 14976,
+          "native_accepted": 14976,
+          "native_declined": 0,
+          "public_scalar_module": "_normal_jaro_base_baseline"
+        },
+        "candidate": {
+          "scalar": "public base scorer",
+          "batch": [],
+          "native_calls": 14976,
+          "native_accepted": 14976,
+          "native_declined": 0,
+          "public_scalar_module": "_normal_jaro_base_candidate"
+        }
+      },
+      "iterations": {
+        "baseline": 1,
+        "candidate": 1
+      },
+      "order": [
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ]
+      ],
+      "samples": {
+        "baseline": [
+          {
+            "wall_ns": 8418875.0,
+            "cpu_ns": 7347000.0
+          },
+          {
+            "wall_ns": 8968667.0,
+            "cpu_ns": 7941000.0
+          },
+          {
+            "wall_ns": 9003875.0,
+            "cpu_ns": 7701000.0
+          },
+          {
+            "wall_ns": 6700041.0,
+            "cpu_ns": 6702000.0
+          },
+          {
+            "wall_ns": 6812709.0,
+            "cpu_ns": 6809000.0
+          },
+          {
+            "wall_ns": 6643750.0,
+            "cpu_ns": 6645000.0
+          },
+          {
+            "wall_ns": 6588375.0,
+            "cpu_ns": 6589000.0
+          }
+        ],
+        "candidate": [
+          {
+            "wall_ns": 6668833.0,
+            "cpu_ns": 6670000.0
+          },
+          {
+            "wall_ns": 6945625.0,
+            "cpu_ns": 6941000.0
+          },
+          {
+            "wall_ns": 13248750.0,
+            "cpu_ns": 7485000.0
+          },
+          {
+            "wall_ns": 10930875.0,
+            "cpu_ns": 7697000.0
+          },
+          {
+            "wall_ns": 9297709.0,
+            "cpu_ns": 7123000.0
+          },
+          {
+            "wall_ns": 7426000.0,
+            "cpu_ns": 6831000.0
+          },
+          {
+            "wall_ns": 8081792.0,
+            "cpu_ns": 7486000.0
+          }
+        ]
+      },
+      "median_wall_ns": {
+        "baseline": 6812709.0,
+        "candidate": 8081792.0
+      },
+      "median_cpu_ns": {
+        "baseline": 6809000.0,
+        "candidate": 7123000.0
+      },
+      "paired_speedup": 0.8152121460191007
+    },
+    "base/paths-scalar": {
+      "operation": "scalar",
+      "query_count": 1,
+      "choice_count": 77,
+      "maximum_string_length": 41,
+      "exact_output_check": true,
+      "expected_sha256": "9be70c7a4c8c1424016723c26d0850eb9d62938633d6280f3aa0909e2e29ca12",
+      "output_sha256": {
+        "baseline": "9be70c7a4c8c1424016723c26d0850eb9d62938633d6280f3aa0909e2e29ca12",
+        "candidate": "9be70c7a4c8c1424016723c26d0850eb9d62938633d6280f3aa0909e2e29ca12"
+      },
+      "routes": {
+        "baseline": {
+          "scalar": "public base scorer",
+          "batch": [],
+          "native_calls": 1,
+          "native_accepted": 1,
+          "native_declined": 0,
+          "public_scalar_module": "_normal_jaro_base_baseline"
+        },
+        "candidate": {
+          "scalar": "public base scorer",
+          "batch": [],
+          "native_calls": 1,
+          "native_accepted": 1,
+          "native_declined": 0,
+          "public_scalar_module": "_normal_jaro_base_candidate"
+        }
+      },
+      "iterations": {
+        "baseline": 10752,
+        "candidate": 8192
+      },
+      "order": [
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ]
+      ],
+      "samples": {
+        "baseline": [
+          {
+            "wall_ns": 819.680896577381,
+            "cpu_ns": 820.1264880952381
+          },
+          {
+            "wall_ns": 1081.508091517857,
+            "cpu_ns": 870.0706845238095
+          },
+          {
+            "wall_ns": 1010.0524553571429,
+            "cpu_ns": 860.3980654761905
+          },
+          {
+            "wall_ns": 1155.219215029762,
+            "cpu_ns": 849.3303571428571
+          },
+          {
+            "wall_ns": 822.6725260416666,
+            "cpu_ns": 822.8236607142857
+          },
+          {
+            "wall_ns": 1031.0523623511904,
+            "cpu_ns": 901.9717261904761
+          },
+          {
+            "wall_ns": 937.1009114583334,
+            "cpu_ns": 832.03125
+          }
+        ],
+        "candidate": [
+          {
+            "wall_ns": 821.8536376953125,
+            "cpu_ns": 822.021484375
+          },
+          {
+            "wall_ns": 1133.23974609375,
+            "cpu_ns": 888.0615234375
+          },
+          {
+            "wall_ns": 987.14697265625,
+            "cpu_ns": 873.1689453125
+          },
+          {
+            "wall_ns": 993.342041015625,
+            "cpu_ns": 870.849609375
+          },
+          {
+            "wall_ns": 944.3258056640625,
+            "cpu_ns": 863.1591796875
+          },
+          {
+            "wall_ns": 971.00830078125,
+            "cpu_ns": 868.408203125
+          },
+          {
+            "wall_ns": 916.6920166015625,
+            "cpu_ns": 886.23046875
+          }
+        ]
+      },
+      "median_wall_ns": {
+        "baseline": 1010.0524553571429,
+        "candidate": 971.00830078125
+      },
+      "median_cpu_ns": {
+        "baseline": 849.3303571428571,
+        "candidate": 870.849609375
+      },
+      "paired_speedup": 1.0222636332455828
+    },
+    "base/paths-best_match": {
+      "operation": "best_match",
+      "query_count": 1,
+      "choice_count": 77,
+      "maximum_string_length": 41,
+      "exact_output_check": true,
+      "expected_sha256": "dabcbf67fa4ec2e3ca62fa4652018e81202947b326a16b8f047004d6cd4d803f",
+      "output_sha256": {
+        "baseline": "dabcbf67fa4ec2e3ca62fa4652018e81202947b326a16b8f047004d6cd4d803f",
+        "candidate": "dabcbf67fa4ec2e3ca62fa4652018e81202947b326a16b8f047004d6cd4d803f"
+      },
+      "routes": {
+        "baseline": {
+          "scalar": "public base scorer",
+          "batch": [],
+          "native_calls": 77,
+          "native_accepted": 77,
+          "native_declined": 0,
+          "public_scalar_module": "_normal_jaro_base_baseline"
+        },
+        "candidate": {
+          "scalar": "public base scorer",
+          "batch": [],
+          "native_calls": 77,
+          "native_accepted": 77,
+          "native_declined": 0,
+          "public_scalar_module": "_normal_jaro_base_candidate"
+        }
+      },
+      "iterations": {
+        "baseline": 128,
+        "candidate": 128
+      },
+      "order": [
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ]
+      ],
+      "samples": {
+        "baseline": [
+          {
+            "wall_ns": 74569.3359375,
+            "cpu_ns": 67781.25
+          },
+          {
+            "wall_ns": 123705.7265625,
+            "cpu_ns": 75289.0625
+          },
+          {
+            "wall_ns": 109163.40625,
+            "cpu_ns": 77054.6875
+          },
+          {
+            "wall_ns": 66531.578125,
+            "cpu_ns": 66546.875
+          },
+          {
+            "wall_ns": 66424.15625,
+            "cpu_ns": 66437.5
+          },
+          {
+            "wall_ns": 74735.03125,
+            "cpu_ns": 72351.5625
+          },
+          {
+            "wall_ns": 108484.703125,
+            "cpu_ns": 76531.25
+          }
+        ],
+        "candidate": [
+          {
+            "wall_ns": 143077.796875,
+            "cpu_ns": 76796.875
+          },
+          {
+            "wall_ns": 119184.25,
+            "cpu_ns": 75132.8125
+          },
+          {
+            "wall_ns": 80351.234375,
+            "cpu_ns": 75320.3125
+          },
+          {
+            "wall_ns": 83910.8125,
+            "cpu_ns": 69117.1875
+          },
+          {
+            "wall_ns": 77868.4921875,
+            "cpu_ns": 71250.0
+          },
+          {
+            "wall_ns": 103088.5390625,
+            "cpu_ns": 67601.5625
+          },
+          {
+            "wall_ns": 219383.7890625,
+            "cpu_ns": 83304.6875
+          }
+        ]
+      },
+      "median_wall_ns": {
+        "baseline": 74735.03125,
+        "candidate": 103088.5390625
+      },
+      "median_cpu_ns": {
+        "baseline": 72351.5625,
+        "candidate": 75132.8125
+      },
+      "paired_speedup": 0.7928844465068193
+    },
+    "base/paths-extract": {
+      "operation": "extract",
+      "query_count": 1,
+      "choice_count": 77,
+      "maximum_string_length": 41,
+      "exact_output_check": true,
+      "expected_sha256": "bef8b1bd42f2cf6feaaa9fe68dd8d4e048ca5661355b68d12c857740431ae5d6",
+      "output_sha256": {
+        "baseline": "bef8b1bd42f2cf6feaaa9fe68dd8d4e048ca5661355b68d12c857740431ae5d6",
+        "candidate": "bef8b1bd42f2cf6feaaa9fe68dd8d4e048ca5661355b68d12c857740431ae5d6"
+      },
+      "routes": {
+        "baseline": {
+          "scalar": "public base scorer",
+          "batch": [],
+          "native_calls": 77,
+          "native_accepted": 77,
+          "native_declined": 0,
+          "public_scalar_module": "_normal_jaro_base_baseline"
+        },
+        "candidate": {
+          "scalar": "public base scorer",
+          "batch": [],
+          "native_calls": 77,
+          "native_accepted": 77,
+          "native_declined": 0,
+          "public_scalar_module": "_normal_jaro_base_candidate"
+        }
+      },
+      "iterations": {
+        "baseline": 60,
+        "candidate": 64
+      },
+      "order": [
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ]
+      ],
+      "samples": {
+        "baseline": [
+          {
+            "wall_ns": 462306.95,
+            "cpu_ns": 91733.33333333333
+          },
+          {
+            "wall_ns": 67926.38333333333,
+            "cpu_ns": 67950.0
+          },
+          {
+            "wall_ns": 67756.25,
+            "cpu_ns": 67766.66666666667
+          },
+          {
+            "wall_ns": 67273.61666666667,
+            "cpu_ns": 67300.0
+          },
+          {
+            "wall_ns": 67340.28333333334,
+            "cpu_ns": 67350.0
+          },
+          {
+            "wall_ns": 68102.76666666666,
+            "cpu_ns": 68150.0
+          },
+          {
+            "wall_ns": 68365.96666666666,
+            "cpu_ns": 68383.33333333333
+          }
+        ],
+        "candidate": [
+          {
+            "wall_ns": 2091069.0,
+            "cpu_ns": 88234.375
+          },
+          {
+            "wall_ns": 185667.96875,
+            "cpu_ns": 85859.375
+          },
+          {
+            "wall_ns": 67303.390625,
+            "cpu_ns": 67328.125
+          },
+          {
+            "wall_ns": 67573.578125,
+            "cpu_ns": 67593.75
+          },
+          {
+            "wall_ns": 67402.34375,
+            "cpu_ns": 67406.25
+          },
+          {
+            "wall_ns": 218532.546875,
+            "cpu_ns": 72984.375
+          },
+          {
+            "wall_ns": 68282.546875,
+            "cpu_ns": 68312.5
+          }
+        ]
+      },
+      "median_wall_ns": {
+        "baseline": 67926.38333333333,
+        "candidate": 68282.546875
+      },
+      "median_cpu_ns": {
+        "baseline": 67950.0,
+        "candidate": 68312.5
+      },
+      "paired_speedup": 0.9955609652965476
+    },
+    "base/paths-cdist": {
+      "operation": "cdist",
+      "query_count": 24,
+      "choice_count": 77,
+      "maximum_string_length": 41,
+      "exact_output_check": true,
+      "expected_sha256": "9bec208d9661d0457a301ce7900702ca56ef0d15132d6ef126fe34cfc0f04297",
+      "output_sha256": {
+        "baseline": "9bec208d9661d0457a301ce7900702ca56ef0d15132d6ef126fe34cfc0f04297",
+        "candidate": "9bec208d9661d0457a301ce7900702ca56ef0d15132d6ef126fe34cfc0f04297"
+      },
+      "routes": {
+        "baseline": {
+          "scalar": "public base scorer",
+          "batch": [],
+          "native_calls": 1848,
+          "native_accepted": 1848,
+          "native_declined": 0,
+          "public_scalar_module": "_normal_jaro_base_baseline"
+        },
+        "candidate": {
+          "scalar": "public base scorer",
+          "batch": [],
+          "native_calls": 1848,
+          "native_accepted": 1848,
+          "native_declined": 0,
+          "public_scalar_module": "_normal_jaro_base_candidate"
+        }
+      },
+      "iterations": {
+        "baseline": 2,
+        "candidate": 2
+      },
+      "order": [
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ]
+      ],
+      "samples": {
+        "baseline": [
+          {
+            "wall_ns": 4443729.0,
+            "cpu_ns": 2485500.0
+          },
+          {
+            "wall_ns": 2091521.0,
+            "cpu_ns": 2092000.0
+          },
+          {
+            "wall_ns": 2075145.5,
+            "cpu_ns": 2076000.0
+          },
+          {
+            "wall_ns": 2524146.0,
+            "cpu_ns": 2362500.0
+          },
+          {
+            "wall_ns": 3023312.5,
+            "cpu_ns": 2333000.0
+          },
+          {
+            "wall_ns": 2116687.5,
+            "cpu_ns": 2117500.0
+          },
+          {
+            "wall_ns": 2136833.0,
+            "cpu_ns": 2137000.0
+          }
+        ],
+        "candidate": [
+          {
+            "wall_ns": 2788521.0,
+            "cpu_ns": 2285500.0
+          },
+          {
+            "wall_ns": 2114521.0,
+            "cpu_ns": 2115500.0
+          },
+          {
+            "wall_ns": 3735146.0,
+            "cpu_ns": 2303000.0
+          },
+          {
+            "wall_ns": 2682291.5,
+            "cpu_ns": 2539000.0
+          },
+          {
+            "wall_ns": 3318958.5,
+            "cpu_ns": 2479500.0
+          },
+          {
+            "wall_ns": 2179458.0,
+            "cpu_ns": 2180500.0
+          },
+          {
+            "wall_ns": 2498271.0,
+            "cpu_ns": 2248500.0
+          }
+        ]
+      },
+      "median_wall_ns": {
+        "baseline": 2136833.0,
+        "candidate": 2682291.5
+      },
+      "median_cpu_ns": {
+        "baseline": 2137000.0,
+        "candidate": 2285500.0
+      },
+      "paired_speedup": 0.9410408973073956
+    }
+  },
+  "guards": {
+    "maximum_all_case_slowdown": 1.3,
+    "minimum_extra_contacts_matching_speedup": 2.0,
+    "failures": []
+  }
+}

@@ -163,6 +163,47 @@ def test_jaro_winkler_matches_the_published_definition(
     assert path.jaro_winkler(a, a, prefix_weight=weight) == 1.0
 
 
+@pytest.mark.parametrize("scan_length", [0, 32])
+@given(
+    a=st.text("aab\x00\ud800😀\u0301", max_size=80),
+    b=st.text("aab\x00\ud800😀\u0301", max_size=80),
+)
+def test_portable_jaro_index_preserves_greedy_matches(
+    scan_length: int, a: str, b: str
+) -> None:
+    # Include the indexed path for even tiny windows, then the normal short
+    # scan/index boundary. The reference visits every candidate in each window.
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(fuzz, "_native_jaro", None)
+        patch.setattr(fuzz, "_JARO_SCAN_LENGTH", scan_length)
+        assert fuzz._jaro(a, b) == _jaro(a, b)
+        assert fuzz._jaro(b, a) == _jaro(b, a)
+
+
+@pytest.mark.parametrize(
+    ("a", "b"),
+    [
+        ("aa", "ba"),  # A future occurrence must survive the first right edge.
+        ("ab", "b"),  # An occurrence left of the next window has expired.
+        ("a", "b"),
+        ("a", "ba"),
+        ("gecaedbc", "acde"),  # Odd mismatch count floors to one transposition.
+        ("abacaba", "baaacba"),
+        ("\x00😀\ud800\x00a", "😀\x00a\ud800\x00"),
+        ("abc", "xxxxxxxxxxxxxxxxxabc"),
+        ("a" * 31 + "b", "a" * 31 + "c"),  # Exactly the short-scan length.
+        ("a" * 32 + "b", "a" * 32 + "c"),  # Just beyond the short-scan length.
+    ],
+)
+@pytest.mark.parametrize("scan_length", [0, 32])
+def test_portable_jaro_index_window_edges(a: str, b: str, scan_length: int) -> None:
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(fuzz, "_native_jaro", None)
+        patch.setattr(fuzz, "_JARO_SCAN_LENGTH", scan_length)
+        assert fuzz._jaro(a, b) == _jaro(a, b)
+        assert fuzz._jaro(b, a) == _jaro(b, a)
+
+
 def test_every_short_binary_pair_matches_all_references(path: Path) -> None:
     # Window edges, repeated matches and transpositions all occur within this domain.
     words = ["".join(chars) for n in range(6) for chars in product("ab", repeat=n)]

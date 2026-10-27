@@ -111,6 +111,10 @@ __all__ = [
 _BOOST_MIN: Final[float] = 0.7
 _PREFIX_MAX: Final[int] = 4
 
+# Short portable names cost less to scan in C than to build an occurrence index.
+# A bounded shorter input also bounds the repeated scans for unequal lengths.
+_JARO_SCAN_LENGTH: Final[int] = 32
+
 #: rapidfuzz's own ``score_cutoff`` is never passed: its normalized scorers prune
 #: through a float round-trip that drops pairs scoring *exactly* at the cutoff
 #: (~70% of random short pairs), and pruning buys nothing measurable at SIMD speed.
@@ -206,9 +210,29 @@ def _jaro(a: str, b: str) -> float:
     window = max(max(len(a), size) // 2 - 1, 0)
     taken = [False] * size
     a_matched: list[str] = []
+    indexed = exact and len(a) > _JARO_SCAN_LENGTH and size > _JARO_SCAN_LENGTH
+    positions: dict[str, list[int]] = {}
+    if indexed:
+        # Each character's positions are stored last-first, so pop() consumes
+        # the earliest available occurrence. Both window edges only advance:
+        # an expired position can never match later, while one beyond the
+        # right edge must stay available for a later character. Every position
+        # is visited at most once instead of rescanning already-taken matches.
+        for j in range(size - 1, -1, -1):
+            char = b[j]
+            if (occurrences := positions.get(char)) is None:
+                positions[char] = occurrences = []
+            occurrences.append(j)
     for i, ca in enumerate(a):
         lo, hi = max(0, i - window), min(size, i + window + 1)
-        if exact:  # str.find scans the window in C; subclasses keep their hooks
+        if indexed:
+            candidates = positions.get(ca)
+            if candidates is None:
+                continue
+            while candidates and candidates[-1] < lo:
+                candidates.pop()
+            j = candidates.pop() if candidates and candidates[-1] < hi else -1
+        elif exact:
             j = b.find(ca, lo, hi)
             while j >= 0 and taken[j]:
                 j = b.find(ca, j + 1, hi)
@@ -392,10 +416,17 @@ Matches ``rapidfuzz.distance.JaroWinkler.similarity`` on both paths.
 
 
 def _accelerated(scorer: _Similarity | None) -> bool:
-    """Whether a batch call may hand the whole job to RapidFuzz's Indel kernel."""
+    """Whether a batch call may use a recognized RapidFuzz similarity kernel."""
     return _HAVE_RAPIDFUZZ and (
-        scorer is None or scorer is _rf.distance.Indel.normalized_similarity
+        scorer is None
+        or scorer is _rf.distance.Indel.normalized_similarity
+        or scorer is _rf.distance.JaroWinkler.similarity
     )
+
+
+def _plain_strings(values: Iterable[str]) -> bool:
+    """Exact string sequences can enter new kernels without observable hooks."""
+    return type(values) in (list, tuple) and all(type(value) is str for value in values)
 
 
 def best_match(
@@ -415,16 +446,28 @@ def best_match(
     With an explicit scorer, mappings supply their iterated keys, like other
     iterables; a NaN cutoff admits no choices.
     """
-    if _HAVE_RAPIDFUZZ and (
-        scorer is None or scorer is _rf.distance.Indel.normalized_similarity
+    similarity = ratio if scorer is None else scorer
+    if _accelerated(scorer) and (
+        scorer is not _rf.distance.JaroWinkler.similarity
+        or (
+            type(query) is str
+            and type(score_cutoff) in (int, float, bool)
+            and _plain_strings(choices)
+        )
     ):
+        # extractOne can stop at a perfect match. Jaro's existing Python path
+        # exhausts arbitrary iterables; retain those observable producer hooks.
+        # Native extraction also skips None instead of scoring it as zero.
         hit = _rf.process.extractOne(
             query,
             choices if scorer is None else iter(choices),
-            scorer=_rf.distance.Indel.normalized_similarity,
+            scorer=(
+                _rf.distance.JaroWinkler.similarity
+                if scorer is _rf.distance.JaroWinkler.similarity
+                else _rf.distance.Indel.normalized_similarity
+            ),
         )
         return (hit[0], hit[1]) if hit and hit[1] >= score_cutoff else None
-    similarity = ratio if scorer is None else scorer
     return max(
         ((c, s) for c in choices if (s := similarity(query, c)) >= score_cutoff),
         key=itemgetter(1),
@@ -450,15 +493,27 @@ def extract(
     if scorer is not None and limit is not None and limit < 0:
         msg = "unstd.text: limit must be nonnegative when a scorer is selected"
         raise ValueError(msg)
-    if _accelerated(scorer):
+    similarity = ratio if scorer is None else scorer
+    if _accelerated(scorer) and (
+        scorer is not _rf.distance.JaroWinkler.similarity
+        or (
+            type(query) is str
+            and type(score_cutoff) in (int, float, bool)
+            and (limit is None or type(limit) in (int, bool))
+            and _plain_strings(choices)
+        )
+    ):
         hits = _rf.process.extract(
             query,
             list(choices),
-            scorer=_rf.distance.Indel.normalized_similarity,
+            scorer=(
+                _rf.distance.JaroWinkler.similarity
+                if scorer is _rf.distance.JaroWinkler.similarity
+                else _rf.distance.Indel.normalized_similarity
+            ),
             limit=limit,
         )
         return [(choice, score) for choice, score, _ in hits if score >= score_cutoff]
-    similarity = ratio if scorer is None else scorer
     scored = [(c, s) for c in choices if (s := similarity(query, c)) >= score_cutoff]
     return sorted(scored, key=itemgetter(1), reverse=True)[:limit]
 
@@ -489,14 +544,26 @@ def cdist(
     from the ``text`` extra's own dependencies); when it's missing this
     degrades to the same fallback the extra-absent case takes.
     """
-    if _accelerated(scorer):
+    similarity = ratio if scorer is None else scorer
+    if _accelerated(scorer) and (
+        scorer is not _rf.distance.JaroWinkler.similarity
+        or (
+            type(score_cutoff) in (int, float, bool)
+            and _plain_strings(queries)
+            and _plain_strings(choices)
+        )
+    ):
         try:
             import numpy as np  # cdist is numpy-backed; numpy isn't a `text`-extra dep
 
             matrix = _rf.process.cdist(
                 queries,
                 choices,
-                scorer=_rf.distance.Indel.normalized_similarity,
+                scorer=(
+                    _rf.distance.JaroWinkler.similarity
+                    if scorer is _rf.distance.JaroWinkler.similarity
+                    else _rf.distance.Indel.normalized_similarity
+                ),
                 workers=workers,
                 dtype=np.float64,  # float32 would disagree with `ratio` past 7 digits
             )
@@ -512,7 +579,6 @@ def cdist(
             matrix[rejected] = 0.0
             rows: list[list[float]] = matrix.tolist()
             return rows
-    similarity = ratio if scorer is None else scorer
     return [
         [s if (s := similarity(q, c)) >= score_cutoff else 0.0 for c in choices]
         for q in queries

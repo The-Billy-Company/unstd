@@ -243,6 +243,31 @@ def test_common_clone_guard_checks_native_routes_and_both_latency_clocks(
     )
 
 
+def test_normal_jaro_guard_compares_both_installed_revisions(workflow):
+    (step,) = [
+        step
+        for step in workflow["jobs"]["compare"]["steps"]
+        if "bench/profiles/text_jaro_normal.py" in step.get("run", "")
+    ]
+    tokens = shlex.split(step["run"])
+    assert step["if"] == "${{ !inputs.gzip_diagnostic }}"
+    for option, suffix in (
+        ("--baseline-source", "installed-before"),
+        ("--candidate-source", "installed-current"),
+        ("--baseline-native", "installed-before/unstd/text/_text_native*.so"),
+        ("--candidate-native", "installed-current/unstd/text/_text_native*.so"),
+    ):
+        assert tokens[tokens.index(option) + 1] == f".local/performance/{suffix}"
+    # Future unchanged revisions need only retain current performance; the
+    # change's one-time >2x proof is separate from this recurring comparison.
+    assert float(tokens[tokens.index("--minimum-speedup") + 1]) == 0.80
+    assert float(tokens[tokens.index("--max-slowdown") + 1]) == 1.30
+    assert int(tokens[tokens.index("--rounds") + 1]) >= 7
+    assert tokens[tokens.index("--output") + 1] == (
+        ".local/performance/evidence/text-jaro-normal.json"
+    )
+
+
 def test_comparison_retains_evidence_on_regression(workflow: dict[str, Any]) -> None:
     upload = next(
         step

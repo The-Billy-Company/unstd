@@ -5,6 +5,8 @@ from __future__ import annotations
 import builtins
 from collections import UserDict
 import difflib
+from functools import partial
+import math
 import subprocess
 import sys
 import textwrap
@@ -35,6 +37,7 @@ def scoring_backend(request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPa
         monkeypatch.setattr(fuzz, "_HAVE_RAPIDFUZZ", False)
         monkeypatch.setattr(fuzz, "ratio", fuzz._difflib_ratio)
         monkeypatch.setattr(fuzz, "indel_ratio", fuzz._indel_ratio)
+        monkeypatch.setattr(fuzz, "jaro_winkler", fuzz._jaro_winkler)
 
 
 def _indel_reference(a: str, b: str) -> float:
@@ -140,7 +143,7 @@ def test_explicit_algorithm_controls_rankings_ties_and_cutoffs(algorithm: str) -
 
 
 @pytest.mark.usefixtures("scoring_backend")
-@pytest.mark.parametrize("algorithm", ["indel_ratio", "difflib_ratio"])
+@pytest.mark.parametrize("algorithm", ["indel_ratio", "difflib_ratio", "jaro_winkler"])
 @given(
     a=st.text(alphabet="abé😀", max_size=18),
     b=st.text(alphabet="abé😀", max_size=18),
@@ -156,7 +159,7 @@ def test_explicit_scorer_keeps_exact_cutoff_for_every_helper(
 
 
 @pytest.mark.usefixtures("scoring_backend")
-@pytest.mark.parametrize("algorithm", ["indel_ratio", "difflib_ratio"])
+@pytest.mark.parametrize("algorithm", ["indel_ratio", "difflib_ratio", "jaro_winkler"])
 def test_explicit_scorer_has_consistent_empty_and_invalid_limit_behavior(
     algorithm: str,
 ) -> None:
@@ -271,7 +274,7 @@ def test_base_imports_keep_stable_apis_and_runtime_annotations_usable() -> None:
 
 
 @pytest.mark.usefixtures("scoring_backend")
-@pytest.mark.parametrize("algorithm", ["indel_ratio", "difflib_ratio"])
+@pytest.mark.parametrize("algorithm", ["indel_ratio", "difflib_ratio", "jaro_winkler"])
 @pytest.mark.parametrize("mapping_kind", ["dict", "userdict", "proxy", "subclass"])
 def test_explicit_scorers_rank_mapping_keys_in_iteration_order(
     algorithm: str, mapping_kind: str
@@ -304,7 +307,7 @@ def test_explicit_scorers_rank_mapping_keys_in_iteration_order(
 
 
 @pytest.mark.usefixtures("scoring_backend")
-@pytest.mark.parametrize("algorithm", ["indel_ratio", "difflib_ratio"])
+@pytest.mark.parametrize("algorithm", ["indel_ratio", "difflib_ratio", "jaro_winkler"])
 @pytest.mark.parametrize("cutoff", [float("nan"), float("inf"), float("-inf")])
 def test_explicit_scorers_apply_one_predicate_to_nonfinite_cutoffs(
     algorithm: str, cutoff: float
@@ -335,3 +338,261 @@ def test_omitted_scorer_retains_legacy_mapping_value_selection() -> None:
 def test_omitted_scorer_retains_legacy_nan_batch_cutoff() -> None:
     pytest.importorskip("numpy")
     assert fuzz.cdist(["a"], ["a"], score_cutoff=float("nan")) == [[1.0]]
+
+
+@pytest.mark.skipif(not _HAVE_RAPIDFUZZ, reason="RapidFuzz batch routing")
+@pytest.mark.parametrize("container", [list, tuple])
+def test_jaro_matching_enters_builtin_batch_kernels(
+    monkeypatch: pytest.MonkeyPatch, container
+) -> None:
+    from rapidfuzz import process
+
+    np = pytest.importorskip("numpy")
+    calls = []
+    for name in ("extractOne", "extract", "cdist"):
+        original = getattr(process, name)
+
+        def observed(*args, _name=name, _original=original, **kwargs):
+            calls.append((_name, kwargs))
+            return _original(*args, **kwargs)
+
+        monkeypatch.setattr(process, name, observed)
+    query = "Martha Smith"
+    choices = container(["Marhta Smith", "Maria Smith", "Marhta Smith", "Jane Doe"])
+    scorer = fuzz.jaro_winkler
+    scored = [(choice, scorer(query, choice)) for choice in choices]
+    ranked = sorted(scored, key=lambda hit: hit[1], reverse=True)
+    assert fuzz.best_match(query, choices, scorer=scorer) == ranked[0]
+    assert fuzz.extract(query, choices, scorer=scorer, limit=None) == ranked
+    assert fuzz.cdist(container([query]), choices, scorer=scorer, workers=2) == [
+        [score for _, score in scored]
+    ]
+    assert [name for name, _ in calls] == ["extractOne", "extract", "cdist"]
+    assert all(kwargs["scorer"] is scorer for _, kwargs in calls)
+    assert all("score_cutoff" not in kwargs for _, kwargs in calls)
+    assert calls[-1][1]["dtype"] is np.float64
+    assert calls[-1][1]["workers"] == 2
+
+
+@pytest.mark.skipif(not _HAVE_RAPIDFUZZ, reason="RapidFuzz batch routing")
+def test_jaro_custom_weight_partial_retains_python_scoring(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from rapidfuzz import process
+
+    def forbidden(*args, **kwargs):
+        pytest.fail("custom scorer wrappers must retain Python iteration")
+
+    for name in ("extractOne", "extract", "cdist"):
+        monkeypatch.setattr(process, name, forbidden)
+    scorer = partial(fuzz.jaro_winkler, prefix_weight=0.2)
+    choices = ["Marhta", "Martha", "Jane"]
+    scores = [scorer("Martha", choice) for choice in choices]
+    assert fuzz.best_match("Martha", choices, scorer=scorer) == ("Martha", 1.0)
+    assert fuzz.extract("Martha", choices, scorer=scorer, limit=None) == sorted(
+        zip(choices, scores, strict=True), key=lambda hit: hit[1], reverse=True
+    )
+    assert fuzz.cdist(["Martha"], choices, scorer=scorer) == [scores]
+
+
+@pytest.mark.skipif(not _HAVE_RAPIDFUZZ, reason="RapidFuzz batch routing")
+def test_jaro_perfect_match_still_exhausts_arbitrary_iterables(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from rapidfuzz import process
+
+    def forbidden(*args, **kwargs):
+        pytest.fail("Jaro arbitrary iterables must keep their producer hooks")
+
+    monkeypatch.setattr(process, "extractOne", forbidden)
+    visited = []
+
+    def choices():
+        for choice in ["Martha", None, "Jane"]:
+            visited.append(choice)
+            yield choice
+
+    assert fuzz.best_match("Martha", choices(), scorer=fuzz.jaro_winkler) == (
+        "Martha",
+        1.0,
+    )
+    assert visited == ["Martha", None, "Jane"]
+
+    def failed_choices():
+        yield "Martha"
+        msg = "producer failed after perfect match"
+        raise RuntimeError(msg)
+
+    with pytest.raises(RuntimeError, match="producer failed after perfect match"):
+        fuzz.best_match("Martha", failed_choices(), scorer=fuzz.jaro_winkler)
+
+
+@pytest.mark.skipif(not _HAVE_RAPIDFUZZ, reason="RapidFuzz batch routing")
+@pytest.mark.parametrize("shape", ["query", "choice", "list", "tuple", "none", "nan"])
+def test_jaro_unfamiliar_values_keep_scalar_behavior(
+    monkeypatch: pytest.MonkeyPatch, shape: str
+) -> None:
+    from rapidfuzz import process
+
+    class Text(str):
+        pass
+
+    class Choices(list):
+        pass
+
+    class TupleChoices(tuple):
+        pass
+
+    def forbidden(*args, **kwargs):
+        pytest.fail("unfamiliar input shapes must retain scalar scoring")
+
+    for name in ("extractOne", "extract", "cdist"):
+        monkeypatch.setattr(process, name, forbidden)
+    query = Text("Martha") if shape == "query" else "Martha"
+    choices = ["Martha", Text("Marhta") if shape == "choice" else "Marhta"]
+    if shape == "list":
+        choices = Choices(choices)
+    elif shape == "tuple":
+        choices = TupleChoices(choices)
+    elif shape == "none":
+        choices.append(None)
+    elif shape == "nan":
+        choices.append(math.nan)
+    scorer = fuzz.jaro_winkler
+    scored = [(choice, scorer(query, choice)) for choice in choices]
+    assert fuzz.best_match(query, choices, scorer=scorer) == ("Martha", 1.0)
+    assert fuzz.extract(query, choices, scorer=scorer, limit=None) == sorted(
+        scored, key=lambda hit: hit[1], reverse=True
+    )
+    assert fuzz.cdist([query], choices, scorer=scorer) == [
+        [score for _, score in scored]
+    ]
+
+
+@pytest.mark.skipif(not _HAVE_RAPIDFUZZ, reason="RapidFuzz batch routing")
+def test_jaro_matrix_without_numpy_uses_scalar_fallback(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    original_import = builtins.__import__
+
+    def without_numpy(name: str, *args: object, **kwargs: object) -> object:
+        if name == "numpy":
+            msg = "numpy blocked for Jaro batch test"
+            raise ImportError(msg)
+        return original_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", without_numpy)
+    choices = ["Martha", "Marhta", "Jane"]
+    assert fuzz.cdist(["Martha"], choices, scorer=fuzz.jaro_winkler) == [
+        [fuzz.jaro_winkler("Martha", choice) for choice in choices]
+    ]
+
+
+@pytest.mark.usefixtures("scoring_backend")
+@pytest.mark.parametrize("limit", [None, 0, 1, 2, 3, 4])
+def test_jaro_matching_preserves_ties_limits_and_adjacent_cutoffs(limit: int) -> None:
+    query, choices = "Martha", ["Marhta", "Jane", "Marhta"]
+    scorer = fuzz.jaro_winkler
+    score = scorer(query, choices[0])
+    for cutoff in (score, math.nextafter(score, math.inf)):
+        ranked = sorted(
+            ((c, s) for c in choices if (s := scorer(query, c)) >= cutoff),
+            key=lambda hit: hit[1],
+            reverse=True,
+        )
+        assert fuzz.best_match(query, choices, scorer=scorer, score_cutoff=cutoff) == (
+            ranked[0] if ranked else None
+        )
+        assert (
+            fuzz.extract(
+                query, choices, scorer=scorer, score_cutoff=cutoff, limit=limit
+            )
+            == ranked[:limit]
+        )
+        matrix = [[s if (s := scorer(query, c)) >= cutoff else 0.0 for c in choices]]
+        assert (
+            fuzz.cdist([query], choices, scorer=scorer, score_cutoff=cutoff) == matrix
+        )
+
+
+@pytest.mark.skipif(not _HAVE_RAPIDFUZZ, reason="RapidFuzz batch routing")
+@pytest.mark.parametrize("cutoff_kind", ["subclass", "foreign"])
+@pytest.mark.parametrize("operation", ["best_match", "extract", "cdist"])
+def test_jaro_stateful_cutoff_retains_scalar_comparison_order(
+    monkeypatch: pytest.MonkeyPatch, cutoff_kind: str, operation: str
+) -> None:
+    from rapidfuzz import process
+
+    class Stateful:
+        def __init__(self):
+            self.scores = []
+
+        def __le__(self, score):
+            self.scores.append(score)
+            return len(self.scores) > 1
+
+    class FloatCutoff(float, Stateful):
+        def __new__(cls):
+            return float.__new__(cls, 0.0)
+
+        def __le__(self, score):
+            return Stateful.__le__(self, score)
+
+    cutoff_type = FloatCutoff if cutoff_kind == "subclass" else Stateful
+    cutoff, expected_cutoff = cutoff_type(), cutoff_type()
+    queries, choices = ["Martha", "Jane"], ["Martha", "Marhta", "Jane"]
+    scorer = fuzz.jaro_winkler
+
+    def forbidden(*args, **kwargs):
+        pytest.fail("custom cutoff comparisons must retain Python iteration")
+
+    for name in ("extractOne", "extract", "cdist"):
+        monkeypatch.setattr(process, name, forbidden)
+    if operation == "cdist":
+        expected = [
+            [s if (s := scorer(q, c)) >= expected_cutoff else 0.0 for c in choices]
+            for q in queries
+        ]
+        actual = fuzz.cdist(queries, choices, scorer=scorer, score_cutoff=cutoff)
+    else:
+        hits = [
+            (c, s) for c in choices if (s := scorer(queries[0], c)) >= expected_cutoff
+        ]
+        expected = (
+            max(hits, key=lambda hit: hit[1], default=None)
+            if operation == "best_match"
+            else sorted(hits, key=lambda hit: hit[1], reverse=True)
+        )
+        actual = getattr(fuzz, operation)(
+            queries[0], choices, scorer=scorer, score_cutoff=cutoff
+        )
+    assert actual == expected
+    assert cutoff.scores == expected_cutoff.scores
+    assert len(cutoff.scores) == len(choices) * (2 if operation == "cdist" else 1)
+
+
+@pytest.mark.skipif(not _HAVE_RAPIDFUZZ, reason="RapidFuzz batch routing")
+def test_jaro_custom_limit_is_indexed_after_scoring_choices(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from rapidfuzz import process
+
+    choices = ["Marhta", "Jane"]
+    expected = [("Marhta", fuzz.jaro_winkler("Martha", "Marhta"))]
+
+    class Limit:
+        def __lt__(self, other):
+            return False
+
+        def __index__(self):
+            choices.clear()
+            return 1
+
+    def forbidden(*args, **kwargs):
+        pytest.fail("custom slice indices must run after scalar scoring")
+
+    monkeypatch.setattr(process, "extract", forbidden)
+    assert fuzz.extract("Martha", choices, scorer=fuzz.jaro_winkler, limit=Limit()) == (
+        expected
+    )
+    assert choices == []

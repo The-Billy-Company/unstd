@@ -47,6 +47,13 @@ creating a false regression. Baseline imports select that revision's own
 native entrypoints. Raw timings and route evidence remain in `clone-common.json`
 even when the guard fails.
 
+Ordinary Jaro–Winkler contact and path matching also runs through installed
+before/current products on every Linux/macOS and Python 3.13/3.14 performance
+worker. The focused comparison requires observed native batch dispatch,
+preserves exact scalar-derived results, and retains paired timings in
+`text-jaro-normal.json`. Contact matching must retain at least 0.80× baseline
+speed; every case must remain within 1.30× baseline wall time.
+
 Normal comparisons also require the installed current JSON kernels to pass
 `tests/tooling/runtime/json_acceleration.py`, then compare JSON record workloads
 between the two installed revisions with `--require-native`. A wall-time

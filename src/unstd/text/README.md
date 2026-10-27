@@ -93,6 +93,32 @@ fuzz.cdist(["abcbc"], choices, scorer=fuzz.indel_ratio, score_cutoff=0.8)
 Their portable implementations are tested against RapidFuzz; they do not use
 difflib's metric.
 
+For ordinary name matching with `unstd[text]`, the batch helpers also recognize
+`scorer=fuzz.jaro_winkler` and use RapidFuzz's native batch kernels on Linux and
+macOS. Exact strings in ordinary lists or tuples take this route automatically;
+custom scorers, string subclasses and general iterables retain their existing
+iteration behavior. Matrix calls additionally require NumPy and honor `workers`.
+Scores, inclusive cutoffs, duplicates and tie ordering are preserved.
+
+```python
+contacts = ["John Smith", "Joan Smith", "Jonathan Smyth"]
+fuzz.extract("Jon Smth", contacts, scorer=fuzz.jaro_winkler, limit=2)
+fuzz.best_match("Jon Smth", contacts, scorer=fuzz.jaro_winkler)
+fuzz.cdist(["Jon Smth", "Joan Smit"], contacts, scorer=fuzz.jaro_winkler)
+```
+
+See the [Linux and macOS ordinary-workload qualification](../../../bench/reports/text/jaro-normal.md)
+for public API timings, backend dispatch checks and reproduction commands.
+
+For long exact strings, portable Jaro matching indexes character positions and
+consumes each occurrence once. This bounds matching to O(len(a) + len(b)) time
+and storage, avoiding repeated scans of already matched characters in repetitive
+text. Short strings retain the existing scan; string subclasses retain their
+observable comparison and indexing behavior. The greedy match order,
+transposition count, prefix bonus and scores stay the same. The
+[Jaro before/after report](../../../bench/reports/text/jaro.md) includes
+long repetitive inputs, ordinary names, Unicode and batch matching controls.
+
 ## Bundled native kernels
 
 CPython builds optionally include `_text_native`, which accelerates exact-string
