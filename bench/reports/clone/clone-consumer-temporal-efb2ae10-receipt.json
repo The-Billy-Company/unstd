@@ -1,0 +1,383 @@
+{
+  "recorded_utc": "2026-10-27T05:23:20.012880+00:00",
+  "measurement_started_utc": "2026-10-27T05:09:28Z",
+  "repository_revision_at_packaging": "934fe62a16ffb6a0e22774cd7650cf392513013c",
+  "status": "regression gate failed;100x target met on eight cases and missed on49",
+  "python": "3.14.9 (main, Oct 21 2026, 17:47:42) [Clang 23.1.3 ]",
+  "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "pydantic": "2.13.5",
+  "selection": {
+    "default_common": 30,
+    "consumer": 13,
+    "temporal": 14,
+    "total": 57
+  },
+  "rounds": 7,
+  "gc_enabled": true,
+  "includes_output_destruction": true,
+  "command": [
+    ".venv/bin/python",
+    "-m",
+    "bench.profiles.clone_common_cpu",
+    "--source-dir",
+    ".local/clone-iteration/final-documented",
+    "--compare-dir",
+    ".local/clone-iteration/before",
+    "--original-dir",
+    ".local/clone-iteration/published-4.0.2",
+    "--infer-native-bindings",
+    "--require-native",
+    "--gc-enabled",
+    "--consumer-cases",
+    "--temporal-cases",
+    "--max-slowdown",
+    "1.10",
+    "--target-speedup",
+    "100",
+    "--rounds",
+    "7",
+    "--output",
+    ".local/clone-iteration/clone-final57-gc.json"
+  ],
+  "exit_code": 1,
+  "performance_gate": {
+    "max_slowdown": 1.1,
+    "comparison": "median of matched current/before batch ratios",
+    "passed": false,
+    "regressions": [
+      {
+        "workload": "records-500",
+        "metric": "median_wall_ns",
+        "before_ns": 210783.28515625,
+        "current_ns": 398223.08984375,
+        "slowdown": 1.2638414445223984
+      },
+      {
+        "workload": "tuple-records-500",
+        "metric": "median_wall_ns",
+        "before_ns": 273261.1223958333,
+        "current_ns": 365522.04241071426,
+        "slowdown": 1.4004528577082118
+      },
+      {
+        "workload": "wide-lists-1000",
+        "metric": "median_wall_ns",
+        "before_ns": 263202.3816964286,
+        "current_ns": 373574.1189903846,
+        "slowdown": 1.2598946933365238
+      },
+      {
+        "workload": "repeated-aliases-500",
+        "metric": "median_wall_ns",
+        "before_ns": 2936.385552300347,
+        "current_ns": 3997.8612365722656,
+        "slowdown": 1.4328447736638596
+      },
+      {
+        "workload": "dataclasses-200",
+        "metric": "median_wall_ns",
+        "before_ns": 112547.037109375,
+        "current_ns": 231844.18359375,
+        "slowdown": 1.6610429653532317
+      },
+      {
+        "workload": "dataclass-records-500",
+        "metric": "median_wall_ns",
+        "before_ns": 255960.871875,
+        "current_ns": 305772.37890625,
+        "slowdown": 1.3151401976979415
+      },
+      {
+        "workload": "foreign-last",
+        "metric": "median_wall_ns",
+        "before_ns": 26991.120515046296,
+        "current_ns": 29743.265625,
+        "slowdown": 1.1848155340895843
+      },
+      {
+        "workload": "asdict-records-500",
+        "metric": "median_wall_ns",
+        "before_ns": 250750.21614583334,
+        "current_ns": 375342.64375,
+        "slowdown": 1.4328475545970893
+      },
+      {
+        "workload": "balanced-dict-list",
+        "metric": "median_wall_ns",
+        "before_ns": 53615.208125,
+        "current_ns": 63588.555338541664,
+        "slowdown": 1.471490254618907
+      },
+      {
+        "workload": "dictionary-of-records-500",
+        "metric": "median_wall_ns",
+        "before_ns": 511935.678125,
+        "current_ns": 491862.14453125,
+        "slowdown": 1.1517961333459488
+      },
+      {
+        "workload": "dataclass-small",
+        "metric": "median_cpu_ns",
+        "before_ns": 619.9776785714286,
+        "current_ns": 697.265625,
+        "slowdown": 1.1246624662466247
+      },
+      {
+        "workload": "dataclasses-datetime-200",
+        "metric": "median_cpu_ns",
+        "before_ns": 144031.25,
+        "current_ns": 196953.125,
+        "slowdown": 1.4078331696609092
+      },
+      {
+        "workload": "scalar-tuple-1000",
+        "metric": "median_wall_ns",
+        "before_ns": 12370.488525390625,
+        "current_ns": 16344.333251953125,
+        "slowdown": 1.7697094539894438
+      },
+      {
+        "workload": "consumer-asdict-field-alias",
+        "metric": "median_wall_ns",
+        "before_ns": 2754.9968784877233,
+        "current_ns": 3174.244471958705,
+        "slowdown": 1.2371017153634705
+      },
+      {
+        "workload": "consumer-builtin-cycle",
+        "metric": "median_wall_ns",
+        "before_ns": 4594.247161865234,
+        "current_ns": 4288.53644670759,
+        "slowdown": 1.1926975677495848
+      },
+      {
+        "workload": "consumer-copy-hook-alias",
+        "metric": "median_wall_ns",
+        "before_ns": 9704.930623372396,
+        "current_ns": 13229.121360085228,
+        "slowdown": 1.4361609284065067
+      },
+      {
+        "workload": "consumer-copy-hook-alias",
+        "metric": "median_cpu_ns",
+        "before_ns": 1041.0563151041667,
+        "current_ns": 1136.2970525568182,
+        "slowdown": 1.108105666473586
+      }
+    ]
+  },
+  "stdlib_target": {
+    "required_speedup": 100.0,
+    "comparison": "median of matched stdlib/current wall and CPU batch ratios",
+    "enforced": false,
+    "passed": false,
+    "misses": [
+      "small-dict",
+      "nested-200",
+      "records-500",
+      "tuple-records-500",
+      "wide-lists-1000",
+      "deep-80",
+      "large-records-20000",
+      "repeated-aliases-500",
+      "dataclasses-200",
+      "dataclass-records-500",
+      "mixed-keys-1000",
+      "foreign-last",
+      "asdict-records-500",
+      "nested-small-5",
+      "nested-wide-1000",
+      "balanced-dict-list",
+      "dictionary-of-records-500",
+      "dataclass-small",
+      "dataclasses-copy-hooks-40",
+      "dataclasses-frozen-200",
+      "dataclasses-slots-200",
+      "dataclasses-flat-500",
+      "dataclasses-datetime-200",
+      "dataclass-tree-200",
+      "asdict-tree-200",
+      "scalar-list-1000",
+      "scalar-tuple-1000",
+      "scalar-list-100000",
+      "repeated-aliases-10000",
+      "repeated-aliases-100000",
+      "consumer-question-tiny",
+      "consumer-question-nested-100",
+      "consumer-question-private-alias",
+      "consumer-attachment-empty",
+      "consumer-attachment-images-10",
+      "consumer-materials-scalar-40",
+      "consumer-materials-data-40",
+      "consumer-change-slots-tiny",
+      "consumer-change-slots-1000",
+      "consumer-dataclass-field-alias",
+      "consumer-asdict-field-alias",
+      "consumer-builtin-cycle",
+      "consumer-copy-hook-alias",
+      "temporal-datetime-utc-10000",
+      "temporal-time-naive-1000",
+      "temporal-time-naive-10000",
+      "temporal-mixed-scalars-1000",
+      "temporal-nested-date-1000",
+      "temporal-scalar-first-1000"
+    ]
+  },
+  "native_routes": {
+    "current": {
+      "builtin-graph": [
+        "_native_graph"
+      ],
+      "mixed-dataclass": [
+        "_native_walk_graph"
+      ],
+      "asdict-tree": [
+        "_native_clone"
+      ],
+      "pydantic-model": [
+        "_native_walk_graph"
+      ],
+      "closed-temporal-sequence": [
+        "_native_graph"
+      ]
+    },
+    "before": {
+      "builtin-graph": [
+        "_native_graph"
+      ],
+      "mixed-dataclass": [
+        "_native_walk_graph"
+      ],
+      "asdict-tree": [
+        "_native_clone"
+      ]
+    }
+  },
+  "source_hashes": {
+    "current": {
+      "python": "a5422f111da176a6c44b54e48340ec1e796d0e17bbe8e06af00d33f05f34c064",
+      "C": "efb2ae10c5414d195240d7857b557668d2cabba5698f13a3c1dd1f132d7378d3",
+      "binary": "4903b7756871ad8c7a528489cf6056ec43db8d9bce356d3c98256697e0613c1d"
+    },
+    "before": {
+      "python": "17a79a76fa4aab536a3124d67cf44bb93407f08cbb1c777f97ea3a5411d96460",
+      "C": "5b9df74e5e5f98777799b2b55fdf820e81e6e3fc0f2fc88b44493199469d9b84",
+      "binary": "3a219863ebbf627098a52825b69666e2e6ee45e682bb8c1606891470a60295b6"
+    },
+    "original": {
+      "python": "17a79a76fa4aab536a3124d67cf44bb93407f08cbb1c777f97ea3a5411d96460",
+      "C": "efb2ae10c5414d195240d7857b557668d2cabba5698f13a3c1dd1f132d7378d3",
+      "binary": "edbec08a31f9461e7cdc1b66c738f7f710de0da296d5b935f9739c21ed60310a"
+    }
+  },
+  "owned_only_C_sha256": "750d56edd3e66e50f0a641c42d98fc58bda639d6b4189b559ded25b050e4db4b",
+  "measurement_scope": "Working C retains the pre-existing unrelated callable safety delta in both source arms. Owned-only C excludes that delta and has separate correctness qualification; no owned-only numeric claim.",
+  "baseline_provenance": {
+    "before": "Pre-task Python+fresh local O3 C build, including the pre-existing callable safety edits held constant in current.",
+    "original": "Actual installed4.0.2 Python+binary copied intact and run under the same interpreter; matching C source and compiler settings unavailable."
+  },
+  "files": {
+    "clone-consumer-temporal-efb2ae10-py314-gc.json": {
+      "sha256": "25f477014a0719dcd811414c48bd5e7a916fbf62eeddc3a82fe9252f7f5ec838",
+      "bytes": 779636
+    },
+    "clone-consumer-temporal-efb2ae10-sources.tar.gz": {
+      "sha256": "5c195c51233d10258cbb88d145f5edb653288445e0b85e7eecda26acb164c0f8",
+      "bytes": 283346
+    },
+    "clone-consumer-temporal-efb2ae10-qualification.tar.gz": {
+      "sha256": "a78995d09321b4f47fddd0087f1f74586d19fe2569d3c2cfd194d4c424deaac8",
+      "bytes": 34833
+    }
+  },
+  "source_archive_members": {
+    "before/adapter.c": "5b9df74e5e5f98777799b2b55fdf820e81e6e3fc0f2fc88b44493199469d9b84",
+    "before/structural.py": "17a79a76fa4aab536a3124d67cf44bb93407f08cbb1c777f97ea3a5411d96460",
+    "current/adapter.c": "efb2ae10c5414d195240d7857b557668d2cabba5698f13a3c1dd1f132d7378d3",
+    "current/manifest.json": "1df23f6f057c79eb071e015d75ed5dce94ce6bda28d80389c47e5dab1e1211c8",
+    "current/structural.py": "a5422f111da176a6c44b54e48340ec1e796d0e17bbe8e06af00d33f05f34c064",
+    "harness/bench/__init__.py": "d3ce1c8fb2b19ac17342c879a03486448de07de9934b8c22ec3295826fb8d17a",
+    "harness/bench/core/__init__.py": "7d448fab00178bc6758de1b89205f4d4a0be0def7afc723ec6f4d26a1e8ec83a",
+    "harness/bench/core/cases.py": "379e6cb223147ab0793fb54ec4801b2b4e6859c5a65f40d428ab2b91379e9622",
+    "harness/bench/core/report.py": "3b5222c32930817f7333450dabd44088df1c403ed468029a74939b0b89afa4ab",
+    "harness/bench/core/timing.py": "d585627571b5daeca0a078b75484c84e769dce70a5b4448825fd811a8e3b61bc",
+    "harness/bench/diagnostics/__init__.py": "ad76f607bceaccbdb68bdc2cd1c46fb902634162e07698542203e2ca6be86964",
+    "harness/bench/diagnostics/clone_alloc_floor.c": "f774af2472fcfe463820dab518485efb2c467380120f8d8dbd683184615b8f22",
+    "harness/bench/diagnostics/clone_allocations.py": "04ab3409d325bfaf692e383fb4ee25f4cfd2d2b5f6ad6f51dec5ac80ed2f998b",
+    "harness/bench/profiles/__init__.py": "75f32d76ac6c0671fe17c653bcffbc558a9fa9c6006eaf5523424178452a0c7e",
+    "harness/bench/profiles/clone_common_cpu.py": "9eff21036064ceb7497d427d263b298837ae7ae733d0b941650ed3a454c1c61d",
+    "harness/bench/profiles/clone_cpu.py": "ad54ae80f6acd231936844edf10592185d9719cda5831398535bf8d5b98807cf",
+    "harness/bench/workloads/__init__.py": "f62e623ffb84a575736ca61764f795f113699392ea58c77f46220f979d53ca67",
+    "harness/bench/workloads/clone_consumers.py": "6deee0f55edfec14ed4d2894c90f54f44b3ba8d6d865416f871f8b490b26fc7e",
+    "harness/bench/workloads/clone_temporals.py": "e412f70e35960c4e17095630f6aa7de72153d0b47cdc1f760d70b671b4c737e1",
+    "harness/manifest.json": "11101f5ca205327102faff1b9c312f8a3835eaf8cf9ff46d49dd67affa1cb866",
+    "harness/tests/suites/assurance/gates/bench/test_clone_consumers.py": "7e1f074be094f9a4d7f4feb9ea88bfabb4ff5c484ab67d37a946a4bdff2e917b",
+    "harness/tests/suites/assurance/gates/bench/test_clone_temporals.py": "735fe7cef56b3b3afab8ecb24fa43932908b3eed11e2cb795e4b771e3d6d6989",
+    "hatch_build.py": "1e4f40663ee754d6c08c13a8c9f648caf0bd8fc9f9d7fb35cdec43e8b39271bc",
+    "owned-only/adapter.c": "750d56edd3e66e50f0a641c42d98fc58bda639d6b4189b559ded25b050e4db4b",
+    "published-4.0.2/structural.py": "17a79a76fa4aab536a3124d67cf44bb93407f08cbb1c777f97ea3a5411d96460",
+    "pyproject.toml": "b5ca2e69190ad3b78fe995403f1bc525196a7833a8adffc4554caf406a38b71f",
+    "qualification/module-doc-only.json": "1b45c06205f2da2f12ad2bc97791b935abe4e4ea71075222734efcfe72eeef22",
+    "uv.lock": "019af9daff1cbdf66fbf78a57e7a5b22a8dea5668c29d6dd59d2265fa64f15f1"
+  },
+  "qualification_archive_members": {
+    "clone_memory_owned.py": "e533f46bc2484e0961c9622c15411f1e2efa959b340c9727283dbf6754699511",
+    "final-cycle-memory/cycle-target.log": "54d06ba77f0c39ebf33941b18826dd5e1320ce0449e38d9561e511b6cfa3de3f",
+    "final-cycle-memory/large-run-interruption.json": "82793271048599081f6fb3aa627b6db1dc0678b15885a73f5bc5cf41cde85089",
+    "final-cycle-memory/manifest.json": "aadfdcc042e5b153b2b2caa3d1beeaaebe4fe53fedabe6eddf4273a07c08d9ae",
+    "final-cycle-memory/pytest.log": "5551b55e095d5798fea4f89a91795d0a109dc76fc4863593367527abb63ddab6",
+    "final-cycle-memory/stall-sample.txt": "98f320d288576d71e96c064db4c08ed75144524b463cd876056eb10bfbc4b1b0",
+    "final-memory/manifest.json": "403be6df058db5de8ff6c747ed09484dacdd55697b188e54a87836b98696b143",
+    "final-memory/pytest.log": "2f1ce5e4fc3a50b25eefc3788207cbc0247a03a2e67cccc3a7c21fa89870ddd6",
+    "final-unit.log": "ebdce144fe8a7b7883017a577ed1729873cda799e7002c9bb9673c9a87599e27",
+    "module-doc-only.json": "1b45c06205f2da2f12ad2bc97791b935abe4e4ea71075222734efcfe72eeef22",
+    "owned-only-qualification-final.json": "98b914e470bb1f5529a3d0170949e9007251cd842f828a9314bc31d000500964",
+    "portable-qualification-final.json": "1e49773e20b7748df5859908ae9127eaca6bf9874799e8f0ec7e2af188b712ae",
+    "qualification-owned314-build.stdout": "013cc46866b12eeb4a9e63c204e406fa12f1a4c2ff234dc1481d40051fc79602",
+    "qualification-owned314-unit.stdout": "dda06e11faf8f861b76a0bd9b0e5ff03cbf4058d6b23b0454fe66c5a25e2f778",
+    "qualification-owned314/manifest.json": "013cc46866b12eeb4a9e63c204e406fa12f1a4c2ff234dc1481d40051fc79602",
+    "qualification-summary.json": "f165c3d26a913660655dd5c23df19fc0aa24c405353600112b981c8c40024576",
+    "slot-fusion/decision.json": "354d15766e93014b66ed73879bfc035ba72fa754550c3bdb01dbebdf67a0ec1b",
+    "temporal-signal-proof.json": "264e71f9016589f4916bac2e0be9e273bb4467aede6fe7fb42be1ee905fdd9c4",
+    "final-benchmark-load.json": "96d4a321a73ed6d3641d323a77317431e5e52dde9d57adb500d5942d1a6c142d"
+  },
+  "qualification": {
+    "source_C_sha256": "efb2ae10c5414d195240d7857b557668d2cabba5698f13a3c1dd1f132d7378d3",
+    "source_Python_sha256": "a5422f111da176a6c44b54e48340ec1e796d0e17bbe8e06af00d33f05f34c064",
+    "normal_unit": {
+      "python314": "615 passed,42 skipped",
+      "python312": "617 passed,40 skipped",
+      "python313": "617 passed,40 skipped"
+    },
+    "owned_only": "169 passed,32 skipped",
+    "sanitizers": {
+      "model_temporal_set_memo_reentrant": "136 passed,1 skipped on pre-cycle-guard source; functions unchanged by final cycle patch",
+      "final_cycle_targets": "4 passed on final C",
+      "broader_final": "Interrupted existing large memo export fault-injection stress after 6m; partial results and native sample retained, no completion claim"
+    }
+  },
+  "checks": {
+    "focused_feature_and_route_tests": "9 passed",
+    "mypy_strict": "passed three revised Python files",
+    "ruff": "passed"
+  },
+  "limits": [
+    "One local arm64 host; substantial scheduling delay remains in all saved wall samples.",
+    "All49 target misses and all17 failing regression metrics are retained. No sample was removed.",
+    "Temporal identity sharing is the existing unstd contract. Stdlib may allocate equal immutable values.",
+    "Broad final forced-GC sanitizer stress was interrupted; only the selected completed runs are qualified.",
+    "Native binaries are fingerprinted in reports and retained locally; source archive excludes binaries."
+  ],
+  "candidate": "first frozen candidate; regression qualification failed",
+  "host_load_during_run": {
+    "utc": "2026-10-27T05:17:35.351793+00:00",
+    "logical_cpus": 18,
+    "load_average_1_5_15_min": [
+      136.61572265625,
+      106.9912109375,
+      85.15625
+    ],
+    "context": "Final57 benchmark in progress; root qualification CPU jobs finished."
+  }
+}
