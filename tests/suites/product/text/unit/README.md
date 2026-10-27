@@ -1,6 +1,6 @@
 # Text scoring and native kernel contracts
 
-`test_text.py` checks score scales, fallback difflib behavior, RapidFuzz differences, ranking, cutoffs, and Jaro-Winkler weight boundaries/NaN behavior. `test_distance.py` compares edit distance with an independent full cost matrix. `test_native.py` checks Unicode kernels, supported inputs, bounded work/refusal, and agreement with portable results.
+`test_text.py` checks score scales, fallback difflib behavior, RapidFuzz differences, ranking, cutoffs, and Jaro-Winkler weight boundaries/NaN behavior. `test_distance.py` compares edit distance with an independent full cost matrix, including shared ends, overlapping repeated ends, mixed Unicode and empty residuals. `test_native.py` checks Unicode kernels, supported inputs, bounded work/refusal, shared ends beyond the original full-string budgets, and agreement with portable results.
 
 `test_stable_scorers.py` compares named algorithms with an independent edit matrix and RapidFuzz, then checks explicit-scorer ranking, ties, cutoffs, Unicode, empty inputs, and NumPy-free batching in both backend configurations.
 

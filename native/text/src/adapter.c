@@ -12,6 +12,7 @@
 #define MAX_PATTERN 65536
 #define MAX_TEXT 262144
 #define MAX_WORD_STEPS 4194304
+#define MAX_AFFIX_STEPS MAX_WORD_STEPS
 #define MAX_JARO_LENGTH 65536
 #define MAX_JARO_PAIRS 4194304
 #define MAX_ALPHABET 256
@@ -61,6 +62,41 @@ distance(PyObject *module, PyObject *const *args, Py_ssize_t nargs)
     }
     Text pattern = text_view(args[0]);
     Text text = text_view(args[1]);
+    /* Equal ends can be removed without changing Levenshtein distance. Work
+     * on immutable views rather than copying substrings, and measure the
+     * expensive bit-vector/alphabet budgets on only the remaining problem.
+     * Bound the scan separately so huge common ends cannot hold the GIL for
+     * unbounded native work before the ordinary kernel limits are checked. */
+    Py_ssize_t shared = pattern.length < text.length
+        ? pattern.length : text.length;
+    Py_ssize_t prefix = 0;
+    Py_ssize_t suffix = 0;
+    size_t affix_steps = 0;
+    while (prefix < shared) {
+        if (affix_steps == MAX_AFFIX_STEPS) {
+            Py_RETURN_NOTIMPLEMENTED;
+        }
+        affix_steps++;
+        if (character(pattern, prefix) != character(text, prefix)) {
+            break;
+        }
+        prefix++;
+    }
+    while (suffix < shared - prefix) {
+        if (affix_steps == MAX_AFFIX_STEPS) {
+            Py_RETURN_NOTIMPLEMENTED;
+        }
+        affix_steps++;
+        if (character(pattern, pattern.length - suffix - 1) !=
+            character(text, text.length - suffix - 1)) {
+            break;
+        }
+        suffix++;
+    }
+    pattern.data = (const char *)pattern.data + (size_t)prefix * pattern.kind;
+    text.data = (const char *)text.data + (size_t)prefix * text.kind;
+    pattern.length -= prefix + suffix;
+    text.length -= prefix + suffix;
     if (pattern.length > text.length) {
         Text temporary = pattern;
         pattern = text;

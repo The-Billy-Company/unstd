@@ -42,6 +42,7 @@ These drivers compare saved and current implementations, check outputs and impor
 - [`billy_gzip_requests.py`](billy_gzip_requests.py) — 11 frozen request and dataset encode cases; direct gzip/JSON/base64 operations and fresh/warm 64 KiB compressor checkpoints, with strict checkpoint equality and retained contract failures
 - [`gzip_concurrency.py`](gzip_concurrency.py) — independent consumer streams on 1, 2 and 4 warmed executor workers, with isolated installations and aggregate wall throughput
 - [`text_native_compare.py`](text_native_compare.py)
+- [`text_affixes.py`](text_affixes.py) — saved/current edit distance on near-identical strings and unrelated controls, through isolated native and source-only wrappers; retains dispatch, exact outputs, paired timings and allocation peaks
 
 Run `pack_backend.py`, `pack_consumers.py`, and `ragged.py` directly so product
 source selection happens before imports. The ragged driver includes complete

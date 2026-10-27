@@ -222,6 +222,77 @@ def test_distance_resource_bounds_defer(a: str, b: str) -> None:
 
 
 @pytest.mark.parametrize(
+    ("prefix", "suffix"),
+    [
+        ("a" * 65536, ""),
+        ("", "😀" * 262145),
+        ("a" * 8192, "\ud800" * 8192),
+        ("".join(chr(0x1000 + i) for i in range(300)), "\x00é" * 11),
+    ],
+    ids=["pattern-length", "text-length", "word-work", "alphabet-size"],
+)
+def test_shared_ends_admit_small_residuals_beyond_original_native_limits(
+    prefix: str, suffix: str
+) -> None:
+    # These complete strings exceeded one of the old admission budgets. Their
+    # edit distances have a one-substitution proof or the length lower bound,
+    # so the test does not use another implementation's affix reduction.
+    a, b = prefix + "x" + suffix, prefix + "y" + suffix
+    assert native.distance(a, b) == 1
+    assert native.distance(b, a) == 1
+    a, b = prefix + suffix, prefix + "xyz" + suffix
+    assert native.distance(a, b) == 3
+    assert native.distance(b, a) == 3
+
+
+@pytest.mark.parametrize("left_core", ["é", "\ud800", "😀"])
+def test_shared_ascii_ends_preserve_different_native_storage_widths(
+    left_core: str,
+) -> None:
+    a, b = (
+        "prefix" * 23 + left_core + "suffix" * 19,
+        "prefix" * 23 + "x" + "suffix" * 19,
+    )
+    assert native.distance(a, b) == _reference_distance(a, b) == 1
+    assert native.distance(b, a) == 1
+
+
+@pytest.mark.parametrize(
+    ("a", "b"),
+    [
+        ("a" * 65537, "b" * 65538),
+        ("a", "b" * 262145),
+        ("a" * 8192, "b" * 32769),
+        ("".join(chr(i) for i in range(257)), "a" * 258),
+    ],
+    ids=["pattern-length", "text-length", "word-work", "alphabet-size"],
+)
+def test_shared_ends_keep_native_residual_resource_limits(a: str, b: str) -> None:
+    prefix, suffix = "shared\x00😀", "\ud800suffix"
+    assert native.distance(prefix + a + suffix, prefix + b + suffix) is NotImplemented
+
+
+@pytest.mark.parametrize("end", ["prefix", "suffix"])
+def test_native_shared_end_scan_has_a_work_limit(end: str) -> None:
+    shared = "a" * (4194304 + 1)
+    a, b = (
+        (shared + "x", shared + "y")
+        if end == "prefix"
+        else ("x" + shared, "y" + shared)
+    )
+    assert native.distance(a, b) is NotImplemented
+
+
+def test_native_shared_end_scan_admits_its_exact_comparison_budget() -> None:
+    equal = "a" * 4194304
+    assert native.distance(equal, equal) == 0
+    # Each end also tests one unequal pair: two half-ends plus those two
+    # mismatches consume exactly the combined prefix/suffix comparison budget.
+    shared = "a" * ((4194304 - 2) // 2)
+    assert native.distance(shared + "x" + shared, shared + "y" + shared) == 1
+
+
+@pytest.mark.parametrize(
     ("a", "b"),
     [("a" * 65537, "b"), ("a" * 2048, "b" * 2049)],
     ids=["text-length", "pair-work"],

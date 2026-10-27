@@ -217,6 +217,8 @@ def test_base_imports_keep_stable_apis_and_runtime_annotations_usable() -> None:
             def find_spec(self, fullname, path=None, target=None):
                 if fullname.partition(".")[0] in {"rapidfuzz", "numpy"}:
                     raise ModuleNotFoundError("optional backend deliberately unavailable")
+                if fullname == "unstd.text._text_native":
+                    raise ModuleNotFoundError("bundled kernel deliberately unavailable")
                 return None
 
         sys.meta_path.insert(0, BlockBackends())
@@ -224,7 +226,11 @@ def test_base_imports_keep_stable_apis_and_runtime_annotations_usable() -> None:
         from unstd.pack import binpack
 
         assert fuzz._HAVE_RAPIDFUZZ is False
+        assert fuzz._native_distance is None
         assert binpack._HAVE_NUMPY is False
+        prefix, suffix = "shared-prefix" * 1000, "shared-suffix" * 1000
+        assert fuzz.distance(prefix + "kitten" + suffix, prefix + "sitting" + suffix) == 3
+        assert fuzz.distance(prefix + suffix, prefix + "abc" + suffix) == 3
         assert fuzz.ratio("abcbc", "bcabc") == 0.6
         assert fuzz.indel_ratio("abcbc", "bcabc") == 0.8
         assert fuzz.difflib_ratio("abcbc", "bcabc") == 0.6
@@ -251,6 +257,7 @@ def test_base_imports_keep_stable_apis_and_runtime_annotations_usable() -> None:
         assert get_type_hints(binpack.unpack_array_portable)["dtype"] is str
         assert get_type_hints(binpack.unpack_array)["return"] == list[float]
         assert not any(name.partition(".")[0] in {"numpy", "rapidfuzz"} for name in sys.modules)
+        assert "unstd.text._text_native" not in sys.modules
         """
     )
     result = subprocess.run(  # noqa: S603 — fixed script and current interpreter

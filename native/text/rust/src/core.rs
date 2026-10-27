@@ -6,6 +6,7 @@ use std::mem::size_of;
 const MAX_PATTERN: usize = 65_536;
 const MAX_TEXT: usize = 262_144;
 const MAX_WORD_STEPS: usize = 4_194_304;
+const MAX_AFFIX_STEPS: usize = MAX_WORD_STEPS;
 const MAX_JARO_LENGTH: usize = 65_536;
 const MAX_JARO_PAIRS: usize = 4_194_304;
 const MAX_ALPHABET: usize = 256;
@@ -89,6 +90,44 @@ fn zeroed<T: Default + Clone>(count: usize) -> Result<Vec<T>, AllocationFailure>
 }
 
 fn distance_for<A: CodePoint, B: CodePoint>(a: &[A], b: &[B]) -> Outcome<usize> {
+    if a.is_empty() || b.is_empty() {
+        return Ok(Some(a.len().max(b.len())));
+    }
+
+    // Equal affixes contribute no uniform Levenshtein edits. Compare code
+    // points across storage widths without copying, and cap the scan as well
+    // as the residual bit-vector work while the caller holds Python's GIL.
+    let shortest = a.len().min(b.len());
+    let mut prefix = 0;
+    let mut comparisons = 0;
+    while prefix < shortest {
+        if comparisons == MAX_AFFIX_STEPS {
+            return Ok(None);
+        }
+        comparisons += 1;
+        if a[prefix].code_point() != b[prefix].code_point() {
+            break;
+        }
+        prefix += 1;
+    }
+    if prefix == shortest {
+        return Ok(Some(a.len().abs_diff(b.len())));
+    }
+    let mut a_end = a.len();
+    let mut b_end = b.len();
+    while a_end > prefix && b_end > prefix {
+        if comparisons == MAX_AFFIX_STEPS {
+            return Ok(None);
+        }
+        comparisons += 1;
+        if a[a_end - 1].code_point() != b[b_end - 1].code_point() {
+            break;
+        }
+        a_end -= 1;
+        b_end -= 1;
+    }
+    let a = &a[prefix..a_end];
+    let b = &b[prefix..b_end];
     if a.len() > b.len() {
         distance_ordered(b, a)
     } else {
@@ -428,6 +467,56 @@ mod tests {
     }
 
     #[test]
+    fn affixes_reduce_work_and_alphabet_before_residual_admission() {
+        let mut a = vec![0_u32; MAX_TEXT + 1];
+        a.extend(0x1000..0x1200);
+        a.push(97);
+        a.extend(vec![0xd800; MAX_PATTERN + 1]);
+        let mut b = a.clone();
+        b[MAX_TEXT + 1 + 512] = 0x1f600;
+        assert_eq!(distance(Text::U32(&a), Text::U32(&b)).unwrap(), Some(1));
+        assert_eq!(distance(Text::U32(&b), Text::U32(&a)).unwrap(), Some(1));
+
+        // Prefix/suffix overlap consumes the shorter input exactly once.
+        assert_eq!(
+            distance(Text::U8(b"aaa"), Text::U8(b"aaaaa")).unwrap(),
+            Some(2)
+        );
+        assert_eq!(
+            distance(Text::U8(b"baaa"), Text::U8(b"aaa")).unwrap(),
+            Some(1)
+        );
+        assert_eq!(
+            distance(Text::U8(b"aaa"), Text::U8(b"baaa")).unwrap(),
+            Some(1)
+        );
+    }
+
+    #[test]
+    fn affix_scan_cap_counts_mismatches_and_both_ends() {
+        let mut a = vec![97_u8; MAX_AFFIX_STEPS];
+        assert_eq!(distance(Text::U8(&a), Text::U8(&a)).unwrap(), Some(0));
+        a.push(97);
+        assert!(distance(Text::U8(&a), Text::U8(&a)).unwrap().is_none());
+
+        // One differing first pair and MAX - 2 equal suffix pairs leave the
+        // final mismatch exactly at the shared comparison limit.
+        a.truncate(MAX_AFFIX_STEPS - 1);
+        let mut b = a.clone();
+        b[0] = 98;
+        assert_eq!(distance(Text::U8(&a), Text::U8(&b)).unwrap(), Some(1));
+        a.push(97);
+        b.push(97);
+        assert!(distance(Text::U8(&a), Text::U8(&b)).unwrap().is_none());
+
+        // Original empty inputs still avoid affix work and residual budgets.
+        assert_eq!(
+            distance(Text::U8(&[]), Text::U8(&a)).unwrap(),
+            Some(a.len())
+        );
+    }
+
+    #[test]
     fn admission_limits_match_existing_native_contract() {
         assert_eq!(
             distance(Text::U8(&[]), Text::U8(&vec![0; MAX_TEXT + 1])).unwrap(),
@@ -453,10 +542,18 @@ mod tests {
         );
         assert!(distance(
             Text::U32(&(0..257).collect::<Vec<_>>()),
-            Text::U8(&vec![0; 258])
+            Text::U16(&vec![0xffff; 258])
         )
         .unwrap()
         .is_none());
+        assert_eq!(
+            distance(
+                Text::U32(&(0..257).collect::<Vec<_>>()),
+                Text::U8(&vec![0; 258])
+            )
+            .unwrap(),
+            Some(257)
+        );
         assert_eq!(
             jaro(Text::U8(&vec![0; 2048]), Text::U8(&vec![0; 2048])).unwrap(),
             Some(1.0)

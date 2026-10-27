@@ -11,7 +11,7 @@ points; no Python callbacks run inside the kernels.
 
 | Kernel | Work limits |
 | --- | --- |
-| Levenshtein, both inputs nonempty | Shorter length ≤ 65,536; longer ≤ 262,144; longer × ceil(shorter / 64) ≤ 4,194,304; shorter input has ≤ 256 distinct code points. An empty input returns the other length directly. |
+| Levenshtein | Equal prefixes/suffixes are removed using at most 4,194,304 code-point pair comparisons, counting mismatches across both ends. The remaining shorter length ≤ 65,536; longer ≤ 262,144; longer × ceil(shorter / 64) ≤ 4,194,304; shorter remainder has ≤ 256 distinct code points. An empty remainder returns the other remainder's length directly. |
 | Jaro | Each length ≤ 65,536; length product ≤ 4,194,304. |
 
 Non-exact strings or exceeded work limits return `NotImplemented` to
@@ -20,3 +20,10 @@ Non-exact strings or exceeded work limits return `NotImplemented` to
 storage. Jaro preserves Python's separate double operations: the
 [build hook](../../../hatch_build.py) disables fast-math and contraction.
 The [Rust alternative](../rust/README.md) must retain the same contracts.
+
+Shared-end removal borrows string storage without allocating substrings. Long
+strings with small differences can therefore stay in the native kernel even
+when their original lengths or alphabets exceed its residual work limits. The
+portable fallback also removes equal ends before allocating bit masks or DP
+rows. [Paired measurements](../../../bench/reports/text/affixes.md) compare both
+paths with their original implementations.

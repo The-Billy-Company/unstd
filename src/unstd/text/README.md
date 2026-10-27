@@ -101,6 +101,15 @@ or work beyond its internal bounds defer to Python; string subclasses and
 non-string sequences retain their Python behavior. Builds without the extension
 also work. Installing RapidFuzz selects its public distance and name scorers.
 
+Edit distance removes equal prefixes and suffixes before comparing the
+remaining middle. This preserves the exact edit count and makes long,
+near-identical strings inexpensive on both the bundled and pure-Python paths.
+Native work limits apply to the remainder, with a separate bounded scan of
+the shared ends; native views allocate no substrings. See the
+[before/after evidence](../../../bench/reports/text/affixes.md) for workload
+shapes, controls, timing samples, and reproduction commands. These improvements
+apply when RapidFuzz is absent; its installed public binding stays unchanged.
+
 The C implementation lives in [`native/text/src/adapter.c`](../../../native/text/src/adapter.c), with signatures
 in [`_text_native.pyi`](_text_native.pyi). An opt-in
 [Rust experiment](../../../native/text/README.md) implements the same kernel

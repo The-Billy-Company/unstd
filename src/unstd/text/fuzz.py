@@ -284,11 +284,26 @@ def _sequence_distance(a: Sequence[object], b: Sequence[object]) -> int:
 def _string_distance(a: str, b: str) -> int:
     """Myers' bit-vector recurrence, evaluated by Python's arbitrary-width ints.
 
+    Remove equal, nonoverlapping ends before allocating masks or DP rows: the
+    edit distance depends only on the remaining middle of the exact strings.
     One bit records each DP row's vertical difference. Integer arithmetic updates
     a whole column at once instead of allocating and visiting Python cells.
     The shorter string bounds the bit width; at most 256 character masks keep
     their total storage linear with a small constant even for diverse Unicode.
     """
+    a_end, b_end, start = len(a), len(b), 0
+    shared = min(a_end, b_end)
+    while start < shared and a[start] == b[start]:
+        start += 1
+    while start < a_end and start < b_end and a[a_end - 1] == b[b_end - 1]:
+        a_end -= 1
+        b_end -= 1
+    if start in (a_end, b_end):
+        return max(a_end - start, b_end - start)
+    if start or a_end != len(a):
+        a = a[start:a_end]
+    if start or b_end != len(b):
+        b = b[start:b_end]
     if len(a) > len(b):
         a, b = b, a
     if (masks := _masks(a)) is None:

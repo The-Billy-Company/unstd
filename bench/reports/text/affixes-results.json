@@ -1,0 +1,1931 @@
+{
+  "utc": "2026-10-27T20:43:39.799318+00:00",
+  "environment": {
+    "python": "3.14.9 (main, Oct 21 2026, 17:47:42) [Clang 23.1.3 ]",
+    "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+    "machine": "arm64"
+  },
+  "harness": {
+    "path": "/Users/griffinstrier/Billy-Company/unstd/bench/profiles/text_affixes.py",
+    "sha256": "239bd924628a725b7ac368d531e749059373e20effa62c440b4a08e431af88ce"
+  },
+  "implementations": {
+    "baseline": {
+      "wrapper": {
+        "path": "/Users/griffinstrier/Billy-Company/unstd/.local/text-affixes/before/src/unstd/text/fuzz.py",
+        "sha256": "96bb910dda4e55925adfe133a2128bc13f914c7e01cd2fad614795cd5e2cf534"
+      },
+      "native": {
+        "path": "/Users/griffinstrier/Billy-Company/unstd/.local/text-affixes/before/lib/unstd/text/_text_native.cpython-314-darwin.so",
+        "sha256": "cbe71f418db48b5d0606ac39c03f7146a502e7da6e7309e8f69d92a0052dd37b"
+      }
+    },
+    "candidate": {
+      "wrapper": {
+        "path": "/Users/griffinstrier/Billy-Company/unstd/.local/text-affixes/candidate/src/unstd/text/fuzz.py",
+        "sha256": "e3587d372fb1104100b0b3b7fa2b5a02c94a69e92a5ed0f3cc1955f13b7d0a97"
+      },
+      "native": {
+        "path": "/Users/griffinstrier/Billy-Company/unstd/.local/text-affixes/candidate/_text_native.cpython-314-darwin.so",
+        "sha256": "355914ad0497767fdf4b061bc5c32a7eecd694caffc77f431b9d64444ff1d12b"
+      }
+    }
+  },
+  "method": "isolated base-install public wrappers; alternating paired batch means; median ratios; independent per-arm calibration; GC enabled; allocations measured separately",
+  "limitation": "synthetic workload shapes on one host; RapidFuzz-present public binding is unchanged and excluded",
+  "rows": {
+    "native/short-no-affixes": {
+      "lengths": [
+        6,
+        7
+      ],
+      "expected": 3,
+      "proof": "full untrimmed edit matrix",
+      "routes": {
+        "baseline": "native",
+        "candidate": "native"
+      },
+      "iterations": {
+        "baseline": 90112,
+        "candidate": 90112
+      },
+      "order": [
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ]
+      ],
+      "samples": {
+        "baseline": [
+          {
+            "wall_ns": 116.09394975142045,
+            "cpu_ns": 114.19122869318181
+          },
+          {
+            "wall_ns": 116.02089621803977,
+            "cpu_ns": 113.58087713068181
+          },
+          {
+            "wall_ns": 114.7433194247159,
+            "cpu_ns": 112.71528764204545
+          },
+          {
+            "wall_ns": 113.1046142578125,
+            "cpu_ns": 112.29359019886364
+          },
+          {
+            "wall_ns": 118.70689808238636,
+            "cpu_ns": 117.44273792613636
+          },
+          {
+            "wall_ns": 115.02768776633523,
+            "cpu_ns": 112.55992542613636
+          },
+          {
+            "wall_ns": 113.06346546519886,
+            "cpu_ns": 111.73872514204545
+          }
+        ],
+        "candidate": [
+          {
+            "wall_ns": 118.1733065518466,
+            "cpu_ns": 115.03462357954545
+          },
+          {
+            "wall_ns": 116.65714888139205,
+            "cpu_ns": 114.2911044034091
+          },
+          {
+            "wall_ns": 113.8943758877841,
+            "cpu_ns": 112.9150390625
+          },
+          {
+            "wall_ns": 112.27231667258523,
+            "cpu_ns": 111.6943359375
+          },
+          {
+            "wall_ns": 116.43889825994319,
+            "cpu_ns": 114.31329900568181
+          },
+          {
+            "wall_ns": 114.24163263494319,
+            "cpu_ns": 112.73748224431819
+          },
+          {
+            "wall_ns": 117.27719948508523,
+            "cpu_ns": 115.67826704545455
+          }
+        ]
+      },
+      "median_wall_ns": {
+        "baseline": 115.02768776633523,
+        "candidate": 116.43889825994319
+      },
+      "paired_speedup": 1.0068806363605103,
+      "peak_python_allocation_bytes": {
+        "baseline": 0,
+        "candidate": 0
+      }
+    },
+    "native/unrelated-400": {
+      "lengths": [
+        400,
+        400
+      ],
+      "expected": 400,
+      "proof": "full untrimmed edit matrix",
+      "routes": {
+        "baseline": "native",
+        "candidate": "native"
+      },
+      "iterations": {
+        "baseline": 1664,
+        "candidate": 960
+      },
+      "order": [
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ]
+      ],
+      "samples": {
+        "baseline": [
+          {
+            "wall_ns": 5232.221754807692,
+            "cpu_ns": 5128.6057692307695
+          },
+          {
+            "wall_ns": 5051.582932692308,
+            "cpu_ns": 5006.610576923077
+          },
+          {
+            "wall_ns": 5115.7854567307695,
+            "cpu_ns": 5068.509615384615
+          },
+          {
+            "wall_ns": 5279.522235576923,
+            "cpu_ns": 5155.048076923077
+          },
+          {
+            "wall_ns": 5285.081129807692,
+            "cpu_ns": 5158.653846153846
+          },
+          {
+            "wall_ns": 5412.5348557692305,
+            "cpu_ns": 5346.153846153846
+          },
+          {
+            "wall_ns": 5361.3786057692305,
+            "cpu_ns": 5261.4182692307695
+          }
+        ],
+        "candidate": [
+          {
+            "wall_ns": 5945.094791666666,
+            "cpu_ns": 5927.083333333333
+          },
+          {
+            "wall_ns": 5764.8,
+            "cpu_ns": 5744.791666666667
+          },
+          {
+            "wall_ns": 5681.380208333333,
+            "cpu_ns": 5544.791666666667
+          },
+          {
+            "wall_ns": 5666.188541666666,
+            "cpu_ns": 5597.916666666667
+          },
+          {
+            "wall_ns": 5105.078125,
+            "cpu_ns": 5013.541666666667
+          },
+          {
+            "wall_ns": 4965.190625,
+            "cpu_ns": 4921.875
+          },
+          {
+            "wall_ns": 5305.208333333333,
+            "cpu_ns": 5182.291666666667
+          }
+        ]
+      },
+      "median_wall_ns": {
+        "baseline": 5279.522235576923,
+        "candidate": 5666.188541666666
+      },
+      "paired_speedup": 0.9317590116801852,
+      "peak_python_allocation_bytes": {
+        "baseline": 504,
+        "candidate": 504
+      }
+    },
+    "native/empty": {
+      "lengths": [
+        0,
+        3
+      ],
+      "expected": 3,
+      "proof": "full untrimmed edit matrix",
+      "routes": {
+        "baseline": "empty/equality shortcut",
+        "candidate": "empty/equality shortcut"
+      },
+      "iterations": {
+        "baseline": 253952,
+        "candidate": 155648
+      },
+      "order": [
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ]
+      ],
+      "samples": {
+        "baseline": [
+          {
+            "wall_ns": 33.52503622731855,
+            "cpu_ns": 33.13224546370968
+          },
+          {
+            "wall_ns": 33.16227082283266,
+            "cpu_ns": 32.73059475806452
+          },
+          {
+            "wall_ns": 42.70049064390121,
+            "cpu_ns": 39.491714969758064
+          },
+          {
+            "wall_ns": 34.72276650705645,
+            "cpu_ns": 34.25450478830645
+          },
+          {
+            "wall_ns": 39.77031092489919,
+            "cpu_ns": 39.44839969758065
+          },
+          {
+            "wall_ns": 34.68946493825605,
+            "cpu_ns": 33.65990423387097
+          },
+          {
+            "wall_ns": 35.703597530241936,
+            "cpu_ns": 34.38445060483871
+          }
+        ],
+        "candidate": [
+          {
+            "wall_ns": 34.68911261307566,
+            "cpu_ns": 34.5715974506579
+          },
+          {
+            "wall_ns": 34.48218415912829,
+            "cpu_ns": 33.87772409539474
+          },
+          {
+            "wall_ns": 39.8053620990954,
+            "cpu_ns": 39.63430304276316
+          },
+          {
+            "wall_ns": 35.28340871710526,
+            "cpu_ns": 34.90568462171053
+          },
+          {
+            "wall_ns": 33.407380756578945,
+            "cpu_ns": 33.036081414473685
+          },
+          {
+            "wall_ns": 35.15919253700658,
+            "cpu_ns": 34.62942023026316
+          },
+          {
+            "wall_ns": 36.935373406661185,
+            "cpu_ns": 35.657380756578945
+          }
+        ]
+      },
+      "median_wall_ns": {
+        "baseline": 34.72276650705645,
+        "candidate": 35.15919253700658
+      },
+      "paired_speedup": 0.9841103161391259,
+      "peak_python_allocation_bytes": {
+        "baseline": 0,
+        "candidate": 0
+      }
+    },
+    "native/both-ends-8192": {
+      "lengths": [
+        8195,
+        8195
+      ],
+      "expected": 1,
+      "proof": "unequal strings; explicit single substitution/insertion witness",
+      "routes": {
+        "baseline": "native",
+        "candidate": "native"
+      },
+      "iterations": {
+        "baseline": 8,
+        "candidate": 1408
+      },
+      "order": [
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ]
+      ],
+      "samples": {
+        "baseline": [
+          {
+            "wall_ns": 1227286.375,
+            "cpu_ns": 1219500.0
+          },
+          {
+            "wall_ns": 1193713.5,
+            "cpu_ns": 1184125.0
+          },
+          {
+            "wall_ns": 1246166.625,
+            "cpu_ns": 1239750.0
+          },
+          {
+            "wall_ns": 1306078.125,
+            "cpu_ns": 1298000.0
+          },
+          {
+            "wall_ns": 1222265.625,
+            "cpu_ns": 1218000.0
+          },
+          {
+            "wall_ns": 1270791.625,
+            "cpu_ns": 1267000.0
+          },
+          {
+            "wall_ns": 1203807.25,
+            "cpu_ns": 1202500.0
+          }
+        ],
+        "candidate": [
+          {
+            "wall_ns": 5957.622869318182,
+            "cpu_ns": 5884.232954545455
+          },
+          {
+            "wall_ns": 5972.389914772727,
+            "cpu_ns": 5890.625
+          },
+          {
+            "wall_ns": 6001.125,
+            "cpu_ns": 5875.0
+          },
+          {
+            "wall_ns": 5939.423295454545,
+            "cpu_ns": 5866.477272727273
+          },
+          {
+            "wall_ns": 5875.561789772727,
+            "cpu_ns": 5822.443181818182
+          },
+          {
+            "wall_ns": 5842.980113636364,
+            "cpu_ns": 5806.818181818182
+          },
+          {
+            "wall_ns": 5851.591619318182,
+            "cpu_ns": 5845.880681818182
+          }
+        ]
+      },
+      "median_wall_ns": {
+        "baseline": 1227286.375,
+        "candidate": 5939.423295454545
+      },
+      "paired_speedup": 207.65550209335748,
+      "peak_python_allocation_bytes": {
+        "baseline": 9288,
+        "candidate": 0
+      }
+    },
+    "native/prefix-65536-insertion": {
+      "lengths": [
+        65539,
+        65540
+      ],
+      "expected": 1,
+      "proof": "unequal strings; explicit single substitution/insertion witness",
+      "routes": {
+        "baseline": "native-declined, portable",
+        "candidate": "native"
+      },
+      "iterations": {
+        "baseline": 1,
+        "candidate": 128
+      },
+      "order": [
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ]
+      ],
+      "samples": {
+        "baseline": [
+          {
+            "wall_ns": 1383770417.0,
+            "cpu_ns": 1365529000.0
+          },
+          {
+            "wall_ns": 1369401792.0,
+            "cpu_ns": 1353296000.0
+          },
+          {
+            "wall_ns": 1349388084.0,
+            "cpu_ns": 1342480000.0
+          },
+          {
+            "wall_ns": 1333347292.0,
+            "cpu_ns": 1330381000.0
+          },
+          {
+            "wall_ns": 1353616125.0,
+            "cpu_ns": 1349020000.0
+          },
+          {
+            "wall_ns": 1327129417.0,
+            "cpu_ns": 1325781000.0
+          },
+          {
+            "wall_ns": 1364824292.0,
+            "cpu_ns": 1352780000.0
+          }
+        ],
+        "candidate": [
+          {
+            "wall_ns": 46452.796875,
+            "cpu_ns": 45898.4375
+          },
+          {
+            "wall_ns": 45480.1484375,
+            "cpu_ns": 45382.8125
+          },
+          {
+            "wall_ns": 44657.2265625,
+            "cpu_ns": 44687.5
+          },
+          {
+            "wall_ns": 44785.4765625,
+            "cpu_ns": 44726.5625
+          },
+          {
+            "wall_ns": 47425.125,
+            "cpu_ns": 47250.0
+          },
+          {
+            "wall_ns": 45571.9375,
+            "cpu_ns": 45507.8125
+          },
+          {
+            "wall_ns": 48135.7421875,
+            "cpu_ns": 47101.5625
+          }
+        ]
+      },
+      "median_wall_ns": {
+        "baseline": 1353616125.0,
+        "candidate": 45571.9375
+      },
+      "paired_speedup": 29771.867898720655,
+      "peak_python_allocation_bytes": {
+        "baseline": 973328,
+        "candidate": 0
+      }
+    },
+    "native/suffix-32768-insertion": {
+      "lengths": [
+        32771,
+        32772
+      ],
+      "expected": 1,
+      "proof": "unequal strings; explicit single substitution/insertion witness",
+      "routes": {
+        "baseline": "native-declined, portable",
+        "candidate": "native"
+      },
+      "iterations": {
+        "baseline": 1,
+        "candidate": 384
+      },
+      "order": [
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ]
+      ],
+      "samples": {
+        "baseline": [
+          {
+            "wall_ns": 355220125.0,
+            "cpu_ns": 353322000.0
+          },
+          {
+            "wall_ns": 373570750.0,
+            "cpu_ns": 366970000.0
+          },
+          {
+            "wall_ns": 375191042.0,
+            "cpu_ns": 368929000.0
+          },
+          {
+            "wall_ns": 416137291.0,
+            "cpu_ns": 368341000.0
+          },
+          {
+            "wall_ns": 461846958.0,
+            "cpu_ns": 383886000.0
+          },
+          {
+            "wall_ns": 389834125.0,
+            "cpu_ns": 376209000.0
+          },
+          {
+            "wall_ns": 380754042.0,
+            "cpu_ns": 369202000.0
+          }
+        ],
+        "candidate": [
+          {
+            "wall_ns": 22047.6328125,
+            "cpu_ns": 21606.770833333332
+          },
+          {
+            "wall_ns": 22617.403645833332,
+            "cpu_ns": 21825.520833333332
+          },
+          {
+            "wall_ns": 22948.893229166668,
+            "cpu_ns": 22184.895833333332
+          },
+          {
+            "wall_ns": 22164.494791666668,
+            "cpu_ns": 21906.25
+          },
+          {
+            "wall_ns": 25910.15625,
+            "cpu_ns": 23875.0
+          },
+          {
+            "wall_ns": 26967.015625,
+            "cpu_ns": 26911.458333333332
+          },
+          {
+            "wall_ns": 25212.565104166668,
+            "cpu_ns": 24083.333333333332
+          }
+        ]
+      },
+      "median_wall_ns": {
+        "baseline": 380754042.0,
+        "candidate": 22948.893229166668
+      },
+      "paired_speedup": 16348.98198590051,
+      "peak_python_allocation_bytes": {
+        "baseline": 479684,
+        "candidate": 0
+      }
+    },
+    "native/mixed-unicode-kind-32768": {
+      "lengths": [
+        32769,
+        32769
+      ],
+      "expected": 1,
+      "proof": "unequal strings; explicit single substitution/insertion witness",
+      "routes": {
+        "baseline": "native-declined, portable",
+        "candidate": "native"
+      },
+      "iterations": {
+        "baseline": 1,
+        "candidate": 256
+      },
+      "order": [
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ]
+      ],
+      "samples": {
+        "baseline": [
+          {
+            "wall_ns": 366908125.0,
+            "cpu_ns": 359177000.0
+          },
+          {
+            "wall_ns": 346452625.0,
+            "cpu_ns": 344747000.0
+          },
+          {
+            "wall_ns": 346100542.0,
+            "cpu_ns": 344556000.0
+          },
+          {
+            "wall_ns": 350507459.0,
+            "cpu_ns": 347626000.0
+          },
+          {
+            "wall_ns": 345286542.0,
+            "cpu_ns": 344468000.0
+          },
+          {
+            "wall_ns": 342468208.0,
+            "cpu_ns": 342346000.0
+          },
+          {
+            "wall_ns": 343944875.0,
+            "cpu_ns": 343148000.0
+          }
+        ],
+        "candidate": [
+          {
+            "wall_ns": 20144.3671875,
+            "cpu_ns": 20144.53125
+          },
+          {
+            "wall_ns": 19361.0,
+            "cpu_ns": 19359.375
+          },
+          {
+            "wall_ns": 20040.69140625,
+            "cpu_ns": 20023.4375
+          },
+          {
+            "wall_ns": 21500.0,
+            "cpu_ns": 21183.59375
+          },
+          {
+            "wall_ns": 19229.4921875,
+            "cpu_ns": 19230.46875
+          },
+          {
+            "wall_ns": 19274.7421875,
+            "cpu_ns": 19257.8125
+          },
+          {
+            "wall_ns": 20030.59765625,
+            "cpu_ns": 19843.75
+          }
+        ]
+      },
+      "median_wall_ns": {
+        "baseline": 346100542.0,
+        "candidate": 20030.59765625
+      },
+      "paired_speedup": 17767.7192601879,
+      "peak_python_allocation_bytes": {
+        "baseline": 484080,
+        "candidate": 0
+      }
+    },
+    "native/diverse-unicode-600": {
+      "lengths": [
+        601,
+        601
+      ],
+      "expected": 1,
+      "proof": "unequal strings; explicit single substitution/insertion witness",
+      "routes": {
+        "baseline": "native-declined, portable",
+        "candidate": "native"
+      },
+      "iterations": {
+        "baseline": 1,
+        "candidate": 16384
+      },
+      "order": [
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ]
+      ],
+      "samples": {
+        "baseline": [
+          {
+            "wall_ns": 19562000.0,
+            "cpu_ns": 19409000.0
+          },
+          {
+            "wall_ns": 19627584.0,
+            "cpu_ns": 19514000.0
+          },
+          {
+            "wall_ns": 19643333.0,
+            "cpu_ns": 19580000.0
+          },
+          {
+            "wall_ns": 19076500.0,
+            "cpu_ns": 19070000.0
+          },
+          {
+            "wall_ns": 19089875.0,
+            "cpu_ns": 19087000.0
+          },
+          {
+            "wall_ns": 19333125.0,
+            "cpu_ns": 19282000.0
+          },
+          {
+            "wall_ns": 18934042.0,
+            "cpu_ns": 18929000.0
+          }
+        ],
+        "candidate": [
+          {
+            "wall_ns": 391.08782958984375,
+            "cpu_ns": 389.5263671875
+          },
+          {
+            "wall_ns": 403.51617431640625,
+            "cpu_ns": 397.15576171875
+          },
+          {
+            "wall_ns": 457.60345458984375,
+            "cpu_ns": 457.33642578125
+          },
+          {
+            "wall_ns": 453.55224609375,
+            "cpu_ns": 453.4912109375
+          },
+          {
+            "wall_ns": 450.469970703125,
+            "cpu_ns": 450.5615234375
+          },
+          {
+            "wall_ns": 393.27496337890625,
+            "cpu_ns": 393.00537109375
+          },
+          {
+            "wall_ns": 447.22747802734375,
+            "cpu_ns": 447.32666015625
+          }
+        ]
+      },
+      "median_wall_ns": {
+        "baseline": 19333125.0,
+        "candidate": 447.22747802734375
+      },
+      "paired_speedup": 42926.54000526851,
+      "peak_python_allocation_bytes": {
+        "baseline": 38964,
+        "candidate": 0
+      }
+    },
+    "portable/short-no-affixes": {
+      "lengths": [
+        6,
+        7
+      ],
+      "expected": 3,
+      "proof": "full untrimmed edit matrix",
+      "routes": {
+        "baseline": "portable",
+        "candidate": "portable"
+      },
+      "iterations": {
+        "baseline": 7168,
+        "candidate": 6784
+      },
+      "order": [
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ]
+      ],
+      "samples": {
+        "baseline": [
+          {
+            "wall_ns": 1691.1446707589287,
+            "cpu_ns": 1691.8247767857142
+          },
+          {
+            "wall_ns": 1688.627650669643,
+            "cpu_ns": 1688.755580357143
+          },
+          {
+            "wall_ns": 1690.3309151785713,
+            "cpu_ns": 1687.3604910714287
+          },
+          {
+            "wall_ns": 1501.5753348214287,
+            "cpu_ns": 1486.7466517857142
+          },
+          {
+            "wall_ns": 1629.970005580357,
+            "cpu_ns": 1628.208705357143
+          },
+          {
+            "wall_ns": 1455.6245814732142,
+            "cpu_ns": 1455.078125
+          },
+          {
+            "wall_ns": 1331.775390625,
+            "cpu_ns": 1329.2410714285713
+          }
+        ],
+        "candidate": [
+          {
+            "wall_ns": 1841.2196344339623,
+            "cpu_ns": 1841.3915094339623
+          },
+          {
+            "wall_ns": 1833.7326061320755,
+            "cpu_ns": 1833.873820754717
+          },
+          {
+            "wall_ns": 1832.0250589622642,
+            "cpu_ns": 1830.188679245283
+          },
+          {
+            "wall_ns": 1821.6513856132076,
+            "cpu_ns": 1716.686320754717
+          },
+          {
+            "wall_ns": 1598.743366745283,
+            "cpu_ns": 1598.0247641509434
+          },
+          {
+            "wall_ns": 1417.4467865566037,
+            "cpu_ns": 1417.305424528302
+          },
+          {
+            "wall_ns": 1520.728920990566,
+            "cpu_ns": 1520.0471698113208
+          }
+        ]
+      },
+      "median_wall_ns": {
+        "baseline": 1629.970005580357,
+        "candidate": 1821.6513856132076
+      },
+      "paired_speedup": 0.9208690760162109,
+      "peak_python_allocation_bytes": {
+        "baseline": 776,
+        "candidate": 840
+      }
+    },
+    "portable/unrelated-400": {
+      "lengths": [
+        400,
+        400
+      ],
+      "expected": 400,
+      "proof": "full untrimmed edit matrix",
+      "routes": {
+        "baseline": "portable",
+        "candidate": "portable"
+      },
+      "iterations": {
+        "baseline": 64,
+        "candidate": 62
+      },
+      "order": [
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ]
+      ],
+      "samples": {
+        "baseline": [
+          {
+            "wall_ns": 147622.390625,
+            "cpu_ns": 147671.875
+          },
+          {
+            "wall_ns": 159871.734375,
+            "cpu_ns": 159875.0
+          },
+          {
+            "wall_ns": 152671.234375,
+            "cpu_ns": 152687.5
+          },
+          {
+            "wall_ns": 162938.796875,
+            "cpu_ns": 160484.375
+          },
+          {
+            "wall_ns": 189570.953125,
+            "cpu_ns": 177062.5
+          },
+          {
+            "wall_ns": 158814.453125,
+            "cpu_ns": 153453.125
+          },
+          {
+            "wall_ns": 164793.609375,
+            "cpu_ns": 160078.125
+          }
+        ],
+        "candidate": [
+          {
+            "wall_ns": 156516.79032258064,
+            "cpu_ns": 156548.38709677418
+          },
+          {
+            "wall_ns": 152975.12903225806,
+            "cpu_ns": 152612.90322580645
+          },
+          {
+            "wall_ns": 151522.17741935485,
+            "cpu_ns": 150177.4193548387
+          },
+          {
+            "wall_ns": 158553.0806451613,
+            "cpu_ns": 158516.12903225806
+          },
+          {
+            "wall_ns": 160739.9193548387,
+            "cpu_ns": 156338.70967741936
+          },
+          {
+            "wall_ns": 151187.5,
+            "cpu_ns": 150306.4516129032
+          },
+          {
+            "wall_ns": 173129.03225806452,
+            "cpu_ns": 169322.5806451613
+          }
+        ]
+      },
+      "median_wall_ns": {
+        "baseline": 159871.734375,
+        "candidate": 156516.79032258064
+      },
+      "paired_speedup": 1.0276608704920331,
+      "peak_python_allocation_bytes": {
+        "baseline": 9132,
+        "candidate": 9196
+      }
+    },
+    "portable/empty": {
+      "lengths": [
+        0,
+        3
+      ],
+      "expected": 3,
+      "proof": "full untrimmed edit matrix",
+      "routes": {
+        "baseline": "empty/equality shortcut",
+        "candidate": "empty/equality shortcut"
+      },
+      "iterations": {
+        "baseline": 311296,
+        "candidate": 155648
+      },
+      "order": [
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ]
+      ],
+      "samples": {
+        "baseline": [
+          {
+            "wall_ns": 35.75602641858553,
+            "cpu_ns": 34.43025287828947
+          },
+          {
+            "wall_ns": 32.42211592824835,
+            "cpu_ns": 32.22013774671053
+          },
+          {
+            "wall_ns": 40.261118035567435,
+            "cpu_ns": 37.42418791118421
+          },
+          {
+            "wall_ns": 40.445161518297695,
+            "cpu_ns": 37.13186163651316
+          },
+          {
+            "wall_ns": 40.09407445004112,
+            "cpu_ns": 36.50544819078947
+          },
+          {
+            "wall_ns": 39.88848234477796,
+            "cpu_ns": 36.16172388980263
+          },
+          {
+            "wall_ns": 43.45796926398026,
+            "cpu_ns": 38.68665193256579
+          }
+        ],
+        "candidate": [
+          {
+            "wall_ns": 33.04116339432566,
+            "cpu_ns": 31.821803042763158
+          },
+          {
+            "wall_ns": 34.86338404605263,
+            "cpu_ns": 33.093904194078945
+          },
+          {
+            "wall_ns": 38.684782329358555,
+            "cpu_ns": 34.87356085526316
+          },
+          {
+            "wall_ns": 42.76450066817434,
+            "cpu_ns": 39.4544099506579
+          },
+          {
+            "wall_ns": 40.20958830180921,
+            "cpu_ns": 35.55458470394737
+          },
+          {
+            "wall_ns": 42.58300138774671,
+            "cpu_ns": 36.56327097039474
+          },
+          {
+            "wall_ns": 42.1399568256579,
+            "cpu_ns": 37.09010074013158
+          }
+        ]
+      },
+      "median_wall_ns": {
+        "baseline": 40.09407445004112,
+        "candidate": 40.20958830180921
+      },
+      "paired_speedup": 0.9971272063045994,
+      "peak_python_allocation_bytes": {
+        "baseline": 0,
+        "candidate": 0
+      }
+    },
+    "portable/both-ends-8192": {
+      "lengths": [
+        8195,
+        8195
+      ],
+      "expected": 1,
+      "proof": "unequal strings; explicit single substitution/insertion witness",
+      "routes": {
+        "baseline": "portable",
+        "candidate": "portable"
+      },
+      "iterations": {
+        "baseline": 1,
+        "candidate": 42
+      },
+      "order": [
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ]
+      ],
+      "samples": {
+        "baseline": [
+          {
+            "wall_ns": 28903208.0,
+            "cpu_ns": 27626000.0
+          },
+          {
+            "wall_ns": 28795291.0,
+            "cpu_ns": 27156000.0
+          },
+          {
+            "wall_ns": 28504208.0,
+            "cpu_ns": 26979000.0
+          },
+          {
+            "wall_ns": 28211417.0,
+            "cpu_ns": 26986000.0
+          },
+          {
+            "wall_ns": 27076666.0,
+            "cpu_ns": 26305000.0
+          },
+          {
+            "wall_ns": 26485459.0,
+            "cpu_ns": 26154000.0
+          },
+          {
+            "wall_ns": 26119000.0,
+            "cpu_ns": 25903000.0
+          }
+        ],
+        "candidate": [
+          {
+            "wall_ns": 230151.7857142857,
+            "cpu_ns": 213500.0
+          },
+          {
+            "wall_ns": 199169.64285714287,
+            "cpu_ns": 187261.90476190476
+          },
+          {
+            "wall_ns": 190377.97619047618,
+            "cpu_ns": 185023.80952380953
+          },
+          {
+            "wall_ns": 195798.61904761905,
+            "cpu_ns": 189357.14285714287
+          },
+          {
+            "wall_ns": 188179.57142857142,
+            "cpu_ns": 184833.33333333334
+          },
+          {
+            "wall_ns": 179359.14285714287,
+            "cpu_ns": 178642.85714285713
+          },
+          {
+            "wall_ns": 196677.57142857142,
+            "cpu_ns": 190095.2380952381
+          }
+        ]
+      },
+      "median_wall_ns": {
+        "baseline": 28211417.0,
+        "candidate": 195798.61904761905
+      },
+      "paired_speedup": 144.08384051543726,
+      "peak_python_allocation_bytes": {
+        "baseline": 124316,
+        "candidate": 664
+      }
+    },
+    "portable/prefix-65536-insertion": {
+      "lengths": [
+        65539,
+        65540
+      ],
+      "expected": 1,
+      "proof": "unequal strings; explicit single substitution/insertion witness",
+      "routes": {
+        "baseline": "portable",
+        "candidate": "portable"
+      },
+      "iterations": {
+        "baseline": 1,
+        "candidate": 5
+      },
+      "order": [
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ]
+      ],
+      "samples": {
+        "baseline": [
+          {
+            "wall_ns": 1453325708.0,
+            "cpu_ns": 1405018000.0
+          },
+          {
+            "wall_ns": 1431475417.0,
+            "cpu_ns": 1388539000.0
+          },
+          {
+            "wall_ns": 1444500666.0,
+            "cpu_ns": 1396004000.0
+          },
+          {
+            "wall_ns": 1448618125.0,
+            "cpu_ns": 1398176000.0
+          },
+          {
+            "wall_ns": 1431261375.0,
+            "cpu_ns": 1380132000.0
+          },
+          {
+            "wall_ns": 1418301250.0,
+            "cpu_ns": 1371447000.0
+          },
+          {
+            "wall_ns": 1363935750.0,
+            "cpu_ns": 1355577000.0
+          }
+        ],
+        "candidate": [
+          {
+            "wall_ns": 1029833.2,
+            "cpu_ns": 1021400.0
+          },
+          {
+            "wall_ns": 1155216.6,
+            "cpu_ns": 1140400.0
+          },
+          {
+            "wall_ns": 1078275.0,
+            "cpu_ns": 1061200.0
+          },
+          {
+            "wall_ns": 1193983.2,
+            "cpu_ns": 1188000.0
+          },
+          {
+            "wall_ns": 1046325.0,
+            "cpu_ns": 1026600.0
+          },
+          {
+            "wall_ns": 1056675.0,
+            "cpu_ns": 1018800.0
+          },
+          {
+            "wall_ns": 1107741.8,
+            "cpu_ns": 1101000.0
+          }
+        ]
+      },
+      "median_wall_ns": {
+        "baseline": 1431475417.0,
+        "candidate": 1078275.0
+      },
+      "paired_speedup": 1339.6403199554845,
+      "peak_python_allocation_bytes": {
+        "baseline": 973328,
+        "candidate": 192
+      }
+    },
+    "portable/suffix-32768-insertion": {
+      "lengths": [
+        32771,
+        32772
+      ],
+      "expected": 1,
+      "proof": "unequal strings; explicit single substitution/insertion witness",
+      "routes": {
+        "baseline": "portable",
+        "candidate": "portable"
+      },
+      "iterations": {
+        "baseline": 1,
+        "candidate": 5
+      },
+      "order": [
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ]
+      ],
+      "samples": {
+        "baseline": [
+          {
+            "wall_ns": 344377333.0,
+            "cpu_ns": 343563000.0
+          },
+          {
+            "wall_ns": 353786958.0,
+            "cpu_ns": 350540000.0
+          },
+          {
+            "wall_ns": 346508625.0,
+            "cpu_ns": 345148000.0
+          },
+          {
+            "wall_ns": 368782000.0,
+            "cpu_ns": 363392000.0
+          },
+          {
+            "wall_ns": 360664292.0,
+            "cpu_ns": 356484000.0
+          },
+          {
+            "wall_ns": 353839541.0,
+            "cpu_ns": 351768000.0
+          },
+          {
+            "wall_ns": 361349041.0,
+            "cpu_ns": 356224000.0
+          }
+        ],
+        "candidate": [
+          {
+            "wall_ns": 947366.6,
+            "cpu_ns": 947200.0
+          },
+          {
+            "wall_ns": 1196508.4,
+            "cpu_ns": 1190800.0
+          },
+          {
+            "wall_ns": 1132125.0,
+            "cpu_ns": 1127200.0
+          },
+          {
+            "wall_ns": 959800.0,
+            "cpu_ns": 956000.0
+          },
+          {
+            "wall_ns": 1156750.0,
+            "cpu_ns": 1156200.0
+          },
+          {
+            "wall_ns": 1348708.4,
+            "cpu_ns": 1348800.0
+          },
+          {
+            "wall_ns": 1102591.6,
+            "cpu_ns": 1090800.0
+          }
+        ]
+      },
+      "median_wall_ns": {
+        "baseline": 353839541.0,
+        "candidate": 1132125.0
+      },
+      "paired_speedup": 311.7910456019019,
+      "peak_python_allocation_bytes": {
+        "baseline": 479684,
+        "candidate": 192
+      }
+    },
+    "portable/mixed-unicode-kind-32768": {
+      "lengths": [
+        32769,
+        32769
+      ],
+      "expected": 1,
+      "proof": "unequal strings; explicit single substitution/insertion witness",
+      "routes": {
+        "baseline": "portable",
+        "candidate": "portable"
+      },
+      "iterations": {
+        "baseline": 1,
+        "candidate": 18
+      },
+      "order": [
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ]
+      ],
+      "samples": {
+        "baseline": [
+          {
+            "wall_ns": 350668750.0,
+            "cpu_ns": 349321000.0
+          },
+          {
+            "wall_ns": 351714292.0,
+            "cpu_ns": 350071000.0
+          },
+          {
+            "wall_ns": 344465583.0,
+            "cpu_ns": 343790000.0
+          },
+          {
+            "wall_ns": 357758917.0,
+            "cpu_ns": 355557000.0
+          },
+          {
+            "wall_ns": 356304458.0,
+            "cpu_ns": 353397000.0
+          },
+          {
+            "wall_ns": 358248292.0,
+            "cpu_ns": 356130000.0
+          },
+          {
+            "wall_ns": 350651917.0,
+            "cpu_ns": 349662000.0
+          }
+        ],
+        "candidate": [
+          {
+            "wall_ns": 549023.1666666666,
+            "cpu_ns": 545222.2222222222
+          },
+          {
+            "wall_ns": 598898.1111111111,
+            "cpu_ns": 597777.7777777778
+          },
+          {
+            "wall_ns": 544615.7222222222,
+            "cpu_ns": 541833.3333333334
+          },
+          {
+            "wall_ns": 622495.3333333334,
+            "cpu_ns": 617666.6666666666
+          },
+          {
+            "wall_ns": 507247.6666666667,
+            "cpu_ns": 499333.3333333333
+          },
+          {
+            "wall_ns": 549995.3888888889,
+            "cpu_ns": 540333.3333333334
+          },
+          {
+            "wall_ns": 534604.1666666666,
+            "cpu_ns": 532166.6666666666
+          }
+        ]
+      },
+      "median_wall_ns": {
+        "baseline": 351714292.0,
+        "candidate": 549023.1666666666
+      },
+      "paired_speedup": 638.7139401221382,
+      "peak_python_allocation_bytes": {
+        "baseline": 484080,
+        "candidate": 760
+      }
+    },
+    "portable/diverse-unicode-600": {
+      "lengths": [
+        601,
+        601
+      ],
+      "expected": 1,
+      "proof": "unequal strings; explicit single substitution/insertion witness",
+      "routes": {
+        "baseline": "portable",
+        "candidate": "portable"
+      },
+      "iterations": {
+        "baseline": 1,
+        "candidate": 256
+      },
+      "order": [
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ]
+      ],
+      "samples": {
+        "baseline": [
+          {
+            "wall_ns": 21567000.0,
+            "cpu_ns": 21515000.0
+          },
+          {
+            "wall_ns": 21563708.0,
+            "cpu_ns": 21322000.0
+          },
+          {
+            "wall_ns": 22394167.0,
+            "cpu_ns": 21981000.0
+          },
+          {
+            "wall_ns": 21088708.0,
+            "cpu_ns": 20979000.0
+          },
+          {
+            "wall_ns": 20742042.0,
+            "cpu_ns": 20715000.0
+          },
+          {
+            "wall_ns": 20787583.0,
+            "cpu_ns": 20782000.0
+          },
+          {
+            "wall_ns": 21071333.0,
+            "cpu_ns": 21024000.0
+          }
+        ],
+        "candidate": [
+          {
+            "wall_ns": 28733.3984375,
+            "cpu_ns": 28691.40625
+          },
+          {
+            "wall_ns": 30431.48046875,
+            "cpu_ns": 30390.625
+          },
+          {
+            "wall_ns": 28403.64453125,
+            "cpu_ns": 28402.34375
+          },
+          {
+            "wall_ns": 28356.93359375,
+            "cpu_ns": 28347.65625
+          },
+          {
+            "wall_ns": 28436.84765625,
+            "cpu_ns": 28406.25
+          },
+          {
+            "wall_ns": 28357.421875,
+            "cpu_ns": 28343.75
+          },
+          {
+            "wall_ns": 28672.6875,
+            "cpu_ns": 28597.65625
+          }
+        ]
+      },
+      "median_wall_ns": {
+        "baseline": 21088708.0,
+        "candidate": 28436.84765625
+      },
+      "paired_speedup": 734.8921512850862,
+      "peak_python_allocation_bytes": {
+        "baseline": 38964,
+        "candidate": 664
+      }
+    }
+  },
+  "source_snapshot": {
+    "baseline_git_commit": "0b00d72a6e5155322e06c4594c7b829e5fd47788",
+    "baseline_verified_against_git": true,
+    "baseline_c_sha256": "7051b4889c064fa430eb90ad2aab0eae5c126e5d4fbe7e869b99aa654355883f",
+    "candidate_c_sha256": "a164b834c6aefdc6c9c5ebc9f33677dbebf974cd3aeac25257155e864f7fadc7",
+    "candidate_rust_sha256": "c353c11378bf67509a9d552eed703b35f4f00ae8ece27e53ba4362b19940c8d1"
+  },
+  "build": {
+    "baseline": "setuptools Distribution/Extension + build_ext, preserved adapter.c; only text extension built",
+    "candidate": "existing Hatch CustomBuildHook._build_module, editable; only text extension built",
+    "text_extra_compile_args": [
+      "-fno-fast-math",
+      "-ffp-contract=off"
+    ],
+    "python_build_configuration": {
+      "CC": "cc",
+      "CFLAGS": "-fno-strict-overflow -Wsign-compare -Wunreachable-code -DNDEBUG -g -O3 -Wall -O3 -arch arm64 -mmacosx-version-min=11.0 -Wno-nullability-completeness -Wno-expansion-to-defined -Wno-undef-prefix -fPIC",
+      "LDSHARED": "cc -bundle -undefined dynamic_lookup -arch arm64 -mmacosx-version-min=11.0 -Wl,-headerpad,40"
+    },
+    "note": "Configuration describes the local builders; compiler invocations were not separately captured. Reproduction builds both with one identical setuptools procedure."
+  }
+}
