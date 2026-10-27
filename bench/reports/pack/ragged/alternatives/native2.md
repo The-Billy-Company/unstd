@@ -2,7 +2,7 @@
 
 **The complete-decoder 100× target is still unmet on both operating systems.**
 This round ships a smaller native improvement and evaluates the broader
-current project CPU workflow without changing Billy application files.
+current project CPU workflow without changing Consumer application files.
 
 ## Shipped change
 
@@ -144,7 +144,7 @@ latency. Neither maximum-capacity result reaches 100×.
 Replay the public complete-frame harness as documented in the
 [main report](../README.md#replay), selecting the installed wheel's
 `site-packages` root explicitly. For the broader workflow, copy the retained
-probe to `.local/pack-project-native2-replay.py`, supply an authorized Billy
+probe to `.local/pack-project-native2-replay.py`, supply an authorized Consumer
 checkout, and pass `--source` explicitly. The capacity driver imports that same
 probe. Frozen source and artifact/evidence hashes are retained in
 [`native2-source.tar.gz`](native2-source.tar.gz) and

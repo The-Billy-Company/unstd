@@ -96,6 +96,12 @@ numeric frames without a NumPy C ABI; base consumers exercise tuple results
 and NumPy consumers exercise read-only views. Python fallback and native tests
 share independent geometry, boundary, nonfinite-value and ownership contracts.
 
+Dataset's `_dataset_native` offset-copy kernel is included in native imports,
+sanitizer contracts, installed-wheel tests and release verification. Its checks
+cover immutable snapshot geometry, selected offsets and row terminators; JSON
+decoding uses the existing serialization surface. The portable reader remains
+available when an optional local compile is unavailable.
+
 The dependency-floor job restores the committed `uv.lock` immediately after
 installing its lowest-direct environment. Tests retain those installed versions
 with `--no-sync`, while release/export checks inspect the audited canonical lock

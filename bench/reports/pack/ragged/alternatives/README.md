@@ -115,7 +115,7 @@ wheels. Its source and binary fingerprints are kept with each result.
 
 ## Scope of a scheduling comparison
 
-Billy's current offload policy includes bounded FIFO capacity, cancellation,
+Consumer's current offload policy includes bounded FIFO capacity, cancellation,
 copied context, telemetry observations, and ownership until physical worker
 completion. Releasing the GIL in a synchronous call does not yield the calling
 event-loop thread. Removing those costs from only the candidate would change

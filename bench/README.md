@@ -36,7 +36,7 @@ runtime backends from available source and unqualified replacement candidates.
 ## Frozen function speeds
 
 [`speeds.json`](baselines/speeds.json) freezes representative latency for every public
-operation across all 20 packages. The shared registry currently has 292
+operation across all 21 packages. The shared registry currently has 304
 workloads, including constructors, locally declared public methods/properties,
 stdlib aliases, generator consumption and complete stream lifecycles. Nine
 imported typing/enum/result vocabulary names have explicit exclusions. Private

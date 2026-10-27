@@ -55,7 +55,7 @@ uv run --no-sync pytest tests/suites/product/compress/unit -q
 See [the module test overview](../README.md) for related evidence.
 
 `test_native_encoder.py` qualifies the complete-buffer compression kernels with
-frozen Billy request bytes, gzip headers/trailers and decoder consumption,
+frozen Consumer request bytes, gzip headers/trailers and decoder consumption,
 observed request quality, unsupported workload and capability fallbacks, all
 other levels/timestamps, 37 differential argument/callback histories, failure
 propagation without replay, independent concurrent encoders and Python-thread

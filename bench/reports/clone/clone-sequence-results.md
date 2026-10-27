@@ -1,6 +1,6 @@
 # Clone sequence CPU follow-up
 
-Measured 2026-10-25 on Billy’s Linux x86_64 Foundry through public `clone.deep` and `clone.asdict`, with separately built CPython 3.13.16 and 3.14.8 wheels. The repeated-alias case that previously regressed is now **4.68–4.92× faster than the previous native implementation** and **4.14–4.32× faster than the older shared-identity baseline**. Larger adjacent-alias runs improve **5.89–6.26×** against the previous native implementation.
+Measured 2026-10-25 on Consumer’s Linux x86_64 Foundry through public `clone.deep` and `clone.asdict`, with separately built CPython 3.13.16 and 3.14.8 wheels. The repeated-alias case that previously regressed is now **4.68–4.92× faster than the previous native implementation** and **4.14–4.32× faster than the older shared-identity baseline**. Larger adjacent-alias runs improve **5.89–6.26×** against the previous native implementation.
 
 Scalar arrays improve **1.05–1.17×** on this server. The largest observed stdlib gain is **83.0×**, for `repeated-aliases-100000` on Python 3.13 with GC disabled. All 30 workloads pass the new 10% wall/CPU guard in all four configurations.
 

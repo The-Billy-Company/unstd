@@ -1,6 +1,6 @@
 # Process exit latency on Linux and macOS
 
-The subsequent [native-backend qualification](billy-native.md) measures
+The subsequent [native-backend qualification](consumer-native.md) measures
 ordinary commands and large captured output, with source receipts and sanitizer
 evidence. The measurements below record the earlier Python wait optimization.
 

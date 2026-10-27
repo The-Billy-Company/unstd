@@ -1,4 +1,4 @@
-"""Checked workloads for cloning, text, regex, iterators, files, processes and caches."""
+"""Checked workloads for copying, matching, files, processes, caches and datasets."""
 
 from __future__ import annotations
 
@@ -749,6 +749,184 @@ def _cache_cases(stack: ExitStack, *, comparison: bool = False) -> list[Case]:
     ]
 
 
+def _dataset_cases(stack: ExitStack, *, comparison: bool = False) -> list[Case]:
+    from hashlib import sha256
+
+    try:
+        from unstd.dataset import Dataset, build
+    except ImportError:
+        if comparison:
+            return []
+        raise
+
+    directory = Path(
+        stack.enter_context(TemporaryDirectory(prefix="unstd-dataset-speed-"))
+    )
+    source = directory / "source.dataset"
+    target = directory / "built.dataset"
+    rows: list[Json] = [
+        {"id": index, "text": f"event-{index}", "tags": ["training", "résumé"]}
+        for index in range(32)
+    ]
+    build(source, iter(rows))
+    reader = Dataset(source)
+    stack.callback(reader.close)
+    additional = []
+    if not comparison or hasattr(Dataset, "verify"):
+        # Independent format/checksum vectors stay outside every timed call.
+        frame = source.read_bytes()
+        expect(sha256(frame[56:]).digest())(frame[24:56])
+        corrupt = bytearray(frame)
+        corrupt[24] ^= 1
+        corrupt_path = directory / "checksum-corrupt.dataset"
+        corrupt_path.write_bytes(corrupt)
+
+        def check_verified(value: object) -> None:
+            expect(None)(value)
+            with Dataset(corrupt_path) as rejected:
+                try:
+                    rejected.verify()
+                except ValueError:
+                    pass
+                else:
+                    msg = "dataset verification accepted an independently corrupted checksum"
+                    raise AssertionError(msg)
+
+        def check_taken(value: Any) -> None:
+            expect([rows[index] for index in (31, 0, 17, 17, 0)])(value)
+            if value[2] is value[3] or value[1] is value[4]:
+                msg = "duplicate selections retained the same mutable result"
+                raise AssertionError(msg)
+
+        additional = [
+            Case(
+                "unstd.dataset.Dataset.take",
+                partial(reader.take, (31, -32, 17, 17, 0)),
+                check_taken,
+                "Select five ordered rows, including negative and duplicate indices, from a preopened 32-row mapped snapshot.",
+            ),
+            Case(
+                "unstd.dataset.Dataset.iter_rows",
+                lambda: list(reader.iter_rows(-2, 3, -5)),
+                expect(rows[-2:3:-5]),
+                "Consume a six-row reverse stepped selection from a preopened 32-row mapped snapshot.",
+            ),
+            Case(
+                "unstd.dataset.Dataset.batches",
+                lambda: list(reader.batches(7, start=2, stop=26)),
+                expect([rows[2:9], rows[9:16], rows[16:23], rows[23:26]]),
+                "Consume four bounded batches of 7, 7, 7 and 3 rows from a preopened 32-row mapped snapshot.",
+            ),
+            Case(
+                "unstd.dataset.Dataset.verify",
+                reader.verify,
+                check_verified,
+                "Validate every offset and the body SHA256 of a preopened 32-row mapped snapshot; independent corrupted-checksum control stays outside timing.",
+            ),
+        ]
+
+    def open_dataset() -> int:
+        with Dataset(source) as dataset:
+            return len(dataset)
+
+    def random_rows() -> list[Json]:
+        with Dataset(source) as dataset:
+            return [dataset[index] for index in (31, 2, 17, 0)]
+
+    def slice_rows() -> list[Json]:
+        with Dataset(source) as dataset:
+            return dataset[3:15:3]
+
+    def scan_rows() -> list[Json]:
+        with Dataset(source) as dataset:
+            return list(dataset)
+
+    def check_built(value: object) -> None:
+        expect(32)(value)
+        with Dataset(target) as dataset:
+            expect(rows)(list(dataset))
+
+    def check_entered(value: Any) -> None:
+        if value is not reader:
+            msg = "dataset context entry must return the existing reader"
+            raise AssertionError(msg)
+        expect(rows[0])(value[0])
+
+    def close_dataset() -> tuple[None, Dataset]:
+        dataset = Dataset(source)
+        dataset.close()
+        return None, dataset
+
+    def exit_dataset() -> tuple[None, Dataset]:
+        dataset = Dataset(source)
+        dataset.__enter__()
+        dataset.__exit__(None, None, None)
+        return None, dataset
+
+    def check_closed(value: Any) -> None:
+        expect(None)(value[0])
+        try:
+            value[1][0]
+        except ValueError:
+            pass
+        else:
+            msg = "closed dataset still permits row reads"
+            raise AssertionError(msg)
+        value[1].close()
+
+    return [
+        Case(
+            "unstd.dataset.build",
+            partial(build, target, rows),
+            check_built,
+            "Atomically serialize and publish 32 JSON rows with an offset index and body SHA256; verify all rows outside timing.",
+        ),
+        Case(
+            "unstd.dataset.Dataset",
+            open_dataset,
+            expect(32),
+            "Open, validate geometry, count and close a 32-row immutable mapped dataset snapshot.",
+        ),
+        Case(
+            "unstd.dataset.Dataset#random-access",
+            random_rows,
+            expect([rows[index] for index in (31, 2, 17, 0)]),
+            "Open a 32-row snapshot, decode four nonsequential indexed rows, and close the handle.",
+        ),
+        Case(
+            "unstd.dataset.Dataset#slice",
+            slice_rows,
+            expect(rows[3:15:3]),
+            "Open a 32-row snapshot, decode a four-row stepped slice, and close the handle.",
+        ),
+        Case(
+            "unstd.dataset.Dataset#scan",
+            scan_rows,
+            expect(rows),
+            "Open a 32-row snapshot, stream and decode every row in source order, and close the handle.",
+        ),
+        Case(
+            "unstd.dataset.Dataset.close",
+            close_dataset,
+            check_closed,
+            "Open and close a fresh dataset handle; verify closure rejects subsequent row reads outside timing.",
+        ),
+        Case(
+            "unstd.dataset.Dataset.__enter__",
+            reader.__enter__,
+            check_entered,
+            "Enter an existing readonly dataset handle and verify its identity and first row outside timing.",
+        ),
+        Case(
+            "unstd.dataset.Dataset.__exit__",
+            exit_dataset,
+            check_closed,
+            "Open, enter and exit a fresh dataset context; verify subsequent row reads fail outside timing.",
+        ),
+        *additional,
+    ]
+
+
 def cases(stack: ExitStack, *, comparison: bool = False) -> list[Case]:
     """Build independent, bounded workloads and register owned fixture cleanup."""
     return [
@@ -759,4 +937,5 @@ def cases(stack: ExitStack, *, comparison: bool = False) -> list[Case]:
         *_filesystem_cases(stack),
         *_process_cases(),
         *_cache_cases(stack, comparison=comparison),
+        *_dataset_cases(stack, comparison=comparison),
     ]

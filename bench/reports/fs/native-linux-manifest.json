@@ -1,5 +1,5 @@
 {
-  "purpose": "Linux-only native atomic-write experiment for captured Billy consumers; public dispatch unchanged",
+  "purpose": "Linux-only native atomic-write experiment for captured Consumer consumers; public dispatch unchanged",
   "container_image_sha256": "sha256:27d6dd95c50ac1ee9bac3c5683a1f468cbd529de5b39eaa5cde05635606f2abc",
   "environment_file": "native-linux-environment.json",
   "compiler_command": [
@@ -24,14 +24,14 @@
     "native/fs/experiments/commit.c": "1c9d2005c440cb92a027cafeaf344840b55554c73b471dcee1746a8a1e4f70ee",
     "native/fs/experiments/README.md": "3121352cbeb2a139f3d3f51127d221120b129f6a075699abfb2c2d6509d8a669",
     "native/fs/experiments/qualify.py": "b3131d91e15c13e41644b8253be5b1f56a08bc5f7bdf943d38370cb3847ba5a2",
-    "bench/profiles/billy_fs.py": "e0bbd4c8b32b73d220e8fe5887810ecc41495c1cc5098ea294cea1f99b86d786",
+    "bench/profiles/consumer_fs.py": "e0bbd4c8b32b73d220e8fe5887810ecc41495c1cc5098ea294cea1f99b86d786",
     "bench/profiles/fs_backend.py": "36d6bd753ab1227a6c7e0f8b4d11f82c7625b94dc7f7c5674075e010d449d3cb",
-    "bench/workloads/billy_fs.json": "8e13569fef4c9b04a84ab67bf49c31d97c42c2b8728eac8292172d1a7c2c0a47"
+    "bench/workloads/consumer_fs.json": "8e13569fef4c9b04a84ab67bf49c31d97c42c2b8728eac8292172d1a7c2c0a47"
   },
   "report_files_sha256": {
-    "billy-native-linux-overlay-py314.json": "bd0c0b2f078466da3b8a9b942c7a3e0f62dd63f2db1e158520c93cc8632bf062",
-    "billy-native-linux-tmpfs-py314.json": "7d0bf3c2f1c4142ebef96e65f599ccf39ff5150ad7e24d2a1d552d6fccb99780",
-    "billy-native-linux-overlay-followup-py314.json": "990ee98835f1059a5c9636bd45b6b1ee888515677a1a08273611d8c9f600fe08"
+    "consumer-native-linux-overlay-py314.json": "bd0c0b2f078466da3b8a9b942c7a3e0f62dd63f2db1e158520c93cc8632bf062",
+    "consumer-native-linux-tmpfs-py314.json": "7d0bf3c2f1c4142ebef96e65f599ccf39ff5150ad7e24d2a1d552d6fccb99780",
+    "consumer-native-linux-overlay-followup-py314.json": "990ee98835f1059a5c9636bd45b6b1ee888515677a1a08273611d8c9f600fe08"
   },
   "validation": {
     "fs_product_linux": {
@@ -45,12 +45,12 @@
       "receipt": "native-linux-tests.txt"
     },
     "harness_contracts": {
-      "billy_fs": 12,
+      "consumer_fs": 12,
       "fs_backend": 14
     },
     "combined_development_host": {
       "passed": 189,
-      "command": ".venv/bin/python -m pytest tests/suites/product/fs tests/suites/assurance/gates/bench/test_fs_backend.py tests/suites/assurance/gates/bench/test_billy_fs.py -q",
+      "command": ".venv/bin/python -m pytest tests/suites/product/fs tests/suites/assurance/gates/bench/test_fs_backend.py tests/suites/assurance/gates/bench/test_consumer_fs.py -q",
       "observed_seconds": 7.61
     },
     "lint_format_mypy": "passed on the relevant fs runtime, drivers, tests and qualification Python files"
@@ -60,5 +60,9 @@
     "Overlay storage and tmpfs measured; tmpfs offers no persistence claim",
     "Synthetic byte-size scenarios carry no production frequency weights",
     "Native cancellation/error admission is incomplete; proof is not installed or dispatched by public fs"
-  ]
+  ],
+  "publication_normalization": {
+    "kind": "public_metadata_normalization",
+    "note": "Consumer labels, artifact paths and machine-specific origins normalized for public publication. Historical timings, measured payload bytes and original source digests retain their captured meaning; normalized source/archive bytes have their own publication hashes."
+  }
 }

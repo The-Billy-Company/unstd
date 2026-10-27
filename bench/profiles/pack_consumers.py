@@ -3,7 +3,7 @@
 Capture the real consumer once, then replay exactly those saved source bytes on
 each operating system::
 
-    python bench/profiles/pack_consumers.py --billy-root /path/to/billy \
+    python bench/profiles/pack_consumers.py --consumer-root /path/to/consumer \
         --write-capture /tmp/pack-consumer.json
     python bench/profiles/pack_consumers.py --capture /tmp/pack-consumer.json \
         --source src --rounds 7 --output /tmp/pack-consumers.json
@@ -59,9 +59,9 @@ def _node_source(source: str, node: ast.ClassDef | ast.FunctionDef) -> str:
     return "".join(source.splitlines(keepends=True)[start - 1 : node.end_lineno])
 
 
-def _capture(billy_root: Path) -> dict[str, Any]:
+def _capture(consumer_root: Path) -> dict[str, Any]:
     """Capture two actual consumer definitions and their governing literals."""
-    path = billy_root / _CONSUMER
+    path = consumer_root / _CONSUMER
     source = path.read_text(encoding="utf-8")
     tree = ast.parse(source)
     selected = {
@@ -503,7 +503,7 @@ def _run(args: argparse.Namespace) -> dict[str, Any]:
 def main() -> None:
     """Capture or replay one bounded consumer qualification."""
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--billy-root", type=Path)
+    parser.add_argument("--consumer-root", type=Path)
     parser.add_argument("--write-capture", type=Path)
     parser.add_argument("--capture", type=Path)
     parser.add_argument("--source", type=Path, default=_ROOT / "src")
@@ -513,11 +513,11 @@ def main() -> None:
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
     if args.write_capture is not None:
-        if args.billy_root is None:
-            parser.error("--write-capture requires --billy-root")
+        if args.consumer_root is None:
+            parser.error("--write-capture requires --consumer-root")
         args.write_capture.parent.mkdir(parents=True, exist_ok=True)
         args.write_capture.write_text(
-            json.dumps(_capture(args.billy_root), indent=2) + "\n", encoding="utf-8"
+            json.dumps(_capture(args.consumer_root), indent=2) + "\n", encoding="utf-8"
         )
         return
     if args.capture is None or args.output is None:

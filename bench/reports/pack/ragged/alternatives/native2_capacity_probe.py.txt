@@ -13,7 +13,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser()
 parser.add_argument('--source', type=Path, required=True)
-parser.add_argument('--billy-root', type=Path, default=ROOT.parent/'billy')
+parser.add_argument('--consumer-root', type=Path, default=ROOT.parent/'consumer')
 parser.add_argument('--output', type=Path, required=True)
 args = parser.parse_args()
 path = ROOT/'.local/pack-project-native2-replay.py'
@@ -28,7 +28,7 @@ from unstd.pack import binpack, ragged
 assert Path(ragged.__file__).resolve() == source/'unstd/pack/ragged.py'
 assert Path(ragged._native.__file__).resolve().parent == source/'unstd/pack'
 assert ragged._native.KERNEL_VERSION == 2
-data = p.capture(args.billy_root)
+data = p.capture(args.consumer_root)
 modules = p.make_modules(data,binpack,ragged)
 documents = data['recipe']['capacity']
 rows = data['recipe']['document_maximum']

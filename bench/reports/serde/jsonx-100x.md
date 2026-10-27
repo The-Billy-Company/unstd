@@ -13,7 +13,7 @@ They use no stdlib-control normalization. The prework column measures this turn'
 change; the historical column uses commit
 `94589856d2e604310b55020e40c51010f2af4755`. Both sides use the same CPython 3.14.9
 interpreter, orjson 3.12.0, msgspec 0.22.0 and default production allocator on
-Billy's Foundry (Linux x86_64, Ryzen 9 7950X3D).
+Consumer's Foundry (Linux x86_64, Ryzen 9 7950X3D).
 
 | Public call and input | Versus immediate prework | Versus historical original |
 |---|---:|---:|

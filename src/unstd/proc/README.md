@@ -110,7 +110,7 @@ globals, signal handlers or worker threads are changed.
 
 The [native source guide](../../../native/proc/README.md) explains argument and
 environment ownership, output buffers, audit handling and sanitizer checks.
-The [captured-consumer qualification](../../../bench/reports/proc/billy-native.md)
+The [captured-consumer qualification](../../../bench/reports/proc/consumer-native.md)
 records native spawn/capture costs and fallback cases on macOS and Linux,
 including unchanged workloads and measured slowdowns.
 Run the contracts from the repository root with

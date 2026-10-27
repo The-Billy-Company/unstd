@@ -33,7 +33,7 @@ Linux cibuildwheel tests import the packaged fs extension before running the
 full [fs contracts](../../suites/product/fs/README.md), including the 62 native
 integration cases. Their syscall-boundary checks compile a test-only ELF
 observer from the source tree when a compiler is available; it is not a
-production backend or a profiling dependency. Installed Billy performance
+production backend or a profiling dependency. Installed Consumer performance
 qualification has a separate [driver and retained receipts](../../../bench/reports/fs/production/README.md).
 
 The native-wheel verifier also requires exactly one `unstd.pack._pack_native`
@@ -43,6 +43,11 @@ ragged-frame admission and direct native metadata checks. The extension is
 built independently of the NumPy extra and needs no NumPy C ABI; base installs
 can use it with immutable tuple output. Its typing stub ships with the Python
 package, and `native/pack/src/adapter.c` belongs in the sdist.
+
+The same build and wheel gates require `unstd.dataset._dataset_native` for
+checked snapshot row/span copies. Its portable typing stub ships in every
+wheel, and `native/dataset/src/adapter.c` ships in the sdist. The complete
+dataset contracts run against the installed wheel without an optional extra.
 
 Local optional compiler failures leave the stdlib ragged validator available;
 strict release builds fail on a missing registered kernel. Free-threaded and

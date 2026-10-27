@@ -28,6 +28,7 @@ MODULES = (
     "rand",
     "pack",
     "math",
+    "dataset",
 )
 
 

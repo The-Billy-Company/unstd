@@ -1,15 +1,15 @@
 # Rand backend qualification
 
 Measured October 25, 2026. The explicit `ints(..., seeds=...)` path exceeds
-100× for Billy-shaped batches of independently seeded integer counts on both
-tested systems. **This does not establish a 100× complete Billy workflow gain.**
+100× for Consumer-shaped batches of independently seeded integer counts on both
+tested systems. **This does not establish a 100× complete Consumer workflow gain.**
 Existing consumers keep their historical streams; the new path requires an
-explicit caller opt-in and produces different values. No Billy application
+explicit caller opt-in and produces different values. No Consumer application
 files were changed, and no application-specific logic is present in rand.
 
 ## Keyed counts: the qualified 100× scope
 
-The captured Anvil consumers construct `Generator(seed, backend="stdlib")`
+The captured Evaluation consumers construct `Generator(seed, backend="stdlib")`
 and call `randint(1, 4)` separately for each deterministic, BLAKE2b-derived key.
 The new generic API batches these independent counts:
 
@@ -104,8 +104,8 @@ median regressions. For example, macOS masking-256 is 0.95× and scaled NumPy
 floats of size one are 0.91×; Linux masking-8192 is 0.97×. Unchanged controls also
 vary under the shared host's load. No universal no-regression claim is made.
 
-Exact consumer evidence: [macOS](billy-macos-py314.json),
-[Linux](billy-linux-py314.json). Backend matrix:
+Exact consumer evidence: [macOS](consumer-macos-py314.json),
+[Linux](consumer-linux-py314.json). Backend matrix:
 [macOS](backend-macos-py314.json), [Linux](backend-linux-py314.json).
 All exact cases compare complete outputs and full RNG states outside timing.
 
@@ -123,7 +123,7 @@ LLM, network, database and unrelated application work. Sizes are grounded in
 the 8,000-example corpus configuration, 371-tool catalogue and 24-example setting;
 receipts distinguish configured sizes from hypothetical scenarios. Captured
 source/AST hashes and relevant application test/configuration hashes live in
-the [consumer fixtures](../../workloads/billy_rand.json),
+the [consumer fixtures](../../workloads/consumer_rand.json),
 [keyed fixtures](../../workloads/rand_keyed.json) and
 [sampling fixtures](../../workloads/rand_strategies.json).
 
@@ -171,7 +171,7 @@ From the repository root, after rebuilding native extensions:
 
 ```console
 uv run --no-sync python bench/profiles/rand_backend.py --compare-source bench/reports/rand/before-draw.py.txt --rounds 9 --batch-ms 3 --output /tmp/rand-backend.json
-uv run --no-sync python bench/profiles/billy_rand.py --compare-source bench/reports/rand/before-draw.py.txt --require-native --rounds 9 --batch-ms 3 --min-speedup 100 --output /tmp/billy-rand.json
+uv run --no-sync python bench/profiles/consumer_rand.py --compare-source bench/reports/rand/before-draw.py.txt --require-native --rounds 9 --batch-ms 3 --min-speedup 100 --output /tmp/consumer-rand.json
 uv run --no-sync python bench/profiles/rand_keyed.py --compare-source bench/reports/rand/before-draw.py.txt --require-native --rounds 9 --batch-ms 3 --min-speedup 100 --output /tmp/rand-keyed.json
 uv run --no-sync python bench/profiles/rand_strategies.py --compare-source bench/reports/rand/before-draw.py.txt --rounds 9 --batch-ms 3 --output /tmp/rand-strategies.json
 ```

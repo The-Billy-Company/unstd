@@ -10,10 +10,10 @@
     "src/unstd/compress/_reader.py": "be0dd7f18e403df9a5663efe935618fd9037639d99d91e919772f6f7b0b26f4a",
     "src/unstd/compress/_validation.py": "bc8a0ea27e8e59c679faa5cef0599624884b1147912066bfa391763b935a7ad1",
     "src/unstd/compress/zlibx.py": "d2678ca13f856bc1d207c68ed57ccd448e3b06915445c7636be0fcc5e7fd6887",
-    "bench/profiles/billy_gzip.py": "94af7370eb60336831e4de3fe0601c79cf691b94bf77d371934f6a46c0a11756",
+    "bench/profiles/consumer_gzip.py": "94af7370eb60336831e4de3fe0601c79cf691b94bf77d371934f6a46c0a11756",
     "bench/profiles/gzip_concurrency.py": "df255e0494ff6267d398eab29bb54c04575351066c6c29b660444965cebb7f5d",
     "bench/profiles/gzip_reads.py": "30766b7bc03952b5f91a75ff54e9f87f527bd26f8feef38427224303cdd801ae",
-    "bench/workloads/billy_gzip.json.gz": "bc2f0885ef632bd443d8b84c9d9d3982d0ad4b4328d748614d581d931a865294",
+    "bench/workloads/consumer_gzip.json.gz": "bc2f0885ef632bd443d8b84c9d9d3982d0ad4b4328d748614d581d931a865294",
     "src/unstd/compress/zipfile.py": "4b2d49f65772e92dd05bdf8748a48941dae23fc9e29bdef64ed08c8ad90de804",
     "src/unstd/compress/lzma.py": "f9175365c90049160b11bc5d1f8fa39ae847a95525efb3e15e2f3a3c70793794",
     "src/unstd/compress/zstandard.py": "dfa12e41adc07d081fba85078742d3702cb4b64b8257e4081248ccc9eb0fd8dd",
@@ -57,8 +57,8 @@
     "tests/suites/product/compress/properties/test_gzip_laws.py": "068bdf20a206420a2b70625f7587e6771e769eeeaa887a2f2fac9ab52eab5a75"
   },
   "reports": {
-    "billy-macos-py314.json": "5a2a1095b1ae81008064a16012c5ebcbfe33f92f5d70a06bae96aa87e5ebe0f5",
-    "billy-linux-py314.json": "743ff8b0c73cfd77bf63ad920c52519c718135bf15ddd58f02f14078d630b181",
+    "consumer-macos-py314.json": "5a2a1095b1ae81008064a16012c5ebcbfe33f92f5d70a06bae96aa87e5ebe0f5",
+    "consumer-linux-py314.json": "743ff8b0c73cfd77bf63ad920c52519c718135bf15ddd58f02f14078d630b181",
     "concurrency-macos-py314.json": "4ba4d5c8f96bfe6b9f2664d0bb5b9830d0451370a92fdf0032a7797c6e630097",
     "concurrency-linux-py314.json": "fc1a13303afba2dd3a6c5e46e65def8ca959c124e4cf6e4f8f04e0700f658f22"
   },
@@ -185,5 +185,9 @@
       "gates-macos-py314.txt": "286a9f88199b0087134af3152cd488087caf166bb62150e1b9008961199d1714"
     }
   },
-  "scope": "Synthetic frozen Billy codec/I/O consumption shapes; independent upload streams count two full decoded passes; excludes transport, filesystem and application business logic."
+  "scope": "Synthetic frozen Consumer codec/I/O consumption shapes; independent upload streams count two full decoded passes; excludes transport, filesystem and application business logic.",
+  "publication_normalization": {
+    "kind": "public_metadata_normalization",
+    "note": "Consumer labels, artifact paths and machine-specific origins normalized for public publication. Historical timings, measured payload bytes and original source digests retain their captured meaning; normalized source/archive bytes have their own publication hashes."
+  }
 }

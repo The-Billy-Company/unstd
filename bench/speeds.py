@@ -44,6 +44,7 @@ _NATIVE = (
     "containers._sorted_native",
     "crypto._stream_native",
     "math._math_native",
+    "dataset._dataset_native",
     "serde._json_native",
     "text._text_native",
 )

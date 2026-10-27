@@ -8,7 +8,7 @@
   "rounds": 9,
   "measurement": "complete call including output allocation and refcount cleanup; setup and oracle checks excluded; GC disabled during operation batches",
   "summary": {
-    "billy/embedding-pack-256-list": {
+    "consumer/embedding-pack-256-list": {
       "baseline_median_wall_ns": 1766.4531569529652,
       "candidate_median_wall_ns": 1675.2190104318433,
       "median_wall_speedup": 1.0544610262616367,
@@ -29,7 +29,7 @@
       "median_cpu_speedup": 0.7734061244125312,
       "observed_conservative_cpu_speedup": 0.12942214161946383
     },
-    "billy/embedding-unpack-256-owned-list": {
+    "consumer/embedding-unpack-256-owned-list": {
       "baseline_median_wall_ns": 3809.9532504532503,
       "candidate_median_wall_ns": 3810.779905496145,
       "median_wall_speedup": 0.999783074577017,
@@ -50,7 +50,7 @@
       "median_cpu_speedup": 0.9997506046845052,
       "observed_conservative_cpu_speedup": 0.5593331294493805
     },
-    "billy/embedding-pack-page-200x256-lists": {
+    "consumer/embedding-pack-page-200x256-lists": {
       "baseline_median_wall_ns": 357137.1685393258,
       "candidate_median_wall_ns": 340965.1304347826,
       "median_wall_speedup": 1.0474301817429876,
@@ -71,7 +71,7 @@
       "median_cpu_speedup": 1.0474810416732905,
       "observed_conservative_cpu_speedup": 0.6652010364951787
     },
-    "billy/embedding-unpack-page-200x256-owned-lists": {
+    "consumer/embedding-unpack-page-200x256-owned-lists": {
       "baseline_median_wall_ns": 866457.1666666666,
       "candidate_median_wall_ns": 800690.3243243244,
       "median_wall_speedup": 1.0821376758834205,
@@ -92,7 +92,7 @@
       "median_cpu_speedup": 1.0820470608568968,
       "observed_conservative_cpu_speedup": 0.818236814483188
     },
-    "billy/f32-unpack-256-owned-list": {
+    "consumer/f32-unpack-256-owned-list": {
       "baseline_median_wall_ns": 9283.433364112034,
       "candidate_median_wall_ns": 8970.513864306784,
       "median_wall_speedup": 1.0348831186862484,
@@ -113,7 +113,7 @@
       "median_cpu_speedup": 1.0368890704413054,
       "observed_conservative_cpu_speedup": 0.3748884758188971
     },
-    "billy/http-length-pack": {
+    "consumer/http-length-pack": {
       "baseline_median_wall_ns": 40.95432176640039,
       "candidate_median_wall_ns": 39.21883184235317,
       "median_wall_speedup": 1.0442514435672976,
@@ -134,7 +134,7 @@
       "median_cpu_speedup": 1.044253984866501,
       "observed_conservative_cpu_speedup": 0.7505170109421385
     },
-    "billy/http-length-unpack": {
+    "consumer/http-length-unpack": {
       "baseline_median_wall_ns": 44.656624691722826,
       "candidate_median_wall_ns": 41.917031102484884,
       "median_wall_speedup": 1.0653575293188056,
@@ -680,7 +680,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-256-list": {
+          "consumer/embedding-pack-256-list": {
             "iterations": 14788,
             "wall_ns": 28451583,
             "cpu_ns": 73531540,
@@ -689,7 +689,7 @@
             "note": "Existing compiled !256d Struct.pack, including argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-256-owned-list": {
+          "consumer/embedding-unpack-256-owned-list": {
             "iterations": 6839,
             "wall_ns": 28455917,
             "cpu_ns": 28468124,
@@ -698,7 +698,7 @@
             "note": "Existing !256d Struct.unpack_from followed by owned Python list",
             "oracle_passed": true
           },
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 73,
             "wall_ns": 30894292,
             "cpu_ns": 30903209,
@@ -707,7 +707,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 30,
             "wall_ns": 30825667,
             "cpu_ns": 30830583,
@@ -716,7 +716,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 2215,
             "wall_ns": 29022083,
             "cpu_ns": 29031916,
@@ -725,7 +725,7 @@
             "note": "Existing float32 little-endian view followed by Python float conversion",
             "oracle_passed": true
           },
-          "billy/http-length-pack": {
+          "consumer/http-length-pack": {
             "iterations": 484401,
             "wall_ns": 29239792,
             "cpu_ns": 29250125,
@@ -734,7 +734,7 @@
             "note": "Existing four-byte big-endian framing header",
             "oracle_passed": true
           },
-          "billy/http-length-unpack": {
+          "consumer/http-length-unpack": {
             "iterations": 538865,
             "wall_ns": 32873250,
             "cpu_ns": 32874374,
@@ -979,7 +979,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-256-list": {
+          "consumer/embedding-pack-256-list": {
             "iterations": 15648,
             "wall_ns": 27641459,
             "cpu_ns": 108763083,
@@ -988,7 +988,7 @@
             "note": "Existing compiled !256d Struct.pack, including argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-256-owned-list": {
+          "consumer/embedding-unpack-256-owned-list": {
             "iterations": 7716,
             "wall_ns": 30547542,
             "cpu_ns": 30548708,
@@ -997,7 +997,7 @@
             "note": "Existing !256d Struct.unpack_from followed by owned Python list",
             "oracle_passed": true
           },
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 89,
             "wall_ns": 31785208,
             "cpu_ns": 31792958,
@@ -1006,7 +1006,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 37,
             "wall_ns": 31219542,
             "cpu_ns": 31226041,
@@ -1015,7 +1015,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 3221,
             "wall_ns": 30415792,
             "cpu_ns": 30422416,
@@ -1024,7 +1024,7 @@
             "note": "Existing float32 little-endian view followed by Python float conversion",
             "oracle_passed": true
           },
-          "billy/http-length-pack": {
+          "consumer/http-length-pack": {
             "iterations": 769942,
             "wall_ns": 33310916,
             "cpu_ns": 33318458,
@@ -1033,7 +1033,7 @@
             "note": "Existing four-byte big-endian framing header",
             "oracle_passed": true
           },
-          "billy/http-length-unpack": {
+          "consumer/http-length-unpack": {
             "iterations": 644143,
             "wall_ns": 29183917,
             "cpu_ns": 29186625,
@@ -1278,7 +1278,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-256-list": {
+          "consumer/embedding-pack-256-list": {
             "iterations": 15576,
             "wall_ns": 28006000,
             "cpu_ns": 263472001,
@@ -1287,7 +1287,7 @@
             "note": "Existing compiled !256d Struct.pack, including argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-256-owned-list": {
+          "consumer/embedding-unpack-256-owned-list": {
             "iterations": 7894,
             "wall_ns": 31690209,
             "cpu_ns": 31696333,
@@ -1296,7 +1296,7 @@
             "note": "Existing !256d Struct.unpack_from followed by owned Python list",
             "oracle_passed": true
           },
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 84,
             "wall_ns": 32424083,
             "cpu_ns": 32430792,
@@ -1305,7 +1305,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 36,
             "wall_ns": 31192458,
             "cpu_ns": 31197083,
@@ -1314,7 +1314,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 3273,
             "wall_ns": 29690167,
             "cpu_ns": 29680334,
@@ -1323,7 +1323,7 @@
             "note": "Existing float32 little-endian view followed by Python float conversion",
             "oracle_passed": true
           },
-          "billy/http-length-pack": {
+          "consumer/http-length-pack": {
             "iterations": 754947,
             "wall_ns": 29992667,
             "cpu_ns": 29998375,
@@ -1332,7 +1332,7 @@
             "note": "Existing four-byte big-endian framing header",
             "oracle_passed": true
           },
-          "billy/http-length-unpack": {
+          "consumer/http-length-unpack": {
             "iterations": 726157,
             "wall_ns": 30660708,
             "cpu_ns": 30652583,
@@ -1577,7 +1577,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-256-list": {
+          "consumer/embedding-pack-256-list": {
             "iterations": 17919,
             "wall_ns": 28695375,
             "cpu_ns": 28690459,
@@ -1586,7 +1586,7 @@
             "note": "Existing compiled !256d Struct.pack, including argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-256-owned-list": {
+          "consumer/embedding-unpack-256-owned-list": {
             "iterations": 8572,
             "wall_ns": 29334917,
             "cpu_ns": 29331791,
@@ -1595,7 +1595,7 @@
             "note": "Existing !256d Struct.unpack_from followed by owned Python list",
             "oracle_passed": true
           },
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 94,
             "wall_ns": 29818625,
             "cpu_ns": 29823208,
@@ -1604,7 +1604,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 38,
             "wall_ns": 28590959,
             "cpu_ns": 28597416,
@@ -1613,7 +1613,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 3215,
             "wall_ns": 27461875,
             "cpu_ns": 27466792,
@@ -1622,7 +1622,7 @@
             "note": "Existing float32 little-endian view followed by Python float conversion",
             "oracle_passed": true
           },
-          "billy/http-length-pack": {
+          "consumer/http-length-pack": {
             "iterations": 801997,
             "wall_ns": 30020250,
             "cpu_ns": 30020625,
@@ -1631,7 +1631,7 @@
             "note": "Existing four-byte big-endian framing header",
             "oracle_passed": true
           },
-          "billy/http-length-unpack": {
+          "consumer/http-length-unpack": {
             "iterations": 732805,
             "wall_ns": 29564791,
             "cpu_ns": 29558459,
@@ -1876,7 +1876,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-256-list": {
+          "consumer/embedding-pack-256-list": {
             "iterations": 18052,
             "wall_ns": 30328584,
             "cpu_ns": 30321166,
@@ -1885,7 +1885,7 @@
             "note": "Existing compiled !256d Struct.pack, including argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-256-owned-list": {
+          "consumer/embedding-unpack-256-owned-list": {
             "iterations": 7860,
             "wall_ns": 28820000,
             "cpu_ns": 28825750,
@@ -1894,7 +1894,7 @@
             "note": "Existing !256d Struct.unpack_from followed by owned Python list",
             "oracle_passed": true
           },
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 94,
             "wall_ns": 32114750,
             "cpu_ns": 32120875,
@@ -1903,7 +1903,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 36,
             "wall_ns": 29270625,
             "cpu_ns": 29275666,
@@ -1912,7 +1912,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 3249,
             "wall_ns": 30161875,
             "cpu_ns": 30161375,
@@ -1921,7 +1921,7 @@
             "note": "Existing float32 little-endian view followed by Python float conversion",
             "oracle_passed": true
           },
-          "billy/http-length-pack": {
+          "consumer/http-length-pack": {
             "iterations": 783152,
             "wall_ns": 32073459,
             "cpu_ns": 32079500,
@@ -1930,7 +1930,7 @@
             "note": "Existing four-byte big-endian framing header",
             "oracle_passed": true
           },
-          "billy/http-length-unpack": {
+          "consumer/http-length-unpack": {
             "iterations": 725153,
             "wall_ns": 30550208,
             "cpu_ns": 30556750,
@@ -2175,7 +2175,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-256-list": {
+          "consumer/embedding-pack-256-list": {
             "iterations": 17687,
             "wall_ns": 28897000,
             "cpu_ns": 115592875,
@@ -2184,7 +2184,7 @@
             "note": "Existing compiled !256d Struct.pack, including argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-256-owned-list": {
+          "consumer/embedding-unpack-256-owned-list": {
             "iterations": 7946,
             "wall_ns": 29262375,
             "cpu_ns": 29266709,
@@ -2193,7 +2193,7 @@
             "note": "Existing !256d Struct.unpack_from followed by owned Python list",
             "oracle_passed": true
           },
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 85,
             "wall_ns": 27206000,
             "cpu_ns": 27210791,
@@ -2202,7 +2202,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 35,
             "wall_ns": 28232917,
             "cpu_ns": 28241083,
@@ -2211,7 +2211,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 3372,
             "wall_ns": 29247916,
             "cpu_ns": 29239584,
@@ -2220,7 +2220,7 @@
             "note": "Existing float32 little-endian view followed by Python float conversion",
             "oracle_passed": true
           },
-          "billy/http-length-pack": {
+          "consumer/http-length-pack": {
             "iterations": 780464,
             "wall_ns": 30897416,
             "cpu_ns": 30885667,
@@ -2229,7 +2229,7 @@
             "note": "Existing four-byte big-endian framing header",
             "oracle_passed": true
           },
-          "billy/http-length-unpack": {
+          "consumer/http-length-unpack": {
             "iterations": 703912,
             "wall_ns": 31434334,
             "cpu_ns": 31440666,
@@ -2474,7 +2474,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-256-list": {
+          "consumer/embedding-pack-256-list": {
             "iterations": 17174,
             "wall_ns": 27222750,
             "cpu_ns": 157061249,
@@ -2483,7 +2483,7 @@
             "note": "Existing compiled !256d Struct.pack, including argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-256-owned-list": {
+          "consumer/embedding-unpack-256-owned-list": {
             "iterations": 8697,
             "wall_ns": 30053250,
             "cpu_ns": 30038166,
@@ -2492,7 +2492,7 @@
             "note": "Existing !256d Struct.unpack_from followed by owned Python list",
             "oracle_passed": true
           },
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 96,
             "wall_ns": 30614875,
             "cpu_ns": 30620041,
@@ -2501,7 +2501,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 38,
             "wall_ns": 36625750,
             "cpu_ns": 36646333,
@@ -2510,7 +2510,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 3597,
             "wall_ns": 29637125,
             "cpu_ns": 29641792,
@@ -2519,7 +2519,7 @@
             "note": "Existing float32 little-endian view followed by Python float conversion",
             "oracle_passed": true
           },
-          "billy/http-length-pack": {
+          "consumer/http-length-pack": {
             "iterations": 830178,
             "wall_ns": 30866500,
             "cpu_ns": 30872334,
@@ -2528,7 +2528,7 @@
             "note": "Existing four-byte big-endian framing header",
             "oracle_passed": true
           },
-          "billy/http-length-unpack": {
+          "consumer/http-length-unpack": {
             "iterations": 778298,
             "wall_ns": 32106584,
             "cpu_ns": 32096625,
@@ -2773,7 +2773,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-256-list": {
+          "consumer/embedding-pack-256-list": {
             "iterations": 14402,
             "wall_ns": 26961917,
             "cpu_ns": 271633751,
@@ -2782,7 +2782,7 @@
             "note": "Existing compiled !256d Struct.pack, including argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-256-owned-list": {
+          "consumer/embedding-unpack-256-owned-list": {
             "iterations": 7722,
             "wall_ns": 29420459,
             "cpu_ns": 29425583,
@@ -2791,7 +2791,7 @@
             "note": "Existing !256d Struct.unpack_from followed by owned Python list",
             "oracle_passed": true
           },
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 76,
             "wall_ns": 27474750,
             "cpu_ns": 27478874,
@@ -2800,7 +2800,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 35,
             "wall_ns": 30648250,
             "cpu_ns": 30657542,
@@ -2809,7 +2809,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 3261,
             "wall_ns": 32231584,
             "cpu_ns": 32230916,
@@ -2818,7 +2818,7 @@
             "note": "Existing float32 little-endian view followed by Python float conversion",
             "oracle_passed": true
           },
-          "billy/http-length-pack": {
+          "consumer/http-length-pack": {
             "iterations": 690938,
             "wall_ns": 31017250,
             "cpu_ns": 31008875,
@@ -2827,7 +2827,7 @@
             "note": "Existing four-byte big-endian framing header",
             "oracle_passed": true
           },
-          "billy/http-length-unpack": {
+          "consumer/http-length-unpack": {
             "iterations": 607543,
             "wall_ns": 28980000,
             "cpu_ns": 28913375,
@@ -3072,7 +3072,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-256-list": {
+          "consumer/embedding-pack-256-list": {
             "iterations": 13263,
             "wall_ns": 34093791,
             "cpu_ns": 34035959,
@@ -3081,7 +3081,7 @@
             "note": "Existing compiled !256d Struct.pack, including argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-256-owned-list": {
+          "consumer/embedding-unpack-256-owned-list": {
             "iterations": 5197,
             "wall_ns": 27018375,
             "cpu_ns": 26852460,
@@ -3090,7 +3090,7 @@
             "note": "Existing !256d Struct.unpack_from followed by owned Python list",
             "oracle_passed": true
           },
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 52,
             "wall_ns": 21502417,
             "cpu_ns": 21506334,
@@ -3099,7 +3099,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 30,
             "wall_ns": 29513625,
             "cpu_ns": 29518875,
@@ -3108,7 +3108,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 3012,
             "wall_ns": 33852541,
             "cpu_ns": 33868583,
@@ -3117,7 +3117,7 @@
             "note": "Existing float32 little-endian view followed by Python float conversion",
             "oracle_passed": true
           },
-          "billy/http-length-pack": {
+          "consumer/http-length-pack": {
             "iterations": 634490,
             "wall_ns": 32273417,
             "cpu_ns": 32234916,
@@ -3126,7 +3126,7 @@
             "note": "Existing four-byte big-endian framing header",
             "oracle_passed": true
           },
-          "billy/http-length-unpack": {
+          "consumer/http-length-unpack": {
             "iterations": 504867,
             "wall_ns": 31698541,
             "cpu_ns": 31699334,
@@ -3374,7 +3374,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-256-list": {
+          "consumer/embedding-pack-256-list": {
             "iterations": 15821,
             "wall_ns": 50526584,
             "cpu_ns": 50528083,
@@ -3383,7 +3383,7 @@
             "note": "Existing compiled !256d Struct.pack, including argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-256-owned-list": {
+          "consumer/embedding-unpack-256-owned-list": {
             "iterations": 6444,
             "wall_ns": 39415667,
             "cpu_ns": 39422250,
@@ -3392,7 +3392,7 @@
             "note": "Existing !256d Struct.unpack_from followed by owned Python list",
             "oracle_passed": true
           },
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 72,
             "wall_ns": 34331917,
             "cpu_ns": 34340458,
@@ -3401,7 +3401,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 28,
             "wall_ns": 25744541,
             "cpu_ns": 25752667,
@@ -3410,7 +3410,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 2852,
             "wall_ns": 32874667,
             "cpu_ns": 32864458,
@@ -3419,7 +3419,7 @@
             "note": "Existing float32 little-endian view followed by Python float conversion",
             "oracle_passed": true
           },
-          "billy/http-length-pack": {
+          "consumer/http-length-pack": {
             "iterations": 529110,
             "wall_ns": 26226791,
             "cpu_ns": 26217041,
@@ -3428,7 +3428,7 @@
             "note": "Existing four-byte big-endian framing header",
             "oracle_passed": true
           },
-          "billy/http-length-unpack": {
+          "consumer/http-length-unpack": {
             "iterations": 507727,
             "wall_ns": 26560916,
             "cpu_ns": 26458834,
@@ -3674,7 +3674,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-256-list": {
+          "consumer/embedding-pack-256-list": {
             "iterations": 17013,
             "wall_ns": 28038584,
             "cpu_ns": 121819959,
@@ -3683,7 +3683,7 @@
             "note": "Existing compiled !256d Struct.pack, including argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-256-owned-list": {
+          "consumer/embedding-unpack-256-owned-list": {
             "iterations": 8684,
             "wall_ns": 31513375,
             "cpu_ns": 31453416,
@@ -3692,7 +3692,7 @@
             "note": "Existing !256d Struct.unpack_from followed by owned Python list",
             "oracle_passed": true
           },
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 94,
             "wall_ns": 30318208,
             "cpu_ns": 30317624,
@@ -3701,7 +3701,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 35,
             "wall_ns": 28208667,
             "cpu_ns": 28210501,
@@ -3710,7 +3710,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 3034,
             "wall_ns": 33324209,
             "cpu_ns": 33329208,
@@ -3719,7 +3719,7 @@
             "note": "Existing float32 little-endian view followed by Python float conversion",
             "oracle_passed": true
           },
-          "billy/http-length-pack": {
+          "consumer/http-length-pack": {
             "iterations": 720057,
             "wall_ns": 29130292,
             "cpu_ns": 29136958,
@@ -3728,7 +3728,7 @@
             "note": "Existing four-byte big-endian framing header",
             "oracle_passed": true
           },
-          "billy/http-length-unpack": {
+          "consumer/http-length-unpack": {
             "iterations": 612746,
             "wall_ns": 27014583,
             "cpu_ns": 27021667,
@@ -3974,7 +3974,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-256-list": {
+          "consumer/embedding-pack-256-list": {
             "iterations": 17525,
             "wall_ns": 27565791,
             "cpu_ns": 152970710,
@@ -3983,7 +3983,7 @@
             "note": "Existing compiled !256d Struct.pack, including argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-256-owned-list": {
+          "consumer/embedding-unpack-256-owned-list": {
             "iterations": 7771,
             "wall_ns": 30452375,
             "cpu_ns": 30409916,
@@ -3992,7 +3992,7 @@
             "note": "Existing !256d Struct.unpack_from followed by owned Python list",
             "oracle_passed": true
           },
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 70,
             "wall_ns": 29627167,
             "cpu_ns": 29636416,
@@ -4001,7 +4001,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 32,
             "wall_ns": 28342917,
             "cpu_ns": 28348500,
@@ -4010,7 +4010,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 3093,
             "wall_ns": 67980625,
             "cpu_ns": 67989500,
@@ -4019,7 +4019,7 @@
             "note": "Existing float32 little-endian view followed by Python float conversion",
             "oracle_passed": true
           },
-          "billy/http-length-pack": {
+          "consumer/http-length-pack": {
             "iterations": 615716,
             "wall_ns": 28466292,
             "cpu_ns": 28458500,
@@ -4028,7 +4028,7 @@
             "note": "Existing four-byte big-endian framing header",
             "oracle_passed": true
           },
-          "billy/http-length-unpack": {
+          "consumer/http-length-unpack": {
             "iterations": 617541,
             "wall_ns": 30851625,
             "cpu_ns": 30859208,
@@ -4274,7 +4274,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-256-list": {
+          "consumer/embedding-pack-256-list": {
             "iterations": 16181,
             "wall_ns": 28359959,
             "cpu_ns": 28368125,
@@ -4283,7 +4283,7 @@
             "note": "Existing compiled !256d Struct.pack, including argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-256-owned-list": {
+          "consumer/embedding-unpack-256-owned-list": {
             "iterations": 8042,
             "wall_ns": 30646292,
             "cpu_ns": 30652625,
@@ -4292,7 +4292,7 @@
             "note": "Existing !256d Struct.unpack_from followed by owned Python list",
             "oracle_passed": true
           },
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 87,
             "wall_ns": 31865250,
             "cpu_ns": 31870625,
@@ -4301,7 +4301,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 37,
             "wall_ns": 30615917,
             "cpu_ns": 30609000,
@@ -4310,7 +4310,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 3390,
             "wall_ns": 30410042,
             "cpu_ns": 30350708,
@@ -4319,7 +4319,7 @@
             "note": "Existing float32 little-endian view followed by Python float conversion",
             "oracle_passed": true
           },
-          "billy/http-length-pack": {
+          "consumer/http-length-pack": {
             "iterations": 758460,
             "wall_ns": 29980584,
             "cpu_ns": 29987500,
@@ -4328,7 +4328,7 @@
             "note": "Existing four-byte big-endian framing header",
             "oracle_passed": true
           },
-          "billy/http-length-unpack": {
+          "consumer/http-length-unpack": {
             "iterations": 703855,
             "wall_ns": 29490167,
             "cpu_ns": 29499708,
@@ -4574,7 +4574,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-256-list": {
+          "consumer/embedding-pack-256-list": {
             "iterations": 17408,
             "wall_ns": 28153334,
             "cpu_ns": 208587750,
@@ -4583,7 +4583,7 @@
             "note": "Existing compiled !256d Struct.pack, including argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-256-owned-list": {
+          "consumer/embedding-unpack-256-owned-list": {
             "iterations": 8650,
             "wall_ns": 29832042,
             "cpu_ns": 29836083,
@@ -4592,7 +4592,7 @@
             "note": "Existing !256d Struct.unpack_from followed by owned Python list",
             "oracle_passed": true
           },
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 97,
             "wall_ns": 30091083,
             "cpu_ns": 30083833,
@@ -4601,7 +4601,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 39,
             "wall_ns": 30588791,
             "cpu_ns": 30582958,
@@ -4610,7 +4610,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 3711,
             "wall_ns": 30611083,
             "cpu_ns": 30616042,
@@ -4619,7 +4619,7 @@
             "note": "Existing float32 little-endian view followed by Python float conversion",
             "oracle_passed": true
           },
-          "billy/http-length-pack": {
+          "consumer/http-length-pack": {
             "iterations": 827478,
             "wall_ns": 31096458,
             "cpu_ns": 31100416,
@@ -4628,7 +4628,7 @@
             "note": "Existing four-byte big-endian framing header",
             "oracle_passed": true
           },
-          "billy/http-length-unpack": {
+          "consumer/http-length-unpack": {
             "iterations": 746220,
             "wall_ns": 30352875,
             "cpu_ns": 30360375,
@@ -4874,7 +4874,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-256-list": {
+          "consumer/embedding-pack-256-list": {
             "iterations": 16361,
             "wall_ns": 27879667,
             "cpu_ns": 202406749,
@@ -4883,7 +4883,7 @@
             "note": "Existing compiled !256d Struct.pack, including argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-256-owned-list": {
+          "consumer/embedding-unpack-256-owned-list": {
             "iterations": 8697,
             "wall_ns": 29769083,
             "cpu_ns": 29751583,
@@ -4892,7 +4892,7 @@
             "note": "Existing !256d Struct.unpack_from followed by owned Python list",
             "oracle_passed": true
           },
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 92,
             "wall_ns": 29216833,
             "cpu_ns": 29215625,
@@ -4901,7 +4901,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 40,
             "wall_ns": 30288250,
             "cpu_ns": 30294250,
@@ -4910,7 +4910,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 3528,
             "wall_ns": 28780709,
             "cpu_ns": 28785000,
@@ -4919,7 +4919,7 @@
             "note": "Existing float32 little-endian view followed by Python float conversion",
             "oracle_passed": true
           },
-          "billy/http-length-pack": {
+          "consumer/http-length-pack": {
             "iterations": 714407,
             "wall_ns": 28018208,
             "cpu_ns": 28023417,
@@ -4928,7 +4928,7 @@
             "note": "Existing four-byte big-endian framing header",
             "oracle_passed": true
           },
-          "billy/http-length-unpack": {
+          "consumer/http-length-unpack": {
             "iterations": 723840,
             "wall_ns": 31517709,
             "cpu_ns": 31500375,
@@ -5174,7 +5174,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-256-list": {
+          "consumer/embedding-pack-256-list": {
             "iterations": 17073,
             "wall_ns": 27832958,
             "cpu_ns": 169611416,
@@ -5183,7 +5183,7 @@
             "note": "Existing compiled !256d Struct.pack, including argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-256-owned-list": {
+          "consumer/embedding-unpack-256-owned-list": {
             "iterations": 8859,
             "wall_ns": 30336208,
             "cpu_ns": 30343458,
@@ -5192,7 +5192,7 @@
             "note": "Existing !256d Struct.unpack_from followed by owned Python list",
             "oracle_passed": true
           },
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 97,
             "wall_ns": 29935000,
             "cpu_ns": 29935083,
@@ -5201,7 +5201,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 40,
             "wall_ns": 30468708,
             "cpu_ns": 30450167,
@@ -5210,7 +5210,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 3771,
             "wall_ns": 31301250,
             "cpu_ns": 31308958,
@@ -5219,7 +5219,7 @@
             "note": "Existing float32 little-endian view followed by Python float conversion",
             "oracle_passed": true
           },
-          "billy/http-length-pack": {
+          "consumer/http-length-pack": {
             "iterations": 823402,
             "wall_ns": 30220375,
             "cpu_ns": 30226958,
@@ -5228,7 +5228,7 @@
             "note": "Existing four-byte big-endian framing header",
             "oracle_passed": true
           },
-          "billy/http-length-unpack": {
+          "consumer/http-length-unpack": {
             "iterations": 645061,
             "wall_ns": 27039042,
             "cpu_ns": 27046250,
@@ -5474,7 +5474,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-256-list": {
+          "consumer/embedding-pack-256-list": {
             "iterations": 17159,
             "wall_ns": 28745083,
             "cpu_ns": 144997748,
@@ -5483,7 +5483,7 @@
             "note": "Existing compiled !256d Struct.pack, including argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-256-owned-list": {
+          "consumer/embedding-unpack-256-owned-list": {
             "iterations": 8726,
             "wall_ns": 35977959,
             "cpu_ns": 35959376,
@@ -5492,7 +5492,7 @@
             "note": "Existing !256d Struct.unpack_from followed by owned Python list",
             "oracle_passed": true
           },
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 92,
             "wall_ns": 31368792,
             "cpu_ns": 31374917,
@@ -5501,7 +5501,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 36,
             "wall_ns": 27556083,
             "cpu_ns": 27561292,
@@ -5510,7 +5510,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 3591,
             "wall_ns": 32713000,
             "cpu_ns": 32716792,
@@ -5519,7 +5519,7 @@
             "note": "Existing float32 little-endian view followed by Python float conversion",
             "oracle_passed": true
           },
-          "billy/http-length-pack": {
+          "consumer/http-length-pack": {
             "iterations": 785443,
             "wall_ns": 28801833,
             "cpu_ns": 28806834,
@@ -5528,7 +5528,7 @@
             "note": "Existing four-byte big-endian framing header",
             "oracle_passed": true
           },
-          "billy/http-length-unpack": {
+          "consumer/http-length-unpack": {
             "iterations": 708760,
             "wall_ns": 28614834,
             "cpu_ns": 28606375,
@@ -5774,7 +5774,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-256-list": {
+          "consumer/embedding-pack-256-list": {
             "iterations": 17140,
             "wall_ns": 32192750,
             "cpu_ns": 86073541,
@@ -5783,7 +5783,7 @@
             "note": "Existing compiled !256d Struct.pack, including argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-256-owned-list": {
+          "consumer/embedding-unpack-256-owned-list": {
             "iterations": 8387,
             "wall_ns": 33117583,
             "cpu_ns": 33123458,
@@ -5792,7 +5792,7 @@
             "note": "Existing !256d Struct.unpack_from followed by owned Python list",
             "oracle_passed": true
           },
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 71,
             "wall_ns": 27428125,
             "cpu_ns": 27433166,
@@ -5801,7 +5801,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 37,
             "wall_ns": 29625542,
             "cpu_ns": 29632416,
@@ -5810,7 +5810,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 3667,
             "wall_ns": 31202125,
             "cpu_ns": 31179501,
@@ -5819,7 +5819,7 @@
             "note": "Existing float32 little-endian view followed by Python float conversion",
             "oracle_passed": true
           },
-          "billy/http-length-pack": {
+          "consumer/http-length-pack": {
             "iterations": 790175,
             "wall_ns": 29074375,
             "cpu_ns": 29079583,
@@ -5828,7 +5828,7 @@
             "note": "Existing four-byte big-endian framing header",
             "oracle_passed": true
           },
-          "billy/http-length-unpack": {
+          "consumer/http-length-unpack": {
             "iterations": 783198,
             "wall_ns": 30629625,
             "cpu_ns": 30636291,
@@ -6205,5 +6205,9 @@
         "process_wall_ns": 65942542
       }
     ]
+  },
+  "publication_normalization": {
+    "kind": "public_metadata_normalization",
+    "note": "Consumer labels, artifact paths and machine-specific origins normalized for public publication. Historical timings, measured payload bytes and original source digests retain their captured meaning; normalized source/archive bytes have their own publication hashes."
   }
 }

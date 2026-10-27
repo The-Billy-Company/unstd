@@ -1,0 +1,410 @@
+{
+  "schema": 1,
+  "recorded": "2026-10-27T21:52:34.515307+00:00",
+  "environment": {
+    "python": "3.14.9",
+    "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+    "machine": "arm64",
+    "sqlite": "3.53.1"
+  },
+  "provenance": {
+    "files": {
+      "proof": {
+        "path": "bench/profiles/dataset_access.py",
+        "sha256": "2a539522b6bf629e07ec3b37cf269c0919797d830a75c149736941f357e16a89"
+      },
+      "native_source": {
+        "path": "native/dataset/src/adapter.c",
+        "sha256": "59f46bc89d32cd3a300249f16119787b1f8ee2d623a429d6474d4d2fe2c6f111"
+      },
+      "unstd.dataset": {
+        "path": "unstd/dataset/__init__.py",
+        "sha256": "d769995f0bbf9db67b99169b0f37eb337e464f331669f29c71fccb6b8e562de1"
+      },
+      "unstd.dataset.reader": {
+        "path": "unstd/dataset/reader.py",
+        "sha256": "d0053bbb02aab02405ceae1f8a76c5190638d8cf4c538721bbf4d77daf2040fc"
+      },
+      "unstd.dataset.storage": {
+        "path": "unstd/dataset/storage.py",
+        "sha256": "7c85d3f5cc6ff71ef6c561ba3dbcbdde4c1acc4a7447dedbc9e589a61cfe61cf"
+      },
+      "unstd.serde.jsonx": {
+        "path": "unstd/serde/jsonx.py",
+        "sha256": "ac8f97d22c661afe3a7d2d630172e19999e870cae74a01866e8bc57074e66f0e"
+      },
+      "unstd.serde.ndjson": {
+        "path": "unstd/serde/ndjson.py",
+        "sha256": "aed41e482feaaf75afded30bfa67a5ea52819e460ad2cab2f549c602332c204e"
+      },
+      "unstd.serde.encoding": {
+        "path": "unstd/serde/encoding.py",
+        "sha256": "45591b272872b828ded3ec06fb6635b77e470c1c6456e5d56edf3a659dffacd7"
+      },
+      "unstd.serde.recursion": {
+        "path": "unstd/serde/recursion.py",
+        "sha256": "5e3741e4dfdd23b540c7208d4ee8fe55ae3785625d9fb336d46b8e06af5a3091"
+      },
+      "unstd.fs": {
+        "path": "unstd/fs/__init__.py",
+        "sha256": "1cca03b3ae758f8cd321d5ef22b41cf952b3996732933be0fd2ea502714abceb"
+      },
+      "unstd.serde._json_native": {
+        "path": "unstd/serde/_json_native.cpython-314-darwin.so",
+        "sha256": "35375ae5411eecf47ce43ada0f8b98e1414905dfb1f7a5e764b7ccd86fc5370d"
+      },
+      "msgspec._core": {
+        "path": "msgspec/_core.cpython-314-darwin.so",
+        "sha256": "5b7f13df7855615e38ceba6e7121724221005eaeb4eb1eb4e68d00122d9b5469"
+      },
+      "orjson.orjson": {
+        "path": "orjson/orjson.cpython-314-darwin.so",
+        "sha256": "aaebbe8aad399489acc642c23615bd373192904c319f159496ea5ab0d3c3bc45"
+      },
+      "dataset_native": {
+        "path": "unstd/dataset/_dataset_native.cpython-314-darwin.so",
+        "sha256": "db51b7c7e029a41c65ae066bf22237957ff2a3d01d791403e220958b4a972fd7"
+      }
+    },
+    "backends": {
+      "orjson": "3.12.0",
+      "msgspec": "0.22.0"
+    }
+  },
+  "fixture": {
+    "rows": 25000,
+    "payload_bytes": 256,
+    "scalar_indices": 1024,
+    "small_selection": 64,
+    "large_selection": 4096
+  },
+  "rounds": 7,
+  "kernel_version": 2,
+  "lane_orders": [
+    [
+      "sqlite",
+      "python",
+      "native"
+    ],
+    [
+      "sqlite",
+      "native",
+      "python"
+    ],
+    [
+      "native",
+      "sqlite",
+      "python"
+    ],
+    [
+      "native",
+      "python",
+      "sqlite"
+    ],
+    [
+      "python",
+      "native",
+      "sqlite"
+    ],
+    [
+      "python",
+      "sqlite",
+      "native"
+    ],
+    [
+      "sqlite",
+      "python",
+      "native"
+    ]
+  ],
+  "storage": {
+    "jsonl_bytes": 7824444,
+    "sqlite_bytes": 8568832,
+    "mapped_bytes": 8024508
+  },
+  "build_samples_ns": {
+    "sqlite": [
+      65097583,
+      82754125,
+      66101208,
+      94897833,
+      85466583,
+      99832208,
+      67006417
+    ],
+    "mapped": [
+      52159458,
+      56653958,
+      97270083,
+      63739792,
+      60340167,
+      54026875,
+      75559458
+    ]
+  },
+  "build_median_ns": {
+    "sqlite": 82754125,
+    "mapped": 60340167
+  },
+  "samples_ns": {
+    "open-count": {
+      "sqlite": [
+        262958,
+        263000,
+        205500,
+        243083,
+        230084,
+        338000,
+        3367833
+      ],
+      "python": [
+        3860459,
+        11385041,
+        3986833,
+        3382209,
+        3743083,
+        4407791,
+        5247375
+      ],
+      "native": [
+        102875,
+        119833,
+        144625,
+        233958,
+        109542,
+        134250,
+        109709
+      ]
+    },
+    "index-1024": {
+      "sqlite": [
+        4327750,
+        3656583,
+        2665708,
+        2817167,
+        2742667,
+        2842291,
+        2615709
+      ],
+      "python": [
+        1322125,
+        869833,
+        931542,
+        1079917,
+        944125,
+        959125,
+        1043083
+      ],
+      "native": [
+        1037958,
+        932750,
+        762250,
+        741917,
+        739166,
+        756834,
+        655625
+      ]
+    },
+    "take-64": {
+      "sqlite": [
+        297959,
+        227375,
+        164041,
+        157917,
+        159292,
+        159500,
+        245584
+      ],
+      "python": [
+        79917,
+        46833,
+        49000,
+        51958,
+        109500,
+        104958,
+        64917
+      ],
+      "native": [
+        235666,
+        44500,
+        88875,
+        90166,
+        32292,
+        31625,
+        30750
+      ]
+    },
+    "take-4096": {
+      "sqlite": [
+        12631667,
+        10307917,
+        10337625,
+        12350833,
+        64417166,
+        14268375,
+        12404833
+      ],
+      "python": [
+        3995000,
+        3892625,
+        3570750,
+        3468834,
+        3097792,
+        3069959,
+        3774833
+      ],
+      "native": [
+        2345167,
+        2587459,
+        2066833,
+        2227208,
+        2221875,
+        2485417,
+        2382417
+      ]
+    },
+    "scan": {
+      "sqlite": [
+        20811292,
+        29669916,
+        20699542,
+        23263250,
+        21082916,
+        29530292,
+        20933667
+      ],
+      "python": [
+        26520709,
+        40277875,
+        31650042,
+        18409833,
+        41418875,
+        34457125,
+        42745875
+      ],
+      "native": [
+        17637625,
+        20013625,
+        28760625,
+        15191667,
+        13187875,
+        22838542,
+        21041041
+      ]
+    },
+    "batches-1024": {
+      "sqlite": [
+        32692041,
+        26193167,
+        29054875,
+        20793583,
+        30910375,
+        21656958,
+        30158208
+      ],
+      "python": [
+        18913667,
+        21118625,
+        26013375,
+        25389917,
+        27516459,
+        27098459,
+        18831541
+      ],
+      "native": [
+        11141292,
+        15480125,
+        15401667,
+        42633209,
+        13590417,
+        15529166,
+        15393042
+      ]
+    }
+  },
+  "median_ns": {
+    "open-count": {
+      "sqlite": 262958,
+      "python": 3986833,
+      "native": 119833
+    },
+    "index-1024": {
+      "sqlite": 2817167,
+      "python": 959125,
+      "native": 756834
+    },
+    "take-64": {
+      "sqlite": 164041,
+      "python": 64917,
+      "native": 44500
+    },
+    "take-4096": {
+      "sqlite": 12404833,
+      "python": 3570750,
+      "native": 2345167
+    },
+    "scan": {
+      "sqlite": 21082916,
+      "python": 34457125,
+      "native": 20013625
+    },
+    "batches-1024": {
+      "sqlite": 29054875,
+      "python": 25389917,
+      "native": 15401667
+    }
+  },
+  "native_calls": {
+    "open-count": {
+      "sqlite": {},
+      "python": {},
+      "native": {
+        "map": 1
+      }
+    },
+    "index-1024": {
+      "sqlite": {},
+      "python": {},
+      "native": {
+        "row": 1024
+      }
+    },
+    "take-64": {
+      "sqlite": {},
+      "python": {},
+      "native": {
+        "take": 1
+      }
+    },
+    "take-4096": {
+      "sqlite": {},
+      "python": {},
+      "native": {
+        "take": 1
+      }
+    },
+    "scan": {
+      "sqlite": {},
+      "python": {},
+      "native": {
+        "row": 25000
+      }
+    },
+    "batches-1024": {
+      "sqlite": {},
+      "python": {},
+      "native": {
+        "span": 25
+      }
+    }
+  },
+  "verified": true,
+  "limits": [
+    "One machine, warm filesystem cache, deterministic synthetic JSON records; no universal speed claim.",
+    "The SQLite reference is self-contained and uses the same JSON encoder and decoder family, including bulk NDJSON for its batch scan.",
+    "Builds include source decoding, serialization, disk index construction, file synchronization and atomic publication.",
+    "Indexed/scanning operations reuse open handles; open-count measures constructor/count/close separately.",
+    "Expected-value comparison, native binding observation, source hashing and fixture creation occur outside timing.",
+    "No tracer runs during timing. Raw samples and every matched lane order are retained; ratios can show regressions."
+  ]
+}

@@ -6,7 +6,7 @@
   },
   "sources": {
     "proposed": {
-      "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/rand/draw.py",
+      "path": "src/unstd/rand/draw.py",
       "sha256": "1f7879df232688c5a3e94c9d8cf76bedf1d7c1038dbe9aa98f1c902b2a55a457",
       "public_signatures": {
         "Generator": "(seed: int | None = None, *, backend: Literal['stdlib', 'numpy'] = 'stdlib', bit_generator: Literal['PCG64', 'PCG64DXSM', 'SFC64', 'Philox'] | None = None) -> None",
@@ -65,7 +65,7 @@
             "name": "seeded_ints"
           },
           "module": "unstd.rand._keyed",
-          "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/rand/_keyed.py",
+          "path": "src/unstd/rand/_keyed.py",
           "sha256": "51b70ae8ab7171493dc3c08b463c10bd1fad2162b256b3a23a7f60fa3c6983f6"
         }
       },
@@ -74,13 +74,13 @@
         "_native": {
           "module": "unstd.rand._rand_native",
           "name": "unstd.rand._rand_native",
-          "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/rand/_rand_native.cpython-314-darwin.so",
+          "path": "src/unstd/rand/_rand_native.cpython-314-darwin.so",
           "sha256": "23fc283f72e4b08ffbe0d553b073c44939a5ed48dd882f5746f5f9c729e20c9c"
         }
       }
     },
     "original": {
-      "path": "/Users/griffinstrier/Billy-Company/unstd/bench/reports/rand/before-draw.py.txt",
+      "path": "bench/reports/rand/before-draw.py.txt",
       "sha256": "dc178890d7c64ea2351dc2b8aa3858b6d1a5db8c1b6333a4294510a73e4a2aad",
       "public_signatures": {
         "Generator": "(seed: int | None = None, *, backend: Literal['stdlib', 'numpy'] = 'stdlib', bit_generator: Literal['PCG64', 'PCG64DXSM', 'SFC64', 'Philox'] | None = None) -> None",
@@ -136,10 +136,10 @@
   },
   "receipts": {
     "version": 1,
-    "repository": "The-Billy-Company/billy",
+    "repository": "The-Consumer-Company/consumer",
     "commit": "b4ce9e820bba6d5049158a3d170a2eb7bc101951",
     "consumer": {
-      "source_path": "services/anvil/anvil/datagen/corpus.py",
+      "source_path": "services/evaluation/evaluation/datagen/corpus.py",
       "source_file_sha256": "3d5bf5d3ed7610599cb1e19255bc827084541855e2bebc8cd4189c2dde1a07de",
       "source": "def _trim(examples: list[TrainExample], cap: int, rng: rand.Generator) -> list[TrainExample]:\n    \"\"\"Deterministically trim a track to its budget (shuffle then cut).\"\"\"\n    if cap <= 0:\n        return []\n    if len(examples) <= cap:\n        return examples\n    shuffled = examples[:]\n    rng.shuffle(shuffled)\n    return shuffled[:cap]\n",
       "symbols": {
@@ -150,7 +150,7 @@
       },
       "test_references": [
         {
-          "path": "services/anvil/tests/test_corpus.py",
+          "path": "services/evaluation/tests/test_corpus.py",
           "sha256": "ce2dfa8349db5dd7d158e7d07bee50187fd476cc890d7cd93c1a4096b38ed53b"
         }
       ]
@@ -158,14 +158,14 @@
     "population_size_receipts": [
       {
         "size": 8000,
-        "path": "services/anvil/anvil/datagen/anvil_dataset.research.toml",
+        "path": "services/evaluation/evaluation/datagen/evaluation_dataset.research.toml",
         "file_sha256": "28e0e638972f0251d42f9ac22de58876160955e99884b9f1ae07dc52bdbf28ce",
         "basis": "corpus.total_examples value; budget-scale population, not observed overproduction count",
         "value": 8000
       },
       {
         "size": 400,
-        "path": "services/anvil/tests/test_corpus.py",
+        "path": "services/evaluation/tests/test_corpus.py",
         "file_sha256": "ce2dfa8349db5dd7d158e7d07bee50187fd476cc890d7cd93c1a4096b38ed53b",
         "basis": "explicit total=400 test fixture"
       }
@@ -342,7 +342,7 @@
       "fraction": 0.01,
       "size_receipt": {
         "size": 8000,
-        "path": "services/anvil/anvil/datagen/anvil_dataset.research.toml",
+        "path": "services/evaluation/evaluation/datagen/evaluation_dataset.research.toml",
         "file_sha256": "28e0e638972f0251d42f9ac22de58876160955e99884b9f1ae07dc52bdbf28ce",
         "basis": "corpus.total_examples value; budget-scale population, not observed overproduction count",
         "value": 8000
@@ -514,7 +514,7 @@
       "fraction": 0.1,
       "size_receipt": {
         "size": 8000,
-        "path": "services/anvil/anvil/datagen/anvil_dataset.research.toml",
+        "path": "services/evaluation/evaluation/datagen/evaluation_dataset.research.toml",
         "file_sha256": "28e0e638972f0251d42f9ac22de58876160955e99884b9f1ae07dc52bdbf28ce",
         "basis": "corpus.total_examples value; budget-scale population, not observed overproduction count",
         "value": 8000
@@ -686,7 +686,7 @@
       "fraction": 0.5,
       "size_receipt": {
         "size": 8000,
-        "path": "services/anvil/anvil/datagen/anvil_dataset.research.toml",
+        "path": "services/evaluation/evaluation/datagen/evaluation_dataset.research.toml",
         "file_sha256": "28e0e638972f0251d42f9ac22de58876160955e99884b9f1ae07dc52bdbf28ce",
         "basis": "corpus.total_examples value; budget-scale population, not observed overproduction count",
         "value": 8000
@@ -858,7 +858,7 @@
       "fraction": 0.01,
       "size_receipt": {
         "size": 400,
-        "path": "services/anvil/tests/test_corpus.py",
+        "path": "services/evaluation/tests/test_corpus.py",
         "file_sha256": "ce2dfa8349db5dd7d158e7d07bee50187fd476cc890d7cd93c1a4096b38ed53b",
         "basis": "explicit total=400 test fixture"
       },
@@ -1029,7 +1029,7 @@
       "fraction": 0.1,
       "size_receipt": {
         "size": 400,
-        "path": "services/anvil/tests/test_corpus.py",
+        "path": "services/evaluation/tests/test_corpus.py",
         "file_sha256": "ce2dfa8349db5dd7d158e7d07bee50187fd476cc890d7cd93c1a4096b38ed53b",
         "basis": "explicit total=400 test fixture"
       },
@@ -1200,7 +1200,7 @@
       "fraction": 0.5,
       "size_receipt": {
         "size": 400,
-        "path": "services/anvil/tests/test_corpus.py",
+        "path": "services/evaluation/tests/test_corpus.py",
         "file_sha256": "ce2dfa8349db5dd7d158e7d07bee50187fd476cc890d7cd93c1a4096b38ed53b",
         "basis": "explicit total=400 test fixture"
       },
@@ -1208,5 +1208,9 @@
       "target_passed": false
     }
   ],
-  "all_targets_passed": false
+  "all_targets_passed": false,
+  "publication_normalization": {
+    "kind": "public_metadata_normalization",
+    "note": "Consumer labels, artifact paths and machine-specific origins normalized for public publication. Historical timings, measured payload bytes and original source digests retain their captured meaning; normalized source/archive bytes have their own publication hashes."
+  }
 }

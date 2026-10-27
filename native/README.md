@@ -17,6 +17,7 @@ headers. Python module names remain independent of source filenames.
 | [`rand/`](rand/README.md) | [`adapter.c`](rand/src/adapter.c), [`keyed.h`](rand/src/keyed.h) | Seed-faithful list shuffling and explicit SplitMix64-v1 integer batches |
 | [`pack/`](pack/README.md) | [`adapter.c`](pack/src/adapter.c) | Immutable numeric frame geometry, integer boundaries, and finite-value scans |
 | [`math/`](math/README.md) | [`adapter.c`](math/src/adapter.c) | Stable score selection and fused ndarray reductions through checked buffers |
+| [`dataset/`](dataset/README.md) | [`adapter.c`](dataset/src/adapter.c) | Checked immutable row offsets, batch/span copies, and full index validation |
 | [`fs/`](fs/README.md) | [`adapter.c`](fs/src/adapter.c) | Linux atomic writes with signal-aware rollback and durable commit reporting |
 | [`crypto/`](crypto/README.md) | [`adapter.c`](crypto/src/adapter.c) | Hash-stream batching and bearer-envelope parsing |
 | [`serde/`](serde/README.md) | [`adapter.c`](serde/src/adapter.c) | JSON proofs, codec dispatch and implementation headers |
@@ -53,3 +54,7 @@ ABIs; wheel builds include only successful outputs. Compiler and Cargo outputs
 are ignored. Vendored gzip sources retain licenses and per-file hashes under
 [`compress/vendor/`](compress/vendor/README.md); their upstream filenames are
 part of that authenticated inventory.
+
+Native builds remap the project directory in C/C++ and Rust source/debug paths.
+macOS linker object paths receive the same treatment. Existing optimization
+and strict floating-point options remain in place.

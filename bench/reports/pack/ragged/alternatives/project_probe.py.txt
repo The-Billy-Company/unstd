@@ -1,6 +1,6 @@
 """Private CPU replay of the captured three-stage remote project decoder.
 
-No Billy imports or edits. Transport, asyncio scheduling, before_each, breaker
+No Consumer imports or edits. Transport, asyncio scheduling, before_each, breaker
 state and logging are excluded. Every fresh response is admitted before the next
 response, then reused by the caller and copied once into immutable final storage.
 The error-only legacy codec fallback is disclosed and counted; valid frames use
@@ -48,8 +48,8 @@ def dump(node: ast.AST) -> str:
     return ast.dump(node, include_attributes=False)
 
 
-def capture(billy: Path) -> dict[str, Any]:
-    colbert_path = billy / profile._CONSUMER
+def capture(consumer: Path) -> dict[str, Any]:
+    colbert_path = consumer / profile._CONSUMER
     remote_path = colbert_path.with_name("remote.py")
     source = colbert_path.read_text()
     remote = remote_path.read_text()
@@ -61,7 +61,7 @@ def capture(billy: Path) -> dict[str, Any]:
     recipes = json.loads(colbert_path.with_suffix(".json").read_text())["recipe"]
     data = {
         "schema": 1,
-        "consumer": profile._capture(billy),
+        "consumer": profile._capture(consumer),
         "project": profile._node_source(source, project),
         "validate": profile._node_source(remote, validate),
         "project_remote_ast": dump(ast.Module(body=remote_branch.body, type_ignores=[])),
@@ -72,7 +72,7 @@ def capture(billy: Path) -> dict[str, Any]:
     data["capture_sha256"] = sha256(profile._canonical(data).encode()).hexdigest()
     if CAPTURE.exists():
         if json.loads(CAPTURE.read_text()) != data:
-            raise ValueError("current Billy source differs from the pinned private project capture")
+            raise ValueError("current Consumer source differs from the pinned private project capture")
     else:
         CAPTURE.write_text(json.dumps(data, indent=2) + "\n")
     return data
@@ -380,7 +380,7 @@ def semantic_oracles(modules: dict[str, ModuleType], data: dict[str, Any], codec
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--billy-root", type=Path, default=ROOT.parent / "billy")
+    parser.add_argument("--consumer-root", type=Path, default=ROOT.parent / "consumer")
     parser.add_argument("--output", type=Path, default=LOCAL / "pack-project-oracles.json")
     parser.add_argument("--run-timings", action="store_true")
     parser.add_argument("--rounds", type=int, default=9)
@@ -391,7 +391,7 @@ def main() -> None:
     ragged = import_module("unstd.pack.ragged")
     if ragged._native is None:
         raise RuntimeError("this scratch comparison requires the built native validator")
-    data = capture(args.billy_root)
+    data = capture(args.consumer_root)
     modules = make_modules(data, codec, ragged)
     fingerprints = single._fingerprints(ROOT / "src", ragged._native)
     harness_digest = sha256(Path(__file__).read_bytes()).hexdigest()

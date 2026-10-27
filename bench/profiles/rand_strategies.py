@@ -1,6 +1,6 @@
 """Prospective explicit sampling migration, separate from exact backend timings.
 
-Compare captured Billy full-shuffle-and-slice to the already available public
+Compare captured Consumer full-shuffle-and-slice to the already available public
 ``Generator.sample(population, cap)`` API. The proposal changes selected values,
 output order and RNG state for the same seed. No application call site is edited.
 Construction and complete result allocation are included in every measured call.
@@ -23,7 +23,7 @@ from typing import TYPE_CHECKING, Any
 if not __package__:
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from bench.profiles import billy_rand
+from bench.profiles import consumer_rand
 from bench.profiles import rand_backend as timing
 
 
@@ -118,7 +118,9 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--rounds", type=timing._positive, default=7)
     parser.add_argument("--batch-ms", type=timing._positive, default=5)
-    parser.add_argument("--min-speedup", type=billy_rand._positive_float, default=100)
+    parser.add_argument(
+        "--min-speedup", type=consumer_rand._positive_float, default=100
+    )
     args = parser.parse_args(argv)
     if args.rounds < 3:
         parser.error("paired comparisons require at least three rounds")

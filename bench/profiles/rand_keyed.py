@@ -1,10 +1,10 @@
-"""Opt-in keyed count batching for captured Billy distractor consumers.
+"""Opt-in keyed count batching for captured Consumer distractor consumers.
 
 The count phase compares the exact per-key constructor+randint expression with
 stateless public ``ints(..., seeds=...)``. Reused and newly constructed batch
 streams are labelled separately. Full consumer cases retain sorting, hashing and
 function-spec construction. Opt-in values change; all unchanged-API timings and
-same-seed compatibility evidence belong to the separate ``billy_rand`` driver.
+same-seed compatibility evidence belong to the separate ``consumer_rand`` driver.
 """
 
 from __future__ import annotations
@@ -26,7 +26,7 @@ from typing import TYPE_CHECKING, Any, override
 if not __package__:
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from bench.profiles import billy_rand
+from bench.profiles import consumer_rand
 from bench.profiles import rand_backend as timing
 
 
@@ -261,7 +261,9 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--rounds", type=timing._positive, default=7)
     parser.add_argument("--batch-ms", type=timing._positive, default=5)
-    parser.add_argument("--min-speedup", type=billy_rand._positive_float, default=100)
+    parser.add_argument(
+        "--min-speedup", type=consumer_rand._positive_float, default=100
+    )
     parser.add_argument("--require-native", action="store_true")
     args = parser.parse_args(argv)
     if args.rounds < 7:

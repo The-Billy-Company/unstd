@@ -5,7 +5,7 @@
   },
   "sources": {
     "keyed": {
-      "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/rand/draw.py",
+      "path": "src/unstd/rand/draw.py",
       "sha256": "d1db31f2d9f5f35143e4af2bb71126e2ed9a59e283b9b6adba73929b34b7fb7b",
       "public_signatures": {
         "Generator": "(seed: int | None = None, *, backend: Literal['stdlib', 'numpy'] = 'stdlib', bit_generator: Literal['PCG64', 'PCG64DXSM', 'SFC64', 'Philox'] | None = None) -> None",
@@ -64,7 +64,7 @@
             "name": "seeded_ints"
           },
           "module": "unstd.rand.keyed",
-          "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/rand/keyed.py",
+          "path": "src/unstd/rand/keyed.py",
           "sha256": "ba4886979d9096f66b01fcf1451ee883a9fc5e37adb017e5371c784ae3f9cd47"
         }
       },
@@ -73,13 +73,13 @@
         "_native": {
           "module": "unstd.rand._rand_native",
           "name": "unstd.rand._rand_native",
-          "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/rand/_rand_native.cpython-314-darwin.so",
+          "path": "src/unstd/rand/_rand_native.cpython-314-darwin.so",
           "sha256": "66788a06c079eb406d6673ecafffa95b7707419fd8631ae53be781b4bce19e9e"
         }
       }
     },
     "original": {
-      "path": "/Users/griffinstrier/Billy-Company/unstd/bench/reports/rand/before-draw.py.txt",
+      "path": "bench/reports/rand/before-draw.py.txt",
       "sha256": "dc178890d7c64ea2351dc2b8aa3858b6d1a5db8c1b6333a4294510a73e4a2aad",
       "public_signatures": {
         "Generator": "(seed: int | None = None, *, backend: Literal['stdlib', 'numpy'] = 'stdlib', bit_generator: Literal['PCG64', 'PCG64DXSM', 'SFC64', 'Philox'] | None = None) -> None",
@@ -136,11 +136,11 @@
   "scope": "8,000 independently keyed counts in [1,4], fresh batch Generator included; full consumer and input key hashing excluded, both original per-key construction and all result/input conversion costs included",
   "configured_size_receipt": {
     "version": 1,
-    "repository": "The-Billy-Company/billy",
+    "repository": "The-Consumer-Company/consumer",
     "commit": "2f66095c1fd0d84922c0b0fbcac6b4e61aae06de",
     "consumers": {
       "engine": {
-        "source_path": "services/anvil/anvil/datagen/engine.py",
+        "source_path": "services/evaluation/evaluation/datagen/engine.py",
         "source_file_sha256": "3b867c3e5ac09c2975558478a824c5834935eeb150cde137f886106523124327",
         "source": "def _trigger_text(ex: TrainExample) -> str:\n    \"\"\"The triggering (last) user turn \u2014 the stable per-example dedup/seed key.\"\"\"\n    return next(\n        (str(m.get(\"content\", \"\")) for m in reversed(ex.messages) if m.get(\"role\") == \"user\"), \"\"\n    )\n\ndef _distractor_specs(\n    target: ToolSchema, ex: TrainExample, spec_by_name: dict[str, ToolSchema]\n) -> list[FunctionSpec]:\n    \"\"\"Function specs for sibling tools shown beside ``target`` (target excluded).\n\n    Prefers same-capability siblings (the hard distractors \u2014 a model that can\n    pick ``make_payment`` over ``list_charges`` has learned selection, not just\n    arg-shaping), then any other live tool. The count + ordering are derived\n    deterministically from the example's trigger turn so a rebuild is byte-stable.\n    \"\"\"\n    siblings = sorted(\n        (t for n, t in spec_by_name.items() if n != target.name),\n        key=lambda t: (t.capability_key != target.capability_key, t.name),\n    )\n    if not siblings:\n        return []\n    seed = int.from_bytes(\n        hashlib.blake2b(f\"{target.name}|{_trigger_text(ex)}\".encode(), digest_size=8).digest(),\n        \"big\",\n    )\n    k = min(len(siblings), rand.Generator(seed, backend=\"stdlib\").randint(1, _MAX_DISTRACTORS))\n    return [tool_spec(t) for t in siblings[:k]]\n",
         "symbols": {
@@ -155,7 +155,7 @@
         }
       },
       "emit": {
-        "source_path": "services/anvil/anvil/datagen/emit.py",
+        "source_path": "services/evaluation/evaluation/datagen/emit.py",
         "source_file_sha256": "376fb37b09186e0fedfe5fc8609f24a4b65b624fa003e295b21fa1f3a8472af5",
         "source": "def _misleading_distractors(\n    ex: TrainExample, spec_by_name: dict[str, ToolSchema]\n) -> list[FunctionSpec]:\n    \"\"\"Sibling specs offered beside the discovery verbs \u2014 the real target absent.\n\n    The adversarial half of the discovery weave: prefer same-capability siblings of\n    the *hidden* tool (the tempting near-misses) so the model can't shortcut to a\n    direct call and must reach for ``find_tool``/``forge_tool``. The discovery verbs\n    and the hidden target are excluded; count + ordering are derived deterministically\n    from the trigger turn so a rebuild is byte-stable.\n    \"\"\"\n    hidden = spec_by_name.get(ex.hidden_tool)\n    cap = hidden.capability_key if hidden else ex.capability_key\n    exclude = {ex.hidden_tool, *DISCOVERY_VERBS}\n    sibs = sorted(\n        (t for n, t in spec_by_name.items() if n not in exclude),\n        key=lambda t: (t.capability_key != cap, t.name),\n    )\n    if not sibs:\n        return []\n    seed = int.from_bytes(\n        hashlib.blake2b(f\"{ex.hidden_tool}|{_trigger_text(ex)}\".encode(), digest_size=8).digest(),\n        \"big\",\n    )\n    k = min(len(sibs), rand.Generator(seed, backend=\"stdlib\").randint(1, _MAX_DISTRACTORS))\n    return [tool_spec(t) for t in sibs[:k]]\n",
         "symbols": {
@@ -166,7 +166,7 @@
         }
       },
       "spec": {
-        "source_path": "services/anvil/anvil/datagen/synth.py",
+        "source_path": "services/evaluation/evaluation/datagen/synth.py",
         "source_file_sha256": "c19a5bb59d39f5f9bfc950a5653ffb05e7f047512d13c66b9248e1063eb5a762",
         "source": "def tool_spec(tool: ToolSchema) -> FunctionSpec:\n    \"\"\"OpenAI function spec for a tool \u2014 the ``tools`` entry beside ``messages``.\"\"\"\n    return {\n        \"type\": \"function\",\n        \"function\": {\n            \"name\": tool.name,\n            \"description\": tool.description,\n            \"parameters\": tool.args_schema or {\"type\": \"object\", \"properties\": {}},\n        },\n    }\n",
         "symbols": {
@@ -179,12 +179,12 @@
     },
     "size_provenance": {
       "24": "small public catalog scenario; diagnostic batch size, not an observed production count",
-      "371": "live tool count documented in anvil_dataset.research.toml recipe-fanout rationale",
-      "8000": "corpus.total_examples configured budget in anvil_dataset.research.toml"
+      "371": "live tool count documented in evaluation_dataset.research.toml recipe-fanout rationale",
+      "8000": "corpus.total_examples configured budget in evaluation_dataset.research.toml"
     },
     "input_provenance": "Synthetic tool names, trigger messages and schemas following exact captured BLAKE2b64 seed expressions; no customer payloads.",
     "config_receipt": {
-      "source_path": "services/anvil/anvil/datagen/anvil_dataset.research.toml",
+      "source_path": "services/evaluation/evaluation/datagen/evaluation_dataset.research.toml",
       "sha256": "28e0e638972f0251d42f9ac22de58876160955e99884b9f1ae07dc52bdbf28ce",
       "total_examples": 8000,
       "documented_live_tools": 371
@@ -380,5 +380,9 @@
       "wall_ns": 346.79577748026406,
       "thread_cpu_ns": 343.16113547195937
     }
+  },
+  "publication_normalization": {
+    "kind": "public_metadata_normalization",
+    "note": "Consumer labels, artifact paths and machine-specific origins normalized for public publication. Historical timings, measured payload bytes and original source digests retain their captured meaning; normalized source/archive bytes have their own publication hashes."
   }
 }

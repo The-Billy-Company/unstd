@@ -1,14 +1,14 @@
 {
   "generated_at": "2026-10-25T21:10:34.384763+00:00",
   "python": "3.14.9 (main, Oct 21 2026, 17:47:42) [Clang 23.1.3 ]",
-  "executable": "/Users/griffinstrier/Billy-Company/unstd/.venv/bin/python",
+  "executable": ".venv/bin/python",
   "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
   "machine": "arm64",
   "harness_sha256": "34081141cf0e07eb6acad1bfea98b0d264922739f29ea351c7ec04c7af189453",
   "rounds": 9,
   "measurement": "complete call including output allocation and refcount cleanup; setup and oracle checks excluded; GC disabled during operation batches",
   "summary": {
-    "billy/embedding-pack-256-list": {
+    "consumer/embedding-pack-256-list": {
       "baseline_median_wall_ns": 1119.502705187595,
       "candidate_median_wall_ns": 1089.054634922932,
       "median_wall_speedup": 1.0279582578213053,
@@ -29,7 +29,7 @@
       "median_cpu_speedup": 1.0212077940389135,
       "observed_conservative_cpu_speedup": 0.8009759153200319
     },
-    "billy/embedding-unpack-256-owned-list": {
+    "consumer/embedding-unpack-256-owned-list": {
       "baseline_median_wall_ns": 2048.8512016021364,
       "candidate_median_wall_ns": 1986.2283417486049,
       "median_wall_speedup": 1.0315285299969088,
@@ -50,7 +50,7 @@
       "median_cpu_speedup": 1.0291436671355536,
       "observed_conservative_cpu_speedup": 0.8125347659994364
     },
-    "billy/embedding-pack-page-200x256-lists": {
+    "consumer/embedding-pack-page-200x256-lists": {
       "baseline_median_wall_ns": 249755.81147540984,
       "candidate_median_wall_ns": 253709.0163934426,
       "median_wall_speedup": 0.9844183506986512,
@@ -71,7 +71,7 @@
       "median_cpu_speedup": 0.9831756046267087,
       "observed_conservative_cpu_speedup": 0.8205603515107259
     },
-    "billy/embedding-unpack-page-200x256-owned-lists": {
+    "consumer/embedding-unpack-page-200x256-owned-lists": {
       "baseline_median_wall_ns": 480917.41818181815,
       "candidate_median_wall_ns": 469258.3230769231,
       "median_wall_speedup": 1.0248457928853483,
@@ -92,7 +92,7 @@
       "median_cpu_speedup": 1.0039738876489435,
       "observed_conservative_cpu_speedup": 0.7909092852257181
     },
-    "billy/f32-unpack-256-owned-list": {
+    "consumer/f32-unpack-256-owned-list": {
       "baseline_median_wall_ns": 8513.446041285602,
       "candidate_median_wall_ns": 8765.308266360506,
       "median_wall_speedup": 0.9712660162744646,
@@ -113,7 +113,7 @@
       "median_cpu_speedup": 1.0221311804635096,
       "observed_conservative_cpu_speedup": 0.8675208595439307
     },
-    "billy/http-length-pack": {
+    "consumer/http-length-pack": {
       "baseline_median_wall_ns": 33.49675474552422,
       "candidate_median_wall_ns": 29.282928277779895,
       "median_wall_speedup": 1.143900446969363,
@@ -134,7 +134,7 @@
       "median_cpu_speedup": 1.1255774951338602,
       "observed_conservative_cpu_speedup": 0.8438790361445783
     },
-    "billy/http-length-unpack": {
+    "consumer/http-length-unpack": {
       "baseline_median_wall_ns": 34.870208,
       "candidate_median_wall_ns": 33.274871695062764,
       "median_wall_speedup": 1.0479441760003525,
@@ -663,7 +663,7 @@
   "samples": {
     "baseline": [
       {
-        "source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src",
+        "source": ".local/pack-backend-before/src",
         "source_hashes": {
           "unstd/__init__.py": "b52aa5df64f0215833b16bcd1a5153ad2f5fe2535902a24911d77c19bc874cad",
           "unstd/pack/__init__.py": "3399b170cfd1dd1bce7aedf15e65fb029c0e4ce61baebc80d5ec7cd712b704fa",
@@ -671,7 +671,7 @@
           "unstd/pack/_internal/dtype.py": "9adac429d0055a2f213e648fffb2657674fb2efd589b3476ca48d4cad1437e17",
           "unstd/pack/binpack.py": "2770b38dbc874406b511947b2415e161f02870a766beb7730407a87542ae1f14"
         },
-        "imported_source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src/unstd/pack/binpack.py",
+        "imported_source": ".local/pack-backend-before/src/unstd/pack/binpack.py",
         "numpy_version": "2.5.3",
         "signatures": {
           "pack_array": "(dtype: 'DTypeLike', seq: 'Iterable[float]') -> 'bytes'",
@@ -680,7 +680,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-256-list": {
+          "consumer/embedding-pack-256-list": {
             "iterations": 30003,
             "wall_ns": 30566083,
             "cpu_ns": 29820000,
@@ -689,7 +689,7 @@
             "note": "Existing compiled !256d Struct.pack, including argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-256-owned-list": {
+          "consumer/embedding-unpack-256-owned-list": {
             "iterations": 16516,
             "wall_ns": 29249334,
             "cpu_ns": 28735000,
@@ -698,7 +698,7 @@
             "note": "Existing !256d Struct.unpack_from followed by owned Python list",
             "oracle_passed": true
           },
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 131,
             "wall_ns": 31484917,
             "cpu_ns": 30079000,
@@ -707,7 +707,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 68,
             "wall_ns": 28629333,
             "cpu_ns": 28463000,
@@ -716,7 +716,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 3851,
             "wall_ns": 31430000,
             "cpu_ns": 31222000,
@@ -725,7 +725,7 @@
             "note": "Existing float32 little-endian view followed by Python float conversion",
             "oracle_passed": true
           },
-          "billy/http-length-pack": {
+          "consumer/http-length-pack": {
             "iterations": 1000000,
             "wall_ns": 27423667,
             "cpu_ns": 26970000,
@@ -734,7 +734,7 @@
             "note": "Existing four-byte big-endian framing header",
             "oracle_passed": true
           },
-          "billy/http-length-unpack": {
+          "consumer/http-length-unpack": {
             "iterations": 1000000,
             "wall_ns": 34870208,
             "cpu_ns": 33920000,
@@ -962,7 +962,7 @@
         }
       },
       {
-        "source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src",
+        "source": ".local/pack-backend-before/src",
         "source_hashes": {
           "unstd/__init__.py": "b52aa5df64f0215833b16bcd1a5153ad2f5fe2535902a24911d77c19bc874cad",
           "unstd/pack/__init__.py": "3399b170cfd1dd1bce7aedf15e65fb029c0e4ce61baebc80d5ec7cd712b704fa",
@@ -970,7 +970,7 @@
           "unstd/pack/_internal/dtype.py": "9adac429d0055a2f213e648fffb2657674fb2efd589b3476ca48d4cad1437e17",
           "unstd/pack/binpack.py": "2770b38dbc874406b511947b2415e161f02870a766beb7730407a87542ae1f14"
         },
-        "imported_source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src/unstd/pack/binpack.py",
+        "imported_source": ".local/pack-backend-before/src/unstd/pack/binpack.py",
         "numpy_version": "2.5.3",
         "signatures": {
           "pack_array": "(dtype: 'DTypeLike', seq: 'Iterable[float]') -> 'bytes'",
@@ -979,7 +979,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-256-list": {
+          "consumer/embedding-pack-256-list": {
             "iterations": 30943,
             "wall_ns": 30498708,
             "cpu_ns": 30083000,
@@ -988,7 +988,7 @@
             "note": "Existing compiled !256d Struct.pack, including argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-256-owned-list": {
+          "consumer/embedding-unpack-256-owned-list": {
             "iterations": 17153,
             "wall_ns": 31964167,
             "cpu_ns": 31896000,
@@ -997,7 +997,7 @@
             "note": "Existing !256d Struct.unpack_from followed by owned Python list",
             "oracle_passed": true
           },
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 136,
             "wall_ns": 29847000,
             "cpu_ns": 29494000,
@@ -1006,7 +1006,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 70,
             "wall_ns": 30325625,
             "cpu_ns": 29929000,
@@ -1015,7 +1015,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 3926,
             "wall_ns": 31413750,
             "cpu_ns": 30475000,
@@ -1024,7 +1024,7 @@
             "note": "Existing float32 little-endian view followed by Python float conversion",
             "oracle_passed": true
           },
-          "billy/http-length-pack": {
+          "consumer/http-length-pack": {
             "iterations": 951681,
             "wall_ns": 27298625,
             "cpu_ns": 26658000,
@@ -1033,7 +1033,7 @@
             "note": "Existing four-byte big-endian framing header",
             "oracle_passed": true
           },
-          "billy/http-length-unpack": {
+          "consumer/http-length-unpack": {
             "iterations": 895151,
             "wall_ns": 27128625,
             "cpu_ns": 27005000,
@@ -1261,7 +1261,7 @@
         }
       },
       {
-        "source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src",
+        "source": ".local/pack-backend-before/src",
         "source_hashes": {
           "unstd/__init__.py": "b52aa5df64f0215833b16bcd1a5153ad2f5fe2535902a24911d77c19bc874cad",
           "unstd/pack/__init__.py": "3399b170cfd1dd1bce7aedf15e65fb029c0e4ce61baebc80d5ec7cd712b704fa",
@@ -1269,7 +1269,7 @@
           "unstd/pack/_internal/dtype.py": "9adac429d0055a2f213e648fffb2657674fb2efd589b3476ca48d4cad1437e17",
           "unstd/pack/binpack.py": "2770b38dbc874406b511947b2415e161f02870a766beb7730407a87542ae1f14"
         },
-        "imported_source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src/unstd/pack/binpack.py",
+        "imported_source": ".local/pack-backend-before/src/unstd/pack/binpack.py",
         "numpy_version": "2.5.3",
         "signatures": {
           "pack_array": "(dtype: 'DTypeLike', seq: 'Iterable[float]') -> 'bytes'",
@@ -1278,7 +1278,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-256-list": {
+          "consumer/embedding-pack-256-list": {
             "iterations": 29409,
             "wall_ns": 30416375,
             "cpu_ns": 29905000,
@@ -1287,7 +1287,7 @@
             "note": "Existing compiled !256d Struct.pack, including argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-256-owned-list": {
+          "consumer/embedding-unpack-256-owned-list": {
             "iterations": 12753,
             "wall_ns": 25827375,
             "cpu_ns": 25673000,
@@ -1296,7 +1296,7 @@
             "note": "Existing !256d Struct.unpack_from followed by owned Python list",
             "oracle_passed": true
           },
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 127,
             "wall_ns": 29717083,
             "cpu_ns": 29195000,
@@ -1305,7 +1305,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 61,
             "wall_ns": 31116792,
             "cpu_ns": 30202000,
@@ -1314,7 +1314,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 3327,
             "wall_ns": 34988625,
             "cpu_ns": 32348000,
@@ -1323,7 +1323,7 @@
             "note": "Existing float32 little-endian view followed by Python float conversion",
             "oracle_passed": true
           },
-          "billy/http-length-pack": {
+          "consumer/http-length-pack": {
             "iterations": 719204,
             "wall_ns": 24091000,
             "cpu_ns": 22812000,
@@ -1332,7 +1332,7 @@
             "note": "Existing four-byte big-endian framing header",
             "oracle_passed": true
           },
-          "billy/http-length-unpack": {
+          "consumer/http-length-unpack": {
             "iterations": 988145,
             "wall_ns": 36809375,
             "cpu_ns": 36715000,
@@ -1560,7 +1560,7 @@
         }
       },
       {
-        "source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src",
+        "source": ".local/pack-backend-before/src",
         "source_hashes": {
           "unstd/__init__.py": "b52aa5df64f0215833b16bcd1a5153ad2f5fe2535902a24911d77c19bc874cad",
           "unstd/pack/__init__.py": "3399b170cfd1dd1bce7aedf15e65fb029c0e4ce61baebc80d5ec7cd712b704fa",
@@ -1568,7 +1568,7 @@
           "unstd/pack/_internal/dtype.py": "9adac429d0055a2f213e648fffb2657674fb2efd589b3476ca48d4cad1437e17",
           "unstd/pack/binpack.py": "2770b38dbc874406b511947b2415e161f02870a766beb7730407a87542ae1f14"
         },
-        "imported_source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src/unstd/pack/binpack.py",
+        "imported_source": ".local/pack-backend-before/src/unstd/pack/binpack.py",
         "numpy_version": "2.5.3",
         "signatures": {
           "pack_array": "(dtype: 'DTypeLike', seq: 'Iterable[float]') -> 'bytes'",
@@ -1577,7 +1577,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-256-list": {
+          "consumer/embedding-pack-256-list": {
             "iterations": 27755,
             "wall_ns": 33025125,
             "cpu_ns": 30757000,
@@ -1586,7 +1586,7 @@
             "note": "Existing compiled !256d Struct.pack, including argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-256-owned-list": {
+          "consumer/embedding-unpack-256-owned-list": {
             "iterations": 11852,
             "wall_ns": 28661167,
             "cpu_ns": 24601000,
@@ -1595,7 +1595,7 @@
             "note": "Existing !256d Struct.unpack_from followed by owned Python list",
             "oracle_passed": true
           },
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 78,
             "wall_ns": 23642083,
             "cpu_ns": 20454000,
@@ -1604,7 +1604,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 49,
             "wall_ns": 23749000,
             "cpu_ns": 22436000,
@@ -1613,7 +1613,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 3444,
             "wall_ns": 33091333,
             "cpu_ns": 29827000,
@@ -1622,7 +1622,7 @@
             "note": "Existing float32 little-endian view followed by Python float conversion",
             "oracle_passed": true
           },
-          "billy/http-length-pack": {
+          "consumer/http-length-pack": {
             "iterations": 1000000,
             "wall_ns": 29122583,
             "cpu_ns": 28874000,
@@ -1631,7 +1631,7 @@
             "note": "Existing four-byte big-endian framing header",
             "oracle_passed": true
           },
-          "billy/http-length-unpack": {
+          "consumer/http-length-unpack": {
             "iterations": 773920,
             "wall_ns": 25927458,
             "cpu_ns": 25673000,
@@ -1859,7 +1859,7 @@
         }
       },
       {
-        "source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src",
+        "source": ".local/pack-backend-before/src",
         "source_hashes": {
           "unstd/__init__.py": "b52aa5df64f0215833b16bcd1a5153ad2f5fe2535902a24911d77c19bc874cad",
           "unstd/pack/__init__.py": "3399b170cfd1dd1bce7aedf15e65fb029c0e4ce61baebc80d5ec7cd712b704fa",
@@ -1867,7 +1867,7 @@
           "unstd/pack/_internal/dtype.py": "9adac429d0055a2f213e648fffb2657674fb2efd589b3476ca48d4cad1437e17",
           "unstd/pack/binpack.py": "2770b38dbc874406b511947b2415e161f02870a766beb7730407a87542ae1f14"
         },
-        "imported_source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src/unstd/pack/binpack.py",
+        "imported_source": ".local/pack-backend-before/src/unstd/pack/binpack.py",
         "numpy_version": "2.5.3",
         "signatures": {
           "pack_array": "(dtype: 'DTypeLike', seq: 'Iterable[float]') -> 'bytes'",
@@ -1876,7 +1876,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-256-list": {
+          "consumer/embedding-pack-256-list": {
             "iterations": 28502,
             "wall_ns": 35601250,
             "cpu_ns": 31652000,
@@ -1885,7 +1885,7 @@
             "note": "Existing compiled !256d Struct.pack, including argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-256-owned-list": {
+          "consumer/embedding-unpack-256-owned-list": {
             "iterations": 14346,
             "wall_ns": 29540000,
             "cpu_ns": 27107000,
@@ -1894,7 +1894,7 @@
             "note": "Existing !256d Struct.unpack_from followed by owned Python list",
             "oracle_passed": true
           },
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 122,
             "wall_ns": 30470209,
             "cpu_ns": 28985000,
@@ -1903,7 +1903,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 68,
             "wall_ns": 29467709,
             "cpu_ns": 28906000,
@@ -1912,7 +1912,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 3364,
             "wall_ns": 44392875,
             "cpu_ns": 31696000,
@@ -1921,7 +1921,7 @@
             "note": "Existing float32 little-endian view followed by Python float conversion",
             "oracle_passed": true
           },
-          "billy/http-length-pack": {
+          "consumer/http-length-pack": {
             "iterations": 710460,
             "wall_ns": 30054667,
             "cpu_ns": 24435000,
@@ -1930,7 +1930,7 @@
             "note": "Existing four-byte big-endian framing header",
             "oracle_passed": true
           },
-          "billy/http-length-unpack": {
+          "consumer/http-length-unpack": {
             "iterations": 671098,
             "wall_ns": 27211583,
             "cpu_ns": 23135000,
@@ -2158,7 +2158,7 @@
         }
       },
       {
-        "source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src",
+        "source": ".local/pack-backend-before/src",
         "source_hashes": {
           "unstd/__init__.py": "b52aa5df64f0215833b16bcd1a5153ad2f5fe2535902a24911d77c19bc874cad",
           "unstd/pack/__init__.py": "3399b170cfd1dd1bce7aedf15e65fb029c0e4ce61baebc80d5ec7cd712b704fa",
@@ -2166,7 +2166,7 @@
           "unstd/pack/_internal/dtype.py": "9adac429d0055a2f213e648fffb2657674fb2efd589b3476ca48d4cad1437e17",
           "unstd/pack/binpack.py": "2770b38dbc874406b511947b2415e161f02870a766beb7730407a87542ae1f14"
         },
-        "imported_source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src/unstd/pack/binpack.py",
+        "imported_source": ".local/pack-backend-before/src/unstd/pack/binpack.py",
         "numpy_version": "2.5.3",
         "signatures": {
           "pack_array": "(dtype: 'DTypeLike', seq: 'Iterable[float]') -> 'bytes'",
@@ -2175,7 +2175,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-256-list": {
+          "consumer/embedding-pack-256-list": {
             "iterations": 30054,
             "wall_ns": 29839042,
             "cpu_ns": 29759000,
@@ -2184,7 +2184,7 @@
             "note": "Existing compiled !256d Struct.pack, including argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-256-owned-list": {
+          "consumer/embedding-unpack-256-owned-list": {
             "iterations": 14148,
             "wall_ns": 40995625,
             "cpu_ns": 33422000,
@@ -2193,7 +2193,7 @@
             "note": "Existing !256d Struct.unpack_from followed by owned Python list",
             "oracle_passed": true
           },
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 125,
             "wall_ns": 31717416,
             "cpu_ns": 30788000,
@@ -2202,7 +2202,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 55,
             "wall_ns": 26450458,
             "cpu_ns": 24997000,
@@ -2211,7 +2211,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 3709,
             "wall_ns": 30240083,
             "cpu_ns": 29354000,
@@ -2220,7 +2220,7 @@
             "note": "Existing float32 little-endian view followed by Python float conversion",
             "oracle_passed": true
           },
-          "billy/http-length-pack": {
+          "consumer/http-length-pack": {
             "iterations": 820885,
             "wall_ns": 30190834,
             "cpu_ns": 26907000,
@@ -2229,7 +2229,7 @@
             "note": "Existing four-byte big-endian framing header",
             "oracle_passed": true
           },
-          "billy/http-length-unpack": {
+          "consumer/http-length-unpack": {
             "iterations": 925881,
             "wall_ns": 37071083,
             "cpu_ns": 32749000,
@@ -2457,7 +2457,7 @@
         }
       },
       {
-        "source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src",
+        "source": ".local/pack-backend-before/src",
         "source_hashes": {
           "unstd/__init__.py": "b52aa5df64f0215833b16bcd1a5153ad2f5fe2535902a24911d77c19bc874cad",
           "unstd/pack/__init__.py": "3399b170cfd1dd1bce7aedf15e65fb029c0e4ce61baebc80d5ec7cd712b704fa",
@@ -2465,7 +2465,7 @@
           "unstd/pack/_internal/dtype.py": "9adac429d0055a2f213e648fffb2657674fb2efd589b3476ca48d4cad1437e17",
           "unstd/pack/binpack.py": "2770b38dbc874406b511947b2415e161f02870a766beb7730407a87542ae1f14"
         },
-        "imported_source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src/unstd/pack/binpack.py",
+        "imported_source": ".local/pack-backend-before/src/unstd/pack/binpack.py",
         "numpy_version": "2.5.3",
         "signatures": {
           "pack_array": "(dtype: 'DTypeLike', seq: 'Iterable[float]') -> 'bytes'",
@@ -2474,7 +2474,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-256-list": {
+          "consumer/embedding-pack-256-list": {
             "iterations": 24133,
             "wall_ns": 35066209,
             "cpu_ns": 30576000,
@@ -2483,7 +2483,7 @@
             "note": "Existing compiled !256d Struct.pack, including argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-256-owned-list": {
+          "consumer/embedding-unpack-256-owned-list": {
             "iterations": 13776,
             "wall_ns": 26398125,
             "cpu_ns": 24978000,
@@ -2492,7 +2492,7 @@
             "note": "Existing !256d Struct.unpack_from followed by owned Python list",
             "oracle_passed": true
           },
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 125,
             "wall_ns": 37408167,
             "cpu_ns": 32731000,
@@ -2501,7 +2501,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 48,
             "wall_ns": 24776000,
             "cpu_ns": 22885000,
@@ -2510,7 +2510,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 3772,
             "wall_ns": 30620625,
             "cpu_ns": 30044000,
@@ -2519,7 +2519,7 @@
             "note": "Existing float32 little-endian view followed by Python float conversion",
             "oracle_passed": true
           },
-          "billy/http-length-pack": {
+          "consumer/http-length-pack": {
             "iterations": 980338,
             "wall_ns": 30071875,
             "cpu_ns": 28512000,
@@ -2528,7 +2528,7 @@
             "note": "Existing four-byte big-endian framing header",
             "oracle_passed": true
           },
-          "billy/http-length-unpack": {
+          "consumer/http-length-unpack": {
             "iterations": 889490,
             "wall_ns": 28713000,
             "cpu_ns": 27318000,
@@ -2756,7 +2756,7 @@
         }
       },
       {
-        "source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src",
+        "source": ".local/pack-backend-before/src",
         "source_hashes": {
           "unstd/__init__.py": "b52aa5df64f0215833b16bcd1a5153ad2f5fe2535902a24911d77c19bc874cad",
           "unstd/pack/__init__.py": "3399b170cfd1dd1bce7aedf15e65fb029c0e4ce61baebc80d5ec7cd712b704fa",
@@ -2764,7 +2764,7 @@
           "unstd/pack/_internal/dtype.py": "9adac429d0055a2f213e648fffb2657674fb2efd589b3476ca48d4cad1437e17",
           "unstd/pack/binpack.py": "2770b38dbc874406b511947b2415e161f02870a766beb7730407a87542ae1f14"
         },
-        "imported_source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src/unstd/pack/binpack.py",
+        "imported_source": ".local/pack-backend-before/src/unstd/pack/binpack.py",
         "numpy_version": "2.5.3",
         "signatures": {
           "pack_array": "(dtype: 'DTypeLike', seq: 'Iterable[float]') -> 'bytes'",
@@ -2773,7 +2773,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-256-list": {
+          "consumer/embedding-pack-256-list": {
             "iterations": 28279,
             "wall_ns": 31658417,
             "cpu_ns": 30137000,
@@ -2782,7 +2782,7 @@
             "note": "Existing compiled !256d Struct.pack, including argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-256-owned-list": {
+          "consumer/embedding-unpack-256-owned-list": {
             "iterations": 14980,
             "wall_ns": 30691791,
             "cpu_ns": 29051000,
@@ -2791,7 +2791,7 @@
             "note": "Existing !256d Struct.unpack_from followed by owned Python list",
             "oracle_passed": true
           },
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 132,
             "wall_ns": 30312541,
             "cpu_ns": 29793000,
@@ -2800,7 +2800,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 64,
             "wall_ns": 29822708,
             "cpu_ns": 29261000,
@@ -2809,7 +2809,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 3827,
             "wall_ns": 32580958,
             "cpu_ns": 31810000,
@@ -2818,7 +2818,7 @@
             "note": "Existing float32 little-endian view followed by Python float conversion",
             "oracle_passed": true
           },
-          "billy/http-length-pack": {
+          "consumer/http-length-pack": {
             "iterations": 813178,
             "wall_ns": 27264083,
             "cpu_ns": 26971000,
@@ -2827,7 +2827,7 @@
             "note": "Existing four-byte big-endian framing header",
             "oracle_passed": true
           },
-          "billy/http-length-unpack": {
+          "consumer/http-length-unpack": {
             "iterations": 1000000,
             "wall_ns": 31526166,
             "cpu_ns": 31030000,
@@ -3055,7 +3055,7 @@
         }
       },
       {
-        "source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src",
+        "source": ".local/pack-backend-before/src",
         "source_hashes": {
           "unstd/__init__.py": "b52aa5df64f0215833b16bcd1a5153ad2f5fe2535902a24911d77c19bc874cad",
           "unstd/pack/__init__.py": "3399b170cfd1dd1bce7aedf15e65fb029c0e4ce61baebc80d5ec7cd712b704fa",
@@ -3063,7 +3063,7 @@
           "unstd/pack/_internal/dtype.py": "9adac429d0055a2f213e648fffb2657674fb2efd589b3476ca48d4cad1437e17",
           "unstd/pack/binpack.py": "2770b38dbc874406b511947b2415e161f02870a766beb7730407a87542ae1f14"
         },
-        "imported_source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src/unstd/pack/binpack.py",
+        "imported_source": ".local/pack-backend-before/src/unstd/pack/binpack.py",
         "numpy_version": "2.5.3",
         "signatures": {
           "pack_array": "(dtype: 'DTypeLike', seq: 'Iterable[float]') -> 'bytes'",
@@ -3072,7 +3072,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-256-list": {
+          "consumer/embedding-pack-256-list": {
             "iterations": 29172,
             "wall_ns": 39597667,
             "cpu_ns": 31769000,
@@ -3081,7 +3081,7 @@
             "note": "Existing compiled !256d Struct.pack, including argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-256-owned-list": {
+          "consumer/embedding-unpack-256-owned-list": {
             "iterations": 16137,
             "wall_ns": 35028125,
             "cpu_ns": 32966000,
@@ -3090,7 +3090,7 @@
             "note": "Existing !256d Struct.unpack_from followed by owned Python list",
             "oracle_passed": true
           },
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 112,
             "wall_ns": 32879333,
             "cpu_ns": 31256000,
@@ -3099,7 +3099,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 50,
             "wall_ns": 30086833,
             "cpu_ns": 28307000,
@@ -3108,7 +3108,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 2984,
             "wall_ns": 31228458,
             "cpu_ns": 29437000,
@@ -3117,7 +3117,7 @@
             "note": "Existing float32 little-endian view followed by Python float conversion",
             "oracle_passed": true
           },
-          "billy/http-length-pack": {
+          "consumer/http-length-pack": {
             "iterations": 891549,
             "wall_ns": 32325750,
             "cpu_ns": 29020000,
@@ -3126,7 +3126,7 @@
             "note": "Existing four-byte big-endian framing header",
             "oracle_passed": true
           },
-          "billy/http-length-unpack": {
+          "consumer/http-length-unpack": {
             "iterations": 773736,
             "wall_ns": 28308666,
             "cpu_ns": 25816000,
@@ -3356,7 +3356,7 @@
     ],
     "candidate": [
       {
-        "source": "/Users/griffinstrier/Billy-Company/unstd/src",
+        "source": "src",
         "source_hashes": {
           "unstd/__init__.py": "b52aa5df64f0215833b16bcd1a5153ad2f5fe2535902a24911d77c19bc874cad",
           "unstd/pack/__init__.py": "3399b170cfd1dd1bce7aedf15e65fb029c0e4ce61baebc80d5ec7cd712b704fa",
@@ -3365,7 +3365,7 @@
           "unstd/pack/_internal/dtype.py": "9adac429d0055a2f213e648fffb2657674fb2efd589b3476ca48d4cad1437e17",
           "unstd/pack/binpack.py": "5c0c6a48f314e75cbb75f5ddebef84d9b6993d6e894007a8e27deeff362648db"
         },
-        "imported_source": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/pack/binpack.py",
+        "imported_source": "src/unstd/pack/binpack.py",
         "numpy_version": "2.5.3",
         "signatures": {
           "pack_array": "(dtype: 'DTypeLike', seq: 'Iterable[float]') -> 'bytes'",
@@ -3374,7 +3374,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-256-list": {
+          "consumer/embedding-pack-256-list": {
             "iterations": 28449,
             "wall_ns": 29995667,
             "cpu_ns": 29475000,
@@ -3383,7 +3383,7 @@
             "note": "Existing compiled !256d Struct.pack, including argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-256-owned-list": {
+          "consumer/embedding-unpack-256-owned-list": {
             "iterations": 15084,
             "wall_ns": 28259167,
             "cpu_ns": 27598000,
@@ -3392,7 +3392,7 @@
             "note": "Existing !256d Struct.unpack_from followed by owned Python list",
             "oracle_passed": true
           },
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 122,
             "wall_ns": 30952500,
             "cpu_ns": 29481000,
@@ -3401,7 +3401,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 59,
             "wall_ns": 25459167,
             "cpu_ns": 24994000,
@@ -3410,7 +3410,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 3863,
             "wall_ns": 29827750,
             "cpu_ns": 29723000,
@@ -3419,7 +3419,7 @@
             "note": "Existing float32 little-endian view followed by Python float conversion",
             "oracle_passed": true
           },
-          "billy/http-length-pack": {
+          "consumer/http-length-pack": {
             "iterations": 1000000,
             "wall_ns": 27344375,
             "cpu_ns": 27294000,
@@ -3428,7 +3428,7 @@
             "note": "Existing four-byte big-endian framing header",
             "oracle_passed": true
           },
-          "billy/http-length-unpack": {
+          "consumer/http-length-unpack": {
             "iterations": 999273,
             "wall_ns": 30941792,
             "cpu_ns": 30506000,
@@ -3656,7 +3656,7 @@
         }
       },
       {
-        "source": "/Users/griffinstrier/Billy-Company/unstd/src",
+        "source": "src",
         "source_hashes": {
           "unstd/__init__.py": "b52aa5df64f0215833b16bcd1a5153ad2f5fe2535902a24911d77c19bc874cad",
           "unstd/pack/__init__.py": "3399b170cfd1dd1bce7aedf15e65fb029c0e4ce61baebc80d5ec7cd712b704fa",
@@ -3665,7 +3665,7 @@
           "unstd/pack/_internal/dtype.py": "9adac429d0055a2f213e648fffb2657674fb2efd589b3476ca48d4cad1437e17",
           "unstd/pack/binpack.py": "5c0c6a48f314e75cbb75f5ddebef84d9b6993d6e894007a8e27deeff362648db"
         },
-        "imported_source": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/pack/binpack.py",
+        "imported_source": "src/unstd/pack/binpack.py",
         "numpy_version": "2.5.3",
         "signatures": {
           "pack_array": "(dtype: 'DTypeLike', seq: 'Iterable[float]') -> 'bytes'",
@@ -3674,7 +3674,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-256-list": {
+          "consumer/embedding-pack-256-list": {
             "iterations": 29653,
             "wall_ns": 30977291,
             "cpu_ns": 30945000,
@@ -3683,7 +3683,7 @@
             "note": "Existing compiled !256d Struct.pack, including argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-256-owned-list": {
+          "consumer/embedding-unpack-256-owned-list": {
             "iterations": 17450,
             "wall_ns": 31751083,
             "cpu_ns": 31137000,
@@ -3692,7 +3692,7 @@
             "note": "Existing !256d Struct.unpack_from followed by owned Python list",
             "oracle_passed": true
           },
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 127,
             "wall_ns": 29602750,
             "cpu_ns": 28943000,
@@ -3701,7 +3701,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 61,
             "wall_ns": 29364625,
             "cpu_ns": 27779000,
@@ -3710,7 +3710,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 3010,
             "wall_ns": 26421042,
             "cpu_ns": 24826000,
@@ -3719,7 +3719,7 @@
             "note": "Existing float32 little-endian view followed by Python float conversion",
             "oracle_passed": true
           },
-          "billy/http-length-pack": {
+          "consumer/http-length-pack": {
             "iterations": 836659,
             "wall_ns": 25570375,
             "cpu_ns": 23615000,
@@ -3728,7 +3728,7 @@
             "note": "Existing four-byte big-endian framing header",
             "oracle_passed": true
           },
-          "billy/http-length-unpack": {
+          "consumer/http-length-unpack": {
             "iterations": 899773,
             "wall_ns": 28764584,
             "cpu_ns": 28024000,
@@ -3956,7 +3956,7 @@
         }
       },
       {
-        "source": "/Users/griffinstrier/Billy-Company/unstd/src",
+        "source": "src",
         "source_hashes": {
           "unstd/__init__.py": "b52aa5df64f0215833b16bcd1a5153ad2f5fe2535902a24911d77c19bc874cad",
           "unstd/pack/__init__.py": "3399b170cfd1dd1bce7aedf15e65fb029c0e4ce61baebc80d5ec7cd712b704fa",
@@ -3965,7 +3965,7 @@
           "unstd/pack/_internal/dtype.py": "9adac429d0055a2f213e648fffb2657674fb2efd589b3476ca48d4cad1437e17",
           "unstd/pack/binpack.py": "5c0c6a48f314e75cbb75f5ddebef84d9b6993d6e894007a8e27deeff362648db"
         },
-        "imported_source": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/pack/binpack.py",
+        "imported_source": "src/unstd/pack/binpack.py",
         "numpy_version": "2.5.3",
         "signatures": {
           "pack_array": "(dtype: 'DTypeLike', seq: 'Iterable[float]') -> 'bytes'",
@@ -3974,7 +3974,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-256-list": {
+          "consumer/embedding-pack-256-list": {
             "iterations": 24185,
             "wall_ns": 25114209,
             "cpu_ns": 24380000,
@@ -3983,7 +3983,7 @@
             "note": "Existing compiled !256d Struct.pack, including argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-256-owned-list": {
+          "consumer/embedding-unpack-256-owned-list": {
             "iterations": 16476,
             "wall_ns": 29538208,
             "cpu_ns": 28817000,
@@ -3992,7 +3992,7 @@
             "note": "Existing !256d Struct.unpack_from followed by owned Python list",
             "oracle_passed": true
           },
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 125,
             "wall_ns": 29187375,
             "cpu_ns": 28534000,
@@ -4001,7 +4001,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 58,
             "wall_ns": 24949333,
             "cpu_ns": 24387000,
@@ -4010,7 +4010,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 3560,
             "wall_ns": 29648292,
             "cpu_ns": 28950000,
@@ -4019,7 +4019,7 @@
             "note": "Existing float32 little-endian view followed by Python float conversion",
             "oracle_passed": true
           },
-          "billy/http-length-pack": {
+          "consumer/http-length-pack": {
             "iterations": 1000000,
             "wall_ns": 27545458,
             "cpu_ns": 27185000,
@@ -4028,7 +4028,7 @@
             "note": "Existing four-byte big-endian framing header",
             "oracle_passed": true
           },
-          "billy/http-length-unpack": {
+          "consumer/http-length-unpack": {
             "iterations": 995966,
             "wall_ns": 58483042,
             "cpu_ns": 36600000,
@@ -4256,7 +4256,7 @@
         }
       },
       {
-        "source": "/Users/griffinstrier/Billy-Company/unstd/src",
+        "source": "src",
         "source_hashes": {
           "unstd/__init__.py": "b52aa5df64f0215833b16bcd1a5153ad2f5fe2535902a24911d77c19bc874cad",
           "unstd/pack/__init__.py": "3399b170cfd1dd1bce7aedf15e65fb029c0e4ce61baebc80d5ec7cd712b704fa",
@@ -4265,7 +4265,7 @@
           "unstd/pack/_internal/dtype.py": "9adac429d0055a2f213e648fffb2657674fb2efd589b3476ca48d4cad1437e17",
           "unstd/pack/binpack.py": "5c0c6a48f314e75cbb75f5ddebef84d9b6993d6e894007a8e27deeff362648db"
         },
-        "imported_source": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/pack/binpack.py",
+        "imported_source": "src/unstd/pack/binpack.py",
         "numpy_version": "2.5.3",
         "signatures": {
           "pack_array": "(dtype: 'DTypeLike', seq: 'Iterable[float]') -> 'bytes'",
@@ -4274,7 +4274,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-256-list": {
+          "consumer/embedding-pack-256-list": {
             "iterations": 27336,
             "wall_ns": 33550625,
             "cpu_ns": 31352000,
@@ -4283,7 +4283,7 @@
             "note": "Existing compiled !256d Struct.pack, including argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-256-owned-list": {
+          "consumer/embedding-unpack-256-owned-list": {
             "iterations": 13446,
             "wall_ns": 31252709,
             "cpu_ns": 27743000,
@@ -4292,7 +4292,7 @@
             "note": "Existing !256d Struct.unpack_from followed by owned Python list",
             "oracle_passed": true
           },
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 127,
             "wall_ns": 37050416,
             "cpu_ns": 33148000,
@@ -4301,7 +4301,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 43,
             "wall_ns": 24277542,
             "cpu_ns": 21568000,
@@ -4310,7 +4310,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 3587,
             "wall_ns": 29227375,
             "cpu_ns": 28034000,
@@ -4319,7 +4319,7 @@
             "note": "Existing float32 little-endian view followed by Python float conversion",
             "oracle_passed": true
           },
-          "billy/http-length-pack": {
+          "consumer/http-length-pack": {
             "iterations": 1000000,
             "wall_ns": 28646584,
             "cpu_ns": 28184000,
@@ -4328,7 +4328,7 @@
             "note": "Existing four-byte big-endian framing header",
             "oracle_passed": true
           },
-          "billy/http-length-unpack": {
+          "consumer/http-length-unpack": {
             "iterations": 868569,
             "wall_ns": 26999542,
             "cpu_ns": 26849000,
@@ -4556,7 +4556,7 @@
         }
       },
       {
-        "source": "/Users/griffinstrier/Billy-Company/unstd/src",
+        "source": "src",
         "source_hashes": {
           "unstd/__init__.py": "b52aa5df64f0215833b16bcd1a5153ad2f5fe2535902a24911d77c19bc874cad",
           "unstd/pack/__init__.py": "3399b170cfd1dd1bce7aedf15e65fb029c0e4ce61baebc80d5ec7cd712b704fa",
@@ -4565,7 +4565,7 @@
           "unstd/pack/_internal/dtype.py": "9adac429d0055a2f213e648fffb2657674fb2efd589b3476ca48d4cad1437e17",
           "unstd/pack/binpack.py": "5c0c6a48f314e75cbb75f5ddebef84d9b6993d6e894007a8e27deeff362648db"
         },
-        "imported_source": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/pack/binpack.py",
+        "imported_source": "src/unstd/pack/binpack.py",
         "numpy_version": "2.5.3",
         "signatures": {
           "pack_array": "(dtype: 'DTypeLike', seq: 'Iterable[float]') -> 'bytes'",
@@ -4574,7 +4574,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-256-list": {
+          "consumer/embedding-pack-256-list": {
             "iterations": 28094,
             "wall_ns": 30362833,
             "cpu_ns": 28609000,
@@ -4583,7 +4583,7 @@
             "note": "Existing compiled !256d Struct.pack, including argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-256-owned-list": {
+          "consumer/embedding-unpack-256-owned-list": {
             "iterations": 12419,
             "wall_ns": 29594375,
             "cpu_ns": 26592000,
@@ -4592,7 +4592,7 @@
             "note": "Existing !256d Struct.unpack_from followed by owned Python list",
             "oracle_passed": true
           },
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 118,
             "wall_ns": 32819666,
             "cpu_ns": 29878000,
@@ -4601,7 +4601,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 62,
             "wall_ns": 27959625,
             "cpu_ns": 27211000,
@@ -4610,7 +4610,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 3813,
             "wall_ns": 35052334,
             "cpu_ns": 31543000,
@@ -4619,7 +4619,7 @@
             "note": "Existing float32 little-endian view followed by Python float conversion",
             "oracle_passed": true
           },
-          "billy/http-length-pack": {
+          "consumer/http-length-pack": {
             "iterations": 885588,
             "wall_ns": 32217167,
             "cpu_ns": 28303000,
@@ -4628,7 +4628,7 @@
             "note": "Existing four-byte big-endian framing header",
             "oracle_passed": true
           },
-          "billy/http-length-unpack": {
+          "consumer/http-length-unpack": {
             "iterations": 681579,
             "wall_ns": 29570125,
             "cpu_ns": 24534000,
@@ -4856,7 +4856,7 @@
         }
       },
       {
-        "source": "/Users/griffinstrier/Billy-Company/unstd/src",
+        "source": "src",
         "source_hashes": {
           "unstd/__init__.py": "b52aa5df64f0215833b16bcd1a5153ad2f5fe2535902a24911d77c19bc874cad",
           "unstd/pack/__init__.py": "3399b170cfd1dd1bce7aedf15e65fb029c0e4ce61baebc80d5ec7cd712b704fa",
@@ -4865,7 +4865,7 @@
           "unstd/pack/_internal/dtype.py": "9adac429d0055a2f213e648fffb2657674fb2efd589b3476ca48d4cad1437e17",
           "unstd/pack/binpack.py": "5c0c6a48f314e75cbb75f5ddebef84d9b6993d6e894007a8e27deeff362648db"
         },
-        "imported_source": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/pack/binpack.py",
+        "imported_source": "src/unstd/pack/binpack.py",
         "numpy_version": "2.5.3",
         "signatures": {
           "pack_array": "(dtype: 'DTypeLike', seq: 'Iterable[float]') -> 'bytes'",
@@ -4874,7 +4874,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-256-list": {
+          "consumer/embedding-pack-256-list": {
             "iterations": 18290,
             "wall_ns": 30121541,
             "cpu_ns": 22200000,
@@ -4883,7 +4883,7 @@
             "note": "Existing compiled !256d Struct.pack, including argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-256-owned-list": {
+          "consumer/embedding-unpack-256-owned-list": {
             "iterations": 15052,
             "wall_ns": 29896709,
             "cpu_ns": 28364000,
@@ -4892,7 +4892,7 @@
             "note": "Existing !256d Struct.unpack_from followed by owned Python list",
             "oracle_passed": true
           },
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 124,
             "wall_ns": 32730459,
             "cpu_ns": 30765000,
@@ -4901,7 +4901,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 63,
             "wall_ns": 28172791,
             "cpu_ns": 27508000,
@@ -4910,7 +4910,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 3484,
             "wall_ns": 30538334,
             "cpu_ns": 28310000,
@@ -4919,7 +4919,7 @@
             "note": "Existing float32 little-endian view followed by Python float conversion",
             "oracle_passed": true
           },
-          "billy/http-length-pack": {
+          "consumer/http-length-pack": {
             "iterations": 936256,
             "wall_ns": 25959041,
             "cpu_ns": 25486000,
@@ -4928,7 +4928,7 @@
             "note": "Existing four-byte big-endian framing header",
             "oracle_passed": true
           },
-          "billy/http-length-unpack": {
+          "consumer/http-length-unpack": {
             "iterations": 888088,
             "wall_ns": 27943542,
             "cpu_ns": 27042000,
@@ -5156,7 +5156,7 @@
         }
       },
       {
-        "source": "/Users/griffinstrier/Billy-Company/unstd/src",
+        "source": "src",
         "source_hashes": {
           "unstd/__init__.py": "b52aa5df64f0215833b16bcd1a5153ad2f5fe2535902a24911d77c19bc874cad",
           "unstd/pack/__init__.py": "3399b170cfd1dd1bce7aedf15e65fb029c0e4ce61baebc80d5ec7cd712b704fa",
@@ -5165,7 +5165,7 @@
           "unstd/pack/_internal/dtype.py": "9adac429d0055a2f213e648fffb2657674fb2efd589b3476ca48d4cad1437e17",
           "unstd/pack/binpack.py": "5c0c6a48f314e75cbb75f5ddebef84d9b6993d6e894007a8e27deeff362648db"
         },
-        "imported_source": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/pack/binpack.py",
+        "imported_source": "src/unstd/pack/binpack.py",
         "numpy_version": "2.5.3",
         "signatures": {
           "pack_array": "(dtype: 'DTypeLike', seq: 'Iterable[float]') -> 'bytes'",
@@ -5174,7 +5174,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-256-list": {
+          "consumer/embedding-pack-256-list": {
             "iterations": 26438,
             "wall_ns": 34199542,
             "cpu_ns": 30762000,
@@ -5183,7 +5183,7 @@
             "note": "Existing compiled !256d Struct.pack, including argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-256-owned-list": {
+          "consumer/embedding-unpack-256-owned-list": {
             "iterations": 11108,
             "wall_ns": 26820708,
             "cpu_ns": 23094000,
@@ -5192,7 +5192,7 @@
             "note": "Existing !256d Struct.unpack_from followed by owned Python list",
             "oracle_passed": true
           },
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 89,
             "wall_ns": 26788250,
             "cpu_ns": 23522000,
@@ -5201,7 +5201,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 57,
             "wall_ns": 31271833,
             "cpu_ns": 28670000,
@@ -5210,7 +5210,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 3676,
             "wall_ns": 31049875,
             "cpu_ns": 29882000,
@@ -5219,7 +5219,7 @@
             "note": "Existing float32 little-endian view followed by Python float conversion",
             "oracle_passed": true
           },
-          "billy/http-length-pack": {
+          "consumer/http-length-pack": {
             "iterations": 1000000,
             "wall_ns": 29673250,
             "cpu_ns": 27779000,
@@ -5228,7 +5228,7 @@
             "note": "Existing four-byte big-endian framing header",
             "oracle_passed": true
           },
-          "billy/http-length-unpack": {
+          "consumer/http-length-unpack": {
             "iterations": 786287,
             "wall_ns": 26462250,
             "cpu_ns": 25293000,
@@ -5456,7 +5456,7 @@
         }
       },
       {
-        "source": "/Users/griffinstrier/Billy-Company/unstd/src",
+        "source": "src",
         "source_hashes": {
           "unstd/__init__.py": "b52aa5df64f0215833b16bcd1a5153ad2f5fe2535902a24911d77c19bc874cad",
           "unstd/pack/__init__.py": "3399b170cfd1dd1bce7aedf15e65fb029c0e4ce61baebc80d5ec7cd712b704fa",
@@ -5465,7 +5465,7 @@
           "unstd/pack/_internal/dtype.py": "9adac429d0055a2f213e648fffb2657674fb2efd589b3476ca48d4cad1437e17",
           "unstd/pack/binpack.py": "5c0c6a48f314e75cbb75f5ddebef84d9b6993d6e894007a8e27deeff362648db"
         },
-        "imported_source": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/pack/binpack.py",
+        "imported_source": "src/unstd/pack/binpack.py",
         "numpy_version": "2.5.3",
         "signatures": {
           "pack_array": "(dtype: 'DTypeLike', seq: 'Iterable[float]') -> 'bytes'",
@@ -5474,7 +5474,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-256-list": {
+          "consumer/embedding-pack-256-list": {
             "iterations": 27638,
             "wall_ns": 30099292,
             "cpu_ns": 28504000,
@@ -5483,7 +5483,7 @@
             "note": "Existing compiled !256d Struct.pack, including argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-256-owned-list": {
+          "consumer/embedding-unpack-256-owned-list": {
             "iterations": 15568,
             "wall_ns": 27227167,
             "cpu_ns": 26768000,
@@ -5492,7 +5492,7 @@
             "note": "Existing !256d Struct.unpack_from followed by owned Python list",
             "oracle_passed": true
           },
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 135,
             "wall_ns": 29888708,
             "cpu_ns": 29781000,
@@ -5501,7 +5501,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 39,
             "wall_ns": 25072083,
             "cpu_ns": 20640000,
@@ -5510,7 +5510,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 3420,
             "wall_ns": 31697167,
             "cpu_ns": 29317000,
@@ -5519,7 +5519,7 @@
             "note": "Existing float32 little-endian view followed by Python float conversion",
             "oracle_passed": true
           },
-          "billy/http-length-pack": {
+          "consumer/http-length-pack": {
             "iterations": 996818,
             "wall_ns": 29189750,
             "cpu_ns": 28090000,
@@ -5528,7 +5528,7 @@
             "note": "Existing four-byte big-endian framing header",
             "oracle_passed": true
           },
-          "billy/http-length-unpack": {
+          "consumer/http-length-unpack": {
             "iterations": 828913,
             "wall_ns": 32243208,
             "cpu_ns": 28502000,
@@ -5756,7 +5756,7 @@
         }
       },
       {
-        "source": "/Users/griffinstrier/Billy-Company/unstd/src",
+        "source": "src",
         "source_hashes": {
           "unstd/__init__.py": "b52aa5df64f0215833b16bcd1a5153ad2f5fe2535902a24911d77c19bc874cad",
           "unstd/pack/__init__.py": "3399b170cfd1dd1bce7aedf15e65fb029c0e4ce61baebc80d5ec7cd712b704fa",
@@ -5765,7 +5765,7 @@
           "unstd/pack/_internal/dtype.py": "9adac429d0055a2f213e648fffb2657674fb2efd589b3476ca48d4cad1437e17",
           "unstd/pack/binpack.py": "5c0c6a48f314e75cbb75f5ddebef84d9b6993d6e894007a8e27deeff362648db"
         },
-        "imported_source": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/pack/binpack.py",
+        "imported_source": "src/unstd/pack/binpack.py",
         "numpy_version": "2.5.3",
         "signatures": {
           "pack_array": "(dtype: 'DTypeLike', seq: 'Iterable[float]') -> 'bytes'",
@@ -5774,7 +5774,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-256-list": {
+          "consumer/embedding-pack-256-list": {
             "iterations": 25288,
             "wall_ns": 30100208,
             "cpu_ns": 28455000,
@@ -5783,7 +5783,7 @@
             "note": "Existing compiled !256d Struct.pack, including argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-256-owned-list": {
+          "consumer/embedding-unpack-256-owned-list": {
             "iterations": 13589,
             "wall_ns": 28250834,
             "cpu_ns": 27045000,
@@ -5792,7 +5792,7 @@
             "note": "Existing !256d Struct.unpack_from followed by owned Python list",
             "oracle_passed": true
           },
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 123,
             "wall_ns": 30160375,
             "cpu_ns": 29626000,
@@ -5801,7 +5801,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 65,
             "wall_ns": 30501791,
             "cpu_ns": 29765000,
@@ -5810,7 +5810,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 3655,
             "wall_ns": 34441791,
             "cpu_ns": 32704000,
@@ -5819,7 +5819,7 @@
             "note": "Existing float32 little-endian view followed by Python float conversion",
             "oracle_passed": true
           },
-          "billy/http-length-pack": {
+          "consumer/http-length-pack": {
             "iterations": 982507,
             "wall_ns": 30254625,
             "cpu_ns": 29117000,
@@ -5828,7 +5828,7 @@
             "note": "Existing four-byte big-endian framing header",
             "oracle_passed": true
           },
-          "billy/http-length-unpack": {
+          "consumer/http-length-unpack": {
             "iterations": 904291,
             "wall_ns": 30090167,
             "cpu_ns": 29141000,
@@ -6080,63 +6080,63 @@
         "wall_ns": 35572333,
         "cpu_ns": 31430000,
         "numpy_loaded": true,
-        "source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src/unstd/pack/binpack.py",
+        "source": ".local/pack-backend-before/src/unstd/pack/binpack.py",
         "process_wall_ns": 56958417
       },
       {
         "wall_ns": 31834708,
         "cpu_ns": 31508000,
         "numpy_loaded": true,
-        "source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src/unstd/pack/binpack.py",
+        "source": ".local/pack-backend-before/src/unstd/pack/binpack.py",
         "process_wall_ns": 54800709
       },
       {
         "wall_ns": 32420625,
         "cpu_ns": 31268000,
         "numpy_loaded": true,
-        "source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src/unstd/pack/binpack.py",
+        "source": ".local/pack-backend-before/src/unstd/pack/binpack.py",
         "process_wall_ns": 58928959
       },
       {
         "wall_ns": 73714959,
         "cpu_ns": 50930000,
         "numpy_loaded": true,
-        "source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src/unstd/pack/binpack.py",
+        "source": ".local/pack-backend-before/src/unstd/pack/binpack.py",
         "process_wall_ns": 107579959
       },
       {
         "wall_ns": 48104208,
         "cpu_ns": 41165000,
         "numpy_loaded": true,
-        "source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src/unstd/pack/binpack.py",
+        "source": ".local/pack-backend-before/src/unstd/pack/binpack.py",
         "process_wall_ns": 77459291
       },
       {
         "wall_ns": 36007459,
         "cpu_ns": 34591000,
         "numpy_loaded": true,
-        "source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src/unstd/pack/binpack.py",
+        "source": ".local/pack-backend-before/src/unstd/pack/binpack.py",
         "process_wall_ns": 64795000
       },
       {
         "wall_ns": 41976083,
         "cpu_ns": 38690000,
         "numpy_loaded": true,
-        "source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src/unstd/pack/binpack.py",
+        "source": ".local/pack-backend-before/src/unstd/pack/binpack.py",
         "process_wall_ns": 69694625
       },
       {
         "wall_ns": 34448417,
         "cpu_ns": 33616000,
         "numpy_loaded": true,
-        "source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src/unstd/pack/binpack.py",
+        "source": ".local/pack-backend-before/src/unstd/pack/binpack.py",
         "process_wall_ns": 56848084
       },
       {
         "wall_ns": 83396833,
         "cpu_ns": 48869000,
         "numpy_loaded": true,
-        "source": "/Users/griffinstrier/Billy-Company/unstd/.local/pack-backend-before/src/unstd/pack/binpack.py",
+        "source": ".local/pack-backend-before/src/unstd/pack/binpack.py",
         "process_wall_ns": 110846125
       }
     ],
@@ -6145,65 +6145,69 @@
         "wall_ns": 30428125,
         "cpu_ns": 30126000,
         "numpy_loaded": true,
-        "source": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/pack/binpack.py",
+        "source": "src/unstd/pack/binpack.py",
         "process_wall_ns": 51404333
       },
       {
         "wall_ns": 57593166,
         "cpu_ns": 37447000,
         "numpy_loaded": true,
-        "source": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/pack/binpack.py",
+        "source": "src/unstd/pack/binpack.py",
         "process_wall_ns": 116407541
       },
       {
         "wall_ns": 33363875,
         "cpu_ns": 31984000,
         "numpy_loaded": true,
-        "source": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/pack/binpack.py",
+        "source": "src/unstd/pack/binpack.py",
         "process_wall_ns": 54941667
       },
       {
         "wall_ns": 37133125,
         "cpu_ns": 34789000,
         "numpy_loaded": true,
-        "source": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/pack/binpack.py",
+        "source": "src/unstd/pack/binpack.py",
         "process_wall_ns": 61323417
       },
       {
         "wall_ns": 64343292,
         "cpu_ns": 48610000,
         "numpy_loaded": true,
-        "source": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/pack/binpack.py",
+        "source": "src/unstd/pack/binpack.py",
         "process_wall_ns": 101298292
       },
       {
         "wall_ns": 30880542,
         "cpu_ns": 30376000,
         "numpy_loaded": true,
-        "source": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/pack/binpack.py",
+        "source": "src/unstd/pack/binpack.py",
         "process_wall_ns": 51775459
       },
       {
         "wall_ns": 28988417,
         "cpu_ns": 28605000,
         "numpy_loaded": true,
-        "source": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/pack/binpack.py",
+        "source": "src/unstd/pack/binpack.py",
         "process_wall_ns": 50602791
       },
       {
         "wall_ns": 30829875,
         "cpu_ns": 30421000,
         "numpy_loaded": true,
-        "source": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/pack/binpack.py",
+        "source": "src/unstd/pack/binpack.py",
         "process_wall_ns": 52426334
       },
       {
         "wall_ns": 87646125,
         "cpu_ns": 50190000,
         "numpy_loaded": true,
-        "source": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/pack/binpack.py",
+        "source": "src/unstd/pack/binpack.py",
         "process_wall_ns": 122942292
       }
     ]
+  },
+  "publication_normalization": {
+    "kind": "public_metadata_normalization",
+    "note": "Consumer labels, artifact paths and machine-specific origins normalized for public publication. Historical timings, measured payload bytes and original source digests retain their captured meaning; normalized source/archive bytes have their own publication hashes."
   }
 }

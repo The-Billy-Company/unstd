@@ -21,8 +21,8 @@
   "runner_sha256": "f55b5f23adb77901b928f727399d4ea6c49014d998b561f70fc3c07449bccf7e",
   "bootstrap_sha256": "549804495fe0fee86561c836a7bd4c714e21e973191dcaff51a0e335a9bd039c",
   "build_command": [
-    "/Users/griffinstrier/Billy-Company/unstd/.venv/bin/python",
-    "/Users/griffinstrier/Billy-Company/unstd/native/proc/experiments/build.py",
+    ".venv/bin/python",
+    "native/proc/experiments/build.py",
     "--warnings-as-errors",
     "--output",
     "/private/tmp/unstd-proc-memory-flat-final-macos/src",
@@ -32,7 +32,7 @@
     "/private/tmp/unstd-proc-memory-flat-final-macos/python",
     "-m",
     "pytest",
-    "/Users/griffinstrier/Billy-Company/unstd/tests/suites/product/proc",
+    "tests/suites/product/proc",
     "-q",
     "--tb=short",
     "--basetemp=/private/tmp/unstd-proc-memory-flat-final-macos/pytest",
@@ -43,7 +43,7 @@
     "not hostile_argv and not allocation_limit"
   ],
   "environment": {
-    "PYTHONPATH": "/private/tmp/unstd-proc-memory-flat-final-macos/src:/private/tmp/unstd-proc-memory-flat-final-macos/bootstrap:/Users/griffinstrier/Billy-Company/unstd",
+    "PYTHONPATH": "/private/tmp/unstd-proc-memory-flat-final-macos/src:/private/tmp/unstd-proc-memory-flat-final-macos/bootstrap:dependency-source/unstd",
     "PYTHONMALLOC": "malloc",
     "DYLD_INSERT_LIBRARIES": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/21/lib/darwin/libclang_rt.asan_osx_dynamic.dylib",
     "ASAN_OPTIONS": "detect_leaks=0:abort_on_error=1:strict_string_checks=1",
@@ -54,5 +54,9 @@
   "verification_output": "",
   "test_exit_code": 0,
   "qualification_exit_code": 0,
-  "junitxml": "/private/tmp/unstd-proc-memory-flat-final-macos/tests.xml"
+  "junitxml": "/private/tmp/unstd-proc-memory-flat-final-macos/tests.xml",
+  "publication_normalization": {
+    "kind": "public_metadata_normalization",
+    "note": "Consumer labels, artifact paths and machine-specific origins normalized for public publication. Historical timings, measured payload bytes and original source digests retain their captured meaning; normalized source/archive bytes have their own publication hashes."
+  }
 }

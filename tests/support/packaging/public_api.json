@@ -317,6 +317,22 @@
       }
     }
   },
+  "unstd.dataset": {
+    "exports": [
+      "Dataset",
+      "build"
+    ],
+    "callables": {
+      "Dataset": {
+        "signature": "(path: 'str | PathLike[str]') -> 'None'",
+        "module": "unstd.dataset.reader"
+      },
+      "build": {
+        "signature": "(path: 'str | PathLike[str]', rows: 'Iterable[Json]', *, max_row_bytes: 'int' = 16777216) -> 'int'",
+        "module": "unstd.dataset.storage"
+      }
+    }
+  },
   "unstd.fs": {
     "exports": [
       "atomic_replace",
@@ -340,7 +356,7 @@
         "module": "unstd.fs"
       },
       "ensure_dir": {
-        "signature": "(path: '_Pathish') -> 'Path'",
+        "signature": "(path: '_Pathish', *, check_first: 'bool' = True) -> 'Path'",
         "module": "unstd.fs"
       },
       "sync_dir": {

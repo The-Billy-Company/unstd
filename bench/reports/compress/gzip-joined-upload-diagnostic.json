@@ -204,7 +204,7 @@
   },
   "interpretation": [
     "The historical timed upload consumer joined both expanded passes and retained two complete outputs while comparing them.",
-    "Billy sandbox_upload_from instead hashes and counts bounded chunks on the first pass, rewinds, and streams bounded chunks on the second pass.",
+    "Consumer sandbox_upload_from instead hashes and counts bounded chunks on the first pass, rewinds, and streams bounded chunks on the second pass.",
     "This negative diagnostic is preserved with its raw 31 samples and source/binary hashes; its joined-output timings are not directly comparable with the corrected bounded upload workload.",
     "The observations do not establish allocator, alignment, cache, or codec causality. Correcting benchmark consumption does not cache decoded upload contents; each pass continues to execute native inflation."
   ],
@@ -816,5 +816,9 @@
         "median_cpu_ns": 3669281.125
       }
     }
+  },
+  "publication_normalization": {
+    "kind": "public_metadata_normalization",
+    "note": "Consumer labels, artifact paths and machine-specific origins normalized for public publication. Historical timings, measured payload bytes and original source digests retain their captured meaning; normalized source/archive bytes have their own publication hashes."
   }
 }

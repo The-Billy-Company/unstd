@@ -3,7 +3,7 @@
 **The requested complete-decoder 100× target is not met on either measured
 operating system.** The new generic `unstd.pack.ragged.RaggedDecoder` removes
 duplicate scans and payload copies, but every floating value still requires
-fresh finite-value validation. No Billy application files were changed.
+fresh finite-value validation. No Consumer application files were changed.
 
 The current shipped validator is now **kernel version 2**. The
 [continued qualification](alternatives/native2.md) records its medium-frame
@@ -88,10 +88,10 @@ these arrays through that unchanged constructor repeats the work and does not
 produce the table's gains.
 
 The baseline comes from read-only captures of `TokenIndex` and `_remote_index`
-in Billy's ColBERT module. [Provenance](../consumer-api/consumer-provenance.json)
+in Consumer's ColBERT module. [Provenance](../consumer-api/consumer-provenance.json)
 pins the source, definitions, model identity, and private capture hash. Synthetic
 finite payloads follow that wire geometry. Transport, inference, normalization,
-and the rest of Billy are outside this decoder measurement. Application source
+and the rest of Consumer are outside this decoder measurement. Application source
 definitions remain in the ignored private capture, outside release artifacts.
 
 Output oracles check every value, exact dtypes/shapes, result class, byte counts,
@@ -147,10 +147,10 @@ the base installation has no new runtime dependency.
 
 ## Replay
 
-Regenerate the private source capture from an authorized local Billy checkout:
+Regenerate the private source capture from an authorized local Consumer checkout:
 
 ```console
-python bench/profiles/pack_consumers.py --billy-root ../billy --write-capture .local/pack-consumer-capture.json
+python bench/profiles/pack_consumers.py --consumer-root ../consumer --write-capture .local/pack-consumer-capture.json
 ```
 
 Build/install the current unstd wheel with a C compiler and NumPy, then select

@@ -43,7 +43,7 @@ from typing import TYPE_CHECKING, Any
 
 from bench.core import timing
 from bench.core.timing import measure
-from bench.profiles.billy_serde import _retained
+from bench.profiles.consumer_serde import _retained
 
 
 if TYPE_CHECKING:

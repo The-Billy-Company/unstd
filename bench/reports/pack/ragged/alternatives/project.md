@@ -75,12 +75,12 @@ ownership. The current public tuple result does not certify arbitrary arrays
 for unchecked composition. This experiment does not establish a need to add
 that API to reach 100×, and no such API was added.
 
-To reproduce from an authorized Billy checkout, copy the exact retained
+To reproduce from an authorized Consumer checkout, copy the exact retained
 [probe](project_probe.py.txt) into `.local/pack-project-replay.py` at the unstd
 repository root, build the current native validator, and run:
 
 ```console
-python .local/pack-project-replay.py --billy-root ../billy --run-timings --rounds 9 --batch-ms 25 --output .local/pack-project-macos.json
+python .local/pack-project-replay.py --consumer-root ../consumer --run-timings --rounds 9 --batch-ms 25 --output .local/pack-project-macos.json
 ```
 
 The probe creates a private capture if absent and otherwise rejects source

@@ -228,15 +228,15 @@ jobs:
           --comparison-source .local/performance/source-before/src/unstd
           --baseline .local/performance/evidence/baseline.json
           --output .local/performance/evidence/before.json
-      - name: Guard Billy gzip consumer latency with frozen transport fixtures
+      - name: Guard gzip consumer latency with frozen transport fixtures
         if: ${{ !inputs.gzip_diagnostic }}
         run: >-
-          .venv/bin/python bench/profiles/billy_gzip.py run
-          --fixtures bench/workloads/billy_gzip.json.gz
+          .venv/bin/python bench/profiles/consumer_gzip.py run
+          --fixtures bench/workloads/consumer_gzip.json.gz
           --baseline-source .local/performance/installed-before
           --source .local/performance/installed-current
           --rounds 7 --repetitions 3 --max-slowdown 1.30
-          --output .local/performance/evidence/billy-gzip.json
+          --output .local/performance/evidence/consumer-gzip.json
       - name: Verify current revision against the frozen worker baseline
         if: ${{ !inputs.gzip_diagnostic }}
         env:

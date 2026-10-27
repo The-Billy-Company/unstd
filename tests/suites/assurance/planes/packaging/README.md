@@ -143,4 +143,4 @@ The [fs integration suite](../../../product/fs/integration/README.md) separately
 checks real Linux native/fallback cancellation and error parity, including the
 test-only ELF observer. The [production qualification](../../../../../bench/reports/fs/production/README.md)
 retains direct/sdist-installed suite receipts, compiler-failure evidence, and
-Billy workload profiles tied to the tested wheel bytes.
+Consumer workload profiles tied to the tested wheel bytes.

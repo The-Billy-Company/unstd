@@ -1,0 +1,1924 @@
+{
+  "schema": 1,
+  "recorded_utc": "2026-10-25T09:35:35.625228+00:00",
+  "python": "3.14.9 (main, Oct 21 2026, 17:47:42) [Clang 23.1.3 ]",
+  "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+  "numpy": "2.5.3",
+  "method": {
+    "rounds": 7,
+    "order": "alternating adjacent pairs on a shared host",
+    "timed": "complete output allocation; wall and current-thread CPU",
+    "memory": "one retained output under tracemalloc, outside timed calls",
+    "validation": "exact bytes, dtype, shape, owned writable output, before/after",
+    "excluded": "fixture construction, imports, async scheduling, provider/network time",
+    "decode_reference": "Consumer's frombuffer(int16).astype(float32) then divide or multiply"
+  },
+  "source_sha256": {
+    "bench/profiles/consumer_audio.py": "68de452c86e7bc93d4a5bb32647c7b74ce08af39ff5408836208c63108f40409",
+    "bench/reports/audio/wavx-before.py.txt": "54688dd59144d2b83a85cf448b8d07bf32eb297378cd78064d9e17a7ac25c414",
+    "src/unstd/audio/wavx.py": "f75f5d3c7a355d5c188448e46bdb6042af5d1e5fbb66bf3bb49d2f2896c14a9e",
+    "src/unstd/audio/_internal/__init__.py": "76c4395ed14aacd77e93f9d26d131eb09dce10fbc5013dbc7f97230f25da55c6",
+    "src/unstd/audio/_internal/pcm.py": "a11ec53c3eb4c72c4afee3f0a788bf80ab17c7a78cfe60625dc745bf08bcc90c"
+  },
+  "consumer_root": "consumer-source",
+  "source_contracts": {
+    "services/ai/core/domain/media/sound/audio.py:_sound": {
+      "line": 93,
+      "end_line": 171,
+      "file_sha256": "c045985ee0bf109a9ca949d46cdb97e25b1072d86dda5ed517da839372f6b2ce",
+      "symbol_sha256": "e26f4d7fe903f1012454d6174dc47d75da6f8ec5176c01bd2944704249cef5b5",
+      "source": "async def _sound(pcm: bytes, sample_rate: int, *, model: str = \"\") -> tuple[str, str]:\n    \"\"\"Return a blind soundtrack observation and its actual returned observer model.\"\"\"\n    from google.genai import types\n\n    from core.foundation.llm import gemini\n    from core.foundation.llm._models_gen import MODEL_ALIASES, MODELS\n    from core.foundation.llm.runtime import active as provider_runtime\n    from core.platform.config import settings\n\n    check = live.input_admission.get()\n    requested = model or settings.llm.media_model\n    meta = MODELS.get(MODEL_ALIASES.get(requested, requested))\n    if meta is None or not meta.media.supports_audio:\n        raise ServiceError(\n            Code.AIUNAVAIL, \"The configured model has no verified native-audio support\"\n        )\n    prompt = (\n        load_static(\"system/context/media_audio.j2\")\n        + \"\\nDecoded excerpt facts:\\n\"\n        + jsonx.dumps(\n            {\n                \"duration_ms\": len(pcm) * 500 / sample_rate,\n                \"samples\": len(pcm) // 2,\n                \"sample_rate\": sample_rate,\n                \"channels\": 1,\n                \"sample_width_bits\": 16,\n            },\n            ensure_ascii=False,\n            separators=(\",\", \":\"),\n        )\n    )\n    if meta.provider != \"google\":\n        from core.domain.sight.frame import Frame\n        from core.domain.sight.glance import glance\n\n        observation = await glance(\n            Frame(wavx.wrap_pcm(pcm, sample_rate, channels=1), \"audio/wav\"),\n            prompt,\n            via=\"openrouter\",\n            model=meta.id,\n        )\n        if observation is None or not observation.model:\n            raise ServiceError(\n                Code.EXTERNAL, \"Sound analysis has no actual native observer identity\"\n            )\n        return observation.observation, observation.model\n    if provider_runtime().credentials.unconfigured(\"google\") is not None:\n        raise ServiceError(Code.AIUNAVAIL, \"No configured native-audio analysis carrier\")\n    contents = types.UserContent(\n        parts=[\n            types.Part.from_bytes(\n                data=wavx.wrap_pcm(pcm, sample_rate, channels=1),\n                mime_type=\"audio/wav\",\n                media_resolution=\"MEDIA_RESOLUTION_HIGH\"\n                if meta.media.resolution_scope == \"part\"\n                else None,\n            ),\n            types.Part.from_text(text=prompt),\n        ]\n    )\n    config = (\n        types.GenerateContentConfig(media_resolution=types.MediaResolution.MEDIA_RESOLUTION_HIGH)\n        if meta.media.resolution_scope == \"request\"\n        else None\n    )\n    async with gemini.generation(\n        meta.id,\n        contents,\n        config=config,\n        audio=True,\n        admit=check,\n        on_cleanup_error=lambda closer, exc: _log.warning(\n            \"audio_client_close_failed\", closer=closer, error_type=type(exc).__name__\n        ),\n    ) as response:\n        summary = (response.text or \"\").strip()\n        if not summary:\n            raise ServiceError(Code.EXTERNAL, \"Sound analysis returned no description\")\n        return summary, (response.model_version or \"\").strip()"
+    },
+    "services/ai/core/domain/media/sound/audio.py:synthesize": {
+      "line": 310,
+      "end_line": 389,
+      "file_sha256": "c045985ee0bf109a9ca949d46cdb97e25b1072d86dda5ed517da839372f6b2ce",
+      "symbol_sha256": "995f46bb6530613dc616a0a39fe30b1b95763c3fb5a13a343636c493da4612a6",
+      "source": "async def synthesize(text: str, *, voice_id: str = \"\", language: str = \"\") -> Recording:\n    \"\"\"Create a playable narration through the configured speech engine and shared drain.\"\"\"\n    from core.bridges.transport.speech import configured_tts\n    from core.domain.media.edit.recording import Recording\n    from core.domain.presence.voice.speech import SpeechFaultError, synthesized\n    from core.domain.sight import render\n\n    if not text.strip() or len(text) > _budget_chars():\n        raise ServiceError(\n            Code.VALIDATION, \"Narration needs nonempty text within the active context budget\"\n        )\n    engine, spec = configured_tts(voice_id=voice_id, language=language, complete=True)\n    header_size = len(wavx.wrap_pcm(b\"\", spec.sample_rate, channels=1))\n    pcm = bytearray()\n    aligned: list[Alignment] = []\n    served: list[str] = []\n\n    async def source() -> AsyncIterator[str]:\n        yield text\n\n    try:\n        async with (\n            asyncio.timeout(_AUDIO_DEADLINE_S),\n            aclosing(\n                synthesized(\n                    engine,\n                    spec,\n                    source(),\n                    rim=\"audio_narration\",\n                    on_alignment=aligned.append,\n                    on_served=served.append,\n                )\n            ) as chunks,\n        ):\n            async for chunk in chunks:\n                if len(pcm) + len(chunk) + header_size > render.MAX_BYTES:\n                    raise ServiceError(\n                        Code.OUT_OF_RANGE,\n                        \"Narration exceeds the audio byte budget; synthesize a shorter passage\",\n                    )\n                pcm.extend(chunk)\n    except TimeoutError as exc:\n        raise ServiceError(\n            Code.EXTERNAL, \"Narration exceeded its deadline; synthesize a shorter passage\"\n        ) from exc\n    except SpeechFaultError as exc:\n        raise ServiceError(Code.EXTERNAL, f\"Narration synthesis failed: {exc}\") from exc\n    if not pcm:\n        raise ServiceError(Code.EXTERNAL, \"Narration synthesis returned no audio\")\n    timing = None\n    with swallow(\n        lambda _exc: _log.warning(\"narration_alignment_unavailable\", provider=engine.provider),\n        catch=(TypeError, ValueError),\n    ):\n        timing = tuple(\n            TimedText(\n                text=char,\n                start_ms=packet.offset_ms + start,\n                end_ms=packet.offset_ms + start + duration,\n            )\n            for packet in aligned\n            for char, start, duration in zip(\n                packet.chars, packet.starts_ms, packet.durations_ms, strict=True\n            )\n        )\n    return Recording(\n        wavx.wrap_pcm(bytes(pcm), spec.sample_rate, channels=1),\n        \"audio/wav\",\n        \"generated narration\",\n        Transcript(\n            text=\"\".join(packet.text for packet in aligned) or text,\n            final=True,\n            language=language,\n            timing=timing,\n            granularity=\"character\",\n            provider=served[-1] if served else engine.provider,\n            voice_id=spec.voice_id,\n            model=spec.text(\"model\"),\n        ),\n    )"
+    },
+    "services/ai/transport/speech/elevenlabs/stt.py:_wav": {
+      "line": 679,
+      "end_line": 681,
+      "file_sha256": "6e033b0241540aff752c7e7da125c69698d0912153ff8eb471f9aaaa4b634483",
+      "symbol_sha256": "cc17587acc3c6606968fe74f486f9068ed69e8a1957ab2318978d9e77fba878c",
+      "source": "def _wav(s16: bytes, spec: AudioSpec) -> bytes:\n    \"\"\"Wrap raw PCM16 in a RIFF container \u2014 the multipart endpoint wants a file.\"\"\"\n    return wavx.wrap_pcm(s16, spec.sample_rate, channels=spec.channels)"
+    },
+    "services/ai/transport/livekit/sidecar/features/sidecar_features.py:resample_s16": {
+      "line": 281,
+      "end_line": 294,
+      "file_sha256": "61a523a65345bc1fe2ce52b4539cec9e286514625c90677186b469cc5174acb3",
+      "symbol_sha256": "ffdf0f0a9a1c1b7dbc437814dd060ffc7dacd8d8bea922d89eae436869e44d29",
+      "source": "def resample_s16(data: bytes, src_rate: int, channels: int) -> NDArray[np.float32]:\n    \"\"\"Resample s16le PCM to 16 kHz mono. Rust when available, numpy fallback.\"\"\"\n    if _HAS_RUST_RESAMPLE and _rs_resample is not None:\n        return _rs_resample(data, src_rate, channels)\n    samples = np.frombuffer(data, dtype=np.int16).astype(np.float32) * (1.0 / 32768.0)\n    if channels > 1:\n        samples = samples.reshape(-1, channels).mean(axis=1)\n    if src_rate != _TARGET_SR and src_rate > 0:\n        n_out = int(len(samples) * _TARGET_SR / src_rate)\n        if n_out == 0:\n            return np.empty(0, dtype=np.float32)\n        indices = np.linspace(0, len(samples) - 1, n_out)\n        samples = np.interp(indices, np.arange(len(samples)), samples).astype(np.float32)\n    return samples"
+    },
+    "services/ai/transport/livekit/sidecar/core/runner.py:_ingest_pcm": {
+      "line": 950,
+      "end_line": 969,
+      "file_sha256": "a37c191e9df5e13c6188737f105c74a8a2834a551f54ce0c6aba44cb75f4ffb9",
+      "symbol_sha256": "1298ea299abebd7083dcb08db4157c372045b1b7df3123c000fcbd3ee3b2357e",
+      "source": "def _ingest_pcm(self, raw: bytes) -> None:\n        \"\"\"Common ingest path \u2014 write to ring, advance audio clock, fan out to raw audio taps. Both ``feed_frames``\n        (headless / eval) and ``_consume`` (live LiveKit track) funnel through here.\n        \"\"\"\n        n_samples = len(raw) // 2\n        pcm = np.frombuffer(raw, dtype=np.int16).astype(np.float32) * (1.0 / 32768.0)\n        self._ring.write(pcm)\n        self._speech.push(pcm)\n        # Tempo is scored here, on the *incremental* chunk, not in the tick loop over the whole window \u2014\n        # that is the entire performance argument for the streaming estimator. Deliberately fed the RAW\n        # frame rather than the conditioned one: per-band normalization already makes the estimator\n        # level-invariant, so the conditioner's gain control can only add a nonlinearity the model was not\n        # fitted through. Guarded because a tempo fault must never cost us the audio ring.\n        with swallow(log=_log, event=\"tempo_push_err\"):\n            self._tempo.push(pcm)\n        if n_samples:\n            self._audio_clock_s += n_samples / _TARGET_SR\n        for cb in self._raw_audio_taps:\n            with swallow(log=_log, event=\"raw_audio_tap_err\"):\n                cb(raw, self._audio_clock_s)"
+    },
+    "services/ai/transport/livekit/worker/pcm_buffer.py:append": {
+      "line": 42,
+      "end_line": 51,
+      "file_sha256": "1f3bbc91fff0eb35326cbd4afa7589e5ce512704991783252622a30093685bab",
+      "symbol_sha256": "08d73528b4bd1e89456d918d02c85ced007c2048432c8ce53ccd5e57077868ef",
+      "source": "def append(self, pcm_bytes: bytes, t1_audio: float) -> None:\n        if not pcm_bytes:\n            return\n        samples = np.frombuffer(pcm_bytes, dtype=np.int16).astype(np.float32) * (1.0 / 32768.0)\n        if samples.size == 0:\n            return\n        duration = samples.size / _TARGET_SR\n        chunk = _AudioChunk(pcm=samples, t0=t1_audio - duration, t1=t1_audio)\n        self._chunks.append(chunk)\n        self._evict(t1_audio)"
+    },
+    "services/ai/transport/livekit/worker/diarized_stt.py:_recognize_impl": {
+      "line": 166,
+      "end_line": 190,
+      "file_sha256": "86bb92306c3e441f120698e75b210f62afec9e280ddc759e7b5c5963f34f9a06",
+      "symbol_sha256": "d50c416663d76d9a840a6f9fb0c92cd823f9cd04e62aa812ab3085e72877af9f",
+      "source": "async def _recognize_impl(\n        self,\n        buffer: AudioBuffer,\n        *,\n        language: NotGivenOr[str] = NOT_GIVEN,\n        conn_options: APIConnectOptions = DEFAULT_API_CONNECT_OPTIONS,\n    ) -> SpeechEvent:\n        # Offline single-buffer recognition path \u2014 feed straight through\n        # the engine (no diarization possible without a stream of segments).\n        from livekit.agents.utils.audio import AudioByteStream\n\n        audio_stream = AudioByteStream(_TARGET_SR, 1)\n        chunks = audio_stream.write(_audio_buffer_to_pcm(buffer)) + audio_stream.flush()\n        pcm = b\"\".join(c.data.tobytes() for c in chunks) if chunks else b\"\"\n        samples = np.frombuffer(pcm, dtype=np.int16).astype(np.float32) * (1.0 / 32768.0)\n        result = await _transcribe(self._engine, samples)\n        return _to_speech_event(\n            text=result.text,\n            language=result.language,\n            words=result.words,\n            t0=0.0,\n            t1=samples.size / _TARGET_SR,\n            speaker_id=None,\n            is_primary=None,\n        )"
+    },
+    "services/ai/transport/livekit/worker/smart_turn_model.py:predict_pcm16": {
+      "line": 179,
+      "end_line": 191,
+      "file_sha256": "c8f4e89f93151a145601acafcde38b411d74242e3e7d320270d9000cde51f9bd",
+      "symbol_sha256": "42006820699bbf32c083ef3313ea2600d62ab9f241893e4001bea33b30a57991",
+      "source": "def predict_pcm16(pcm_bytes: bytes) -> float:\n    \"\"\"int16 mono 16 kHz PCM bytes \u2192 P(turn complete) in [0, 1].\n\n    This is the top-level callable submitted to the inference process pool, so it must stay importable and\n    picklable-by-reference (no closures). Loads the session on first call in a cold worker.\n    \"\"\"\n    if _session is None:\n        init()\n    assert _session is not None\n    audio = np.frombuffer(pcm_bytes, dtype=np.int16).astype(np.float32) / 32768.0\n    feats = np.expand_dims(log_mel(audio), axis=0)  # (1, 80, 800)\n    out = _session.run(None, {\"input_features\": feats})\n    return float(np.asarray(out[0]).ravel()[0])"
+    }
+  },
+  "rows": [
+    {
+      "name": "wrap/bytes/640",
+      "input_bytes": 640,
+      "input_sha256": "aaa5328301c0a7229fc64badfcc02afe9e28ef30b2b8ce8f8b7035f6ba36ca84",
+      "output_sha256": "e840fdb5df8c29c098978df1469391b08e14bb7572315718e3f48f8ae7f0706d",
+      "output_dtype": null,
+      "output_shape": null,
+      "iterations": 16384,
+      "samples": [
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 228.0552978515625,
+            "thread_cpu_ns": 226.43792724609375
+          },
+          "candidate": {
+            "wall_ns": 230.77392578125,
+            "thread_cpu_ns": 228.03240966796875
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 226.77099609375,
+            "thread_cpu_ns": 224.47967529296875
+          },
+          "baseline": {
+            "wall_ns": 221.893310546875,
+            "thread_cpu_ns": 215.35235595703125
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 197.59112548828125,
+            "thread_cpu_ns": 192.55572509765625
+          },
+          "candidate": {
+            "wall_ns": 346.8297119140625,
+            "thread_cpu_ns": 234.78192138671875
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 246.46502685546875,
+            "thread_cpu_ns": 235.3541259765625
+          },
+          "baseline": {
+            "wall_ns": 231.45037841796875,
+            "thread_cpu_ns": 231.49359130859375
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 226.76593017578125,
+            "thread_cpu_ns": 223.30474853515625
+          },
+          "candidate": {
+            "wall_ns": 217.4072265625,
+            "thread_cpu_ns": 205.32989501953125
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 260.602294921875,
+            "thread_cpu_ns": 242.00946044921875
+          },
+          "baseline": {
+            "wall_ns": 197.1231689453125,
+            "thread_cpu_ns": 191.97845458984375
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 222.7630615234375,
+            "thread_cpu_ns": 221.78399658203125
+          },
+          "candidate": {
+            "wall_ns": 246.587158203125,
+            "thread_cpu_ns": 239.25274658203125
+          }
+        }
+      ],
+      "median": {
+        "baseline": {
+          "wall_ns": 222.7630615234375,
+          "thread_cpu_ns": 221.78399658203125,
+          "input_mib_per_s": 2739.913692718679
+        },
+        "candidate": {
+          "wall_ns": 246.46502685546875,
+          "thread_cpu_ns": 234.78192138671875,
+          "input_mib_per_s": 2476.4225995354727
+        }
+      },
+      "median_paired_candidate_over_baseline": {
+        "wall_ns": 1.0648719977911876,
+        "thread_cpu_ns": 1.0423831877546705
+      },
+      "peak_traced_bytes": {
+        "baseline": 794,
+        "candidate": 794
+      },
+      "exact_result_checked_before_and_after": true
+    },
+    {
+      "name": "wrap/narration-bytearray/640",
+      "input_bytes": 640,
+      "input_sha256": "aaa5328301c0a7229fc64badfcc02afe9e28ef30b2b8ce8f8b7035f6ba36ca84",
+      "output_sha256": "e840fdb5df8c29c098978df1469391b08e14bb7572315718e3f48f8ae7f0706d",
+      "output_dtype": null,
+      "output_shape": null,
+      "iterations": 8192,
+      "samples": [
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 304.4840087890625,
+            "thread_cpu_ns": 292.5771484375
+          },
+          "candidate": {
+            "wall_ns": 422.490478515625,
+            "thread_cpu_ns": 422.114013671875
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 447.870849609375,
+            "thread_cpu_ns": 415.4815673828125
+          },
+          "baseline": {
+            "wall_ns": 296.42236328125,
+            "thread_cpu_ns": 296.5240478515625
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 303.619384765625,
+            "thread_cpu_ns": 297.526123046875
+          },
+          "candidate": {
+            "wall_ns": 450.251220703125,
+            "thread_cpu_ns": 429.3975830078125
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 395.868896484375,
+            "thread_cpu_ns": 377.7415771484375
+          },
+          "baseline": {
+            "wall_ns": 274.714111328125,
+            "thread_cpu_ns": 261.515380859375
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 293.3248291015625,
+            "thread_cpu_ns": 277.45556640625
+          },
+          "candidate": {
+            "wall_ns": 417.07861328125,
+            "thread_cpu_ns": 407.4351806640625
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 390.9200439453125,
+            "thread_cpu_ns": 374.3438720703125
+          },
+          "baseline": {
+            "wall_ns": 315.032958984375,
+            "thread_cpu_ns": 300.6795654296875
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 308.049560546875,
+            "thread_cpu_ns": 292.93310546875
+          },
+          "candidate": {
+            "wall_ns": 432.0220947265625,
+            "thread_cpu_ns": 407.440185546875
+          }
+        }
+      ],
+      "median": {
+        "baseline": {
+          "wall_ns": 303.619384765625,
+          "thread_cpu_ns": 292.93310546875,
+          "input_mib_per_s": 2010.252286661976
+        },
+        "candidate": {
+          "wall_ns": 422.490478515625,
+          "thread_cpu_ns": 407.440185546875,
+          "input_mib_per_s": 1444.6516395929318
+        }
+      },
+      "median_paired_candidate_over_baseline": {
+        "wall_ns": 1.4219001322143046,
+        "thread_cpu_ns": 1.442744301549738
+      },
+      "peak_traced_bytes": {
+        "baseline": 1467,
+        "candidate": 794
+      },
+      "exact_result_checked_before_and_after": true
+    },
+    {
+      "name": "wrap/bytes/32000",
+      "input_bytes": 32000,
+      "input_sha256": "be564ec91644a24e7add8ce7d9112e8a971ebd37903905871458756bd5a169b7",
+      "output_sha256": "ab5c4898372ac6c14dcc3918a5af3d7202f7bf2bbe933eca1bc9f1ddad38d63b",
+      "output_dtype": null,
+      "output_shape": null,
+      "iterations": 4096,
+      "samples": [
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 542.61279296875,
+            "thread_cpu_ns": 537.017822265625
+          },
+          "candidate": {
+            "wall_ns": 612.78271484375,
+            "thread_cpu_ns": 592.529296875
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 609.60888671875,
+            "thread_cpu_ns": 583.06884765625
+          },
+          "baseline": {
+            "wall_ns": 540.97509765625,
+            "thread_cpu_ns": 534.322021484375
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 543.46728515625,
+            "thread_cpu_ns": 535.14599609375
+          },
+          "candidate": {
+            "wall_ns": 557.952880859375,
+            "thread_cpu_ns": 548.4111328125
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 540.58837890625,
+            "thread_cpu_ns": 536.814453125
+          },
+          "baseline": {
+            "wall_ns": 555.35888671875,
+            "thread_cpu_ns": 548.970458984375
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 562.703369140625,
+            "thread_cpu_ns": 553.853515625
+          },
+          "candidate": {
+            "wall_ns": 564.076904296875,
+            "thread_cpu_ns": 558.04443359375
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 637.786865234375,
+            "thread_cpu_ns": 622.660400390625
+          },
+          "baseline": {
+            "wall_ns": 531.25,
+            "thread_cpu_ns": 528.60498046875
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 542.460205078125,
+            "thread_cpu_ns": 537.465576171875
+          },
+          "candidate": {
+            "wall_ns": 548.635009765625,
+            "thread_cpu_ns": 544.046875
+          }
+        }
+      ],
+      "median": {
+        "baseline": {
+          "wall_ns": 542.61279296875,
+          "thread_cpu_ns": 537.017822265625,
+          "input_mib_per_s": 56241.90678961298
+        },
+        "candidate": {
+          "wall_ns": 564.076904296875,
+          "thread_cpu_ns": 558.04443359375,
+          "input_mib_per_s": 54101.80401383448
+        }
+      },
+      "median_paired_candidate_over_baseline": {
+        "wall_ns": 1.0266540343803037,
+        "thread_cpu_ns": 1.0247878837094506
+      },
+      "peak_traced_bytes": {
+        "baseline": 32154,
+        "candidate": 32154
+      },
+      "exact_result_checked_before_and_after": true
+    },
+    {
+      "name": "wrap/narration-bytearray/32000",
+      "input_bytes": 32000,
+      "input_sha256": "be564ec91644a24e7add8ce7d9112e8a971ebd37903905871458756bd5a169b7",
+      "output_sha256": "ab5c4898372ac6c14dcc3918a5af3d7202f7bf2bbe933eca1bc9f1ddad38d63b",
+      "output_dtype": null,
+      "output_shape": null,
+      "iterations": 2048,
+      "samples": [
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 1727.25439453125,
+            "thread_cpu_ns": 1608.9072265625
+          },
+          "candidate": {
+            "wall_ns": 748.53515625,
+            "thread_cpu_ns": 722.0458984375
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 700.96826171875,
+            "thread_cpu_ns": 697.57080078125
+          },
+          "baseline": {
+            "wall_ns": 1417.68408203125,
+            "thread_cpu_ns": 1394.3076171875
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 1607.767578125,
+            "thread_cpu_ns": 1510.57958984375
+          },
+          "candidate": {
+            "wall_ns": 797.36328125,
+            "thread_cpu_ns": 773.03076171875
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 673.42138671875,
+            "thread_cpu_ns": 664.9580078125
+          },
+          "baseline": {
+            "wall_ns": 1600.484375,
+            "thread_cpu_ns": 1484.35498046875
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 1431.82373046875,
+            "thread_cpu_ns": 1391.52001953125
+          },
+          "candidate": {
+            "wall_ns": 771.09814453125,
+            "thread_cpu_ns": 749.064453125
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 775.1259765625,
+            "thread_cpu_ns": 765.56396484375
+          },
+          "baseline": {
+            "wall_ns": 1476.23681640625,
+            "thread_cpu_ns": 1440.6533203125
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 1553.42626953125,
+            "thread_cpu_ns": 1480.69287109375
+          },
+          "candidate": {
+            "wall_ns": 909.72900390625,
+            "thread_cpu_ns": 881.65283203125
+          }
+        }
+      ],
+      "median": {
+        "baseline": {
+          "wall_ns": 1553.42626953125,
+          "thread_cpu_ns": 1480.69287109375,
+          "input_mib_per_s": 19645.33413884442
+        },
+        "candidate": {
+          "wall_ns": 771.09814453125,
+          "thread_cpu_ns": 749.064453125,
+          "input_mib_per_s": 39576.77546163934
+        }
+      },
+      "median_paired_candidate_over_baseline": {
+        "wall_ns": 0.4959443716235998,
+        "thread_cpu_ns": 0.5117444767003042
+      },
+      "peak_traced_bytes": {
+        "baseline": 64187,
+        "candidate": 32154
+      },
+      "exact_result_checked_before_and_after": true
+    },
+    {
+      "name": "wrap/bytes/12582912",
+      "input_bytes": 12582912,
+      "input_sha256": "30dde27397710f173c729cfe2b0f919cc4e235afe84eac172f3ce65ae7e18ba1",
+      "output_sha256": "136686c025f6ab7471e0433d147e31b76c11a7461d634a0105ef395a09ce388a",
+      "output_dtype": null,
+      "output_shape": null,
+      "iterations": 8,
+      "samples": [
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 198088.5,
+            "thread_cpu_ns": 192078.125
+          },
+          "candidate": {
+            "wall_ns": 232921.875,
+            "thread_cpu_ns": 202218.75
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 332468.75,
+            "thread_cpu_ns": 199687.5
+          },
+          "baseline": {
+            "wall_ns": 324145.75,
+            "thread_cpu_ns": 217729.125
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 324614.5,
+            "thread_cpu_ns": 191166.625
+          },
+          "candidate": {
+            "wall_ns": 215312.5,
+            "thread_cpu_ns": 204312.5
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 219734.375,
+            "thread_cpu_ns": 197744.75
+          },
+          "baseline": {
+            "wall_ns": 217088.5,
+            "thread_cpu_ns": 192302.125
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 370755.125,
+            "thread_cpu_ns": 216911.375
+          },
+          "candidate": {
+            "wall_ns": 308125.0,
+            "thread_cpu_ns": 225869.75
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 219453.125,
+            "thread_cpu_ns": 211000.0
+          },
+          "baseline": {
+            "wall_ns": 217229.125,
+            "thread_cpu_ns": 212723.875
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 205406.25,
+            "thread_cpu_ns": 205526.125
+          },
+          "candidate": {
+            "wall_ns": 202062.5,
+            "thread_cpu_ns": 202255.25
+          }
+        }
+      ],
+      "median": {
+        "baseline": {
+          "wall_ns": 217229.125,
+          "thread_cpu_ns": 205526.125,
+          "input_mib_per_s": 55241.211324678494
+        },
+        "candidate": {
+          "wall_ns": 219734.375,
+          "thread_cpu_ns": 202255.25,
+          "input_mib_per_s": 54611.39159496551
+        }
+      },
+      "median_paired_candidate_over_baseline": {
+        "wall_ns": 1.0102380378321738,
+        "thread_cpu_ns": 1.028302469356488
+      },
+      "peak_traced_bytes": {
+        "baseline": 12583066,
+        "candidate": 12583066
+      },
+      "exact_result_checked_before_and_after": true
+    },
+    {
+      "name": "wrap/narration-bytearray/12582912",
+      "input_bytes": 12582912,
+      "input_sha256": "30dde27397710f173c729cfe2b0f919cc4e235afe84eac172f3ce65ae7e18ba1",
+      "output_sha256": "136686c025f6ab7471e0433d147e31b76c11a7461d634a0105ef395a09ce388a",
+      "output_dtype": null,
+      "output_shape": null,
+      "iterations": 8,
+      "samples": [
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 402994.75,
+            "thread_cpu_ns": 392349.0
+          },
+          "candidate": {
+            "wall_ns": 209510.375,
+            "thread_cpu_ns": 204427.125
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 210177.125,
+            "thread_cpu_ns": 211036.5
+          },
+          "baseline": {
+            "wall_ns": 391078.125,
+            "thread_cpu_ns": 389760.5
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 439104.25,
+            "thread_cpu_ns": 431312.5
+          },
+          "candidate": {
+            "wall_ns": 241067.75,
+            "thread_cpu_ns": 225286.5
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 219677.0,
+            "thread_cpu_ns": 210817.625
+          },
+          "baseline": {
+            "wall_ns": 403432.25,
+            "thread_cpu_ns": 395791.75
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 408598.875,
+            "thread_cpu_ns": 395718.75
+          },
+          "candidate": {
+            "wall_ns": 213093.75,
+            "thread_cpu_ns": 212161.375
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 212708.375,
+            "thread_cpu_ns": 205427.125
+          },
+          "baseline": {
+            "wall_ns": 409239.5,
+            "thread_cpu_ns": 398005.25
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 413005.125,
+            "thread_cpu_ns": 399583.375
+          },
+          "candidate": {
+            "wall_ns": 210072.875,
+            "thread_cpu_ns": 205218.75
+          }
+        }
+      ],
+      "median": {
+        "baseline": {
+          "wall_ns": 408598.875,
+          "thread_cpu_ns": 395791.75,
+          "input_mib_per_s": 29368.65648492057
+        },
+        "candidate": {
+          "wall_ns": 212708.375,
+          "thread_cpu_ns": 210817.625,
+          "input_mib_per_s": 56415.26808711693
+        }
+      },
+      "median_paired_candidate_over_baseline": {
+        "wall_ns": 0.5215230952361286,
+        "thread_cpu_ns": 0.5223277785828141
+      },
+      "peak_traced_bytes": {
+        "baseline": 25166011,
+        "candidate": 12583066
+      },
+      "exact_result_checked_before_and_after": true
+    },
+    {
+      "name": "decode/divide/320-frames",
+      "input_bytes": 640,
+      "input_sha256": "aaa5328301c0a7229fc64badfcc02afe9e28ef30b2b8ce8f8b7035f6ba36ca84",
+      "output_sha256": "29e32b84252f545d79770a71d5308b1b4b135ca3bccbdaaadeb650a4b7ce7cc5",
+      "output_dtype": "<f4",
+      "output_shape": [
+        320
+      ],
+      "iterations": 2048,
+      "samples": [
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 823.95458984375,
+            "thread_cpu_ns": 808.69580078125
+          },
+          "candidate": {
+            "wall_ns": 1185.05859375,
+            "thread_cpu_ns": 1178.73095703125
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 1137.8173828125,
+            "thread_cpu_ns": 1103.61767578125
+          },
+          "baseline": {
+            "wall_ns": 987.38623046875,
+            "thread_cpu_ns": 911.45849609375
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 933.4716796875,
+            "thread_cpu_ns": 861.02294921875
+          },
+          "candidate": {
+            "wall_ns": 1155.57861328125,
+            "thread_cpu_ns": 1121.88720703125
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 1148.2138671875,
+            "thread_cpu_ns": 1121.052734375
+          },
+          "baseline": {
+            "wall_ns": 819.376953125,
+            "thread_cpu_ns": 800.29296875
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 824.42236328125,
+            "thread_cpu_ns": 799.0517578125
+          },
+          "candidate": {
+            "wall_ns": 1251.50537109375,
+            "thread_cpu_ns": 1178.87353515625
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 1235.18896484375,
+            "thread_cpu_ns": 1124.20654296875
+          },
+          "baseline": {
+            "wall_ns": 811.07568359375,
+            "thread_cpu_ns": 788.92041015625
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 852.68115234375,
+            "thread_cpu_ns": 814.96142578125
+          },
+          "candidate": {
+            "wall_ns": 1248.0263671875,
+            "thread_cpu_ns": 1184.3466796875
+          }
+        }
+      ],
+      "median": {
+        "baseline": {
+          "wall_ns": 824.42236328125,
+          "thread_cpu_ns": 808.69580078125,
+          "input_mib_per_s": 740.3384353509826
+        },
+        "candidate": {
+          "wall_ns": 1185.05859375,
+          "thread_cpu_ns": 1124.20654296875,
+          "input_mib_per_s": 515.0391429748661
+        }
+      },
+      "median_paired_candidate_over_baseline": {
+        "wall_ns": 1.4382571665444908,
+        "thread_cpu_ns": 1.4249936096165832
+      },
+      "peak_traced_bytes": {
+        "baseline": 3036,
+        "candidate": 1820
+      },
+      "exact_result_checked_before_and_after": true
+    },
+    {
+      "name": "decode/multiply/320-frames",
+      "input_bytes": 640,
+      "input_sha256": "aaa5328301c0a7229fc64badfcc02afe9e28ef30b2b8ce8f8b7035f6ba36ca84",
+      "output_sha256": "29e32b84252f545d79770a71d5308b1b4b135ca3bccbdaaadeb650a4b7ce7cc5",
+      "output_dtype": "<f4",
+      "output_shape": [
+        320
+      ],
+      "iterations": 2048,
+      "samples": [
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 815.61279296875,
+            "thread_cpu_ns": 778.86962890625
+          },
+          "candidate": {
+            "wall_ns": 1152.42529296875,
+            "thread_cpu_ns": 1114.9697265625
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 1195.3330078125,
+            "thread_cpu_ns": 1115.7431640625
+          },
+          "baseline": {
+            "wall_ns": 737.162109375,
+            "thread_cpu_ns": 737.4267578125
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 857.80859375,
+            "thread_cpu_ns": 837.6669921875
+          },
+          "candidate": {
+            "wall_ns": 1008.158203125,
+            "thread_cpu_ns": 1005.57470703125
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 982.09619140625,
+            "thread_cpu_ns": 982.1982421875
+          },
+          "baseline": {
+            "wall_ns": 727.681640625,
+            "thread_cpu_ns": 725.484375
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 732.64599609375,
+            "thread_cpu_ns": 721.9033203125
+          },
+          "candidate": {
+            "wall_ns": 985.005859375,
+            "thread_cpu_ns": 985.16845703125
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 1127.54296875,
+            "thread_cpu_ns": 1091.8173828125
+          },
+          "baseline": {
+            "wall_ns": 721.25244140625,
+            "thread_cpu_ns": 721.4765625
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 715.6982421875,
+            "thread_cpu_ns": 715.86083984375
+          },
+          "candidate": {
+            "wall_ns": 1225.42333984375,
+            "thread_cpu_ns": 1134.48046875
+          }
+        }
+      ],
+      "median": {
+        "baseline": {
+          "wall_ns": 732.64599609375,
+          "thread_cpu_ns": 725.484375,
+          "input_mib_per_s": 833.0784113394635
+        },
+        "candidate": {
+          "wall_ns": 1127.54296875,
+          "thread_cpu_ns": 1091.8173828125,
+          "input_mib_per_s": 541.3111335141746
+        }
+      },
+      "median_paired_candidate_over_baseline": {
+        "wall_ns": 1.4129563720721394,
+        "thread_cpu_ns": 1.431522921401144
+      },
+      "peak_traced_bytes": {
+        "baseline": 3036,
+        "candidate": 1820
+      },
+      "exact_result_checked_before_and_after": true
+    },
+    {
+      "name": "decode/divide/1600-frames",
+      "input_bytes": 3200,
+      "input_sha256": "8576bbc711314fcfd7fcdb62a999bd7e75ea70ea15f8dc0b407964e395f819df",
+      "output_sha256": "774c1ca3bbf36ff3eb0dcdcc1fa25144ce6b8f954f75d3081782ab505c13378a",
+      "output_dtype": "<f4",
+      "output_shape": [
+        1600
+      ],
+      "iterations": 2048,
+      "samples": [
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 1292.5615234375,
+            "thread_cpu_ns": 1265.03466796875
+          },
+          "candidate": {
+            "wall_ns": 1443.66455078125,
+            "thread_cpu_ns": 1443.90869140625
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 1510.15234375,
+            "thread_cpu_ns": 1488.1591796875
+          },
+          "baseline": {
+            "wall_ns": 1446.20751953125,
+            "thread_cpu_ns": 1342.95654296875
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 1195.9228515625,
+            "thread_cpu_ns": 1185.0380859375
+          },
+          "candidate": {
+            "wall_ns": 1728.55615234375,
+            "thread_cpu_ns": 1672.56640625
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 1417.56201171875,
+            "thread_cpu_ns": 1399.27197265625
+          },
+          "baseline": {
+            "wall_ns": 1187.9677734375,
+            "thread_cpu_ns": 1176.73779296875
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 1224.7314453125,
+            "thread_cpu_ns": 1209.12646484375
+          },
+          "candidate": {
+            "wall_ns": 1489.11572265625,
+            "thread_cpu_ns": 1483.4189453125
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 1443.5830078125,
+            "thread_cpu_ns": 1441.7724609375
+          },
+          "baseline": {
+            "wall_ns": 1225.50439453125,
+            "thread_cpu_ns": 1201.314453125
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 1200.62255859375,
+            "thread_cpu_ns": 1198.40478515625
+          },
+          "candidate": {
+            "wall_ns": 1448.42529296875,
+            "thread_cpu_ns": 1448.587890625
+          }
+        }
+      ],
+      "median": {
+        "baseline": {
+          "wall_ns": 1224.7314453125,
+          "thread_cpu_ns": 1201.314453125,
+          "input_mib_per_s": 2491.777135453005
+        },
+        "candidate": {
+          "wall_ns": 1448.42529296875,
+          "thread_cpu_ns": 1448.587890625,
+          "input_mib_per_s": 2106.9487168682313
+        }
+      },
+      "median_paired_candidate_over_baseline": {
+        "wall_ns": 1.1932663860206383,
+        "thread_cpu_ns": 1.2001624197452985
+      },
+      "peak_traced_bytes": {
+        "baseline": 13276,
+        "candidate": 6940
+      },
+      "exact_result_checked_before_and_after": true
+    },
+    {
+      "name": "decode/multiply/1600-frames",
+      "input_bytes": 3200,
+      "input_sha256": "8576bbc711314fcfd7fcdb62a999bd7e75ea70ea15f8dc0b407964e395f819df",
+      "output_sha256": "774c1ca3bbf36ff3eb0dcdcc1fa25144ce6b8f954f75d3081782ab505c13378a",
+      "output_dtype": "<f4",
+      "output_shape": [
+        1600
+      ],
+      "iterations": 2048,
+      "samples": [
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 1258.28076171875,
+            "thread_cpu_ns": 1210.205078125
+          },
+          "candidate": {
+            "wall_ns": 1468.9130859375,
+            "thread_cpu_ns": 1462.66650390625
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 1644.87744140625,
+            "thread_cpu_ns": 1620.9921875
+          },
+          "baseline": {
+            "wall_ns": 1316.3857421875,
+            "thread_cpu_ns": 1286.11279296875
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 1200.5615234375,
+            "thread_cpu_ns": 1192.0166015625
+          },
+          "candidate": {
+            "wall_ns": 1467.46826171875,
+            "thread_cpu_ns": 1457.72314453125
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 1497.802734375,
+            "thread_cpu_ns": 1479.8583984375
+          },
+          "baseline": {
+            "wall_ns": 1155.57861328125,
+            "thread_cpu_ns": 1151.57080078125
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 1222.1474609375,
+            "thread_cpu_ns": 1186.9912109375
+          },
+          "candidate": {
+            "wall_ns": 1572.46875,
+            "thread_cpu_ns": 1510.33544921875
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 1442.3623046875,
+            "thread_cpu_ns": 1434.5908203125
+          },
+          "baseline": {
+            "wall_ns": 1194.05078125,
+            "thread_cpu_ns": 1184.26513671875
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 1203.2470703125,
+            "thread_cpu_ns": 1190.958984375
+          },
+          "candidate": {
+            "wall_ns": 1477.15234375,
+            "thread_cpu_ns": 1458.17041015625
+          }
+        }
+      ],
+      "median": {
+        "baseline": {
+          "wall_ns": 1203.2470703125,
+          "thread_cpu_ns": 1190.958984375,
+          "input_mib_per_s": 2536.2686415745156
+        },
+        "candidate": {
+          "wall_ns": 1477.15234375,
+          "thread_cpu_ns": 1462.66650390625,
+          "input_mib_per_s": 2065.9736454485114
+        }
+      },
+      "median_paired_candidate_over_baseline": {
+        "wall_ns": 1.2276384295424572,
+        "thread_cpu_ns": 1.2243666064801377
+      },
+      "peak_traced_bytes": {
+        "baseline": 13276,
+        "candidate": 6940
+      },
+      "exact_result_checked_before_and_after": true
+    },
+    {
+      "name": "decode/divide/16000-frames",
+      "input_bytes": 32000,
+      "input_sha256": "be564ec91644a24e7add8ce7d9112e8a971ebd37903905871458756bd5a169b7",
+      "output_sha256": "dfd7a798cdc66184162414f53c10c7d2695ff26264b03a912a4ba3dcba721330",
+      "output_dtype": "<f4",
+      "output_shape": [
+        16000
+      ],
+      "iterations": 512,
+      "samples": [
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 6092.123046875,
+            "thread_cpu_ns": 6092.69140625
+          },
+          "candidate": {
+            "wall_ns": 6049.234375,
+            "thread_cpu_ns": 5930.2578125
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 6231.12109375,
+            "thread_cpu_ns": 5969.15625
+          },
+          "baseline": {
+            "wall_ns": 6466.796875,
+            "thread_cpu_ns": 6248.373046875
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 6057.6171875,
+            "thread_cpu_ns": 6003.173828125
+          },
+          "candidate": {
+            "wall_ns": 6175.212890625,
+            "thread_cpu_ns": 5971.109375
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 5730.55078125,
+            "thread_cpu_ns": 5670.4921875
+          },
+          "baseline": {
+            "wall_ns": 6159.09765625,
+            "thread_cpu_ns": 6031.005859375
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 5938.15234375,
+            "thread_cpu_ns": 5852.783203125
+          },
+          "candidate": {
+            "wall_ns": 6720.78515625,
+            "thread_cpu_ns": 6669.841796875
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 6747.4765625,
+            "thread_cpu_ns": 6400.06640625
+          },
+          "baseline": {
+            "wall_ns": 6015.21875,
+            "thread_cpu_ns": 5981.689453125
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 6183.67578125,
+            "thread_cpu_ns": 6068.603515625
+          },
+          "candidate": {
+            "wall_ns": 6014.078125,
+            "thread_cpu_ns": 5908.123046875
+          }
+        }
+      ],
+      "median": {
+        "baseline": {
+          "wall_ns": 6092.123046875,
+          "thread_cpu_ns": 6031.005859375,
+          "input_mib_per_s": 5009.350252807881
+        },
+        "candidate": {
+          "wall_ns": 6175.212890625,
+          "thread_cpu_ns": 5969.15625,
+          "input_mib_per_s": 4941.947535336111
+        }
+      },
+      "median_paired_candidate_over_baseline": {
+        "wall_ns": 0.9929599793791098,
+        "thread_cpu_ns": 0.9735556181357364
+      },
+      "peak_traced_bytes": {
+        "baseline": 128476,
+        "candidate": 64540
+      },
+      "exact_result_checked_before_and_after": true
+    },
+    {
+      "name": "decode/multiply/16000-frames",
+      "input_bytes": 32000,
+      "input_sha256": "be564ec91644a24e7add8ce7d9112e8a971ebd37903905871458756bd5a169b7",
+      "output_sha256": "dfd7a798cdc66184162414f53c10c7d2695ff26264b03a912a4ba3dcba721330",
+      "output_dtype": "<f4",
+      "output_shape": [
+        16000
+      ],
+      "iterations": 512,
+      "samples": [
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 6643.5546875,
+            "thread_cpu_ns": 6242.919921875
+          },
+          "candidate": {
+            "wall_ns": 7192.546875,
+            "thread_cpu_ns": 6544.513671875
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 6676.1875,
+            "thread_cpu_ns": 6356.36328125
+          },
+          "baseline": {
+            "wall_ns": 6169.677734375,
+            "thread_cpu_ns": 6018.47265625
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 5715.412109375,
+            "thread_cpu_ns": 5656.65625
+          },
+          "candidate": {
+            "wall_ns": 6760.08984375,
+            "thread_cpu_ns": 6561.849609375
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 8435.955078125,
+            "thread_cpu_ns": 7636.880859375
+          },
+          "baseline": {
+            "wall_ns": 9596.109375,
+            "thread_cpu_ns": 7250.650390625
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 10615.640625,
+            "thread_cpu_ns": 7023.599609375
+          },
+          "candidate": {
+            "wall_ns": 11550.86328125,
+            "thread_cpu_ns": 7704.671875
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 9170.166015625,
+            "thread_cpu_ns": 7596.435546875
+          },
+          "baseline": {
+            "wall_ns": 9801.919921875,
+            "thread_cpu_ns": 7156.087890625
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 10564.53515625,
+            "thread_cpu_ns": 7031.65625
+          },
+          "candidate": {
+            "wall_ns": 11595.947265625,
+            "thread_cpu_ns": 7494.05859375
+          }
+        }
+      ],
+      "median": {
+        "baseline": {
+          "wall_ns": 9596.109375,
+          "thread_cpu_ns": 7023.599609375,
+          "input_mib_per_s": 3180.2032399198242
+        },
+        "candidate": {
+          "wall_ns": 8435.955078125,
+          "thread_cpu_ns": 7494.05859375,
+          "input_mib_per_s": 3617.5605301804103
+        }
+      },
+      "median_paired_candidate_over_baseline": {
+        "wall_ns": 1.082635307952374,
+        "thread_cpu_ns": 1.0615346908786416
+      },
+      "peak_traced_bytes": {
+        "baseline": 128476,
+        "candidate": 64540
+      },
+      "exact_result_checked_before_and_after": true
+    },
+    {
+      "name": "decode/divide/512000-frames",
+      "input_bytes": 1024000,
+      "input_sha256": "c0cd689a3981117ded1770183149d5f715fb1d3cbdc7a62968d3a922ef09d89b",
+      "output_sha256": "b2a1bf2953fa2316a3200bebfec82fad00f3c1f253fb65fc5d7ae9a41b353bfe",
+      "output_dtype": "<f4",
+      "output_shape": [
+        512000
+      ],
+      "iterations": 16,
+      "samples": [
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 191666.6875,
+            "thread_cpu_ns": 171966.1875
+          },
+          "candidate": {
+            "wall_ns": 169723.9375,
+            "thread_cpu_ns": 161117.1875
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 167567.6875,
+            "thread_cpu_ns": 156046.875
+          },
+          "baseline": {
+            "wall_ns": 175778.625,
+            "thread_cpu_ns": 166341.125
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 248619.8125,
+            "thread_cpu_ns": 229856.75
+          },
+          "candidate": {
+            "wall_ns": 220726.5625,
+            "thread_cpu_ns": 194377.625
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 191901.0625,
+            "thread_cpu_ns": 162835.9375
+          },
+          "baseline": {
+            "wall_ns": 178815.125,
+            "thread_cpu_ns": 166364.625
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 217408.875,
+            "thread_cpu_ns": 172619.8125
+          },
+          "candidate": {
+            "wall_ns": 158182.25,
+            "thread_cpu_ns": 158239.5625
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 157903.6875,
+            "thread_cpu_ns": 157684.9375
+          },
+          "baseline": {
+            "wall_ns": 172242.1875,
+            "thread_cpu_ns": 168669.3125
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 184625.0,
+            "thread_cpu_ns": 180651.0
+          },
+          "candidate": {
+            "wall_ns": 166268.25,
+            "thread_cpu_ns": 165447.875
+          }
+        }
+      ],
+      "median": {
+        "baseline": {
+          "wall_ns": 184625.0,
+          "thread_cpu_ns": 171966.1875,
+          "input_mib_per_s": 5289.438050101558
+        },
+        "candidate": {
+          "wall_ns": 167567.6875,
+          "thread_cpu_ns": 161117.1875,
+          "input_mib_per_s": 5827.868812714862
+        }
+      },
+      "median_paired_candidate_over_baseline": {
+        "wall_ns": 0.9005727826675693,
+        "thread_cpu_ns": 0.9348762686158456
+      },
+      "peak_traced_bytes": {
+        "baseline": 4096476,
+        "candidate": 2048540
+      },
+      "exact_result_checked_before_and_after": true
+    },
+    {
+      "name": "decode/multiply/512000-frames",
+      "input_bytes": 1024000,
+      "input_sha256": "c0cd689a3981117ded1770183149d5f715fb1d3cbdc7a62968d3a922ef09d89b",
+      "output_sha256": "b2a1bf2953fa2316a3200bebfec82fad00f3c1f253fb65fc5d7ae9a41b353bfe",
+      "output_dtype": "<f4",
+      "output_shape": [
+        512000
+      ],
+      "iterations": 16,
+      "samples": [
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 247375.0,
+            "thread_cpu_ns": 200755.1875
+          },
+          "candidate": {
+            "wall_ns": 187200.5625,
+            "thread_cpu_ns": 179968.75
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 247520.8125,
+            "thread_cpu_ns": 179796.875
+          },
+          "baseline": {
+            "wall_ns": 346351.5625,
+            "thread_cpu_ns": 181210.9375
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 198471.375,
+            "thread_cpu_ns": 174473.9375
+          },
+          "candidate": {
+            "wall_ns": 200033.875,
+            "thread_cpu_ns": 181966.125
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 180963.5625,
+            "thread_cpu_ns": 176632.8125
+          },
+          "baseline": {
+            "wall_ns": 258276.0625,
+            "thread_cpu_ns": 183455.75
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 234476.5625,
+            "thread_cpu_ns": 180612.0
+          },
+          "candidate": {
+            "wall_ns": 183195.3125,
+            "thread_cpu_ns": 181322.9375
+          }
+        },
+        {
+          "order": [
+            "candidate",
+            "baseline"
+          ],
+          "candidate": {
+            "wall_ns": 188335.9375,
+            "thread_cpu_ns": 176075.5625
+          },
+          "baseline": {
+            "wall_ns": 238455.75,
+            "thread_cpu_ns": 207497.4375
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "wall_ns": 195085.9375,
+            "thread_cpu_ns": 175585.9375
+          },
+          "candidate": {
+            "wall_ns": 179018.1875,
+            "thread_cpu_ns": 166908.875
+          }
+        }
+      ],
+      "median": {
+        "baseline": {
+          "wall_ns": 238455.75,
+          "thread_cpu_ns": 181210.9375,
+          "input_mib_per_s": 4095.3615083720983
+        },
+        "candidate": {
+          "wall_ns": 187200.5625,
+          "thread_cpu_ns": 179796.875,
+          "input_mib_per_s": 5216.664346294366
+        }
+      },
+      "median_paired_candidate_over_baseline": {
+        "wall_ns": 0.7812947722653517,
+        "thread_cpu_ns": 0.9628088108440319
+      },
+      "peak_traced_bytes": {
+        "baseline": 4096476,
+        "candidate": 2048540
+      },
+      "exact_result_checked_before_and_after": true
+    }
+  ],
+  "publication_normalization": {
+    "kind": "public_metadata_normalization",
+    "note": "Consumer labels, artifact paths and machine-specific origins normalized for public publication. Historical timings, measured payload bytes and original source digests retain their captured meaning; normalized source/archive bytes have their own publication hashes."
+  }
+}

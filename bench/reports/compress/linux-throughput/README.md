@@ -1,8 +1,8 @@
 # C gzip throughput on Linux and Mac
 
-Billy’s large request encodes are **1.9–2.0× faster on both machines**. Full dataset JSON → gzip → base64 materialization is **1.4–1.5× faster**. On the actual Linux server, large two-pass upload workflows improve **20–21%**, and a successful bounded HTTP read improves **26%**. These ratios compare the saved, already accelerated implementation with the current C code on each machine.
+Consumer’s large request encodes are **1.9–2.0× faster on both machines**. Full dataset JSON → gzip → base64 materialization is **1.4–1.5× faster**. On the actual Linux server, large two-pass upload workflows improve **20–21%**, and a successful bounded HTTP read improves **26%**. These ratios compare the saved, already accelerated implementation with the current C code on each machine.
 
-Each persistent worker imports an isolated installation. Timings alternate per case with common calibration, 11 rounds and at least 30 ms of thread CPU per batch. Output, source receipts, native calls and selected engines are checked outside timing. [Installation isolation](isolation.json) confirms identical non-compression files in each saved/current pair, including the JSON and base64 implementations. The 14 original Billy stream fixtures are unchanged; the separate request fixture contains eight request/checkpoint cases and three dataset cases. `gzipx` runs the six whole-buffer cases.
+Each persistent worker imports an isolated installation. Timings alternate per case with common calibration, 11 rounds and at least 30 ms of thread CPU per batch. Output, source receipts, native calls and selected engines are checked outside timing. [Installation isolation](isolation.json) confirms identical non-compression files in each saved/current pair, including the JSON and base64 implementations. The 14 original Consumer stream fixtures are unchanged; the separate request fixture contains eight request/checkpoint cases and three dataset cases. `gzipx` runs the six whole-buffer cases.
 
 | Operation / fixture | Linux wall speedup | Mac wall speedup | Current / prior gzip size |
 |---|---:|---:|---:|
@@ -15,7 +15,7 @@ Each persistent worker imports an isolated installation. Timings alternate per c
 
 The request fixture labels describe the requested payload size; actual JSON body sizes are 6,506, 132,690 and 524,746 bytes. Large dataset JSON bodies are 1,286,747 and 2,606,747 bytes. Request gzip output increases by 0.46–0.93% in these fixtures; large dataset output is 20.6–22.0% smaller. This is measured quality on the fixtures, not a universal compressed-size bound.
 
-| Original Billy streaming operation | Linux wall speedup |
+| Original Consumer streaming operation | Linux wall speedup |
 |---|---:|
 | `dataset-query-100` | 1.002× |
 | `dataset-upload-100` | 0.979× |
@@ -32,7 +32,7 @@ The request fixture labels describe the requested payload size; actual JSON body
 | `journal-replay-20000-2-members` | 1.037× |
 | `journal-write-flush-20000` | 0.999× |
 
-The broader 21-case [Linux read matrix](linux-reads.json) records 1.22–1.27× gains on large streams and two-pass reads. Its slowest synthetic control, the period-1 stream with 256 KiB reads, has about 5.8% higher latency (roughly 4.3 µs); the original Billy controls stay within about 3% of prior throughput. The Mac stream controls retain their previous implementation and gains. See [Linux Billy samples](linux-billy.json), [Mac Billy samples](mac-billy.json), [Linux encode samples](linux-encodes.json) and [Mac encode samples](mac-encodes.json).
+The broader 21-case [Linux read matrix](linux-reads.json) records 1.22–1.27× gains on large streams and two-pass reads. Its slowest synthetic control, the period-1 stream with 256 KiB reads, has about 5.8% higher latency (roughly 4.3 µs); the original Consumer controls stay within about 3% of prior throughput. The Mac stream controls retain their previous implementation and gains. See [Linux Consumer samples](linux-consumer.json), [Mac Consumer samples](mac-consumer.json), [Linux encode samples](linux-encodes.json) and [Mac encode samples](mac-encodes.json).
 
 The Linux run uses the actual Ryzen 9 7950X3D server, 128 GiB RAM, one pinned CPU (28), Python 3.14.8, GCC 12.2, zlib-ng 2.2.5 and local Yasm 1.3.0. The Mac is an Apple M5 Max with Python 3.14.9 and Apple Clang 21. Exact runtime, compiler flags and binary hashes are in [Linux platform metadata](linux-platform.json) and [Mac platform metadata](mac-platform.json). The server was shared with other jobs; both CPU and wall samples are retained.
 
@@ -43,7 +43,7 @@ The C changes are deliberately narrow:
 - The owned core edits cap internal decoding to the requested output, validate complete code trees and preserve diagnostics. Cold symbol checks use retained history and limit packed lookups to the first proved literal. Header-owned bits are never returned by pointer rewind. Input exhaustion flags retain the reference provider’s behavior, including its pending-literal quirk.
 - Each decoder retains its own lock and state. Gzip framing, optional headers, CRC/ISIZE, concatenation, seeking, short reads, source callbacks and ownership remain governed by the running interpreter. Public `readinto` keeps its staged failure behavior. Stream failures are latched; decoding is not replayed and expanded data is not cached across rewinds.
 
-The original `bz2`, `lzma`, `zlib`, `tarfile`, `zipfile`, `zstd`, `zstandard` and `libarchive` ports retain the original provider objects. Use the original `zlib` port when compressed-byte identity is needed for Billy’s 64 KiB checkpoints. The request driver keeps strict checkpoint byte checks: zlib-ng’s pre-existing 512 KiB chunk-boundary variation remains a reported contract failure in the `zlibx` lane rather than being accepted by a weaker oracle.
+The original `bz2`, `lzma`, `zlib`, `tarfile`, `zipfile`, `zstd`, `zstandard` and `libarchive` ports retain the original provider objects. Use the original `zlib` port when compressed-byte identity is needed for Consumer’s 64 KiB checkpoints. The request driver keeps strict checkpoint byte checks: zlib-ng’s pre-existing 512 KiB chunk-boundary variation remains a reported contract failure in the `zlibx` lane rather than being accepted by a weaker oracle.
 
 Validation includes **31,840 raw traces and 14,592 public histories**, independently prefixed with zlib and zlib-ng output. Both [NG-prefix](linux-budget-ng.json) and [stdlib-prefix](linux-budget-stdlib.json) reports have zero mismatches, including native error wording, exact output pieces, EOF/input flags, unused tails, source calls/position, exception ownership and failed destination buffers. Each corpus includes 3,492 traces selecting ISA-L. Stored, fixed and dynamic blocks, malformed trees, short headers, truncation, tiny tail budgets and later members are covered.
 

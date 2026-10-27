@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "recorded_at": "2026-10-27T22:25:22.827421+00:00",
+  "wheel": {
+    "filename": "unstd-4.0.2-cp314-cp314-macosx_11_0_arm64.whl",
+    "sha256": "94e710a726b7447f68af10f5d122d95f0f33df5cbb843b77abf45f93611873c9",
+    "bytes": 474630
+  },
+  "dataset_files_sha256": {
+    "unstd/dataset/README.md": "1c87ad4d2e30fc9eb3c8bb88c40fa57353bedf402f3d26838a5170614b6035cb",
+    "unstd/dataset/__init__.py": "d769995f0bbf9db67b99169b0f37eb337e464f331669f29c71fccb6b8e562de1",
+    "unstd/dataset/_dataset_native.pyi": "13cb98115edc222dfb05f6c86d654d49bdb0ce8fc4a10b1848be83da5b83274b",
+    "unstd/dataset/reader.py": "d0053bbb02aab02405ceae1f8a76c5190638d8cf4c538721bbf4d77daf2040fc",
+    "unstd/dataset/storage.py": "7c85d3f5cc6ff71ef6c561ba3dbcbdde4c1acc4a7447dedbc9e589a61cfe61cf",
+    "unstd/dataset/_dataset_native.cpython-314-darwin.so": "db51b7c7e029a41c65ae066bf22237957ff2a3d01d791403e220958b4a972fd7"
+  },
+  "native_source_sha256": "59f46bc89d32cd3a300249f16119787b1f8ee2d623a429d6474d4d2fe2c6f111",
+  "proof_reports": {
+    "measured.json": {
+      "sha256": "e4e849fab7ce10ec2f24d75b5253353ae5bdd89673952484aa7045c416be7ff6"
+    },
+    "access.json": {
+      "sha256": "9610f500c2475e646d6717d40075646e6cc151b4ff65fc1d52391aea2098dd5d"
+    },
+    "operations.json": {
+      "sha256": "81cee3e64423a35e4896fc0fc28da2988a0d2f7efcf8569060a7b9c872525575"
+    },
+    "packaging.json": {
+      "sha256": "a0527968e11cc5de0c3f03bd2ff00e5d9558a006c6e8ef0d17db29d9db001988"
+    }
+  },
+  "validation": {
+    "installed_wheel_dataset_tests": 180,
+    "packaging_tests": 193,
+    "speed_coverage_tests": 38,
+    "total_passed": 411,
+    "strict_typing_passed": true,
+    "lint_and_format_passed": true,
+    "runtime_annotation_resolution_passed": true,
+    "native_binaries_checked_for_product_references": 11,
+    "embedded_nonlegal_product_reference_matches": 0,
+    "base_install_without_site_packages_passed": true
+  },
+  "verification": {
+    "proof_subject": "The unpacked wheel, pinned by source and binary hashes before and after every campaign.",
+    "working_tree_dataset_python_and_guide_match_wheel": true,
+    "reproduce": [
+      "PYTHONPATH=<unpacked-wheel> python -m bench.profiles.dataset --output main.json",
+      "PYTHONPATH=<unpacked-wheel> python -m bench.profiles.dataset_access --output access.json",
+      "PYTHONPATH=<unpacked-wheel> python -m pytest tests/suites/product/dataset tests/suites/assurance/gates/packaging tests/suites/assurance/gates/bench/test_speed_coverage.py -q"
+    ]
+  }
+}

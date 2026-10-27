@@ -10,7 +10,7 @@ Workers select their source before importing the product. Alternating paired
 rounds retain complete operation wall/CPU timings and exact output checks.
 Cold imports are measured in separate minimal interpreters, including a scalar
 round trip. Bulk typed-array cases are capability measurements, distinct from
-the current Billy scalar/owned-list call shapes. No universal speedup is assumed.
+the current Consumer scalar/owned-list call shapes. No universal speedup is assumed.
 """
 
 from __future__ import annotations
@@ -89,43 +89,43 @@ def _cases(codec: Any) -> list[Case]:
     corpus = encoded * len(rows)
     cases = [
         Case(
-            "billy/embedding-pack-256-list",
+            "consumer/embedding-pack-256-list",
             lambda: shape.pack(*values),
             _equal(encoded),
             "Existing compiled !256d Struct.pack, including argument expansion",
         ),
         Case(
-            "billy/embedding-unpack-256-owned-list",
+            "consumer/embedding-unpack-256-owned-list",
             lambda: list(shape.unpack_from(encoded)),
             _equal(values),
             "Existing !256d Struct.unpack_from followed by owned Python list",
         ),
         Case(
-            "billy/embedding-pack-page-200x256-lists",
+            "consumer/embedding-pack-page-200x256-lists",
             lambda: b"".join(shape.pack(*row) for row in rows),
             _equal(corpus),
             "Two hundred independent !256d rows, including join and argument expansion",
         ),
         Case(
-            "billy/embedding-unpack-page-200x256-owned-lists",
+            "consumer/embedding-unpack-page-200x256-owned-lists",
             lambda: [list(row) for row in shape.iter_unpack(corpus)],
             _equal(rows),
             "Two hundred !256d records decoded to owned Python lists",
         ),
         Case(
-            "billy/f32-unpack-256-owned-list",
+            "consumer/f32-unpack-256-owned-list",
             lambda: [float(value) for value in codec.unpack_array("<f4", f32)],
             _equal(values),
             "Existing float32 little-endian view followed by Python float conversion",
         ),
         Case(
-            "billy/http-length-pack",
+            "consumer/http-length-pack",
             partial(codec.pack, ">I", 123456),
             _equal(header),
             "Existing four-byte big-endian framing header",
         ),
         Case(
-            "billy/http-length-unpack",
+            "consumer/http-length-unpack",
             partial(codec.unpack_from, ">I", header),
             _equal((123456,)),
             "Existing four-byte big-endian framing header",

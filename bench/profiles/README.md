@@ -19,6 +19,8 @@ These drivers compare saved and current implementations, check outputs and impor
 - [`cache_batches.py`](cache_batches.py) — paired batch reads and atomic writes against the frozen first cache implementation
 - [`cache_concurrency.py`](cache_concurrency.py) — paired independent-process cold fills with actual CPU work and recorded producer overlap
 - [`consumer_cache.py`](consumer_cache.py) — actual Consumer corpus-loader reuse in separate processes, including content/version invalidation and input hashing
+- [`dataset.py`](dataset.py) — indexed JSON snapshots compared with eager and streaming reads, with exact rows and separate build, storage, latency and memory evidence
+- [`dataset_access.py`](dataset_access.py) — matched SQLite, portable mapped, and native mapped access with real binding counters and explicit losses
 - [`jsonx_throughput.py`](jsonx_throughput.py)
 - [`jsonx_existing.py`](jsonx_existing.py) — three saved sources, unchanged JSONX registry/core fixtures and separate Python profiles; run this file directly to select sources before import
 - [`clone_ids_profile.py`](clone_ids_profile.py)
@@ -31,20 +33,20 @@ These drivers compare saved and current implementations, check outputs and impor
 - [`pack_backend.py`](pack_backend.py) — scalar/typed-array packing, owned-list and zero-copy decoding, with saved-source comparisons and exact wire checks
 - [`pack_consumers.py`](pack_consumers.py) — complete captured buffer decode/publication operations and explicit prospective API choices
 - [`rand_backend.py`](rand_backend.py) — saved/current bulk, scalar and construction timings with exact values and full engine-state checks
-- [`billy_rand.py`](billy_rand.py) — captured consumer slices with unchanged streams, separate profiles and explicit speedup gates
+- [`consumer_rand.py`](consumer_rand.py) — captured consumer slices with unchanged streams, separate profiles and explicit speedup gates
 - [`rand_keyed.py`](rand_keyed.py) — opt-in per-key integer count batches and complete captured consumer costs, with separate target results
 - [`rand_strategies.py`](rand_strategies.py) — prospective sparse sampling through the existing public API, labelled independently from backend acceleration
 - [`proc_backend.py`](proc_backend.py) — paired Linux/macOS process latency, exact captured I/O, source/signature checks, and separate wait-route profiles; run this file directly
 - Process consumer profile — source-backed Git, metadata and capture workloads, native/Python/stdlib controls, exact outputs and separate native-route profiles; run the driver directly
 - [`crypto_hash.py`](crypto_hash.py)
 - [`fs_backend.py`](fs_backend.py) — paired filesystem traversal and atomic-write timings with real syncing, independent output checks, source isolation, and profiles
-- [`billy_fs.py`](billy_fs.py) — historical Linux native-write experiment using captured consumers, synthetic payloads, exact browser/notebook reference functions, and real syncing
-- [`billy_fs_installed.py`](billy_fs_installed.py) — built Linux public `atomic_write` versus its Python fallback, with wheel hashes and accepted native-routing proof for every workload
+- [`consumer_fs.py`](consumer_fs.py) — historical Linux native-write experiment using captured consumers, synthetic payloads, exact browser/notebook reference functions, and real syncing
+- [`consumer_fs_installed.py`](consumer_fs_installed.py) — built Linux public `atomic_write` versus its Python fallback, with wheel hashes and accepted native-routing proof for every workload
 - Serde consumer profile — saved-fixture comparisons against isolated package installations
 - Audio consumer profile — exact PCM wrapping and raw normalization ports, paired timings, allocation peaks and captured consumer source
 - [`gzip_reads.py`](gzip_reads.py) — paired CPU/wall read timings, including bounded-memory repetitive streams at 8, 64 and 256 KiB read sizes; records the selected native backend outside timing
 - Gzip consumer profile — frozen consumer receipts, real ijson batches, bounded HTTP reads, two-pass uploads, and journal writes/flushes/replay
-- [`billy_gzip_requests.py`](billy_gzip_requests.py) — 11 frozen request and dataset encode cases; direct gzip/JSON/base64 operations and fresh/warm 64 KiB compressor checkpoints, with strict checkpoint equality and retained contract failures
+- [`consumer_gzip_requests.py`](consumer_gzip_requests.py) — 11 frozen request and dataset encode cases; direct gzip/JSON/base64 operations and fresh/warm 64 KiB compressor checkpoints, with strict checkpoint equality and retained contract failures
 - [`gzip_concurrency.py`](gzip_concurrency.py) — independent consumer streams on 1, 2 and 4 warmed executor workers, with isolated installations and aggregate wall throughput
 - [`text_native_compare.py`](text_native_compare.py)
 - [`text_affixes.py`](text_affixes.py) — saved/current edit distance on near-identical strings and unrelated controls, through isolated native and source-only wrappers; retains dispatch, exact outputs, paired timings and allocation peaks
@@ -60,15 +62,15 @@ not met. Read its [report](../reports/pack/ragged/README.md) before interpreting
 the array-selection-only results from the earlier consumer profile.
 
 For filesystem backend work, use the direct file entry point of
-[`billy_fs_installed.py`](billy_fs_installed.py) inside Linux. Select one built,
+[`consumer_fs_installed.py`](consumer_fs_installed.py) inside Linux. Select one built,
 installed package root and its wheel; both lanes load identical fs bytes from
 that root. One public module keeps native dispatch and the other sets
-`_native=None`. The checked [Billy fixtures](../workloads/billy_fs.json) require
+`_native=None`. The checked [Consumer fixtures](../workloads/consumer_fs.json) require
 the captured consumer checkout for source hashes and reference ASTs, without
 importing application dependencies.
 
 ```console
-python bench/profiles/billy_fs_installed.py --source /tmp/fs-install --wheel /tmp/fs-dist/unstd-3.1.6-cp314-cp314-linux_aarch64.whl --fixtures bench/workloads/billy_fs.json --billy-source ../billy --root /tmp --rounds 9 --output /tmp/fs-installed.json
+python bench/profiles/consumer_fs_installed.py --source /tmp/fs-install --wheel /tmp/fs-dist/unstd-3.1.6-cp314-cp314-linux_aarch64.whl --fixtures bench/workloads/consumer_fs.json --consumer-source ../consumer --root /tmp --rounds 9 --output /tmp/fs-installed.json
 ```
 
 Use the wheel's actual ABI/platform filename. Before and after each workload,
@@ -85,8 +87,8 @@ wheel and sdist-rebuilt wheel results, cancellation/error coverage, and fallback
 packaging checks for its recorded source snapshot. These are synthetic workload
 shapes, not service-frequency weights; disk regressions remain visible and
 tmpfs measures CPU/VFS overhead. Later source edits require fresh evidence.
-The [historical experiment](../reports/fs/billy-linux.md) uses a separately built
-`_fs_experiment` binary through `billy_fs.py run --native-extension ...`; its
+The [historical experiment](../reports/fs/consumer-linux.md) uses a separately built
+`_fs_experiment` binary through `consumer_fs.py run --native-extension ...`; its
 comparison lane explicitly forces Python even when public native dispatch is
 available. Its ratios and admission limits are separate from installed results.
 
@@ -176,6 +178,18 @@ with `jsonx.iterload` in fresh processes at increasing record counts. Its
 [retained evidence](../reports/serde/json-array-stream.md) checks every decoded
 field and source byte, and records peak RSS, separate allocation tracing,
 first-item reads and latency, and the complete-consumption throughput tradeoff.
+
+[`dataset.py`](dataset.py) compares indexed evaluation snapshots with eager and
+streaming JSONL reads. Its [retained evidence](../reports/dataset/README.md)
+reports exact selected rows, peak Python allocations, snapshot construction
+cost, and storage overhead alongside count, page, and random-access latency.
+Run `python -m bench.profiles.dataset --output /tmp/dataset-proof.json` to
+reproduce the comparison on the current interpreter and filesystem.
+
+[`dataset_access.py`](dataset_access.py) isolates the storage and native-kernel
+changes with seven matched rounds using the same JSON codecs. Its
+[qualification report](../reports/dataset/access.md) retains raw timings, actual
+native calls, construction cost, and portable controls.
 
 See the [benchmark guide](../README.md).
 

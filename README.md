@@ -65,6 +65,7 @@ bounded memory. See the [read guide](src/unstd/serde/README.md#stream-a-json-arr
 | JSON, Base64, NDJSON, typed codecs | [`serde`](src/unstd/serde/README.md) | `serde` |
 | Deep copying and dataclass conversion | [`clone`](src/unstd/clone/README.md) | None |
 | Persistent JSON caching, atomic batches, TTLs, and parallel fills | [`cache`](src/unstd/cache/README.md) | None |
+| Indexed JSON corpora, ordered selection, and bounded batches | [`dataset`](src/unstd/dataset/README.md) | None |
 | Gzip/zlib streams, Zstandard, archive bindings | [`compress`](src/unstd/compress/README.md) | `compress`, `zstd`, `archives` |
 | UUIDs and BLAKE3 hashing | [`ids`](src/unstd/ids/README.md), [`crypto`](src/unstd/crypto/README.md) | `ids`, `crypto` |
 | Clocks, zoned time, Protobuf timestamp bridge | [`time`](src/unstd/time/README.md) | `time`, `proto` |

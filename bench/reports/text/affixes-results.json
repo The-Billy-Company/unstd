@@ -6,27 +6,27 @@
     "machine": "arm64"
   },
   "harness": {
-    "path": "/Users/griffinstrier/Billy-Company/unstd/bench/profiles/text_affixes.py",
+    "path": "bench/profiles/text_affixes.py",
     "sha256": "239bd924628a725b7ac368d531e749059373e20effa62c440b4a08e431af88ce"
   },
   "implementations": {
     "baseline": {
       "wrapper": {
-        "path": "/Users/griffinstrier/Billy-Company/unstd/.local/text-affixes/before/src/unstd/text/fuzz.py",
+        "path": ".local/text-affixes/before/src/unstd/text/fuzz.py",
         "sha256": "96bb910dda4e55925adfe133a2128bc13f914c7e01cd2fad614795cd5e2cf534"
       },
       "native": {
-        "path": "/Users/griffinstrier/Billy-Company/unstd/.local/text-affixes/before/lib/unstd/text/_text_native.cpython-314-darwin.so",
+        "path": ".local/text-affixes/before/lib/unstd/text/_text_native.cpython-314-darwin.so",
         "sha256": "cbe71f418db48b5d0606ac39c03f7146a502e7da6e7309e8f69d92a0052dd37b"
       }
     },
     "candidate": {
       "wrapper": {
-        "path": "/Users/griffinstrier/Billy-Company/unstd/.local/text-affixes/candidate/src/unstd/text/fuzz.py",
+        "path": ".local/text-affixes/candidate/src/unstd/text/fuzz.py",
         "sha256": "e3587d372fb1104100b0b3b7fa2b5a02c94a69e92a5ed0f3cc1955f13b7d0a97"
       },
       "native": {
-        "path": "/Users/griffinstrier/Billy-Company/unstd/.local/text-affixes/candidate/_text_native.cpython-314-darwin.so",
+        "path": ".local/text-affixes/candidate/_text_native.cpython-314-darwin.so",
         "sha256": "355914ad0497767fdf4b061bc5c32a7eecd694caffc77f431b9d64444ff1d12b"
       }
     }
@@ -1927,5 +1927,9 @@
       "LDSHARED": "cc -bundle -undefined dynamic_lookup -arch arm64 -mmacosx-version-min=11.0 -Wl,-headerpad,40"
     },
     "note": "Configuration describes the local builders; compiler invocations were not separately captured. Reproduction builds both with one identical setuptools procedure."
+  },
+  "publication_normalization": {
+    "kind": "public_metadata_normalization",
+    "note": "Consumer labels, artifact paths and machine-specific origins normalized for public publication. Historical timings, measured payload bytes and original source digests retain their captured meaning; normalized source/archive bytes have their own publication hashes."
   }
 }

@@ -6,12 +6,12 @@
   "prior_results_note": "bench/native-results.md compares Python versus C, not C versus Rust",
   "utc": "2026-10-22T01:41:41.982957+00:00",
   "harness": {
-    "path": "/Users/griffinstrier/Billy-Company/unstd/bench/text_native_compare.py",
+    "path": "bench/text_native_compare.py",
     "size_bytes": 22250,
     "sha256": "1e622c49bcb2250e08d687a6b70055fe97839537abedd239d45231a0fd938b82"
   },
   "wrapper": {
-    "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/text/fuzz.py",
+    "path": "src/unstd/text/fuzz.py",
     "size_bytes": 18855,
     "sha256": "0a6dd4e4ae32bf284138dfa814045021a6a03327ec9467579da79bd8883f5f7e"
   },
@@ -30,34 +30,34 @@
   "sources": {
     "baseline": [
       {
-        "path": "/Users/griffinstrier/Billy-Company/unstd/src/unstd/text/_text_native.c",
+        "path": "src/unstd/text/_text_native.c",
         "size_bytes": 9836,
         "sha256": "7051b4889c064fa430eb90ad2aab0eae5c126e5d4fbe7e869b99aa654355883f"
       }
     ],
     "candidate": [
       {
-        "path": "/Users/griffinstrier/Billy-Company/unstd/native/text/Cargo.toml",
+        "path": "native/text/Cargo.toml",
         "size_bytes": 236,
         "sha256": "571edf90e91280d1f7cfbd564c325bb9ae209d51157ca88783ff084ba4919985"
       },
       {
-        "path": "/Users/griffinstrier/Billy-Company/unstd/native/text/Cargo.lock",
+        "path": "native/text/Cargo.lock",
         "size_bytes": 154,
         "sha256": "1fc8e2953d3de85a4ffb1061ea05fe3ec5610aaa020cbcb630ee64ae14cf4c58"
       },
       {
-        "path": "/Users/griffinstrier/Billy-Company/unstd/native/text/adapter.c",
+        "path": "native/text/adapter.c",
         "size_bytes": 3515,
         "sha256": "a202b573dabe9ef559a7a72fa045a73ae7ed3a413273ba6d87dd5f653a7959a8"
       },
       {
-        "path": "/Users/griffinstrier/Billy-Company/unstd/native/text/src/lib.rs",
+        "path": "native/text/src/lib.rs",
         "size_bytes": 4896,
         "sha256": "e4ea0ce62a3c0d9629bdbf8ca48366e6b3063ed81e7e64d21d98b37b00a5145d"
       },
       {
-        "path": "/Users/griffinstrier/Billy-Company/unstd/native/text/src/core.rs",
+        "path": "native/text/src/core.rs",
         "size_bytes": 16822,
         "sha256": "bf79d9dab6524cf3b89b3cc1f2f479057c5aca8e7596e1cefcad1a7121113329"
       }
@@ -66,7 +66,7 @@
   "toolchain_note": "Compiler versions describe the current tools; use recorded build commands to establish the flags used for each saved binary.",
   "environment": {
     "python": "3.13.14 (main, Aug  5 2026, 15:33:38) [Clang 22.1.3 ]",
-    "executable": "/Users/griffinstrier/Billy-Company/unstd/.venv/bin/python",
+    "executable": ".venv/bin/python",
     "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
     "machine": "arm64",
     "processor": "arm",
@@ -14009,5 +14009,9 @@
     "requirement": "No overhead",
     "decision": "Rejected for default adoption: short-Jaro latency and extension size regressions; RSS does not establish memory parity.",
     "scope": "These observations apply to this prototype on this host, not all possible Rust implementations."
+  },
+  "publication_normalization": {
+    "kind": "public_metadata_normalization",
+    "note": "Consumer labels, artifact paths and machine-specific origins normalized for public publication. Historical timings, measured payload bytes and original source digests retain their captured meaning; normalized source/archive bytes have their own publication hashes."
   }
 }

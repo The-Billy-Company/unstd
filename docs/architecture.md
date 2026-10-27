@@ -64,6 +64,7 @@ responsibility without an extra helper package.
 | `compress` | `gzipx.py`, `zlibx.py`, original codec/archive ports | `engines/` owns provider admission, gzip reading, flush validation and import identity; `libarchive/` owns its binding and type surface. |
 | `containers` | Lazy package exports, `persistent.py`, `sorted.py` | `ordering.py` owns compatible accelerated collection classes. |
 | `crypto` | `digest.py`, `tls.py`, `token.py` | `hashing.py` owns BLAKE3 admission and worker policy. |
+| `dataset` | Package class `Dataset` and function `build` | `reader.py` owns sequence and batch semantics; `storage.py` owns portable indexed JSON files, atomic construction, mapping, and integrity; the optional native kernel copies checked row ranges. |
 | `fs` | Package functions | `durability.py` and `traversal.py`; public orchestration owns Linux native admission and injectable sync/cleanup hooks. |
 | `ids` | `uid.py` | UUID generation and fallback state stay together. |
 | `iters` | Package functions | `consecutive.py`, `distinct.py`, `reshape.py`, `select.py` own focused combinators. |
@@ -124,7 +125,7 @@ including `unstd.serde._json_native`, `unstd.clone._clone_native`,
 `unstd.crypto._stream_native`, `unstd.text._text_native`,
 `unstd.compress._gzip_native`, `unstd.containers._sorted_native`,
 `unstd.proc._proc_native`, `unstd.rand._rand_native`, and
-`unstd.pack._pack_native`.
+`unstd.pack._pack_native`, and `unstd.dataset._dataset_native`.
 Linux additionally builds `unstd.fs._fs_native`.
 The [build registry](../hatch_build.py) lists all bundled extensions; their typing
 stubs live beside the Python interfaces.

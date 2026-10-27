@@ -13,7 +13,7 @@
     "hatch_build.py": "86866a83039ceebab8508e24989fff24a5de6d5ab30d6efb7f757614b9ab8358",
     "src/unstd/compress/gzipx.py": "def93facf3eed14dae3a9c81eb2ea9cd323c3fbd47484fb170170b2100d7e468",
     "bench/profiles/gzip_reads.py": "5b2d25a6c5177e1ca14c8c659946ae3cf3de8c07c100a1e6e33b66385fccf2ac",
-    "bench/profiles/billy_gzip.py": "94af7370eb60336831e4de3fe0601c79cf691b94bf77d371934f6a46c0a11756",
+    "bench/profiles/consumer_gzip.py": "94af7370eb60336831e4de3fe0601c79cf691b94bf77d371934f6a46c0a11756",
     "tests/suites/assurance/gates/bench/test_gzip_reads.py": "73a9e130eec89959cf94038b054a5f804532fcd86e92cf7f168a768c5029c1a8"
   },
   "baseline_source_sha256": {
@@ -62,7 +62,7 @@
   "evidence_sha256": {
     "tests-linux16.txt": "d769bf9d96229f2af96845f6cbe18ba43466a59a01c16a03e6ee797b9d1098de",
     "ownership-oom-final16.json": "adbaf66a07242041f0ad340614a664925309f5ac66180ad95a7d37ddeb9022d2",
-    "billy-linux-interleaved.json": "25ea292037084ba2e8c73a652f2fb9c9dd867715b7db6582a81d94a57bf98ae4",
+    "consumer-linux-interleaved.json": "25ea292037084ba2e8c73a652f2fb9c9dd867715b7db6582a81d94a57bf98ae4",
     "shape-oracle.log.gz": "9e9a87707afae349af3e2dd3e66e893eb76397d070394627ccba212a529d4a95",
     "native-python-versions.json": "2406b1d590e4c0cd6820d4dce0bb1960de3292478931a17c8b098d49847f07d6",
     "linux-host-selection.json": "90bad822fd185e8a4f364aaae4ef34dfa3cbe987f4b50f098b0c3d41ceb614e9",
@@ -77,10 +77,10 @@
     "bench-gates.txt": "18f05404380dc6a956cd42c8a94d36967d5d6bb8d0d3f682157dc0b41cd48187",
     "shape-sanitizer.log.gz": "27ae328671705b049d5b2e84587230c60868d89275f09b0069e2103e4c11f30f",
     "reproduction-sources.tar.gz": "6a8c67de7dfce9e00650e2f79ec806747da1557455e6c7eed94858438bc6fd94",
-    "busy-billy-linux-repeat.json.gz": "af0666537ca34c1a351b5aece79c774275a88f46d50931f6da41f143332a2204",
-    "busy-billy-linux.json.gz": "e07fd4dadfd16bf7896e3b3918e180f0f4da05129f11fde96ceb4adbb6f5c3f6",
+    "busy-consumer-linux-repeat.json.gz": "af0666537ca34c1a351b5aece79c774275a88f46d50931f6da41f143332a2204",
+    "busy-consumer-linux.json.gz": "e07fd4dadfd16bf7896e3b3918e180f0f4da05129f11fde96ceb4adbb6f5c3f6",
     "packaging-receipt.json": "d14149d2c9d2aa78321cbbc48604c34b641f13da97a39efe51873dd4b9c5a425",
-    "billy-macos16.json": "c0d935f611fcdb6327c0a747ad59178d0bcf7cb07eee12a3c4609626aa62b70b",
+    "consumer-macos16.json": "c0d935f611fcdb6327c0a747ad59178d0bcf7cb07eee12a3c4609626aa62b70b",
     "editable-smoke.txt": "8747ddbdf0e85ce30caba7730db0dc022fd780ee2d8373e89f2adb907b8e713b"
   },
   "editable_smoke": {
@@ -88,5 +88,9 @@
     "native_sha256": "d7d2ac9544d11862985b35083b6c86f47e18d4047ee9aa2387e6b5c6465d1774",
     "provider": "zlib-ng 2.2.5",
     "concurrently_rebuilt_editable_binary": true
+  },
+  "publication_normalization": {
+    "kind": "public_metadata_normalization",
+    "note": "Consumer labels, artifact paths and machine-specific origins normalized for public publication. Historical timings, measured payload bytes and original source digests retain their captured meaning; normalized source/archive bytes have their own publication hashes."
   }
 }

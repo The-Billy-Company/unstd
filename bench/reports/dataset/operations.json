@@ -1,0 +1,802 @@
+{
+  "baseline_sha256": "5f9ab7e77be3d4f172287544a88d85fdb23bf42cf5506be5b1768288c9d9a4a5",
+  "cases": {
+    "unstd.dataset.Dataset": {
+      "ceiling_ns": 23976.15390625,
+      "cpu_samples_ns": [
+        null,
+        21151.04296875,
+        20190.59375,
+        19333.33203125,
+        19081.87109375,
+        18445.47265625,
+        18927.24609375
+      ],
+      "iters": 256,
+      "note": "Open, validate geometry, count and close a 32-row immutable mapped dataset snapshot.",
+      "per_op_ns": 18443.1953125,
+      "rounds": 7,
+      "samples_ns": [
+        20047.8515625,
+        21326.82421875,
+        20227.2109375,
+        19330.56640625,
+        19085.9375,
+        18443.1953125,
+        18932.6171875
+      ],
+      "spread": 0.15635191502285947
+    },
+    "unstd.dataset.Dataset#random-access": {
+      "ceiling_ns": 22597.44296875,
+      "cpu_samples_ns": [
+        null,
+        19919.189453125,
+        21631.103515625,
+        19147.216796875,
+        20936.60546875,
+        17949.21875,
+        18451.82421875
+      ],
+      "iters": 512,
+      "note": "Open a 32-row snapshot, decode four nonsequential indexed rows, and close the handle.",
+      "per_op_ns": 17382.6484375,
+      "rounds": 7,
+      "samples_ns": [
+        17382.6484375,
+        20041.177734375,
+        21645.587890625,
+        19152.017578125,
+        20970.458984375,
+        17951.904296875,
+        18487.466796875
+      ],
+      "spread": 0.2452410786798437
+    },
+    "unstd.dataset.Dataset#scan": {
+      "ceiling_ns": 34510.7953125,
+      "cpu_samples_ns": [
+        null,
+        31739.3671875,
+        30823.677083333332,
+        26924.044270833332,
+        26908.744791666668,
+        27508.8984375,
+        26481.770833333332
+      ],
+      "iters": 384,
+      "note": "Open a 32-row snapshot, stream and decode every row in source order, and close the handle.",
+      "per_op_ns": 26546.765625,
+      "rounds": 7,
+      "samples_ns": [
+        31938.041666666668,
+        32289.388020833332,
+        31861.869791666668,
+        27152.450520833332,
+        26958.442708333332,
+        27574.869791666668,
+        26546.765625
+      ],
+      "spread": 0.2163209815068887
+    },
+    "unstd.dataset.Dataset#slice": {
+      "ceiling_ns": 24022.77786458333,
+      "cpu_samples_ns": [
+        null,
+        18990.453125,
+        20593.317708333332,
+        19235.5703125,
+        18717.341145833332,
+        19160.15625,
+        18475.151041666668
+      ],
+      "iters": 384,
+      "note": "Open a 32-row snapshot, decode a four-row stepped slice, and close the handle.",
+      "per_op_ns": 18479.059895833332,
+      "rounds": 7,
+      "samples_ns": [
+        18820.421875,
+        18992.1875,
+        20590.059895833332,
+        19233.3984375,
+        18772.244791666668,
+        19158.528645833332,
+        18479.059895833332
+      ],
+      "spread": 0.11423741315303541
+    },
+    "unstd.dataset.Dataset.__enter__": {
+      "ceiling_ns": 31.866021079205456,
+      "cpu_samples_ns": [
+        null,
+        24.69564494680851,
+        24.92030886386303,
+        25.02344009724069,
+        24.77280637051197,
+        24.797480157081118,
+        24.81544267370346
+      ],
+      "iters": 385024,
+      "note": "Enter an existing readonly dataset handle and verify its identity and first row outside timing.",
+      "per_op_ns": 24.512323907081118,
+      "rounds": 7,
+      "samples_ns": [
+        24.512323907081118,
+        24.70387300531915,
+        25.03079808011968,
+        25.03501859624335,
+        24.932102933843087,
+        24.85602715674867,
+        24.90548381399601
+      ],
+      "spread": 0.021323750907650093
+    },
+    "unstd.dataset.Dataset.__exit__": {
+      "ceiling_ns": 25564.127604166668,
+      "cpu_samples_ns": [
+        null,
+        28290.151041666668,
+        29361.328125,
+        27502.822916666668,
+        21327.911458333332,
+        22289.0625,
+        19669.921875
+      ],
+      "iters": 192,
+      "note": "Open, enter and exit a fresh dataset context; verify subsequent row reads fail outside timing.",
+      "per_op_ns": 19664.713541666668,
+      "rounds": 7,
+      "samples_ns": [
+        32954.645833333336,
+        39413.192708333336,
+        38691.40625,
+        31186.197916666668,
+        21550.567708333332,
+        22843.53125,
+        19664.713541666668
+      ],
+      "spread": 1.0042596921039564
+    },
+    "unstd.dataset.Dataset.batches": {
+      "ceiling_ns": 6819.17265625,
+      "cpu_samples_ns": [
+        null,
+        5355.569110576923,
+        5308.6442307692305,
+        5423.126802884615,
+        5350.4609375,
+        5459.259615384615,
+        5245.818509615385
+      ],
+      "iters": 1664,
+      "note": "Consume four bounded batches of 7, 7, 7 and 3 rows from a preopened 32-row mapped snapshot.",
+      "per_op_ns": 5245.517427884615,
+      "rounds": 7,
+      "samples_ns": [
+        5318.935096153846,
+        5387.194110576923,
+        5330.778846153846,
+        5437.0745192307695,
+        5372.721754807692,
+        5470.051682692308,
+        5245.517427884615
+      ],
+      "spread": 0.04280497737250704
+    },
+    "unstd.dataset.Dataset.close": {
+      "ceiling_ns": 24948.685937500002,
+      "cpu_samples_ns": [
+        null,
+        20014.6484375,
+        20605.903645833332,
+        19089.302083333332,
+        19769.421875,
+        20691.515625,
+        20780.3828125
+      ],
+      "iters": 384,
+      "note": "Open and close a fresh dataset handle; verify closure rejects subsequent row reads outside timing.",
+      "per_op_ns": 19191.296875,
+      "rounds": 7,
+      "samples_ns": [
+        19729.166666666668,
+        20136.609375,
+        20791.234375,
+        19191.296875,
+        19813.041666666668,
+        20877.9296875,
+        21155.817708333332
+      ],
+      "spread": 0.10236519429244322
+    },
+    "unstd.dataset.Dataset.iter_rows": {
+      "ceiling_ns": 2192.6922265625003,
+      "cpu_samples_ns": [
+        null,
+        1718.3755859375,
+        1713.370703125,
+        1717.1794921875,
+        1712.9150390625,
+        1719.0509765625,
+        1730.143359375
+      ],
+      "iters": 5120,
+      "note": "Consume a six-row reverse stepped selection from a preopened 32-row mapped snapshot.",
+      "per_op_ns": 1686.686328125,
+      "rounds": 7,
+      "samples_ns": [
+        1686.686328125,
+        1735.7259765625,
+        1713.5333984375,
+        1717.08984375,
+        1716.552734375,
+        1721.7529296875,
+        1735.3189453125
+      ],
+      "spread": 0.02907455145617667
+    },
+    "unstd.dataset.Dataset.take": {
+      "ceiling_ns": 1885.939453125,
+      "cpu_samples_ns": [
+        null,
+        1452.5390625,
+        1451.90765625,
+        1446.236875,
+        1451.74484375,
+        1448.04046875,
+        1506.0090625
+      ],
+      "iters": 6400,
+      "note": "Select five ordered rows, including negative and duplicate indices, from a preopened 32-row mapped snapshot.",
+      "per_op_ns": 1450.72265625,
+      "rounds": 7,
+      "samples_ns": [
+        1462.87765625,
+        1452.89703125,
+        1451.79046875,
+        1451.79046875,
+        1457.8646875,
+        1450.72265625,
+        1512.2590625
+      ],
+      "spread": 0.042417760544987006
+    },
+    "unstd.dataset.Dataset.verify": {
+      "ceiling_ns": 1682.3293585526314,
+      "cpu_samples_ns": [
+        null,
+        1303.9794407894738,
+        1309.8101699561403,
+        1304.7331414473683,
+        1315.9094024122808,
+        1306.006716008772,
+        1308.530975877193
+      ],
+      "iters": 7296,
+      "note": "Validate every offset and the body SHA256 of a preopened 32-row mapped snapshot; independent corrupted-checksum control stays outside timing.",
+      "per_op_ns": 1294.0995065789473,
+      "rounds": 7,
+      "samples_ns": [
+        1294.0995065789473,
+        1303.4253015350878,
+        1310.5411184210527,
+        1304.2649396929824,
+        1316.2291666666667,
+        1305.8867872807018,
+        1310.0785361842106
+      ],
+      "spread": 0.017100431593719385
+    },
+    "unstd.dataset.build": {
+      "ceiling_ns": 583458.6727272727,
+      "cpu_samples_ns": [
+        null,
+        471644.0,
+        402685.63636363635,
+        424674.2727272727,
+        403045.45454545453,
+        422594.63636363635,
+        408011.36363636365
+      ],
+      "iters": 11,
+      "note": "Atomically serialize and publish 32 JSON rows with an offset index and body SHA256; verify all rows outside timing.",
+      "per_op_ns": 448814.36363636365,
+      "rounds": 7,
+      "samples_ns": [
+        469776.54545454547,
+        823189.3636363636,
+        484329.54545454547,
+        464757.54545454547,
+        450541.7272727273,
+        472935.54545454547,
+        448814.36363636365
+      ],
+      "spread": 0.8341421984955107
+    }
+  },
+  "command": "PYTHONPATH=INSTALL:. python -m bench.speeds freeze --group dataset --rounds 7 --baseline .local/dataset-frozen-speeds.json",
+  "environment": {
+    "backends": {
+      "blake3": "1.0.10",
+      "immutables": "0.21",
+      "irregex": "2.6.0",
+      "libarchive-c": "5.3",
+      "msgspec": "0.22.0",
+      "numpy": "2.5.3",
+      "orjson": "3.12.0",
+      "protobuf": "7.36.2",
+      "pybase64": "1.5.0",
+      "pydantic": "2.13.5",
+      "pydantic-settings": "2.15.0",
+      "pyyaml": "6.0.3",
+      "rapidfuzz": "3.14.6",
+      "ruamel-yaml": "0.19.1",
+      "sortedcontainers": "2.4.0",
+      "soundfile": "0.14.0",
+      "tomlkit": "0.15.1",
+      "uuid-utils": "1.0.0",
+      "whenever": "0.10.5",
+      "zlib-ng": "1.0.0",
+      "zstandard": "0.25.0"
+    },
+    "cpu": "Apple M5 Max",
+    "cpu_count": 18,
+    "implementation": "CPython",
+    "machine": "arm64",
+    "native": {
+      "clone._clone_native": true,
+      "compress._gzip_native": true,
+      "containers._sorted_native": true,
+      "crypto._stream_native": true,
+      "dataset._dataset_native": true,
+      "math._math_native": true,
+      "serde._json_native": true,
+      "text._text_native": true
+    },
+    "native_implementations": {
+      "clone._clone_native": "c",
+      "compress._gzip_native": "c",
+      "containers._sorted_native": "c",
+      "crypto._stream_native": "c",
+      "dataset._dataset_native": "c",
+      "math._math_native": "c",
+      "serde._json_native": "c",
+      "text._text_native": "c"
+    },
+    "python": "3.14.9",
+    "python_debug": 0,
+    "python_free_threaded": 0,
+    "system": "Darwin",
+    "system_release": "25.6.0",
+    "thread_settings": {
+      "MKL_NUM_THREADS": null,
+      "OMP_NUM_THREADS": null,
+      "OPENBLAS_NUM_THREADS": null
+    }
+  },
+  "import_root": "installed/",
+  "kernel_version": 2,
+  "native_route": true,
+  "product_and_workload_sha256": {
+    "bench/core/timing.py": "d585627571b5daeca0a078b75484c84e769dce70a5b4448825fd811a8e3b61bc",
+    "bench/speeds.py": "5b4fcc9e179cfdad2a035f2557ac680153eca161527260c7a7cea9ed6de68c7d",
+    "bench/workloads/speed_cases_operations.py": "1a2b8ead567a5a6bafc03a6286eb64bee239d864c7f50cb19ded31f18871d9fa",
+    "installed/unstd/dataset/__init__.py": "d769995f0bbf9db67b99169b0f37eb337e464f331669f29c71fccb6b8e562de1",
+    "installed/unstd/dataset/_dataset_native.cpython-314-darwin.so": "db51b7c7e029a41c65ae066bf22237957ff2a3d01d791403e220958b4a972fd7",
+    "installed/unstd/dataset/reader.py": "d0053bbb02aab02405ceae1f8a76c5190638d8cf4c538721bbf4d77daf2040fc",
+    "installed/unstd/dataset/storage.py": "7c85d3f5cc6ff71ef6c561ba3dbcbdde4c1acc4a7447dedbc9e589a61cfe61cf",
+    "installed/unstd/serde/jsonx.py": "ac8f97d22c661afe3a7d2d630172e19999e870cae74a01866e8bc57074e66f0e",
+    "installed/unstd/serde/ndjson.py": "aed41e482feaaf75afded30bfa67a5ea52819e460ad2cab2f549c602332c204e",
+    "native/dataset/src/adapter.c": "59f46bc89d32cd3a300249f16119787b1f8ee2d623a429d6474d4d2fe2c6f111"
+  },
+  "provenance": {
+    "build_environment": {
+      "CC": null,
+      "CFLAGS": null,
+      "CIBUILDWHEEL": null,
+      "CPPFLAGS": null,
+      "CXX": null,
+      "LDFLAGS": null,
+      "PYTHONMALLOC": null,
+      "UNSTD_GZIP_ZLIB_RS": null,
+      "UNSTD_TEXT_RUST": null
+    },
+    "compiler_configuration": {
+      "CC": "cc",
+      "CFLAGS": "-fno-strict-overflow -Wsign-compare -Wunreachable-code -DNDEBUG -g -O3 -Wall -O3 -arch arm64 -mmacosx-version-min=11.0 -Wno-nullability-completeness -Wno-expansion-to-defined -Wno-undef-prefix -fPIC",
+      "CONFIG_ARGS": "'--build=aarch64-apple-darwin' '--host=aarch64-apple-darwin' '--prefix=/install' '--with-openssl=/tmp/tmpbu7gfntw/tools/deps' '--with-system-expat' '--without-ensurepip' '--with-tail-call-interp' '--with-system-libmpdec' 'MODULE_BUILDTYPE=static' '--enable-loadable-sqlite-extensions' '--enable-static-libpython-for-interpreter' '--enable-shared' '--with-mimalloc' '--enable-optimizations' '--enable-experimental-jit=yes-off' '--with-lto=full' '--with-build-python=/tmp/tmpbu7gfntw/tools/host/bin/python3.14' 'ac_cv_lib_intl_textdomain=no' 'ac_cv_func_ptsname_r=no' 'ac_cv_func_explicit_bzero=no' '--with-dbmliborder=ndbm' 'build_alias=aarch64-apple-darwin' 'host_alias=aarch64-apple-darwin' 'PKG_CONFIG=pkg-config --static --define-prefix' 'PKG_CONFIG_PATH=/tmp/tmpbu7gfntw/tools/deps/share/pkgconfig:/tmp/tmpbu7gfntw/tools/deps/lib/pkgconfig' 'CC=clang' 'CFLAGS=-O3 -arch arm64 -mmacosx-version-min=11.0 -Wno-nullability-completeness -Wno-expansion-to-defined -Wno-undef-prefix -fPIC -Werror=unguarded-availability-new' 'LDFLAGS=-arch arm64 -mmacosx-version-min=11.0 -Wl,-headerpad,40' 'CPPFLAGS=-O3 -arch arm64 -mmacosx-version-min=11.0 -Wno-nullability-completeness -Wno-expansion-to-defined -Wno-undef-prefix -fPIC -Werror=unguarded-availability-new' 'PROFILE_TASK=-m test --pgo -j 12' 'BOLT_COMMON_FLAGS=' 'BOLT_APPLY_FLAGS='",
+      "CPPFLAGS": "-I. -I./Include -O3 -arch arm64 -mmacosx-version-min=11.0 -Wno-nullability-completeness -Wno-expansion-to-defined -Wno-undef-prefix -fPIC",
+      "CXX": "c++",
+      "LDFLAGS": "-arch arm64 -mmacosx-version-min=11.0 -Wl,-headerpad,40"
+    },
+    "harness_sources": {
+      "bench/core/timing.py": "d585627571b5daeca0a078b75484c84e769dce70a5b4448825fd811a8e3b61bc",
+      "bench/speeds.py": "5b4fcc9e179cfdad2a035f2557ac680153eca161527260c7a7cea9ed6de68c7d"
+    },
+    "loaded_files": {
+      "gzip": {
+        "path": "python-runtime/lib/python3.14/gzip.py",
+        "sha256": "a5c6e7714160c6972427eb6612bb6ee0d4d6e70727c77f7ad4b6ab7a56b8cc50"
+      },
+      "unstd": {
+        "path": "installed/unstd/__init__.py",
+        "sha256": "88398b89f4185e422e3d0e09ebd7135d1e938557b86542f9cdefec7d20d4be22"
+      },
+      "unstd.audio": {
+        "path": "installed/unstd/audio/__init__.py",
+        "sha256": "2a7152cd40de762b07488036611ef713c07a281e650b54b2a9239dcb6d2fda07"
+      },
+      "unstd.audio.pcm": {
+        "path": "installed/unstd/audio/pcm.py",
+        "sha256": "311bd93c6886859bb2158e879d493aa6762962ba61ec2c2cb4123d6adc2c3d04"
+      },
+      "unstd.audio.wavx": {
+        "path": "installed/unstd/audio/wavx.py",
+        "sha256": "248b27c0d7d969e4a1f90a93fa4eb8088b57c983eb87ad22155af8f84fb16b46"
+      },
+      "unstd.cache": {
+        "path": "installed/unstd/cache/__init__.py",
+        "sha256": "3ff4aecc4cc8fd68807de62fcec1125cb58e20cb4e7b0a0e92241dfcad8655bd"
+      },
+      "unstd.cache.locking": {
+        "path": "installed/unstd/cache/locking.py",
+        "sha256": "eab1a7949bcde294e81834e34fa4947b6190099652b7aaf6092b2044c6ade19c"
+      },
+      "unstd.clone": {
+        "path": "installed/unstd/clone/__init__.py",
+        "sha256": "ceea4742f2f34a4f7c6a5b86a969ce50be0702adb3f097f75000bada3e6ccf06"
+      },
+      "unstd.clone._clone_native": {
+        "path": "installed/unstd/clone/_clone_native.cpython-314-darwin.so",
+        "sha256": "e2305bb39fb739452888b5822c9ca67fe023865065442b7983591188b8bb7de2"
+      },
+      "unstd.clone.structural": {
+        "path": "installed/unstd/clone/structural.py",
+        "sha256": "32a555b2637bcc8bb95a83dca490b22f9befa30f789853d50f8a7d52b1a97033"
+      },
+      "unstd.compress": {
+        "path": "installed/unstd/compress/__init__.py",
+        "sha256": "cb251e3f867d6a74a7edc31b129932c1a64146de63780f99140dbcf6b18b8067"
+      },
+      "unstd.compress._gzip_native": {
+        "path": "installed/unstd/compress/_gzip_native.cpython-314-darwin.so",
+        "sha256": "b834361237ff91620ff5e715c250429475b285df7812b9f95a8969073bee853b"
+      },
+      "unstd.compress.engines": {
+        "path": "installed/unstd/compress/engines/__init__.py",
+        "sha256": "bf8be44e50d4127078cdf3f14abfe9bcf3b0fa0a742694b19a19e3499a5199f8"
+      },
+      "unstd.compress.engines.flush": {
+        "path": "installed/unstd/compress/engines/flush.py",
+        "sha256": "178c00d304d2686501afe549f2dbb8051a9ef3f3c7ac03de0b5ad59d7c5a80ce"
+      },
+      "unstd.compress.engines.native": {
+        "path": "installed/unstd/compress/engines/native.py",
+        "sha256": "73ff583b7289716201f8f0671f2ffb8edbe2cc5cc3204fb145ee7c24969cd8b3"
+      },
+      "unstd.compress.engines.reader": {
+        "path": "installed/unstd/compress/engines/reader.py",
+        "sha256": "977e8dec4d4264a65c8809edc564cf135e8c176373bcf2995f229013e0a17e70"
+      },
+      "unstd.compress.gzipx": {
+        "path": "installed/unstd/compress/gzipx.py",
+        "sha256": "437aa42321e4784b739db85a94a1a2cbdd40b7091b102348c9e3daf98fa726ad"
+      },
+      "unstd.compress.zlibx": {
+        "path": "installed/unstd/compress/zlibx.py",
+        "sha256": "24412cab69cd39a751507e6436b441705787d78d4b44688039314c91684343b2"
+      },
+      "unstd.containers": {
+        "path": "installed/unstd/containers/__init__.py",
+        "sha256": "b7362441945751f734d2628772c0c23e1c8882850c356fcb70b9ca2b4812d5b1"
+      },
+      "unstd.containers._sorted_native": {
+        "path": "installed/unstd/containers/_sorted_native.cpython-314-darwin.so",
+        "sha256": "e88eb36fef020f2fda65112ca662d4b39d1a22d4a13b0b14a535004543ed3e36"
+      },
+      "unstd.containers.ordering": {
+        "path": "installed/unstd/containers/ordering.py",
+        "sha256": "afb03876deb570bbdfd545134f54f360b779613792c07bce450c0db85e365a42"
+      },
+      "unstd.containers.persistent": {
+        "path": "installed/unstd/containers/persistent.py",
+        "sha256": "5d0b65c82314bfab1cca792b02e0bdb02c42ed62cb92e7a0db3e4cf4eb7b7ee0"
+      },
+      "unstd.containers.sorted": {
+        "path": "installed/unstd/containers/sorted.py",
+        "sha256": "c485fa2a544e9005d822c0207e3c9ffbe7b8a5a91bea87bbb8a5578f728ca6d2"
+      },
+      "unstd.crypto": {
+        "path": "installed/unstd/crypto/__init__.py",
+        "sha256": "6908e373f1ef84c7e673c59fc9f52a25871ba93eaa2f5a327940579d170e9270"
+      },
+      "unstd.crypto._stream_native": {
+        "path": "installed/unstd/crypto/_stream_native.cpython-314-darwin.so",
+        "sha256": "7370ca165d88b92c043631606b576fced92d49f32505c28a5a2dcd9ee8e08e8d"
+      },
+      "unstd.crypto.digest": {
+        "path": "installed/unstd/crypto/digest.py",
+        "sha256": "63b98bcd89d9b0783a654b6b672159bd5ec6b337bf12da330216a6f5d9272c5b"
+      },
+      "unstd.crypto.hashing": {
+        "path": "installed/unstd/crypto/hashing.py",
+        "sha256": "7b4a4772e29d0b43346970666723b855f4f77b0c19f5bf4b1006c19b863b40a8"
+      },
+      "unstd.crypto.tls": {
+        "path": "installed/unstd/crypto/tls.py",
+        "sha256": "e68e3bb3ad9b70e52265ed23bccbfc2a4a594dc9e5b23cfeee0f4c924374f6db"
+      },
+      "unstd.crypto.token": {
+        "path": "installed/unstd/crypto/token.py",
+        "sha256": "f1c86940f26e8ee39c7588b135510d24cc1e007b56bfd4d430ea85a0dc9a2eb5"
+      },
+      "unstd.dataset": {
+        "path": "installed/unstd/dataset/__init__.py",
+        "sha256": "d769995f0bbf9db67b99169b0f37eb337e464f331669f29c71fccb6b8e562de1"
+      },
+      "unstd.dataset._dataset_native": {
+        "path": "installed/unstd/dataset/_dataset_native.cpython-314-darwin.so",
+        "sha256": "db51b7c7e029a41c65ae066bf22237957ff2a3d01d791403e220958b4a972fd7"
+      },
+      "unstd.dataset.reader": {
+        "path": "installed/unstd/dataset/reader.py",
+        "sha256": "d0053bbb02aab02405ceae1f8a76c5190638d8cf4c538721bbf4d77daf2040fc"
+      },
+      "unstd.dataset.storage": {
+        "path": "installed/unstd/dataset/storage.py",
+        "sha256": "7c85d3f5cc6ff71ef6c561ba3dbcbdde4c1acc4a7447dedbc9e589a61cfe61cf"
+      },
+      "unstd.extras": {
+        "path": "installed/unstd/extras.py",
+        "sha256": "f4dccfa432d9e580f731d81507781fbf1193d5e8367aa3e3ac44607ec58d268b"
+      },
+      "unstd.fs": {
+        "path": "installed/unstd/fs/__init__.py",
+        "sha256": "1cca03b3ae758f8cd321d5ef22b41cf952b3996732933be0fd2ea502714abceb"
+      },
+      "unstd.fs.durability": {
+        "path": "installed/unstd/fs/durability.py",
+        "sha256": "b0310342fcbc1905a5ef335ec1f42ac149e876f4b506f51ce6e0df88b6deb41a"
+      },
+      "unstd.fs.traversal": {
+        "path": "installed/unstd/fs/traversal.py",
+        "sha256": "4e28e2ac58856bbf580a0221828028b6e32e8cb2887b4fca8ebc87ae919ab9f7"
+      },
+      "unstd.ids": {
+        "path": "installed/unstd/ids/__init__.py",
+        "sha256": "66dc384b2ac1155327fb79b0b94ae3ac1c7aae1e354e8f564eafeac2f6ed3f03"
+      },
+      "unstd.ids.uid": {
+        "path": "installed/unstd/ids/uid.py",
+        "sha256": "e4a8537a73bb72d1d65725b8a63a654e05894e6d143d59affcabdc4d469045a3"
+      },
+      "unstd.iters": {
+        "path": "installed/unstd/iters/__init__.py",
+        "sha256": "d891eb82d3b01bf29bfebe02320bb33314a1404a45db2bf64314261839705197"
+      },
+      "unstd.iters.consecutive": {
+        "path": "installed/unstd/iters/consecutive.py",
+        "sha256": "76e14015d5ef517b2c5c74ef10b7065394a02e7008216f470fa54c54159d24a9"
+      },
+      "unstd.iters.distinct": {
+        "path": "installed/unstd/iters/distinct.py",
+        "sha256": "ec9d00b052635b99654c7840d904cd6194ca05f9b02e7860483baea8038894b3"
+      },
+      "unstd.iters.reshape": {
+        "path": "installed/unstd/iters/reshape.py",
+        "sha256": "a2ec2a7acc20920958f213bd96f197982d2826f4d28d3c0a7fccd36fc54e95a9"
+      },
+      "unstd.iters.select": {
+        "path": "installed/unstd/iters/select.py",
+        "sha256": "396daf3b6bafe3518eaea3c61e4da4363f065fc1b73ad017b67aaea57ea33dff"
+      },
+      "unstd.math": {
+        "path": "installed/unstd/math/__init__.py",
+        "sha256": "fa1784e68fb66aa036b973558cc5d0ae3d27130a43a7141da29a5881b8e68984"
+      },
+      "unstd.math._math_native": {
+        "path": "installed/unstd/math/_math_native.cpython-314-darwin.so",
+        "sha256": "2201b58154e481ab75ef4e435c542091247b714de6c50ec2c430e3bfc53b6d0a"
+      },
+      "unstd.model": {
+        "path": "installed/unstd/model/__init__.py",
+        "sha256": "a33a77fed171f845228a916b91518895b1912797506290a1a9d820883fa0116a"
+      },
+      "unstd.model.base": {
+        "path": "installed/unstd/model/base.py",
+        "sha256": "53ba849ca99c00402791c7a6fd2110cbcb290ac841d421b812dc2337edb2dcbb"
+      },
+      "unstd.model.settings": {
+        "path": "installed/unstd/model/settings.py",
+        "sha256": "1f9bf7b3d7de6736cdb6813540ad72c95e2874e7a0be43f91f23bff8d339593c"
+      },
+      "unstd.pack": {
+        "path": "installed/unstd/pack/__init__.py",
+        "sha256": "d44fc4095d269ee7ef3f961cdc1e096b28af896900b387b8a907cea77228edd1"
+      },
+      "unstd.pack._pack_native": {
+        "path": "installed/unstd/pack/_pack_native.cpython-314-darwin.so",
+        "sha256": "69a607fe4b65db185aa6c5399038c3e8fc8bb6992a4ae2911e898a0e8c5f1cb7"
+      },
+      "unstd.pack.binpack": {
+        "path": "installed/unstd/pack/binpack.py",
+        "sha256": "29fd70e184bf2e18c288d4483fa630108cff1829af5b16ae129059afd9a7741e"
+      },
+      "unstd.pack.buffers": {
+        "path": "installed/unstd/pack/buffers.py",
+        "sha256": "25f72e707c06616aeb6e867ba8f1e12680e52a9e9ae88992994f8553a69342ed"
+      },
+      "unstd.pack.dtypes": {
+        "path": "installed/unstd/pack/dtypes.py",
+        "sha256": "284df185b9aea56a436d6052ddb749849a9cf956a70258fe7aef32b35120b763"
+      },
+      "unstd.pack.ragged": {
+        "path": "installed/unstd/pack/ragged.py",
+        "sha256": "4bfbd36b3891cba10e00b9694a438f741371df89a22c811c73c10c7998d486f1"
+      },
+      "unstd.proc": {
+        "path": "installed/unstd/proc/__init__.py",
+        "sha256": "2f7486f90af312e6a8be5a9dd1d0e49415fb89c4bf93540b6c743c0f4e26511d"
+      },
+      "unstd.proc._proc_native": {
+        "path": "installed/unstd/proc/_proc_native.cpython-314-darwin.so",
+        "sha256": "fc7789a0cb8f4b56a3167325c161ffcbb30f7adfceef5c3b92bf8050a1d53746"
+      },
+      "unstd.proc.backend": {
+        "path": "installed/unstd/proc/backend.py",
+        "sha256": "9eddc4240fbe5b0882b9a03ad8e0788a6783b23dde57bebe2ef68265430d0652"
+      },
+      "unstd.proc.results": {
+        "path": "installed/unstd/proc/results.py",
+        "sha256": "5beac9cd269e9743d0b073c8cac3b14e0fac6c6c675a74bd29ca8c09c4245738"
+      },
+      "unstd.rand": {
+        "path": "installed/unstd/rand/__init__.py",
+        "sha256": "7fc8051be03f8826451a0130fe7872ed59404aeb7e94502847339d9d5f5e54bb"
+      },
+      "unstd.rand._rand_native": {
+        "path": "installed/unstd/rand/_rand_native.cpython-314-darwin.so",
+        "sha256": "4fec0f67bf52f3680e133bdd3ea607b1de309b47a86fb736a1839653e60e6e04"
+      },
+      "unstd.rand.crypto": {
+        "path": "installed/unstd/rand/crypto.py",
+        "sha256": "dde63b51dec92e542aba3e386fd27819d49a3db20e803f28250129f56b88edad"
+      },
+      "unstd.rand.draw": {
+        "path": "installed/unstd/rand/draw.py",
+        "sha256": "d1db31f2d9f5f35143e4af2bb71126e2ed9a59e283b9b6adba73929b34b7fb7b"
+      },
+      "unstd.rand.keyed": {
+        "path": "installed/unstd/rand/keyed.py",
+        "sha256": "ba4886979d9096f66b01fcf1451ee883a9fc5e37adb017e5371c784ae3f9cd47"
+      },
+      "unstd.rex": {
+        "path": "installed/unstd/rex/__init__.py",
+        "sha256": "087d88f6739977e63fc5264e870ff313b895f11711af84f19fa201a2c2d25f01"
+      },
+      "unstd.rex._faithful": {
+        "path": "installed/unstd/rex/patterns.py",
+        "sha256": "29f8819f85fb63c21dd996277a82e68f3aae0d19d426da5e605f77ef0d9320c8"
+      },
+      "unstd.rex.patterns": {
+        "path": "installed/unstd/rex/patterns.py",
+        "sha256": "29f8819f85fb63c21dd996277a82e68f3aae0d19d426da5e605f77ef0d9320c8"
+      },
+      "unstd.rex.profile": {
+        "path": "installed/unstd/rex/profile.py",
+        "sha256": "68371ace19ba5dc83e3b7e9d33c1f18cac1c651380be999e29f451c497423788"
+      },
+      "unstd.serde": {
+        "path": "installed/unstd/serde/__init__.py",
+        "sha256": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d"
+      },
+      "unstd.serde._json_native": {
+        "path": "installed/unstd/serde/_json_native.cpython-314-darwin.so",
+        "sha256": "35375ae5411eecf47ce43ada0f8b98e1414905dfb1f7a5e764b7ccd86fc5370d"
+      },
+      "unstd.serde.b64": {
+        "path": "installed/unstd/serde/b64.py",
+        "sha256": "c9fa198b3a6a4dffab239697c2d35c717ab2adea1977e7c1bd2226c30c4dbe32"
+      },
+      "unstd.serde.encoding": {
+        "path": "installed/unstd/serde/encoding.py",
+        "sha256": "45591b272872b828ded3ec06fb6635b77e470c1c6456e5d56edf3a659dffacd7"
+      },
+      "unstd.serde.jsonx": {
+        "path": "installed/unstd/serde/jsonx.py",
+        "sha256": "ac8f97d22c661afe3a7d2d630172e19999e870cae74a01866e8bc57074e66f0e"
+      },
+      "unstd.serde.ndjson": {
+        "path": "installed/unstd/serde/ndjson.py",
+        "sha256": "aed41e482feaaf75afded30bfa67a5ea52819e460ad2cab2f549c602332c204e"
+      },
+      "unstd.serde.recursion": {
+        "path": "installed/unstd/serde/recursion.py",
+        "sha256": "5e3741e4dfdd23b540c7208d4ee8fe55ae3785625d9fb336d46b8e06af5a3091"
+      },
+      "unstd.serde.structs": {
+        "path": "installed/unstd/serde/structs.py",
+        "sha256": "ebe5eb0c8cba8e8bc01137c9e4f768d86cb900d15c67600cbaf38f0accfa6c65"
+      },
+      "unstd.text": {
+        "path": "installed/unstd/text/__init__.py",
+        "sha256": "97ff7f7743ca9b2a4f123ca08a7423b41201c07ead775971e424c283a79f2392"
+      },
+      "unstd.text._text_native": {
+        "path": "installed/unstd/text/_text_native.cpython-314-darwin.so",
+        "sha256": "6341b62728ec7016e670e93e42c6df754265cc412c8fbbff704bcfbaa3b1ec5c"
+      },
+      "unstd.text.fuzz": {
+        "path": "installed/unstd/text/fuzz.py",
+        "sha256": "becb6f8adf74043e4d11d400391a43d83c97fe0d7fee121b76f1305d561e017b"
+      },
+      "unstd.time": {
+        "path": "installed/unstd/time/__init__.py",
+        "sha256": "086200dcbf110f22d08d69c197aef901ebe346e0859e00091b5c2e075112d80f"
+      },
+      "unstd.time.timeutil": {
+        "path": "installed/unstd/time/timeutil.py",
+        "sha256": "b3db8abe7d844c1d09f613832bdbe7fd06fb46d48f0ff31ceeafd5356d1f2d59"
+      },
+      "unstd.time.zoned": {
+        "path": "installed/unstd/time/zoned.py",
+        "sha256": "e8b6391f8987f4938272d5de462d7811e494dff3b4e961ed2e25cfce5688b995"
+      },
+      "unstd.toml": {
+        "path": "installed/unstd/toml/__init__.py",
+        "sha256": "d4634a3114f7add40743dd6ccaed31b68060be5d34529c87c0f4fadb0bab029b"
+      },
+      "unstd.toml.dialect": {
+        "path": "installed/unstd/toml/dialect.py",
+        "sha256": "ebab1f62518d8ec3a3aed9ff028c9f12e0c3d28b24fb58dcf4817ca5e2053ccd"
+      },
+      "unstd.yaml": {
+        "path": "installed/unstd/yaml/__init__.py",
+        "sha256": "49d17b2789f4919063ef886382ee517514e74cd301fef646876cbbc2f3333b5b"
+      },
+      "unstd.yaml.codec": {
+        "path": "installed/unstd/yaml/codec.py",
+        "sha256": "34f5e47495f7ec9be5b0561fd159c15e30f29ad856686910c52ce696ddab7a6f"
+      },
+      "unstd.yaml.parser": {
+        "path": "installed/unstd/yaml/parser.py",
+        "sha256": "bf38e2f2a070f646d241a98bfb41b0de9c33ba11d11b39ecab08eeea30e950de"
+      },
+      "zlib_ng._version": {
+        "path": "site-packages/zlib_ng/_version.py",
+        "sha256": "02cf7794b29318a0f0e4080d536184bd1f0e6f5c613b700f837cb6040f447d73"
+      },
+      "zlib_ng.gzip_ng": {
+        "path": "site-packages/zlib_ng/gzip_ng.py",
+        "sha256": "a4b59414593a47ff1c4ad64eb0209a607c6efd154da632617909b4cde62be414"
+      },
+      "zlib_ng.zlib_ng": {
+        "path": "site-packages/zlib_ng/zlib_ng.cpython-314-darwin.so",
+        "sha256": "790d02eaacad48e8f76544eaf166bad933051ef21f0ff1c39898b42e8f0d6cb9"
+      }
+    },
+    "python_build": "3.14.9 (main, Oct 21 2026, 17:47:42) [Clang 23.1.3 ]",
+    "python_executable": ".venv/bin/python",
+    "workload_sources": {
+      "speed_cases_codecs.py": "974a57ffd2cc18833530b387357008b1f011c7e8c2c9b20f79b436e2d6f06919",
+      "speed_cases_math.py": "4a256cf060c79d470e236de3e9e03361b2ae882dea51a876475bccf698bec965",
+      "speed_cases_operations.py": "1a2b8ead567a5a6bafc03a6286eb64bee239d864c7f50cb19ded31f18871d9fa",
+      "speed_cases_runtime.py": "b1e5bf41dd71aa289732d15574bb5a110c2650b989d7271b2927b6d4a4a075cd"
+    }
+  },
+  "public_operations": [
+    "unstd.dataset.Dataset",
+    "unstd.dataset.Dataset.__enter__",
+    "unstd.dataset.Dataset.__exit__",
+    "unstd.dataset.Dataset.batches",
+    "unstd.dataset.Dataset.close",
+    "unstd.dataset.Dataset.iter_rows",
+    "unstd.dataset.Dataset.take",
+    "unstd.dataset.Dataset.verify",
+    "unstd.dataset.build"
+  ],
+  "recorded": "2026-10-27T21:55:31.092455+00:00",
+  "schema": 1,
+  "scope": "Twelve dataset-only workloads against the extracted immutable native wheel. Standard speeds.timings/freeze helpers, independent pre/post output audits, imported source/environment drift refusal.",
+  "wheel_sha256": "94e710a726b7447f68af10f5d122d95f0f33df5cbb843b77abf45f93611873c9"
+}

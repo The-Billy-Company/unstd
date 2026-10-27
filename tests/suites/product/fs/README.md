@@ -22,5 +22,5 @@ uv run --no-sync pytest tests/suites/product/fs -q
 
 See [the module documentation](../../../../src/unstd/fs/README.md) for the public contract,
 the [production qualification](../../../../bench/reports/fs/production/README.md)
-for installed-wheel and Billy workload evidence, and [the test guide](../../../README.md)
+for installed-wheel and Consumer workload evidence, and [the test guide](../../../README.md)
 for environment setup.

@@ -60,7 +60,7 @@ those are not the table's latency estimator.
   happen outside timing. Validation compares types, float bits and dictionary
   key order against stdlib JSON.
 - The [source manifest](json-decode-scale-source-manifest.json) and
-  [source archive](json-decode-scale-sources.tar.gz) preserve both trees. Python
+  [public source-only archive](json-decode-scale-sources.tar.gz) preserve both source trees. Python
   sources are identical between measured revisions; only `decode.h` and the
   rebuilt native binary differ. Both were compiled with identical flags.
   The baseline is the pre-task working tree, including existing uncommitted
@@ -79,8 +79,12 @@ those are not the table's latency estimator.
 ## Reproduce
 
 Use the repository's development environment with the serde extras installed.
-The archive includes the measured macOS ARM64 CPython 3.14 binaries and a local
-rebuild script. Extract it into a fresh directory and rebuild for your runtime:
+The public archive includes both source trees and a local rebuild script. Its
+20 opaque compiled artifacts are omitted; the manifest retains their original
+captured hashes, the original archive digest, and a separate publication digest.
+Retained source bytes match their captured hashes. The embedded include-directory
+label and archive owner metadata are normalized; timing evidence is unchanged.
+Extract into a fresh directory and rebuild for your runtime:
 
 ```sh
 mkdir /tmp/json-decode-scale

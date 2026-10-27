@@ -1,0 +1,540 @@
+{
+  "schema": 1,
+  "generated_date": "2026-10-25",
+  "repository": {
+    "name": "consumer",
+    "revision": "64429a7258d01c83ce8cb291c44341fc0590532a",
+    "source_state": "source hashes refer to current working-tree bytes; revision is a locator, not proof that each file equals HEAD"
+  },
+  "audit_scope": {
+    "paths": [
+      "services/ai/core",
+      "services/ai/tools",
+      "services/ai/evals",
+      "tools/igor",
+      "scripts"
+    ],
+    "excluded": [
+      "tests",
+      "vendor",
+      "clients/web/surfaces/old-app"
+    ],
+    "tool": "gist native code search plus direct file reads",
+    "execution": "No source commands executed; git rev-parse HEAD only reads repository identity",
+    "current_proc_import_source_files": 14,
+    "receipt_selection": "Representative operations plus import-source coverage; repeated identical rev-parse calls and repeated longhaul admission calls are not individually duplicated."
+  },
+  "findings": {
+    "current_proc_calls_are_text": true,
+    "current_production_proc_stdin_text_call_found": false,
+    "size_evidence": "Callsites specify contracts but no fixed output payload size. 1MiB and 16MiB fixtures are scaling stress, not captured production percentiles.",
+    "adoption_boundary": "Large binary/streaming asyncio media and parser paths are separate APIs and gain nothing from a faster synchronous proc without explicit integration work."
+  },
+  "callsites": [
+    {
+      "id": "source-revision",
+      "source": "services/ai/tools/code/source/__init__.py",
+      "line": 193,
+      "source_sha256": "6ff1a996a4be2726003188d9a95821374af26f15bf786c245492189b19949e53",
+      "usage": "runtime",
+      "api": "proc.run",
+      "argv_shape": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "options": {
+        "cwd": "selected source root",
+        "timeout_seconds": 1,
+        "check": false
+      },
+      "output_contract": "Small revision text, normally 40 hex characters plus newline. BUILD_COMMIT may bypass process creation.",
+      "excerpt": {
+        "start_line": 184,
+        "end_line": 201,
+        "text": "    \"\"\"Validate each native path once and give aliases one public identity.\"\"\"\n    return {path: PurePosixPath(_source_path(root, path)).as_posix() for path in set(paths)}\n\n\ndef _corpus(root: Path) -> dict[str, object]:\n    \"\"\"Name the searched snapshot without treating excluded files as absent code.\"\"\"\n    revision = os.environ.get(\"BUILD_COMMIT\", \"\") if os.environ.get(_ROOT_ENV) else \"\"\n    if not revision:\n        try:\n            result = proc.run([\"git\", \"rev-parse\", \"HEAD\"], cwd=root, timeout=1, check=False)\n            revision = result.stdout.strip() if result.returncode == 0 else \"\"\n        except OSError, proc.TimeoutExpired:\n            revision = \"\"\n    return {\n        \"root\": str(root),\n        \"directories\": sorted(\n            path.name for path in root.iterdir() if path.is_dir() and not path.name.startswith(\".\")\n        ),"
+      }
+    },
+    {
+      "id": "replay-revision",
+      "source": "services/ai/evals/suites/agent/harness/replay/judging/store.py",
+      "line": 57,
+      "source_sha256": "2e297ccd353c88597294a204b4832a977c6626d62fdc6e488edf415407b39527",
+      "usage": "evaluation",
+      "api": "proc.run",
+      "argv_shape": [
+        "<resolved git>",
+        "rev-parse",
+        "HEAD"
+      ],
+      "options": {
+        "timeout_seconds": 5,
+        "check": false
+      },
+      "output_contract": "Small revision text; environment overrides bypass command. Absolute executable path in this caller.",
+      "excerpt": {
+        "start_line": 48,
+        "end_line": 60,
+        "text": "\n\ndef resolve_commit() -> str:\n    if c := (os.environ.get(\"CONSUMER_REPLAY_COMMIT\") or os.environ.get(\"GITHUB_SHA\")):\n        return c[:40]\n    git = shutil.which(\"git\")\n    if not git:\n        return \"unknown\"\n    try:\n        out = proc.run([git, \"rev-parse\", \"HEAD\"], timeout=5, check=False)\n        return out.stdout.strip()[:40] or \"unknown\"\n    except OSError, subprocess.TimeoutExpired:\n        return \"unknown\""
+      }
+    },
+    {
+      "id": "inventory",
+      "source": "services/ai/evals/suites/agent/control/browser/record/proof.py",
+      "line": 57,
+      "source_sha256": "44488862cd75a1eddaddc0e8392d0a81ff8a7976d180f056067abbcc12e78f99",
+      "usage": "evaluation",
+      "api": "proc.run",
+      "argv_shape": [
+        "git",
+        "ls-files",
+        "--cached",
+        "--others",
+        "--exclude-standard",
+        "-z",
+        "--",
+        "<source scopes>"
+      ],
+      "options": {
+        "cwd": "Consumer root",
+        "timeout_seconds": 5
+      },
+      "output_contract": "Potentially large NUL-delimited UTF-8 filename output; split on NUL, no binary subprocess API required.",
+      "excerpt": {
+        "start_line": 48,
+        "end_line": 72,
+        "text": "\n\ndef identity(*, base: str | None = None) -> dict[str, object]:\n    \"\"\"Fingerprint effective source, including uncommitted edits and toolchain.\"\"\"\n    from evals.suites.agent.harness.replay.judging.store import resolve_build, resolve_commit\n\n    # Every bound tool's description can change model behavior, even when that\n    # tool is never called. Fingerprint the runtime and its shared libraries;\n    # Git's inventory excludes virtualenvs, caches and evidence output itself.\n    inventory = proc.run(\n        [\"git\", \"ls-files\", \"--cached\", \"--others\", \"--exclude-standard\", \"-z\", \"--\", *SCOPES],\n        cwd=ROOT,\n        timeout=5,\n    ).stdout.split(\"\\0\")\n    files = sorted(\n        {\n            ROOT / name\n            for name in inventory\n            if name\n            and (file := ROOT / name).is_file()\n            and file.suffix\n            in {\n                \".py\",\n                \".js\",\n                \".ts\","
+      }
+    },
+    {
+      "id": "diff-inventory",
+      "source": "services/ai/evals/suites/agent/control/browser/record/proof.py",
+      "line": 210,
+      "source_sha256": "44488862cd75a1eddaddc0e8392d0a81ff8a7976d180f056067abbcc12e78f99",
+      "usage": "evaluation",
+      "api": "proc.run",
+      "argv_shape": [
+        "git",
+        "-c",
+        "diff.autoRefreshIndex=false",
+        "diff",
+        "--numstat",
+        "-z",
+        "--no-ext-diff",
+        "--no-textconv",
+        "<base>",
+        "--",
+        "<covered scopes>"
+      ],
+      "options": {
+        "cwd": "Consumer root",
+        "timeout_seconds": 5
+      },
+      "output_contract": "NUL-delimited textual numstat records; size depends on changed source files. Explicitly avoids refresh costs.",
+      "excerpt": {
+        "start_line": 205,
+        "end_line": 229,
+        "text": "    (out / \"plan.toml\").write_text(plan)\n    changes = out / \"changes.z\"\n    # Name-only diff refreshes the entire copied index. Numstat compares actual\n    # scoped content without that refresh, including stat-only and binary files.\n    records = iter(\n        proc.run(\n            [\n                \"git\",\n                \"-c\",\n                \"diff.autoRefreshIndex=false\",\n                \"diff\",\n                \"--numstat\",\n                \"-z\",\n                \"--no-ext-diff\",\n                \"--no-textconv\",\n                base_commit,\n                \"--\",\n                *covered,\n            ],\n            cwd=ROOT,\n            timeout=5,\n        ).stdout.split(\"\\0\")\n    )\n    changed = []\n    for record in records:"
+      }
+    },
+    {
+      "id": "source-status",
+      "source": "services/ai/evals/suites/agent/control/software/longhaul/evolution.py",
+      "line": 1247,
+      "source_sha256": "ed491f1c53ace5f17ee35703cf5f875321b7ba32a4e996dfd8fa857d367512b9",
+      "usage": "evaluation",
+      "api": "proc.capture",
+      "argv_shape": [
+        "git",
+        "status",
+        "--porcelain",
+        "--untracked-files=normal"
+      ],
+      "options": {
+        "cwd": "explicit source root"
+      },
+      "output_contract": "Paired with git rev-parse HEAD to admit a clean source baseline. Empty output is common.",
+      "excerpt": {
+        "start_line": 1243,
+        "end_line": 1251,
+        "text": ") -> None:\n    \"\"\"Read-only source and full configuration admission; it grants no calibration.\"\"\"\n    if (\n        root.resolve() != config.source_root.resolve()\n        or proc.capture([\"git\", \"rev-parse\", \"HEAD\"], cwd=root) != config.revision\n        or proc.capture([\"git\", \"status\", \"--porcelain\", \"--untracked-files=normal\"], cwd=root)\n        or (\n            config.repository_sources is not None\n            and _source_digest(config.repository_sources) != repository_digest"
+      }
+    },
+    {
+      "id": "approved-plan",
+      "source": "services/ai/evals/suites/agent/conduct/judgment/promotion.py",
+      "line": 54,
+      "source_sha256": "edd0bf9853d70d7fc2d0f764f75b8c3225b5e20d8fce34cee05755d7e51503f2",
+      "usage": "evaluation",
+      "api": "proc.run",
+      "argv_shape": [
+        "<resolved git>",
+        "show",
+        "HEAD:<approved plan path>"
+      ],
+      "options": {
+        "cwd": "Consumer root",
+        "check": false,
+        "timeout_seconds": 5
+      },
+      "output_contract": "Git blob returned as decoded text and encoded for exact comparison with approved plan bytes; current content size is not fixed.",
+      "excerpt": {
+        "start_line": 45,
+        "end_line": 61,
+        "text": "    return hashlib.sha256(data).hexdigest()\n\n\ndef committed_plan(path: Path, *, root: Path):\n    \"\"\"Read a repository-approved plan; untracked or modified authority is refused.\"\"\"\n    relative = path.resolve().relative_to(root.resolve())\n    git = shutil.which(\"git\")\n    if git is None:\n        _fail(\"Git source authority is unavailable; synthetic admission is denied\")\n    result = proc.run(\n        [git, \"show\", f\"HEAD:{relative.as_posix()}\"], cwd=root, check=False, timeout=5\n    )\n    content = result.stdout.encode()\n    if result.returncode or content != path.read_bytes():\n        _fail(\"Synthetic admission requires an unchanged committed evidence plan\")\n    return content\n"
+      }
+    },
+    {
+      "id": "pkg-config",
+      "source": "services/ai/core/domain/media/edit/transpose.py",
+      "line": 108,
+      "source_sha256": "b09bd6842aa1a1160054b3156940dee54ff913e5f9570ffd414a813c6100538c",
+      "usage": "runtime",
+      "api": "proc.run",
+      "argv_shape": [
+        "<resolved pkg-config>",
+        "--variable=libdir",
+        "rubberband"
+      ],
+      "options": {
+        "check": false,
+        "timeout_seconds": 2,
+        "platform": "darwin only fallback"
+      },
+      "output_contract": "One library directory line; only called when ctypes find_library misses on macOS.",
+      "excerpt": {
+        "start_line": 97,
+        "end_line": 120,
+        "text": "\n\ndef _library_path() -> str | None:\n    from ctypes.util import find_library\n    import shutil\n\n    path = find_library(\"rubberband\")\n    if path is None and sys.platform == \"darwin\" and (config := shutil.which(\"pkg-config\")):\n        from unstd import proc\n\n        try:\n            location = proc.run(\n                [config, \"--variable=libdir\", \"rubberband\"],\n                check=False,\n                timeout=2,\n            )\n        except OSError, proc.TimeoutExpired:\n            return None\n        directory = location.stdout.strip()\n        if location.returncode == 0 and directory:\n            library = Path(directory, \"librubberband.dylib\")\n            if library.is_file():\n                return str(library.resolve())\n    return path"
+      }
+    },
+    {
+      "id": "browser-executable-metadata",
+      "source": "services/ai/core/foundation/io/net/chrome.py",
+      "line": 1058,
+      "source_sha256": "54d4cd868ea43b560bfda1361ea3e1c302189be19e6412d360a903cd460e367f",
+      "usage": "runtime",
+      "api": "proc.capture",
+      "argv_shape": [
+        "<resolved node>",
+        "-e",
+        "<registry resolver script>",
+        "<Playwright bundle path>",
+        "<browser rung>"
+      ],
+      "options": {
+        "env": "explicit mapping",
+        "timeout_seconds": "remaining common deadline"
+      },
+      "output_contract": "Small JSON path, then [resolved browser executable, --version] text. Interpreter/browser startup dominates; scripts not executed by this receipt.",
+      "excerpt": {
+        "start_line": 1043,
+        "end_line": 1089,
+        "text": "\ndef _binary_version(\n    pw: _Play,\n    rung: str,\n    environment: dict[str, str],\n    *,\n    deadline: float,\n    executable_path: str | None = None,\n) -> str | None:\n    \"\"\"Read the selected executable's version without starting a renderer.\"\"\"\n\n    def output(argv: list[str], env: dict[str, str]) -> str:\n        remaining = deadline - mono()\n        if remaining <= 0:\n            raise TimeoutError\n        return proc.capture(argv, env=env, timeout=remaining)\n\n    try:\n        if executable_path is None:\n            driver = import_module(type(pw).__module__.partition(\".\")[0] + \"._impl._driver\")\n            node, cli = driver.compute_driver_executable()\n            registry_env = dict(environment)\n            if (directory := os.environ.get(\"PLAYWRIGHT_BROWSERS_PATH\")) is not None:\n                registry_env[\"PLAYWRIGHT_BROWSERS_PATH\"] = directory\n            parsed: jsonx.Json = jsonx.loads(\n                output(\n                    [node, \"-e\", _EXECUTABLE, str(Path(cli).parent / \"lib/coreBundle.js\"), rung],\n                    registry_env,\n                )\n            )\n            path = parsed.get(\"path\") if isinstance(parsed, dict) else None\n            if not isinstance(path, str):\n                return None\n            executable_path = path\n        words = output([executable_path, \"--version\"], environment).split()\n    except (TimeoutError, proc.TimeoutExpired) as exc:\n        raise TimeoutError from exc\n    except ImportError, AttributeError, OSError, proc.CalledProcessError, ValueError, KeyError:\n        # An SDK without this metadata seam keeps the actual-browser probe.\n        return None\n    version = words[-1] if words else \"\"\n    return version if all(part.isdecimal() for part in version.split(\".\")) else None\n\n\nasync def _open(\n    pw: _Play,\n    rung: str,"
+      }
+    },
+    {
+      "id": "process-inventory",
+      "source": "tools/igor/connectors/database/transport/shell.py",
+      "line": 93,
+      "source_sha256": "1948abfbda7feb775738a417c18a07ad5c6f999a72bf4ec8a9c41ed7e2569f36",
+      "usage": "operator",
+      "api": "proc.run",
+      "argv_shape": [
+        "ps",
+        "-axo",
+        "uid=,pid=,ppid=,command="
+      ],
+      "options": {
+        "check": true,
+        "errors": "strict",
+        "timeout_seconds": 5
+      },
+      "output_contract": "Variable host-sized process table. Benchmark must never execute cleanup(), which sends SIGTERM to abandoned SSH children.",
+      "excerpt": {
+        "start_line": 90,
+        "end_line": 112,
+        "text": "\ndef cleanup() -> tuple[int, ...]:\n    \"\"\"Terminate abandoned SSH children, leaving every live owner's tunnel alone.\"\"\"\n    result = proc.run(\n        [\"ps\", \"-axo\", \"uid=,pid=,ppid=,command=\"],  # native process inventory.\n        check=True,\n        errors=\"strict\",\n        timeout=5,\n    )\n    killed: list[int] = []\n    for row in result.stdout.splitlines():\n        fields = row.strip().split(None, 3)\n        if len(fields) != 4:\n            continue\n        uid, pid, parent, command = fields\n        if uid != str(os.getuid()) or parent != \"1\":\n            continue\n        try:\n            args = shlex.split(command)\n        except ValueError:\n            continue\n        if not args or Path(args[0]).name != \"ssh\" or \"-i\" not in args:\n            continue"
+      }
+    },
+    {
+      "id": "descriptor-json",
+      "source": "tools/igor/connectors/telemetry/transport/feeds.py",
+      "line": 127,
+      "source_sha256": "52e323cb517be88533ba706559558fe945b8cc882c8ad313ef285e29cf8f487f",
+      "usage": "operator",
+      "api": "proc.run",
+      "argv_shape": [
+        "buf",
+        "build",
+        "--path",
+        "connect/admin/telemetrypb/v1/logs.proto",
+        "--as-file-descriptor-set",
+        "--exclude-source-info",
+        "-o",
+        "-#format=json"
+      ],
+      "options": {
+        "cwd": "contracts/wire/proto",
+        "errors": "strict",
+        "timeout_seconds": 15,
+        "check": true
+      },
+      "output_contract": "Captured JSON file-descriptor set; parsed for ObsEntry field names; cached after first call. Output size is schema-dependent.",
+      "excerpt": {
+        "start_line": 118,
+        "end_line": 151,
+        "text": "\n\n@cache\ndef _observatory_fields() -> tuple[tuple[str, str], ...]:\n    \"\"\"Derive log labels from the compiler's actual field names.\"\"\"\n\n    from unstd.serde import jsonx\n\n    try:\n        result = proc.run(\n            [  # repository-pinned buf toolchain\n                \"buf\",\n                \"build\",\n                \"--path\",\n                \"connect/admin/telemetrypb/v1/logs.proto\",\n                \"--as-file-descriptor-set\",\n                \"--exclude-source-info\",\n                \"-o\",\n                \"-#format=json\",\n            ],\n            cwd=REPO_ROOT / \"contracts/wire/proto\",\n            errors=\"strict\",\n            timeout=15,\n            check=True,\n        )\n        schema = jsonx.loads(result.stdout)\n        message = next(\n            message\n            for file in schema[\"file\"]\n            if file[\"package\"] == \"telemetrypb.v1\"\n            for message in file[\"messageType\"]\n            if message[\"name\"] == \"ObsEntry\"\n        )\n        return tuple("
+      }
+    },
+    {
+      "id": "native-qualification-logs",
+      "source": "scripts/observe/delivery/database/scaling.py",
+      "line": 284,
+      "source_sha256": "d43c3c897b19081136700e17802206dc43e17bfc93cba6df513f7ae350731da0",
+      "usage": "qualification",
+      "api": "proc.run",
+      "argv_shape": [
+        "<native owner command argv>"
+      ],
+      "options": {
+        "cwd": "selected source root",
+        "env": "explicit mapping",
+        "check": false,
+        "timeout_seconds": "remaining shared 900-second qualification deadline"
+      },
+      "output_contract": "Captured stdout and stderr appended to qualification evidence. Build/test work dominates overall wall time; no stdin_text provided.",
+      "excerpt": {
+        "start_line": 245,
+        "end_line": 289,
+        "text": "        (*command, \"--junitxml=\" + str(junit), \"--basetemp=\" + str(temporary))\n        if owner == \"checkpoints\"\n        else command\n        for command in commands\n    )\n    environment = os.environ | {\n        \"ENVIRONMENT\": \"test\",\n        \"GOMAXPROCS\": \"2\",\n        \"LOG_FORMAT\": \"console\",\n        \"PYTHON_DOTENV_DISABLED\": \"1\",\n        \"INTERNAL_TOKEN\": secrets.token_urlsafe(32),\n        \"CONSUMER_ROOT\": str(root),\n        \"CONSUMER_RECEIPT_PYTHON\": sys.executable,\n        **(native_bindings or {}),\n    }\n    environment[\"PYTHONPATH\"] = os.pathsep.join(\n        (\n            str(root / \"services/ai\"),\n            str(root / \"tools\"),\n            environment.get(\"PYTHONPATH\", \"\"),\n        )\n    )\n    # Explicit external PG selects required infrastructure in testdb. Qualification\n    # owns disposable containers instead; it must never inherit an operator DSN.\n    for name in (\"CONSUMER_TESTPG_DSN\", \"CONSUMER_TESTPG_RECEIPT\", \"CONSUMER_TESTPG_RUN_ID\"):\n        environment.pop(name, None)\n    start = monotonic()\n    outputs: list[str] = []\n    logs: list[str] = []\n    processes: list[dict[str, object]] = []\n    exit_code = 0\n    # Ryuk identifies a session by the go-test parent. One invocation per\n    # package gives each native process its own cleanup lifetime; sharing a\n    # parent lets the next package race the previous reaper's shutdown.\n    for args in arguments:\n        remaining = 900 - (monotonic() - start)\n        if remaining <= 0:\n            message = \"native owner exceeded its qualification deadline\"\n            raise TimeoutError(message)\n        observed = proc.run(args, cwd=root, env=environment, check=False, timeout=remaining)\n        outputs.append(observed.stdout)\n        logs.append(observed.stdout + observed.stderr)\n        processes.append({\"command\": args, \"exit_code\": observed.returncode})\n        exit_code = observed.returncode\n        if exit_code:"
+      }
+    },
+    {
+      "id": "go-package-json",
+      "source": "services/ai/evals/suites/agent/control/browser/gate/financial.py",
+      "line": 112,
+      "source_sha256": "2369118cf1d8a494be35427ac5810def56b399e862b7f687f4299edc314f2129",
+      "usage": "evaluation",
+      "api": "proc.run",
+      "argv_shape": [
+        "go",
+        "list",
+        "-deps",
+        "-test",
+        "-tags=purchasewire",
+        "-json",
+        "./internal/handler/rpc/auth/identityrpc"
+      ],
+      "options": {
+        "cwd": "services/backend/api",
+        "timeout_seconds": 60
+      },
+      "output_contract": "Potentially large concatenated JSON objects, decoded one at a time. Includes Go resolver/compiler work and local module state.",
+      "excerpt": {
+        "start_line": 108,
+        "end_line": 131,
+        "text": "    for subtree in (\"foundation\", \"suites/agent/harness\", \"suites/agent/control/browser\"):\n        scopes.update(\n            str(path.relative_to(root)) for path in (ai / \"evals\" / subtree).rglob(\"*.py\")\n        )\n    packages = proc.run(\n        [\n            \"go\",\n            \"list\",\n            \"-deps\",\n            \"-test\",\n            \"-tags=purchasewire\",\n            \"-json\",\n            \"./internal/handler/rpc/auth/identityrpc\",\n        ],\n        cwd=root / \"services/backend/api\",\n        timeout=60,\n    ).stdout\n    decoder = json.JSONDecoder()\n    while packages.strip():\n        package, end = decoder.raw_decode(packages.lstrip())\n        packages = packages.lstrip()[end:]\n        directory = Path(package[\"Dir\"]).resolve()\n        if directory.is_relative_to(root):\n            scopes.add(str(directory.relative_to(root)))"
+      }
+    },
+    {
+      "id": "audio-levels",
+      "source": "services/ai/evals/suites/agent/artifacts/media/media_tasks/trial.py",
+      "line": 145,
+      "source_sha256": "f719f8bffd395df57fbc003b78c443ba86d493a958c50d7d08bf9abf0a06ce56",
+      "usage": "evaluation",
+      "api": "asyncio.to_thread(proc.run)",
+      "argv_shape": [
+        "<resolved ffmpeg>",
+        "-hide_banner",
+        "-nostdin",
+        "-threads",
+        "1",
+        "-i",
+        "<delivered audio>",
+        "-af",
+        "loudnorm=I=-16:TP=-1:print_format=json",
+        "-f",
+        "null",
+        "-"
+      ],
+      "options": {
+        "timeout_seconds": 30,
+        "check": false
+      },
+      "output_contract": "No audio payload in pipes: ffmpeg reads a file and reports loudness JSON in stderr. Decode/filter CPU dominates.",
+      "excerpt": {
+        "start_line": 142,
+        "end_line": 170,
+        "text": "                }\n            )\n            measured = await asyncio.to_thread(\n                proc.run,\n                [\n                    shutil.which(\"ffmpeg\") or \"ffmpeg\",\n                    \"-hide_banner\",\n                    \"-nostdin\",\n                    \"-threads\",\n                    \"1\",\n                    \"-i\",\n                    delivered[0][\"path\"],\n                    \"-af\",\n                    \"loudnorm=I=-16:TP=-1:print_format=json\",\n                    \"-f\",\n                    \"null\",\n                    \"-\",\n                ],\n                timeout=30,\n                check=False,\n            )\n            levels, _ = json.JSONDecoder().raw_decode(\n                measured.stderr[measured.stderr.rfind(\"\\n{\") :].lstrip()\n            )\n            checks.append(\n                {\n                    \"name\": \"independent_delivery_levels\",\n                    \"passed\": measured.returncode == 0\n                    and abs(float(levels[\"input_i\"]) + 16) <= 0.5"
+      }
+    },
+    {
+      "id": "assistantbench-revision",
+      "source": "services/ai/evals/suites/agent/control/browser/assistantbench/run.py",
+      "line": 57,
+      "source_sha256": "9061dc715fae2ae57d4236ecb9ddff267ab9e2b64ac75e5e9b4be04d69d4e503",
+      "usage": "evaluation",
+      "api": "proc.run",
+      "argv_shape": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "options": {},
+      "output_contract": "Small revision text in evaluation source fingerprint; cwd=ROOT,timeout=5.",
+      "excerpt": {
+        "start_line": 47,
+        "end_line": 61,
+        "text": "def source() -> dict[str, object]:\n    \"\"\"Record the evaluator's source separately from the serving AI's own receipt.\"\"\"\n    files = [\n        *Path(__file__).parent.glob(\"*.py\"),\n        ROOT / \"services/ai/evals/foundation/trial/wire.py\",\n        ROOT / \"services/ai/evals/foundation/trial/browser.py\",\n        ROOT / \"services/ai/evals/foundation/trial/evidence.py\",\n        ROOT / \"services/ai/core/foundation/io/net/_netcfg_gen.py\",\n    ]\n    return {\n        \"commit\": proc.run([\"git\", \"rev-parse\", \"HEAD\"], cwd=ROOT, timeout=5).stdout.strip(),\n        \"files\": {\n            str(path.relative_to(ROOT)): hashlib.sha256(path.read_bytes()).hexdigest()\n            for path in sorted(files)\n        },"
+      }
+    },
+    {
+      "id": "media-decision-revision",
+      "source": "services/ai/evals/suites/agent/artifacts/media/decisions.py",
+      "line": 475,
+      "source_sha256": "d8c7c74a62ed118d4bc7a824b7e11ecc68fd02604d015da72cf453e411f9c401",
+      "usage": "evaluation",
+      "api": "proc.run",
+      "argv_shape": [
+        "<resolved git or git>",
+        "-C",
+        "<Consumer root>",
+        "rev-parse",
+        "HEAD"
+      ],
+      "options": {},
+      "output_contract": "Small revision text; uses git -C argv rather than Popen cwd; timeout=5,check=False.",
+      "excerpt": {
+        "start_line": 467,
+        "end_line": 480,
+        "text": "\n\ndef runtime_sources(source: bytes):\n    \"\"\"Record the loaded runtime's source paths and hashes, including overlay files.\"\"\"\n    from unstd import proc\n\n    from evals.foundation.runtime.production import ROOT\n\n    revision = proc.run(\n        [shutil.which(\"git\") or \"git\", \"-C\", str(ROOT), \"rev-parse\", \"HEAD\"], timeout=5, check=False\n    )\n    prefixes = (\n        \"agent.context.assembly.media\",\n        \"core.bridges.agent.identity.helpers\","
+      }
+    },
+    {
+      "id": "source-archive-file",
+      "source": "services/ai/evals/suites/agent/control/software/longhaul/evolution.py",
+      "line": 2082,
+      "source_sha256": "ed491f1c53ace5f17ee35703cf5f875321b7ba32a4e996dfd8fa857d367512b9",
+      "usage": "evaluation",
+      "api": "proc.run",
+      "argv_shape": [
+        "git",
+        "archive",
+        "--format=tar",
+        "--output",
+        "<archive file>",
+        "<revision>"
+      ],
+      "options": {},
+      "output_contract": "Archive bytes go directly to a file, not captured stdout. A proc capture I/O optimization does not accelerate archive contents; cwd=source root.",
+      "excerpt": {
+        "start_line": 2076,
+        "end_line": 2088,
+        "text": "                candidate.components[0].body,\n                retained,\n            )\n            return source\n        folder.mkdir(parents=True, exist_ok=False)\n        archive = folder / \"source.tar\"\n        proc.run(\n            [\"git\", \"archive\", \"--format=tar\", \"--output\", str(archive), self.config.revision],\n            cwd=self.config.source_root,\n        )\n        with tarfile.open(archive) as tree:\n            tree.extractall(source, filter=\"data\")\n        (source / self.relative).write_text(candidate.components[0].body)"
+      }
+    }
+  ],
+  "adjacent_non_proc_contracts": [
+    {
+      "id": "binary-parser-worker",
+      "source": "services/ai/core/foundation/util/aio/worker.py",
+      "contract": "asyncio byte exchange, admission/memory budgets, per-frame byte limits and cancellation ownership; not compatible with existing proc text API",
+      "source_sha256": "2057a473347a27ddc37e95777e00e3d8b11998c7d449c240b7256bac9238a4b6",
+      "excerpt": "\nasync def exchange(\n    command: Sequence[str] | Callable[[int], Sequence[str]],\n    data: bytes,\n    *,\n    name: str,\n    limits: ByteLimits,\n    timeout_s: float,\n    memory_bytes: int | None = None,\n    request: bytes | None = None,\n    cwd: Path | None = None,\n    spawn: Spawn | None = None,\n) -> WorkerResult:\n    \"\"\"Exchange one frame within the caller's finite operation budget.\n\n    FIFO waiting consumes the same budget as spawn and execution; admission\n    never resets the clock. Expiry owns kill and reap before capacity returns.\n    An earlier caller cancellation still propagates unchanged. ``spawn`` starts\n    the child (default: ``asyncio.create_subprocess_exec``).\n\n    A command factory receives the native memory allowance after admission and\n    atomic headroom reservation, excluding parent frame copies. It must enforce\n    that allowance before loading native code; ``memory_bytes`` is then omitted.\n    \"\"\"\n    import asyncio\n"
+    },
+    {
+      "id": "pdf-choice-render",
+      "source": "services/ai/core/domain/sight/forms.py",
+      "contract": "asyncio Java stdin/stdout binary PDF plus stderr, 128MiB JVM memory; proc would decode and corrupt binary data",
+      "source_sha256": "6efced92c7750313f882dbd3638e1d74b9a2a9b42d76892955920128326f9a16",
+      "excerpt": "\n\nasync def _refresh_choices(doc: PdfWriter, names: set[str]) -> None:\n    \"\"\"Graft only PDFBox's native choice appearances, never its security contract.\"\"\"\n    import asyncio\n\n    # Export/display pairs and highlighted list rows are an existing PDFBox\n    # primitive. Temporary plaintext stays in pipes, with bounded cancellation.\n    process = await asyncio.create_subprocess_exec(\n        \"java\",\n        \"-Xmx128m\",\n        # One admitted PDF uses a serial JVM; compressed-class and tiered-code\n        # reservations otherwise exceed the parser's address-space allowance.\n        \"-XX:+UseSerialGC\",\n        \"-XX:-UseCompressedClassPointers\",\n        \"-XX:-TieredCompilation\",\n        \"-XX:ActiveProcessorCount=1\",\n        \"-Djava.awt.headless=true\",\n        \"-cp\",\n        _PDFBOX_CLASSPATH,\n        \"ChoiceAppearance\",\n        *sorted(names),\n        stdin=asyncio.subprocess.PIPE,\n        stdout=asyncio.subprocess.PIPE,\n        stderr=asyncio.subprocess.PIPE,\n    )\n    try:\n        async with asyncio.timeout(_CHOICE_TIMEOUT_SECONDS):\n            rendered, _stderr = await process.communicate(_bytes(doc))\n    finally:\n        if process.returncode is None:\n            with suppress(ProcessLookupError):\n                process.kill()\n            await process.communicate()\n    if process.returncode:\n        msg = \"Native PDF choice appearance generation failed; no completed copy was saved\"\n        raise RuntimeError(msg)"
+    },
+    {
+      "id": "media-codec-worker",
+      "source": "services/ai/core/domain/sight/render.py",
+      "contract": "asyncio Python codec child, pass_fds, start_new_session=True, env={}, concurrent bounded pipe drain; unsupported by proc API",
+      "source_sha256": "cba8efe58a29c049d927c4514cb14c0a80a565731d5ab0358028438201be081c",
+      "excerpt": "                    cancellation = cancellation or error\n            written.result()\n            if cancellation is not None:\n                raise cancellation\n        fds = tuple(source.fileno() for source in sources)\n        command = [\n            sys.executable,\n            \"-I\",\n            \"-S\",\n            \"-c\",\n            _CODEC_BOOTSTRAP,\n            _CODEC_ROOT,\n            str(memory_bytes),\n            *_argv(args, fds, inputs),\n        ]\n        try:\n            async with leash(\n                \"media-spawn\",\n                asyncio.create_subprocess_exec(\n                    *command,\n                    pass_fds=fds,\n                    start_new_session=True,\n                    env={},\n                    stdin=asyncio.subprocess.DEVNULL,\n                    stdout=asyncio.subprocess.PIPE,\n                    stderr=asyncio.subprocess.PIPE,\n                ),\n            ) as spawned:\n                # Acquire the handle even when cancellation arrives mid-spawn.\n                while not spawned.done():\n                    try:\n                        await asyncio.shield(spawned)\n                    except asyncio.CancelledError as error:\n                        cancellation = cancellation or error\n                proc = spawned.result()\n                if cancellation is not None:\n                    raise cancellation\n            assert proc.stdout is not None\n            assert proc.stderr is not None\n            pending = [\n                readers.spawn(\"stdout\", drain(proc.stdout)),\n                readers.spawn(\"stderr\", drain(proc.stderr)),\n            ]\n            done, _ = await asyncio.wait(pending, return_when=asyncio.FIRST_EXCEPTION)\n            for task in pending:\n                if task in done:\n                    task.result()"
+    },
+    {
+      "id": "blender-log-stream",
+      "source": "services/ai/tools/code/media/blender/rendering/process.py",
+      "contract": "generated sandbox subprocess.Popen with merged stderr and incremental binary read1 to log file; proc instead buffers text stdout/stderr separately",
+      "source_sha256": "6d79d15ca39277b3354c1912bd44e269a0c4a0c1e511e092699d6da2cef8b16d",
+      "excerpt": "    raise RuntimeError(\"Blender requires this sandbox's physical cgroup memory enforcement; its finite virtual-memory fallback cannot load Blender. The retained scene can be retried on a cgroup worker.\")\nenvironment = dict(os.environ, OMP_NUM_THREADS=\"1\", OPENBLAS_NUM_THREADS=\"1\", MALLOC_ARENA_MAX=\"2\")\nif {phase!r} == \"render\":\n    exec({PROBE_BODY!r})\nbootstrap = \"import sys, os; root = os.getcwd(); sys.path[:] = [p for p in sys.path if p and os.path.realpath(p) != root and not os.path.realpath(p).startswith(root + os.sep)]; exec(compile(open('/usr/local/lib/consumer/blender.py').read(), '/usr/local/lib/consumer/blender.py', 'exec'))\"\nwith open(\"blender.log\", \"wb\") as output:\n    with subprocess.Popen([\"blender\", \"--background\", \"--factory-startup\", \"--disable-autoexec\", \"--threads\", \"1\", \"--python-exit-code\", \"1\", \"--python-expr\", bootstrap, \"--\", {phase!r}, str({film._LIMIT})], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=environment) as process:\n        for chunk in iter(lambda: process.stdout.read1(io.DEFAULT_BUFFER_SIZE), b\"\"):\n            output.write(chunk)\n            output.flush()\n            sys.stdout.buffer.write(chunk)\n            sys.stdout.buffer.flush()\n        returncode = process.wait()\nif returncode:\n    with open(\"blender.log\", \"rb\") as output:"
+    },
+    {
+      "id": "toolchain-resolver",
+      "source": "services/ai/tools/code/sandbox/run/packages.py",
+      "contract": "offloaded synchronous subprocess.run, text=True capture_output=True, cwd default, explicit timeout=1; a plausible proc adoption candidate, but currently not proc",
+      "source_sha256": "541813db72e9ee70f4103eb19dfada090e7526253a75a816b662e60dab91fd00",
+      "excerpt": "\n    from core.foundation.util.aio.bg import offload\n\n    executable = shutil.which(\"uv\")\n    manager = shutil.which(\"mise\")\n    if (\n        executable is None\n        or manager is None\n        or not await offload(Path(executable).samefile, manager)\n    ):\n        return executable\n    try:\n        result = await offload(\n            subprocess.run,  # Native toolchain resolution, fixed argv, no shell.\n            [manager, \"which\", \"uv\"],\n            capture_output=True,\n            text=True,\n            timeout=1,\n            check=False,\n        )\n    except subprocess.TimeoutExpired:\n        return None\n    resolved = Path(result.stdout.strip())\n    return (\n        str(resolved)\n        if result.returncode == 0 and resolved.is_absolute() and os.access(resolved, os.X_OK)\n        else None\n    )"
+    }
+  ],
+  "recommended_workloads": [
+    {
+      "id": "git-revision",
+      "evidence": [
+        "source-revision",
+        "replay-revision"
+      ],
+      "fixture": "Temporary local Git repository with one committed text tree; run bare git with cwd and resolved absolute git with cwd omitted or -C. Expected HEAD derived from fixture commit."
+    },
+    {
+      "id": "git-inventory",
+      "evidence": [
+        "inventory",
+        "diff-inventory"
+      ],
+      "fixture": "Temporary local Git tree with tracked and untracked ASCII/Unicode paths; run ls-files with NUL delimiters and independently enumerate expected fixture paths. Keep index construction and writes outside timing."
+    },
+    {
+      "id": "git-status",
+      "evidence": [
+        "source-status"
+      ],
+      "fixture": "Clean and dirty temporary Git tree; run exact porcelain/untracked flags and independently check generated status lines."
+    },
+    {
+      "id": "git-show-text",
+      "evidence": [
+        "approved-plan"
+      ],
+      "fixture": "Committed 1MiB and 16MiB UTF-8 text blobs including Unicode and newline forms; git show HEAD:path, compare exact expected proc universal-newline text. These are declared scaling fixtures, not observed Consumer payload sizes."
+    },
+    {
+      "id": "version-probe-env",
+      "evidence": [
+        "browser-executable-metadata",
+        "pkg-config",
+        "toolchain-resolver"
+      ],
+      "fixture": "Resolved small native executable with --version or one-line metadata mode under an explicit environment mapping; labels must say shape replay if browser/pkg-config are replaced."
+    },
+    {
+      "id": "descriptor-json-text",
+      "evidence": [
+        "descriptor-json",
+        "go-package-json"
+      ],
+      "fixture": "Deterministic native child emits exact generated JSON schema text at 1MiB/16MiB to stdout; synthetic scaling replay of observed contract, not actual buf/go end-to-end runtime."
+    },
+    {
+      "id": "qualification-log-output",
+      "evidence": [
+        "native-qualification-logs",
+        "process-inventory"
+      ],
+      "fixture": "Deterministic native child emits fixed Unicode multiline stdout/stderr, in selected cwd and explicit env mapping; 1MiB/16MiB scaling. Do not claim ps cleanup acceleration from shape helper."
+    },
+    {
+      "id": "duplex-stress",
+      "evidence": [
+        "binary-parser-worker",
+        "pdf-choice-render"
+      ],
+      "fixture": "Synthetic simultaneous stdin/stdout/stderr only as backend stress. No current production proc callsite supplies stdin_text; do not advertise as measured Consumer-current use or replace binary async workers."
+    }
+  ]
+}

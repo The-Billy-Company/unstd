@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING, Any
 
 from bench import speeds
 from bench.core import timing
-from bench.profiles.billy_serde import _retained
+from bench.profiles.consumer_serde import _retained
 from bench.profiles.jsonx_throughput import _calibrate
 
 

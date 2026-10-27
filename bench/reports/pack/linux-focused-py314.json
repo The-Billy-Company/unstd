@@ -8,7 +8,7 @@
   "rounds": 9,
   "measurement": "complete call including output allocation and refcount cleanup; setup and oracle checks excluded; GC disabled during operation batches",
   "summary": {
-    "billy/embedding-pack-page-200x256-lists": {
+    "consumer/embedding-pack-page-200x256-lists": {
       "baseline_median_wall_ns": 410449.61010830326,
       "candidate_median_wall_ns": 361993.88803088805,
       "median_wall_speedup": 1.1338578458907036,
@@ -29,7 +29,7 @@
       "median_cpu_speedup": 1.1336870898708837,
       "observed_conservative_cpu_speedup": 0.7171481559552082
     },
-    "billy/embedding-unpack-page-200x256-owned-lists": {
+    "consumer/embedding-unpack-page-200x256-owned-lists": {
       "baseline_median_wall_ns": 914567.6229508197,
       "candidate_median_wall_ns": 885031.7428571428,
       "median_wall_speedup": 1.0333726788129953,
@@ -50,7 +50,7 @@
       "median_cpu_speedup": 1.0229429377781032,
       "observed_conservative_cpu_speedup": 0.7129278191137504
     },
-    "billy/f32-unpack-256-owned-list": {
+    "consumer/f32-unpack-256-owned-list": {
       "baseline_median_wall_ns": 10800.098310957124,
       "candidate_median_wall_ns": 10005.08465764175,
       "median_wall_speedup": 1.0794609621526945,
@@ -239,7 +239,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 276,
             "wall_ns": 103180208,
             "cpu_ns": 103184541,
@@ -248,7 +248,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 122,
             "wall_ns": 111577250,
             "cpu_ns": 110440165,
@@ -257,7 +257,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 10937,
             "wall_ns": 124257750,
             "cpu_ns": 124220583,
@@ -349,7 +349,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 226,
             "wall_ns": 96143583,
             "cpu_ns": 96150875,
@@ -358,7 +358,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 113,
             "wall_ns": 94822584,
             "cpu_ns": 94819208,
@@ -367,7 +367,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 10887,
             "wall_ns": 102001458,
             "cpu_ns": 102001250,
@@ -459,7 +459,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 187,
             "wall_ns": 82276625,
             "cpu_ns": 82281666,
@@ -468,7 +468,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 102,
             "wall_ns": 105406375,
             "cpu_ns": 105150250,
@@ -477,7 +477,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 9052,
             "wall_ns": 124526125,
             "cpu_ns": 123318001,
@@ -569,7 +569,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 237,
             "wall_ns": 100626875,
             "cpu_ns": 100625125,
@@ -578,7 +578,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 105,
             "wall_ns": 100087375,
             "cpu_ns": 100027584,
@@ -587,7 +587,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 9104,
             "wall_ns": 101244167,
             "cpu_ns": 101066666,
@@ -679,7 +679,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 236,
             "wall_ns": 100899708,
             "cpu_ns": 100870208,
@@ -688,7 +688,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 107,
             "wall_ns": 102197709,
             "cpu_ns": 102183749,
@@ -697,7 +697,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 9236,
             "wall_ns": 99749708,
             "cpu_ns": 99653208,
@@ -789,7 +789,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 277,
             "wall_ns": 113694542,
             "cpu_ns": 113669791,
@@ -798,7 +798,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 102,
             "wall_ns": 129108083,
             "cpu_ns": 129086917,
@@ -807,7 +807,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 9473,
             "wall_ns": 109632126,
             "cpu_ns": 109527164,
@@ -899,7 +899,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 310,
             "wall_ns": 100593875,
             "cpu_ns": 100585707,
@@ -908,7 +908,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 118,
             "wall_ns": 92173375,
             "cpu_ns": 92152000,
@@ -917,7 +917,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 11498,
             "wall_ns": 99810917,
             "cpu_ns": 99796000,
@@ -1009,7 +1009,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 314,
             "wall_ns": 102384708,
             "cpu_ns": 102362417,
@@ -1018,7 +1018,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 120,
             "wall_ns": 95419542,
             "cpu_ns": 95405999,
@@ -1027,7 +1027,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 11719,
             "wall_ns": 113492625,
             "cpu_ns": 112604626,
@@ -1119,7 +1119,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 319,
             "wall_ns": 101079292,
             "cpu_ns": 101077332,
@@ -1128,7 +1128,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 134,
             "wall_ns": 103854500,
             "cpu_ns": 103758499,
@@ -1137,7 +1137,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 11707,
             "wall_ns": 102352125,
             "cpu_ns": 102138668,
@@ -1232,7 +1232,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 117,
             "wall_ns": 48434166,
             "cpu_ns": 48416750,
@@ -1241,7 +1241,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 105,
             "wall_ns": 92928333,
             "cpu_ns": 92919124,
@@ -1250,7 +1250,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 10194,
             "wall_ns": 101991833,
             "cpu_ns": 101990500,
@@ -1343,7 +1343,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 255,
             "wall_ns": 85591667,
             "cpu_ns": 85597291,
@@ -1352,7 +1352,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 121,
             "wall_ns": 102684042,
             "cpu_ns": 102685333,
@@ -1361,7 +1361,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 11397,
             "wall_ns": 105330208,
             "cpu_ns": 105263042,
@@ -1454,7 +1454,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 173,
             "wall_ns": 68478500,
             "cpu_ns": 68473375,
@@ -1463,7 +1463,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 96,
             "wall_ns": 92158000,
             "cpu_ns": 92152665,
@@ -1472,7 +1472,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 7935,
             "wall_ns": 107413083,
             "cpu_ns": 106204254,
@@ -1565,7 +1565,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 259,
             "wall_ns": 93756417,
             "cpu_ns": 93750125,
@@ -1574,7 +1574,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 100,
             "wall_ns": 102161791,
             "cpu_ns": 102017207,
@@ -1583,7 +1583,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 8520,
             "wall_ns": 100038667,
             "cpu_ns": 100023457,
@@ -1676,7 +1676,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 251,
             "wall_ns": 107172000,
             "cpu_ns": 106925457,
@@ -1685,7 +1685,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 106,
             "wall_ns": 111969958,
             "cpu_ns": 110850706,
@@ -1694,7 +1694,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 9208,
             "wall_ns": 101401709,
             "cpu_ns": 101366292,
@@ -1787,7 +1787,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 230,
             "wall_ns": 101621334,
             "cpu_ns": 101620666,
@@ -1796,7 +1796,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 100,
             "wall_ns": 109037333,
             "cpu_ns": 108610877,
@@ -1805,7 +1805,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 9383,
             "wall_ns": 95343167,
             "cpu_ns": 95175542,
@@ -1898,7 +1898,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 309,
             "wall_ns": 98192125,
             "cpu_ns": 98170833,
@@ -1907,7 +1907,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 132,
             "wall_ns": 99110041,
             "cpu_ns": 99100958,
@@ -1916,7 +1916,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 12409,
             "wall_ns": 102902541,
             "cpu_ns": 102859959,
@@ -2009,7 +2009,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 254,
             "wall_ns": 91581125,
             "cpu_ns": 91572166,
@@ -2018,7 +2018,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 113,
             "wall_ns": 97412250,
             "cpu_ns": 97387375,
@@ -2027,7 +2027,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 11389,
             "wall_ns": 99962208,
             "cpu_ns": 99955957,
@@ -2120,7 +2120,7 @@
           "unpack_array_portable": "(dtype: 'str', buf: 'bytes | bytearray | memoryview') -> 'list[float]'"
         },
         "measurements": {
-          "billy/embedding-pack-page-200x256-lists": {
+          "consumer/embedding-pack-page-200x256-lists": {
             "iterations": 294,
             "wall_ns": 93688292,
             "cpu_ns": 93687875,
@@ -2129,7 +2129,7 @@
             "note": "Two hundred independent !256d rows, including join and argument expansion",
             "oracle_passed": true
           },
-          "billy/embedding-unpack-page-200x256-owned-lists": {
+          "consumer/embedding-unpack-page-200x256-owned-lists": {
             "iterations": 124,
             "wall_ns": 95079833,
             "cpu_ns": 95067542,
@@ -2138,7 +2138,7 @@
             "note": "Two hundred !256d records decoded to owned Python lists",
             "oracle_passed": true
           },
-          "billy/f32-unpack-256-owned-list": {
+          "consumer/f32-unpack-256-owned-list": {
             "iterations": 12524,
             "wall_ns": 103530375,
             "cpu_ns": 103507833,
@@ -2362,5 +2362,9 @@
         "process_wall_ns": 49974208
       }
     ]
+  },
+  "publication_normalization": {
+    "kind": "public_metadata_normalization",
+    "note": "Consumer labels, artifact paths and machine-specific origins normalized for public publication. Historical timings, measured payload bytes and original source digests retain their captured meaning; normalized source/archive bytes have their own publication hashes."
   }
 }

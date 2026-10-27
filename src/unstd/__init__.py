@@ -45,6 +45,9 @@ failing loud where no faithful substitute exists:
   optional FIFO bounds, atomic batch operations, and concurrent key-coordinated
   producers across local processes.
   Uses ``serde.jsonx`` and requires no extra.
+- ``dataset`` — immutable indexed JSON corpora: cheap length, random access,
+  ordered selections, bounded batches, and integrity checks, with optional
+  bundled native offset extraction. Requires no extra.
 - ``text`` (``difflib``) — rapidfuzz similarity and fuzzy matching.
 - ``audio`` (``wave``) — soundfile read/write plus a streaming writer.
 - ``toml`` (``tomllib``) — reading is stdlib; writing needs tomlkit.

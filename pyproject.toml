@@ -12,7 +12,7 @@ test-extras = ["serde", "crypto", "compress", "containers", "rand", "math"]
 test-requires = ["pytest>=8.2", "hypothesis>=6.100", "packaging>=24.2"]
 test-command = [
   "python {project}/tests/tooling/runtime/tls.py --json",
-  "python -c \"import unstd.serde._json_native, unstd.clone._clone_native, unstd.crypto._stream_native, unstd.text._text_native, unstd.compress._gzip_native, unstd.containers._sorted_native, unstd.proc._proc_native, unstd.rand._rand_native, unstd.pack._pack_native, unstd.math._math_native\"",
+  "python -c \"import unstd.serde._json_native, unstd.clone._clone_native, unstd.crypto._stream_native, unstd.text._text_native, unstd.compress._gzip_native, unstd.containers._sorted_native, unstd.proc._proc_native, unstd.rand._rand_native, unstd.pack._pack_native, unstd.math._math_native, unstd.dataset._dataset_native\"",
   "python -c \"import importlib, sys; sys.platform != 'linux' or importlib.import_module('unstd.fs._fs_native')\"",
   "python {project}/tests/tooling/runtime/json_acceleration.py --json",
   "python {project}/tests/tooling/release/wheel_tests.py --workers 4",

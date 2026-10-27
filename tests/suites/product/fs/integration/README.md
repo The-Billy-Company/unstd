@@ -59,7 +59,7 @@ Each child has a fixed timeout and checks its descriptor delta.
 Native cases carry Linux/backend guards. A missing C compiler skips only cases
 that need the observer, which is built in a private temporary directory. Child
 launches preserve an existing sanitizer preload before appending the observer.
-No observer is loaded during [installed Billy profiling](../../../../../bench/reports/fs/production/README.md).
+No observer is loaded during [installed Consumer profiling](../../../../../bench/reports/fs/production/README.md).
 
 These are syscall-error and process-interruption contracts. They do not simulate
 power loss or prove storage-device persistence. Default directory sync remains

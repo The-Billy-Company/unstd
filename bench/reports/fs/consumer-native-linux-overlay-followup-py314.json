@@ -1,0 +1,5953 @@
+{
+  "environment": {
+    "python": "3.14.8 (main, Oct  6 2026, 02:02:59) [GCC 14.2.0]",
+    "platform": "Linux-7.0.14-linuxkit-aarch64-with-glibc2.41",
+    "machine": "aarch64",
+    "fixture_root": "/tmp/unstd-consumer-fs-dh8rqqjv",
+    "fixture_device": 90
+  },
+  "python_source": {
+    "source": "/work/current",
+    "files_sha256": {
+      "unstd/fs/_internal/__init__.py": "64f815fae7af0a70ae4a84158e270135d4050d329f37f0c2243dab79dc04ed6c",
+      "unstd/fs/_internal/durability.py": "b20eacb1f1aa18040f73d7b9b9ea055344af4711fb9aa8d975ed4cd020abf99d",
+      "unstd/fs/_internal/walk.py": "bd7dc73228d318961a477ed4fad6982d9a9999ea82dcc4d778c23159c0953b91",
+      "unstd/fs/__init__.py": "77ca6360919dc5d9c640943874f8bf5648cfb97e311ecbace9111cd5404839e2"
+    },
+    "public_signatures": {
+      "atomic_replace": "(src: '_Pathish', dest: '_Pathish', *, durable: '_Durability' = False) -> 'Path'",
+      "atomic_write": "(path: '_Pathish', data: 'str | bytes', *, encoding: 'str' = 'utf-8', durable: '_Durability' = False) -> 'Path'",
+      "atomic_writer": "(path: '_Pathish', *, mode: \"Literal['w', 'wb']\" = 'w', encoding: 'str' = 'utf-8', durable: '_Durability' = False) -> 'AbstractContextManager[IO[str] | IO[bytes]]'",
+      "ensure_dir": "(path: '_Pathish') -> 'Path'",
+      "sync_dir": "(path: '_Pathish', *, strict: 'bool' = False) -> 'None'",
+      "walk_files": "(root: '_Pathish', *, follow_symlinks: 'bool' = False) -> 'Iterator[Path]'"
+    },
+    "descriptor_walk_supported": true
+  },
+  "native": {
+    "path": "/tmp/fs-native-proof/build/_fs_experiment.cpython-314-aarch64-linux-gnu.so",
+    "sha256": "ae56c7fffd24933c5fbd70ff6cd8851a63029592591e8ec3ccf38a2a5da4b8b4",
+    "method": "<built-in function atomic_write>",
+    "active_builtin": true
+  },
+  "fixtures": {
+    "schema": 1,
+    "provenance": {
+      "oauth": {
+        "path": "services/ai/scripts/auth/google_oauth.py",
+        "symbol": "main",
+        "line": 73,
+        "end_line": 123,
+        "file_sha256": "e722f32f365903ac13ab7fdd24ec0a171e6ea12c53f25ec86d75df8d2c99dd3e",
+        "symbol_sha256": "bb9a28280a2771a4d2525df45b6c3316a1cb1488d88eb9a4e48b6761947c39b7"
+      },
+      "config": {
+        "path": "services/ai/scripts/lint/refresh_import_baseline.py",
+        "symbol": "main",
+        "line": 220,
+        "end_line": 254,
+        "file_sha256": "38d446ab8c3a0c9ea0263b2ef86e151c3e12788c16aba30bf7e89825712a4dbd",
+        "symbol_sha256": "6b5820ae93600ace135d521dc4e733c842e3c4e1cffd0c90bc5eedcb15cbcaa9"
+      },
+      "report": {
+        "path": "tools/igor/connectors/storage/capture/probe.py",
+        "symbol": "write_snapshot",
+        "line": 494,
+        "end_line": 501,
+        "file_sha256": "9a40eb4fc9acd4c803fa5a45986636c1e0afe457cccbc347eb0da0889ab130af",
+        "symbol_sha256": "3b9b2434aeef9d853998b2e4040b66161e478b64f213cc558959d9ee80d7b8ef"
+      },
+      "hosted": {
+        "path": "services/ai/tools/system/control/browser/hosted/custody.py",
+        "symbol": "land_state",
+        "line": 234,
+        "end_line": 264,
+        "file_sha256": "a4df37086f11d14acd82af4d96150a5d49afa676bbf2e51ee2ad0838fa0bfa07",
+        "symbol_sha256": "102122914ae0b7df59779e27f082f327beb6c124323c00350f6b51fccef7fb7b"
+      },
+      "notebook": {
+        "path": "libs/runtime/jupyter/consumer_jupyter/policy.py",
+        "symbol": "atomic",
+        "line": 73,
+        "end_line": 89,
+        "file_sha256": "10ca72d481e217c122460d0dc3fdad50273386f7258125504d75fdf3fe0f0798",
+        "symbol_sha256": "1b8f70559139bd3ba882a8d75c3e15907511f6a93d35953bbffc83d38d5c00e3"
+      },
+      "retention": {
+        "path": "libs/runtime/jupyter/consumer_jupyter/retention.py",
+        "symbol": "checkpoint",
+        "line": 143,
+        "end_line": 148,
+        "file_sha256": "bf4ef7246213058ab5890ccb1a8b3a9ba631c23ad2adb1cc92e3798d63a267af",
+        "symbol_sha256": "4c6d198d7d2a09ae9bb88b31b12287ba53da93f2bce75f7385462dd6fccd5a9e"
+      },
+      "config_input": {
+        "path": "services/ai/.importlinter",
+        "file_sha256": "628cbd2e94eab4efe308e5820d19d3a7b08d0ff1436dd007d787f6d50b26a844",
+        "bytes": 47473
+      },
+      "report_input": {
+        "path": "tools/igor/connectors/storage/capture/fixture.json",
+        "file_sha256": "ab44fece04234adca2c1ffe3bba9c0ebb037a3dd58cb4b76832d8b56931565a4",
+        "bytes": 14112
+      }
+    },
+    "synthetic": true,
+    "notes": [
+      "Payload sizes are sensitivity scenarios, not measured production frequencies.",
+      "Report keys/container schema come from the bundled fixture; string leaf values are synthetic.",
+      "Report serialization uses shared stdlib-compatible JSON; actual jsonx codec latency is not measured.",
+      "Hosted legacy resets mode to 0600; candidates preserve existing mode. All benchmark destinations are 0600.",
+      "Notebook candidates use strict durability with an extra preflight sync; these are migration experiments, not transparent replacements."
+    ],
+    "cases": [
+      {
+        "name": "oauth-token",
+        "consumer": "oauth",
+        "kind": "text",
+        "line": "synthetic-token-",
+        "bytes": 128,
+        "encoded_bytes": 128,
+        "encoded_sha256": "6fdea9fd9ce352ca64377b53ad53a13849852b73fdb5d4519b8c1098d43c8467"
+      },
+      {
+        "name": "import-config",
+        "consumer": "config",
+        "kind": "text",
+        "line": "# synthetic import-policy configuration\n",
+        "bytes": 47473,
+        "encoded_bytes": 47473,
+        "encoded_sha256": "6d344bf1665189f72a6fc4dd7be6c5785b42087ac71bf40eefbe2af5c77fe88b"
+      },
+      {
+        "name": "capture-report",
+        "consumer": "report",
+        "kind": "report",
+        "value": {
+          "captured_at": "xxxxxxxxxxxxxxxxxxxx",
+          "database": {
+            "name": "xxxxx",
+            "size_bytes": 1402994688,
+            "version": "xxxx"
+          },
+          "delegated": {
+            "memories": {
+              "by_owner": {
+                "memory.Prune": {
+                  "overlap_rows": 0,
+                  "reach_bytes": 141900000,
+                  "reach_rows": 61471,
+                  "witness_age_hours": 2.4
+                }
+              },
+              "covered_bytes": 148000000,
+              "covered_rows": 63247,
+              "scanned_bytes": 148000000,
+              "scanned_rows": 63247
+            },
+            "person_facts": {
+              "by_owner": {
+                "relationships.CompactSuperseded": {
+                  "overlap_rows": 0,
+                  "reach_bytes": 34000000,
+                  "reach_rows": 190000,
+                  "witness_age_hours": 486.0
+                }
+              },
+              "covered_bytes": 34000000,
+              "covered_rows": 190000,
+              "scanned_bytes": 62000000,
+              "scanned_rows": 340000
+            }
+          },
+          "delegations": [
+            {
+              "alerts": [
+                "xxxxxxxxxxxxxxxxxxxxx",
+                "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+              ],
+              "cadence_hours": 6,
+              "domain_where": "xxxxxxxxxxxxxxxx",
+              "evidence": [
+                "xxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                "xxxxxxxxxxxxxxxxxxxxxxxxxxx"
+              ],
+              "note": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+              "owner": "xxxxxxxxxxxx",
+              "table": "xxxxxxxx",
+              "witness_col": "xxxxxxxx"
+            },
+            {
+              "alerts": [
+                "xxxxxxxxxxxxxxxxxxxxxxxxx"
+              ],
+              "cadence_hours": 24,
+              "domain_where": "xxxxxxxxxxxxxxxxxxxxxxxxx",
+              "evidence": [
+                "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+              ],
+              "note": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+              "owner": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+              "table": "xxxxxxxxxxxx",
+              "witness_col": "xxxxxxxx"
+            }
+          ],
+          "env": "xxxxxxx",
+          "extensions": {
+            "pg_cron": null,
+            "pg_partman": null,
+            "pg_prewarm": null,
+            "pg_repack": null,
+            "pg_squeeze": null,
+            "pg_stat_statements": "xxxx",
+            "pgaudit": "xxxx",
+            "pgstattuple": null,
+            "vector": "xxxxx"
+          },
+          "liveness": {
+            "ai_tool_calls": {
+              "deletable_now": 4100
+            },
+            "memories": {
+              "deletable_now": 1204,
+              "reach_bytes": 6100000,
+              "reach_rows": 1776,
+              "scanned_bytes": 148000000,
+              "scanned_rows": 63247
+            },
+            "notifications": {
+              "deletable_now": 0,
+              "reach_bytes": 41000000,
+              "reach_rows": 92000,
+              "scanned_bytes": 41000000,
+              "scanned_rows": 92000
+            },
+            "substrate_deltas": {
+              "deletable_now": 0,
+              "reach_bytes": 402000000,
+              "reach_rows": 119000,
+              "scanned_bytes": 486000000,
+              "scanned_rows": 146820
+            },
+            "substrate_trajectory": {
+              "deletable_now": 12400,
+              "reach_bytes": 201000000,
+              "reach_rows": 18604,
+              "scanned_bytes": 201000000,
+              "scanned_rows": 18604
+            },
+            "voice_print_samples": {
+              "deletable_now": 0,
+              "reach_bytes": 39000000,
+              "reach_rows": 21400,
+              "scanned_bytes": 39000000,
+              "scanned_rows": 21400
+            }
+          },
+          "owners": {
+            "admin_audit": {
+              "age_days": 92.0,
+              "distinct_users": 2,
+              "synthetic_rows": 0
+            },
+            "ai_tool_calls": {
+              "age_days": 75.0,
+              "distinct_users": 3,
+              "synthetic_rows": 0
+            },
+            "cdc_state": {
+              "age_days": 120.0,
+              "distinct_users": 0,
+              "synthetic_rows": 0
+            },
+            "chat_messages": {
+              "age_days": 150.0,
+              "distinct_users": 4,
+              "synthetic_rows": 0
+            },
+            "events": {
+              "age_days": 90.0,
+              "distinct_users": 3,
+              "synthetic_rows": 0
+            },
+            "memories": {
+              "age_days": 90.0,
+              "distinct_users": 4,
+              "synthetic_rows": 60000
+            },
+            "notifications": {
+              "age_days": 30.0,
+              "distinct_users": 3,
+              "synthetic_rows": 0
+            },
+            "person_facts": {
+              "age_days": 120.0,
+              "distinct_users": 4,
+              "synthetic_rows": 0
+            },
+            "substrate_deltas": {
+              "age_days": 120.0,
+              "distinct_users": 3,
+              "synthetic_rows": 0
+            },
+            "substrate_state": {
+              "age_days": 120.0,
+              "distinct_users": 4,
+              "synthetic_rows": 0
+            },
+            "substrate_trajectory": {
+              "age_days": 60.0,
+              "distinct_users": 3,
+              "synthetic_rows": 0
+            },
+            "voice_print_samples": {
+              "age_days": 45.0,
+              "distinct_users": 3,
+              "synthetic_rows": 0
+            }
+          },
+          "partitions": [
+            {
+              "key_col": "xxxxxxxxxx",
+              "months_ahead": 1,
+              "retention_months": 3,
+              "table": "xxxxxx"
+            }
+          ],
+          "policies": [
+            {
+              "hard_cap": 0,
+              "keep_where": "xxxxxxxxxxxxxxxx",
+              "max_age_days": 30,
+              "pk_col": "xx",
+              "table": "xxxxxxxx",
+              "time_col": "xxxxxxxx"
+            },
+            {
+              "hard_cap": 0,
+              "keep_where": "",
+              "max_age_days": 90,
+              "pk_col": "xx",
+              "table": "xxxxxxxxxxxxxxxxxxx",
+              "time_col": "xxxxxxxxxx"
+            },
+            {
+              "hard_cap": 0,
+              "keep_where": "",
+              "max_age_days": 30,
+              "pk_col": "xx",
+              "table": "xxxxxxxxxxxxx",
+              "time_col": "xxxxxxxxxx"
+            },
+            {
+              "hard_cap": 1000000,
+              "keep_where": "xxxxxxxxxxxxxxxxxxxx",
+              "max_age_days": 90,
+              "pk_col": "xx",
+              "table": "xxxxxxxxxxxxxxxx",
+              "time_col": "xxxxxxxxxxx"
+            },
+            {
+              "hard_cap": 0,
+              "keep_where": "",
+              "max_age_days": 30,
+              "pk_col": "xx",
+              "table": "xxxxxxxxxxxxxxxxxxxx",
+              "time_col": "xxxxxxxxxxx"
+            },
+            {
+              "hard_cap": 100000,
+              "keep_where": "",
+              "max_age_days": 60,
+              "pk_col": "xx",
+              "table": "xxxxxxxxxxxxx",
+              "time_col": "xxxxxxxxxx"
+            }
+          ],
+          "relations": [
+            "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+            "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+            "xxxxxxxxxxxxxxxxxxxxxxxxxxx"
+          ],
+          "settings": {
+            "autovacuum": "xx",
+            "autovacuum_naptime": "xx",
+            "autovacuum_vacuum_scale_factor": "xxx",
+            "block_size": "xxxx",
+            "default_toast_compression": "xxxx",
+            "max_slot_wal_keep_size": "xx",
+            "max_wal_size": "xxxx",
+            "server_version": "xxxx",
+            "shared_buffers": "xxxxxx",
+            "wal_compression": "xxx"
+          },
+          "slots": [
+            {
+              "active": false,
+              "plugin": "xxxxxxxx",
+              "slot_name": "xxxxxxxxx",
+              "slot_type": "xxxxxxx",
+              "wal_retained_bytes": 102760448,
+              "wal_status": "xxxxxxxx"
+            }
+          ],
+          "tables": [
+            {
+              "dead_rows": 5000,
+              "heap_bytes": 167772160,
+              "index_bytes": 22020096,
+              "index_count": 5,
+              "label_col": null,
+              "last_autovacuum": "xxxxxxxxxxxxxxxxxxxxxx",
+              "live_rows": 146000,
+              "name": "xxxxxxxxxxxxxxxx",
+              "owner_col": "xxxxxxx",
+              "parent": null,
+              "partitioned": false,
+              "time_col": "xxxxxxxxxxx",
+              "toast_bytes": 310378496,
+              "total_bytes": 500170752,
+              "unique_non_pk": 0,
+              "unused_index_bytes": 6291456,
+              "unused_index_count": 1
+            },
+            {
+              "dead_rows": 0,
+              "heap_bytes": 62914560,
+              "index_bytes": 136314880,
+              "index_count": 9,
+              "label_col": "xxxx",
+              "last_autovacuum": "xxxxxxxxxxxxxxxxxxxxxx",
+              "live_rows": 62000,
+              "name": "xxxxxxxx",
+              "owner_col": "xxxxxxx",
+              "parent": null,
+              "partitioned": false,
+              "time_col": "xxxxxxxxxx",
+              "toast_bytes": 20971520,
+              "total_bytes": 220200960,
+              "unique_non_pk": 0,
+              "unused_index_bytes": 14680064,
+              "unused_index_count": 2
+            },
+            {
+              "dead_rows": 0,
+              "heap_bytes": 3145728,
+              "index_bytes": 4194304,
+              "index_count": 3,
+              "label_col": null,
+              "last_autovacuum": "xxxxxxxxxxxxxxxxxxxxxx",
+              "live_rows": 18600,
+              "name": "xxxxxxxxxxxxxxxxxxxx",
+              "owner_col": "xxxxxxx",
+              "parent": null,
+              "partitioned": false,
+              "time_col": "xxxxxxxxxxx",
+              "toast_bytes": 202375168,
+              "total_bytes": 209715200,
+              "unique_non_pk": 0,
+              "unused_index_bytes": 0,
+              "unused_index_count": 0
+            },
+            {
+              "dead_rows": 0,
+              "heap_bytes": 44040192,
+              "index_bytes": 18874368,
+              "index_count": 4,
+              "label_col": "xxxxxx",
+              "last_autovacuum": "xxxxxxxxxxxxxxxxxxxxxx",
+              "live_rows": 71000,
+              "name": "xxxxxxxxxxx",
+              "owner_col": "xxxxxxx",
+              "parent": null,
+              "partitioned": false,
+              "time_col": "xxxxxxxxxx",
+              "toast_bytes": 6291456,
+              "total_bytes": 69206016,
+              "unique_non_pk": 0,
+              "unused_index_bytes": 0,
+              "unused_index_count": 0
+            },
+            {
+              "dead_rows": 0,
+              "heap_bytes": 50331648,
+              "index_bytes": 12582912,
+              "index_count": 3,
+              "label_col": null,
+              "last_autovacuum": "xxxxxxxxxxxxxxxxxxxxxx",
+              "live_rows": 97000,
+              "name": "xxxxxx",
+              "owner_col": "xxxxxxx",
+              "parent": null,
+              "partitioned": true,
+              "time_col": "xxxxxxxxxx",
+              "toast_bytes": 0,
+              "total_bytes": 62914560,
+              "unique_non_pk": 0,
+              "unused_index_bytes": 0,
+              "unused_index_count": 0
+            },
+            {
+              "dead_rows": 0,
+              "heap_bytes": 33554432,
+              "index_bytes": 10485760,
+              "index_count": 4,
+              "label_col": "xxxxxxx",
+              "last_autovacuum": "xxxxxxxxxxxxxxxxxxxxxx",
+              "live_rows": 84000,
+              "name": "xxxxxxxxxxxxx",
+              "owner_col": "xxxxxxx",
+              "parent": null,
+              "partitioned": true,
+              "time_col": "xxxxxxxxxx",
+              "toast_bytes": 8388608,
+              "total_bytes": 52428800,
+              "unique_non_pk": 0,
+              "unused_index_bytes": 0,
+              "unused_index_count": 0
+            },
+            {
+              "dead_rows": 0,
+              "heap_bytes": 33554432,
+              "index_bytes": 8388608,
+              "index_count": 3,
+              "label_col": "xxxxxxxxx",
+              "last_autovacuum": "xxxxxxxxxxxxxxxxxxxxxx",
+              "live_rows": 58000,
+              "name": "xxxxxxxxxxxxx",
+              "owner_col": "xxxxxxx",
+              "parent": null,
+              "partitioned": false,
+              "time_col": "xxxxxxxxxx",
+              "toast_bytes": 6291456,
+              "total_bytes": 48234496,
+              "unique_non_pk": 0,
+              "unused_index_bytes": 0,
+              "unused_index_count": 0
+            },
+            {
+              "dead_rows": 0,
+              "heap_bytes": 12582912,
+              "index_bytes": 4194304,
+              "index_count": 3,
+              "label_col": null,
+              "last_autovacuum": "xxxxxxxxxxxxxxxxxxxxxx",
+              "live_rows": 21400,
+              "name": "xxxxxxxxxxxxxxxxxxx",
+              "owner_col": "xxxxxxx",
+              "parent": null,
+              "partitioned": false,
+              "time_col": "xxxxxxxxxx",
+              "toast_bytes": 25165824,
+              "total_bytes": 41943040,
+              "unique_non_pk": 0,
+              "unused_index_bytes": 0,
+              "unused_index_count": 0
+            },
+            {
+              "dead_rows": 0,
+              "heap_bytes": 25165824,
+              "index_bytes": 6291456,
+              "index_count": 3,
+              "label_col": null,
+              "last_autovacuum": "xxxxxxxxxxxxxxxxxxxxxx",
+              "live_rows": 48000,
+              "name": "xxxxxxxxxxxxxx",
+              "owner_col": "xxxxxxx",
+              "parent": "xxxxxx",
+              "partitioned": false,
+              "time_col": "xxxxxxxxxx",
+              "toast_bytes": 0,
+              "total_bytes": 31457280,
+              "unique_non_pk": 0,
+              "unused_index_bytes": 0,
+              "unused_index_count": 0
+            },
+            {
+              "dead_rows": 0,
+              "heap_bytes": 16777216,
+              "index_bytes": 8388608,
+              "index_count": 3,
+              "label_col": null,
+              "last_autovacuum": "xxxxxxxxxxxxxxxxxxxxxx",
+              "live_rows": 99000,
+              "name": "xxxxxxxxxxxxx",
+              "owner_col": "xxxxxxx",
+              "parent": null,
+              "partitioned": false,
+              "time_col": "xxxxxxxxxx",
+              "toast_bytes": 0,
+              "total_bytes": 25165824,
+              "unique_non_pk": 0,
+              "unused_index_bytes": 0,
+              "unused_index_count": 0
+            },
+            {
+              "dead_rows": 0,
+              "heap_bytes": 5242880,
+              "index_bytes": 3145728,
+              "index_count": 3,
+              "label_col": null,
+              "last_autovacuum": "xxxxxxxxxxxxxxxxxxxxxx",
+              "live_rows": 4,
+              "name": "xxxxxxxxxxxxxxx",
+              "owner_col": "xxxxxxx",
+              "parent": null,
+              "partitioned": false,
+              "time_col": "xxxxxxxxxx",
+              "toast_bytes": 4194304,
+              "total_bytes": 12582912,
+              "unique_non_pk": 1,
+              "unused_index_bytes": 0,
+              "unused_index_count": 0
+            },
+            {
+              "dead_rows": 45000,
+              "heap_bytes": 7340032,
+              "index_bytes": 2097152,
+              "index_count": 3,
+              "label_col": null,
+              "last_autovacuum": "xxxxxxxxxxxxxxxxxxxxxx",
+              "live_rows": 1,
+              "name": "xxxxxxxxx",
+              "owner_col": null,
+              "parent": null,
+              "partitioned": false,
+              "time_col": "xxxxxxxxxx",
+              "toast_bytes": 0,
+              "total_bytes": 9437184,
+              "unique_non_pk": 0,
+              "unused_index_bytes": 0,
+              "unused_index_count": 0
+            },
+            {
+              "dead_rows": 0,
+              "heap_bytes": 16384,
+              "index_bytes": 16384,
+              "index_count": 3,
+              "label_col": null,
+              "last_autovacuum": "xxxxxxxxxxxxxxxxxxxxxx",
+              "live_rows": 11,
+              "name": "xxxxxxxxxxxxxxxxxxxx",
+              "owner_col": null,
+              "parent": null,
+              "partitioned": false,
+              "time_col": null,
+              "toast_bytes": 0,
+              "total_bytes": 32768,
+              "unique_non_pk": 0,
+              "unused_index_bytes": 0,
+              "unused_index_count": 0
+            },
+            {
+              "dead_rows": 0,
+              "heap_bytes": 67108864,
+              "index_bytes": 25165824,
+              "index_count": 6,
+              "label_col": "xxxxxxxxx",
+              "last_autovacuum": "xxxxxxxxxxxxxxxxxxxxxx",
+              "live_rows": 340000,
+              "name": "xxxxxxxxxxxx",
+              "owner_col": "xxxxxxx",
+              "parent": null,
+              "partitioned": false,
+              "time_col": "xxxxxxxxxx",
+              "toast_bytes": 8388608,
+              "total_bytes": 100663296,
+              "unique_non_pk": 0,
+              "unused_index_bytes": 0,
+              "unused_index_count": 0
+            }
+          ],
+          "wal_statements": [
+            {
+              "calls": 18600,
+              "query": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+              "total_ms": 41233,
+              "wal_bytes": 3699376128
+            },
+            {
+              "calls": 146000,
+              "query": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+              "total_ms": 38902,
+              "wal_bytes": 2488270848
+            },
+            {
+              "calls": 1400000,
+              "query": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+              "total_ms": 12004,
+              "wal_bytes": 243269632
+            }
+          ]
+        },
+        "encoded_bytes": 14112,
+        "encoded_sha256": "ee7cbbe93348fdc06aba12b15f95be2490ca6f9242873e40fda6d13ff0c158ba"
+      },
+      {
+        "name": "browser-write-4096",
+        "consumer": "hosted",
+        "kind": "browser",
+        "bytes": 4096,
+        "encoded_bytes": 4096,
+        "encoded_sha256": "5a0be6039615802b604a772d10cd981070d5ec63d3eb04e6482162a4cfe5cc8d"
+      },
+      {
+        "name": "browser-write-65536",
+        "consumer": "hosted",
+        "kind": "browser",
+        "bytes": 65536,
+        "encoded_bytes": 65536,
+        "encoded_sha256": "52bc0d65507208ddce9c085f0facfbda82f1065bccd5df7531e106833b86bf6a"
+      },
+      {
+        "name": "browser-write-1048576",
+        "consumer": "hosted",
+        "kind": "browser",
+        "bytes": 1048576,
+        "encoded_bytes": 1048576,
+        "encoded_sha256": "899196498a20443ae3f438ee99c6a74454afbc5f6e420a46ca92b8a8d88f3057"
+      },
+      {
+        "name": "browser-write-4194176",
+        "consumer": "hosted",
+        "kind": "browser",
+        "bytes": 4194176,
+        "encoded_bytes": 4194176,
+        "encoded_sha256": "f721f5032024e07f7305df7657125d13be2d36aab2dd9f1f406802f0a138ace5"
+      },
+      {
+        "name": "browser-land-65536-peers-0",
+        "consumer": "hosted",
+        "kind": "browser",
+        "bytes": 65536,
+        "peers": 0,
+        "encoded_bytes": 65536,
+        "encoded_sha256": "52bc0d65507208ddce9c085f0facfbda82f1065bccd5df7531e106833b86bf6a"
+      },
+      {
+        "name": "browser-land-65536-peers-64",
+        "consumer": "hosted",
+        "kind": "browser",
+        "bytes": 65536,
+        "peers": 64,
+        "encoded_bytes": 65536,
+        "encoded_sha256": "52bc0d65507208ddce9c085f0facfbda82f1065bccd5df7531e106833b86bf6a"
+      },
+      {
+        "name": "browser-land-65536-peers-512",
+        "consumer": "hosted",
+        "kind": "browser",
+        "bytes": 65536,
+        "peers": 512,
+        "encoded_bytes": 65536,
+        "encoded_sha256": "52bc0d65507208ddce9c085f0facfbda82f1065bccd5df7531e106833b86bf6a"
+      },
+      {
+        "name": "notebook-checkpoint-4096",
+        "consumer": "notebook",
+        "kind": "bytes",
+        "bytes": 4096,
+        "encoded_bytes": 4096,
+        "encoded_sha256": "a2e659dacb4691e887ac0139f8893d04764ee197d70fb73d3190d56113d18e3e"
+      },
+      {
+        "name": "notebook-checkpoint-1048576",
+        "consumer": "notebook",
+        "kind": "bytes",
+        "bytes": 1048576,
+        "encoded_bytes": 1048576,
+        "encoded_sha256": "8f990ba0b577b51cf009ea049368c16bbda1b21e1b93be07a824758bb253c39b"
+      },
+      {
+        "name": "notebook-checkpoint-18874368",
+        "consumer": "notebook",
+        "kind": "bytes",
+        "bytes": 18874368,
+        "encoded_bytes": 18874368,
+        "encoded_sha256": "9b5d24a86c4da73f04ce824d6fa3df5f888936104defa417f610f4b5761b3884"
+      }
+    ]
+  },
+  "harness_files_sha256": {
+    "/work/bench/consumer_fs.py": "e0bbd4c8b32b73d220e8fe5887810ecc41495c1cc5098ea294cea1f99b86d786",
+    "/work/bench/fs_backend.py": "36d6bd753ab1227a6c7e0f8b4d11f82c7625b94dc7f7c5674075e010d449d3cb",
+    "/work/bench/consumer_fs.json": "8e13569fef4c9b04a84ab67bf49c31d97c42c2b8728eac8292172d1a7c2c0a47"
+  },
+  "workloads": [
+    {
+      "name": "oauth-token",
+      "note": "shared destination; untimed sentinel reset before every batch/profile; real fsync; private existing 0600 file",
+      "calibration": {
+        "python": {
+          "wall_ns": 19805167,
+          "process_cpu_ns": 2338709,
+          "operations": 10
+        },
+        "native": {
+          "wall_ns": 20747208,
+          "process_cpu_ns": 2837418,
+          "operations": 10
+        }
+      },
+      "target_batch_wall_ns": 20000000,
+      "samples": {
+        "python": [
+          {
+            "wall_ns": 20927000,
+            "process_cpu_ns": 2892582,
+            "operations": 11
+          },
+          {
+            "wall_ns": 9270375,
+            "process_cpu_ns": 1326333,
+            "operations": 11
+          },
+          {
+            "wall_ns": 22379750,
+            "process_cpu_ns": 3844580,
+            "operations": 11
+          },
+          {
+            "wall_ns": 5384542,
+            "process_cpu_ns": 815250,
+            "operations": 11
+          },
+          {
+            "wall_ns": 15182084,
+            "process_cpu_ns": 2342791,
+            "operations": 11
+          },
+          {
+            "wall_ns": 20809458,
+            "process_cpu_ns": 2428501,
+            "operations": 11
+          },
+          {
+            "wall_ns": 13502375,
+            "process_cpu_ns": 1842331,
+            "operations": 11
+          },
+          {
+            "wall_ns": 21057542,
+            "process_cpu_ns": 2213084,
+            "operations": 11
+          },
+          {
+            "wall_ns": 9952542,
+            "process_cpu_ns": 1442748,
+            "operations": 11
+          },
+          {
+            "wall_ns": 25357334,
+            "process_cpu_ns": 6890123,
+            "operations": 11
+          },
+          {
+            "wall_ns": 16136000,
+            "process_cpu_ns": 2232542,
+            "operations": 11
+          },
+          {
+            "wall_ns": 17099959,
+            "process_cpu_ns": 2358627,
+            "operations": 11
+          },
+          {
+            "wall_ns": 19817666,
+            "process_cpu_ns": 2283750,
+            "operations": 11
+          },
+          {
+            "wall_ns": 15948250,
+            "process_cpu_ns": 1899294,
+            "operations": 11
+          },
+          {
+            "wall_ns": 23327666,
+            "process_cpu_ns": 2475915,
+            "operations": 11
+          },
+          {
+            "wall_ns": 17908458,
+            "process_cpu_ns": 2599792,
+            "operations": 11
+          },
+          {
+            "wall_ns": 7443208,
+            "process_cpu_ns": 878169,
+            "operations": 11
+          },
+          {
+            "wall_ns": 39158125,
+            "process_cpu_ns": 1357242,
+            "operations": 11
+          },
+          {
+            "wall_ns": 23439583,
+            "process_cpu_ns": 2634042,
+            "operations": 11
+          },
+          {
+            "wall_ns": 14324583,
+            "process_cpu_ns": 1702793,
+            "operations": 11
+          },
+          {
+            "wall_ns": 7135875,
+            "process_cpu_ns": 735707,
+            "operations": 11
+          },
+          {
+            "wall_ns": 9461458,
+            "process_cpu_ns": 1032211,
+            "operations": 11
+          },
+          {
+            "wall_ns": 18730375,
+            "process_cpu_ns": 1882459,
+            "operations": 11
+          },
+          {
+            "wall_ns": 8083417,
+            "process_cpu_ns": 1024208,
+            "operations": 11
+          },
+          {
+            "wall_ns": 8996792,
+            "process_cpu_ns": 930001,
+            "operations": 11
+          },
+          {
+            "wall_ns": 7398125,
+            "process_cpu_ns": 876165,
+            "operations": 11
+          },
+          {
+            "wall_ns": 18711792,
+            "process_cpu_ns": 1945666,
+            "operations": 11
+          },
+          {
+            "wall_ns": 27318125,
+            "process_cpu_ns": 4100875,
+            "operations": 11
+          },
+          {
+            "wall_ns": 10339291,
+            "process_cpu_ns": 1440666,
+            "operations": 11
+          },
+          {
+            "wall_ns": 7500334,
+            "process_cpu_ns": 958499,
+            "operations": 11
+          },
+          {
+            "wall_ns": 15641292,
+            "process_cpu_ns": 2054918,
+            "operations": 11
+          }
+        ],
+        "native": [
+          {
+            "wall_ns": 20309416,
+            "process_cpu_ns": 1879207,
+            "operations": 11
+          },
+          {
+            "wall_ns": 6530375,
+            "process_cpu_ns": 866086,
+            "operations": 11
+          },
+          {
+            "wall_ns": 20032750,
+            "process_cpu_ns": 1714917,
+            "operations": 11
+          },
+          {
+            "wall_ns": 6623208,
+            "process_cpu_ns": 675754,
+            "operations": 11
+          },
+          {
+            "wall_ns": 6919167,
+            "process_cpu_ns": 859291,
+            "operations": 11
+          },
+          {
+            "wall_ns": 13615666,
+            "process_cpu_ns": 1457252,
+            "operations": 11
+          },
+          {
+            "wall_ns": 5367166,
+            "process_cpu_ns": 619875,
+            "operations": 11
+          },
+          {
+            "wall_ns": 5592791,
+            "process_cpu_ns": 667961,
+            "operations": 11
+          },
+          {
+            "wall_ns": 5533833,
+            "process_cpu_ns": 538416,
+            "operations": 11
+          },
+          {
+            "wall_ns": 9608792,
+            "process_cpu_ns": 1191332,
+            "operations": 11
+          },
+          {
+            "wall_ns": 5502792,
+            "process_cpu_ns": 652918,
+            "operations": 11
+          },
+          {
+            "wall_ns": 4888917,
+            "process_cpu_ns": 623459,
+            "operations": 11
+          },
+          {
+            "wall_ns": 6119291,
+            "process_cpu_ns": 686376,
+            "operations": 11
+          },
+          {
+            "wall_ns": 5691041,
+            "process_cpu_ns": 618582,
+            "operations": 11
+          },
+          {
+            "wall_ns": 21748834,
+            "process_cpu_ns": 1744917,
+            "operations": 11
+          },
+          {
+            "wall_ns": 25144917,
+            "process_cpu_ns": 2202875,
+            "operations": 11
+          },
+          {
+            "wall_ns": 7877083,
+            "process_cpu_ns": 699833,
+            "operations": 11
+          },
+          {
+            "wall_ns": 6015083,
+            "process_cpu_ns": 572002,
+            "operations": 11
+          },
+          {
+            "wall_ns": 10695417,
+            "process_cpu_ns": 809916,
+            "operations": 11
+          },
+          {
+            "wall_ns": 6206959,
+            "process_cpu_ns": 503668,
+            "operations": 11
+          },
+          {
+            "wall_ns": 10249333,
+            "process_cpu_ns": 747372,
+            "operations": 11
+          },
+          {
+            "wall_ns": 7041250,
+            "process_cpu_ns": 646624,
+            "operations": 11
+          },
+          {
+            "wall_ns": 8026417,
+            "process_cpu_ns": 566416,
+            "operations": 11
+          },
+          {
+            "wall_ns": 12936667,
+            "process_cpu_ns": 1215626,
+            "operations": 11
+          },
+          {
+            "wall_ns": 55875917,
+            "process_cpu_ns": 1618085,
+            "operations": 11
+          },
+          {
+            "wall_ns": 19913833,
+            "process_cpu_ns": 1487457,
+            "operations": 11
+          },
+          {
+            "wall_ns": 21609208,
+            "process_cpu_ns": 1847709,
+            "operations": 11
+          },
+          {
+            "wall_ns": 23679708,
+            "process_cpu_ns": 2069501,
+            "operations": 11
+          },
+          {
+            "wall_ns": 14790709,
+            "process_cpu_ns": 1269584,
+            "operations": 11
+          },
+          {
+            "wall_ns": 12283459,
+            "process_cpu_ns": 1067291,
+            "operations": 11
+          },
+          {
+            "wall_ns": 7426500,
+            "process_cpu_ns": 687667,
+            "operations": 11
+          }
+        ]
+      },
+      "median_per_operation_ns": {
+        "python": {
+          "wall_ns": 1449840.9090909092,
+          "process_cpu_ns": 172663.0909090909
+        },
+        "native": {
+          "wall_ns": 729674.2727272727,
+          "process_cpu_ns": 73628.72727272728
+        }
+      },
+      "orders": [
+        [
+          "python",
+          "native"
+        ],
+        [
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native"
+        ],
+        [
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native"
+        ],
+        [
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native"
+        ],
+        [
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native"
+        ],
+        [
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native"
+        ],
+        [
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native"
+        ],
+        [
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native"
+        ],
+        [
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native"
+        ],
+        [
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native"
+        ],
+        [
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native"
+        ],
+        [
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native"
+        ],
+        [
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native"
+        ],
+        [
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native"
+        ],
+        [
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native"
+        ],
+        [
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native"
+        ]
+      ],
+      "profiles": {
+        "python": [
+          {
+            "file": "/work/bench/consumer_fs.py",
+            "line": 360,
+            "function": "operation",
+            "calls": 1,
+            "self_seconds": 5.3740000000000006e-06,
+            "cumulative_seconds": 0.0009001660000000001
+          },
+          {
+            "file": "/work/current/unstd/fs/__init__.py",
+            "line": 282,
+            "function": "atomic_write",
+            "calls": 1,
+            "self_seconds": 8.125000000000001e-06,
+            "cumulative_seconds": 0.000891542
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method builtins.next>",
+            "calls": 2,
+            "self_seconds": 3.7080000000000003e-06,
+            "cumulative_seconds": 0.0008687920000000001
+          },
+          {
+            "file": "/work/current/unstd/fs/__init__.py",
+            "line": 200,
+            "function": "_atomic_writer",
+            "calls": 2,
+            "self_seconds": 1.7001000000000002e-05,
+            "cumulative_seconds": 0.000865084
+          },
+          {
+            "file": "/usr/local/lib/python3.14/contextlib.py",
+            "line": 145,
+            "function": "__exit__",
+            "calls": 1,
+            "self_seconds": 1.1660000000000001e-06,
+            "cumulative_seconds": 0.000679166
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.fsync>",
+            "calls": 1,
+            "self_seconds": 0.0006254160000000001,
+            "cumulative_seconds": 0.0006254160000000001
+          },
+          {
+            "file": "/usr/local/lib/python3.14/contextlib.py",
+            "line": 136,
+            "function": "__enter__",
+            "calls": 1,
+            "self_seconds": 1.0000000000000002e-06,
+            "cumulative_seconds": 0.000191792
+          },
+          {
+            "file": "/work/current/unstd/fs/__init__.py",
+            "line": 150,
+            "function": "_scratch",
+            "calls": 1,
+            "self_seconds": 1.7666e-05,
+            "cumulative_seconds": 0.00012166700000000001
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.open>",
+            "calls": 1,
+            "self_seconds": 5.2166e-05,
+            "cumulative_seconds": 5.3625e-05
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 269,
+            "function": "_from_parsed_parts",
+            "calls": 2,
+            "self_seconds": 1.5875e-05,
+            "cumulative_seconds": 4.1959e-05
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 406,
+            "function": "with_name",
+            "calls": 1,
+            "self_seconds": 2.418e-06,
+            "cumulative_seconds": 3.9292e-05
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 381,
+            "function": "parent",
+            "calls": 1,
+            "self_seconds": 2.624e-06,
+            "cumulative_seconds": 3.0667e-05
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 1081,
+            "function": "replace",
+            "calls": 1,
+            "self_seconds": 1.542e-06,
+            "cumulative_seconds": 2.7042000000000003e-05
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.replace>",
+            "calls": 1,
+            "self_seconds": 2.3083000000000002e-05,
+            "cumulative_seconds": 2.5125e-05
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 341,
+            "function": "drive",
+            "calls": 4,
+            "self_seconds": 4.459e-06,
+            "cumulative_seconds": 2.5e-05
+          }
+        ],
+        "native": [
+          {
+            "file": "/work/bench/consumer_fs.py",
+            "line": 360,
+            "function": "operation",
+            "calls": 1,
+            "self_seconds": 2.877e-06,
+            "cumulative_seconds": 0.000616
+          },
+          {
+            "file": "/work/bench/consumer_fs.py",
+            "line": 334,
+            "function": "native_write",
+            "calls": 1,
+            "self_seconds": 1.916e-06,
+            "cumulative_seconds": 0.000609541
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method _fs_experiment.atomic_write>",
+            "calls": 1,
+            "self_seconds": 0.000604251,
+            "cumulative_seconds": 0.0006049590000000001
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<method 'disable' of '_lsprof.Profiler' objects>",
+            "calls": 1,
+            "self_seconds": 1.4292000000000001e-05,
+            "cumulative_seconds": 1.4292000000000001e-05
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 1023,
+            "function": "chmod",
+            "calls": 1,
+            "self_seconds": 1.2080000000000001e-06,
+            "cumulative_seconds": 3.541e-06
+          },
+          {
+            "file": "/work/bench/consumer_fs.py",
+            "line": 159,
+            "function": "_encoded",
+            "calls": 1,
+            "self_seconds": 1.916e-06,
+            "cumulative_seconds": 2.666e-06
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.chmod>",
+            "calls": 1,
+            "self_seconds": 1.7500000000000002e-06,
+            "cumulative_seconds": 2.333e-06
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 190,
+            "function": "__fspath__",
+            "calls": 2,
+            "self_seconds": 1.125e-06,
+            "cumulative_seconds": 1.291e-06
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method builtins.isinstance>",
+            "calls": 2,
+            "self_seconds": 3.75e-07,
+            "cumulative_seconds": 3.75e-07
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<method 'encode' of 'str' objects>",
+            "calls": 1,
+            "self_seconds": 2.92e-07,
+            "cumulative_seconds": 2.92e-07
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 251,
+            "function": "__str__",
+            "calls": 2,
+            "self_seconds": 1.66e-07,
+            "cumulative_seconds": 1.66e-07
+          },
+          {
+            "file": "/usr/local/lib/python3.14/typing.py",
+            "line": 2308,
+            "function": "cast",
+            "calls": 2,
+            "self_seconds": 1.24e-07,
+            "cumulative_seconds": 1.24e-07
+          }
+        ]
+      },
+      "python_over_native": {
+        "wall_ns": 1.9869700266009107,
+        "process_cpu_ns": 2.345050597839776
+      },
+      "recipe": {
+        "name": "oauth-token",
+        "consumer": "oauth",
+        "kind": "text",
+        "line": "synthetic-token-",
+        "bytes": 128,
+        "encoded_bytes": 128,
+        "encoded_sha256": "6fdea9fd9ce352ca64377b53ad53a13849852b73fdb5d4519b8c1098d43c8467"
+      }
+    },
+    {
+      "name": "import-config",
+      "note": "shared destination; untimed sentinel reset before every batch/profile; real fsync; private existing 0600 file",
+      "calibration": {
+        "python": {
+          "wall_ns": 18636125,
+          "process_cpu_ns": 2266875,
+          "operations": 10
+        },
+        "native": {
+          "wall_ns": 6981000,
+          "process_cpu_ns": 772999,
+          "operations": 10
+        }
+      },
+      "target_batch_wall_ns": 20000000,
+      "samples": {
+        "python": [
+          {
+            "wall_ns": 43995250,
+            "process_cpu_ns": 5555253,
+            "operations": 29
+          },
+          {
+            "wall_ns": 78659125,
+            "process_cpu_ns": 7154665,
+            "operations": 29
+          },
+          {
+            "wall_ns": 41763541,
+            "process_cpu_ns": 5901203,
+            "operations": 29
+          },
+          {
+            "wall_ns": 62293875,
+            "process_cpu_ns": 7913917,
+            "operations": 29
+          },
+          {
+            "wall_ns": 39009584,
+            "process_cpu_ns": 4186209,
+            "operations": 29
+          },
+          {
+            "wall_ns": 46690834,
+            "process_cpu_ns": 5440087,
+            "operations": 29
+          },
+          {
+            "wall_ns": 38762916,
+            "process_cpu_ns": 6293329,
+            "operations": 29
+          },
+          {
+            "wall_ns": 39352000,
+            "process_cpu_ns": 7185083,
+            "operations": 29
+          },
+          {
+            "wall_ns": 39960500,
+            "process_cpu_ns": 4969250,
+            "operations": 29
+          },
+          {
+            "wall_ns": 53001542,
+            "process_cpu_ns": 9668714,
+            "operations": 29
+          },
+          {
+            "wall_ns": 62932041,
+            "process_cpu_ns": 6093043,
+            "operations": 29
+          },
+          {
+            "wall_ns": 40489500,
+            "process_cpu_ns": 5544210,
+            "operations": 29
+          },
+          {
+            "wall_ns": 35165000,
+            "process_cpu_ns": 4738087,
+            "operations": 29
+          },
+          {
+            "wall_ns": 62697417,
+            "process_cpu_ns": 11350334,
+            "operations": 29
+          },
+          {
+            "wall_ns": 53804250,
+            "process_cpu_ns": 7122374,
+            "operations": 29
+          },
+          {
+            "wall_ns": 76105792,
+            "process_cpu_ns": 12254753,
+            "operations": 29
+          },
+          {
+            "wall_ns": 38287416,
+            "process_cpu_ns": 4997122,
+            "operations": 29
+          },
+          {
+            "wall_ns": 62733416,
+            "process_cpu_ns": 8682291,
+            "operations": 29
+          },
+          {
+            "wall_ns": 120582917,
+            "process_cpu_ns": 17233332,
+            "operations": 29
+          },
+          {
+            "wall_ns": 73362750,
+            "process_cpu_ns": 7255499,
+            "operations": 29
+          },
+          {
+            "wall_ns": 60040875,
+            "process_cpu_ns": 7710457,
+            "operations": 29
+          },
+          {
+            "wall_ns": 33972208,
+            "process_cpu_ns": 4960455,
+            "operations": 29
+          },
+          {
+            "wall_ns": 39218708,
+            "process_cpu_ns": 5557501,
+            "operations": 29
+          },
+          {
+            "wall_ns": 22893667,
+            "process_cpu_ns": 3605459,
+            "operations": 29
+          },
+          {
+            "wall_ns": 34964500,
+            "process_cpu_ns": 4412291,
+            "operations": 29
+          },
+          {
+            "wall_ns": 32938334,
+            "process_cpu_ns": 5053783,
+            "operations": 29
+          },
+          {
+            "wall_ns": 48257792,
+            "process_cpu_ns": 6503629,
+            "operations": 29
+          },
+          {
+            "wall_ns": 64477708,
+            "process_cpu_ns": 7410709,
+            "operations": 29
+          },
+          {
+            "wall_ns": 84204166,
+            "process_cpu_ns": 7303251,
+            "operations": 29
+          },
+          {
+            "wall_ns": 63482917,
+            "process_cpu_ns": 11434998,
+            "operations": 29
+          },
+          {
+            "wall_ns": 55901459,
+            "process_cpu_ns": 6851914,
+            "operations": 29
+          }
+        ],
+        "native": [
+          {
+            "wall_ns": 38703041,
+            "process_cpu_ns": 3825002,
+            "operations": 29
+          },
+          {
+            "wall_ns": 141222625,
+            "process_cpu_ns": 7641663,
+            "operations": 29
+          },
+          {
+            "wall_ns": 68516792,
+            "process_cpu_ns": 7391120,
+            "operations": 29
+          },
+          {
+            "wall_ns": 45784167,
+            "process_cpu_ns": 4304083,
+            "operations": 29
+          },
+          {
+            "wall_ns": 26925334,
+            "process_cpu_ns": 2414918,
+            "operations": 29
+          },
+          {
+            "wall_ns": 52339542,
+            "process_cpu_ns": 4240081,
+            "operations": 29
+          },
+          {
+            "wall_ns": 37696750,
+            "process_cpu_ns": 3254544,
+            "operations": 29
+          },
+          {
+            "wall_ns": 77266834,
+            "process_cpu_ns": 5835712,
+            "operations": 29
+          },
+          {
+            "wall_ns": 45332417,
+            "process_cpu_ns": 4089418,
+            "operations": 29
+          },
+          {
+            "wall_ns": 41890291,
+            "process_cpu_ns": 3551500,
+            "operations": 29
+          },
+          {
+            "wall_ns": 36858416,
+            "process_cpu_ns": 3512080,
+            "operations": 29
+          },
+          {
+            "wall_ns": 49991084,
+            "process_cpu_ns": 3865663,
+            "operations": 29
+          },
+          {
+            "wall_ns": 33760792,
+            "process_cpu_ns": 3192713,
+            "operations": 29
+          },
+          {
+            "wall_ns": 86589125,
+            "process_cpu_ns": 5347499,
+            "operations": 29
+          },
+          {
+            "wall_ns": 59801750,
+            "process_cpu_ns": 5865998,
+            "operations": 29
+          },
+          {
+            "wall_ns": 31484166,
+            "process_cpu_ns": 3039709,
+            "operations": 29
+          },
+          {
+            "wall_ns": 517088833,
+            "process_cpu_ns": 7401249,
+            "operations": 29
+          },
+          {
+            "wall_ns": 29111208,
+            "process_cpu_ns": 3672667,
+            "operations": 29
+          },
+          {
+            "wall_ns": 39314334,
+            "process_cpu_ns": 3652673,
+            "operations": 29
+          },
+          {
+            "wall_ns": 29818042,
+            "process_cpu_ns": 3120956,
+            "operations": 29
+          },
+          {
+            "wall_ns": 43616001,
+            "process_cpu_ns": 4867544,
+            "operations": 29
+          },
+          {
+            "wall_ns": 41056542,
+            "process_cpu_ns": 4145793,
+            "operations": 29
+          },
+          {
+            "wall_ns": 33800666,
+            "process_cpu_ns": 3657918,
+            "operations": 29
+          },
+          {
+            "wall_ns": 44461792,
+            "process_cpu_ns": 4451373,
+            "operations": 29
+          },
+          {
+            "wall_ns": 33390459,
+            "process_cpu_ns": 3060291,
+            "operations": 29
+          },
+          {
+            "wall_ns": 39679458,
+            "process_cpu_ns": 4286081,
+            "operations": 29
+          },
+          {
+            "wall_ns": 37269583,
+            "process_cpu_ns": 3984169,
+            "operations": 29
+          },
+          {
+            "wall_ns": 24657208,
+            "process_cpu_ns": 2904292,
+            "operations": 29
+          },
+          {
+            "wall_ns": 35078958,
+            "process_cpu_ns": 4817163,
+            "operations": 29
+          },
+          {
+            "wall_ns": 40113209,
+            "process_cpu_ns": 4948459,
+            "operations": 29
+          },
+          {
+            "wall_ns": 105392542,
+            "process_cpu_ns": 8982707,
+            "operations": 29
+          }
+        ]
+      },
+      "median_per_operation_ns": {
+        "python": {
+          "wall_ns": 1664061.7931034483,
+          "process_cpu_ns": 224263.06896551725
+        },
+        "native": {
+          "wall_ns": 1383214.103448276,
+          "process_cpu_ns": 141014.41379310345
+        }
+      },
+      "orders": [
+        [
+          "python",
+          "native"
+        ],
+        [
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native"
+        ],
+        [
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native"
+        ],
+        [
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native"
+        ],
+        [
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native"
+        ],
+        [
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native"
+        ],
+        [
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native"
+        ],
+        [
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native"
+        ],
+        [
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native"
+        ],
+        [
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native"
+        ],
+        [
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native"
+        ],
+        [
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native"
+        ],
+        [
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native"
+        ],
+        [
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native"
+        ],
+        [
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native"
+        ],
+        [
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native"
+        ]
+      ],
+      "profiles": {
+        "python": [
+          {
+            "file": "/work/bench/consumer_fs.py",
+            "line": 360,
+            "function": "operation",
+            "calls": 1,
+            "self_seconds": 7.457000000000001e-06,
+            "cumulative_seconds": 0.001889625
+          },
+          {
+            "file": "/work/current/unstd/fs/__init__.py",
+            "line": 282,
+            "function": "atomic_write",
+            "calls": 1,
+            "self_seconds": 1.4334e-05,
+            "cumulative_seconds": 0.001882084
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method builtins.next>",
+            "calls": 2,
+            "self_seconds": 5.375e-06,
+            "cumulative_seconds": 0.0018412500000000002
+          },
+          {
+            "file": "/work/current/unstd/fs/__init__.py",
+            "line": 200,
+            "function": "_atomic_writer",
+            "calls": 2,
+            "self_seconds": 2.4459e-05,
+            "cumulative_seconds": 0.001835875
+          },
+          {
+            "file": "/usr/local/lib/python3.14/contextlib.py",
+            "line": 145,
+            "function": "__exit__",
+            "calls": 1,
+            "self_seconds": 1.833e-06,
+            "cumulative_seconds": 0.0017317500000000002
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.fsync>",
+            "calls": 1,
+            "self_seconds": 0.001609125,
+            "cumulative_seconds": 0.001609125
+          },
+          {
+            "file": "/usr/local/lib/python3.14/contextlib.py",
+            "line": 136,
+            "function": "__enter__",
+            "calls": 1,
+            "self_seconds": 1.4170000000000002e-06,
+            "cumulative_seconds": 0.00011275
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 1081,
+            "function": "replace",
+            "calls": 1,
+            "self_seconds": 2.0840000000000003e-06,
+            "cumulative_seconds": 7.241700000000001e-05
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.replace>",
+            "calls": 1,
+            "self_seconds": 6.6958e-05,
+            "cumulative_seconds": 6.9708e-05
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<method 'disable' of '_lsprof.Profiler' objects>",
+            "calls": 1,
+            "self_seconds": 4.1791e-05,
+            "cumulative_seconds": 4.1791e-05
+          },
+          {
+            "file": "/work/current/unstd/fs/__init__.py",
+            "line": 150,
+            "function": "_scratch",
+            "calls": 1,
+            "self_seconds": 6.6240000000000004e-06,
+            "cumulative_seconds": 4.1542e-05
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 381,
+            "function": "parent",
+            "calls": 1,
+            "self_seconds": 3.3740000000000002e-06,
+            "cumulative_seconds": 2.9166e-05
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 341,
+            "function": "drive",
+            "calls": 4,
+            "self_seconds": 7.2510000000000005e-06,
+            "cumulative_seconds": 2.2501e-05
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.open>",
+            "calls": 1,
+            "self_seconds": 1.9333000000000003e-05,
+            "cumulative_seconds": 1.9625000000000003e-05
+          },
+          {
+            "file": "/work/current/unstd/fs/__init__.py",
+            "line": 100,
+            "function": "_prepare_parent",
+            "calls": 1,
+            "self_seconds": 1.333e-06,
+            "cumulative_seconds": 1.9542e-05
+          }
+        ],
+        "native": [
+          {
+            "file": "/work/bench/consumer_fs.py",
+            "line": 360,
+            "function": "operation",
+            "calls": 1,
+            "self_seconds": 4.958000000000001e-06,
+            "cumulative_seconds": 0.001875041
+          },
+          {
+            "file": "/work/bench/consumer_fs.py",
+            "line": 334,
+            "function": "native_write",
+            "calls": 1,
+            "self_seconds": 3.3750000000000003e-06,
+            "cumulative_seconds": 0.0018699580000000001
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method _fs_experiment.atomic_write>",
+            "calls": 1,
+            "self_seconds": 0.0018592910000000001,
+            "cumulative_seconds": 0.001860375
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<method 'disable' of '_lsprof.Profiler' objects>",
+            "calls": 1,
+            "self_seconds": 1.9875000000000002e-05,
+            "cumulative_seconds": 1.9875000000000002e-05
+          },
+          {
+            "file": "/work/bench/consumer_fs.py",
+            "line": 159,
+            "function": "_encoded",
+            "calls": 1,
+            "self_seconds": 3.4160000000000004e-06,
+            "cumulative_seconds": 6.2080000000000005e-06
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<method 'encode' of 'str' objects>",
+            "calls": 1,
+            "self_seconds": 2.0000000000000003e-06,
+            "cumulative_seconds": 2.0000000000000003e-06
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 190,
+            "function": "__fspath__",
+            "calls": 1,
+            "self_seconds": 1.001e-06,
+            "cumulative_seconds": 1.0840000000000001e-06
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method builtins.isinstance>",
+            "calls": 2,
+            "self_seconds": 7.08e-07,
+            "cumulative_seconds": 7.08e-07
+          },
+          {
+            "file": "/usr/local/lib/python3.14/typing.py",
+            "line": 2308,
+            "function": "cast",
+            "calls": 2,
+            "self_seconds": 2.09e-07,
+            "cumulative_seconds": 2.09e-07
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 251,
+            "function": "__str__",
+            "calls": 1,
+            "self_seconds": 8.3e-08,
+            "cumulative_seconds": 8.3e-08
+          }
+        ]
+      },
+      "python_over_native": {
+        "wall_ns": 1.2030399263245182,
+        "process_cpu_ns": 1.5903556447396672
+      },
+      "recipe": {
+        "name": "import-config",
+        "consumer": "config",
+        "kind": "text",
+        "line": "# synthetic import-policy configuration\n",
+        "bytes": 47473,
+        "encoded_bytes": 47473,
+        "encoded_sha256": "6d344bf1665189f72a6fc4dd7be6c5785b42087ac71bf40eefbe2af5c77fe88b"
+      }
+    },
+    {
+      "name": "browser-write-65536",
+      "note": "shared destination; untimed sentinel reset before every batch/profile; real fsync; private existing 0600 file",
+      "calibration": {
+        "python": {
+          "wall_ns": 46036083,
+          "process_cpu_ns": 2341708,
+          "operations": 10
+        },
+        "native": {
+          "wall_ns": 33847459,
+          "process_cpu_ns": 2257997,
+          "operations": 10
+        }
+      },
+      "target_batch_wall_ns": 20000000,
+      "samples": {
+        "python": [
+          {
+            "wall_ns": 20859333,
+            "process_cpu_ns": 4834666,
+            "operations": 10
+          },
+          {
+            "wall_ns": 12205791,
+            "process_cpu_ns": 1667291,
+            "operations": 10
+          },
+          {
+            "wall_ns": 12117917,
+            "process_cpu_ns": 1117082,
+            "operations": 10
+          },
+          {
+            "wall_ns": 23987375,
+            "process_cpu_ns": 3252626,
+            "operations": 10
+          },
+          {
+            "wall_ns": 38809709,
+            "process_cpu_ns": 2994123,
+            "operations": 10
+          },
+          {
+            "wall_ns": 12809750,
+            "process_cpu_ns": 1366123,
+            "operations": 10
+          },
+          {
+            "wall_ns": 12401542,
+            "process_cpu_ns": 1472123,
+            "operations": 10
+          },
+          {
+            "wall_ns": 26062792,
+            "process_cpu_ns": 2689374,
+            "operations": 10
+          },
+          {
+            "wall_ns": 29645834,
+            "process_cpu_ns": 4285043,
+            "operations": 10
+          },
+          {
+            "wall_ns": 8472875,
+            "process_cpu_ns": 1402043,
+            "operations": 10
+          },
+          {
+            "wall_ns": 10684125,
+            "process_cpu_ns": 1363541,
+            "operations": 10
+          },
+          {
+            "wall_ns": 8276833,
+            "process_cpu_ns": 1204251,
+            "operations": 10
+          },
+          {
+            "wall_ns": 32921500,
+            "process_cpu_ns": 1470539,
+            "operations": 10
+          },
+          {
+            "wall_ns": 19332709,
+            "process_cpu_ns": 2117165,
+            "operations": 10
+          },
+          {
+            "wall_ns": 22498583,
+            "process_cpu_ns": 2879500,
+            "operations": 10
+          },
+          {
+            "wall_ns": 10397334,
+            "process_cpu_ns": 1354750,
+            "operations": 10
+          },
+          {
+            "wall_ns": 6688250,
+            "process_cpu_ns": 910747,
+            "operations": 10
+          },
+          {
+            "wall_ns": 21518500,
+            "process_cpu_ns": 6015123,
+            "operations": 10
+          },
+          {
+            "wall_ns": 24896292,
+            "process_cpu_ns": 7986749,
+            "operations": 10
+          },
+          {
+            "wall_ns": 37861792,
+            "process_cpu_ns": 2251040,
+            "operations": 10
+          },
+          {
+            "wall_ns": 24155625,
+            "process_cpu_ns": 2343876,
+            "operations": 10
+          },
+          {
+            "wall_ns": 8862500,
+            "process_cpu_ns": 1508249,
+            "operations": 10
+          },
+          {
+            "wall_ns": 14674292,
+            "process_cpu_ns": 2513540,
+            "operations": 10
+          },
+          {
+            "wall_ns": 33331208,
+            "process_cpu_ns": 3115499,
+            "operations": 10
+          },
+          {
+            "wall_ns": 21822916,
+            "process_cpu_ns": 2237544,
+            "operations": 10
+          },
+          {
+            "wall_ns": 25092458,
+            "process_cpu_ns": 1870001,
+            "operations": 10
+          },
+          {
+            "wall_ns": 18990875,
+            "process_cpu_ns": 1559122,
+            "operations": 10
+          },
+          {
+            "wall_ns": 19797208,
+            "process_cpu_ns": 2110331,
+            "operations": 10
+          },
+          {
+            "wall_ns": 10905959,
+            "process_cpu_ns": 1575997,
+            "operations": 10
+          },
+          {
+            "wall_ns": 6440250,
+            "process_cpu_ns": 927124,
+            "operations": 10
+          },
+          {
+            "wall_ns": 6399542,
+            "process_cpu_ns": 979126,
+            "operations": 10
+          }
+        ],
+        "native": [
+          {
+            "wall_ns": 7987208,
+            "process_cpu_ns": 639833,
+            "operations": 10
+          },
+          {
+            "wall_ns": 17335792,
+            "process_cpu_ns": 1484288,
+            "operations": 10
+          },
+          {
+            "wall_ns": 33751958,
+            "process_cpu_ns": 2531247,
+            "operations": 10
+          },
+          {
+            "wall_ns": 25416875,
+            "process_cpu_ns": 4373748,
+            "operations": 10
+          },
+          {
+            "wall_ns": 26590709,
+            "process_cpu_ns": 2037957,
+            "operations": 10
+          },
+          {
+            "wall_ns": 29299708,
+            "process_cpu_ns": 3478958,
+            "operations": 10
+          },
+          {
+            "wall_ns": 12214375,
+            "process_cpu_ns": 1068918,
+            "operations": 10
+          },
+          {
+            "wall_ns": 11615209,
+            "process_cpu_ns": 1286334,
+            "operations": 10
+          },
+          {
+            "wall_ns": 6710917,
+            "process_cpu_ns": 745086,
+            "operations": 10
+          },
+          {
+            "wall_ns": 30903916,
+            "process_cpu_ns": 1912040,
+            "operations": 10
+          },
+          {
+            "wall_ns": 20251333,
+            "process_cpu_ns": 3762709,
+            "operations": 10
+          },
+          {
+            "wall_ns": 14785459,
+            "process_cpu_ns": 2095955,
+            "operations": 10
+          },
+          {
+            "wall_ns": 16992625,
+            "process_cpu_ns": 1683500,
+            "operations": 10
+          },
+          {
+            "wall_ns": 7487708,
+            "process_cpu_ns": 665501,
+            "operations": 10
+          },
+          {
+            "wall_ns": 19694166,
+            "process_cpu_ns": 1839041,
+            "operations": 10
+          },
+          {
+            "wall_ns": 18565000,
+            "process_cpu_ns": 1570664,
+            "operations": 10
+          },
+          {
+            "wall_ns": 14436625,
+            "process_cpu_ns": 1720330,
+            "operations": 10
+          },
+          {
+            "wall_ns": 19012125,
+            "process_cpu_ns": 1496329,
+            "operations": 10
+          },
+          {
+            "wall_ns": 18975625,
+            "process_cpu_ns": 1830333,
+            "operations": 10
+          },
+          {
+            "wall_ns": 17427167,
+            "process_cpu_ns": 1749542,
+            "operations": 10
+          },
+          {
+            "wall_ns": 22272292,
+            "process_cpu_ns": 1826335,
+            "operations": 10
+          },
+          {
+            "wall_ns": 19816250,
+            "process_cpu_ns": 2200748,
+            "operations": 10
+          },
+          {
+            "wall_ns": 15924833,
+            "process_cpu_ns": 1024666,
+            "operations": 10
+          },
+          {
+            "wall_ns": 21186417,
+            "process_cpu_ns": 1855330,
+            "operations": 10
+          },
+          {
+            "wall_ns": 28863958,
+            "process_cpu_ns": 2824877,
+            "operations": 10
+          },
+          {
+            "wall_ns": 21136334,
+            "process_cpu_ns": 2292626,
+            "operations": 10
+          },
+          {
+            "wall_ns": 15886876,
+            "process_cpu_ns": 1256915,
+            "operations": 10
+          },
+          {
+            "wall_ns": 6019791,
+            "process_cpu_ns": 586250,
+            "operations": 10
+          },
+          {
+            "wall_ns": 6502834,
+            "process_cpu_ns": 653251,
+            "operations": 10
+          },
+          {
+            "wall_ns": 23635250,
+            "process_cpu_ns": 1808373,
+            "operations": 10
+          },
+          {
+            "wall_ns": 23165833,
+            "process_cpu_ns": 1353121,
+            "operations": 10
+          }
+        ]
+      },
+      "median_per_operation_ns": {
+        "python": {
+          "wall_ns": 1933270.9,
+          "process_cpu_ns": 187000.1
+        },
+        "native": {
+          "wall_ns": 1897562.5,
+          "process_cpu_ns": 174954.2
+        }
+      },
+      "orders": [
+        [
+          "python",
+          "native"
+        ],
+        [
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native"
+        ],
+        [
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native"
+        ],
+        [
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native"
+        ],
+        [
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native"
+        ],
+        [
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native"
+        ],
+        [
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native"
+        ],
+        [
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native"
+        ],
+        [
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native"
+        ],
+        [
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native"
+        ],
+        [
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native"
+        ],
+        [
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native"
+        ],
+        [
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native"
+        ],
+        [
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native"
+        ],
+        [
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native"
+        ],
+        [
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native"
+        ]
+      ],
+      "profiles": {
+        "python": [
+          {
+            "file": "/work/bench/consumer_fs.py",
+            "line": 360,
+            "function": "operation",
+            "calls": 1,
+            "self_seconds": 1.1458000000000001e-05,
+            "cumulative_seconds": 0.004771
+          },
+          {
+            "file": "/work/current/unstd/fs/__init__.py",
+            "line": 282,
+            "function": "atomic_write",
+            "calls": 1,
+            "self_seconds": 8.542e-06,
+            "cumulative_seconds": 0.004757375
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method builtins.next>",
+            "calls": 2,
+            "self_seconds": 4.208e-06,
+            "cumulative_seconds": 0.004731833
+          },
+          {
+            "file": "/work/current/unstd/fs/__init__.py",
+            "line": 200,
+            "function": "_atomic_writer",
+            "calls": 2,
+            "self_seconds": 3.8041000000000004e-05,
+            "cumulative_seconds": 0.004727625
+          },
+          {
+            "file": "/usr/local/lib/python3.14/contextlib.py",
+            "line": 145,
+            "function": "__exit__",
+            "calls": 1,
+            "self_seconds": 1.333e-06,
+            "cumulative_seconds": 0.004608458
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.fsync>",
+            "calls": 1,
+            "self_seconds": 0.00452375,
+            "cumulative_seconds": 0.00452375
+          },
+          {
+            "file": "/usr/local/lib/python3.14/contextlib.py",
+            "line": 136,
+            "function": "__enter__",
+            "calls": 1,
+            "self_seconds": 1.0420000000000001e-06,
+            "cumulative_seconds": 0.00012575000000000002
+          },
+          {
+            "file": "/work/current/unstd/fs/__init__.py",
+            "line": 150,
+            "function": "_scratch",
+            "calls": 1,
+            "self_seconds": 8.501e-06,
+            "cumulative_seconds": 5.5834e-05
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 1081,
+            "function": "replace",
+            "calls": 1,
+            "self_seconds": 2.042e-06,
+            "cumulative_seconds": 4.5041000000000005e-05
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.replace>",
+            "calls": 1,
+            "self_seconds": 3.7041e-05,
+            "cumulative_seconds": 4.2583e-05
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 381,
+            "function": "parent",
+            "calls": 1,
+            "self_seconds": 2.375e-06,
+            "cumulative_seconds": 2.4125e-05
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<method 'disable' of '_lsprof.Profiler' objects>",
+            "calls": 1,
+            "self_seconds": 2.0208e-05,
+            "cumulative_seconds": 2.0208e-05
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.stat>",
+            "calls": 2,
+            "self_seconds": 7.583e-06,
+            "cumulative_seconds": 1.9541e-05
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 341,
+            "function": "drive",
+            "calls": 4,
+            "self_seconds": 5.8750000000000005e-06,
+            "cumulative_seconds": 1.925e-05
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.open>",
+            "calls": 1,
+            "self_seconds": 1.8625000000000002e-05,
+            "cumulative_seconds": 1.9e-05
+          }
+        ],
+        "native": [
+          {
+            "file": "/work/bench/consumer_fs.py",
+            "line": 360,
+            "function": "operation",
+            "calls": 1,
+            "self_seconds": 1.0624e-05,
+            "cumulative_seconds": 0.002791
+          },
+          {
+            "file": "/work/bench/consumer_fs.py",
+            "line": 334,
+            "function": "native_write",
+            "calls": 1,
+            "self_seconds": 2.0830000000000002e-06,
+            "cumulative_seconds": 0.002778042
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method _fs_experiment.atomic_write>",
+            "calls": 1,
+            "self_seconds": 0.002774167,
+            "cumulative_seconds": 0.002774917
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<method 'disable' of '_lsprof.Profiler' objects>",
+            "calls": 1,
+            "self_seconds": 2.3166e-05,
+            "cumulative_seconds": 2.3166e-05
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<method 'encode' of 'str' objects>",
+            "calls": 1,
+            "self_seconds": 2.209e-06,
+            "cumulative_seconds": 2.209e-06
+          },
+          {
+            "file": "/work/bench/consumer_fs.py",
+            "line": 159,
+            "function": "_encoded",
+            "calls": 1,
+            "self_seconds": 6.67e-07,
+            "cumulative_seconds": 1.0420000000000001e-06
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 190,
+            "function": "__fspath__",
+            "calls": 1,
+            "self_seconds": 7.08e-07,
+            "cumulative_seconds": 7.5e-07
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method builtins.isinstance>",
+            "calls": 1,
+            "self_seconds": 3.75e-07,
+            "cumulative_seconds": 3.75e-07
+          },
+          {
+            "file": "/usr/local/lib/python3.14/typing.py",
+            "line": 2308,
+            "function": "cast",
+            "calls": 1,
+            "self_seconds": 1.2500000000000002e-07,
+            "cumulative_seconds": 1.2500000000000002e-07
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 251,
+            "function": "__str__",
+            "calls": 1,
+            "self_seconds": 4.2000000000000006e-08,
+            "cumulative_seconds": 4.2000000000000006e-08
+          }
+        ]
+      },
+      "python_over_native": {
+        "wall_ns": 1.0188180362965646,
+        "process_cpu_ns": 1.0688517337680374
+      },
+      "recipe": {
+        "name": "browser-write-65536",
+        "consumer": "hosted",
+        "kind": "browser",
+        "bytes": 65536,
+        "encoded_bytes": 65536,
+        "encoded_sha256": "52bc0d65507208ddce9c085f0facfbda82f1065bccd5df7531e106833b86bf6a"
+      }
+    },
+    {
+      "name": "browser-land-65536-peers-64",
+      "note": "shared destination; untimed sentinel reset before every batch/profile; real fsync; private existing 0600 file",
+      "calibration": {
+        "python": {
+          "wall_ns": 24619167,
+          "process_cpu_ns": 6385875,
+          "operations": 10
+        },
+        "native": {
+          "wall_ns": 41781041,
+          "process_cpu_ns": 7004249,
+          "operations": 10
+        },
+        "consumer": {
+          "wall_ns": 31881584,
+          "process_cpu_ns": 6672873,
+          "operations": 10
+        }
+      },
+      "target_batch_wall_ns": 20000000,
+      "samples": {
+        "python": [
+          {
+            "wall_ns": 23627791,
+            "process_cpu_ns": 5574293,
+            "operations": 10
+          },
+          {
+            "wall_ns": 12883208,
+            "process_cpu_ns": 4415959,
+            "operations": 10
+          },
+          {
+            "wall_ns": 35598792,
+            "process_cpu_ns": 13150165,
+            "operations": 10
+          },
+          {
+            "wall_ns": 10973125,
+            "process_cpu_ns": 4268415,
+            "operations": 10
+          },
+          {
+            "wall_ns": 44312083,
+            "process_cpu_ns": 12427207,
+            "operations": 10
+          },
+          {
+            "wall_ns": 43329541,
+            "process_cpu_ns": 7965125,
+            "operations": 10
+          },
+          {
+            "wall_ns": 20544292,
+            "process_cpu_ns": 5957956,
+            "operations": 10
+          },
+          {
+            "wall_ns": 37493291,
+            "process_cpu_ns": 5917417,
+            "operations": 10
+          },
+          {
+            "wall_ns": 27159334,
+            "process_cpu_ns": 6454333,
+            "operations": 10
+          },
+          {
+            "wall_ns": 40828167,
+            "process_cpu_ns": 6484499,
+            "operations": 10
+          },
+          {
+            "wall_ns": 44291584,
+            "process_cpu_ns": 12440332,
+            "operations": 10
+          },
+          {
+            "wall_ns": 18107167,
+            "process_cpu_ns": 5621665,
+            "operations": 10
+          },
+          {
+            "wall_ns": 14159208,
+            "process_cpu_ns": 4328666,
+            "operations": 10
+          },
+          {
+            "wall_ns": 15995083,
+            "process_cpu_ns": 4911084,
+            "operations": 10
+          },
+          {
+            "wall_ns": 840319000,
+            "process_cpu_ns": 18577210,
+            "operations": 10
+          },
+          {
+            "wall_ns": 23226458,
+            "process_cpu_ns": 6212291,
+            "operations": 10
+          },
+          {
+            "wall_ns": 28111417,
+            "process_cpu_ns": 7304002,
+            "operations": 10
+          },
+          {
+            "wall_ns": 15618167,
+            "process_cpu_ns": 5450126,
+            "operations": 10
+          },
+          {
+            "wall_ns": 12722500,
+            "process_cpu_ns": 3679248,
+            "operations": 10
+          },
+          {
+            "wall_ns": 42230500,
+            "process_cpu_ns": 22806085,
+            "operations": 10
+          },
+          {
+            "wall_ns": 16909875,
+            "process_cpu_ns": 5286791,
+            "operations": 10
+          },
+          {
+            "wall_ns": 29150834,
+            "process_cpu_ns": 7305080,
+            "operations": 10
+          },
+          {
+            "wall_ns": 26391667,
+            "process_cpu_ns": 6924957,
+            "operations": 10
+          },
+          {
+            "wall_ns": 25796958,
+            "process_cpu_ns": 7114583,
+            "operations": 10
+          },
+          {
+            "wall_ns": 13208833,
+            "process_cpu_ns": 4238082,
+            "operations": 10
+          },
+          {
+            "wall_ns": 60190958,
+            "process_cpu_ns": 8423919,
+            "operations": 10
+          },
+          {
+            "wall_ns": 30458875,
+            "process_cpu_ns": 9292706,
+            "operations": 10
+          },
+          {
+            "wall_ns": 10899542,
+            "process_cpu_ns": 3848624,
+            "operations": 10
+          },
+          {
+            "wall_ns": 27641000,
+            "process_cpu_ns": 6540499,
+            "operations": 10
+          },
+          {
+            "wall_ns": 18309667,
+            "process_cpu_ns": 5869624,
+            "operations": 10
+          },
+          {
+            "wall_ns": 17853125,
+            "process_cpu_ns": 4600750,
+            "operations": 10
+          }
+        ],
+        "native": [
+          {
+            "wall_ns": 8728625,
+            "process_cpu_ns": 3156127,
+            "operations": 10
+          },
+          {
+            "wall_ns": 25600250,
+            "process_cpu_ns": 4654957,
+            "operations": 10
+          },
+          {
+            "wall_ns": 24652584,
+            "process_cpu_ns": 6321250,
+            "operations": 10
+          },
+          {
+            "wall_ns": 14781458,
+            "process_cpu_ns": 4217710,
+            "operations": 10
+          },
+          {
+            "wall_ns": 17700875,
+            "process_cpu_ns": 4753919,
+            "operations": 10
+          },
+          {
+            "wall_ns": 13008083,
+            "process_cpu_ns": 3958000,
+            "operations": 10
+          },
+          {
+            "wall_ns": 33025250,
+            "process_cpu_ns": 6168459,
+            "operations": 10
+          },
+          {
+            "wall_ns": 36538084,
+            "process_cpu_ns": 7631667,
+            "operations": 10
+          },
+          {
+            "wall_ns": 26571083,
+            "process_cpu_ns": 8943209,
+            "operations": 10
+          },
+          {
+            "wall_ns": 36195250,
+            "process_cpu_ns": 17648163,
+            "operations": 10
+          },
+          {
+            "wall_ns": 48177792,
+            "process_cpu_ns": 13215371,
+            "operations": 10
+          },
+          {
+            "wall_ns": 25999333,
+            "process_cpu_ns": 6403083,
+            "operations": 10
+          },
+          {
+            "wall_ns": 19884125,
+            "process_cpu_ns": 5400251,
+            "operations": 10
+          },
+          {
+            "wall_ns": 40233292,
+            "process_cpu_ns": 7756833,
+            "operations": 10
+          },
+          {
+            "wall_ns": 30937417,
+            "process_cpu_ns": 6801085,
+            "operations": 10
+          },
+          {
+            "wall_ns": 18401041,
+            "process_cpu_ns": 5054751,
+            "operations": 10
+          },
+          {
+            "wall_ns": 28857750,
+            "process_cpu_ns": 10745584,
+            "operations": 10
+          },
+          {
+            "wall_ns": 10114042,
+            "process_cpu_ns": 3446749,
+            "operations": 10
+          },
+          {
+            "wall_ns": 15055125,
+            "process_cpu_ns": 4745168,
+            "operations": 10
+          },
+          {
+            "wall_ns": 10122125,
+            "process_cpu_ns": 3418373,
+            "operations": 10
+          },
+          {
+            "wall_ns": 11114042,
+            "process_cpu_ns": 3647086,
+            "operations": 10
+          },
+          {
+            "wall_ns": 27920916,
+            "process_cpu_ns": 7235961,
+            "operations": 10
+          },
+          {
+            "wall_ns": 14389000,
+            "process_cpu_ns": 4681039,
+            "operations": 10
+          },
+          {
+            "wall_ns": 17166792,
+            "process_cpu_ns": 4176958,
+            "operations": 10
+          },
+          {
+            "wall_ns": 21549000,
+            "process_cpu_ns": 5730418,
+            "operations": 10
+          },
+          {
+            "wall_ns": 26577458,
+            "process_cpu_ns": 5951169,
+            "operations": 10
+          },
+          {
+            "wall_ns": 22521916,
+            "process_cpu_ns": 6415461,
+            "operations": 10
+          },
+          {
+            "wall_ns": 20156417,
+            "process_cpu_ns": 5724084,
+            "operations": 10
+          },
+          {
+            "wall_ns": 17871625,
+            "process_cpu_ns": 5035002,
+            "operations": 10
+          },
+          {
+            "wall_ns": 11381042,
+            "process_cpu_ns": 3872500,
+            "operations": 10
+          },
+          {
+            "wall_ns": 26971666,
+            "process_cpu_ns": 7439210,
+            "operations": 10
+          }
+        ],
+        "consumer": [
+          {
+            "wall_ns": 18248083,
+            "process_cpu_ns": 5600123,
+            "operations": 10
+          },
+          {
+            "wall_ns": 54615292,
+            "process_cpu_ns": 9084959,
+            "operations": 10
+          },
+          {
+            "wall_ns": 22430833,
+            "process_cpu_ns": 6741709,
+            "operations": 10
+          },
+          {
+            "wall_ns": 25941291,
+            "process_cpu_ns": 4646501,
+            "operations": 10
+          },
+          {
+            "wall_ns": 19529000,
+            "process_cpu_ns": 4938627,
+            "operations": 10
+          },
+          {
+            "wall_ns": 15267666,
+            "process_cpu_ns": 5486459,
+            "operations": 10
+          },
+          {
+            "wall_ns": 14480875,
+            "process_cpu_ns": 4852708,
+            "operations": 10
+          },
+          {
+            "wall_ns": 17736625,
+            "process_cpu_ns": 5461415,
+            "operations": 10
+          },
+          {
+            "wall_ns": 33639292,
+            "process_cpu_ns": 7966252,
+            "operations": 10
+          },
+          {
+            "wall_ns": 36469708,
+            "process_cpu_ns": 8090875,
+            "operations": 10
+          },
+          {
+            "wall_ns": 29103041,
+            "process_cpu_ns": 7588624,
+            "operations": 10
+          },
+          {
+            "wall_ns": 26461875,
+            "process_cpu_ns": 7358960,
+            "operations": 10
+          },
+          {
+            "wall_ns": 22623500,
+            "process_cpu_ns": 6057124,
+            "operations": 10
+          },
+          {
+            "wall_ns": 109949792,
+            "process_cpu_ns": 15303373,
+            "operations": 10
+          },
+          {
+            "wall_ns": 25885709,
+            "process_cpu_ns": 7525335,
+            "operations": 10
+          },
+          {
+            "wall_ns": 18356500,
+            "process_cpu_ns": 5764375,
+            "operations": 10
+          },
+          {
+            "wall_ns": 9715959,
+            "process_cpu_ns": 3546378,
+            "operations": 10
+          },
+          {
+            "wall_ns": 18694125,
+            "process_cpu_ns": 5766042,
+            "operations": 10
+          },
+          {
+            "wall_ns": 16189875,
+            "process_cpu_ns": 5040168,
+            "operations": 10
+          },
+          {
+            "wall_ns": 16723584,
+            "process_cpu_ns": 5345164,
+            "operations": 10
+          },
+          {
+            "wall_ns": 14512167,
+            "process_cpu_ns": 4581418,
+            "operations": 10
+          },
+          {
+            "wall_ns": 17515083,
+            "process_cpu_ns": 5386874,
+            "operations": 10
+          },
+          {
+            "wall_ns": 16731875,
+            "process_cpu_ns": 5088458,
+            "operations": 10
+          },
+          {
+            "wall_ns": 17026000,
+            "process_cpu_ns": 5162002,
+            "operations": 10
+          },
+          {
+            "wall_ns": 18207334,
+            "process_cpu_ns": 5190291,
+            "operations": 10
+          },
+          {
+            "wall_ns": 11235083,
+            "process_cpu_ns": 3970626,
+            "operations": 10
+          },
+          {
+            "wall_ns": 26216500,
+            "process_cpu_ns": 13923458,
+            "operations": 10
+          },
+          {
+            "wall_ns": 31826542,
+            "process_cpu_ns": 7705543,
+            "operations": 10
+          },
+          {
+            "wall_ns": 16703958,
+            "process_cpu_ns": 4961667,
+            "operations": 10
+          },
+          {
+            "wall_ns": 19086834,
+            "process_cpu_ns": 5873124,
+            "operations": 10
+          },
+          {
+            "wall_ns": 22116417,
+            "process_cpu_ns": 6652707,
+            "operations": 10
+          }
+        ]
+      },
+      "median_per_operation_ns": {
+        "python": {
+          "wall_ns": 2579695.8,
+          "process_cpu_ns": 621229.1
+        },
+        "native": {
+          "wall_ns": 2154900.0,
+          "process_cpu_ns": 572408.4
+        },
+        "consumer": {
+          "wall_ns": 1869412.5,
+          "process_cpu_ns": 560012.3
+        }
+      },
+      "orders": [
+        [
+          "python",
+          "native",
+          "consumer"
+        ],
+        [
+          "consumer",
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native",
+          "consumer"
+        ],
+        [
+          "consumer",
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native",
+          "consumer"
+        ],
+        [
+          "consumer",
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native",
+          "consumer"
+        ],
+        [
+          "consumer",
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native",
+          "consumer"
+        ],
+        [
+          "consumer",
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native",
+          "consumer"
+        ],
+        [
+          "consumer",
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native",
+          "consumer"
+        ],
+        [
+          "consumer",
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native",
+          "consumer"
+        ],
+        [
+          "consumer",
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native",
+          "consumer"
+        ],
+        [
+          "consumer",
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native",
+          "consumer"
+        ],
+        [
+          "consumer",
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native",
+          "consumer"
+        ],
+        [
+          "consumer",
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native",
+          "consumer"
+        ],
+        [
+          "consumer",
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native",
+          "consumer"
+        ],
+        [
+          "consumer",
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native",
+          "consumer"
+        ],
+        [
+          "consumer",
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native",
+          "consumer"
+        ],
+        [
+          "consumer",
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native",
+          "consumer"
+        ]
+      ],
+      "profiles": {
+        "python": [
+          {
+            "file": "/work/bench/consumer_fs.py",
+            "line": 320,
+            "function": "_hosted_result",
+            "calls": 1,
+            "self_seconds": 3.625e-06,
+            "cumulative_seconds": 0.001419667
+          },
+          {
+            "file": "/work/consumer/services/ai/tools/system/control/browser/hosted/custody.py",
+            "line": 234,
+            "function": "land_state",
+            "calls": 1,
+            "self_seconds": 1.4709000000000001e-05,
+            "cumulative_seconds": 0.001413042
+          },
+          {
+            "file": "/work/current/unstd/fs/__init__.py",
+            "line": 282,
+            "function": "atomic_write",
+            "calls": 1,
+            "self_seconds": 6.666e-06,
+            "cumulative_seconds": 0.0006966250000000001
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method builtins.next>",
+            "calls": 2,
+            "self_seconds": 3.5830000000000003e-06,
+            "cumulative_seconds": 0.000678208
+          },
+          {
+            "file": "/work/current/unstd/fs/__init__.py",
+            "line": 200,
+            "function": "_atomic_writer",
+            "calls": 2,
+            "self_seconds": 1.1958000000000001e-05,
+            "cumulative_seconds": 0.0006746250000000001
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method builtins.sum>",
+            "calls": 1,
+            "self_seconds": 6.418e-06,
+            "cumulative_seconds": 0.000629875
+          },
+          {
+            "file": "/work/consumer/services/ai/tools/system/control/browser/hosted/custody.py",
+            "line": 245,
+            "function": "<genexpr>",
+            "calls": 65,
+            "self_seconds": 5.6868000000000005e-05,
+            "cumulative_seconds": 0.000623457
+          },
+          {
+            "file": "/usr/local/lib/python3.14/contextlib.py",
+            "line": 145,
+            "function": "__exit__",
+            "calls": 1,
+            "self_seconds": 1.0000000000000002e-06,
+            "cumulative_seconds": 0.000610333
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.fsync>",
+            "calls": 1,
+            "self_seconds": 0.000566042,
+            "cumulative_seconds": 0.000566042
+          },
+          {
+            "file": "/usr/local/lib/python3.14/glob.py",
+            "line": 452,
+            "function": "select_wildcard",
+            "calls": 66,
+            "self_seconds": 5.4557000000000006e-05,
+            "cumulative_seconds": 0.00021579700000000002
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.stat>",
+            "calls": 131,
+            "self_seconds": 9.7829e-05,
+            "cumulative_seconds": 0.00013353800000000002
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 276,
+            "function": "_from_parsed_string",
+            "calls": 68,
+            "self_seconds": 1.4039e-05,
+            "cumulative_seconds": 0.000125042
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 157,
+            "function": "with_segments",
+            "calls": 68,
+            "self_seconds": 3.0839e-05,
+            "cumulative_seconds": 0.00011100300000000001
+          },
+          {
+            "file": "/usr/local/lib/python3.14/glob.py",
+            "line": 534,
+            "function": "select_exists",
+            "calls": 130,
+            "self_seconds": 1.6959e-05,
+            "cumulative_seconds": 0.000104624
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 685,
+            "function": "is_file",
+            "calls": 64,
+            "self_seconds": 1.6666000000000003e-05,
+            "cumulative_seconds": 0.000100588
+          }
+        ],
+        "native": [
+          {
+            "file": "/work/bench/consumer_fs.py",
+            "line": 320,
+            "function": "_hosted_result",
+            "calls": 1,
+            "self_seconds": 2.832e-06,
+            "cumulative_seconds": 0.0014192080000000001
+          },
+          {
+            "file": "/work/consumer/services/ai/tools/system/control/browser/hosted/custody.py",
+            "line": 234,
+            "function": "land_state",
+            "calls": 1,
+            "self_seconds": 7.167e-06,
+            "cumulative_seconds": 0.001413834
+          },
+          {
+            "file": "/work/bench/consumer_fs.py",
+            "line": 334,
+            "function": "native_write",
+            "calls": 1,
+            "self_seconds": 2.542e-06,
+            "cumulative_seconds": 0.0007488330000000001
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method _fs_experiment.atomic_write>",
+            "calls": 1,
+            "self_seconds": 0.0007457080000000001,
+            "cumulative_seconds": 0.000745958
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method builtins.sum>",
+            "calls": 1,
+            "self_seconds": 6.581e-06,
+            "cumulative_seconds": 0.000625667
+          },
+          {
+            "file": "/work/consumer/services/ai/tools/system/control/browser/hosted/custody.py",
+            "line": 245,
+            "function": "<genexpr>",
+            "calls": 65,
+            "self_seconds": 5.325e-05,
+            "cumulative_seconds": 0.000619086
+          },
+          {
+            "file": "/usr/local/lib/python3.14/glob.py",
+            "line": 452,
+            "function": "select_wildcard",
+            "calls": 66,
+            "self_seconds": 5.2834e-05,
+            "cumulative_seconds": 0.000199583
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.stat>",
+            "calls": 129,
+            "self_seconds": 0.000101422,
+            "cumulative_seconds": 0.00013366700000000002
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 276,
+            "function": "_from_parsed_string",
+            "calls": 66,
+            "self_seconds": 2.3207e-05,
+            "cumulative_seconds": 0.00012462400000000002
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 685,
+            "function": "is_file",
+            "calls": 64,
+            "self_seconds": 1.7001000000000002e-05,
+            "cumulative_seconds": 0.00010420600000000001
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 157,
+            "function": "with_segments",
+            "calls": 66,
+            "self_seconds": 2.8250000000000002e-05,
+            "cumulative_seconds": 0.00010141700000000001
+          },
+          {
+            "file": "/usr/local/lib/python3.14/glob.py",
+            "line": 534,
+            "function": "select_exists",
+            "calls": 130,
+            "self_seconds": 1.6326000000000003e-05,
+            "cumulative_seconds": 9.2744e-05
+          },
+          {
+            "file": "<frozen genericpath>",
+            "line": 36,
+            "function": "isfile",
+            "calls": 64,
+            "self_seconds": 1.6539000000000002e-05,
+            "cumulative_seconds": 8.7205e-05
+          },
+          {
+            "file": "<frozen genericpath>",
+            "line": 26,
+            "function": "lexists",
+            "calls": 65,
+            "self_seconds": 1.4462000000000001e-05,
+            "cumulative_seconds": 7.6418e-05
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 649,
+            "function": "stat",
+            "calls": 64,
+            "self_seconds": 9.674000000000001e-06,
+            "cumulative_seconds": 7.508800000000001e-05
+          }
+        ],
+        "consumer": [
+          {
+            "file": "/work/bench/consumer_fs.py",
+            "line": 320,
+            "function": "_hosted_result",
+            "calls": 1,
+            "self_seconds": 7.043e-06,
+            "cumulative_seconds": 0.0017956670000000001
+          },
+          {
+            "file": "/work/consumer/services/ai/tools/system/control/browser/hosted/custody.py",
+            "line": 234,
+            "function": "land_state",
+            "calls": 1,
+            "self_seconds": 1.8875e-05,
+            "cumulative_seconds": 0.001785167
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.fsync>",
+            "calls": 1,
+            "self_seconds": 0.000820458,
+            "cumulative_seconds": 0.000820458
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method builtins.sum>",
+            "calls": 1,
+            "self_seconds": 6.205000000000001e-06,
+            "cumulative_seconds": 0.0006794580000000001
+          },
+          {
+            "file": "/work/consumer/services/ai/tools/system/control/browser/hosted/custody.py",
+            "line": 245,
+            "function": "<genexpr>",
+            "calls": 65,
+            "self_seconds": 6.0366000000000004e-05,
+            "cumulative_seconds": 0.0006732530000000001
+          },
+          {
+            "file": "/usr/local/lib/python3.14/glob.py",
+            "line": 452,
+            "function": "select_wildcard",
+            "calls": 66,
+            "self_seconds": 5.708200000000001e-05,
+            "cumulative_seconds": 0.000221002
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.stat>",
+            "calls": 129,
+            "self_seconds": 0.000113751,
+            "cumulative_seconds": 0.000148417
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 276,
+            "function": "_from_parsed_string",
+            "calls": 67,
+            "self_seconds": 1.3672e-05,
+            "cumulative_seconds": 0.000124255
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 685,
+            "function": "is_file",
+            "calls": 64,
+            "self_seconds": 1.8167e-05,
+            "cumulative_seconds": 0.000114381
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 157,
+            "function": "with_segments",
+            "calls": 67,
+            "self_seconds": 2.9958000000000004e-05,
+            "cumulative_seconds": 0.00011058300000000001
+          },
+          {
+            "file": "/usr/local/lib/python3.14/glob.py",
+            "line": 534,
+            "function": "select_exists",
+            "calls": 130,
+            "self_seconds": 1.7789000000000002e-05,
+            "cumulative_seconds": 0.00010579
+          },
+          {
+            "file": "<frozen genericpath>",
+            "line": 36,
+            "function": "isfile",
+            "calls": 64,
+            "self_seconds": 1.817e-05,
+            "cumulative_seconds": 9.621400000000001e-05
+          },
+          {
+            "file": "<frozen genericpath>",
+            "line": 26,
+            "function": "lexists",
+            "calls": 65,
+            "self_seconds": 1.5708e-05,
+            "cumulative_seconds": 8.8001e-05
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 649,
+            "function": "stat",
+            "calls": 64,
+            "self_seconds": 1.1127e-05,
+            "cumulative_seconds": 8.4585e-05
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 217,
+            "function": "__eq__",
+            "calls": 65,
+            "self_seconds": 2.5328000000000002e-05,
+            "cumulative_seconds": 7.4706e-05
+          }
+        ]
+      },
+      "python_over_native": {
+        "wall_ns": 1.1971301684532925,
+        "process_cpu_ns": 1.085289978274253
+      },
+      "recipe": {
+        "name": "browser-land-65536-peers-64",
+        "consumer": "hosted",
+        "kind": "browser",
+        "bytes": 65536,
+        "peers": 64,
+        "encoded_bytes": 65536,
+        "encoded_sha256": "52bc0d65507208ddce9c085f0facfbda82f1065bccd5df7531e106833b86bf6a"
+      }
+    },
+    {
+      "name": "browser-land-65536-peers-512",
+      "note": "shared destination; untimed sentinel reset before every batch/profile; real fsync; private existing 0600 file",
+      "calibration": {
+        "python": {
+          "wall_ns": 80143916,
+          "process_cpu_ns": 54663749,
+          "operations": 10
+        },
+        "native": {
+          "wall_ns": 46854209,
+          "process_cpu_ns": 28718915,
+          "operations": 10
+        },
+        "consumer": {
+          "wall_ns": 43553500,
+          "process_cpu_ns": 28697203,
+          "operations": 10
+        }
+      },
+      "target_batch_wall_ns": 20000000,
+      "samples": {
+        "python": [
+          {
+            "wall_ns": 139082667,
+            "process_cpu_ns": 121578545,
+            "operations": 10
+          },
+          {
+            "wall_ns": 49295792,
+            "process_cpu_ns": 29934292,
+            "operations": 10
+          },
+          {
+            "wall_ns": 37800375,
+            "process_cpu_ns": 24699418,
+            "operations": 10
+          },
+          {
+            "wall_ns": 31009875,
+            "process_cpu_ns": 19996083,
+            "operations": 10
+          },
+          {
+            "wall_ns": 69700125,
+            "process_cpu_ns": 48569541,
+            "operations": 10
+          },
+          {
+            "wall_ns": 47861292,
+            "process_cpu_ns": 27611293,
+            "operations": 10
+          },
+          {
+            "wall_ns": 35366625,
+            "process_cpu_ns": 24572045,
+            "operations": 10
+          },
+          {
+            "wall_ns": 36152292,
+            "process_cpu_ns": 23124584,
+            "operations": 10
+          },
+          {
+            "wall_ns": 37614167,
+            "process_cpu_ns": 22287834,
+            "operations": 10
+          },
+          {
+            "wall_ns": 35019959,
+            "process_cpu_ns": 22641579,
+            "operations": 10
+          },
+          {
+            "wall_ns": 37700125,
+            "process_cpu_ns": 23583584,
+            "operations": 10
+          },
+          {
+            "wall_ns": 66360042,
+            "process_cpu_ns": 49330000,
+            "operations": 10
+          },
+          {
+            "wall_ns": 38840709,
+            "process_cpu_ns": 26102540,
+            "operations": 10
+          },
+          {
+            "wall_ns": 106050875,
+            "process_cpu_ns": 54528667,
+            "operations": 10
+          },
+          {
+            "wall_ns": 61201250,
+            "process_cpu_ns": 41945083,
+            "operations": 10
+          },
+          {
+            "wall_ns": 51542208,
+            "process_cpu_ns": 33612334,
+            "operations": 10
+          },
+          {
+            "wall_ns": 79664375,
+            "process_cpu_ns": 51523961,
+            "operations": 10
+          },
+          {
+            "wall_ns": 112781167,
+            "process_cpu_ns": 38055667,
+            "operations": 10
+          },
+          {
+            "wall_ns": 57696375,
+            "process_cpu_ns": 33409455,
+            "operations": 10
+          },
+          {
+            "wall_ns": 57472876,
+            "process_cpu_ns": 36813959,
+            "operations": 10
+          },
+          {
+            "wall_ns": 43973416,
+            "process_cpu_ns": 28887626,
+            "operations": 10
+          },
+          {
+            "wall_ns": 55269834,
+            "process_cpu_ns": 37517959,
+            "operations": 10
+          },
+          {
+            "wall_ns": 45796291,
+            "process_cpu_ns": 32092791,
+            "operations": 10
+          },
+          {
+            "wall_ns": 54985917,
+            "process_cpu_ns": 33735291,
+            "operations": 10
+          },
+          {
+            "wall_ns": 43578625,
+            "process_cpu_ns": 28894916,
+            "operations": 10
+          },
+          {
+            "wall_ns": 36597959,
+            "process_cpu_ns": 25954542,
+            "operations": 10
+          },
+          {
+            "wall_ns": 54677625,
+            "process_cpu_ns": 33998169,
+            "operations": 10
+          },
+          {
+            "wall_ns": 55825250,
+            "process_cpu_ns": 34606252,
+            "operations": 10
+          },
+          {
+            "wall_ns": 52089917,
+            "process_cpu_ns": 34025171,
+            "operations": 10
+          },
+          {
+            "wall_ns": 52403833,
+            "process_cpu_ns": 35483460,
+            "operations": 10
+          },
+          {
+            "wall_ns": 80671917,
+            "process_cpu_ns": 55428666,
+            "operations": 10
+          }
+        ],
+        "native": [
+          {
+            "wall_ns": 77745500,
+            "process_cpu_ns": 59061001,
+            "operations": 10
+          },
+          {
+            "wall_ns": 56698542,
+            "process_cpu_ns": 27035790,
+            "operations": 10
+          },
+          {
+            "wall_ns": 40061375,
+            "process_cpu_ns": 26244792,
+            "operations": 10
+          },
+          {
+            "wall_ns": 37308542,
+            "process_cpu_ns": 24299999,
+            "operations": 10
+          },
+          {
+            "wall_ns": 53017500,
+            "process_cpu_ns": 31053835,
+            "operations": 10
+          },
+          {
+            "wall_ns": 39705917,
+            "process_cpu_ns": 24673501,
+            "operations": 10
+          },
+          {
+            "wall_ns": 34974875,
+            "process_cpu_ns": 21933918,
+            "operations": 10
+          },
+          {
+            "wall_ns": 34764125,
+            "process_cpu_ns": 21442417,
+            "operations": 10
+          },
+          {
+            "wall_ns": 47022209,
+            "process_cpu_ns": 28674626,
+            "operations": 10
+          },
+          {
+            "wall_ns": 83632208,
+            "process_cpu_ns": 63356584,
+            "operations": 10
+          },
+          {
+            "wall_ns": 36821084,
+            "process_cpu_ns": 23012375,
+            "operations": 10
+          },
+          {
+            "wall_ns": 39668709,
+            "process_cpu_ns": 25087918,
+            "operations": 10
+          },
+          {
+            "wall_ns": 42521791,
+            "process_cpu_ns": 27836919,
+            "operations": 10
+          },
+          {
+            "wall_ns": 67657959,
+            "process_cpu_ns": 38114792,
+            "operations": 10
+          },
+          {
+            "wall_ns": 47757750,
+            "process_cpu_ns": 30556167,
+            "operations": 10
+          },
+          {
+            "wall_ns": 44680708,
+            "process_cpu_ns": 27913835,
+            "operations": 10
+          },
+          {
+            "wall_ns": 172434500,
+            "process_cpu_ns": 134866412,
+            "operations": 10
+          },
+          {
+            "wall_ns": 49780292,
+            "process_cpu_ns": 29137792,
+            "operations": 10
+          },
+          {
+            "wall_ns": 67154250,
+            "process_cpu_ns": 37977835,
+            "operations": 10
+          },
+          {
+            "wall_ns": 52697458,
+            "process_cpu_ns": 31446456,
+            "operations": 10
+          },
+          {
+            "wall_ns": 53298542,
+            "process_cpu_ns": 33883748,
+            "operations": 10
+          },
+          {
+            "wall_ns": 61177833,
+            "process_cpu_ns": 36614083,
+            "operations": 10
+          },
+          {
+            "wall_ns": 310602917,
+            "process_cpu_ns": 27814086,
+            "operations": 10
+          },
+          {
+            "wall_ns": 42997875,
+            "process_cpu_ns": 27641750,
+            "operations": 10
+          },
+          {
+            "wall_ns": 43102292,
+            "process_cpu_ns": 29778127,
+            "operations": 10
+          },
+          {
+            "wall_ns": 47429833,
+            "process_cpu_ns": 32103545,
+            "operations": 10
+          },
+          {
+            "wall_ns": 66497584,
+            "process_cpu_ns": 45670168,
+            "operations": 10
+          },
+          {
+            "wall_ns": 89767000,
+            "process_cpu_ns": 45331124,
+            "operations": 10
+          },
+          {
+            "wall_ns": 50487958,
+            "process_cpu_ns": 31979002,
+            "operations": 10
+          },
+          {
+            "wall_ns": 52384750,
+            "process_cpu_ns": 35380957,
+            "operations": 10
+          },
+          {
+            "wall_ns": 70827209,
+            "process_cpu_ns": 45919415,
+            "operations": 10
+          }
+        ],
+        "consumer": [
+          {
+            "wall_ns": 41284333,
+            "process_cpu_ns": 26735209,
+            "operations": 10
+          },
+          {
+            "wall_ns": 59476125,
+            "process_cpu_ns": 34521205,
+            "operations": 10
+          },
+          {
+            "wall_ns": 32963417,
+            "process_cpu_ns": 23515002,
+            "operations": 10
+          },
+          {
+            "wall_ns": 75994334,
+            "process_cpu_ns": 56584000,
+            "operations": 10
+          },
+          {
+            "wall_ns": 108242667,
+            "process_cpu_ns": 91310665,
+            "operations": 10
+          },
+          {
+            "wall_ns": 40238958,
+            "process_cpu_ns": 26304211,
+            "operations": 10
+          },
+          {
+            "wall_ns": 37030583,
+            "process_cpu_ns": 23134291,
+            "operations": 10
+          },
+          {
+            "wall_ns": 36844708,
+            "process_cpu_ns": 23910084,
+            "operations": 10
+          },
+          {
+            "wall_ns": 56010166,
+            "process_cpu_ns": 36457628,
+            "operations": 10
+          },
+          {
+            "wall_ns": 55089209,
+            "process_cpu_ns": 34558165,
+            "operations": 10
+          },
+          {
+            "wall_ns": 45768584,
+            "process_cpu_ns": 27893538,
+            "operations": 10
+          },
+          {
+            "wall_ns": 37663583,
+            "process_cpu_ns": 23643372,
+            "operations": 10
+          },
+          {
+            "wall_ns": 50023833,
+            "process_cpu_ns": 32186458,
+            "operations": 10
+          },
+          {
+            "wall_ns": 58113917,
+            "process_cpu_ns": 38862955,
+            "operations": 10
+          },
+          {
+            "wall_ns": 91674209,
+            "process_cpu_ns": 69321707,
+            "operations": 10
+          },
+          {
+            "wall_ns": 45696333,
+            "process_cpu_ns": 28911291,
+            "operations": 10
+          },
+          {
+            "wall_ns": 68690958,
+            "process_cpu_ns": 37923793,
+            "operations": 10
+          },
+          {
+            "wall_ns": 69266333,
+            "process_cpu_ns": 46958998,
+            "operations": 10
+          },
+          {
+            "wall_ns": 65947750,
+            "process_cpu_ns": 37809041,
+            "operations": 10
+          },
+          {
+            "wall_ns": 65317083,
+            "process_cpu_ns": 35687247,
+            "operations": 10
+          },
+          {
+            "wall_ns": 44923541,
+            "process_cpu_ns": 28583792,
+            "operations": 10
+          },
+          {
+            "wall_ns": 44688125,
+            "process_cpu_ns": 27944999,
+            "operations": 10
+          },
+          {
+            "wall_ns": 39331875,
+            "process_cpu_ns": 26798043,
+            "operations": 10
+          },
+          {
+            "wall_ns": 39463750,
+            "process_cpu_ns": 26244084,
+            "operations": 10
+          },
+          {
+            "wall_ns": 64635916,
+            "process_cpu_ns": 41511245,
+            "operations": 10
+          },
+          {
+            "wall_ns": 44467333,
+            "process_cpu_ns": 30278664,
+            "operations": 10
+          },
+          {
+            "wall_ns": 54681834,
+            "process_cpu_ns": 33730623,
+            "operations": 10
+          },
+          {
+            "wall_ns": 66055709,
+            "process_cpu_ns": 44685121,
+            "operations": 10
+          },
+          {
+            "wall_ns": 284771083,
+            "process_cpu_ns": 30809374,
+            "operations": 10
+          },
+          {
+            "wall_ns": 300174708,
+            "process_cpu_ns": 39156794,
+            "operations": 10
+          },
+          {
+            "wall_ns": 59773000,
+            "process_cpu_ns": 41111703,
+            "operations": 10
+          }
+        ]
+      },
+      "median_per_operation_ns": {
+        "python": {
+          "wall_ns": 5208991.7,
+          "process_cpu_ns": 3361233.4
+        },
+        "native": {
+          "wall_ns": 5048795.8,
+          "process_cpu_ns": 3055616.7
+        },
+        "consumer": {
+          "wall_ns": 5508920.9,
+          "process_cpu_ns": 3373062.3
+        }
+      },
+      "orders": [
+        [
+          "python",
+          "native",
+          "consumer"
+        ],
+        [
+          "consumer",
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native",
+          "consumer"
+        ],
+        [
+          "consumer",
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native",
+          "consumer"
+        ],
+        [
+          "consumer",
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native",
+          "consumer"
+        ],
+        [
+          "consumer",
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native",
+          "consumer"
+        ],
+        [
+          "consumer",
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native",
+          "consumer"
+        ],
+        [
+          "consumer",
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native",
+          "consumer"
+        ],
+        [
+          "consumer",
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native",
+          "consumer"
+        ],
+        [
+          "consumer",
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native",
+          "consumer"
+        ],
+        [
+          "consumer",
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native",
+          "consumer"
+        ],
+        [
+          "consumer",
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native",
+          "consumer"
+        ],
+        [
+          "consumer",
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native",
+          "consumer"
+        ],
+        [
+          "consumer",
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native",
+          "consumer"
+        ],
+        [
+          "consumer",
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native",
+          "consumer"
+        ],
+        [
+          "consumer",
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native",
+          "consumer"
+        ],
+        [
+          "consumer",
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native",
+          "consumer"
+        ]
+      ],
+      "profiles": {
+        "python": [
+          {
+            "file": "/work/bench/consumer_fs.py",
+            "line": 320,
+            "function": "_hosted_result",
+            "calls": 1,
+            "self_seconds": 4.792e-06,
+            "cumulative_seconds": 0.013451125000000001
+          },
+          {
+            "file": "/work/consumer/services/ai/tools/system/control/browser/hosted/custody.py",
+            "line": 234,
+            "function": "land_state",
+            "calls": 1,
+            "self_seconds": 2.6667e-05,
+            "cumulative_seconds": 0.013440208
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method builtins.sum>",
+            "calls": 1,
+            "self_seconds": 7.383800000000001e-05,
+            "cumulative_seconds": 0.01050625
+          },
+          {
+            "file": "/work/consumer/services/ai/tools/system/control/browser/hosted/custody.py",
+            "line": 245,
+            "function": "<genexpr>",
+            "calls": 513,
+            "self_seconds": 0.000821124,
+            "cumulative_seconds": 0.010432412
+          },
+          {
+            "file": "/usr/local/lib/python3.14/glob.py",
+            "line": 452,
+            "function": "select_wildcard",
+            "calls": 514,
+            "self_seconds": 0.000734526,
+            "cumulative_seconds": 0.003982615
+          },
+          {
+            "file": "/work/current/unstd/fs/__init__.py",
+            "line": 282,
+            "function": "atomic_write",
+            "calls": 1,
+            "self_seconds": 1.0249000000000001e-05,
+            "cumulative_seconds": 0.0027495410000000003
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method builtins.next>",
+            "calls": 2,
+            "self_seconds": 8.251000000000001e-06,
+            "cumulative_seconds": 0.0027036670000000003
+          },
+          {
+            "file": "/work/current/unstd/fs/__init__.py",
+            "line": 200,
+            "function": "_atomic_writer",
+            "calls": 2,
+            "self_seconds": 2.6413000000000003e-05,
+            "cumulative_seconds": 0.002695416
+          },
+          {
+            "file": "/usr/local/lib/python3.14/contextlib.py",
+            "line": 145,
+            "function": "__exit__",
+            "calls": 1,
+            "self_seconds": 1.542e-06,
+            "cumulative_seconds": 0.0024945
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.stat>",
+            "calls": 1027,
+            "self_seconds": 0.0020139290000000002,
+            "cumulative_seconds": 0.002418099
+          },
+          {
+            "file": "/usr/local/lib/python3.14/glob.py",
+            "line": 534,
+            "function": "select_exists",
+            "calls": 1026,
+            "self_seconds": 0.00021519600000000002,
+            "cumulative_seconds": 0.002372948
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.fsync>",
+            "calls": 1,
+            "self_seconds": 0.00230675,
+            "cumulative_seconds": 0.00230675
+          },
+          {
+            "file": "<frozen genericpath>",
+            "line": 26,
+            "function": "lexists",
+            "calls": 513,
+            "self_seconds": 0.000191711,
+            "cumulative_seconds": 0.002157752
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.lstat>",
+            "calls": 513,
+            "self_seconds": 0.001966041,
+            "cumulative_seconds": 0.001966041
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 685,
+            "function": "is_file",
+            "calls": 512,
+            "self_seconds": 0.000261148,
+            "cumulative_seconds": 0.001938805
+          }
+        ],
+        "native": [
+          {
+            "file": "/work/bench/consumer_fs.py",
+            "line": 320,
+            "function": "_hosted_result",
+            "calls": 1,
+            "self_seconds": 8.626e-06,
+            "cumulative_seconds": 0.009101583
+          },
+          {
+            "file": "/work/consumer/services/ai/tools/system/control/browser/hosted/custody.py",
+            "line": 234,
+            "function": "land_state",
+            "calls": 1,
+            "self_seconds": 1.4123e-05,
+            "cumulative_seconds": 0.009058083
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method builtins.sum>",
+            "calls": 1,
+            "self_seconds": 5.5751e-05,
+            "cumulative_seconds": 0.007731750000000001
+          },
+          {
+            "file": "/work/consumer/services/ai/tools/system/control/browser/hosted/custody.py",
+            "line": 245,
+            "function": "<genexpr>",
+            "calls": 513,
+            "self_seconds": 0.000618195,
+            "cumulative_seconds": 0.007675999
+          },
+          {
+            "file": "/usr/local/lib/python3.14/glob.py",
+            "line": 452,
+            "function": "select_wildcard",
+            "calls": 514,
+            "self_seconds": 0.000581936,
+            "cumulative_seconds": 0.0028394740000000003
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.stat>",
+            "calls": 1025,
+            "self_seconds": 0.001426404,
+            "cumulative_seconds": 0.0018184050000000002
+          },
+          {
+            "file": "/usr/local/lib/python3.14/glob.py",
+            "line": 534,
+            "function": "select_exists",
+            "calls": 1026,
+            "self_seconds": 0.000189408,
+            "cumulative_seconds": 0.001660323
+          },
+          {
+            "file": "<frozen genericpath>",
+            "line": 26,
+            "function": "lexists",
+            "calls": 513,
+            "self_seconds": 0.00016338500000000002,
+            "cumulative_seconds": 0.0014709150000000002
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 685,
+            "function": "is_file",
+            "calls": 512,
+            "self_seconds": 0.00018375500000000002,
+            "cumulative_seconds": 0.001320201
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.lstat>",
+            "calls": 513,
+            "self_seconds": 0.00130753,
+            "cumulative_seconds": 0.00130753
+          },
+          {
+            "file": "/work/bench/consumer_fs.py",
+            "line": 334,
+            "function": "native_write",
+            "calls": 1,
+            "self_seconds": 4.2510000000000005e-06,
+            "cumulative_seconds": 0.0012334590000000001
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method _fs_experiment.atomic_write>",
+            "calls": 1,
+            "self_seconds": 0.001221166,
+            "cumulative_seconds": 0.0012288750000000001
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 276,
+            "function": "_from_parsed_string",
+            "calls": 514,
+            "self_seconds": 0.00012479600000000002,
+            "cumulative_seconds": 0.001160884
+          },
+          {
+            "file": "<frozen genericpath>",
+            "line": 36,
+            "function": "isfile",
+            "calls": 512,
+            "self_seconds": 0.000177646,
+            "cumulative_seconds": 0.0011364460000000002
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 157,
+            "function": "with_segments",
+            "calls": 514,
+            "self_seconds": 0.000299128,
+            "cumulative_seconds": 0.0010360880000000001
+          }
+        ],
+        "consumer": [
+          {
+            "file": "/work/bench/consumer_fs.py",
+            "line": 320,
+            "function": "_hosted_result",
+            "calls": 1,
+            "self_seconds": 8.917000000000001e-06,
+            "cumulative_seconds": 0.010094792
+          },
+          {
+            "file": "/work/consumer/services/ai/tools/system/control/browser/hosted/custody.py",
+            "line": 234,
+            "function": "land_state",
+            "calls": 1,
+            "self_seconds": 3.5668000000000005e-05,
+            "cumulative_seconds": 0.010082833000000001
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method builtins.sum>",
+            "calls": 1,
+            "self_seconds": 6.862200000000001e-05,
+            "cumulative_seconds": 0.007361292
+          },
+          {
+            "file": "/work/consumer/services/ai/tools/system/control/browser/hosted/custody.py",
+            "line": 245,
+            "function": "<genexpr>",
+            "calls": 513,
+            "self_seconds": 0.000586868,
+            "cumulative_seconds": 0.00729267
+          },
+          {
+            "file": "/usr/local/lib/python3.14/glob.py",
+            "line": 452,
+            "function": "select_wildcard",
+            "calls": 514,
+            "self_seconds": 0.000489016,
+            "cumulative_seconds": 0.002639462
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.fsync>",
+            "calls": 1,
+            "self_seconds": 0.0022036670000000003,
+            "cumulative_seconds": 0.0022036670000000003
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.stat>",
+            "calls": 1025,
+            "self_seconds": 0.0013248040000000002,
+            "cumulative_seconds": 0.0016238930000000002
+          },
+          {
+            "file": "/usr/local/lib/python3.14/glob.py",
+            "line": 534,
+            "function": "select_exists",
+            "calls": 1026,
+            "self_seconds": 0.000238955,
+            "cumulative_seconds": 0.001622495
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 685,
+            "function": "is_file",
+            "calls": 512,
+            "self_seconds": 0.000226302,
+            "cumulative_seconds": 0.001401674
+          },
+          {
+            "file": "<frozen genericpath>",
+            "line": 26,
+            "function": "lexists",
+            "calls": 513,
+            "self_seconds": 0.000145055,
+            "cumulative_seconds": 0.0013835400000000002
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.lstat>",
+            "calls": 513,
+            "self_seconds": 0.001238485,
+            "cumulative_seconds": 0.001238485
+          },
+          {
+            "file": "<frozen genericpath>",
+            "line": 36,
+            "function": "isfile",
+            "calls": 512,
+            "self_seconds": 0.000176941,
+            "cumulative_seconds": 0.001175372
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 276,
+            "function": "_from_parsed_string",
+            "calls": 515,
+            "self_seconds": 0.00013134300000000002,
+            "cumulative_seconds": 0.0011606020000000002
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 157,
+            "function": "with_segments",
+            "calls": 515,
+            "self_seconds": 0.000321304,
+            "cumulative_seconds": 0.001029259
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 649,
+            "function": "stat",
+            "calls": 512,
+            "self_seconds": 0.00011796500000000001,
+            "cumulative_seconds": 0.000815253
+          }
+        ]
+      },
+      "python_over_native": {
+        "wall_ns": 1.031729526474412,
+        "process_cpu_ns": 1.100018009457796
+      },
+      "recipe": {
+        "name": "browser-land-65536-peers-512",
+        "consumer": "hosted",
+        "kind": "browser",
+        "bytes": 65536,
+        "peers": 512,
+        "encoded_bytes": 65536,
+        "encoded_sha256": "52bc0d65507208ddce9c085f0facfbda82f1065bccd5df7531e106833b86bf6a"
+      }
+    },
+    {
+      "name": "notebook-checkpoint-4096",
+      "note": "shared destination; untimed sentinel reset before every batch/profile; real fsync; private existing 0600 file",
+      "calibration": {
+        "python": {
+          "wall_ns": 53569625,
+          "process_cpu_ns": 5065084,
+          "operations": 10
+        },
+        "native": {
+          "wall_ns": 26826667,
+          "process_cpu_ns": 2272079,
+          "operations": 10
+        },
+        "consumer": {
+          "wall_ns": 40363583,
+          "process_cpu_ns": 3164204,
+          "operations": 10
+        }
+      },
+      "target_batch_wall_ns": 20000000,
+      "samples": {
+        "python": [
+          {
+            "wall_ns": 140924250,
+            "process_cpu_ns": 20583747,
+            "operations": 10
+          },
+          {
+            "wall_ns": 70570917,
+            "process_cpu_ns": 13319331,
+            "operations": 10
+          },
+          {
+            "wall_ns": 51766375,
+            "process_cpu_ns": 4778877,
+            "operations": 10
+          },
+          {
+            "wall_ns": 31730959,
+            "process_cpu_ns": 4193164,
+            "operations": 10
+          },
+          {
+            "wall_ns": 11663292,
+            "process_cpu_ns": 1410082,
+            "operations": 10
+          },
+          {
+            "wall_ns": 38210625,
+            "process_cpu_ns": 3638169,
+            "operations": 10
+          },
+          {
+            "wall_ns": 23846917,
+            "process_cpu_ns": 2681208,
+            "operations": 10
+          },
+          {
+            "wall_ns": 27277083,
+            "process_cpu_ns": 3392794,
+            "operations": 10
+          },
+          {
+            "wall_ns": 25666833,
+            "process_cpu_ns": 3119338,
+            "operations": 10
+          },
+          {
+            "wall_ns": 39435042,
+            "process_cpu_ns": 3557290,
+            "operations": 10
+          },
+          {
+            "wall_ns": 19306125,
+            "process_cpu_ns": 2601963,
+            "operations": 10
+          },
+          {
+            "wall_ns": 49617708,
+            "process_cpu_ns": 4960045,
+            "operations": 10
+          },
+          {
+            "wall_ns": 19422584,
+            "process_cpu_ns": 3311378,
+            "operations": 10
+          },
+          {
+            "wall_ns": 49073292,
+            "process_cpu_ns": 5381952,
+            "operations": 10
+          },
+          {
+            "wall_ns": 62605541,
+            "process_cpu_ns": 8938042,
+            "operations": 10
+          },
+          {
+            "wall_ns": 30193625,
+            "process_cpu_ns": 3356960,
+            "operations": 10
+          },
+          {
+            "wall_ns": 11720041,
+            "process_cpu_ns": 1577293,
+            "operations": 10
+          },
+          {
+            "wall_ns": 43285500,
+            "process_cpu_ns": 4368083,
+            "operations": 10
+          },
+          {
+            "wall_ns": 33933083,
+            "process_cpu_ns": 4563415,
+            "operations": 10
+          },
+          {
+            "wall_ns": 31891375,
+            "process_cpu_ns": 3886913,
+            "operations": 10
+          },
+          {
+            "wall_ns": 49348417,
+            "process_cpu_ns": 5592666,
+            "operations": 10
+          },
+          {
+            "wall_ns": 37118333,
+            "process_cpu_ns": 4128414,
+            "operations": 10
+          },
+          {
+            "wall_ns": 14418459,
+            "process_cpu_ns": 1942421,
+            "operations": 10
+          },
+          {
+            "wall_ns": 17016750,
+            "process_cpu_ns": 2534244,
+            "operations": 10
+          },
+          {
+            "wall_ns": 53936500,
+            "process_cpu_ns": 5901084,
+            "operations": 10
+          },
+          {
+            "wall_ns": 54764500,
+            "process_cpu_ns": 6970501,
+            "operations": 10
+          },
+          {
+            "wall_ns": 48553959,
+            "process_cpu_ns": 4546168,
+            "operations": 10
+          },
+          {
+            "wall_ns": 17066625,
+            "process_cpu_ns": 2263169,
+            "operations": 10
+          },
+          {
+            "wall_ns": 38331167,
+            "process_cpu_ns": 4570917,
+            "operations": 10
+          },
+          {
+            "wall_ns": 53442875,
+            "process_cpu_ns": 5812000,
+            "operations": 10
+          },
+          {
+            "wall_ns": 54648625,
+            "process_cpu_ns": 4153833,
+            "operations": 10
+          }
+        ],
+        "native": [
+          {
+            "wall_ns": 27279042,
+            "process_cpu_ns": 1890417,
+            "operations": 10
+          },
+          {
+            "wall_ns": 182064125,
+            "process_cpu_ns": 48661334,
+            "operations": 10
+          },
+          {
+            "wall_ns": 35571084,
+            "process_cpu_ns": 3295003,
+            "operations": 10
+          },
+          {
+            "wall_ns": 31959084,
+            "process_cpu_ns": 2345795,
+            "operations": 10
+          },
+          {
+            "wall_ns": 23046541,
+            "process_cpu_ns": 1785787,
+            "operations": 10
+          },
+          {
+            "wall_ns": 11203958,
+            "process_cpu_ns": 1656337,
+            "operations": 10
+          },
+          {
+            "wall_ns": 56073250,
+            "process_cpu_ns": 3334500,
+            "operations": 10
+          },
+          {
+            "wall_ns": 47141709,
+            "process_cpu_ns": 5990208,
+            "operations": 10
+          },
+          {
+            "wall_ns": 51896417,
+            "process_cpu_ns": 3419337,
+            "operations": 10
+          },
+          {
+            "wall_ns": 13889125,
+            "process_cpu_ns": 1420165,
+            "operations": 10
+          },
+          {
+            "wall_ns": 43552792,
+            "process_cpu_ns": 4186256,
+            "operations": 10
+          },
+          {
+            "wall_ns": 788200459,
+            "process_cpu_ns": 4533248,
+            "operations": 10
+          },
+          {
+            "wall_ns": 24674875,
+            "process_cpu_ns": 2042547,
+            "operations": 10
+          },
+          {
+            "wall_ns": 11610625,
+            "process_cpu_ns": 1216876,
+            "operations": 10
+          },
+          {
+            "wall_ns": 19282833,
+            "process_cpu_ns": 2041751,
+            "operations": 10
+          },
+          {
+            "wall_ns": 39281042,
+            "process_cpu_ns": 2824040,
+            "operations": 10
+          },
+          {
+            "wall_ns": 18667667,
+            "process_cpu_ns": 1309539,
+            "operations": 10
+          },
+          {
+            "wall_ns": 9922125,
+            "process_cpu_ns": 1114460,
+            "operations": 10
+          },
+          {
+            "wall_ns": 32543417,
+            "process_cpu_ns": 3943670,
+            "operations": 10
+          },
+          {
+            "wall_ns": 74069791,
+            "process_cpu_ns": 9155504,
+            "operations": 10
+          },
+          {
+            "wall_ns": 41656167,
+            "process_cpu_ns": 3759668,
+            "operations": 10
+          },
+          {
+            "wall_ns": 57738542,
+            "process_cpu_ns": 4187920,
+            "operations": 10
+          },
+          {
+            "wall_ns": 40946708,
+            "process_cpu_ns": 2903625,
+            "operations": 10
+          },
+          {
+            "wall_ns": 70512000,
+            "process_cpu_ns": 4485582,
+            "operations": 10
+          },
+          {
+            "wall_ns": 54587708,
+            "process_cpu_ns": 3273378,
+            "operations": 10
+          },
+          {
+            "wall_ns": 48636583,
+            "process_cpu_ns": 4003836,
+            "operations": 10
+          },
+          {
+            "wall_ns": 17426833,
+            "process_cpu_ns": 1797621,
+            "operations": 10
+          },
+          {
+            "wall_ns": 47790292,
+            "process_cpu_ns": 3630458,
+            "operations": 10
+          },
+          {
+            "wall_ns": 50603333,
+            "process_cpu_ns": 3135833,
+            "operations": 10
+          },
+          {
+            "wall_ns": 22714542,
+            "process_cpu_ns": 2400539,
+            "operations": 10
+          },
+          {
+            "wall_ns": 23868250,
+            "process_cpu_ns": 1640585,
+            "operations": 10
+          }
+        ],
+        "consumer": [
+          {
+            "wall_ns": 38320250,
+            "process_cpu_ns": 4223207,
+            "operations": 10
+          },
+          {
+            "wall_ns": 70235333,
+            "process_cpu_ns": 12637208,
+            "operations": 10
+          },
+          {
+            "wall_ns": 34951500,
+            "process_cpu_ns": 3933083,
+            "operations": 10
+          },
+          {
+            "wall_ns": 48909042,
+            "process_cpu_ns": 5215748,
+            "operations": 10
+          },
+          {
+            "wall_ns": 15881541,
+            "process_cpu_ns": 1659957,
+            "operations": 10
+          },
+          {
+            "wall_ns": 43370666,
+            "process_cpu_ns": 4287334,
+            "operations": 10
+          },
+          {
+            "wall_ns": 13524583,
+            "process_cpu_ns": 1807960,
+            "operations": 10
+          },
+          {
+            "wall_ns": 62901917,
+            "process_cpu_ns": 9638375,
+            "operations": 10
+          },
+          {
+            "wall_ns": 8361542,
+            "process_cpu_ns": 1288833,
+            "operations": 10
+          },
+          {
+            "wall_ns": 27554917,
+            "process_cpu_ns": 2747795,
+            "operations": 10
+          },
+          {
+            "wall_ns": 39696042,
+            "process_cpu_ns": 3641373,
+            "operations": 10
+          },
+          {
+            "wall_ns": 149661292,
+            "process_cpu_ns": 5951421,
+            "operations": 10
+          },
+          {
+            "wall_ns": 27913167,
+            "process_cpu_ns": 3301375,
+            "operations": 10
+          },
+          {
+            "wall_ns": 20292000,
+            "process_cpu_ns": 2506461,
+            "operations": 10
+          },
+          {
+            "wall_ns": 52881166,
+            "process_cpu_ns": 5782542,
+            "operations": 10
+          },
+          {
+            "wall_ns": 76900041,
+            "process_cpu_ns": 6038169,
+            "operations": 10
+          },
+          {
+            "wall_ns": 16021083,
+            "process_cpu_ns": 1989787,
+            "operations": 10
+          },
+          {
+            "wall_ns": 39095583,
+            "process_cpu_ns": 3840661,
+            "operations": 10
+          },
+          {
+            "wall_ns": 47182250,
+            "process_cpu_ns": 3431794,
+            "operations": 10
+          },
+          {
+            "wall_ns": 44613667,
+            "process_cpu_ns": 4602915,
+            "operations": 10
+          },
+          {
+            "wall_ns": 33520375,
+            "process_cpu_ns": 3807373,
+            "operations": 10
+          },
+          {
+            "wall_ns": 28962375,
+            "process_cpu_ns": 3554041,
+            "operations": 10
+          },
+          {
+            "wall_ns": 21637500,
+            "process_cpu_ns": 2475789,
+            "operations": 10
+          },
+          {
+            "wall_ns": 17386500,
+            "process_cpu_ns": 2204127,
+            "operations": 10
+          },
+          {
+            "wall_ns": 195612125,
+            "process_cpu_ns": 5548334,
+            "operations": 10
+          },
+          {
+            "wall_ns": 304351042,
+            "process_cpu_ns": 5172378,
+            "operations": 10
+          },
+          {
+            "wall_ns": 24533000,
+            "process_cpu_ns": 3130420,
+            "operations": 10
+          },
+          {
+            "wall_ns": 29324750,
+            "process_cpu_ns": 3449288,
+            "operations": 10
+          },
+          {
+            "wall_ns": 35547041,
+            "process_cpu_ns": 4939959,
+            "operations": 10
+          },
+          {
+            "wall_ns": 8536875,
+            "process_cpu_ns": 1392371,
+            "operations": 10
+          },
+          {
+            "wall_ns": 376342500,
+            "process_cpu_ns": 3736539,
+            "operations": 10
+          }
+        ]
+      },
+      "median_per_operation_ns": {
+        "python": {
+          "wall_ns": 3821062.5,
+          "process_cpu_ns": 415383.3
+        },
+        "native": {
+          "wall_ns": 3928104.2,
+          "process_cpu_ns": 313583.3
+        },
+        "consumer": {
+          "wall_ns": 3554704.1,
+          "process_cpu_ns": 373653.9
+        }
+      },
+      "orders": [
+        [
+          "python",
+          "native",
+          "consumer"
+        ],
+        [
+          "consumer",
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native",
+          "consumer"
+        ],
+        [
+          "consumer",
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native",
+          "consumer"
+        ],
+        [
+          "consumer",
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native",
+          "consumer"
+        ],
+        [
+          "consumer",
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native",
+          "consumer"
+        ],
+        [
+          "consumer",
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native",
+          "consumer"
+        ],
+        [
+          "consumer",
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native",
+          "consumer"
+        ],
+        [
+          "consumer",
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native",
+          "consumer"
+        ],
+        [
+          "consumer",
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native",
+          "consumer"
+        ],
+        [
+          "consumer",
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native",
+          "consumer"
+        ],
+        [
+          "consumer",
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native",
+          "consumer"
+        ],
+        [
+          "consumer",
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native",
+          "consumer"
+        ],
+        [
+          "consumer",
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native",
+          "consumer"
+        ],
+        [
+          "consumer",
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native",
+          "consumer"
+        ],
+        [
+          "consumer",
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native",
+          "consumer"
+        ],
+        [
+          "consumer",
+          "native",
+          "python"
+        ],
+        [
+          "python",
+          "native",
+          "consumer"
+        ]
+      ],
+      "profiles": {
+        "python": [
+          {
+            "file": "/work/bench/consumer_fs.py",
+            "line": 360,
+            "function": "operation",
+            "calls": 1,
+            "self_seconds": 8.916e-06,
+            "cumulative_seconds": 0.008090625
+          },
+          {
+            "file": "/work/current/unstd/fs/__init__.py",
+            "line": 282,
+            "function": "atomic_write",
+            "calls": 1,
+            "self_seconds": 8.2249e-05,
+            "cumulative_seconds": 0.008081625
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method builtins.next>",
+            "calls": 2,
+            "self_seconds": 1.0959000000000001e-05,
+            "cumulative_seconds": 0.007672209
+          },
+          {
+            "file": "/work/current/unstd/fs/__init__.py",
+            "line": 200,
+            "function": "_atomic_writer",
+            "calls": 2,
+            "self_seconds": 2.2918e-05,
+            "cumulative_seconds": 0.0076612500000000005
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.fsync>",
+            "calls": 3,
+            "self_seconds": 0.007213459,
+            "cumulative_seconds": 0.007213459
+          },
+          {
+            "file": "/usr/local/lib/python3.14/contextlib.py",
+            "line": 145,
+            "function": "__exit__",
+            "calls": 1,
+            "self_seconds": 4.7917e-05,
+            "cumulative_seconds": 0.0048669590000000006
+          },
+          {
+            "file": "/work/current/unstd/fs/__init__.py",
+            "line": 89,
+            "function": "sync_dir",
+            "calls": 2,
+            "self_seconds": 3.7080000000000003e-06,
+            "cumulative_seconds": 0.004435583
+          },
+          {
+            "file": "/work/current/unstd/fs/_internal/durability.py",
+            "line": 28,
+            "function": "sync_directory",
+            "calls": 2,
+            "self_seconds": 1.3127000000000002e-05,
+            "cumulative_seconds": 0.004431875
+          },
+          {
+            "file": "/work/current/unstd/fs/_internal/durability.py",
+            "line": 19,
+            "function": "_sync_directory_handle",
+            "calls": 2,
+            "self_seconds": 5.543e-06,
+            "cumulative_seconds": 0.004400792000000001
+          },
+          {
+            "file": "/usr/local/lib/python3.14/contextlib.py",
+            "line": 136,
+            "function": "__enter__",
+            "calls": 1,
+            "self_seconds": 1.125e-06,
+            "cumulative_seconds": 0.002854292
+          },
+          {
+            "file": "/work/current/unstd/fs/__init__.py",
+            "line": 100,
+            "function": "_prepare_parent",
+            "calls": 1,
+            "self_seconds": 3.4751e-05,
+            "cumulative_seconds": 0.0026590840000000004
+          },
+          {
+            "file": "/work/current/unstd/fs/__init__.py",
+            "line": 127,
+            "function": "_sync_committed",
+            "calls": 1,
+            "self_seconds": 9.160000000000001e-07,
+            "cumulative_seconds": 0.001906291
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 632,
+            "function": "__new__",
+            "calls": 5,
+            "self_seconds": 0.00016391700000000002,
+            "cumulative_seconds": 0.00016762500000000002
+          },
+          {
+            "file": "/work/current/unstd/fs/__init__.py",
+            "line": 150,
+            "function": "_scratch",
+            "calls": 1,
+            "self_seconds": 7.082e-06,
+            "cumulative_seconds": 0.00012791700000000002
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 135,
+            "function": "__init__",
+            "calls": 5,
+            "self_seconds": 7.5542e-05,
+            "cumulative_seconds": 0.00011175
+          }
+        ],
+        "native": [
+          {
+            "file": "/work/bench/consumer_fs.py",
+            "line": 360,
+            "function": "operation",
+            "calls": 1,
+            "self_seconds": 7.624e-06,
+            "cumulative_seconds": 0.005941583
+          },
+          {
+            "file": "/work/bench/consumer_fs.py",
+            "line": 334,
+            "function": "native_write",
+            "calls": 1,
+            "self_seconds": 3.084e-06,
+            "cumulative_seconds": 0.0059337090000000006
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method _fs_experiment.atomic_write>",
+            "calls": 1,
+            "self_seconds": 0.005928500000000001,
+            "cumulative_seconds": 0.005929375000000001
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<method 'disable' of '_lsprof.Profiler' objects>",
+            "calls": 1,
+            "self_seconds": 2.2834000000000002e-05,
+            "cumulative_seconds": 2.2834000000000002e-05
+          },
+          {
+            "file": "/work/bench/consumer_fs.py",
+            "line": 159,
+            "function": "_encoded",
+            "calls": 1,
+            "self_seconds": 9.58e-07,
+            "cumulative_seconds": 1.25e-06
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 190,
+            "function": "__fspath__",
+            "calls": 1,
+            "self_seconds": 7.92e-07,
+            "cumulative_seconds": 8.750000000000001e-07
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method builtins.isinstance>",
+            "calls": 1,
+            "self_seconds": 2.92e-07,
+            "cumulative_seconds": 2.92e-07
+          },
+          {
+            "file": "/usr/local/lib/python3.14/typing.py",
+            "line": 2308,
+            "function": "cast",
+            "calls": 1,
+            "self_seconds": 2.5000000000000004e-07,
+            "cumulative_seconds": 2.5000000000000004e-07
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 251,
+            "function": "__str__",
+            "calls": 1,
+            "self_seconds": 8.3e-08,
+            "cumulative_seconds": 8.3e-08
+          }
+        ],
+        "consumer": [
+          {
+            "file": "/work/bench/consumer_fs.py",
+            "line": 417,
+            "function": "notebook",
+            "calls": 1,
+            "self_seconds": 5.2500000000000006e-06,
+            "cumulative_seconds": 0.005046833000000001
+          },
+          {
+            "file": "/work/consumer/libs/runtime/jupyter/consumer_jupyter/policy.py",
+            "line": 73,
+            "function": "atomic",
+            "calls": 1,
+            "self_seconds": 5.8582e-05,
+            "cumulative_seconds": 0.0050415830000000005
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.fsync>",
+            "calls": 2,
+            "self_seconds": 0.004506166000000001,
+            "cumulative_seconds": 0.004506166000000001
+          },
+          {
+            "file": "/usr/local/lib/python3.14/tempfile.py",
+            "line": 318,
+            "function": "mkstemp",
+            "calls": 1,
+            "self_seconds": 4.124000000000001e-06,
+            "cumulative_seconds": 0.00018179100000000002
+          },
+          {
+            "file": "/usr/local/lib/python3.14/tempfile.py",
+            "line": 242,
+            "function": "_mkstemp_inner",
+            "calls": 1,
+            "self_seconds": 3.6376000000000005e-05,
+            "cumulative_seconds": 0.000166625
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 381,
+            "function": "parent",
+            "calls": 2,
+            "self_seconds": 4.751e-06,
+            "cumulative_seconds": 0.00010675
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.open>",
+            "calls": 2,
+            "self_seconds": 0.00010120900000000001,
+            "cumulative_seconds": 0.00010429200000000001
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 269,
+            "function": "_from_parsed_parts",
+            "calls": 2,
+            "self_seconds": 3.0820000000000003e-06,
+            "cumulative_seconds": 0.00010149900000000001
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 276,
+            "function": "_from_parsed_string",
+            "calls": 2,
+            "self_seconds": 2.666e-06,
+            "cumulative_seconds": 9.562500000000001e-05
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 157,
+            "function": "with_segments",
+            "calls": 2,
+            "self_seconds": 7.208e-06,
+            "cumulative_seconds": 9.2959e-05
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 135,
+            "function": "__init__",
+            "calls": 3,
+            "self_seconds": 4.0169e-05,
+            "cumulative_seconds": 8.3459e-05
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 1081,
+            "function": "replace",
+            "calls": 1,
+            "self_seconds": 3.125e-06,
+            "cumulative_seconds": 8.079200000000001e-05
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method posix.replace>",
+            "calls": 1,
+            "self_seconds": 5.2668000000000005e-05,
+            "cumulative_seconds": 7.7209e-05
+          },
+          {
+            "file": "~",
+            "line": 0,
+            "function": "<built-in method builtins.isinstance>",
+            "calls": 13,
+            "self_seconds": 3.8373e-05,
+            "cumulative_seconds": 4.1831e-05
+          },
+          {
+            "file": "/usr/local/lib/python3.14/pathlib/__init__.py",
+            "line": 1036,
+            "function": "unlink",
+            "calls": 1,
+            "self_seconds": 6.584000000000001e-06,
+            "cumulative_seconds": 4.1667e-05
+          }
+        ]
+      },
+      "python_over_native": {
+        "wall_ns": 0.9727497809248542,
+        "process_cpu_ns": 1.3246346345612154
+      },
+      "recipe": {
+        "name": "notebook-checkpoint-4096",
+        "consumer": "notebook",
+        "kind": "bytes",
+        "bytes": 4096,
+        "encoded_bytes": 4096,
+        "encoded_sha256": "a2e659dacb4691e887ac0139f8893d04764ee197d70fb73d3190d56113d18e3e"
+      }
+    }
+  ],
+  "publication_normalization": {
+    "kind": "public_metadata_normalization",
+    "note": "Consumer labels, artifact paths and machine-specific origins normalized for public publication. Historical timings, measured payload bytes and original source digests retain their captured meaning; normalized source/archive bytes have their own publication hashes."
+  }
+}

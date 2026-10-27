@@ -118,7 +118,7 @@ def saved_source(tmp_path):
 
 
 def test_fresh_worker_loads_selected_source_and_retains_hashes(saved_source):
-    result = _worker(saved_source, "billy/http-length-pack")
+    result = _worker(saved_source, "consumer/http-length-pack")
     assert result.returncode == 0, result.stderr
     report = json.loads(result.stdout)
     assert report["source"] == str(saved_source.resolve())
@@ -126,8 +126,8 @@ def test_fresh_worker_loads_selected_source_and_retains_hashes(saved_source):
         (saved_source / "unstd" / "pack" / "binpack.py").resolve()
     )
     assert report["source_hashes"] == profile._source_hashes(saved_source)
-    assert set(report["measurements"]) == {"billy/http-length-pack"}
-    assert report["measurements"]["billy/http-length-pack"]["oracle_passed"]
+    assert set(report["measurements"]) == {"consumer/http-length-pack"}
+    assert report["measurements"]["consumer/http-length-pack"]["oracle_passed"]
 
 
 def test_fresh_worker_rejects_unknown_selected_case(saved_source):
@@ -148,6 +148,6 @@ def test_fresh_worker_rejects_product_imported_from_another_tree(tmp_path):
     (source / "unstd" / "__init__.py").write_text(
         f"__path__ = [{str(other / 'unstd')!r}]\n"
     )
-    result = _worker(source, "billy/http-length-pack")
+    result = _worker(source, "consumer/http-length-pack")
     assert result.returncode != 0
     assert "selected pack implementation was not imported" in result.stderr

@@ -223,7 +223,7 @@ guide and explains the scope of the retained performance evidence.
   ISA-L before decoding; other builds and streams retain their existing routes.
   No mandatory runtime dependency or universal speedup is claimed.
 
-- Accelerate Billy-shaped gzip request encoding and dataset materialization in C
+- Accelerate representative gzip request encoding and dataset materialization in C
   on both Linux and Mac. Add a private, runtime-dispatched Linux x86_64 streaming
   decoder with verified source and local assembly builds, strict read budgets,
   code-tree validation, input accounting and persistent error semantics. Preserve

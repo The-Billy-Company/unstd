@@ -36,7 +36,7 @@ def native_encoder() -> ModuleType:
 
 @pytest.fixture(scope="module")
 def request_bytes() -> dict[str, bytes]:
-    path = REPO_ROOT / "bench/workloads/billy_gzip_requests.json.gz"
+    path = REPO_ROOT / "bench/workloads/consumer_gzip_requests.json.gz"
     document = json.loads(gzip.decompress(path.read_bytes()))
     chunks = {
         digest: base64.b64decode(encoded, validate=True)

@@ -41,7 +41,7 @@ an original OS hook.
 Normal Linux CPython builds include the extension. Non-Linux and unsupported
 interpreter/build configurations retain Python. A strict release build fails
 if compilation fails; optional local builds remain usable. `atomic_writer`
-continues to provide the Python streaming interface. No Billy application code,
+continues to provide the Python streaming interface. No Consumer application code,
 credentials, persistence policy, or public call signature was changed.
 
 ## Functional and packaging evidence
@@ -92,9 +92,9 @@ in the helpers; it does not relabel untested bytes as tested.
 - [ASan/UBSan receipt](sanitizers.json) and [test output](sanitizer-tests.txt)
 - [Strict direct build](build-direct.txt) and [strict sdist rebuild](build-sdist.txt)
 
-## Billy workloads through the installed public API
+## Consumer workloads through the installed public API
 
-The [installed driver](../../../profiles/billy_fs_installed.py) loads two public
+The [installed driver](../../../profiles/consumer_fs_installed.py) loads two public
 fs modules from the same installation. One retains native dispatch; the other
 sets `_native=None`. Every lane calls public `fs.atomic_write`. The selected
 wheel's ZIP members must match every loaded fs Python file and compiled binary.
@@ -108,9 +108,9 @@ checked outside timing. A no-op, declined route, wrong binary, or quiet fallback
 cannot support the result. All sources, inputs, wheels and binaries are checked
 again after timing.
 
-The [synthetic fixtures](../../../workloads/billy_fs.json) retain source receipts
+The [synthetic fixtures](../../../workloads/consumer_fs.json) retain source receipts
 for token/config/report writes, browser state, and notebook checkpoints. Browser
-and notebook reference functions use checked Billy ASTs; quota checks remain in
+and notebook reference functions use checked Consumer ASTs; quota checks remain in
 the complete browser operation. No token, cookie, or notebook data was captured.
 The report-serialization control uses common stdlib JSON; actual jsonx codec
 latency is excluded. Browser/notebook reference writers reset mode while
@@ -172,7 +172,7 @@ only if its source and artifact identities match the manifest.
 CIBUILDWHEEL=1 python -m build --wheel --sdist --no-isolation --outdir /tmp/fs-dist
 python -m pip install --no-deps --target /tmp/fs-install /tmp/fs-dist/unstd-3.1.6-cp314-cp314-linux_aarch64.whl
 PYTHONPATH=/tmp/fs-install python -m pytest tests/suites/product/fs -q
-python bench/profiles/billy_fs_installed.py --source /tmp/fs-install --wheel /tmp/fs-dist/unstd-3.1.6-cp314-cp314-linux_aarch64.whl --fixtures bench/workloads/billy_fs.json --billy-source ../billy --root /tmp --rounds 9 --output /tmp/fs-installed.json
+python bench/profiles/consumer_fs_installed.py --source /tmp/fs-install --wheel /tmp/fs-dist/unstd-3.1.6-cp314-cp314-linux_aarch64.whl --fixtures bench/workloads/consumer_fs.json --consumer-source ../consumer --root /tmp --rounds 9 --output /tmp/fs-installed.json
 ```
 
 Use the built wheel's actual filename for another ABI/platform. Repeat with the
@@ -184,10 +184,10 @@ tar -xzf /tmp/fs-dist/unstd-3.1.6.tar.gz -C /tmp/fs-rebuild-source
 CIBUILDWHEEL=1 python -m build --wheel --no-isolation --outdir /tmp/fs-sdist-dist /tmp/fs-rebuild-source/unstd-3.1.6
 python -m pip install --no-deps --target /tmp/fs-sdist-install /tmp/fs-sdist-dist/unstd-3.1.6-cp314-cp314-linux_aarch64.whl
 PYTHONPATH=/tmp/fs-sdist-install python -m pytest tests/suites/product/fs -q
-python bench/profiles/billy_fs_installed.py --source /tmp/fs-sdist-install --wheel /tmp/fs-sdist-dist/unstd-3.1.6-cp314-cp314-linux_aarch64.whl --fixtures bench/workloads/billy_fs.json --billy-source ../billy --root /tmp --rounds 9 --output /tmp/fs-sdist-installed.json
+python bench/profiles/consumer_fs_installed.py --source /tmp/fs-sdist-install --wheel /tmp/fs-sdist-dist/unstd-3.1.6-cp314-cp314-linux_aarch64.whl --fixtures bench/workloads/consumer_fs.json --consumer-source ../consumer --root /tmp --rounds 9 --output /tmp/fs-sdist-installed.json
 ```
 
-Use `--root /dev/shm` only for the RAM diagnostic. The matching Billy source
+Use `--root /dev/shm` only for the RAM diagnostic. The matching Consumer source
 receipts are required for either route; changed consumer files fail verification
 instead of silently changing the workload. Repeat `--include NAME` for focused
 follow-ups and retain them separately from complete runs.

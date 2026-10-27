@@ -36,6 +36,7 @@ _NATIVE_MODULES = (
     "unstd.rand._rand_native",
     "unstd.pack._pack_native",
     "unstd.math._math_native",
+    "unstd.dataset._dataset_native",
 )
 
 _COMPILER_KEYS = {
@@ -283,8 +284,26 @@ class _IsalBuildExt(build_ext):
     """The normal and retained-container routes share one admitted C compiler."""
 
     unstd_isal_config: _IsalConfig | None = None
+    unstd_source_root: str | None = None
 
     def build_extensions(self) -> None:
+        if self.unstd_source_root is not None:
+            source_root = Path(self.unstd_source_root).resolve()
+            remap = (
+                f"/pathmap:{source_root}=."
+                if self.compiler.compiler_type == "msvc"
+                else f"-ffile-prefix-map={source_root}=."
+            )
+            for extension in self.extensions:
+                if remap not in extension.extra_compile_args:
+                    extension.extra_compile_args.append(remap)
+                if sys.platform == "darwin" and self.compiler.compiler_type != "msvc":
+                    # Mach-O N_OSO entries name temporary object paths, which
+                    # mirror absolute source directories despite compiler maps.
+                    objects = Path(self.build_temp) / str(source_root).lstrip("/")
+                    extension.extra_link_args.extend(
+                        ("-Xlinker", "-oso_prefix", "-Xlinker", str(objects) + "/")
+                    )
         config = self.unstd_isal_config
         if config is not None and _isal_platform():
             assembler = _isal_assembler()
@@ -511,6 +530,7 @@ class CustomBuildHook(BuildHookInterface):
         command = (
             _ContainerBuildExt if self._compiler_commands is not None else _IsalBuildExt
         )(distribution)
+        command.unstd_source_root = self.root
         if gzip_buffers and zlib_rs is None:
             command.unstd_isal_config = _IsalConfig(
                 gzip_root.parent / "isa-l",
@@ -640,7 +660,13 @@ class CustomBuildHook(BuildHookInterface):
             ]
             if target is not None:
                 command.extend(("--target", target))
-            command.extend(("--", "--print=native-static-libs"))
+            command.extend(
+                (
+                    "--",
+                    f"--remap-path-prefix={Path(self.root).resolve()}=.",
+                    "--print=native-static-libs",
+                )
+            )
             result = subprocess.run(  # noqa: S603  # nosec B603 # explicit compiler argv, no shell
                 command, capture_output=True, text=True, check=False
             )

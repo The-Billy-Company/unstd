@@ -1,7 +1,7 @@
 {
   "method": "nine alternating adjacent fresh subprocess pairs; warm filesystem cache; macOS ru_maxrss bytes; import includes numpy/CFFI/unstd.audio; no timing samples discarded",
   "sources_sha256": {
-    "/Users/griffinstrier/Billy-Company/unstd/.local/math-audit-root/qualify_startup.py": "c14aabf9d87c09059b2c5759fb440a2d02039589202437d08f8a566e73b2ea18"
+    ".local/math-audit-root/qualify_startup.py": "c14aabf9d87c09059b2c5759fb440a2d02039589202437d08f8a566e73b2ea18"
   },
   "worker": "import io,json,resource,sys,time,wave\nsys.path.insert(0,sys.argv[1]) if sys.argv[1] else None\ncpu=time.process_time_ns(); wall=time.perf_counter_ns()\nimport unstd.audio.wavx as wavx\nimport soundfile\nimport_wall=time.perf_counter_ns()-wall; import_cpu=time.process_time_ns()-cpu\nstream=io.BytesIO()\nwith wave.open(stream,'wb') as f:\n    f.setnchannels(1);f.setsampwidth(2);f.setframerate(16000);f.writeframes(b'\\0\\0')\nstream.seek(0)\ncpu=time.process_time_ns();wall=time.perf_counter_ns()\nsamples,rate=wavx.read(stream,dtype='int16')\nfirst_wall=time.perf_counter_ns()-wall;first_cpu=time.process_time_ns()-cpu\nassert samples.tolist()==[0] and rate==16000\nprint(json.dumps(dict(import_wall_ns=import_wall,import_cpu_ns=import_cpu,first_read_wall_ns=first_wall,first_read_cpu_ns=first_cpu,peak_rss_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,library=soundfile._full_path)))\n",
   "samples": [
@@ -16,7 +16,7 @@
         "first_read_wall_ns": 1950000,
         "first_read_cpu_ns": 1218000,
         "peak_rss_bytes": 33849344,
-        "library": "/Users/griffinstrier/Billy-Company/unstd/.venv/lib/python3.13/site-packages/_soundfile_data/libsndfile_arm64.dylib"
+        "library": ".venv/lib/python3.13/site-packages/_soundfile_data/libsndfile_arm64.dylib"
       },
       "candidate": {
         "import_wall_ns": 59117500,
@@ -24,7 +24,7 @@
         "first_read_wall_ns": 1715000,
         "first_read_cpu_ns": 978000,
         "peak_rss_bytes": 34095104,
-        "library": "/Users/griffinstrier/Billy-Company/unstd/.local/audio-patched-474e4d3-r4/stage/_soundfile_data/libsndfile_arm64.dylib"
+        "library": ".local/audio-patched-474e4d3-r4/stage/_soundfile_data/libsndfile_arm64.dylib"
       }
     },
     {
@@ -38,7 +38,7 @@
         "first_read_wall_ns": 580750,
         "first_read_cpu_ns": 582000,
         "peak_rss_bytes": 33898496,
-        "library": "/Users/griffinstrier/Billy-Company/unstd/.local/audio-patched-474e4d3-r4/stage/_soundfile_data/libsndfile_arm64.dylib"
+        "library": ".local/audio-patched-474e4d3-r4/stage/_soundfile_data/libsndfile_arm64.dylib"
       },
       "baseline": {
         "import_wall_ns": 61654209,
@@ -46,7 +46,7 @@
         "first_read_wall_ns": 718292,
         "first_read_cpu_ns": 644000,
         "peak_rss_bytes": 33914880,
-        "library": "/Users/griffinstrier/Billy-Company/unstd/.venv/lib/python3.13/site-packages/_soundfile_data/libsndfile_arm64.dylib"
+        "library": ".venv/lib/python3.13/site-packages/_soundfile_data/libsndfile_arm64.dylib"
       }
     },
     {
@@ -60,7 +60,7 @@
         "first_read_wall_ns": 527625,
         "first_read_cpu_ns": 529000,
         "peak_rss_bytes": 33980416,
-        "library": "/Users/griffinstrier/Billy-Company/unstd/.venv/lib/python3.13/site-packages/_soundfile_data/libsndfile_arm64.dylib"
+        "library": ".venv/lib/python3.13/site-packages/_soundfile_data/libsndfile_arm64.dylib"
       },
       "candidate": {
         "import_wall_ns": 60182042,
@@ -68,7 +68,7 @@
         "first_read_wall_ns": 567375,
         "first_read_cpu_ns": 561000,
         "peak_rss_bytes": 33996800,
-        "library": "/Users/griffinstrier/Billy-Company/unstd/.local/audio-patched-474e4d3-r4/stage/_soundfile_data/libsndfile_arm64.dylib"
+        "library": ".local/audio-patched-474e4d3-r4/stage/_soundfile_data/libsndfile_arm64.dylib"
       }
     },
     {
@@ -82,7 +82,7 @@
         "first_read_wall_ns": 558916,
         "first_read_cpu_ns": 561000,
         "peak_rss_bytes": 33980416,
-        "library": "/Users/griffinstrier/Billy-Company/unstd/.local/audio-patched-474e4d3-r4/stage/_soundfile_data/libsndfile_arm64.dylib"
+        "library": ".local/audio-patched-474e4d3-r4/stage/_soundfile_data/libsndfile_arm64.dylib"
       },
       "baseline": {
         "import_wall_ns": 52012750,
@@ -90,7 +90,7 @@
         "first_read_wall_ns": 471792,
         "first_read_cpu_ns": 473000,
         "peak_rss_bytes": 33964032,
-        "library": "/Users/griffinstrier/Billy-Company/unstd/.venv/lib/python3.13/site-packages/_soundfile_data/libsndfile_arm64.dylib"
+        "library": ".venv/lib/python3.13/site-packages/_soundfile_data/libsndfile_arm64.dylib"
       }
     },
     {
@@ -104,7 +104,7 @@
         "first_read_wall_ns": 645916,
         "first_read_cpu_ns": 634000,
         "peak_rss_bytes": 34029568,
-        "library": "/Users/griffinstrier/Billy-Company/unstd/.venv/lib/python3.13/site-packages/_soundfile_data/libsndfile_arm64.dylib"
+        "library": ".venv/lib/python3.13/site-packages/_soundfile_data/libsndfile_arm64.dylib"
       },
       "candidate": {
         "import_wall_ns": 52236500,
@@ -112,7 +112,7 @@
         "first_read_wall_ns": 563541,
         "first_read_cpu_ns": 475000,
         "peak_rss_bytes": 33947648,
-        "library": "/Users/griffinstrier/Billy-Company/unstd/.local/audio-patched-474e4d3-r4/stage/_soundfile_data/libsndfile_arm64.dylib"
+        "library": ".local/audio-patched-474e4d3-r4/stage/_soundfile_data/libsndfile_arm64.dylib"
       }
     },
     {
@@ -126,7 +126,7 @@
         "first_read_wall_ns": 525333,
         "first_read_cpu_ns": 527000,
         "peak_rss_bytes": 33767424,
-        "library": "/Users/griffinstrier/Billy-Company/unstd/.local/audio-patched-474e4d3-r4/stage/_soundfile_data/libsndfile_arm64.dylib"
+        "library": ".local/audio-patched-474e4d3-r4/stage/_soundfile_data/libsndfile_arm64.dylib"
       },
       "baseline": {
         "import_wall_ns": 58920166,
@@ -134,7 +134,7 @@
         "first_read_wall_ns": 567041,
         "first_read_cpu_ns": 569000,
         "peak_rss_bytes": 33980416,
-        "library": "/Users/griffinstrier/Billy-Company/unstd/.venv/lib/python3.13/site-packages/_soundfile_data/libsndfile_arm64.dylib"
+        "library": ".venv/lib/python3.13/site-packages/_soundfile_data/libsndfile_arm64.dylib"
       }
     },
     {
@@ -148,7 +148,7 @@
         "first_read_wall_ns": 579541,
         "first_read_cpu_ns": 581000,
         "peak_rss_bytes": 33865728,
-        "library": "/Users/griffinstrier/Billy-Company/unstd/.venv/lib/python3.13/site-packages/_soundfile_data/libsndfile_arm64.dylib"
+        "library": ".venv/lib/python3.13/site-packages/_soundfile_data/libsndfile_arm64.dylib"
       },
       "candidate": {
         "import_wall_ns": 49591042,
@@ -156,7 +156,7 @@
         "first_read_wall_ns": 542333,
         "first_read_cpu_ns": 544000,
         "peak_rss_bytes": 33751040,
-        "library": "/Users/griffinstrier/Billy-Company/unstd/.local/audio-patched-474e4d3-r4/stage/_soundfile_data/libsndfile_arm64.dylib"
+        "library": ".local/audio-patched-474e4d3-r4/stage/_soundfile_data/libsndfile_arm64.dylib"
       }
     },
     {
@@ -170,7 +170,7 @@
         "first_read_wall_ns": 811375,
         "first_read_cpu_ns": 706000,
         "peak_rss_bytes": 33849344,
-        "library": "/Users/griffinstrier/Billy-Company/unstd/.local/audio-patched-474e4d3-r4/stage/_soundfile_data/libsndfile_arm64.dylib"
+        "library": ".local/audio-patched-474e4d3-r4/stage/_soundfile_data/libsndfile_arm64.dylib"
       },
       "baseline": {
         "import_wall_ns": 49901583,
@@ -178,7 +178,7 @@
         "first_read_wall_ns": 514416,
         "first_read_cpu_ns": 512000,
         "peak_rss_bytes": 33865728,
-        "library": "/Users/griffinstrier/Billy-Company/unstd/.venv/lib/python3.13/site-packages/_soundfile_data/libsndfile_arm64.dylib"
+        "library": ".venv/lib/python3.13/site-packages/_soundfile_data/libsndfile_arm64.dylib"
       }
     },
     {
@@ -192,7 +192,7 @@
         "first_read_wall_ns": 512375,
         "first_read_cpu_ns": 514000,
         "peak_rss_bytes": 33964032,
-        "library": "/Users/griffinstrier/Billy-Company/unstd/.venv/lib/python3.13/site-packages/_soundfile_data/libsndfile_arm64.dylib"
+        "library": ".venv/lib/python3.13/site-packages/_soundfile_data/libsndfile_arm64.dylib"
       },
       "candidate": {
         "import_wall_ns": 48431458,
@@ -200,7 +200,7 @@
         "first_read_wall_ns": 492500,
         "first_read_cpu_ns": 484000,
         "peak_rss_bytes": 34160640,
-        "library": "/Users/griffinstrier/Billy-Company/unstd/.local/audio-patched-474e4d3-r4/stage/_soundfile_data/libsndfile_arm64.dylib"
+        "library": ".local/audio-patched-474e4d3-r4/stage/_soundfile_data/libsndfile_arm64.dylib"
       }
     }
   ],

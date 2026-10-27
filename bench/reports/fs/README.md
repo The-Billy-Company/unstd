@@ -1,7 +1,7 @@
 # Filesystem backend evaluation
 
 The [production qualification](production/README.md) records the installed Linux
-backend, Python fallback, cancellation/errors, packaging, and checked Billy
+backend, Python fallback, cancellation/errors, packaging, and checked Consumer
 workloads. Its [manifest](production/manifest.json) identifies the qualified
 source snapshot and retained direct-wheel/sdist artifacts. Later workspace
 edits do not update that evidence.
@@ -9,7 +9,7 @@ edits do not update that evidence.
 | Stage | Evidence | Scope |
 | --- | --- | --- |
 | Installed Linux backend | [Production qualification](production/README.md) | Public native dispatch versus forced Python fallback from identical installed packages; direct wheel, sdist rebuild, signals/errors, compiler fallback and sanitizers |
-| Standalone Linux prototype | [Historical Billy evaluation](billy-linux.md) | Explicit `_fs_experiment` binary; original cancellation/error limitations, synthetic consumer shapes and separate reference lanes |
+| Standalone Linux prototype | [Historical Consumer evaluation](consumer-linux.md) | Explicit `_fs_experiment` binary; original cancellation/error limitations, synthetic consumer shapes and separate reference lanes |
 | Python orchestration | Results below and [Linux follow-up](backend-linux-py314.json) | Initial traversal/directory/writer changes, before production native dispatch |
 
 The historical measurements below describe the initial Python optimization on

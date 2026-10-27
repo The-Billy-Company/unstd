@@ -102,6 +102,7 @@ _NATIVE_MODULES = (
     "unstd/rand/_rand_native",
     "unstd/pack/_pack_native",
     "unstd/math/_math_native",
+    "unstd/dataset/_dataset_native",
     "unstd/fs/_fs_native",
 )
 _MACHO_ORDERS = {

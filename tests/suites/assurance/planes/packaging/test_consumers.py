@@ -590,6 +590,7 @@ for module in {_PROBE_MODULES[surface]!r}:
         "unstd.rand._rand_native",
         "unstd.pack._pack_native",
         "unstd.math._math_native",
+        "unstd.dataset._dataset_native",
         "unstd.fs._fs_native",
     ],
 )
@@ -682,6 +683,36 @@ assert calls == [subject._py]
 assert actual == expected
 assert subject._py.getstate() == reference.getstate()
 assert rand.shuffle.__func__ is random.Random.shuffle
+""",
+        "unstd.dataset._dataset_native": """
+import struct
+import tempfile
+from pathlib import Path
+from unstd.dataset import Dataset, build, storage
+assert storage._native is native
+newline = bytes((10,))
+payload = b'0' + newline + b'{"id":1}' + newline
+index = 56 + len(payload)
+frame = struct.pack('<8sQQ32s', b'UNSTDDS' + bytes((2,)), 2, index, bytes(32)) + payload + struct.pack('<3Q', 56, 58, index)
+assert native.KERNEL_VERSION == 2
+assert native.validate(frame, index, 2) is None
+assert native.row(frame, index, 2, 1) == b'{"id":1}'
+assert native.take(frame, index, 2, (1, 0, 1)) == [b'{"id":1}', b'0', b'{"id":1}']
+assert native.span(frame, index, 2, 0, 2) == payload
+calls = []
+map_file = native.map
+def observed(fd):
+    mapped = map_file(fd)
+    calls.append(mapped is not None)
+    return mapped
+native.map = observed
+with tempfile.TemporaryDirectory() as directory:
+    path = Path(directory) / 'installed.dataset'
+    assert build(path, [0, {'id': 1}]) == 2
+    with Dataset(path) as rows:
+        assert rows.take((1, 0)) == [{'id': 1}, 0]
+        rows.verify()
+assert calls == [sys.platform != 'win32']
 """,
         "unstd.math._math_native": """
 assert native.KERNEL_VERSION == 1

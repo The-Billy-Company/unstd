@@ -46,7 +46,7 @@ not establish a clean repository-wide gate.
 Compatibility grids also pass on CPython 3.12.15 and 3.13.17: 1620 window
 combinations per interpreter, strict chunks, and mixed-key deduplication.
 
-Billy's compatible consumer changes use existing `flatten` and `take`: message
+Consumer's compatible consumer changes use existing `flatten` and `take`: message
 selection stops at its budget, and search carrier merging avoids a temporary
 list and one generator per pair. The taste-balancing loop stays as it was
 because proposed compositions were slower. The composition workload here is

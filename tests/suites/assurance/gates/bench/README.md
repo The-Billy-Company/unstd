@@ -21,14 +21,14 @@ rejection, unchanged signatures, independent output checks, shared calibrated
 batch counts, alternating sample order, and repeatable filesystem fixtures.
 Its checks use no machine-speed thresholds.
 
-[`test_billy_fs.py`](test_billy_fs.py) pins consumer-source and payload receipts,
+[`test_consumer_fs.py`](test_consumer_fs.py) pins consumer-source and payload receipts,
 synthetic-data boundaries, byte-oriented browser writes, retained quota checks,
 shared paths, independent content/mode checks, and native-entrypoint evidence.
 Untimed sentinel resets prevent a no-op native call from borrowing a preceding
 Python result.
 
-[`test_billy_fs_installed.py`](test_billy_fs_installed.py) gates the production
-[`billy_fs_installed.py`](../../../../../bench/profiles/billy_fs_installed.py)
+[`test_consumer_fs_installed.py`](test_consumer_fs_installed.py) gates the production
+[`consumer_fs_installed.py`](../../../../../bench/profiles/consumer_fs_installed.py)
 driver. Both independent public fs modules come from one selected installation;
 one retains native dispatch and the other forces Python fallback. The gates
 reject missing/noncompiled or ambient binaries, shared module state, inactive or
@@ -37,7 +37,7 @@ loaded fs sources/binary. Public text inputs stay text at dispatch. Support
 modules need file provenance and direct `--help` works without site packages.
 The driver proves each route and checks fresh sentinel/output state outside
 timing, preserving profile hooks on failure. The retained [production report](../../../../../bench/reports/fs/production/README.md)
-covers all 13 Billy shapes through direct and sdist-rebuilt Linux wheels, with
+covers all 13 Consumer shapes through direct and sdist-rebuilt Linux wheels, with
 disk and tmpfs results kept separate. These gates impose no machine-speed
 threshold and the test-only ELF observer is excluded from profiling.
 

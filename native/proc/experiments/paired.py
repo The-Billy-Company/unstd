@@ -1,6 +1,6 @@
 """Alternate retained original/current proc modules within one interpreter.
 
-This experiment reuses the frozen Billy fixtures, exact output checks and route
+This experiment reuses the frozen Consumer fixtures, exact output checks and route
 proofs. Each workload alternates baseline/native order for every paired batch;
 module namespaces remain separate and global import state is restored.
 """
@@ -26,8 +26,8 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[3]
-HARNESS = ROOT / "bench/profiles/billy_proc.py"
-SPEC = importlib.util.spec_from_file_location("_billy_proc_paired_fixtures", HARNESS)
+HARNESS = ROOT / "bench/profiles/consumer_proc.py"
+SPEC = importlib.util.spec_from_file_location("_consumer_proc_paired_fixtures", HARNESS)
 if SPEC is None or SPEC.loader is None:
     message = "the frozen process fixture harness is unavailable"
     raise RuntimeError(message)

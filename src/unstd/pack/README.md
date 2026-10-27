@@ -128,7 +128,7 @@ does not require NumPy for stdlib arrays and always returns owned bytes.
 
 The [backend evaluation](../../../bench/reports/pack/README.md) compares a frozen
 implementation with these changes on macOS and Linux. It distinguishes typed
-array gains from Billy's current compiled-`Struct` and owned-list workflows.
+array gains from representative compiled-`Struct` and owned-list workflows.
 
 ### Decode regions of a buffer
 

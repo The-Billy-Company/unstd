@@ -14,7 +14,7 @@ scalar objects. That phase changed no public API, dependency, wire format, or
 application code; the later API additions are covered by the reports above.
 
 The 100× target is demonstrated for large matching typed-array encoding on both
-measured operating systems. It was **not achieved for the captured Billy
+measured operating systems. It was **not achieved for the captured Consumer
 packing operations**: their compiled `Struct` operations and
 float32-to-owned-list conversion
 remain approximately unchanged. These two results must not be combined into an
@@ -22,7 +22,7 @@ application-wide speedup claim.
 
 ## Evidence and workload selection
 
-[Consumer capture](consumer-capture.json) records read-only Billy source hashes,
+[Consumer capture](consumer-capture.json) records read-only Consumer source hashes,
 commit identity, and locations behind the workload selection. The observed
 operations include network-endian 256-double embedding records, batches of 200
 records, little-endian float32 bytes converted to owned Python floats, and
@@ -31,7 +31,7 @@ operations with those shapes and output types; it does not time whole requests,
 normalization, network traffic, or durable storage.
 
 The 51,200-element typed-array cases model 200 × 256 values held in a flat typed
-buffer. They are a bulk backend opportunity. Billy currently uses `Struct` with
+buffer. They are a bulk backend opportunity. Consumer currently uses `Struct` with
 Python lists at the captured embedding call sites; its other typed-buffer paths
 already use NumPy directly. Setup and changing data representation are excluded
 from operation timings. Callers starting with lists must include that conversion
@@ -89,7 +89,7 @@ below 100× on Linux, as the table shows.
 Those compiled scalar aliases already execute in stdlib C; the modified
 portable helper is not on their path. The array-view result also cannot replace
 an owned-list result in a like-for-like comparison. These measurements leave
-the requested 100× improvement to current Billy workflows unmet.
+the requested 100× improvement to current Consumer workflows unmet.
 
 ## Implementation and alternatives
 
@@ -159,4 +159,4 @@ python -m pytest tests/suites/product/pack tests/suites/assurance/gates/bench/te
 
 [Receipt](receipt.json) records hashes of the frozen source archives, evidence,
 and harness. The raw runs retain the exact Python source hashes measured on
-each platform. No Billy source files were changed.
+each platform. No Consumer source files were changed.

@@ -4,8 +4,8 @@
   "driver_sha256": "861b01c43757ee083ce93d4e8059b690ddce6aa014d638a11bc8c079b7e96cc3",
   "driver_source": "\"\"\"Compare three JSONX sources using the existing public benchmark fixtures.\n\nRun this file directly so a worker can select its product and harness before\neither is imported::\n\n    python bench/profiles/jsonx_existing.py \\\n        --original /saved/original/src --first-pass /saved/first-pass/src \\\n        --candidate /saved/candidate/src --harness /saved/harness \\\n        --output /results/jsonx-existing.json\n\nEach source contains ``unstd`` and its built native extension. Its sibling\n``native-serde`` or ``native/serde`` directory contains the matching C sources.\nThe harness contains ``bench`` with its unchanged fixtures and baselines.\n``--smoke`` checks imports and all existing oracles without timing or profiling.\n\nWorkers use the same interpreter and dependencies. Source positions rotate\nacross repetitions; three repetitions balance all positions. Public Python\ncalls include their guards and allocations. Profiling is a separate pass and\nnever contributes to throughput ratios. No native component is timed directly.\n\"\"\"\n\nfrom __future__ import annotations\n\nimport argparse\nimport cProfile\nfrom dataclasses import asdict\nfrom hashlib import sha256\nfrom importlib.metadata import PackageNotFoundError, distribution, version\nimport json\nimport os\nfrom pathlib import Path\nimport platform\nimport pstats\nfrom statistics import median\nimport subprocess\nimport sys\nimport sysconfig\nimport time\nfrom typing import TYPE_CHECKING, Any\n\n\nif TYPE_CHECKING:\n    from collections.abc import Sequence\n\n    from bench.core.cases import Case as CoreCase\n    from bench.profiles.serde_profile import Workload\n    from bench.speeds import Case\n\n\n_LABELS = (\"original\", \"first_pass\", \"candidate\")\n_FIXTURE_FILES = (\n    \"bench/workloads/speed_cases_codecs.py\",\n    \"bench/core/cases.py\",\n    \"bench/core/timing.py\",\n    \"bench/core/report.py\",\n    \"bench/speeds.py\",\n    \"bench/profiles/serde_profile.py\",\n)\n\n\ndef _backend_fingerprint(name: str) -> dict[str, Any] | None:\n    try:\n        installed = distribution(name)\n    except PackageNotFoundError:\n        return None\n    hashes = {\n        str(path): sha256(\n            Path(str(installed.locate_file(path))).read_bytes()\n        ).hexdigest()\n        for path in sorted(installed.files or (), key=str)\n        if path.suffix in {\".py\", \".so\", \".pyd\", \".dylib\"}\n    }\n    return {\n        \"version\": installed.version,\n        \"code_files\": len(hashes),\n        \"code_sha256\": sha256(json.dumps(hashes, sort_keys=True).encode()).hexdigest(),\n        \"native_sha256\": {\n            name: digest\n            for name, digest in hashes.items()\n            if Path(name).suffix in {\".so\", \".pyd\", \".dylib\"}\n        },\n    }\n\n\ndef _environment() -> dict[str, Any]:\n    executable = Path(sys.executable).resolve()\n    library = Path(sysconfig.get_config_var(\"LIBDIR\") or \"\") / (\n        sysconfig.get_config_var(\"LDLIBRARY\") or \"\"\n    )\n    return {\n        \"python\": sys.version,\n        \"platform\": platform.platform(),\n        \"backends\": {name: version(name) for name in (\"orjson\", \"msgspec\", \"pybase64\")},\n        \"runtime_fingerprint\": {\n            \"executable\": str(executable),\n            \"executable_sha256\": sha256(executable.read_bytes()).hexdigest(),\n            \"library\": str(library.resolve()) if library.is_file() else None,\n            \"library_sha256\": sha256(library.read_bytes()).hexdigest()\n            if library.is_file()\n            else None,\n            \"compiler_configuration\": {\n                name: sysconfig.get_config_var(name)\n                for name in (\"CC\", \"CFLAGS\", \"PY_CFLAGS\", \"CONFIG_ARGS\", \"SOABI\")\n            },\n        },\n        \"backend_fingerprints\": {\n            name: _backend_fingerprint(name)\n            for name in (\"orjson\", \"msgspec\", \"pybase64\", \"numpy\", \"blake3\")\n        },\n        \"thread_environment\": {\n            name: os.environ.get(name)\n            for name in (\n                \"PYTHONHASHSEED\",\n                \"OMP_NUM_THREADS\",\n                \"OPENBLAS_NUM_THREADS\",\n                \"MKL_NUM_THREADS\",\n                \"VECLIB_MAXIMUM_THREADS\",\n            )\n        },\n    }\n\n\ndef _provenance(source: Path, jsonx: Any) -> dict[str, Any]:\n    imported = Path(jsonx.__file__).resolve()\n    if imported != source / \"unstd/serde/jsonx.py\":\n        message = f\"requested {source}, imported {imported}\"\n        raise RuntimeError(message)\n    package = imported.parent\n    native = getattr(jsonx, \"_native\", None)\n    binary = Path(native.__file__).resolve() if native is not None else None\n    if binary is None or binary.parent != package:\n        message = f\"requested native extension in {package}, imported {binary}\"\n        raise RuntimeError(message)\n    native_source = source.parent / \"native-serde\"\n    if not native_source.is_dir():\n        native_source = source.parent / \"native/serde\"\n    native_hashes = {\n        str(path.relative_to(native_source)): sha256(path.read_bytes()).hexdigest()\n        for path in sorted(native_source.rglob(\"*\"))\n        if path.is_file() and path.suffix in {\".c\", \".h\"}\n    }\n    if not native_hashes:\n        message = f\"matching native C/header sources are missing beside {source}\"\n        raise RuntimeError(message)\n    return {\n        \"source\": str(source),\n        \"jsonx\": str(imported),\n        \"native_binary\": str(binary),\n        \"python_sha256\": {\n            str(path.relative_to(source)): sha256(path.read_bytes()).hexdigest()\n            for path in sorted(package.rglob(\"*\"))\n            if path.is_file() and path.suffix in {\".py\", \".pyi\", \".so\", \".pyd\"}\n        },\n        \"native_source_root\": str(native_source),\n        \"native_source_sha256\": native_hashes,\n    }\n\n\ndef _harness_hashes(harness: Path) -> dict[str, str]:\n    for name in _FIXTURE_FILES:\n        if not (harness / name).is_file():\n            message = f\"missing existing harness file: {harness / name}\"\n            raise RuntimeError(message)\n    files = [*(harness / \"bench\").rglob(\"*.py\")]\n    files.extend((harness / \"bench/baselines\").glob(\"*.json\"))\n    return {\n        str(path.relative_to(harness)): sha256(path.read_bytes()).hexdigest()\n        for path in sorted(files)\n        if path.is_file()\n    }\n\n\ndef _check_harness(harness: Path, functions: Sequence[Any]) -> None:\n    for function in functions:\n        path = Path(function.__code__.co_filename).resolve()\n        if not path.is_relative_to(harness / \"bench\"):\n            message = f\"requested harness {harness}, imported {path}\"\n            raise RuntimeError(message)\n\n\ndef _audit_existing(\n    public_cases: Sequence[Case],\n    core_cases: Sequence[CoreCase],\n    profile_cases: Sequence[Workload],\n) -> None:\n    from bench.core.cases import audit as core_audit\n    from bench.profiles.serde_profile import _same\n    from bench.speeds import audit\n\n    audit(public_cases)\n    unavailable = [case.name for case in core_cases if not case.available]\n    if unavailable:\n        message = f\"missing existing core benchmark backends: {unavailable}\"\n        raise RuntimeError(message)\n    # Unlike the speed registry's audit, the core audit returns divergences.\n    if divergences := core_audit(core_cases):\n        message = f\"existing core correctness audit failed: {divergences}\"\n        raise AssertionError(message)\n    for case in profile_cases:\n        if not _same(case.call(), case.expected):\n            message = f\"existing profile correctness audit failed: {case.name}\"\n            raise AssertionError(message)\n\n\ndef _public_profile(cases: Sequence[Case], source: Path) -> list[dict[str, Any]]:\n    # canonical_strict is present in the registry but absent from the older\n    # serde profile. Exercise that unchanged callable in a separate profile.\n    profile = cProfile.Profile()\n    profile.enable()\n    for _ in range(10):\n        for case in cases:\n            case.run()\n    profile.disable()\n    profile_stats: Any = pstats.Stats(profile)\n    stats = profile_stats.stats\n    functions = []\n    for (filename, line, name), entry in sorted(stats.items()):\n        path = Path(filename)\n        if not path.is_relative_to(source / \"unstd/serde\"):\n            continue\n        functions.append(\n            {\n                \"file\": str(path.relative_to(source)),\n                \"line\": line,\n                \"function\": name,\n                \"primitive_calls\": entry[0],\n                \"total_calls\": entry[1],\n                \"self_ns\": entry[2] * 1e9,\n                \"cumulative_ns\": entry[3] * 1e9,\n            }\n        )\n    return functions\n\n\ndef _worker(\n    source: Path, rounds: int, profile_rounds: int, *, smoke: bool, harness: Path\n) -> dict[str, Any]:\n    from bench.core.cases import registry\n    from bench.core.report import run\n    from bench.core.timing import measure\n    from bench.profiles.serde_profile import _worker as profile_worker\n    from bench.profiles.serde_profile import _workloads\n    from bench.speeds import timings\n    from bench.workloads.speed_cases_codecs import _serde_cases\n    from unstd.serde import jsonx\n\n    _check_harness(\n        harness,\n        (registry, run, measure, timings, profile_worker, _workloads, _serde_cases),\n    )\n    metadata = _provenance(source, jsonx)\n    harness_hashes = _harness_hashes(harness)\n    public_cases = [case for case in _serde_cases() if \".jsonx.\" in case.name]\n    core_cases = [\n        case for case in registry((\"serde\",)) if case.name.startswith(\"jsonx.\")\n    ]\n    if len(public_cases) != 9 or len(core_cases) != 7:\n        message = \"expected the unchanged 9 public registry and 7 core JSONX cases\"\n        raise RuntimeError(message)\n    profile_cases = _workloads()\n    _audit_existing(public_cases, core_cases, profile_cases)\n    result: dict[str, Any] = {\n        \"environment\": _environment(),\n        \"provenance\": metadata,\n        \"harness_sha256\": harness_hashes,\n        \"public_case_names\": [case.name for case in public_cases],\n        \"core_case_names\": [case.name for case in core_cases],\n        \"existing_profile_case_names\": [case.name for case in profile_cases],\n    }\n    if not smoke:\n        public_timings = timings(public_cases, rounds=rounds)\n        core_results = run(core_cases, rounds=rounds)\n        # The unchanged worker times first, then profiles in a separate pass.\n        profile = profile_worker(source, profile_rounds, False)\n        result.update(\n            public_registry={\n                case.name: {\n                    \"note\": case.note,\n                    \"measurement\": asdict(public_timings[case.name]),\n                }\n                for case in public_cases\n            },\n            core_registry={\n                row.case.name: {\n                    \"note\": row.case.note,\n                    \"accel\": asdict(row.accel) if row.accel else None,\n                    \"stdlib\": asdict(row.base) if row.base else None,\n                    \"floor\": row.floor,\n                    \"floor_failed\": row.failed,\n                    \"skipped\": row.skipped,\n                }\n                for row in core_results\n            },\n            existing_serde_profile=profile,\n            existing_public_registry_python_profile=_public_profile(\n                public_cases, source\n            ),\n        )\n        _audit_existing(public_cases, core_cases, profile_cases)\n    if _provenance(source, jsonx) != metadata:\n        message = \"product source or native binary changed during the worker\"\n        raise RuntimeError(message)\n    if _harness_hashes(harness) != harness_hashes:\n        message = \"benchmark harness changed during the worker\"\n        raise RuntimeError(message)\n    if _environment() != result[\"environment\"]:\n        message = \"interpreter or backend installation changed during the worker\"\n        raise RuntimeError(message)\n    return result\n\n\ndef _comparisons(runs: Sequence[dict[str, Any]], group: str) -> dict[str, Any]:\n    key = \"measurement\" if group == \"public_registry\" else \"accel\"\n    result = {}\n    for name in sorted(runs[0][group]):\n        latencies = {\n            label: median(\n                run[group][name][key][\"per_op_ns\"]\n                for run in runs\n                if run[\"label\"] == label\n            )\n            for label in _LABELS\n        }\n        result[name] = _ratios(latencies)\n    return result\n\n\ndef _ratios(latencies: dict[str, float]) -> dict[str, Any]:\n    return {\n        \"ns\": latencies,\n        \"final_over_original_speedup\": latencies[\"original\"] / latencies[\"candidate\"],\n        \"final_over_first_pass_speedup\": latencies[\"first_pass\"]\n        / latencies[\"candidate\"],\n    }\n\n\ndef _validate_runs(runs: Sequence[dict[str, Any]], *, smoke: bool) -> None:\n    first = runs[0]\n    for run in runs:\n        for name in (\n            \"environment\",\n            \"harness_sha256\",\n            \"public_case_names\",\n            \"core_case_names\",\n            \"existing_profile_case_names\",\n        ):\n            if run[name] != first[name]:\n                message = f\"comparison workers differ: {name}\"\n                raise RuntimeError(message)\n        if not smoke and (\n            run[\"existing_serde_profile\"][\"signatures\"]\n            != first[\"existing_serde_profile\"][\"signatures\"]\n        ):\n            message = \"comparison workers expose different public signatures\"\n            raise RuntimeError(message)\n        prior = next(row for row in runs if row[\"label\"] == run[\"label\"])\n        if prior[\"provenance\"] != run[\"provenance\"]:\n            message = f\"{run['label']} source changed between repetitions\"\n            raise RuntimeError(message)\n\n\ndef _positive(value: str) -> int:\n    number = int(value)\n    if number < 1:\n        message = \"must be a positive integer\"\n        raise argparse.ArgumentTypeError(message)\n    return number\n\n\ndef _arguments(argv: Sequence[str] | None = None) -> argparse.Namespace:\n    parser = argparse.ArgumentParser(description=__doc__)\n    parser.add_argument(\"--original\", type=Path)\n    parser.add_argument(\"--first-pass\", type=Path)\n    parser.add_argument(\"--candidate\", type=Path)\n    parser.add_argument(\"--harness\", type=Path, required=True)\n    parser.add_argument(\"--rounds\", type=_positive, default=5)\n    parser.add_argument(\"--profile-rounds\", type=_positive, default=3)\n    parser.add_argument(\"--repetitions\", type=_positive, default=3)\n    parser.add_argument(\"--output\", type=Path)\n    parser.add_argument(\"--smoke\", action=\"store_true\")\n    parser.add_argument(\"--worker\", action=\"store_true\", help=argparse.SUPPRESS)\n    parser.add_argument(\"--source\", type=Path, help=argparse.SUPPRESS)\n    args = parser.parse_args(argv)\n    required = (\n        (\"source\",)\n        if args.worker\n        else (\n            \"original\",\n            \"first_pass\",\n            \"candidate\",\n            \"output\",\n        )\n    )\n    for name in required:\n        if getattr(args, name) is None:\n            parser.error(f\"--{name.replace('_', '-')} is required\")\n    if not args.smoke and args.rounds < 3:\n        parser.error(\"--rounds must be at least three for the existing speed timer\")\n    return args\n\n\ndef _save(output: Path, report: dict[str, Any]) -> None:\n    output.write_text(json.dumps(report, indent=2) + \"\\n\", encoding=\"utf-8\")\n\n\ndef _compare(args: argparse.Namespace) -> dict[str, Any]:\n    harness = args.harness.resolve()\n    driver = Path(__file__).resolve()\n    sources = (\n        (\"original\", args.original.resolve()),\n        (\"first_pass\", args.first_pass.resolve()),\n        (\"candidate\", args.candidate.resolve()),\n    )\n    harness_hashes = _harness_hashes(harness)\n    runs: list[dict[str, Any]] = []\n    report: dict[str, Any] = {\n        \"purpose\": \"Three-source comparison of existing public Python JSONX fixtures and separate Python profiles\",\n        \"smoke\": args.smoke,\n        \"driver_sha256\": sha256(driver.read_bytes()).hexdigest(),\n        \"driver_source\": driver.read_text(encoding=\"utf-8\"),\n        \"driver_command\": [sys.executable, *sys.argv],\n        \"harness_root\": str(harness),\n        \"harness_sha256\": harness_hashes,\n        \"fixture_sha256\": {name: harness_hashes[name] for name in _FIXTURE_FILES},\n        \"estimator\": \"Median across cyclically rotated source repetitions of minimum calibrated wall-clock batch means. Three repetitions balance source positions. Profiler times are excluded from throughput ratios. Existing serde_profile retains its original summary statistics; registries retain raw wall and thread-CPU samples.\",\n        \"configuration\": {\n            \"rounds\": args.rounds,\n            \"profile_rounds\": args.profile_rounds,\n            \"repetitions\": args.repetitions,\n        },\n        \"existing_entrypoints\": {\n            \"public_registry\": \"bench.speeds.timings(JSONX _serde_cases(), rounds)\",\n            \"core_registry\": \"bench.core.report.run(JSONX registry(('serde',)), rounds)\",\n            \"serde_profile\": \"bench.profiles.serde_profile._worker(source, profile_rounds, False)\",\n            \"registry_python_profile\": \"cProfile over ten passes of the unchanged public registry callables, after all timings\",\n        },\n        \"runs\": runs,\n    }\n    started = time.monotonic()\n    for repetition in range(args.repetitions):\n        offset = repetition % len(sources)\n        for label, source in sources[offset:] + sources[:offset]:\n            command = [\n                sys.executable,\n                str(driver),\n                \"--worker\",\n                \"--source\",\n                str(source),\n                \"--rounds\",\n                str(args.rounds),\n                \"--profile-rounds\",\n                str(args.profile_rounds),\n                \"--harness\",\n                str(harness),\n            ]\n            if args.smoke:\n                command.append(\"--smoke\")\n            environment = dict(\n                os.environ,\n                PYTHONPATH=os.pathsep.join((str(source), str(harness))),\n                PYTHONDONTWRITEBYTECODE=\"1\",\n            )\n            completed = subprocess.run(  # noqa: S603 \u2014 fixed driver and interpreter.\n                command,\n                cwd=harness,\n                env=environment,\n                text=True,\n                capture_output=True,\n                check=False,\n            )\n            if completed.returncode:\n                report[\"failure\"] = {\n                    \"label\": label,\n                    \"repetition\": repetition + 1,\n                    \"command\": command,\n                    \"returncode\": completed.returncode,\n                    \"stdout\": completed.stdout,\n                    \"stderr\": completed.stderr,\n                }\n                _save(args.output, report)\n                message = f\"{label} worker failed; evidence retained in {args.output}\"\n                raise RuntimeError(message)\n            result = json.loads(completed.stdout)\n            runs.append(\n                {\n                    \"label\": label,\n                    \"repetition\": repetition + 1,\n                    \"worker_command\": command,\n                    **result,\n                }\n            )\n            _save(args.output, report)\n            if result[\"harness_sha256\"] != harness_hashes:\n                message = \"worker benchmark harness differs from the saved harness\"\n                raise RuntimeError(message)\n            print(\n                f\"{sys.version.split()[0]}: {label} repetition {repetition + 1} \"\n                f\"({time.monotonic() - started:.1f}s)\",\n                file=sys.stderr,\n            )\n    _validate_runs(runs, smoke=args.smoke)\n    if not args.smoke:\n        report[\"public_registry_comparisons\"] = _comparisons(runs, \"public_registry\")\n        report[\"core_registry_comparisons\"] = _comparisons(runs, \"core_registry\")\n        report[\"existing_serde_profile_comparisons\"] = {\n            name: _ratios(\n                {\n                    label: median(\n                        run[\"existing_serde_profile\"][\"timings\"][name][\"ns\"]\n                        for run in runs\n                        if run[\"label\"] == label\n                    )\n                    for label in _LABELS\n                }\n            )\n            for name in sorted(runs[0][\"existing_serde_profile\"][\"timings\"])\n            if name.startswith(\"jsonx.\")\n        }\n    report[\"complete\"] = True\n    _save(args.output, report)\n    return report\n\n\ndef main(argv: Sequence[str] | None = None) -> None:\n    \"\"\"Run isolated comparisons, or one internal worker, with explicit paths.\"\"\"\n    args = _arguments(argv)\n    if args.worker:\n        result = _worker(\n            args.source.resolve(),\n            args.rounds,\n            args.profile_rounds,\n            smoke=args.smoke,\n            harness=args.harness.resolve(),\n        )\n        print(json.dumps(result))\n    else:\n        _compare(args)\n\n\nif __name__ == \"__main__\":\n    main()\n",
   "driver_command": [
-    "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-py312/bin/python",
-    "/Users/griffinstrier/Billy-Company/unstd/bench/profiles/jsonx_existing.py",
+    ".local/crypto-py312/bin/python",
+    "bench/profiles/jsonx_existing.py",
     "--original",
     "/tmp/jsonx-throughput-baseline/src",
     "--first-pass",
@@ -21,7 +21,7 @@
     "--repetitions",
     "3",
     "--output",
-    "/Users/griffinstrier/Billy-Company/unstd/bench/reports/serde/jsonx-second-pass-312.json"
+    "bench/reports/serde/jsonx-second-pass-312.json"
   ],
   "harness_root": "/private/tmp/jsonx-second-harness",
   "harness_sha256": {
@@ -38,7 +38,7 @@
     "bench/baselines/baseline.json": "365c1e07adf70a6c28befa769874cce8e9775f60a4faa5ecb9b3d05c44f282b0",
     "bench/baselines/speeds.json": "0ee80a28e3cae55c31aa57da1f7ce21862db09ff710d854740d23c64f751dc8d",
     "bench/baselines/time-native.json": "8bf26ca4ad041e406ef63010e3f6efafd907755bca6b07047e2229399ed09639",
-    "bench/billy_serde.py": "a5115feca4003ec43853c736c090faba72d87108f5afe43b26023516435a64aa",
+    "bench/consumer_serde.py": "a5115feca4003ec43853c736c090faba72d87108f5afe43b26023516435a64aa",
     "bench/cases.py": "fc96d85fb11054f50a0c30741bea63c9900ddbafda409ea0d80b2c860100ddcc",
     "bench/clone_ids_profile.py": "d1a0afb1f6fc74e4ee6eb5f12368c91dc0fdba3c02e1f9dc2bd637947a9f8673",
     "bench/core/__init__.py": "7d448fab00178bc6758de1b89205f4d4a0be0def7afc723ec6f4d26a1e8ec83a",
@@ -68,8 +68,8 @@
     "bench/math-audit/qualify_sndfile.py": "e39bbaaa4c7511b95f2ddc7b2a80cd6b5c6cf64ff5b6593db363fc4662eabbd6",
     "bench/native_profile.py": "2fcc37ffaf7d298fc6ff9e6c9ab15fe46d812794879e5cf10cb526fae4b1a926",
     "bench/profiles/__init__.py": "75f32d76ac6c0671fe17c653bcffbc558a9fa9c6006eaf5523424178452a0c7e",
-    "bench/profiles/billy_gzip.py": "92f34672ffeaf3a32e7cbfee405e319a6bd3f80c1150bda6eb722bb8d841d4d9",
-    "bench/profiles/billy_serde.py": "17f14e760b96b15d98d60ab010be0a018d007dfbac5bc5708fdc497bf8ed14f0",
+    "bench/profiles/consumer_gzip.py": "92f34672ffeaf3a32e7cbfee405e319a6bd3f80c1150bda6eb722bb8d841d4d9",
+    "bench/profiles/consumer_serde.py": "17f14e760b96b15d98d60ab010be0a018d007dfbac5bc5708fdc497bf8ed14f0",
     "bench/profiles/clone_common_cpu.py": "f1bc80e4bbc42068e898e0a3e4f613313b311bd430f12f62dc03991e48a357ba",
     "bench/profiles/clone_cpu.py": "efc3f715ea09f403299354929164a5e2516d8783588ee87411cf54d67cd681cd",
     "bench/profiles/clone_ids_profile.py": "65be3721bd793d6f63ff304cf3373cf1b827015916f2d053655a1b57d3b6cd70",
@@ -118,8 +118,8 @@
       "label": "original",
       "repetition": 1,
       "worker_command": [
-        "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-py312/bin/python",
-        "/Users/griffinstrier/Billy-Company/unstd/bench/profiles/jsonx_existing.py",
+        ".local/crypto-py312/bin/python",
+        "bench/profiles/jsonx_existing.py",
         "--worker",
         "--source",
         "/private/tmp/jsonx-throughput-baseline/src",
@@ -139,9 +139,9 @@
           "pybase64": "1.5.0"
         },
         "runtime_fingerprint": {
-          "executable": "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-python/cpython-3.12.15-macos-aarch64-none/bin/python3.12",
+          "executable": ".local/crypto-python/cpython-3.12.15-macos-aarch64-none/bin/python3.12",
           "executable_sha256": "83deb939c9034c3e85a377eeb04e7d9992f8881652a22289cd0eeeb83b98a565",
-          "library": "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-python/cpython-3.12.15-macos-aarch64-none/lib/libpython3.12.dylib",
+          "library": ".local/crypto-python/cpython-3.12.15-macos-aarch64-none/lib/libpython3.12.dylib",
           "library_sha256": "15e07fb4c7d9929a50117758980e05f7ba073cd4f9ec2d461b3d0d77a09b4735",
           "compiler_configuration": {
             "CC": "cc",
@@ -236,7 +236,7 @@
         "bench/baselines/baseline.json": "365c1e07adf70a6c28befa769874cce8e9775f60a4faa5ecb9b3d05c44f282b0",
         "bench/baselines/speeds.json": "0ee80a28e3cae55c31aa57da1f7ce21862db09ff710d854740d23c64f751dc8d",
         "bench/baselines/time-native.json": "8bf26ca4ad041e406ef63010e3f6efafd907755bca6b07047e2229399ed09639",
-        "bench/billy_serde.py": "a5115feca4003ec43853c736c090faba72d87108f5afe43b26023516435a64aa",
+        "bench/consumer_serde.py": "a5115feca4003ec43853c736c090faba72d87108f5afe43b26023516435a64aa",
         "bench/cases.py": "fc96d85fb11054f50a0c30741bea63c9900ddbafda409ea0d80b2c860100ddcc",
         "bench/clone_ids_profile.py": "d1a0afb1f6fc74e4ee6eb5f12368c91dc0fdba3c02e1f9dc2bd637947a9f8673",
         "bench/core/__init__.py": "7d448fab00178bc6758de1b89205f4d4a0be0def7afc723ec6f4d26a1e8ec83a",
@@ -266,8 +266,8 @@
         "bench/math-audit/qualify_sndfile.py": "e39bbaaa4c7511b95f2ddc7b2a80cd6b5c6cf64ff5b6593db363fc4662eabbd6",
         "bench/native_profile.py": "2fcc37ffaf7d298fc6ff9e6c9ab15fe46d812794879e5cf10cb526fae4b1a926",
         "bench/profiles/__init__.py": "75f32d76ac6c0671fe17c653bcffbc558a9fa9c6006eaf5523424178452a0c7e",
-        "bench/profiles/billy_gzip.py": "92f34672ffeaf3a32e7cbfee405e319a6bd3f80c1150bda6eb722bb8d841d4d9",
-        "bench/profiles/billy_serde.py": "17f14e760b96b15d98d60ab010be0a018d007dfbac5bc5708fdc497bf8ed14f0",
+        "bench/profiles/consumer_gzip.py": "92f34672ffeaf3a32e7cbfee405e319a6bd3f80c1150bda6eb722bb8d841d4d9",
+        "bench/profiles/consumer_serde.py": "17f14e760b96b15d98d60ab010be0a018d007dfbac5bc5708fdc497bf8ed14f0",
         "bench/profiles/clone_common_cpu.py": "f1bc80e4bbc42068e898e0a3e4f613313b311bd430f12f62dc03991e48a357ba",
         "bench/profiles/clone_cpu.py": "efc3f715ea09f403299354929164a5e2516d8783588ee87411cf54d67cd681cd",
         "bench/profiles/clone_ids_profile.py": "65be3721bd793d6f63ff304cf3373cf1b827015916f2d053655a1b57d3b6cd70",
@@ -2119,8 +2119,8 @@
       "label": "first_pass",
       "repetition": 1,
       "worker_command": [
-        "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-py312/bin/python",
-        "/Users/griffinstrier/Billy-Company/unstd/bench/profiles/jsonx_existing.py",
+        ".local/crypto-py312/bin/python",
+        "bench/profiles/jsonx_existing.py",
         "--worker",
         "--source",
         "/private/tmp/jsonx-second-baseline/src",
@@ -2140,9 +2140,9 @@
           "pybase64": "1.5.0"
         },
         "runtime_fingerprint": {
-          "executable": "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-python/cpython-3.12.15-macos-aarch64-none/bin/python3.12",
+          "executable": ".local/crypto-python/cpython-3.12.15-macos-aarch64-none/bin/python3.12",
           "executable_sha256": "83deb939c9034c3e85a377eeb04e7d9992f8881652a22289cd0eeeb83b98a565",
-          "library": "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-python/cpython-3.12.15-macos-aarch64-none/lib/libpython3.12.dylib",
+          "library": ".local/crypto-python/cpython-3.12.15-macos-aarch64-none/lib/libpython3.12.dylib",
           "library_sha256": "15e07fb4c7d9929a50117758980e05f7ba073cd4f9ec2d461b3d0d77a09b4735",
           "compiler_configuration": {
             "CC": "cc",
@@ -2238,7 +2238,7 @@
         "bench/baselines/baseline.json": "365c1e07adf70a6c28befa769874cce8e9775f60a4faa5ecb9b3d05c44f282b0",
         "bench/baselines/speeds.json": "0ee80a28e3cae55c31aa57da1f7ce21862db09ff710d854740d23c64f751dc8d",
         "bench/baselines/time-native.json": "8bf26ca4ad041e406ef63010e3f6efafd907755bca6b07047e2229399ed09639",
-        "bench/billy_serde.py": "a5115feca4003ec43853c736c090faba72d87108f5afe43b26023516435a64aa",
+        "bench/consumer_serde.py": "a5115feca4003ec43853c736c090faba72d87108f5afe43b26023516435a64aa",
         "bench/cases.py": "fc96d85fb11054f50a0c30741bea63c9900ddbafda409ea0d80b2c860100ddcc",
         "bench/clone_ids_profile.py": "d1a0afb1f6fc74e4ee6eb5f12368c91dc0fdba3c02e1f9dc2bd637947a9f8673",
         "bench/core/__init__.py": "7d448fab00178bc6758de1b89205f4d4a0be0def7afc723ec6f4d26a1e8ec83a",
@@ -2268,8 +2268,8 @@
         "bench/math-audit/qualify_sndfile.py": "e39bbaaa4c7511b95f2ddc7b2a80cd6b5c6cf64ff5b6593db363fc4662eabbd6",
         "bench/native_profile.py": "2fcc37ffaf7d298fc6ff9e6c9ab15fe46d812794879e5cf10cb526fae4b1a926",
         "bench/profiles/__init__.py": "75f32d76ac6c0671fe17c653bcffbc558a9fa9c6006eaf5523424178452a0c7e",
-        "bench/profiles/billy_gzip.py": "92f34672ffeaf3a32e7cbfee405e319a6bd3f80c1150bda6eb722bb8d841d4d9",
-        "bench/profiles/billy_serde.py": "17f14e760b96b15d98d60ab010be0a018d007dfbac5bc5708fdc497bf8ed14f0",
+        "bench/profiles/consumer_gzip.py": "92f34672ffeaf3a32e7cbfee405e319a6bd3f80c1150bda6eb722bb8d841d4d9",
+        "bench/profiles/consumer_serde.py": "17f14e760b96b15d98d60ab010be0a018d007dfbac5bc5708fdc497bf8ed14f0",
         "bench/profiles/clone_common_cpu.py": "f1bc80e4bbc42068e898e0a3e4f613313b311bd430f12f62dc03991e48a357ba",
         "bench/profiles/clone_cpu.py": "efc3f715ea09f403299354929164a5e2516d8783588ee87411cf54d67cd681cd",
         "bench/profiles/clone_ids_profile.py": "65be3721bd793d6f63ff304cf3373cf1b827015916f2d053655a1b57d3b6cd70",
@@ -4121,8 +4121,8 @@
       "label": "candidate",
       "repetition": 1,
       "worker_command": [
-        "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-py312/bin/python",
-        "/Users/griffinstrier/Billy-Company/unstd/bench/profiles/jsonx_existing.py",
+        ".local/crypto-py312/bin/python",
+        "bench/profiles/jsonx_existing.py",
         "--worker",
         "--source",
         "/private/tmp/jsonx-second-final-v2/src",
@@ -4142,9 +4142,9 @@
           "pybase64": "1.5.0"
         },
         "runtime_fingerprint": {
-          "executable": "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-python/cpython-3.12.15-macos-aarch64-none/bin/python3.12",
+          "executable": ".local/crypto-python/cpython-3.12.15-macos-aarch64-none/bin/python3.12",
           "executable_sha256": "83deb939c9034c3e85a377eeb04e7d9992f8881652a22289cd0eeeb83b98a565",
-          "library": "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-python/cpython-3.12.15-macos-aarch64-none/lib/libpython3.12.dylib",
+          "library": ".local/crypto-python/cpython-3.12.15-macos-aarch64-none/lib/libpython3.12.dylib",
           "library_sha256": "15e07fb4c7d9929a50117758980e05f7ba073cd4f9ec2d461b3d0d77a09b4735",
           "compiler_configuration": {
             "CC": "cc",
@@ -4242,7 +4242,7 @@
         "bench/baselines/baseline.json": "365c1e07adf70a6c28befa769874cce8e9775f60a4faa5ecb9b3d05c44f282b0",
         "bench/baselines/speeds.json": "0ee80a28e3cae55c31aa57da1f7ce21862db09ff710d854740d23c64f751dc8d",
         "bench/baselines/time-native.json": "8bf26ca4ad041e406ef63010e3f6efafd907755bca6b07047e2229399ed09639",
-        "bench/billy_serde.py": "a5115feca4003ec43853c736c090faba72d87108f5afe43b26023516435a64aa",
+        "bench/consumer_serde.py": "a5115feca4003ec43853c736c090faba72d87108f5afe43b26023516435a64aa",
         "bench/cases.py": "fc96d85fb11054f50a0c30741bea63c9900ddbafda409ea0d80b2c860100ddcc",
         "bench/clone_ids_profile.py": "d1a0afb1f6fc74e4ee6eb5f12368c91dc0fdba3c02e1f9dc2bd637947a9f8673",
         "bench/core/__init__.py": "7d448fab00178bc6758de1b89205f4d4a0be0def7afc723ec6f4d26a1e8ec83a",
@@ -4272,8 +4272,8 @@
         "bench/math-audit/qualify_sndfile.py": "e39bbaaa4c7511b95f2ddc7b2a80cd6b5c6cf64ff5b6593db363fc4662eabbd6",
         "bench/native_profile.py": "2fcc37ffaf7d298fc6ff9e6c9ab15fe46d812794879e5cf10cb526fae4b1a926",
         "bench/profiles/__init__.py": "75f32d76ac6c0671fe17c653bcffbc558a9fa9c6006eaf5523424178452a0c7e",
-        "bench/profiles/billy_gzip.py": "92f34672ffeaf3a32e7cbfee405e319a6bd3f80c1150bda6eb722bb8d841d4d9",
-        "bench/profiles/billy_serde.py": "17f14e760b96b15d98d60ab010be0a018d007dfbac5bc5708fdc497bf8ed14f0",
+        "bench/profiles/consumer_gzip.py": "92f34672ffeaf3a32e7cbfee405e319a6bd3f80c1150bda6eb722bb8d841d4d9",
+        "bench/profiles/consumer_serde.py": "17f14e760b96b15d98d60ab010be0a018d007dfbac5bc5708fdc497bf8ed14f0",
         "bench/profiles/clone_common_cpu.py": "f1bc80e4bbc42068e898e0a3e4f613313b311bd430f12f62dc03991e48a357ba",
         "bench/profiles/clone_cpu.py": "efc3f715ea09f403299354929164a5e2516d8783588ee87411cf54d67cd681cd",
         "bench/profiles/clone_ids_profile.py": "65be3721bd793d6f63ff304cf3373cf1b827015916f2d053655a1b57d3b6cd70",
@@ -6116,8 +6116,8 @@
       "label": "first_pass",
       "repetition": 2,
       "worker_command": [
-        "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-py312/bin/python",
-        "/Users/griffinstrier/Billy-Company/unstd/bench/profiles/jsonx_existing.py",
+        ".local/crypto-py312/bin/python",
+        "bench/profiles/jsonx_existing.py",
         "--worker",
         "--source",
         "/private/tmp/jsonx-second-baseline/src",
@@ -6137,9 +6137,9 @@
           "pybase64": "1.5.0"
         },
         "runtime_fingerprint": {
-          "executable": "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-python/cpython-3.12.15-macos-aarch64-none/bin/python3.12",
+          "executable": ".local/crypto-python/cpython-3.12.15-macos-aarch64-none/bin/python3.12",
           "executable_sha256": "83deb939c9034c3e85a377eeb04e7d9992f8881652a22289cd0eeeb83b98a565",
-          "library": "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-python/cpython-3.12.15-macos-aarch64-none/lib/libpython3.12.dylib",
+          "library": ".local/crypto-python/cpython-3.12.15-macos-aarch64-none/lib/libpython3.12.dylib",
           "library_sha256": "15e07fb4c7d9929a50117758980e05f7ba073cd4f9ec2d461b3d0d77a09b4735",
           "compiler_configuration": {
             "CC": "cc",
@@ -6235,7 +6235,7 @@
         "bench/baselines/baseline.json": "365c1e07adf70a6c28befa769874cce8e9775f60a4faa5ecb9b3d05c44f282b0",
         "bench/baselines/speeds.json": "0ee80a28e3cae55c31aa57da1f7ce21862db09ff710d854740d23c64f751dc8d",
         "bench/baselines/time-native.json": "8bf26ca4ad041e406ef63010e3f6efafd907755bca6b07047e2229399ed09639",
-        "bench/billy_serde.py": "a5115feca4003ec43853c736c090faba72d87108f5afe43b26023516435a64aa",
+        "bench/consumer_serde.py": "a5115feca4003ec43853c736c090faba72d87108f5afe43b26023516435a64aa",
         "bench/cases.py": "fc96d85fb11054f50a0c30741bea63c9900ddbafda409ea0d80b2c860100ddcc",
         "bench/clone_ids_profile.py": "d1a0afb1f6fc74e4ee6eb5f12368c91dc0fdba3c02e1f9dc2bd637947a9f8673",
         "bench/core/__init__.py": "7d448fab00178bc6758de1b89205f4d4a0be0def7afc723ec6f4d26a1e8ec83a",
@@ -6265,8 +6265,8 @@
         "bench/math-audit/qualify_sndfile.py": "e39bbaaa4c7511b95f2ddc7b2a80cd6b5c6cf64ff5b6593db363fc4662eabbd6",
         "bench/native_profile.py": "2fcc37ffaf7d298fc6ff9e6c9ab15fe46d812794879e5cf10cb526fae4b1a926",
         "bench/profiles/__init__.py": "75f32d76ac6c0671fe17c653bcffbc558a9fa9c6006eaf5523424178452a0c7e",
-        "bench/profiles/billy_gzip.py": "92f34672ffeaf3a32e7cbfee405e319a6bd3f80c1150bda6eb722bb8d841d4d9",
-        "bench/profiles/billy_serde.py": "17f14e760b96b15d98d60ab010be0a018d007dfbac5bc5708fdc497bf8ed14f0",
+        "bench/profiles/consumer_gzip.py": "92f34672ffeaf3a32e7cbfee405e319a6bd3f80c1150bda6eb722bb8d841d4d9",
+        "bench/profiles/consumer_serde.py": "17f14e760b96b15d98d60ab010be0a018d007dfbac5bc5708fdc497bf8ed14f0",
         "bench/profiles/clone_common_cpu.py": "f1bc80e4bbc42068e898e0a3e4f613313b311bd430f12f62dc03991e48a357ba",
         "bench/profiles/clone_cpu.py": "efc3f715ea09f403299354929164a5e2516d8783588ee87411cf54d67cd681cd",
         "bench/profiles/clone_ids_profile.py": "65be3721bd793d6f63ff304cf3373cf1b827015916f2d053655a1b57d3b6cd70",
@@ -8118,8 +8118,8 @@
       "label": "candidate",
       "repetition": 2,
       "worker_command": [
-        "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-py312/bin/python",
-        "/Users/griffinstrier/Billy-Company/unstd/bench/profiles/jsonx_existing.py",
+        ".local/crypto-py312/bin/python",
+        "bench/profiles/jsonx_existing.py",
         "--worker",
         "--source",
         "/private/tmp/jsonx-second-final-v2/src",
@@ -8139,9 +8139,9 @@
           "pybase64": "1.5.0"
         },
         "runtime_fingerprint": {
-          "executable": "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-python/cpython-3.12.15-macos-aarch64-none/bin/python3.12",
+          "executable": ".local/crypto-python/cpython-3.12.15-macos-aarch64-none/bin/python3.12",
           "executable_sha256": "83deb939c9034c3e85a377eeb04e7d9992f8881652a22289cd0eeeb83b98a565",
-          "library": "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-python/cpython-3.12.15-macos-aarch64-none/lib/libpython3.12.dylib",
+          "library": ".local/crypto-python/cpython-3.12.15-macos-aarch64-none/lib/libpython3.12.dylib",
           "library_sha256": "15e07fb4c7d9929a50117758980e05f7ba073cd4f9ec2d461b3d0d77a09b4735",
           "compiler_configuration": {
             "CC": "cc",
@@ -8239,7 +8239,7 @@
         "bench/baselines/baseline.json": "365c1e07adf70a6c28befa769874cce8e9775f60a4faa5ecb9b3d05c44f282b0",
         "bench/baselines/speeds.json": "0ee80a28e3cae55c31aa57da1f7ce21862db09ff710d854740d23c64f751dc8d",
         "bench/baselines/time-native.json": "8bf26ca4ad041e406ef63010e3f6efafd907755bca6b07047e2229399ed09639",
-        "bench/billy_serde.py": "a5115feca4003ec43853c736c090faba72d87108f5afe43b26023516435a64aa",
+        "bench/consumer_serde.py": "a5115feca4003ec43853c736c090faba72d87108f5afe43b26023516435a64aa",
         "bench/cases.py": "fc96d85fb11054f50a0c30741bea63c9900ddbafda409ea0d80b2c860100ddcc",
         "bench/clone_ids_profile.py": "d1a0afb1f6fc74e4ee6eb5f12368c91dc0fdba3c02e1f9dc2bd637947a9f8673",
         "bench/core/__init__.py": "7d448fab00178bc6758de1b89205f4d4a0be0def7afc723ec6f4d26a1e8ec83a",
@@ -8269,8 +8269,8 @@
         "bench/math-audit/qualify_sndfile.py": "e39bbaaa4c7511b95f2ddc7b2a80cd6b5c6cf64ff5b6593db363fc4662eabbd6",
         "bench/native_profile.py": "2fcc37ffaf7d298fc6ff9e6c9ab15fe46d812794879e5cf10cb526fae4b1a926",
         "bench/profiles/__init__.py": "75f32d76ac6c0671fe17c653bcffbc558a9fa9c6006eaf5523424178452a0c7e",
-        "bench/profiles/billy_gzip.py": "92f34672ffeaf3a32e7cbfee405e319a6bd3f80c1150bda6eb722bb8d841d4d9",
-        "bench/profiles/billy_serde.py": "17f14e760b96b15d98d60ab010be0a018d007dfbac5bc5708fdc497bf8ed14f0",
+        "bench/profiles/consumer_gzip.py": "92f34672ffeaf3a32e7cbfee405e319a6bd3f80c1150bda6eb722bb8d841d4d9",
+        "bench/profiles/consumer_serde.py": "17f14e760b96b15d98d60ab010be0a018d007dfbac5bc5708fdc497bf8ed14f0",
         "bench/profiles/clone_common_cpu.py": "f1bc80e4bbc42068e898e0a3e4f613313b311bd430f12f62dc03991e48a357ba",
         "bench/profiles/clone_cpu.py": "efc3f715ea09f403299354929164a5e2516d8783588ee87411cf54d67cd681cd",
         "bench/profiles/clone_ids_profile.py": "65be3721bd793d6f63ff304cf3373cf1b827015916f2d053655a1b57d3b6cd70",
@@ -10113,8 +10113,8 @@
       "label": "original",
       "repetition": 2,
       "worker_command": [
-        "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-py312/bin/python",
-        "/Users/griffinstrier/Billy-Company/unstd/bench/profiles/jsonx_existing.py",
+        ".local/crypto-py312/bin/python",
+        "bench/profiles/jsonx_existing.py",
         "--worker",
         "--source",
         "/private/tmp/jsonx-throughput-baseline/src",
@@ -10134,9 +10134,9 @@
           "pybase64": "1.5.0"
         },
         "runtime_fingerprint": {
-          "executable": "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-python/cpython-3.12.15-macos-aarch64-none/bin/python3.12",
+          "executable": ".local/crypto-python/cpython-3.12.15-macos-aarch64-none/bin/python3.12",
           "executable_sha256": "83deb939c9034c3e85a377eeb04e7d9992f8881652a22289cd0eeeb83b98a565",
-          "library": "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-python/cpython-3.12.15-macos-aarch64-none/lib/libpython3.12.dylib",
+          "library": ".local/crypto-python/cpython-3.12.15-macos-aarch64-none/lib/libpython3.12.dylib",
           "library_sha256": "15e07fb4c7d9929a50117758980e05f7ba073cd4f9ec2d461b3d0d77a09b4735",
           "compiler_configuration": {
             "CC": "cc",
@@ -10231,7 +10231,7 @@
         "bench/baselines/baseline.json": "365c1e07adf70a6c28befa769874cce8e9775f60a4faa5ecb9b3d05c44f282b0",
         "bench/baselines/speeds.json": "0ee80a28e3cae55c31aa57da1f7ce21862db09ff710d854740d23c64f751dc8d",
         "bench/baselines/time-native.json": "8bf26ca4ad041e406ef63010e3f6efafd907755bca6b07047e2229399ed09639",
-        "bench/billy_serde.py": "a5115feca4003ec43853c736c090faba72d87108f5afe43b26023516435a64aa",
+        "bench/consumer_serde.py": "a5115feca4003ec43853c736c090faba72d87108f5afe43b26023516435a64aa",
         "bench/cases.py": "fc96d85fb11054f50a0c30741bea63c9900ddbafda409ea0d80b2c860100ddcc",
         "bench/clone_ids_profile.py": "d1a0afb1f6fc74e4ee6eb5f12368c91dc0fdba3c02e1f9dc2bd637947a9f8673",
         "bench/core/__init__.py": "7d448fab00178bc6758de1b89205f4d4a0be0def7afc723ec6f4d26a1e8ec83a",
@@ -10261,8 +10261,8 @@
         "bench/math-audit/qualify_sndfile.py": "e39bbaaa4c7511b95f2ddc7b2a80cd6b5c6cf64ff5b6593db363fc4662eabbd6",
         "bench/native_profile.py": "2fcc37ffaf7d298fc6ff9e6c9ab15fe46d812794879e5cf10cb526fae4b1a926",
         "bench/profiles/__init__.py": "75f32d76ac6c0671fe17c653bcffbc558a9fa9c6006eaf5523424178452a0c7e",
-        "bench/profiles/billy_gzip.py": "92f34672ffeaf3a32e7cbfee405e319a6bd3f80c1150bda6eb722bb8d841d4d9",
-        "bench/profiles/billy_serde.py": "17f14e760b96b15d98d60ab010be0a018d007dfbac5bc5708fdc497bf8ed14f0",
+        "bench/profiles/consumer_gzip.py": "92f34672ffeaf3a32e7cbfee405e319a6bd3f80c1150bda6eb722bb8d841d4d9",
+        "bench/profiles/consumer_serde.py": "17f14e760b96b15d98d60ab010be0a018d007dfbac5bc5708fdc497bf8ed14f0",
         "bench/profiles/clone_common_cpu.py": "f1bc80e4bbc42068e898e0a3e4f613313b311bd430f12f62dc03991e48a357ba",
         "bench/profiles/clone_cpu.py": "efc3f715ea09f403299354929164a5e2516d8783588ee87411cf54d67cd681cd",
         "bench/profiles/clone_ids_profile.py": "65be3721bd793d6f63ff304cf3373cf1b827015916f2d053655a1b57d3b6cd70",
@@ -12114,8 +12114,8 @@
       "label": "candidate",
       "repetition": 3,
       "worker_command": [
-        "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-py312/bin/python",
-        "/Users/griffinstrier/Billy-Company/unstd/bench/profiles/jsonx_existing.py",
+        ".local/crypto-py312/bin/python",
+        "bench/profiles/jsonx_existing.py",
         "--worker",
         "--source",
         "/private/tmp/jsonx-second-final-v2/src",
@@ -12135,9 +12135,9 @@
           "pybase64": "1.5.0"
         },
         "runtime_fingerprint": {
-          "executable": "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-python/cpython-3.12.15-macos-aarch64-none/bin/python3.12",
+          "executable": ".local/crypto-python/cpython-3.12.15-macos-aarch64-none/bin/python3.12",
           "executable_sha256": "83deb939c9034c3e85a377eeb04e7d9992f8881652a22289cd0eeeb83b98a565",
-          "library": "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-python/cpython-3.12.15-macos-aarch64-none/lib/libpython3.12.dylib",
+          "library": ".local/crypto-python/cpython-3.12.15-macos-aarch64-none/lib/libpython3.12.dylib",
           "library_sha256": "15e07fb4c7d9929a50117758980e05f7ba073cd4f9ec2d461b3d0d77a09b4735",
           "compiler_configuration": {
             "CC": "cc",
@@ -12235,7 +12235,7 @@
         "bench/baselines/baseline.json": "365c1e07adf70a6c28befa769874cce8e9775f60a4faa5ecb9b3d05c44f282b0",
         "bench/baselines/speeds.json": "0ee80a28e3cae55c31aa57da1f7ce21862db09ff710d854740d23c64f751dc8d",
         "bench/baselines/time-native.json": "8bf26ca4ad041e406ef63010e3f6efafd907755bca6b07047e2229399ed09639",
-        "bench/billy_serde.py": "a5115feca4003ec43853c736c090faba72d87108f5afe43b26023516435a64aa",
+        "bench/consumer_serde.py": "a5115feca4003ec43853c736c090faba72d87108f5afe43b26023516435a64aa",
         "bench/cases.py": "fc96d85fb11054f50a0c30741bea63c9900ddbafda409ea0d80b2c860100ddcc",
         "bench/clone_ids_profile.py": "d1a0afb1f6fc74e4ee6eb5f12368c91dc0fdba3c02e1f9dc2bd637947a9f8673",
         "bench/core/__init__.py": "7d448fab00178bc6758de1b89205f4d4a0be0def7afc723ec6f4d26a1e8ec83a",
@@ -12265,8 +12265,8 @@
         "bench/math-audit/qualify_sndfile.py": "e39bbaaa4c7511b95f2ddc7b2a80cd6b5c6cf64ff5b6593db363fc4662eabbd6",
         "bench/native_profile.py": "2fcc37ffaf7d298fc6ff9e6c9ab15fe46d812794879e5cf10cb526fae4b1a926",
         "bench/profiles/__init__.py": "75f32d76ac6c0671fe17c653bcffbc558a9fa9c6006eaf5523424178452a0c7e",
-        "bench/profiles/billy_gzip.py": "92f34672ffeaf3a32e7cbfee405e319a6bd3f80c1150bda6eb722bb8d841d4d9",
-        "bench/profiles/billy_serde.py": "17f14e760b96b15d98d60ab010be0a018d007dfbac5bc5708fdc497bf8ed14f0",
+        "bench/profiles/consumer_gzip.py": "92f34672ffeaf3a32e7cbfee405e319a6bd3f80c1150bda6eb722bb8d841d4d9",
+        "bench/profiles/consumer_serde.py": "17f14e760b96b15d98d60ab010be0a018d007dfbac5bc5708fdc497bf8ed14f0",
         "bench/profiles/clone_common_cpu.py": "f1bc80e4bbc42068e898e0a3e4f613313b311bd430f12f62dc03991e48a357ba",
         "bench/profiles/clone_cpu.py": "efc3f715ea09f403299354929164a5e2516d8783588ee87411cf54d67cd681cd",
         "bench/profiles/clone_ids_profile.py": "65be3721bd793d6f63ff304cf3373cf1b827015916f2d053655a1b57d3b6cd70",
@@ -14109,8 +14109,8 @@
       "label": "original",
       "repetition": 3,
       "worker_command": [
-        "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-py312/bin/python",
-        "/Users/griffinstrier/Billy-Company/unstd/bench/profiles/jsonx_existing.py",
+        ".local/crypto-py312/bin/python",
+        "bench/profiles/jsonx_existing.py",
         "--worker",
         "--source",
         "/private/tmp/jsonx-throughput-baseline/src",
@@ -14130,9 +14130,9 @@
           "pybase64": "1.5.0"
         },
         "runtime_fingerprint": {
-          "executable": "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-python/cpython-3.12.15-macos-aarch64-none/bin/python3.12",
+          "executable": ".local/crypto-python/cpython-3.12.15-macos-aarch64-none/bin/python3.12",
           "executable_sha256": "83deb939c9034c3e85a377eeb04e7d9992f8881652a22289cd0eeeb83b98a565",
-          "library": "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-python/cpython-3.12.15-macos-aarch64-none/lib/libpython3.12.dylib",
+          "library": ".local/crypto-python/cpython-3.12.15-macos-aarch64-none/lib/libpython3.12.dylib",
           "library_sha256": "15e07fb4c7d9929a50117758980e05f7ba073cd4f9ec2d461b3d0d77a09b4735",
           "compiler_configuration": {
             "CC": "cc",
@@ -14227,7 +14227,7 @@
         "bench/baselines/baseline.json": "365c1e07adf70a6c28befa769874cce8e9775f60a4faa5ecb9b3d05c44f282b0",
         "bench/baselines/speeds.json": "0ee80a28e3cae55c31aa57da1f7ce21862db09ff710d854740d23c64f751dc8d",
         "bench/baselines/time-native.json": "8bf26ca4ad041e406ef63010e3f6efafd907755bca6b07047e2229399ed09639",
-        "bench/billy_serde.py": "a5115feca4003ec43853c736c090faba72d87108f5afe43b26023516435a64aa",
+        "bench/consumer_serde.py": "a5115feca4003ec43853c736c090faba72d87108f5afe43b26023516435a64aa",
         "bench/cases.py": "fc96d85fb11054f50a0c30741bea63c9900ddbafda409ea0d80b2c860100ddcc",
         "bench/clone_ids_profile.py": "d1a0afb1f6fc74e4ee6eb5f12368c91dc0fdba3c02e1f9dc2bd637947a9f8673",
         "bench/core/__init__.py": "7d448fab00178bc6758de1b89205f4d4a0be0def7afc723ec6f4d26a1e8ec83a",
@@ -14257,8 +14257,8 @@
         "bench/math-audit/qualify_sndfile.py": "e39bbaaa4c7511b95f2ddc7b2a80cd6b5c6cf64ff5b6593db363fc4662eabbd6",
         "bench/native_profile.py": "2fcc37ffaf7d298fc6ff9e6c9ab15fe46d812794879e5cf10cb526fae4b1a926",
         "bench/profiles/__init__.py": "75f32d76ac6c0671fe17c653bcffbc558a9fa9c6006eaf5523424178452a0c7e",
-        "bench/profiles/billy_gzip.py": "92f34672ffeaf3a32e7cbfee405e319a6bd3f80c1150bda6eb722bb8d841d4d9",
-        "bench/profiles/billy_serde.py": "17f14e760b96b15d98d60ab010be0a018d007dfbac5bc5708fdc497bf8ed14f0",
+        "bench/profiles/consumer_gzip.py": "92f34672ffeaf3a32e7cbfee405e319a6bd3f80c1150bda6eb722bb8d841d4d9",
+        "bench/profiles/consumer_serde.py": "17f14e760b96b15d98d60ab010be0a018d007dfbac5bc5708fdc497bf8ed14f0",
         "bench/profiles/clone_common_cpu.py": "f1bc80e4bbc42068e898e0a3e4f613313b311bd430f12f62dc03991e48a357ba",
         "bench/profiles/clone_cpu.py": "efc3f715ea09f403299354929164a5e2516d8783588ee87411cf54d67cd681cd",
         "bench/profiles/clone_ids_profile.py": "65be3721bd793d6f63ff304cf3373cf1b827015916f2d053655a1b57d3b6cd70",
@@ -16110,8 +16110,8 @@
       "label": "first_pass",
       "repetition": 3,
       "worker_command": [
-        "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-py312/bin/python",
-        "/Users/griffinstrier/Billy-Company/unstd/bench/profiles/jsonx_existing.py",
+        ".local/crypto-py312/bin/python",
+        "bench/profiles/jsonx_existing.py",
         "--worker",
         "--source",
         "/private/tmp/jsonx-second-baseline/src",
@@ -16131,9 +16131,9 @@
           "pybase64": "1.5.0"
         },
         "runtime_fingerprint": {
-          "executable": "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-python/cpython-3.12.15-macos-aarch64-none/bin/python3.12",
+          "executable": ".local/crypto-python/cpython-3.12.15-macos-aarch64-none/bin/python3.12",
           "executable_sha256": "83deb939c9034c3e85a377eeb04e7d9992f8881652a22289cd0eeeb83b98a565",
-          "library": "/Users/griffinstrier/Billy-Company/unstd/.local/crypto-python/cpython-3.12.15-macos-aarch64-none/lib/libpython3.12.dylib",
+          "library": ".local/crypto-python/cpython-3.12.15-macos-aarch64-none/lib/libpython3.12.dylib",
           "library_sha256": "15e07fb4c7d9929a50117758980e05f7ba073cd4f9ec2d461b3d0d77a09b4735",
           "compiler_configuration": {
             "CC": "cc",
@@ -16229,7 +16229,7 @@
         "bench/baselines/baseline.json": "365c1e07adf70a6c28befa769874cce8e9775f60a4faa5ecb9b3d05c44f282b0",
         "bench/baselines/speeds.json": "0ee80a28e3cae55c31aa57da1f7ce21862db09ff710d854740d23c64f751dc8d",
         "bench/baselines/time-native.json": "8bf26ca4ad041e406ef63010e3f6efafd907755bca6b07047e2229399ed09639",
-        "bench/billy_serde.py": "a5115feca4003ec43853c736c090faba72d87108f5afe43b26023516435a64aa",
+        "bench/consumer_serde.py": "a5115feca4003ec43853c736c090faba72d87108f5afe43b26023516435a64aa",
         "bench/cases.py": "fc96d85fb11054f50a0c30741bea63c9900ddbafda409ea0d80b2c860100ddcc",
         "bench/clone_ids_profile.py": "d1a0afb1f6fc74e4ee6eb5f12368c91dc0fdba3c02e1f9dc2bd637947a9f8673",
         "bench/core/__init__.py": "7d448fab00178bc6758de1b89205f4d4a0be0def7afc723ec6f4d26a1e8ec83a",
@@ -16259,8 +16259,8 @@
         "bench/math-audit/qualify_sndfile.py": "e39bbaaa4c7511b95f2ddc7b2a80cd6b5c6cf64ff5b6593db363fc4662eabbd6",
         "bench/native_profile.py": "2fcc37ffaf7d298fc6ff9e6c9ab15fe46d812794879e5cf10cb526fae4b1a926",
         "bench/profiles/__init__.py": "75f32d76ac6c0671fe17c653bcffbc558a9fa9c6006eaf5523424178452a0c7e",
-        "bench/profiles/billy_gzip.py": "92f34672ffeaf3a32e7cbfee405e319a6bd3f80c1150bda6eb722bb8d841d4d9",
-        "bench/profiles/billy_serde.py": "17f14e760b96b15d98d60ab010be0a018d007dfbac5bc5708fdc497bf8ed14f0",
+        "bench/profiles/consumer_gzip.py": "92f34672ffeaf3a32e7cbfee405e319a6bd3f80c1150bda6eb722bb8d841d4d9",
+        "bench/profiles/consumer_serde.py": "17f14e760b96b15d98d60ab010be0a018d007dfbac5bc5708fdc497bf8ed14f0",
         "bench/profiles/clone_common_cpu.py": "f1bc80e4bbc42068e898e0a3e4f613313b311bd430f12f62dc03991e48a357ba",
         "bench/profiles/clone_cpu.py": "efc3f715ea09f403299354929164a5e2516d8783588ee87411cf54d67cd681cd",
         "bench/profiles/clone_ids_profile.py": "65be3721bd793d6f63ff304cf3373cf1b827015916f2d053655a1b57d3b6cd70",
@@ -18637,5 +18637,9 @@
       "final_over_first_pass_speedup": 0.9640347104637653
     }
   },
-  "complete": true
+  "complete": true,
+  "publication_normalization": {
+    "kind": "public_metadata_normalization",
+    "note": "Consumer labels, artifact paths and machine-specific origins normalized for public publication. Historical timings, measured payload bytes and original source digests retain their captured meaning; normalized source/archive bytes have their own publication hashes."
+  }
 }

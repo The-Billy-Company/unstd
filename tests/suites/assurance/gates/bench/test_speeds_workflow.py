@@ -325,21 +325,22 @@ def test_manual_gzip_diagnosis_skips_full_timing_and_retains_focused_evidence(
     assert "--baseline" not in tokens
 
 
-def test_full_comparison_guards_frozen_billy_gzip_before_function_verification(
+def test_full_comparison_guards_frozen_consumer_gzip_before_function_verification(
     workflow: dict[str, Any],
 ) -> None:
     steps = workflow["jobs"]["compare"]["steps"]
     paired = next(
         step
         for step in steps
-        if "bench/profiles/billy_gzip.py run" in step.get("run", "")
+        if "bench/profiles/consumer_gzip.py run" in step.get("run", "")
     )
     assert paired["if"] == "${{ !inputs.gzip_diagnostic }}"
     assert not paired.get("continue-on-error", False)
     tokens = shlex.split(paired["run"])
-    assert tokens[:3] == [".venv/bin/python", "bench/profiles/billy_gzip.py", "run"]
+    assert tokens[:3] == [".venv/bin/python", "bench/profiles/consumer_gzip.py", "run"]
     assert (
-        tokens[tokens.index("--fixtures") + 1] == "bench/workloads/billy_gzip.json.gz"
+        tokens[tokens.index("--fixtures") + 1]
+        == "bench/workloads/consumer_gzip.json.gz"
     )
     assert (
         tokens[tokens.index("--baseline-source") + 1]
@@ -434,13 +435,13 @@ def test_shared_json_comparison_also_measures_the_independent_control(workflow):
     assert step["if"] == "${{ !inputs.gzip_diagnostic }}"
 
 
-def test_billy_gzip_direct_parent_can_start_without_any_product_installation(
+def test_consumer_gzip_direct_parent_can_start_without_any_product_installation(
     workflow: dict[str, Any], tmp_path: Path
 ) -> None:
     paired = next(
         step
         for step in workflow["jobs"]["compare"]["steps"]
-        if "bench/profiles/billy_gzip.py run" in step.get("run", "")
+        if "bench/profiles/consumer_gzip.py run" in step.get("run", "")
     )
     tokens = shlex.split(paired["run"])
     command = [

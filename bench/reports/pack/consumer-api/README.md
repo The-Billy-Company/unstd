@@ -7,7 +7,7 @@ NumPy produces views of the original buffer; portable decoding uses compiled
 `Struct.unpack_from` and returns owned Python scalars. Existing calls keep
 their conversion, dtype, ownership, and whole-buffer behavior.
 
-Billy has not been edited. This work prepares the library release and qualifies
+Consumer has not been edited. This work prepares the library release and qualifies
 the proposed caller changes against captured application code.
 
 ## Where to adopt it
@@ -68,7 +68,7 @@ implementation:
   production callers in the inspected Python tree. Its roughly 4× local
   owned-list alternative is not evidence of a live application speedup.
 
-Paths under `core/` above are relative to `services/ai/` in the inspected Billy
+Paths under `core/` above are relative to `services/ai/` in the inspected Consumer
 checkout. [Provenance](consumer-provenance.json) records the source and pinned
 configuration hashes used for the captured ColBERT case.
 
@@ -135,11 +135,11 @@ This does not qualify bare-metal or x86-64 Linux.
   the changed library and qualification code.
 
 Captured application definitions remain in ignored `.local/` storage, outside
-release inputs. Regenerate that private capture from the Billy checkout before
+release inputs. Regenerate that private capture from the Consumer checkout before
 replay; its digest must match the retained provenance for these exact results:
 
 ```console
-python bench/profiles/pack_consumers.py --billy-root ../billy --write-capture .local/pack-consumer-capture.json
+python bench/profiles/pack_consumers.py --consumer-root ../consumer --write-capture .local/pack-consumer-capture.json
 python bench/profiles/pack_consumers.py --capture .local/pack-consumer-capture.json --source src --rounds 9 --batch-ms 50 --output /tmp/pack-consumers.json
 python -m pytest tests/suites/product/pack tests/suites/assurance/gates/bench/test_pack_consumers.py -q
 ```

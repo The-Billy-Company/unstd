@@ -29,6 +29,7 @@ from unstd.audio import wavx
 from unstd.cache import Cache
 from unstd.compress import gzipx
 from unstd.crypto import digest, tls, token
+from unstd.dataset import Dataset, build
 from unstd.ids import uid
 from unstd import math as numeric
 from unstd.model import FrozenModel, StrictModel, StrictSettings
@@ -118,6 +119,40 @@ later expiry can cause recomputation. External side effects are outside the
 cache transaction.
 No extra is required. See the [cache guide](../src/unstd/cache/README.md) for
 usage, validation, storage, and contention limits.
+
+## Indexed JSON datasets
+
+Import `from unstd.dataset import Dataset, build`.
+
+| Module | Exported API |
+| --- | --- |
+| [`unstd.dataset`](../src/unstd/dataset/__init__.py) | `Dataset`, `build` |
+
+```text
+build(path, rows, *, max_row_bytes=16_777_216) -> int
+Dataset(path)
+len(dataset) -> int
+dataset[index] -> Json
+dataset[slice] -> list[Json]
+dataset.take(indices) -> list[Json]
+dataset.iter_rows(start=None, stop=None, step=1) -> Iterator[Json]
+dataset.batches(size=1024, *, start=0, stop=None) -> Iterator[list[Json]]
+dataset.verify() -> None
+dataset.close() -> None
+```
+
+`build` atomically publishes a standalone indexed JSON file from one pass over
+an iterable. `Dataset` opens it as a read-only `Sequence`, with constant-time
+length and offset lookup. Slices return lists; `take` preserves requested order
+and duplicates; lazy row slices and bounded batches support streaming consumers.
+Each read returns independent JSON values. Use a context manager or call
+`close()`; closed reads fail with `ValueError`.
+
+Opening checks geometry and endpoints. `verify` checks all row offsets and the
+SHA-256 body checksum without JSON decoding. Native row extraction is optional;
+compiler-free installs retain the same behavior. No extra is required. The
+[dataset guide](../src/unstd/dataset/README.md) describes resource ownership,
+atomic publication, integrity, and platform limits.
 
 ## Audio
 

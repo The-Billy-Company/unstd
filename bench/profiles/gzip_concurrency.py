@@ -205,18 +205,18 @@ def _worker(args: argparse.Namespace) -> dict[str, Any]:
         message = "requested gzip source was not imported"
         raise RuntimeError(message)
     # Imports above must precede bench.__init__, which can import product code.
-    from bench.profiles import billy_gzip, gzip_reads
+    from bench.profiles import consumer_gzip, gzip_reads
 
-    cases, manifest = billy_gzip._load_fixtures(args.fixtures)
+    cases, manifest = consumer_gzip._load_fixtures(args.fixtures)
     selected = [case for case in cases if case.name == args.case]
     if len(selected) != 1:
-        message = f"expected one frozen Billy case: {args.case}"
+        message = f"expected one frozen Consumer case: {args.case}"
         raise ValueError(message)
     case = selected[0]
-    function = billy_gzip._operation(codec, case)
+    function = consumer_gzip._operation(codec, case)
 
     def check(actual: object) -> None:
-        billy_gzip._validate(codec, case, actual)
+        consumer_gzip._validate(codec, case, actual)
 
     check(function())
     calls = gzip_reads._native_calls(function)
