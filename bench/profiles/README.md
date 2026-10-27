@@ -2,7 +2,7 @@
 doc_radar:
   sentinels:
     - file: bench/profiles/clone_common_cpu.py
-      contains: ['"--consumer-cases"', '"--temporal-cases"', '"--include"', '"--source-dir"', '"consumer_workloads_sha256"', '"temporal_workloads_sha256"']
+      contains: ['"--consumer-cases"', '"--temporal-cases"', '"--include"', '"--source-dir"', '"consumer_workloads_sha256"', '"temporal_workloads_sha256"', '"model_warmup"']
     - file: bench/workloads/clone_consumers.py
       contains: ['"consumer-attachment-images-10"', '"consumer-change-slots-1000"', '"consumer-question-private-alias"']
     - file: bench/workloads/clone_temporals.py
@@ -98,6 +98,10 @@ prepared-image, material and slotted-comparison records. These optional cases
 need Pydantic; their checks include private model state, graph aliases, cyclic
 fallback and foreign copy hooks, while the original common cases stay unchanged.
 These consumer comparisons require baselines that preserve shared references.
+Every implementation first copies the same private/public-alias model through
+its public API and passes the strict check, even when filters select non-model
+cases. The report records warmed labels, backend capabilities and marker state
+so model activation is consistent across saved candidates.
 Use `--source-dir PATH` to measure a frozen candidate snapshot through the same
 isolated loader as `--compare-dir`, without timing an editable source file.
 `--target-speedup 100` records the remaining gap to a 100× stdlib comparison for

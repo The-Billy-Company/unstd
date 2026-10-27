@@ -757,10 +757,47 @@ def main(argv: Sequence[str] | None = None) -> None:
             raise ValueError(message)
         from bench.workloads import clone_consumers
 
-        cases.extend(clone_consumers.workloads())
+        consumer_cases = clone_consumers.workloads()
+        cases.extend(consumer_cases)
         output["consumer_workloads_sha256"] = hashlib.sha256(
             Path(clone_consumers.__file__).read_bytes()
         ).hexdigest()
+        probe = next(
+            case
+            for case in consumer_cases
+            if case.name == "consumer-question-private-alias"
+        )
+        warmups: dict[str, Any] = {}
+        for label, call in base._callables(probe, modules).items():
+            module = modules.get(label)
+            marker_before = (
+                getattr(module, "_PYDANTIC_UNDEFINED", None) is not None
+                if module is not None
+                else None
+            )
+            if not _check(probe, label, call(), shared_aliases=True):
+                message = f"incorrect public model warmup: {label}"
+                raise AssertionError(message)
+            warmups[label] = {
+                "native_model_capability": getattr(
+                    module, "_NATIVE_MODEL_CONTINUATION", 0
+                )
+                if module is not None
+                else None,
+                "marker_initialized_before": marker_before,
+                "marker_initialized_after": (
+                    getattr(module, "_PYDANTIC_UNDEFINED", None) is not None
+                    if module is not None
+                    else None
+                ),
+                "checked": True,
+            }
+        output["model_warmup"] = {
+            "fixture": probe.name,
+            "surface": "public deep; strict private/public alias check",
+            "labels": list(warmups),
+            "implementations": warmups,
+        }
     if args.temporal_cases:
         if any(contract != "shared" for contract in contracts.values()):
             message = "temporal clone comparisons require shared-reference baselines"

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import copy
 import dataclasses
+import json
 import sys
 from types import ModuleType
 from typing import TYPE_CHECKING
@@ -103,6 +104,78 @@ def test_consumer_fixtures_do_not_change_the_original_common_workload_set() -> N
     consumer = workloads()
     assert not {case.name for case in original} & {case.name for case in consumer}
     assert len({case.name for case in consumer}) == len(consumer)
+
+
+def test_consumer_profile_warms_every_public_implementation_before_timing(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    original = structural.deep
+    models: list[Question] = []
+
+    def deep(value: object) -> object:
+        if isinstance(value, Question):
+            models.append(value)
+        return original(value)
+
+    def snapshot(
+        _directory: Path, _label: str, *, infer_native_bindings: bool
+    ) -> ModuleType:
+        return structural
+
+    def timings(
+        _calls: dict[str, Callable[[], object]], _rounds: int, _gc_enabled: bool
+    ) -> dict[str, object]:
+        # This test exercises preparation metadata and performs no timed work.
+        return {}
+
+    def no_profile(_call: Callable[[], object]) -> list[object]:
+        return []
+
+    monkeypatch.setattr(structural, "deep", deep)
+    monkeypatch.setattr(profile, "_snapshot", snapshot)
+    monkeypatch.setattr(base, "_timings", timings)
+    monkeypatch.setattr(base, "_profile", no_profile)
+    output = tmp_path / "warmups.json"
+    profile.main(
+        [
+            "--compare-dir",
+            str(tmp_path),
+            "--original-dir",
+            str(tmp_path),
+            "--consumer-cases",
+            "--include",
+            "consumer-copy-hook-alias",
+            "--output",
+            str(output),
+        ]
+    )
+    data = json.loads(output.read_text())["model_warmup"]
+    assert data["labels"] == ["current", "before", "original", "stdlib"]
+    assert len(models) == 3
+    assert all(model is models[0] for model in models)
+    for label in ("current", "before", "original"):
+        assert data["implementations"][label]["checked"] is True
+        assert data["implementations"][label]["marker_initialized_after"] is True
+    assert data["implementations"]["stdlib"]["native_model_capability"] is None
+
+
+def test_public_model_warmup_rejects_a_shallow_alias_copy(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    original = structural.deep
+
+    def shallow(value: object) -> object:
+        return value.model_copy() if isinstance(value, Question) else original(value)
+
+    def snapshot(
+        _directory: Path, _label: str, *, infer_native_bindings: bool
+    ) -> ModuleType:
+        return structural
+
+    monkeypatch.setattr(structural, "deep", shallow)
+    monkeypatch.setattr(profile, "_snapshot", snapshot)
+    with pytest.raises(AssertionError, match="incorrect public model warmup: current"):
+        profile.main(["--compare-dir", str(tmp_path), "--consumer-cases"])
 
 
 @pytest.mark.parametrize("value", ["0.99", "nan", "inf", "-inf"])
