@@ -94,9 +94,11 @@ The accelerated paths are deliberately narrower than the supported API:
 - **Decoding:** exact `str`/`bytes` with no explicit options. A reusable msgspec
   decoder constructs arbitrary-precision integers and correctly rounded floats.
   The optional extension can use orjson for larger documents after a bounded
-  native proof excludes numeric coercions. A bounded source prefix selects the
-  precise parser directly for float-bearing objects and arrays, avoiding a
-  second parse. Interpreter limits still apply to
+  native proof excludes numeric coercions. Its visit budget follows the original
+  source length, so wide arrays and objects no longer hit a fixed 65,536-value
+  limit and discard a complete parse. The proof retains its 64-container depth
+  cap. A bounded source prefix selects the precise parser directly for
+  float-bearing objects and arrays, avoiding a second parse. Interpreter limits still apply to
   the entire source, including discarded duplicate values. Failures,
   including integer digit limits, Unicode extensions and malformed input, parse
   the original document with stdlib for authoritative behavior and diagnostics.
@@ -113,6 +115,10 @@ proofs and fallback paths are part of the implementation.
 
 Speed depends on the payload and Python version. The benchmark harness compares
 identical outputs and separately measures native paths and fallback records.
+The [large-document decoding profile](../../../bench/profiles/json_decode_scale.py)
+compares the former visit-limit boundary, independent record arrays, precision
+fallbacks and text controls; its [results](../../../bench/reports/serde/json-decode-scale.md)
+retain exact-output checks and paired timings.
 The [JSONX throughput profile](../../../bench/profiles/jsonx_throughput.py)
 compares saved and current sources across encoding, decoding, formatting and
 stream operations, retaining raw timings, stdlib controls and loaded source

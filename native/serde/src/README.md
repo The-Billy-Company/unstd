@@ -47,9 +47,12 @@ with `msgspec`. `lines.h` trims/skips blank rows and uses that same decoder;
 refused or invalid rows discard the batch so Python can replay the whole input
 with its line numbers and diagnostics. Allocation failures propagate.
 The result proof finishes each child before its sibling with at most 64 C
-container frames. Its unchanged 65,536-value budget bounds the work; a wide
-array of shallow records no longer overflows a 64-entry sibling queue and
-needlessly parses the same document again.
+container frames. Its visit budget is the original document's byte/code-point
+length: every newly parsed value consumes at least one source unit, so proof
+work remains bounded by input size. Unlike arbitrary encoder inputs, this owned
+tree cannot expand an alias-heavy DAG. Wide exact trees no longer hit a fixed
+65,536-value limit and discard a complete parse. Numeric and depth refusals keep
+their original precise-parser fallback.
 
 `encode.h` and `decode.h` install vectorcall bindings only on CPython 3.14.
 They retain the Python function objects and fall back to ordinary dispatch when

@@ -9,7 +9,7 @@ requires `orjson`; decoding also needs `msgspec`. The Python
 | --- | --- |
 | [`src/adapter.c`](src/adapter.c) | Module state, backend binding, encoding proofs, spacing and float normalization |
 | [`src/encode.h`](src/encode.h) | Guarded `dumpb` vectorcall binding on CPython 3.14 |
-| [`src/decode.h`](src/decode.h) | Parser selection, decoded-value proof and guarded `loads` binding |
+| [`src/decode.h`](src/decode.h) | Parser selection, source-bounded decoded-value proof and guarded `loads` binding |
 | [`src/lines.h`](src/lines.h) | Strict NDJSON batching over the single-document decoder |
 | [`src/escape.h`](src/escape.h) | Trusted UTF-8 output to stdlib ASCII escape spelling |
 | [`src/repeat.h`](src/repeat.h) | Bounded float encoding, ASCII spans and operation-local shared-branch reuse |

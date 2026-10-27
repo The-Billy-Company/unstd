@@ -59,15 +59,15 @@ def test_wide_sibling_containers_complete_without_a_second_parse(mapping: bool) 
     """)
 
 
-def test_every_sibling_still_consumes_the_original_visit_budget() -> None:
+def test_wide_documents_beyond_the_old_visit_budget_use_one_parse() -> None:
     _proof_worker("""
-        # Two root values plus 65,534 empty child lists exhaust MAX_VALUES.
-        # Empty children consume no additional entries, but each sibling counts.
-        for count, accepted in ((65534, True), (65535, False)):
+        # These counts straddle the old 65,536-value result-proof limit.
+        # The source-sized result proof admits each complete parsed tree.
+        for count in (65534, 65535, 100000):
             value = {'padding': 'x' * 2050, 'tree': [[] for _ in range(count)]}
             document = json.dumps(value)
-            expected = [value] if accepted else [len(document)]
-            assert native.loads_lines(document) == expected, count
+            assert native.loads_lines(document) == [value], count
+            assert native.loads_lines(document.encode()) == [value], count
     """)
 
 

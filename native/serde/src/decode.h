@@ -99,7 +99,7 @@ exact_decoded_tree_visit(PyObject *container, Py_ssize_t *remaining, int depth)
 {
     /* Finish each child before its next sibling. Queuing all children made a
      * shallow list of 65 records discard a complete parse and parse it again.
-     * The depth cap bounds this allocation-free C walk; the existing source
+     * The depth cap bounds this allocation-free C walk; the source
      * stack guard runs before orjson, and refused proofs use the precise parser.
      * The owned root and uninterrupted GIL span keep child references alive. */
     if (depth >= 64) {
@@ -164,9 +164,14 @@ exact_decoded_tree_visit(PyObject *container, Py_ssize_t *remaining, int depth)
 }
 
 static int
-exact_decoded_tree(PyObject *value)
+exact_decoded_tree(PyObject *value, Py_ssize_t source_size)
 {
-    Py_ssize_t remaining = MAX_VALUES;
+    /* This tree was just constructed by the parser: every visited value needs
+     * at least one source byte/code point. Unlike arbitrary encoder inputs it
+     * cannot contain an alias-expanded DAG. Bound work by the owned source,
+     * not a fixed count that discards valid large parses. The independent
+     * depth cap still bounds the C stack, and floats still require msgspec. */
+    Py_ssize_t remaining = source_size;
     return exact_decoded_tree_visit(value, &remaining, 0);
 }
 
@@ -276,7 +281,7 @@ decode_document(NativeState *state, PyObject *document)
         value = precise_document(state, document);
     } else {
         value = state->decoder_fast(state->decoder_self, document);
-        if (value != NULL && !exact_decoded_tree(value)) {
+        if (value != NULL && !exact_decoded_tree(value, size)) {
             Py_DECREF(value);
             value = precise_document(state, document);
         }
