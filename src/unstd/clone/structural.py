@@ -292,6 +292,25 @@ def _admit(cls: type) -> _Clone | None:
             else None
         )
     if (
+        type(cls) is type
+        and dataclasses.is_dataclass(cls)
+        and hasattr(cls, "__slots__")
+        and not cls.__dictoffset__
+        and _default_protocol(cls)
+        and getattr(cls, "__getattribute__", None) is object.__getattribute__
+        and not hasattr(cls, "__getattr__")
+        and getattr(cls, "__getstate__", None)
+        in (object.__getstate__, getattr(dataclasses, "_dataclass_getstate", None))
+        and getattr(cls, "__setstate__", None)
+        in (None, getattr(dataclasses, "_dataclass_setstate", None))
+        and not hasattr(cls, "__getnewargs__")
+        and not hasattr(cls, "__getnewargs_ex__")
+        and all(
+            base is object or dataclasses.is_dataclass(base) for base in cls.__mro__[1:]
+        )
+    ):
+        return _slotted
+    if (
         dataclasses.is_dataclass(cls)
         and _default_protocol(cls)
         and getattr(cls, "__getstate__", None) is object.__getstate__
@@ -384,6 +403,42 @@ def _reduced(o: Any, memo: dict[int, Any]) -> Any:
     if id(o) in memo:
         return memo[id(o)]
     return fn(*values)
+
+
+def _slotted(o: Any, memo: dict[int, Any]) -> Any:
+    """Keep a default slot reducer's allocation/state order, accelerating its data."""
+    cls = type(o)
+    if (
+        not _default_protocol(cls)
+        or getattr(cls, "__getattribute__", None) is not object.__getattribute__
+        or hasattr(cls, "__getattr__")
+        or hasattr(cls, "__getnewargs__")
+        or hasattr(cls, "__getnewargs_ex__")
+    ):
+        return _foreign(o, memo)
+    # These object-only dataclass layouts reduce to __newobj__(cls), state,
+    # and two empty item iterators. Frozen slots supply dataclasses' generated
+    # list state and setter; ordinary/inherited slots retain object slot state.
+    # Dictionary-bearing layouts stay foreign: instance copy/reducer overrides
+    # would otherwise bypass the class-level admission checks.
+    factory, args, state, _listiter, _dictiter = o.__reduce_ex__(4)
+    twin = factory(*args)
+    memo[id(o)] = twin
+    if state is not None:
+        state = _walk_data(state, memo)
+        if hasattr(twin, "__setstate__"):
+            twin.__setstate__(state)
+        else:
+            if isinstance(state, tuple) and len(state) == 2:
+                state, slotstate = state
+            else:
+                slotstate = None
+            if state is not None:
+                twin.__dict__.update(state)
+            if slotstate is not None:
+                for name, value in slotstate.items():
+                    setattr(twin, name, value)
+    return twin
 
 
 _PYDANTIC_UNDEFINED: Any = None

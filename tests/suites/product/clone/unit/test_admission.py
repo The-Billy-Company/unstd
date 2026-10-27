@@ -58,12 +58,29 @@ class _Frozen:
     items: list[int]
 
 
+@dataclasses.dataclass(slots=True)
+class _Slotted:
+    items: list[int]
+
+
+@dataclasses.dataclass(slots=True, frozen=True)
+class _FrozenSlotted:
+    items: list[int]
+
+
 class _Color(enum.Enum):
     RED = [1]  # noqa: RUF012 — a mutable enum value still makes the member a singleton.
 
 
 def _admitted() -> list[object]:
-    return [_Plain([1]), _Inherited([1], {"k": [2]}), _Frozen([1]), _Color.RED]
+    return [
+        _Plain([1]),
+        _Inherited([1], {"k": [2]}),
+        _Frozen([1]),
+        _Slotted([1]),
+        _FrozenSlotted([1]),
+        _Color.RED,
+    ]
 
 
 @pytest.mark.parametrize("value", _admitted(), ids=lambda v: type(v).__name__)
@@ -140,6 +157,13 @@ def _custom_shapes() -> dict[str, tuple[object, list[str]]]:
     @dataclasses.dataclass(slots=True)
     class Slotted:
         items: list[int]
+
+        def __getstate__(self) -> dict[str, Any]:
+            calls.append("slot_state")
+            return {"items": [*self.items, 7]}
+
+        def __setstate__(self, state: dict[str, Any]) -> None:
+            self.items = state["items"]
 
     class HookedEnum(enum.Enum):
         A = 1
