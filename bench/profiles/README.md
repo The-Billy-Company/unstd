@@ -2,9 +2,11 @@
 doc_radar:
   sentinels:
     - file: bench/profiles/clone_common_cpu.py
-      contains: ['"--consumer-cases"', '"--include"', '"--source-dir"', '"consumer_workloads_sha256"']
+      contains: ['"--consumer-cases"', '"--temporal-cases"', '"--include"', '"--source-dir"', '"consumer_workloads_sha256"', '"temporal_workloads_sha256"']
     - file: bench/workloads/clone_consumers.py
       contains: ['"consumer-attachment-images-10"', '"consumer-change-slots-1000"', '"consumer-question-private-alias"']
+    - file: bench/workloads/clone_temporals.py
+      contains: ['"temporal-mixed-scalars-1000"', '"temporal-tuple-date-1000"', '"temporal-nested-date-1000"', '"temporal-scalar-first-1000"']
 ---
 
 # Focused performance profiles
@@ -101,6 +103,15 @@ isolated loader as `--compare-dir`, without timing an editable source file.
 `--target-speedup 100` records the remaining gap to a 100× stdlib comparison for
 both matched clocks. `--enforce-target` fails after saving the report when any
 selected workload misses that target; existing regression limits stay separate.
+
+Add `--temporal-cases --include 'temporal-*'` for ten distinct-value date,
+naive/UTC datetime and naive/UTC time lists at 1,000 and 10,000 leaves. Four
+controls retain mixed scalars, tuple output, nested lists and a scalar-first
+sequence. Current and saved source copies must share the exact immutable
+leaves; stdlib may rebuild equal leaves. Containers remain independent.
+`--require-native` proves the public closed temporal route only when that
+snapshot's own backend advertises it, with successful C graph copying and no
+mixed or Python walk. Both optional sets leave the default thirty cases intact.
 
 Run the gzip consumer comparison through its direct file entry point so neither
 product installation loads before a worker selects its source. Select the two

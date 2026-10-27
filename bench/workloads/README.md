@@ -16,6 +16,11 @@ We keep application-shaped clone records in [`clone_consumers.py`](clone_consume
 The optional `clone_common_cpu --consumer-cases` profile checks small and nested
 models, prepared images, slotted rows, shared state and copy-hook boundaries.
 
+[`clone_temporals.py`](clone_temporals.py) supplies the separate optional
+`--temporal-cases` set. It keeps five exact temporal kinds at two sizes beside
+four structural controls, with immutable leaf identities checked independently
+from stdlib's equal reconstructed values.
+
 The process consumer receipts freeze 16 current process callsites across 14
 source files, with hashes, excerpts and argument/I/O contracts. The process
 consumer profile creates disposable Git repositories and synthetic text scaling

@@ -342,6 +342,10 @@ def _snapshot(directory: Path, label: str) -> Any:
         module._NATIVE_MODEL_CONTINUATION = bool(
             backend is not None and getattr(backend, "MODEL_CONTINUATION", False)
         )
+    if hasattr(module, "_NATIVE_CLOSED_TEMPORALS"):
+        module._NATIVE_CLOSED_TEMPORALS = bool(
+            backend is not None and getattr(backend, "CLOSED_TEMPORALS", False)
+        )
     declared_contract = manifest.get("copy_contract")
     if declared_contract is not None and hasattr(module, "deep"):
         observed_contract = _copy_contract(module)
@@ -511,6 +515,9 @@ def _metadata(module: Any) -> dict[str, Any]:
         "native_dataclass_entrypoint": getattr(native_dataclass, "__name__", None),
         "native_model_continuation": bool(
             getattr(module, "_NATIVE_MODEL_CONTINUATION", False)
+        ),
+        "native_closed_temporals": bool(
+            getattr(module, "_NATIVE_CLOSED_TEMPORALS", False)
         ),
         "native_dataclass": {
             "entrypoint": native_dataclass.__name__,

@@ -237,7 +237,18 @@ def _atomic_identity(
             _atomic_identity(getattr(actual, name), getattr(source, name), seen)
             for name in ("__dict__", "__pydantic_extra__", "__pydantic_private__")
         )
-    if kind in (type(None), bool, int, float, complex, bytes, str):
+    if kind in (
+        type(None),
+        bool,
+        int,
+        float,
+        complex,
+        bytes,
+        str,
+        dt.date,
+        dt.datetime,
+        dt.time,
+    ):
         return actual is source
     return True
 
@@ -323,7 +334,67 @@ def _snapshot(directory: Path, label: str, *, infer_native_bindings: bool) -> An
         module._NATIVE_MODEL_CONTINUATION = bool(
             backend is not None and getattr(backend, "MODEL_CONTINUATION", False)
         )
+    if hasattr(module, "_NATIVE_CLOSED_TEMPORALS"):
+        module._NATIVE_CLOSED_TEMPORALS = bool(
+            backend is not None and getattr(backend, "CLOSED_TEMPORALS", False)
+        )
     return module
+
+
+def _temporal_route(module: Any, label: str) -> list[str]:
+    """Observe a successful closed C route without changing its walker argument."""
+    from bench.workloads import clone_temporals
+
+    graph = getattr(module, "_native_graph", None)
+    mixed = getattr(module, "_native_walk_graph", None)
+    walk = getattr(module, "_walk", None)
+    code = getattr(walk, "__code__", None)
+    if not getattr(module, "_NATIVE_CLOSED_TEMPORALS", False) or not inspect.isbuiltin(
+        graph
+    ):
+        message = f"native closed temporal continuation unavailable: {label}"
+        raise RuntimeError(message)
+    successful = 0
+    graph_calls = mixed_calls = python_walks = 0
+
+    def trace_graph(*args: Any, **kwargs: Any) -> Any:
+        nonlocal successful
+        result = graph(*args, **kwargs)
+        successful += result is not NotImplemented
+        return result
+
+    def observe(frame: Any, event: str, target: Any) -> None:
+        nonlocal graph_calls, mixed_calls, python_walks
+        if event == "c_call":
+            graph_calls += target is graph
+            mixed_calls += mixed is not None and target is mixed
+        elif event == "call":
+            python_walks += code is not None and frame.f_code is code
+
+    source: list[clone_temporals.Tree] = [
+        dt.date(2026, 1, 1) + dt.timedelta(days=index) for index in range(16)
+    ]
+    case = clone_temporals._case("closed-temporal-sequence", source)
+    previous_profile = sys.getprofile()
+    module._native_graph = trace_graph
+    sys.setprofile(observe)
+    try:
+        result = module.deep(case.source)
+    finally:
+        sys.setprofile(previous_profile)
+        module._native_graph = graph
+    if (
+        not _check(case, "current", result)
+        or successful != 1
+        or graph_calls != 1
+        or mixed_calls
+        or python_walks
+    ):
+        message = (
+            f"native closed temporal route unavailable or used mixed walking: {label}"
+        )
+        raise RuntimeError(message)
+    return ["_native_graph"]
 
 
 def _native_routes(
@@ -332,6 +403,7 @@ def _native_routes(
     *,
     structural_baseline: bool = False,
     require_models: bool = False,
+    require_temporals: bool = False,
 ) -> dict[str, list[str]]:
     """Prove public native routes under the revision's actual copy contract."""
     if structural_baseline and base._copy_contract(module) != "structural":
@@ -464,6 +536,8 @@ def _native_routes(
     finally:
         for name, call in bindings.items():
             setattr(module, name, call)
+    if require_temporals:
+        routes["closed-temporal-sequence"] = _temporal_route(module, label)
     return routes
 
 
@@ -565,6 +639,7 @@ def main(argv: Sequence[str] | None = None) -> None:
     parser.add_argument("--require-native", action="store_true")
     parser.add_argument("--max-slowdown", type=float)
     parser.add_argument("--consumer-cases", action="store_true")
+    parser.add_argument("--temporal-cases", action="store_true")
     parser.add_argument("--include", action="append", default=[])
     parser.add_argument("--target-speedup", type=float)
     parser.add_argument("--enforce-target", action="store_true")
@@ -652,6 +727,10 @@ def main(argv: Sequence[str] | None = None) -> None:
                     and bool(
                         getattr(modules[label], "_NATIVE_MODEL_CONTINUATION", False)
                     ),
+                    require_temporals=args.temporal_cases
+                    and bool(
+                        getattr(modules[label], "_NATIVE_CLOSED_TEMPORALS", False)
+                    ),
                 )
         except RuntimeError as error:
             output["native_error"] = str(error)
@@ -668,6 +747,16 @@ def main(argv: Sequence[str] | None = None) -> None:
         output["consumer_workloads_sha256"] = hashlib.sha256(
             Path(clone_consumers.__file__).read_bytes()
         ).hexdigest()
+    if args.temporal_cases:
+        if any(contract != "shared" for contract in contracts.values()):
+            message = "temporal clone comparisons require shared-reference baselines"
+            raise ValueError(message)
+        from bench.workloads import clone_temporals
+
+        cases.extend(clone_temporals.workloads())
+        output["temporal_workloads_sha256"] = hashlib.sha256(
+            Path(clone_temporals.__file__).read_bytes()
+        ).hexdigest()
     selected = [
         case
         for case in cases
@@ -678,6 +767,7 @@ def main(argv: Sequence[str] | None = None) -> None:
         parser.error("include patterns selected no clone workloads")
     output["selection_patterns"] = args.include
     output["consumer_cases_enabled"] = args.consumer_cases
+    output["temporal_cases_enabled"] = args.temporal_cases
     for case in selected:
         calls = base._callables(case, modules)
         for label, call in calls.items():
