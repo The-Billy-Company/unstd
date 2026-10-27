@@ -85,6 +85,20 @@ def _serde_cases(*, comparison: bool = False) -> list[Case]:
         expect(rows),
         "32 records; new StringIO included",
     )
+    if not comparison or hasattr(jsonx, "dump_array"):
+        array_writer = jsonx.dump_array
+
+        def json_dump_array() -> tuple[int, bytes]:
+            sink = io.BytesIO()
+            count = array_writer(iter(rows), sink)
+            return count, sink.getvalue()
+
+        add(
+            "jsonx.dump_array",
+            json_dump_array,
+            expect((len(rows), compact)),
+            "32 Unicode array records; new BytesIO and iterator included",
+        )
     add(
         "jsonx.JSONEncoder",
         jsonx.JSONEncoder,

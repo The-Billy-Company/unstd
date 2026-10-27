@@ -14,6 +14,7 @@ doc_radar:
 These drivers compare saved and current implementations, check outputs and import provenance, and retain timings separately from profiling. Run `python -m bench.profiles.NAME --help`. The earlier `python -m bench.NAME` and `python bench/NAME.py` entry points forward here.
 
 - [`serde_profile.py`](serde_profile.py)
+- [`json_array_write.py`](json_array_write.py) — generator exports against eager JSON writers, with exact output hashes, fresh-process peak memory, and separate write-call diagnostics
 - [`jsonx_throughput.py`](jsonx_throughput.py)
 - [`jsonx_existing.py`](jsonx_existing.py) — three saved sources, unchanged JSONX registry/core fixtures and separate Python profiles; run this file directly to select sources before import
 - [`clone_ids_profile.py`](clone_ids_profile.py)

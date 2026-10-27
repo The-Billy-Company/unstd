@@ -71,7 +71,7 @@ responsibility without an extra helper package.
 | `proc` | Package functions and classes | `backend.py` owns spawning/capture; `results.py` owns results and errors. |
 | `rand` | Package functions, `draw.py`, `crypto.py` | `keyed.py` owns keyed deterministic integer batches; secure draws remain separate. |
 | `rex` | Package functions, flags and types | `profile.py` proves semantic eligibility; `patterns.py` owns adapters; public caches stay at the entrypoint. |
-| `serde` | `jsonx.py`, `b64.py`, `ndjson.py`, `structs.py` | `encoding.py` owns JSON eligibility/encoding; `recursion.py` preserves interpreter stack budgets. |
+| `serde` | `jsonx.py`, `b64.py`, `ndjson.py`, `structs.py` | `encoding.py` owns JSON eligibility/encoding; `recursion.py` preserves interpreter stack budgets; `_array_writer.py` batches array writes. |
 | `text` | `fuzz.py` | Scorer admission and native dispatch stay with the calls. |
 | `time` | `timeutil.py`, `zoned.py` | Native calendar bindings, instant arithmetic and zoned-time backend remain distinct. |
 | `toml` | Package format functions and builders | `dialect.py` normalizes data to the shared TOML dialect. |

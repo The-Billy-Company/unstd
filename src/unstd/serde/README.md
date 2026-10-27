@@ -130,6 +130,44 @@ The [serde reports](../../../bench/reports/serde/README.md) retain release
 regressions as well as gains. Compatibility checking has a cost relative to the
 permissive 2.1 codec; measured results are not a universal speed promise.
 
+### Write a JSON array from a generator
+
+`dump_array` exports an iterable as one compact JSON array without building a
+list of records or a complete encoded document. It returns the record count.
+
+```python
+from unstd.compress import gzipx
+from unstd.serde import jsonx
+
+with gzipx.open("export.json.gz", "wb") as destination:
+    count = jsonx.dump_array(generate_events(), destination)
+```
+
+Each record uses `dumpb`, including its `sort_keys`, `default`, and `numpy`
+options. Binary sinks receive UTF-8 bytes; `io.TextIOBase` sinks receive Unicode
+and apply their own encoding policy. `chunk_size=65536` batches output and
+bounds each write request in bytes or text characters. Short writes are
+completed before the next chunk. Standard `io.IOBase` sinks returning zero or
+`None` raise `BlockingIOError`; generic write-only sinks may acknowledge a full
+write with `None`. Other invalid counts raise `OSError`.
+
+Memory follows the chunk and largest record, excluding values retained by the
+producer or callbacks. Reusing and mutating one record in a generator works:
+each record is encoded before requesting the next. Encoding options and
+recursion limits apply per record; the outer array is framing only. The base
+install works without optional backends.
+
+The opening bracket is written before consuming the iterable. Batching can
+consume several records before a sink error. Encoder, iterator and I/O errors
+propagate, leaving partial output; buffered records may not yet have reached
+the sink. The closing bracket is written only after successful consumption.
+The caller owns flushing, closing and any atomic-file replacement policy.
+The [write profile](../../../bench/profiles/json_array_write.py) compares exact
+output hashes, fresh-process peak memory, elapsed time and separate write-call
+diagnostics against the existing eager export APIs. Its
+[retained measurements](../../../bench/reports/serde/json-array-write.md) include
+the full generated-export pipeline and the faster small-corpus bulk alternative.
+
 **Compact bytes:** `dumpb` equals
 `json.dumps(obj, ensure_ascii=False, separators=(",", ":"), ...).encode()` with
 its `sort_keys` and `default` options. It uses the same native guard or snapshot

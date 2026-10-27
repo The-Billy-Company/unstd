@@ -2119,6 +2119,77 @@
       "rounds": 11,
       "spread": 0.2863924772903638
     },
+    "unstd.serde.jsonx.dump_array": {
+      "captured_environment": {
+        "backends": {
+          "blake3": "1.0.10",
+          "immutables": "0.21",
+          "irregex": "2.6.0",
+          "libarchive-c": "5.3",
+          "msgspec": "0.22.0",
+          "numpy": "2.5.3",
+          "orjson": "3.12.0",
+          "protobuf": "7.36.2",
+          "pybase64": "1.5.0",
+          "pydantic": "2.13.5",
+          "pydantic-settings": "2.15.0",
+          "pyyaml": "6.0.3",
+          "rapidfuzz": "3.14.6",
+          "ruamel-yaml": "0.19.1",
+          "sortedcontainers": "2.4.0",
+          "soundfile": "0.14.0",
+          "tomlkit": "0.15.1",
+          "uuid-utils": "1.0.0",
+          "whenever": "0.10.5",
+          "zlib-ng": "1.0.0",
+          "zstandard": "0.25.0"
+        },
+        "cpu": "Apple M5 Max",
+        "cpu_count": 18,
+        "implementation": "CPython",
+        "machine": "arm64",
+        "native": {
+          "clone._clone_native": true,
+          "compress._gzip_native": true,
+          "containers._sorted_native": true,
+          "crypto._stream_native": true,
+          "dataset._dataset_native": true,
+          "serde._json_native": true,
+          "text._text_native": true
+        },
+        "native_implementations": {
+          "clone._clone_native": "c",
+          "compress._gzip_native": "c",
+          "containers._sorted_native": "c",
+          "crypto._stream_native": "c",
+          "dataset._dataset_native": "c",
+          "serde._json_native": "c",
+          "text._text_native": "c"
+        },
+        "python": "3.14.9",
+        "python_debug": 0,
+        "python_free_threaded": 0,
+        "system": "Darwin",
+        "system_release": "25.6.0",
+        "thread_settings": {
+          "MKL_NUM_THREADS": null,
+          "OMP_NUM_THREADS": null,
+          "OPENBLAS_NUM_THREADS": null
+        }
+      },
+      "captured_provenance": {
+        "evidence": "json_array_write_addition_provenance",
+        "recorded": "2026-10-27T21:12:08.548196+00:00",
+        "report": "bench/reports/serde/json-array-write-operation.json",
+        "report_sha256": "c3425e19b3c863eec7fb6436387b5144c92248a9d31b1110f66ebc4eb911c4cd"
+      },
+      "ceiling_ns": 8898.239322916668,
+      "iterations": 1152,
+      "measured_ns": 6844.799479166667,
+      "note": "32 Unicode array records; new BytesIO and iterator included",
+      "rounds": 9,
+      "spread": 0.415788852267581
+    },
     "unstd.serde.jsonx.dumpb": {
       "ceiling_ns": 2022.3705866228072,
       "iterations": 3648,
@@ -4801,7 +4872,7 @@
   },
   "tolerance": 0.3,
   "workload_sources": {
-    "speed_cases_codecs.py": "3923505d06f0e7e3ebfedfe920fcdfd198ea733ed4250271892f66d57f6fd03c",
+    "speed_cases_codecs.py": "b1c85a8490c636c215a34a32e57e6d847db6e71635fe18f39983fe927b0c206e",
     "speed_cases_operations.py": "54572576bc9cea79179d60a84d428a7f2f232e1d6de46233c3ee00ab196cf497",
     "speed_cases_runtime.py": "b1e5bf41dd71aa289732d15574bb5a110c2650b989d7271b2927b6d4a4a075cd"
   }

@@ -36,10 +36,15 @@ successful acceleration and every fallback boundary against the running stdlib.
 
 from __future__ import annotations
 
-from collections.abc import Callable  # noqa: TC003 — public annotation introspection
+from collections.abc import (  # noqa: TC003 — public annotation introspection
+    Callable,
+    Iterable,
+)
 from functools import wraps
+import io  # noqa: TC003 — public annotation introspection
 import json as _stdlib
 from math import isfinite
+from operator import index
 from typing import TYPE_CHECKING, Any, Protocol
 
 from unstd.serde.encoding import (
@@ -66,6 +71,14 @@ class _Reader(Protocol):
 
     def read(self) -> str | bytes | bytearray:
         """Read the complete document once."""
+        ...
+
+
+class _BinaryWriter(Protocol):
+    """A binary sink for bounded JSON-array writes."""
+
+    def write(self, data: bytes, /) -> object:
+        """Write a prefix, returning its length or acknowledging it with None."""
         ...
 
 
@@ -110,6 +123,7 @@ __all__ = [
     "canonical",
     "canonical_strict",
     "dump",
+    "dump_array",
     "dumpb",
     "dumps",
     "load",
@@ -454,6 +468,41 @@ def dump(
 def load(fp: _Reader, **kw: Any) -> Any:
     """Read once, then apply the same exact decoder dispatch as :func:`loads`."""
     return loads(fp.read(), **kw)
+
+
+def dump_array(
+    rows: Iterable[object],
+    fp: io.TextIOBase | _BinaryWriter,
+    *,
+    chunk_size: int = 65536,
+    sort_keys: bool = False,
+    default: Callable[[object], object] | None = None,
+    numpy: bool = False,
+) -> int:
+    """Write an iterable as a compact JSON array, returning its record count.
+
+    Encode each record with :func:`dumpb` before advancing the iterable. Text
+    streams (``io.TextIOBase``) receive Unicode; other sinks receive UTF-8
+    bytes. Generators, binary/text gzip streams and short writes are supported.
+    No optional dependency is required. Encoding options and recursion limits
+    apply per record; the outer array is framing only.
+
+    A positive integer ``chunk_size`` bounds each write request in binary bytes
+    or text characters. Memory follows that bound plus the largest record,
+    excluding values retained by the producer or encoder callbacks. Batching
+    can consume multiple records before a write failure. The opening bracket
+    is written before consuming records; the closing bracket follows successful
+    consumption only. Errors propagate with partial output left in the sink;
+    buffered records may not yet have been written. The caller owns the sink:
+    it is neither flushed nor closed. Text streams retain their encoding policy.
+    """
+    from unstd.serde._array_writer import write_array
+
+    size = index(chunk_size)
+    if size < 1:
+        message = "chunk_size must be positive"
+        raise ValueError(message)
+    return write_array(rows, fp, size, sort_keys, default, numpy)
 
 
 if _native is not None:

@@ -884,6 +884,7 @@
       "canonical",
       "canonical_strict",
       "dump",
+      "dump_array",
       "dumpb",
       "dumps",
       "load",
@@ -900,6 +901,10 @@
       },
       "dump": {
         "signature": "(obj: 'object', fp: '_TextWriter', *, skipkeys: 'bool' = False, ensure_ascii: 'bool' = True, check_circular: 'bool' = True, allow_nan: 'bool' = True, cls: 'type[JSONEncoder] | None' = None, indent: 'int | str | None' = None, separators: 'tuple[str, str] | None' = None, default: 'Callable[[Any], Any] | None' = None, sort_keys: 'bool' = False, **kw: 'Any') -> 'None'",
+        "module": "unstd.serde.jsonx"
+      },
+      "dump_array": {
+        "signature": "(rows: 'Iterable[object]', fp: 'io.TextIOBase | _BinaryWriter', *, chunk_size: 'int' = 65536, sort_keys: 'bool' = False, default: 'Callable[[object], object] | None' = None, numpy: 'bool' = False) -> 'int'",
         "module": "unstd.serde.jsonx"
       },
       "dumpb": {

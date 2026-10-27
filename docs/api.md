@@ -438,7 +438,7 @@ Import `from unstd.serde import jsonx, b64, ndjson, structs` as needed.
 
 | Module | Exported API |
 | --- | --- |
-| [`unstd.serde.jsonx`](../src/unstd/serde/jsonx.py) | `JSONDecodeError`, `JSONDecoder`, `JSONEncoder`, `Json`, `canonical`, `canonical_strict`, `dump`, `dumpb`, `dumps`, `load`, `loads` |
+| [`unstd.serde.jsonx`](../src/unstd/serde/jsonx.py) | `JSONDecodeError`, `JSONDecoder`, `JSONEncoder`, `Json`, `canonical`, `canonical_strict`, `dump`, `dump_array`, `dumpb`, `dumps`, `load`, `loads` |
 | [`unstd.serde.b64`](../src/unstd/serde/b64.py) | `Error`, `b64decode`, `b64encode`, `decode`, `decode_file`, `decode_json`, `decode_text`, `decodebytes`, `encode`, `encode_file`, `encode_json`, `encodebytes`, `standard_b64decode`, `standard_b64encode`, `urlsafe_b64decode`, `urlsafe_b64encode` |
 | [`unstd.serde.ndjson`](../src/unstd/serde/ndjson.py) | `NDJSONDecodeError`, `dump`, `dumpb`, `dumps`, `iter_loads`, `load`, `loads` |
 | [`unstd.serde.structs`](../src/unstd/serde/structs.py) | `Codec`, `DecHook`, `EncHook`, `FloatHook`, `Order`, `float_enc_hook` |
@@ -448,6 +448,14 @@ Import `from unstd.serde import jsonx, b64, ndjson, structs` as needed.
 their existing instance interfaces. `dumpb` adds compact UTF-8 bytes. The legacy
 `canonical` format remains stable; `canonical_strict` provides its existing
 restricted-value format. Neither format changes during module reorganization.
+
+`jsonx.dump_array(rows, fp, *, chunk_size=65536, sort_keys=False, default=None,
+numpy=False)` writes an iterable as a compact JSON array and returns its record
+count. Each record uses `dumpb`; binary sinks receive UTF-8 and `io.TextIOBase`
+sinks receive Unicode. Buffering follows the chunk and largest record, with
+each write request bounded by the chunk size. Short writes are completed.
+Batching can consume records ahead of a sink failure, which leaves partial
+output. The caller owns flushing and closing the destination.
 
 `b64.Error` is `binascii.Error`. Standard Base64 functions keep their documented
 stdlib signatures and behavior. Convenience `encode`/`decode` keep their distinct
