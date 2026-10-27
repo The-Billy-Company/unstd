@@ -88,10 +88,17 @@ _Pathish = str | os.PathLike[str]
 type _Durability = bool | Literal["strict"]
 
 
-def ensure_dir(path: _Pathish) -> Path:
-    """``mkdir(parents=True, exist_ok=True)`` folded into one call — create *path* and any missing parents, returning it. Idempotent: a no-op (never an error) when the directory already exists."""
+def ensure_dir(path: _Pathish, *, check_first: bool = True) -> Path:
+    """Create *path* and missing parents, returning an ordinary platform Path.
+
+    The default checks the directory first, making an existing directory a
+    no-op without a creation audit event. ``check_first=False`` delegates
+    directly to ``Path.mkdir(parents=True, exist_ok=True)``, preserving its
+    creation attempt and audit behavior even when the directory exists. Both
+    modes normalize custom path values before filesystem operations.
+    """
     p = Path(path)
-    if not p.is_dir():
+    if not check_first or not p.is_dir():
         p.mkdir(parents=True, exist_ok=True)
     return p
 

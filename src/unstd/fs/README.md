@@ -3,6 +3,8 @@ doc_radar:
   sentinels:
     - file: __init__.py
       contains: ['from unstd.fs.durability import']
+    - file: __init__.py
+      contains: ['def ensure_dir(path: _Pathish, *, check_first: bool = True)', 'if not check_first or not p.is_dir():']
     - file: traversal.py
       contains: ['def _walk_descriptors(']
 ---
@@ -28,7 +30,7 @@ from unstd import fs
 | `atomic_write(path, data, *, encoding="utf-8", durable=False)`            | Atomic write of `str`/`bytes`: temp file in the same dir → `fsync` → `os.replace`.                                   |
 | `atomic_writer(path, *, mode="w"\|"wb", encoding="utf-8", durable=False)` | Context-manager form — yields a handle; commits atomically on clean exit, discards the temp file if the body raises. |
 | `atomic_replace(src, dest, *, durable=False)`                             | Atomic `os.replace` of an existing file onto `dest` (same-filesystem rename).                                        |
-| `ensure_dir(path)`                                                        | `mkdir(parents=True, exist_ok=True)`, idempotent.                                                                    |
+| `ensure_dir(path, *, check_first=True)`                                    | Create missing directories; optionally retain direct `Path.mkdir` attempts and audit events.                         |
 | `sync_dir(path, *, strict=False)`                                         | Directory `fsync`; OS errors are suppressed unless strict mode is requested.                                       |
 | `walk_files(root, *, follow_symlinks=False)`                              | `os.scandir` generator — every file, recursively.                                                                    |
 
@@ -177,6 +179,11 @@ traversal caches directory-name prefixes and constructs `Path` objects only
 for returned files. Existing-directory checks avoid a failed `mkdir`; creating
 a missing directory incurs an initial directory check. Strict writers reuse
 their successful parent check before preflight syncing.
+
+Use `ensure_dir(path, check_first=False)` when porting a direct `Path.mkdir`
+call. It keeps that call's creation audit event and skips the preliminary
+directory query. The default still checks first and leaves existing directories
+as audit-free no-ops.
 
 The evaluation includes real file and directory syncing. Local I/O timing is
 noisy, so it does not establish a consistent atomic-write speedup. The portable

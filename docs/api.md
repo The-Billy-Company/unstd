@@ -7,6 +7,8 @@ doc_radar:
       contains: ['if name in ("pyyaml", "ruamel"):', 'globals()[name] = backend']
     - file: ../tests/suites/assurance/gates/packaging/test_public_api.py
       contains: ['def test_public_inventory_retains_all_exports(']
+    - file: ../src/unstd/fs/__init__.py
+      contains: ['def ensure_dir(path: _Pathish, *, check_first: bool = True)', 'if not check_first or not p.is_dir():']
 ---
 
 # Public API inventory
@@ -206,6 +208,10 @@ Strict mode requires directory-sync acknowledgments before and after replacement
 a post-commit failure reports that the new data is already committed.
 `sync_dir(path, *, strict=False)` returns `None` and suppresses OS errors by
 default, while `strict=True` reports them.
+
+`ensure_dir(path, *, check_first=True)` checks before attempting creation.
+Use `check_first=False` to retain a direct `Path.mkdir` call's creation attempts
+and audit events, including when the directory already exists.
 
 This package needs no extra or third-party runtime dependency. Ordinary
 GIL-enabled Linux CPython builds use the bundled native `atomic_write` backend
