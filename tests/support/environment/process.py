@@ -183,11 +183,12 @@ def isolated_environment(**values: str) -> dict[str, str]:
 
 def worker_line(child: subprocess.Popen[str], *, timeout: float) -> str:
     """Read a readiness line with a deadline; caller retains process ownership."""
-    if child.stdout is None:
+    stream = child.stdout
+    if stream is None:
         msg = "worker has no stdout pipe"
         raise ValueError(msg)
     lines: Queue[str] = Queue(maxsize=1)
-    reader = Thread(target=lambda: lines.put(child.stdout.readline()), daemon=True)
+    reader = Thread(target=lambda: lines.put(stream.readline()), daemon=True)
     reader.start()
     line = lines.get(timeout=timeout)
     reader.join(timeout=timeout)
