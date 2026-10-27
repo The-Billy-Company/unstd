@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import signal
 from textwrap import dedent
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, override
 
 import pytest
 
@@ -105,6 +105,7 @@ def test_set_hash_failures_keep_exception_identity_and_initialized_memo() -> Non
     failure = LookupError("set hash failure")
 
     class Copied:
+        @override
         def __hash__(self) -> int:
             raise failure
 

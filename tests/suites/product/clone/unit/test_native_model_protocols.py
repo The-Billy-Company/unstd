@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Self
+from typing import TYPE_CHECKING, Self, override
 
 import pytest
 
-from tests.support.environment.backends import require_backend
 from unstd import clone
 from unstd.clone import structural
 
@@ -14,6 +13,8 @@ from unstd.clone import structural
 if TYPE_CHECKING:
     from pydantic import BaseModel, PrivateAttr
 else:
+    from tests.support.environment.backends import require_backend
+
     _pydantic = require_backend("pydantic")
     BaseModel = _pydantic.BaseModel
     PrivateAttr = _pydantic.PrivateAttr
@@ -59,6 +60,7 @@ def test_model_state_root_honors_atom_memo_override(model_backend: None) -> None
     class Model(BaseModel):
         value: object
 
+        @override
         def __getattribute__(self, name: str) -> object:
             if name == "__pydantic_fields_set__":
                 return 13
@@ -79,9 +81,11 @@ def test_model_state_memo_hit_keeps_membership_and_getitem(
     source: Model
 
     class Key:
+        @override
         def __hash__(self) -> int:
             return id(source.__pydantic_fields_set__)
 
+        @override
         def __eq__(self, other: object) -> bool:
             if type(other) is int and other == id(source.__pydantic_fields_set__):
                 calls.append(other)
@@ -121,12 +125,13 @@ def test_model_state_attributes_are_read_in_order(model_backend: None) -> None:
         values: list[int]
         _cache: list[int] = PrivateAttr(default_factory=list)
 
+        @override
         def __getattribute__(self, name: str) -> object:
             if self is original and name in names:
                 reads.append(name)
             return super().__getattribute__(name)
 
-    source = Model(values=[1], note=[2])
+    source = Model.model_validate({"values": [1], "note": [2]})
     source._cache = [3]
     original = source
     copied = clone.deep(source)
@@ -174,7 +179,7 @@ def test_model_hooks_observe_only_completed_state_phases(
 
     source = Model(field=Hook()) if where == "field" else Model()
     if where == "extra":
-        source = Model(note=Hook())
+        source = Model.model_validate({"note": Hook()})
     elif where == "private":
         source._cache = Hook()
     copied = clone.deep(source)
@@ -189,7 +194,7 @@ def test_model_hooks_observe_only_completed_state_phases(
 
 
 def test_model_constructor_change_is_observed_by_later_records(
-    model_backend: None,
+    model_backend: None, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     calls: list[str] = []
 
@@ -202,7 +207,7 @@ def test_model_constructor_change_is_observed_by_later_records(
 
     class Hook:
         def __deepcopy__(self, _memo: dict[int, object]) -> str:
-            Model.__new__ = staticmethod(changed_new)
+            monkeypatch.setattr(Model, "__new__", staticmethod(changed_new))
             return "copied"
 
     first, second = Model(value=Hook()), Model(value=[1])
@@ -225,6 +230,7 @@ def test_model_state_errors_do_not_retry_allocation(model_backend: None) -> None
             calls.append("new")
             return object.__new__(cls)
 
+        @override
         def __getattribute__(self, name: str) -> object:
             if self is original and name == "__dict__":
                 raise failure
@@ -305,9 +311,10 @@ def test_model_handler_code_changes_are_observed_by_later_records(
 
     first, second = Model(value=Hook()), Model(value=42)
     clone.deep(Model(value=None))
-    copied = clone.deep([first, second])
-    assert type(copied[0]) is Model
-    assert copied[0].value == "copied"
+    copied: list[object] = clone.deep([first, second])
+    first_copied = copied[0]
+    assert type(first_copied) is Model
+    assert first_copied.value == "copied"
     assert copied[1] == ("changed model", 42)
 
 
@@ -330,7 +337,9 @@ def test_model_state_walker_changes_are_observed_at_state_boundaries(
     class Model(BaseModel, extra="allow"):
         value: object
 
-    source = Model(value=Hook() if when == "field" else [1], note=[2])
+    source = Model.model_validate(
+        {"value": Hook() if when == "field" else [1], "note": [2]}
+    )
     clone.deep(Model(value=None))
     if when == "before":
         monkeypatch.setattr(structural, "_walk_data", replaced)
@@ -370,12 +379,16 @@ def test_model_state_memo_miss_reads_current_dispatch_globals(
     active_patch: pytest.MonkeyPatch
 
     class ForeignMeta(type):
+        @override
         def __hash__(cls) -> int:
             return type.__hash__(cls)
 
-    class ForeignState(metaclass=ForeignMeta if changed == "_walk" else type):
+    class ForeignState:
         def __deepcopy__(self, _memo: dict[int, object]) -> str:
             return "original state"
+
+    class OpaqueState(ForeignState, metaclass=ForeignMeta):
+        pass
 
     def replacement(*_args: object) -> object:
         return sentinel
@@ -387,9 +400,11 @@ def test_model_state_memo_miss_reads_current_dispatch_globals(
         return "changed body"
 
     class Key:
+        @override
         def __hash__(self) -> int:
             return id(state)
 
+        @override
         def __eq__(self, other: object) -> bool:
             if type(other) is int and other == id(state):
                 calls.append(other)
@@ -424,12 +439,13 @@ def test_model_state_memo_miss_reads_current_dispatch_globals(
     class Model(BaseModel):
         value: object
 
+        @override
         def __getattribute__(self, name: str) -> object:
             if name == "__pydantic_fields_set__":
                 return state
             return super().__getattribute__(name)
 
-    state = ForeignState()
+    state = OpaqueState() if changed == "_walk" else ForeignState()
     source = Model(value=Hook())
     clone.deep(Model(value=None))
     results: list[tuple[object, list[int]]] = []

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import datetime as dt
 from textwrap import dedent
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal, override
 
 import pytest
 
@@ -24,11 +24,14 @@ pytestmark = pytest.mark.skipif(
 )
 
 
-@pytest.mark.parametrize("kind", [list, tuple])
+@pytest.mark.parametrize("shape", ["list", "tuple"])
 @pytest.mark.parametrize("zone", [None, dt.UTC])
 @pytest.mark.parametrize("temporal", [dt.date, dt.datetime, dt.time])
 def test_temporal_roots_complete_in_the_native_graph(
-    monkeypatch: pytest.MonkeyPatch, kind: Any, zone: Any, temporal: Any
+    monkeypatch: pytest.MonkeyPatch,
+    shape: Literal["list", "tuple"],
+    zone: dt.tzinfo | None,
+    temporal: type[dt.date | dt.time],
 ) -> None:
     value = (
         dt.date(2026, 1, 1)
@@ -42,9 +45,10 @@ def test_temporal_roots_complete_in_the_native_graph(
         raise AssertionError
 
     monkeypatch.setattr(structural, "_native_walk_graph", refuse)
-    source = kind([value, value, 1, None, "a", b"b", 1.0, True, 2j])
+    values: list[object] = [value, value, 1, None, "a", b"b", 1.0, True, 2j]
+    source = values if shape == "list" else tuple(values)
     first, second = clone.deep(source), clone.deep(source)
-    assert type(first) is type(second) is kind
+    assert type(first) is type(second) is type(source)
     assert first == second == source
     assert first is not second is not source
     assert all(a is b for a, b in zip(first, source, strict=True))
@@ -74,9 +78,11 @@ def test_temporal_policy_foreign_membership_retains_python_exception(
     calls: list[object] = []
 
     class Meta(type):
+        @override
         def __hash__(cls) -> int:
             return hash(selected)
 
+        @override
         def __eq__(cls, other: object) -> bool:
             calls.append(other)
             raise failure
@@ -119,11 +125,17 @@ def test_temporal_roots_keep_foreign_timezone_and_subclass_protocols() -> None:
     calls: list[str] = []
 
     class Zone(dt.tzinfo):
-        def utcoffset(self, value: Any) -> dt.timedelta:
+        @override
+        def utcoffset(self, value: dt.datetime | None) -> dt.timedelta:
             return dt.timedelta(0)
 
-        def dst(self, value: Any) -> dt.timedelta:
+        @override
+        def dst(self, value: dt.datetime | None) -> dt.timedelta:
             return dt.timedelta(0)
+
+        @override
+        def tzname(self, value: dt.datetime | None) -> str | None:
+            return super().tzname(value)
 
         def __deepcopy__(self, _memo: dict[int, Any]) -> dt.tzinfo:
             calls.append("zone")
@@ -137,12 +149,16 @@ def test_temporal_roots_keep_foreign_timezone_and_subclass_protocols() -> None:
     value, date = dt.datetime(2026, 1, 1, tzinfo=Zone()), Date(2026, 1, 1)
     copied = clone.deep([value, value, date, date])
     assert copied[0] is copied[1] is not value
-    assert copied[0].utcoffset() == dt.timedelta(hours=2)
+    stamp = copied[0]
+    assert isinstance(stamp, dt.datetime)
+    assert stamp.utcoffset() == dt.timedelta(hours=2)
     assert copied[2:] == ["copied date", "copied date"]
     assert calls == ["zone", "date"]
 
 
-@pytest.mark.parametrize("change", ["policy", "shrink", "grow-foreign", "release"])
+@pytest.mark.parametrize(
+    "change", ["policy", "shrink", "grow-foreign", "replace-foreign", "release"]
+)
 def test_temporal_roots_revalidate_at_allocation(change: str, tmp_path: Path) -> None:
     worker = dedent(
         """
@@ -178,6 +194,8 @@ def test_temporal_roots_revalidate_at_allocation(change: str, tmp_path: Path) ->
                 source[:] = [value] * 2
             elif mode == 'release':
                 source = None
+            elif mode == 'replace-foreign':
+                source[-2:] = [hook, hook]
             else:
                 source.extend([hook, hook])
         copy._deepcopy_dispatch[dt.datetime] = lambda o, memo: sentinel
@@ -197,6 +215,9 @@ def test_temporal_roots_revalidate_at_allocation(change: str, tmp_path: Path) ->
             assert actual == [value] * 2
         elif mode == 'release':
             assert source is None and actual == [value] * 8
+        elif mode == 'replace-foreign':
+            assert actual == [value] * 6 + ['copied', 'copied']
+            assert calls == ['hook']
         else:
             assert actual == [value] * 8 + ['copied', 'copied']
             assert calls == ['hook']

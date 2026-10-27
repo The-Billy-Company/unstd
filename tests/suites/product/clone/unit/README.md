@@ -5,6 +5,8 @@ doc_radar:
       contains: ['test_model_state_root_honors_atom_memo_override', 'test_model_state_memo_hit_keeps_membership_and_getitem']
     - file: tests/suites/product/clone/unit/test_native_temporal_sequence.py
       contains: ['CLOSED_TEMPORALS']
+    - file: tests/suites/product/clone/unit/test_temporal_policy_probes.py
+      contains: ['test_prior_hook_changes_the_active_parent_temporal_dispatch', 'test_dynamic_temporal_parent_preserves_namespace_equality_exception']
 ---
 
 # Cloning API and ownership contracts
@@ -24,6 +26,8 @@ doc_radar:
 `test_temporal_graph.py` compares the canonical native temporal shortcut with the unchanged Python policy. It covers datetime/time identity, explicit source/timezone/timedelta memo entries, source pin order, naive `None` behavior, class/registry/function replacements, custom walkers and timezones, and the legacy extension import. Exact None/UTC temporal values must never compare foreign keys in copy registries that the Python branch does not consult; rebound timezone policies retain their own registry selection, foreign-key lookups and exact exceptions. Foreign memo-key equality and admitted-record state-key equality must preserve lookup counts and policy when callbacks mutate the memo or temporal bindings.
 
 `test_native_temporal_sequence.py` checks the bounded flat-sequence path through the public API, including allocation-time source and policy changes, unsupported later leaves, caller memos and live-prefix behavior in the general fallback. Foreign type-policy keys keep their equality callbacks and exact errors.
+
+`test_temporal_policy_probes.py` compares generated policy collisions with Python's complete callback trace. It covers negative membership, repeated leaves, live walker changes from earlier copy hooks, policy weakref timing and exact foreign-namespace errors.
 
 `test_scalar_prefix.py` checks source shrink, clear and growth at sequence allocation and at a later native child, initialized-only collector visibility, empty-sequence GC state and aliases after scalar prefixes. `test_repeat_cache.py` checks adjacent runs, caller memo precedence, foreign-hook overrides, separate `asdict` positions and mutation/collection of a completed child. Allocation-boundary cases require the forced-GC audit wrapper; ordinary native builds retain the positive ownership and alias checks.
 

@@ -88,6 +88,8 @@ against the previous Python implementation.
   UTC timestamp can retain approved immutable leaves without a per-leaf memo.
   This path validates policy after allocation and every leaf before filling;
   nested data, custom timezones and larger sequences retain the general walk.
+  Mixed datetime state uses bounded policy checks while retaining custom
+  membership callbacks and live changes made by earlier copy hooks.
 - **Data classes are rebuilt the way `deepcopy` rebuilds them**, with the walker
   in place of the recursion. A plain dataclass is `cls.__new__` plus its walked
   `__dict__`. A pydantic model reconstructs its fields, extras, private state and

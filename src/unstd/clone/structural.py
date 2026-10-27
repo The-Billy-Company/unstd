@@ -411,7 +411,6 @@ def _walk_data_after_memo(o: Any, memo: dict[int, Any]) -> Any:
                 if _NATIVE_MODEL_CONTINUATION
                 and _PYDANTIC_UNDEFINED is not None
                 and _model is _MODEL_WALK
-                and _model.__code__ is _MODEL_WALK_CODE
                 else _native_walk_graph(o, _walk, _record_admit, memo)
             )
             if result is not NotImplemented:
@@ -635,7 +634,6 @@ def deep[T](obj: T) -> T:
                 if _NATIVE_MODEL_CONTINUATION
                 and _PYDANTIC_UNDEFINED is not None
                 and _model is _MODEL_WALK
-                and _model.__code__ is _MODEL_WALK_CODE
                 else _native_walk_graph(obj, _walk, _record_admit, memo)
             )
             if cloned is not NotImplemented:

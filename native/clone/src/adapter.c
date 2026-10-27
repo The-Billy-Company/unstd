@@ -13,6 +13,7 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 #include <stdint.h>
+#include <stddef.h>
 #include <datetime.h>
 
 #define MAX_DEPTH 128
@@ -82,6 +83,9 @@ typedef struct {
     RecordRecipe recipes[MAX_RECORD_TYPES];
     unsigned int recipe_count;
     int direct_graph;
+    int canonical_graph;
+    PyObject *loop_walk_code;
+    int temporal_loop_dynamic;
     int temporal_graph;
     int refuse_cycles;
     PyObject *cycle_walk;
@@ -210,6 +214,17 @@ model_current(CopyContext *context)
  * objects. Optional caller memos are exported only after the whole walk succeeds. */
 /* A policy probe must not add foreign-key equality callbacks to the Python
  * branch. These bounded namespace scans allocate and invoke no Python code. */
+/* CPython 3.12--3.14 share this dictionary-key prefix. Reading its kind
+ * byte is the same O(1) proof used by _PyDict_HasOnlyStringKeys; that function
+ * is hidden in 3.13/3.14. Unicode/split tables contain exact str keys. General
+ * tables still need the exact-str scan, since str subclasses may run hooks. */
+typedef struct {
+    Py_ssize_t references;
+    uint8_t log_size;
+    uint8_t log_index_bytes;
+    uint8_t kind;
+} DictKeysPrefix;
+
 static int
 ordinary_namespace(PyObject *dictionary)
 {
@@ -217,6 +232,13 @@ ordinary_namespace(PyObject *dictionary)
         || PyDict_GET_SIZE(dictionary) > 4096) {
         return 0;
     }
+#if PY_VERSION_HEX >= 0x030C0000 && PY_VERSION_HEX < 0x030F0000 && !defined(Py_GIL_DISABLED)
+    const unsigned char *keys = (const unsigned char *)((PyDictObject *)dictionary)->ma_keys;
+    unsigned char kind = keys[offsetof(DictKeysPrefix, kind)];
+    if (kind == 1 || kind == 2) {
+        return 1;
+    }
+#endif
     Py_ssize_t position = 0;
     PyObject *key, *value;
     while (PyDict_Next(dictionary, &position, &key, &value)) {
@@ -354,46 +376,82 @@ closed_temporal_atom(PyObject *value, int flags, PyDateTime_CAPI *api)
 }
 
 
-/* The temporal branch follows two type memberships before timezone work.
- * Foreign metaclass equality belongs to Python, as do policies that turn the
- * source/zone into an earlier graph atom. Never add set membership callbacks
- * while deciding whether to retain the native continuation. */
+
+/* Independent bounded proof of the standard CPython probe geometry:
+ * https://github.com/python/cpython/blob/3.12/Objects/setobject.c#L49
+ * https://github.com/python/cpython/blob/3.14/Objects/setobject.c#L70
+ * Qualified GIL builds use the default nine-step linear window and perturb5.
+ * Only matching hashes can compare keys.
+ * Foreign comparisons defer before running them; exact type keys compare by
+ * identity. No policy references escape this allocation-free check, so policy
+ * replacement retains its ordinary weakref/finalizer timing. */
+static int
+exact_type_membership(PyObject *set, PyTypeObject *kind, Py_ssize_t limit,
+                      Py_ssize_t mask_limit)
+{
+#if PY_VERSION_HEX < 0x030C0000 || PY_VERSION_HEX >= 0x030F0000 || defined(Py_GIL_DISABLED) \
+    || (defined(LINEAR_PROBES) && LINEAR_PROBES != 9)
+    (void)set; (void)kind; (void)limit; (void)mask_limit;
+    return -1;
+#else
+    if (set == NULL || !PyFrozenSet_CheckExact(set) || PySet_GET_SIZE(set) > limit) {
+        return -1;
+    }
+    PySetObject *policy = (PySetObject *)set;
+    if (policy->mask >= mask_limit) {
+        return -1;
+    }
+    Py_hash_t hash = PyObject_Hash((PyObject *)kind);
+    if (hash == -1) {
+        return -1;
+    }
+    size_t mask = (size_t)policy->mask;
+    size_t perturb = (size_t)hash, index = (size_t)hash & mask;
+    size_t budget = (mask + 1) * 4;
+    while (budget != 0) {
+        size_t end = index + 9 <= mask ? index + 9 : index;
+        for (size_t i = index; i <= end && budget != 0; i++, budget--) {
+            setentry entry = policy->table[i];
+            if (entry.hash == 0 && entry.key == NULL) {
+                return 0;
+            }
+            if (entry.hash == hash) {
+                if (entry.key == (PyObject *)kind) {
+                    return 1;
+                }
+                if (Py_TYPE(entry.key) != &PyType_Type) {
+                    return -1;
+                }
+            }
+        }
+        perturb >>= 5;
+        index = (index * 5 + 1 + perturb) & mask;
+    }
+    return -1;
+#endif
+}
+
 static int
 temporal_memberships_safe(ModuleState *state, PyObject *globals, PyTypeObject *kind)
 {
     if (!ordinary_namespace(globals)) {
         return 0;
     }
-    int none_graph_atom = 0;
-    for (int graph = 0; graph < 2; graph++) {
-        PyObject *set = PyDict_GetItemWithError(globals,
-            PyTuple_GET_ITEM(state->closed_names, graph ? 3 : 0));
-        if (set == NULL || !PyFrozenSet_CheckExact(set)
-            || PySet_GET_SIZE(set) > 64 || ((PySetObject *)set)->mask >= 128) {
-            return 0;
-        }
-        PySetObject *policy = (PySetObject *)set;
-        for (Py_ssize_t i = 0; i <= policy->mask; i++) {
-            setentry entry = policy->table[i];
-            if (entry.key == NULL || entry.hash == -1) {
-                continue;
-            }
-            if (Py_TYPE(entry.key) != &PyType_Type || entry.key == (PyObject *)kind
-                || (graph && entry.key == (PyObject *)Py_TYPE(state->datetime_api->TimeZone_UTC))) {
-                return 0;
-            }
-            none_graph_atom |= graph && entry.key == (PyObject *)Py_TYPE(Py_None);
-        }
-    }
-    return none_graph_atom;
+    PyObject *atoms = PyDict_GetItemWithError(globals, PyTuple_GET_ITEM(state->closed_names, 0));
+    PyObject *graph = PyDict_GetItemWithError(globals, PyTuple_GET_ITEM(state->closed_names, 3));
+    return exact_type_membership(atoms, kind, 64, 128) == 0
+        && exact_type_membership(graph, kind, 64, 128) == 0
+        && exact_type_membership(graph, Py_TYPE(state->datetime_api->TimeZone_UTC), 64, 128) == 0
+        && exact_type_membership(graph, Py_TYPE(Py_None), 64, 128) == 1;
 }
-
 
 /* Only a complete root sequence can return immutable temporal atoms without
  * recording each leaf in a Python memo. A later allocating child could change
  * policy; refusing and replaying an earlier temporal prefix would then change
- * its copy protocol. Validate all leaves after the sole output allocation and
- * before filling any slot. No allocation/callback follows that validation.
+ * its copy protocol. After the sole output allocation, validate each leaf
+ * before filling its slot. No allocation/callback occurs in this bounded loop;
+ * source retains every approved immutable prefix leaf if later refusal must
+ * discard the private output before the ordinary continuation starts.
  *
  * Bound the allocation-free scan/fill to the existing 65536-node work budget.
  * Larger sequences keep the ordinary walker and its interruption behavior;
@@ -427,8 +485,8 @@ clone_temporal_sequence(PyObject *source, PyObject *walk, ModuleState *state,
     for (Py_ssize_t i = 0; i < size; i++) {
         PyObject *item = tuple ? PyTuple_GET_ITEM(source, i) : PyList_GET_ITEM(source, i);
         kind = Py_TYPE(item);
-        if (!atom(item) && kind != api->DateType && kind != api->DateTimeType
-            && kind != api->TimeType) {
+        if (kind != api->DateType && kind != api->DateTimeType
+            && kind != api->TimeType && !atom(item)) {
             return 0;
         }
     }
@@ -437,19 +495,16 @@ clone_temporal_sequence(PyObject *source, PyObject *walk, ModuleState *state,
         return -1;
     }
     int flags = closed_temporal_policy(state, walk);
-    if (Py_SIZE(source) != size || Py_GetRecursionLimit() != recursion_limit) {
+    if (flags == 0 || Py_SIZE(source) != size || Py_GetRecursionLimit() != recursion_limit) {
         Py_DECREF(output);
         return 0;
     }
     for (Py_ssize_t i = 0; i < size; i++) {
         PyObject *item = tuple ? PyTuple_GET_ITEM(source, i) : PyList_GET_ITEM(source, i);
-        if (!atom(item) && !closed_temporal_atom(item, flags, api)) {
+        if (!closed_temporal_atom(item, flags, api) && !atom(item)) {
             Py_DECREF(output);
             return 0;
         }
-    }
-    for (Py_ssize_t i = 0; i < size; i++) {
-        PyObject *item = tuple ? PyTuple_GET_ITEM(source, i) : PyList_GET_ITEM(source, i);
         if (tuple) {
             PyTuple_SET_ITEM(output, i, Py_NewRef(item));
         } else {
@@ -889,25 +944,7 @@ temporal_value(PyObject *source, PyObject **result, CopyContext *context)
     if (zones == NULL) {
         return PyErr_Occurred() ? -1 : 0;
     }
-    if (!PyFrozenSet_CheckExact(zones) || PySet_GET_SIZE(zones) > 8) {
-        return 0;
-    }
-    PySetObject *policy = (PySetObject *)zones;
-    if (policy->mask >= 32) {
-        return 0;
-    }
-    int admitted_zone = 0;
-    for (Py_ssize_t i = 0; i <= policy->mask; i++) {
-        setentry entry = policy->table[i];
-        if (entry.key == NULL || entry.hash == -1) {
-            continue;
-        }
-        if (Py_TYPE(entry.key) != &PyType_Type) {
-            return 0;
-        }
-        admitted_zone |= entry.key == (PyObject *)Py_TYPE(zone);
-    }
-    if (!admitted_zone) {
+    if (exact_type_membership(zones, Py_TYPE(zone), 8, 32) != 1) {
         return 0;
     }
     PyObject *identity = PyLong_FromVoidPtr(source);
@@ -1206,6 +1243,108 @@ clone_child(PyObject *source, PyObject **result, unsigned int depth,
         : clone_closed_value(source, result, depth, context);
 }
 
+
+/* Python container loops test graph-atom membership before calling _walk.
+ * A foreign temporal policy must retain BOTH that parent test and the leaf's
+ * own test, even on a repeated leaf already present in the shared memo. */
+
+/* Inspect certificates without adding foreign namespace-key comparisons.
+ * Actual parent identifiers are still resolved through the ordinary dict API. */
+static PyObject *
+loop_certificate(PyObject *globals, PyObject *name, int ordinary)
+{
+    if (ordinary) {
+        return PyDict_GetItemWithError(globals, name);
+    }
+    Py_ssize_t position = 0;
+    PyObject *key, *value;
+    while (PyDict_Next(globals, &position, &key, &value)) {
+        if (PyUnicode_CheckExact(key)
+            && (key == name || PyUnicode_Compare(key, name) == 0)) {
+            return value;
+        }
+    }
+    return NULL;
+}
+
+static int
+clone_loop_value(PyObject *source, PyObject **result, unsigned int depth,
+                 CopyContext *context)
+{
+    if (context->canonical_graph && PyFunction_Check(context->walk)) {
+        PyDateTime_CAPI *api = context->module_state->datetime_api;
+        PyTypeObject *kind = Py_TYPE(source);
+        if (kind == api->DateTimeType || kind == api->TimeType || kind == api->DateType) {
+            PyObject *globals = PyFunction_GetGlobals(context->walk);
+            PyObject *names = context->module_state->temporal_names;
+            PyObject *graph_name = PyTuple_GET_ITEM(context->module_state->closed_names, 3);
+            PyObject *policy = NULL;
+            if (!context->temporal_loop_dynamic) {
+                int ordinary = ordinary_namespace(globals);
+                int membership = -1;
+                int changed_walk = 1;
+                if (ordinary) {
+                    policy = PyDict_GetItemWithError(globals, graph_name);
+                    membership = exact_type_membership(policy, kind, 64, 128);
+                    changed_walk = PyDict_GetItemWithError(globals,
+                        PyTuple_GET_ITEM(names, 9)) != context->walk
+                        || PyFunction_GetCode(context->walk) != context->loop_walk_code;
+                }
+                if (membership == 0 && !changed_walk) {
+                    return clone_value(source, result, depth, context);
+                }
+                /* Retain the entry code as Python's active parent frame does:
+                 * a preceding hook may change the function's current code. */
+                if (loop_certificate(globals, PyTuple_GET_ITEM(names, 0), ordinary)
+                        != context->walk
+                    || loop_certificate(globals, PyTuple_GET_ITEM(names, 1), ordinary)
+                        != context->loop_walk_code) {
+                    return clone_value(source, result, depth, context);
+                }
+                if (membership == 1) {
+                    *result = Py_NewRef(source);
+                    return 1;
+                }
+            }
+            if (policy == NULL) {
+                /* These are actual parent lookups; preserve their exceptions,
+                 * including foreign-key equality after earlier callbacks. */
+                policy = PyDict_GetItemWithError(globals, graph_name);
+            }
+            if (policy == NULL) {
+                if (!PyErr_Occurred()) {
+                    PyErr_SetString(PyExc_NameError, "name '_GRAPH_ATOMS' is not defined");
+                }
+                return -1;
+            }
+            context->temporal_graph = 0;
+            context->temporal_loop_dynamic = 1;
+            Py_INCREF(policy);
+            int contains = PySequence_Contains(policy, (PyObject *)kind);
+            Py_DECREF(policy);
+            if (contains < 0) {
+                return -1;
+            }
+            if (contains) {
+                *result = Py_NewRef(source);
+                return 1;
+            }
+            PyObject *walk = PyDict_GetItemWithError(globals, PyTuple_GET_ITEM(names, 9));
+            if (walk == NULL) {
+                if (!PyErr_Occurred()) {
+                    PyErr_SetString(PyExc_NameError, "name '_walk' is not defined");
+                }
+                return -1;
+            }
+            Py_INCREF(walk);
+            *result = PyObject_CallFunctionObjArgs(walk, source, context->memo, NULL);
+            Py_DECREF(walk);
+            return *result == NULL ? -1 : 1;
+        }
+    }
+    return clone_value(source, result, depth, context);
+}
+
 /* Copy a first repeated non-atomic run into private reserved slots. */
 static int
 clone_initial_run(PyObject *source, PyObject *output, Py_ssize_t *written,
@@ -1336,7 +1475,7 @@ clone_sequence_impl(PyObject *source, PyObject **result, unsigned int depth,
             copied = context->walk != NULL ? Py_NewRef(item) : item;
         } else {
             status = direct_graph
-                ? clone_value(item, &copied, depth - 1, context)
+                ? clone_loop_value(item, &copied, depth - 1, context)
                 : clone_closed_value(item, &copied, depth - 1, context);
             if (context->walk == NULL) {
                 Py_DECREF(item);
@@ -1442,7 +1581,7 @@ clone_dict_impl(PyObject *source, PyObject **result, unsigned int depth,
             copied_key = Py_NewRef(key);
         } else {
             status = direct_graph
-                ? clone_value(key, &copied_key, depth - 1, context)
+                ? clone_loop_value(key, &copied_key, depth - 1, context)
                 : clone_closed_value(key, &copied_key, depth - 1, context);
             if (status != 1) {
                 break;
@@ -1453,7 +1592,7 @@ clone_dict_impl(PyObject *source, PyObject **result, unsigned int depth,
             copied = Py_NewRef(value);
         } else {
             status = direct_graph
-                ? clone_value(value, &copied, depth - 1, context)
+                ? clone_loop_value(value, &copied, depth - 1, context)
                 : clone_closed_value(value, &copied, depth - 1, context);
         }
         if (status != 1) {
@@ -1555,7 +1694,7 @@ clone_set_direct(PyObject *source, PyObject **result, unsigned int depth,
         if (atom(item)) {
             copied = Py_NewRef(item);
         } else {
-            status = clone_value(item, &copied, depth - 1, context);
+            status = clone_loop_value(item, &copied, depth - 1, context);
         }
         if (status != 1) {
             break;
@@ -2466,23 +2605,28 @@ clone_direct_graph(PyObject *module, PyObject *source, PyTypeObject *type, PyObj
         Py_RETURN_NOTIMPLEMENTED;
     }
     ModuleState *state = PyModule_GetState(module);
+    PyObject *entry_walk_code = temporal && PyFunction_Check(walk)
+        ? Py_NewRef(PyFunction_GetCode(walk)) : NULL;
     PyObject *dict_name = Py_NewRef(state->dict_name);
     PyObject *update_name = Py_NewRef(state->update_name);
     PyObject *memo_identity = PyLong_FromVoidPtr(memo);
     if (memo_identity == NULL) {
         Py_DECREF(dict_name);
         Py_DECREF(update_name);
+        Py_XDECREF(entry_walk_code);
         return NULL;
     }
     if (type != NULL && !record_admissible(type)) {
         Py_DECREF(dict_name);
         Py_DECREF(update_name);
+        Py_XDECREF(entry_walk_code);
         Py_DECREF(memo_identity);
         Py_RETURN_NOTIMPLEMENTED;
     }
     if (Py_EnterRecursiveCall(" while entering a record graph")) {
         Py_DECREF(dict_name);
         Py_DECREF(update_name);
+        Py_XDECREF(entry_walk_code);
         Py_DECREF(memo_identity);
         if (PyErr_ExceptionMatches(PyExc_RecursionError)) {
             PyErr_Clear();
@@ -2527,6 +2671,9 @@ clone_direct_graph(PyObject *module, PyObject *source, PyTypeObject *type, PyObj
     context.memo = memo;
     context.memo_identity = memo_identity;
     context.direct_graph = 1;
+    context.canonical_graph = temporal;
+    context.loop_walk_code = entry_walk_code;
+    context.temporal_loop_dynamic = 0;
     context.temporal_graph = temporal && PyDict_Size(memo) == 0;
     context.refuse_cycles = 0;
     context.cycle_walk = NULL;
@@ -2555,6 +2702,7 @@ clone_direct_graph(PyObject *module, PyObject *source, PyTypeObject *type, PyObj
         Py_DECREF(context.recipes[i].handler);
         Py_DECREF(context.recipes[i].type);
     }
+    Py_XDECREF(entry_walk_code);
     return status == 1 ? result : NULL;
 }
 
