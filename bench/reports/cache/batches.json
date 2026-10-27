@@ -1,0 +1,96 @@
+{
+  "schema": 1,
+  "captured_at": "2026-10-27T21:03:21.388048+00:00",
+  "command": "python -m bench.profiles.cache_batches --entries 64 --rounds 9 --output PATH",
+  "rounds": 9,
+  "estimator": "median of paired wall samples; alternating execution order",
+  "environment": {
+    "python": "3.14.9 (main, Oct 21 2026, 17:47:42) [Clang 23.1.3 ]",
+    "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+    "machine": "arm64",
+    "sqlite": "3.53.1"
+  },
+  "source_sha256": {
+    "first_version": "de9162d4565f51fffd99115af8981d211ef099a8d2b4d449f4df37e94f213428",
+    "first_version_gzip": "4f27fe2d6759d68f91efb0c8c02e2453617bef58f755e230cbfb4597b91f90a8",
+    "candidate": "fad9f0ba829fc32a8d387d104c8ae806106e6e1a34b21f90a8b729bfee0e5956",
+    "candidate_locking": "f459f15155e1010a62996d2bff438edf005841e9266f970a43780004136a9afa",
+    "shared_jsonx": "3c300cb8af8d9541fe620ef76c6512f3e5e651b62956e112a7e581587ed2f4cf",
+    "proof": "b4d9056def23a26d8e314ced7b39d9864b6cbb2e6dd23edbe205e1cee8d44682"
+  },
+  "fixture": {
+    "entries": 64,
+    "value": "synthetic completed-evaluation summary with 32 integer counts",
+    "json_bytes": 13174,
+    "expected_sha256": "ad826190bd1f297c47b8ca31345b6b2e692e56c3b675e3f30fef73c3fbb85184"
+  },
+  "reads": {
+    "first_version": {
+      "median_ns": 24896542,
+      "samples_ns": [
+        27175042,
+        24580667,
+        25604708,
+        23953208,
+        22144333,
+        23661250,
+        24896542,
+        26408958,
+        25512125
+      ]
+    },
+    "current_batch": {
+      "median_ns": 506667,
+      "samples_ns": [
+        552542,
+        506667,
+        439167,
+        754875,
+        816959,
+        444000,
+        460708,
+        406917,
+        586125
+      ]
+    },
+    "speedup": 49.13787951455295
+  },
+  "writes": {
+    "first_version": {
+      "median_ns": 38728916,
+      "samples_ns": [
+        38728916,
+        45911625,
+        53183750,
+        46176375,
+        41968667,
+        36007541,
+        36349584,
+        35471791,
+        33403584
+      ]
+    },
+    "current_batch": {
+      "median_ns": 1879417,
+      "samples_ns": [
+        1877833,
+        2498750,
+        1689500,
+        2316292,
+        1879417,
+        2001125,
+        1730833,
+        1682084,
+        2026625
+      ]
+    },
+    "speedup": 20.606877558306646
+  },
+  "verified": {
+    "independent_expected_values": true,
+    "persisted_state_after_every_pair": true,
+    "separate_baseline_module_globals": true,
+    "authenticated_first_version_source": true
+  },
+  "limits": "One host and synthetic values; constructors, fixture setup, and state checks are outside timing. Every read decodes all values. Every write encodes all values and commits with SQLite full synchronization. The first version uses one public get/set call per key; the candidate uses one get_many/set_many call per batch. Current serde/fs code is shared by both versions. Speedups are workload-specific."
+}

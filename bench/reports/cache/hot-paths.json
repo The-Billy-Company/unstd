@@ -1,0 +1,748 @@
+{
+  "schema_version": 1,
+  "captured_date": "2026-10-27",
+  "publication_scope": "Sanitized numeric summary of owner-run private caller proofs. Private sources, source paths, fixture bodies, and complete raw owner receipts are withheld and retained by the owner. This repository cannot independently reproduce that caller; public cache profiles reproduce separate package-operation contracts only.",
+  "method": {
+    "workflow": "deterministic training-data preprocessing",
+    "estimator": "median of nine interleaved paired wall-clock rounds; ratio of within-capture medians",
+    "included": [
+      "fresh source-provenance validation and row ingestion",
+      "two native marker encodes",
+      "new preprocessing callable and full recipe/cache admission",
+      "native dataset construction, map and filter",
+      "response-only label masking and production sequence packing"
+    ],
+    "excluded": [
+      "common native tokenizer fixture construction",
+      "proof-seam compilation",
+      "separate untimed native/render instrumentation",
+      "GPU/model initialization and training",
+      "network/model downloads"
+    ],
+    "inputs": {
+      "synthetic_rows": 1024,
+      "maximum_tokens_per_row": 512,
+      "native_batch_rows": 512,
+      "token_ids": 487166,
+      "trainable_labels": 163840,
+      "packed_rows": 1024
+    },
+    "libraries": {
+      "transformers": "5.17.0",
+      "tokenizers": "0.23.3",
+      "datasets": "5.0.1",
+      "pyarrow": "24.0.0",
+      "polars": "2.0.0"
+    },
+    "thread_environment": {
+      "TOKENIZERS_PARALLELISM": null,
+      "RAYON_NUM_THREADS": null
+    },
+    "checks": {
+      "all_token_ids_labels_and_positions_equal": true,
+      "source_hashes_stable_during_capture": true,
+      "warm_row_renders": 0,
+      "warm_row_encodes": 0,
+      "common_marker_encodes": 2,
+      "cold_native_row_batches": [
+        512,
+        512
+      ]
+    }
+  },
+  "platforms": {
+    "macos_arm64": {
+      "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+      "python": "3.14.9",
+      "scope": "Native macOS arm64 desktop host",
+      "median_ms": {
+        "scalar": 652.361541,
+        "batch_uncached": 474.5615,
+        "cold": 548.615459,
+        "warm": 386.580042
+      },
+      "speedup_vs_scalar": {
+        "scalar": 1.0,
+        "batch_uncached": 1.3746617477397554,
+        "cold": 1.1891052836701053,
+        "warm": 1.687519970314453
+      },
+      "raw_wall_ms": {
+        "scalar": [
+          942.387875,
+          691.810125,
+          805.226958,
+          765.778083,
+          652.361541,
+          570.631417,
+          570.228292,
+          599.9975,
+          552.092334
+        ],
+        "batch_uncached": [
+          637.537375,
+          415.28675,
+          615.50275,
+          630.188791,
+          474.5615,
+          418.802459,
+          469.226292,
+          535.8195,
+          454.673584
+        ],
+        "cold": [
+          548.615459,
+          464.345083,
+          671.896792,
+          794.090084,
+          528.032125,
+          482.739375,
+          512.27275,
+          767.002334,
+          591.144208
+        ],
+        "warm": [
+          385.17025,
+          362.892625,
+          575.5185,
+          497.022708,
+          383.877709,
+          369.854833,
+          436.192083,
+          393.593583,
+          386.580042
+        ]
+      }
+    },
+    "linux_arm64": {
+      "platform": "Linux-7.0.14-linuxkit-aarch64-with-glibc2.41",
+      "python": "3.14.8",
+      "scope": "Native Linux aarch64 kernel and ELF binaries in Docker Desktop VM on a macOS arm64 host, container-owned overlayfs; not bare-metal or x86_64 certification",
+      "filesystem": "container-owned overlayfs",
+      "container_limits": {
+        "cpus": 4,
+        "memory_gib": 4,
+        "pids": 128
+      },
+      "cold_interpretation": "neutral within host variation; no reliable Linux cold speedup claim",
+      "median_ms": {
+        "scalar": 645.025709,
+        "batch_uncached": 514.76275,
+        "cold": 633.384542,
+        "warm": 413.562584
+      },
+      "speedup_vs_scalar": {
+        "scalar": 1.0,
+        "batch_uncached": 1.2530543614509793,
+        "cold": 1.018379303926871,
+        "warm": 1.5596810106980084
+      },
+      "raw_wall_ms": {
+        "scalar": [
+          582.653083,
+          664.463001,
+          620.116792,
+          596.110375,
+          638.148459,
+          645.025709,
+          722.621584,
+          686.493959,
+          935.811667
+        ],
+        "batch_uncached": [
+          517.294792,
+          514.76275,
+          489.936875,
+          492.1095,
+          493.529626,
+          493.24625,
+          649.292541,
+          559.77775,
+          545.35025
+        ],
+        "cold": [
+          632.272083,
+          633.384542,
+          622.374001,
+          610.53475,
+          593.853958,
+          633.937584,
+          751.511375,
+          700.851376,
+          687.360459
+        ],
+        "warm": [
+          410.099584,
+          432.657708,
+          404.205417,
+          413.725375,
+          413.562584,
+          408.473417,
+          534.938126,
+          582.595459,
+          409.260833
+        ]
+      }
+    }
+  },
+  "history": {
+    "before_explicit_dataset_fingerprints": {
+      "reason_retained": "The admitted native batches still paid automatic live SDK/cache object-graph fingerprinting overhead. These complete-workflow cold losses motivated the actual caller API change; rows and outputs continued to be validated.",
+      "macos_arm64": {
+        "median_ms": {
+          "scalar": 580.262625,
+          "batch_uncached": 551.1635,
+          "cold": 641.843959,
+          "warm": 415.673375
+        },
+        "speedup_vs_scalar": {
+          "scalar": 1.0,
+          "batch_uncached": 1.052795812857709,
+          "cold": 0.9040555992831272,
+          "warm": 1.3959581245731698
+        },
+        "raw_wall_ms": {
+          "scalar": [
+            780.285958,
+            635.225,
+            561.936708,
+            560.425,
+            660.17575,
+            511.271292,
+            504.977792,
+            580.262625,
+            774.643375
+          ],
+          "batch_uncached": [
+            602.084375,
+            619.87225,
+            457.290792,
+            551.1635,
+            615.416,
+            493.191584,
+            439.122125,
+            473.986083,
+            579.90175
+          ],
+          "cold": [
+            693.596791,
+            695.257625,
+            555.839791,
+            591.78275,
+            641.843959,
+            543.984,
+            561.5845,
+            660.932958,
+            660.274375
+          ],
+          "warm": [
+            482.29275,
+            418.46375,
+            528.934083,
+            387.394208,
+            415.673375,
+            338.263791,
+            399.270792,
+            440.739125,
+            366.92025
+          ]
+        }
+      },
+      "linux_arm64": {
+        "median_ms": {
+          "scalar": 757.532459,
+          "batch_uncached": 604.954708,
+          "cold": 852.724209,
+          "warm": 522.805459
+        },
+        "speedup_vs_scalar": {
+          "scalar": 1.0,
+          "batch_uncached": 1.252213511164211,
+          "cold": 0.8883674827156222,
+          "warm": 1.4489758015323249
+        },
+        "raw_wall_ms": {
+          "scalar": [
+            637.696208,
+            1012.202084,
+            668.542792,
+            722.299458,
+            704.858167,
+            904.424459,
+            757.532459,
+            961.03075,
+            1008.702584
+          ],
+          "batch_uncached": [
+            533.713,
+            555.424042,
+            572.253042,
+            558.091333,
+            605.749459,
+            696.614875,
+            604.954708,
+            836.497084,
+            854.499542
+          ],
+          "cold": [
+            845.210334,
+            762.035625,
+            705.438792,
+            668.945292,
+            852.724209,
+            945.697834,
+            979.762708,
+            5435.252544,
+            1185.128917
+          ],
+          "warm": [
+            522.696875,
+            449.053501,
+            454.364083,
+            441.945167,
+            562.327083,
+            522.805459,
+            653.251,
+            598.397834,
+            685.354417
+          ]
+        }
+      }
+    },
+    "narrow_final_128_row_callback": {
+      "scope": "Excludes ingestion, constructor, native dataset conversion/filter/packing; diagnostic only, not the production 512-row full workflow",
+      "macos_median_ms": {
+        "scalar": 25.199459,
+        "batch_uncached": 14.802667,
+        "cold": 24.664375,
+        "warm": 4.7975
+      },
+      "linux_median_ms": {
+        "scalar": 21.499042,
+        "batch_uncached": 15.151,
+        "cold": 33.220667,
+        "warm": 4.202583
+      },
+      "cold_limit": "The Linux cold callback remains slower than the old scalar callback; no universal cold improvement is claimed."
+    }
+  },
+  "related_private_schema_admission": {
+    "attribution": "Separate caller-owned bounded in-memory schema admission, not a persistent Cache or codec speedup. Every argument is still validated and repairs/verdicts are not cached.",
+    "macos_arm64": {
+      "unit": "microseconds per complete validation call",
+      "rounds": 9,
+      "cases": {
+        "required16": {
+          "before_us": 2642.36125,
+          "after_us": 94.72,
+          "speedup": 27.8965503589527,
+          "samples_ns": {
+            "before": [
+              2390006.25,
+              2504137.5,
+              2642361.25,
+              2583168.75,
+              2582035.0,
+              2777637.92,
+              2705439.17,
+              2717220.0,
+              3474755.0
+            ],
+            "after": [
+              88115.0,
+              86570.0,
+              100410.41,
+              94720.0,
+              86444.58,
+              92385.84,
+              95977.08,
+              98620.42,
+              100243.75
+            ]
+          }
+        },
+        "nested_refs": {
+          "before_us": 1496.395,
+          "after_us": 142.75209,
+          "speedup": 10.482473496535148,
+          "samples_ns": {
+            "before": [
+              1314128.75,
+              1354026.66,
+              1410735.84,
+              1338609.17,
+              1931468.75,
+              1515335.41,
+              1548355.83,
+              1496395.0,
+              1507768.75
+            ],
+            "after": [
+              136016.67,
+              114520.0,
+              136623.75,
+              132572.92,
+              148503.75,
+              144660.83,
+              155063.34,
+              142752.09,
+              149374.17
+            ]
+          }
+        },
+        "repair": {
+          "before_us": 608.50875,
+          "after_us": 46.84333,
+          "speedup": 12.990296590784643,
+          "samples_ns": {
+            "before": [
+              656465.0,
+              608508.75,
+              630240.42,
+              587657.09,
+              611874.58,
+              587450.41,
+              577455.42,
+              610463.75,
+              595869.58
+            ],
+            "after": [
+              46843.33,
+              49971.66,
+              48877.08,
+              53574.58,
+              38508.75,
+              44998.75,
+              49126.66,
+              41225.41,
+              41285.0
+            ]
+          }
+        },
+        "invalid_args": {
+          "before_us": 404.03416999999996,
+          "after_us": 13.79667,
+          "speedup": 29.284904980694616,
+          "samples_ns": {
+            "before": [
+              486071.25,
+              417374.59,
+              402314.17,
+              397424.59,
+              397920.41,
+              412293.33,
+              399422.08,
+              418777.5,
+              404034.17
+            ],
+            "after": [
+              12925.0,
+              14514.58,
+              13121.25,
+              12690.41,
+              13796.67,
+              13476.66,
+              14890.84,
+              15384.59,
+              15143.33
+            ]
+          }
+        }
+      },
+      "unique_cold_admission": {
+        "before_us": 2553.310606060606,
+        "after_us": 2590.8560606060605,
+        "ratio_after_over_before": 1.0147046170005074,
+        "samples_ns": {
+          "before": [
+            2553310.606060606,
+            2519114.878787879,
+            2421779.0303030303,
+            2583275.272727273,
+            2462455.787878788,
+            3018589.6363636362,
+            2620691.909090909,
+            2526595.9393939395,
+            2572815.6363636362
+          ],
+          "after": [
+            2815194.4545454546,
+            2541915.4242424243,
+            2590856.0606060605,
+            2480606.0606060605,
+            2518332.0606060605,
+            4869454.545454546,
+            2731233.606060606,
+            2712542.909090909,
+            2476560.606060606
+          ]
+        }
+      }
+    },
+    "linux_arm64": {
+      "unit": "microseconds per complete validation call",
+      "rounds": 9,
+      "cases": {
+        "required16": {
+          "before_us": 2606.67751,
+          "after_us": 100.33209,
+          "speedup": 25.98049646927518,
+          "samples_ns": {
+            "before": [
+              3074326.66,
+              2520994.17,
+              2606677.51,
+              2547889.17,
+              2571796.67,
+              2556727.5,
+              2857339.58,
+              2693096.25,
+              2979490.42
+            ],
+            "after": [
+              101138.75,
+              98612.08,
+              97075.0,
+              96122.09,
+              101915.42,
+              101685.83,
+              100332.09,
+              98918.75,
+              102639.17
+            ]
+          }
+        },
+        "nested_refs": {
+          "before_us": 1407.85791,
+          "after_us": 149.11876,
+          "speedup": 9.441185736791265,
+          "samples_ns": {
+            "before": [
+              1405119.17,
+              1403144.59,
+              1477347.92,
+              1407857.91,
+              1429379.58,
+              1395520.0,
+              1392569.58,
+              1485319.16,
+              1420071.25
+            ],
+            "after": [
+              147098.75,
+              149118.76,
+              154343.34,
+              165372.5,
+              139446.67,
+              136830.83,
+              163820.84,
+              144147.5,
+              152454.17
+            ]
+          }
+        },
+        "repair": {
+          "before_us": 639.33625,
+          "after_us": 46.80875,
+          "speedup": 13.65847731460464,
+          "samples_ns": {
+            "before": [
+              740082.91,
+              614645.42,
+              661235.42,
+              639336.25,
+              646161.25,
+              599572.08,
+              586216.67,
+              786778.33,
+              610241.67
+            ],
+            "after": [
+              59749.58,
+              54292.91,
+              46808.75,
+              41299.59,
+              56278.33,
+              48097.5,
+              43395.84,
+              40331.67,
+              42274.58
+            ]
+          }
+        },
+        "invalid_args": {
+          "before_us": 438.9675,
+          "after_us": 15.26125,
+          "speedup": 28.763535097059545,
+          "samples_ns": {
+            "before": [
+              385116.66,
+              409810.42,
+              415127.08,
+              450298.33,
+              453615.42,
+              479937.09,
+              438967.5,
+              453864.16,
+              426556.66
+            ],
+            "after": [
+              14399.17,
+              14120.0,
+              18649.17,
+              17600.0,
+              15261.25,
+              14204.17,
+              16890.42,
+              16350.41,
+              14887.5
+            ]
+          }
+        }
+      },
+      "unique_cold_admission": {
+        "before_us": 2675.9343636363637,
+        "after_us": 2749.935606060606,
+        "ratio_after_over_before": 1.0276543563361848,
+        "samples_ns": {
+          "before": [
+            2668146.4545454546,
+            2567417.909090909,
+            2816017.696969697,
+            2587279.0303030303,
+            2584757.5757575757,
+            2675934.3636363638,
+            2779714.6666666665,
+            2882726.0,
+            2834300.515151515
+          ],
+          "after": [
+            2748542.9393939395,
+            2784202.0,
+            2749935.606060606,
+            2715368.696969697,
+            2653560.606060606,
+            2831539.1515151514,
+            2727886.393939394,
+            3099705.787878788,
+            2888820.696969697
+          ]
+        }
+      }
+    }
+  },
+  "controlled_linux_syscalls": {
+    "operation": "100 committed JSON replacements",
+    "control": "Untimed import/seed warmup, then independent 0-versus-100 replacement processes for each installed wheel; subtract startup/constructor/seed counts.",
+    "filesystem": "container-owned Linux overlayfs inside Docker Desktop VM",
+    "counts": {
+      "newfstatat": {
+        "before": 2700,
+        "after": 1100
+      },
+      "openat": {
+        "before": 500,
+        "after": 500
+      },
+      "fdatasync": {
+        "before": 500,
+        "after": 500
+      },
+      "flock": {
+        "before": 200,
+        "after": 200
+      },
+      "mkdirat": {
+        "before": 100,
+        "after": 100
+      },
+      "unlinkat": {
+        "before": 200,
+        "after": 200
+      },
+      "total": {
+        "before": 4200,
+        "after": 2600
+      }
+    },
+    "total_means": "selected traced calls only",
+    "newfstatat_reduction_per_replacement": 16,
+    "elapsed_time_claim": false,
+    "warm_read_syscall_probe_retained": false,
+    "before_wheel_sha256": "e41ae67afcd2dcd4d5c90b708bd986bace59aeffc2547ee12650ac2531898f46",
+    "after_wheel_sha256": "67d002fc907a4b9e991a9b28fef0c6daddf4daddfc1b2b3431833a0d362178f9"
+  },
+  "validation": {
+    "macos_cache_tests": {
+      "passed": 144
+    },
+    "benchmark_coverage_tests": {
+      "passed": 38
+    },
+    "combined_cache_and_coverage_tests": {
+      "passed": 182
+    },
+    "linux_installed_native_cache_tests": {
+      "passed": 144
+    },
+    "linux_installed_portable_no_extras_no_native_cache_tests": {
+      "passed": 144
+    },
+    "private_native_caller_cohort": {
+      "macos_passed": 77,
+      "linux_passed": 77,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "pristine_only_unstd_wheel_batch_probe_passed": true,
+    "static_checks": {
+      "strict_mypy_cache_and_driver_files": 6,
+      "windows_targeted_mypy_files": 2,
+      "private_caller_pyright_production_files": 3,
+      "private_caller_pyright_test_files": 2,
+      "ruff_cache_files": 17,
+      "ruff_private_caller_files": 6,
+      "all_scoped_checks_clean": true,
+      "scoped_diff_check_clean": true
+    },
+    "repository_wide_clean_claim": false,
+    "broader_owner_checks": "Broader shared-checkout validation was inconclusive; scoped passes do not certify the entire downstream repository.",
+    "cache_workload_correctness_checks": 12
+  },
+  "source_sha256": {
+    "cache_current": "3ff4aecc4cc8fd68807de62fcec1125cb58e20cb4e7b0a0e92241dfcad8655bd",
+    "locking_current": "eab1a7949bcde294e81834e34fa4947b6190099652b7aaf6092b2044c6ade19c",
+    "cache_before_lock_identity_preparation": "fad9f0ba829fc32a8d387d104c8ae806106e6e1a34b21f90a8b729bfee0e5956",
+    "locking_before_lock_identity_preparation": "f459f15155e1010a62996d2bff438edf005841e9266f970a43780004136a9afa",
+    "private_original_workflow": "9581113b3653b2ca69f7c8855fa2c79ddc9d31ff16aa73e867bf874bc3371ff9",
+    "private_current_workflow": "1ef500e21176db28a7347c7acefe3b5e017edca4c6afe43298fc08f07ab8f3a7",
+    "private_preprocessor": "50c401d36a2fda56b3f97ab13b3e6eecb3f868f4cbc5295b4874e3d7766dd54f",
+    "private_renderer": "0b023ed2cb28d7390d20ad22db8679b949182527371a4259d066944cabd47c27",
+    "private_native_checks": "735a56dc5243f4f6739bc657cdc9dd4bebc44cb89fdbd55d282f5d0b84570757",
+    "private_workflow_proof": "a76a9ce6bd49c63e42f1aab5076997ac9a555661161cfd1bae3497235b225bc8",
+    "private_schema_before": "ca77e188ca163dcd5a9cdb50058d2436fafb434645bd10655dadc3996f6d978a",
+    "private_schema_after": "2c69f6fe98fcd9f5443f80242bccfe30cb1e00a7bc33d0ae103389b5c22ed6c0"
+  },
+  "linux_installed_wheel": {
+    "file": "unstd-4.0.2-cp314-cp314-linux_aarch64.whl",
+    "sha256": "67d002fc907a4b9e991a9b28fef0c6daddf4daddfc1b2b3431833a0d362178f9"
+  },
+  "binary_frame_cross_platform_check": {
+    "bytes": 88,
+    "sha256": "d98449295031f2c9a2f14356ce4846da9edb633186b93db11135fe0e290e882f",
+    "linux_encode_and_roundtrip": true,
+    "macos_exact_decode_and_byte_identical_reencode": true,
+    "scope": "One CPU numeric frame; not arbitrary database/model portability"
+  },
+  "limits": [
+    "Synthetic native fast-tokenizer input, not all models or production data distributions",
+    "The timing corpus retains all rows and does not combine multiple examples into one packed row; dedicated tests cover other shapes",
+    "Shared-host wall samples vary; do not compare raw latencies between hosts or separate captures",
+    "Cold persistence includes FULL-synchronized SQLite publication and read validation; tiny or single-use producers may lose",
+    "The Linux result is native arm64 inside a Docker Desktop Linux VM, not bare-metal, x86_64, or Windows certification",
+    "Typed persistence requires the new codec capability; older installations retain an uncached compatible path",
+    "Entry count bounds live rows, not physical database bytes; batch frame bounds exclude other SDK/Python memory",
+    "No GPU throughput, model quality, training-duration, network, or portable disk-latency guarantee"
+  ]
+}

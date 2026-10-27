@@ -59,6 +59,7 @@ responsibility without an extra helper package.
 | Package | Public interface | Supporting concerns |
 | --- | --- | --- |
 | `audio` | `wavx.py` | `pcm.py` owns sample conversion and frame validation. |
+| `cache` | Package class `Cache` | Short SQLite WAL transactions own persistence, consistent batch snapshots, expiry and FIFO retention; `locking.py` prepares canonical identities once and owns bounded key locks/fork cleanup; `serde.jsonx` owns default JSON encoding and structural codecs admit typed artifacts. |
 | `clone` | Package exports, `structural.py` | Graph walking and optional native cloning. |
 | `compress` | `gzipx.py`, `zlibx.py`, original codec/archive ports | `engines/` owns provider admission, gzip reading, flush validation and import identity; `libarchive/` owns its binding and type surface. |
 | `containers` | Lazy package exports, `persistent.py`, `sorted.py` | `ordering.py` owns compatible accelerated collection classes. |

@@ -1,0 +1,646 @@
+{
+  "schema": 1,
+  "captured_at": "2026-10-27T21:03:50.210099+00:00",
+  "command": "python -m bench.profiles.cache_concurrency --workers 8 --rounds 3 --iterations 300000 --output PATH",
+  "environment": {
+    "python": "3.14.9 (main, Oct 21 2026, 17:47:42) [Clang 23.1.3 ]",
+    "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+    "machine": "arm64",
+    "cpu_count": 18
+  },
+  "source_sha256": {
+    "before": "de9162d4565f51fffd99115af8981d211ef099a8d2b4d449f4df37e94f213428",
+    "after": "fad9f0ba829fc32a8d387d104c8ae806106e6e1a34b21f90a8b729bfee0e5956",
+    "locking": "f459f15155e1010a62996d2bff438edf005841e9266f970a43780004136a9afa",
+    "proof": "5cbc128554b07e4a6c229bd6bf22381313fd4c20e19e7d7b90a0a14084fe2372"
+  },
+  "workers": 8,
+  "iterations_per_producer": 300000,
+  "before_median_seconds": 0.30440108399989185,
+  "after_median_seconds": 0.06695741600015026,
+  "median_speedup": 4.546189237637377,
+  "measurements": {
+    "before": [
+      {
+        "wall_seconds": 0.30440108399989185,
+        "peak_producers": 1,
+        "workers": [
+          {
+            "pid": 76698,
+            "calls": 1,
+            "interval_ns": [
+              3358412671666,
+              3358435073000
+            ],
+            "result": {
+              "key": "job-0",
+              "digest": "576ee24c56e3d272e40c76ec026bb0d18e7c4e0ae4025ff36bc4c49c1796034f"
+            }
+          },
+          {
+            "pid": 76699,
+            "calls": 1,
+            "interval_ns": [
+              3358595042125,
+              3358617121500
+            ],
+            "result": {
+              "key": "job-1",
+              "digest": "b3a1eea160a67917c926dad5bf842626abf0a62673d94b91484a127750dc6eaa"
+            }
+          },
+          {
+            "pid": 76700,
+            "calls": 1,
+            "interval_ns": [
+              3358388792375,
+              3358411388166
+            ],
+            "result": {
+              "key": "job-2",
+              "digest": "e22254409f6c0ccff7e61a73b8642465bed3ebc5dc0e19ccccbd160be6c2541f"
+            }
+          },
+          {
+            "pid": 76701,
+            "calls": 1,
+            "interval_ns": [
+              3358543426666,
+              3358564537416
+            ],
+            "result": {
+              "key": "job-3",
+              "digest": "cd8a5a8938451962dc61e3bbf2a28b6d9bb1f5816bf1fba6c9241c9db79cdaa1"
+            }
+          },
+          {
+            "pid": 76702,
+            "calls": 1,
+            "interval_ns": [
+              3358513638000,
+              3358534605625
+            ],
+            "result": {
+              "key": "job-4",
+              "digest": "d02d48eb9985e16395a9321f57837722ca815f731af6189477546dac3c41e1ff"
+            }
+          },
+          {
+            "pid": 76703,
+            "calls": 1,
+            "interval_ns": [
+              3358451292666,
+              3358473565333
+            ],
+            "result": {
+              "key": "job-5",
+              "digest": "023c68b29665d6b89f8f412458051c69ddecd8c51dbd5b7b69a8ecb5e1e7b671"
+            }
+          },
+          {
+            "pid": 76704,
+            "calls": 1,
+            "interval_ns": [
+              3358485050625,
+              3358506983208
+            ],
+            "result": {
+              "key": "job-6",
+              "digest": "fec78fe4ddec6317847bb2f615105a91a32a978b3a9ceae8669d385b1954535f"
+            }
+          },
+          {
+            "pid": 76705,
+            "calls": 1,
+            "interval_ns": [
+              3358645709875,
+              3358668305916
+            ],
+            "result": {
+              "key": "job-7",
+              "digest": "85730df13bae136ea2480bf89f9cb0551caf0249cabd1d1d8f316f7749112d57"
+            }
+          }
+        ]
+      },
+      {
+        "wall_seconds": 0.4134588749998329,
+        "peak_producers": 1,
+        "workers": [
+          {
+            "pid": 76739,
+            "calls": 1,
+            "interval_ns": [
+              3360309763500,
+              3360333691208
+            ],
+            "result": {
+              "key": "job-0",
+              "digest": "576ee24c56e3d272e40c76ec026bb0d18e7c4e0ae4025ff36bc4c49c1796034f"
+            }
+          },
+          {
+            "pid": 76740,
+            "calls": 1,
+            "interval_ns": [
+              3360195667166,
+              3360221507583
+            ],
+            "result": {
+              "key": "job-1",
+              "digest": "b3a1eea160a67917c926dad5bf842626abf0a62673d94b91484a127750dc6eaa"
+            }
+          },
+          {
+            "pid": 76741,
+            "calls": 1,
+            "interval_ns": [
+              3360095560083,
+              3360123624416
+            ],
+            "result": {
+              "key": "job-2",
+              "digest": "e22254409f6c0ccff7e61a73b8642465bed3ebc5dc0e19ccccbd160be6c2541f"
+            }
+          },
+          {
+            "pid": 76742,
+            "calls": 1,
+            "interval_ns": [
+              3359978863208,
+              3360007502333
+            ],
+            "result": {
+              "key": "job-3",
+              "digest": "cd8a5a8938451962dc61e3bbf2a28b6d9bb1f5816bf1fba6c9241c9db79cdaa1"
+            }
+          },
+          {
+            "pid": 76743,
+            "calls": 1,
+            "interval_ns": [
+              3360029580833,
+              3360059112041
+            ],
+            "result": {
+              "key": "job-4",
+              "digest": "d02d48eb9985e16395a9321f57837722ca815f731af6189477546dac3c41e1ff"
+            }
+          },
+          {
+            "pid": 76744,
+            "calls": 1,
+            "interval_ns": [
+              3359940474000,
+              3359968159708
+            ],
+            "result": {
+              "key": "job-5",
+              "digest": "023c68b29665d6b89f8f412458051c69ddecd8c51dbd5b7b69a8ecb5e1e7b671"
+            }
+          },
+          {
+            "pid": 76745,
+            "calls": 1,
+            "interval_ns": [
+              3360062512291,
+              3360090577333
+            ],
+            "result": {
+              "key": "job-6",
+              "digest": "fec78fe4ddec6317847bb2f615105a91a32a978b3a9ceae8669d385b1954535f"
+            }
+          },
+          {
+            "pid": 76746,
+            "calls": 1,
+            "interval_ns": [
+              3360138569958,
+              3360166986291
+            ],
+            "result": {
+              "key": "job-7",
+              "digest": "85730df13bae136ea2480bf89f9cb0551caf0249cabd1d1d8f316f7749112d57"
+            }
+          }
+        ]
+      },
+      {
+        "wall_seconds": 0.29443674999993164,
+        "peak_producers": 1,
+        "workers": [
+          {
+            "pid": 76751,
+            "calls": 1,
+            "interval_ns": [
+              3360938729958,
+              3360960874125
+            ],
+            "result": {
+              "key": "job-0",
+              "digest": "576ee24c56e3d272e40c76ec026bb0d18e7c4e0ae4025ff36bc4c49c1796034f"
+            }
+          },
+          {
+            "pid": 76752,
+            "calls": 1,
+            "interval_ns": [
+              3360751117458,
+              3360773522041
+            ],
+            "result": {
+              "key": "job-1",
+              "digest": "b3a1eea160a67917c926dad5bf842626abf0a62673d94b91484a127750dc6eaa"
+            }
+          },
+          {
+            "pid": 76753,
+            "calls": 1,
+            "interval_ns": [
+              3360775628916,
+              3360797745791
+            ],
+            "result": {
+              "key": "job-2",
+              "digest": "e22254409f6c0ccff7e61a73b8642465bed3ebc5dc0e19ccccbd160be6c2541f"
+            }
+          },
+          {
+            "pid": 76754,
+            "calls": 1,
+            "interval_ns": [
+              3360725484000,
+              3360749149541
+            ],
+            "result": {
+              "key": "job-3",
+              "digest": "cd8a5a8938451962dc61e3bbf2a28b6d9bb1f5816bf1fba6c9241c9db79cdaa1"
+            }
+          },
+          {
+            "pid": 76755,
+            "calls": 1,
+            "interval_ns": [
+              3360886724041,
+              3360910216541
+            ],
+            "result": {
+              "key": "job-5",
+              "digest": "023c68b29665d6b89f8f412458051c69ddecd8c51dbd5b7b69a8ecb5e1e7b671"
+            }
+          },
+          {
+            "pid": 76756,
+            "calls": 1,
+            "interval_ns": [
+              3360686896916,
+              3360710919791
+            ],
+            "result": {
+              "key": "job-6",
+              "digest": "fec78fe4ddec6317847bb2f615105a91a32a978b3a9ceae8669d385b1954535f"
+            }
+          },
+          {
+            "pid": 76757,
+            "calls": 1,
+            "interval_ns": [
+              3360835619583,
+              3360858341375
+            ],
+            "result": {
+              "key": "job-7",
+              "digest": "85730df13bae136ea2480bf89f9cb0551caf0249cabd1d1d8f316f7749112d57"
+            }
+          },
+          {
+            "pid": 76758,
+            "calls": 1,
+            "interval_ns": [
+              3360803707625,
+              3360825809375
+            ],
+            "result": {
+              "key": "job-8",
+              "digest": "620a3077b175b96796fa89dc57650573abc4290bbc28fb24e5ad355548678876"
+            }
+          }
+        ]
+      }
+    ],
+    "after": [
+      {
+        "wall_seconds": 0.06673733299976448,
+        "peak_producers": 8,
+        "workers": [
+          {
+            "pid": 76708,
+            "calls": 1,
+            "interval_ns": [
+              3359040189958,
+              3359065586750
+            ],
+            "result": {
+              "key": "job-0",
+              "digest": "576ee24c56e3d272e40c76ec026bb0d18e7c4e0ae4025ff36bc4c49c1796034f"
+            }
+          },
+          {
+            "pid": 76709,
+            "calls": 1,
+            "interval_ns": [
+              3359034624458,
+              3359059730208
+            ],
+            "result": {
+              "key": "job-1",
+              "digest": "b3a1eea160a67917c926dad5bf842626abf0a62673d94b91484a127750dc6eaa"
+            }
+          },
+          {
+            "pid": 76710,
+            "calls": 1,
+            "interval_ns": [
+              3359031142458,
+              3359057004291
+            ],
+            "result": {
+              "key": "job-2",
+              "digest": "e22254409f6c0ccff7e61a73b8642465bed3ebc5dc0e19ccccbd160be6c2541f"
+            }
+          },
+          {
+            "pid": 76711,
+            "calls": 1,
+            "interval_ns": [
+              3359034688916,
+              3359060475583
+            ],
+            "result": {
+              "key": "job-3",
+              "digest": "cd8a5a8938451962dc61e3bbf2a28b6d9bb1f5816bf1fba6c9241c9db79cdaa1"
+            }
+          },
+          {
+            "pid": 76712,
+            "calls": 1,
+            "interval_ns": [
+              3359034638958,
+              3359057749833
+            ],
+            "result": {
+              "key": "job-4",
+              "digest": "d02d48eb9985e16395a9321f57837722ca815f731af6189477546dac3c41e1ff"
+            }
+          },
+          {
+            "pid": 76713,
+            "calls": 1,
+            "interval_ns": [
+              3359039738708,
+              3359064494291
+            ],
+            "result": {
+              "key": "job-5",
+              "digest": "023c68b29665d6b89f8f412458051c69ddecd8c51dbd5b7b69a8ecb5e1e7b671"
+            }
+          },
+          {
+            "pid": 76714,
+            "calls": 1,
+            "interval_ns": [
+              3359031152416,
+              3359056936083
+            ],
+            "result": {
+              "key": "job-6",
+              "digest": "fec78fe4ddec6317847bb2f615105a91a32a978b3a9ceae8669d385b1954535f"
+            }
+          },
+          {
+            "pid": 76715,
+            "calls": 1,
+            "interval_ns": [
+              3359032385791,
+              3359057954791
+            ],
+            "result": {
+              "key": "job-7",
+              "digest": "85730df13bae136ea2480bf89f9cb0551caf0249cabd1d1d8f316f7749112d57"
+            }
+          }
+        ]
+      },
+      {
+        "wall_seconds": 0.06695741600015026,
+        "peak_producers": 8,
+        "workers": [
+          {
+            "pid": 76726,
+            "calls": 1,
+            "interval_ns": [
+              3359486491708,
+              3359512083083
+            ],
+            "result": {
+              "key": "job-0",
+              "digest": "576ee24c56e3d272e40c76ec026bb0d18e7c4e0ae4025ff36bc4c49c1796034f"
+            }
+          },
+          {
+            "pid": 76727,
+            "calls": 1,
+            "interval_ns": [
+              3359486395125,
+              3359512183750
+            ],
+            "result": {
+              "key": "job-1",
+              "digest": "b3a1eea160a67917c926dad5bf842626abf0a62673d94b91484a127750dc6eaa"
+            }
+          },
+          {
+            "pid": 76728,
+            "calls": 1,
+            "interval_ns": [
+              3359489409583,
+              3359514149666
+            ],
+            "result": {
+              "key": "job-2",
+              "digest": "e22254409f6c0ccff7e61a73b8642465bed3ebc5dc0e19ccccbd160be6c2541f"
+            }
+          },
+          {
+            "pid": 76729,
+            "calls": 1,
+            "interval_ns": [
+              3359489104958,
+              3359515182416
+            ],
+            "result": {
+              "key": "job-3",
+              "digest": "cd8a5a8938451962dc61e3bbf2a28b6d9bb1f5816bf1fba6c9241c9db79cdaa1"
+            }
+          },
+          {
+            "pid": 76730,
+            "calls": 1,
+            "interval_ns": [
+              3359487890583,
+              3359513917833
+            ],
+            "result": {
+              "key": "job-4",
+              "digest": "d02d48eb9985e16395a9321f57837722ca815f731af6189477546dac3c41e1ff"
+            }
+          },
+          {
+            "pid": 76731,
+            "calls": 1,
+            "interval_ns": [
+              3359487917041,
+              3359514807458
+            ],
+            "result": {
+              "key": "job-5",
+              "digest": "023c68b29665d6b89f8f412458051c69ddecd8c51dbd5b7b69a8ecb5e1e7b671"
+            }
+          },
+          {
+            "pid": 76732,
+            "calls": 1,
+            "interval_ns": [
+              3359486270708,
+              3359512243541
+            ],
+            "result": {
+              "key": "job-6",
+              "digest": "fec78fe4ddec6317847bb2f615105a91a32a978b3a9ceae8669d385b1954535f"
+            }
+          },
+          {
+            "pid": 76733,
+            "calls": 1,
+            "interval_ns": [
+              3359487888666,
+              3359515752750
+            ],
+            "result": {
+              "key": "job-7",
+              "digest": "85730df13bae136ea2480bf89f9cb0551caf0249cabd1d1d8f316f7749112d57"
+            }
+          }
+        ]
+      },
+      {
+        "wall_seconds": 0.07022625000035987,
+        "peak_producers": 8,
+        "workers": [
+          {
+            "pid": 76776,
+            "calls": 1,
+            "interval_ns": [
+              3361310782916,
+              3361337629875
+            ],
+            "result": {
+              "key": "job-0",
+              "digest": "576ee24c56e3d272e40c76ec026bb0d18e7c4e0ae4025ff36bc4c49c1796034f"
+            }
+          },
+          {
+            "pid": 76777,
+            "calls": 1,
+            "interval_ns": [
+              3361305463500,
+              3361332062833
+            ],
+            "result": {
+              "key": "job-1",
+              "digest": "b3a1eea160a67917c926dad5bf842626abf0a62673d94b91484a127750dc6eaa"
+            }
+          },
+          {
+            "pid": 76778,
+            "calls": 1,
+            "interval_ns": [
+              3361305792250,
+              3361329401166
+            ],
+            "result": {
+              "key": "job-2",
+              "digest": "e22254409f6c0ccff7e61a73b8642465bed3ebc5dc0e19ccccbd160be6c2541f"
+            }
+          },
+          {
+            "pid": 76779,
+            "calls": 1,
+            "interval_ns": [
+              3361305608666,
+              3361329468291
+            ],
+            "result": {
+              "key": "job-3",
+              "digest": "cd8a5a8938451962dc61e3bbf2a28b6d9bb1f5816bf1fba6c9241c9db79cdaa1"
+            }
+          },
+          {
+            "pid": 76780,
+            "calls": 1,
+            "interval_ns": [
+              3361309947041,
+              3361335781166
+            ],
+            "result": {
+              "key": "job-5",
+              "digest": "023c68b29665d6b89f8f412458051c69ddecd8c51dbd5b7b69a8ecb5e1e7b671"
+            }
+          },
+          {
+            "pid": 76793,
+            "calls": 1,
+            "interval_ns": [
+              3361309875250,
+              3361335024375
+            ],
+            "result": {
+              "key": "job-6",
+              "digest": "fec78fe4ddec6317847bb2f615105a91a32a978b3a9ceae8669d385b1954535f"
+            }
+          },
+          {
+            "pid": 76805,
+            "calls": 1,
+            "interval_ns": [
+              3361308358666,
+              3361332622791
+            ],
+            "result": {
+              "key": "job-7",
+              "digest": "85730df13bae136ea2480bf89f9cb0551caf0249cabd1d1d8f316f7749112d57"
+            }
+          },
+          {
+            "pid": 76817,
+            "calls": 1,
+            "interval_ns": [
+              3361308112791,
+              3361338389041
+            ],
+            "result": {
+              "key": "job-8",
+              "digest": "620a3077b175b96796fa89dc57650573abc4290bbc28fb24e5ad355548678876"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "verified": {
+    "exact_outputs": true,
+    "persisted_values": true,
+    "producer_overlap": true
+  },
+  "limits": "Synthetic native CPU workload on one host, with deliberately distinct lock stripes. Worker startup and reference computations excluded. Timed region includes dispatch, cache fills, publication and worker exit. Same-stripe work serializes; measured gains depend on available CPUs."
+}

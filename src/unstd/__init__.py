@@ -41,6 +41,10 @@ failing loud where no faithful substitute exists:
   frames, with optional native geometry, boundary and finite-value scans.
 - ``clone`` (``copy``) — an exact-type structural deep clone with optional
   bundled C acceleration and no third-party runtime dependency.
+- ``cache`` (``sqlite3``) — persistent JSON results or typed codec artifacts with TTLs, namespaces,
+  optional FIFO bounds, atomic batch operations, and concurrent key-coordinated
+  producers across local processes.
+  Uses ``serde.jsonx`` and requires no extra.
 - ``text`` (``difflib``) — rapidfuzz similarity and fuzzy matching.
 - ``audio`` (``wave``) — soundfile read/write plus a streaming writer.
 - ``toml`` (``tomllib``) — reading is stdlib; writing needs tomlkit.

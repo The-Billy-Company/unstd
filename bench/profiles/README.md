@@ -15,6 +15,10 @@ These drivers compare saved and current implementations, check outputs and impor
 
 - [`serde_profile.py`](serde_profile.py)
 - [`json_array_write.py`](json_array_write.py) — generator exports against eager JSON writers, with exact output hashes, fresh-process peak memory, and separate write-call diagnostics
+- [`cache_reuse.py`](cache_reuse.py) — independently checked compressed-eval summaries reused by a second process with zero producer calls
+- [`cache_batches.py`](cache_batches.py) — paired batch reads and atomic writes against the frozen first cache implementation
+- [`cache_concurrency.py`](cache_concurrency.py) — paired independent-process cold fills with actual CPU work and recorded producer overlap
+- [`consumer_cache.py`](consumer_cache.py) — actual Consumer corpus-loader reuse in separate processes, including content/version invalidation and input hashing
 - [`jsonx_throughput.py`](jsonx_throughput.py)
 - [`jsonx_existing.py`](jsonx_existing.py) — three saved sources, unchanged JSONX registry/core fixtures and separate Python profiles; run this file directly to select sources before import
 - [`clone_ids_profile.py`](clone_ids_profile.py)
@@ -161,6 +165,11 @@ passes. Before/current order and worker counts alternate across rounds. Use
 consumer. Raw samples, native-call proof, source/binary hashes and process CPU
 diagnostics are retained. This profile has no CI speed gate; aggregate stream
 throughput does not establish scaling for every JSON consumer.
+
+[`cache_reuse.py`](cache_reuse.py) proves the persistent-cache use case with
+expensive JSON producers and warm reads after reopening in a second process.
+Its [retained evidence](../reports/cache/README.md) records avoided producer
+calls, independently checked values, output digests, and observed timing.
 
 [`json_array_stream.py`](json_array_stream.py) compares whole-array JSON loading
 with `jsonx.iterload` in fresh processes at increasing record counts. Its

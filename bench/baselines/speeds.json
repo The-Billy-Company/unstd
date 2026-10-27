@@ -73,6 +73,400 @@
     },
     "scope": "New raw PCM decoder only; existing ceilings and their recorded environment remain unchanged. Audio uses the same Python 3.13.14, NumPy 2.5.3, CPU and OS; unrelated installed extras/native modules differ and are recorded here."
   },
+  "cache_addition_provenance": {
+    "captured_report_sha256": "ca706565bcceb8f8298bfaee25f753654cc3b63f4eee4eca4ab153ac528cc1ff",
+    "environment": {
+      "backends": {
+        "blake3": "1.0.10",
+        "immutables": "0.21",
+        "irregex": "2.6.0",
+        "libarchive-c": "5.3",
+        "msgspec": "0.22.0",
+        "numpy": "2.5.3",
+        "orjson": "3.12.0",
+        "protobuf": "7.36.2",
+        "pybase64": "1.5.0",
+        "pydantic": "2.13.5",
+        "pydantic-settings": "2.15.0",
+        "pyyaml": "6.0.3",
+        "rapidfuzz": "3.14.6",
+        "ruamel-yaml": "0.19.1",
+        "sortedcontainers": "2.4.0",
+        "soundfile": "0.14.0",
+        "tomlkit": "0.15.1",
+        "uuid-utils": "1.0.0",
+        "whenever": "0.10.5",
+        "zlib-ng": "1.0.0",
+        "zstandard": "0.25.0"
+      },
+      "cpu": "Apple M5 Max",
+      "cpu_count": 18,
+      "implementation": "CPython",
+      "machine": "arm64",
+      "native": {
+        "clone._clone_native": true,
+        "compress._gzip_native": true,
+        "containers._sorted_native": true,
+        "crypto._stream_native": true,
+        "serde._json_native": true,
+        "text._text_native": true
+      },
+      "native_implementations": {
+        "clone._clone_native": "c",
+        "compress._gzip_native": "c",
+        "containers._sorted_native": "c",
+        "crypto._stream_native": "c",
+        "serde._json_native": "c",
+        "text._text_native": "c"
+      },
+      "python": "3.14.9",
+      "python_debug": 0,
+      "python_free_threaded": 0,
+      "system": "Darwin",
+      "system_release": "25.6.0",
+      "thread_settings": {
+        "MKL_NUM_THREADS": null,
+        "OMP_NUM_THREADS": null,
+        "OPENBLAS_NUM_THREADS": null
+      }
+    },
+    "product_source_sha256": {
+      "src/unstd/cache/__init__.py": "de9162d4565f51fffd99115af8981d211ef099a8d2b4d449f4df37e94f213428"
+    },
+    "publication_note": "The capture-time digest is retained separately; report_sha256 identifies the stored publication-normalized report.",
+    "recorded": "2026-10-27T20:49:41.767327+00:00",
+    "report": "bench/reports/cache/operations.json",
+    "report_sha256": "a894c4f87e8ba1bf8ca11ad66cc8695fbff81a483f7dddcc71ce449b6626799c",
+    "scope": "Eight new cache operation workloads captured on the recorded CPython 3.14.9 local filesystem worker. Existing case rows, ceilings, capture provenance and the aggregate historical environment are unchanged. Each new row retains its actual environment and links the raw timing report, including noisy rounds. The reviewed operations workload fingerprint advances for the additive cache cases. Disk latency varies; these measurements establish no portable speedup or whole-registry comparison on this worker."
+  },
+  "cache_batch_addition_provenance": {
+    "captured_report_sha256": "b6fd0747c5417fac5c5d7f8c644eacf21e8c11620bb070f490bec72e6c1c81da",
+    "cases": [
+      "unstd.cache.Cache.get_many",
+      "unstd.cache.Cache.set_many"
+    ],
+    "environment": {
+      "backends": {
+        "blake3": "1.0.10",
+        "immutables": "0.21",
+        "irregex": "2.6.0",
+        "libarchive-c": "5.3",
+        "msgspec": "0.22.0",
+        "numpy": "2.5.3",
+        "orjson": "3.12.0",
+        "protobuf": "7.36.2",
+        "pybase64": "1.5.0",
+        "pydantic": "2.13.5",
+        "pydantic-settings": "2.15.0",
+        "pyyaml": "6.0.3",
+        "rapidfuzz": "3.14.6",
+        "ruamel-yaml": "0.19.1",
+        "sortedcontainers": "2.4.0",
+        "soundfile": "0.14.0",
+        "tomlkit": "0.15.1",
+        "uuid-utils": "1.0.0",
+        "whenever": "0.10.5",
+        "zlib-ng": "1.0.0",
+        "zstandard": "0.25.0"
+      },
+      "cpu": "Apple M5 Max",
+      "cpu_count": 18,
+      "implementation": "CPython",
+      "machine": "arm64",
+      "native": {
+        "clone._clone_native": true,
+        "compress._gzip_native": true,
+        "containers._sorted_native": true,
+        "crypto._stream_native": true,
+        "serde._json_native": true,
+        "text._text_native": true
+      },
+      "native_implementations": {
+        "clone._clone_native": "c",
+        "compress._gzip_native": "c",
+        "containers._sorted_native": "c",
+        "crypto._stream_native": "c",
+        "serde._json_native": "c",
+        "text._text_native": "c"
+      },
+      "python": "3.14.9",
+      "python_debug": 0,
+      "python_free_threaded": 0,
+      "system": "Darwin",
+      "system_release": "25.6.0",
+      "thread_settings": {
+        "MKL_NUM_THREADS": null,
+        "OMP_NUM_THREADS": null,
+        "OPENBLAS_NUM_THREADS": null
+      }
+    },
+    "measurement_baseline": {
+      "cases": {
+        "unstd.cache.Cache.get_many": {
+          "ceiling_ns": 805210.0333333334,
+          "iterations": 12,
+          "measured_ns": 619392.3333333334,
+          "note": "Read and decode 64 persisted 32-integer JSON records in one consistent SQLite snapshot.",
+          "rounds": 9,
+          "spread": 0.20149681650348703
+        },
+        "unstd.cache.Cache.set_many": {
+          "ceiling_ns": 3069218.75,
+          "iterations": 2,
+          "measured_ns": 2360937.5,
+          "note": "Encode and atomically replace 64 32-integer JSON records in one committed WAL transaction.",
+          "rounds": 9,
+          "spread": 0.3241915552614163
+        }
+      },
+      "environment": {
+        "backends": {
+          "blake3": "1.0.10",
+          "immutables": "0.21",
+          "irregex": "2.6.0",
+          "libarchive-c": "5.3",
+          "msgspec": "0.22.0",
+          "numpy": "2.5.3",
+          "orjson": "3.12.0",
+          "protobuf": "7.36.2",
+          "pybase64": "1.5.0",
+          "pydantic": "2.13.5",
+          "pydantic-settings": "2.15.0",
+          "pyyaml": "6.0.3",
+          "rapidfuzz": "3.14.6",
+          "ruamel-yaml": "0.19.1",
+          "sortedcontainers": "2.4.0",
+          "soundfile": "0.14.0",
+          "tomlkit": "0.15.1",
+          "uuid-utils": "1.0.0",
+          "whenever": "0.10.5",
+          "zlib-ng": "1.0.0",
+          "zstandard": "0.25.0"
+        },
+        "cpu": "Apple M5 Max",
+        "cpu_count": 18,
+        "implementation": "CPython",
+        "machine": "arm64",
+        "native": {
+          "clone._clone_native": true,
+          "compress._gzip_native": true,
+          "containers._sorted_native": true,
+          "crypto._stream_native": true,
+          "serde._json_native": true,
+          "text._text_native": true
+        },
+        "native_implementations": {
+          "clone._clone_native": "c",
+          "compress._gzip_native": "c",
+          "containers._sorted_native": "c",
+          "crypto._stream_native": "c",
+          "serde._json_native": "c",
+          "text._text_native": "c"
+        },
+        "python": "3.14.9",
+        "python_debug": 0,
+        "python_free_threaded": 0,
+        "system": "Darwin",
+        "system_release": "25.6.0",
+        "thread_settings": {
+          "MKL_NUM_THREADS": null,
+          "OMP_NUM_THREADS": null,
+          "OPENBLAS_NUM_THREADS": null
+        }
+      },
+      "recorded": "2026-10-27T21:05:09.503388+00:00",
+      "schema": 1,
+      "tolerance": 0.3,
+      "workload_sources": {
+        "speed_cases_codecs.py": "979beb0a469e8970755f5f4e4b335d2df6d5c04472ed009183001063a4d2fce3",
+        "speed_cases_operations.py": "00248565468fb08b4abcf6c6082afb475b195b0ab69601267b910a9b2347bb6d",
+        "speed_cases_runtime.py": "b1e5bf41dd71aa289732d15574bb5a110c2650b989d7271b2927b6d4a4a075cd"
+      }
+    },
+    "product_source_sha256": {
+      "src/unstd/cache/__init__.py": "fad9f0ba829fc32a8d387d104c8ae806106e6e1a34b21f90a8b729bfee0e5956",
+      "src/unstd/cache/locking.py": "f459f15155e1010a62996d2bff438edf005841e9266f970a43780004136a9afa"
+    },
+    "publication_note": "The capture-time digest is retained separately; report_sha256 identifies the stored publication-normalized report.",
+    "recorded": "2026-10-27T21:05:09.503388+00:00",
+    "report": "bench/reports/cache/batch-operations.json",
+    "report_sha256": "f18df51f0c32463d2c825b1e3ffac354e827c63acc8cc2bcca3ae133b21dec0c",
+    "scope": "Only two new 64-record cache batch workloads captured on this CPython 3.14 worker. All prior case rows, ceilings, capture provenance, aggregate historical environment and original recording timestamp are retained. Standard calibrated wall/CPU measurements and full correctness audits are recorded in the raw report; the separate worker baseline retains the normal 30 percent headroom. Existing eight cache operation rows remain frozen against their first-version source.",
+    "workload_review": {
+      "changes": [
+        "Two cache batch cases were appended to _cache_cases; the original eight cache cases retain their inputs, notes and timed calls.",
+        "Current provider fingerprints already match the latest shared baseline, whose dataset/JSON-stream addition receipts record the concurrent provider changes."
+      ],
+      "reviewed_sources": {
+        "speed_cases_codecs.py": "979beb0a469e8970755f5f4e4b335d2df6d5c04472ed009183001063a4d2fce3",
+        "speed_cases_operations.py": "00248565468fb08b4abcf6c6082afb475b195b0ab69601267b910a9b2347bb6d",
+        "speed_cases_runtime.py": "b1e5bf41dd71aa289732d15574bb5a110c2650b989d7271b2927b6d4a4a075cd"
+      }
+    }
+  },
+  "cache_codec_addition_provenance": {
+    "captured_report_sha256": "e9d1d55a55e124215a4afa644da11432b75f62a422508faeda459508d0140f7f",
+    "cases": [
+      "unstd.cache.Cache.get_or_compute#codec-hit",
+      "unstd.cache.Cache.get_or_compute#codec-miss"
+    ],
+    "environment": {
+      "backends": {
+        "blake3": "1.0.10",
+        "immutables": "0.21",
+        "irregex": "2.6.0",
+        "libarchive-c": "5.3",
+        "msgspec": "0.22.0",
+        "numpy": "2.5.3",
+        "orjson": "3.12.0",
+        "protobuf": "7.36.2",
+        "pybase64": "1.5.0",
+        "pydantic": "2.13.5",
+        "pydantic-settings": "2.15.0",
+        "pyyaml": "6.0.3",
+        "rapidfuzz": "3.14.6",
+        "ruamel-yaml": "0.19.1",
+        "sortedcontainers": "2.4.0",
+        "soundfile": "0.14.0",
+        "tomlkit": "0.15.1",
+        "uuid-utils": "1.0.0",
+        "whenever": "0.10.5",
+        "zlib-ng": "1.0.0",
+        "zstandard": "0.25.0"
+      },
+      "cpu": "Apple M5 Max",
+      "cpu_count": 18,
+      "implementation": "CPython",
+      "machine": "arm64",
+      "native": {
+        "clone._clone_native": true,
+        "compress._gzip_native": true,
+        "containers._sorted_native": true,
+        "crypto._stream_native": true,
+        "dataset._dataset_native": true,
+        "math._math_native": true,
+        "serde._json_native": true,
+        "text._text_native": true
+      },
+      "native_implementations": {
+        "clone._clone_native": "c",
+        "compress._gzip_native": "c",
+        "containers._sorted_native": "c",
+        "crypto._stream_native": "c",
+        "dataset._dataset_native": "c",
+        "math._math_native": "c",
+        "serde._json_native": "c",
+        "text._text_native": "c"
+      },
+      "python": "3.14.9",
+      "python_debug": 0,
+      "python_free_threaded": 0,
+      "system": "Darwin",
+      "system_release": "25.6.0",
+      "thread_settings": {
+        "MKL_NUM_THREADS": null,
+        "OMP_NUM_THREADS": null,
+        "OPENBLAS_NUM_THREADS": null
+      }
+    },
+    "measurement_baseline": {
+      "cases": {
+        "unstd.cache.Cache.get_or_compute#codec-hit": {
+          "ceiling_ns": 713700.0,
+          "iterations": 14,
+          "measured_ns": 549000.0,
+          "note": "Read and validate one eight-byte signed 64-bit artifact through a structural codec; a warm producer must remain uncalled.",
+          "rounds": 9,
+          "spread": 0.7096994535519126
+        },
+        "unstd.cache.Cache.get_or_compute#codec-miss": {
+          "ceiling_ns": 3773764.8000000003,
+          "iterations": 2,
+          "measured_ns": 2902896.0,
+          "note": "Delete a key, produce one signed 64-bit value, encode and validate its eight-byte artifact, then commit; includes deletion.",
+          "rounds": 9,
+          "spread": 0.13742018315502863
+        }
+      },
+      "environment": {
+        "backends": {
+          "blake3": "1.0.10",
+          "immutables": "0.21",
+          "irregex": "2.6.0",
+          "libarchive-c": "5.3",
+          "msgspec": "0.22.0",
+          "numpy": "2.5.3",
+          "orjson": "3.12.0",
+          "protobuf": "7.36.2",
+          "pybase64": "1.5.0",
+          "pydantic": "2.13.5",
+          "pydantic-settings": "2.15.0",
+          "pyyaml": "6.0.3",
+          "rapidfuzz": "3.14.6",
+          "ruamel-yaml": "0.19.1",
+          "sortedcontainers": "2.4.0",
+          "soundfile": "0.14.0",
+          "tomlkit": "0.15.1",
+          "uuid-utils": "1.0.0",
+          "whenever": "0.10.5",
+          "zlib-ng": "1.0.0",
+          "zstandard": "0.25.0"
+        },
+        "cpu": "Apple M5 Max",
+        "cpu_count": 18,
+        "implementation": "CPython",
+        "machine": "arm64",
+        "native": {
+          "clone._clone_native": true,
+          "compress._gzip_native": true,
+          "containers._sorted_native": true,
+          "crypto._stream_native": true,
+          "dataset._dataset_native": true,
+          "math._math_native": true,
+          "serde._json_native": true,
+          "text._text_native": true
+        },
+        "native_implementations": {
+          "clone._clone_native": "c",
+          "compress._gzip_native": "c",
+          "containers._sorted_native": "c",
+          "crypto._stream_native": "c",
+          "dataset._dataset_native": "c",
+          "math._math_native": "c",
+          "serde._json_native": "c",
+          "text._text_native": "c"
+        },
+        "python": "3.14.9",
+        "python_debug": 0,
+        "python_free_threaded": 0,
+        "system": "Darwin",
+        "system_release": "25.6.0",
+        "thread_settings": {
+          "MKL_NUM_THREADS": null,
+          "OMP_NUM_THREADS": null,
+          "OPENBLAS_NUM_THREADS": null
+        }
+      },
+      "recorded": "2026-10-27T21:41:40.996613+00:00",
+      "schema": 1,
+      "tolerance": 0.3,
+      "workload_sources": {
+        "speed_cases_codecs.py": "974a57ffd2cc18833530b387357008b1f011c7e8c2c9b20f79b436e2d6f06919",
+        "speed_cases_math.py": "4a256cf060c79d470e236de3e9e03361b2ae882dea51a876475bccf698bec965",
+        "speed_cases_operations.py": "1a2b8ead567a5a6bafc03a6286eb64bee239d864c7f50cb19ded31f18871d9fa",
+        "speed_cases_runtime.py": "b1e5bf41dd71aa289732d15574bb5a110c2650b989d7271b2927b6d4a4a075cd"
+      }
+    },
+    "product_source_sha256": {
+      "src/unstd/cache/__init__.py": "3ff4aecc4cc8fd68807de62fcec1125cb58e20cb4e7b0a0e92241dfcad8655bd",
+      "src/unstd/cache/locking.py": "eab1a7949bcde294e81834e34fa4947b6190099652b7aaf6092b2044c6ade19c"
+    },
+    "publication_note": "The capture-time digest is retained separately; report_sha256 identifies the stored publication-normalized report.",
+    "recorded": "2026-10-27T21:41:40.999017+00:00",
+    "report": "bench/reports/cache/codec-operations.json",
+    "report_sha256": "b65f367c0f333702d5d8a5d869b8669f811030b3e5f062f7a037a02579b3aa97",
+    "scope": "Two additive typed-codec cache workloads captured with the standard calibrated timing and correctness audits. Codec setup uses a separate database and leaves existing JSON workload state unchanged. All preexisting rows, ceilings, capture provenance, historical environment and timestamp remain unchanged. Reversing only the reviewed codec workload additions reconstructs the previously frozen operations provider hash."
+  },
   "calendar_addition_provenance": {
     "cases": [
       "unstd.time.timeutil.combine",
@@ -320,6 +714,842 @@
       "note": "256 mono PCM16 frames; new BytesIO and completed file included",
       "rounds": 11,
       "spread": 0.24009113100081367
+    },
+    "unstd.cache.Cache": {
+      "captured_environment": {
+        "backends": {
+          "blake3": "1.0.10",
+          "immutables": "0.21",
+          "irregex": "2.6.0",
+          "libarchive-c": "5.3",
+          "msgspec": "0.22.0",
+          "numpy": "2.5.3",
+          "orjson": "3.12.0",
+          "protobuf": "7.36.2",
+          "pybase64": "1.5.0",
+          "pydantic": "2.13.5",
+          "pydantic-settings": "2.15.0",
+          "pyyaml": "6.0.3",
+          "rapidfuzz": "3.14.6",
+          "ruamel-yaml": "0.19.1",
+          "sortedcontainers": "2.4.0",
+          "soundfile": "0.14.0",
+          "tomlkit": "0.15.1",
+          "uuid-utils": "1.0.0",
+          "whenever": "0.10.5",
+          "zlib-ng": "1.0.0",
+          "zstandard": "0.25.0"
+        },
+        "cpu": "Apple M5 Max",
+        "cpu_count": 18,
+        "implementation": "CPython",
+        "machine": "arm64",
+        "native": {
+          "clone._clone_native": true,
+          "compress._gzip_native": true,
+          "containers._sorted_native": true,
+          "crypto._stream_native": true,
+          "serde._json_native": true,
+          "text._text_native": true
+        },
+        "native_implementations": {
+          "clone._clone_native": "c",
+          "compress._gzip_native": "c",
+          "containers._sorted_native": "c",
+          "crypto._stream_native": "c",
+          "serde._json_native": "c",
+          "text._text_native": "c"
+        },
+        "python": "3.14.9",
+        "python_debug": 0,
+        "python_free_threaded": 0,
+        "system": "Darwin",
+        "system_release": "25.6.0",
+        "thread_settings": {
+          "MKL_NUM_THREADS": null,
+          "OMP_NUM_THREADS": null,
+          "OPENBLAS_NUM_THREADS": null
+        }
+      },
+      "captured_provenance": {
+        "evidence": "cache_addition_provenance",
+        "recorded": "2026-10-27T20:49:41.767327+00:00",
+        "report": "bench/reports/cache/operations.json",
+        "report_sha256": "ca706565bcceb8f8298bfaee25f753654cc3b63f4eee4eca4ab153ac528cc1ff"
+      },
+      "ceiling_ns": 585490.9125,
+      "iterations": 16,
+      "measured_ns": 450377.625,
+      "note": "Open and validate an existing local SQLite WAL cache file in an empty namespace.",
+      "rounds": 7,
+      "spread": 1.1706032243497886
+    },
+    "unstd.cache.Cache.clear": {
+      "captured_environment": {
+        "backends": {
+          "blake3": "1.0.10",
+          "immutables": "0.21",
+          "irregex": "2.6.0",
+          "libarchive-c": "5.3",
+          "msgspec": "0.22.0",
+          "numpy": "2.5.3",
+          "orjson": "3.12.0",
+          "protobuf": "7.36.2",
+          "pybase64": "1.5.0",
+          "pydantic": "2.13.5",
+          "pydantic-settings": "2.15.0",
+          "pyyaml": "6.0.3",
+          "rapidfuzz": "3.14.6",
+          "ruamel-yaml": "0.19.1",
+          "sortedcontainers": "2.4.0",
+          "soundfile": "0.14.0",
+          "tomlkit": "0.15.1",
+          "uuid-utils": "1.0.0",
+          "whenever": "0.10.5",
+          "zlib-ng": "1.0.0",
+          "zstandard": "0.25.0"
+        },
+        "cpu": "Apple M5 Max",
+        "cpu_count": 18,
+        "implementation": "CPython",
+        "machine": "arm64",
+        "native": {
+          "clone._clone_native": true,
+          "compress._gzip_native": true,
+          "containers._sorted_native": true,
+          "crypto._stream_native": true,
+          "serde._json_native": true,
+          "text._text_native": true
+        },
+        "native_implementations": {
+          "clone._clone_native": "c",
+          "compress._gzip_native": "c",
+          "containers._sorted_native": "c",
+          "crypto._stream_native": "c",
+          "serde._json_native": "c",
+          "text._text_native": "c"
+        },
+        "python": "3.14.9",
+        "python_debug": 0,
+        "python_free_threaded": 0,
+        "system": "Darwin",
+        "system_release": "25.6.0",
+        "thread_settings": {
+          "MKL_NUM_THREADS": null,
+          "OMP_NUM_THREADS": null,
+          "OPENBLAS_NUM_THREADS": null
+        }
+      },
+      "captured_provenance": {
+        "evidence": "cache_addition_provenance",
+        "recorded": "2026-10-27T20:49:41.767327+00:00",
+        "report": "bench/reports/cache/operations.json",
+        "report_sha256": "ca706565bcceb8f8298bfaee25f753654cc3b63f4eee4eca4ab153ac528cc1ff"
+      },
+      "ceiling_ns": 3575216.45,
+      "iterations": 2,
+      "measured_ns": 2750166.5,
+      "note": "Set two JSON records then clear their namespace; includes setup and checks isolation outside timing.",
+      "rounds": 7,
+      "spread": 1.113758385174134
+    },
+    "unstd.cache.Cache.delete": {
+      "captured_environment": {
+        "backends": {
+          "blake3": "1.0.10",
+          "immutables": "0.21",
+          "irregex": "2.6.0",
+          "libarchive-c": "5.3",
+          "msgspec": "0.22.0",
+          "numpy": "2.5.3",
+          "orjson": "3.12.0",
+          "protobuf": "7.36.2",
+          "pybase64": "1.5.0",
+          "pydantic": "2.13.5",
+          "pydantic-settings": "2.15.0",
+          "pyyaml": "6.0.3",
+          "rapidfuzz": "3.14.6",
+          "ruamel-yaml": "0.19.1",
+          "sortedcontainers": "2.4.0",
+          "soundfile": "0.14.0",
+          "tomlkit": "0.15.1",
+          "uuid-utils": "1.0.0",
+          "whenever": "0.10.5",
+          "zlib-ng": "1.0.0",
+          "zstandard": "0.25.0"
+        },
+        "cpu": "Apple M5 Max",
+        "cpu_count": 18,
+        "implementation": "CPython",
+        "machine": "arm64",
+        "native": {
+          "clone._clone_native": true,
+          "compress._gzip_native": true,
+          "containers._sorted_native": true,
+          "crypto._stream_native": true,
+          "serde._json_native": true,
+          "text._text_native": true
+        },
+        "native_implementations": {
+          "clone._clone_native": "c",
+          "compress._gzip_native": "c",
+          "containers._sorted_native": "c",
+          "crypto._stream_native": "c",
+          "serde._json_native": "c",
+          "text._text_native": "c"
+        },
+        "python": "3.14.9",
+        "python_debug": 0,
+        "python_free_threaded": 0,
+        "system": "Darwin",
+        "system_release": "25.6.0",
+        "thread_settings": {
+          "MKL_NUM_THREADS": null,
+          "OMP_NUM_THREADS": null,
+          "OPENBLAS_NUM_THREADS": null
+        }
+      },
+      "captured_provenance": {
+        "evidence": "cache_addition_provenance",
+        "recorded": "2026-10-27T20:49:41.767327+00:00",
+        "report": "bench/reports/cache/operations.json",
+        "report_sha256": "ca706565bcceb8f8298bfaee25f753654cc3b63f4eee4eca4ab153ac528cc1ff"
+      },
+      "ceiling_ns": 2046245.2833333332,
+      "iterations": 6,
+      "measured_ns": 1574034.8333333333,
+      "note": "Set then delete one existing 32-integer JSON record; includes committed setup and deletion.",
+      "rounds": 7,
+      "spread": 1.2524737646106732
+    },
+    "unstd.cache.Cache.get#hit": {
+      "captured_environment": {
+        "backends": {
+          "blake3": "1.0.10",
+          "immutables": "0.21",
+          "irregex": "2.6.0",
+          "libarchive-c": "5.3",
+          "msgspec": "0.22.0",
+          "numpy": "2.5.3",
+          "orjson": "3.12.0",
+          "protobuf": "7.36.2",
+          "pybase64": "1.5.0",
+          "pydantic": "2.13.5",
+          "pydantic-settings": "2.15.0",
+          "pyyaml": "6.0.3",
+          "rapidfuzz": "3.14.6",
+          "ruamel-yaml": "0.19.1",
+          "sortedcontainers": "2.4.0",
+          "soundfile": "0.14.0",
+          "tomlkit": "0.15.1",
+          "uuid-utils": "1.0.0",
+          "whenever": "0.10.5",
+          "zlib-ng": "1.0.0",
+          "zstandard": "0.25.0"
+        },
+        "cpu": "Apple M5 Max",
+        "cpu_count": 18,
+        "implementation": "CPython",
+        "machine": "arm64",
+        "native": {
+          "clone._clone_native": true,
+          "compress._gzip_native": true,
+          "containers._sorted_native": true,
+          "crypto._stream_native": true,
+          "serde._json_native": true,
+          "text._text_native": true
+        },
+        "native_implementations": {
+          "clone._clone_native": "c",
+          "compress._gzip_native": "c",
+          "containers._sorted_native": "c",
+          "crypto._stream_native": "c",
+          "serde._json_native": "c",
+          "text._text_native": "c"
+        },
+        "python": "3.14.9",
+        "python_debug": 0,
+        "python_free_threaded": 0,
+        "system": "Darwin",
+        "system_release": "25.6.0",
+        "thread_settings": {
+          "MKL_NUM_THREADS": null,
+          "OMP_NUM_THREADS": null,
+          "OPENBLAS_NUM_THREADS": null
+        }
+      },
+      "captured_provenance": {
+        "evidence": "cache_addition_provenance",
+        "recorded": "2026-10-27T20:49:41.767327+00:00",
+        "report": "bench/reports/cache/operations.json",
+        "report_sha256": "ca706565bcceb8f8298bfaee25f753654cc3b63f4eee4eca4ab153ac528cc1ff"
+      },
+      "ceiling_ns": 548177.5,
+      "iterations": 10,
+      "measured_ns": 421675.0,
+      "note": "Read and decode one persisted JSON record containing 32 integers through a fresh connection.",
+      "rounds": 7,
+      "spread": 0.6150570937333254
+    },
+    "unstd.cache.Cache.get#miss": {
+      "captured_environment": {
+        "backends": {
+          "blake3": "1.0.10",
+          "immutables": "0.21",
+          "irregex": "2.6.0",
+          "libarchive-c": "5.3",
+          "msgspec": "0.22.0",
+          "numpy": "2.5.3",
+          "orjson": "3.12.0",
+          "protobuf": "7.36.2",
+          "pybase64": "1.5.0",
+          "pydantic": "2.13.5",
+          "pydantic-settings": "2.15.0",
+          "pyyaml": "6.0.3",
+          "rapidfuzz": "3.14.6",
+          "ruamel-yaml": "0.19.1",
+          "sortedcontainers": "2.4.0",
+          "soundfile": "0.14.0",
+          "tomlkit": "0.15.1",
+          "uuid-utils": "1.0.0",
+          "whenever": "0.10.5",
+          "zlib-ng": "1.0.0",
+          "zstandard": "0.25.0"
+        },
+        "cpu": "Apple M5 Max",
+        "cpu_count": 18,
+        "implementation": "CPython",
+        "machine": "arm64",
+        "native": {
+          "clone._clone_native": true,
+          "compress._gzip_native": true,
+          "containers._sorted_native": true,
+          "crypto._stream_native": true,
+          "serde._json_native": true,
+          "text._text_native": true
+        },
+        "native_implementations": {
+          "clone._clone_native": "c",
+          "compress._gzip_native": "c",
+          "containers._sorted_native": "c",
+          "crypto._stream_native": "c",
+          "serde._json_native": "c",
+          "text._text_native": "c"
+        },
+        "python": "3.14.9",
+        "python_debug": 0,
+        "python_free_threaded": 0,
+        "system": "Darwin",
+        "system_release": "25.6.0",
+        "thread_settings": {
+          "MKL_NUM_THREADS": null,
+          "OMP_NUM_THREADS": null,
+          "OPENBLAS_NUM_THREADS": null
+        }
+      },
+      "captured_provenance": {
+        "evidence": "cache_addition_provenance",
+        "recorded": "2026-10-27T20:49:41.767327+00:00",
+        "report": "bench/reports/cache/operations.json",
+        "report_sha256": "ca706565bcceb8f8298bfaee25f753654cc3b63f4eee4eca4ab153ac528cc1ff"
+      },
+      "ceiling_ns": 702464.9666666667,
+      "iterations": 12,
+      "measured_ns": 540357.6666666666,
+      "note": "Look up an absent key in a populated local WAL cache and return the caller default.",
+      "rounds": 7,
+      "spread": 1.3923648102213781
+    },
+    "unstd.cache.Cache.get_many": {
+      "captured_environment": {
+        "backends": {
+          "blake3": "1.0.10",
+          "immutables": "0.21",
+          "irregex": "2.6.0",
+          "libarchive-c": "5.3",
+          "msgspec": "0.22.0",
+          "numpy": "2.5.3",
+          "orjson": "3.12.0",
+          "protobuf": "7.36.2",
+          "pybase64": "1.5.0",
+          "pydantic": "2.13.5",
+          "pydantic-settings": "2.15.0",
+          "pyyaml": "6.0.3",
+          "rapidfuzz": "3.14.6",
+          "ruamel-yaml": "0.19.1",
+          "sortedcontainers": "2.4.0",
+          "soundfile": "0.14.0",
+          "tomlkit": "0.15.1",
+          "uuid-utils": "1.0.0",
+          "whenever": "0.10.5",
+          "zlib-ng": "1.0.0",
+          "zstandard": "0.25.0"
+        },
+        "cpu": "Apple M5 Max",
+        "cpu_count": 18,
+        "implementation": "CPython",
+        "machine": "arm64",
+        "native": {
+          "clone._clone_native": true,
+          "compress._gzip_native": true,
+          "containers._sorted_native": true,
+          "crypto._stream_native": true,
+          "serde._json_native": true,
+          "text._text_native": true
+        },
+        "native_implementations": {
+          "clone._clone_native": "c",
+          "compress._gzip_native": "c",
+          "containers._sorted_native": "c",
+          "crypto._stream_native": "c",
+          "serde._json_native": "c",
+          "text._text_native": "c"
+        },
+        "python": "3.14.9",
+        "python_debug": 0,
+        "python_free_threaded": 0,
+        "system": "Darwin",
+        "system_release": "25.6.0",
+        "thread_settings": {
+          "MKL_NUM_THREADS": null,
+          "OMP_NUM_THREADS": null,
+          "OPENBLAS_NUM_THREADS": null
+        }
+      },
+      "captured_provenance": {
+        "evidence": "cache_batch_addition_provenance",
+        "recorded": "2026-10-27T21:05:09.503388+00:00",
+        "report": "bench/reports/cache/batch-operations.json",
+        "report_sha256": "b6fd0747c5417fac5c5d7f8c644eacf21e8c11620bb070f490bec72e6c1c81da"
+      },
+      "ceiling_ns": 805210.0333333334,
+      "iterations": 12,
+      "measured_ns": 619392.3333333334,
+      "note": "Read and decode 64 persisted 32-integer JSON records in one consistent SQLite snapshot.",
+      "rounds": 9,
+      "spread": 0.20149681650348703
+    },
+    "unstd.cache.Cache.get_or_compute#codec-hit": {
+      "captured_environment": {
+        "backends": {
+          "blake3": "1.0.10",
+          "immutables": "0.21",
+          "irregex": "2.6.0",
+          "libarchive-c": "5.3",
+          "msgspec": "0.22.0",
+          "numpy": "2.5.3",
+          "orjson": "3.12.0",
+          "protobuf": "7.36.2",
+          "pybase64": "1.5.0",
+          "pydantic": "2.13.5",
+          "pydantic-settings": "2.15.0",
+          "pyyaml": "6.0.3",
+          "rapidfuzz": "3.14.6",
+          "ruamel-yaml": "0.19.1",
+          "sortedcontainers": "2.4.0",
+          "soundfile": "0.14.0",
+          "tomlkit": "0.15.1",
+          "uuid-utils": "1.0.0",
+          "whenever": "0.10.5",
+          "zlib-ng": "1.0.0",
+          "zstandard": "0.25.0"
+        },
+        "cpu": "Apple M5 Max",
+        "cpu_count": 18,
+        "implementation": "CPython",
+        "machine": "arm64",
+        "native": {
+          "clone._clone_native": true,
+          "compress._gzip_native": true,
+          "containers._sorted_native": true,
+          "crypto._stream_native": true,
+          "dataset._dataset_native": true,
+          "math._math_native": true,
+          "serde._json_native": true,
+          "text._text_native": true
+        },
+        "native_implementations": {
+          "clone._clone_native": "c",
+          "compress._gzip_native": "c",
+          "containers._sorted_native": "c",
+          "crypto._stream_native": "c",
+          "dataset._dataset_native": "c",
+          "math._math_native": "c",
+          "serde._json_native": "c",
+          "text._text_native": "c"
+        },
+        "python": "3.14.9",
+        "python_debug": 0,
+        "python_free_threaded": 0,
+        "system": "Darwin",
+        "system_release": "25.6.0",
+        "thread_settings": {
+          "MKL_NUM_THREADS": null,
+          "OMP_NUM_THREADS": null,
+          "OPENBLAS_NUM_THREADS": null
+        }
+      },
+      "captured_provenance": {
+        "evidence": "cache_codec_addition_provenance",
+        "recorded": "2026-10-27T21:41:40.999017+00:00",
+        "report": "bench/reports/cache/codec-operations.json",
+        "report_sha256": "e9d1d55a55e124215a4afa644da11432b75f62a422508faeda459508d0140f7f"
+      },
+      "ceiling_ns": 713700.0,
+      "iterations": 14,
+      "measured_ns": 549000.0,
+      "note": "Read and validate one eight-byte signed 64-bit artifact through a structural codec; a warm producer must remain uncalled.",
+      "rounds": 9,
+      "spread": 0.7096994535519126
+    },
+    "unstd.cache.Cache.get_or_compute#codec-miss": {
+      "captured_environment": {
+        "backends": {
+          "blake3": "1.0.10",
+          "immutables": "0.21",
+          "irregex": "2.6.0",
+          "libarchive-c": "5.3",
+          "msgspec": "0.22.0",
+          "numpy": "2.5.3",
+          "orjson": "3.12.0",
+          "protobuf": "7.36.2",
+          "pybase64": "1.5.0",
+          "pydantic": "2.13.5",
+          "pydantic-settings": "2.15.0",
+          "pyyaml": "6.0.3",
+          "rapidfuzz": "3.14.6",
+          "ruamel-yaml": "0.19.1",
+          "sortedcontainers": "2.4.0",
+          "soundfile": "0.14.0",
+          "tomlkit": "0.15.1",
+          "uuid-utils": "1.0.0",
+          "whenever": "0.10.5",
+          "zlib-ng": "1.0.0",
+          "zstandard": "0.25.0"
+        },
+        "cpu": "Apple M5 Max",
+        "cpu_count": 18,
+        "implementation": "CPython",
+        "machine": "arm64",
+        "native": {
+          "clone._clone_native": true,
+          "compress._gzip_native": true,
+          "containers._sorted_native": true,
+          "crypto._stream_native": true,
+          "dataset._dataset_native": true,
+          "math._math_native": true,
+          "serde._json_native": true,
+          "text._text_native": true
+        },
+        "native_implementations": {
+          "clone._clone_native": "c",
+          "compress._gzip_native": "c",
+          "containers._sorted_native": "c",
+          "crypto._stream_native": "c",
+          "dataset._dataset_native": "c",
+          "math._math_native": "c",
+          "serde._json_native": "c",
+          "text._text_native": "c"
+        },
+        "python": "3.14.9",
+        "python_debug": 0,
+        "python_free_threaded": 0,
+        "system": "Darwin",
+        "system_release": "25.6.0",
+        "thread_settings": {
+          "MKL_NUM_THREADS": null,
+          "OMP_NUM_THREADS": null,
+          "OPENBLAS_NUM_THREADS": null
+        }
+      },
+      "captured_provenance": {
+        "evidence": "cache_codec_addition_provenance",
+        "recorded": "2026-10-27T21:41:40.999017+00:00",
+        "report": "bench/reports/cache/codec-operations.json",
+        "report_sha256": "e9d1d55a55e124215a4afa644da11432b75f62a422508faeda459508d0140f7f"
+      },
+      "ceiling_ns": 3773764.8000000003,
+      "iterations": 2,
+      "measured_ns": 2902896.0,
+      "note": "Delete a key, produce one signed 64-bit value, encode and validate its eight-byte artifact, then commit; includes deletion.",
+      "rounds": 9,
+      "spread": 0.13742018315502863
+    },
+    "unstd.cache.Cache.get_or_compute#hit": {
+      "captured_environment": {
+        "backends": {
+          "blake3": "1.0.10",
+          "immutables": "0.21",
+          "irregex": "2.6.0",
+          "libarchive-c": "5.3",
+          "msgspec": "0.22.0",
+          "numpy": "2.5.3",
+          "orjson": "3.12.0",
+          "protobuf": "7.36.2",
+          "pybase64": "1.5.0",
+          "pydantic": "2.13.5",
+          "pydantic-settings": "2.15.0",
+          "pyyaml": "6.0.3",
+          "rapidfuzz": "3.14.6",
+          "ruamel-yaml": "0.19.1",
+          "sortedcontainers": "2.4.0",
+          "soundfile": "0.14.0",
+          "tomlkit": "0.15.1",
+          "uuid-utils": "1.0.0",
+          "whenever": "0.10.5",
+          "zlib-ng": "1.0.0",
+          "zstandard": "0.25.0"
+        },
+        "cpu": "Apple M5 Max",
+        "cpu_count": 18,
+        "implementation": "CPython",
+        "machine": "arm64",
+        "native": {
+          "clone._clone_native": true,
+          "compress._gzip_native": true,
+          "containers._sorted_native": true,
+          "crypto._stream_native": true,
+          "serde._json_native": true,
+          "text._text_native": true
+        },
+        "native_implementations": {
+          "clone._clone_native": "c",
+          "compress._gzip_native": "c",
+          "containers._sorted_native": "c",
+          "crypto._stream_native": "c",
+          "serde._json_native": "c",
+          "text._text_native": "c"
+        },
+        "python": "3.14.9",
+        "python_debug": 0,
+        "python_free_threaded": 0,
+        "system": "Darwin",
+        "system_release": "25.6.0",
+        "thread_settings": {
+          "MKL_NUM_THREADS": null,
+          "OMP_NUM_THREADS": null,
+          "OPENBLAS_NUM_THREADS": null
+        }
+      },
+      "captured_provenance": {
+        "evidence": "cache_addition_provenance",
+        "recorded": "2026-10-27T20:49:41.767327+00:00",
+        "report": "bench/reports/cache/operations.json",
+        "report_sha256": "ca706565bcceb8f8298bfaee25f753654cc3b63f4eee4eca4ab153ac528cc1ff"
+      },
+      "ceiling_ns": 653696.875,
+      "iterations": 16,
+      "measured_ns": 502843.75,
+      "note": "Read a warm 32-integer JSON result and refuse any unexpected producer invocation.",
+      "rounds": 7,
+      "spread": 0.6313622521906656
+    },
+    "unstd.cache.Cache.get_or_compute#miss": {
+      "captured_environment": {
+        "backends": {
+          "blake3": "1.0.10",
+          "immutables": "0.21",
+          "irregex": "2.6.0",
+          "libarchive-c": "5.3",
+          "msgspec": "0.22.0",
+          "numpy": "2.5.3",
+          "orjson": "3.12.0",
+          "protobuf": "7.36.2",
+          "pybase64": "1.5.0",
+          "pydantic": "2.13.5",
+          "pydantic-settings": "2.15.0",
+          "pyyaml": "6.0.3",
+          "rapidfuzz": "3.14.6",
+          "ruamel-yaml": "0.19.1",
+          "sortedcontainers": "2.4.0",
+          "soundfile": "0.14.0",
+          "tomlkit": "0.15.1",
+          "uuid-utils": "1.0.0",
+          "whenever": "0.10.5",
+          "zlib-ng": "1.0.0",
+          "zstandard": "0.25.0"
+        },
+        "cpu": "Apple M5 Max",
+        "cpu_count": 18,
+        "implementation": "CPython",
+        "machine": "arm64",
+        "native": {
+          "clone._clone_native": true,
+          "compress._gzip_native": true,
+          "containers._sorted_native": true,
+          "crypto._stream_native": true,
+          "serde._json_native": true,
+          "text._text_native": true
+        },
+        "native_implementations": {
+          "clone._clone_native": "c",
+          "compress._gzip_native": "c",
+          "containers._sorted_native": "c",
+          "crypto._stream_native": "c",
+          "serde._json_native": "c",
+          "text._text_native": "c"
+        },
+        "python": "3.14.9",
+        "python_debug": 0,
+        "python_free_threaded": 0,
+        "system": "Darwin",
+        "system_release": "25.6.0",
+        "thread_settings": {
+          "MKL_NUM_THREADS": null,
+          "OMP_NUM_THREADS": null,
+          "OPENBLAS_NUM_THREADS": null
+        }
+      },
+      "captured_provenance": {
+        "evidence": "cache_addition_provenance",
+        "recorded": "2026-10-27T20:49:41.767327+00:00",
+        "report": "bench/reports/cache/operations.json",
+        "report_sha256": "ca706565bcceb8f8298bfaee25f753654cc3b63f4eee4eca4ab153ac528cc1ff"
+      },
+      "ceiling_ns": 1798211.35,
+      "iterations": 4,
+      "measured_ns": 1383239.5,
+      "note": "Delete a key then compute, encode and commit its 32-integer JSON result; includes deletion.",
+      "rounds": 7,
+      "spread": 1.2044718214018613
+    },
+    "unstd.cache.Cache.set": {
+      "captured_environment": {
+        "backends": {
+          "blake3": "1.0.10",
+          "immutables": "0.21",
+          "irregex": "2.6.0",
+          "libarchive-c": "5.3",
+          "msgspec": "0.22.0",
+          "numpy": "2.5.3",
+          "orjson": "3.12.0",
+          "protobuf": "7.36.2",
+          "pybase64": "1.5.0",
+          "pydantic": "2.13.5",
+          "pydantic-settings": "2.15.0",
+          "pyyaml": "6.0.3",
+          "rapidfuzz": "3.14.6",
+          "ruamel-yaml": "0.19.1",
+          "sortedcontainers": "2.4.0",
+          "soundfile": "0.14.0",
+          "tomlkit": "0.15.1",
+          "uuid-utils": "1.0.0",
+          "whenever": "0.10.5",
+          "zlib-ng": "1.0.0",
+          "zstandard": "0.25.0"
+        },
+        "cpu": "Apple M5 Max",
+        "cpu_count": 18,
+        "implementation": "CPython",
+        "machine": "arm64",
+        "native": {
+          "clone._clone_native": true,
+          "compress._gzip_native": true,
+          "containers._sorted_native": true,
+          "crypto._stream_native": true,
+          "serde._json_native": true,
+          "text._text_native": true
+        },
+        "native_implementations": {
+          "clone._clone_native": "c",
+          "compress._gzip_native": "c",
+          "containers._sorted_native": "c",
+          "crypto._stream_native": "c",
+          "serde._json_native": "c",
+          "text._text_native": "c"
+        },
+        "python": "3.14.9",
+        "python_debug": 0,
+        "python_free_threaded": 0,
+        "system": "Darwin",
+        "system_release": "25.6.0",
+        "thread_settings": {
+          "MKL_NUM_THREADS": null,
+          "OMP_NUM_THREADS": null,
+          "OPENBLAS_NUM_THREADS": null
+        }
+      },
+      "captured_provenance": {
+        "evidence": "cache_addition_provenance",
+        "recorded": "2026-10-27T20:49:41.767327+00:00",
+        "report": "bench/reports/cache/operations.json",
+        "report_sha256": "ca706565bcceb8f8298bfaee25f753654cc3b63f4eee4eca4ab153ac528cc1ff"
+      },
+      "ceiling_ns": 835445.0,
+      "iterations": 5,
+      "measured_ns": 642650.0,
+      "note": "Encode and replace a 32-integer JSON record in a committed local WAL transaction.",
+      "rounds": 7,
+      "spread": 2.9674784097097953
+    },
+    "unstd.cache.Cache.set_many": {
+      "captured_environment": {
+        "backends": {
+          "blake3": "1.0.10",
+          "immutables": "0.21",
+          "irregex": "2.6.0",
+          "libarchive-c": "5.3",
+          "msgspec": "0.22.0",
+          "numpy": "2.5.3",
+          "orjson": "3.12.0",
+          "protobuf": "7.36.2",
+          "pybase64": "1.5.0",
+          "pydantic": "2.13.5",
+          "pydantic-settings": "2.15.0",
+          "pyyaml": "6.0.3",
+          "rapidfuzz": "3.14.6",
+          "ruamel-yaml": "0.19.1",
+          "sortedcontainers": "2.4.0",
+          "soundfile": "0.14.0",
+          "tomlkit": "0.15.1",
+          "uuid-utils": "1.0.0",
+          "whenever": "0.10.5",
+          "zlib-ng": "1.0.0",
+          "zstandard": "0.25.0"
+        },
+        "cpu": "Apple M5 Max",
+        "cpu_count": 18,
+        "implementation": "CPython",
+        "machine": "arm64",
+        "native": {
+          "clone._clone_native": true,
+          "compress._gzip_native": true,
+          "containers._sorted_native": true,
+          "crypto._stream_native": true,
+          "serde._json_native": true,
+          "text._text_native": true
+        },
+        "native_implementations": {
+          "clone._clone_native": "c",
+          "compress._gzip_native": "c",
+          "containers._sorted_native": "c",
+          "crypto._stream_native": "c",
+          "serde._json_native": "c",
+          "text._text_native": "c"
+        },
+        "python": "3.14.9",
+        "python_debug": 0,
+        "python_free_threaded": 0,
+        "system": "Darwin",
+        "system_release": "25.6.0",
+        "thread_settings": {
+          "MKL_NUM_THREADS": null,
+          "OMP_NUM_THREADS": null,
+          "OPENBLAS_NUM_THREADS": null
+        }
+      },
+      "captured_provenance": {
+        "evidence": "cache_batch_addition_provenance",
+        "recorded": "2026-10-27T21:05:09.503388+00:00",
+        "report": "bench/reports/cache/batch-operations.json",
+        "report_sha256": "b6fd0747c5417fac5c5d7f8c644eacf21e8c11620bb070f490bec72e6c1c81da"
+      },
+      "ceiling_ns": 3069218.75,
+      "iterations": 2,
+      "measured_ns": 2360937.5,
+      "note": "Encode and atomically replace 64 32-integer JSON records in one committed WAL transaction.",
+      "rounds": 9,
+      "spread": 0.3241915552614163
     },
     "unstd.clone.asdict": {
       "ceiling_ns": 2217.9262907608695,
@@ -5585,7 +6815,7 @@
   "workload_sources": {
     "speed_cases_codecs.py": "974a57ffd2cc18833530b387357008b1f011c7e8c2c9b20f79b436e2d6f06919",
     "speed_cases_math.py": "4a256cf060c79d470e236de3e9e03361b2ae882dea51a876475bccf698bec965",
-    "speed_cases_operations.py": "54572576bc9cea79179d60a84d428a7f2f232e1d6de46233c3ee00ab196cf497",
+    "speed_cases_operations.py": "f93beb17099f0a2d793c3a6f52491c15fc200aae326dc84b851ba3aae7031775",
     "speed_cases_runtime.py": "b1e5bf41dd71aa289732d15574bb5a110c2650b989d7271b2927b6d4a4a075cd"
   }
 }

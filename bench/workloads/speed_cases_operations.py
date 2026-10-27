@@ -1,9 +1,10 @@
-"""Checked workloads for cloning, text, regex, iterators, files and processes."""
+"""Checked workloads for cloning, text, regex, iterators, files, processes and caches."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 from functools import partial
+import inspect
 import math
 from pathlib import Path
 import sys
@@ -16,6 +17,8 @@ from bench.speeds import Case, expect
 if TYPE_CHECKING:
     from collections.abc import Callable
     from contextlib import ExitStack
+
+    from unstd.serde.jsonx import Json
 
 
 EXCLUSIONS = {
@@ -555,6 +558,197 @@ def _process_cases() -> list[Case]:
     ]
 
 
+def _cache_cases(stack: ExitStack, *, comparison: bool = False) -> list[Case]:
+    try:
+        from unstd.cache import Cache
+    except ImportError:
+        if comparison:
+            return []
+        raise
+
+    directory = Path(
+        stack.enter_context(TemporaryDirectory(prefix="unstd-cache-speed-"))
+    )
+    path = directory / "results.sqlite3"
+    reader = Cache(path, namespace="read")
+    writer = Cache(path, namespace="write")
+    remover = Cache(path, namespace="delete")
+    clearer = Cache(path, namespace="clear")
+    computer = Cache(path, namespace="compute")
+    payload: Json = {"name": "result", "values": list(range(32)), "active": True}
+    expected = {"name": "result", "values": list(range(32)), "active": True}
+    reader.set("existing", payload)
+    computer.set("warm", payload)
+
+    def check_constructed(value: Any) -> None:
+        if type(value) is not Cache:
+            msg = "cache constructor returned an unexpected type"
+            raise AssertionError(msg)
+        expect("absent")(value.get("missing", "absent"))
+
+    def check_set(value: object) -> None:
+        expect(None)(value)
+        expect(expected)(writer.get("result"))
+
+    def delete_existing() -> bool:
+        remover.set("result", payload)
+        return remover.delete("result")
+
+    def check_deleted(value: object) -> None:
+        expect(True)(value)
+        expect("absent")(remover.get("result", "absent"))
+
+    def clear_entries() -> int:
+        clearer.set("first", payload)
+        clearer.set("second", payload)
+        return clearer.clear()
+
+    def check_cleared(value: object) -> None:
+        expect(2)(value)
+        expect("absent")(clearer.get("first", "absent"))
+        expect("absent")(clearer.get("second", "absent"))
+        expect(expected)(reader.get("existing"))
+
+    def unexpected_factory() -> Json:
+        msg = "a warm cache entry invoked its producer"
+        raise AssertionError(msg)
+
+    def cold_compute() -> Json:
+        computer.delete("cold")
+        return computer.get_or_compute("cold", lambda: payload)
+
+    codec_cases: list[Case] = []
+    if not comparison or "codec" in inspect.signature(Cache.get_or_compute).parameters:
+
+        class IntegerCodec:
+            """One signed 64-bit artifact with an exact-size decode contract."""
+
+            def encode(self, value: int, /) -> bytes:
+                return value.to_bytes(8, "little", signed=True)
+
+            def decode(self, raw: bytes, /) -> int:
+                if len(raw) != 8:
+                    msg = "integer artifact must contain exactly eight bytes"
+                    raise ValueError(msg)
+                return int.from_bytes(raw, "little", signed=True)
+
+        # Keep new artifact setup out of the existing JSON workload database.
+        codec_computer = Cache(
+            directory / "codec-results.sqlite3", namespace="codec-compute-v1"
+        )
+        codec = IntegerCodec()
+        number = -(1 << 40) - 17
+        codec_computer.get_or_compute("warm", lambda: number, codec=codec)
+
+        def unexpected_integer() -> int:
+            msg = "a warm typed artifact invoked its producer"
+            raise AssertionError(msg)
+
+        def cold_integer() -> int:
+            codec_computer.delete("cold")
+            return codec_computer.get_or_compute("cold", lambda: number, codec=codec)
+
+        codec_cases = [
+            Case(
+                "unstd.cache.Cache.get_or_compute#codec-hit",
+                partial(
+                    codec_computer.get_or_compute,
+                    "warm",
+                    unexpected_integer,
+                    codec=codec,
+                ),
+                expect(number),
+                "Read and validate one eight-byte signed 64-bit artifact through a structural codec; a warm producer must remain uncalled.",
+            ),
+            Case(
+                "unstd.cache.Cache.get_or_compute#codec-miss",
+                cold_integer,
+                expect(number),
+                "Delete a key, produce one signed 64-bit value, encode and validate its eight-byte artifact, then commit; includes deletion.",
+            ),
+        ]
+
+    batch_cases: list[Case] = []
+    if not comparison or hasattr(Cache, "get_many"):
+        batch_reader = Cache(path, namespace="batch-read")
+        batch_writer = Cache(path, namespace="batch-write")
+        batch_values = {f"summary-{index}": payload for index in range(64)}
+        batch_expected = dict.fromkeys(batch_values, expected)
+        batch_reader.set_many(batch_values)
+
+        def check_batch_set(value: object) -> None:
+            expect(None)(value)
+            expect(batch_expected)(batch_writer.get_many(batch_values))
+
+        batch_cases = [
+            Case(
+                "unstd.cache.Cache.get_many",
+                partial(batch_reader.get_many, batch_values),
+                expect(batch_expected),
+                "Read and decode 64 persisted 32-integer JSON records in one consistent SQLite snapshot.",
+            ),
+            Case(
+                "unstd.cache.Cache.set_many",
+                partial(batch_writer.set_many, batch_values),
+                check_batch_set,
+                "Encode and atomically replace 64 32-integer JSON records in one committed WAL transaction.",
+            ),
+        ]
+
+    return [
+        Case(
+            "unstd.cache.Cache",
+            partial(Cache, path, namespace="construct"),
+            check_constructed,
+            "Open and validate an existing local SQLite WAL cache file in an empty namespace.",
+        ),
+        Case(
+            "unstd.cache.Cache.get#hit",
+            partial(reader.get, "existing"),
+            expect(expected),
+            "Read and decode one persisted JSON record containing 32 integers through a fresh connection.",
+        ),
+        Case(
+            "unstd.cache.Cache.get#miss",
+            partial(reader.get, "missing", "absent"),
+            expect("absent"),
+            "Look up an absent key in a populated local WAL cache and return the caller default.",
+        ),
+        Case(
+            "unstd.cache.Cache.set",
+            partial(writer.set, "result", payload),
+            check_set,
+            "Encode and replace a 32-integer JSON record in a committed local WAL transaction.",
+        ),
+        Case(
+            "unstd.cache.Cache.delete",
+            delete_existing,
+            check_deleted,
+            "Set then delete one existing 32-integer JSON record; includes committed setup and deletion.",
+        ),
+        Case(
+            "unstd.cache.Cache.clear",
+            clear_entries,
+            check_cleared,
+            "Set two JSON records then clear their namespace; includes setup and checks isolation outside timing.",
+        ),
+        Case(
+            "unstd.cache.Cache.get_or_compute#hit",
+            partial(computer.get_or_compute, "warm", unexpected_factory),
+            expect(expected),
+            "Read a warm 32-integer JSON result and refuse any unexpected producer invocation.",
+        ),
+        Case(
+            "unstd.cache.Cache.get_or_compute#miss",
+            cold_compute,
+            expect(expected),
+            "Delete a key then compute, encode and commit its 32-integer JSON result; includes deletion.",
+        ),
+        *batch_cases,
+        *codec_cases,
+    ]
+
+
 def cases(stack: ExitStack, *, comparison: bool = False) -> list[Case]:
     """Build independent, bounded workloads and register owned fixture cleanup."""
     return [
@@ -564,4 +758,5 @@ def cases(stack: ExitStack, *, comparison: bool = False) -> list[Case]:
         *_regex_cases(stack, comparison=comparison),
         *_filesystem_cases(stack),
         *_process_cases(),
+        *_cache_cases(stack, comparison=comparison),
     ]

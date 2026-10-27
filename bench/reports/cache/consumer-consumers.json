@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "inspected_on": "2026-10-27",
+  "source": "local Consumer checkout; source code only",
+  "consumers": [
+    {
+      "path": "services/evaluation/evaluation/trainer/evaluate.py",
+      "file_sha256": "c023a236d81de40c6922d097c51b539b493a0fc4b2922206fc150708b3a1eea1",
+      "symbol": "summarize",
+      "line": 283,
+      "opportunity": "Persist JSON summaries of completed immutable evaluation inputs",
+      "key_inputs": [
+        "all evaluation input stream digests",
+        "scoring and contract version",
+        "eval_loss",
+        "passk_k"
+      ]
+    },
+    {
+      "path": "services/evaluation/evaluation/core/contracts.py",
+      "file_sha256": "f7993645eba0eaffed8c8b31f1809f56bd12b6e16d78e3bc046f50f8b2db216e",
+      "symbol": "EvalSummary",
+      "line": 249,
+      "role": "JSON output contract and validation on restoration"
+    },
+    {
+      "path": "benchmarks/harness/loaders/fixtures.py",
+      "file_sha256": "3336449d921a1c3388dadfd843c2aa3944c311aa486d7470f7a37350e67a1dd8",
+      "symbol": "load_tool_use_corpus",
+      "line": 155,
+      "opportunity": "Reuse validated large immutable JSONL corpora",
+      "key_inputs": [
+        "exact corpus bytes digest",
+        "validator version"
+      ]
+    },
+    {
+      "path": "benchmarks/suites/agent-orchestration/adapters/consumer.py",
+      "file_sha256": "e9551671c823830d9f8c9e5aa77e7afec27505ce6bb6a61b65f50b380844aab3",
+      "symbol": "_bench_tool_use",
+      "line": 185,
+      "role": "Verified caller of load_tool_use_corpus"
+    }
+  ],
+  "migration_performed": false,
+  "measured_consumer_speedup": false,
+  "publication_normalization": {
+    "kind": "public_metadata_normalization",
+    "note": "Consumer labels, artifact paths and machine-specific origins normalized for public publication. Historical timings, measured payload bytes and original source digests retain their captured meaning; normalized source/archive bytes have their own publication hashes."
+  }
+}

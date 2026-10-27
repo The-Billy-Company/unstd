@@ -12,6 +12,7 @@ from stdlib behavior.
   [`crypto`](crypto/README.md), [`rand`](rand/README.md), and
   [`time`](time/README.md).
 - Data and matching: [`clone`](clone/README.md),
+  [`cache`](cache/README.md),
   [`math`](math/README.md),
   [`containers`](containers/README.md), [`iters`](iters/README.md),
   [`model`](model/README.md), [`rex`](rex/README.md), and

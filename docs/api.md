@@ -26,6 +26,7 @@ dependency. Import the packages or domain modules that the application uses:
 ```python
 from unstd import clone, containers, fs, iters, proc, rand, rex, toml, yaml
 from unstd.audio import wavx
+from unstd.cache import Cache
 from unstd.compress import gzipx
 from unstd.crypto import digest, tls, token
 from unstd.ids import uid
@@ -68,6 +69,55 @@ Normalization, cosine, mean-square and weighted pooling accept
 `grouped_mean(values, labels, groups)` produces dense means including zero rows
 for absent labels. `frame(values, length, hop)` creates complete read-only frame
 views. Calculations default to float64; framing preserves the input numeric dtype.
+
+## Persistent result cache
+
+Import `from unstd.cache import Cache`.
+
+| Module | Exported API |
+| --- | --- |
+| [`unstd.cache`](../src/unstd/cache/__init__.py) | `Cache` |
+
+```text
+Cache(path, *, namespace="default", timeout=30.0, max_entries=None)
+cache.get(key, default=None)
+cache.set(key, value, *, ttl=None)
+cache.get_many(keys) -> dict[str, Json]
+cache.set_many(values, *, ttl=None)
+cache.delete(key) -> bool
+cache.clear() -> int
+cache.get_or_compute(key, factory, *, ttl=None, codec=None)
+```
+
+`Cache` persists JSON values in a dedicated local SQLite database. Instances
+open a fresh connection per operation, so the same instance can be shared by
+threads and needs no `close()` or context manager. Namespaces isolate keys and
+`clear()`; `max_entries` applies FIFO eviction within the writing namespace.
+Reads decode independent values and preserve the documented JSON normalization,
+including tuple-to-list conversion.
+
+`get_or_compute(..., codec=codec)` instead preserves a typed artifact return:
+the codec exposes `encode(value: T) -> bytes` and validating `decode(bytes) -> T`
+as methods or callable attributes. Cold and warm results both pass through the
+decoder; cold validation failure publishes nothing, and malformed warm data
+raises without recomputing. All readers must use the same codec and a versioned
+artifact namespace. The other read/write methods retain their JSON contract.
+
+An optional nonnegative `ttl` is measured in seconds from a successful write or
+producer completion. Expired values behave as missing; writes clean them up.
+`get_many` reads live hits in one consistent snapshot; `set_many` publishes a
+fully prepared mapping atomically in one transaction. Empty batches avoid I/O.
+`get_or_compute` rechecks under a key lock and computes outside SQLite
+transactions. Different lock stripes fill concurrently while same-key callers
+share a result. Warm reads and unrelated writes continue during computation.
+Canonical database paths and lock identities are prepared once per handle.
+Mutations use the same bounded 64-stripe protocol; clearing fences in-flight
+fills. A producer may read warm dependencies but same-database mutations or
+nested cold fills raise `RuntimeError`. Failures publish nothing, and a crash or
+later expiry can cause recomputation. External side effects are outside the
+cache transaction.
+No extra is required. See the [cache guide](../src/unstd/cache/README.md) for
+usage, validation, storage, and contention limits.
 
 ## Audio
 
