@@ -36,16 +36,18 @@ successful acceleration and every fallback boundary against the running stdlib.
 
 from __future__ import annotations
 
+import codecs
 from collections.abc import (  # noqa: TC003 — public annotation introspection
     Callable,
     Iterable,
+    Iterator,
 )
 from functools import wraps
 import io  # noqa: TC003 — public annotation introspection
 import json as _stdlib
 from math import isfinite
 from operator import index
-from typing import TYPE_CHECKING, Any, Protocol
+from typing import TYPE_CHECKING, Any, Protocol, cast
 
 from unstd.serde.encoding import (
     _compact_bytes,
@@ -79,6 +81,14 @@ class _BinaryWriter(Protocol):
 
     def write(self, data: bytes, /) -> object:
         """Write a prefix, returning its length or acknowledging it with None."""
+        ...
+
+
+class _StreamReader(Protocol):
+    """A text or binary source supporting bounded reads."""
+
+    def read(self, size: int, /) -> str | bytes | bytearray:
+        """Read at most size characters or bytes; an empty result means EOF."""
         ...
 
 
@@ -126,6 +136,7 @@ __all__ = [
     "dump_array",
     "dumpb",
     "dumps",
+    "iterload",
     "load",
     "loads",
 ]
@@ -430,6 +441,9 @@ def loads(s: str | bytes | bytearray, **kw: Any) -> Any:
     return _stdlib.loads(s, **kw)
 
 
+_ARRAY_LOADS = loads
+
+
 def dump(
     obj: object,
     fp: _TextWriter,
@@ -503,6 +517,268 @@ def dump_array(
         message = "chunk_size must be positive"
         raise ValueError(message)
     return write_array(rows, fp, size, sort_keys, default, numpy)
+
+
+def _stream_binary(fp: _StreamReader, size: int) -> bytes | bytearray:
+    """Read a bounded binary chunk and reject a stream that changes type."""
+    chunk = fp.read(size)
+    if not isinstance(chunk, bytes | bytearray):
+        message = "JSON binary stream read() must return bytes or bytearray"
+        raise TypeError(message)
+    return chunk
+
+
+def _input_chunks(
+    fp: _StreamReader, size: int, *, raw_utf8: bool = False
+) -> Iterator[str | bytes]:
+    """Decode short binary reads incrementally using stdlib's encoding rules."""
+    chunk = fp.read(size)
+    if isinstance(chunk, str):
+        while chunk:
+            yield chunk
+            chunk = fp.read(size)
+            if not isinstance(chunk, str):
+                message = "JSON text stream read() must return str"
+                raise TypeError(message)
+        return
+    if not isinstance(chunk, bytes | bytearray):
+        message = "JSON stream read() must return str, bytes or bytearray"
+        raise TypeError(message)
+
+    # Four initial bytes distinguish BOMs and unmarked UTF-8/16/32. Even a
+    # one-byte/short-read source must be sniffed before decoding its first byte.
+    prefix = chunk if type(chunk) is bytes else bytes(memoryview(chunk))
+    eof = not chunk
+    while len(prefix) < 4 and not eof:
+        part = _stream_binary(fp, min(size, 4 - len(prefix)))
+        prefix += part
+        eof = not part
+    encoding = _stdlib.detect_encoding(prefix)
+    if raw_utf8 and encoding in {"utf-8", "utf-8-sig"}:
+        if encoding == "utf-8-sig":
+            prefix = prefix[3:]
+        if prefix:
+            yield prefix
+        while not eof:
+            raw = _stream_binary(fp, size)
+            eof = not raw
+            if raw:
+                # Read the buffer itself: bytes/bytearray subclasses may give
+                # __bytes__ a meaning unrelated to the source's actual bytes.
+                yield raw if type(raw) is bytes else bytes(memoryview(raw))
+        return
+    decoder = codecs.getincrementaldecoder(encoding)("surrogatepass")
+    if text := decoder.decode(prefix, final=eof):
+        yield text
+    while not eof:
+        chunk = _stream_binary(fp, size)
+        eof = not chunk
+        if text := decoder.decode(chunk, final=eof):
+            yield text
+
+
+def _stream_chunks(fp: _StreamReader, size: int) -> Iterator[str]:
+    """Read decoded text for the portable per-item walker."""
+    return cast("Iterator[str]", _input_chunks(fp, size))
+
+
+def _decoded_chunks(chunks: Iterator[str | bytes]) -> Iterator[str]:
+    """Decode an unfinished UTF-8 window and its suffix without rereading."""
+    decoder = None
+    for chunk in chunks:
+        if isinstance(chunk, bytes):
+            if decoder is None:
+                decoder = codecs.getincrementaldecoder("utf-8")("surrogatepass")
+            if text := decoder.decode(chunk):
+                yield text
+        else:
+            yield chunk
+    if decoder is not None and (text := decoder.decode(b"", final=True)):
+        yield text
+
+
+def _array_fallback(
+    fp: _StreamReader,
+    size: int,
+    decode: Callable[[str], Any],
+    text: str | bytes,
+    chunks: Iterator[str | bytes],
+    state: str,
+) -> Iterator[Any]:
+    """Resume the portable item walker without rereading a consumed window."""
+    from itertools import chain
+
+    from unstd.serde._stream import items
+
+    remaining = _decoded_chunks(chain((text,), chunks))
+    return items(fp, size, decode, chunks=remaining, state=state)
+
+
+def _array_items(
+    fp: _StreamReader, size: int, decode: Callable[[str], Any]
+) -> Iterator[Any]:
+    """Decode bounded native windows, loading the general walker only on refusal."""
+    chunks = _input_chunks(fp, size, raw_utf8=True)
+    pending: Any = ""
+    carried = False
+    state = "root"
+    native = _native
+    for chunk in chunks:
+        text: Any = pending + chunk if pending else chunk
+        pending = ""
+        offset = 0
+        if type(text) is not str and type(text) is not bytes:
+            yield from _array_fallback(fp, size, decode, text, chunks, state)
+            return
+        binary = isinstance(text, bytes)
+        # Syntax literals have the same byte/Unicode representation as text.
+        whitespace: Any = b" \t\r\n" if binary else " \t\r\n"
+        opening = 91 if binary else "["
+        closing_array = 93 if binary else "]"
+        comma = 44 if binary else ","
+        closing_object: Any = b"}" if binary else "}"
+        delimiters = b",]" if binary else ",]"
+        while offset < len(text):
+            offset = len(text) - len(text[offset:].lstrip(whitespace))
+            if offset == len(text):
+                break
+            if state == "tail":
+                yield from _array_fallback(
+                    fp, size, decode, text[offset:], chunks, state
+                )
+                return
+            if state == "root":
+                if text[offset] != opening:
+                    yield from _array_fallback(
+                        fp, size, decode, text[offset:], chunks, state
+                    )
+                    return
+                state = "first"
+                offset += 1
+                continue
+            if text[offset] == closing_array:
+                if state != "first":
+                    yield from _array_fallback(
+                        fp, size, decode, text[offset:], chunks, state
+                    )
+                    return
+                state = "tail"
+                offset += 1
+                continue
+            if text[offset] == comma:
+                yield from _array_fallback(
+                    fp, size, decode, text[offset:], chunks, state
+                )
+                return
+            if (
+                decode is not _ARRAY_LOADS
+                or native is None
+                or not native.dispatch_ready(decode)
+            ):
+                yield from _array_fallback(
+                    fp, size, decode, text[offset:], chunks, state
+                )
+                return
+
+            # The decoder itself can prove a complete object-record prefix.
+            # An accepted synthetic array proves all its boundaries, including
+            # quotes and nesting; a failed guess delegates to the C framer.
+            end = -1
+            values: Any = None
+            closing = text.rfind(closing_object, offset)
+            if closing >= offset:
+                following = closing + 1
+                while following < len(text) and text[following] in whitespace:
+                    following += 1
+                if following < len(text) and text[following] in delimiters:
+                    try:
+                        values = native.array_decode(text, offset, following, decode)
+                    except (ValueError, RecursionError):
+                        pass
+                    else:
+                        if values is NotImplemented:
+                            yield from _array_fallback(
+                                fp, size, decode, text[offset:], chunks, state
+                            )
+                            return
+                        end = following
+            if end < 0:
+                span = native.array_boundary(text, offset)
+                if span is NotImplemented:
+                    yield from _array_fallback(
+                        fp, size, decode, text[offset:], chunks, state
+                    )
+                    return
+                end, _closed = span
+                if end < 0:
+                    # Try one short suffix in the next window. Large items and
+                    # repeated short reads then use the linear fragment walker.
+                    if not carried and len(text) - offset < size:
+                        pending = text[offset:]
+                        carried = True
+                        break
+                    yield from _array_fallback(
+                        fp, size, decode, text[offset:], chunks, state
+                    )
+                    return
+                try:
+                    values = native.array_decode(text, offset, end, decode)
+                except (ValueError, RecursionError):
+                    # Replaying item boundaries preserves valid prefix delivery
+                    # and item diagnostics. No custom hook has run in this path.
+                    yield from _array_fallback(
+                        fp, size, decode, text[offset:], chunks, state
+                    )
+                    return
+                if values is NotImplemented:
+                    yield from _array_fallback(
+                        fp, size, decode, text[offset:], chunks, state
+                    )
+                    return
+            state = "tail" if text[end] == closing_array else "value"
+            offset = end + 1
+            carried = False
+            yield from values
+            del values
+    if state != "tail":
+        yield from _array_fallback(fp, size, decode, pending, chunks, state)
+
+
+def iterload(fp: _StreamReader, *, chunk_size: int = 65536, **kw: Any) -> Iterator[Any]:
+    """Yield items from a top-level JSON array using bounded, incremental reads.
+
+    Accepts text or binary streams, including compressed files. Binary streams
+    use stdlib JSON's UTF-8/16/32 encoding detection. Default decoding can use
+    bounded native batches with :func:`loads`; decoder options and hooks apply
+    independently to each item. The outer array is framing only. No optional
+    dependency is required.
+
+    Reads start when iteration starts. Memory is proportional to ``chunk_size``
+    plus the largest encoded/decoded item, excluding values retained by callers
+    or hooks. The stream stays open, including on early termination. Exhaust the
+    iterator to validate the closing bracket and trailing input: a later error
+    can follow previously yielded values. JSONDecodeError positions refer to
+    the current item or input chunk, not the complete document.
+
+    ``chunk_size`` must be a positive integer and bounds each read request in
+    bytes for binary streams or characters for text streams. Short reads work.
+    """
+    size = index(chunk_size)
+    if size < 1:
+        message = "chunk_size must be positive"
+        raise ValueError(message)
+    decode = (lambda text: loads(text, **kw)) if kw else loads
+    if (
+        not kw
+        and decode is _ARRAY_LOADS
+        and _native is not None
+        and hasattr(_native, "array_decode")
+        and _native.dispatch_ready(decode)
+    ):
+        return _array_items(fp, size, decode)
+    from unstd.serde._stream import items
+
+    return items(fp, size, decode)
 
 
 if _native is not None:

@@ -1,0 +1,67 @@
+{
+  "method": "Project CustomBuildHook, serde extension only, isolated candidate source; actual subprocess compiler/linker argument vectors captured through a Python audit hook. Environment variables are intentionally omitted.",
+  "commands": [
+    {
+      "executable": "cc",
+      "argv": [
+        "cc",
+        "-fno-strict-overflow",
+        "-Wsign-compare",
+        "-Wunreachable-code",
+        "-DNDEBUG",
+        "-g",
+        "-O3",
+        "-Wall",
+        "-O3",
+        "-arch",
+        "arm64",
+        "-mmacosx-version-min=11.0",
+        "-Wno-nullability-completeness",
+        "-Wno-expansion-to-defined",
+        "-Wno-undef-prefix",
+        "-fPIC",
+        "-I/Users/griffinstrier/Billy-Company/unstd/.venv/include",
+        "-I/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/include/python3.14",
+        "-c",
+        "/Users/griffinstrier/Billy-Company/unstd/.local/json-array-stream-speed/candidate-bytes/native/serde/src/adapter.c",
+        "-o",
+        "/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/unstd-stream-bytes-build-poxs75lg/temp/Users/griffinstrier/Billy-Company/unstd/.local/json-array-stream-speed/candidate-bytes/native/serde/src/adapter.o",
+        "-ffile-prefix-map=/Users/griffinstrier/Billy-Company/unstd/.local/json-array-stream-speed/candidate-bytes=."
+      ],
+      "cwd": null
+    },
+    {
+      "executable": "cc",
+      "argv": [
+        "cc",
+        "-bundle",
+        "-undefined",
+        "dynamic_lookup",
+        "-arch",
+        "arm64",
+        "-mmacosx-version-min=11.0",
+        "-Wl,-headerpad,40",
+        "/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/unstd-stream-bytes-build-poxs75lg/temp/Users/griffinstrier/Billy-Company/unstd/.local/json-array-stream-speed/candidate-bytes/native/serde/src/adapter.o",
+        "-L/Users/griffinstrier/.local/share/mise/installs/python/3.14.9/lib",
+        "-o",
+        "/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/unstd-stream-bytes-build-poxs75lg/lib/unstd/serde/_json_native.cpython-314-darwin.so",
+        "-Xlinker",
+        "-oso_prefix",
+        "-Xlinker",
+        "/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/unstd-stream-bytes-build-poxs75lg/temp/Users/griffinstrier/Billy-Company/unstd/.local/json-array-stream-speed/candidate-bytes/"
+      ],
+      "cwd": null
+    }
+  ],
+  "source_sha256": {
+    "native/serde/src/adapter.c": "ebeeed9db687868c4ce34e2e46cf78b991484cef281d6020c64abd806a7cb8f1",
+    "native/serde/src/array.h": "6a2710d597224b814d69656a08f24ec9c9661461d19ebea3ce1dd71740e23e96",
+    "native/serde/src/decode.h": "908663c408e6bac6eed7a630a346dcf94ec0a722bb603d8647cd897217055dbc",
+    "native/serde/src/encode.h": "d9cd56b16da3dfd72b36fa8ae00f7b82e4be7cc37629ef129dc0b3a9c9ac6c1e",
+    "native/serde/src/escape.h": "937fe2288c702b38b752e4c7b4a09a91239bba86d2907b0f89c24f99a13d3e92",
+    "native/serde/src/identity.h": "e9dd9fb8b4f8188de9f3180699749fab34d16307177b5f0814a0cf1681d592bf",
+    "native/serde/src/lines.h": "b2f9b71876976199b3a02b53572672f581438e237353a92205211fbd27ea74d0",
+    "native/serde/src/repeat.h": "15a7ba8b7c3d07646a4d4ad0d5770f514ca21142d70162e9c1f18959b180d663"
+  },
+  "binary_sha256": "33640d5aa72178aada70a6c1a9d17380194c52c57452979d896bc96f27debbe6"
+}

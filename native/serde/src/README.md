@@ -46,6 +46,16 @@ reject every float before returning; otherwise the original document is retried
 with `msgspec`. `lines.h` trims/skips blank rows and uses that same decoder;
 refused or invalid rows discard the batch so Python can replay the whole input
 with its line numbers and diagnostics. Allocation failures propagate.
+`array.h` finds complete top-level array-item spans in bounded bytes or Unicode
+windows. Bytes and one-byte strings skip payloads using the shared
+quote/backslash scanner; wider Unicode retains code-point scanning.
+`array_decode` wraps an owned span in one private bytes/Unicode allocation and
+uses the existing decoder. It requires the original `loads` function and
+unchanged decoder configuration. The streaming reader can prove an object
+prefix directly through that decoder; other shapes use the native framer.
+An incomplete short suffix can join one following window. Large items and
+refused/invalid batches resume the portable walker with their original array
+state, avoiding repeated prefix parses and retaining item diagnostics.
 The result proof finishes each child before its sibling with at most 64 C
 container frames. Its visit budget is the original document's byte/code-point
 length: every newly parsed value consumes at least one source unit, so proof

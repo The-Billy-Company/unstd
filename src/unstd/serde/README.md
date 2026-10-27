@@ -136,6 +136,47 @@ The [serde reports](../../../bench/reports/serde/README.md) retain release
 regressions as well as gains. Compatibility checking has a cost relative to the
 permissive 2.1 codec; measured results are not a universal speed promise.
 
+### Stream a JSON array
+
+`iterload` processes an ordinary JSON-array export one item at a time, including
+from a gzip stream. It works in the base install and uses the same accelerated
+item decoder when the `serde` extra is present.
+
+```python
+from unstd.compress import gzipx
+from unstd.serde import jsonx
+
+with gzipx.open("events.json.gz", "rb") as source:
+    for event in jsonx.iterload(source):
+        process(event)
+```
+
+The input must be a top-level array. Text and binary streams support short,
+sized reads; binary encoding detection accepts UTF-8/16/32 with or without a
+BOM, following stdlib JSON. `chunk_size=65536` bounds each read in bytes or text
+characters. Buffering follows the chunk and largest encoded/decoded item,
+excluding values retained by the caller or decoder hooks. With the native
+extension and an unchanged default decoder, complete records share one bounded
+batch decode. UTF-8 binary input stays in bytes through that path; UTF-16/32
+input is decoded incrementally. An incomplete short suffix can join one next
+window, while large records keep the incremental item path. Invalid batches
+resume the portable walker with their original array state and diagnostics.
+
+Options such as `parse_float=Decimal`, `object_hook`, and `cls` apply separately
+to each item. The outer array is framing only. The caller owns the source;
+early termination leaves it open and may have read ahead by one chunk. Exhaust
+the iterator to validate the closing bracket and trailing input. A late error
+can follow valid yielded items. `JSONDecodeError` locations refer to the current
+item or input chunk, rather than the complete source document.
+
+The native batch path preserves bounded memory while reducing decoding overhead.
+Custom decoder options and the portable path retain item-by-item decoding. The
+[memory profile](../../../bench/profiles/json_array_stream.py) compares identical
+exports with independent aggregates, output hashes, first-item reads and fresh
+process peak memory; its
+[optimization comparison](../../../bench/reports/serde/json-array-stream-speedup.md)
+retains the original streaming path and eager loader as controls.
+
 ### Write a JSON array from a generator
 
 `dump_array` exports an iterable as one compact JSON array without building a
@@ -448,7 +489,8 @@ The package is a flat codec leaf: each file owns a concrete concern.
 
 | File | Responsibility |
 | --- | --- |
-| [`jsonx.py`](jsonx.py) | JSON entry points, backend selection and native dispatch |
+| [`jsonx.py`](jsonx.py) | JSON entry points, backend selection, native array batches and incremental input decoding |
+| [`_stream.py`](_stream.py) | Portable JSON-array framing and per-item decoder fallback |
 | [`encoding.py`](encoding.py) | Exact-output eligibility proofs, bounded snapshots and reusable encoders |
 | [`recursion.py`](recursion.py) | The two Python frames needed to retain stdlib recursion headroom |
 | [`b64.py`](b64.py) | Base64 codec and transport conveniences |

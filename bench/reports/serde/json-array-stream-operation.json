@@ -1,0 +1,302 @@
+{
+  "cases": {
+    "unstd.serde.jsonx.iterload": {
+      "ceiling_ns": 96593.5546875,
+      "iterations": 128,
+      "measured_ns": 74302.734375,
+      "note": "32 Unicode array records; new BytesIO and full iterator consumption included",
+      "rounds": 9,
+      "spread": 0.09710937623215835
+    }
+  },
+  "environment": {
+    "backends": {
+      "blake3": "1.0.10",
+      "immutables": "0.21",
+      "irregex": "2.6.0",
+      "libarchive-c": "5.3",
+      "msgspec": "0.22.0",
+      "numpy": "2.5.3",
+      "orjson": "3.12.0",
+      "protobuf": "7.36.2",
+      "pybase64": "1.5.0",
+      "pydantic": "2.13.5",
+      "pydantic-settings": "2.15.0",
+      "pyyaml": "6.0.3",
+      "rapidfuzz": "3.14.6",
+      "ruamel-yaml": "0.19.1",
+      "sortedcontainers": "2.4.0",
+      "soundfile": "0.14.0",
+      "tomlkit": "0.15.1",
+      "uuid-utils": "1.0.0",
+      "whenever": "0.10.5",
+      "zlib-ng": "1.0.0",
+      "zstandard": "0.25.0"
+    },
+    "cpu": "Apple M5 Max",
+    "cpu_count": 18,
+    "implementation": "CPython",
+    "machine": "arm64",
+    "native": {
+      "clone._clone_native": true,
+      "compress._gzip_native": true,
+      "containers._sorted_native": true,
+      "crypto._stream_native": true,
+      "serde._json_native": true,
+      "text._text_native": true
+    },
+    "native_implementations": {
+      "clone._clone_native": "c",
+      "compress._gzip_native": "c",
+      "containers._sorted_native": "c",
+      "crypto._stream_native": "c",
+      "serde._json_native": "c",
+      "text._text_native": "c"
+    },
+    "python": "3.14.9",
+    "python_debug": 0,
+    "python_free_threaded": 0,
+    "system": "Darwin",
+    "system_release": "25.6.0",
+    "thread_settings": {
+      "MKL_NUM_THREADS": null,
+      "OMP_NUM_THREADS": null,
+      "OPENBLAS_NUM_THREADS": null
+    }
+  },
+  "provenance": {
+    "build_environment": {
+      "CC": null,
+      "CFLAGS": null,
+      "CIBUILDWHEEL": null,
+      "CPPFLAGS": null,
+      "CXX": null,
+      "LDFLAGS": null,
+      "PYTHONMALLOC": null,
+      "UNSTD_GZIP_ZLIB_RS": null,
+      "UNSTD_TEXT_RUST": null
+    },
+    "compiler_configuration": {
+      "CC": "cc",
+      "CFLAGS": "-fno-strict-overflow -Wsign-compare -Wunreachable-code -DNDEBUG -g -O3 -Wall -O3 -arch arm64 -mmacosx-version-min=11.0 -Wno-nullability-completeness -Wno-expansion-to-defined -Wno-undef-prefix -fPIC",
+      "CONFIG_ARGS": "'--build=aarch64-apple-darwin' '--host=aarch64-apple-darwin' '--prefix=/install' '--with-openssl=/tmp/tmpbu7gfntw/tools/deps' '--with-system-expat' '--without-ensurepip' '--with-tail-call-interp' '--with-system-libmpdec' 'MODULE_BUILDTYPE=static' '--enable-loadable-sqlite-extensions' '--enable-static-libpython-for-interpreter' '--enable-shared' '--with-mimalloc' '--enable-optimizations' '--enable-experimental-jit=yes-off' '--with-lto=full' '--with-build-python=/tmp/tmpbu7gfntw/tools/host/bin/python3.14' 'ac_cv_lib_intl_textdomain=no' 'ac_cv_func_ptsname_r=no' 'ac_cv_func_explicit_bzero=no' '--with-dbmliborder=ndbm' 'build_alias=aarch64-apple-darwin' 'host_alias=aarch64-apple-darwin' 'PKG_CONFIG=pkg-config --static --define-prefix' 'PKG_CONFIG_PATH=/tmp/tmpbu7gfntw/tools/deps/share/pkgconfig:/tmp/tmpbu7gfntw/tools/deps/lib/pkgconfig' 'CC=clang' 'CFLAGS=-O3 -arch arm64 -mmacosx-version-min=11.0 -Wno-nullability-completeness -Wno-expansion-to-defined -Wno-undef-prefix -fPIC -Werror=unguarded-availability-new' 'LDFLAGS=-arch arm64 -mmacosx-version-min=11.0 -Wl,-headerpad,40' 'CPPFLAGS=-O3 -arch arm64 -mmacosx-version-min=11.0 -Wno-nullability-completeness -Wno-expansion-to-defined -Wno-undef-prefix -fPIC -Werror=unguarded-availability-new' 'PROFILE_TASK=-m test --pgo -j 12' 'BOLT_COMMON_FLAGS=' 'BOLT_APPLY_FLAGS='",
+      "CPPFLAGS": "-I. -I./Include -O3 -arch arm64 -mmacosx-version-min=11.0 -Wno-nullability-completeness -Wno-expansion-to-defined -Wno-undef-prefix -fPIC",
+      "CXX": "c++",
+      "LDFLAGS": "-arch arm64 -mmacosx-version-min=11.0 -Wl,-headerpad,40"
+    },
+    "harness_sources": {
+      "bench/core/timing.py": "d585627571b5daeca0a078b75484c84e769dce70a5b4448825fd811a8e3b61bc",
+      "bench/speeds.py": "ff16b2cd4e8c9b3945515dfceb22f984b12645f9198b97d6e1279a86d87b4c7f"
+    },
+    "loaded_files": {
+      "gzip": {
+        "path": "user-home/.local/share/mise/installs/python/3.14.9/lib/python3.14/gzip.py",
+        "sha256": "a5c6e7714160c6972427eb6612bb6ee0d4d6e70727c77f7ad4b6ab7a56b8cc50"
+      },
+      "unstd": {
+        "path": "src/unstd/__init__.py",
+        "sha256": "d8b97e9d70b4b9683808215377f6e8a9c4d388d86808d3609a3d108e95839f29"
+      },
+      "unstd.clone": {
+        "path": "src/unstd/clone/__init__.py",
+        "sha256": "ceea4742f2f34a4f7c6a5b86a969ce50be0702adb3f097f75000bada3e6ccf06"
+      },
+      "unstd.clone._clone_native": {
+        "path": "src/unstd/clone/_clone_native.cpython-314-darwin.so",
+        "sha256": "e22bba71dc540982a8f0ca9f2d5c67983e14b00ecb30c3e749686f359a2b7772"
+      },
+      "unstd.clone.structural": {
+        "path": "src/unstd/clone/structural.py",
+        "sha256": "32a555b2637bcc8bb95a83dca490b22f9befa30f789853d50f8a7d52b1a97033"
+      },
+      "unstd.compress": {
+        "path": "src/unstd/compress/__init__.py",
+        "sha256": "cb251e3f867d6a74a7edc31b129932c1a64146de63780f99140dbcf6b18b8067"
+      },
+      "unstd.compress._gzip_native": {
+        "path": "src/unstd/compress/_gzip_native.cpython-314-darwin.so",
+        "sha256": "c3f523955f2fbc05289a667fae9418c9f9ae2ed97b04dea0bf21d0a31ace46b8"
+      },
+      "unstd.compress.engines": {
+        "path": "src/unstd/compress/engines/__init__.py",
+        "sha256": "bf8be44e50d4127078cdf3f14abfe9bcf3b0fa0a742694b19a19e3499a5199f8"
+      },
+      "unstd.compress.engines.flush": {
+        "path": "src/unstd/compress/engines/flush.py",
+        "sha256": "178c00d304d2686501afe549f2dbb8051a9ef3f3c7ac03de0b5ad59d7c5a80ce"
+      },
+      "unstd.compress.engines.native": {
+        "path": "src/unstd/compress/engines/native.py",
+        "sha256": "73ff583b7289716201f8f0671f2ffb8edbe2cc5cc3204fb145ee7c24969cd8b3"
+      },
+      "unstd.compress.engines.reader": {
+        "path": "src/unstd/compress/engines/reader.py",
+        "sha256": "977e8dec4d4264a65c8809edc564cf135e8c176373bcf2995f229013e0a17e70"
+      },
+      "unstd.compress.gzipx": {
+        "path": "src/unstd/compress/gzipx.py",
+        "sha256": "437aa42321e4784b739db85a94a1a2cbdd40b7091b102348c9e3daf98fa726ad"
+      },
+      "unstd.containers": {
+        "path": "src/unstd/containers/__init__.py",
+        "sha256": "b7362441945751f734d2628772c0c23e1c8882850c356fcb70b9ca2b4812d5b1"
+      },
+      "unstd.containers._sorted_native": {
+        "path": "src/unstd/containers/_sorted_native.cpython-314-darwin.so",
+        "sha256": "00396cf02b0df3a6964b746d5e67d3c74500844c7d5940cbd35b62d4f97bfbe6"
+      },
+      "unstd.crypto": {
+        "path": "src/unstd/crypto/__init__.py",
+        "sha256": "6908e373f1ef84c7e673c59fc9f52a25871ba93eaa2f5a327940579d170e9270"
+      },
+      "unstd.crypto._stream_native": {
+        "path": "src/unstd/crypto/_stream_native.cpython-314-darwin.so",
+        "sha256": "68186df53f2f5d896168d7396aad3e5f1fa8955d2e994f2e6998f8591c185d83"
+      },
+      "unstd.crypto.digest": {
+        "path": "src/unstd/crypto/digest.py",
+        "sha256": "63b98bcd89d9b0783a654b6b672159bd5ec6b337bf12da330216a6f5d9272c5b"
+      },
+      "unstd.crypto.hashing": {
+        "path": "src/unstd/crypto/hashing.py",
+        "sha256": "7b4a4772e29d0b43346970666723b855f4f77b0c19f5bf4b1006c19b863b40a8"
+      },
+      "unstd.extras": {
+        "path": "src/unstd/extras.py",
+        "sha256": "f4dccfa432d9e580f731d81507781fbf1193d5e8367aa3e3ac44607ec58d268b"
+      },
+      "unstd.pack": {
+        "path": "src/unstd/pack/__init__.py",
+        "sha256": "d44fc4095d269ee7ef3f961cdc1e096b28af896900b387b8a907cea77228edd1"
+      },
+      "unstd.pack.binpack": {
+        "path": "src/unstd/pack/binpack.py",
+        "sha256": "29fd70e184bf2e18c288d4483fa630108cff1829af5b16ae129059afd9a7741e"
+      },
+      "unstd.pack.buffers": {
+        "path": "src/unstd/pack/buffers.py",
+        "sha256": "25f72e707c06616aeb6e867ba8f1e12680e52a9e9ae88992994f8553a69342ed"
+      },
+      "unstd.pack.dtypes": {
+        "path": "src/unstd/pack/dtypes.py",
+        "sha256": "284df185b9aea56a436d6052ddb749849a9cf956a70258fe7aef32b35120b763"
+      },
+      "unstd.rand": {
+        "path": "src/unstd/rand/__init__.py",
+        "sha256": "7fc8051be03f8826451a0130fe7872ed59404aeb7e94502847339d9d5f5e54bb"
+      },
+      "unstd.rand._rand_native": {
+        "path": "src/unstd/rand/_rand_native.cpython-314-darwin.so",
+        "sha256": "ffe0a8a9fcde008f912fc7c02679b4f0e3ad2364c3f68cda601460707170857c"
+      },
+      "unstd.rand.crypto": {
+        "path": "src/unstd/rand/crypto.py",
+        "sha256": "dde63b51dec92e542aba3e386fd27819d49a3db20e803f28250129f56b88edad"
+      },
+      "unstd.rand.draw": {
+        "path": "src/unstd/rand/draw.py",
+        "sha256": "d1db31f2d9f5f35143e4af2bb71126e2ed9a59e283b9b6adba73929b34b7fb7b"
+      },
+      "unstd.rand.keyed": {
+        "path": "src/unstd/rand/keyed.py",
+        "sha256": "ba4886979d9096f66b01fcf1451ee883a9fc5e37adb017e5371c784ae3f9cd47"
+      },
+      "unstd.rex": {
+        "path": "src/unstd/rex/__init__.py",
+        "sha256": "087d88f6739977e63fc5264e870ff313b895f11711af84f19fa201a2c2d25f01"
+      },
+      "unstd.rex._faithful": {
+        "path": "src/unstd/rex/patterns.py",
+        "sha256": "29f8819f85fb63c21dd996277a82e68f3aae0d19d426da5e605f77ef0d9320c8"
+      },
+      "unstd.rex.patterns": {
+        "path": "src/unstd/rex/patterns.py",
+        "sha256": "29f8819f85fb63c21dd996277a82e68f3aae0d19d426da5e605f77ef0d9320c8"
+      },
+      "unstd.rex.profile": {
+        "path": "src/unstd/rex/profile.py",
+        "sha256": "68371ace19ba5dc83e3b7e9d33c1f18cac1c651380be999e29f451c497423788"
+      },
+      "unstd.serde": {
+        "path": "src/unstd/serde/__init__.py",
+        "sha256": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d"
+      },
+      "unstd.serde._json_native": {
+        "path": "src/unstd/serde/_json_native.cpython-314-darwin.so",
+        "sha256": "8261c26070830e1cf796216662f7a40ef9d0157c833db20c0ccf33cc92c6d07f"
+      },
+      "unstd.serde._stream": {
+        "path": "src/unstd/serde/_stream.py",
+        "sha256": "ec559f7e241b26179b5af8c7d3c11e2982b59080bab45ae7ddb6acd49de05d2c"
+      },
+      "unstd.serde.b64": {
+        "path": "src/unstd/serde/b64.py",
+        "sha256": "c9fa198b3a6a4dffab239697c2d35c717ab2adea1977e7c1bd2226c30c4dbe32"
+      },
+      "unstd.serde.encoding": {
+        "path": "src/unstd/serde/encoding.py",
+        "sha256": "45591b272872b828ded3ec06fb6635b77e470c1c6456e5d56edf3a659dffacd7"
+      },
+      "unstd.serde.jsonx": {
+        "path": "src/unstd/serde/jsonx.py",
+        "sha256": "3c300cb8af8d9541fe620ef76c6512f3e5e651b62956e112a7e581587ed2f4cf"
+      },
+      "unstd.serde.ndjson": {
+        "path": "src/unstd/serde/ndjson.py",
+        "sha256": "aed41e482feaaf75afded30bfa67a5ea52819e460ad2cab2f549c602332c204e"
+      },
+      "unstd.serde.recursion": {
+        "path": "src/unstd/serde/recursion.py",
+        "sha256": "5e3741e4dfdd23b540c7208d4ee8fe55ae3785625d9fb336d46b8e06af5a3091"
+      },
+      "unstd.serde.structs": {
+        "path": "src/unstd/serde/structs.py",
+        "sha256": "ebe5eb0c8cba8e8bc01137c9e4f768d86cb900d15c67600cbaf38f0accfa6c65"
+      },
+      "unstd.text": {
+        "path": "src/unstd/text/__init__.py",
+        "sha256": "97ff7f7743ca9b2a4f123ca08a7423b41201c07ead775971e424c283a79f2392"
+      },
+      "unstd.text._text_native": {
+        "path": "src/unstd/text/_text_native.cpython-314-darwin.so",
+        "sha256": "355914ad0497767fdf4b061bc5c32a7eecd694caffc77f431b9d64444ff1d12b"
+      },
+      "unstd.text.fuzz": {
+        "path": "src/unstd/text/fuzz.py",
+        "sha256": "e3587d372fb1104100b0b3b7fa2b5a02c94a69e92a5ed0f3cc1955f13b7d0a97"
+      },
+      "zlib_ng._version": {
+        "path": ".venv/lib/python3.14/site-packages/zlib_ng/_version.py",
+        "sha256": "02cf7794b29318a0f0e4080d536184bd1f0e6f5c613b700f837cb6040f447d73"
+      },
+      "zlib_ng.gzip_ng": {
+        "path": ".venv/lib/python3.14/site-packages/zlib_ng/gzip_ng.py",
+        "sha256": "a4b59414593a47ff1c4ad64eb0209a607c6efd154da632617909b4cde62be414"
+      },
+      "zlib_ng.zlib_ng": {
+        "path": ".venv/lib/python3.14/site-packages/zlib_ng/zlib_ng.cpython-314-darwin.so",
+        "sha256": "790d02eaacad48e8f76544eaf166bad933051ef21f0ff1c39898b42e8f0d6cb9"
+      }
+    },
+    "python_build": "3.14.9 (main, Oct 21 2026, 17:47:42) [Clang 23.1.3 ]",
+    "python_executable": ".venv/bin/python",
+    "workload_sources": {
+      "speed_cases_codecs.py": "979beb0a469e8970755f5f4e4b335d2df6d5c04472ed009183001063a4d2fce3",
+      "speed_cases_operations.py": "89a627db909baeb7fcdcde984a93142ca5b1e9a11b7f32274516d57dc1179c9b",
+      "speed_cases_runtime.py": "b1e5bf41dd71aa289732d15574bb5a110c2650b989d7271b2927b6d4a4a075cd"
+    }
+  },
+  "recorded": "2026-10-27T20:57:27.899874+00:00",
+  "schema": 1,
+  "scope": "New JSON-array streaming workload only. This CPython 3.14 capture does not replace the aggregate historical CPython 3.13 baseline or any existing case ceiling.",
+  "tolerance": 0.3,
+  "workload_sources": {
+    "speed_cases_codecs.py": "979beb0a469e8970755f5f4e4b335d2df6d5c04472ed009183001063a4d2fce3",
+    "speed_cases_operations.py": "89a627db909baeb7fcdcde984a93142ca5b1e9a11b7f32274516d57dc1179c9b",
+    "speed_cases_runtime.py": "b1e5bf41dd71aa289732d15574bb5a110c2650b989d7271b2927b6d4a4a075cd"
+  },
+  "publication_normalization": {
+    "kind": "public_metadata_normalization",
+    "note": "Consumer labels, artifact paths and machine-specific origins normalized for public publication. Historical timings, measured payload bytes and original source digests retain their captured meaning; normalized source/archive bytes have their own publication hashes."
+  }
+}

@@ -1,0 +1,2150 @@
+{
+  "schema": 1,
+  "utc": "2026-10-27T20:55:57.519712+00:00",
+  "environment": {
+    "python": "3.14.9 (main, Oct 21 2026, 17:47:42) [Clang 23.1.3 ]",
+    "executable": ".venv/bin/python",
+    "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+    "machine": "arm64"
+  },
+  "harness": {
+    "path": "bench/profiles/json_array_stream.py",
+    "bytes": 21938,
+    "sha256": "033c4830e2e5f39a2b7936d94d67c402b6f5a4f6d6365b1792a5c13809189e7a"
+  },
+  "source_manifest": [
+    {
+      "path": "src/unstd/__init__.py",
+      "bytes": 5056,
+      "sha256": "3320d3faf5b87515bc8cd99a40be7980b9c6bc6ad6a79e53d5575a954dc70a68"
+    },
+    {
+      "path": "src/unstd/serde/__init__.py",
+      "bytes": 1288,
+      "sha256": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d"
+    },
+    {
+      "path": "src/unstd/serde/_json_native.cpython-314-darwin.so",
+      "bytes": 93952,
+      "sha256": "8261c26070830e1cf796216662f7a40ef9d0157c833db20c0ccf33cc92c6d07f"
+    },
+    {
+      "path": "src/unstd/serde/_json_native.pyi",
+      "bytes": 1029,
+      "sha256": "275cb98230bf6a337bbc224ebfcd13025859b7ccef2800fb6d4ef7ac3796d47e"
+    },
+    {
+      "path": "src/unstd/serde/_stream.py",
+      "bytes": 6300,
+      "sha256": "ec559f7e241b26179b5af8c7d3c11e2982b59080bab45ae7ddb6acd49de05d2c"
+    },
+    {
+      "path": "src/unstd/serde/b64.py",
+      "bytes": 9866,
+      "sha256": "c9fa198b3a6a4dffab239697c2d35c717ab2adea1977e7c1bd2226c30c4dbe32"
+    },
+    {
+      "path": "src/unstd/serde/encoding.py",
+      "bytes": 8129,
+      "sha256": "45591b272872b828ded3ec06fb6635b77e470c1c6456e5d56edf3a659dffacd7"
+    },
+    {
+      "path": "src/unstd/serde/jsonx.py",
+      "bytes": 18384,
+      "sha256": "3c300cb8af8d9541fe620ef76c6512f3e5e651b62956e112a7e581587ed2f4cf"
+    },
+    {
+      "path": "src/unstd/serde/ndjson.py",
+      "bytes": 12468,
+      "sha256": "aed41e482feaaf75afded30bfa67a5ea52819e460ad2cab2f549c602332c204e"
+    },
+    {
+      "path": "src/unstd/serde/recursion.py",
+      "bytes": 497,
+      "sha256": "5e3741e4dfdd23b540c7208d4ee8fe55ae3785625d9fb336d46b8e06af5a3091"
+    },
+    {
+      "path": "src/unstd/serde/structs.py",
+      "bytes": 6786,
+      "sha256": "ebe5eb0c8cba8e8bc01137c9e4f768d86cb900d15c67600cbaf38f0accfa6c65"
+    }
+  ],
+  "configuration": {
+    "rows": [
+      10000,
+      100000,
+      300000
+    ],
+    "rounds": 3,
+    "chunk_size": 65536,
+    "tracemalloc_supplement": true,
+    "min_rss_reduction": 3.0,
+    "max_stream_rss_growth_mib": 16.0
+  },
+  "method": "fresh interpreter per sample; alternating load/iterload order; same deterministic ASCII arrays; source reading, SHA256 and complete field aggregation inside timing; GC enabled; fixture creation and source receipts outside timing; optional tracing in separate workers",
+  "limitations": "synthetic event records on one host; OS file cache is uncontrolled; RSS includes interpreter and backend imports; first-item source bytes measure the raw source API, not physical disk traffic; timing includes aggregation and hashing and is not an isolated decoder throughput claim; memory depends on the largest individual item and configured chunk size",
+  "fixtures": [
+    {
+      "path": "/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/unstd-array-stream-z481lzog/events-10000.json",
+      "rows": 10000,
+      "source_bytes": 2823953,
+      "source_sha256": "24a18ec0eb64cc643519ce923f4bd0cdfbb97762d9a7d559e2dd7ea26346c922",
+      "first_record_end_bytes": 278,
+      "expected": {
+        "rows": 10000,
+        "id_sum": 49995000,
+        "token_sum": 40593256,
+        "passed": 8571,
+        "category_counts": {
+          "answer": 2500,
+          "tool": 2500,
+          "refusal": 2500,
+          "error": 2500
+        },
+        "response_characters": 2080000,
+        "fields_sha256": "3d59a078c7d3096ce95520e7087381a3151fcda7d6de07e937c293afd5e3b5be"
+      },
+      "runs": [
+        {
+          "pid": 51072,
+          "mode": "load",
+          "tracemalloc_enabled": false,
+          "wall_seconds": 0.009027125,
+          "cpu_seconds": 0.00877,
+          "rss_before": {
+            "bytes": 41025536,
+            "raw": 41025536,
+            "raw_unit": "bytes"
+          },
+          "peak_rss": {
+            "bytes": 54165504,
+            "raw": 54165504,
+            "raw_unit": "bytes"
+          },
+          "peak_traced_bytes": null,
+          "first_item_source_bytes": 2823953,
+          "first_item_wall_seconds": 0.004012666,
+          "source_bytes_read": 2823953,
+          "source_sha256": "24a18ec0eb64cc643519ce923f4bd0cdfbb97762d9a7d559e2dd7ea26346c922",
+          "read_calls": 1,
+          "unsized_read_calls": 1,
+          "max_requested_bytes": 0,
+          "summary": {
+            "rows": 10000,
+            "id_sum": 49995000,
+            "token_sum": 40593256,
+            "passed": 8571,
+            "category_counts": {
+              "answer": 2500,
+              "tool": 2500,
+              "refusal": 2500,
+              "error": 2500
+            },
+            "response_characters": 2080000,
+            "fields_sha256": "3d59a078c7d3096ce95520e7087381a3151fcda7d6de07e937c293afd5e3b5be"
+          },
+          "loaded_sources": [
+            {
+              "path": "src/unstd/__init__.py",
+              "bytes": 5056,
+              "sha256": "3320d3faf5b87515bc8cd99a40be7980b9c6bc6ad6a79e53d5575a954dc70a68"
+            },
+            {
+              "path": "src/unstd/serde/__init__.py",
+              "bytes": 1288,
+              "sha256": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d"
+            },
+            {
+              "path": "src/unstd/serde/_json_native.cpython-314-darwin.so",
+              "bytes": 93952,
+              "sha256": "8261c26070830e1cf796216662f7a40ef9d0157c833db20c0ccf33cc92c6d07f"
+            },
+            {
+              "path": "src/unstd/serde/encoding.py",
+              "bytes": 8129,
+              "sha256": "45591b272872b828ded3ec06fb6635b77e470c1c6456e5d56edf3a659dffacd7"
+            },
+            {
+              "path": "src/unstd/serde/jsonx.py",
+              "bytes": 18384,
+              "sha256": "3c300cb8af8d9541fe620ef76c6512f3e5e651b62956e112a7e581587ed2f4cf"
+            },
+            {
+              "path": "src/unstd/serde/recursion.py",
+              "bytes": 497,
+              "sha256": "5e3741e4dfdd23b540c7208d4ee8fe55ae3785625d9fb336d46b8e06af5a3091"
+            }
+          ],
+          "backends": {
+            "orjson": "3.12.0",
+            "msgspec": "0.22.0",
+            "numpy": "2.5.3"
+          },
+          "round": 0,
+          "order": 0
+        },
+        {
+          "pid": 51073,
+          "mode": "iterload",
+          "tracemalloc_enabled": false,
+          "wall_seconds": 0.040503042,
+          "cpu_seconds": 0.039397,
+          "rss_before": {
+            "bytes": 40419328,
+            "raw": 40419328,
+            "raw_unit": "bytes"
+          },
+          "peak_rss": {
+            "bytes": 40615936,
+            "raw": 40615936,
+            "raw_unit": "bytes"
+          },
+          "peak_traced_bytes": null,
+          "first_item_source_bytes": 65536,
+          "first_item_wall_seconds": 0.000251,
+          "source_bytes_read": 2823953,
+          "source_sha256": "24a18ec0eb64cc643519ce923f4bd0cdfbb97762d9a7d559e2dd7ea26346c922",
+          "read_calls": 45,
+          "unsized_read_calls": 0,
+          "max_requested_bytes": 65536,
+          "summary": {
+            "rows": 10000,
+            "id_sum": 49995000,
+            "token_sum": 40593256,
+            "passed": 8571,
+            "category_counts": {
+              "answer": 2500,
+              "tool": 2500,
+              "refusal": 2500,
+              "error": 2500
+            },
+            "response_characters": 2080000,
+            "fields_sha256": "3d59a078c7d3096ce95520e7087381a3151fcda7d6de07e937c293afd5e3b5be"
+          },
+          "loaded_sources": [
+            {
+              "path": "src/unstd/__init__.py",
+              "bytes": 5056,
+              "sha256": "3320d3faf5b87515bc8cd99a40be7980b9c6bc6ad6a79e53d5575a954dc70a68"
+            },
+            {
+              "path": "src/unstd/serde/__init__.py",
+              "bytes": 1288,
+              "sha256": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d"
+            },
+            {
+              "path": "src/unstd/serde/_json_native.cpython-314-darwin.so",
+              "bytes": 93952,
+              "sha256": "8261c26070830e1cf796216662f7a40ef9d0157c833db20c0ccf33cc92c6d07f"
+            },
+            {
+              "path": "src/unstd/serde/_stream.py",
+              "bytes": 6300,
+              "sha256": "ec559f7e241b26179b5af8c7d3c11e2982b59080bab45ae7ddb6acd49de05d2c"
+            },
+            {
+              "path": "src/unstd/serde/encoding.py",
+              "bytes": 8129,
+              "sha256": "45591b272872b828ded3ec06fb6635b77e470c1c6456e5d56edf3a659dffacd7"
+            },
+            {
+              "path": "src/unstd/serde/jsonx.py",
+              "bytes": 18384,
+              "sha256": "3c300cb8af8d9541fe620ef76c6512f3e5e651b62956e112a7e581587ed2f4cf"
+            },
+            {
+              "path": "src/unstd/serde/recursion.py",
+              "bytes": 497,
+              "sha256": "5e3741e4dfdd23b540c7208d4ee8fe55ae3785625d9fb336d46b8e06af5a3091"
+            }
+          ],
+          "backends": {
+            "orjson": "3.12.0",
+            "msgspec": "0.22.0",
+            "numpy": "2.5.3"
+          },
+          "round": 0,
+          "order": 1
+        },
+        {
+          "pid": 51075,
+          "mode": "iterload",
+          "tracemalloc_enabled": false,
+          "wall_seconds": 0.04029225,
+          "cpu_seconds": 0.03928,
+          "rss_before": {
+            "bytes": 40386560,
+            "raw": 40386560,
+            "raw_unit": "bytes"
+          },
+          "peak_rss": {
+            "bytes": 40599552,
+            "raw": 40599552,
+            "raw_unit": "bytes"
+          },
+          "peak_traced_bytes": null,
+          "first_item_source_bytes": 65536,
+          "first_item_wall_seconds": 0.000245833,
+          "source_bytes_read": 2823953,
+          "source_sha256": "24a18ec0eb64cc643519ce923f4bd0cdfbb97762d9a7d559e2dd7ea26346c922",
+          "read_calls": 45,
+          "unsized_read_calls": 0,
+          "max_requested_bytes": 65536,
+          "summary": {
+            "rows": 10000,
+            "id_sum": 49995000,
+            "token_sum": 40593256,
+            "passed": 8571,
+            "category_counts": {
+              "answer": 2500,
+              "tool": 2500,
+              "refusal": 2500,
+              "error": 2500
+            },
+            "response_characters": 2080000,
+            "fields_sha256": "3d59a078c7d3096ce95520e7087381a3151fcda7d6de07e937c293afd5e3b5be"
+          },
+          "loaded_sources": [
+            {
+              "path": "src/unstd/__init__.py",
+              "bytes": 5056,
+              "sha256": "3320d3faf5b87515bc8cd99a40be7980b9c6bc6ad6a79e53d5575a954dc70a68"
+            },
+            {
+              "path": "src/unstd/serde/__init__.py",
+              "bytes": 1288,
+              "sha256": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d"
+            },
+            {
+              "path": "src/unstd/serde/_json_native.cpython-314-darwin.so",
+              "bytes": 93952,
+              "sha256": "8261c26070830e1cf796216662f7a40ef9d0157c833db20c0ccf33cc92c6d07f"
+            },
+            {
+              "path": "src/unstd/serde/_stream.py",
+              "bytes": 6300,
+              "sha256": "ec559f7e241b26179b5af8c7d3c11e2982b59080bab45ae7ddb6acd49de05d2c"
+            },
+            {
+              "path": "src/unstd/serde/encoding.py",
+              "bytes": 8129,
+              "sha256": "45591b272872b828ded3ec06fb6635b77e470c1c6456e5d56edf3a659dffacd7"
+            },
+            {
+              "path": "src/unstd/serde/jsonx.py",
+              "bytes": 18384,
+              "sha256": "3c300cb8af8d9541fe620ef76c6512f3e5e651b62956e112a7e581587ed2f4cf"
+            },
+            {
+              "path": "src/unstd/serde/recursion.py",
+              "bytes": 497,
+              "sha256": "5e3741e4dfdd23b540c7208d4ee8fe55ae3785625d9fb336d46b8e06af5a3091"
+            }
+          ],
+          "backends": {
+            "orjson": "3.12.0",
+            "msgspec": "0.22.0",
+            "numpy": "2.5.3"
+          },
+          "round": 1,
+          "order": 0
+        },
+        {
+          "pid": 51076,
+          "mode": "load",
+          "tracemalloc_enabled": false,
+          "wall_seconds": 0.008607834,
+          "cpu_seconds": 0.008254,
+          "rss_before": {
+            "bytes": 40779776,
+            "raw": 40779776,
+            "raw_unit": "bytes"
+          },
+          "peak_rss": {
+            "bytes": 53952512,
+            "raw": 53952512,
+            "raw_unit": "bytes"
+          },
+          "peak_traced_bytes": null,
+          "first_item_source_bytes": 2823953,
+          "first_item_wall_seconds": 0.003541584,
+          "source_bytes_read": 2823953,
+          "source_sha256": "24a18ec0eb64cc643519ce923f4bd0cdfbb97762d9a7d559e2dd7ea26346c922",
+          "read_calls": 1,
+          "unsized_read_calls": 1,
+          "max_requested_bytes": 0,
+          "summary": {
+            "rows": 10000,
+            "id_sum": 49995000,
+            "token_sum": 40593256,
+            "passed": 8571,
+            "category_counts": {
+              "answer": 2500,
+              "tool": 2500,
+              "refusal": 2500,
+              "error": 2500
+            },
+            "response_characters": 2080000,
+            "fields_sha256": "3d59a078c7d3096ce95520e7087381a3151fcda7d6de07e937c293afd5e3b5be"
+          },
+          "loaded_sources": [
+            {
+              "path": "src/unstd/__init__.py",
+              "bytes": 5056,
+              "sha256": "3320d3faf5b87515bc8cd99a40be7980b9c6bc6ad6a79e53d5575a954dc70a68"
+            },
+            {
+              "path": "src/unstd/serde/__init__.py",
+              "bytes": 1288,
+              "sha256": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d"
+            },
+            {
+              "path": "src/unstd/serde/_json_native.cpython-314-darwin.so",
+              "bytes": 93952,
+              "sha256": "8261c26070830e1cf796216662f7a40ef9d0157c833db20c0ccf33cc92c6d07f"
+            },
+            {
+              "path": "src/unstd/serde/encoding.py",
+              "bytes": 8129,
+              "sha256": "45591b272872b828ded3ec06fb6635b77e470c1c6456e5d56edf3a659dffacd7"
+            },
+            {
+              "path": "src/unstd/serde/jsonx.py",
+              "bytes": 18384,
+              "sha256": "3c300cb8af8d9541fe620ef76c6512f3e5e651b62956e112a7e581587ed2f4cf"
+            },
+            {
+              "path": "src/unstd/serde/recursion.py",
+              "bytes": 497,
+              "sha256": "5e3741e4dfdd23b540c7208d4ee8fe55ae3785625d9fb336d46b8e06af5a3091"
+            }
+          ],
+          "backends": {
+            "orjson": "3.12.0",
+            "msgspec": "0.22.0",
+            "numpy": "2.5.3"
+          },
+          "round": 1,
+          "order": 1
+        },
+        {
+          "pid": 51079,
+          "mode": "load",
+          "tracemalloc_enabled": false,
+          "wall_seconds": 0.008648917,
+          "cpu_seconds": 0.008447,
+          "rss_before": {
+            "bytes": 40566784,
+            "raw": 40566784,
+            "raw_unit": "bytes"
+          },
+          "peak_rss": {
+            "bytes": 53690368,
+            "raw": 53690368,
+            "raw_unit": "bytes"
+          },
+          "peak_traced_bytes": null,
+          "first_item_source_bytes": 2823953,
+          "first_item_wall_seconds": 0.003679167,
+          "source_bytes_read": 2823953,
+          "source_sha256": "24a18ec0eb64cc643519ce923f4bd0cdfbb97762d9a7d559e2dd7ea26346c922",
+          "read_calls": 1,
+          "unsized_read_calls": 1,
+          "max_requested_bytes": 0,
+          "summary": {
+            "rows": 10000,
+            "id_sum": 49995000,
+            "token_sum": 40593256,
+            "passed": 8571,
+            "category_counts": {
+              "answer": 2500,
+              "tool": 2500,
+              "refusal": 2500,
+              "error": 2500
+            },
+            "response_characters": 2080000,
+            "fields_sha256": "3d59a078c7d3096ce95520e7087381a3151fcda7d6de07e937c293afd5e3b5be"
+          },
+          "loaded_sources": [
+            {
+              "path": "src/unstd/__init__.py",
+              "bytes": 5056,
+              "sha256": "3320d3faf5b87515bc8cd99a40be7980b9c6bc6ad6a79e53d5575a954dc70a68"
+            },
+            {
+              "path": "src/unstd/serde/__init__.py",
+              "bytes": 1288,
+              "sha256": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d"
+            },
+            {
+              "path": "src/unstd/serde/_json_native.cpython-314-darwin.so",
+              "bytes": 93952,
+              "sha256": "8261c26070830e1cf796216662f7a40ef9d0157c833db20c0ccf33cc92c6d07f"
+            },
+            {
+              "path": "src/unstd/serde/encoding.py",
+              "bytes": 8129,
+              "sha256": "45591b272872b828ded3ec06fb6635b77e470c1c6456e5d56edf3a659dffacd7"
+            },
+            {
+              "path": "src/unstd/serde/jsonx.py",
+              "bytes": 18384,
+              "sha256": "3c300cb8af8d9541fe620ef76c6512f3e5e651b62956e112a7e581587ed2f4cf"
+            },
+            {
+              "path": "src/unstd/serde/recursion.py",
+              "bytes": 497,
+              "sha256": "5e3741e4dfdd23b540c7208d4ee8fe55ae3785625d9fb336d46b8e06af5a3091"
+            }
+          ],
+          "backends": {
+            "orjson": "3.12.0",
+            "msgspec": "0.22.0",
+            "numpy": "2.5.3"
+          },
+          "round": 2,
+          "order": 0
+        },
+        {
+          "pid": 51084,
+          "mode": "iterload",
+          "tracemalloc_enabled": false,
+          "wall_seconds": 0.046169125,
+          "cpu_seconds": 0.044174,
+          "rss_before": {
+            "bytes": 40665088,
+            "raw": 40665088,
+            "raw_unit": "bytes"
+          },
+          "peak_rss": {
+            "bytes": 40910848,
+            "raw": 40910848,
+            "raw_unit": "bytes"
+          },
+          "peak_traced_bytes": null,
+          "first_item_source_bytes": 65536,
+          "first_item_wall_seconds": 0.000242583,
+          "source_bytes_read": 2823953,
+          "source_sha256": "24a18ec0eb64cc643519ce923f4bd0cdfbb97762d9a7d559e2dd7ea26346c922",
+          "read_calls": 45,
+          "unsized_read_calls": 0,
+          "max_requested_bytes": 65536,
+          "summary": {
+            "rows": 10000,
+            "id_sum": 49995000,
+            "token_sum": 40593256,
+            "passed": 8571,
+            "category_counts": {
+              "answer": 2500,
+              "tool": 2500,
+              "refusal": 2500,
+              "error": 2500
+            },
+            "response_characters": 2080000,
+            "fields_sha256": "3d59a078c7d3096ce95520e7087381a3151fcda7d6de07e937c293afd5e3b5be"
+          },
+          "loaded_sources": [
+            {
+              "path": "src/unstd/__init__.py",
+              "bytes": 5056,
+              "sha256": "3320d3faf5b87515bc8cd99a40be7980b9c6bc6ad6a79e53d5575a954dc70a68"
+            },
+            {
+              "path": "src/unstd/serde/__init__.py",
+              "bytes": 1288,
+              "sha256": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d"
+            },
+            {
+              "path": "src/unstd/serde/_json_native.cpython-314-darwin.so",
+              "bytes": 93952,
+              "sha256": "8261c26070830e1cf796216662f7a40ef9d0157c833db20c0ccf33cc92c6d07f"
+            },
+            {
+              "path": "src/unstd/serde/_stream.py",
+              "bytes": 6300,
+              "sha256": "ec559f7e241b26179b5af8c7d3c11e2982b59080bab45ae7ddb6acd49de05d2c"
+            },
+            {
+              "path": "src/unstd/serde/encoding.py",
+              "bytes": 8129,
+              "sha256": "45591b272872b828ded3ec06fb6635b77e470c1c6456e5d56edf3a659dffacd7"
+            },
+            {
+              "path": "src/unstd/serde/jsonx.py",
+              "bytes": 18384,
+              "sha256": "3c300cb8af8d9541fe620ef76c6512f3e5e651b62956e112a7e581587ed2f4cf"
+            },
+            {
+              "path": "src/unstd/serde/recursion.py",
+              "bytes": 497,
+              "sha256": "5e3741e4dfdd23b540c7208d4ee8fe55ae3785625d9fb336d46b8e06af5a3091"
+            }
+          ],
+          "backends": {
+            "orjson": "3.12.0",
+            "msgspec": "0.22.0",
+            "numpy": "2.5.3"
+          },
+          "round": 2,
+          "order": 1
+        }
+      ],
+      "allocation_runs": [
+        {
+          "pid": 51086,
+          "mode": "load",
+          "tracemalloc_enabled": true,
+          "wall_seconds": 0.083043375,
+          "cpu_seconds": 0.082156,
+          "rss_before": {
+            "bytes": 40484864,
+            "raw": 40484864,
+            "raw_unit": "bytes"
+          },
+          "peak_rss": {
+            "bytes": 58114048,
+            "raw": 58114048,
+            "raw_unit": "bytes"
+          },
+          "peak_traced_bytes": 42212864,
+          "first_item_source_bytes": 2823953,
+          "first_item_wall_seconds": 0.009942708,
+          "source_bytes_read": 2823953,
+          "source_sha256": "24a18ec0eb64cc643519ce923f4bd0cdfbb97762d9a7d559e2dd7ea26346c922",
+          "read_calls": 1,
+          "unsized_read_calls": 1,
+          "max_requested_bytes": 0,
+          "summary": {
+            "rows": 10000,
+            "id_sum": 49995000,
+            "token_sum": 40593256,
+            "passed": 8571,
+            "category_counts": {
+              "answer": 2500,
+              "tool": 2500,
+              "refusal": 2500,
+              "error": 2500
+            },
+            "response_characters": 2080000,
+            "fields_sha256": "3d59a078c7d3096ce95520e7087381a3151fcda7d6de07e937c293afd5e3b5be"
+          },
+          "loaded_sources": [
+            {
+              "path": "src/unstd/__init__.py",
+              "bytes": 5056,
+              "sha256": "3320d3faf5b87515bc8cd99a40be7980b9c6bc6ad6a79e53d5575a954dc70a68"
+            },
+            {
+              "path": "src/unstd/serde/__init__.py",
+              "bytes": 1288,
+              "sha256": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d"
+            },
+            {
+              "path": "src/unstd/serde/_json_native.cpython-314-darwin.so",
+              "bytes": 93952,
+              "sha256": "8261c26070830e1cf796216662f7a40ef9d0157c833db20c0ccf33cc92c6d07f"
+            },
+            {
+              "path": "src/unstd/serde/encoding.py",
+              "bytes": 8129,
+              "sha256": "45591b272872b828ded3ec06fb6635b77e470c1c6456e5d56edf3a659dffacd7"
+            },
+            {
+              "path": "src/unstd/serde/jsonx.py",
+              "bytes": 18384,
+              "sha256": "3c300cb8af8d9541fe620ef76c6512f3e5e651b62956e112a7e581587ed2f4cf"
+            },
+            {
+              "path": "src/unstd/serde/recursion.py",
+              "bytes": 497,
+              "sha256": "5e3741e4dfdd23b540c7208d4ee8fe55ae3785625d9fb336d46b8e06af5a3091"
+            }
+          ],
+          "backends": {
+            "orjson": "3.12.0",
+            "msgspec": "0.22.0",
+            "numpy": "2.5.3"
+          }
+        },
+        {
+          "pid": 51091,
+          "mode": "iterload",
+          "tracemalloc_enabled": true,
+          "wall_seconds": 0.487086583,
+          "cpu_seconds": 0.461696,
+          "rss_before": {
+            "bytes": 40681472,
+            "raw": 40681472,
+            "raw_unit": "bytes"
+          },
+          "peak_rss": {
+            "bytes": 41189376,
+            "raw": 41189376,
+            "raw_unit": "bytes"
+          },
+          "peak_traced_bytes": 292068,
+          "first_item_source_bytes": 65536,
+          "first_item_wall_seconds": 0.000472375,
+          "source_bytes_read": 2823953,
+          "source_sha256": "24a18ec0eb64cc643519ce923f4bd0cdfbb97762d9a7d559e2dd7ea26346c922",
+          "read_calls": 45,
+          "unsized_read_calls": 0,
+          "max_requested_bytes": 65536,
+          "summary": {
+            "rows": 10000,
+            "id_sum": 49995000,
+            "token_sum": 40593256,
+            "passed": 8571,
+            "category_counts": {
+              "answer": 2500,
+              "tool": 2500,
+              "refusal": 2500,
+              "error": 2500
+            },
+            "response_characters": 2080000,
+            "fields_sha256": "3d59a078c7d3096ce95520e7087381a3151fcda7d6de07e937c293afd5e3b5be"
+          },
+          "loaded_sources": [
+            {
+              "path": "src/unstd/__init__.py",
+              "bytes": 5056,
+              "sha256": "3320d3faf5b87515bc8cd99a40be7980b9c6bc6ad6a79e53d5575a954dc70a68"
+            },
+            {
+              "path": "src/unstd/serde/__init__.py",
+              "bytes": 1288,
+              "sha256": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d"
+            },
+            {
+              "path": "src/unstd/serde/_json_native.cpython-314-darwin.so",
+              "bytes": 93952,
+              "sha256": "8261c26070830e1cf796216662f7a40ef9d0157c833db20c0ccf33cc92c6d07f"
+            },
+            {
+              "path": "src/unstd/serde/_stream.py",
+              "bytes": 6300,
+              "sha256": "ec559f7e241b26179b5af8c7d3c11e2982b59080bab45ae7ddb6acd49de05d2c"
+            },
+            {
+              "path": "src/unstd/serde/encoding.py",
+              "bytes": 8129,
+              "sha256": "45591b272872b828ded3ec06fb6635b77e470c1c6456e5d56edf3a659dffacd7"
+            },
+            {
+              "path": "src/unstd/serde/jsonx.py",
+              "bytes": 18384,
+              "sha256": "3c300cb8af8d9541fe620ef76c6512f3e5e651b62956e112a7e581587ed2f4cf"
+            },
+            {
+              "path": "src/unstd/serde/recursion.py",
+              "bytes": 497,
+              "sha256": "5e3741e4dfdd23b540c7208d4ee8fe55ae3785625d9fb336d46b8e06af5a3091"
+            }
+          ],
+          "backends": {
+            "orjson": "3.12.0",
+            "msgspec": "0.22.0",
+            "numpy": "2.5.3"
+          }
+        }
+      ],
+      "summary": {
+        "load": {
+          "median_wall_seconds": 0.008648917,
+          "median_cpu_seconds": 0.008447,
+          "median_peak_rss_bytes": 53952512,
+          "median_first_item_wall_seconds": 0.003679167,
+          "median_first_item_source_bytes": 2823953,
+          "input_mib_per_second": 311.38366188950346
+        },
+        "iterload": {
+          "median_wall_seconds": 0.040503042,
+          "median_cpu_seconds": 0.039397,
+          "median_peak_rss_bytes": 40615936,
+          "median_first_item_wall_seconds": 0.000245833,
+          "median_first_item_source_bytes": 65536,
+          "input_mib_per_second": 66.49207846754767
+        },
+        "peak_rss_ratio_load_over_iterload": 1.328358208955224,
+        "median_paired_wall_ratio_load_over_iterload": 0.2136349794315284
+      }
+    },
+    {
+      "path": "/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/unstd-array-stream-z481lzog/events-100000.json",
+      "rows": 100000,
+      "source_bytes": 28339600,
+      "source_sha256": "f4f921b387e1dcd94afa87e4fbdd4b5436752f2ab4b649db0f481215fd07c3d3",
+      "first_record_end_bytes": 278,
+      "expected": {
+        "rows": 100000,
+        "id_sum": 4999950000,
+        "token_sum": 409061136,
+        "passed": 85714,
+        "category_counts": {
+          "answer": 25000,
+          "tool": 25000,
+          "refusal": 25000,
+          "error": 25000
+        },
+        "response_characters": 20800000,
+        "fields_sha256": "4d2fc6e4cc3a489ced81f87a4aaf337c08da365577a3c8138b82600edb0e4834"
+      },
+      "runs": [
+        {
+          "pid": 51121,
+          "mode": "iterload",
+          "tracemalloc_enabled": false,
+          "wall_seconds": 0.562259625,
+          "cpu_seconds": 0.472892,
+          "rss_before": {
+            "bytes": 40960000,
+            "raw": 40960000,
+            "raw_unit": "bytes"
+          },
+          "peak_rss": {
+            "bytes": 41336832,
+            "raw": 41336832,
+            "raw_unit": "bytes"
+          },
+          "peak_traced_bytes": null,
+          "first_item_source_bytes": 65536,
+          "first_item_wall_seconds": 0.000334083,
+          "source_bytes_read": 28339600,
+          "source_sha256": "f4f921b387e1dcd94afa87e4fbdd4b5436752f2ab4b649db0f481215fd07c3d3",
+          "read_calls": 434,
+          "unsized_read_calls": 0,
+          "max_requested_bytes": 65536,
+          "summary": {
+            "rows": 100000,
+            "id_sum": 4999950000,
+            "token_sum": 409061136,
+            "passed": 85714,
+            "category_counts": {
+              "answer": 25000,
+              "tool": 25000,
+              "refusal": 25000,
+              "error": 25000
+            },
+            "response_characters": 20800000,
+            "fields_sha256": "4d2fc6e4cc3a489ced81f87a4aaf337c08da365577a3c8138b82600edb0e4834"
+          },
+          "loaded_sources": [
+            {
+              "path": "src/unstd/__init__.py",
+              "bytes": 5056,
+              "sha256": "3320d3faf5b87515bc8cd99a40be7980b9c6bc6ad6a79e53d5575a954dc70a68"
+            },
+            {
+              "path": "src/unstd/serde/__init__.py",
+              "bytes": 1288,
+              "sha256": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d"
+            },
+            {
+              "path": "src/unstd/serde/_json_native.cpython-314-darwin.so",
+              "bytes": 93952,
+              "sha256": "8261c26070830e1cf796216662f7a40ef9d0157c833db20c0ccf33cc92c6d07f"
+            },
+            {
+              "path": "src/unstd/serde/_stream.py",
+              "bytes": 6300,
+              "sha256": "ec559f7e241b26179b5af8c7d3c11e2982b59080bab45ae7ddb6acd49de05d2c"
+            },
+            {
+              "path": "src/unstd/serde/encoding.py",
+              "bytes": 8129,
+              "sha256": "45591b272872b828ded3ec06fb6635b77e470c1c6456e5d56edf3a659dffacd7"
+            },
+            {
+              "path": "src/unstd/serde/jsonx.py",
+              "bytes": 18384,
+              "sha256": "3c300cb8af8d9541fe620ef76c6512f3e5e651b62956e112a7e581587ed2f4cf"
+            },
+            {
+              "path": "src/unstd/serde/recursion.py",
+              "bytes": 497,
+              "sha256": "5e3741e4dfdd23b540c7208d4ee8fe55ae3785625d9fb336d46b8e06af5a3091"
+            }
+          ],
+          "backends": {
+            "orjson": "3.12.0",
+            "msgspec": "0.22.0",
+            "numpy": "2.5.3"
+          },
+          "round": 0,
+          "order": 0
+        },
+        {
+          "pid": 51255,
+          "mode": "load",
+          "tracemalloc_enabled": false,
+          "wall_seconds": 0.11867775,
+          "cpu_seconds": 0.111817,
+          "rss_before": {
+            "bytes": 40992768,
+            "raw": 40992768,
+            "raw_unit": "bytes"
+          },
+          "peak_rss": {
+            "bytes": 172949504,
+            "raw": 172949504,
+            "raw_unit": "bytes"
+          },
+          "peak_traced_bytes": null,
+          "first_item_source_bytes": 28339600,
+          "first_item_wall_seconds": 0.068666834,
+          "source_bytes_read": 28339600,
+          "source_sha256": "f4f921b387e1dcd94afa87e4fbdd4b5436752f2ab4b649db0f481215fd07c3d3",
+          "read_calls": 1,
+          "unsized_read_calls": 1,
+          "max_requested_bytes": 0,
+          "summary": {
+            "rows": 100000,
+            "id_sum": 4999950000,
+            "token_sum": 409061136,
+            "passed": 85714,
+            "category_counts": {
+              "answer": 25000,
+              "tool": 25000,
+              "refusal": 25000,
+              "error": 25000
+            },
+            "response_characters": 20800000,
+            "fields_sha256": "4d2fc6e4cc3a489ced81f87a4aaf337c08da365577a3c8138b82600edb0e4834"
+          },
+          "loaded_sources": [
+            {
+              "path": "src/unstd/__init__.py",
+              "bytes": 5056,
+              "sha256": "3320d3faf5b87515bc8cd99a40be7980b9c6bc6ad6a79e53d5575a954dc70a68"
+            },
+            {
+              "path": "src/unstd/serde/__init__.py",
+              "bytes": 1288,
+              "sha256": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d"
+            },
+            {
+              "path": "src/unstd/serde/_json_native.cpython-314-darwin.so",
+              "bytes": 93952,
+              "sha256": "8261c26070830e1cf796216662f7a40ef9d0157c833db20c0ccf33cc92c6d07f"
+            },
+            {
+              "path": "src/unstd/serde/encoding.py",
+              "bytes": 8129,
+              "sha256": "45591b272872b828ded3ec06fb6635b77e470c1c6456e5d56edf3a659dffacd7"
+            },
+            {
+              "path": "src/unstd/serde/jsonx.py",
+              "bytes": 18384,
+              "sha256": "3c300cb8af8d9541fe620ef76c6512f3e5e651b62956e112a7e581587ed2f4cf"
+            },
+            {
+              "path": "src/unstd/serde/recursion.py",
+              "bytes": 497,
+              "sha256": "5e3741e4dfdd23b540c7208d4ee8fe55ae3785625d9fb336d46b8e06af5a3091"
+            }
+          ],
+          "backends": {
+            "orjson": "3.12.0",
+            "msgspec": "0.22.0",
+            "numpy": "2.5.3"
+          },
+          "round": 0,
+          "order": 1
+        },
+        {
+          "pid": 51260,
+          "mode": "load",
+          "tracemalloc_enabled": false,
+          "wall_seconds": 0.106650333,
+          "cpu_seconds": 0.103545,
+          "rss_before": {
+            "bytes": 40648704,
+            "raw": 40648704,
+            "raw_unit": "bytes"
+          },
+          "peak_rss": {
+            "bytes": 172130304,
+            "raw": 172130304,
+            "raw_unit": "bytes"
+          },
+          "peak_traced_bytes": null,
+          "first_item_source_bytes": 28339600,
+          "first_item_wall_seconds": 0.060446208,
+          "source_bytes_read": 28339600,
+          "source_sha256": "f4f921b387e1dcd94afa87e4fbdd4b5436752f2ab4b649db0f481215fd07c3d3",
+          "read_calls": 1,
+          "unsized_read_calls": 1,
+          "max_requested_bytes": 0,
+          "summary": {
+            "rows": 100000,
+            "id_sum": 4999950000,
+            "token_sum": 409061136,
+            "passed": 85714,
+            "category_counts": {
+              "answer": 25000,
+              "tool": 25000,
+              "refusal": 25000,
+              "error": 25000
+            },
+            "response_characters": 20800000,
+            "fields_sha256": "4d2fc6e4cc3a489ced81f87a4aaf337c08da365577a3c8138b82600edb0e4834"
+          },
+          "loaded_sources": [
+            {
+              "path": "src/unstd/__init__.py",
+              "bytes": 5056,
+              "sha256": "3320d3faf5b87515bc8cd99a40be7980b9c6bc6ad6a79e53d5575a954dc70a68"
+            },
+            {
+              "path": "src/unstd/serde/__init__.py",
+              "bytes": 1288,
+              "sha256": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d"
+            },
+            {
+              "path": "src/unstd/serde/_json_native.cpython-314-darwin.so",
+              "bytes": 93952,
+              "sha256": "8261c26070830e1cf796216662f7a40ef9d0157c833db20c0ccf33cc92c6d07f"
+            },
+            {
+              "path": "src/unstd/serde/encoding.py",
+              "bytes": 8129,
+              "sha256": "45591b272872b828ded3ec06fb6635b77e470c1c6456e5d56edf3a659dffacd7"
+            },
+            {
+              "path": "src/unstd/serde/jsonx.py",
+              "bytes": 18384,
+              "sha256": "3c300cb8af8d9541fe620ef76c6512f3e5e651b62956e112a7e581587ed2f4cf"
+            },
+            {
+              "path": "src/unstd/serde/recursion.py",
+              "bytes": 497,
+              "sha256": "5e3741e4dfdd23b540c7208d4ee8fe55ae3785625d9fb336d46b8e06af5a3091"
+            }
+          ],
+          "backends": {
+            "orjson": "3.12.0",
+            "msgspec": "0.22.0",
+            "numpy": "2.5.3"
+          },
+          "round": 1,
+          "order": 0
+        },
+        {
+          "pid": 51262,
+          "mode": "iterload",
+          "tracemalloc_enabled": false,
+          "wall_seconds": 0.478642958,
+          "cpu_seconds": 0.44479,
+          "rss_before": {
+            "bytes": 40468480,
+            "raw": 40468480,
+            "raw_unit": "bytes"
+          },
+          "peak_rss": {
+            "bytes": 41107456,
+            "raw": 41107456,
+            "raw_unit": "bytes"
+          },
+          "peak_traced_bytes": null,
+          "first_item_source_bytes": 65536,
+          "first_item_wall_seconds": 0.000232,
+          "source_bytes_read": 28339600,
+          "source_sha256": "f4f921b387e1dcd94afa87e4fbdd4b5436752f2ab4b649db0f481215fd07c3d3",
+          "read_calls": 434,
+          "unsized_read_calls": 0,
+          "max_requested_bytes": 65536,
+          "summary": {
+            "rows": 100000,
+            "id_sum": 4999950000,
+            "token_sum": 409061136,
+            "passed": 85714,
+            "category_counts": {
+              "answer": 25000,
+              "tool": 25000,
+              "refusal": 25000,
+              "error": 25000
+            },
+            "response_characters": 20800000,
+            "fields_sha256": "4d2fc6e4cc3a489ced81f87a4aaf337c08da365577a3c8138b82600edb0e4834"
+          },
+          "loaded_sources": [
+            {
+              "path": "src/unstd/__init__.py",
+              "bytes": 5056,
+              "sha256": "3320d3faf5b87515bc8cd99a40be7980b9c6bc6ad6a79e53d5575a954dc70a68"
+            },
+            {
+              "path": "src/unstd/serde/__init__.py",
+              "bytes": 1288,
+              "sha256": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d"
+            },
+            {
+              "path": "src/unstd/serde/_json_native.cpython-314-darwin.so",
+              "bytes": 93952,
+              "sha256": "8261c26070830e1cf796216662f7a40ef9d0157c833db20c0ccf33cc92c6d07f"
+            },
+            {
+              "path": "src/unstd/serde/_stream.py",
+              "bytes": 6300,
+              "sha256": "ec559f7e241b26179b5af8c7d3c11e2982b59080bab45ae7ddb6acd49de05d2c"
+            },
+            {
+              "path": "src/unstd/serde/encoding.py",
+              "bytes": 8129,
+              "sha256": "45591b272872b828ded3ec06fb6635b77e470c1c6456e5d56edf3a659dffacd7"
+            },
+            {
+              "path": "src/unstd/serde/jsonx.py",
+              "bytes": 18384,
+              "sha256": "3c300cb8af8d9541fe620ef76c6512f3e5e651b62956e112a7e581587ed2f4cf"
+            },
+            {
+              "path": "src/unstd/serde/recursion.py",
+              "bytes": 497,
+              "sha256": "5e3741e4dfdd23b540c7208d4ee8fe55ae3785625d9fb336d46b8e06af5a3091"
+            }
+          ],
+          "backends": {
+            "orjson": "3.12.0",
+            "msgspec": "0.22.0",
+            "numpy": "2.5.3"
+          },
+          "round": 1,
+          "order": 1
+        },
+        {
+          "pid": 51275,
+          "mode": "iterload",
+          "tracemalloc_enabled": false,
+          "wall_seconds": 0.490490292,
+          "cpu_seconds": 0.468989,
+          "rss_before": {
+            "bytes": 41123840,
+            "raw": 41123840,
+            "raw_unit": "bytes"
+          },
+          "peak_rss": {
+            "bytes": 41320448,
+            "raw": 41320448,
+            "raw_unit": "bytes"
+          },
+          "peak_traced_bytes": null,
+          "first_item_source_bytes": 65536,
+          "first_item_wall_seconds": 0.000346334,
+          "source_bytes_read": 28339600,
+          "source_sha256": "f4f921b387e1dcd94afa87e4fbdd4b5436752f2ab4b649db0f481215fd07c3d3",
+          "read_calls": 434,
+          "unsized_read_calls": 0,
+          "max_requested_bytes": 65536,
+          "summary": {
+            "rows": 100000,
+            "id_sum": 4999950000,
+            "token_sum": 409061136,
+            "passed": 85714,
+            "category_counts": {
+              "answer": 25000,
+              "tool": 25000,
+              "refusal": 25000,
+              "error": 25000
+            },
+            "response_characters": 20800000,
+            "fields_sha256": "4d2fc6e4cc3a489ced81f87a4aaf337c08da365577a3c8138b82600edb0e4834"
+          },
+          "loaded_sources": [
+            {
+              "path": "src/unstd/__init__.py",
+              "bytes": 5056,
+              "sha256": "3320d3faf5b87515bc8cd99a40be7980b9c6bc6ad6a79e53d5575a954dc70a68"
+            },
+            {
+              "path": "src/unstd/serde/__init__.py",
+              "bytes": 1288,
+              "sha256": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d"
+            },
+            {
+              "path": "src/unstd/serde/_json_native.cpython-314-darwin.so",
+              "bytes": 93952,
+              "sha256": "8261c26070830e1cf796216662f7a40ef9d0157c833db20c0ccf33cc92c6d07f"
+            },
+            {
+              "path": "src/unstd/serde/_stream.py",
+              "bytes": 6300,
+              "sha256": "ec559f7e241b26179b5af8c7d3c11e2982b59080bab45ae7ddb6acd49de05d2c"
+            },
+            {
+              "path": "src/unstd/serde/encoding.py",
+              "bytes": 8129,
+              "sha256": "45591b272872b828ded3ec06fb6635b77e470c1c6456e5d56edf3a659dffacd7"
+            },
+            {
+              "path": "src/unstd/serde/jsonx.py",
+              "bytes": 18384,
+              "sha256": "3c300cb8af8d9541fe620ef76c6512f3e5e651b62956e112a7e581587ed2f4cf"
+            },
+            {
+              "path": "src/unstd/serde/recursion.py",
+              "bytes": 497,
+              "sha256": "5e3741e4dfdd23b540c7208d4ee8fe55ae3785625d9fb336d46b8e06af5a3091"
+            }
+          ],
+          "backends": {
+            "orjson": "3.12.0",
+            "msgspec": "0.22.0",
+            "numpy": "2.5.3"
+          },
+          "round": 2,
+          "order": 0
+        },
+        {
+          "pid": 51300,
+          "mode": "load",
+          "tracemalloc_enabled": false,
+          "wall_seconds": 0.116728042,
+          "cpu_seconds": 0.112067,
+          "rss_before": {
+            "bytes": 40910848,
+            "raw": 40910848,
+            "raw_unit": "bytes"
+          },
+          "peak_rss": {
+            "bytes": 172507136,
+            "raw": 172507136,
+            "raw_unit": "bytes"
+          },
+          "peak_traced_bytes": null,
+          "first_item_source_bytes": 28339600,
+          "first_item_wall_seconds": 0.06529925,
+          "source_bytes_read": 28339600,
+          "source_sha256": "f4f921b387e1dcd94afa87e4fbdd4b5436752f2ab4b649db0f481215fd07c3d3",
+          "read_calls": 1,
+          "unsized_read_calls": 1,
+          "max_requested_bytes": 0,
+          "summary": {
+            "rows": 100000,
+            "id_sum": 4999950000,
+            "token_sum": 409061136,
+            "passed": 85714,
+            "category_counts": {
+              "answer": 25000,
+              "tool": 25000,
+              "refusal": 25000,
+              "error": 25000
+            },
+            "response_characters": 20800000,
+            "fields_sha256": "4d2fc6e4cc3a489ced81f87a4aaf337c08da365577a3c8138b82600edb0e4834"
+          },
+          "loaded_sources": [
+            {
+              "path": "src/unstd/__init__.py",
+              "bytes": 5056,
+              "sha256": "3320d3faf5b87515bc8cd99a40be7980b9c6bc6ad6a79e53d5575a954dc70a68"
+            },
+            {
+              "path": "src/unstd/serde/__init__.py",
+              "bytes": 1288,
+              "sha256": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d"
+            },
+            {
+              "path": "src/unstd/serde/_json_native.cpython-314-darwin.so",
+              "bytes": 93952,
+              "sha256": "8261c26070830e1cf796216662f7a40ef9d0157c833db20c0ccf33cc92c6d07f"
+            },
+            {
+              "path": "src/unstd/serde/encoding.py",
+              "bytes": 8129,
+              "sha256": "45591b272872b828ded3ec06fb6635b77e470c1c6456e5d56edf3a659dffacd7"
+            },
+            {
+              "path": "src/unstd/serde/jsonx.py",
+              "bytes": 18384,
+              "sha256": "3c300cb8af8d9541fe620ef76c6512f3e5e651b62956e112a7e581587ed2f4cf"
+            },
+            {
+              "path": "src/unstd/serde/recursion.py",
+              "bytes": 497,
+              "sha256": "5e3741e4dfdd23b540c7208d4ee8fe55ae3785625d9fb336d46b8e06af5a3091"
+            }
+          ],
+          "backends": {
+            "orjson": "3.12.0",
+            "msgspec": "0.22.0",
+            "numpy": "2.5.3"
+          },
+          "round": 2,
+          "order": 1
+        }
+      ],
+      "allocation_runs": [
+        {
+          "pid": 51316,
+          "mode": "load",
+          "tracemalloc_enabled": true,
+          "wall_seconds": 1.089306834,
+          "cpu_seconds": 1.019766,
+          "rss_before": {
+            "bytes": 40992768,
+            "raw": 40992768,
+            "raw_unit": "bytes"
+          },
+          "peak_rss": {
+            "bytes": 234323968,
+            "raw": 234323968,
+            "raw_unit": "bytes"
+          },
+          "peak_traced_bytes": 423461305,
+          "first_item_source_bytes": 28339600,
+          "first_item_wall_seconds": 0.235187042,
+          "source_bytes_read": 28339600,
+          "source_sha256": "f4f921b387e1dcd94afa87e4fbdd4b5436752f2ab4b649db0f481215fd07c3d3",
+          "read_calls": 1,
+          "unsized_read_calls": 1,
+          "max_requested_bytes": 0,
+          "summary": {
+            "rows": 100000,
+            "id_sum": 4999950000,
+            "token_sum": 409061136,
+            "passed": 85714,
+            "category_counts": {
+              "answer": 25000,
+              "tool": 25000,
+              "refusal": 25000,
+              "error": 25000
+            },
+            "response_characters": 20800000,
+            "fields_sha256": "4d2fc6e4cc3a489ced81f87a4aaf337c08da365577a3c8138b82600edb0e4834"
+          },
+          "loaded_sources": [
+            {
+              "path": "src/unstd/__init__.py",
+              "bytes": 5056,
+              "sha256": "3320d3faf5b87515bc8cd99a40be7980b9c6bc6ad6a79e53d5575a954dc70a68"
+            },
+            {
+              "path": "src/unstd/serde/__init__.py",
+              "bytes": 1288,
+              "sha256": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d"
+            },
+            {
+              "path": "src/unstd/serde/_json_native.cpython-314-darwin.so",
+              "bytes": 93952,
+              "sha256": "8261c26070830e1cf796216662f7a40ef9d0157c833db20c0ccf33cc92c6d07f"
+            },
+            {
+              "path": "src/unstd/serde/encoding.py",
+              "bytes": 8129,
+              "sha256": "45591b272872b828ded3ec06fb6635b77e470c1c6456e5d56edf3a659dffacd7"
+            },
+            {
+              "path": "src/unstd/serde/jsonx.py",
+              "bytes": 18384,
+              "sha256": "3c300cb8af8d9541fe620ef76c6512f3e5e651b62956e112a7e581587ed2f4cf"
+            },
+            {
+              "path": "src/unstd/serde/recursion.py",
+              "bytes": 497,
+              "sha256": "5e3741e4dfdd23b540c7208d4ee8fe55ae3785625d9fb336d46b8e06af5a3091"
+            }
+          ],
+          "backends": {
+            "orjson": "3.12.0",
+            "msgspec": "0.22.0",
+            "numpy": "2.5.3"
+          }
+        },
+        {
+          "pid": 51640,
+          "mode": "iterload",
+          "tracemalloc_enabled": true,
+          "wall_seconds": 4.867024583,
+          "cpu_seconds": 4.604791,
+          "rss_before": {
+            "bytes": 40828928,
+            "raw": 40828928,
+            "raw_unit": "bytes"
+          },
+          "peak_rss": {
+            "bytes": 41271296,
+            "raw": 41271296,
+            "raw_unit": "bytes"
+          },
+          "peak_traced_bytes": 296461,
+          "first_item_source_bytes": 65536,
+          "first_item_wall_seconds": 0.000615208,
+          "source_bytes_read": 28339600,
+          "source_sha256": "f4f921b387e1dcd94afa87e4fbdd4b5436752f2ab4b649db0f481215fd07c3d3",
+          "read_calls": 434,
+          "unsized_read_calls": 0,
+          "max_requested_bytes": 65536,
+          "summary": {
+            "rows": 100000,
+            "id_sum": 4999950000,
+            "token_sum": 409061136,
+            "passed": 85714,
+            "category_counts": {
+              "answer": 25000,
+              "tool": 25000,
+              "refusal": 25000,
+              "error": 25000
+            },
+            "response_characters": 20800000,
+            "fields_sha256": "4d2fc6e4cc3a489ced81f87a4aaf337c08da365577a3c8138b82600edb0e4834"
+          },
+          "loaded_sources": [
+            {
+              "path": "src/unstd/__init__.py",
+              "bytes": 5056,
+              "sha256": "3320d3faf5b87515bc8cd99a40be7980b9c6bc6ad6a79e53d5575a954dc70a68"
+            },
+            {
+              "path": "src/unstd/serde/__init__.py",
+              "bytes": 1288,
+              "sha256": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d"
+            },
+            {
+              "path": "src/unstd/serde/_json_native.cpython-314-darwin.so",
+              "bytes": 93952,
+              "sha256": "8261c26070830e1cf796216662f7a40ef9d0157c833db20c0ccf33cc92c6d07f"
+            },
+            {
+              "path": "src/unstd/serde/_stream.py",
+              "bytes": 6300,
+              "sha256": "ec559f7e241b26179b5af8c7d3c11e2982b59080bab45ae7ddb6acd49de05d2c"
+            },
+            {
+              "path": "src/unstd/serde/encoding.py",
+              "bytes": 8129,
+              "sha256": "45591b272872b828ded3ec06fb6635b77e470c1c6456e5d56edf3a659dffacd7"
+            },
+            {
+              "path": "src/unstd/serde/jsonx.py",
+              "bytes": 18384,
+              "sha256": "3c300cb8af8d9541fe620ef76c6512f3e5e651b62956e112a7e581587ed2f4cf"
+            },
+            {
+              "path": "src/unstd/serde/recursion.py",
+              "bytes": 497,
+              "sha256": "5e3741e4dfdd23b540c7208d4ee8fe55ae3785625d9fb336d46b8e06af5a3091"
+            }
+          ],
+          "backends": {
+            "orjson": "3.12.0",
+            "msgspec": "0.22.0",
+            "numpy": "2.5.3"
+          }
+        }
+      ],
+      "summary": {
+        "load": {
+          "median_wall_seconds": 0.116728042,
+          "median_cpu_seconds": 0.111817,
+          "median_peak_rss_bytes": 172507136,
+          "median_first_item_wall_seconds": 0.06529925,
+          "median_first_item_source_bytes": 28339600,
+          "input_mib_per_second": 231.53604047625987
+        },
+        "iterload": {
+          "median_wall_seconds": 0.490490292,
+          "median_cpu_seconds": 0.468989,
+          "median_peak_rss_bytes": 41320448,
+          "median_first_item_wall_seconds": 0.000334083,
+          "median_first_item_source_bytes": 65536,
+          "input_mib_per_second": 55.10149558113285
+        },
+        "peak_rss_ratio_load_over_iterload": 4.174861221252974,
+        "median_paired_wall_ratio_load_over_iterload": 0.22281813869285005
+      }
+    },
+    {
+      "path": "/var/folders/76/sfc0cm2j4zx5qrmmr09nt6rr0000gn/T/unstd-array-stream-z481lzog/events-300000.json",
+      "rows": 300000,
+      "source_bytes": 85241075,
+      "source_sha256": "f8cd3cab8a5bb8ff11062146992db4da01a9c2ef7188f62c43dfaa21fbe2e279",
+      "first_record_end_bytes": 278,
+      "expected": {
+        "rows": 300000,
+        "id_sum": 44999850000,
+        "token_sum": 1228169520,
+        "passed": 257142,
+        "category_counts": {
+          "answer": 75000,
+          "tool": 75000,
+          "refusal": 75000,
+          "error": 75000
+        },
+        "response_characters": 62400000,
+        "fields_sha256": "3e49ee13d6c880244eef776a9496a38471b7bacfe33676c616f229bcd0c0a1a5"
+      },
+      "runs": [
+        {
+          "pid": 53111,
+          "mode": "load",
+          "tracemalloc_enabled": false,
+          "wall_seconds": 0.355108375,
+          "cpu_seconds": 0.33697,
+          "rss_before": {
+            "bytes": 40730624,
+            "raw": 40730624,
+            "raw_unit": "bytes"
+          },
+          "peak_rss": {
+            "bytes": 438026240,
+            "raw": 438026240,
+            "raw_unit": "bytes"
+          },
+          "peak_traced_bytes": null,
+          "first_item_source_bytes": 85241075,
+          "first_item_wall_seconds": 0.200551625,
+          "source_bytes_read": 85241075,
+          "source_sha256": "f8cd3cab8a5bb8ff11062146992db4da01a9c2ef7188f62c43dfaa21fbe2e279",
+          "read_calls": 1,
+          "unsized_read_calls": 1,
+          "max_requested_bytes": 0,
+          "summary": {
+            "rows": 300000,
+            "id_sum": 44999850000,
+            "token_sum": 1228169520,
+            "passed": 257142,
+            "category_counts": {
+              "answer": 75000,
+              "tool": 75000,
+              "refusal": 75000,
+              "error": 75000
+            },
+            "response_characters": 62400000,
+            "fields_sha256": "3e49ee13d6c880244eef776a9496a38471b7bacfe33676c616f229bcd0c0a1a5"
+          },
+          "loaded_sources": [
+            {
+              "path": "src/unstd/__init__.py",
+              "bytes": 5056,
+              "sha256": "3320d3faf5b87515bc8cd99a40be7980b9c6bc6ad6a79e53d5575a954dc70a68"
+            },
+            {
+              "path": "src/unstd/serde/__init__.py",
+              "bytes": 1288,
+              "sha256": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d"
+            },
+            {
+              "path": "src/unstd/serde/_json_native.cpython-314-darwin.so",
+              "bytes": 93952,
+              "sha256": "8261c26070830e1cf796216662f7a40ef9d0157c833db20c0ccf33cc92c6d07f"
+            },
+            {
+              "path": "src/unstd/serde/encoding.py",
+              "bytes": 8129,
+              "sha256": "45591b272872b828ded3ec06fb6635b77e470c1c6456e5d56edf3a659dffacd7"
+            },
+            {
+              "path": "src/unstd/serde/jsonx.py",
+              "bytes": 18384,
+              "sha256": "3c300cb8af8d9541fe620ef76c6512f3e5e651b62956e112a7e581587ed2f4cf"
+            },
+            {
+              "path": "src/unstd/serde/recursion.py",
+              "bytes": 497,
+              "sha256": "5e3741e4dfdd23b540c7208d4ee8fe55ae3785625d9fb336d46b8e06af5a3091"
+            }
+          ],
+          "backends": {
+            "orjson": "3.12.0",
+            "msgspec": "0.22.0",
+            "numpy": "2.5.3"
+          },
+          "round": 0,
+          "order": 0
+        },
+        {
+          "pid": 53121,
+          "mode": "iterload",
+          "tracemalloc_enabled": false,
+          "wall_seconds": 1.514439208,
+          "cpu_seconds": 1.439583,
+          "rss_before": {
+            "bytes": 40894464,
+            "raw": 40894464,
+            "raw_unit": "bytes"
+          },
+          "peak_rss": {
+            "bytes": 41320448,
+            "raw": 41320448,
+            "raw_unit": "bytes"
+          },
+          "peak_traced_bytes": null,
+          "first_item_source_bytes": 65536,
+          "first_item_wall_seconds": 0.000366166,
+          "source_bytes_read": 85241075,
+          "source_sha256": "f8cd3cab8a5bb8ff11062146992db4da01a9c2ef7188f62c43dfaa21fbe2e279",
+          "read_calls": 1302,
+          "unsized_read_calls": 0,
+          "max_requested_bytes": 65536,
+          "summary": {
+            "rows": 300000,
+            "id_sum": 44999850000,
+            "token_sum": 1228169520,
+            "passed": 257142,
+            "category_counts": {
+              "answer": 75000,
+              "tool": 75000,
+              "refusal": 75000,
+              "error": 75000
+            },
+            "response_characters": 62400000,
+            "fields_sha256": "3e49ee13d6c880244eef776a9496a38471b7bacfe33676c616f229bcd0c0a1a5"
+          },
+          "loaded_sources": [
+            {
+              "path": "src/unstd/__init__.py",
+              "bytes": 5056,
+              "sha256": "3320d3faf5b87515bc8cd99a40be7980b9c6bc6ad6a79e53d5575a954dc70a68"
+            },
+            {
+              "path": "src/unstd/serde/__init__.py",
+              "bytes": 1288,
+              "sha256": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d"
+            },
+            {
+              "path": "src/unstd/serde/_json_native.cpython-314-darwin.so",
+              "bytes": 93952,
+              "sha256": "8261c26070830e1cf796216662f7a40ef9d0157c833db20c0ccf33cc92c6d07f"
+            },
+            {
+              "path": "src/unstd/serde/_stream.py",
+              "bytes": 6300,
+              "sha256": "ec559f7e241b26179b5af8c7d3c11e2982b59080bab45ae7ddb6acd49de05d2c"
+            },
+            {
+              "path": "src/unstd/serde/encoding.py",
+              "bytes": 8129,
+              "sha256": "45591b272872b828ded3ec06fb6635b77e470c1c6456e5d56edf3a659dffacd7"
+            },
+            {
+              "path": "src/unstd/serde/jsonx.py",
+              "bytes": 18384,
+              "sha256": "3c300cb8af8d9541fe620ef76c6512f3e5e651b62956e112a7e581587ed2f4cf"
+            },
+            {
+              "path": "src/unstd/serde/recursion.py",
+              "bytes": 497,
+              "sha256": "5e3741e4dfdd23b540c7208d4ee8fe55ae3785625d9fb336d46b8e06af5a3091"
+            }
+          ],
+          "backends": {
+            "orjson": "3.12.0",
+            "msgspec": "0.22.0",
+            "numpy": "2.5.3"
+          },
+          "round": 0,
+          "order": 1
+        },
+        {
+          "pid": 53301,
+          "mode": "iterload",
+          "tracemalloc_enabled": false,
+          "wall_seconds": 1.40223675,
+          "cpu_seconds": 1.358618,
+          "rss_before": {
+            "bytes": 40730624,
+            "raw": 40730624,
+            "raw_unit": "bytes"
+          },
+          "peak_rss": {
+            "bytes": 41091072,
+            "raw": 41091072,
+            "raw_unit": "bytes"
+          },
+          "peak_traced_bytes": null,
+          "first_item_source_bytes": 65536,
+          "first_item_wall_seconds": 0.000332,
+          "source_bytes_read": 85241075,
+          "source_sha256": "f8cd3cab8a5bb8ff11062146992db4da01a9c2ef7188f62c43dfaa21fbe2e279",
+          "read_calls": 1302,
+          "unsized_read_calls": 0,
+          "max_requested_bytes": 65536,
+          "summary": {
+            "rows": 300000,
+            "id_sum": 44999850000,
+            "token_sum": 1228169520,
+            "passed": 257142,
+            "category_counts": {
+              "answer": 75000,
+              "tool": 75000,
+              "refusal": 75000,
+              "error": 75000
+            },
+            "response_characters": 62400000,
+            "fields_sha256": "3e49ee13d6c880244eef776a9496a38471b7bacfe33676c616f229bcd0c0a1a5"
+          },
+          "loaded_sources": [
+            {
+              "path": "src/unstd/__init__.py",
+              "bytes": 5056,
+              "sha256": "3320d3faf5b87515bc8cd99a40be7980b9c6bc6ad6a79e53d5575a954dc70a68"
+            },
+            {
+              "path": "src/unstd/serde/__init__.py",
+              "bytes": 1288,
+              "sha256": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d"
+            },
+            {
+              "path": "src/unstd/serde/_json_native.cpython-314-darwin.so",
+              "bytes": 93952,
+              "sha256": "8261c26070830e1cf796216662f7a40ef9d0157c833db20c0ccf33cc92c6d07f"
+            },
+            {
+              "path": "src/unstd/serde/_stream.py",
+              "bytes": 6300,
+              "sha256": "ec559f7e241b26179b5af8c7d3c11e2982b59080bab45ae7ddb6acd49de05d2c"
+            },
+            {
+              "path": "src/unstd/serde/encoding.py",
+              "bytes": 8129,
+              "sha256": "45591b272872b828ded3ec06fb6635b77e470c1c6456e5d56edf3a659dffacd7"
+            },
+            {
+              "path": "src/unstd/serde/jsonx.py",
+              "bytes": 18384,
+              "sha256": "3c300cb8af8d9541fe620ef76c6512f3e5e651b62956e112a7e581587ed2f4cf"
+            },
+            {
+              "path": "src/unstd/serde/recursion.py",
+              "bytes": 497,
+              "sha256": "5e3741e4dfdd23b540c7208d4ee8fe55ae3785625d9fb336d46b8e06af5a3091"
+            }
+          ],
+          "backends": {
+            "orjson": "3.12.0",
+            "msgspec": "0.22.0",
+            "numpy": "2.5.3"
+          },
+          "round": 1,
+          "order": 0
+        },
+        {
+          "pid": 53462,
+          "mode": "load",
+          "tracemalloc_enabled": false,
+          "wall_seconds": 0.346825291,
+          "cpu_seconds": 0.332135,
+          "rss_before": {
+            "bytes": 40730624,
+            "raw": 40730624,
+            "raw_unit": "bytes"
+          },
+          "peak_rss": {
+            "bytes": 437878784,
+            "raw": 437878784,
+            "raw_unit": "bytes"
+          },
+          "peak_traced_bytes": null,
+          "first_item_source_bytes": 85241075,
+          "first_item_wall_seconds": 0.198541666,
+          "source_bytes_read": 85241075,
+          "source_sha256": "f8cd3cab8a5bb8ff11062146992db4da01a9c2ef7188f62c43dfaa21fbe2e279",
+          "read_calls": 1,
+          "unsized_read_calls": 1,
+          "max_requested_bytes": 0,
+          "summary": {
+            "rows": 300000,
+            "id_sum": 44999850000,
+            "token_sum": 1228169520,
+            "passed": 257142,
+            "category_counts": {
+              "answer": 75000,
+              "tool": 75000,
+              "refusal": 75000,
+              "error": 75000
+            },
+            "response_characters": 62400000,
+            "fields_sha256": "3e49ee13d6c880244eef776a9496a38471b7bacfe33676c616f229bcd0c0a1a5"
+          },
+          "loaded_sources": [
+            {
+              "path": "src/unstd/__init__.py",
+              "bytes": 5056,
+              "sha256": "3320d3faf5b87515bc8cd99a40be7980b9c6bc6ad6a79e53d5575a954dc70a68"
+            },
+            {
+              "path": "src/unstd/serde/__init__.py",
+              "bytes": 1288,
+              "sha256": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d"
+            },
+            {
+              "path": "src/unstd/serde/_json_native.cpython-314-darwin.so",
+              "bytes": 93952,
+              "sha256": "8261c26070830e1cf796216662f7a40ef9d0157c833db20c0ccf33cc92c6d07f"
+            },
+            {
+              "path": "src/unstd/serde/encoding.py",
+              "bytes": 8129,
+              "sha256": "45591b272872b828ded3ec06fb6635b77e470c1c6456e5d56edf3a659dffacd7"
+            },
+            {
+              "path": "src/unstd/serde/jsonx.py",
+              "bytes": 18384,
+              "sha256": "3c300cb8af8d9541fe620ef76c6512f3e5e651b62956e112a7e581587ed2f4cf"
+            },
+            {
+              "path": "src/unstd/serde/recursion.py",
+              "bytes": 497,
+              "sha256": "5e3741e4dfdd23b540c7208d4ee8fe55ae3785625d9fb336d46b8e06af5a3091"
+            }
+          ],
+          "backends": {
+            "orjson": "3.12.0",
+            "msgspec": "0.22.0",
+            "numpy": "2.5.3"
+          },
+          "round": 1,
+          "order": 1
+        },
+        {
+          "pid": 53490,
+          "mode": "load",
+          "tracemalloc_enabled": false,
+          "wall_seconds": 0.353405,
+          "cpu_seconds": 0.335141,
+          "rss_before": {
+            "bytes": 40714240,
+            "raw": 40714240,
+            "raw_unit": "bytes"
+          },
+          "peak_rss": {
+            "bytes": 437829632,
+            "raw": 437829632,
+            "raw_unit": "bytes"
+          },
+          "peak_traced_bytes": null,
+          "first_item_source_bytes": 85241075,
+          "first_item_wall_seconds": 0.208309333,
+          "source_bytes_read": 85241075,
+          "source_sha256": "f8cd3cab8a5bb8ff11062146992db4da01a9c2ef7188f62c43dfaa21fbe2e279",
+          "read_calls": 1,
+          "unsized_read_calls": 1,
+          "max_requested_bytes": 0,
+          "summary": {
+            "rows": 300000,
+            "id_sum": 44999850000,
+            "token_sum": 1228169520,
+            "passed": 257142,
+            "category_counts": {
+              "answer": 75000,
+              "tool": 75000,
+              "refusal": 75000,
+              "error": 75000
+            },
+            "response_characters": 62400000,
+            "fields_sha256": "3e49ee13d6c880244eef776a9496a38471b7bacfe33676c616f229bcd0c0a1a5"
+          },
+          "loaded_sources": [
+            {
+              "path": "src/unstd/__init__.py",
+              "bytes": 5056,
+              "sha256": "3320d3faf5b87515bc8cd99a40be7980b9c6bc6ad6a79e53d5575a954dc70a68"
+            },
+            {
+              "path": "src/unstd/serde/__init__.py",
+              "bytes": 1288,
+              "sha256": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d"
+            },
+            {
+              "path": "src/unstd/serde/_json_native.cpython-314-darwin.so",
+              "bytes": 93952,
+              "sha256": "8261c26070830e1cf796216662f7a40ef9d0157c833db20c0ccf33cc92c6d07f"
+            },
+            {
+              "path": "src/unstd/serde/encoding.py",
+              "bytes": 8129,
+              "sha256": "45591b272872b828ded3ec06fb6635b77e470c1c6456e5d56edf3a659dffacd7"
+            },
+            {
+              "path": "src/unstd/serde/jsonx.py",
+              "bytes": 18384,
+              "sha256": "3c300cb8af8d9541fe620ef76c6512f3e5e651b62956e112a7e581587ed2f4cf"
+            },
+            {
+              "path": "src/unstd/serde/recursion.py",
+              "bytes": 497,
+              "sha256": "5e3741e4dfdd23b540c7208d4ee8fe55ae3785625d9fb336d46b8e06af5a3091"
+            }
+          ],
+          "backends": {
+            "orjson": "3.12.0",
+            "msgspec": "0.22.0",
+            "numpy": "2.5.3"
+          },
+          "round": 2,
+          "order": 0
+        },
+        {
+          "pid": 53509,
+          "mode": "iterload",
+          "tracemalloc_enabled": false,
+          "wall_seconds": 1.48292025,
+          "cpu_seconds": 1.384693,
+          "rss_before": {
+            "bytes": 40763392,
+            "raw": 40763392,
+            "raw_unit": "bytes"
+          },
+          "peak_rss": {
+            "bytes": 41254912,
+            "raw": 41254912,
+            "raw_unit": "bytes"
+          },
+          "peak_traced_bytes": null,
+          "first_item_source_bytes": 65536,
+          "first_item_wall_seconds": 0.000227958,
+          "source_bytes_read": 85241075,
+          "source_sha256": "f8cd3cab8a5bb8ff11062146992db4da01a9c2ef7188f62c43dfaa21fbe2e279",
+          "read_calls": 1302,
+          "unsized_read_calls": 0,
+          "max_requested_bytes": 65536,
+          "summary": {
+            "rows": 300000,
+            "id_sum": 44999850000,
+            "token_sum": 1228169520,
+            "passed": 257142,
+            "category_counts": {
+              "answer": 75000,
+              "tool": 75000,
+              "refusal": 75000,
+              "error": 75000
+            },
+            "response_characters": 62400000,
+            "fields_sha256": "3e49ee13d6c880244eef776a9496a38471b7bacfe33676c616f229bcd0c0a1a5"
+          },
+          "loaded_sources": [
+            {
+              "path": "src/unstd/__init__.py",
+              "bytes": 5056,
+              "sha256": "3320d3faf5b87515bc8cd99a40be7980b9c6bc6ad6a79e53d5575a954dc70a68"
+            },
+            {
+              "path": "src/unstd/serde/__init__.py",
+              "bytes": 1288,
+              "sha256": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d"
+            },
+            {
+              "path": "src/unstd/serde/_json_native.cpython-314-darwin.so",
+              "bytes": 93952,
+              "sha256": "8261c26070830e1cf796216662f7a40ef9d0157c833db20c0ccf33cc92c6d07f"
+            },
+            {
+              "path": "src/unstd/serde/_stream.py",
+              "bytes": 6300,
+              "sha256": "ec559f7e241b26179b5af8c7d3c11e2982b59080bab45ae7ddb6acd49de05d2c"
+            },
+            {
+              "path": "src/unstd/serde/encoding.py",
+              "bytes": 8129,
+              "sha256": "45591b272872b828ded3ec06fb6635b77e470c1c6456e5d56edf3a659dffacd7"
+            },
+            {
+              "path": "src/unstd/serde/jsonx.py",
+              "bytes": 18384,
+              "sha256": "3c300cb8af8d9541fe620ef76c6512f3e5e651b62956e112a7e581587ed2f4cf"
+            },
+            {
+              "path": "src/unstd/serde/recursion.py",
+              "bytes": 497,
+              "sha256": "5e3741e4dfdd23b540c7208d4ee8fe55ae3785625d9fb336d46b8e06af5a3091"
+            }
+          ],
+          "backends": {
+            "orjson": "3.12.0",
+            "msgspec": "0.22.0",
+            "numpy": "2.5.3"
+          },
+          "round": 2,
+          "order": 1
+        }
+      ],
+      "allocation_runs": [
+        {
+          "pid": 54780,
+          "mode": "load",
+          "tracemalloc_enabled": true,
+          "wall_seconds": 3.309400792,
+          "cpu_seconds": 3.09992,
+          "rss_before": {
+            "bytes": 40730624,
+            "raw": 40730624,
+            "raw_unit": "bytes"
+          },
+          "peak_rss": {
+            "bytes": 589053952,
+            "raw": 589053952,
+            "raw_unit": "bytes"
+          },
+          "peak_traced_bytes": 1273277500,
+          "first_item_source_bytes": 85241075,
+          "first_item_wall_seconds": 0.759402417,
+          "source_bytes_read": 85241075,
+          "source_sha256": "f8cd3cab8a5bb8ff11062146992db4da01a9c2ef7188f62c43dfaa21fbe2e279",
+          "read_calls": 1,
+          "unsized_read_calls": 1,
+          "max_requested_bytes": 0,
+          "summary": {
+            "rows": 300000,
+            "id_sum": 44999850000,
+            "token_sum": 1228169520,
+            "passed": 257142,
+            "category_counts": {
+              "answer": 75000,
+              "tool": 75000,
+              "refusal": 75000,
+              "error": 75000
+            },
+            "response_characters": 62400000,
+            "fields_sha256": "3e49ee13d6c880244eef776a9496a38471b7bacfe33676c616f229bcd0c0a1a5"
+          },
+          "loaded_sources": [
+            {
+              "path": "src/unstd/__init__.py",
+              "bytes": 5056,
+              "sha256": "3320d3faf5b87515bc8cd99a40be7980b9c6bc6ad6a79e53d5575a954dc70a68"
+            },
+            {
+              "path": "src/unstd/serde/__init__.py",
+              "bytes": 1288,
+              "sha256": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d"
+            },
+            {
+              "path": "src/unstd/serde/_json_native.cpython-314-darwin.so",
+              "bytes": 93952,
+              "sha256": "8261c26070830e1cf796216662f7a40ef9d0157c833db20c0ccf33cc92c6d07f"
+            },
+            {
+              "path": "src/unstd/serde/encoding.py",
+              "bytes": 8129,
+              "sha256": "45591b272872b828ded3ec06fb6635b77e470c1c6456e5d56edf3a659dffacd7"
+            },
+            {
+              "path": "src/unstd/serde/jsonx.py",
+              "bytes": 18384,
+              "sha256": "3c300cb8af8d9541fe620ef76c6512f3e5e651b62956e112a7e581587ed2f4cf"
+            },
+            {
+              "path": "src/unstd/serde/recursion.py",
+              "bytes": 497,
+              "sha256": "5e3741e4dfdd23b540c7208d4ee8fe55ae3785625d9fb336d46b8e06af5a3091"
+            }
+          ],
+          "backends": {
+            "orjson": "3.12.0",
+            "msgspec": "0.22.0",
+            "numpy": "2.5.3"
+          }
+        },
+        {
+          "pid": 55549,
+          "mode": "iterload",
+          "tracemalloc_enabled": true,
+          "wall_seconds": 15.190382208,
+          "cpu_seconds": 14.474975,
+          "rss_before": {
+            "bytes": 41009152,
+            "raw": 41009152,
+            "raw_unit": "bytes"
+          },
+          "peak_rss": {
+            "bytes": 41418752,
+            "raw": 41418752,
+            "raw_unit": "bytes"
+          },
+          "peak_traced_bytes": 294694,
+          "first_item_source_bytes": 65536,
+          "first_item_wall_seconds": 0.000818125,
+          "source_bytes_read": 85241075,
+          "source_sha256": "f8cd3cab8a5bb8ff11062146992db4da01a9c2ef7188f62c43dfaa21fbe2e279",
+          "read_calls": 1302,
+          "unsized_read_calls": 0,
+          "max_requested_bytes": 65536,
+          "summary": {
+            "rows": 300000,
+            "id_sum": 44999850000,
+            "token_sum": 1228169520,
+            "passed": 257142,
+            "category_counts": {
+              "answer": 75000,
+              "tool": 75000,
+              "refusal": 75000,
+              "error": 75000
+            },
+            "response_characters": 62400000,
+            "fields_sha256": "3e49ee13d6c880244eef776a9496a38471b7bacfe33676c616f229bcd0c0a1a5"
+          },
+          "loaded_sources": [
+            {
+              "path": "src/unstd/__init__.py",
+              "bytes": 5056,
+              "sha256": "3320d3faf5b87515bc8cd99a40be7980b9c6bc6ad6a79e53d5575a954dc70a68"
+            },
+            {
+              "path": "src/unstd/serde/__init__.py",
+              "bytes": 1288,
+              "sha256": "afa784c1fd0d1b4821f666043c9fa3e90958124a849652f2deb03fd182a5cd6d"
+            },
+            {
+              "path": "src/unstd/serde/_json_native.cpython-314-darwin.so",
+              "bytes": 93952,
+              "sha256": "8261c26070830e1cf796216662f7a40ef9d0157c833db20c0ccf33cc92c6d07f"
+            },
+            {
+              "path": "src/unstd/serde/_stream.py",
+              "bytes": 6300,
+              "sha256": "ec559f7e241b26179b5af8c7d3c11e2982b59080bab45ae7ddb6acd49de05d2c"
+            },
+            {
+              "path": "src/unstd/serde/encoding.py",
+              "bytes": 8129,
+              "sha256": "45591b272872b828ded3ec06fb6635b77e470c1c6456e5d56edf3a659dffacd7"
+            },
+            {
+              "path": "src/unstd/serde/jsonx.py",
+              "bytes": 18384,
+              "sha256": "3c300cb8af8d9541fe620ef76c6512f3e5e651b62956e112a7e581587ed2f4cf"
+            },
+            {
+              "path": "src/unstd/serde/recursion.py",
+              "bytes": 497,
+              "sha256": "5e3741e4dfdd23b540c7208d4ee8fe55ae3785625d9fb336d46b8e06af5a3091"
+            }
+          ],
+          "backends": {
+            "orjson": "3.12.0",
+            "msgspec": "0.22.0",
+            "numpy": "2.5.3"
+          }
+        }
+      ],
+      "summary": {
+        "load": {
+          "median_wall_seconds": 0.353405,
+          "median_cpu_seconds": 0.335141,
+          "median_peak_rss_bytes": 437878784,
+          "median_first_item_wall_seconds": 0.200551625,
+          "median_first_item_source_bytes": 85241075,
+          "input_mib_per_second": 230.02567572716538
+        },
+        "iterload": {
+          "median_wall_seconds": 1.48292025,
+          "median_cpu_seconds": 1.384693,
+          "median_peak_rss_bytes": 41254912,
+          "median_first_item_wall_seconds": 0.000332,
+          "median_first_item_source_bytes": 65536,
+          "input_mib_per_second": 54.819012641009444
+        },
+        "peak_rss_ratio_load_over_iterload": 10.613979348689437,
+        "median_paired_wall_ratio_load_over_iterload": 0.23831692904591464
+      }
+    }
+  ],
+  "failures": [],
+  "source_manifest_verified_unchanged": true,
+  "stream_peak_rss_growth_bytes": 638976,
+  "publication_normalization": {
+    "kind": "public_metadata_normalization",
+    "note": "Consumer labels, artifact paths and machine-specific origins normalized for public publication. Historical timings, measured payload bytes and original source digests retain their captured meaning; normalized source/archive bytes have their own publication hashes."
+  }
+}

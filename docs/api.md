@@ -460,7 +460,7 @@ Import `from unstd.serde import jsonx, b64, ndjson, structs` as needed.
 
 | Module | Exported API |
 | --- | --- |
-| [`unstd.serde.jsonx`](../src/unstd/serde/jsonx.py) | `JSONDecodeError`, `JSONDecoder`, `JSONEncoder`, `Json`, `canonical`, `canonical_strict`, `dump`, `dump_array`, `dumpb`, `dumps`, `load`, `loads` |
+| [`unstd.serde.jsonx`](../src/unstd/serde/jsonx.py) | `JSONDecodeError`, `JSONDecoder`, `JSONEncoder`, `Json`, `canonical`, `canonical_strict`, `dump`, `dump_array`, `dumpb`, `dumps`, `iterload`, `load`, `loads` |
 | [`unstd.serde.b64`](../src/unstd/serde/b64.py) | `Error`, `b64decode`, `b64encode`, `decode`, `decode_file`, `decode_json`, `decode_text`, `decodebytes`, `encode`, `encode_file`, `encode_json`, `encodebytes`, `standard_b64decode`, `standard_b64encode`, `urlsafe_b64decode`, `urlsafe_b64encode` |
 | [`unstd.serde.ndjson`](../src/unstd/serde/ndjson.py) | `NDJSONDecodeError`, `dump`, `dumpb`, `dumps`, `iter_loads`, `load`, `loads` |
 | [`unstd.serde.structs`](../src/unstd/serde/structs.py) | `Codec`, `DecHook`, `EncHook`, `FloatHook`, `Order`, `float_enc_hook` |
@@ -470,6 +470,13 @@ Import `from unstd.serde import jsonx, b64, ndjson, structs` as needed.
 their existing instance interfaces. `dumpb` adds compact UTF-8 bytes. The legacy
 `canonical` format remains stable; `canonical_strict` provides its existing
 restricted-value format. Neither format changes during module reorganization.
+
+`jsonx.iterload(fp, *, chunk_size=65536, **kw)` lazily reads a top-level JSON
+array from a text or binary stream. Each item is decoded independently with
+`loads` and its options; the outer array is framing only. Memory follows the
+chunk and largest item. The caller owns the stream. Exhaust the iterator to
+validate the closing bracket and trailing input. Errors use positions within
+the current item or chunk.
 
 `jsonx.dump_array(rows, fp, *, chunk_size=65536, sort_keys=False, default=None,
 numpy=False)` writes an iterable as a compact JSON array and returns its record

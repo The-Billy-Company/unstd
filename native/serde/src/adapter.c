@@ -598,6 +598,7 @@ static int configure_identity_snapshot(NativeState *, PyObject *);
 
 #include "decode.h"
 #include "lines.h"
+#include "array.h"
 
 static PyObject *
 configure(PyObject *module, PyObject *globals)
@@ -733,6 +734,10 @@ static PyMethodDef methods[] = {
      "Compact transport bytes for the existing Python facade."},
     {"line", line, METH_O, "One compact record for the existing Python facade."},
     {"loads_lines", loads_lines, METH_O, "Strict NDJSON values or NotImplemented."},
+    {"array_boundary", (PyCFunction)(void (*)(void))array_boundary, METH_FASTCALL,
+     "Last complete top-level item delimiter in a bounded JSON-array window."},
+    {"array_decode", (PyCFunction)(void (*)(void))array_decode, METH_FASTCALL,
+     "Decode a bounded array span through the unchanged default native decoder."},
     {"is_bound", is_bound, METH_O, "Whether the Python codec uses native dispatch."},
     {"dispatch_ready", dispatch_ready, METH_O, "Whether native codec guards currently pass."},
     {NULL, NULL, 0, NULL}

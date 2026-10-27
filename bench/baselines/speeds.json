@@ -2782,6 +2782,75 @@
       "rounds": 11,
       "spread": 0.22749927677342882
     },
+    "unstd.serde.jsonx.iterload": {
+      "captured_environment": {
+        "backends": {
+          "blake3": "1.0.10",
+          "immutables": "0.21",
+          "irregex": "2.6.0",
+          "libarchive-c": "5.3",
+          "msgspec": "0.22.0",
+          "numpy": "2.5.3",
+          "orjson": "3.12.0",
+          "protobuf": "7.36.2",
+          "pybase64": "1.5.0",
+          "pydantic": "2.13.5",
+          "pydantic-settings": "2.15.0",
+          "pyyaml": "6.0.3",
+          "rapidfuzz": "3.14.6",
+          "ruamel-yaml": "0.19.1",
+          "sortedcontainers": "2.4.0",
+          "soundfile": "0.14.0",
+          "tomlkit": "0.15.1",
+          "uuid-utils": "1.0.0",
+          "whenever": "0.10.5",
+          "zlib-ng": "1.0.0",
+          "zstandard": "0.25.0"
+        },
+        "cpu": "Apple M5 Max",
+        "cpu_count": 18,
+        "implementation": "CPython",
+        "machine": "arm64",
+        "native": {
+          "clone._clone_native": true,
+          "compress._gzip_native": true,
+          "containers._sorted_native": true,
+          "crypto._stream_native": true,
+          "serde._json_native": true,
+          "text._text_native": true
+        },
+        "native_implementations": {
+          "clone._clone_native": "c",
+          "compress._gzip_native": "c",
+          "containers._sorted_native": "c",
+          "crypto._stream_native": "c",
+          "serde._json_native": "c",
+          "text._text_native": "c"
+        },
+        "python": "3.14.9",
+        "python_debug": 0,
+        "python_free_threaded": 0,
+        "system": "Darwin",
+        "system_release": "25.6.0",
+        "thread_settings": {
+          "MKL_NUM_THREADS": null,
+          "OMP_NUM_THREADS": null,
+          "OPENBLAS_NUM_THREADS": null
+        }
+      },
+      "captured_provenance": {
+        "evidence": "json_array_stream_addition_provenance",
+        "recorded": "2026-10-27T20:57:27.899874+00:00",
+        "report": "bench/reports/serde/json-array-stream-operation.json",
+        "report_sha256": "81e36fd333b499206c861a074fbf21be7026a05b22b051b4f25d0aecacdb2bd8"
+      },
+      "ceiling_ns": 96593.5546875,
+      "iterations": 128,
+      "measured_ns": 74302.734375,
+      "note": "32 Unicode array records; new BytesIO and full iterator consumption included",
+      "rounds": 9,
+      "spread": 0.09710937623215835
+    },
     "unstd.serde.jsonx.load": {
       "ceiling_ns": 6020.4345703125,
       "iterations": 1024,
@@ -5131,6 +5200,72 @@
       "OPENBLAS_NUM_THREADS": null
     }
   },
+  "json_array_stream_addition_provenance": {
+    "environment": {
+      "backends": {
+        "blake3": "1.0.10",
+        "immutables": "0.21",
+        "irregex": "2.6.0",
+        "libarchive-c": "5.3",
+        "msgspec": "0.22.0",
+        "numpy": "2.5.3",
+        "orjson": "3.12.0",
+        "protobuf": "7.36.2",
+        "pybase64": "1.5.0",
+        "pydantic": "2.13.5",
+        "pydantic-settings": "2.15.0",
+        "pyyaml": "6.0.3",
+        "rapidfuzz": "3.14.6",
+        "ruamel-yaml": "0.19.1",
+        "sortedcontainers": "2.4.0",
+        "soundfile": "0.14.0",
+        "tomlkit": "0.15.1",
+        "uuid-utils": "1.0.0",
+        "whenever": "0.10.5",
+        "zlib-ng": "1.0.0",
+        "zstandard": "0.25.0"
+      },
+      "cpu": "Apple M5 Max",
+      "cpu_count": 18,
+      "implementation": "CPython",
+      "machine": "arm64",
+      "native": {
+        "clone._clone_native": true,
+        "compress._gzip_native": true,
+        "containers._sorted_native": true,
+        "crypto._stream_native": true,
+        "serde._json_native": true,
+        "text._text_native": true
+      },
+      "native_implementations": {
+        "clone._clone_native": "c",
+        "compress._gzip_native": "c",
+        "containers._sorted_native": "c",
+        "crypto._stream_native": "c",
+        "serde._json_native": "c",
+        "text._text_native": "c"
+      },
+      "python": "3.14.9",
+      "python_debug": 0,
+      "python_free_threaded": 0,
+      "system": "Darwin",
+      "system_release": "25.6.0",
+      "thread_settings": {
+        "MKL_NUM_THREADS": null,
+        "OMP_NUM_THREADS": null,
+        "OPENBLAS_NUM_THREADS": null
+      }
+    },
+    "product_source_sha256": {
+      "src/unstd/serde/_stream.py": "ec559f7e241b26179b5af8c7d3c11e2982b59080bab45ae7ddb6acd49de05d2c",
+      "src/unstd/serde/jsonx.py": "3c300cb8af8d9541fe620ef76c6512f3e5e651b62956e112a7e581587ed2f4cf"
+    },
+    "recorded": "2026-10-27T20:57:27.899874+00:00",
+    "report": "bench/reports/serde/json-array-stream-operation.json",
+    "report_publication_note": "Report digest identifies the publication-normalized artifact. Timings, captured source digests and the original speed ceiling are unchanged.",
+    "report_sha256": "81e36fd333b499206c861a074fbf21be7026a05b22b051b4f25d0aecacdb2bd8",
+    "scope": "New JSON-array streaming workload only. This CPython 3.14 capture does not replace the aggregate historical CPython 3.13 baseline or any existing case ceiling."
+  },
   "ragged_addition_provenance": {
     "cases": [
       "unstd.pack.ragged.RaggedDecoder",
@@ -5448,7 +5583,7 @@
   },
   "tolerance": 0.3,
   "workload_sources": {
-    "speed_cases_codecs.py": "b1c85a8490c636c215a34a32e57e6d847db6e71635fe18f39983fe927b0c206e",
+    "speed_cases_codecs.py": "974a57ffd2cc18833530b387357008b1f011c7e8c2c9b20f79b436e2d6f06919",
     "speed_cases_math.py": "4a256cf060c79d470e236de3e9e03361b2ae882dea51a876475bccf698bec965",
     "speed_cases_operations.py": "54572576bc9cea79179d60a84d428a7f2f232e1d6de46233c3ee00ab196cf497",
     "speed_cases_runtime.py": "b1e5bf41dd71aa289732d15574bb5a110c2650b989d7271b2927b6d4a4a075cd"

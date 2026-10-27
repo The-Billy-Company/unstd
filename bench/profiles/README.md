@@ -162,6 +162,12 @@ consumer. Raw samples, native-call proof, source/binary hashes and process CPU
 diagnostics are retained. This profile has no CI speed gate; aggregate stream
 throughput does not establish scaling for every JSON consumer.
 
+[`json_array_stream.py`](json_array_stream.py) compares whole-array JSON loading
+with `jsonx.iterload` in fresh processes at increasing record counts. Its
+[retained evidence](../reports/serde/json-array-stream.md) checks every decoded
+field and source byte, and records peak RSS, separate allocation tracing,
+first-item reads and latency, and the complete-consumption throughput tradeoff.
+
 See the [benchmark guide](../README.md).
 
 To check JSON packaging or a server build, compare two installed roots using

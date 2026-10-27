@@ -51,10 +51,12 @@ restored = jsonx.loads(gzipx.decompress(packed))
 
 To migrate existing JSON calls, use `from unstd.serde import jsonx as json`.
 
-For large JSON-array exports, use `jsonx.dump_array(records, destination)` to
-write a generator with bounded memory. See the
-[write guide](src/unstd/serde/README.md#write-a-json-array-from-a-generator) and
-[measurements](bench/reports/serde/json-array-write.md).
+For large JSON arrays, use `jsonx.iterload(source)` to process one record at a
+time and `jsonx.dump_array(records, destination)` to export a generator with
+bounded memory. See the [read guide](src/unstd/serde/README.md#stream-a-json-array),
+[write guide](src/unstd/serde/README.md#write-a-json-array-from-a-generator), and
+[read measurements](bench/reports/serde/json-array-stream.md) and
+[write measurements](bench/reports/serde/json-array-write.md).
 
 ## Choose a module
 
