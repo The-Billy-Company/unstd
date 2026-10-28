@@ -131,6 +131,19 @@ def cases(stack: ExitStack, *, comparison: bool = False) -> list[Case]:
             message = "framing copied the source samples"
             raise AssertionError(message)
 
+    integers = np.asarray([0, 2**63 - 1, -1, -(2**63)] * 16, dtype=np.int64)
+    reference = np.asarray([0, 2**63, 2**64 - 2, 0] * 16, dtype=np.uint64)
+    tolerance = np.asarray([0, 1, 2**64 - 1, 2**63] * 16, dtype=np.uint64)
+    accepted = all(
+        abs(int(left) - int(right)) <= int(limit)
+        for left, right, limit in zip(integers, reference, tolerance, strict=True)
+    )
+
+    def within_check(actual: object) -> None:
+        if actual is not accepted:
+            message = f"expected exact integer comparison {accepted}, got {actual!r}"
+            raise AssertionError(message)
+
     return [
         Case(
             "unstd.math.topk",
@@ -179,5 +192,11 @@ def cases(stack: ExitStack, *, comparison: bool = False) -> list[Case]:
             partial(numeric.frame, samples, 64, 32),
             frame_check,
             "Create 31 overlapping 64-sample read-only float32 frame views without copying samples.",
+        ),
+        Case(
+            "unstd.math.within",
+            partial(numeric.within, integers, reference, atol=tolerance),
+            within_check,
+            "Compare 64 mixed signed/unsigned integers against exact per-element integer tolerances without rounding or wrapping.",
         ),
     ]

@@ -9,6 +9,8 @@ doc_radar:
       contains: ['def test_public_inventory_retains_all_exports(']
     - file: ../src/unstd/fs/__init__.py
       contains: ['def ensure_dir(path: _Pathish, *, check_first: bool = True)', 'if not check_first or not p.is_dir():']
+    - file: ../src/unstd/math/__init__.py
+      contains: ['def within(', '"within",']
 ---
 
 # Public API inventory
@@ -60,7 +62,7 @@ columns without adding a dataframe dependency.
 
 | Module | Exported API |
 | --- | --- |
-| [`unstd.math`](../src/unstd/math/__init__.py) | `cosine_rows`, `frame`, `grouped_mean`, `mean_square`, `normalize_rows`, `pearson`, `topk`, `weighted_mean` |
+| [`unstd.math`](../src/unstd/math/__init__.py) | `cosine_rows`, `frame`, `grouped_mean`, `mean_square`, `normalize_rows`, `pearson`, `topk`, `weighted_mean`, `within` |
 
 `topk(values, k)` returns descending indices with stable ties. `normalize_rows`
 and `cosine_rows` accept an additive `eps` norm floor. `mean_square` reduces each
@@ -70,6 +72,10 @@ Normalization, cosine, mean-square and weighted pooling accept
 `grouped_mean(values, labels, groups)` produces dense means including zero rows
 for absent labels. `frame(values, length, hop)` creates complete read-only frame
 views. Calculations default to float64; framing preserves the input numeric dtype.
+`within(actual, expected, *, atol)` returns a bool for exact integer distances
+with a nonnegative integer scalar or same-shaped tolerance. Operands have equal
+shapes; signed/unsigned extremes do not round or wrap. Relative and floating
+tolerances remain the caller's policy.
 
 ## Persistent result cache
 

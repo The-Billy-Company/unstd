@@ -1,12 +1,36 @@
-# Math for repeated array work
+---
+doc_radar:
+  sentinels:
+    - file: __init__.py
+      contains: ['def within(', '"within",', 'def frame(', 'def topk(']
+---
 
-Eight operations we found in Consumer's production calculations. We select fewer
-scores, reduce rows without building squared or weighted matrices, and share
-audio samples instead of copying every overlapping frame.
+# Math for Repeated Array Work
+
+We accelerate repeated array work with NumPy: selecting scores, reducing rows,
+sharing overlapping audio frames and comparing exact integers. These operations
+come from production calculations rather than a general array wrapper.
+
+- [Install](#install)
+- [Use It](#use-it)
+- [Common Cases](#common-cases)
+- [Dispatch](#dispatch)
+- [Numeric Contract](#numeric-contract)
+- [Framing Ownership](#framing-ownership)
+- [Verification](#verification)
+- [Support](#support)
+
+## Install
+
+Install the math extra to get NumPy alongside the package.
 
 ```sh
 pip install 'unstd[math]'
 ```
+
+## Use It
+
+Import the operations where a repeated array calculation earns its own helper.
 
 ```python
 from unstd import math as numeric
@@ -17,33 +41,48 @@ similarity = numeric.cosine_rows(embeddings, query, dtype="float32")
 pooled = numeric.weighted_mean(embeddings, weights, dtype="float32")
 centroids = numeric.grouped_mean(embeddings, labels, groups=128)
 correlation = numeric.pearson(observations[:-1], observations[1:])
+accepted = numeric.within(counts, expected_counts, atol=0)
 
 frames = numeric.frame(audio, length=400, hop=160)
 energy = numeric.mean_square(frames, dtype="float32")
 # RMS: np.sqrt(energy). Audio dB: 10 * np.log10(energy + 1e-12).
 ```
 
-## Where each helper earns its place
+## Common Cases
 
-| Operation | Production use | Work avoided |
-| --- | --- | --- |
-| `topk(values, k)` | Resident memory retrieval | Sorting all N scores when only K positions are needed |
-| `normalize_rows(values, *, eps=0, dtype="float64")` | Speaker clustering | N×D squared-norm temporary |
-| `cosine_rows(values, query, *, eps=0, dtype="float64")` | Domain relevance scoring | N×D normalized gallery allocation |
-| `mean_square(values, *, dtype="float64")` | Audio quality and VAD energy | N×D squared-sample temporary |
-| `pearson(x, y)` | Presence lag-one correlation | General covariance matrix calculation |
-| `weighted_mean(values, weights, *, dtype="float64")` | Generation embedding pooling | N×D weighted-value temporary |
-| `grouped_mean(values, labels, groups)` | Domain and speaker centroids | Repeated whole-label scans and selected-row copies |
-| `frame(values, length, hop)` | Speaker audio analysis | N×W integer indices and copied overlapping samples |
+Each helper removes repeated work at a production seam.
 
-The [proof report](../../../bench/reports/math/README.md) maps all eight to
-source files and lines, includes raw timing and allocation results, and records
+- **`topk(values, k)`** selects resident memory results without sorting all N
+  scores when only K positions survive.
+- **`normalize_rows(values, *, eps=0, dtype="float64")`** normalizes speaker
+  embeddings without an N×D squared-norm temporary.
+- **`cosine_rows(values, query, *, eps=0, dtype="float64")`** scores domain
+  relevance without allocating an N×D normalized gallery.
+- **`mean_square(values, *, dtype="float64")`** measures audio quality and VAD
+  energy without an N×D squared-sample temporary.
+- **`pearson(x, y)`** measures lag-one presence correlation without calculating
+  a general covariance matrix.
+- **`weighted_mean(values, weights, *, dtype="float64")`** pools generation
+  embeddings without an N×D weighted-value temporary.
+- **`grouped_mean(values, labels, groups)`** builds domain and speaker centroids
+  without repeated whole-label scans and selected-row copies.
+- **`frame(values, length, hop)`** shares speaker audio windows without N×W
+  integer indices and copied overlapping samples.
+- **`within(actual, expected, *, atol)`** checks notebook integers without
+  Python object arrays for exact subtraction and comparison.
+
+The [proof report](../../../bench/reports/math/README.md) maps the original
+operations to source files and lines, includes raw timing and allocation results, and records
 losing comparisons. These are local measurements of production-shaped NumPy
 expressions. The package does not change Consumer's deployed callers or replace its
 existing native kernels. We found no pandas calculation hotspot worth inventing
 a dataframe abstraction around; numeric columns can use these array operations.
 
-## Small calls and platform dispatch
+Exact integer checks have a separate [proof](../../../bench/reports/math/integer-checks.md).
+We measure both the public helper and the Consumer's complete numerical check,
+including its validation and failure handling.
+
+## Dispatch
 
 CPython wheels include an optional C implementation for small ndarray reductions,
 stable selection, grouped means and frame views. It uses Python's checked buffer
@@ -64,7 +103,7 @@ calculation precision. It retains cold first-call timing, raw samples and every
 losing comparison. Unsupported inputs and unavailable native builds retain the
 portable implementation; its speed is not guaranteed to match a compiled wheel.
 
-## Numeric contract
+## Numeric Contract
 
 Inputs are real integer or floating array-likes. Strings, object arrays, complex
 arrays and booleans are rejected. All helpers check dimensions and leave their
@@ -86,6 +125,19 @@ including uint64 values above 2⁵³ and signed minima. NaNs are rejected, even 
 `k=0`; infinities are ordered. The partition path costs O(N + K log K), native
 heap selection costs O(N log K), and dense selection uses a full stable sort.
 
+`within` returns a bool for equal-shaped integer operands and a nonnegative
+integer scalar or same-shaped `atol`. Empty arrays compare true; scalar operands
+work.
+
+Full signed/unsigned ranges retain exact distances, including mixed distances
+above uint64. Python integer scalar tolerances may exceed uint64; array
+tolerances require a native integer dtype. Relative and floating tolerances stay
+with the caller's numerical policy.
+
+Equal signedness with zero scalar tolerance uses a direct equality scan. Other
+cases use native unsigned arithmetic and an explicit carry bit, without object
+buffers or broadcasting.
+
 Normalization and cosine accept matrices, with one query vector for cosine.
 The norm floor is additive: `norm + eps`, with finite, nonnegative `eps`. Zero
 rows normalize to zero; zero-vector cosines are zero. For a pre-normalized
@@ -104,7 +156,7 @@ label order, with zeros for absent groups; callers needing counts can use
 empty-array sentinel. The native accumulator also handles small group counts;
 without it, those counts can favor the existing mask loop.
 
-## Framing and ownership
+## Framing Ownership
 
 `frame` takes a vector and positive integer length/hop, retains the source dtype,
 and includes only complete windows. Short inputs give shape `(0, length)`.
@@ -120,14 +172,27 @@ values. The proof measures framing plus energy as well as view construction.
 
 ## Verification
 
+Run correctness tests and focused profiles through the public package boundary.
+
 ```sh
 python -m pytest tests/suites/product/math -q
 python -m bench.profiles.math --output bench/reports/math/results.json
 python -m bench.profiles.math_workflows --require-native --strict --output /tmp/math-workflows.json
 python -m bench.speeds check --group math
+python -m bench.profiles.integer_checks --output /tmp/integer-checks.json
 ```
 
 Unit and property tests compare independent scalar references, exact correlation
 fractions, stable sorting and production NumPy expressions. They cover malformed
 inputs, integer extremes, both calculation precisions, empty shapes, strides,
 nonmutation, shared frame storage and an isolated process without NumPy.
+
+## Support
+
+Report a reproducible issue with the input dtype, shape, layout and expected
+result through the package's issue tracker. Send vulnerabilities through the
+[security policy](../../../SECURITY.md).
+
+For numeric wire buffers and packing, use [pack](../pack/README.md). For general
+array algorithms, keep NumPy's own operations; this package only owns the focused
+calculations above.

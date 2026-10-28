@@ -2,8 +2,9 @@
 
 Install ``unstd[math]`` to use these operations. Numeric calculations return
 float64 arrays by default, accept real numeric array-likes, and never mutate inputs.
-``topk`` preserves the input's ordering precision; ``frame`` preserves its dtype
-and returns a read-only view. No pandas, SciPy or native build is required.
+``topk`` preserves ordering precision; ``within`` compares exact integers.
+``frame`` preserves its dtype and returns a read-only view. No pandas, SciPy
+or native build is required.
 """
 
 from __future__ import annotations
@@ -48,6 +49,7 @@ __all__ = [
     "pearson",
     "topk",
     "weighted_mean",
+    "within",
 ]
 
 
@@ -392,3 +394,76 @@ def frame(values: ArrayLike, length: int, hop: int) -> RealArray:
         out.flags.writeable = False
         return out
     return np.lib.stride_tricks.sliding_window_view(samples, width)[::step]
+
+
+def _integer(values: ArrayLike) -> NDArray[np.integer[Any]]:
+    """Native integer storage of any shape, without rounding through floats."""
+    if not _HAVE_NUMPY:
+        msg = "unstd.math requires NumPy; install with: pip install 'unstd[math]'"
+        raise ImportError(msg)
+    array = np.asarray(values)
+    if array.dtype.kind not in "iu":
+        msg = "values and atol must have an integer dtype, not bool or object"
+        raise TypeError(msg)
+    return cast("NDArray[np.integer[Any]]", array)
+
+
+def within(actual: ArrayLike, expected: ArrayLike, *, atol: ArrayLike) -> bool:
+    """Whether every exact integer distance is at most the absolute tolerance.
+
+    Operands must have equal shapes; *atol* is a nonnegative integer scalar or
+    an integer array of that same shape. Empty arrays compare true. Signed and
+    unsigned values retain all bits, including their 65-bit mixed distance;
+    no float conversion, broadcasting or Python object buffers are used.
+    Python integer scalar tolerances may exceed uint64. Inputs stay unchanged.
+    Relative or floating tolerances belong to the caller's numerical policy.
+    """
+    left, right = _integer(actual), _integer(expected)
+    if left.shape != right.shape:
+        msg = "operands must have equal shapes"
+        raise ValueError(msg)
+    wide = False
+    if isinstance(atol, int) and not isinstance(atol, bool) and atol >= 1 << 64:
+        wide = True
+        # No distance between supported integers exceeds UINT64_MAX + 2**63.
+        if atol >= (1 << 64) + (1 << 63):
+            return True
+        threshold = np.asarray(atol - (1 << 64), dtype=np.uint64)
+    else:
+        threshold = _integer(atol)
+        if threshold.ndim and threshold.shape != left.shape:
+            msg = "atol must be scalar or match the operands"
+            raise ValueError(msg)
+        if threshold.dtype.kind == "i" and np.any(threshold < 0):
+            msg = "atol must be nonnegative"
+            raise ValueError(msg)
+        if (
+            threshold.ndim == 0
+            and not threshold.item()
+            and left.dtype.kind == right.dtype.kind
+        ):
+            # Same signedness permits a direct equality scan at every width.
+            return bool(np.array_equal(left, right))
+        threshold = threshold.astype(np.uint64, copy=False)
+
+    unsigned_left = left.astype(np.uint64, copy=False)
+    unsigned_right = right.astype(np.uint64, copy=False)
+    carry: NDArray[np.bool_] | np.bool_ | None = None
+    if left.dtype.kind == right.dtype.kind:
+        lower = left < right
+    elif left.dtype.kind == "i":
+        negative = left < 0
+        lower = negative | (unsigned_left < unsigned_right)
+        carry = negative & (unsigned_right >= unsigned_left)
+    else:
+        negative = right < 0
+        lower = ~negative & (unsigned_left < unsigned_right)
+        carry = negative & (unsigned_left >= unsigned_right)
+    if not wide and carry is not None and np.any(carry):
+        return False
+    distance = np.empty_like(unsigned_left)
+    np.subtract(unsigned_left, unsigned_right, out=distance)
+    np.negative(distance, out=distance, where=lower)
+    if wide:
+        return carry is None or bool(np.all(~carry | (distance <= threshold)))
+    return bool(np.all(distance <= threshold))

@@ -43,6 +43,7 @@ calls = (
     lambda: math.weighted_mean([[1.0]], [1.0]),
     lambda: math.grouped_mean([[1.0]], [0], 1),
     lambda: math.frame([1.0], 1, 1),
+    lambda: math.within([1], [1], atol=0),
 )
 for call in calls:
     try:

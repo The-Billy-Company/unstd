@@ -7,6 +7,8 @@ doc_radar:
       contains: ['"consumer-attachment-images-10"', '"consumer-change-slots-1000"', '"consumer-question-private-alias"']
     - file: bench/workloads/clone_temporals.py
       contains: ['"temporal-mixed-scalars-1000"', '"temporal-tuple-date-1000"', '"temporal-nested-date-1000"', '"temporal-scalar-first-1000"']
+    - file: bench/profiles/integer_checks.py
+      contains: ['"--consumer-source"', '"consumer_close"', '"target_100x_met"']
 ---
 
 # Focused performance profiles
@@ -21,6 +23,7 @@ These drivers compare saved and current implementations, check outputs and impor
 - [`consumer_cache.py`](consumer_cache.py) — actual Consumer corpus-loader reuse in separate processes, including content/version invalidation and input hashing
 - [`dataset.py`](dataset.py) — indexed JSON snapshots compared with eager and streaming reads, with exact rows and separate build, storage, latency and memory evidence
 - [`dataset_access.py`](dataset_access.py) — matched SQLite, portable mapped, and native mapped access with real binding counters and explicit losses
+- [`integer_checks.py`](integer_checks.py) - exact integer distances against object arithmetic, with paired samples, allocation peaks and an optional complete consumer comparison through its own `close` function
 - [`jsonx_throughput.py`](jsonx_throughput.py)
 - [`jsonx_existing.py`](jsonx_existing.py) — three saved sources, unchanged JSONX registry/core fixtures and separate Python profiles; run this file directly to select sources before import
 - [`clone_ids_profile.py`](clone_ids_profile.py)

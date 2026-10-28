@@ -530,7 +530,8 @@
       "normalize_rows",
       "pearson",
       "topk",
-      "weighted_mean"
+      "weighted_mean",
+      "within"
     ],
     "callables": {
       "cosine_rows": {
@@ -563,6 +564,10 @@
       },
       "weighted_mean": {
         "signature": "(values: 'ArrayLike', weights: 'ArrayLike', *, dtype: 'Precision' = 'float64') -> 'FloatArray'",
+        "module": "unstd.math"
+      },
+      "within": {
+        "signature": "(actual: 'ArrayLike', expected: 'ArrayLike', *, atol: 'ArrayLike') -> 'bool'",
         "module": "unstd.math"
       }
     }
