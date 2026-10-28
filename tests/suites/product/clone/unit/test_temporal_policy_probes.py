@@ -205,10 +205,17 @@ def test_temporal_parent_membership_uses_live_walker_and_policy_lifetime(
                     # Reap the intentionally foreign key on every exit.
                     del namespace[foreign_name]
     assert observations[0] == observations[1]
-    expected = ["contains", "released", "walk"]
+    # CPython's perturbation probe can revisit a singleton's occupied slot.
+    # Its callback count depends on the type's address hash, but every probe
+    # must finish before the old policy is released and the new walker runs.
+    trace = observations[0][1]
+    released_index = trace.index("released")
+    assert released_index > 0
+    assert trace[:released_index] == ["contains"] * released_index
+    expected = ["released", "walk"]
     if shape != "set":
         expected.append("walk")
-    assert observations[0][1] == expected
+    assert trace[released_index:] == expected
 
 
 @pytest.mark.parametrize("shape", ["list", "tuple", "dict"])
@@ -269,6 +276,7 @@ def test_dynamic_temporal_parent_preserves_namespace_equality_exception() -> Non
     namespace = vars(structural)
     failure = LookupError("dynamic graph-atom namespace comparison")
     armed = False
+    mutated = False
     events: list[str] = []
 
     def changed_walk(o: object, memo: dict[int, Any] | None = None) -> str:
@@ -296,10 +304,16 @@ def test_dynamic_temporal_parent_preserves_namespace_equality_exception() -> Non
 
         @override
         def __eq__(cls, other: object) -> bool:
+            nonlocal mutated
             events.append("contains")
-            del namespace["_GRAPH_ATOMS"]
-            namespace[name] = object()
-            structural._walk = changed_walk
+            # One membership search can compare this same entry repeatedly.
+            # Mutate once so the exception still comes from the next parent's
+            # namespace lookup, after the changed walker has run.
+            if not mutated:
+                mutated = True
+                del namespace["_GRAPH_ATOMS"]
+                namespace[name] = object()
+                structural._walk = changed_walk
             return False
 
     class Foreign(metaclass=Meta):
@@ -314,6 +328,7 @@ def test_dynamic_temporal_parent_preserves_namespace_equality_exception() -> Non
                 patch.setattr(structural, "_native_clone", None)
             events.clear()
             armed = True
+            mutated = False
             try:
                 with pytest.raises(LookupError) as observed:
                     clone.deep(source)
@@ -323,4 +338,8 @@ def test_dynamic_temporal_parent_preserves_namespace_equality_exception() -> Non
                 armed = False
                 del namespace[name]
                 namespace["_GRAPH_ATOMS"] = original_policy
-    assert observations[0] == observations[1] == ["contains", "walk", "namespace"]
+    assert observations[0] == observations[1]
+    trace = observations[0]
+    assert len(trace) > 2
+    assert trace[:-2] == ["contains"] * (len(trace) - 2)
+    assert trace[-2:] == ["walk", "namespace"]
