@@ -759,7 +759,8 @@ with tempfile.TemporaryDirectory() as directory:
 assert calls == [sys.platform != 'win32']
 """,
         "unstd.math._math_native": """
-assert native.KERNEL_VERSION == 1
+assert native.KERNEL_VERSION == 2
+assert callable(native.within)
 assert 'numpy' not in sys.modules
 """,
         "unstd.pack._pack_native": """
