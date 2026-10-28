@@ -47,6 +47,24 @@ doc_radar:
 
 <!-- towncrier release notes start -->
 
+## [4.0.4] - 2026-10-27
+
+### Added
+
+- `math.within(actual, expected, *, atol)` checks exact integer distances without
+  Python object arrays. Equal-shaped signed and unsigned operands retain their
+  full ranges, including mixed distances above uint64; absolute tolerances can
+  be nonnegative integer scalars or same-shaped integer arrays.
+
+### Changed
+
+- Exact integer checks avoid scalar NumPy setup and share unsigned views for
+  large matching native-endian inputs. Compiled wheels fuse contiguous 64-bit
+  checks with scalar tolerance into one scan without working arrays, retaining
+  interruption handling and buffer ownership. Other dtypes, layouts and
+  tolerances keep the exact portable path; older compiled extensions also fall
+  back safely until rebuilt.
+
 ## [4.0.3] - 2026-10-27
 
 ### Added

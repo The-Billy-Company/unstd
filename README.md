@@ -2,9 +2,9 @@
 doc_radar:
   sentinels:
     - file: pyproject.toml
-      contains: ['version = "4.0.3"', 'requires-python = ">=3.12"']
+      contains: ['version = "4.0.4"', 'requires-python = ">=3.12"']
     - file: CHANGELOG.md
-      contains: ['## [4.0.3] - 2026-10-27']
+      contains: ['## [4.0.4] - 2026-10-27']
 ---
 
 # unstd
@@ -103,7 +103,7 @@ both gains and regressions.
 See the [test guide](tests/README.md), [architecture](docs/architecture.md),
 [API inventory](docs/api.md), and [security policy](SECURITY.md).
 
-The [4.0.3 release notes](CHANGELOG.md#403---2026-10-27) cover the latest additions
+The [4.0.4 release notes](CHANGELOG.md#404---2026-10-27) cover the latest additions
 and improvements. The [October 25 updates](docs/updates-2026-10-25.md) retain the
 change index through version 4.0.2.
 
