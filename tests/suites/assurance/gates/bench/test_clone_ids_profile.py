@@ -40,7 +40,11 @@ def test_value_check_observes_key_types_order_and_default_factory() -> None:
 def test_stdlib_profile_records_coverage_and_explicit_optional_skips() -> None:
     result = _bundle(REPO_ROOT / "src", "gate", stdlib_only=True)
     skipped = {row["function"] for row in result["functions"] if row["skipped"]}
-    expected_skips = {"structural._model", "structural._reduced"}
+    expected_skips = {
+        "structural._model",
+        "structural._model_private",
+        "structural._reduced",
+    }
     from unstd.clone import structural
 
     if structural._native_walk_graph is None:

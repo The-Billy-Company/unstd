@@ -149,11 +149,15 @@ def test_immediate_expiry_replaces_existing_batch_keys_without_removing_others(
 
 
 def test_batched_lookups_bind_sql_shaped_keys(tmp_path):
-    cache = Cache(tmp_path / "results.sqlite3")
+    path = tmp_path / "results.sqlite3"
+    cache = Cache(path, namespace="x'; DROP TABLE _unstd_cache_v1; --")
+    other = Cache(path, namespace="other")
+    other.set("private", "other namespace")
     values = {"x' OR 1=1 --": "quoted", "NULL\x00key": "zero", "plain": "plain"}
     cache.set_many(values)
     assert cache.get_many(values) == values
-    assert cache.get_many(["not' OR 1=1 --"]) == {}
+    assert cache.get_many(["not' OR 1=1 --", "private"]) == {}
+    assert other.get_many(["private", *values]) == {"private": "other namespace"}
 
 
 def test_chunked_reads_use_one_expiry_cutoff(tmp_path, monkeypatch):

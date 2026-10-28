@@ -439,7 +439,10 @@ cosine_rows(PyObject *module, PyObject *args)
                 for (; column<columns; column++) sum += (float)at(&rows,row,column)*(float)at(&matrix,0,column);
                 total=sum;
                 float rn=sqrtf((float)square(&rows,row,columns,width))+(float)eps;
-                denominator=rn*((float)qnorm+(float)eps);
+                /* Keep the selected float32 arithmetic before widening storage.
+                   Its overflow must reach fp_finish and NumPy's error policy. */
+                float product=rn*((float)qnorm+(float)eps);
+                denominator=product;
             } else {
                 double sum=0;
                 for (Py_ssize_t column=0; column<columns; column++) sum += at(&rows,row,column)*at(&matrix,0,column);

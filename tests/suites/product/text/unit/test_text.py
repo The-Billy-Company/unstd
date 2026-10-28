@@ -411,6 +411,7 @@ def test_portable_jaro_preserves_string_subclass_iteration(
         ("ab", "a" * 100_000 + "c", (1 / 2 + 1 / 100_001 + 1) / 3),
         ("\ud800", "\x00" * 100_000, 0.0),
     ],
+    ids=["no-match", "one-match", "surrogate-and-nuls"],
 )
 def test_portable_jaro_tiny_input_and_large_choice(
     monkeypatch: pytest.MonkeyPatch, a: str, b: str, expected: float

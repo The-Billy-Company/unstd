@@ -11,7 +11,9 @@ from __future__ import annotations
 from contextlib import contextmanager
 import io
 import json
+import subprocess
 import sys
+import textwrap
 
 import pytest
 
@@ -199,6 +201,8 @@ def test_one_byte_reads_do_not_repeatedly_batch_scan_a_growing_large_item(monkey
 def test_whitespace_carry_does_not_join_adjacent_number_tokens(monkeypatch):
     if not jsonx._HAVE_MSGSPEC:
         pytest.skip("native batch decoding requires the serde extra")
+    jsonx.loads("null")
+    assert native.dispatch_ready(jsonx.loads)
     original = native.array_boundary
     attempts = []
 
@@ -441,7 +445,11 @@ def test_native_batch_decode_refuses_changed_backend_configuration(
 
 @pytest.mark.parametrize("observer", ["profile", "trace"])
 def test_native_batch_decode_refuses_active_python_observers(observer, default_decoder):
+    calls = []
+
     def observe(_frame, _event, _argument):
+        if _frame.f_code is default_decoder.__code__:
+            calls.append(_event)
         return observe
 
     get = sys.getprofile if observer == "profile" else sys.gettrace
@@ -450,8 +458,119 @@ def test_native_batch_decode_refuses_active_python_observers(observer, default_d
     try:
         set_observer(observe)
         assert native.array_decode("1,2", 0, 3, default_decoder) is NotImplemented
+        assert default_decoder("[1,2]") == [1, 2]
+        assert calls
+        assert native.array_decode("1,2", 0, 3, default_decoder) is NotImplemented
     finally:
         set_observer(previous)
+    default_decoder("null")
+    assert native.array_decode("1,2", 0, 3, default_decoder) == [1, 2]
+
+
+@pytest.mark.parametrize("local", [False, True])
+def test_native_batch_decode_tracks_enabled_and_disabled_monitoring(
+    local, default_decoder
+):
+    monitoring = sys.monitoring
+    available = [tool for tool in range(6) if monitoring.get_tool(tool) is None]
+    if not available:
+        pytest.skip("all monitoring tool IDs are already occupied")
+    tool = available[-1]
+    code = default_decoder.__code__
+    calls = []
+
+    def started(called_code, _offset):
+        if called_code is code:
+            calls.append(called_code)
+
+    monitoring.use_tool_id(tool, "unstd batch decoder monitoring")
+    try:
+        monitoring.register_callback(tool, monitoring.events.PY_START, started)
+        if local:
+            monitoring.set_local_events(tool, code, monitoring.events.PY_START)
+        else:
+            monitoring.set_events(tool, monitoring.events.PY_START)
+        # Event changes must be honored even before the next Python frame has
+        # refreshed this code object's active monitoring table.
+        assert native.array_decode("1,2", 0, 3, default_decoder) is NotImplemented
+        assert default_decoder("[1,2]") == [1, 2]
+        assert calls == [code]
+        assert native.array_decode("1,2", 0, 3, default_decoder) is NotImplemented
+    finally:
+        monitoring.set_events(tool, 0)
+        monitoring.set_local_events(tool, code, 0)
+        monitoring.free_tool_id(tool)
+    default_decoder("null")
+    assert native.array_decode("1,2", 0, 3, default_decoder) == [1, 2]
+
+
+@pytest.mark.parametrize("event_name", ["RAISE", "EXCEPTION_HANDLED", "PY_UNWIND"])
+def test_global_exception_monitoring_keeps_decoder_frames(
+    event_name, default_decoder, monkeypatch
+):
+    monitoring = sys.monitoring
+    available = [tool for tool in range(6) if monitoring.get_tool(tool) is None]
+    if not available:
+        pytest.skip("all monitoring tool IDs are already occupied")
+    tool = available[-1]
+    code = default_decoder.__code__
+    calls = []
+    event = getattr(monitoring.events, event_name)
+
+    def observed(called_code, _offset, error):
+        if called_code is code:
+            calls.append(error)
+
+    def forbidden_getter(_tool):
+        pytest.fail("native admission called a replacement monitoring getter")
+
+    # Admission retains the authentic C builtin, including across later event
+    # generations. A replaced public attribute cannot hide an enabled observer.
+    monkeypatch.setattr(monitoring, "get_events", forbidden_getter)
+    monitoring.use_tool_id(tool, "unstd global decoder exception monitoring")
+    try:
+        monitoring.register_callback(tool, event, observed)
+        monitoring.set_events(tool, event)
+        default_decoder("null")
+        assert not native.dispatch_ready(default_decoder)
+        assert native.array_decode("broken", 0, 6, default_decoder) is NotImplemented
+        with pytest.raises(json.JSONDecodeError):
+            list(jsonx.iterload(io.StringIO("[broken]")))
+        assert calls
+    finally:
+        monitoring.set_events(tool, 0)
+        monitoring.free_tool_id(tool)
+    default_decoder("null")
+    assert native.array_decode("1,2", 0, 3, default_decoder) == [1, 2]
+
+
+@pytest.mark.parametrize("replacement", ["python", "other_builtin"])
+def test_replaced_monitoring_getter_before_import_keeps_python_fallback(replacement):
+    script = textwrap.dedent(f"""
+        import io
+        import sys
+
+        def forbidden(tool):
+            raise AssertionError("untrusted monitoring callback ran")
+
+        sys.monitoring.get_events = (
+            forbidden if {replacement!r} == "python" else sys.monitoring.get_tool
+        )
+        from unstd.serde import _json_native as native, jsonx
+
+        jsonx.loads("null")
+        assert not native.dispatch_ready(jsonx.loads)
+        assert native.array_decode("1,2", 0, 3, jsonx.loads) is NotImplemented
+        assert list(jsonx.iterload(io.StringIO("[1,2]"))) == [1, 2]
+        """)
+    result = subprocess.run(  # noqa: S603 - fixed source in a bounded worker
+        [sys.executable, "-c", script],
+        capture_output=True,
+        text=True,
+        timeout=20,
+        check=False,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
 
 
 @pytest.mark.parametrize("marker", ["ascii", "café", "界", "😀", "\ud800"])

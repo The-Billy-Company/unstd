@@ -157,7 +157,13 @@ def test_malformed_ndjson_aborts_import_without_publishing(tmp_path):
 
 
 def test_dataset_path_with_uri_metacharacters_is_literal(tmp_path):
-    path = tmp_path / "what?mode=rw#東京.dataset"
+    # Windows forbids '?' in filenames; '#', '%' and '=' remain literal there.
+    name = (
+        "what%3Fmode=rw#東京.dataset"
+        if os.name == "nt"
+        else "what?mode=rw#東京.dataset"
+    )
+    path = tmp_path / name
     build(str(path), [{"literal": True}])
     with Dataset(path) as dataset:
         assert dataset[0] == {"literal": True}

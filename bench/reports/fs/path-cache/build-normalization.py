@@ -1,4 +1,5 @@
 """Build the private-style normalization opportunity proof for local reruns."""
+
 from __future__ import annotations
 
 import hashlib
@@ -23,7 +24,9 @@ def main() -> None:
     command = ["cc", "-O3", "-shared", "-fPIC"]
     if sys.platform == "darwin":
         command.extend(["-undefined", "dynamic_lookup"])
-    command.extend(["-I" + sysconfig.get_path("include"), str(source), "-o", str(output)])
+    command.extend(
+        ["-I" + sysconfig.get_path("include"), str(source), "-o", str(output)]
+    )
     # Compiler flags are fixed; both paths name this local proof's owned files.
     subprocess.run(command, check=True)  # noqa: S603
     report = {

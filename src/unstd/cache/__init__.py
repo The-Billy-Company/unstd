@@ -278,7 +278,7 @@ class Cache:
                 placeholders = ",".join("?" for _ in chunk)
                 # Only placeholder count enters SQL; all caller values are bound.
                 statement = (
-                    "SELECT key, value FROM _unstd_cache_v1 "  # noqa: S608
+                    "SELECT key, value FROM _unstd_cache_v1 "  # noqa: S608  # nosec B608 # only generated placeholders; values are bound
                     "WHERE namespace = ? AND key IN ("
                     + placeholders
                     + ") AND (expires_at IS NULL OR expires_at > ?)"

@@ -21,6 +21,48 @@ if TYPE_CHECKING:
 
 
 _STDLIB_CASES = {
+    "cache": """
+from pathlib import Path
+from unstd.cache import Cache
+cache = Cache(Path('results.sqlite'), namespace='installed')
+cache.set_many({'first': {'items': [1, 2]}, 'second': None})
+assert cache.get_many(['first', 'second', 'absent']) == {'first': {'items': [1, 2]}, 'second': None}
+calls = []
+def produce():
+    calls.append('computed')
+    return {'items': [3]}
+assert cache.get_or_compute('third', produce) == {'items': [3]}
+assert Cache(Path('results.sqlite'), namespace='installed').get_or_compute('third', produce) == {'items': [3]}
+assert calls == ['computed']
+result = cache.get('first')
+result['items'].append(99)
+assert cache.get('first') == {'items': [1, 2]}
+assert cache.delete('second')
+assert cache.clear() == 2
+""",
+    "dataset": """
+from pathlib import Path
+from unstd.dataset import Dataset, build
+rows = [{'id': 0, 'text': '東京'}, {'id': 1}, {'id': 2}]
+path = Path('rows.dataset')
+assert build(path, iter(rows)) == 3
+with Dataset(path) as records:
+    records.verify()
+    assert len(records) == 3
+    assert records[-1] == rows[-1]
+    assert records.take([2, 0, 2]) == [rows[2], rows[0], rows[2]]
+    assert records[::-1] == rows[::-1]
+    assert list(records.batches(2)) == [rows[:2], rows[2:]]
+    result = records[0]
+    result['id'] = 99
+    assert records[0] == rows[0]
+try:
+    len(records)
+except ValueError:
+    pass
+else:
+    raise AssertionError('closed dataset still permits reads')
+""",
     "compress.stdlib_ports": """
 import bz2, importlib, io, lzma, tarfile, zipfile, zlib
 from unstd import compress
@@ -391,6 +433,8 @@ _MISSING_EXTRA_CASES = {
 # is intentionally not generated from the package: a new module must make an
 # author choose and implement its installed/fallback/missing-extra contract.
 _PROBE_MODULES = {
+    "cache": ("unstd.cache", "unstd.cache.locking"),
+    "dataset": ("unstd.dataset", "unstd.dataset.reader", "unstd.dataset.storage"),
     "math.mean_square": ("unstd.math",),
     "compress.stdlib_ports": (
         "unstd.compress.bz2",

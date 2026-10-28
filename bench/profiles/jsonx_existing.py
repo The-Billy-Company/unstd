@@ -48,6 +48,22 @@ if TYPE_CHECKING:
 
 
 _LABELS = ("original", "first_pass", "candidate")
+# Keep this historical comparison on APIs shared by its saved products. New
+# registry entries (such as array streaming) have their own workload evidence.
+_PUBLIC_CASE_NAMES = frozenset(
+    f"unstd.serde.jsonx.{name}"
+    for name in (
+        "dumps",
+        "dumpb",
+        "loads",
+        "canonical",
+        "canonical_strict",
+        "dump",
+        "load",
+        "JSONEncoder",
+        "JSONDecoder",
+    )
+)
 _FIXTURE_FILES = (
     "bench/workloads/speed_cases_codecs.py",
     "bench/core/cases.py",
@@ -250,11 +266,15 @@ def _worker(
     )
     metadata = _provenance(source, jsonx)
     harness_hashes = _harness_hashes(harness)
-    public_cases = [case for case in _serde_cases() if ".jsonx." in case.name]
+    public_cases = [case for case in _serde_cases() if case.name in _PUBLIC_CASE_NAMES]
     core_cases = [
         case for case in registry(("serde",)) if case.name.startswith("jsonx.")
     ]
-    if len(public_cases) != 9 or len(core_cases) != 7:
+    if (
+        {case.name for case in public_cases} != _PUBLIC_CASE_NAMES
+        or len(public_cases) != len(_PUBLIC_CASE_NAMES)
+        or len(core_cases) != 7
+    ):
         message = "expected the unchanged 9 public registry and 7 core JSONX cases"
         raise RuntimeError(message)
     profile_cases = _workloads()

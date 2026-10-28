@@ -1,3 +1,0 @@
-Clone bounded flat temporal lists and tuples in the native graph path while preserving current copy policies, caller memo aliases and foreign protocols. Keep foreign type-membership callbacks on the canonical Python temporal path.
-
-Use bounded policy probes for mixed datetime state and avoid repeated primitive checks in flat temporal loops. Preserve parent membership order and live walker changes across copy hooks.

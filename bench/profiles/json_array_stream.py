@@ -151,6 +151,8 @@ class _CountingReader:
 
 def _rss() -> dict[str, Any]:
     """Normalize macOS bytes and Linux KiB while retaining the raw RSS value."""
+    if sys.platform == "win32":
+        return {"bytes": None, "raw": None, "raw_unit": "resource unavailable"}
     try:
         import resource
     except ImportError:

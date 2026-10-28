@@ -54,6 +54,9 @@ def test_smoke_audits_all_existing_fixtures_without_timing_or_profiling(monkeypa
     source = Path(jsonx.__file__).resolve().parents[2]
     result = profile._worker(source, 1, 1, smoke=True, harness=harness)
     assert len(result["public_case_names"]) == 9
+    assert set(result["public_case_names"]) == profile._PUBLIC_CASE_NAMES
+    assert "unstd.serde.jsonx.iterload" not in result["public_case_names"]
+    assert "unstd.serde.jsonx.dump_array" not in result["public_case_names"]
     assert len(result["core_case_names"]) == 7
     assert "jsonx.dumps/records" in result["existing_profile_case_names"]
     assert "unstd.serde.jsonx.canonical_strict" in result["public_case_names"]

@@ -246,9 +246,10 @@ def test_built_extensions_are_exercised_by_the_public_workloads() -> None:
         "walk": [True, True, True],
     }
     cycle = result["routes"]["clone.deep/cycle-fallback"]
-    assert cycle["native_returns"] == {}
-    assert cycle["native_recursion_errors"] == {"graph": 3}
-    assert cycle["python_calls"]["deepcopy"]
+    assert cycle["expected"] == "native shared-memo walk"
+    assert cycle["native_returns"] == {"graph": [False] * 3, "walk": [True] * 3}
+    assert cycle["native_recursion_errors"] == {}
+    assert "deepcopy" not in cycle["python_calls"]
     assert "_walk" not in cycle["python_calls"]
     records = result["routes"]["clone.deep/dataclass-records"]
     assert records["native_returns"]["walk"] == [True] * 3
@@ -275,16 +276,18 @@ def test_clone_routes_are_proven_without_the_optional_text_extension() -> None:
         assert "_walk" not in route["python_calls"]
 
 
-def test_cycle_route_rejects_python_walking_before_deepcopy(monkeypatch) -> None:
+def test_cycle_route_rejects_python_walking_instead_of_native_memo(monkeypatch) -> None:
     native = pytest.importorskip("unstd.clone._clone_native")
     pytest.importorskip("unstd.text._text_native")
     source = REPO_ROOT / "src"
     clone = _load(source, "clone/structural.py", "_route_cycle_clone")
     text = _load(source, "text/fuzz.py", "_route_cycle_text")
     _base_text(text)
-    # The legacy entry point refuses cycles, forcing the recursive Python walk.
-    # Equal output cannot qualify that slower route as immediate cycle fallback.
-    monkeypatch.setattr(clone, "_native_graph", lambda source: native.clone(source))
+    # The legacy entry point refuses cycles, forcing the Python shared-memo walk.
+    # Equal output cannot qualify that slower route as native cycle handling.
+    monkeypatch.setattr(
+        clone, "_native_graph", lambda source, *args: native.clone(source)
+    )
     monkeypatch.setattr(clone, "_native_walk_graph", None)
     cases = [
         case
@@ -296,6 +299,47 @@ def test_cycle_route_rejects_python_walking_before_deepcopy(monkeypatch) -> None
     with pytest.raises(AssertionError, match="unexpected native/fallback route"):
         _routes(cases, source, clone, text)
     assert clone._native_clone is native.clone_checked
+
+
+def test_legacy_cycle_route_retains_its_immediate_deepcopy_proof(monkeypatch) -> None:
+    pytest.importorskip("unstd.clone._clone_native")
+    source = REPO_ROOT / "src"
+    clone = _load(source, "clone/structural.py", "_route_legacy_cycle_clone")
+    text = SimpleNamespace(**vars(fuzz))
+    _base_text(text)
+    # Saved products call the one-argument graph kernel, whose cycle signal
+    # selects stdlib deepcopy before any Python structural traversal.
+    monkeypatch.setattr(clone, "_NATIVE_CLOSED_TEMPORALS", False)
+    cases = [
+        case
+        for case in _workloads(clone, text)
+        if case.name == "clone.deep/cycle-fallback"
+    ]
+    route = _routes(cases, source, clone, text)["clone.deep/cycle-fallback"]
+    assert route["expected"] == "python fallback"
+    assert route["native_returns"] == {}
+    assert route["native_recursion_errors"] == {"graph": 3}
+    assert route["python_calls"]["deepcopy"]
+    assert "_walk" not in route["python_calls"]
+
+
+def test_current_cycle_route_rejects_legacy_deepcopy_fallback(monkeypatch) -> None:
+    native = pytest.importorskip("unstd.clone._clone_native")
+    source = REPO_ROOT / "src"
+    clone = _load(source, "clone/structural.py", "_route_cycle_deepcopy_clone")
+    text = SimpleNamespace(**vars(fuzz))
+    _base_text(text)
+    monkeypatch.setattr(
+        clone, "_native_graph", lambda source, *args: native.clone_graph(source)
+    )
+    cases = [
+        case
+        for case in _workloads(clone, text)
+        if case.name == "clone.deep/cycle-fallback"
+    ]
+    assert cases[0].check(cases[0].call())
+    with pytest.raises(AssertionError, match="unexpected native/fallback route"):
+        _routes(cases, source, clone, text)
 
 
 @pytest.mark.parametrize(

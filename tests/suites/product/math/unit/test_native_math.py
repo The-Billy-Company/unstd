@@ -203,6 +203,18 @@ def test_native_float32_narrows_before_division_not_after_it(np, native):
     np.testing.assert_array_equal(actual, expected)
 
 
+def test_cosine_denominator_uses_selected_precision_before_widening(np, native):
+    source = np.array([[1e19]], dtype=np.float32)
+    query = source[0]
+    assert native.cosine_rows(source, query, 1e19, "float32") is NotImplemented
+    with np.errstate(over="raise"):
+        with pytest.raises(FloatingPointError, match="overflow"):
+            numeric.cosine_rows(source, query, eps=1e19, dtype="float32")
+        wide = native.cosine_rows(source, query, 1e19, "float64")
+    assert wide is not NotImplemented
+    np.testing.assert_allclose(wide, [0.25], rtol=1e-6)
+
+
 def test_native_empty_inferred_float_labels_are_vacuously_valid(np, native):
     source = np.empty((0, 3), dtype=np.float64)
     labels = np.asarray([])

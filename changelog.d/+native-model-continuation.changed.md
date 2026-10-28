@@ -1,1 +1,0 @@
-Keep canonical Pydantic model reconstruction inside the native graph traversal, preserving allocation, state order, private aliases and live copy-policy changes. Resolve model setup only when a model is encountered.

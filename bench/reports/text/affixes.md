@@ -101,7 +101,9 @@ revision = "0b00d72a6e5155322e06c4594c7b829e5fd47788"
 for relative in ("src/unstd/text/fuzz.py", "native/text/src/adapter.c"):
     target = before / relative
     target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_bytes(subprocess.check_output(["git", "show", f"{revision}:{relative}"]))
+    target.write_bytes(
+        subprocess.check_output(["git", "show", f"{revision}:{relative}"])
+    )
 
 binaries = {}
 for label, source_root in (("before", before), ("after", root)):
@@ -118,14 +120,25 @@ for label, source_root in (("before", before), ("after", root)):
     command.run()
     binaries[label] = command.get_ext_fullpath(extension.name)
 
-subprocess.run([
-    sys.executable, "bench/profiles/text_affixes.py",
-    "--baseline-source", str(before / "src"),
-    "--baseline-native", binaries["before"],
-    "--candidate-source", str(root / "src"),
-    "--candidate-native", binaries["after"],
-    "--rounds", "7", "--output", ".local/text-affixes/reproduced.json",
-], check=True)
+subprocess.run(
+    [
+        sys.executable,
+        "bench/profiles/text_affixes.py",
+        "--baseline-source",
+        str(before / "src"),
+        "--baseline-native",
+        binaries["before"],
+        "--candidate-source",
+        str(root / "src"),
+        "--candidate-native",
+        binaries["after"],
+        "--rounds",
+        "7",
+        "--output",
+        ".local/text-affixes/reproduced.json",
+    ],
+    check=True,
+)
 ```
 
 The strict floating-point compiler arguments above match the macOS/Linux text

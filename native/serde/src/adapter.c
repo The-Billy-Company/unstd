@@ -9,7 +9,13 @@
 #include <Python.h>
 #include <string.h>
 
-#if PY_VERSION_HEX >= 0x030E0000 && PY_VERSION_HEX < 0x030F0000
+#if PY_VERSION_HEX >= 0x030C0000 && PY_VERSION_HEX < 0x030D0000
+#define Py_BUILD_CORE
+/* The public 3.12 compatibility macro conflicts with the internal inline. */
+#undef _PyGC_FINALIZED
+#include "internal/pycore_interp.h"
+#undef Py_BUILD_CORE
+#elif PY_VERSION_HEX >= 0x030E0000 && PY_VERSION_HEX < 0x030F0000
 #define Py_BUILD_CORE
 #include "internal/pycore_instruments.h"
 #undef Py_BUILD_CORE
@@ -51,6 +57,9 @@ typedef struct {
     PyObject *identity_walker, *identity_walker_code, *identity_walker_key;
     PyObject *identity_builtins, *identity_builtins_snapshot;
     PyObject *identity_isfinite, *identity_isfinite_key;
+    PyObject *monitoring_get_events;
+    uint64_t monitoring_version;
+    int monitoring_checked, global_monitoring_clear;
 } NativeState;
 
 static inline int
@@ -59,6 +68,51 @@ has_headroom(int needed)
     /* The requested budget includes the stdlib entry frames used by a codec's
      * independent reference. Read the versioned CPython budget directly. */
     return PyThreadState_Get()->py_recursion_remaining >= needed;
+}
+
+static int
+global_monitoring_clear(uint64_t version)
+{
+    PyObject *module = PyState_FindModule(&definition);
+    NativeState *state = module == NULL ? NULL : PyModule_GetState(module);
+    if (state == NULL || state->monitoring_get_events == NULL) {
+        return 0;
+    }
+    if (!state->monitoring_checked || state->monitoring_version != version) {
+        /* Exception-only events have no entry in a code object's local table.
+         * The retained builtin reads their authoritative global state without
+         * calling Python or depending on the private interpreter layout.
+         * Refresh only when CPython's instrumentation generation changes. */
+        PyObject *getter = state->monitoring_get_events;
+        PyCFunction read_events = PyCFunction_GET_FUNCTION(getter);
+        PyObject *owner = PyCFunction_GET_SELF(getter);
+        int clear_events = 1;
+        for (long tool = 0; tool < 6; tool++) {
+            PyObject *identifier = PyLong_FromLong(tool);
+            PyObject *events = identifier == NULL ? NULL
+                : read_events(owner, identifier);
+            Py_XDECREF(identifier);
+            if (events == NULL) {
+                /* An unavailable optional proof keeps the Python fallback. */
+                PyErr_Clear();
+                return 0;
+            }
+            unsigned long mask = PyLong_AsUnsignedLong(events);
+            Py_DECREF(events);
+            if (mask == (unsigned long)-1 && PyErr_Occurred()) {
+                PyErr_Clear();
+                return 0;
+            }
+            if (mask != 0) {
+                clear_events = 0;
+                break;
+            }
+        }
+        state->global_monitoring_clear = clear_events;
+        state->monitoring_version = version;
+        state->monitoring_checked = 1;
+    }
+    return state->global_monitoring_clear;
 }
 
 static int
@@ -71,12 +125,18 @@ monitoring_clear(PyObject *code_object)
         return 0;
     }
     PyCodeObject *code = (PyCodeObject *)code_object;
-#if PY_VERSION_HEX >= 0x030E0000 && PY_VERSION_HEX < 0x030F0000
-    /* CPython reserves the low eight eval_breaker bits for pending events.
+#if PY_VERSION_HEX >= 0x030C0000 && PY_VERSION_HEX < 0x030F0000
+    /* 3.12 stores the monitoring version on the interpreter. Later versions
+     * reserve the low eight eval_breaker bits for pending events.
      * A version mismatch must enter Python once to refresh instrumentation.
      * Monitoring data survives profiling, so its pointer alone is not a gate. */
-    if (code->_co_instrumentation_version
-        != (thread->eval_breaker & ~(uintptr_t)255)) {
+#if PY_VERSION_HEX < 0x030D0000
+    uint64_t version = thread->interp->monitoring_version;
+#else
+    uint64_t version = thread->eval_breaker & ~(uintptr_t)255;
+#endif
+    if (code->_co_instrumentation_version != version
+        || !global_monitoring_clear(version)) {
         return 0;
     }
     if (code->_co_monitoring != NULL) {
@@ -772,6 +832,7 @@ traverse(PyObject *module, visitproc visit, void *arg)
     Py_VISIT(state->identity_builtins_snapshot);
     Py_VISIT(state->identity_isfinite);
     Py_VISIT(state->identity_isfinite_key);
+    Py_VISIT(state->monitoring_get_events);
     return 0;
 }
 
@@ -831,6 +892,8 @@ clear(PyObject *module)
     Py_CLEAR(state->identity_builtins_snapshot);
     Py_CLEAR(state->identity_isfinite);
     Py_CLEAR(state->identity_isfinite_key);
+    Py_CLEAR(state->monitoring_get_events);
+    state->monitoring_checked = 0;
     return 0;
 }
 
@@ -922,6 +985,22 @@ PyInit__json_native(void)
     state->encoder = encoder;
     state->sort_option = sort_option;
     state->newline_option = newline_option;
+    PyObject *monitoring = PySys_GetObject("monitoring");
+    if (monitoring != NULL && PyModule_CheckExact(monitoring)) {
+        PyObject *getter = PyDict_GetItemString(PyModule_GetDict(monitoring),
+                                                "get_events");
+        if (getter != NULL && PyCFunction_Check(getter)
+            && PyCFunction_GET_FLAGS(getter) == METH_O
+            && PyCFunction_GET_SELF(getter) == monitoring
+            && strcmp(((PyCFunctionObject *)getter)->m_ml->ml_name,
+                      "get_events") == 0) {
+            state->monitoring_get_events = Py_NewRef(getter);
+        }
+    }
+    if (PyErr_Occurred()) {
+        Py_DECREF(module);
+        return NULL;
+    }
     if (PyCFunction_GetFlags(encoder) == (METH_FASTCALL | METH_KEYWORDS)) {
         state->encoder_fast = (NativeEncoder)(void (*)(void))
             PyCFunction_GetFunction(encoder);

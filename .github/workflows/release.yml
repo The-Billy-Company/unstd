@@ -121,7 +121,7 @@ jobs:
             --no-emit-project --no-header --output-file test-build-constraints.txt &&
             uv pip install --no-deps --only-binary :all: --require-hashes
             --requirements test-build-constraints.txt &&
-            uv export --project "{package}" --locked --extra serde --extra crypto --extra compress --extra containers --extra rand
+            uv export --project "{package}" --locked --extra serde --extra crypto --extra compress --extra containers --extra rand --extra math
             --no-default-groups --group supply-chain
             --no-emit-project --no-header --output-file test-requirements.txt &&
             uv pip install --no-deps --require-hashes --require-build-hashes

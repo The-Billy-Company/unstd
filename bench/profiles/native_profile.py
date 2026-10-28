@@ -429,7 +429,12 @@ def _routes(
     walk_entrypoint = _walk_entrypoint(clone)
     with _native_results(clone, fuzz) as (outcomes, recursion_errors):
         return _checked_routes(
-            cases, source, outcomes, recursion_errors, walk_entrypoint
+            cases,
+            source,
+            outcomes,
+            recursion_errors,
+            walk_entrypoint,
+            shared_memo_cycles=bool(getattr(clone, "_NATIVE_CLOSED_TEMPORALS", False)),
         )
 
 
@@ -439,6 +444,8 @@ def _checked_routes(
     outcomes: dict[str, list[bool]],
     recursion_errors: dict[str, int],
     walk_entrypoint: str,
+    *,
+    shared_memo_cycles: bool,
 ) -> dict[str, Any]:
     """A C call that refuses its input is not evidence of acceleration."""
     routes = {}
@@ -455,7 +462,22 @@ def _checked_routes(
         completed = {name: all(results) for name, results in outcomes.items()}
         if case.name.startswith("clone.deep/"):
             fallback = "fallback" in case.name
-            if case.name == "clone.deep/cycle-fallback":
+            if case.name == "clone.deep/cycle-fallback" and shared_memo_cycles:
+                # Preserve the historical workload key while proving the current
+                # closed-graph refusal and successful shared-memo continuation.
+                fallback = False
+                valid = (
+                    any("_clone_native.clone_graph>" in name for name in c_calls)
+                    and any(
+                        f"_clone_native.{walk_entrypoint}>" in name for name in c_calls
+                    )
+                    and outcomes.get("graph") == [False] * 3
+                    and outcomes.get("walk") == [True] * 3
+                    and not recursion_errors
+                    and not python_calls.get("deepcopy")
+                    and not python_calls.get("_walk")
+                )
+            elif case.name == "clone.deep/cycle-fallback":
                 valid = (
                     any("_clone_native.clone_graph>" in name for name in c_calls)
                     and recursion_errors.get("graph") == 3
@@ -498,7 +520,9 @@ def _checked_routes(
             raise AssertionError(msg)
         routes[case.name] = {
             "expected": (
-                "native walk with Python foreign nodes"
+                "native shared-memo walk"
+                if case.name == "clone.deep/cycle-fallback" and shared_memo_cycles
+                else "native walk with Python foreign nodes"
                 if case.name == "clone.deep/mixed-custom-fallback"
                 else "python fallback"
                 if fallback

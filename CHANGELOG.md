@@ -47,6 +47,78 @@ doc_radar:
 
 <!-- towncrier release notes start -->
 
+## [4.0.3] - 2026-10-27
+
+### Added
+
+- `unstd.cache.Cache` persists JSON results and typed codec artifacts across local
+  workers without a new runtime dependency. SQLite WAL storage supports
+  namespaces, expiration, optional FIFO bounds, consistent batch reads and atomic
+  batch writes. `get_or_compute` coordinates same-key producers while allowing
+  independent keys to fill concurrently; mutations and clearing fence in-flight
+  producers. Producer failures publish nothing, though crashes and expiry can
+  cause recomputation. JSON reads return independent values, and typed codecs
+  validate both cold and warm results. Empty batches avoid I/O.
+- `unstd.dataset` builds immutable indexed JSON snapshots in one streaming pass.
+  Readers can count, index, slice, select rows in request order and process bounded
+  batches without retaining the corpus. Snapshots publish atomically and support
+  explicit SHA-256 integrity checks. Optional bundled C kernels accelerate
+  checked offset lookup and copying; portable installs retain the same API.
+- `unstd.math` and the optional `math` extra provide eight NumPy operations:
+  stable top-k retrieval, row normalization, cosine scoring, mean-square energy,
+  Pearson correlation, weighted pooling, grouped centroids and read-only audio
+  frame views. Callers select float32 or float64 calculation precision. Optional
+  portable C kernels specialize small calls, dense top-k selection, grouped means
+  and frame views, retaining NumPy for larger reductions and exceptional
+  arithmetic policies.
+- `serde.jsonx.iterload` reads top-level JSON arrays with memory proportional to
+  the chunk and largest record. Text, binary, gzip and short-read streams support
+  per-record decoder hooks and UTF-8/16/32 binary encoding detection. Exhausting
+  the iterator validates the closing bracket and trailing input; callers retain
+  ownership of the source. The native default path decodes bounded batches,
+  while custom hooks remain lazy per item and fallback never replays callbacks.
+- `serde.jsonx.dump_array` writes generators as compact JSON arrays with bounded
+  buffering, accelerated per-record encoding and batched text or binary writes.
+  Gzip streams, short writes and the stdlib fallback are supported. The function
+  returns the record count and leaves the caller's stream open.
+
+### Changed
+
+- Large JSON arrays and objects no longer discard a complete native parse after
+  crossing the decoder's 65,536-value proof limit. Validation work is bounded by
+  source length, retaining depth and recursion limits, precise-number fallback,
+  stdlib hooks and diagnostics.
+- Native cloning now handles exact mutable sets, default slotted dataclass state,
+  canonical Pydantic model reconstruction and bounded flat temporal sequences
+  within the shared graph traversal. Shared identities, caller memo aliases,
+  frozen and inherited slots, source isolation, private model aliases, state
+  order, iterator errors and custom copy protocols retain their contracts. Model
+  setup occurs only when a model is encountered. Bounded temporal policy probes
+  preserve live policy changes and walker changes across copy hooks; foreign
+  type-membership callbacks stay on the canonical Python path.
+- Base-install edit distance removes equal prefixes and suffixes before computing
+  the remaining edits, reducing work for long, near-identical strings in bundled
+  C/Rust kernels and the Python fallback. Results and subclass/sequence behavior
+  remain unchanged. Native scans and residual work stay bounded; RapidFuzz's
+  public binding is unchanged. Source installs must rebuild native extensions
+  to use the native improvement.
+- Portable Jaro–Winkler matching indexes long exact strings in linear time and
+  storage while preserving scores and greedy match order. With the `text` extra,
+  `best_match`, `extract` and `cdist` use RapidFuzz's native batch kernels for the
+  built-in `jaro_winkler` scorer and ordinary string lists or tuples, preserving
+  cutoffs and stable ties. Custom scorers and general iterables retain their
+  existing behavior; native matrices require NumPy.
+
+### Fixed
+
+- `fs.ensure_dir(..., check_first=False)` retains `Path.mkdir`'s creation attempts
+  and audit events. The default keeps existing directories as audit-free no-ops.
+- Native JSON array decoding resumes after tracing, profiling or monitoring is
+  disabled on Python 3.12–3.14, while active observers retain the Python path.
+- Release qualification covers the new cache, dataset and math surfaces, keeps
+  wheel-test dependencies within the audited lock, and updates cross-platform
+  test and benchmark contracts.
+
 ## [4.0.2] - 2026-10-25
 
 ### Fixed

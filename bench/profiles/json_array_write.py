@@ -93,6 +93,8 @@ def _expected(rows: int) -> dict[str, Any]:
 
 def _rss() -> dict[str, Any]:
     """Normalize platform-specific process high-water RSS without subtraction."""
+    if sys.platform == "win32":
+        return {"bytes": None, "raw": None, "unit": "unavailable"}
     try:
         import resource
     except ImportError:
