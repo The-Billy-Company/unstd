@@ -173,23 +173,45 @@ def test_large_native_set_remains_interruptible(tmp_path: Path) -> None:
                     active -= 1
 
         def interrupt(signum, frame):
-            seen.append(active > 0)
-            raise Interrupted
+            partial = memo.get(id(source))
+            inside = (active > 0 and type(partial) is set
+                      and 0 < len(partial) < len(source))
+            seen.append(inside)
+            if inside:
+                raise Interrupted
 
         def refuse(*args):
             raise AssertionError('exact scalar sets must remain native')
 
-        source = set(range(200000))
         signal.signal(signal.SIGALRM, interrupt)
         sys.setprofile(profile)
+        attempts = []
         try:
-            signal.setitimer(signal.ITIMER_REAL, .001)
-            native.clone_walk_graph(source, refuse, refuse, {})
-        except Interrupted:
-            assert seen == [True], seen
-            print('native set interrupted')
-        else:
-            raise AssertionError('native scalar-set loop ignored the signal')
+            # macOS may deliver a short timer after a complete native call.
+            # Increase bounded work until the handler observes an incomplete
+            # native set; delivery in profiling or after return cannot pass.
+            for count in (200000, 800000, 3200000):
+                source = set(range(count))
+                memo = {}
+                seen.clear()
+                try:
+                    signal.setitimer(signal.ITIMER_REAL, .001)
+                    copied = native.clone_walk_graph(source, refuse, refuse, memo)
+                except Interrupted:
+                    assert seen[-1] is True, seen
+                    assert 0 < len(memo[id(source)]) < count
+                    assert len(source) == count
+                    print('native set interrupted')
+                    break
+                finally:
+                    signal.setitimer(signal.ITIMER_REAL, 0)
+                assert copied == source and copied is not source
+                attempts.append((count, seen.copy()))
+                del copied
+                memo.clear()
+                source.clear()
+            else:
+                raise AssertionError(('no signal inside bounded native sets', attempts))
         finally:
             signal.setitimer(signal.ITIMER_REAL, 0)
             sys.setprofile(None)

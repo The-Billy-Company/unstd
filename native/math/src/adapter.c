@@ -338,7 +338,9 @@ mean_square(PyObject *module, PyObject *args)
             if ((row & 63) == 0 && PyErr_CheckSignals() < 0) {
                 Py_CLEAR(result); break;
             }
-            double value = columns ? square(&rows, row, columns, width) / columns : NAN;
+            /* UCRT's arithmetic NAN macro can itself raise FP exceptions under
+               /fp:strict. Construct the intentional quiet NaN without them. */
+            double value = columns ? square(&rows, row, columns, width) / columns : nan("");
             store(output.buf, row, width, value);
         }
         PyBuffer_Release(&output);
@@ -603,7 +605,7 @@ weighted_mean(PyObject *module, PyObject *args)
             return fp_finish(&floating,NULL);
         }
         double value=at(&weight,row,0);
-        if(!isfinite(value)||value<0) {total=NAN;break;}
+        if(!isfinite(value)||value<0) {total=nan("");break;}
         if(width==4)total32+=(float)value; else total+=value;
     }
     if(width==4 && !isnan(total))total=total32;

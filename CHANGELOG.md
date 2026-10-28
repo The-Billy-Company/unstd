@@ -115,6 +115,8 @@ doc_radar:
   and audit events. The default keeps existing directories as audit-free no-ops.
 - Native JSON array decoding resumes after tracing, profiling or monitoring is
   disabled on Python 3.12–3.14, while active observers retain the Python path.
+- Windows native math kernels construct quiet NaNs without triggering spurious
+  floating-point exceptions, preserving native results and input validation.
 - Release qualification covers the new cache, dataset and math surfaces, keeps
   wheel-test dependencies within the audited lock, and updates cross-platform
   test and benchmark contracts.

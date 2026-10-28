@@ -120,8 +120,12 @@ def test_partial_acquisition_error_closes_every_owned_descriptor(tmp_path, monke
     assert len(descriptors) == 2
     assert not locking._active_fds
     for descriptor in descriptors:
-        with pytest.raises(OSError, match="Bad file descriptor"):
+        with pytest.raises(OSError) as closed:  # noqa: PT011 — exact error codes checked below
             os.fstat(descriptor)
+        assert (
+            closed.value.errno == errno.EBADF
+            or getattr(closed.value, "winerror", None) == 6  # ERROR_INVALID_HANDLE
+        )
     monkeypatch.setattr(locking, "_try_lock", try_lock)
     with locking.locked(tmp_path / "cache.sqlite3", "default", None, 0):
         pass
