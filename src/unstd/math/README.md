@@ -82,6 +82,10 @@ Exact integer checks have a separate [proof](../../../bench/reports/math/integer
 We measure both the public helper and the Consumer's complete numerical check,
 including its validation and failure handling.
 
+The [second pass](../../../bench/reports/math/integer-checks-second-pass.md)
+compares saved first-pass code, current portable code and the compiled path.
+It keeps fallback losses and shared-host timing noise visible alongside gains.
+
 ## Dispatch
 
 CPython wheels include an optional C implementation for small ndarray reductions,
@@ -131,12 +135,20 @@ work.
 
 Full signed/unsigned ranges retain exact distances, including mixed distances
 above uint64. Python integer scalar tolerances may exceed uint64; array
-tolerances require a native integer dtype. Relative and floating tolerances stay
+tolerances require a NumPy integer dtype. Relative and floating tolerances stay
 with the caller's numerical policy.
 
-Equal signedness with zero scalar tolerance uses a direct equality scan. Other
-cases use native unsigned arithmetic and an explicit carry bit, without object
-buffers or broadcasting.
+Compiled wheels scan matching contiguous 64-bit integer arrays with scalar
+tolerance without allocating working arrays. Zero tolerance uses a direct
+equality scan; other tolerances reduce exact unsigned distances.
+
+An older compiled extension keeps the portable path until rebuilt. The public
+signature and exact integer contract stay the same with either backend.
+
+The portable path compares small scalar-tolerance inputs as Python integers
+and shares signed input storage through unsigned views for large native-endian
+arrays. Other cases retain unsigned conversion and an explicit carry bit where
+needed, without object arrays or broadcasting.
 
 Normalization and cosine accept matrices, with one query vector for cosine.
 The norm floor is additive: `norm + eps`, with finite, nonnegative `eps`. Zero

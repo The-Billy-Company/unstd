@@ -9,6 +9,9 @@ doc_radar:
 
 # Exact Integer Checks
 
+This is the first-pass capture. The [second pass](integer-checks-second-pass.md)
+retains this implementation and measures the later changes against it.
+
 We compare integer arrays without converting every value into a Python object.
 `math.within` preserves full signed/unsigned ranges, including a mixed distance
 above uint64. Zero scalar tolerance with equal signedness takes a direct equality

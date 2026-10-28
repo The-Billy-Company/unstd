@@ -163,7 +163,7 @@ admit(State *state, PyObject *object, int ndim, Array *array, int floats_only)
     if ((PyObject *)Py_TYPE(object) != state->ndarray) return 0;
     if (PyObject_GetBuffer(object, &array->view, PyBUF_STRIDES | PyBUF_FORMAT) < 0)
         return -1;
-    if (array->view.ndim != ndim) {
+    if (ndim >= 0 && array->view.ndim != ndim) {
         PyBuffer_Release(&array->view);
         return invalid(ndim == 1 ? "expected 1-dimensional values" :
                                   "expected 2-dimensional values");
@@ -475,17 +475,98 @@ better(const Score *a, const Score *b, int integers)
 }
 
 static uint64_t
+integer_word(const char *pointer, Py_ssize_t width)
+{
+    uint64_t word=0;
+    if (width==1) { uint8_t value; memcpy(&value,pointer,1); word=value; }
+    else if (width==2) { uint16_t value; memcpy(&value,pointer,2); word=value; }
+    else if (width==4) { uint32_t value; memcpy(&value,pointer,4); word=value; }
+    else memcpy(&word,pointer,8);
+    return word;
+}
+
+static uint64_t
 integer_key(const Array *array, Py_ssize_t position)
 {
-    const char *p=(const char *)array->view.buf+position*array->view.strides[0];
-    uint64_t word=0;
-    if (array->view.itemsize==1) { uint8_t v; memcpy(&v,p,1); word=v; }
-    else if (array->view.itemsize==2) { uint16_t v; memcpy(&v,p,2); word=v; }
-    else if (array->view.itemsize==4) { uint32_t v; memcpy(&v,p,4); word=v; }
-    else memcpy(&word,p,8);
+    const char *pointer=(const char *)array->view.buf+position*array->view.strides[0];
+    uint64_t word=integer_word(pointer,array->view.itemsize);
     if (strchr("bhilqn",array->code) != NULL)
         word ^= UINT64_C(1) << (array->view.itemsize*8-1);
     return word;
+}
+
+static int
+within_tolerance(State *state, PyObject *object, uint64_t *value)
+{
+    if (PyLong_CheckExact(object)) {
+        *value=PyLong_AsUnsignedLongLong(object);
+        if (!PyErr_Occurred()) return 1;
+        if (!PyErr_ExceptionMatches(PyExc_OverflowError)) return -1;
+        PyErr_Clear(); return 0;
+    }
+    Array scalar;int ok=admit(state,object,-1,&scalar,0);
+    if(ok<=0)return ok;
+    if(scalar.view.ndim!=0 || scalar.code=='f' || scalar.code=='d') {
+        PyBuffer_Release(&scalar.view);return 0;
+    }
+    uint64_t word=integer_word(scalar.view.buf,scalar.view.itemsize);
+    int negative=strchr("bhilqn",scalar.code)!=NULL &&
+                 (word & (UINT64_C(1) << (scalar.view.itemsize*8-1)))!=0;
+    PyBuffer_Release(&scalar.view);
+    if(negative)return 0;
+    *value=word;return 1;
+}
+
+static PyObject *
+within(PyObject *module, PyObject *args)
+{
+    PyObject *actual,*expected,*atol;
+    if(!PyArg_ParseTuple(args,"OOO:within",&actual,&expected,&atol))return NULL;
+    State *state=PyModule_GetState(module);
+    if(ready(state)<0)return NULL;
+    uint64_t tolerance;int ok=within_tolerance(state,atol,&tolerance);
+    if(ok<0)return NULL;
+    if(!ok)Py_RETURN_NOTIMPLEMENTED;
+    Array left,right;ok=admit(state,actual,-1,&left,0);
+    if(ok<0)return NULL;
+    if(!ok)Py_RETURN_NOTIMPLEMENTED;
+    ok=admit(state,expected,-1,&right,0);
+    if(ok<=0){PyBuffer_Release(&left.view);if(ok<0)return NULL;Py_RETURN_NOTIMPLEMENTED;}
+    PyObject *result=NULL;
+    int left_signed=strchr("bhilqn",left.code)!=NULL;
+    int right_signed=strchr("bhilqn",right.code)!=NULL;
+    if(left.view.itemsize!=8 || right.view.itemsize!=8 ||
+       left.code=='f' || left.code=='d' || right.code=='f' || right.code=='d' ||
+       left_signed!=right_signed || left.view.ndim!=right.view.ndim ||
+       !PyBuffer_IsContiguous(&left.view,'C') ||
+       !PyBuffer_IsContiguous(&right.view,'C'))goto declined;
+    for(int axis=0;axis<left.view.ndim;axis++)
+        if(left.view.shape[axis]!=right.view.shape[axis])goto declined;
+    if(left.view.len!=right.view.len || left.view.len%8!=0)goto declined;
+    Py_ssize_t n=left.view.len/8;
+    const char *a=left.view.buf,*b=right.view.buf;
+    uint64_t sign=left_signed ? UINT64_C(1)<<63 : 0;
+    for(Py_ssize_t start=0;start<n;) {
+        if(PyErr_CheckSignals()<0)goto finished;
+        Py_ssize_t count=n-start;
+        if(count>65536)count=65536;
+        unsigned bad=0;
+        if(tolerance==0)bad=memcmp(a+start*8,b+start*8,(size_t)count*8)!=0;
+        else for(Py_ssize_t i=0;i<count;i++) {
+            uint64_t x,y;
+            memcpy(&x,a+(start+i)*8,8);memcpy(&y,b+(start+i)*8,8);
+            x^=sign;y^=sign;
+            uint64_t distance=x>y ? x-y : y-x;
+            bad|=distance>tolerance;
+        }
+        if(bad){result=Py_NewRef(Py_False);goto finished;}
+        start+=count;
+    }
+    result=Py_NewRef(Py_True);goto finished;
+declined:
+    result=Py_NewRef(Py_NotImplemented);
+finished:
+    PyBuffer_Release(&right.view);PyBuffer_Release(&left.view);return result;
 }
 
 static void
@@ -786,10 +867,11 @@ execute(PyObject *module)
     State *state=PyModule_GetState(module);
     state->readonly_type=PyType_FromSpec(&readonly_spec);
     if(state->readonly_type==NULL)return -1;
-    return PyModule_AddIntConstant(module,"KERNEL_VERSION",1);
+    return PyModule_AddIntConstant(module,"KERNEL_VERSION",2);
 }
 
 static PyMethodDef methods[]={
+    {"within",within,METH_VARARGS,"Exact contiguous 64-bit integer distances, or NotImplemented."},
     {"topk",topk,METH_VARARGS,"Stable descending top-k indices, or NotImplemented."},
     {"frame",frame,METH_VARARGS,"Read-only complete frame views, or NotImplemented."},
     {"normalize_rows",normalize_rows,METH_VARARGS,"Row L2 normalization, or NotImplemented."},

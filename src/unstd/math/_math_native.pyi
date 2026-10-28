@@ -7,6 +7,9 @@ from numpy.typing import NDArray
 
 KERNEL_VERSION: int
 
+def within(
+    actual: object, expected: object, atol: object, /
+) -> bool | NotImplementedType: ...
 def topk(values: object, k: object, /) -> NDArray[Any] | NotImplementedType: ...
 def normalize_rows(
     values: object, eps: float, dtype: str, /

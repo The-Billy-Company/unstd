@@ -418,6 +418,13 @@ def within(actual: ArrayLike, expected: ArrayLike, *, atol: ArrayLike) -> bool:
     Python integer scalar tolerances may exceed uint64. Inputs stay unchanged.
     Relative or floating tolerances belong to the caller's numerical policy.
     """
+    if _native is not None and _HAVE_NUMPY and _native.KERNEL_VERSION >= 2:
+        result = _native.within(actual, expected, atol)
+        if isinstance(result, bool):
+            return result
+        if result is not NotImplemented:
+            msg = "native integer comparison must return bool or NotImplemented"
+            raise TypeError(msg)
     left, right = _integer(actual), _integer(expected)
     if left.shape != right.shape:
         msg = "operands must have equal shapes"
@@ -434,20 +441,48 @@ def within(actual: ArrayLike, expected: ArrayLike, *, atol: ArrayLike) -> bool:
         if threshold.ndim and threshold.shape != left.shape:
             msg = "atol must be scalar or match the operands"
             raise ValueError(msg)
-        if threshold.dtype.kind == "i" and np.any(threshold < 0):
+        if threshold.ndim == 0:
+            tolerance = int(threshold.item())
+            if tolerance < 0:
+                msg = "atol must be nonnegative"
+                raise ValueError(msg)
+            if tolerance == 0 and left.dtype.kind == right.dtype.kind:
+                # Same signedness permits a direct equality scan at every width.
+                return bool(np.array_equal(left, right))
+            if left.size <= 32:
+                # Measured crossover: small exact scalar checks avoid setting
+                # up array arithmetic and its temporary buffers.
+                return all(
+                    abs(int(a) - int(b)) <= tolerance
+                    for a, b in zip(left.flat, right.flat, strict=True)
+                )
+        elif threshold.dtype.kind == "i" and np.any(threshold < 0):
             msg = "atol must be nonnegative"
             raise ValueError(msg)
-        if (
-            threshold.ndim == 0
-            and not threshold.item()
-            and left.dtype.kind == right.dtype.kind
-        ):
-            # Same signedness permits a direct equality scan at every width.
-            return bool(np.array_equal(left, right))
         threshold = threshold.astype(np.uint64, copy=False)
 
-    unsigned_left = left.astype(np.uint64, copy=False)
-    unsigned_right = right.astype(np.uint64, copy=False)
+    if (
+        left.size >= 512
+        and left.dtype.kind == right.dtype.kind
+        and left.itemsize == right.itemsize
+        and left.dtype.isnative
+        and right.dtype.isnative
+    ):
+        # Each exact distance fits the unsigned width of equal-width operands.
+        # Reinterpreting signed bits avoids copying both complete input arrays.
+        unsigned_left = (
+            left
+            if left.dtype.kind == "u"
+            else left.view(left.dtype.str.replace("i", "u"))
+        )
+        unsigned_right = (
+            right
+            if right.dtype.kind == "u"
+            else right.view(right.dtype.str.replace("i", "u"))
+        )
+    else:
+        unsigned_left = left.astype(np.uint64, copy=False)
+        unsigned_right = right.astype(np.uint64, copy=False)
     carry: NDArray[np.bool_] | np.bool_ | None = None
     if left.dtype.kind == right.dtype.kind:
         lower = left < right

@@ -159,3 +159,62 @@ def test_broadcasting_is_refused_even_for_vacuous_or_wide_tolerances(np):
         math.within([[1, 2], [3, 4]], [[1, 2], [3, 4]], atol=[0, 0])
     with pytest.raises(ValueError, match="match the operands"):
         math.within(np.empty((0, 3), dtype=int), np.empty((0, 3), dtype=int), atol=[0])
+
+
+@pytest.mark.parametrize("dtype", _DTYPES)
+@pytest.mark.parametrize("size", [0, 1, 32, 33, 511, 512, 513])
+def test_portable_dispatch_boundaries_keep_full_width_distances(
+    monkeypatch: pytest.MonkeyPatch, dtype: str, size: int
+) -> None:
+    require_backend("numpy")
+    import numpy as np
+
+    monkeypatch.setattr(math, "_native", None)
+    limits = np.iinfo(dtype)
+    left = np.resize(np.asarray([limits.min, limits.max, 0, 1], dtype=dtype), size)
+    right = np.resize(np.asarray([limits.max, limits.min, 1, 0], dtype=dtype), size)
+    distances = [abs(int(a) - int(b)) for a, b in zip(left, right, strict=True)]
+    for tolerance in (0, 3, (1 << (left.itemsize * 8)) - 1):
+        expected = all(distance <= tolerance for distance in distances)
+        assert math.within(left, right, atol=tolerance) is expected
+        assert (
+            math.within(left, right, atol=np.asarray(tolerance, dtype=np.uint64))
+            is expected
+        )
+    thresholds = np.asarray(distances, dtype=np.uint64)
+    assert math.within(left, right, atol=thresholds)
+    if size:
+        thresholds[0] -= 1
+        assert not math.within(left, right, atol=thresholds)
+
+
+@pytest.mark.parametrize(
+    "dtype", ["int8", "uint8", "int16", "uint16", "int32", "uint32"]
+)
+def test_portable_narrow_distances_allow_tolerances_above_the_storage_width(
+    monkeypatch: pytest.MonkeyPatch, dtype: str
+) -> None:
+    require_backend("numpy")
+    import numpy as np
+
+    monkeypatch.setattr(math, "_native", None)
+    limits = np.iinfo(dtype)
+    left = np.full(32, limits.min, dtype=dtype)
+    right = np.full(32, limits.max, dtype=dtype)
+    tolerance = np.full(left.shape, 2**64 - 1, dtype=np.uint64)
+    assert math.within(left, right, atol=tolerance)
+    assert math.within(left, right, atol=2**64)
+
+
+def test_previous_native_binary_keeps_the_portable_implementation(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    require_backend("numpy")
+    if math._native is None:
+        pytest.skip("Optional native kernel is unavailable")
+    monkeypatch.setattr(math._native, "KERNEL_VERSION", 1)
+    monkeypatch.delattr(math._native, "within", raising=False)
+    assert math.within([1, 2], [4, 5], atol=3)
+    assert not math.within([1, 2], [4, 6], atol=3)
+    with pytest.raises(ValueError, match="nonnegative"):
+        math.within([1], [1], atol=-1)
