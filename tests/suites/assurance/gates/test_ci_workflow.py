@@ -138,6 +138,12 @@ def test_tooling_owner_installs_required_builder_and_compiler_tools_in_every_env
             ]
 
 
+def test_only_dependency_floors_receive_time_for_cold_native_builds(workflow):
+    assert workflow["jobs"]["test"]["timeout-minutes"] == (
+        "${{ matrix.environment.id == 'floors' && 25 || 15 }}"
+    )
+
+
 def test_matrix_python_uses_the_managed_runtime_instead_of_the_runner(workflow):
     assert workflow["env"]["UV_MANAGED_PYTHON"] == "1"
     for job in workflow["jobs"].values():

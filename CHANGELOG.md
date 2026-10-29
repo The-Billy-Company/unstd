@@ -75,6 +75,9 @@ doc_radar:
   events. Gzip header checksums follow the running stdlib, and copying a
   finished compressor no longer reaches zlib-ng 1.0's fatal lock-release path
   on Python 3.15.
+- Native Linux ISA-L inflation retains its bundled zlib fallback when a
+  source-built zlib-ng provider hides its C symbols. Optional provider binding
+  keeps its existing ABI checks.
 - WAV framing follows Python 3.15's odd-chunk alignment rule. Integer audio
   fallbacks reject IEEE float data before decoding instead of misreading it.
 - Zoned wall times outside the UTC calendar range consistently return `None`

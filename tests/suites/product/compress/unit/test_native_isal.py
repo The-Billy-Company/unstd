@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import importlib.util
 from random import Random
 import struct
 import zlib
@@ -9,13 +10,38 @@ import zlib
 import pytest
 
 
-@pytest.fixture
-def codecs():
+@pytest.fixture(scope="module")
+def unbound_native():
     native = pytest.importorskip("unstd.compress._gzip_native")
     if not getattr(native, "ISAL_STREAMING", False):
         pytest.skip("private ISA-L route is unavailable on this build or CPU")
+    specification = importlib.util.spec_from_file_location(
+        "_unstd_isal_unbound._gzip_native", native.__file__
+    )
+    assert specification is not None
+    assert specification.loader is not None
+    module = importlib.util.module_from_spec(specification)
+    specification.loader.exec_module(module)
+    assert module._ng_runtime_version() is None
+    return module
+
+
+@pytest.fixture(params=["provider", "unbound"])
+def codecs(request, unbound_native):
+    native = (
+        pytest.importorskip("unstd.compress._gzip_native")
+        if request.param == "provider"
+        else unbound_native
+    )
     ng = pytest.importorskip("zlib_ng.zlib_ng")
-    assert native._configure_ng(ng.__file__)
+    if request.param == "provider":
+        # Source-built providers may intentionally hide their static-library
+        # symbols. Keep the ABI proof strict; ISA-L also works with bundled
+        # zlib as its untouched fallback when no NG API can be bound.
+        bound = native._configure_ng(ng.__file__)
+        assert bound is (native._ng_runtime_version() is not None)
+    else:
+        assert native._ng_runtime_version() is None
     return native, ng
 
 
@@ -87,3 +113,16 @@ def test_data_error_remains_latched_without_decoding_later_input(codecs):
     decoder.__init__()
     assert decoder.decompress(prefix + b"\x01\x00\x00\xff\xff", 131072) == raw
     assert decoder.eof
+
+
+def test_unbound_short_stream_keeps_bundled_zlib_and_native_tail_state(unbound_native):
+    assert not unbound_native._configure_ng("/unstd-not-an-already-loaded-provider")
+    payload = b"small raw stream" * 16
+    packed = zlib.compress(payload, wbits=-15)
+    decoder = unbound_native.Inflater()
+    assert decoder._selected_backend == "pending"
+    assert decoder.decompress(packed + b"following member", 16384) == payload
+    assert decoder._selected_backend == "zlib"
+    assert decoder.eof
+    assert decoder.unused_data == b"following member"
+    assert unbound_native._ng_runtime_version() is None

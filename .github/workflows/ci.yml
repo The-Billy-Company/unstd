@@ -164,7 +164,8 @@ jobs:
   test:
     name: ${{ matrix.group.name }} / ${{ matrix.environment.name }}
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # CPython 3.15 floors build older native backends from source on a cold cache.
+    timeout-minutes: ${{ matrix.environment.id == 'floors' && 25 || 15 }}
     strategy:
       fail-fast: false
       matrix:

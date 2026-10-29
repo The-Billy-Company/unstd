@@ -75,6 +75,8 @@ buffer mutation must retain their order.
 
 
 `test_native_isal.py` compares 33 raw Linux decoder histories with the native
-reference, using bodies produced independently by zlib and zlib-ng. Exact
+reference both with optional NG binding and with an independently unbound
+module, using bodies produced independently by zlib and zlib-ng. Exact
 output budgets, partial headers and symbols, trailing bytes, and persistent
-errors retain their observable input and output state.
+errors retain their observable input and output state. An unbound short-stream
+control checks bundled-zlib selection, EOF and untouched following-member bytes.

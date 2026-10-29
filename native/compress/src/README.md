@@ -87,6 +87,12 @@ the explicit module initializer export. Decoder selection uses conservative CPU
 and stream-shape admission before decoding. Other architectures need no
 assembler and retain their existing routes.
 
+ISA-L admission is independent of optional zlib-ng symbol exports. When a
+source-built provider hides its static-library symbols, NG binding still
+refuses that API; the untouched baseline is bundled zlib instead. An admitted
+ISA-L stream releases that baseline before consuming input. Short or
+ineligible streams retain the selected NG or bundled-zlib baseline.
+
 
 The Linux bridge retains saved header bits until more input arrives. Its cold
 zero-output symbol check uses retained history and processes at most the first

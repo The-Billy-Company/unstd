@@ -68,7 +68,9 @@ engines; the interchange contract is gzip streams and identical recovered bytes.
 With the compression extra, Linux normally uses zlib-ng's native SIMD inflater.
 Linux x86_64 builds with the reviewed ISA-L codec and supported CPU can use the
 bundled bridge, selecting ISA-L before decoding for admitted stream shapes and
-retaining zlib-ng for other inputs. macOS keeps its faster platform `libz`
+retaining zlib-ng for other inputs. If a source-built provider hides its native
+library symbols, those inputs use bundled zlib while ISA-L remains available.
+macOS keeps its faster platform `libz`
 through the bundled C adapter. Other platforms retain the bundled inflater. The compiled extension supplies
 libdeflate CRC32 on native paths. The running interpreter still supplies gzip
 framing, buffering, header/trailer checks, concatenated members and seeking.
@@ -82,8 +84,8 @@ On Mac ARM, the C adapter can select the already loaded zlib-ng inflater for a
 complete small DEFLATE block dominated by repeated short-distance matches.
 The bounded probe selects before decoding and preserves source consumption,
 output limits and the interpreter's framing. Incomplete probes keep Apple libz;
-Linux keeps its zlib-ng SIMD reader unless its optional ISA-L route admits the
-stream. Selection adds no package dependency.
+Linux keeps its zlib-ng or bundled-zlib reader unless its optional ISA-L route
+admits the stream. Selection adds no package dependency.
 The [single-stream qualification](../../../bench/reports/compress/single-stream/README.md)
 records repetitive-stream gains, server parity, edge costs and streaming checks.
 The [Linux and Mac C qualification](../../../bench/reports/compress/linux-throughput/README.md)

@@ -293,7 +293,12 @@ unstd_inflate_create(int wbits, int *status, void *api)
         binding->owners++;
     }
     decoder->api = binding;
-    decoder->pending = api != NULL && wbits == -15;
+    decoder->pending = wbits == -15 &&
+#ifdef UNSTD_LINUX_ISAL
+        isal_cpu_supported();
+#else
+        api != NULL;
+#endif
     decoder->engine =
 #ifdef UNSTD_LINUX_ISAL
         3;
@@ -329,9 +334,10 @@ unstd_inflate_decode(void *value,
             return Z_BUF_ERROR;
         }
 #ifdef UNSTD_LINUX_ISAL
-        /* Conservatively keep the existing NG path for short-distance,
-         * fixed/stored, fragmented and small reads. A nonfinal dynamic
-         * block remains eligible: most large JSON streams start that way. */
+        /* Conservatively keep the initial NG or bundled zlib state for
+         * short-distance, fixed/stored, fragmented and small reads. A nonfinal
+         * dynamic block remains eligible: most large JSON streams start there.
+         * ISA-L admission needs no symbols from the optional NG provider. */
         if (input_size >= 8192 && output_size >= 16384
                 && (input[0] & 6U) == 4U && (input[1] & 31U) >= 8U) {
             struct inflate_state *isa = PyMem_RawMalloc(sizeof(*isa));
@@ -340,7 +346,12 @@ unstd_inflate_decode(void *value,
             }
             isal_inflate_init(isa);
             isa->crc_flag = ISAL_DEFLATE;
-            decoder->api->end(&decoder->ng);
+            if (decoder->engine == 2) {
+                decoder->api->end(&decoder->ng);
+            }
+            else {
+                inflateEnd(&decoder->apple);
+            }
             decoder->isa = isa;
             decoder->engine = 4;
         }

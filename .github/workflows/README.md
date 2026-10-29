@@ -21,6 +21,8 @@ permissions, matrices, and schedule times are defined in the YAML files.
 Development uses Python 3.15.2 and default workflow jobs use Python 3.15.
 Compatibility matrices continue to test Python 3.12, 3.13 and 3.14;
 the dependency-floor and base-install environments run on Python 3.15.
+Dependency-floor test jobs allow 25 minutes for cold native dependency builds;
+the other grouped test environments retain 15 minutes and the same test budgets.
 ASan/UBSan retain Python 3.14 alongside 3.15 so the older interpreter's guarded
 native internals continue to receive memory-safety coverage.
 The audited uv frontend includes the pinned development Python in its bundled

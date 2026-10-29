@@ -104,6 +104,10 @@ Python 3.12, 3.13, 3.14, and 3.15 with all extras, plus Python 3.15 dependency-f
 base-install environments. Groups derive paths from the inventory; new active
 default suites must join exactly one group.
 
+Dependency-floor jobs allow 25 minutes for cold native dependency builds and
+tests; the other grouped environments allow 15 minutes. Per-test limits and
+Hypothesis generation profiles remain the same in every environment.
+
 Python 3.15 also runs the macOS/Windows public contracts, partial-extra installs,
 resource bounds, sanitizer checks, Rust experiment, and quality/release tooling.
 Sanitizers also retain Python 3.14 coverage for its guarded native internals.
