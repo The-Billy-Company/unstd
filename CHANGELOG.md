@@ -82,6 +82,8 @@ doc_radar:
   fallbacks reject IEEE float data before decoding instead of misreading it.
 - Zoned wall times outside the UTC calendar range consistently return `None`
   across whenever backends.
+- Dependency trust checks and SBOM exports retain exact locked versions when
+  build tools require conditional dependency versions.
 
 ## [4.0.4] - 2026-10-27
 

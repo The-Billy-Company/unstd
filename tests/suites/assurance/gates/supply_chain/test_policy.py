@@ -458,6 +458,74 @@ def test_missing_lock_and_symlink_escape_fail_closed(repo, tmp_path):
         supply_chain.check_policy(repo)
 
 
+@pytest.fixture
+def forked_python_repo(repo):
+    with (repo / "uv.lock").open("a") as stream:
+        stream.write(
+            '\n[[package]]\nname = "backend"\nversion = "2.0.0"\nsource = {registry = "https://pypi.org/simple"}\n'
+            + _WHEEL
+        )
+    return repo
+
+
+@pytest.mark.parametrize("version", ["1.2.0", "2.0.0"])
+def test_sbom_python_edges_retain_the_exact_locked_version(forked_python_repo, version):
+    _replace(
+        forked_python_repo,
+        "uv.lock",
+        '{name = "backend"}',
+        f'{{name = "backend", version = "{version}", source = {{registry = "https://pypi.org/simple"}}}}',
+    )
+    assert supply_chain.check_policy(forked_python_repo)["python_packages"] == 3
+    sbom = supply_chain.build_sbom(forked_python_repo)
+    assert {row["purl"] for row in sbom["components"] if row["name"] == "backend"} == {
+        "pkg:pypi/backend@1.2.0",
+        "pkg:pypi/backend@2.0.0",
+    }
+    edges = {row["ref"]: row["dependsOn"] for row in sbom["dependencies"]}
+    assert edges["pkg:pypi/example@1.0.0"] == [f"pkg:pypi/backend@{version}"]
+
+
+def test_sbom_unversioned_python_edges_preserve_all_locked_matches(
+    forked_python_repo,
+):
+    sbom = supply_chain.build_sbom(forked_python_repo)
+    edges = {row["ref"]: row["dependsOn"] for row in sbom["dependencies"]}
+    assert edges["pkg:pypi/example@1.0.0"] == [
+        "pkg:pypi/backend@1.2.0",
+        "pkg:pypi/backend@2.0.0",
+    ]
+
+
+@pytest.mark.parametrize("section", ["dependencies", "fast", "build"])
+def test_python_edge_cannot_resolve_to_another_version_of_the_same_name(
+    forked_python_repo, section
+):
+    _replace(
+        forked_python_repo,
+        "uv.lock",
+        f'{section} = [{{name = "backend"}}]',
+        f'{section} = [{{name = "backend", version = "9.9.9"}}]',
+    )
+    with pytest.raises(
+        supply_chain.SupplyChainError,
+        match=r"unresolved dependencies: backend@9\.9\.9",
+    ):
+        supply_chain.check_policy(forked_python_repo)
+
+
+@pytest.mark.parametrize("version", ['""', '" 1.2.0"', "false", "123"])
+def test_python_edge_version_must_be_a_nonempty_string(repo, version):
+    _replace(
+        repo,
+        "uv.lock",
+        '{name = "backend"}',
+        f'{{name = "backend", version = {version}}}',
+    )
+    with pytest.raises(supply_chain.SupplyChainError, match=r"dependency\.version"):
+        supply_chain.check_policy(repo)
+
+
 def test_sbom_contains_every_locked_component_hash_and_dependency_deterministically(
     repo,
 ):

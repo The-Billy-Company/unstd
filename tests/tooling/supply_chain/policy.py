@@ -42,13 +42,24 @@ class SupplyChainError(ValueError):
 
 
 @dataclass(frozen=True)
+class _Dependency:
+    name: str
+    version: str | None = None
+
+    def matches(self, package: _Package) -> bool:
+        return self.name == package.name and (
+            self.version is None or self.version == package.version
+        )
+
+
+@dataclass(frozen=True)
 class _Package:
     ecosystem: str
     name: str
     version: str
     lockfile: str
     hashes: tuple[str, ...]
-    dependencies: tuple[str, ...]
+    dependencies: tuple[_Dependency, ...]
     external: bool
     license: str | None = None
     source_url: str | None = None
@@ -183,18 +194,24 @@ def _artifact(value: object, context: str, *, wheel: bool) -> str:
     return digest[7:]
 
 
-def _edges(package: dict, context: str) -> tuple[str, ...]:
+def _edges(package: dict, context: str) -> tuple[_Dependency, ...]:
     edges = list(_rows(package.get("dependencies", []), f"{context}.dependencies"))
     for key in ("optional-dependencies", "dev-dependencies"):
         for group in _table(package.get(key, {}), f"{context}.{key}").values():
             edges.extend(_rows(group, f"{context}.{key}"))
-    names: list[str] = []
+    dependencies: set[_Dependency] = set()
     for edge in edges:
         row = _table(edge, f"{context} dependency")
-        names.append(_name(row.get("name"), f"{context} dependency.name"))
+        name = _name(row.get("name"), f"{context} dependency.name")
+        version = (
+            _string(row["version"], f"{context} dependency.version")
+            if "version" in row
+            else None
+        )
+        dependencies.add(_Dependency(name, version))
         if "source" in row and row["source"] != {"registry": _PYPI}:
             _fail(f"{context}: dependency edge contains an unapproved source")
-    return tuple(sorted(set(names)))
+    return tuple(sorted(dependencies, key=lambda edge: (edge.name, edge.version or "")))
 
 
 def _python(root: Path) -> tuple[list[_Package], int]:
@@ -264,15 +281,18 @@ def _python(root: Path) -> tuple[list[_Package], int]:
         )
     if len(root_rows) != 1:
         _fail("uv.lock: expected exactly one editable project root")
-    known_names = {package.name for package in packages}
     for package in packages:
-        missing = set(package.dependencies) - known_names
+        missing = {
+            f"{edge.name}@{edge.version}" if edge.version is not None else edge.name
+            for edge in package.dependencies
+            if not any(edge.matches(candidate) for candidate in packages)
+        }
         if missing:
             _fail(
                 f"uv.lock {package.name}: unresolved dependencies: {', '.join(sorted(missing))}"
             )
     project_root = root_rows[0]
-    if set(_edges(project_root, "uv.lock project")) != (
+    if {edge.name for edge in _edges(project_root, "uv.lock project")} != (
         _requirements(project.get("dependencies", []), "project.dependencies")
         | set().union(
             *(
@@ -360,7 +380,7 @@ def _cargo(root: Path) -> list[_Package]:
             else:
                 local_count += 1
             edges = tuple(
-                _string(edge, f"{lockfile} {name}.dependencies").split()[0]
+                _Dependency(_string(edge, f"{lockfile} {name}.dependencies").split()[0])
                 for edge in _rows(
                     row.get("dependencies", []), f"{lockfile} {name}.dependencies"
                 )
@@ -372,7 +392,7 @@ def _cargo(root: Path) -> list[_Package]:
             _fail(f"{lockfile}: expected exactly one local manifest package")
         names = {name for name, _ in seen}
         for package in (row for row in packages if row.lockfile == lockfile):
-            if set(package.dependencies) - names:
+            if {edge.name for edge in package.dependencies} - names:
                 _fail(f"{lockfile} {package.name}: unresolved Cargo dependency")
     return packages
 
@@ -475,7 +495,7 @@ def build_sbom(repo_root: Path) -> dict:
             candidate.purl
             for candidate in selected
             if candidate.ecosystem == package.ecosystem
-            and candidate.name in package.dependencies
+            and any(edge.matches(candidate) for edge in package.dependencies)
         )
     return {
         "bomFormat": "CycloneDX",

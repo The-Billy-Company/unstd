@@ -644,6 +644,8 @@ def test_source_backend_closure_covers_each_release_interpreter_and_platform(
         # The authenticated blake3/zlib-ng source manifests require these
         # backends when their release wheel is unavailable.
         expected.update(("maturin", "setuptools-scm"))
+    if python == "3.15" and platform == "linux":
+        expected.add("puccinialin")
     if (platform, machine) == ("win32", "ARM64"):
         # CMake is a compiler prerequisite here, not a Python build backend.
         expected.add("cmake")
@@ -765,15 +767,55 @@ def test_real_offline_wheel_export_keeps_every_transitive_locked_hash(
         seeds.extend(root["dev-dependencies"]["release-uv"])
     else:
         seeds.extend(root["dev-dependencies"]["backend-build"])
-    pending = [edge["name"] for edge in seeds]
-    closure = set()
+    environments = [
+        {
+            "python_version": python,
+            "python_full_version": python + ".2",
+            "sys_platform": platform,
+            "platform_machine": machine,
+            "platform_system": {
+                "linux": "Linux",
+                "darwin": "Darwin",
+                "win32": "Windows",
+            }[platform],
+            "os_name": "nt" if platform == "win32" else "posix",
+        }
+        for python in ("3.12", "3.13", "3.14", "3.15")
+        for platform, machine in (
+            ("linux", "x86_64"),
+            ("linux", "aarch64"),
+            ("darwin", "x86_64"),
+            ("darwin", "arm64"),
+            ("win32", "AMD64"),
+            ("win32", "ARM64"),
+        )
+    ]
+    pending = [(edge, set(range(len(environments)))) for edge in seeds]
+    closure = {}
+    reached = {}
     while pending:
-        name = pending.pop()
-        if name in closure:
-            continue
-        closure.add(name)
-        for row in by_name[name]:
-            pending.extend(edge["name"] for edge in row.get("dependencies", []))
+        edge, contexts = pending.pop()
+        if "marker" in edge:
+            marker = Marker(edge["marker"])
+            contexts = {
+                index for index in contexts if marker.evaluate(environments[index])
+            }
+        for row in by_name[edge["name"]]:
+            # A conditional fork can pin another version in an unrelated group.
+            # Follow this edge's exact identity instead of every row by name.
+            if "version" in edge and row["version"] != edge["version"]:
+                continue
+            if "source" in edge and row["source"] != edge["source"]:
+                continue
+            identity = row["name"], row["version"]
+            newly_reached = contexts - reached.get(identity, set())
+            if newly_reached:
+                reached.setdefault(identity, set()).update(newly_reached)
+                closure[identity] = row
+                pending.extend(
+                    (dependency, newly_reached)
+                    for dependency in row.get("dependencies", [])
+                )
     expected = {
         (row["name"], row["version"]): {
             artifact["hash"].removeprefix("sha256:")
@@ -782,8 +824,7 @@ def test_real_offline_wheel_export_keeps_every_transitive_locked_hash(
                 *([row["sdist"]] if "sdist" in row else []),
             ]
         }
-        for name in closure
-        for row in by_name[name]
+        for row in closure.values()
     }
     observed = {}
     for line in output.read_text().replace("\\\n", "").splitlines():
