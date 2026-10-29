@@ -11,6 +11,8 @@ import sys
 import tomllib
 from typing import TYPE_CHECKING
 
+from packaging.markers import Marker
+from packaging.requirements import Requirement
 import pytest
 
 from tests.support.environment.anchors import REPO_ROOT
@@ -606,13 +608,55 @@ def test_source_backends_use_the_authenticated_build_closure(workflows):
     with (REPO_ROOT / "pyproject.toml").open("rb") as stream:
         build = tomllib.load(stream)["dependency-groups"]["backend-build"]
     assert "wheel>=0.45" in build
-    for package in ("setuptools-scm", "cmake", "maturin"):
-        assert any(
-            requirement.startswith(package)
-            and "sys_platform == 'win32'" in requirement
-            and "platform_machine == 'ARM64'" in requirement
-            for requirement in build
-        )
+
+
+@pytest.mark.parametrize("python", ["3.12", "3.13", "3.14", "3.15"])
+@pytest.mark.parametrize(
+    ("platform", "machine"),
+    [
+        ("linux", "x86_64"),
+        ("linux", "aarch64"),
+        ("darwin", "x86_64"),
+        ("darwin", "arm64"),
+        ("win32", "AMD64"),
+        ("win32", "ARM64"),
+    ],
+)
+def test_source_backend_closure_covers_each_release_interpreter_and_platform(
+    python, platform, machine
+):
+    manifest = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text())
+    lock = tomllib.loads((REPO_ROOT / "uv.lock").read_text())
+    environment = {
+        "python_version": python,
+        "python_full_version": python + ".2",
+        "sys_platform": platform,
+        "platform_machine": machine,
+    }
+    requirements = {
+        requirement.name: requirement
+        for text in manifest["dependency-groups"]["backend-build"]
+        if (requirement := Requirement(text)).marker is None
+        or requirement.marker.evaluate(environment)
+    }
+    expected = {"setuptools", "wheel"}
+    if python == "3.15" or (platform, machine) == ("win32", "ARM64"):
+        # The authenticated blake3/zlib-ng source manifests require these
+        # backends when their release wheel is unavailable.
+        expected.update(("maturin", "setuptools-scm"))
+    if (platform, machine) == ("win32", "ARM64"):
+        # CMake is a compiler prerequisite here, not a Python build backend.
+        expected.add("cmake")
+    assert requirements.keys() == expected
+    root = next(row for row in lock["package"] if row["source"] == {"editable": "."})
+    assert {
+        row["name"]
+        for row in root["dev-dependencies"]["backend-build"]
+        if "marker" not in row or Marker(row["marker"]).evaluate(environment)
+    } == expected
+    for name, requirement in requirements.items():
+        package = next(row for row in lock["package"] if row["name"] == name)
+        assert requirement.specifier.contains(package["version"])
 
 
 def test_platform_repair_tools_are_constrained_to_the_audited_release_group(workflows):

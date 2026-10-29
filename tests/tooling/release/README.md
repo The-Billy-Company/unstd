@@ -80,6 +80,12 @@ commands, including caller overrides. The build hook keeps the managed SDK
 paths, rejects old Python SDK paths in those commands, and records the compiler
 profile and its SHA256 in the build log. Ordinary builds skip this opt-in input.
 
+Wheel-test source builds authenticate Setuptools and wheel through the locked
+`backend-build` group. Python 3.15 and Windows ARM also include Maturin and
+setuptools-scm for BLAKE3 and zlib-ng source builds. CMake remains a Windows ARM
+compiler prerequisite. The same export supplies build constraints and required
+build hashes; backend resolution cannot fetch an unauthenticated prerequisite.
+
 For third-party wheel-test source builds, CPython 3.13+ reads a private
 sysconfig-data overlay containing only the original compiler/toolchain settings
 on top of the admitted runtime's configuration. Its SDK paths, SOABI and tags

@@ -170,14 +170,14 @@ supply-chain = [
 build = ["hatchling", "setuptools>=77"]
 backend-build = [
   "setuptools>=77",
-  # Immutables needs wheel when CPython 3.14 installs its source distribution.
+  # Immutables needs wheel when newer CPython installs its source distribution.
   "wheel>=0.45",
-  # zlib-ng has no Windows ARM wheel. Authenticate its source-build backend
-  # and provide CMake from a hashed wheel in the release test interpreter.
-  "setuptools-scm>=8 ; sys_platform == 'win32' and platform_machine == 'ARM64'",
-  # VS 2026 ARM runners require CMake 4.2 and a native Maturin backend.
+  # zlib-ng and BLAKE3 need source builds on CPython 3.15 and Windows ARM.
+  # Authenticate their Python build backends before installing wheel-test extras.
+  "setuptools-scm>=8 ; python_version >= '3.15' or (sys_platform == 'win32' and platform_machine == 'ARM64')",
+  "maturin>=1.15,<2 ; python_version >= '3.15' or (sys_platform == 'win32' and platform_machine == 'ARM64')",
+  # VS 2026 ARM runners need this external compiler prerequisite from a wheel.
   "cmake>=4.2,<5 ; sys_platform == 'win32' and platform_machine == 'ARM64'",
-  "maturin>=1.15,<2 ; sys_platform == 'win32' and platform_machine == 'ARM64'",
 ]
 # Linux build containers carry their own frontend independently of the host.
 release-uv = ["uv==0.13.6"]

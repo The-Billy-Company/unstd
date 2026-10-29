@@ -111,6 +111,10 @@ installing its lowest-direct environment. Tests retain those installed versions
 with `--no-sync`, while release/export checks inspect the audited canonical lock
 instead of rejecting a temporary lock created with another resolution policy.
 
+Python 3.15 wheel tests authenticate source-build prerequisites on every release OS.
+The backend closure includes Maturin for BLAKE3 and setuptools-scm for zlib-ng;
+CMake remains specific to Windows ARM.
+
 Windows ARM release caches use the audited dependency and build configuration,
 excluding only this package's version, so version bumps reuse compiled `blake3`
 and `zlib-ng` wheels. The warmup saves caches on `main`, which release tags can
