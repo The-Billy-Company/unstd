@@ -113,8 +113,10 @@ instead of rejecting a temporary lock created with another resolution policy.
 
 Python 3.15 wheel tests authenticate source-build prerequisites on every release OS.
 The backend closure includes Maturin for BLAKE3 and setuptools-scm for zlib-ng;
-CMake remains specific to Windows ARM. Linux 3.15 also includes Maturin's
-Puccinialin bootstrap helper for containers without Cargo.
+CMake remains specific to Windows ARM.
+Linux Python 3.15 containers prepare Rust 1.99.1 with a
+SHA-256-checked Rustup 1.29.2 installer after admitting the target Python SDK.
+The same Cargo path is available during source builds and installed-wheel tests.
 
 Windows ARM release caches use the audited dependency and build configuration,
 excluding only this package's version, so version bumps reuse compiled `blake3`

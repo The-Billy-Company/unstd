@@ -77,8 +77,11 @@ def _wheel_setup_commands(workflows):
     return settings["CIBW_BEFORE_TEST"], commands
 
 
-def _linux_frontend_commands(workflows):
-    python = workflows["release"]["jobs"]["wheels"]["strategy"]["matrix"]["python"][0]
+def _linux_frontend_commands(workflows, python=None):
+    if python is None:
+        python = workflows["release"]["jobs"]["wheels"]["strategy"]["matrix"]["python"][
+            0
+        ]
     build = next(
         step
         for step in workflows["release"]["jobs"]["wheels"]["steps"]
@@ -498,7 +501,7 @@ def test_wheel_test_dependencies_use_only_the_authenticated_locked_closure(workf
 
 
 def test_linux_container_frontend_uses_the_authenticated_locked_tool(workflows):
-    export, install, runtime = _linux_frontend_commands(workflows)
+    export, install, runtime, _ = _linux_frontend_commands(workflows)
     assert export[:2] == ["uv", "export"]
     assert {"--locked", "--no-emit-project"} <= set(export)
     assert "--no-hashes" not in export
@@ -531,6 +534,35 @@ def test_linux_container_frontend_uses_the_authenticated_locked_tool(workflows):
         assert dependencies == [f"uv=={setup['with']['version']}"]
 
 
+@pytest.mark.parametrize("python", ["312", "313", "314", "315"])
+def test_linux_rust_preparation_uses_the_admitted_interpreter_and_retains_the_sdk(
+    workflows, python
+):
+    _, _, runtime, rust = _linux_frontend_commands(workflows, python)
+    assert runtime[-2:] == ["--linux-runtime", f"cp{python}"]
+    assert rust == [
+        f"/opt/python/cp{python}-cp{python}/bin/python",
+        "{package}/tests/tooling/release/rust.py",
+        f"cp{python}",
+    ]
+    build = next(
+        step
+        for step in workflows["release"]["jobs"]["wheels"]["steps"]
+        if "CIBW_BUILD" in step.get("env", {})
+    )
+    environment = require_backend("cibuildwheel.environment")
+    selected = environment.parse_environment(
+        build["env"]["CIBW_ENVIRONMENT_LINUX"]
+    ).as_dictionary(prev_environment={"PATH": "/usr/bin:/bin", "CC": "gcc"})
+    assert selected["CARGO_HOME"] == "/opt/unstd-rust/cargo"
+    assert selected["RUSTUP_HOME"] == "/opt/unstd-rust/rustup"
+    assert selected["PATH"] == "/opt/unstd-rust/cargo/bin:/usr/bin:/bin"
+    assert selected["CC"] == "gcc"
+    assert selected["UNSTD_WHEEL_COMPILER_CONFIG"] == (
+        "/tmp/unstd-wheel-compiler.json"  # noqa: S108 — container compiler-profile contract
+    )
+
+
 def test_linux_bootstrap_export_ignores_the_development_pin(
     workflows, tmp_path, monkeypatch
 ):
@@ -541,7 +573,7 @@ def test_linux_bootstrap_export_ignores_the_development_pin(
     # The bootstrap frontend cannot provision the project's future development
     # runtime. It must export the lock using the already installed build target.
     (tmp_path / ".python-version").write_text("3.99.99\n", encoding="utf-8")
-    export, _, _ = _linux_frontend_commands(workflows)
+    export, _, _, _ = _linux_frontend_commands(workflows)
     selected = export.index("--python")
     command = [
         uv,
@@ -644,8 +676,6 @@ def test_source_backend_closure_covers_each_release_interpreter_and_platform(
         # The authenticated blake3/zlib-ng source manifests require these
         # backends when their release wheel is unavailable.
         expected.update(("maturin", "setuptools-scm"))
-    if python == "3.15" and platform == "linux":
-        expected.add("puccinialin")
     if (platform, machine) == ("win32", "ARM64"):
         # CMake is a compiler prerequisite here, not a Python build backend.
         expected.add("cmake")
@@ -718,7 +748,7 @@ def test_real_offline_wheel_export_keeps_every_transitive_locked_hash(
     elif purpose == "repair":
         export = _repair_tool_export(workflows)
     elif purpose == "frontend":
-        export, _, _ = _linux_frontend_commands(workflows)
+        export, _, _, _ = _linux_frontend_commands(workflows)
     else:
         _, (export, _, _, _) = _wheel_setup_commands(workflows)
     # Freeze both inputs so concurrent development cannot change our closure

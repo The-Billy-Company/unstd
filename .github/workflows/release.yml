@@ -102,8 +102,14 @@ jobs:
             --no-emit-project --no-header --output-file release-uv.txt &&
             python -m pip install --prefix /usr/local --no-deps --only-binary :all:
             --require-hashes --requirement release-uv.txt &&
-            python "{package}/tests/tooling/release/wheels.py" --linux-runtime cp${{ matrix.python }}
-          CIBW_ENVIRONMENT_LINUX: "UNSTD_WHEEL_COMPILER_CONFIG=/tmp/unstd-wheel-compiler.json"
+            python "{package}/tests/tooling/release/wheels.py" --linux-runtime cp${{ matrix.python }} &&
+            /opt/python/cp${{ matrix.python }}-cp${{ matrix.python }}/bin/python
+            "{package}/tests/tooling/release/rust.py" cp${{ matrix.python }}
+          CIBW_ENVIRONMENT_LINUX: >-
+            UNSTD_WHEEL_COMPILER_CONFIG=/tmp/unstd-wheel-compiler.json
+            CARGO_HOME=/opt/unstd-rust/cargo
+            RUSTUP_HOME=/opt/unstd-rust/rustup
+            PATH=/opt/unstd-rust/cargo/bin:$PATH
           CIBW_TEST_ENVIRONMENT_LINUX: "_PYTHON_SYSCONFIGDATA_PATH=/tmp/unstd-wheel-compiler.sysconfig"
           CIBW_BEFORE_BUILD: >-
             uv export --project "{package}" --locked --only-group build

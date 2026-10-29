@@ -83,9 +83,7 @@ profile and its SHA256 in the build log. Ordinary builds skip this opt-in input.
 Wheel-test source builds authenticate Setuptools and wheel through the locked
 `backend-build` group. Python 3.15 and Windows ARM also include Maturin and
 setuptools-scm for BLAKE3 and zlib-ng source builds. CMake remains a Windows ARM
-compiler prerequisite. Linux 3.15 also authenticates Puccinialin and its Python
-closure for Maturin's Rust bootstrap in containers without Cargo.
-The same export supplies build constraints and required
+compiler prerequisite. The same export supplies build constraints and required
 build hashes; backend resolution cannot fetch an unauthenticated prerequisite.
 
 For third-party wheel-test source builds, CPython 3.13+ reads a private
@@ -95,6 +93,12 @@ remain unchanged. The override enters only the test environment after provider
 admission; CPython 3.12 ignores the newer path hook and keeps its existing build
 behavior. This avoids passing Clang-only managed-runtime flags to a container's
 GCC without changing cached interpreters or adding an older stdlib to `sys.path`.
+
+After admitting the Linux interpreter, [`rust.py`](rust.py) prepares Rust 1.99.1
+through Rustup 1.29.2 for Python 3.15 source builds. The installer is SHA-256
+checked before execution. The build/test environment
+retains the admitted compiler settings and explicitly selects the Cargo/Rustup
+directories and Cargo's executable path.
 
 ```console
 python -m tests.tooling.release verify --help

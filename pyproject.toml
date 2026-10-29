@@ -176,8 +176,6 @@ backend-build = [
   # Authenticate their Python build backends before installing wheel-test extras.
   "setuptools-scm>=8 ; python_version >= '3.15' or (sys_platform == 'win32' and platform_machine == 'ARM64')",
   "maturin>=1.15,<2 ; python_version >= '3.15' or (sys_platform == 'win32' and platform_machine == 'ARM64')",
-  # Maturin requests its Rust bootstrap helper when Linux images lack Cargo.
-  "puccinialin>=0.1,<0.2 ; python_version >= '3.15' and sys_platform == 'linux'",
   # VS 2026 ARM runners need this external compiler prerequisite from a wheel.
   "cmake>=4.2,<5 ; sys_platform == 'win32' and platform_machine == 'ARM64'",
 ]
