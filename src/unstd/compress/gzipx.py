@@ -297,8 +297,8 @@ if TYPE_CHECKING or _backend is not None:
             if result is not None:
                 return result
         # Concatenations and truncation retain gzip's exact behavior.
-        # Its parser also accepts reserved flags and ignores header checksums
-        # that the C decoder rejects; codec errors above take the same fallback.
+        # Its parser owns reserved flags and interpreter-specific header
+        # checksum policy; codec errors above take the same fallback.
         return _stdlib.decompress(data)
 
 else:

@@ -1,7 +1,7 @@
 # Seed-faithful random kernels
 
 `src/adapter.c` implements the optional `unstd.rand._rand_native` extension
-using the public CPython C API on Python 3.12–3.14. It contains no platform
+using the public CPython C API on Python 3.12–3.15. It contains no platform
 instructions, OS interfaces, or dependency on CPython's
 private `Random` object layout.
 

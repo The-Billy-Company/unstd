@@ -1,6 +1,12 @@
 ---
 doc_radar:
   sentinels:
+  - file: .python-version
+    contains: ['3.15.2']
+  - file: pyproject.toml
+    contains: ['Programming Language :: Python :: 3.15', 'cp3{12,13,14,15}-*', 'uv==0.13.6']
+  - file: .github/workflows/release.yml
+    contains: ['python: ["312", "313", "314", "315"]']
   - file: src/unstd/rex/profile.py
     contains: ['_parser.parse(pattern, flags)']
   - file: src/unstd/rex/patterns.py
@@ -8,7 +14,7 @@ doc_radar:
   - file: pyproject.toml
     contains: ['"msgspec>=0.22"', exclude-newer = "P2D", '"blake3>=1.0.10"', '"pyyaml>=6.0.3"', 'select = "cp3{12,13}-macosx_x86_64"', sysconfig.get_config_var("CFLAGS")]
   - file: .github/workflows/ci.yml
-    contains: [github.sha || github.ref, 'version: "0.13.5"', uv sync --locked]
+    contains: [github.sha || github.ref, 'version: "0.13.6"', uv sync --locked]
   - file: .github/workflows/release.yml
     contains: ['TAG: ${{ github.ref_name }}', Build and test CPython wheels, 'UV_MANAGED_PYTHON: "1"', python -m tests.tooling.release.wheels]
   - file: src/unstd/serde/structs.py
@@ -46,6 +52,33 @@ doc_radar:
 # Changelog
 
 <!-- towncrier release notes start -->
+
+## [4.0.5] - 2026-10-28
+
+### Added
+
+- Python 3.15.2 support, including CI, dependency-floor and base-install checks,
+  and CPython 3.15 release wheels. Python 3.12–3.14 remain supported.
+
+### Changed
+
+- Base64 functions follow the running interpreter's padding, wrapping,
+  validation, warning and URL-decoding contracts, including Python 3.15's new
+  options and typed signatures.
+- Python 3.15 keeps safe fallbacks for unqualified private native clone layouts
+  and incremental zlib compressors. Native one-shot compression remains
+  available. The audited uv frontend is updated to 0.13.6 to provision 3.15.2.
+
+### Fixed
+
+- Native JSON dispatch respects Python 3.15 global and per-code monitoring
+  events. Gzip header checksums follow the running stdlib, and copying a
+  finished compressor no longer reaches zlib-ng 1.0's fatal lock-release path
+  on Python 3.15.
+- WAV framing follows Python 3.15's odd-chunk alignment rule. Integer audio
+  fallbacks reject IEEE float data before decoding instead of misreading it.
+- Zoned wall times outside the UTC calendar range consistently return `None`
+  across whenever backends.
 
 ## [4.0.4] - 2026-10-27
 

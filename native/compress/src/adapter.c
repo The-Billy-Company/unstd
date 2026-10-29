@@ -41,6 +41,12 @@ decompress(PyObject *module, PyObject *data)
             || input[2] != 8) {
         Py_RETURN_NONE;
     }
+    /* libdeflate skips FHCRC validation. CPython 3.15 verifies it, while
+     * older interpreters ignore it. Let the running gzip parser own that
+     * policy and its exact diagnostics, including every optional header field. */
+    if (input[3] & 2) {
+        Py_RETURN_NONE;
+    }
     uint32_t output_size =
         (uint32_t)input[input_size - 4]
         | ((uint32_t)input[input_size - 3] << 8)
@@ -115,7 +121,7 @@ decompress(PyObject *module, PyObject *data)
     /* The native decoder validates framing, CRC and ISIZE. It stops at the
      * first member; only an entirely consumed member may be returned here.
      * Replaying every other result preserves the interpreter's exact errors
-     * and its permissive treatment of reserved header bits and checksums. */
+     * and its treatment of reserved header bits and checksums. */
     if (result != LIBDEFLATE_SUCCESS || output_used != output_size) {
         Py_DECREF(output);
         Py_RETURN_NONE;

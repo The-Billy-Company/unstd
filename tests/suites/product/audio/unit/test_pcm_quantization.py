@@ -10,10 +10,11 @@ codes. Decoders are fed raw PCM wrapped by stdlib ``wave``.
 from __future__ import annotations
 
 from fractions import Fraction
+from functools import partial
 import io
 import math
-import re
 import struct
+import sys
 import wave
 
 import pytest
@@ -205,9 +206,11 @@ def test_every_backend_reads_every_backends_pcm16_identically(
 # ── native-only subtypes: a separate capability contract ───────────────────
 
 
-def _ieee_float_wav(values: list[float]) -> bytes:
-    data = bytearray(_wav(struct.pack(f"<{len(values)}f", *values), width=4))
+def _ieee_float_wav(values: list[float], *, width: int = 4) -> bytes:
+    code = "f" if width == 4 else "d"
+    data = bytearray(_wav(struct.pack(f"<{len(values)}{code}", *values), width=4))
     data[20:22] = struct.pack("<H", 3)  # WAVE_FORMAT_IEEE_FLOAT
+    data[28:36] = struct.pack("<IHH", 8000 * width, width, width * 8)
     return bytes(data)
 
 
@@ -215,29 +218,52 @@ _PCM24 = [-(1 << 23), -5 << 8, 7 << 8, (1 << 23) - (1 << 8)]
 _PCM24_RAW = b"".join(v.to_bytes(3, "little", signed=True) for v in _PCM24)
 
 
-def test_soundfile_decodes_24bit_and_ieee_float_wavs() -> None:
+@pytest.mark.parametrize("width", [4, 8])
+def test_soundfile_decodes_24bit_and_ieee_float_wavs(width) -> None:
     require_backend("soundfile")
     samples, _ = wavx.read(io.BytesIO(_wav(_PCM24_RAW, width=3)), dtype="float64")
     assert _values(samples) == [v / (1 << 23) for v in _PCM24]
     ints, _ = wavx.read(io.BytesIO(_wav(_PCM24_RAW, width=3)), dtype="int16")
     assert _values(ints) == [-32768, -5, 7, 32767]
     floats = [0.25, -0.5, 1.5, -2.0]
-    samples, _ = wavx.read(io.BytesIO(_ieee_float_wav(floats)), dtype="float64")
+    samples, _ = wavx.read(
+        io.BytesIO(_ieee_float_wav(floats, width=width)), dtype="float64"
+    )
     assert _values(samples) == floats
 
 
 @pytest.mark.parametrize("floor", ["array"] + (["numpy"] if wavx._HAVE_NUMPY else []))
-def test_fallbacks_refuse_native_only_encodings_instead_of_misreading(
-    monkeypatch, floor
-) -> None:
+def test_fallbacks_refuse_24bit_pcm_instead_of_misreading(monkeypatch, floor) -> None:
     _force(monkeypatch, floor)
     supported = "16" if floor == "array" else "8/16/32"
     with pytest.raises(
         ValueError, match=f"supports {supported}-bit PCM.*'audio' extra"
     ):
         wavx.read(io.BytesIO(_wav(_PCM24_RAW, width=3)))
-    data = _ieee_float_wav([0.25])
-    with pytest.raises(wave.Error) as oracle, wave.open(io.BytesIO(data), "rb"):
-        pass
-    with pytest.raises(type(oracle.value), match=re.escape(str(oracle.value))):
-        wavx.read(io.BytesIO(data))
+
+
+@pytest.mark.parametrize("floor", ["array"] + (["numpy"] if wavx._HAVE_NUMPY else []))
+@pytest.mark.parametrize("width", [4, 8])
+@pytest.mark.parametrize("dtype", ["float32", "float64", "int16"])
+@pytest.mark.parametrize("streaming", [False, True])
+def test_fallbacks_refuse_ieee_float_instead_of_reinterpreting_integer_bits(
+    monkeypatch, floor, width, dtype, streaming
+) -> None:
+    _force(monkeypatch, floor)
+    data = _ieee_float_wav([0.25, -0.5, 1.5, -2.0], width=width)
+    if sys.version_info >= (3, 15):
+        # The stdlib now parses IEEE_FLOAT successfully. The fallback must
+        # inspect the format before applying its integer fixed-point scaling.
+        with wave.open(io.BytesIO(data), "rb") as reader:
+            assert reader.getformat() == wave.WAVE_FORMAT_IEEE_FLOAT
+            assert reader.getsampwidth() == width
+            assert reader.getnframes() == 4
+    source = io.BytesIO(data)
+    operation = (
+        partial(next, wavx.blocks(source, 2, dtype=dtype))
+        if streaming
+        else partial(wavx.read, source, dtype=dtype)
+    )
+    with pytest.raises(wave.Error, match=r"^unknown format: 3$"):
+        operation()
+    assert not source.closed

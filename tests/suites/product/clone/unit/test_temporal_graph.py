@@ -49,6 +49,7 @@ def _fallback_calls(value: Any) -> list[Any]:
 
 @pytest.mark.parametrize("kind", [dt.datetime, dt.time])
 @pytest.mark.parametrize("zone", [None, dt.UTC])
+@pytest.mark.usefixtures("native_mixed_graph")
 def test_canonical_temporal_memo(kind: Any, zone: Any) -> None:
     value = _value(kind, zone)
     result = _native([value, value], {})
@@ -60,6 +61,7 @@ def test_canonical_temporal_memo(kind: Any, zone: Any) -> None:
 
 @pytest.mark.parametrize("kind", [dt.datetime, dt.time])
 @pytest.mark.parametrize("override", ["zone", "offset"])
+@pytest.mark.usefixtures("native_mixed_graph")
 def test_canonical_temporal_zone_memo(kind: Any, override: str) -> None:
     value = _value(kind, dt.UTC)
     replacement = dt.timezone(dt.timedelta(hours=2))
@@ -82,6 +84,7 @@ def test_canonical_temporal_zone_memo(kind: Any, override: str) -> None:
 
 @pytest.mark.parametrize("kind", [dt.datetime, dt.time])
 @pytest.mark.parametrize("table", ["dispatch_table", "_deepcopy_dispatch"])
+@pytest.mark.usefixtures("native_mixed_graph")
 def test_temporal_registry_override_keeps_python_policy(
     monkeypatch: pytest.MonkeyPatch, kind: Any, table: str
 ) -> None:
@@ -104,6 +107,7 @@ def test_temporal_registry_override_keeps_python_policy(
 @pytest.mark.parametrize("zone", [None, dt.UTC])
 @pytest.mark.parametrize("table", ["dispatch_table", "_deepcopy_dispatch"])
 @pytest.mark.parametrize("error_type", [RuntimeError, KeyError])
+@pytest.mark.usefixtures("native_mixed_graph")
 def test_irrelevant_temporal_registry_keys_are_not_compared(
     monkeypatch: pytest.MonkeyPatch,
     kind: Any,
@@ -139,6 +143,7 @@ def test_irrelevant_temporal_registry_keys_are_not_compared(
 
 @pytest.mark.parametrize("kind", [dt.datetime, dt.time])
 @pytest.mark.parametrize("zone", [None, dt.UTC])
+@pytest.mark.usefixtures("native_mixed_graph")
 def test_rebound_timezone_policy_can_select_copy_registry(
     monkeypatch: pytest.MonkeyPatch, kind: Any, zone: Any
 ) -> None:
@@ -155,6 +160,7 @@ def test_rebound_timezone_policy_can_select_copy_registry(
 @pytest.mark.parametrize("kind", [dt.datetime, dt.time])
 @pytest.mark.parametrize("zone", [None, dt.UTC])
 @pytest.mark.parametrize("error_type", [RuntimeError, KeyError])
+@pytest.mark.usefixtures("native_mixed_graph")
 def test_timezone_policy_foreign_keys_keep_python_exception(
     monkeypatch: pytest.MonkeyPatch,
     kind: Any,
@@ -188,6 +194,7 @@ def test_timezone_policy_foreign_keys_keep_python_exception(
 
 
 @pytest.mark.parametrize("canonical", [False, True])
+@pytest.mark.usefixtures("native_mixed_graph")
 def test_custom_temporal_walker_is_called(canonical: bool) -> None:
     value = _value(dt.datetime, dt.UTC)
     sentinel = object()
@@ -202,6 +209,7 @@ def test_custom_temporal_walker_is_called(canonical: bool) -> None:
     assert seen == [value]
 
 
+@pytest.mark.usefixtures("native_mixed_graph")
 def test_custom_timezone_and_datetime_subclass_keep_copy_protocols() -> None:
     calls: list[str] = []
 
@@ -227,12 +235,14 @@ def test_custom_timezone_and_datetime_subclass_keep_copy_protocols() -> None:
 
 
 @pytest.mark.parametrize("kind", [dt.datetime, dt.time])
+@pytest.mark.usefixtures("native_mixed_graph")
 def test_naive_temporal_ignores_none_memo(kind: Any) -> None:
     value = _value(kind, None)
     assert _native([value], {id(None): object()})[0] is value
 
 
 @pytest.mark.parametrize("name", ["datetime", "time"])
+@pytest.mark.usefixtures("native_mixed_graph")
 def test_changed_temporal_binding_uses_python_policy(
     monkeypatch: pytest.MonkeyPatch, name: str
 ) -> None:
@@ -250,6 +260,7 @@ def test_changed_temporal_binding_uses_python_policy(
     assert reference[0] is not value
 
 
+@pytest.mark.usefixtures("native_mixed_graph")
 def test_replaced_deepcopy_keeps_python_temporal_policy(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -263,6 +274,7 @@ def test_replaced_deepcopy_keeps_python_temporal_policy(
     assert _fallback_calls(value) == []
 
 
+@pytest.mark.usefixtures("native_mixed_graph")
 def test_canonical_temporal_keepalive_order_matches_python() -> None:
     value = _value(dt.datetime, dt.UTC)
     source = [value, value, dt.UTC, dt.UTC.utcoffset(None)]
@@ -278,6 +290,7 @@ def test_canonical_temporal_keepalive_order_matches_python() -> None:
     assert actual[0] is actual[1]
 
 
+@pytest.mark.usefixtures("native_mixed_graph")
 def test_later_record_admission_cannot_restart_temporal_shortcut() -> None:
     import dataclasses
 
@@ -318,6 +331,7 @@ def test_later_record_admission_cannot_restart_temporal_shortcut() -> None:
     assert calls == [value, value]
 
 
+@pytest.mark.usefixtures("native_mixed_graph")
 def test_changed_timezone_binding_and_offset_memo_keep_python_policy(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -363,6 +377,7 @@ def test_stale_native_extension_keeps_shared_memo_route(
     assert copied[0] is not shared
 
 
+@pytest.mark.usefixtures("native_mixed_graph")
 def test_foreign_memo_equality_mutation_keeps_original_lookup_sequence(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -411,6 +426,7 @@ def test_foreign_memo_equality_mutation_keeps_original_lookup_sequence(
 
 
 @pytest.mark.parametrize("kind", [dt.datetime, dt.time])
+@pytest.mark.usefixtures("native_mixed_graph")
 def test_record_state_key_equality_cannot_reenable_temporal_shortcut(
     monkeypatch: pytest.MonkeyPatch, kind: Any
 ) -> None:

@@ -7,6 +7,7 @@ import copy
 import importlib
 import inspect
 import runpy
+import subprocess
 import sys
 from types import SimpleNamespace
 import zlib
@@ -131,6 +132,43 @@ def test_compressor_copy_branches_without_sharing_mutable_state(wbits, copier):
     right = prefix + twin.compress(b"right") + twin.flush()
     assert zlib.decompress(left, wbits) == _RAW + b"left"
     assert zlib.decompress(right, wbits) == _RAW + b"right"
+
+
+@pytest.mark.skipif(sys.version_info < (3, 15), reason="CPython 3.15 mutex semantics")
+def test_python315_compressor_state_is_the_exact_stdlib_factory():
+    assert zlibx.compressobj is zlib.compressobj
+
+
+def test_finished_compressor_copy_protocols_reject_without_terminating_python():
+    # A provider's invalid unlock aborts CPython 3.15 before an exception can
+    # reach pytest. Keep that regression contained in one deadline-owned child.
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            """
+import copy
+import zlib
+from unstd.compress import zlibx
+
+for copier in (lambda value: value.copy(), copy.copy, copy.deepcopy):
+    state = zlibx.compressobj()
+    wire = state.compress(b'finished stream') + state.flush()
+    assert zlib.decompress(wire) == b'finished stream'
+    try:
+        copier(state)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError('finished compressor was copied')
+""",
+        ],
+        capture_output=True,
+        text=True,
+        timeout=15,
+        check=False,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
 
 
 @pytest.mark.parametrize("wbits", [-15, 15, 31])

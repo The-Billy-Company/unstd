@@ -69,7 +69,7 @@ def test_groups_share_four_backend_platform_jobs_and_cached_setup(workflow):
         for step in campaign["steps"]
         if step.get("uses", "").startswith("astral-sh/setup-uv@")
     )
-    assert setup["with"]["python-version"] == "3.14"
+    assert setup["with"]["python-version"] == "3.15"
     assert setup["with"]["enable-cache"] is True
     assert set(setup["with"]["cache-dependency-glob"].splitlines()) == {
         "uv.lock",
@@ -83,7 +83,7 @@ def test_groups_share_four_backend_platform_jobs_and_cached_setup(workflow):
     assert "--locked" in sync
     assert "--all-extras" in sync
     assert "--group dev" in sync
-    assert "--python 3.14" in sync
+    assert "--python 3.15" in sync
     assert "--reinstall-package unstd" in sync
 
 

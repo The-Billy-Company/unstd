@@ -14,6 +14,7 @@ import hashlib
 import importlib
 import json as stdjson
 import math
+import sys
 
 from hypothesis import given
 from hypothesis import strategies as st
@@ -160,6 +161,7 @@ def test_unexpected_parser_exceptions_escape_instead_of_becoming_rejections(
         b"Zg=!",
         b"_-8",
         b"+/8=",
+        b"+=A",
         b"Z ! g",
         b"====",
         b"a",
@@ -180,6 +182,12 @@ def test_base64_url_oracle_pads_retained_alphabet_after_ignoring_junk():
     assert base64_target._url(b"_-8") == base64.urlsafe_b64decode(b"_-8=")
     with pytest.raises(ValueError, match="ASCII"):
         base64_target._url("\ud800")
+
+
+@pytest.mark.skipif(sys.version_info < (3, 15), reason="Python 3.15 unpadded mode")
+def test_base64_url_oracle_keeps_runtime_interior_padding_semantics():
+    assert base64_target._url(b"AA=A") == b"\0\0"
+    assert base64_target._url(b"-=A") == b"\xf8"
 
 
 @pytest.mark.parametrize(

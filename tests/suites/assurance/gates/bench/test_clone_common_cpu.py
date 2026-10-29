@@ -171,9 +171,15 @@ def test_native_route_proofs_exercise_and_restore_public_bindings():
     bindings = {
         name: getattr(structural, name, None) for name in profile._NATIVE_BINDINGS
     }
-    routes = profile._native_routes(structural, "current")
-    assert set(routes) == {"builtin-graph", "mixed-dataclass", "asdict-tree"}
-    assert all(routes.values())
+    if (3, 12) <= sys.version_info[:2] < (3, 15):
+        routes = profile._native_routes(structural, "current")
+        assert set(routes) == {"builtin-graph", "mixed-dataclass", "asdict-tree"}
+        assert all(routes.values())
+    else:
+        # The public fallback remains correct, but cannot qualify as a native
+        # benchmark route when this runtime's record layout is unaudited.
+        with pytest.raises(RuntimeError, match="current/mixed-dataclass"):
+            profile._native_routes(structural, "current")
     assert bindings == {
         name: getattr(structural, name, None) for name in profile._NATIVE_BINDINGS
     }
@@ -238,7 +244,9 @@ def test_current_shared_graph_cannot_use_historical_tree_qualification():
 
 
 @pytest.mark.parametrize("route", ["mixed-dataclass", "asdict-tree"])
-def test_native_requirement_rejects_public_python_fallback(route, monkeypatch):
+def test_native_requirement_rejects_public_python_fallback(
+    route, monkeypatch, native_mixed_graph
+):
     pytest.importorskip("unstd.clone._clone_native")
     if route == "mixed-dataclass":
         for binding in (

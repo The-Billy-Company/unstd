@@ -278,7 +278,9 @@ def test_snapshot_inference_uses_its_own_model_capability(
     assert observed == expected
 
 
-def test_fused_model_route_proof_exercises_the_public_copier() -> None:
+def test_fused_model_route_proof_exercises_the_public_copier(
+    native_mixed_graph,
+) -> None:
     if not getattr(structural, "_NATIVE_MODEL_CONTINUATION", False):
         pytest.skip("native model continuation is not built")
     routes = profile._native_routes(structural, "current", require_models=True)
@@ -286,7 +288,7 @@ def test_fused_model_route_proof_exercises_the_public_copier() -> None:
 
 
 def test_fused_model_proof_requires_the_unmodified_model_handler(
-    monkeypatch: pytest.MonkeyPatch,
+    monkeypatch: pytest.MonkeyPatch, native_mixed_graph
 ) -> None:
     if not getattr(structural, "_NATIVE_MODEL_CONTINUATION", False):
         pytest.skip("native model continuation is not built")
@@ -297,7 +299,7 @@ def test_fused_model_proof_requires_the_unmodified_model_handler(
 
 @pytest.mark.parametrize("feature", [0, True])
 def test_fused_model_proof_requires_the_exact_integer_feature(
-    monkeypatch: pytest.MonkeyPatch, feature: int
+    monkeypatch: pytest.MonkeyPatch, feature: int, native_mixed_graph
 ) -> None:
     if not getattr(structural, "_NATIVE_MODEL_CONTINUATION", False):
         pytest.skip("native model continuation is not built")
@@ -309,7 +311,7 @@ def test_fused_model_proof_requires_the_exact_integer_feature(
 
 
 def test_fused_model_proof_rejects_python_reconstruction_and_restores_profile(
-    monkeypatch: pytest.MonkeyPatch,
+    monkeypatch: pytest.MonkeyPatch, native_mixed_graph
 ) -> None:
     if not getattr(structural, "_NATIVE_MODEL_CONTINUATION", False):
         pytest.skip("native model continuation is not built")

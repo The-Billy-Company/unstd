@@ -31,12 +31,12 @@ then validate the exact archives and checksums handed to the PyPI publisher.
 
 From the repository root, prepare a full environment with
 `uv sync --locked --all-extras --group dev --group release --group build --reinstall-package unstd`; omit `--all-extras` for the fallback
-configuration. The development interpreter is pinned to Python 3.14 in
-`.python-version`, matching the consuming application's runtime.
+configuration. The development interpreter is pinned to Python 3.15.2 in
+`.python-version`.
 Reinstall after native source changes so local checks exercise the rebuilt C
 extensions, as CI does. `--no-sync` preserves the backend combination and compiled
 extensions already installed.
-The tooling owner installs the release and build groups in all five CI environments;
+The tooling owner installs the release and build groups in all six CI environments;
 its builder and compiler checks require those tools.
 `--require-extras` makes every declared extra mandatory, including isolated
 per-extra consumers in the packaging lane. A partial install (for example
@@ -100,14 +100,15 @@ this gate and the existing benchmark timer calibration checks. The
 
 The main CI workflow runs four disjoint groups: API & regressions, Compatibility
 & boundaries, Test tooling & corpus, and Packaging & consumers. Each runs on
-Python 3.12, 3.13, and 3.14 with all extras, plus Python 3.14 dependency-floor and
+Python 3.12, 3.13, 3.14, and 3.15 with all extras, plus Python 3.15 dependency-floor and
 base-install environments. Groups derive paths from the inventory; new active
 default suites must join exactly one group.
 
-Python 3.14 also runs the macOS/Windows public contracts, partial-extra installs,
+Python 3.15 also runs the macOS/Windows public contracts, partial-extra installs,
 resource bounds, sanitizer checks, Rust experiment, and quality/release tooling.
-Fuzz replay and deterministic mutation cover 3.14 alongside the Python 3.12
-Atheris environment; chaos and concurrency campaigns run on 3.14.
+Sanitizers also retain Python 3.14 coverage for its guarded native internals.
+Fuzz replay and deterministic mutation cover 3.15 alongside the Python 3.12
+Atheris environment; chaos and concurrency campaigns run on 3.15.
 
 ```console
 uv run --no-sync python -m tests.tooling.ci list

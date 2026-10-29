@@ -545,17 +545,32 @@ def test_global_exception_monitoring_keeps_decoder_frames(
 
 
 @pytest.mark.parametrize("replacement", ["python", "other_builtin"])
-def test_replaced_monitoring_getter_before_import_keeps_python_fallback(replacement):
+@pytest.mark.parametrize(
+    "getter",
+    [
+        "get_events",
+        pytest.param(
+            "get_local_events",
+            marks=pytest.mark.skipif(
+                sys.version_info[:2] != (3, 15),
+                reason="CPython 3.15 uses the public local monitoring reader",
+            ),
+        ),
+    ],
+)
+def test_replaced_monitoring_getter_before_import_keeps_python_fallback(
+    replacement, getter
+):
     script = textwrap.dedent(f"""
         import io
         import sys
 
-        def forbidden(tool):
+        def forbidden(*args):
             raise AssertionError("untrusted monitoring callback ran")
 
-        sys.monitoring.get_events = (
+        setattr(sys.monitoring, {getter!r}, (
             forbidden if {replacement!r} == "python" else sys.monitoring.get_tool
-        )
+        ))
         from unstd.serde import _json_native as native, jsonx
 
         jsonx.loads("null")
@@ -571,6 +586,35 @@ def test_replaced_monitoring_getter_before_import_keeps_python_fallback(replacem
         check=False,
     )
     assert result.returncode == 0, result.stdout + result.stderr
+
+
+@pytest.mark.skipif(
+    sys.version_info[:2] != (3, 15),
+    reason="CPython 3.15 uses the public local monitoring reader",
+)
+def test_local_monitoring_reader_is_retained_after_import(monkeypatch, default_decoder):
+    monitoring = sys.monitoring
+    available = [tool for tool in range(6) if monitoring.get_tool(tool) is None]
+    if not available:
+        pytest.skip("all monitoring tool IDs are already occupied")
+    tool = available[-1]
+    code = default_decoder.__code__
+
+    def forbidden(*args):
+        pytest.fail("native admission called a replacement local monitoring getter")
+
+    monkeypatch.setattr(monitoring, "get_local_events", forbidden)
+    monitoring.use_tool_id(tool, "unstd retained local monitoring reader")
+    try:
+        monitoring.set_local_events(tool, code, monitoring.events.PY_START)
+        # The reader sees pending local events before decoder instrumentation
+        # has been refreshed by a Python call.
+        assert not native.dispatch_ready(default_decoder)
+        assert native.array_decode("1,2", 0, 3, default_decoder) is NotImplemented
+    finally:
+        monitoring.set_local_events(tool, code, 0)
+        monitoring.free_tool_id(tool)
+    assert native.array_decode("1,2", 0, 3, default_decoder) == [1, 2]
 
 
 @pytest.mark.parametrize("marker", ["ascii", "café", "界", "😀", "\ud800"])

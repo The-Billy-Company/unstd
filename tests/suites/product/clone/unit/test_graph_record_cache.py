@@ -91,6 +91,7 @@ def test_admission_cache_preserves_metaclass_mapping_callbacks(
 
 @pytest.mark.parametrize("changed_protocol", ["allocator", "attributes"])
 @pytest.mark.parametrize("version_churn", [0, 1100])
+@pytest.mark.usefixtures("native_mixed_graph")
 def test_warmed_graph_cache_delegates_after_class_protocol_changes(
     monkeypatch: pytest.MonkeyPatch, changed_protocol: str, version_churn: int
 ) -> None:
@@ -163,6 +164,7 @@ def test_warmed_graph_cache_delegates_after_class_protocol_changes(
     assert actual.values is not source.values
 
 
+@pytest.mark.usefixtures("native_mixed_graph")
 def test_warmed_graph_cache_does_not_retain_generated_classes() -> None:
     native = pytest.importorskip("unstd.clone._clone_native")
 

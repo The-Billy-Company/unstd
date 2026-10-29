@@ -294,11 +294,11 @@ generates broad values, options, Unicode, binary encodings and malformed input;
 its comparator checks type, key order, NaN and negative zero as well as equality.
 The fast-path suite also asserts actual backend use, snapshot isolation, fallback
 dispatch, and recursion boundaries rather than letting every example fall back.
-CI covers Python 3.12, 3.13 and 3.14, dependency floors and a real base install.
+CI covers Python 3.12 through 3.15, dependency floors and a real base install.
 
 ## `b64` — accelerated base64
 
-Faithful Python 3.12–3.14 Base64 functions alongside unstd's existing text,
+Faithful Python 3.12–3.15 Base64 functions alongside unstd's existing text,
 optional-padding and JSON helpers. [`pybase64`](https://github.com/mayeut/pybase64)
 accelerates plain-byte encoding and strict decoding of plain ASCII inputs.
 
@@ -330,17 +330,22 @@ functions' defaults, return types, positional/keyword options and failures:
   `ValueError`; unsupported types, released views and noncontiguous encoding
   buffers retain stdlib's errors. Decoding accepts strided views by copying,
   just as CPython does. Inputs are not modified.
-- `b64decode` defaults to `validate=False`: ignored bytes, leading/interior/
+- `b64decode` normally defaults to `validate=False`: ignored bytes, leading/interior/
   excess padding and data after padding follow the running interpreter.
   `validate=True` rejects malformed input with the same exception class and
   diagnostic. `Error` is the original `binascii.Error`.
+- On Python 3.15, `b64encode` also accepts `padded` and `wrapcol`, and
+  `b64decode` accepts `padded`, `ignorechars` and `canonical`. Specifying
+  `ignorechars` makes validation default to true. `urlsafe_b64encode` and
+  `urlsafe_b64decode` accept `padded`; URL decoding defaults to unpadded mode.
 - Alternative alphabets follow stdlib translation semantics, including
   duplicated, overlapping and non-ASCII byte alternatives. Encoding requires
   bytes-like `altchars`; decoding also accepts ASCII text `altchars`. Invalid
   options and the order of their validation follow stdlib.
 - Strict validation does **not** require zero unused pad bits. For example,
   `b64decode(b"Zh==", validate=True)` returns `b"f"`, as in stdlib. Encoding
-  always emits zero pad bits. Neither strict decoding nor the URL helper
+  always emits zero pad bits. Python 3.15's `canonical=True` additionally rejects
+  nonzero pad bits. Neither ordinary strict decoding nor the URL helper
   promises a unique textual spelling.
 
 `encodebytes` and `decodebytes` are stdlib's MIME helpers, including 76-column
@@ -352,21 +357,24 @@ renaming those stream calls. Base16, Base32 and Base85 remain in `base64`.
 
 The convenience API retains its distinct defaults: `encode` returns `str`,
 `decode` validates standard input, and `decode(url=True)` accepts omitted
-padding. The URL helper translates the URL alphabet, removes bytes stdlib
+padding. On Python 3.12–3.14 the URL helper translates the URL alphabet, removes bytes stdlib
 ignores, then appends enough `=` to reach a multiple of four. Existing `=`
 characters remain in place so completed padding retains stdlib's termination
 behavior. Thus `decode("AA!", url=True)` returns `b"\x00"`, and padded inputs
 already accepted by stdlib keep their decoded value. Non-ASCII **text** remains
-an error. `urlsafe_b64decode` itself keeps stdlib's padding requirement.
+an error. On Python 3.15 the URL helper uses stdlib's unpadded decoding directly,
+including its treatment of interior `=` and warnings for `+` or `/` in URL data.
+`urlsafe_b64decode` itself follows the running stdlib's padding default.
 
 Installing the `serde` extra must not change bytes, accepted inputs, errors or
 warnings. Native paths accept only exact builtin types; other buffers,
 subclasses, lenient decoding and custom alphabets use stdlib. Native strict
 decode failures return to stdlib for runtime-accurate behavior and diagnostics.
-This boundary matters because pybase64 1.5 adopts Python 3.15 padding and URL
-alphabet behavior, while this package tests Python 3.12–3.14. URL decoding
-therefore uses stdlib rather than pybase64's unpadded decoder. Without the
-extra, all operations use stdlib.
+On Python 3.15 the stdlib-named functions and URL convenience decoder use stdlib
+directly to preserve the expanded options and warnings. On older interpreters,
+the wrappers preserve their original padding and alphabet behavior even though
+pybase64 1.5 has adopted Python 3.15 semantics. Without the extra, all operations
+use stdlib.
 
 ### Evidence and regression coverage
 

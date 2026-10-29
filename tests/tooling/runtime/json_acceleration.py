@@ -80,6 +80,15 @@ def _probes(
                     native.is_bound(function) and native.dispatch_ready(function),
                     f"{function.__name__} native function dispatch is inactive",
                 )
+        elif sys.version_info[:2] == (3, 15):
+            _require(
+                not native.is_bound(jsonx.loads) and not native.is_bound(jsonx.dumpb),
+                "CPython 3.15 must retain ordinary Python function dispatch",
+            )
+            _require(
+                native.dispatch_ready(jsonx.loads),
+                "CPython 3.15 native batch decoder admission is inactive",
+            )
 
     def encoding_probe() -> None:
         _equal(native.encode(integers), compact)
@@ -127,6 +136,7 @@ def _probes(
             "native decoder declined an eligible exact-number document",
         )
         _equal(json.dumps(decoded), "[" + expected + "]")
+        _equal(native.array_decode("1,2", 0, 3, jsonx.loads), [1, 2])
 
     def identity_probe() -> None:
         jsonx._identity_snapshot(None, set())  # Refresh ordinary walker monitoring.

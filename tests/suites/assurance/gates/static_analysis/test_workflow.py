@@ -214,7 +214,7 @@ def test_c_analysis_builds_both_extension_implementations_with_required_compiler
     assert build["env"]["CIBUILDWHEEL"] == "1"
     assert build["shell"] == "bash"
     # Exercise the actual loop and environment expansion. A static check for
-    # three version strings could pass while every compile used one interpreter.
+    # version strings could pass while every compile used one interpreter.
     trace = tmp_path / "builds.jsonl"
     executable = tmp_path / "uv"
     executable.write_text(
@@ -242,12 +242,12 @@ def test_c_analysis_builds_both_extension_implementations_with_required_compiler
     )
     assert result.returncode == 0, result.stdout + result.stderr
     calls = [json.loads(line) for line in trace.read_text().splitlines()]
-    assert len(calls) == 6
+    assert len(calls) == 8
     for call, (version, rust) in zip(
         calls,
         [
             (version, rust)
-            for version in ("3.12", "3.13", "3.14")
+            for version in ("3.12", "3.13", "3.14", "3.15")
             for rust in ("0", "1")
         ],
         strict=True,
@@ -267,7 +267,7 @@ def test_c_analysis_builds_both_extension_implementations_with_required_compiler
         step for step in job["steps"] if step["name"] == "Install locked build tools"
     )
     assert job["steps"].index(setup) < job["steps"].index(build)
-    assert "for python in 3.12 3.13 3.14" in setup["run"]
+    assert "for python in 3.12 3.13 3.14 3.15" in setup["run"]
     assert 'UV_PROJECT_ENVIRONMENT=".local/sast/build-$python"' in setup["run"]
     assert '--python "$python"' in setup["run"]
     assert {"--locked", "--only-group", "build", "--no-install-project"} <= set(

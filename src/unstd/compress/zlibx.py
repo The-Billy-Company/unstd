@@ -1,7 +1,9 @@
 """The zlib wire/state API with optional zlib-ng acceleration.
 
 The ``compress`` extra selects zlib-ng for complete buffers, incremental
-compression and checksums. Incremental decompression retains the running
+compression before Python 3.15, and checksums. Python 3.15 compressor objects
+retain stdlib state to avoid the provider's fatal finished-copy lock error.
+Incremental decompression retains the running
 interpreter's exact C state objects and their EOF/flush behavior. Compressed
 bytes may differ between
 codecs; recovered bytes, output budgets and stream state keep zlib's contracts.
@@ -13,6 +15,7 @@ from __future__ import annotations
 
 from collections.abc import Buffer  # noqa: TC003 — public runtime type introspection
 from importlib import import_module
+import sys
 from typing import TYPE_CHECKING, Protocol, cast, override, runtime_checkable
 import zlib as _stdlib
 
@@ -204,27 +207,36 @@ if TYPE_CHECKING or _backend is not None:
         except _native.error as exc:
             raise error(str(exc)) from exc
 
-    def compressobj(
-        level: int = -1,
-        method: int = DEFLATED,
-        wbits: int = MAX_WBITS,
-        memLevel: int = DEF_MEM_LEVEL,  # noqa: N803 — zlib's public keyword
-        strategy: int = Z_DEFAULT_STRATEGY,
-        zdict: Buffer | _Omitted = _OMITTED,
-    ) -> _Compress:
-        """Create one incremental compressor; dictionaries remain opt-in."""
-        try:
-            if zdict is _OMITTED:
-                implementation = _native.compressobj(
-                    level, method, wbits, memLevel, strategy
-                )
-            else:
-                implementation = _native.compressobj(
-                    level, method, wbits, memLevel, strategy, cast("Buffer", zdict)
-                )
-        except _native.error as exc:
-            raise error(str(exc)) from exc
-        return _Compress(implementation)
+    if sys.version_info >= (3, 15):
+        # zlib-ng 1.0 releases an unacquired lock when copying a finished
+        # compressor. CPython 3.15 now aborts on that invalid unlock. Retain
+        # this interpreter's exact state objects until the provider's complete
+        # lifecycle, including concurrent finish/copy, is qualified here.
+        # https://python-zlib-ng.readthedocs.io/en/latest/#changelog
+        compressobj = _stdlib.compressobj
+    else:
+
+        def compressobj(
+            level: int = -1,
+            method: int = DEFLATED,
+            wbits: int = MAX_WBITS,
+            memLevel: int = DEF_MEM_LEVEL,  # noqa: N803 — zlib's public keyword
+            strategy: int = Z_DEFAULT_STRATEGY,
+            zdict: Buffer | _Omitted = _OMITTED,
+        ) -> _Compress:
+            """Create one incremental compressor; dictionaries remain opt-in."""
+            try:
+                if zdict is _OMITTED:
+                    implementation = _native.compressobj(
+                        level, method, wbits, memLevel, strategy
+                    )
+                else:
+                    implementation = _native.compressobj(
+                        level, method, wbits, memLevel, strategy, cast("Buffer", zdict)
+                    )
+            except _native.error as exc:
+                raise error(str(exc)) from exc
+            return _Compress(implementation)
 
     # Checksums have no codec-error result. Their argument/buffer failures
     # already use the stdlib exception classes, so retain direct C dispatch.

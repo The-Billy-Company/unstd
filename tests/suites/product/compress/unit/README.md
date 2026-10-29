@@ -24,6 +24,10 @@ lazy, and refuse filesystem replay for a missing canonical child.
 
 `test_zlibx.py` compares window modes, checksums, compressor copies, dictionaries,
 argument callbacks and interpreter-specific incremental decoder state.
+Python 3.15 checks exact stdlib compressor selection; a bounded child verifies
+all three finished-compressor copy protocols reject safely without aborting.
+Gzip header cases compare valid and invalid FHCRC values with optional extra,
+filename and comment fields against the running stdlib's validation policy.
 `test_flush_modes.py` checks native C-integer overflow, stream continuation,
 coercion timing and closed/read-handle behavior for gzip flushes.
 

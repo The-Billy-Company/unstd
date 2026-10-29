@@ -71,3 +71,10 @@ code, defaults, backend configuration or tracing/monitoring guards change.
 teardown detaches watchers and restores vectorcall slots. Review version gates
 around private stack, dictionary and monitoring layouts before adding a minor
 Python version. Keep refusal (`NotImplemented`) distinct from allocation errors.
+
+CPython 3.15 keeps ordinary Python function dispatch and uses authenticated,
+retained `sys.monitoring.get_events` and `get_local_events` C builtins to admit
+batch decoding and identity snapshots. Each admission reads fresh event masks,
+including local changes before the code object's instrumentation is refreshed.
+Its unqualified private C-stack and dense-dictionary layouts remain disabled;
+the precise parser and public dictionary traversal handle those cases.

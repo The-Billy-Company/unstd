@@ -70,7 +70,7 @@ def test_targets_cover_deployed_python_and_both_backends_with_cached_setup(workf
         "Parser fuzzing / Python ${{ matrix.python }} / ${{ matrix.backend }}"
     )
     assert campaign["strategy"]["matrix"] == {
-        "python": ["3.12", "3.14"],
+        "python": ["3.12", "3.15"],
         "backend": ["installed", "stdlib"],
     }
     assert campaign["strategy"]["fail-fast"] is False

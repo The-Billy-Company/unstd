@@ -112,7 +112,10 @@ def wall(
     *,
     disambiguate: Disambiguate = "compatible",
 ) -> ZonedDateTime | None:
-    """A local wall-clock time in *zone*, resolved DST-correctly — or ``None`` for invalid fields or zone.
+    """A local wall-clock time in *zone*, resolved DST-correctly.
+
+    Return ``None`` for invalid fields, an unknown zone, or a resolved instant
+    outside the calendar range.
 
     ``disambiguate="raise"``'s ``RepeatedTime`` / ``SkippedTime`` propagate
     rather than collapsing into ``None``: that exception *is* the answer the
@@ -124,7 +127,9 @@ def wall(
         )
     except (RepeatedTime, SkippedTime):
         raise
-    except ValueError:
+    except (OverflowError, ValueError):
+        # The Python whenever backend raises OverflowError when valid local
+        # fields would resolve before year 1 or after year 9999 in UTC.
         return None
 
 

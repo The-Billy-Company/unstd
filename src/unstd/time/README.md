@@ -82,6 +82,7 @@ zoned.wall(2023, 10, 29, 1, 15, "Europe/London", disambiguate="raise")  # Repeat
 `disambiguate="raise"` propagates whenever's `RepeatedTime`/`SkippedTime`
 (both `ValueError` subclasses) rather than collapsing into the same `None`
 `wall`/`parse` return for invalid date/time fields. `wall` also returns `None`
-for an unknown zone, while `parse` propagates `TimeZoneNotFoundError`. It's a no-op on `parse`'s aware
+for an unknown zone or an instant outside years 1–9999, while `parse` propagates
+`TimeZoneNotFoundError` for an unknown zone. It's a no-op on `parse`'s aware
 branch: an already-aware `raw` carries its own absolute instant, so there's no
 fold or gap to resolve.

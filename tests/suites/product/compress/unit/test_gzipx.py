@@ -371,15 +371,47 @@ def test_optional_header_fields_remain_interoperable(gzip_module) -> None:
 
 
 @pytest.mark.parametrize("valid_checksum", [False, True])
-def test_header_checksum_policy_matches_stdlib(gzip_module, valid_checksum) -> None:
+@pytest.mark.parametrize("flags", [0, 4, 8, 16, 4 | 8 | 16])
+def test_header_checksum_policy_matches_stdlib(
+    gzip_module, valid_checksum, flags
+) -> None:
     header = bytearray(MEMBER[:10])
-    header[3] = 2
+    header[3] = 2 | flags
+    if flags & 4:
+        header += struct.pack("<H", 3) + b"abc"
+    if flags & 8:
+        header += b"payload.txt\0"
+    if flags & 16:
+        header += b"test comment\0"
     checksum = zlib.crc32(header) & 0xFFFF
     if not valid_checksum:
         checksum ^= 1
     data = bytes(header) + struct.pack("<H", checksum) + MEMBER[10:]
-    assert gzip_module.decompress(data) == gzip.decompress(data) == PAYLOAD
-    assert _read(gzip_module, data, "read") == _read(gzip, data, "read") == PAYLOAD
+    if _outcome(lambda: gzip.decompress(data)) is gzip.BadGzipFile:
+        with pytest.raises(gzip.BadGzipFile) as expected_error:
+            gzip.decompress(data)
+        for decode in (
+            gzip_module.decompress,
+            lambda value: _read(gzip_module, value, "read"),
+        ):
+            with pytest.raises(gzip.BadGzipFile) as actual:
+                decode(data)
+            assert str(actual.value) == str(expected_error.value)
+    else:
+        expected = gzip.decompress(data)
+        assert expected == PAYLOAD
+        assert gzip_module.decompress(data) == expected
+        assert _read(gzip_module, data, "read") == _read(gzip, data, "read") == expected
+
+
+def test_native_one_shot_defers_header_checksum_policy_to_the_interpreter():
+    native = pytest.importorskip("unstd.compress._gzip_native")
+    header = bytearray(MEMBER[:10])
+    header[3] = 2
+    checksum = zlib.crc32(header) & 0xFFFF
+    for value in (checksum, checksum ^ 1):
+        data = bytes(header) + struct.pack("<H", value) + MEMBER[10:]
+        assert native.decompress(data) is None
 
 
 @pytest.mark.parametrize("data", CORRUPT_STREAMS)

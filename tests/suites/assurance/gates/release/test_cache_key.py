@@ -88,6 +88,7 @@ def test_project_version_bumps_keep_compiled_dependencies_reusable(source):
         ("uv.lock", 'specifier = ">=77"', 'specifier = ">=78"'),
         ("pyproject.toml", "uv==0.13.4", "uv==0.13.5"),
         ("pyproject.toml", 'build-frontend = "uv"', 'build-frontend = "build"'),
+        ("pyproject.toml", "cp3{12,13,14}-*", "cp3{12,13,14,15}-*"),
         ("pyproject.toml", "setuptools>=77", "setuptools>=78"),
         ("pyproject.toml", 'requires-python = ">=3.12"', 'requires-python = ">=3.13"'),
         ("pyproject.toml", 'exclude-newer = "P2D"', 'exclude-newer = "P3D"'),

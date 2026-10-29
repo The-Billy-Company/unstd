@@ -42,6 +42,7 @@ def test_generated_classes_are_released_after_their_instances(operation, referen
     assert all(item() is None for item in observed), "clone metadata retained a class"
 
 
+@pytest.mark.usefixtures("native_mixed_graph")
 def test_direct_native_module_deallocation_releases_cached_weakrefs() -> None:
     pytest.importorskip("unstd.clone._clone_native")
     # Clear builtin functions' references to their module to select direct

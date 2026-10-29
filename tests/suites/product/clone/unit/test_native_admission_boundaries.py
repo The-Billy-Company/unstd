@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import dataclasses
+import sys
 from typing import TYPE_CHECKING, Any
 import weakref
 
@@ -15,6 +16,55 @@ from unstd.clone import structural
 
 if TYPE_CHECKING:
     from pathlib import Path
+
+
+@pytest.mark.skipif(
+    sys.version_info[:2] != (3, 15),
+    reason="CPython 3.15 retains Python mixed-graph frame accounting",
+)
+@pytest.mark.parametrize(
+    "entrypoint",
+    ["clone_walk_graph", "clone_walk_canonical_graph", "clone_record_graph"],
+)
+def test_unqualified_native_graph_refuses_before_public_fallback(
+    entrypoint: str,
+) -> None:
+    native = pytest.importorskip("unstd.clone._clone_native")
+    calls: list[object] = []
+
+    class Hook:
+        def __deepcopy__(self, memo: dict[int, Any]) -> list[str]:
+            calls.append(self)
+            return ["copied"]
+
+    @dataclasses.dataclass
+    class Row:
+        values: list[Any]
+
+    def unexpected(*args: Any) -> Any:
+        pytest.fail("unqualified native graph entered a copy callback")
+
+    shared = [Hook()]
+    row = Row(shared)
+    source = [row, row, shared]
+    memo: dict[int, Any] = {}
+    arguments = (
+        (source, Row, unexpected, memo)
+        if entrypoint == "clone_record_graph"
+        else (source, unexpected, unexpected, memo)
+    )
+    assert getattr(native, entrypoint)(*arguments) is NotImplemented
+    assert memo == {}
+    assert calls == []
+
+    actual = clone.deep(source)
+    assert type(actual[0]) is Row
+    assert actual[0] is actual[1]
+    assert actual[0] is not row
+    assert actual[0].values is actual[2]
+    assert actual[2] is not shared
+    assert actual[2] == [["copied"]]
+    assert calls == shared
 
 
 @pytest.fixture(params=["python", "native", "native-dataclass-fallback"])

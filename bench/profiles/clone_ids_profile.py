@@ -514,7 +514,10 @@ def _profile(
                         and name in ("_model", "_model_private", "_reduced")
                         else "native general walk unavailable"
                         if name == "_record_admit"
-                        and getattr(clone, "_native_walk_graph", None) is None
+                        and (
+                            getattr(clone, "_native_walk_graph", None) is None
+                            or not (3, 12) <= sys.version_info[:2] < (3, 15)
+                        )
                         else "native record kernel unavailable"
                         if name == "_record_class"
                         and getattr(clone, "_native_records", None) is None

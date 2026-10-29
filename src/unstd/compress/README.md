@@ -129,7 +129,12 @@ codec coverage and the precise compatibility boundaries.
 ## Accelerated zlib wire operations
 
 `from unstd.compress import zlibx as zlib` adds zlib-ng complete-buffer codecs,
-incremental compression and native checksums behind the same `compress` extra.
+incremental compression before Python 3.15, and native checksums behind the same
+`compress` extra. On Python 3.15, `compressobj` is the exact stdlib factory:
+zlib-ng 1.0 can abort the interpreter when copying a finished compressor, with
+the fix currently listed in its
+[development changelog](https://python-zlib-ng.readthedocs.io/en/latest/#changelog).
+Complete-buffer codecs, checksums and gzip acceleration still use zlib-ng.
 It preserves raw/zlib/gzip window modes, compressor copying, dictionaries and
 stdlib exception families. Oversized flush modes fail before they can finish a
 compressor. Incremental `decompressobj` is the running stdlib's C factory: this

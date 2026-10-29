@@ -20,6 +20,8 @@ only zero padding afterward; concatenated members and refused inputs return
 `None` for stdlib replay. Outputs below 64 KiB reuse the module decoder with the
 GIL held; larger outputs use a per-call decoder and release the GIL to decode.
 Exact immutable input and the output reference remain live through that release.
+FHCRC-marked members return `None` before allocation because libdeflate skips
+header checksum validation; the interpreter owns its version-specific policy.
 
 The encoder is a whole-buffer path for exact `bytes` and exact integer levels
 6 or 9; `gzipx.py` additionally requires integer `mtime=0`. It refuses inputs

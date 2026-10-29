@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from fnmatch import fnmatchcase
 from functools import partial
 from hashlib import sha256
-from importlib.machinery import SourceFileLoader
+from importlib.machinery import ModuleSpec, SourceFileLoader
 from importlib.util import module_from_spec, spec_from_file_location
 import json
 from pathlib import Path
@@ -366,10 +366,9 @@ def _load_previous(path: Path) -> Within:
             "Retained first-pass source differs from its captured revision"
         )
     name = "_unstd_integer_first_pass"
-    spec = spec_from_file_location(name, path, loader=SourceFileLoader(name, str(path)))
-    if spec is None or spec.loader is None:
-        message = "Previous source must be a readable math module"
-        raise ValueError(message)
+    source = str(path.resolve())
+    spec = ModuleSpec(name, SourceFileLoader(name, source), origin=source)
+    spec.has_location = True
     module = module_from_spec(spec)
     exec(compile(path.read_bytes(), str(path), "exec"), module.__dict__)  # noqa: S102 — retained local implementation, compiled from recorded bytes
     implementation: object = getattr(module, "within", None)

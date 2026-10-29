@@ -21,6 +21,7 @@ native = pytest.importorskip("unstd.clone._clone_native")
 
 
 @pytest.mark.parametrize("entry", ["clone_walk_graph", "clone_walk_canonical_graph"])
+@pytest.mark.usefixtures("native_mixed_graph")
 def test_exact_scalar_sets_complete_without_python_callbacks(entry: str) -> None:
     def refuse(_source: object, _memo: dict[int, object]) -> object:
         raise AssertionError
@@ -101,6 +102,7 @@ def test_set_iteration_retains_live_size_change_errors(
     assert messages == ["Set changed size during iteration"] * 2
 
 
+@pytest.mark.usefixtures("native_mixed_graph")
 def test_set_hash_failures_keep_exception_identity_and_initialized_memo() -> None:
     failure = LookupError("set hash failure")
 
@@ -124,6 +126,7 @@ def test_set_hash_failures_keep_exception_identity_and_initialized_memo() -> Non
     assert memo[id(source)] == set()
 
 
+@pytest.mark.usefixtures("native_mixed_graph")
 def test_set_callers_keep_explicit_memo_precedence() -> None:
     source = {"original"}
     sentinel = object()
@@ -151,6 +154,7 @@ def test_set_subclasses_keep_their_copy_protocol() -> None:
 @pytest.mark.skipif(
     not hasattr(signal, "setitimer"), reason="interval timers are unavailable"
 )
+@pytest.mark.usefixtures("native_mixed_graph")
 def test_large_native_set_remains_interruptible(tmp_path: Path) -> None:
     worker = dedent(
         """

@@ -4,8 +4,9 @@
 lenient unpadded URL helper, 3 decodes arbitrary UTF-8/surrogate text. Selector
 bits vary strictness, buffer kind, padding, alternative alphabets and text error
 policy. Raw inputs are never pre-sanitized for stdlib-compatible functions.
-The URL oracle separately translates alphabets, filters ignored characters, then
-pads the retained alphabet, as required by the convenience contract. Caller
+The URL oracle uses stdlib's unpadded mode on Python 3.15 and later; on older
+interpreters it separately translates alphabets, filters ignored characters,
+then pads the retained alphabet, as required by the convenience contract. Caller
 bounds input to 65536 bytes, hence output is at most 87384 Base64 bytes or 65536
 text characters. Only each operation's documented input errors are compared.
 """
@@ -16,6 +17,7 @@ import base64 as reference
 import binascii
 import io
 import json as stdjson
+import sys
 
 from unstd.serde import b64
 
@@ -28,6 +30,8 @@ _ALPHABET = frozenset(
 
 
 def _url(raw: bytes | str | bytearray | memoryview) -> bytes:
+    if sys.version_info >= (3, 15):
+        return reference.urlsafe_b64decode(raw)
     if isinstance(raw, str):
         if not raw.isascii():
             # Ask stdlib for its documented ASCII-input error and exact message.

@@ -141,6 +141,48 @@ def test_pinned_provider_catalog_contains_the_development_python_on_release_host
     assert required <= platforms, (pinned, version, required - platforms)
 
 
+@pytest.mark.parametrize(
+    ("name", "platforms"),
+    [
+        (
+            "linux",
+            (
+                "manylinux_x86_64",
+                "manylinux_aarch64",
+                "musllinux_x86_64",
+                "musllinux_aarch64",
+            ),
+        ),
+        ("macos", ("macosx_x86_64", "macosx_arm64")),
+        ("windows", ("win_amd64", "win_arm64")),
+    ],
+)
+def test_builder_catalog_covers_every_advertised_runtime_on_release_platforms(
+    name, platforms
+):
+    project = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text())
+    prefix = "Programming Language :: Python :: 3."
+    minors = {
+        classifier.removeprefix(prefix)
+        for classifier in project["project"]["classifiers"]
+        if classifier.startswith(prefix)
+    }
+    assert minors == {"12", "13", "14", "15"}
+    builder = import_module(f"cibuildwheel.platforms.{name}")
+    arguments = CommandLineArguments.defaults()
+    arguments.package_dir = REPO_ROOT
+    options = compute_options(name, arguments, {})
+    selected = {
+        item.identifier
+        for item in builder.all_python_configurations()
+        if options.globals.build_selector(item.identifier)
+    }
+    expected = {
+        f"cp3{minor}-{platform_tag}" for minor in minors for platform_tag in platforms
+    }
+    assert expected <= selected, expected - selected
+
+
 def _native_provider_configurations():
     if sys.platform not in {"darwin", "win32"}:
         return [pytest.param(None, marks=pytest.mark.skip(reason="native installers"))]
@@ -255,6 +297,8 @@ def test_actual_builder_preserves_intel_flags_and_effective_deployment_target(
         "cp313-macosx_arm64",
         "cp314-macosx_arm64",
         "cp314-macosx_x86_64",
+        "cp315-macosx_arm64",
+        "cp315-macosx_x86_64",
     ):
         assert (
             options.build_options(unaffected).environment.as_dictionary(

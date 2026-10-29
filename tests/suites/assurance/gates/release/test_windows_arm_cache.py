@@ -47,7 +47,12 @@ def test_arm_warmup_runs_on_main_before_tags_need_its_cache(workflows):
     assert not {"pull_request_target", "workflow_run"} & warmup["on"].keys()
     job = warmup["jobs"]["dependencies"]
     assert job["runs-on"] == "windows-11-arm"
-    assert job["strategy"]["matrix"]["python"] == ["312", "313", "314"]
+    versions = ["312", "313", "314", "315"]
+    assert job["strategy"]["matrix"]["python"] == versions
+    assert (
+        workflows["release"]["jobs"]["wheels"]["strategy"]["matrix"]["python"]
+        == versions
+    )
     assert job["strategy"]["fail-fast"] is False
     assert 0 < job["timeout-minutes"] <= 15
     for step in job["steps"]:

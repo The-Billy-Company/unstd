@@ -274,6 +274,7 @@ def test_model_metaclass_hash_callbacks_keep_the_python_trace(
     assert traces[0] == traces[1]
 
 
+@pytest.mark.usefixtures("native_mixed_graph")
 def test_model_continuation_ignores_a_foreign_handler_hint() -> None:
     native = pytest.importorskip("unstd.clone._clone_native")
     if not getattr(native, "MODEL_CONTINUATION", 0):
@@ -366,6 +367,7 @@ def test_model_state_walker_changes_are_observed_at_state_boundaries(
         "_native_clone",
     ],
 )
+@pytest.mark.usefixtures("native_mixed_graph")
 def test_model_state_memo_miss_reads_current_dispatch_globals(
     monkeypatch: pytest.MonkeyPatch, changed: str
 ) -> None:

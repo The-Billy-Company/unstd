@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
+import sys
 
 import pytest
 
@@ -47,7 +48,10 @@ def test_stdlib_profile_records_coverage_and_explicit_optional_skips() -> None:
     }
     from unstd.clone import structural
 
-    if structural._native_walk_graph is None:
+    if structural._native_walk_graph is None or not (3, 12) <= sys.version_info[:2] < (
+        3,
+        15,
+    ):
         expected_skips.add("structural._record_admit")
     assert skipped == expected_skips
     assert all(row["calls"] or row["skipped"] for row in result["functions"])

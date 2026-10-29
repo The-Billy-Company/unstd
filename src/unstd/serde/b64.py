@@ -1,7 +1,7 @@
 """Stdlib-compatible Base64 functions and optional accelerated convenience helpers.
 
 ``b64encode``/``b64decode``, ``standard_b64encode``/``standard_b64decode`` and
-``urlsafe_b64encode``/``urlsafe_b64decode`` follow Python 3.12–3.14's Base64 API:
+``urlsafe_b64encode``/``urlsafe_b64decode`` follow the running Python's Base64 API:
 byte results, bytes-like inputs, arbitrary ``altchars``, lenient decoding by
 default and optional ``validate=True``. MIME helpers ``encodebytes`` and
 ``decodebytes`` are stdlib's originals. The legacy stream functions are exposed
@@ -12,15 +12,17 @@ existing convenience meanings. Other encodings (Base16/32/85) remain in stdlib.
 strict standard decoding by default; ``decode(url=True)`` uses stdlib's lenient
 URL alphabet with an extension accepting omitted padding. Ignored characters
 do not count towards that padding. Strict validation does not check unused pad
-bits for canonicality, just as in stdlib.
+bits for canonicality unless Python 3.15's ``canonical=True`` is requested.
 
 With the ``serde`` extra, pybase64 accelerates exact ``bytes`` encoding and
 strict decoding of exact ``bytes`` or ASCII ``str``. The URL convenience decoder
 also accelerates validated input after preserving its normalization rules.
 Other input types and options use stdlib; native decode failures also return to
-stdlib for its exact acceptance and diagnostics. This avoids pybase64 1.5's
-Python 3.15-oriented lenient padding rules, Unicode coercion and
-alternate-alphabet warnings.
+stdlib for its exact acceptance and diagnostics. On Python 3.15 and later the
+stdlib-named functions and URL convenience decoder use stdlib directly, keeping
+its added padding, wrapping, ignored-character and canonical-validation options,
+as well as its alternate-alphabet warnings. Older interpreters retain their own
+padding, Unicode coercion and warning behavior.
 Installing the extra must not change results, errors or warnings.
 
 Contract sources: https://docs.python.org/3.12/library/base64.html,
@@ -35,6 +37,7 @@ import base64 as _stdlib
 from binascii import Error
 from binascii import a2b_base64 as _a2b_base64
 from binascii import b2a_base64 as _b2a_base64
+import sys
 from typing import TYPE_CHECKING
 
 from unstd.serde import jsonx
@@ -90,53 +93,60 @@ _URL_IGNORED = bytes(range(256)).translate(
 _URL_INPUT_IGNORED = _URL_IGNORED.translate(None, b"-_")
 
 
-def b64encode(s: Buffer, altchars: Buffer | None = None) -> bytes:
-    """Stdlib ``b64encode``: bytes output with optional alternative alphabet."""
-    if altchars is not None:
-        # Stdlib owns alphabet validation, translation, buffer errors and their order.
-        return _stdlib.b64encode(s, altchars)
-    if _HAVE_PYBASE64 and type(s) is bytes:
-        return _b64.b64encode(s)
-    return _b2a_base64(s, newline=False)
+if sys.version_info >= (3, 15):
+    # 3.15 changes signatures and the meaning of unpadded input, and adds
+    # canonical validation and ignored characters. Keep those contracts with
+    # their original functions, including the validate sentinel and warnings.
+    b64encode = _stdlib.b64encode
+    b64decode = _stdlib.b64decode
+    standard_b64encode = _stdlib.standard_b64encode
+    standard_b64decode = _stdlib.standard_b64decode
+    urlsafe_b64encode = _stdlib.urlsafe_b64encode
+else:
 
+    def b64encode(s: Buffer, altchars: Buffer | None = None) -> bytes:
+        """Stdlib ``b64encode``: bytes output with optional alternative alphabet."""
+        if altchars is not None:
+            # Stdlib owns alphabet validation, translation, buffer errors and their order.
+            return _stdlib.b64encode(s, altchars)
+        if _HAVE_PYBASE64 and type(s) is bytes:
+            return _b64.b64encode(s)
+        return _b2a_base64(s, newline=False)
 
-def b64decode(
-    s: str | Buffer, altchars: str | Buffer | None = None, validate: bool = False
-) -> bytes:
-    """Stdlib ``b64decode``, including lenient defaults and exact diagnostics."""
-    if altchars is None and (type(s) is bytes or (type(s) is str and s.isascii())):
-        # Native dispatch costs more than binascii on tiny documents. Exact ASCII
-        # strings suit both codecs; subclasses keep stdlib's coercion hooks below.
-        if _HAVE_PYBASE64 and validate is True and len(s) >= 256:
-            try:
-                return _b64.b64decode(s, None, True)
-            except Error:
-                # Backend errors are less specific, and supported Python patch
-                # releases can differ on excess padding. Stdlib is authoritative.
-                pass
-        return _a2b_base64(s, strict_mode=validate)
-    return _stdlib.b64decode(s, altchars, validate)
+    def b64decode(
+        s: str | Buffer, altchars: str | Buffer | None = None, validate: bool = False
+    ) -> bytes:
+        """Stdlib ``b64decode``, including lenient defaults and exact diagnostics."""
+        if altchars is None and (type(s) is bytes or (type(s) is str and s.isascii())):
+            # Native dispatch costs more than binascii on tiny documents. Exact ASCII
+            # strings suit both codecs; subclasses keep stdlib's coercion hooks below.
+            if _HAVE_PYBASE64 and validate is True and len(s) >= 256:
+                try:
+                    return _b64.b64decode(s, None, True)
+                except Error:
+                    # Backend errors are less specific, and supported Python patch
+                    # releases can differ on excess padding. Stdlib is authoritative.
+                    pass
+            return _a2b_base64(s, strict_mode=validate)
+        return _stdlib.b64decode(s, altchars, validate)
 
+    def standard_b64encode(s: Buffer) -> bytes:
+        """Stdlib standard-alphabet encoding, returning bytes."""
+        if _HAVE_PYBASE64 and type(s) is bytes:
+            return _b64.b64encode(s)
+        return _b2a_base64(s, newline=False)
 
-def standard_b64encode(s: Buffer) -> bytes:
-    """Stdlib standard-alphabet encoding, returning bytes."""
-    if _HAVE_PYBASE64 and type(s) is bytes:
-        return _b64.b64encode(s)
-    return _b2a_base64(s, newline=False)
+    def standard_b64decode(s: str | Buffer) -> bytes:
+        """Stdlib standard-alphabet decoding, discarding non-alphabet bytes."""
+        if type(s) is bytes or (type(s) is str and s.isascii()):
+            return _a2b_base64(s)
+        return _stdlib.b64decode(s)
 
-
-def standard_b64decode(s: str | Buffer) -> bytes:
-    """Stdlib standard-alphabet decoding, discarding non-alphabet bytes."""
-    if type(s) is bytes or (type(s) is str and s.isascii()):
-        return _a2b_base64(s)
-    return _stdlib.b64decode(s)
-
-
-def urlsafe_b64encode(s: Buffer) -> bytes:
-    """Stdlib URL-safe encoding, retaining padding and returning bytes."""
-    if _HAVE_PYBASE64 and type(s) is bytes:
-        return _b64.b64encode(s, b"-_")
-    return _b2a_base64(s, newline=False).translate(_URL_ENCODING)
+    def urlsafe_b64encode(s: Buffer) -> bytes:
+        """Stdlib URL-safe encoding, retaining padding and returning bytes."""
+        if _HAVE_PYBASE64 and type(s) is bytes:
+            return _b64.b64encode(s, b"-_")
+        return _b2a_base64(s, newline=False).translate(_URL_ENCODING)
 
 
 def encode(data: Buffer, *, url: bool = False, pad: bool = True) -> str:
@@ -183,6 +193,10 @@ def decode(s: str | Buffer, *, url: bool = False) -> bytes:
     """
     if not url:
         return b64decode(s, validate=True)
+    if sys.version_info >= (3, 15):
+        # Stdlib now accepts omitted padding itself. Its unpadded mode also
+        # changes interior '=' handling, so adding padding would change results.
+        return _stdlib.urlsafe_b64decode(s)
     native_rejected = False
     raw: bytes | bytearray
     if type(s) is bytes:

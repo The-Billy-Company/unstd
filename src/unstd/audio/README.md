@@ -56,6 +56,10 @@ The `audio` extra (`pip install 'unstd[audio]'`) provides `soundfile>=0.14` +
 | stdlib `wave` + `numpy` | numpy present, no soundfile  | `ndarray`           | 8/16/32-bit | `PCM_16`/`PCM_32` |
 | stdlib `wave` + `array` | no numpy (pure-stdlib floor) | `list`/`list[list]` | 16-bit      | `PCM_16`          |
 
+Both fallback readers decode integer PCM only. IEEE float WAV files require
+the `audio` extra; fallbacks raise `wave.Error`, including on Python 3.15 where
+stdlib `wave` can expose those floating-point frames.
+
 The pure-stdlib floor deliberately trades ergonomics for zero dependencies:
 16-bit PCM only, Python lists, no vectorization. Wider widths / other subtypes
 raise a clear error pointing at the `audio` extra rather than silently degrading.

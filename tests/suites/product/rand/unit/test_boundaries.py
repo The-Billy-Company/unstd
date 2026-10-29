@@ -10,6 +10,7 @@ from __future__ import annotations
 import math
 import random
 import re
+import secrets
 import string
 from typing import Literal
 
@@ -252,7 +253,10 @@ def test_secure_integer_and_choice_edges() -> None:
     ]:
         with pytest.raises(ValueError, match=message):
             call(arg)
-    with pytest.raises(ValueError, match="negative argument not allowed"):
+    with pytest.raises(ValueError, match="negative") as oracle:
+        secrets.token_bytes(-1)
+    with pytest.raises(type(oracle.value)) as actual:
         crypto.token_bytes(-1)
+    assert actual.value.args == oracle.value.args
     with pytest.raises(IndexError):
         crypto.choice([])

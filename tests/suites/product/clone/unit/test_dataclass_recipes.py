@@ -427,6 +427,7 @@ def test_class_changed_by_admission_keeps_the_already_selected_default_recipe(
     assert copied == []
 
 
+@pytest.mark.usefixtures("native_mixed_graph")
 def test_plain_dataclass_state_uses_the_native_record_helper(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -603,6 +604,7 @@ def test_state_truth_hook_changes_destination_access_before_lookup(
     assert another.values is not actual.values
 
 
+@pytest.mark.usefixtures("native_mixed_graph")
 def test_cached_native_record_rechecks_a_replaced_allocator(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -644,6 +646,7 @@ def test_cached_native_record_rechecks_a_replaced_allocator(
     assert actual.values is not source.values
 
 
+@pytest.mark.usefixtures("native_mixed_graph")
 def test_standalone_native_record_memo_pins_source_until_released() -> None:
     native = pytest.importorskip("unstd.clone._clone_native")
 
@@ -668,6 +671,7 @@ def test_standalone_native_record_memo_pins_source_until_released() -> None:
     assert actual.values == [1]
 
 
+@pytest.mark.usefixtures("native_mixed_graph")
 def test_native_record_callback_can_replace_both_instance_classes() -> None:
     pytest.importorskip("unstd.clone._clone_native")
     # A direct helper call has no Python _walk frame retaining the source type.

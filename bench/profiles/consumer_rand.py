@@ -60,15 +60,19 @@ class _Example:
 
 
 def _consumer_ast_hash(node: ast.AST) -> str:
-    """Retain receipt formatting across Python's empty-field dump change."""
+    """Retain receipt formatting across Python's AST dump default changes."""
     normalized = copy.deepcopy(node)
     for child in ast.walk(normalized):
         for field, value in ast.iter_fields(child):
             if isinstance(value, list) and not value:
                 delattr(child, field)
-    return hashlib.sha256(
-        ast.dump(normalized, include_attributes=False).encode()
-    ).hexdigest()
+    # Python 3.15 also hides Load contexts by default. Retain those semantic
+    # fields without restoring the empty lists removed above.
+    if sys.version_info >= (3, 15):
+        dumped = ast.dump(normalized, include_attributes=False, show_empty=True)
+    else:
+        dumped = ast.dump(normalized, include_attributes=False)
+    return hashlib.sha256(dumped.encode()).hexdigest()
 
 
 def _load_consumers(path: Path) -> tuple[dict[str, Any], dict[str, Any]]:

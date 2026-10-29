@@ -85,7 +85,7 @@ def test_every_owned_group_runs_in_every_supported_dependency_environment(workfl
     assert "${{ matrix.environment.name }}" in job["name"]
     assert job["strategy"]["fail-fast"] is False
     environments = matrix["environment"]
-    assert len(environments) == len({item["id"] for item in environments}) == 5
+    assert len(environments) == len({item["id"] for item in environments}) == 6
     contracts = set()
     for environment in environments:
         flags = shlex.split(environment["sync"])
@@ -105,8 +105,9 @@ def test_every_owned_group_runs_in_every_supported_dependency_environment(workfl
         ("3.12", True, True, None, True),
         ("3.13", True, True, None, True),
         ("3.14", True, True, None, True),
-        ("3.14", False, True, "lowest-direct", True),
-        ("3.14", True, False, None, False),
+        ("3.15", True, True, None, True),
+        ("3.15", False, True, "lowest-direct", True),
+        ("3.15", True, False, None, False),
     }
 
 
@@ -145,7 +146,7 @@ def test_matrix_python_uses_the_managed_runtime_instead_of_the_runner(workflow):
 
 def test_default_workflow_interpreters_match_the_deployed_python():
     version = (REPO_ROOT / ".python-version").read_text().strip()
-    assert re.fullmatch(r"3\.14\.\d+", version)
+    assert re.fullmatch(r"3\.15\.\d+", version)
     runtime = ".".join(version.split(".")[:2])
     yaml = require_backend("ruamel.yaml").YAML(typ="safe", pure=True)
     for source in (REPO_ROOT / ".github/workflows").glob("*.yml"):
@@ -229,7 +230,8 @@ def test_sanitizer_shards_retain_both_engines_every_module_and_failure_evidence(
 ):
     job = workflow["jobs"]["native-sanitizers"]
     matrix = job["strategy"]["matrix"]
-    assert set(matrix) == {"rust-text", "shard"}
+    assert set(matrix) == {"python", "rust-text", "shard"}
+    assert matrix["python"] == ["3.14", "3.15"]
     assert matrix["rust-text"] == ["0", "1"]
     assert matrix["shard"] == [1, 2, 3]
     assert job["strategy"]["fail-fast"] is False
@@ -266,6 +268,12 @@ def test_sanitizer_shards_retain_both_engines_every_module_and_failure_evidence(
         ".local/proc-memory/tests.xml",
     ]
     assert "${{ matrix.shard }}" in artifact["with"]["name"]
+    assert "${{ matrix.python }}" in artifact["with"]["name"]
+    setup = next(
+        item for item in job["steps"] if "python-version" in item.get("with", {})
+    )
+    assert setup["with"]["python-version"] == "${{ matrix.python }}"
+    assert "--python ${{ matrix.python }}" in _sync(job)
     assert 'if [ "${{ matrix.shard }}" = "1" ]; then' in step["run"]
     # Rebuild with the same compiler as the GCC sanitizer runtime while keeping
     # the controller itself outside the preloaded runtime.
@@ -413,16 +421,16 @@ def test_parallel_type_matrix_runs_every_combination_and_preserves_failure(
     )
     assert result.returncode == 1, result.stderr
     observed = [json.loads(line) for line in calls.read_text().splitlines()]
-    assert len(observed) == 9
+    assert len(observed) == 12
     assert {
         (args[args.index("--python-version") + 1], args[args.index("--platform") + 1])
         for args in observed
     } == {
         (python, platform)
-        for python in ("3.12", "3.13", "3.14")
+        for python in ("3.12", "3.13", "3.14", "3.15")
         for platform in ("linux", "darwin", "win32")
     }
-    assert len({args[args.index("--cache-dir") + 1] for args in observed}) == 9
+    assert len({args[args.index("--cache-dir") + 1] for args in observed}) == 12
     assert all(args[:3] == ["run", "--no-sync", "mypy"] for args in observed)
 
 

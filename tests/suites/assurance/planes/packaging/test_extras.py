@@ -381,11 +381,19 @@ assert gzip.decompress(stream.getvalue()) == payload
 from unstd.compress import zlibx
 import zlib
 assert zlibx.crc32 is zlib_ng.crc32
+if sys.version_info >= (3, 15):
+    assert zlibx.compressobj is zlib.compressobj
 encoder = zlibx.compressobj(level=6, wbits=31)
 prefix = encoder.compress(payload[:20])
 copied = encoder.copy()
 wire = prefix + copied.compress(memoryview(payload)[20:]) + copied.flush()
 assert gzip.decompress(wire) == payload
+try:
+    copied.copy()
+except ValueError:
+    pass
+else:
+    raise AssertionError('finished compressor was copied')
 decoder = zlibx.decompressobj(31)
 head = decoder.decompress(wire, 7)
 assert len(head) == 7

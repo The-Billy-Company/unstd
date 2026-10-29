@@ -71,9 +71,15 @@ assert_type(tarfile.TarInfo('entry').size, int)
 if sys.version_info >= (3, 14):
     from unstd.compress import zstd
     assert_type(zstd.decompress(b'wire'), bytes)
+if sys.version_info >= (3, 15):
+    assert_type(b64.b64encode(b'wire', padded=False, wrapcol=12), bytes)
+    assert_type(b64.b64decode('d2lyZQ', padded=False, ignorechars=b' ', canonical=True), bytes)
+    assert_type(b64.urlsafe_b64encode(b'wire', padded=False), bytes)
+    assert_type(b64.urlsafe_b64decode('d2lyZQ', padded=False), bytes)
 """
 
-_NEGATIVE = """from unstd.ids import uid
+_NEGATIVE = """import sys
+from unstd.ids import uid
 from unstd.serde import b64, jsonx
 from unstd import clone, fs, rand
 from unstd.compress import bz2, zlib, zlibx
@@ -93,6 +99,14 @@ wrong_zlibx: str = zlibx.decompressobj().unused_data
 RaggedDecoder('<f4', columns='two')
 RaggedDecoder('<f4', columns=2).unpack(b'', index_count='two')
 wrong_ragged: str = RaggedDecoder('<f4', columns=2).unpack(b'', index_count=1)
+if sys.version_info >= (3, 15):
+    b64.b64encode(b'wire', padded='yes')
+    b64.b64encode(b'wire', wrapcol='12')
+    b64.b64decode('d2lyZQ', padded='yes')
+    b64.b64decode('d2lyZQ', ignorechars=42)
+    b64.b64decode('d2lyZQ==', canonical='yes')
+    b64.urlsafe_b64encode(b'wire', padded='yes')
+    b64.urlsafe_b64decode('d2lyZQ', padded='yes')
 """
 
 
@@ -130,12 +144,13 @@ def test_downstream_strict_mypy_consumes_installed_types_with_negative_controls(
     assert result.stdout == result.stderr == ""
     rejected = checked_command([*common, negative], cwd=consumer.root, expected_code=1)
     errors = [line for line in rejected.stdout.splitlines() if ": error:" in line]
-    assert len(errors) == 13, rejected.stdout
+    assert len(errors) == (20 if sys.version_info >= (3, 15) else 13), rejected.stdout
     assert all("[assignment]" in line for line in errors[:4]), rejected.stdout
     assert all("[arg-type]" in line for line in errors[4:7]), rejected.stdout
     assert all("[assignment]" in line for line in errors[7:10]), rejected.stdout
     assert all("[arg-type]" in line for line in errors[10:12]), rejected.stdout
     assert "[assignment]" in errors[12], rejected.stdout
+    assert all("[arg-type]" in line for line in errors[13:]), rejected.stdout
     assert not rejected.stderr
 
 

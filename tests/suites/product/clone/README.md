@@ -7,6 +7,11 @@ Contracts for `unstd.clone`: value and type fidelity, mutation isolation, copy p
 
 Core contracts use the stdlib. Pydantic and msgspec cases skip locally when absent and fail under `--require-extras`; compiled-extension cases skip when the extension is not built.
 
+Direct mixed-graph and record acceleration assertions use the
+`native_mixed_graph` fixture from `conftest.py` on their qualified CPython
+3.12–3.14 ABIs. Python 3.15 runs all public cloning contracts and explicit
+native-refusal/fallback checks, retaining the Python walker for those paths.
+
 Run from the repository root:
 
 ```console

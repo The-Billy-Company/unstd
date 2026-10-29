@@ -91,6 +91,7 @@ def test_missing_backend_or_extension_fails_with_actionable_evidence(
         ("encode_text", "repeated_floats"),
         ("ascii_text", "ascii"),
         ("loads_lines", "decoding"),
+        ("array_decode", "decoding"),
         ("identity_snapshot", "strict_identity"),
     ],
 )
@@ -151,4 +152,21 @@ def test_inactive_function_dispatch_cannot_pass_correct_output(tmp_path):
     assert code == 1
     assert any(
         "native function dispatch is inactive" in error for error in report["errors"]
+    )
+
+
+@pytest.mark.skipif(sys.version_info[:2] != (3, 15), reason="3.15 batch admission")
+def test_inactive_batch_admission_cannot_pass_correct_output(tmp_path):
+    code, report = _run(
+        tmp_path,
+        """
+        from unstd.serde import jsonx, _json_native as native
+        native.dispatch_ready = lambda function: False
+        assert jsonx.loads('[1,2]') == [1, 2]
+    """,
+    )
+    assert code == 1
+    assert any(
+        "native batch decoder admission is inactive" in error
+        for error in report["errors"]
     )

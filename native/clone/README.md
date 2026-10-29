@@ -32,6 +32,10 @@ builds of CPython 3.12–3.14; visible custom probe overrides select the
 conservative fallback. Custom membership keeps its callback order, live walker
 changes and exact errors.
 
+CPython 3.15 builds the extension while retaining the Python graph walker for
+paths that require the private dictionary, probe or virtual frame-budget ABI.
+Those version guards remain limited to their qualified CPython 3.12–3.14 layouts.
+
 The [build hook](../../hatch_build.py) compiles this source for CPython GIL
 builds. When changing admission or reconstruction, check both native paths and
 [product tests](../../tests/suites/product/clone/README.md): GC/finalizers can

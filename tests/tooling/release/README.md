@@ -67,7 +67,7 @@ Other Windows versions keep their normal provider; a changed builder version or
 installer contract requires review.
 The Intel 3.12 and 3.13 override preserves the existing 10.13 deployment floor
 after retaining the interpreter's defaults or the caller's explicit compiler
-flags. Intel 3.14 retains its 10.15 floor.
+flags. Intel 3.14 and 3.15 retain their provider deployment floors.
 
 Linux containers install the locked uv provider, match the original
 interpreter's SOABI and native platform, and atomically replace only its

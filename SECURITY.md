@@ -8,7 +8,7 @@ baseline, changed-lines-only filter, or accepted duplicate budget.
 | Check | Scope and failure policy |
 | --- | --- |
 | Bandit | All Python under `src/` and `hatch_build.py`, every severity and confidence. Findings, parse/read errors, absent reports and empty scans fail. |
-| CodeQL `security-extended` | Python, C/C++, Rust and GitHub Actions. C analysis traces all default extensions and the opt-in Rust CPython adapter on Python 3.12, 3.13 and 3.14. Every SARIF finding fails, including suppressed and unchanged alerts; malformed reports and failed invocations fail. |
+| CodeQL `security-extended` | Python, C/C++, Rust and GitHub Actions. C analysis traces all default extensions and the opt-in Rust CPython adapter on Python 3.12, 3.13, 3.14 and 3.15. Every SARIF finding fails, including suppressed and unchanged alerts; malformed reports and failed invocations fail. |
 | Rust Clippy | Every target in `native/text/rust`, using the locked offline crate. All warnings fail. |
 | Pylint `duplicate-code` | All production Python modules. Repeated implementations of at least eight comparable lines fail. Comments, docstrings, imports and signatures do not count as executable duplication. |
 | Ruff and mypy | Existing style, security-pattern and strict type checks continue in the quality job. |

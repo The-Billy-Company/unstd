@@ -17,6 +17,7 @@ native = pytest.importorskip("unstd.clone._clone_native")
     "entrypoint", ["clone_walk_graph", "clone_walk_canonical_graph"]
 )
 @pytest.mark.parametrize("kind", ["function", "instance", "builtin"])
+@pytest.mark.usefixtures("native_mixed_graph")
 def test_native_graph_accepts_each_callback_shape(entrypoint: str, kind: str) -> None:
     @dataclasses.dataclass
     class Row:
@@ -82,6 +83,7 @@ def test_native_graph_rejects_noncallables_before_copying(
 @pytest.mark.parametrize(
     "entrypoint", ["clone_walk_graph", "clone_walk_canonical_graph"]
 )
+@pytest.mark.usefixtures("native_mixed_graph")
 def test_native_graph_validation_does_not_resolve_call_descriptors(
     entrypoint: str,
 ) -> None:

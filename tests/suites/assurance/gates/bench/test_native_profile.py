@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import copy
 import hashlib
+import sys
 from types import SimpleNamespace
 
 import pytest
@@ -220,7 +221,9 @@ def test_timing_alternates_order_and_keeps_measurements_separate(monkeypatch) ->
     assert result["case"]["samples"]["after"][0]["rounds"] == 2
 
 
-def test_built_extensions_are_exercised_by_the_public_workloads() -> None:
+def test_built_extensions_are_exercised_by_the_public_workloads(
+    native_mixed_graph,
+) -> None:
     pytest.importorskip("unstd.clone._clone_native")
     pytest.importorskip("unstd.text._text_native")
     result = _bundle(REPO_ROOT / "src", "gate_native", require_native=True)
@@ -257,7 +260,9 @@ def test_built_extensions_are_exercised_by_the_public_workloads() -> None:
     assert "_walk" not in records["python_calls"]
 
 
-def test_clone_routes_are_proven_without_the_optional_text_extension() -> None:
+def test_clone_routes_are_proven_without_the_optional_text_extension(
+    native_mixed_graph,
+) -> None:
     native = pytest.importorskip("unstd.clone._clone_native")
     expected = getattr(native, "clone_walk_canonical_graph", native.clone_walk_graph)
     assert structural._native_walk_graph is expected
@@ -274,6 +279,25 @@ def test_clone_routes_are_proven_without_the_optional_text_extension() -> None:
         route = routes[f"clone.deep/{name}"]
         assert route["native_returns"]["walk"] == [True] * 3
         assert "_walk" not in route["python_calls"]
+
+
+@pytest.mark.skipif(
+    (3, 12) <= sys.version_info[:2] < (3, 15),
+    reason="native mixed-graph layouts are qualified on this interpreter",
+)
+def test_native_qualification_rejects_unaudited_record_layouts() -> None:
+    pytest.importorskip("unstd.clone._clone_native")
+    text = SimpleNamespace(**vars(fuzz))
+    _base_text(text)
+    cases = [
+        case
+        for case in _workloads(structural, text)
+        if case.name == "clone.deep/mixed-custom-fallback"
+    ]
+    assert len(cases) == 1
+    assert cases[0].check(cases[0].call())
+    with pytest.raises(AssertionError, match=r"clone\.deep/mixed-custom-fallback"):
+        _routes(cases, REPO_ROOT / "src", structural, text)
 
 
 def test_cycle_route_rejects_python_walking_instead_of_native_memo(monkeypatch) -> None:

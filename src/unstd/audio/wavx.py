@@ -38,6 +38,7 @@ from collections.abc import Buffer, Iterator, Sequence
 import contextlib
 from operator import index
 import struct
+import sys
 from typing import IO, TYPE_CHECKING, Protocol, Self, cast
 import wave
 
@@ -135,19 +136,31 @@ _PCM_CODE = {1: "<u1", 2: "<i2", 4: "<i4"}
 _SUBTYPE = {"PCM_16": (2, "<i2", 1 << 15), "PCM_32": (4, "<i4", 1 << 31)}
 
 
+def _check_wave_pcm(reader: wave.Wave_read) -> None:
+    """Keep the integer fallback from interpreting IEEE float bits as PCM."""
+    if sys.version_info >= (3, 15):
+        # Earlier wave readers reject this format themselves. 3.15 exposes
+        # packed IEEE float frames without converting them to integer PCM.
+        if reader.getformat() == wave.WAVE_FORMAT_IEEE_FLOAT:
+            msg = "unknown format: 3"
+            raise wave.Error(msg)
+
+
 def read(path_or_file: PathOrFile, *, dtype: str = "float32") -> tuple[Samples, int]:
     """Read a WAV file into ``(samples, samplerate)``.
 
     ``dtype`` is ``"float32"`` (default) or ``"float64"`` for normalized samples in
     ``[-1, 1]``, or ``"int16"`` for raw signed 16-bit samples. Mono returns a 1-D
     container, multichannel a 2-D ``(frames, channels)`` one. Fallback decoders
-    reject incomplete PCM sample/channel frames with ``ValueError``.
+    reject incomplete PCM sample/channel frames with ``ValueError``. IEEE float
+    WAV files require the ``audio`` extra; integer fallbacks raise ``wave.Error``.
     """
     _check_dtype(dtype)
     if _HAVE_SOUNDFILE:
         samples, samplerate = _sf.read(path_or_file, dtype=dtype, always_2d=False)
         return samples, int(samplerate)
     with contextlib.closing(wave.open(path_or_file, "rb")) as w:
+        _check_wave_pcm(w)
         nchannels, sampwidth = w.getnchannels(), w.getsampwidth()
         samplerate, nframes = w.getframerate(), w.getnframes()
         # getnframes() floors the data chunk's byte length. Read one extra frame
@@ -188,6 +201,7 @@ def blocks(
         return
     reader = _read_numpy if _HAVE_NUMPY else _read_array
     with contextlib.closing(wave.open(path_or_file, "rb")) as w:
+        _check_wave_pcm(w)
         nchannels, sampwidth = w.getnchannels(), w.getsampwidth()
         while raw := w.readframes(blocksize):
             yield reader(raw, nchannels, sampwidth, dtype)
@@ -213,6 +227,8 @@ def wrap_pcm(
     elements. The returned bytes own their storage, so a mutable source can be
     reused after the call. Pass an accumulated bytearray directly to avoid an
     intermediate ``bytes(raw)`` copy. Noncontiguous buffers raise ``BufferError``.
+    Like stdlib ``wave``, Python 3.15 adds a zero alignment byte after odd-sized
+    data chunks; this byte is excluded from the declared PCM data length.
 
     ``width`` is bytes per sample (2 = PCM16), ``channels`` is the interleave
     factor, and both belong to the bytes rather than to a preference — get them
@@ -236,10 +252,11 @@ def wrap_pcm(
         buffer = _pcm_buffer(raw)
         n = buffer.nbytes if isinstance(buffer, memoryview) else len(buffer)
     block = channels * width
-    return (
+    padding = (n & 1) if sys.version_info >= (3, 15) else 0
+    wrapped = (
         _RIFF_PCM.pack(
             b"RIFF",
-            36 + n,
+            36 + n + padding,
             b"WAVE",
             b"fmt ",
             16,
@@ -254,6 +271,7 @@ def wrap_pcm(
         )
         + buffer
     )
+    return wrapped + b"\0" if padding else wrapped
 
 
 def decode_pcm(

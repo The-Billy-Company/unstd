@@ -16,7 +16,9 @@ Private build inputs for `unstd.compress._gzip_native`. Start with
 
 Buffer decoding accepts exact `bytes` and returns `None` for stdlib replay when
 framing, checksums, size, or input consumption cannot be accepted; allocation
-errors propagate. Streaming feeds raw DEFLATE through `stream.c` and `inflate.c`;
+errors propagate. Members with FHCRC also defer to stdlib, preserving header
+checksum validation added in Python 3.15 and older interpreters' acceptance.
+Streaming feeds raw DEFLATE through `stream.c` and `inflate.c`;
 the running interpreter's gzip reader owns headers, trailers, member boundaries,
 and error-delivery order. See [`src/README.md`](src/README.md) before changing
 buffer ownership or read budgets.

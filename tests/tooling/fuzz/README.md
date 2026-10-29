@@ -145,7 +145,7 @@ copied into that campaign's artifact directory, never auto-promoted into source.
 ## CI campaigns
 
 [`fuzz.yml`](../../../.github/workflows/fuzz.yml) runs installed and stdlib
-backend jobs on Python 3.12 and 3.14. Each job installs cached dependencies once
+backend jobs on Python 3.12 and 3.15. Each job installs cached dependencies once
 and runs deterministic mutation with `--target all`, selecting all eleven
 installed or eight supported stdlib targets from the authenticated registry.
 Installed-only targets are recorded as unsupported in the stdlib summary.

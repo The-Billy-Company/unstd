@@ -654,10 +654,47 @@ def test_new_constructor_failure_stays_before_io(
 
 
 @pytest.mark.parametrize("owner_name", ["base", "concrete"])
+@pytest.mark.parametrize("check_first", [True, False])
+def test_string_override_follows_pathlibs_filesystem_protocol(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    owner_name: str,
+    check_first: bool,
+) -> None:
+    requested = tmp_path / "requested"
+    redirected_text = str(tmp_path / "redirected")
+    owner = Path if owner_name == "base" else type(requested)
+    getattribute = owner.__getattribute__
+
+    def text(self: Path) -> str:
+        try:
+            cached: object = getattribute(self, "_str")
+        except AttributeError:
+            return redirected_text
+        assert isinstance(cached, str)
+        return cached
+
+    with monkeypatch.context() as patch:
+        patch.setattr(owner, "__str__", text)
+        assert str(Path(requested)) == redirected_text
+        # 3.15 aliases __fspath__ directly to the original __str__; earlier
+        # versions call str(self). Keep pathlib's actual filesystem protocol,
+        # including the distinction between display and I/O on newer runtimes.
+        reference = Path(requested)
+        reference.mkdir(parents=True, exist_ok=True)
+        expected_text = os.fspath(reference)
+        assert reference.is_dir()
+        reference.rmdir()
+        result = fs.ensure_dir(requested, check_first=check_first)
+        assert os.fspath(result) == expected_text
+    assert Path(expected_text).is_dir()
+    assert [child.name for child in tmp_path.iterdir()] == [Path(expected_text).name]
+
+
+@pytest.mark.parametrize("owner_name", ["base", "concrete"])
 @pytest.mark.parametrize(
     ("binding", "restore_inside"),
     [
-        ("__str__", False),
         ("__fspath__", False),
         ("__getattribute__", False),
         ("__getattribute__", True),

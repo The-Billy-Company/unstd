@@ -73,15 +73,16 @@ ESC is spelled `\u001b` (tomlkit alone writes the 1.1-only `\e`), and UTC
 offsets that are not whole minutes, or a `time` carrying an offset, raise
 `ValueError` before anything is written — no TOML version can represent them.
 Existing tomlkit items keep their spelling, so a document parsed from (or
-built with) 1.1-only constructs can still fail `loads`/`load` after `dumps`.
-Read such a document back with `tomlkit.parse` (or this module's `parse`) — not
-`loads` — until the target interpreter is 3.15+.
+built with) 1.1-only constructs can still fail `loads`/`load` after `dumps` on
+Python 3.12–3.14. Read those documents with `tomlkit.parse` (or this module's
+`parse`) on older interpreters. Python 3.15 reads TOML 1.1 through `loads`/`load`.
 
 ## Prior art
 
 - **stdlib `tomllib`** — [PEP 680](https://peps.python.org/pep-0680/); based on
   [`tomli`](https://github.com/hukkin/tomli) by Taneli Hukkinen. A strict,
-  spec-compliant TOML 1.0.0 parser, read-only on purpose.
+  spec-compliant parser, read-only on purpose; TOML 1.1.0 from Python 3.15,
+  and TOML 1.0.0 on earlier supported interpreters.
 - **[`tomlkit`](https://github.com/sdispater/tomlkit)** — Sébastien Eustace; the
   style-preserving TOML engine behind Poetry.
 

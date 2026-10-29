@@ -232,7 +232,9 @@ enables native codecs; a base install uses stdlib gzip.
 Linux streaming selects zlib-ng; macOS retains platform libz. The interpreter
 still supplies framing, member checks, output budgets and error-delivery order.
 `zlibx` accelerates compression, complete-buffer decoding and checksums while
-retaining the interpreter's exact incremental decompressor state. Both accelerated
+retaining the interpreter's exact incremental decompressor state. Python 3.15
+also retains its stdlib compressor state, avoiding zlib-ng's finished-copy lock
+error. Both accelerated
 interfaces preserve recovered bytes; compressed output can differ by engine.
 Use `from unstd.compress import zlib` where persisted compressed bytes must match
 the running interpreter's stock codec.

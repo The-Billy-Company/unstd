@@ -30,11 +30,12 @@ ROOT = Path(__file__).resolve().parents[3]
 
 def load(path: Path, name: str) -> Any:
     """Load independent wrapper globals without changing the installed module."""
-    spec = importlib.util.spec_from_loader(
-        name, importlib.machinery.SourceFileLoader(name, str(path))
+    source = str(path.resolve())
+    spec = importlib.machinery.ModuleSpec(
+        name, importlib.machinery.SourceFileLoader(name, source), origin=source
     )
-    if spec is None or spec.loader is None:
-        raise ValueError(str(path))
+    spec.has_location = True
+    assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     sys.modules[name] = module
     spec.loader.exec_module(module)

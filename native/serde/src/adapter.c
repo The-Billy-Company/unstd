@@ -57,7 +57,7 @@ typedef struct {
     PyObject *identity_walker, *identity_walker_code, *identity_walker_key;
     PyObject *identity_builtins, *identity_builtins_snapshot;
     PyObject *identity_isfinite, *identity_isfinite_key;
-    PyObject *monitoring_get_events;
+    PyObject *monitoring_get_events, *monitoring_get_local_events;
     uint64_t monitoring_version;
     int monitoring_checked, global_monitoring_clear;
 } NativeState;
@@ -115,6 +115,51 @@ global_monitoring_clear(uint64_t version)
     return state->global_monitoring_clear;
 }
 
+#if PY_VERSION_HEX >= 0x030F0000 && PY_VERSION_HEX < 0x03100000
+static int
+public_monitoring_clear(PyObject *code)
+{
+    /* New CPython minors keep the public event readers without sharing the
+     * private instrumentation-generation layout. Query fresh masks before
+     * bypassing a Python frame, including events not yet installed in code.
+     * Retained, authenticated C builtins cannot call a replaced Python hook. */
+    PyObject *module = PyState_FindModule(&definition);
+    NativeState *state = module == NULL ? NULL : PyModule_GetState(module);
+    if (state == NULL || state->monitoring_get_local_events == NULL) {
+        return 0;
+    }
+    state->monitoring_checked = 0;
+    if (!global_monitoring_clear(0)) {
+        return 0;
+    }
+    PyObject *getter = state->monitoring_get_local_events;
+    NativePreciseDecoder read_events = (NativePreciseDecoder)(void (*)(void))
+        PyCFunction_GET_FUNCTION(getter);
+    PyObject *owner = PyCFunction_GET_SELF(getter);
+    for (long tool = 0; tool < 6; tool++) {
+        PyObject *identifier = PyLong_FromLong(tool);
+        PyObject *args[] = {identifier, code};
+        PyObject *events = identifier == NULL ? NULL
+            : read_events(owner, args, 2);
+        Py_XDECREF(identifier);
+        if (events == NULL) {
+            PyErr_Clear();
+            return 0;
+        }
+        unsigned long mask = PyLong_AsUnsignedLong(events);
+        Py_DECREF(events);
+        if (mask == (unsigned long)-1 && PyErr_Occurred()) {
+            PyErr_Clear();
+            return 0;
+        }
+        if (mask != 0) {
+            return 0;
+        }
+    }
+    return 1;
+}
+#endif
+
 static int
 monitoring_clear(PyObject *code_object)
 {
@@ -124,8 +169,8 @@ monitoring_clear(PyObject *code_object)
            != _PyEval_EvalFrameDefault) {
         return 0;
     }
-    PyCodeObject *code = (PyCodeObject *)code_object;
 #if PY_VERSION_HEX >= 0x030C0000 && PY_VERSION_HEX < 0x030F0000
+    PyCodeObject *code = (PyCodeObject *)code_object;
     /* 3.12 stores the monitoring version on the interpreter. Later versions
      * reserve the low eight eval_breaker bits for pending events.
      * A version mismatch must enter Python once to refresh instrumentation.
@@ -147,8 +192,10 @@ monitoring_clear(PyObject *code_object)
         }
     }
     return 1;
+#elif PY_VERSION_HEX >= 0x030F0000 && PY_VERSION_HEX < 0x03100000
+    return public_monitoring_clear(code_object);
 #else
-    return code->_co_monitoring == NULL;
+    return 0;
 #endif
 }
 
@@ -833,6 +880,7 @@ traverse(PyObject *module, visitproc visit, void *arg)
     Py_VISIT(state->identity_isfinite);
     Py_VISIT(state->identity_isfinite_key);
     Py_VISIT(state->monitoring_get_events);
+    Py_VISIT(state->monitoring_get_local_events);
     return 0;
 }
 
@@ -893,6 +941,7 @@ clear(PyObject *module)
     Py_CLEAR(state->identity_isfinite);
     Py_CLEAR(state->identity_isfinite_key);
     Py_CLEAR(state->monitoring_get_events);
+    Py_CLEAR(state->monitoring_get_local_events);
     state->monitoring_checked = 0;
     return 0;
 }
@@ -995,6 +1044,15 @@ PyInit__json_native(void)
             && strcmp(((PyCFunctionObject *)getter)->m_ml->ml_name,
                       "get_events") == 0) {
             state->monitoring_get_events = Py_NewRef(getter);
+        }
+        getter = PyDict_GetItemString(PyModule_GetDict(monitoring),
+                                     "get_local_events");
+        if (getter != NULL && PyCFunction_Check(getter)
+            && PyCFunction_GET_FLAGS(getter) == METH_FASTCALL
+            && PyCFunction_GET_SELF(getter) == monitoring
+            && strcmp(((PyCFunctionObject *)getter)->m_ml->ml_name,
+                      "get_local_events") == 0) {
+            state->monitoring_get_local_events = Py_NewRef(getter);
         }
     }
     if (PyErr_Occurred()) {

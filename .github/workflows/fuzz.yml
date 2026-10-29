@@ -24,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python: ["3.12", "3.14"]
+        python: ["3.12", "3.15"]
         backend: [installed, stdlib]
     env:
       UNSTD_CAMPAIGN_REPORTING: "1"
@@ -43,10 +43,10 @@ jobs:
           cache-dependency-glob: |
             uv.lock
             pyproject.toml
-          version: "0.13.5"
+          version: "0.13.6"
           python-version: ${{ matrix.python }}
       # The fuzz group installs Atheris only on its supported Python 3.12 lane.
-      # Python 3.14 exercises the deployed runtime with deterministic mutation.
+      # Python 3.15 exercises the deployed runtime with deterministic mutation.
       - name: Provide Yasm for native gzip builds
         run: |
           sudo apt-get update

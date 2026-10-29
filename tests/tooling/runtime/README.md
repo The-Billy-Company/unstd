@@ -22,7 +22,7 @@ alone cannot establish that they are fixed. Do not add an unverified bypass.
 Refresh the policy when upgrading to a new OpenSSL branch or reviewing a new
 upstream advisory, and retain the preflight output with release evidence.
 
-For development on CPython 3.14, use the project's pinned patched interpreter.
+For development on CPython 3.15.2, use the project's pinned patched interpreter.
 The package still supports Python 3.12 and later. Validate every deployed
 interpreter separately, including container and wheel-test interpreters; a
 Python patch number alone does not identify the linked TLS library.
@@ -80,3 +80,11 @@ code or a declined native fixture fails even when a portable fallback produces
 correct output. The report retains interpreter/backend versions and the loaded
 binary hash. Every release wheel runs this check before its full contracts;
 the performance workflow retains it alongside paired installed-wheel timings.
+
+On CPython 3.15, public JSON functions retain ordinary Python dispatch while
+native batch decoding and identity snapshots check fresh global and local
+monitoring masks through retained C builtins. The preflight requires that batch
+admission and an accepted native array decode, without enabling the private
+CPython 3.14 vectorcall, stack or dense-dictionary layouts. Native clone mixed
+graph and record paths keep their Python fallback on 3.15; their direct ABI
+qualification remains on 3.12–3.14.

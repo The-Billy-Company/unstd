@@ -32,8 +32,8 @@ past this module for them: :func:`table` / :func:`array` / :func:`inline_table`
 **Read/write spec-version skew (Python < 3.15).** ``tomlkit`` 0.15+ writes
 TOML 1.1.0 (ratified 2025-12-18); stdlib ``tomllib`` stays TOML-1.0.0-only
 through Python 3.14 — 1.1 support lands in 3.15
-(https://docs.python.org/3.15/whatsnew/3.15.html), not backported. So on every
-interpreter this package currently targets, a document containing 1.1-only
+(https://docs.python.org/3.15/whatsnew/3.15.html), not backported. On supported
+Python 3.12–3.14 interpreters, a document containing 1.1-only
 syntax (seconds-optional local times, a handful of new escapes) that ``dumps``
 happily writes can fail to round-trip back through :func:`loads`. :func:`dumps`
 and :func:`dump` therefore keep plain Python data in the common dialect: ESC is
@@ -42,13 +42,14 @@ cannot represent in any version — a UTC offset that is not whole minutes, or a
 time of day carrying an offset — raise ``ValueError`` instead of being written
 as invalid TOML. Strings that are already tomlkit items (parsed text, or values
 assigned into a parsed document) keep their spelling, so parse → edit → dump
-stays byte-preserving; a parsed 1.1 document should be read back with
-:func:`parse`, not :func:`loads`, until you are on 3.15+.
+stays byte-preserving. Python 3.15 reads these documents through :func:`loads`
+as well; on older interpreters use :func:`parse` for TOML 1.1.
 
 Prior art:
 
 - **stdlib ``tomllib``** (PEP 680; based on ``tomli`` by Taneli Hukkinen) — the
-  read half; a strict, spec-compliant TOML 1.0.0 parser, read-only on purpose.
+  read half; a strict, spec-compliant parser, read-only on purpose. Python 3.15
+  reads TOML 1.1.0; earlier supported interpreters read TOML 1.0.0.
 - **``tomlkit``** (Sébastien Eustace; the TOML engine behind Poetry) — the write
   half; a style-preserving round-trip parser/serializer that treats a TOML
   document as an editable, comment-aware tree.

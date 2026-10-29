@@ -23,7 +23,9 @@ typedef struct {
 static int
 orjson_stack_room(void)
 {
+#if PY_VERSION_HEX < 0x030F0000
     PyThreadState *thread = PyThreadState_Get();
+#endif
 #if PY_VERSION_HEX < 0x030E0000
     return thread->c_recursion_remaining >= 4096;
 #elif PY_VERSION_HEX < 0x030F0000

@@ -292,6 +292,12 @@ def test_instant_reads_odd_offsets_bounds_and_truncated_fractions(
 def test_wall_at_the_calendar_limits(
     fields: tuple[int, int, int, int, int], zone: str, utc: datetime | None
 ) -> None:
+    local = datetime(*fields, tzinfo=ZoneInfo(zone))
+    if utc is None:
+        with pytest.raises(OverflowError):
+            local.astimezone(UTC)
+    else:
+        assert local.astimezone(UTC) == utc
     resolved = zoned.wall(*fields, zone)
     assert (resolved and zoned.to_utc(resolved)) == utc
 

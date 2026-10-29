@@ -2,9 +2,9 @@
 doc_radar:
   sentinels:
     - file: pyproject.toml
-      contains: ['version = "4.0.4"', 'requires-python = ">=3.12"']
+      contains: ['version = "4.0.5"', 'requires-python = ">=3.12"']
     - file: CHANGELOG.md
-      contains: ['## [4.0.4] - 2026-10-27']
+      contains: ['## [4.0.5] - 2026-10-28']
 ---
 
 # unstd
@@ -14,7 +14,7 @@ doc_radar:
 unstd accelerates serialization, compression, deep copying, hashing, and other
 hot paths with bundled native code, optional backends, and familiar Python APIs.
 
-Requires **Python 3.12+**. The base install has **no third-party runtime
+Supports **Python 3.12–3.15**, including Python 3.15.2. The base install has **no third-party runtime
 dependencies**.
 
 ## Install
@@ -103,7 +103,7 @@ both gains and regressions.
 See the [test guide](tests/README.md), [architecture](docs/architecture.md),
 [API inventory](docs/api.md), and [security policy](SECURITY.md).
 
-The [4.0.4 release notes](CHANGELOG.md#404---2026-10-27) cover the latest additions
+The [4.0.5 release notes](CHANGELOG.md#405---2026-10-28) cover the latest additions
 and improvements. The [October 25 updates](docs/updates-2026-10-25.md) retain the
 change index through version 4.0.2.
 

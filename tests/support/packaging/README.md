@@ -6,6 +6,9 @@ consumer interpreters. Build and consumer processes have explicit deadlines.
 
 [`public_api.json`](public_api.json) records the compatibility contract used by
 [public API gates](../../suites/assurance/gates/packaging/test_public_api.py).
+Versioned exports record interpreter additions; stdlib aliases are checked by
+identity from their declared interpreter version, while earlier runtimes retain
+the original owned signatures. Wrapper mutation canaries protect those aliases.
 Archive contents, licenses, typing, optional extras, and installed behavior are
 asserted in the [packaging plane](../../suites/assurance/planes/packaging/README.md).
 

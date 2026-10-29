@@ -122,12 +122,15 @@ cache, backend, resolver, import or native library failure is skipped there.
   called, not merely imported.
 - The host's mypy checks an external strict consumer against the fresh
   interpreter's installed package. A successful fixture uses `assert_type`; a
-  negative control requires thirteen real type errors, including invalid explicit
+  negative control requires thirteen real type errors (twenty on Python 3.15), including invalid explicit
   durability/backend policies and compression return types, so a missing typing marker or
   `Any` leakage cannot masquerade as success. No type checker is installed into
   the consumer environment. Required-extra runs also check installed native
   Zstandard and libarchive typing with independent negative controls for both
   wheel routes.
+  Python 3.15 consumers also check the new Base64 padding, wrapping,
+  ignored-character and canonical-validation keywords with accepted signatures
+  and rejected argument types.
 
 `clean_environment()` retains only platform/launch variables and an explicitly
 selected cache directory. Inherited Python import paths, virtualenv selection,

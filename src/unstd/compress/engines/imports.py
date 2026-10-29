@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from importlib import import_module
 from importlib.abc import Loader, MetaPathFinder
-from importlib.util import find_spec, spec_from_loader
+from importlib.machinery import ModuleSpec
+from importlib.util import find_spec
 import sys
 from typing import TYPE_CHECKING, override
 
@@ -14,7 +15,6 @@ __all__ = ()
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
-    from importlib.machinery import ModuleSpec
     from types import ModuleType
 
 
@@ -60,7 +60,7 @@ class _PortFinder(MetaPathFinder):
                     # again under the alias and create different native types.
                     message = f"No module named {fullname!r}"
                     raise ModuleNotFoundError(message, name=fullname)
-                return spec_from_loader(
+                return ModuleSpec(
                     fullname,
                     _PortLoader(original),
                     is_package=specification.submodule_search_locations is not None,

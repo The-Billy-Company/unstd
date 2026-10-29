@@ -2601,8 +2601,8 @@ clone_direct_graph(PyObject *module, PyObject *source, PyTypeObject *type, PyObj
                    PyObject *admit, PyObject *memo, int temporal, PyObject *model)
 {
 #if PY_VERSION_HEX < 0x030C0000 || PY_VERSION_HEX >= 0x030F0000
-    /* The versioned frame-budget ABI is validated on supported wheel targets;
-     * other interpreters retain the Python walker instead of bypassing limits. */
+    /* Virtual Python-frame reservations are qualified on CPython 3.12--3.14.
+     * Other supported runtimes keep the Python walker's frame accounting. */
     Py_RETURN_NOTIMPLEMENTED;
 #endif
     if (type != NULL

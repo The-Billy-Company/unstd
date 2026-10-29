@@ -14,6 +14,7 @@ import inspect
 import json
 import pickle
 import re
+import sys
 from types import FunctionType
 import zlib
 
@@ -74,9 +75,21 @@ def _assert_signature(value, contract, *, signature=None) -> None:
 
 def _assert_contract(name, module) -> None:
     expected = _CONTRACT[name]
-    assert list(getattr(module, "__all__", [])) == expected["exports"]
+    exports = list(expected["exports"])
+    for addition in expected.get("versioned_exports", []):
+        if sys.version_info[:2] >= tuple(addition["since"]):
+            exports.extend(addition["exports"])
+    assert list(getattr(module, "__all__", [])) == exports
     for attribute, contract in expected["callables"].items():
+        if sys.version_info[:2] < tuple(contract.get("since", (0,))):
+            assert not hasattr(module, attribute)
+            continue
         value = getattr(module, attribute)
+        reference = contract.get("stdlib_alias")
+        if reference and sys.version_info[:2] >= tuple(reference.get("since", (0,))):
+            owner = getattr(import_module(reference["module"]), reference["attribute"])
+            assert value is owner
+            continue
         if name == "unstd.compress.gzipx" and module._backend is None:
             assert value is getattr(gzip, attribute)
             continue
@@ -155,6 +168,35 @@ def test_native_bindings_are_not_public_exports() -> None:
         assert not any("native" in export.lower() for export in contract["exports"]), (
             name
         )
+
+
+@pytest.mark.skipif(sys.version_info < (3, 15), reason="Python 3.15 stdlib aliases")
+@pytest.mark.parametrize(
+    ("module_name", "attribute"),
+    [
+        ("unstd.serde.b64", "b64encode"),
+        ("unstd.serde.b64", "b64decode"),
+        ("unstd.serde.b64", "standard_b64encode"),
+        ("unstd.serde.b64", "standard_b64decode"),
+        ("unstd.serde.b64", "urlsafe_b64encode"),
+        ("unstd.compress.zlibx", "compressobj"),
+        ("unstd.compress.zlibx", "adler32_combine"),
+        ("unstd.compress.zlibx", "crc32_combine"),
+    ],
+)
+def test_stdlib_alias_contract_rejects_wrapped_aliases(
+    monkeypatch, module_name, attribute
+):
+    module = import_module(module_name)
+    value = getattr(module, attribute)
+
+    @wraps(value)
+    def wrapped(*args, **kwargs):
+        return value(*args, **kwargs)
+
+    monkeypatch.setattr(module, attribute, wrapped)
+    with pytest.raises(AssertionError):
+        _assert_contract(module_name, module)
 
 
 def test_process_result_pickle_keeps_its_public_identity() -> None:

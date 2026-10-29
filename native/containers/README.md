@@ -1,7 +1,7 @@
 # Sorted container kernels
 
 `src/adapter.c` implements the optional `unstd.containers._sorted_native`
-extension with the CPython C API on Python 3.12–3.14. It contains no
+extension with the CPython C API on Python 3.12–3.15. It contains no
 platform-specific instructions or operating-system interfaces.
 
 `install(cls, base, keyed=False)` installs native descriptors on unstd's own

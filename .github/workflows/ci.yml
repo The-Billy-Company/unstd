@@ -77,8 +77,8 @@ jobs:
         uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           enable-cache: false
-          version: "0.13.5"
-          python-version: "3.14"
+          version: "0.13.6"
+          python-version: "3.15"
       - name: Provide Yasm for native gzip builds
         if: runner.os == 'Linux'
         run: |
@@ -86,7 +86,7 @@ jobs:
           sudo apt-get install --yes --no-install-recommends yasm
           yasm --version
       - name: Build experimental Rust text extension
-        run: uv sync --locked --group dev --python 3.14 --reinstall-package unstd
+        run: uv sync --locked --group dev --python 3.15 --reinstall-package unstd
       - name: Rust text extension must import
         run: >-
           uv run --no-sync python -c
@@ -129,10 +129,10 @@ jobs:
           cache-dependency-glob: |
             uv.lock
             pyproject.toml
-          version: "0.13.5"
-          python-version: "3.14"
+          version: "0.13.6"
+          python-version: "3.15"
       - name: Install quality tools & backends
-        run: uv sync --locked --all-extras --group dev --reinstall-package unstd --python 3.14
+        run: uv sync --locked --all-extras --group dev --reinstall-package unstd --python 3.15
       - name: Validate test ownership & CI groups
         run: uv run --no-sync python -m tests.tooling.ci check
       - name: Validate fuzz targets & corpus
@@ -151,7 +151,7 @@ jobs:
           status=0
           for platform in linux darwin win32; do
             pids=()
-            for python in 3.12 3.13 3.14; do
+            for python in 3.12 3.13 3.14 3.15; do
               uv run --no-sync mypy --python-version "$python" --platform "$platform" --cache-dir ".mypy_cache/$platform-$python" &
               pids+=("$!")
             done
@@ -180,9 +180,10 @@ jobs:
           - {id: py312, name: Python 3.12, python: "3.12", sync: "--locked --all-extras", pytest: "--require-extras"}
           - {id: py313, name: Python 3.13, python: "3.13", sync: "--locked --all-extras", pytest: "--require-extras"}
           - {id: py314, name: Python 3.14, python: "3.14", sync: "--locked --all-extras", pytest: "--require-extras"}
+          - {id: py315, name: Python 3.15, python: "3.15", sync: "--locked --all-extras", pytest: "--require-extras"}
           # Floors remain unlocked; --no-sync below preserves lowest-direct.
-          - {id: floors, name: Dependency floors (3.14), python: "3.14", sync: "--all-extras --resolution lowest-direct", pytest: "--require-extras"}
-          - {id: fallback, name: Base install (3.14), python: "3.14", sync: "--locked", pytest: ""}
+          - {id: floors, name: Dependency floors (3.15), python: "3.15", sync: "--all-extras --resolution lowest-direct", pytest: "--require-extras"}
+          - {id: fallback, name: Base install (3.15), python: "3.15", sync: "--locked", pytest: ""}
     steps:
       - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -196,7 +197,7 @@ jobs:
           cache-dependency-glob: |
             uv.lock
             pyproject.toml
-          version: "0.13.5"
+          version: "0.13.6"
           python-version: ${{ matrix.environment.python }}
       - name: Provide native libarchive for required archive consumers
         if: matrix.environment.id != 'fallback'
@@ -274,10 +275,10 @@ jobs:
           cache-dependency-glob: |
             uv.lock
             pyproject.toml
-          version: "0.13.5"
-          python-version: "3.14"
+          version: "0.13.6"
+          python-version: "3.15"
       - name: Install test environment & rebuild local extensions
-        run: uv sync --locked --all-extras --group dev --reinstall-package unstd --python 3.14
+        run: uv sync --locked --all-extras --group dev --reinstall-package unstd --python 3.15
       - name: Run ${{ matrix.group.name }}
         run: uv run --no-sync python -m tests.tooling.ci run ${{ matrix.group.shard }} ${{ matrix.group.id }} -- --require-extras -q
       - name: Retain platform test results
@@ -333,8 +334,8 @@ jobs:
           cache-dependency-glob: |
             uv.lock
             pyproject.toml
-          version: "0.13.5"
-          python-version: "3.14"
+          version: "0.13.6"
+          python-version: "3.15"
       - name: Provide native libarchive for the archives extra
         if: matrix.install.id == 'archives'
         run: |
@@ -346,7 +347,7 @@ jobs:
           sudo apt-get install --yes --no-install-recommends yasm
           yasm --version
       - name: Install one partial environment & rebuild local extensions
-        run: uv sync --locked ${{ matrix.install.sync }} --group dev --reinstall-package unstd --python 3.14
+        run: uv sync --locked ${{ matrix.install.sync }} --group dev --reinstall-package unstd --python 3.15
       - name: Show resolved backend versions
         run: uv pip list
       - name: Run API & regressions
@@ -383,8 +384,8 @@ jobs:
         uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           enable-cache: auto
-          version: "0.13.5"
-          python-version: "3.14"
+          version: "0.13.6"
+          python-version: "3.15"
           cache-suffix: resources
           cache-dependency-glob: "uv.lock\npyproject.toml\n"
       - name: Provide Yasm for native gzip builds
@@ -394,7 +395,7 @@ jobs:
           sudo apt-get install --yes --no-install-recommends yasm
           yasm --version
       - name: Install test environment
-        run: uv sync --locked --all-extras --group dev --python 3.14 --reinstall-package unstd
+        run: uv sync --locked --all-extras --group dev --python 3.15 --reinstall-package unstd
       # The suite owns both installed and import-blocked stdlib worker policies.
       - name: Check memory, cleanup, cache lifetime & depth
         id: tests
@@ -425,7 +426,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.12", "3.13", "3.14"]
+        python-version: ["3.12", "3.13", "3.14", "3.15"]
     env:
       CIBUILDWHEEL: "1"
       PYTHONMALLOC: debug
@@ -439,7 +440,7 @@ jobs:
         uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           enable-cache: auto
-          version: "0.13.5"
+          version: "0.13.6"
           python-version: ${{ matrix.python-version }}
           cache-suffix: native
           cache-dependency-glob: "uv.lock\npyproject.toml\n"
@@ -492,11 +493,12 @@ jobs:
           retention-days: 14
     timeout-minutes: 15
   native-sanitizers:
-    name: Native safety / ASan & UBSan / text ${{ matrix.rust-text }} / shard ${{ matrix.shard }}
+    name: Native safety / ASan & UBSan / Python ${{ matrix.python }} / text ${{ matrix.rust-text }} / shard ${{ matrix.shard }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
+        python: ["3.14", "3.15"]
         rust-text: ["0", "1"]
         shard: [1, 2, 3]
     env:
@@ -515,12 +517,12 @@ jobs:
         uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           enable-cache: auto
-          version: "0.13.5"
-          python-version: "3.14"
-          cache-suffix: native-sanitizers
+          version: "0.13.6"
+          python-version: ${{ matrix.python }}
+          cache-suffix: native-sanitizers-${{ matrix.python }}
           cache-dependency-glob: "uv.lock\npyproject.toml\n"
       - name: Install test environment
-        run: uv sync --locked --extra serde --extra crypto --extra compress --extra containers --extra rand --group dev --group build --no-install-project --python 3.14
+        run: uv sync --locked --extra serde --extra crypto --extra compress --extra containers --extra rand --group dev --group build --no-install-project --python ${{ matrix.python }}
       # Stable Rust kernels retain their bounds checks and unit tests. These
       # sanitizer flags instrument our C modules and the text CPython shim.
       - name: Provide Yasm for native gzip builds
@@ -563,7 +565,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: native-sanitizers-${{ matrix.rust-text }}-${{ matrix.shard }}-${{ github.run_attempt }}
+          name: native-sanitizers-${{ matrix.python }}-${{ matrix.rust-text }}-${{ matrix.shard }}-${{ github.run_attempt }}
           path: |
             .local/native-sanitizers-${{ matrix.shard }}.xml
             .local/proc-memory/manifest.json

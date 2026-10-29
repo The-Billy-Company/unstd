@@ -190,13 +190,53 @@
       },
       "compressobj": {
         "signature": "(level: 'int' = -1, method: 'int' = 8, wbits: 'int' = 15, memLevel: 'int' = 8, strategy: 'int' = 0, zdict: 'Buffer | _Omitted' = <omitted>) -> '_Compress'",
-        "module": "unstd.compress.zlibx"
+        "module": "unstd.compress.zlibx",
+        "stdlib_alias": {
+          "module": "zlib",
+          "attribute": "compressobj",
+          "since": [
+            3,
+            15
+          ]
+        }
       },
       "decompress": {
         "signature": "(data: 'Buffer', /, wbits: 'int' = 15, bufsize: 'int' = 16384) -> 'bytes'",
         "module": "unstd.compress.zlibx"
+      },
+      "adler32_combine": {
+        "since": [
+          3,
+          15
+        ],
+        "stdlib_alias": {
+          "module": "zlib",
+          "attribute": "adler32_combine"
+        }
+      },
+      "crc32_combine": {
+        "since": [
+          3,
+          15
+        ],
+        "stdlib_alias": {
+          "module": "zlib",
+          "attribute": "crc32_combine"
+        }
       }
-    }
+    },
+    "versioned_exports": [
+      {
+        "since": [
+          3,
+          15
+        ],
+        "exports": [
+          "adler32_combine",
+          "crc32_combine"
+        ]
+      }
+    ]
   },
   "unstd.containers": {
     "exports": [
@@ -913,11 +953,27 @@
     "callables": {
       "b64decode": {
         "signature": "(s: 'str | Buffer', altchars: 'str | Buffer | None' = None, validate: 'bool' = False) -> 'bytes'",
-        "module": "unstd.serde.b64"
+        "module": "unstd.serde.b64",
+        "stdlib_alias": {
+          "module": "base64",
+          "attribute": "b64decode",
+          "since": [
+            3,
+            15
+          ]
+        }
       },
       "b64encode": {
         "signature": "(s: 'Buffer', altchars: 'Buffer | None' = None) -> 'bytes'",
-        "module": "unstd.serde.b64"
+        "module": "unstd.serde.b64",
+        "stdlib_alias": {
+          "module": "base64",
+          "attribute": "b64encode",
+          "since": [
+            3,
+            15
+          ]
+        }
       },
       "decode": {
         "signature": "(s: 'str | Buffer', *, url: 'bool' = False) -> 'bytes'",
@@ -941,15 +997,39 @@
       },
       "standard_b64decode": {
         "signature": "(s: 'str | Buffer') -> 'bytes'",
-        "module": "unstd.serde.b64"
+        "module": "unstd.serde.b64",
+        "stdlib_alias": {
+          "module": "base64",
+          "attribute": "standard_b64decode",
+          "since": [
+            3,
+            15
+          ]
+        }
       },
       "standard_b64encode": {
         "signature": "(s: 'Buffer') -> 'bytes'",
-        "module": "unstd.serde.b64"
+        "module": "unstd.serde.b64",
+        "stdlib_alias": {
+          "module": "base64",
+          "attribute": "standard_b64encode",
+          "since": [
+            3,
+            15
+          ]
+        }
       },
       "urlsafe_b64encode": {
         "signature": "(s: 'Buffer') -> 'bytes'",
-        "module": "unstd.serde.b64"
+        "module": "unstd.serde.b64",
+        "stdlib_alias": {
+          "module": "base64",
+          "attribute": "urlsafe_b64encode",
+          "since": [
+            3,
+            15
+          ]
+        }
       }
     }
   },

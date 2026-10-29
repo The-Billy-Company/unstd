@@ -15,6 +15,7 @@ import binascii
 import inspect
 from io import BytesIO
 from itertools import product
+import sys
 from typing import TYPE_CHECKING
 import warnings
 
@@ -105,19 +106,26 @@ def _same_call(
     **kwargs: object,
 ) -> None:
     error: Exception | None = None
-    try:
-        expected = expected_call(*args, **kwargs)
-    except Exception as expected_error:
-        error = expected_error
-    if error is not None:
-        with pytest.raises(type(error)) as actual_error:
-            actual_call(*args, **kwargs)
-        assert type(actual_error.value) is type(error)
-        assert actual_error.value.args == error.args
-    else:
-        actual = actual_call(*args, **kwargs)
-        assert type(actual) is type(expected)
-        assert actual == expected
+    with warnings.catch_warnings(record=True) as expected_warnings:
+        warnings.simplefilter("always")
+        try:
+            expected = expected_call(*args, **kwargs)
+        except Exception as expected_error:
+            error = expected_error
+    with warnings.catch_warnings(record=True) as actual_warnings:
+        warnings.simplefilter("always")
+        if error is not None:
+            with pytest.raises(type(error)) as actual_error:
+                actual_call(*args, **kwargs)
+            assert type(actual_error.value) is type(error)
+            assert actual_error.value.args == error.args
+        else:
+            actual = actual_call(*args, **kwargs)
+            assert type(actual) is type(expected)
+            assert actual == expected
+    assert [(w.category, str(w.message)) for w in actual_warnings] == [
+        (w.category, str(w.message)) for w in expected_warnings
+    ]
 
 
 def test_public_base64_names_and_parameter_contracts() -> None:
@@ -131,6 +139,42 @@ def test_public_base64_names_and_parameter_contracts() -> None:
             (p.name, p.kind, p.default) for p in expected_parameters
         ]
     assert b64.Error is binascii.Error
+
+
+@pytest.mark.skipif(sys.version_info < (3, 15), reason="Python 3.15 Base64 options")
+@pytest.mark.parametrize(
+    ("name", "source", "kwargs"),
+    [
+        ("b64encode", b"f", {"padded": False}),
+        ("b64encode", b"foobar", {"wrapcol": 4}),
+        ("b64encode", b"foobar", {"wrapcol": 3, "padded": False}),
+        ("b64encode", b"f", {"wrapcol": -1}),
+        ("b64encode", b"f", {"padded": False, "altchars": b"-_"}),
+        ("b64encode", b"f", {"wrapcol": "4"}),
+        ("urlsafe_b64encode", b"f", {"padded": False}),
+        ("b64decode", b"Zg", {"padded": False}),
+        ("b64decode", b"Zg", {"padded": True}),
+        ("b64decode", b"Zg==\n", {"ignorechars": b"\n"}),
+        ("b64decode", b"Zg==!", {"ignorechars": b"\n"}),
+        ("b64decode", b"Zg==!", {"ignorechars": b"\n", "validate": False}),
+        ("b64decode", b"Zg==", {"canonical": True}),
+        ("b64decode", b"Zh==", {"canonical": True}),
+        ("b64decode", b"Zh", {"canonical": True, "padded": False}),
+        ("b64decode", b"-_8=\n", {"altchars": b"-_", "ignorechars": b"\n"}),
+        ("b64decode", b"+/8=", {"altchars": b"-_"}),
+        ("b64decode", b"+/8=", {"altchars": b"-_", "validate": True}),
+        ("b64decode", b"Zg==", {"ignorechars": "\n"}),
+        ("urlsafe_b64decode", b"Zg", {"padded": False}),
+        ("urlsafe_b64decode", b"Zg", {"padded": True}),
+        ("urlsafe_b64decode", b"AAA=A", {}),
+        ("urlsafe_b64decode", b"AA===AAAA", {}),
+        ("urlsafe_b64decode", b"+/8=", {}),
+    ],
+)
+def test_python_315_options_and_warnings_follow_stdlib(
+    name: str, source: bytes, kwargs: dict[str, object]
+) -> None:
+    _same_call(getattr(b64, name), getattr(base64, name), source, **kwargs)
 
 
 @pytest.mark.parametrize(("raw", "encoded"), _VECTORS)
@@ -521,7 +565,14 @@ def test_url_helper_large_mixed_alphabets_and_ignored_bytes(
     with warnings.catch_warnings():
         warnings.simplefilter("error")
         for document in [encoded, encoded.rstrip(b"="), b"!\n" + encoded + b"\xff"]:
-            assert b64.decode(document, url=True) == payload
+            if sys.version_info >= (3, 15):
+                _same_call(
+                    lambda data: b64.decode(data, url=True),
+                    base64.urlsafe_b64decode,
+                    document,
+                )
+            else:
+                assert b64.decode(document, url=True) == payload
 
 
 @pytest.mark.parametrize("size", [0, 1, 56, 57, 58, 114, 115, 512])
@@ -635,8 +686,10 @@ def test_url_helper_calls_subclass_translation_once_before_filtering() -> None:
 
 def test_url_helper_normalizes_a_translation_returning_text_once() -> None:
     expected, actual = _TextTranslatingBytes(b"Yw=="), _TextTranslatingBytes(b"Yw==")
-    assert b64.decode(actual, url=True) == base64.urlsafe_b64decode(expected) == b"a"
+    assert b64.decode(actual, url=True) == base64.urlsafe_b64decode(expected)
     assert actual.calls == expected.calls
     assert len(actual.calls) == 1
     assert actual.text.calls == expected.text.calls
-    assert len(actual.text.calls) == 1
+    # 3.15 feeds translated ASCII text directly to binascii; earlier versions
+    # normalize it again through the subclass's encode hook.
+    assert len(actual.text.calls) == (0 if sys.version_info >= (3, 15) else 1)

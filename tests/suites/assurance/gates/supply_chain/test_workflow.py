@@ -383,7 +383,7 @@ def test_release_wheel_shards_keep_every_platform_and_supported_interpreter(work
         "windows-latest",
         "windows-11-arm",
     }
-    assert matrix["python"] == ["312", "313", "314"]
+    assert matrix["python"] == ["312", "313", "314", "315"]
     assert wheels["strategy"]["fail-fast"] is False
     build = next(s for s in wheels["steps"] if "CIBW_BUILD" in s.get("env", {}))
     assert build["env"]["CIBW_BUILD"] == "cp${{ matrix.python }}-*"
